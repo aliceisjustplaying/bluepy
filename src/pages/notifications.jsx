@@ -658,9 +658,9 @@ function Notifications({ columnMode }) {
     {
       useKey: true,
       ignoreEventWhen: (e) => {
-        // Allow '.' even with Shift (some keyboard layouts require Shift for '.') 
-        if (e.key === '.') return false; 
-        return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey; 
+        // Allow '.' even with Shift (some keyboard layouts require Shift for '.')
+        if (e.key === '.') return false;
+        return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
       },
     },
   );
