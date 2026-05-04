@@ -646,6 +646,25 @@ function Notifications({ columnMode }) {
     },
   );
 
+  const dotRef = useHotkeys(
+    '.',
+    () => {
+      loadNotifications(true);
+      scrollableRef.current?.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    },
+    {
+      useKey: true,
+      ignoreEventWhen: (e) => {
+        // Allow '.' even with Shift (some keyboard layouts require Shift for '.')
+        if (e.key === '.') return false;
+        return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
+      },
+    },
+  );
+
   const today = new Date();
   const todaySubHeading = useMemo(() => {
     return niceDateTime(today, {
@@ -664,6 +683,7 @@ function Notifications({ columnMode }) {
         jRef.current = node;
         kRef.current = node;
         oRef.current = node;
+        dotRef.current = node;
       }}
       tabIndex="-1"
     >
