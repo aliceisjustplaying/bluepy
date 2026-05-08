@@ -261,6 +261,22 @@ function Login() {
     })();
   };
 
+  const submitBlueskyOAuth = (e) => {
+    e.preventDefault();
+    if (!bskyIdentifier) return;
+    (async () => {
+      setUIState('loading');
+      try {
+        await startAtprotoOAuthLogin(bskyIdentifier.trim());
+      } catch (e) {
+        console.error(e);
+        setUIState('error');
+      } finally {
+        setUIState('default');
+      }
+    })();
+  };
+
   if (submit) {
     useEffect(() => {
       submitInstance(instance || selectedInstanceText);

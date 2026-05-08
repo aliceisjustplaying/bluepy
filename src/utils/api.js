@@ -101,6 +101,7 @@ export function initClient({ instance, accessToken }) {
     };
     const masto = createAtprotoClient({
       session: atprotoSession?.session,
+      oauthSession,
       service: atprotoSession?.service,
       persistSession,
     });

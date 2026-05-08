@@ -2,6 +2,11 @@ import { Agent, BskyAgent, RichText } from '@atproto/api';
 import { getPdsEndpoint } from '@atproto/common-web';
 
 import { encodeAtprotoID } from './atproto-route';
+import { createAtprotoOAuthAgent } from './atproto-oauth';
+import {
+  createAtprotoExternalEmbed,
+  getFirstPostURL,
+} from './atproto-unfurl';
 import {
   BSKY_PDS,
   resolveAtprotoLoginService,
@@ -57,6 +62,8 @@ async function uploadVideoBlob(agent, file) {
       : null;
     if (pdsEndpoint) pdsUrl = new URL(pdsEndpoint);
   }
+  const dispatchUrl =
+    agent.dispatchUrl || (await agent.sessionManager?.getTokenInfo?.())?.aud;
 
   const dispatchUrl = agent.sessionManager?.dispatchUrl || pdsUrl;
   if (!dispatchUrl) throw new Error('Could not resolve PDS URL for video upload');
@@ -156,6 +163,10 @@ function actorToAccount(actor = {}) {
   const displayName = actor.displayName || handle;
   const description = actor.description || '';
   const url = `https://bsky.app/profile/${handle}`;
+  const hasProfileCounts =
+    Number.isFinite(actor.followersCount) &&
+    Number.isFinite(actor.followsCount) &&
+    Number.isFinite(actor.postsCount);
   return {
     id: actor.did || handle,
     username: handle,
@@ -172,13 +183,16 @@ function actorToAccount(actor = {}) {
     avatarStatic: actor.avatar,
     header: actor.banner,
     headerStatic: actor.banner,
-    followersCount: actor.followersCount || 0,
-    followingCount: actor.followsCount || 0,
-    statusesCount: actor.postsCount || 0,
+    followersCount: actor.followersCount ?? 0,
+    followingCount: actor.followsCount ?? 0,
+    statusesCount: actor.postsCount ?? 0,
     emojis: [],
     fields: [],
     bot: false,
     group: false,
+    _atproto: {
+      hasProfileCounts,
+    },
   };
 }
 
@@ -479,12 +493,13 @@ function relationshipFromAtproto(rel = {}, profile = {}) {
   };
 }
 
-function notificationType(reason) {
+export function notificationType(reason) {
   switch (reason) {
     case 'like':
     case 'like-via-repost':
       return 'favourite';
     case 'repost':
+    case 'repost-via-repost':
       return 'reblog';
     case 'quote':
       return 'quote';
@@ -498,8 +513,11 @@ function notificationType(reason) {
   }
 }
 
-function notificationStatusURI(notification) {
+export function notificationStatusURI(notification) {
   if (notification.reason === 'like-via-repost') {
+    return notification.record?.subject?.uri || notification.reasonSubject;
+  }
+  if (notification.reason === 'repost-via-repost') {
     return notification.record?.subject?.uri || notification.reasonSubject;
   }
   if (['like', 'repost'].includes(notification.reason)) {
@@ -615,6 +633,7 @@ async function uploadProfileImage(agent, file) {
 
 export function createAtprotoClient({
   session,
+  oauthSession,
   service = BSKY_PDS,
   persistSession,
   agent: existingAgent,
@@ -1279,17 +1298,12 @@ export function createAtprotoClient({
           },
         },
         search: {
-          list({ q, limit = 10 } = {}) {
-            return makeCollection(async () => {
-              const res = await agent.searchActors({
-                term: q || '',
-                limit,
-              });
-              return {
-                cursor: undefined,
-                items: res.data.actors.map(actorToAccount),
-              };
+          async list({ q, limit = 10 } = {}) {
+            const res = await agent.searchActors({
+              term: q || '',
+              limit,
             });
+            return res.data.actors.map(actorToAccount);
           },
         },
       },
@@ -1796,6 +1810,17 @@ export function createAtprotoClient({
                 };
               }
             }
+          }
+          if (!record.embed && !(params.disable_card || params.disableCard)) {
+            const externalEmbed = await createAtprotoExternalEmbed(
+              agent,
+              params.card_url ||
+                params.cardUrl ||
+                params.external_url ||
+                params.externalUrl ||
+                getFirstPostURL(rt.text),
+            );
+            if (externalEmbed) record.embed = externalEmbed;
           }
           const res = await agent.post(record);
           const id = encodeAtprotoID(res.uri);
