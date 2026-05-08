@@ -16,6 +16,7 @@ import {
   BSKY_INSTANCE,
   loginAtproto,
 } from '../utils/atproto-adapter';
+import { signInOAuth } from '../utils/atproto-oauth-client';
 import {
   getAuthorizationURL,
   getPKCEAuthorizationURL,
@@ -66,12 +67,6 @@ function Login() {
       }
     })();
   }, []);
-
-  // useEffect(() => {
-  //   if (cachedInstanceURL) {
-  //     instanceURLRef.current.value = cachedInstanceURL.toLowerCase();
-  //   }
-  // }, []);
 
   const submitInstance = (instanceURL) => {
     if (!instanceURL) return;
@@ -207,21 +202,26 @@ function Login() {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    // const { elements } = e.target;
-    // let instanceURL = elements.instanceURL.value.toLowerCase();
-    // // Remove protocol from instance URL
-    // instanceURL = instanceURL.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-    // // Remove @acct@ or acct@ from instance URL
-    // instanceURL = instanceURL.replace(/^@?[^@]+@/, '');
-    // if (!/\./.test(instanceURL)) {
-    //   instanceURL = instancesList.find((instance) =>
-    //     instance.includes(instanceURL),
-    //   );
-    // }
-    // submitInstance(instanceURL);
     submitInstance(selectedInstanceText);
   };
 
+  // OAuth sign-in — primary Bluesky login method
+  const submitBlueskyOAuth = (e) => {
+    e.preventDefault();
+    if (!bskyIdentifier.trim()) return;
+    (async () => {
+      setUIState('loading');
+      try {
+        // signInOAuth navigates away — never returns
+        await signInOAuth(bskyIdentifier.trim());
+      } catch (e) {
+        console.error('OAuth sign-in failed:', e);
+        setUIState('error');
+      }
+    })();
+  };
+
+  // App-password sign-in — fallback for advanced users
   const submitBluesky = (e) => {
     e.preventDefault();
     if (!bskyIdentifier || !bskyPassword) return;
@@ -269,7 +269,7 @@ function Login() {
 
   return (
     <main id="login" style={{ textAlign: 'center' }}>
-      <form onSubmit={submitBluesky}>
+      <form onSubmit={submitBlueskyOAuth}>
         <h1>
           <img src={logo} alt="" width="80" height="80" />
           <br />
@@ -278,7 +278,7 @@ function Login() {
         <section class="bsky-login">
           <h2>Bluesky</h2>
           <label>
-            <p>Handle or email</p>
+            <p>Handle</p>
             <input
               value={bskyIdentifier}
               type="text"
@@ -292,19 +292,26 @@ function Login() {
               onInput={(e) => setBskyIdentifier(e.target.value)}
             />
           </label>
-          <label>
-            <p>App password</p>
-            <input
-              value={bskyPassword}
-              type="password"
-              class="large"
-              disabled={uiState === 'loading'}
-              autocomplete="current-password"
-              onInput={(e) => setBskyPassword(e.target.value)}
-            />
-          </label>
+          <div>
+            <button
+              disabled={uiState === 'loading' || !bskyIdentifier.trim()}
+            >
+              Continue with Bluesky
+            </button>
+          </div>
           <details class="bsky-advanced-login">
-            <summary>Advanced</summary>
+            <summary>App password login</summary>
+            <label>
+              <p>App password</p>
+              <input
+                value={bskyPassword}
+                type="password"
+                class="large"
+                disabled={uiState === 'loading'}
+                autocomplete="current-password"
+                onInput={(e) => setBskyPassword(e.target.value)}
+              />
+            </label>
             <label>
               <p>PDS URL, optional</p>
               <input
@@ -320,21 +327,23 @@ function Login() {
                 onInput={(e) => setBskyService(e.target.value)}
               />
             </label>
+            <div>
+              <button
+                type="button"
+                disabled={
+                  uiState === 'loading' || !bskyIdentifier || !bskyPassword
+                }
+                onClick={submitBluesky}
+              >
+                Sign in with app password
+              </button>
+            </div>
           </details>
-          <div>
-            <button
-              disabled={
-                uiState === 'loading' || !bskyIdentifier || !bskyPassword
-              }
-            >
-              Continue with Bluesky
-            </button>
-          </div>
         </section>
         {uiState === 'error' && (
           <p class="error">
             <Trans>
-              Failed to log in. Please check your handle and app password.
+              Failed to log in. Please check your handle and try again.
             </Trans>
           </p>
         )}

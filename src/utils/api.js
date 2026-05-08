@@ -5,7 +5,9 @@ import {
   atprotoInstanceInfo,
   BSKY_INSTANCE,
   createAtprotoClient,
+  createAtprotoOAuthClient,
 } from './atproto-adapter';
+import { restoreOAuthSession } from './atproto-oauth-client';
 import mem from '../utils/mem';
 
 import store from './store';
@@ -46,8 +48,34 @@ export function initClient({ instance, accessToken }) {
       .toLowerCase();
   }
   const atprotoSession = parseAtprotoSession(accessToken);
-  if (isAtprotoInstance(instance) || atprotoSession) {
+  const atprotoOAuthMarker = parseAtprotoOAuthMarker(accessToken);
+  if (isAtprotoInstance(instance) || atprotoSession || atprotoOAuthMarker) {
     instance = BSKY_INSTANCE;
+
+    // OAuth session — must be restored from IndexedDB (async)
+    // Returns a promise-aware client. The caller should use initClientAsync for OAuth.
+    if (atprotoOAuthMarker) {
+      // Synchronous init not possible for OAuth — return a placeholder
+      // that will be replaced by initClientAsync
+      const placeholder = {
+        masto: null,
+        instance,
+        accessToken,
+        atproto: true,
+        atprotoOAuth: true,
+        _oauthDid: atprotoOAuthMarker.did,
+        _ready: false,
+        onStreamingReady: function (callback) {
+          this._streamingCallback = callback;
+        },
+      };
+      apis[instance] = placeholder;
+      if (!accountApis[instance]) accountApis[instance] = {};
+      if (accessToken) accountApis[instance][accessToken] = placeholder;
+      return placeholder;
+    }
+
+    // App-password session
     let client;
     let persistedAccessToken = accessToken;
     const persistSession = (event, session) => {
@@ -127,6 +155,54 @@ function parseAtprotoSession(accessToken) {
   } catch (e) {
     return null;
   }
+}
+
+function parseAtprotoOAuthMarker(accessToken) {
+  if (!accessToken) return null;
+  try {
+    const data = JSON.parse(accessToken);
+    return data?.type === 'atproto-oauth' ? data : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+export function isAtprotoOAuthAccount(accessToken) {
+  return !!parseAtprotoOAuthMarker(accessToken);
+}
+
+/**
+ * Async version of initClient for OAuth sessions.
+ * Restores the live OAuth session from IndexedDB and creates a proper client.
+ */
+export async function initClientAsync({ instance, accessToken }) {
+  const oauthMarker = parseAtprotoOAuthMarker(accessToken);
+  if (!oauthMarker) {
+    return initClient({ instance, accessToken });
+  }
+
+  instance = BSKY_INSTANCE;
+  const { restoreOAuthSession } = await import('./atproto-oauth-client');
+  const oauthResult = await restoreOAuthSession(oauthMarker.did);
+  if (!oauthResult?.session) {
+    throw new Error('OAuth session not found in IndexedDB');
+  }
+
+  const masto = createAtprotoOAuthClient({ oauthSession: oauthResult.session });
+  const client = {
+    masto,
+    instance,
+    accessToken,
+    atproto: true,
+    atprotoOAuth: true,
+    onStreamingReady: function (callback) {
+      this._streamingCallback = callback;
+    },
+  };
+  apis[instance] = client;
+  if (!accountApis[instance]) accountApis[instance] = {};
+  if (accessToken) accountApis[instance][accessToken] = client;
+  return client;
 }
 
 export function hasInstance(instance) {
@@ -328,6 +404,9 @@ export function api({ instance, accessToken, accountID, account } = {}) {
       accountApis[instance]?.[accessToken] ||
       initClient({ instance, accessToken });
     const { masto, streaming } = client;
+    if (!masto && client.atprotoOAuth) {
+      throw new Error('OAuth client not initialised — call initClientAsync first');
+    }
     return {
       masto,
       streaming,

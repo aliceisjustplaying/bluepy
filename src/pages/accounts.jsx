@@ -13,8 +13,9 @@ import MenuLink from '../components/menu-link';
 import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
-import { api } from '../utils/api';
+import { api, isAtprotoOAuthAccount } from '../utils/api';
 import { revokeAccessToken } from '../utils/auth';
+import { signOutOAuth } from '../utils/atproto-oauth-client';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
 import states from '../utils/states';
@@ -70,6 +71,17 @@ function Accounts({ onClose }) {
               };
 
               const logOutAccount = async () => {
+                // ATProto OAuth accounts — sign out via the OAuth client
+                if (isAtprotoOAuthAccount(account.accessToken)) {
+                  try {
+                    const data = JSON.parse(account.accessToken);
+                    if (data?.did) await signOutOAuth(data.did);
+                  } catch (e) {
+                    console.error('OAuth sign out error:', e);
+                  }
+                  return;
+                }
+                // Mastodon / app-password accounts
                 await revokeAccessToken({
                   instanceURL: account.instanceURL,
                   client_id: account.clientId,

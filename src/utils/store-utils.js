@@ -25,7 +25,33 @@ export function getAccount(id) {
 
 export function getAccountByAccessToken(accessToken) {
   const accounts = getAccounts();
+  // For OAuth accounts, match by DID since the session object changes on refresh
+  try {
+    const data = JSON.parse(accessToken);
+    if (data?.type === 'atproto-oauth' && data?.did) {
+      return accounts.find((a) => {
+        try {
+          const aData = JSON.parse(a.accessToken);
+          return aData?.type === 'atproto-oauth' && aData?.did === data.did;
+        } catch {
+          return false;
+        }
+      });
+    }
+  } catch {}
   return accounts.find((a) => a.accessToken === accessToken);
+}
+
+export function getAccountByDID(did) {
+  const accounts = getAccounts();
+  return accounts.find((a) => {
+    try {
+      const data = JSON.parse(a.accessToken);
+      return data?.type === 'atproto-oauth' && data?.did === did;
+    } catch {
+      return false;
+    }
+  });
 }
 
 export function getAccountByInstance(instance) {

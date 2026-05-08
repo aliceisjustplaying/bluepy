@@ -62,11 +62,15 @@ import {
   hasPreferences,
   initAccount,
   initClient,
+  initClientAsync,
   initInstance,
   initPreferences,
+  isAtprotoOAuthAccount,
 } from './utils/api';
+import { BSKY_INSTANCE } from './utils/atproto-adapter';
 import { getAccessToken } from './utils/auth';
 import { AuthProvider, useAuth } from './utils/auth-context';
+import { initOAuth } from './utils/atproto-oauth-client';
 import focusDeck from './utils/focus-deck';
 import states, { hideAllModals, initStates, statusKey } from './utils/states';
 import store from './utils/store';
@@ -75,6 +79,7 @@ import {
   getCredentialApplication,
   getCurrentAccount,
   getVapidKey,
+  saveAccount,
   setCurrentAccountID,
 } from './utils/store-utils';
 
@@ -502,56 +507,141 @@ function App() {
         __BENCHMARK.end('app-init');
       })();
     } else {
-      window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
-      const searchAccount = decodeURIComponent(
-        (window.location.search.match(/account=([^&]+)/) || [, ''])[1],
-      );
-      let account;
-      if (searchAccount) {
-        account = getAccount(searchAccount);
-        console.log('searchAccount', searchAccount, account);
-        if (account) {
-          setCurrentAccountID(account.info.id);
-          window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname || '/',
-          );
-        }
-      }
-      if (!account) {
-        account = getCurrentAccount();
-      }
-      if (account) {
-        setCurrentAccountID(account.info.id);
-        const { client } = api({ account });
-        const { instance } = client;
-        // console.log('masto', masto);
-        initStates();
-        setUIState('loading');
-        (async () => {
-          try {
-            if (hasPreferences() && hasInstance(instance)) {
-              // Non-blocking
-              initPreferences(client);
-              initInstance(client, instance);
-            } else {
-              await Promise.allSettled([
-                initPreferences(client),
-                initInstance(client, instance),
-              ]);
+      // Try AT Protocol OAuth first — handles both callback and session restore
+      (async () => {
+        try {
+          const oauthResult = await initOAuth();
+          if (oauthResult?.session) {
+            // OAuth session found (either callback completion or existing session)
+            const { session: oauthSession, did, handle } = oauthResult;
+
+            // Clean URL if this was a callback (remove query params)
+            if (window.location.search) {
+              window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname || '/',
+              );
             }
-          } catch (e) {
-          } finally {
+
+            const accessToken = JSON.stringify({
+              type: 'atproto-oauth',
+              did,
+            });
+
+            const client = await initClientAsync({
+              instance: BSKY_INSTANCE,
+              accessToken,
+            });
+            const account = await client.masto.v1.accounts.verifyCredentials();
+
+            saveAccount({
+              info: account,
+              instanceURL: BSKY_INSTANCE,
+              accessToken,
+              atproto: true,
+              createdAt: Date.now(),
+            });
+            setCurrentAccountID(account.id);
+
+            await Promise.allSettled([
+              initPreferences(client),
+              initInstance(client, BSKY_INSTANCE),
+            ]);
+            initStates();
+            window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+
             setIsLoggedIn(true);
             setUIState('default');
             __BENCHMARK.end('app-init');
+            return;
           }
-        })();
-      } else {
-        setUIState('default');
-        __BENCHMARK.end('app-init');
-      }
+        } catch (e) {
+          console.error('OAuth init error:', e);
+          // Fall through to regular account restore
+        }
+
+        // Regular account restore (Mastodon or app-password ATProto)
+        window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+        const searchAccount = decodeURIComponent(
+          (window.location.search.match(/account=([^&]+)/) || [, ''])[1],
+        );
+        let account;
+        if (searchAccount) {
+          account = getAccount(searchAccount);
+          console.log('searchAccount', searchAccount, account);
+          if (account) {
+            setCurrentAccountID(account.info.id);
+            window.history.replaceState(
+              {},
+              document.title,
+              window.location.pathname || '/',
+            );
+          }
+        }
+        if (!account) {
+          account = getCurrentAccount();
+        }
+
+        // For OAuth accounts, restore session from IndexedDB
+        if (account && isAtprotoOAuthAccount(account.accessToken)) {
+          try {
+            const client = await initClientAsync({
+              instance: BSKY_INSTANCE,
+              accessToken: account.accessToken,
+            });
+            // Re-init the API with the live client
+            setCurrentAccountID(account.info.id);
+            initStates();
+            setUIState('loading');
+            try {
+              await Promise.allSettled([
+                initPreferences(client),
+                initInstance(client, BSKY_INSTANCE),
+              ]);
+            } catch (e) {}
+            setIsLoggedIn(true);
+            setUIState('default');
+            __BENCHMARK.end('app-init');
+            return;
+          } catch (e) {
+            console.error('OAuth session restore failed:', e);
+            // Session expired — fall through to regular account handling
+            // which will show the login page
+          }
+        }
+
+        if (account) {
+          setCurrentAccountID(account.info.id);
+          const { client } = api({ account });
+          const { instance } = client;
+          // console.log('masto', masto);
+          initStates();
+          setUIState('loading');
+          (async () => {
+            try {
+              if (hasPreferences() && hasInstance(instance)) {
+                // Non-blocking
+                initPreferences(client);
+                initInstance(client, instance);
+              } else {
+                await Promise.allSettled([
+                  initPreferences(client),
+                  initInstance(client, instance),
+                ]);
+              }
+            } catch (e) {
+            } finally {
+              setIsLoggedIn(true);
+              setUIState('default');
+              __BENCHMARK.end('app-init');
+            }
+          })();
+        } else {
+          setUIState('default');
+          __BENCHMARK.end('app-init');
+        }
+      })();
     }
 
     // Cleanup

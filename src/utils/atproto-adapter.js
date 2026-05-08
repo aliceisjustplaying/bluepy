@@ -1,4 +1,4 @@
-import { BskyAgent, RichText } from '@atproto/api';
+import { Agent, BskyAgent, RichText } from '@atproto/api';
 import { getPdsEndpoint } from '@atproto/common-web';
 
 import { encodeAtprotoID } from './atproto-route';
@@ -44,17 +44,26 @@ async function uploadVideoBlob(agent, file) {
   }
   if (!agent.did) throw new Error('Missing Bluesky session');
 
-  if (!agent.sessionManager.pdsUrl) {
+  // Resolve PDS URL for service auth
+  // BskyAgent exposes sessionManager.pdsUrl / dispatchUrl
+  // Agent (OAuth) resolves via session or getSession
+  let pdsUrl;
+  if (agent.sessionManager?.pdsUrl) {
+    pdsUrl = agent.sessionManager.pdsUrl;
+  } else {
     const session = await agent.com.atproto.server.getSession();
     const pdsEndpoint = session.data.didDoc
       ? getPdsEndpoint(session.data.didDoc)
       : null;
-    if (pdsEndpoint) agent.sessionManager.pdsUrl = new URL(pdsEndpoint);
+    if (pdsEndpoint) pdsUrl = new URL(pdsEndpoint);
   }
+
+  const dispatchUrl = agent.sessionManager?.dispatchUrl || pdsUrl;
+  if (!dispatchUrl) throw new Error('Could not resolve PDS URL for video upload');
 
   const uploadToken = await getServiceAuthToken({
     agent,
-    aud: getServiceAuthAudFromUrl(agent.dispatchUrl),
+    aud: getServiceAuthAudFromUrl(dispatchUrl),
     lxm: 'com.atproto.repo.uploadBlob',
     exp: Date.now() / 1000 + 60 * 30,
   });
@@ -608,9 +617,10 @@ export function createAtprotoClient({
   session,
   service = BSKY_PDS,
   persistSession,
+  agent: existingAgent,
 }) {
-  const agent = new BskyAgent({ service, persistSession });
-  if (session) {
+  const agent = existingAgent || new BskyAgent({ service, persistSession });
+  if (!existingAgent && session) {
     agent.sessionManager.session = session;
   }
   const uploadedMedia = new Map();
@@ -2030,6 +2040,16 @@ export async function loginAtproto({
     session: agent.session,
     service,
   };
+}
+
+/**
+ * Create an ATProto client from an OAuth session.
+ * Uses the Agent class (not BskyAgent) — the OAuth session provides
+ * DPoP-signed fetch handling automatically.
+ */
+export function createAtprotoOAuthClient({ oauthSession }) {
+  const agent = new Agent(oauthSession);
+  return createAtprotoClient({ agent });
 }
 
 export function createPublicAtprotoClient() {

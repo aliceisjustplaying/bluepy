@@ -302,7 +302,7 @@ msgstr "View post stats"
 #: src/components/status.jsx:3454
 #: src/components/status.jsx:3666
 #: src/components/translated-bio-sheet.jsx:21
-#: src/pages/accounts.jsx:46
+#: src/pages/accounts.jsx:47
 #: src/pages/catchup.jsx:1731
 #: src/pages/filters.jsx:225
 #: src/pages/list.jsx:345
@@ -840,7 +840,7 @@ msgstr ""
 
 #: src/components/generic-accounts.jsx:154
 #: src/components/notification.jsx:483
-#: src/pages/accounts.jsx:51
+#: src/pages/accounts.jsx:52
 #: src/pages/search.jsx:349
 #: src/pages/search.jsx:382
 msgid "Accounts"
@@ -1178,7 +1178,7 @@ msgstr ""
 #: src/components/status.jsx:3087
 #: src/components/status.jsx:3090
 #: src/pages/account-statuses.jsx:676
-#: src/pages/accounts.jsx:149
+#: src/pages/accounts.jsx:161
 #: src/pages/hashtag.jsx:232
 #: src/pages/list.jsx:212
 #: src/pages/public.jsx:147
@@ -1482,7 +1482,7 @@ msgid "Accounts…"
 msgstr ""
 
 #: src/components/nav-menu.jsx:329
-#: src/pages/login.jsx:40
+#: src/pages/login.jsx:41
 #: src/pages/login.jsx:276
 #: src/pages/status.jsx:1109
 #: src/pages/welcome.jsx:61
@@ -2395,12 +2395,12 @@ msgid "Not available in current view mode"
 msgstr ""
 
 #: src/components/shortcuts-settings.jsx:360
-#: src/pages/accounts.jsx:219
+#: src/pages/accounts.jsx:231
 msgid "Move up"
 msgstr ""
 
 #: src/components/shortcuts-settings.jsx:376
-#: src/pages/accounts.jsx:234
+#: src/pages/accounts.jsx:246
 msgid "Move down"
 msgstr ""
 
@@ -2427,7 +2427,7 @@ msgid "Max {SHORTCUTS_LIMIT} shortcuts"
 msgstr ""
 
 #: src/components/shortcuts-settings.jsx:461
-#: src/pages/accounts.jsx:360
+#: src/pages/accounts.jsx:372
 msgid "Import/export"
 msgstr ""
 
@@ -3047,7 +3047,7 @@ msgstr "Login required."
 #: src/compose.jsx:96
 #: src/pages/annual-report.jsx:186
 #: src/pages/http-route.jsx:91
-#: src/pages/login.jsx:345
+#: src/pages/login.jsx:354
 msgid "Go home"
 msgstr ""
 
@@ -3146,67 +3146,67 @@ msgstr "Switch to my server (<0>{currentInstance}</0>)"
 msgid "Month"
 msgstr ""
 
-#: src/pages/accounts.jsx:86
+#: src/pages/accounts.jsx:98
 msgid "Current"
 msgstr ""
 
-#: src/pages/accounts.jsx:135
+#: src/pages/accounts.jsx:147
 msgid "Logged out"
 msgstr "Logged out"
 
-#: src/pages/accounts.jsx:141
+#: src/pages/accounts.jsx:153
 msgid "Default"
 msgstr ""
 
-#: src/pages/accounts.jsx:163
+#: src/pages/accounts.jsx:175
 msgid "Switch to this account"
 msgstr "Switch to this account"
 
-#: src/pages/accounts.jsx:172
+#: src/pages/accounts.jsx:184
 msgid "Switch in new tab/window"
 msgstr "Switch in new tab/window"
 
-#: src/pages/accounts.jsx:186
+#: src/pages/accounts.jsx:198
 msgid "View profile…"
 msgstr ""
 
-#: src/pages/accounts.jsx:204
+#: src/pages/accounts.jsx:216
 msgid "Set as default"
 msgstr ""
 
 #. placeholder {0}: account.info.acct
-#: src/pages/accounts.jsx:247
+#: src/pages/accounts.jsx:259
 msgid "Log out <0>@{0}</0>?"
 msgstr ""
 
 #. placeholder {0}: account.info.acct
-#: src/pages/accounts.jsx:275
+#: src/pages/accounts.jsx:287
 msgid "Log out and remove <0>@{0}</0>"
 msgstr "Log out and remove <0>@{0}</0>"
 
-#: src/pages/accounts.jsx:287
+#: src/pages/accounts.jsx:299
 msgid "Log out…"
 msgstr ""
 
 #. placeholder {0}: account.info.acct
-#: src/pages/accounts.jsx:297
+#: src/pages/accounts.jsx:309
 msgid "Remove <0>@{0}</0>?"
 msgstr "Remove <0>@{0}</0>?"
 
-#: src/pages/accounts.jsx:315
+#: src/pages/accounts.jsx:327
 msgid "Remove account…"
 msgstr "Remove account…"
 
 #. placeholder {0}: niceDateTime(account.createdAt)
-#: src/pages/accounts.jsx:323
+#: src/pages/accounts.jsx:335
 msgid "Connected on {0} (<0/>)"
 msgstr "Connected on {0} (<0/>)"
 
-#: src/pages/accounts.jsx:340
+#: src/pages/accounts.jsx:352
 msgid "Add an existing account"
 msgstr ""
 
-#: src/pages/accounts.jsx:347
+#: src/pages/accounts.jsx:359
 msgid "Note: <0>Default</0> account will always be used for first load. Switched accounts will persist during the session."
 msgstr ""
 
@@ -3792,14 +3792,14 @@ msgstr "{0, plural, one {# feed} other {# feeds}}"
 msgid "No lists or feeds yet."
 msgstr "No lists or feeds yet."
 
-#: src/pages/login.jsx:135
-#: src/pages/login.jsx:147
+#: src/pages/login.jsx:130
+#: src/pages/login.jsx:142
 msgid "Failed to register application"
 msgstr "Failed to register application"
 
-#: src/pages/login.jsx:336
-msgid "Failed to log in. Please check your handle and app password."
-msgstr "Failed to log in. Please check your handle and app password."
+#: src/pages/login.jsx:345
+msgid "Failed to log in. Please check your handle and try again."
+msgstr "Failed to log in. Please check your handle and try again."
 
 #: src/pages/mentions.jsx:25
 msgid "Private mentions"

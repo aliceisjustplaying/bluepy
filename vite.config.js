@@ -194,6 +194,40 @@ export default defineConfig({
           commitHash,
         },
       },
+      {
+        // AT Protocol OAuth client metadata
+        // For production, PHANPY_WEBSITE must be set to the deployed origin
+        // For dev, the loopback client ID shortcut is used
+        type: 'json',
+        output: './oauth-client-metadata.json',
+        data: WEBSITE
+          ? {
+              client_id: `${WEBSITE}/oauth-client-metadata.json`,
+              client_name: CLIENT_NAME || 'Bluepy',
+              client_uri: WEBSITE,
+              redirect_uris: [WEBSITE],
+              grant_types: ['authorization_code', 'refresh_token'],
+              response_types: ['code'],
+              scope: 'atproto transition:generic',
+              application_type: 'web',
+              token_endpoint_auth_method: 'none',
+              dpop_bound_access_tokens: true,
+            }
+          : {
+              // Loopback client for local development
+              client_id:
+                'http://localhost?redirect_uri=http://localhost/callback&scope=atproto+transition:generic',
+              client_name: CLIENT_NAME || 'Bluepy',
+              client_uri: 'http://localhost',
+              redirect_uris: ['http://localhost/callback'],
+              grant_types: ['authorization_code', 'refresh_token'],
+              response_types: ['code'],
+              scope: 'atproto transition:generic',
+              application_type: 'web',
+              token_endpoint_auth_method: 'none',
+              dpop_bound_access_tokens: true,
+            },
+      },
       ...(DISALLOW_ROBOTS
         ? [
             {
