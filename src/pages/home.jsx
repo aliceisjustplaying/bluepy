@@ -19,6 +19,7 @@ import states, { saveStatus } from '../utils/states';
 import store from '../utils/store';
 import { getCurrentAccountNS } from '../utils/store-utils';
 
+import Columns from '../components/columns';
 import Following from './following';
 import Following2 from './following2';
 import List from './list';
@@ -54,9 +55,17 @@ function Home() {
     homeTimeline?.type === 'feed' && homeTimeline?.id ? homeTimeline.id : null;
   const defaultFollowing = homeTimeline?.type === 'following';
 
+  const isMultiColumn =
+    (snapStates.settings.shortcutsViewMode === 'multi-column' ||
+      (!snapStates.settings.shortcutsViewMode &&
+        snapStates.settings.shortcutsColumnsMode)) &&
+    !!snapStates.shortcuts?.length;
+
   return (
     <>
-      {defaultFeedID ? (
+      {isMultiColumn ? (
+        <Columns />
+      ) : defaultFeedID ? (
         <List id={defaultFeedID} />
       ) : expTimeline2.current && !defaultFollowing ? (
         <Following2
