@@ -31,8 +31,15 @@ const {
   PHANPY_DISALLOW_ROBOTS: DISALLOW_ROBOTS,
   PHANPY_DEV,
 } = loadEnv('production', process.cwd(), allowedEnvPrefixes);
-const productionOrigin = (WEBSITE || 'https://bluepy.mosphere.at').replace(/\/$/, '');
-const { PHANPY_WEBSITE: DEV_WEBSITE } = loadEnv('development', process.cwd(), allowedEnvPrefixes);
+const productionOrigin = (WEBSITE || 'https://bluepy.mosphere.at').replace(
+  /\/$/,
+  '',
+);
+const { PHANPY_WEBSITE: DEV_WEBSITE } = loadEnv(
+  'development',
+  process.cwd(),
+  allowedEnvPrefixes,
+);
 const devOrigin = DEV_WEBSITE?.replace(/\/$/, '') || null;
 const devHost = devOrigin ? new URL(devOrigin).hostname : null;
 const DEV_PORT = Number(process.env.PORT || process.env.VITE_PORT) || undefined;
@@ -43,7 +50,8 @@ function oauthMetadata(origin) {
     client_name: 'Bluepy',
     client_uri: `${origin}/`,
     logo_uri: `${origin}/logo-512.png`,
-    policy_uri: 'https://github.com/aliceisjustplaying/bluepy/blob/bluesky/PRIVACY.MD',
+    policy_uri:
+      'https://github.com/aliceisjustplaying/bluepy/blob/bluesky/PRIVACY.MD',
     redirect_uris: [`${origin}/`],
     scope: 'atproto transition:generic',
     grant_types: ['authorization_code', 'refresh_token'],
@@ -129,12 +137,16 @@ export default defineConfig({
     devOrigin && {
       name: 'dynamic-oauth-metadata',
       configureServer(server) {
-        server.middlewares.use('/oauth-client-metadata.json', (req, res, next) => {
-          const host = req.headers.host || '';
-          if (/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host)) return next();
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify(oauthMetadata(devOrigin)));
-        });
+        server.middlewares.use(
+          '/oauth-client-metadata.json',
+          (req, res, next) => {
+            const host = req.headers.host || '';
+            if (/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host))
+              return next();
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(oauthMetadata(devOrigin)));
+          },
+        );
       },
     },
     preact({
