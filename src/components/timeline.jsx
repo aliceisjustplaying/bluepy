@@ -267,7 +267,7 @@ function Timeline({
 
   // Updated every render so the cleanup fn always sees the latest values
   const cachePayloadRef = useRef(null);
-  cachePayloadRef.current = { items, showMore };
+  cachePayloadRef.current = { cacheKey, items, showMore };
 
   console.debug('RENDER Timeline', id, refresh);
   __BENCHMARK.start(`timeline-${id}-load`);
@@ -408,7 +408,7 @@ function Timeline({
     if (!cachedData?.items?.length) loadItems(true);
     return () => {
       loadItems.cancel?.();
-      const { items, showMore } = cachePayloadRef.current;
+      const { cacheKey, items, showMore } = cachePayloadRef.current;
       if (items?.length) {
         timelineCache.set(cacheKey, {
           items,

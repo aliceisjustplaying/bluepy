@@ -713,13 +713,14 @@ function isRootPath(pathname) {
 
 const PrimaryRoutes = memo(() => {
   const location = useLocation();
-  const nonRootLocation = useMemo(() => {
+  const primaryLocation = useMemo(() => {
     const { pathname } = location;
-    return !isRootPath(pathname);
+    if (pathname === '/' || isRootPath(pathname)) return location;
+    return { ...location, pathname: '/' };
   }, [location]);
 
   return (
-    <Routes location={nonRootLocation || location}>
+    <Routes location={primaryLocation}>
       <Route path="/" element={<Root />} />
       <Route path="/login" element={<Login />} />
       <Route path="/welcome" element={<Welcome />} />

@@ -115,7 +115,7 @@ function List(props) {
         key={id}
         title={list.title}
         id={timelineId}
-        timelineKey={id}
+        timelineKey={`${timelineId}-${id}`}
         emptyText={t`Nothing yet.`}
         errorText={t`Unable to load posts.`}
         instance={instance}

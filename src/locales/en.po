@@ -1178,14 +1178,14 @@ msgstr ""
 #: src/components/status.jsx:2366
 #: src/components/status.jsx:3101
 #: src/components/status.jsx:3104
-#: src/pages/account-statuses.jsx:676
+#: src/pages/account-statuses.jsx:683
 #: src/pages/accounts.jsx:149
-#: src/pages/hashtag.jsx:232
+#: src/pages/hashtag.jsx:235
 #: src/pages/list.jsx:205
-#: src/pages/public.jsx:147
+#: src/pages/public.jsx:148
 #: src/pages/scheduled-posts.jsx:89
 #: src/pages/status.jsx:1584
-#: src/pages/trending.jsx:474
+#: src/pages/trending.jsx:475
 msgid "More"
 msgstr ""
 
@@ -1458,7 +1458,7 @@ msgstr ""
 #: src/pages/account-statuses.jsx:410
 #: src/pages/filters.jsx:55
 #: src/pages/filters.jsx:94
-#: src/pages/hashtag.jsx:373
+#: src/pages/hashtag.jsx:376
 msgid "Filters"
 msgstr ""
 
@@ -2058,7 +2058,7 @@ msgid "Don't feature on profile"
 msgstr "Don't feature on profile"
 
 #: src/components/related-actions.jsx:456
-#: src/pages/hashtag.jsx:362
+#: src/pages/hashtag.jsx:365
 msgid "Feature on profile"
 msgstr ""
 
@@ -2162,7 +2162,7 @@ msgstr ""
 
 #: src/components/related-actions.jsx:972
 #: src/components/related-actions.jsx:976
-#: src/pages/hashtag.jsx:294
+#: src/pages/hashtag.jsx:297
 msgid "Follow"
 msgstr ""
 
@@ -2366,7 +2366,7 @@ msgid "e.g. PixelArt (Max 5, space-separated)"
 msgstr ""
 
 #: src/components/shortcuts-settings.jsx:120
-#: src/pages/hashtag.jsx:389
+#: src/pages/hashtag.jsx:392
 msgid "Media only"
 msgstr ""
 
@@ -3123,31 +3123,31 @@ msgstr "Search @{0}'s posts"
 msgid "Posts"
 msgstr ""
 
-#: src/pages/account-statuses.jsx:653
+#: src/pages/account-statuses.jsx:660
 msgid "Nothing to see here yet."
 msgstr ""
 
-#: src/pages/account-statuses.jsx:654
-#: src/pages/public.jsx:130
-#: src/pages/trending.jsx:452
+#: src/pages/account-statuses.jsx:661
+#: src/pages/public.jsx:131
+#: src/pages/trending.jsx:453
 msgid "Unable to load posts"
 msgstr ""
 
-#: src/pages/account-statuses.jsx:695
-#: src/pages/account-statuses.jsx:725
+#: src/pages/account-statuses.jsx:702
+#: src/pages/account-statuses.jsx:732
 msgid "Unable to fetch account info"
 msgstr ""
 
 #. placeholder {0}: accountInstance ? ( <> {' '} (<b>{punycode.toUnicode(accountInstance)}</b>) </> ) : null
-#: src/pages/account-statuses.jsx:702
+#: src/pages/account-statuses.jsx:709
 msgid "Switch to account's server {0}"
 msgstr "Switch to account's server {0}"
 
-#: src/pages/account-statuses.jsx:732
+#: src/pages/account-statuses.jsx:739
 msgid "Switch to my server (<0>{currentInstance}</0>)"
 msgstr "Switch to my server (<0>{currentInstance}</0>)"
 
-#: src/pages/account-statuses.jsx:805
+#: src/pages/account-statuses.jsx:812
 msgid "Month"
 msgstr ""
 
@@ -3650,102 +3650,102 @@ msgstr ""
 msgid "{hashtagTitle}"
 msgstr ""
 
-#: src/pages/hashtag.jsx:210
-#: src/pages/public.jsx:125
+#: src/pages/hashtag.jsx:213
+#: src/pages/public.jsx:126
 msgid "This timeline is disabled on this server."
 msgstr "This timeline is disabled on this server."
 
-#: src/pages/hashtag.jsx:212
-#: src/pages/public.jsx:127
+#: src/pages/hashtag.jsx:215
+#: src/pages/public.jsx:128
 msgid "Login required to see posts from this server."
 msgstr "Login required to see posts from this server."
 
-#: src/pages/hashtag.jsx:213
+#: src/pages/hashtag.jsx:216
 msgid "No one has posted anything with this tag yet."
 msgstr ""
 
-#: src/pages/hashtag.jsx:215
+#: src/pages/hashtag.jsx:218
 msgid "Unable to load posts with this tag"
 msgstr ""
 
-#: src/pages/hashtag.jsx:241
+#: src/pages/hashtag.jsx:244
 msgid "Unfollow #{hashtag}?"
 msgstr "Unfollow #{hashtag}?"
 
-#: src/pages/hashtag.jsx:256
+#: src/pages/hashtag.jsx:259
 msgid "Unfollowed #{hashtag}"
 msgstr ""
 
-#: src/pages/hashtag.jsx:271
+#: src/pages/hashtag.jsx:274
 msgid "Followed #{hashtag}"
 msgstr ""
 
-#: src/pages/hashtag.jsx:287
+#: src/pages/hashtag.jsx:290
 msgid "Following…"
 msgstr ""
 
-#: src/pages/hashtag.jsx:316
+#: src/pages/hashtag.jsx:319
 msgid "Unfeatured on profile"
 msgstr ""
 
-#: src/pages/hashtag.jsx:330
+#: src/pages/hashtag.jsx:333
 msgid "Unable to unfeature on profile"
 msgstr ""
 
-#: src/pages/hashtag.jsx:339
-#: src/pages/hashtag.jsx:355
+#: src/pages/hashtag.jsx:342
+#: src/pages/hashtag.jsx:358
 msgid "Featured on profile"
 msgstr ""
 
-#: src/pages/hashtag.jsx:427
+#: src/pages/hashtag.jsx:430
 msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
 msgstr ""
 
-#: src/pages/hashtag.jsx:430
+#: src/pages/hashtag.jsx:433
 msgid "Add hashtag"
 msgstr ""
 
-#: src/pages/hashtag.jsx:463
+#: src/pages/hashtag.jsx:466
 msgid "Remove hashtag"
 msgstr ""
 
-#: src/pages/hashtag.jsx:477
+#: src/pages/hashtag.jsx:480
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
 msgstr ""
 
-#: src/pages/hashtag.jsx:506
+#: src/pages/hashtag.jsx:509
 msgid "This shortcut already exists"
 msgstr ""
 
-#: src/pages/hashtag.jsx:509
+#: src/pages/hashtag.jsx:512
 msgid "Hashtag shortcut added"
 msgstr ""
 
-#: src/pages/hashtag.jsx:515
+#: src/pages/hashtag.jsx:518
 msgid "Add to Shortcuts"
 msgstr ""
 
-#: src/pages/hashtag.jsx:521
-#: src/pages/public.jsx:172
-#: src/pages/trending.jsx:481
+#: src/pages/hashtag.jsx:524
+#: src/pages/public.jsx:173
+#: src/pages/trending.jsx:482
 msgid "Enter a new server e.g. \"mastodon.social\""
 msgstr "Enter a new server e.g. \"mastodon.social\""
 
-#: src/pages/hashtag.jsx:524
-#: src/pages/public.jsx:175
-#: src/pages/trending.jsx:484
+#: src/pages/hashtag.jsx:527
+#: src/pages/public.jsx:176
+#: src/pages/trending.jsx:485
 msgid "Invalid server"
 msgstr "Invalid server"
 
-#: src/pages/hashtag.jsx:538
-#: src/pages/public.jsx:189
-#: src/pages/trending.jsx:496
+#: src/pages/hashtag.jsx:541
+#: src/pages/public.jsx:190
+#: src/pages/trending.jsx:497
 msgid "Go to another server…"
 msgstr "Go to another server…"
 
-#: src/pages/hashtag.jsx:551
-#: src/pages/public.jsx:202
-#: src/pages/trending.jsx:507
+#: src/pages/hashtag.jsx:554
+#: src/pages/public.jsx:203
+#: src/pages/trending.jsx:508
 msgid "Go to my server (<0>{currentInstance}</0>)"
 msgstr "Go to my server (<0>{currentInstance}</0>)"
 
@@ -3818,11 +3818,11 @@ msgstr "Only followings"
 msgid "Private"
 msgstr ""
 
-#: src/pages/mentions.jsx:258
+#: src/pages/mentions.jsx:259
 msgid "No one mentioned you :("
 msgstr ""
 
-#: src/pages/mentions.jsx:259
+#: src/pages/mentions.jsx:260
 msgid "Unable to load mentions."
 msgstr ""
 
@@ -3972,15 +3972,15 @@ msgstr ""
 msgid "Federated timeline"
 msgstr ""
 
-#: src/pages/public.jsx:128
+#: src/pages/public.jsx:129
 msgid "No one has posted anything yet."
 msgstr ""
 
-#: src/pages/public.jsx:156
+#: src/pages/public.jsx:157
 msgid "Switch to Federated"
 msgstr "Switch to Federated"
 
-#: src/pages/public.jsx:163
+#: src/pages/public.jsx:164
 msgid "Switch to Local"
 msgstr "Switch to Local"
 
@@ -4464,7 +4464,7 @@ msgstr ""
 msgid "Trending posts"
 msgstr ""
 
-#: src/pages/trending.jsx:451
+#: src/pages/trending.jsx:452
 msgid "No trending posts."
 msgstr ""
 
