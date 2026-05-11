@@ -713,29 +713,13 @@ function isRootPath(pathname) {
 
 const PrimaryRoutes = memo(() => {
   const location = useLocation();
-  const primaryLocation = useMemo(() => {
+  const nonRootLocation = useMemo(() => {
     const { pathname } = location;
-    if (pathname === '/' || isRootPath(pathname)) return location;
-
-    const isModalPage =
-      matchPath('/:instance/s/:id', pathname) || matchPath('/s/:id', pathname);
-    const prevLocation = states.prevLocation;
-    if (
-      isModalPage &&
-      (!prevLocation ||
-        prevLocation.pathname === '/' ||
-        isRootPath(prevLocation.pathname))
-    ) {
-      return prevLocation || { ...location, pathname: '/' };
-    }
-
-    return null;
+    return !isRootPath(pathname);
   }, [location]);
 
-  if (!primaryLocation) return null;
-
   return (
-    <Routes location={primaryLocation}>
+    <Routes location={nonRootLocation || location}>
       <Route path="/" element={<Root />} />
       <Route path="/login" element={<Login />} />
       <Route path="/welcome" element={<Welcome />} />
