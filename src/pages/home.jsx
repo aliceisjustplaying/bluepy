@@ -20,7 +20,6 @@ import states, { saveStatus } from '../utils/states';
 import store from '../utils/store';
 import { getCurrentAccountNS } from '../utils/store-utils';
 
-import Columns from '../components/columns';
 import Following from './following';
 import Following2 from './following2';
 import List from './list';
