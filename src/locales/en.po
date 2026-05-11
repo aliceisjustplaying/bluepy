@@ -135,7 +135,7 @@ msgid "Go to account page"
 msgstr "Go to account page"
 
 #: src/components/account-info.jsx:417
-#: src/components/timeline.jsx:687
+#: src/components/timeline.jsx:689
 #: src/components/timeline2.jsx:685
 #: src/pages/home.jsx:261
 #: src/pages/notifications.jsx:1032
@@ -358,7 +358,7 @@ msgstr "More from <0/>"
 #: src/components/columns.jsx:29
 #: src/components/nav-menu.jsx:184
 #: src/components/shortcuts-settings.jsx:142
-#: src/components/timeline.jsx:570
+#: src/components/timeline.jsx:572
 #: src/components/timeline2.jsx:564
 #: src/pages/catchup.jsx:1027
 #: src/pages/filters.jsx:90
@@ -521,7 +521,7 @@ msgstr "Attachment #{i} failed"
 
 #: src/components/compose.jsx:1566
 #: src/components/status.jsx:2560
-#: src/components/timeline.jsx:1096
+#: src/components/timeline.jsx:1098
 msgid "Content warning"
 msgstr ""
 
@@ -751,14 +751,14 @@ msgstr "Edit History Snapshots"
 #: src/components/edit-history-controls.jsx:35
 #: src/components/gif-picker-modal.jsx:208
 #: src/components/media-modal.jsx:478
-#: src/components/timeline.jsx:1009
+#: src/components/timeline.jsx:1011
 msgid "Previous"
 msgstr ""
 
 #: src/components/edit-history-controls.jsx:47
 #: src/components/gif-picker-modal.jsx:226
 #: src/components/media-modal.jsx:497
-#: src/components/timeline.jsx:1026
+#: src/components/timeline.jsx:1028
 msgid "Next"
 msgstr ""
 
@@ -849,7 +849,7 @@ msgstr ""
 
 #: src/components/generic-accounts.jsx:214
 #: src/components/quotes-modal.jsx:129
-#: src/components/timeline.jsx:652
+#: src/components/timeline.jsx:654
 #: src/pages/list.jsx:357
 #: src/pages/notifications.jsx:1056
 #: src/pages/search.jsx:576
@@ -860,7 +860,7 @@ msgstr ""
 #: src/components/generic-accounts.jsx:219
 #: src/components/quote-chain-modal.jsx:169
 #: src/components/quotes-modal.jsx:133
-#: src/components/timeline.jsx:657
+#: src/components/timeline.jsx:659
 #: src/components/timeline2.jsx:663
 #: src/pages/search.jsx:581
 msgid "The end."
@@ -1328,7 +1328,7 @@ msgstr ""
 #: src/components/status-compact.jsx:74
 #: src/components/status.jsx:3606
 #: src/components/status.jsx:3684
-#: src/components/timeline.jsx:1085
+#: src/components/timeline.jsx:1087
 #: src/pages/catchup.jsx:79
 #: src/pages/catchup.jsx:2052
 msgid "Filtered"
@@ -2980,22 +2980,22 @@ msgstr "{index}/{total}"
 msgid "{index}/X"
 msgstr "{index}/X"
 
-#: src/components/timeline.jsx:586
+#: src/components/timeline.jsx:588
 #: src/pages/settings.jsx:1349
 msgid "New posts"
 msgstr ""
 
 #. placeholder {0}: fItems.length
-#: src/components/timeline.jsx:722
+#: src/components/timeline.jsx:724
 msgid "{0, plural, one {# Boost} other {# Boosts}}"
 msgstr "{0, plural, one {# Boost} other {# Boosts}}"
 
-#: src/components/timeline.jsx:727
+#: src/components/timeline.jsx:729
 msgid "Pinned posts"
 msgstr "Pinned posts"
 
 #. placeholder {0}: filterInfo.titlesStr
-#: src/components/timeline.jsx:1080
+#: src/components/timeline.jsx:1082
 msgid "<0>Filtered</0>: <1>{0}</1>"
 msgstr ""
 

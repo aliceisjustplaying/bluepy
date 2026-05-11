@@ -253,7 +253,9 @@ function Timeline({
   const cacheKey = timelineKey || id;
   const [cachedData] = useState(() => {
     const cached = timelineCache.get(cacheKey);
-    return cached && Date.now() - cached.ts <= TIMELINE_CACHE_TTL ? cached : null;
+    return cached && Date.now() - cached.ts <= TIMELINE_CACHE_TTL
+      ? cached
+      : null;
   });
 
   const [items, setItems] = useState(cachedData?.items || []);
