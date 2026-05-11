@@ -83,7 +83,7 @@ msgstr ""
 
 #: src/components/account-info-mini.jsx:57
 #: src/components/account-info.jsx:812
-#: src/components/compose.jsx:2145
+#: src/components/compose.jsx:2147
 #: src/pages/settings.jsx:300
 #: src/utils/visibility-text.jsx:7
 msgid "Followers"
@@ -400,7 +400,7 @@ msgid "Remove"
 msgstr ""
 
 #: src/components/compose-poll.jsx:80
-#: src/components/compose.jsx:1853
+#: src/components/compose.jsx:1855
 #: src/components/mention-modal.jsx:221
 #: src/components/shortcuts-settings.jsx:730
 #: src/pages/list.jsx:431
@@ -455,7 +455,7 @@ msgid "{0, plural, one {File {1} is not supported.} other {Files {2} are not sup
 msgstr "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
 
 #: src/components/compose.jsx:333
-#: src/components/compose.jsx:2279
+#: src/components/compose.jsx:2281
 #: src/components/file-picker-input.jsx:47
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
 msgstr ""
@@ -526,8 +526,8 @@ msgid "Content warning"
 msgstr ""
 
 #: src/components/compose.jsx:1598
-#: src/components/compose.jsx:1680
-#: src/components/compose.jsx:1787
+#: src/components/compose.jsx:1682
+#: src/components/compose.jsx:1789
 #: src/components/edit-profile-sheet.jsx:326
 #: src/components/import-accounts-selection.jsx:175
 #: src/components/open-link-sheet.jsx:74
@@ -552,69 +552,69 @@ msgstr "Ask a question"
 msgid "What are you doing?"
 msgstr "What are you doing?"
 
-#: src/components/compose.jsx:1727
+#: src/components/compose.jsx:1729
 msgid "Mark media as sensitive"
 msgstr ""
 
-#: src/components/compose.jsx:1767
+#: src/components/compose.jsx:1769
 msgid "Posting on <0/>"
 msgstr "Posting on <0/>"
 
-#: src/components/compose.jsx:2065
+#: src/components/compose.jsx:2067
 #: src/components/quote-settings-sheet.jsx:82
 #: src/components/status.jsx:299
 #: src/pages/settings.jsx:342
 msgid "Anyone can quote"
 msgstr "Anyone can quote"
 
-#: src/components/compose.jsx:2068
+#: src/components/compose.jsx:2070
 #: src/components/quote-settings-sheet.jsx:85
 #: src/components/status.jsx:300
 #: src/pages/settings.jsx:345
 msgid "Your followers can quote"
 msgstr "Your followers can quote"
 
-#: src/components/compose.jsx:2071
+#: src/components/compose.jsx:2073
 #: src/components/quote-settings-sheet.jsx:88
 #: src/components/status.jsx:301
 #: src/pages/settings.jsx:348
 msgid "Only you can quote"
 msgstr "Only you can quote"
 
-#: src/components/compose.jsx:2111
+#: src/components/compose.jsx:2113
 msgid "Quotes can't be embedded in private mentions."
 msgstr "Quotes can't be embedded in private mentions."
 
-#: src/components/compose.jsx:2133
+#: src/components/compose.jsx:2135
 #: src/pages/settings.jsx:294
 #: src/utils/visibility-text.jsx:4
 msgid "Public"
 msgstr ""
 
-#: src/components/compose.jsx:2138
+#: src/components/compose.jsx:2140
 #: src/components/nav-menu.jsx:352
 #: src/components/shortcuts-settings.jsx:167
 #: src/utils/visibility-text.jsx:5
 msgid "Local"
 msgstr ""
 
-#: src/components/compose.jsx:2142
+#: src/components/compose.jsx:2144
 #: src/pages/settings.jsx:297
 #: src/utils/visibility-text.jsx:6
 msgid "Quiet public"
 msgstr "Quiet public"
 
-#: src/components/compose.jsx:2148
+#: src/components/compose.jsx:2150
 #: src/components/status.jsx:2440
 #: src/utils/visibility-text.jsx:8
 msgid "Private mention"
 msgstr ""
 
-#: src/components/compose.jsx:2204
+#: src/components/compose.jsx:2206
 msgid "Schedule"
 msgstr "Schedule"
 
-#: src/components/compose.jsx:2206
+#: src/components/compose.jsx:2208
 #: src/components/keyboard-shortcuts-help.jsx:149
 #: src/components/status.jsx:1118
 #: src/components/status.jsx:1167
@@ -625,20 +625,20 @@ msgstr "Schedule"
 msgid "Reply"
 msgstr ""
 
-#: src/components/compose.jsx:2208
+#: src/components/compose.jsx:2210
 msgid "Update"
 msgstr "Update"
 
-#: src/components/compose.jsx:2209
+#: src/components/compose.jsx:2211
 msgctxt "Submit button in composer"
 msgid "Post"
 msgstr "Post"
 
-#: src/components/compose.jsx:2291
+#: src/components/compose.jsx:2293
 msgid "Downloading GIF…"
 msgstr "Downloading GIF…"
 
-#: src/components/compose.jsx:2315
+#: src/components/compose.jsx:2317
 msgid "Failed to download GIF"
 msgstr "Failed to download GIF"
 
@@ -1483,8 +1483,8 @@ msgid "Accounts…"
 msgstr ""
 
 #: src/components/nav-menu.jsx:329
-#: src/pages/login.jsx:41
-#: src/pages/login.jsx:293
+#: src/pages/login.jsx:38
+#: src/pages/login.jsx:290
 #: src/pages/status.jsx:1109
 #: src/pages/welcome.jsx:61
 msgid "Log in"
@@ -3052,7 +3052,7 @@ msgstr "Login required."
 #: src/compose.jsx:96
 #: src/pages/annual-report.jsx:186
 #: src/pages/http-route.jsx:91
-#: src/pages/login.jsx:372
+#: src/pages/login.jsx:369
 msgid "Go home"
 msgstr ""
 
@@ -3797,12 +3797,12 @@ msgstr "{0, plural, one {# feed} other {# feeds}}"
 msgid "No lists or feeds yet."
 msgstr "No lists or feeds yet."
 
-#: src/pages/login.jsx:136
-#: src/pages/login.jsx:148
+#: src/pages/login.jsx:133
+#: src/pages/login.jsx:145
 msgid "Failed to register application"
 msgstr "Failed to register application"
 
-#: src/pages/login.jsx:363
+#: src/pages/login.jsx:360
 msgid "Failed to log in. Please check your handle and app password."
 msgstr "Failed to log in. Please check your handle and app password."
 
