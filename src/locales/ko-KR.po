@@ -140,7 +140,7 @@ msgid "Go to account page"
 msgstr "계정 페이지로 이동"
 
 #: src/components/account-info.jsx:417
-#: src/components/timeline.jsx:656
+#: src/components/timeline.jsx:689
 #: src/components/timeline2.jsx:685
 #: src/pages/home.jsx:261
 #: src/pages/notifications.jsx:1032
@@ -280,7 +280,7 @@ msgstr "게시물 통계 보기"
 #: src/components/custom-emojis-modal.jsx:281
 #: src/components/drafts.jsx:57
 #: src/components/edit-profile-sheet.jsx:89
-#: src/components/embed-modal.jsx:13
+#: src/components/embed-modal.jsx:21
 #: src/components/generic-accounts.jsx:151
 #: src/components/gif-picker-modal.jsx:71
 #: src/components/import-accounts-selection.jsx:81
@@ -310,7 +310,7 @@ msgstr "게시물 통계 보기"
 #: src/pages/accounts.jsx:46
 #: src/pages/catchup.jsx:1731
 #: src/pages/filters.jsx:225
-#: src/pages/list.jsx:345
+#: src/pages/list.jsx:338
 #: src/pages/notifications.jsx:1076
 #: src/pages/scheduled-posts.jsx:288
 #: src/pages/settings.jsx:104
@@ -363,7 +363,7 @@ msgstr ""
 #: src/components/columns.jsx:29
 #: src/components/nav-menu.jsx:184
 #: src/components/shortcuts-settings.jsx:142
-#: src/components/timeline.jsx:539
+#: src/components/timeline.jsx:572
 #: src/components/timeline2.jsx:564
 #: src/pages/catchup.jsx:1027
 #: src/pages/filters.jsx:90
@@ -408,7 +408,7 @@ msgstr "지우기"
 #: src/components/compose.jsx:1855
 #: src/components/mention-modal.jsx:221
 #: src/components/shortcuts-settings.jsx:730
-#: src/pages/list.jsx:431
+#: src/pages/list.jsx:424
 msgid "Add"
 msgstr "더하기"
 
@@ -526,7 +526,7 @@ msgstr "첨부 파일 #{i} 실패"
 
 #: src/components/compose.jsx:1566
 #: src/components/status.jsx:2560
-#: src/components/timeline.jsx:1065
+#: src/components/timeline.jsx:1098
 msgid "Content warning"
 msgstr "열람 주의"
 
@@ -756,14 +756,14 @@ msgstr ""
 #: src/components/edit-history-controls.jsx:35
 #: src/components/gif-picker-modal.jsx:208
 #: src/components/media-modal.jsx:478
-#: src/components/timeline.jsx:978
+#: src/components/timeline.jsx:1011
 msgid "Previous"
 msgstr "이전"
 
 #: src/components/edit-history-controls.jsx:47
 #: src/components/gif-picker-modal.jsx:226
 #: src/components/media-modal.jsx:497
-#: src/components/timeline.jsx:995
+#: src/components/timeline.jsx:1028
 msgid "Next"
 msgstr "다음"
 
@@ -813,7 +813,7 @@ msgstr "내용"
 msgid "Save"
 msgstr "저장"
 
-#: src/components/embed-modal.jsx:18
+#: src/components/embed-modal.jsx:26
 msgid "Open in new window"
 msgstr "새 창에서 열기"
 
@@ -847,17 +847,17 @@ msgstr "거절함"
 #: src/components/generic-accounts.jsx:154
 #: src/components/notification.jsx:483
 #: src/pages/accounts.jsx:51
-#: src/pages/search.jsx:349
-#: src/pages/search.jsx:382
+#: src/pages/search.jsx:368
+#: src/pages/search.jsx:401
 msgid "Accounts"
 msgstr "계정"
 
 #: src/components/generic-accounts.jsx:214
 #: src/components/quotes-modal.jsx:129
-#: src/components/timeline.jsx:621
-#: src/pages/list.jsx:364
+#: src/components/timeline.jsx:654
+#: src/pages/list.jsx:357
 #: src/pages/notifications.jsx:1056
-#: src/pages/search.jsx:576
+#: src/pages/search.jsx:595
 #: src/pages/status.jsx:1716
 msgid "Show more…"
 msgstr "더 보기…"
@@ -865,9 +865,9 @@ msgstr "더 보기…"
 #: src/components/generic-accounts.jsx:219
 #: src/components/quote-chain-modal.jsx:169
 #: src/components/quotes-modal.jsx:133
-#: src/components/timeline.jsx:626
+#: src/components/timeline.jsx:659
 #: src/components/timeline2.jsx:663
-#: src/pages/search.jsx:581
+#: src/pages/search.jsx:600
 msgid "The end."
 msgstr "끝"
 
@@ -1053,8 +1053,8 @@ msgstr "<0>Ctrl</0> + <1>Enter</1> 또는 <2>⌘</2> + <3>Enter</3>"
 #: src/components/search-form.jsx:208
 #: src/components/shortcuts-settings.jsx:54
 #: src/components/shortcuts-settings.jsx:181
-#: src/pages/search.jsx:47
-#: src/pages/search.jsx:331
+#: src/pages/search.jsx:48
+#: src/pages/search.jsx:350
 msgid "Search"
 msgstr "검색"
 
@@ -1162,7 +1162,7 @@ msgid "Unable to delete list."
 msgstr "리스트를 지울 수 없습니다."
 
 #: src/components/list-exclusive-badge.jsx:14
-#: src/pages/list.jsx:220
+#: src/pages/list.jsx:213
 #: src/pages/lists.jsx:131
 msgid "Posts on this list are hidden from Home/Following"
 msgstr ""
@@ -1199,14 +1199,14 @@ msgstr "매체 설명"
 #: src/components/status.jsx:2366
 #: src/components/status.jsx:3101
 #: src/components/status.jsx:3104
-#: src/pages/account-statuses.jsx:676
+#: src/pages/account-statuses.jsx:683
 #: src/pages/accounts.jsx:149
-#: src/pages/hashtag.jsx:232
-#: src/pages/list.jsx:212
-#: src/pages/public.jsx:147
+#: src/pages/hashtag.jsx:235
+#: src/pages/list.jsx:205
+#: src/pages/public.jsx:148
 #: src/pages/scheduled-posts.jsx:89
 #: src/pages/status.jsx:1584
-#: src/pages/trending.jsx:474
+#: src/pages/trending.jsx:475
 msgid "More"
 msgstr "더 보기"
 
@@ -1349,7 +1349,7 @@ msgstr "필터됨: {filterTitleStr}"
 #: src/components/status-compact.jsx:74
 #: src/components/status.jsx:3606
 #: src/components/status.jsx:3684
-#: src/components/timeline.jsx:1054
+#: src/components/timeline.jsx:1087
 #: src/pages/catchup.jsx:79
 #: src/pages/catchup.jsx:2052
 msgid "Filtered"
@@ -1429,7 +1429,7 @@ msgstr "언급"
 #: src/pages/filters.jsx:24
 #: src/pages/home.jsx:119
 #: src/pages/home.jsx:231
-#: src/pages/list.jsx:201
+#: src/pages/list.jsx:194
 #: src/pages/notifications.jsx:112
 #: src/pages/notifications.jsx:713
 msgid "Notifications"
@@ -1479,7 +1479,7 @@ msgstr "팔로하는 해시태그"
 #: src/pages/account-statuses.jsx:410
 #: src/pages/filters.jsx:55
 #: src/pages/filters.jsx:94
-#: src/pages/hashtag.jsx:373
+#: src/pages/hashtag.jsx:376
 msgid "Filters"
 msgstr "필터"
 
@@ -1538,8 +1538,8 @@ msgstr "설정…"
 #: src/components/shortcuts-settings.jsx:52
 #: src/components/shortcuts-settings.jsx:161
 #: src/components/shortcuts.jsx:33
-#: src/pages/list.jsx:146
-#: src/pages/list.jsx:158
+#: src/pages/list.jsx:139
+#: src/pages/list.jsx:151
 #: src/pages/lists.jsx:18
 #: src/pages/lists.jsx:55
 msgid "Lists & Feeds"
@@ -1554,7 +1554,7 @@ msgstr ""
 #: src/components/nav-menu.jsx:453
 #: src/components/shortcuts-settings.jsx:664
 #: src/components/shortcuts.jsx:40
-#: src/pages/list.jsx:165
+#: src/pages/list.jsx:158
 #: src/pages/lists.jsx:74
 msgid "Lists"
 msgstr "리스트"
@@ -1562,7 +1562,7 @@ msgstr "리스트"
 #: src/components/nav-menu.jsx:473
 #: src/components/shortcuts-settings.jsx:671
 #: src/components/shortcuts.jsx:60
-#: src/pages/list.jsx:186
+#: src/pages/list.jsx:179
 #: src/pages/lists.jsx:112
 msgid "Feeds"
 msgstr ""
@@ -2085,7 +2085,7 @@ msgid "Don't feature on profile"
 msgstr ""
 
 #: src/components/related-actions.jsx:456
-#: src/pages/hashtag.jsx:362
+#: src/pages/hashtag.jsx:365
 msgid "Feature on profile"
 msgstr "프로필에 내보이기"
 
@@ -2189,7 +2189,7 @@ msgstr "취소…"
 
 #: src/components/related-actions.jsx:972
 #: src/components/related-actions.jsx:976
-#: src/pages/hashtag.jsx:294
+#: src/pages/hashtag.jsx:297
 msgid "Follow"
 msgstr "팔로"
 
@@ -2397,12 +2397,12 @@ msgid "e.g. PixelArt (Max 5, space-separated)"
 msgstr "예: 픽셀아트 (최대 5개, 띄어쓰기로 구분)"
 
 #: src/components/shortcuts-settings.jsx:120
-#: src/pages/hashtag.jsx:389
+#: src/pages/hashtag.jsx:392
 msgid "Media only"
 msgstr "매체만"
 
 #: src/components/shortcuts-settings.jsx:250
-#: src/components/shortcuts.jsx:364
+#: src/components/shortcuts.jsx:367
 msgid "Shortcuts"
 msgstr "바로 가기"
 
@@ -2442,7 +2442,7 @@ msgstr "아래로 내리기"
 
 #: src/components/shortcuts-settings.jsx:394
 #: src/components/status.jsx:1659
-#: src/pages/list.jsx:236
+#: src/pages/list.jsx:229
 msgid "Edit"
 msgstr "고치기"
 
@@ -3031,22 +3031,22 @@ msgstr ""
 msgid "{index}/X"
 msgstr ""
 
-#: src/components/timeline.jsx:555
+#: src/components/timeline.jsx:588
 #: src/pages/settings.jsx:1349
 msgid "New posts"
 msgstr "새 게시물"
 
 #. placeholder {0}: fItems.length
-#: src/components/timeline.jsx:691
+#: src/components/timeline.jsx:724
 msgid "{0, plural, one {# Boost} other {# Boosts}}"
 msgstr ""
 
-#: src/components/timeline.jsx:696
+#: src/components/timeline.jsx:729
 msgid "Pinned posts"
 msgstr ""
 
 #. placeholder {0}: filterInfo.titlesStr
-#: src/components/timeline.jsx:1049
+#: src/components/timeline.jsx:1082
 msgid "<0>Filtered</0>: <1>{0}</1>"
 msgstr "<0>필터됨</0>: <1>{0}</1>"
 
@@ -3209,36 +3209,36 @@ msgid "Search @{0}'s posts"
 msgstr ""
 
 #: src/pages/account-statuses.jsx:628
-#: src/pages/search.jsx:359
-#: src/pages/search.jsx:506
+#: src/pages/search.jsx:378
+#: src/pages/search.jsx:525
 msgid "Posts"
 msgstr "게시물"
 
-#: src/pages/account-statuses.jsx:653
+#: src/pages/account-statuses.jsx:660
 msgid "Nothing to see here yet."
 msgstr "아직 표시할 내용이 없습니다."
 
-#: src/pages/account-statuses.jsx:654
-#: src/pages/public.jsx:130
-#: src/pages/trending.jsx:452
+#: src/pages/account-statuses.jsx:661
+#: src/pages/public.jsx:131
+#: src/pages/trending.jsx:453
 msgid "Unable to load posts"
 msgstr "게시물을 불러 올 수 없습니다"
 
-#: src/pages/account-statuses.jsx:695
-#: src/pages/account-statuses.jsx:725
+#: src/pages/account-statuses.jsx:702
+#: src/pages/account-statuses.jsx:732
 msgid "Unable to fetch account info"
 msgstr "계정 정보를 가져올 수 없음"
 
 #. placeholder {0}: accountInstance ? ( <> {' '} (<b>{punycode.toUnicode(accountInstance)}</b>) </> ) : null
-#: src/pages/account-statuses.jsx:702
+#: src/pages/account-statuses.jsx:709
 msgid "Switch to account's server {0}"
 msgstr ""
 
-#: src/pages/account-statuses.jsx:732
+#: src/pages/account-statuses.jsx:739
 msgid "Switch to my server (<0>{currentInstance}</0>)"
 msgstr ""
 
-#: src/pages/account-statuses.jsx:805
+#: src/pages/account-statuses.jsx:812
 msgid "Month"
 msgstr "월"
 
@@ -3480,7 +3480,7 @@ msgstr "{0} 이 공유함"
 
 #: src/pages/catchup.jsx:1466
 #: src/pages/mentions.jsx:235
-#: src/pages/search.jsx:344
+#: src/pages/search.jsx:363
 msgid "All"
 msgstr "전체"
 
@@ -3721,7 +3721,7 @@ msgstr "표시할 내용이 없습니다."
 
 #: src/pages/following.jsx:167
 #: src/pages/following2.jsx:144
-#: src/pages/list.jsx:127
+#: src/pages/list.jsx:120
 msgid "Unable to load posts."
 msgstr "게시물을 불러 올 수 없습니다."
 
@@ -3741,102 +3741,102 @@ msgstr "{hashtagTitle} (매체만)"
 msgid "{hashtagTitle}"
 msgstr "{hashtagTitle}"
 
-#: src/pages/hashtag.jsx:210
-#: src/pages/public.jsx:125
+#: src/pages/hashtag.jsx:213
+#: src/pages/public.jsx:126
 msgid "This timeline is disabled on this server."
 msgstr ""
 
-#: src/pages/hashtag.jsx:212
-#: src/pages/public.jsx:127
+#: src/pages/hashtag.jsx:215
+#: src/pages/public.jsx:128
 msgid "Login required to see posts from this server."
 msgstr ""
 
-#: src/pages/hashtag.jsx:213
+#: src/pages/hashtag.jsx:216
 msgid "No one has posted anything with this tag yet."
 msgstr ""
 
-#: src/pages/hashtag.jsx:215
+#: src/pages/hashtag.jsx:218
 msgid "Unable to load posts with this tag"
 msgstr "해당 태그를 포함한 게시물을 불러올 수 없습니다"
 
-#: src/pages/hashtag.jsx:241
+#: src/pages/hashtag.jsx:244
 msgid "Unfollow #{hashtag}?"
 msgstr "#{hashtag} 를 그만 팔로우할까요?"
 
-#: src/pages/hashtag.jsx:256
+#: src/pages/hashtag.jsx:259
 msgid "Unfollowed #{hashtag}"
 msgstr "#{hashtag} 팔로 풂"
 
-#: src/pages/hashtag.jsx:271
+#: src/pages/hashtag.jsx:274
 msgid "Followed #{hashtag}"
 msgstr "#{hashtag} 팔로함"
 
-#: src/pages/hashtag.jsx:287
+#: src/pages/hashtag.jsx:290
 msgid "Following…"
 msgstr "팔로잉…"
 
-#: src/pages/hashtag.jsx:316
+#: src/pages/hashtag.jsx:319
 msgid "Unfeatured on profile"
 msgstr "프로필에 표시되지 않음"
 
-#: src/pages/hashtag.jsx:330
+#: src/pages/hashtag.jsx:333
 msgid "Unable to unfeature on profile"
 msgstr "프로필에 표시되지 않음 기능을 사용할 수 없습니다."
 
-#: src/pages/hashtag.jsx:339
-#: src/pages/hashtag.jsx:355
+#: src/pages/hashtag.jsx:342
+#: src/pages/hashtag.jsx:358
 msgid "Featured on profile"
 msgstr "프로필에 내보임"
 
-#: src/pages/hashtag.jsx:427
+#: src/pages/hashtag.jsx:430
 msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
 msgstr ""
 
-#: src/pages/hashtag.jsx:430
+#: src/pages/hashtag.jsx:433
 msgid "Add hashtag"
 msgstr "해시태그 더하기"
 
-#: src/pages/hashtag.jsx:463
+#: src/pages/hashtag.jsx:466
 msgid "Remove hashtag"
 msgstr "해시태그 지우기"
 
-#: src/pages/hashtag.jsx:477
+#: src/pages/hashtag.jsx:480
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
 msgstr ""
 
-#: src/pages/hashtag.jsx:506
+#: src/pages/hashtag.jsx:509
 msgid "This shortcut already exists"
 msgstr "이 바로 가기는 이미 있습니다"
 
-#: src/pages/hashtag.jsx:509
+#: src/pages/hashtag.jsx:512
 msgid "Hashtag shortcut added"
 msgstr "해시태그 바로 가기가 추가됨"
 
-#: src/pages/hashtag.jsx:515
+#: src/pages/hashtag.jsx:518
 msgid "Add to Shortcuts"
 msgstr "바로 가기 추가"
 
-#: src/pages/hashtag.jsx:521
-#: src/pages/public.jsx:172
-#: src/pages/trending.jsx:481
+#: src/pages/hashtag.jsx:524
+#: src/pages/public.jsx:173
+#: src/pages/trending.jsx:482
 msgid "Enter a new server e.g. \"mastodon.social\""
 msgstr ""
 
-#: src/pages/hashtag.jsx:524
-#: src/pages/public.jsx:175
-#: src/pages/trending.jsx:484
+#: src/pages/hashtag.jsx:527
+#: src/pages/public.jsx:176
+#: src/pages/trending.jsx:485
 msgid "Invalid server"
 msgstr ""
 
-#: src/pages/hashtag.jsx:538
-#: src/pages/public.jsx:189
-#: src/pages/trending.jsx:496
+#: src/pages/hashtag.jsx:541
+#: src/pages/public.jsx:190
+#: src/pages/trending.jsx:497
 msgid "Go to another server…"
 msgstr ""
 
-#: src/pages/hashtag.jsx:551
-#: src/pages/public.jsx:202
-#: src/pages/trending.jsx:507
+#: src/pages/hashtag.jsx:554
+#: src/pages/public.jsx:203
+#: src/pages/trending.jsx:508
 msgid "Go to my server (<0>{currentInstance}</0>)"
 msgstr ""
 
@@ -3856,21 +3856,21 @@ msgstr "불러오는 중…"
 msgid "Unable to resolve URL"
 msgstr "URL을 불러올 수 없음"
 
-#: src/pages/list.jsx:126
+#: src/pages/list.jsx:119
 msgid "Nothing yet."
 msgstr "아직 아무 것도 없습니다."
 
-#: src/pages/list.jsx:242
-#: src/pages/list.jsx:350
+#: src/pages/list.jsx:235
+#: src/pages/list.jsx:343
 msgid "Manage members"
 msgstr "구성원 관리"
 
 #. placeholder {0}: account.username
-#: src/pages/list.jsx:385
+#: src/pages/list.jsx:378
 msgid "Remove <0>@{0}</0> from list?"
 msgstr "<0>@{0}</0> 님을 리스트에서 뺄까요?"
 
-#: src/pages/list.jsx:431
+#: src/pages/list.jsx:424
 msgid "Remove…"
 msgstr "지우기…"
 
@@ -3937,11 +3937,11 @@ msgstr ""
 msgid "Private"
 msgstr "쪽지"
 
-#: src/pages/mentions.jsx:258
+#: src/pages/mentions.jsx:259
 msgid "No one mentioned you :("
 msgstr "아무도 언급하지 않았습니다"
 
-#: src/pages/mentions.jsx:259
+#: src/pages/mentions.jsx:260
 msgid "Unable to load mentions."
 msgstr "언급을 가져올 수 없습니다."
 
@@ -4091,15 +4091,15 @@ msgstr "로컬 타임라인"
 msgid "Federated timeline"
 msgstr "연합 타임라인"
 
-#: src/pages/public.jsx:128
+#: src/pages/public.jsx:129
 msgid "No one has posted anything yet."
 msgstr "아직 아무도 게시물을 쓰지 않았습니다."
 
-#: src/pages/public.jsx:156
+#: src/pages/public.jsx:157
 msgid "Switch to Federated"
 msgstr "연합으로 변경하기"
 
-#: src/pages/public.jsx:163
+#: src/pages/public.jsx:164
 msgid "Switch to Local"
 msgstr "로컬로 변경하기"
 
@@ -4142,58 +4142,58 @@ msgstr ""
 msgid "Failed to delete scheduled post"
 msgstr ""
 
-#: src/pages/search.jsx:51
+#: src/pages/search.jsx:52
 msgid "Search: {q} (Posts)"
 msgstr "검색: {q} (게시물)"
 
-#: src/pages/search.jsx:54
+#: src/pages/search.jsx:55
 msgid "Search: {q} (Accounts)"
 msgstr "검색: {q} (계정)"
 
-#: src/pages/search.jsx:57
+#: src/pages/search.jsx:58
 msgid "Search: {q} (Hashtags)"
 msgstr "검색: {q} (해시태그)"
 
-#: src/pages/search.jsx:60
+#: src/pages/search.jsx:61
 msgid "Search: {q}"
 msgstr "검색: {q}"
 
-#: src/pages/search.jsx:354
-#: src/pages/search.jsx:436
+#: src/pages/search.jsx:373
+#: src/pages/search.jsx:455
 msgid "Hashtags"
 msgstr "해시태그"
 
-#: src/pages/search.jsx:386
-#: src/pages/search.jsx:440
-#: src/pages/search.jsx:510
+#: src/pages/search.jsx:405
+#: src/pages/search.jsx:459
+#: src/pages/search.jsx:529
 msgid "See more"
 msgstr "더 보기"
 
-#: src/pages/search.jsx:412
+#: src/pages/search.jsx:431
 msgid "See more accounts"
 msgstr "계정 더 보기"
 
-#: src/pages/search.jsx:426
+#: src/pages/search.jsx:445
 msgid "No accounts found."
 msgstr "아무 계정도 찾을 수 없습니다."
 
-#: src/pages/search.jsx:482
+#: src/pages/search.jsx:501
 msgid "See more hashtags"
 msgstr "해시태그 더 보기"
 
-#: src/pages/search.jsx:496
+#: src/pages/search.jsx:515
 msgid "No hashtags found."
 msgstr "아무 해시태그도 찾을 수 없습니다."
 
-#: src/pages/search.jsx:540
+#: src/pages/search.jsx:559
 msgid "See more posts"
 msgstr "게시물 더 보기"
 
-#: src/pages/search.jsx:554
+#: src/pages/search.jsx:573
 msgid "No posts found."
 msgstr "아무 게시물도 찾을 수 없습니다."
 
-#: src/pages/search.jsx:599
+#: src/pages/search.jsx:618
 msgid "Enter your search term or paste a URL above to get started."
 msgstr "시작하려면 위 검색창에 검색어를 입력하거나 URL을 붙여 넣으세요."
 
@@ -4587,7 +4587,7 @@ msgstr "<0>{0}</0> 님을 언급하는 게시물 보기"
 msgid "Trending posts"
 msgstr "인기 게시물"
 
-#: src/pages/trending.jsx:451
+#: src/pages/trending.jsx:452
 msgid "No trending posts."
 msgstr "인기 게시물이 없음."
 
