@@ -1,9 +1,9 @@
-import { SubMenu } from '@szhsin/react-menu';
+import { SubMenu, type MenuInstance, type SubMenuProps } from '@szhsin/react-menu';
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 
-export default function SubMenu2(props) {
-  const menuRef = useRef();
-  const itemRef = useRef();
+export default function SubMenu2(props: SubMenuProps) {
+  const menuRef = useRef<MenuInstance | null>(null);
+  const itemRef = useRef<HTMLElement | null>(null);
   const { label, direction, shift, ...restProps } = props;
   const [computedDirection, setComputedDirection] = useState(direction);
   const [computedShift, setComputedShift] = useState(shift);
@@ -33,12 +33,12 @@ export default function SubMenu2(props) {
       // Test fix for bug; submenus not opening on Android
       itemProps={{
         ref: itemRef,
-        onPointerMove: (e) => {
+        onPointerMove: (e: PointerEvent) => {
           if (e.pointerType === 'touch') {
             menuRef.current?.openMenu?.();
           }
         },
-        onPointerLeave: (e) => {
+        onPointerLeave: (e: PointerEvent) => {
           if (e.pointerType === 'touch') {
             menuRef.current?.openMenu?.();
           }
