@@ -5,7 +5,9 @@ import store from './store';
 
 const CACHE_STORE = 'localeMatchCache';
 
-export function _localeMatch(...args) {
+type MatchArgs = Parameters<typeof match>;
+
+export function _localeMatch(...args: MatchArgs): string | false {
   try {
     return match(...args);
   } catch (e) {
@@ -15,18 +17,22 @@ export function _localeMatch(...args) {
 }
 
 if (typeof window !== 'undefined') {
-  window._localeMatch = _localeMatch; // For debugging
+  (window as unknown as { _localeMatch: typeof _localeMatch })._localeMatch =
+    _localeMatch; // For debugging
 }
 
-function cacheMem(fn) {
-  return function (...args) {
+function cacheMem<Args extends readonly unknown[], Result>(
+  fn: (...args: Args) => Result,
+) {
+  return function (...args: Args): Result {
     const cacheKey = args
       .map((arg) => (Array.isArray(arg) ? arg.join(',') : arg))
       .join('|');
 
-    let cache;
+    let cache: Record<string, Result>;
     try {
-      cache = store.session.getJSON(CACHE_STORE) || {};
+      cache =
+        store.session.getJSON<Record<string, Result>>(CACHE_STORE) || {};
     } catch (e) {
       // If fails, just call the function
       return fn(...args);
