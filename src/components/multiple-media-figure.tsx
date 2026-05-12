@@ -1,4 +1,13 @@
-function MultipleMediaFigure(props) {
+import type { ComponentChildren } from 'preact';
+
+interface MultipleMediaFigureProps {
+  enabled?: boolean;
+  children?: ComponentChildren;
+  lang?: string;
+  captionChildren?: ComponentChildren;
+}
+
+function MultipleMediaFigure(props: MultipleMediaFigureProps) {
   const { enabled, children, lang, captionChildren } = props;
   if (!enabled || !captionChildren) return children;
   return (

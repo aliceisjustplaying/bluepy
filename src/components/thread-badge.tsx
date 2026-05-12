@@ -1,18 +1,35 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { ComponentType } from 'preact';
 import { useContext } from 'preact/hooks';
 
 import { ThreadCountContext } from '../utils/thread-count-context';
 
-import Icon from './icon';
+import IconRaw from './icon';
 
-function ThreadIcon({ alt }) {
+const Icon = IconRaw as unknown as ComponentType<{
+  icon: string;
+  size?: string;
+  alt?: string;
+}>;
+
+interface ThreadIconProps {
+  alt?: string;
+}
+
+function ThreadIcon({ alt }: ThreadIconProps) {
   return <Icon icon="thread" size="s" alt={alt} />;
 }
 
-function ThreadBadge({ index, showIcon, showText }) {
+interface ThreadBadgeProps {
+  index?: number;
+  showIcon?: boolean;
+  showText?: boolean;
+}
+
+function ThreadBadge({ index, showIcon, showText }: ThreadBadgeProps) {
   const { t } = useLingui();
   const total = useContext(ThreadCountContext);
-  const hasIndex = index > 0;
+  const hasIndex = (index ?? 0) > 0;
   const hasTotal = total > 0;
 
   return (
