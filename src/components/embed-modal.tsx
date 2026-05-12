@@ -1,8 +1,24 @@
 import './embed-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { ComponentType, JSX } from 'preact';
 
-import Icon from './icon';
+import IconRaw from './icon';
+
+const Icon = IconRaw as unknown as ComponentType<{
+  icon: string;
+  alt?: string;
+}>;
+
+interface EmbedModalProps {
+  html?: string;
+  url?: string;
+  iframeUrl?: string;
+  title?: string;
+  width?: number | string;
+  height?: number | string;
+  onClose?: () => void;
+}
 
 function EmbedModal({
   html,
@@ -12,7 +28,7 @@ function EmbedModal({
   width,
   height,
   onClose = () => {},
-}) {
+}: EmbedModalProps) {
   const { t } = useLingui();
   return (
     <div class="embed-modal-container">
@@ -42,12 +58,14 @@ function EmbedModal({
       ) : (
         <div
           class="embed-content"
-          dangerouslySetInnerHTML={{ __html: html }}
-          style={{
-            '--width': width + 'px',
-            '--height': height + 'px',
-            '--aspect-ratio': `${width}/${height}`,
-          }}
+          dangerouslySetInnerHTML={{ __html: html as string }}
+          style={
+            {
+              '--width': width + 'px',
+              '--height': height + 'px',
+              '--aspect-ratio': `${width}/${height}`,
+            } as JSX.CSSProperties
+          }
         />
       )}
     </div>

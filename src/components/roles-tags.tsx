@@ -1,7 +1,23 @@
 import getDomain from '../utils/get-domain';
 import { getCurrentAccountID } from '../utils/store-utils';
 
-function RolesTags({ roles, accountId, accountUrl, hideSelf = false }) {
+interface Role {
+  name?: string;
+}
+
+interface RolesTagsProps {
+  roles?: Role[] | null;
+  accountId?: string;
+  accountUrl?: string;
+  hideSelf?: boolean;
+}
+
+function RolesTags({
+  roles,
+  accountId,
+  accountUrl,
+  hideSelf = false,
+}: RolesTagsProps) {
   if (!roles?.length) return null;
 
   const isSelf = accountId && accountId === getCurrentAccountID();
@@ -10,7 +26,7 @@ function RolesTags({ roles, accountId, accountUrl, hideSelf = false }) {
   }
   if (hideSelf && isSelf) return null;
 
-  const parsedAccountInstance = getDomain(accountUrl);
+  const parsedAccountInstance = accountUrl ? getDomain(accountUrl) : '';
 
   return roles?.map((role) => (
     <>

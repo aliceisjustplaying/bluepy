@@ -1,9 +1,14 @@
 import { Trans } from '@lingui/react/macro';
 import punycode from 'punycode/';
 
-function AccountHandleInfo({ acct, instance }) {
+interface AccountHandleInfoProps {
+  acct: string;
+  instance?: string;
+}
+
+function AccountHandleInfo({ acct, instance }: AccountHandleInfoProps) {
   // acct = username or username@server
-  let [username, server] = acct.split('@');
+  let [username, server]: (string | undefined)[] = acct.split('@');
   if (!server) server = instance;
   const encodedAcct = punycode.toASCII(acct);
   return (
