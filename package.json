@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:tailscale": "node scripts/dev-tailscale.js",
     "build": "vite build",
     "build:sizes": "NO_COLOR=true vite build 2>&1 | grep '^dist/' | node scripts/bundle-sizes-to-md.js",
     "preview": "vite preview",
