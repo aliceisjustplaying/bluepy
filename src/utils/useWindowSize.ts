@@ -1,7 +1,12 @@
 import { useLayoutEffect, useState } from 'preact/hooks';
 
-export default function useWindowSize() {
-  const [size, setSize] = useState({
+interface WindowSize {
+  width: number | null;
+  height: number | null;
+}
+
+export default function useWindowSize(): WindowSize {
+  const [size, setSize] = useState<WindowSize>({
     width: null,
     height: null,
   });
