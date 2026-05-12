@@ -1,9 +1,21 @@
+import type { ComponentChildren, ComponentType, JSX } from 'preact';
 import { Children } from 'preact/compat';
-import { useRef, useMemo } from 'preact/hooks';
+import { useMemo, useRef } from 'preact/hooks';
 import { useOnInView } from 'react-intersection-observer';
 
 // The sticky header, usually at the top
 const TOP = 48;
+
+type LazyRenderAs = keyof JSX.IntrinsicElements | ComponentType;
+
+interface LazyRenderProps {
+  as?: LazyRenderAs;
+  id?: string;
+  class?: string;
+  children?: ComponentChildren;
+  renderIfHasChildren?: boolean;
+  [key: string]: unknown;
+}
 
 export default function LazyRender({
   as: Root = 'div',
@@ -12,15 +24,15 @@ export default function LazyRender({
   children,
   renderIfHasChildren = true,
   ...props
-}) {
-  const rootRef = useRef(null);
+}: LazyRenderProps) {
+  const rootRef = useRef<HTMLElement | null>(null);
 
   const hasChildren = useMemo(
     () => Children.toArray(children).filter((child) => !!child).length > 0,
     [children],
   );
 
-  const observerRef = useOnInView(
+  const observerRef = useOnInView<HTMLElement>(
     (inView, entry) => {
       if (!rootRef.current) return;
       const node = rootRef.current;
@@ -34,7 +46,7 @@ export default function LazyRender({
           observerRef(null);
           // Debugging
           if (import.meta.env.DEV) {
-            node.dataset.rectBottom = entry.boundingClientRect.bottom;
+            node.dataset.rectBottom = String(entry.boundingClientRect.bottom);
           }
         } else {
           node.classList.add('hidden');
@@ -48,16 +60,17 @@ export default function LazyRender({
     },
   );
 
+  const RootEl = Root as unknown as 'div';
   return (
-    <Root
+    <RootEl
       {...props}
-      ref={(node) => {
+      ref={(node: HTMLElement | null) => {
         rootRef.current = node;
         observerRef(node);
       }}
       class={`lazy-render ${className || ''}`}
     >
       {children}
-    </Root>
+    </RootEl>
   );
 }

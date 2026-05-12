@@ -1,20 +1,26 @@
 /*
   Rendered but hidden. Only show when visible
 */
+import type { ComponentChildren } from 'preact';
 import { useCallback, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { useOnInView } from 'react-intersection-observer';
 
 // The sticky header, usually at the top
 const TOP = 48;
 
-const shazamIDs = {};
+const shazamIDs: Record<string, boolean> = {};
 
-export default function LazyShazam({ id, children }) {
-  const containerRef = useRef();
-  const [visibleStart, setVisibleStart] = useState(!!shazamIDs[id]);
+interface LazyShazamProps {
+  id?: string;
+  children?: ComponentChildren;
+}
+
+export default function LazyShazam({ id, children }: LazyShazamProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [visibleStart, setVisibleStart] = useState(!!(id && shazamIDs[id]));
 
   const onInView = useCallback(
-    (inView) => {
+    (inView: boolean) => {
       if (inView && containerRef.current) {
         containerRef.current.hidden = false;
         if (id) shazamIDs[id] = true;
@@ -23,7 +29,7 @@ export default function LazyShazam({ id, children }) {
     [id],
   );
 
-  const ref = useOnInView(onInView, {
+  const ref = useOnInView<HTMLDivElement>(onInView, {
     rootMargin: `-${TOP}px 0px 0px 0px`,
     trackVisibility: true,
     delay: 1000,
