@@ -1,12 +1,23 @@
 import store from './store';
 
-export const getSearchHistory = ({ limit } = {}) => {
-  const history = store.account.get('searchHistory') || [];
+interface SearchHistoryItem {
+  query: string;
+  queryType: string | null;
+  timestamp: number;
+}
+
+export const getSearchHistory = ({
+  limit,
+}: { limit?: number } = {}): SearchHistoryItem[] => {
+  const history = store.account.get<SearchHistoryItem[]>('searchHistory') || [];
   return limit ? history.slice(0, limit) : history;
 };
 
 const MAX_HISTORY_LENGTH = 10;
-export const addToSearchHistory = (query, queryType = null) => {
+export const addToSearchHistory = (
+  query: string,
+  queryType: string | null = null,
+) => {
   if (!query?.trim?.()) return;
 
   const history = getSearchHistory();
@@ -30,7 +41,10 @@ export const addToSearchHistory = (query, queryType = null) => {
   store.account.set('searchHistory', limitedHistory);
 };
 
-export const removeFromSearchHistory = (query, queryType = null) => {
+export const removeFromSearchHistory = (
+  query: string,
+  queryType: string | null = null,
+) => {
   const history = getSearchHistory();
   const filteredHistory = history.filter(
     (item) => !(item.query === query && item.queryType === queryType),

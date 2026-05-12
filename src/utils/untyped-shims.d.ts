@@ -20,6 +20,14 @@ declare module 'chroma-js/src/io/oklch/rgb2oklch.js' {
   export default rgb2oklch;
 }
 
+declare module 'toastify-js' {
+  const Toastify: (options: Record<string, unknown>) => {
+    showToast(): void;
+    hideToast(): void;
+  };
+  export default Toastify;
+}
+
 declare module 'exifreader/dist/exif-reader.js' {
   interface ExifTag {
     description?: string;

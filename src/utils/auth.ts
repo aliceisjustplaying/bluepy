@@ -14,18 +14,23 @@ const SCOPES = 'read write follow push';
   without rebuilding.
   Therefore, we can't use it as redirect_uri.
   We only use PHANPY_WEBSITE if it's "same" as current location URL.
-  
+
   Very basic check based on location.hostname for now
 */
 const sameSite = WEBSITE
   ? WEBSITE.toLowerCase().includes(location.hostname)
   : false;
 const currentLocation = location.origin + location.pathname;
-const REDIRECT_URI = DEV || !sameSite ? currentLocation : WEBSITE;
+const REDIRECT_URI: string =
+  DEV || !sameSite ? currentLocation : (WEBSITE ?? currentLocation);
 
-export async function registerApplication({ instanceURL }) {
+export async function registerApplication({
+  instanceURL,
+}: {
+  instanceURL: string;
+}) {
   const registrationParams = new URLSearchParams({
-    client_name: CLIENT_NAME,
+    client_name: String(CLIENT_NAME),
     redirect_uris: REDIRECT_URI,
     scopes: SCOPES,
     website: WEBSITE || REDIRECT_URI,
@@ -49,7 +54,11 @@ export async function getPKCEAuthorizationURL({
   instanceURL,
   client_id,
   forceLogin = false,
-}) {
+}: {
+  instanceURL: string;
+  client_id: string;
+  forceLogin?: boolean;
+}): Promise<[string, string]> {
   const codeVerifier = verifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
   const params = new URLSearchParams({
@@ -60,7 +69,7 @@ export async function getPKCEAuthorizationURL({
     response_type: 'code',
     scope: SCOPES,
   });
-  if (forceLogin) params.append('force_login', true);
+  if (forceLogin) params.append('force_login', String(true));
   const authorizationURL = `https://${instanceURL}/oauth/authorize?${params.toString()}`;
   return [authorizationURL, codeVerifier];
 }
@@ -69,7 +78,11 @@ export async function getAuthorizationURL({
   instanceURL,
   client_id,
   forceLogin = false,
-}) {
+}: {
+  instanceURL: string;
+  client_id: string;
+  forceLogin?: boolean;
+}): Promise<string> {
   const authorizationParams = new URLSearchParams({
     client_id,
     scope: SCOPES,
@@ -77,7 +90,7 @@ export async function getAuthorizationURL({
     // redirect_uri: 'urn:ietf:wg:oauth:2.0:oob',
     response_type: 'code',
   });
-  if (forceLogin) authorizationParams.append('force_login', true);
+  if (forceLogin) authorizationParams.append('force_login', String(true));
   const authorizationURL = `https://${instanceURL}/oauth/authorize?${authorizationParams.toString()}`;
   return authorizationURL;
 }
@@ -88,6 +101,12 @@ export async function getAccessToken({
   client_secret,
   code,
   code_verifier,
+}: {
+  instanceURL: string;
+  client_id: string;
+  client_secret?: string;
+  code: string;
+  code_verifier?: string;
 }) {
   const params = new URLSearchParams({
     client_id,
@@ -121,7 +140,12 @@ export async function revokeAccessToken({
   client_id,
   client_secret,
   token,
-}) {
+}: {
+  instanceURL: string;
+  client_id: string;
+  client_secret: string;
+  token: string;
+}): Promise<boolean> {
   try {
     const params = new URLSearchParams({
       client_id,
