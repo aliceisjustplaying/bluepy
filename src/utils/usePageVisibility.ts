@@ -1,7 +1,12 @@
 import { useEffect, useRef } from 'preact/hooks';
 
-export default function usePageVisibility(fn = () => {}, deps = []) {
-  const savedCallback = useRef(fn);
+type VisibilityCallback = (visible: boolean) => void;
+
+export default function usePageVisibility(
+  fn: VisibilityCallback = () => {},
+  deps: ReadonlyArray<unknown> = [],
+) {
+  const savedCallback = useRef<VisibilityCallback>(fn);
   useEffect(() => {
     savedCallback.current = fn;
   }, [deps]);

@@ -1,4 +1,19 @@
 import { useLayoutEffect, useState } from 'preact/hooks';
+import type { RefObject } from 'preact';
+
+type ScrollDirection = 'end' | 'start' | null;
+type ScrollAxis = 'vertical' | 'horizontal';
+
+interface UseScrollOpts {
+  scrollableRef: RefObject<HTMLElement>;
+  distanceFromStart?: number;
+  distanceFromEnd?: number;
+  scrollThresholdStart?: number;
+  scrollThresholdEnd?: number;
+  direction?: ScrollAxis;
+  distanceFromStartPx?: number;
+  distanceFromEndPx?: number;
+}
 
 export default function useScroll({
   scrollableRef,
@@ -9,8 +24,8 @@ export default function useScroll({
   direction = 'vertical',
   distanceFromStartPx: _distanceFromStartPx,
   distanceFromEndPx: _distanceFromEndPx,
-} = {}) {
-  const [scrollDirection, setScrollDirection] = useState(null);
+}: UseScrollOpts) {
+  const [scrollDirection, setScrollDirection] = useState<ScrollDirection>(null);
   const [reachStart, setReachStart] = useState(false);
   const [reachEnd, setReachEnd] = useState(false);
   const [nearReachStart, setNearReachStart] = useState(false);
@@ -19,10 +34,9 @@ export default function useScroll({
 
   useLayoutEffect(() => {
     const scrollableElement = scrollableRef.current;
-    if (!scrollableElement) return {};
-    let previousScrollStart = isVertical
-      ? scrollableElement.scrollTop
-      : scrollableElement.scrollLeft;
+    if (!scrollableElement) return;
+    const el: HTMLElement = scrollableElement;
+    let previousScrollStart = isVertical ? el.scrollTop : el.scrollLeft;
 
     function onScroll() {
       const {
@@ -32,7 +46,7 @@ export default function useScroll({
         scrollWidth,
         clientHeight,
         clientWidth,
-      } = scrollableElement;
+      } = el;
       const scrollStart = isVertical ? scrollTop : scrollLeft;
       const scrollDimension = isVertical ? scrollHeight : scrollWidth;
       const clientDimension = isVertical ? clientHeight : clientWidth;
@@ -70,9 +84,9 @@ export default function useScroll({
       );
     }
 
-    scrollableElement.addEventListener('scroll', onScroll, { passive: true });
+    el.addEventListener('scroll', onScroll, { passive: true });
 
-    return () => scrollableElement.removeEventListener('scroll', onScroll);
+    return () => el.removeEventListener('scroll', onScroll);
   }, [
     distanceFromStart,
     distanceFromEnd,
