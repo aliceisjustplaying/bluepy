@@ -59,5 +59,13 @@
     "react/no-unknown-property": "off",
     "react/react-in-jsx-scope": "off",
     "unicorn/prefer-ternary": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.tsx"],
+      "rules": {
+        "typescript/prefer-readonly-parameter-types": "off"
+      }
+    }
+  ]
 }
