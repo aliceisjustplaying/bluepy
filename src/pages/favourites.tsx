@@ -1,9 +1,22 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { useRef } from 'preact/hooks';
 
-import Timeline from '../components/timeline';
+import TimelineUntyped from '../components/timeline';
 import { api } from '../utils/api';
 import useTitle from '../utils/useTitle';
+
+const Timeline = TimelineUntyped as unknown as ComponentType<{
+  title?: string;
+  id?: string;
+  emptyText?: string;
+  errorText?: string;
+  instance?: string;
+  fetchItems?: (
+    firstLoad?: boolean,
+  ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
+}>;
 
 const LIMIT = 20;
 
@@ -11,10 +24,14 @@ function Favourites() {
   const { t } = useLingui();
   useTitle(t`Likes`, '/favourites');
   const { masto, instance } = api();
-  const favouritesIterator = useRef();
-  async function fetchFavourites(firstLoad) {
+  const favouritesIterator = useRef<
+    AsyncIterator<mastodon.v1.Status[]> | undefined
+  >(undefined);
+  async function fetchFavourites(firstLoad?: boolean) {
     if (firstLoad || !favouritesIterator.current) {
-      favouritesIterator.current = masto.v1.favourites
+      favouritesIterator.current = (
+        masto.v1.favourites as unknown as mastodon.rest.v1.FavouritesResource
+      )
         .list({ limit: LIMIT })
         .values();
     }
