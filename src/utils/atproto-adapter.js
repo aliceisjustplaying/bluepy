@@ -446,6 +446,56 @@ export function feedToStatuses(feed, agent) {
   return feed.flatMap((item) => feedItemToStatuses(item, agent));
 }
 
+function feedToProfileStatuses(feed, agent) {
+  return feed.map((item) => postToStatus(item, agent));
+}
+
+function isReasonRepost(reason) {
+  return reason?.$type === 'app.bsky.feed.defs#reasonRepost';
+}
+
+function isReasonPin(reason) {
+  return reason?.$type === 'app.bsky.feed.defs#reasonPin';
+}
+
+function isActorProfile(profile, actor) {
+  return profile?.did === actor || profile?.handle === actor;
+}
+
+function isAuthorReplyChain(actor, feedItem, feed) {
+  if (!isActorProfile(feedItem?.post?.author, actor)) return false;
+
+  const replyParent = feedItem.reply?.parent;
+  if (isPostView(replyParent)) {
+    if (!isActorProfile(replyParent.author, actor)) return false;
+    const parentPost = feed.find((item) => item.post?.uri === replyParent.uri);
+    if (!parentPost) return true;
+    return isAuthorReplyChain(actor, parentPost, feed);
+  }
+
+  return true;
+}
+
+function filterAuthorFeed(feed, actor, filter) {
+  let filtered = feed;
+  if (filter === 'posts_and_author_threads') {
+    filtered = filtered.filter((item) => {
+      if (!item.reply) return true;
+      if (isReasonRepost(item.reason) || isReasonPin(item.reason)) return true;
+      return isAuthorReplyChain(actor, item, feed);
+    });
+  }
+
+  const seen = new Set();
+  return filtered.filter((item) => {
+    const uri = item.post?.uri;
+    if (!uri) return false;
+    if (seen.has(uri)) return false;
+    seen.add(uri);
+    return true;
+  });
+}
+
 function feedItemRootURI(feedItem) {
   return isPostView(feedItem?.reply?.root)
     ? feedItem.reply.root.uri
@@ -1092,15 +1142,25 @@ export function createAtprotoClient({
       } = {}) {
         if (pinned) return emptyCollection();
         return makeCollection(async (cursor) => {
+          const filter = onlyMedia
+            ? 'posts_with_media'
+            : excludeReplies
+              ? 'posts_and_author_threads'
+              : 'posts_with_replies';
+          const actor = normalizeActor(id);
           const res = await agent.getAuthorFeed({
-            actor: normalizeActor(id),
+            actor,
             limit,
             cursor,
-            filter: 'posts_with_replies',
+            filter,
+            includePins: filter === 'posts_and_author_threads',
           });
-          const feed = await hydrateFeedReplyContext(res.data.feed, agent);
-          let items = feedToStatuses(feed, agent);
-          if (excludeReplies) items = items.filter((item) => !item.inReplyToId);
+          const feed = filterAuthorFeed(
+            await hydrateFeedReplyContext(res.data.feed, agent),
+            actor,
+            filter,
+          );
+          let items = feedToProfileStatuses(feed, agent);
           if (excludeReposts) items = items.filter((item) => !item.reblog);
           if (onlyMedia) {
             items = items.filter((item) => item.mediaAttachments?.length);
@@ -1509,12 +1569,15 @@ export function createAtprotoClient({
           },
         },
         search: {
-          async list({ q, limit = 10 } = {}) {
+          async list({ q, limit = 10, cursor } = {}) {
             const res = await agent.searchActors({
-              term: q || '',
+              q: q || '',
               limit,
+              cursor,
             });
-            return res.data.actors.map(actorToAccount);
+            const accounts = res.data.actors.map(actorToAccount);
+            accounts._pagination = { cursor: res.data.cursor };
+            return accounts;
           },
         },
       },
@@ -2190,30 +2253,44 @@ export function createAtprotoClient({
         async fetch(params = {}) {
           return this.list(params);
         },
-        async list({ q = '', type, limit = 20 } = {}) {
+        async list({ q = '', type, limit = 20, cursor, sort } = {}) {
           const wanted = type ? [type] : ['accounts', 'statuses', 'hashtags'];
           const results = {
             accounts: [],
             statuses: [],
             hashtags: [],
+            _pagination: {},
           };
 
           if (wanted.includes('accounts')) {
-            const res = await agent.searchActors({
-              term: q,
-              limit,
-            });
-            results.accounts = res.data.actors.map(actorToAccount);
+            try {
+              const res = await agent.searchActors({
+                q,
+                limit,
+                cursor,
+              });
+              results.accounts = res.data.actors.map(actorToAccount);
+              results._pagination.accounts = res.data.cursor;
+            } catch (err) {
+              if (wanted.length === 1) throw err;
+            }
           }
 
           if (wanted.includes('statuses')) {
-            const res = await agent.app.bsky.feed.searchPosts({
-              q,
-              limit,
-            });
-            results.statuses = res.data.posts.map((post) =>
-              postToStatus(post, agent),
-            );
+            try {
+              const res = await agent.app.bsky.feed.searchPosts({
+                q,
+                limit,
+                cursor,
+                sort,
+              });
+              results.statuses = res.data.posts.map((post) =>
+                postToStatus(post, agent),
+              );
+              results._pagination.statuses = res.data.cursor;
+            } catch (err) {
+              if (wanted.length === 1) throw err;
+            }
           }
 
           if (wanted.includes('hashtags')) {
