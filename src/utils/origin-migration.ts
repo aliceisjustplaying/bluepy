@@ -3,8 +3,16 @@ const LEGACY_ORIGIN = 'https://bluepy.mosphere.at';
 const MIGRATION_KEY = 'bluepy-origin-migration-v1';
 const MIGRATION_TIMEOUT = 2000;
 
-function dumpStorage(storage) {
-  const entries = [];
+interface MigrationPayload {
+  readonly type?: unknown;
+  readonly version?: unknown;
+  readonly target?: unknown;
+  readonly localStorage?: unknown;
+  readonly sessionStorage?: unknown;
+}
+
+function dumpStorage(storage: Storage): Array<[string, string | null]> {
+  const entries: Array<[string, string | null]> = [];
   for (let i = 0; i < storage.length; i += 1) {
     const key = storage.key(i);
     if (key) entries.push([key, storage.getItem(key)]);
@@ -12,31 +20,32 @@ function dumpStorage(storage) {
   return entries;
 }
 
-function importPairs(storage, pairs) {
+function importPairs(storage: Storage, pairs: unknown): void {
   if (!Array.isArray(pairs)) return;
-  for (const [key, value] of pairs) {
+  for (const [key, value] of pairs as Array<[unknown, unknown]>) {
     if (typeof key !== 'string' || typeof value !== 'string') continue;
     if (storage.getItem(key) === null) storage.setItem(key, value);
   }
 }
 
-function importMigrationPayload(payload) {
+function importMigrationPayload(payload: unknown): boolean {
+  const p = payload as MigrationPayload | null | undefined;
   if (
-    payload?.type !== 'bluepy:storage-export' ||
-    payload.version !== 1 ||
-    payload.target !== CANONICAL_ORIGIN
+    p?.type !== 'bluepy:storage-export' ||
+    p.version !== 1 ||
+    p.target !== CANONICAL_ORIGIN
   ) {
     return false;
   }
-  importPairs(localStorage, payload.localStorage);
-  importPairs(sessionStorage, payload.sessionStorage);
+  importPairs(localStorage, p.localStorage);
+  importPairs(sessionStorage, p.sessionStorage);
   localStorage.setItem(MIGRATION_KEY, 'imported');
   return true;
 }
 
-function importWindowNameMigration() {
+function importWindowNameMigration(): boolean {
   if (!window.name) return false;
-  let payload;
+  let payload: unknown;
   try {
     payload = JSON.parse(window.name);
   } catch (error) {
@@ -81,11 +90,11 @@ export function importLegacyOriginStorage() {
     return Promise.resolve(false);
   }
 
-  return new Promise((resolve) => {
+  return new Promise<boolean>((resolve) => {
     const iframe = document.createElement('iframe');
     let settled = false;
 
-    function cleanup(result) {
+    function cleanup(result: boolean): void {
       if (settled) return;
       settled = true;
       window.removeEventListener('message', onMessage);
@@ -93,7 +102,7 @@ export function importLegacyOriginStorage() {
       resolve(result);
     }
 
-    function onMessage(event) {
+    function onMessage(event: MessageEvent): void {
       if (event.origin !== LEGACY_ORIGIN) return;
       try {
         if (importMigrationPayload(event.data)) cleanup(true);

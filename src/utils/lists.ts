@@ -5,11 +5,31 @@ import store from './store';
 const FETCH_MAX_AGE = 1000 * 60; // 1 minute
 const MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
 
-export function isFeedList(list) {
+interface ListLike {
+  id: string;
+  title: string;
+  _atproto?: { type?: string } | null;
+  [key: string]: unknown;
+}
+
+interface StoredLists {
+  lists: ListLike[];
+  updatedAt: number;
+}
+
+interface MastoListsApi {
+  list(): Promise<ListLike[]>;
+  $select(id: string): { fetch(): Promise<ListLike> };
+}
+
+export function isFeedList(list: ListLike | null | undefined): boolean {
   return list?._atproto?.type === 'feed';
 }
 
-export function splitListsAndFeeds(lists = []) {
+export function splitListsAndFeeds(lists: ListLike[] = []): {
+  lists: ListLike[];
+  feeds: ListLike[];
+} {
   return {
     lists: lists.filter((list) => !isFeedList(list)),
     feeds: lists.filter(isFeedList),
@@ -19,7 +39,7 @@ export function splitListsAndFeeds(lists = []) {
 export const fetchLists = pmem(
   async () => {
     const { masto } = api();
-    const lists = await masto.v1.lists.list();
+    const lists = await (masto.v1.lists as unknown as MastoListsApi).list();
     lists.sort((a, b) => a.title.localeCompare(b.title));
 
     if (lists.length) {
@@ -39,11 +59,12 @@ export const fetchLists = pmem(
   },
 );
 
-export async function getLists() {
+export async function getLists(): Promise<ListLike[]> {
   try {
-    const { lists, updatedAt } = store.account.get('lists') || {};
+    const { lists, updatedAt } =
+      store.account.get<StoredLists>('lists') || ({} as Partial<StoredLists>);
     if (!lists?.length) return await fetchLists();
-    if (Date.now() - updatedAt > MAX_AGE) {
+    if (Date.now() - (updatedAt as number) > MAX_AGE) {
       // Stale-while-revalidate
       fetchLists();
       return lists;
@@ -54,23 +75,24 @@ export async function getLists() {
   }
 }
 
-export async function getUserLists() {
+export async function getUserLists(): Promise<ListLike[]> {
   const lists = await getLists();
   return splitListsAndFeeds(lists).lists;
 }
 
 export const fetchList = pmem(
-  (id) => {
+  (id: string) => {
     const { masto } = api();
-    return masto.v1.lists.$select(id).fetch();
+    return (masto.v1.lists as unknown as MastoListsApi).$select(id).fetch();
   },
   {
     expires: FETCH_MAX_AGE,
   },
 );
 
-export async function getList(id) {
-  const { lists } = store.account.get('lists') || {};
+export async function getList(id: string): Promise<ListLike | null> {
+  const { lists } =
+    store.account.get<StoredLists>('lists') || ({} as Partial<StoredLists>);
   console.log({ lists });
   if (lists?.length) {
     const theList = lists.find((l) => l.id === id);
@@ -83,13 +105,14 @@ export async function getList(id) {
   }
 }
 
-export async function getListTitle(id) {
+export async function getListTitle(id: string): Promise<string> {
   const list = await getList(id);
   return list?.title || '';
 }
 
-export function addListStore(list) {
-  const { lists } = store.account.get('lists') || {};
+export function addListStore(list: ListLike): void {
+  const { lists } =
+    store.account.get<StoredLists>('lists') || ({} as Partial<StoredLists>);
   if (lists?.length) {
     lists.push(list);
     lists.sort((a, b) => a.title.localeCompare(b.title));
@@ -100,8 +123,9 @@ export function addListStore(list) {
   }
 }
 
-export function updateListStore(list) {
-  const { lists } = store.account.get('lists') || {};
+export function updateListStore(list: ListLike): void {
+  const { lists } =
+    store.account.get<StoredLists>('lists') || ({} as Partial<StoredLists>);
   if (lists?.length) {
     const index = lists.findIndex((l) => l.id === list.id);
     if (index !== -1) {
@@ -115,8 +139,9 @@ export function updateListStore(list) {
   }
 }
 
-export function deleteListStore(listID) {
-  const { lists } = store.account.get('lists') || {};
+export function deleteListStore(listID: string): void {
+  const { lists } =
+    store.account.get<StoredLists>('lists') || ({} as Partial<StoredLists>);
   if (lists?.length) {
     const index = lists.findIndex((l) => l.id === listID);
     if (index !== -1) {

@@ -1,7 +1,12 @@
 import { t } from '@lingui/core/macro';
 
-export default function openCompose(opts) {
-  const url = URL.parse('./compose/', window.location);
+interface ComposeOpts {
+  uid?: string | number;
+  [key: string]: unknown;
+}
+
+export default function openCompose(opts?: ComposeOpts): Window | null {
+  const url = URL.parse('./compose/', window.location as unknown as URL);
   const { width: screenWidth, height: screenHeight } = window.screen;
   const left = Math.max(0, (screenWidth - 600) / 2);
   const top = Math.max(0, (screenHeight - 450) / 2);
@@ -9,7 +14,7 @@ export default function openCompose(opts) {
   const height = Math.min(screenHeight, 450);
   const winUID = opts?.uid || Math.random();
   const newWin = window.open(
-    url,
+    url as URL,
     'compose' + winUID,
     `width=${width},height=${height},left=${left},top=${top}`,
   );
@@ -19,7 +24,7 @@ export default function openCompose(opts) {
     //   newWin.masto = masto;
     // }
 
-    newWin.__COMPOSE__ = opts;
+    (newWin as Window & { __COMPOSE__?: ComposeOpts }).__COMPOSE__ = opts;
   } else {
     alert(t`Looks like your browser is blocking popups.`);
   }

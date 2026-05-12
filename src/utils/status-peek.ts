@@ -1,6 +1,27 @@
 import getHTMLText from './get-html-text';
 
-function statusPeek(status) {
+interface PollOption {
+  title: string;
+}
+
+interface PollLike {
+  options?: PollOption[];
+  multiple?: boolean;
+}
+
+interface MediaAttachmentLike {
+  type: string;
+}
+
+interface StatusLike {
+  spoilerText?: string;
+  content?: string;
+  poll?: PollLike | null;
+  mediaAttachments?: MediaAttachmentLike[] | null;
+  quote?: { quotedStatus?: StatusLike & { id?: string } } | null;
+}
+
+function statusPeek(status: StatusLike): string {
   const { spoilerText, content, poll, mediaAttachments, quote } = status;
   let text = '';
   // Don't need supportsNativeQuote because checking quotedStatus ID is enough
@@ -8,7 +29,7 @@ function statusPeek(status) {
   if (spoilerText?.trim()) {
     text += spoilerText;
   } else {
-    text += getHTMLText(content, {
+    text += getHTMLText(content as string, {
       preProcess: (dom) => {
         if (hasQuote) {
           const reContainer = dom.querySelector('.quote-inline');
@@ -31,17 +52,19 @@ function statusPeek(status) {
       mediaAttachments
         .map(
           (m) =>
-            ({
-              image: '🖼️',
-              gifv: '🎞️',
-              video: '📹',
-              audio: '🎵',
-              unknown: '',
-            })[m.type] || '',
+            (
+              {
+                image: '🖼️',
+                gifv: '🎞️',
+                video: '📹',
+                audio: '🎵',
+                unknown: '',
+              } as Record<string, string>
+            )[m.type] || '',
         )
         .join('');
   }
-  if (hasQuote) {
+  if (hasQuote && quote?.quotedStatus) {
     const quotePeek = statusPeek(quote.quotedStatus);
     text += `\n\n❝\n${quotePeek}\n❞`;
   }
