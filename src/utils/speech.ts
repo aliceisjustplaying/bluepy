@@ -1,6 +1,6 @@
 export const supportsTTS = 'speechSynthesis' in window;
 
-export function speak(text, lang) {
+export function speak(text: string, lang?: string | null): void {
   if (!supportsTTS) return;
   try {
     if (speechSynthesis.speaking) {
