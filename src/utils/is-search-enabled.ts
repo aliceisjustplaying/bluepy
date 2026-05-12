@@ -1,7 +1,7 @@
 import { api } from './api';
 import pmem from './pmem';
 
-async function _isSearchEnabled(instance) {
+async function _isSearchEnabled(instance: string): Promise<boolean> {
   const { masto } = api({ instance });
   const results = await masto.v2.search.list({
     q: 'from:me',
