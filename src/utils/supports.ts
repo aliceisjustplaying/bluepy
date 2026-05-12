@@ -4,13 +4,22 @@ import features from '../data/features.json';
 
 import { getCurrentInstance, getCurrentNodeInfo } from './store-utils';
 
+type SatisfiesWithOptions = (
+  version: string | undefined,
+  range: string,
+  options?: { includePrerelease?: boolean; loose?: boolean },
+) => boolean;
+
+const satisfiesVersion = satisfies as unknown as SatisfiesWithOptions;
+const featuresMap = features as Record<string, string | undefined>;
+
 // Non-semver(?) UA string detection
 const containPixelfed = /pixelfed/i;
 const notContainPixelfed = /^(?!.*pixelfed).*$/i;
 const containPleroma = /pleroma/i;
 const containAkkoma = /akkoma/i;
 const containGTS = /gotosocial/i;
-const platformFeatures = {
+const platformFeatures: Record<string, RegExp> = {
   '@mastodon/lists': notContainPixelfed,
   '@mastodon/filters': notContainPixelfed,
   '@mastodon/mentions': notContainPixelfed,
@@ -28,8 +37,8 @@ const platformFeatures = {
   '@akkoma/local-visibility-post': containAkkoma,
 };
 
-const supportsCache = {};
-const bskyUnsupportedFeatures = new Set([
+const supportsCache: Record<string, boolean> = {};
+const bskyUnsupportedFeatures = new Set<string>([
   '@mastodon/filters',
   '@mastodon/endorsements',
   '@mastodon/pinned-posts',
@@ -42,10 +51,17 @@ const bskyUnsupportedFeatures = new Set([
 const semverExtract = /^\d+\.\d+(\.\d+)?/;
 const atSoftwareSlashMatch = /^@([a-z]+)\//i;
 
-function supports(feature) {
+function supports(feature: string): boolean {
   try {
-    let { version, domain } = getCurrentInstance();
-    let softwareName = getCurrentNodeInfo()?.software?.name || 'mastodon';
+    const instance = getCurrentInstance() as {
+      version?: string;
+      domain?: string;
+    };
+    const { version, domain } = instance;
+    const nodeInfo = getCurrentNodeInfo() as {
+      software?: { name?: string };
+    };
+    let softwareName = nodeInfo?.software?.name || 'mastodon';
 
     if (domain === 'bsky.social' && bskyUnsupportedFeatures.has(feature)) {
       return false;
@@ -60,7 +76,9 @@ function supports(feature) {
     if (supportsCache[key]) return supportsCache[key];
 
     if (platformFeatures[feature]) {
-      return (supportsCache[key] = platformFeatures[feature].test(version));
+      return (supportsCache[key] = platformFeatures[feature].test(
+        version as string,
+      ));
     }
 
     const featureMatch = feature.match(atSoftwareSlashMatch);
@@ -70,14 +88,14 @@ function supports(feature) {
       return (supportsCache[key] = softwareName === software);
     }
 
-    const range = features[feature];
+    const range = featuresMap[feature];
     if (!range) return false;
 
     // '@mastodon/blah' => 'mastodon'
     const featureSoftware = featureMatch[1];
 
     const doesSoftwareMatch = featureSoftware === softwareName.toLowerCase();
-    let satisfiesRange = satisfies(version, range, {
+    let satisfiesRange = satisfiesVersion(version, range, {
       includePrerelease: true,
       loose: true,
     });
@@ -86,10 +104,14 @@ function supports(feature) {
         // E.g. "4.2.1 (compatible; Iceshrimp 2023.12.14-dev-046d237af)" is invalid semver 😅
         // This regex extracts numbers with dots out and tries again
         // Hopefully this doesn't break anything
-        satisfiesRange = satisfies(version.match(semverExtract)?.[0], range, {
-          includePrerelease: true,
-          loose: false,
-        });
+        satisfiesRange = satisfiesVersion(
+          (version as string).match(semverExtract)?.[0],
+          range,
+          {
+            includePrerelease: true,
+            loose: false,
+          },
+        );
       } catch (e) {
         // Ignore
       }
