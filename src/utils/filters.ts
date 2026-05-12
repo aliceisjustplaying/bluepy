@@ -1,11 +1,43 @@
+import type { mastodon } from 'masto';
+
 import mem from './mem';
 import { getCurrentAccountID } from './store-utils';
 
-function _isFiltered(filtered, filterContext) {
+type FilterResult = mastodon.v1.FilterResult;
+
+interface FilterableItem {
+  readonly filtered?: readonly FilterResult[] | null;
+  readonly account?: { readonly id?: string } | null;
+}
+
+interface FilterStateHide {
+  readonly action: 'hide';
+}
+
+interface FilterStateBlur {
+  readonly action: 'blur';
+  readonly titles: string[];
+  readonly titlesStr: string;
+}
+
+interface FilterStateWarn {
+  readonly action: 'warn';
+  readonly titles: string[];
+  readonly titlesStr: string;
+}
+
+type FilterState = FilterStateHide | FilterStateBlur | FilterStateWarn | false;
+
+function _isFiltered(
+  filtered: readonly FilterResult[] | null | undefined,
+  filterContext: string,
+): FilterState {
   if (!filtered?.length) return false;
   const appliedFilters = filtered.filter((f) => {
     const { filter } = f;
-    const hasContext = filter.context.includes(filterContext);
+    const hasContext = (
+      filter.context as readonly string[]
+    ).includes(filterContext);
     if (!hasContext) return false;
     if (!filter.expiresAt) return hasContext;
     return Date.parse(filter.expiresAt) > Date.now();
@@ -40,18 +72,25 @@ function _isFiltered(filtered, filterContext) {
 }
 export const isFiltered = mem(_isFiltered);
 
-export function filteredItem(item, filterContext, currentAccountID) {
+export function filteredItem(
+  item: FilterableItem,
+  filterContext: string | undefined,
+  currentAccountID: string | null | undefined,
+): boolean {
   const { filtered } = item;
   if (!filtered?.length) return true;
   const isSelf = currentAccountID && item.account?.id === currentAccountID;
   if (isSelf) return true;
-  const filterState = isFiltered(filtered, filterContext);
+  const filterState = isFiltered(filtered, filterContext as string);
   if (!filterState) return true;
   if (filterState.action === 'hide') return false;
   // item._filtered = filterState;
   return true;
 }
-export function filteredItems(items, filterContext) {
+export function filteredItems<T extends FilterableItem>(
+  items: readonly T[] | null | undefined,
+  filterContext: string | undefined,
+): readonly T[] {
   if (!items?.length) return [];
   if (!filterContext) return items;
   const currentAccountID = getCurrentAccountID();
