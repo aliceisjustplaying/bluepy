@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 // Hook that runs a callback when the location changes
 // Won't run on the first render
 
-export default function useLocationChange(fn) {
+export default function useLocationChange(fn?: (() => void) | null): void {
   if (!fn) return;
   const location = useLocation();
   const currentLocationRef = useRef(location.pathname);
