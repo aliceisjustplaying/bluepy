@@ -9,14 +9,14 @@ import {
   set,
 } from 'idb-keyval';
 
-function initDB(dbName, storeName) {
+function initDB(dbName: string, storeName: string) {
   const store = createStore(dbName, storeName);
   return {
-    set: (key, val) => set(key, val, store),
-    get: (key) => get(key, store),
-    getMany: (keys) => getMany(keys, store),
-    del: (key) => del(key, store),
-    delMany: (keys) => delMany(keys, store),
+    set: (key: IDBValidKey, val: unknown) => set(key, val, store),
+    get: (key: IDBValidKey) => get(key, store),
+    getMany: (keys: IDBValidKey[]) => getMany(keys, store),
+    del: (key: IDBValidKey) => del(key, store),
+    delMany: (keys: IDBValidKey[]) => delMany(keys, store),
     clear: () => clear(store),
     keys: () => keys(store),
   };

@@ -4,10 +4,11 @@ import Toastify from 'toastify-js';
 const nativeAlert = window.alert;
 if (!window.__nativeAlert) window.__nativeAlert = nativeAlert;
 
-window.alert = function (message) {
+window.alert = function (rawMessage?: unknown) {
   console.debug(
     'ALERT: This is a custom alert() function. Native alert() is still available as window.__nativeAlert()',
   );
+  let message: unknown = rawMessage;
   // If Error object, show the message
   if (message instanceof Error && message?.message) {
     message = message.message;
@@ -18,7 +19,7 @@ window.alert = function (message) {
   }
 
   const toast = Toastify({
-    text: message,
+    text: message as string,
     className: 'alert',
     gravity: 'top',
     position: 'center',
