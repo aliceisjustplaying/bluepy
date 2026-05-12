@@ -1,5 +1,31 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
 import { useThrottledCallback } from 'use-debounce';
+import type { RefObject } from 'preact';
+
+type ScrollDirection = 'end' | 'start' | null;
+type ScrollAxis = 'vertical' | 'horizontal';
+
+interface ScrollFnState {
+  scrollDirection: ScrollDirection;
+  reachStart: boolean;
+  reachEnd: boolean;
+  nearReachStart: boolean;
+  nearReachEnd: boolean;
+}
+
+type ScrollFnCallback = (state: ScrollFnState) => void;
+
+interface UseScrollFnOpts {
+  scrollableRef: RefObject<HTMLElement>;
+  distanceFromStart?: number;
+  distanceFromEnd?: number;
+  scrollThresholdStart?: number;
+  scrollThresholdEnd?: number;
+  direction?: ScrollAxis;
+  distanceFromStartPx?: number;
+  distanceFromEndPx?: number;
+  init?: unknown;
+}
 
 export default function useScrollFn(
   {
@@ -12,13 +38,13 @@ export default function useScrollFn(
     distanceFromStartPx: _distanceFromStartPx,
     distanceFromEndPx: _distanceFromEndPx,
     init,
-  } = {},
-  callback,
-) {
+  }: UseScrollFnOpts,
+  callback?: ScrollFnCallback,
+): { resetScrollDirection: () => void } | undefined {
   if (!callback) return;
   const isVertical = direction === 'vertical';
-  const previousScrollStart = useRef(null);
-  const scrollDirection = useRef(null);
+  const previousScrollStart = useRef<number | null>(null);
+  const scrollDirection = useRef<ScrollDirection>(null);
 
   const onScroll = useThrottledCallback(
     () => {
@@ -27,7 +53,7 @@ export default function useScrollFn(
       let nearReachStart = false;
       let nearReachEnd = false;
 
-      const scrollableElement = scrollableRef.current;
+      const scrollableElement = scrollableRef.current!;
       const {
         scrollTop,
         scrollLeft,
@@ -39,7 +65,7 @@ export default function useScrollFn(
       const scrollStart = isVertical ? scrollTop : scrollLeft;
       const scrollDimension = isVertical ? scrollHeight : scrollWidth;
       const clientDimension = isVertical ? clientHeight : clientWidth;
-      const scrollDelta = scrollStart - previousScrollStart.current;
+      const scrollDelta = scrollStart - (previousScrollStart.current ?? 0);
       const isScrollingForward = scrollDelta > 0;
       const threshold = isScrollingForward
         ? scrollThresholdEnd
@@ -89,11 +115,16 @@ export default function useScrollFn(
     if (scrollableElement) {
       previousScrollStart.current =
         scrollableElement[isVertical ? 'scrollTop' : 'scrollLeft'];
-      scrollableElement.addEventListener('scroll', onScroll, { passive: true });
+      scrollableElement.addEventListener('scroll', onScroll as EventListener, {
+        passive: true,
+      });
     }
     return () => {
       if (scrollableElement) {
-        scrollableElement.removeEventListener('scroll', onScroll);
+        scrollableElement.removeEventListener(
+          'scroll',
+          onScroll as EventListener,
+        );
       }
     };
   }, []);
@@ -101,7 +132,7 @@ export default function useScrollFn(
   useEffect(() => {
     if (init && scrollableRef.current) {
       queueMicrotask(() => {
-        scrollableRef.current.dispatchEvent(new Event('scroll'));
+        scrollableRef.current!.dispatchEvent(new Event('scroll'));
       });
     }
   }, [init]);
