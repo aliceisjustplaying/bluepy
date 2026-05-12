@@ -1,9 +1,59 @@
+// Minimal shims for the experimental Chrome AI APIs used here.
+// https://developer.chrome.com/docs/ai/language-detection
+// https://developer.chrome.com/docs/ai/translator-api
+type AIAvailability = 'unavailable' | 'downloadable' | 'downloading' | 'available';
+
+interface AIMonitorEvent {
+  loaded: number;
+}
+
+interface AIMonitor {
+  addEventListener(
+    type: 'downloadprogress',
+    listener: (event: AIMonitorEvent) => void,
+  ): void;
+}
+
+interface LanguageDetectorInstance {
+  ready: Promise<void>;
+  detect(
+    text: string,
+  ): Promise<Array<{ detectedLanguage: string; confidence?: number }>>;
+}
+
+interface LanguageDetectorStatic {
+  availability(): Promise<AIAvailability>;
+  create(options?: {
+    monitor?: (m: AIMonitor) => void;
+  }): Promise<LanguageDetectorInstance>;
+}
+
+interface TranslatorInstance {
+  ready: Promise<void>;
+  translate(text: string): Promise<string>;
+}
+
+interface TranslatorStatic {
+  availability(options: {
+    sourceLanguage: string;
+    targetLanguage: string;
+  }): Promise<AIAvailability>;
+  create(options: {
+    sourceLanguage: string;
+    targetLanguage: string;
+    monitor?: (m: AIMonitor) => void;
+  }): Promise<TranslatorInstance>;
+}
+
+declare const LanguageDetector: LanguageDetectorStatic;
+declare const Translator: TranslatorStatic;
+
 const supportsLanguageDetector = 'LanguageDetector' in self;
 export const supportsBrowserTranslator =
   supportsLanguageDetector && 'Translator' in self;
 
 // https://developer.chrome.com/docs/ai/language-detection
-export let langDetector;
+export let langDetector: LanguageDetectorInstance | undefined;
 if (supportsLanguageDetector) {
   (async () => {
     try {
@@ -37,9 +87,25 @@ if (supportsLanguageDetector) {
   })();
 }
 
+export interface TranslateResult {
+  content?: string;
+  detectedSourceLanguage?: string;
+  provider?: string;
+  error?: unknown;
+}
+
+// console.groupEnd() takes no arguments per the spec; the original JS passed a
+// label as a harmless no-op. The call-site cast preserves both runtime call
+// shape (method on `console`) and the original argument.
+type ConsoleGroupEnd = (label?: string) => void;
+
 // https://developer.chrome.com/docs/ai/translator-api
-export const translate = async (text, source, target) => {
-  let detectedSourceLanguage;
+export const translate = async (
+  text: string,
+  source: string,
+  target: string,
+): Promise<TranslateResult> => {
+  let detectedSourceLanguage: string | undefined;
   const originalSource = source;
   if (source === 'auto') {
     if (!langDetector?.detect) {
@@ -68,12 +134,12 @@ export const translate = async (text, source, target) => {
     });
     // Note: Translator.availability() returns 'unavailable', 'downloadable', 'downloading', or 'available'.
     if (translatorCapabilities === 'unavailable') {
-      console.groupEnd(groupLabel);
+      (console.groupEnd as ConsoleGroupEnd)(groupLabel);
       return {
         error: `Unsupported language pair: ${source} -> ${target}`,
       };
     }
-    let translator;
+    let translator: TranslatorInstance;
     if (translatorCapabilities === 'available') {
       translator = await Translator.create({
         sourceLanguage: source,
@@ -96,7 +162,7 @@ export const translate = async (text, source, target) => {
 
     const content = await translator.translate(text);
     console.log(content);
-    console.groupEnd(groupLabel);
+    (console.groupEnd as ConsoleGroupEnd)(groupLabel);
 
     return {
       content,
@@ -104,7 +170,7 @@ export const translate = async (text, source, target) => {
       provider: 'browser',
     };
   } catch (e) {
-    console.groupEnd(groupLabel);
+    (console.groupEnd as ConsoleGroupEnd)(groupLabel);
     console.error(e);
     return {
       error: e,
