@@ -75,24 +75,61 @@ Worker constraints (enforce in every worker prompt):
 
 ### Codex Review CLI
 
-Codex review runs through the Codex Claude Code plugin's companion script. From within the worktree where the batch is staged:
+The Codex Claude Code plugin is intentionally disabled. Reviews call the `codex` CLI directly. **Always** use `gpt-5.5` at `high` reasoning effort — never rely on config defaults.
+
+Canonical review invocation (run from inside the worktree where the batch is staged):
 
 ```bash
-node /home/agent/.claude/plugins/cache/openai-codex/codex/1.0.4/scripts/codex-companion.mjs review --wait --scope working-tree
+DIFF="$(git diff --no-color HEAD)"
+TYPECHECK="$(bun run typecheck 2>&1)"
+LINT="$(bunx oxlint <changed-files> 2>&1)"
+codex exec \
+  -c model='"gpt-5.5"' \
+  -c model_reasoning_effort='"high"' \
+  --dangerously-bypass-approvals-and-sandbox \
+  --skip-git-repo-check \
+  - <<EOF
+You are reviewing a TypeScript migration batch in Bluepy. The diff is a set of
+\`.js -> .ts\` and \`.jsx -> .tsx\` renames with the smallest type annotations
+needed to compile. Review for correctness only. Find:
+
+- Behavioral regressions vs the JS original
+- Unsafe type claims, casts, or \`as unknown as X\` shims that hide bugs
+- Use of \`any\`, \`@ts-ignore\`, \`@ts-expect-error\`, or \`eslint-disable\`
+- Missing tests around changed behavior
+- Over-decomposition or unnecessary abstraction
+- Drive-by changes (formatting, version bumps, unrelated edits, package.json,
+  tsconfig, lint config, lockfiles, generated images, locale catalogs, .claude/)
+- Files renamed without \`git mv\` (delete+add instead of rename)
+
+Return findings ordered by severity with file:line refs. If none, say
+"no actionable findings" and name residual risks (if any).
+
+Typecheck output:
+${TYPECHECK}
+
+Oxlint output (informational, project baseline ~32 510 errors):
+${LINT}
+
+Diff:
+${DIFF}
+EOF
 ```
 
-- `--wait` runs the review in the foreground and returns Codex's verdict to stdout.
-- `--scope working-tree` reviews staged + unstaged changes vs HEAD (use this when the batch is staged but not committed).
-- For branch-scoped reviews after commit: `--scope branch --base typescript`.
-- Higher reasoning effort: use `task --effort high "<review prompt>"` instead of `review` when explicit effort control is required. The plain `review` command uses Codex defaults.
+- `--dangerously-bypass-approvals-and-sandbox` enables yolo mode (no prompts, no sandbox). Safe for review because Codex only reads the prompt; it does not need to edit files.
+- The plugin's `review` subcommand rejects custom prompts when scoped to `--uncommitted`, so we use `exec` with the diff embedded.
 - Read Codex's output: actionable findings (bugs, unsafe casts, regressions, missing tests for changed behavior, over-decomposition, rule bypasses) → fix in code. Explicitly non-actionable residual risks → acceptable; commit anyway.
 
-Do not let Codex edit files during review. Treat Codex output as review input; the Coder (Claude Opus) owns code changes, verification, and commits.
+Do not let Codex edit files during review. Treat Codex output as review input only; the Coder (Claude Opus) owns code changes, verification, and commits.
 
 For smoke testing Codex availability:
 
 ```bash
-node /home/agent/.claude/plugins/cache/openai-codex/codex/1.0.4/scripts/codex-companion.mjs task "Smoke test: reply with exactly CODEX_OK if you can read this."
+codex exec \
+  -c model='"gpt-5.5"' \
+  -c model_reasoning_effort='"high"' \
+  --dangerously-bypass-approvals-and-sandbox \
+  "Reply with EXACTLY CODEX_OK and nothing else."
 ```
 
 ### Rule-Change Protocol
