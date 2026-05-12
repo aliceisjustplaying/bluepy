@@ -4,12 +4,17 @@ import { useLingui } from '@lingui/react/macro';
 
 import Icon from './icon';
 
-function ListExclusiveBadge({ insignificant }) {
+interface ListExclusiveBadgeProps {
+  insignificant?: boolean;
+}
+
+function ListExclusiveBadge({ insignificant }: ListExclusiveBadgeProps) {
   const { t } = useLingui();
   return (
     <Icon
       icon="filter"
       size="xs"
+      alt={undefined}
       class={`list-exclusive-badge ${insignificant ? 'insignificant' : ''}`}
       title={t`Posts on this list are hidden from Home/Following`}
     />
