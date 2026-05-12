@@ -1,17 +1,32 @@
+import type { mastodon } from 'masto';
+
 import { api } from '../utils/api';
 import store from '../utils/store';
+
+interface FollowedTagsResource {
+  readonly list: (params: { readonly limit: number }) => {
+    readonly values: () => AsyncIterator<mastodon.v1.Tag[]>;
+  };
+}
+
+interface CachedFollowedTags {
+  readonly tags: mastodon.v1.Tag[];
+  readonly updatedAt: number;
+}
 
 const LIMIT = 200;
 const MAX_FETCH = 10;
 
-export async function fetchFollowedTags() {
+export async function fetchFollowedTags(): Promise<mastodon.v1.Tag[]> {
   const { masto } = api();
-  const iterator = masto.v1.followedTags
+  const followedTags = masto.v1
+    .followedTags as unknown as FollowedTagsResource;
+  const iterator = followedTags
     .list({
       limit: LIMIT,
     })
     .values();
-  const tags = [];
+  const tags: mastodon.v1.Tag[] = [];
   let fetchCount = 0;
   do {
     const { value, done } = await iterator.next();
@@ -36,11 +51,12 @@ export async function fetchFollowedTags() {
 }
 
 const MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
-export async function getFollowedTags() {
+export async function getFollowedTags(): Promise<mastodon.v1.Tag[]> {
   try {
-    const { tags, updatedAt } = store.account.get('followedTags') || {};
+    const { tags, updatedAt } =
+      store.account.get<CachedFollowedTags>('followedTags') || {};
     if (!tags?.length) return await fetchFollowedTags();
-    if (Date.now() - updatedAt > MAX_AGE) {
+    if (updatedAt !== undefined && Date.now() - updatedAt > MAX_AGE) {
       // Stale-while-revalidate
       fetchFollowedTags();
       return tags;
@@ -52,11 +68,13 @@ export async function getFollowedTags() {
 }
 
 const fauxDiv = document.createElement('div');
-export const extractTagsFromStatus = (content) => {
+export const extractTagsFromStatus = (
+  content: string | null | undefined,
+): string[] => {
   if (!content) return [];
   if (content.indexOf('#') === -1) return [];
   fauxDiv.innerHTML = content;
-  const hashtagLinks = fauxDiv.querySelectorAll('a.hashtag');
+  const hashtagLinks = fauxDiv.querySelectorAll<HTMLAnchorElement>('a.hashtag');
   if (!hashtagLinks.length) return [];
   return Array.from(hashtagLinks).map((a) =>
     a.innerText.trim().replace(/^[^#]*#+/, ''),
