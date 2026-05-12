@@ -88,7 +88,14 @@ codex exec \
   -c model_reasoning_effort='"high"' \
   --dangerously-bypass-approvals-and-sandbox \
   --skip-git-repo-check \
-  - <<EOF
+  "$PROMPT" < /dev/null > codex-review.out 2>&1
+# Where $PROMPT is the heredoc contents below. CRITICAL: `< /dev/null` is
+# mandatory whenever codex is spawned from a non-TTY context (background
+# tasks, sub-agents, scripts) — otherwise codex hangs forever waiting for
+# stdin EOF after printing "Reading additional input from stdin...".
+#
+# Heredoc prompt body (write to a file or assemble in $PROMPT):
+# <<EOF
 You are reviewing a TypeScript migration batch in Bluepy. The diff is a set of
 \`.js -> .ts\` and \`.jsx -> .tsx\` renames with the smallest type annotations
 needed to compile. Review for correctness only. Find:
