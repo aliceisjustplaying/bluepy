@@ -10,7 +10,9 @@ const statusPostRegexes = [
   /^\/p\/[^\/]+\/([^\/]+)/i, // Pixelfed
 ];
 
-export function getInstanceStatusObject(url) {
+export function getInstanceStatusObject(
+  url: string,
+): { instance: string; id: string } | Record<string, never> {
   // Regex /:username/:id, where username = @username or @username@domain, id = anything
   const theURL = URL.parse(url);
   if (!theURL) return {};
@@ -29,7 +31,7 @@ export function getInstanceStatusObject(url) {
   return {};
 }
 
-function getInstanceStatusURL(url) {
+function getInstanceStatusURL(url: string): string | null {
   const { instance, id } = getInstanceStatusObject(url);
   if (instance && id) {
     return `/${instance}/s/${id}`;

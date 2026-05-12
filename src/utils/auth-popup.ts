@@ -1,4 +1,4 @@
-export function openAuthPopup(url) {
+export function openAuthPopup(url: string): Window | null {
   const width = Math.min(500, Math.floor(window.screen.width * 0.9));
   const height = Math.min(600, Math.floor(window.screen.height * 0.8));
 
@@ -16,7 +16,7 @@ export function openAuthPopup(url) {
   }
 }
 
-export function closeAuthPopup(popup) {
+export function closeAuthPopup(popup: Window | null): void {
   if (popup && !popup.closed) {
     try {
       popup.close();
@@ -26,10 +26,14 @@ export function closeAuthPopup(popup) {
   }
 }
 
-export function watchAuthPopup(popup, onSuccess, onError) {
+export function watchAuthPopup(
+  popup: Window | null,
+  onSuccess: (code: string) => void,
+  onError: (error: Error) => void,
+): () => void {
   let resolved = false;
 
-  const messageHandler = (event) => {
+  const messageHandler = (event: MessageEvent): void => {
     // Security: verify event origin matches current origin
     if (event.origin !== window.location.origin) {
       return;

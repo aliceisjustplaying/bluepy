@@ -1,5 +1,5 @@
 const ESCAPE_REGEX = /[.*+?^${}()|[\]\\]/g;
-const HTML_ESCAPE_MAP = {
+const HTML_ESCAPE_MAP: Record<string, string> = {
   '&': '&amp;',
   '"': '&quot;',
   '<': '&lt;',
@@ -7,21 +7,27 @@ const HTML_ESCAPE_MAP = {
 };
 const HTML_ESCAPE_REGEX = /[&"<>]/g;
 
-function escapeRegex(str) {
+interface EmojiEntry {
+  shortcode?: string;
+  url?: string;
+  staticUrl?: string;
+}
+
+function escapeRegex(str: string): string {
   return str.replace(ESCAPE_REGEX, '\\$&');
 }
 
-function escapeHTML(str) {
+function escapeHTML(str: string): string {
   return str.replace(HTML_ESCAPE_REGEX, (char) => HTML_ESCAPE_MAP[char]);
 }
 
-function emojifyText(text, emojis = []) {
+function emojifyText(text: string, emojis: EmojiEntry[] = []): string {
   if (!text) return '';
   if (!emojis.length) return text;
   if (!text.includes(':')) return text;
 
   // Deduplicate emojis by shortcode and filter out invalid entries
-  const emojiMap = new Map();
+  const emojiMap = new Map<string, EmojiEntry>();
   for (let i = 0; i < emojis.length; i++) {
     const emoji = emojis[i];
     if (emoji?.shortcode && emoji?.url) {
