@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
 
-function AsyncText({ children }) {
+interface AsyncTextProps {
+  children: string | Promise<string>;
+}
+
+function AsyncText({ children }: AsyncTextProps) {
   if (typeof children === 'string') return children;
   const [text, setText] = useState('');
   useEffect(() => {
