@@ -1,17 +1,15 @@
 {
   "name": "phanpy",
   "version": "0.1.0",
-  "packageManager": "bun@1.3.13",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:tailscale": "node scripts/dev-tailscale.js",
     "build": "vite build",
     "build:sizes": "NO_COLOR=true vite build 2>&1 | grep '^dist/' | node scripts/bundle-sizes-to-md.js",
     "preview": "vite preview",
     "fetch-instances": "node scripts/fetch-instances-list.js",
-    "sourcemap": "bunx source-map-explorer dist/assets/*.js",
-    "bundle-visualizer": "bunx vite-bundle-visualizer",
+    "sourcemap": "npx source-map-explorer dist/assets/*.js",
+    "bundle-visualizer": "npx vite-bundle-visualizer",
     "messages:extract": "lingui extract",
     "messages:extract:clean": "lingui extract --locale en --clean",
     "messages:compile": "lingui compile",
@@ -21,7 +19,6 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "typecheck": "tsgo --noEmit",
-    "lint": "oxlint .",
     "formatting": "oxfmt",
     "formatting-check": "oxfmt --check",
     "git:po-filter": "git config --local diff.po-filter.textconv \"sed 's/:[0-9]*$//'\"",
@@ -91,8 +88,6 @@
     "@types/node": "~25.5.2",
     "@typescript/native-preview": "^7.0.0-dev.20260511.1",
     "oxfmt": "~0.44.0",
-    "oxlint": "^1.63.0",
-    "oxlint-tsgolint": "^0.22.1",
     "postcss": "~8.5.9",
     "postcss-dark-theme-class": "~2.0.0",
     "postcss-preset-env": "~11.2.0",
@@ -150,6 +145,11 @@
       "photoshop": true,
       "thumbnail": true,
       "icc": true
+    }
+  },
+  "overrides": {
+    "vite-plugin-pwa": {
+      "vite": "$vite"
     }
   }
 }
