@@ -54,6 +54,7 @@
     "import/no-unassigned-import": "off",
     "oxc/no-rest-spread-properties": "off",
     "oxc/no-optional-chaining": "off",
+    "promise/prefer-await-to-then": "warn",
     "react/jsx-filename-extension": "off",
     "react/jsx-max-depth": "off",
     "react/no-unknown-property": "off",
