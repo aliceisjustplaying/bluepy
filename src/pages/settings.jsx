@@ -18,17 +18,17 @@ import { api, getPreferences, setPreferences } from '../utils/api';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import localeCode2Text from '../utils/localeCode2Text';
 import prettyBytes from '../utils/pretty-bytes';
-import {
-  initSubscription,
-  isPushSupported,
-  removeSubscription,
-  updateSubscription,
-} from '../utils/push-notifications';
 import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import store from '../utils/store';
 import { getAPIVersions, getVapidKey } from '../utils/store-utils';
+import {
+  initSubscription,
+  isPushSupported,
+  removeSubscription,
+  updateSubscription,
+} from '../utils/web-push-subscriptions';
 
 const DEFAULT_TEXT_SIZE = 16;
 const TEXT_SIZES = [14, 15, 16, 17, 18, 19, 20];
