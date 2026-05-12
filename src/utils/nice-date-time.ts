@@ -2,16 +2,28 @@ import { i18n } from '@lingui/core';
 
 import DateTimeFormat from './date-time-format';
 
-function niceDateTime(date, dtfOpts) {
-  if (!(date instanceof Date)) {
-    date = new Date(date);
+interface NiceDateTimeOpts {
+  hideTime?: boolean;
+  formatOpts?: Intl.DateTimeFormatOptions;
+  forceOpts?: Intl.DateTimeFormatOptions;
+}
+
+function niceDateTime(
+  date: Date | string | number,
+  dtfOpts?: NiceDateTimeOpts,
+): string {
+  let d: Date;
+  if (date instanceof Date) {
+    d = date;
+  } else {
+    d = new Date(date);
   }
 
   const { hideTime, formatOpts, forceOpts } = dtfOpts || {};
   const currentYear = new Date().getFullYear();
-  const options = forceOpts || {
+  const options: Intl.DateTimeFormatOptions = forceOpts || {
     // Show year if not current year
-    year: date.getFullYear() === currentYear ? undefined : 'numeric',
+    year: d.getFullYear() === currentYear ? undefined : 'numeric',
     month: 'short',
     day: 'numeric',
     // Hide time if requested
@@ -21,7 +33,7 @@ function niceDateTime(date, dtfOpts) {
   };
 
   const DTF = DateTimeFormat(i18n.locale, options);
-  const dateText = DTF.format(date);
+  const dateText = DTF.format(d);
   return dateText;
 }
 
