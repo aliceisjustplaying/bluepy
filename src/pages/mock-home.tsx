@@ -1,3 +1,4 @@
+import type { ComponentType } from 'preact';
 import { useEffect, useMemo } from 'preact/hooks';
 
 import ComposeButton from '../components/compose-button';
@@ -5,24 +6,54 @@ import Icon from '../components/icon';
 import Link from '../components/link';
 import NavMenu from '../components/nav-menu';
 import Shortcuts from '../components/shortcuts';
-import Status from '../components/status';
+import StatusComponent from '../components/status';
 import mockPostsData from '../data/mock-posts.json';
 import states from '../utils/states';
 import useTitle from '../utils/useTitle';
 
+// Shape of the mocked status passed into `<Status>` from this page. Mirrors
+// what `toCamelCase(mockPostsData[n])` produces plus the two locally
+// assigned fields (`_instance`, `createdAt`).
+interface MockStatus {
+  id: string;
+  _instance: string;
+  createdAt: string;
+  [key: string]: unknown;
+}
+
+interface MockStatusProps {
+  status: MockStatus;
+  instance: string;
+  allowFilters: boolean;
+}
+
+// `Status` (still .jsx) declares all destructured props as required from
+// TS's perspective. Shim with the local prop shape this page actually
+// passes; a later batch that converts `status.jsx` removes this cast.
+const Status = StatusComponent as unknown as ComponentType<MockStatusProps>;
+
+type JsonLike =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | JsonLike[]
+  | { [key: string]: JsonLike };
+
 // Helper function to convert snake_case keys to camelCase recursively
 // This mimics the behavior of masto.js which uses change-case library
 // to transform API responses from snake_case to camelCase
-function toCamelCase(obj) {
+function toCamelCase(obj: JsonLike): JsonLike {
   if (!obj || typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(toCamelCase);
 
-  return Object.keys(obj).reduce((acc, key) => {
+  return Object.keys(obj).reduce<Record<string, JsonLike>>((acc, key) => {
     // Convert snake_case to camelCase: user_name -> userName
-    const camelKey = key.replace(/_([a-z])/g, (_, letter) =>
+    const camelKey = key.replace(/_([a-z])/g, (_, letter: string) =>
       letter.toUpperCase(),
     );
-    acc[camelKey] = toCamelCase(obj[key]);
+    acc[camelKey] = toCamelCase((obj as Record<string, JsonLike>)[key]);
     return acc;
   }, {});
 }
@@ -51,15 +82,19 @@ function MockHome() {
     };
   }, []);
 
-  const statuses = useMemo(() => {
+  const statuses = useMemo<MockStatus[]>(() => {
     const now = new Date();
 
     return mockPostsData.map((status, index) => {
       const accountURL = new URL(status.account.url);
       const instance = accountURL.hostname;
 
-      // Convert all snake_case keys to camelCase
-      const transformedStatus = toCamelCase(status);
+      // Convert all snake_case keys to camelCase. The JSON fixture has
+      // `id` and the snake→camel mapping is identity for it, so we narrow
+      // the result back to MockStatus here without a second cast below.
+      const transformedStatus = toCamelCase(
+        status as JsonLike,
+      ) as MockStatus;
       transformedStatus._instance = instance;
 
       // Mock createdAt dates: now, then 15 minutes ago, 30 minutes ago, etc.
@@ -73,7 +108,7 @@ function MockHome() {
 
   return (
     <>
-      <div id="home-page" class="deck-container" tabIndex="-1">
+      <div id="home-page" class="deck-container" tabIndex={-1}>
         <div class="timeline-deck deck">
           <header>
             <div class="header-grid">

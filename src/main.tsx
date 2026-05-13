@@ -12,6 +12,7 @@ import * as Sentry from '@sentry/react';
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1423593
 // import '@formatjs/intl-segmenter/polyfill';
 import { render } from 'preact';
+import type { ComponentType, VNode } from 'preact';
 import { HashRouter } from 'react-router-dom';
 
 import { App } from './app';
@@ -23,6 +24,18 @@ import {
 } from './utils/origin-migration';
 import { initPWAViewport } from './utils/pwa-viewport';
 import states from './utils/states';
+
+// Vite aliases `react` to `preact/compat` at bundle time, so Sentry's
+// `ErrorBoundary` works at runtime with preact children. The shipped Sentry
+// types extend `React.Component`, and preact's JSX type system does not
+// accept React class components directly. Per the CLAUDE.md migration rules,
+// an `as unknown as <preact type>` shim around an untyped/non-preact peer is
+// acceptable; a later batch (or a real react→preact/compat ambient module)
+// can replace this with a structurally typed boundary.
+const SentryErrorBoundary = Sentry.ErrorBoundary as unknown as ComponentType<{
+  fallback?: VNode;
+  children?: unknown;
+}>;
 
 if (!redirectLegacyOrigin()) {
   importLegacyOriginStorage().finally(() => {
@@ -50,13 +63,16 @@ if (!redirectLegacyOrigin()) {
       <I18nProvider i18n={i18n}>
         <HashRouter>
           <IconSpriteProvider>
-            <Sentry.ErrorBoundary fallback={<p>Something went wrong.</p>}>
+            <SentryErrorBoundary fallback={<p>Something went wrong.</p>}>
               <App />
-            </Sentry.ErrorBoundary>
+            </SentryErrorBoundary>
           </IconSpriteProvider>
         </HashRouter>
       </I18nProvider>,
-      document.getElementById('app'),
+      // The HTML template guarantees this element. Preserve the original JS
+      // behavior of failing loudly through `render(...)` if it is ever missing
+      // rather than silently skipping mount.
+      document.getElementById('app') as HTMLElement,
     );
 
     // Storage cleanup
@@ -75,7 +91,7 @@ if (!redirectLegacyOrigin()) {
       const FAST_INTERVAL = 10_000; // 10 seconds
       const SLOW_INTERVAL = 60 * 60 * 1000; // 1 hour
       async function clearCaches() {
-        if (window.__IDLE__) {
+        if ((window as Window & { __IDLE__?: boolean }).__IDLE__) {
           try {
             const keys = await caches.keys();
             for (const key of keys) {
@@ -100,10 +116,22 @@ if (!redirectLegacyOrigin()) {
     }
 
     if ('serviceWorker' in navigator) {
-      function processShareData(data) {
+      interface ShareData {
+        title?: string;
+        text?: string;
+        url?: string;
+        files?: readonly File[];
+      }
+      interface SharedDataPayload {
+        initialText: string;
+        files: readonly File[];
+      }
+      function processShareData(
+        data: ShareData | null | undefined,
+      ): SharedDataPayload | null {
         if (!data) return null;
 
-        const textParts = [];
+        const textParts: string[] = [];
         if (data.title) textParts.push(data.title);
         if (data.text) textParts.push(data.text);
         if (data.url) textParts.push(data.url);
@@ -115,19 +143,22 @@ if (!redirectLegacyOrigin()) {
       }
 
       navigator.serviceWorker.addEventListener('message', (event) => {
-        const { data, action } = event.data || {};
+        const { data, action } =
+          (event.data as { data?: ShareData; action?: string } | undefined) ||
+          {};
         if (action === 'compose-with-shared-data') {
           console.log('💪 Received shared data from SW', data);
           const sharedData = processShareData(data);
           if (sharedData) {
-            window.__SHARED_DATA__ = sharedData;
+            (window as Window & { __SHARED_DATA__?: SharedDataPayload }).__SHARED_DATA__ =
+              sharedData;
             states.showCompose = true; // It'll use __SHARED_DATA__
           }
         }
       });
     }
 
-    window.__CLOAK__ = () => {
+    (window as Window & { __CLOAK__?: () => void }).__CLOAK__ = () => {
       document.body.classList.toggle('cloak');
     };
   });

@@ -18,20 +18,41 @@ import { initStates } from './utils/states';
 import { getCurrentAccount } from './utils/store-utils';
 import useTitle from './utils/useTitle';
 
+interface ComposePayload {
+  editStatus?: unknown;
+  replyToStatus?: {
+    account?: { acct?: string; username?: string };
+    [key: string]: unknown;
+  };
+  replyMode?: string;
+  draftStatus?: unknown;
+  quoteStatus?: unknown;
+}
+
+interface ComposeCloseResults {
+  newStatus?: unknown;
+  fn?: () => void;
+}
+
 initActivateLang();
 initPWAViewport();
 
-if (window.opener) {
-  console = window.opener.console;
+const opener = (window as Window & { opener?: Window | null }).opener;
+if (opener) {
+  // The compose popup proxies its console through the parent window so
+  // logs surface in the opener's devtools.
+  (globalThis as { console: Console }).console = (
+    opener as Window & { console: Console }
+  ).console;
 }
 
 function App() {
   const { t } = useLingui();
   const [uiState, setUIState] = useState('default');
-  const [isLoggedIn, setIsLoggedIn] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   const { editStatus, replyToStatus, replyMode, draftStatus, quoteStatus } =
-    window.__COMPOSE__ || {};
+    (window as Window & { __COMPOSE__?: ComposePayload }).__COMPOSE__ || {};
 
   useTitle(
     editStatus
@@ -41,6 +62,7 @@ function App() {
             replyToStatus.account?.acct || replyToStatus.account?.username
           }`
         : t`Compose`,
+    '',
   );
 
   useEffect(() => {
@@ -55,7 +77,7 @@ function App() {
     if (uiState === 'closed') {
       try {
         // Focus parent window
-        window.opener.focus();
+        (window as Window & { opener?: Window | null }).opener?.focus();
       } catch (e) {}
       window.close();
     }
@@ -109,12 +131,16 @@ function App() {
         draftStatus={draftStatus}
         quoteStatus={quoteStatus}
         standalone
-        hasOpener={window.opener}
-        onClose={(results) => {
+        hasOpener={(window as Window & { opener?: Window | null }).opener}
+        onClose={(results: ComposeCloseResults | null | undefined) => {
           const { newStatus, fn = () => {} } = results || {};
           try {
             if (newStatus) {
-              window.opener.__STATES__.reloadStatusPage++;
+              const openerWin = (window as Window & { opener?: Window | null })
+                .opener as Window & {
+                __STATES__: { reloadStatusPage: number };
+              };
+              openerWin.__STATES__.reloadStatusPage++;
             }
             fn();
             setUIState('closed');
@@ -137,5 +163,7 @@ render(
       <App />
     </IconSpriteProvider>
   </I18nProvider>,
-  document.getElementById('app-standalone'),
+  // Preserve original JS behavior of failing loudly via `render(...)` if the
+  // template's root element is ever missing rather than silently skipping.
+  document.getElementById('app-standalone') as HTMLElement,
 );
