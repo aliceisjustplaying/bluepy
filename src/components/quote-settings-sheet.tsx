@@ -2,7 +2,7 @@ import './quote-settings-sheet.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType, TargetedEvent } from 'preact';
+import type { TargetedEvent } from 'preact';
 import { useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
@@ -10,27 +10,7 @@ import showToast from '../utils/show-toast';
 import { saveStatus } from '../utils/states';
 
 import Icon from './icon';
-// TODO(oxlint:import/no-cycle): status imports quote-settings-sheet lazily
-// for the quote-policy editor; quote-settings-sheet renders a Status preview.
-// Breaking this requires extracting the shared status-preview helper into a
-// separate leaf module. Out of scope for the oxlint cleanup batch.
-import StatusUntyped from './status';
-
-interface StatusComponentProps {
-  status?: mastodon.v1.Status;
-  size?: 's' | 'm' | 'l';
-  readOnly?: boolean;
-}
-// Wrapper instead of `const Status = StatusUntyped as ...` at module top
-// level: the circular import status.tsx ↔ quote-settings-sheet.tsx puts
-// `StatusUntyped` in the TDZ at module-init time, so reading it eagerly
-// throws `ReferenceError: Cannot access 'StatusUntyped' before initialization`
-// the first time quote-settings-sheet evaluates. Deferring the read into
-// the render body resolves the cycle naturally.
-function Status(props: StatusComponentProps) {
-  const Inner = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
-  return <Inner {...props} />;
-}
+import type { AnyStatus, RenderStatus } from './status-types';
 
 const QUOTE_POLICIES = ['public', 'followers', 'nobody'] as const;
 type QuotePolicy = (typeof QUOTE_POLICIES)[number];
@@ -46,6 +26,7 @@ interface QuoteSettingsSheetProps {
   onClose: (arg?: unknown) => void;
   post: mastodon.v1.Status & { instance?: string };
   currentPolicy?: string | null;
+  renderStatus: RenderStatus;
 }
 
 interface InteractionPolicyClient {
@@ -62,6 +43,7 @@ function QuoteSettingsSheet({
   onClose,
   post,
   currentPolicy,
+  renderStatus,
 }: QuoteSettingsSheetProps) {
   const { t } = useLingui();
   const { masto } = api();
@@ -130,7 +112,11 @@ function QuoteSettingsSheet({
       <main>
         {!!post && (
           <div class="post-preview">
-            <Status status={post} size="s" readOnly />
+            {renderStatus({
+              status: post as AnyStatus,
+              size: 's',
+              readOnly: true,
+            })}
           </div>
         )}
         <form

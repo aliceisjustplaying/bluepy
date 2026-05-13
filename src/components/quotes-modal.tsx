@@ -2,7 +2,6 @@ import './quotes-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
@@ -10,25 +9,7 @@ import { api } from '../utils/api';
 import Icon from './icon';
 import Link from './link';
 import Loader from './loader';
-// TODO(oxlint:import/no-cycle): status imports quotes-modal lazily for the
-// "show quotes" sheet; breaking this cycle requires extracting a shared types
-// module. Out of scope for the oxlint cleanup batch.
-import StatusUntyped from './status';
-
-type StatusProps = {
-  status: mastodon.v1.Status;
-  instance?: string;
-  size?: string;
-  readOnly?: boolean;
-  showCommentCount?: boolean;
-  showQuoteCount?: boolean | ((c: number) => boolean);
-  [key: string]: unknown;
-};
-
-function Status(props: StatusProps) {
-  const Inner = StatusUntyped as unknown as ComponentType<StatusProps>;
-  return <Inner {...props} />;
-}
+import type { AnyStatus, RenderStatus } from './status-types';
 
 const LIMIT = 20;
 
@@ -46,12 +27,14 @@ interface QuotesModalProps {
   statusId: string;
   instance?: string;
   onClose?: () => void;
+  renderStatus: RenderStatus;
 }
 
 export default function QuotesModal({
   statusId,
   instance,
   onClose = () => {},
+  renderStatus,
 }: QuotesModalProps) {
   const { t } = useLingui();
   const { masto } = api();
@@ -164,14 +147,14 @@ export default function QuotesModal({
                       }
                     }}
                   >
-                    <Status
-                      status={post}
-                      instance={instance}
-                      size="s"
-                      readOnly
-                      showCommentCount
-                      showQuoteCount
-                    />
+                    {renderStatus({
+                      status: post as AnyStatus,
+                      instance,
+                      size: 's',
+                      readOnly: true,
+                      showCommentCount: true,
+                      showQuoteCount: true,
+                    })}
                   </Link>
                 </li>
               ))}
@@ -181,7 +164,9 @@ export default function QuotesModal({
                 <button
                   type="button"
                   class="plain block"
-                  onClick={() => loadQuotes()}
+                  onClick={() => {
+                    loadQuotes();
+                  }}
                 >
                   <Trans>Show more…</Trans>
                 </button>
