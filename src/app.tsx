@@ -4,7 +4,7 @@ import 'swiped-events';
 
 import { useLingui } from '@lingui/react';
 import debounce from 'just-debounce-it';
-import type { ComponentType, VNode } from 'preact';
+import type { VNode } from 'preact';
 import { lazy, memo, Suspense } from 'preact/compat';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import {
@@ -33,40 +33,29 @@ import NavigationCommand from './components/navigation-command';
 import NotificationService from './components/notification-service';
 import SearchCommand from './components/search-command';
 import Shortcuts from './components/shortcuts';
-import AccountStatusesRaw from './pages/account-statuses';
+import AccountStatuses from './pages/account-statuses';
 import AnnualReport from './pages/annual-report';
 import Bookmarks from './pages/bookmarks';
-import CatchupRaw from './pages/catchup';
+import Catchup from './pages/catchup';
 import Favourites from './pages/favourites';
-import FiltersRaw from './pages/filters';
+import Filters from './pages/filters';
 import FollowedHashtags from './pages/followed-hashtags';
 import Following from './pages/following';
 import Following2 from './pages/following2';
-import HashtagRaw from './pages/hashtag';
+import Hashtag from './pages/hashtag';
 import Home from './pages/home';
 import HttpRoute from './pages/http-route';
 import List from './pages/list';
 import Lists from './pages/lists';
 import Login from './pages/login';
 import Mentions from './pages/mentions';
-import NotificationsRaw from './pages/notifications';
+import Notifications from './pages/notifications';
 import Public from './pages/public';
 import ScheduledPosts from './pages/scheduled-posts';
-import SearchRaw from './pages/search';
+import Search from './pages/search';
 import StatusRoute from './pages/status-route';
-import TrendingRaw from './pages/trending';
+import Trending from './pages/trending';
 import Welcome from './pages/welcome';
-
-// Shims for peer pages still authored as .jsx — required props inferred
-// from destructuring become "required" in JSX-strict mode. These shims
-// erase the JSX requirement until the page itself is converted.
-const AccountStatuses = AccountStatusesRaw as unknown as ComponentType;
-const Catchup = CatchupRaw as unknown as ComponentType;
-const Filters = FiltersRaw as unknown as ComponentType;
-const Hashtag = HashtagRaw as unknown as ComponentType;
-const Notifications = NotificationsRaw as unknown as ComponentType;
-const Search = SearchRaw as unknown as ComponentType;
-const Trending = TrendingRaw as unknown as ComponentType;
 import {
   api,
   hasInstance,
@@ -145,7 +134,7 @@ appWindow.__STATES_STATS__ = () => {
   const counts: Record<string, number> = {};
   keys.forEach((key) => {
     counts[key] = Object.keys(
-      (states as unknown as Record<string, Record<string, unknown>>)[key],
+      states[key] as Record<string, unknown>,
     ).length;
   });
   console.warn('STATE stats', counts);

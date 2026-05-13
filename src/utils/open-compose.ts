@@ -6,7 +6,7 @@ interface ComposeOpts {
 }
 
 export default function openCompose(opts?: ComposeOpts): Window | null {
-  const url = URL.parse('./compose/', window.location as unknown as URL);
+  const url = URL.parse('./compose/', window.location.href);
   const { width: screenWidth, height: screenHeight } = window.screen;
   const left = Math.max(0, (screenWidth - 600) / 2);
   const top = Math.max(0, (screenHeight - 450) / 2);

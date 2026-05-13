@@ -11,7 +11,7 @@ import store from './store';
 // TODO(oxlint:import/no-cycle): states <-> unfurl-link cycle is structural;
 // breaking it requires extracting unfurled-link types into a separate module
 // shared by states.ts. Out of scope for the oxlint cleanup batch.
-import unfurlMastodonLinkRaw from './unfurl-link';
+import unfurlMastodonLink from './unfurl-link';
 
 // Intentionally loose typings — this hub is mutated by 60+ consumers and 139
 // direct writes. Narrower Status / Account shapes belong in later waves; doing
@@ -130,14 +130,6 @@ interface StateProxy {
   // future consumer-side addition through this file.
   [key: string]: unknown;
 }
-
-// `unfurl-link.js` is still untyped (peer module — converted in a later wave).
-// Shim its default export here; the next wave that types unfurl-link removes
-// this cast.
-const unfurlMastodonLink = unfurlMastodonLinkRaw as unknown as (
-  instance: string | undefined,
-  url: string,
-) => Promise<(Status & { id?: string }) | null | undefined>;
 
 // Restore prevLocation from sessionStorage for page reload persistence
 function restorePrevLocation(): PrevLocation | null {
