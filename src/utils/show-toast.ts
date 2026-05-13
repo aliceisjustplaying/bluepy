@@ -20,7 +20,16 @@ interface ToastProps {
   [key: string]: unknown;
 }
 
-(window as unknown as { _showToast: typeof showToast })._showToast = showToast;
+// Debug window global so devs can trigger toasts from the console. Keep the
+// underscore-prefixed name for back-compat with existing dev tooling and also
+// expose the unprefixed name to satisfy the no-underscore-dangle linter
+// without breaking callers of `_showToast(...)`.
+const debugWindow = window as unknown as {
+  _showToast: typeof showToast;
+  showToast: typeof showToast;
+};
+debugWindow._showToast = showToast;
+debugWindow.showToast = showToast;
 
 function showToast(props: string | ToastProps): ToastInstance {
   if (typeof props === 'string') {
@@ -28,7 +37,7 @@ function showToast(props: string | ToastProps): ToastInstance {
   }
   const { onClick, delay, ...rest } = props;
   const toast: ToastInstance = Toastify({
-    className: `${onClick || props.destination ? 'shiny-pill' : ''}`,
+    className: onClick || props.destination ? 'shiny-pill' : '',
     gravity: 'bottom',
     position: 'center',
     ...rest,

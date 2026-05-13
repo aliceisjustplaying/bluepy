@@ -51,7 +51,7 @@ function createDOM(html: string, isDocumentFragment?: boolean): EnhanceDOM {
   }
 }
 
-function _enhanceContent(
+function enhanceContentRaw(
   content: string | null | undefined,
   opts: EnhanceOpts = {},
 ): string | EnhanceDOM {
@@ -181,7 +181,7 @@ function _enhanceContent(
     // For each codeBlocks, get all paragraphs until the last paragraph with ``` at the end only
     for (const block of codeBlocks) {
       const nextParagraphs: HTMLParagraphElement[] = [block];
-      let hasCodeBlock = false;
+      let hasClosingBlock = false;
       let currentBlock: Element = block;
       while (currentBlock.nextElementSibling) {
         const next = currentBlock.nextElementSibling;
@@ -189,7 +189,7 @@ function _enhanceContent(
           const nextP = next as HTMLParagraphElement;
           if (CODE_BLOCK_END_REGEX.test(nextP.innerText)) {
             nextParagraphs.push(nextP);
-            hasCodeBlock = true;
+            hasClosingBlock = true;
             break;
           } else {
             nextParagraphs.push(nextP);
@@ -199,7 +199,7 @@ function _enhanceContent(
         }
         currentBlock = next;
       }
-      if (hasCodeBlock) {
+      if (hasClosingBlock) {
         const pre = document.createElement('pre');
         for (const p of nextParagraphs) {
           // Replace <br /> with newlines
@@ -337,7 +337,9 @@ function _enhanceContent(
   }
 
   if (postEnhanceDOM) {
-    queueMicrotask(() => postEnhanceDOM(dom));
+    queueMicrotask(() => {
+      postEnhanceDOM(dom);
+    });
     // postEnhanceDOM(dom); // mutate dom
   }
 
@@ -346,7 +348,7 @@ function _enhanceContent(
   // exposes `innerHTML`. Cast away the union here.
   return (dom as HTMLDivElement).innerHTML;
 }
-const enhanceContent = mem(_enhanceContent);
+const enhanceContent = mem(enhanceContentRaw);
 
 const defaultRejectFilter = [
   // Document metadata
@@ -404,7 +406,7 @@ function shortenLink(link: HTMLAnchorElement | null | undefined): void {
     link.innerHTML = `<span class="invisible">${prefix}</span><span class=${
       cutoff ? 'ellipsis' : ''
     }>${displayURL}</span><span class="invisible">${suffix}</span>`;
-  } catch (e) {
+  } catch {
     // Silently fail on malformed URLs
   }
 }

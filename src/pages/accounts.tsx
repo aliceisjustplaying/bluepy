@@ -83,7 +83,7 @@ function Accounts({ onClose }: AccountsProps) {
                   if (store.session.get('currentAccount') === account.info.id) {
                     store.session.del('currentAccount');
                   }
-                } catch (e) {}
+                } catch {}
               };
 
               const logOutAccount = async () => {
@@ -101,11 +101,11 @@ function Accounts({ onClose }: AccountsProps) {
               // JS treats these as untyped strings; cast preserves runtime
               // behavior (NameText interpolates them as-is). `avatarStatic` is
               // typed `unknown` on AccountInfo, so cast at the read site.
-              const acct = account.info.acct as unknown as string;
+              const acct = account.info.acct as string;
               const avatarStatic = account.info.avatarStatic as
                 | string
                 | undefined;
-              const username = account.info.username as unknown as string;
+              const username = account.info.username as string;
 
               return (
                 <li key={account.info.id}>
@@ -132,7 +132,7 @@ function Accounts({ onClose }: AccountsProps) {
                               accounts as unknown as StoredAccount[],
                             );
                             reload();
-                          } catch (e) {}
+                          } catch {}
                         }
                       }}
                     />
@@ -151,7 +151,7 @@ function Accounts({ onClose }: AccountsProps) {
                       }
                       showAcct
                       onClick={() => {
-                        haptics.trigger('medium');
+                        void haptics.trigger('medium');
                         if (isLoggedOut) {
                           location.href = `/#/login?instance=${account.instanceURL}`;
                           onClose?.();
@@ -293,22 +293,26 @@ function Accounts({ onClose }: AccountsProps) {
                             </>
                           }
                           menuItemClassName="danger"
-                          onClick={async () => {
-                            await logOutAccount();
-                            delete (account as { accessToken?: string })
-                              .accessToken;
-                            saveAccounts(
-                              accounts as unknown as StoredAccount[],
-                            );
-                            reload();
+                          onClick={() => {
+                            void (async () => {
+                              await logOutAccount();
+                              delete (account as { accessToken?: string })
+                                .accessToken;
+                              saveAccounts(
+                                accounts as unknown as StoredAccount[],
+                              );
+                              reload();
+                            })();
                           }}
                           menuExtras={
                             <MenuItem
                               className="danger"
-                              onClick={async () => {
-                                await logOutAccount();
-                                removeAccount();
-                                location.href = location.pathname || '/';
+                              onClick={() => {
+                                void (async () => {
+                                  await logOutAccount();
+                                  removeAccount();
+                                  location.href = location.pathname || '/';
+                                })();
                               }}
                             >
                               <Icon icon="x" />

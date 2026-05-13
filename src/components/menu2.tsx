@@ -1,5 +1,5 @@
 import { Menu, type MenuInstance, type MenuProps } from '@szhsin/react-menu';
-import type { JSX, RefObject } from 'preact';
+import type { RefObject, TargetedMouseEvent } from 'preact';
 import { useRef } from 'preact/hooks';
 
 import isRTL from '../utils/is-rtl';
@@ -15,11 +15,12 @@ type Menu2Props = MenuProps & {
 
 // It's like Menu but with sensible defaults, bug fixes and improvements.
 function Menu2(props: Menu2Props) {
-  const { containerProps, instanceRef: _instanceRef, align } = props;
+  const { containerProps, instanceRef: externalInstanceRef, align } = props;
   const size = useWindowSize();
-  const instanceRef = _instanceRef?.current
-    ? _instanceRef
-    : useRef<MenuInstance | undefined>(undefined);
+  const fallbackInstanceRef = useRef<MenuInstance | undefined>(undefined);
+  const instanceRef = externalInstanceRef?.current
+    ? externalInstanceRef
+    : fallbackInstanceRef;
 
   // Values: start, end, center
   // Note: don't mess with 'center'
@@ -40,7 +41,7 @@ function Menu2(props: Menu2Props) {
       align={rtlAlign}
       instanceRef={instanceRef}
       containerProps={{
-        onClick: (e: JSX.TargetedMouseEvent<HTMLElement>) => {
+        onClick: (e: TargetedMouseEvent<HTMLElement>) => {
           if (e.target === e.currentTarget) {
             instanceRef.current?.closeMenu?.();
           }

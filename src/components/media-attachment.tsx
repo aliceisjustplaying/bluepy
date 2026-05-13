@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
-import type { JSX } from 'preact';
+import type { TargetedEvent } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useDebouncedCallback } from 'use-debounce';
 
@@ -155,7 +155,7 @@ function MediaAttachment({
         URL.revokeObjectURL(url);
       }
     };
-  }, [url]);
+  }, [url, attachment.url]);
 
   console.log({ attachment });
 
@@ -169,7 +169,6 @@ function MediaAttachment({
       imageMatrixLimit,
       videoSizeLimit,
       videoMatrixLimit,
-      videoFrameRateLimit,
     } = {},
   } = configuration || {};
 
@@ -178,24 +177,26 @@ function MediaAttachment({
     if (
       type.startsWith('image') &&
       imageSizeLimit &&
-      (fileSize as number) > imageSizeLimit
+      fileSize !== undefined &&
+      fileSize > imageSizeLimit
     ) {
       return {
         type: 'imageSizeLimit',
         details: {
-          imageSize: fileSize as number,
+          imageSize: fileSize,
           imageSizeLimit,
         },
       };
     } else if (
       type.startsWith('video') &&
       videoSizeLimit &&
-      (fileSize as number) > videoSizeLimit
+      fileSize !== undefined &&
+      fileSize > videoSizeLimit
     ) {
       return {
         type: 'videoSizeLimit',
         details: {
-          videoSize: fileSize as number,
+          videoSize: fileSize,
           videoSizeLimit,
         },
       };
@@ -246,12 +247,12 @@ function MediaAttachment({
       id ||
       attachment.description
     ) {
-      return;
+      return undefined;
     }
 
     let cancelled = false;
 
-    (async () => {
+    void (async () => {
       setUIState('loading');
       try {
         // Reconstruct File from fileData, or fall back to legacy file object
@@ -283,9 +284,9 @@ function MediaAttachment({
   const subTypeMap: Record<string, string> = {};
   if (supportedMimeTypes?.length) {
     supportedMimeTypes.forEach((mimeType) => {
-      const [t, st] = mimeType.split('/');
-      subTypeMap[st] = t;
-      suffixTypes.add(t);
+      const [topType, st] = mimeType.split('/');
+      subTypeMap[st] = topType;
+      suffixTypes.add(topType);
     });
   }
   if (subtype && !suffixTypes.has(suffixType) && subTypeMap[subtype]) {
@@ -348,7 +349,7 @@ function MediaAttachment({
           disabled={disabled || uiState === 'loading'}
           class={uiState === 'loading' ? 'loading' : ''}
           maxlength={descriptionLimit} // Not unicode-aware :(
-          onInput={(e: JSX.TargetedEvent<HTMLTextAreaElement, Event>) => {
+          onInput={(e: TargetedEvent<HTMLTextAreaElement>) => {
             const { value } = e.target as HTMLTextAreaElement;
             setDescription(value);
             // debouncedOnDescriptionChange(value);
@@ -367,19 +368,24 @@ function MediaAttachment({
 
   const maxErrorToast = useRef<ToastHandle | null>(null);
 
-  const maxErrorText = (err: MaxError) => {
+  const maxErrorText = (err: MaxError): string => {
     switch (err.type) {
       case 'imageSizeLimit': {
-        const { imageSize, imageSizeLimit } = err.details;
+        const { imageSize, imageSizeLimit: limit } = err.details;
         return t`File size too large. Uploading might encounter issues. Try reduce the file size from ${prettyBytes(
           imageSize,
-        )} to ${prettyBytes(imageSizeLimit)} or lower.`;
+        )} to ${prettyBytes(limit)} or lower.`;
       }
       case 'imageMatrixLimit': {
-        const { imageMatrix, imageMatrixLimit, width, height } = err.details;
+        const {
+          imageMatrix: matrix,
+          imageMatrixLimit: limit,
+          width,
+          height,
+        } = err.details;
         const { newWidth, newHeight } = scaleDimension(
-          imageMatrix as number,
-          imageMatrixLimit,
+          matrix as number,
+          limit,
           width as number,
           height as number,
         );
@@ -390,16 +396,21 @@ function MediaAttachment({
         )}px.`;
       }
       case 'videoSizeLimit': {
-        const { videoSize, videoSizeLimit } = err.details;
+        const { videoSize, videoSizeLimit: limit } = err.details;
         return t`File size too large. Uploading might encounter issues. Try reduce the file size from ${prettyBytes(
           videoSize,
-        )} to ${prettyBytes(videoSizeLimit)} or lower.`;
+        )} to ${prettyBytes(limit)} or lower.`;
       }
       case 'videoMatrixLimit': {
-        const { videoMatrix, videoMatrixLimit, width, height } = err.details;
+        const {
+          videoMatrix: matrix,
+          videoMatrixLimit: limit,
+          width,
+          height,
+        } = err.details;
         const { newWidth, newHeight } = scaleDimension(
-          videoMatrix as number,
-          videoMatrixLimit,
+          matrix as number,
+          limit,
           width as number,
           height as number,
         );
@@ -413,6 +424,8 @@ function MediaAttachment({
         // Not possible to detect this on client-side for now
         return t`Frame rate too high. Uploading might encounter issues.`;
       }
+      default:
+        return '';
     }
   };
 
@@ -421,16 +434,23 @@ function MediaAttachment({
       <div class="media-attachment">
         <div
           class="media-preview"
+          role="button"
           tabIndex={0}
           onClick={() => {
             setShowModal(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setShowModal(true);
+            }
           }}
         >
           {suffixType === 'image' ? (
             <img
               src={url as string}
               alt=""
-              onLoad={(e: JSX.TargetedEvent<HTMLImageElement, Event>) => {
+              onLoad={(e: TargetedEvent<HTMLImageElement>) => {
                 if (!checkMaxError) return;
                 const { naturalWidth, naturalHeight } =
                   e.target as HTMLImageElement;
@@ -449,7 +469,7 @@ function MediaAttachment({
               disablePictureInPicture
               preload="metadata"
               onLoadedMetadata={(
-                e: JSX.TargetedEvent<HTMLVideoElement, Event>,
+                e: TargetedEvent<HTMLVideoElement>,
               ) => {
                 if (!checkMaxError) return;
                 const { videoWidth, videoHeight } =
@@ -542,7 +562,7 @@ function MediaAttachment({
                 <footer>
                   {suffixType === 'image' &&
                     /^(png|jpe?g|gif|webp)$/i.test(subtype) &&
-                    !!states.settings.mediaAltGenerator &&
+                    states.settings.mediaAltGenerator &&
                     !!IMG_ALT_API_URL && (
                       <Menu2
                         portal={{
@@ -571,7 +591,7 @@ function MediaAttachment({
                               duration: -1,
                             });
                             // POST with multipart
-                            (async function () {
+                            void (async function () {
                               try {
                                 const body = new FormData();
                                 const fileObj = fileData
@@ -579,9 +599,14 @@ function MediaAttachment({
                                       type,
                                     })
                                   : file;
-                                body.append('image', fileObj as File);
+                                if (fileObj) {
+                                  body.append('image', fileObj);
+                                }
+                                if (!IMG_ALT_API_URL) {
+                                  return;
+                                }
                                 const response = await fetch(
-                                  IMG_ALT_API_URL as string,
+                                  IMG_ALT_API_URL,
                                   {
                                     method: 'POST',
                                     body,
@@ -629,7 +654,7 @@ function MediaAttachment({
                                 duration: -1,
                               });
                               // POST with multipart
-                              (async function () {
+                              void (async function () {
                                 try {
                                   const body = new FormData();
                                   const fileObj = fileData
@@ -639,10 +664,15 @@ function MediaAttachment({
                                         { type },
                                       )
                                     : file;
-                                  body.append('image', fileObj as File);
+                                  if (fileObj) {
+                                    body.append('image', fileObj);
+                                  }
+                                  if (!IMG_ALT_API_URL) {
+                                    return;
+                                  }
                                   const params = `?lang=${lang}`;
                                   const response = await fetch(
-                                    (IMG_ALT_API_URL as string) + params,
+                                    IMG_ALT_API_URL + params,
                                     {
                                       method: 'POST',
                                       body,

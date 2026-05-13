@@ -1,4 +1,4 @@
-import type { JSX } from 'preact';
+import type { CSSProperties } from 'preact';
 import { memo } from 'preact/compat';
 import { useEffect } from 'preact/hooks';
 
@@ -33,7 +33,7 @@ interface IconProps {
   alt?: string;
   title?: string;
   class?: string;
-  style?: JSX.CSSProperties;
+  style?: CSSProperties;
 }
 
 function Icon({
@@ -46,6 +46,12 @@ function Icon({
 }: IconProps) {
   title = title || alt;
   const { loadIcon, isIconLoaded } = useIconSprite();
+
+  useEffect(() => {
+    if (icon && !isIconLoaded(icon)) {
+      void loadIcon(icon);
+    }
+  }, [icon]);
 
   if (!icon) return null;
 
@@ -71,22 +77,18 @@ function Icon({
   const sanitizedTitle = title?.replace(INVALID_ID_CHARS_REGEX, '-');
   const titleID = `${ICON_NAMESPACE}-title-${icon}-${sanitizedTitle}`;
 
-  useEffect(() => {
-    if (!isIconLoaded(icon)) {
-      loadIcon(icon);
-    }
-  }, [icon]);
-
   const loaded = isIconLoaded(icon);
 
   return (
     <span
       class={`icon ${className} ${rtl ? 'rtl-flip' : ''}`}
-      style={{
-        width: `${iconSize}px`,
-        height: `${iconSize}px`,
-        ...style,
-      }}
+      style={Object.assign(
+        {
+          width: `${iconSize}px`,
+          height: `${iconSize}px`,
+        },
+        style,
+      )}
       data-icon={icon}
       title={loaded ? undefined : title || undefined}
     >

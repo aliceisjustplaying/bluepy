@@ -1,5 +1,10 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentChildren, JSX, Ref } from 'preact';
+import type {
+  ComponentChildren,
+  Ref,
+  TargetedEvent,
+  TargetedKeyboardEvent,
+} from 'preact';
 import { forwardRef } from 'preact/compat';
 import { useImperativeHandle, useMemo, useRef, useState } from 'preact/hooks';
 import { useSearchParams } from 'react-router-dom';
@@ -208,7 +213,7 @@ const SearchForm = forwardRef(
       ];
 
       return allItems
-        .sort((a, b) => {
+        .toSorted((a, b) => {
           if (type) {
             if (a.queryType === type) return -1;
             if (b.queryType === type) return 1;
@@ -218,13 +223,13 @@ const SearchForm = forwardRef(
           return 0;
         })
         .filter(({ hidden }) => !hidden);
-    }, [query, type, instance]);
+    }, [query, type, instance, searchHistory]);
 
     return (
       <form
         ref={formRef}
         class="search-popover-container"
-        onSubmit={(e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
+        onSubmit={(e: TargetedEvent<HTMLFormElement>) => {
           e.preventDefault();
 
           const isSearchPage = /\/search/.test(location.hash);
@@ -266,12 +271,12 @@ const SearchForm = forwardRef(
           autocapitalize="off"
           spellcheck={false}
           enterKeyHint="search"
-          onSearch={(e: JSX.TargetedEvent<HTMLInputElement, Event>) => {
+          onSearch={(e: TargetedEvent<HTMLInputElement>) => {
             if (!e.currentTarget.value) {
               setSearchParams({});
             }
           }}
-          onInput={(e: JSX.TargetedEvent<HTMLInputElement, Event>) => {
+          onInput={(e: TargetedEvent<HTMLInputElement>) => {
             setQuery(e.currentTarget.value);
             setSearchMenuOpen(true);
           }}
@@ -293,7 +298,7 @@ const SearchForm = forwardRef(
               ?.querySelector('.search-popover-item.focus')
               ?.classList.remove('focus');
           }}
-          onKeyDown={(e: JSX.TargetedKeyboardEvent<HTMLInputElement>) => {
+          onKeyDown={(e: TargetedKeyboardEvent<HTMLInputElement>) => {
             const { key } = e;
             switch (key) {
               case 'Escape':

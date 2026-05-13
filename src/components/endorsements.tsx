@@ -55,7 +55,7 @@ function Endorsements({
   useEffect(() => {
     if (!supports('@mastodon/endorsements')) return;
     if (!open) return;
-    (async () => {
+    void (async () => {
       setEndorsementsUIState('loading');
       try {
         const accountsEndpoint = masto.v1
@@ -115,9 +115,8 @@ function Endorsements({
               }`}
             >
               {endorsements.map((account) => (
-                <li>
+                <li key={account.id}>
                   <AccountBlock
-                    key={account.id}
                     account={account}
                     showStats
                     avatarSize="xxl"
