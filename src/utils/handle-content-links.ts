@@ -3,20 +3,50 @@ import states from './states';
 
 const supportsHover = window.matchMedia('(hover: hover)').matches;
 
-function handleContentLinks(opts) {
+interface MentionLike {
+  url?: string;
+  acct?: string;
+  username?: string;
+  [key: string]: unknown;
+}
+
+interface HandleContentLinksOpts {
+  mentions?: MentionLike[];
+  instance?: string;
+  previewMode?: boolean;
+  statusURL?: string;
+}
+
+// The handler is attached to elements rendering arbitrary status content; the
+// element types vary (anchors, images, spans), so we keep DOM access loose and
+// rely on the existing runtime guards (closest, contains, optional chaining).
+type LinkClickTarget = HTMLElement &
+  Partial<HTMLImageElement> &
+  Partial<HTMLAnchorElement>;
+
+function handleContentLinks(
+  opts?: HandleContentLinksOpts,
+): (e: MouseEvent) => void {
   const { mentions = [], instance, previewMode, statusURL } = opts || {};
-  return (e) => {
+  return (e: MouseEvent) => {
     // If cmd/ctrl/shift/alt key is pressed or middle-click, let the browser handle it
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.which === 2) {
+    if (
+      e.metaKey ||
+      e.ctrlKey ||
+      e.shiftKey ||
+      e.altKey ||
+      (e as unknown as { which?: number }).which === 2
+    ) {
       return;
     }
 
-    let { target } = e;
+    let target = e.target as LinkClickTarget | null;
 
     // Experiment opening custom emoji in a modal
     // TODO: Rename this function because it's not just for links
-    if (target.closest('.shortcode-emoji')) {
-      const { naturalWidth, naturalHeight, width, height } = target;
+    if (target!.closest('.shortcode-emoji')) {
+      const { naturalWidth, naturalHeight, width, height } =
+        target as HTMLImageElement;
       const kindaLargeRatio = 2;
       const kindaLarge =
         naturalWidth > width * kindaLargeRatio ||
@@ -28,8 +58,10 @@ function handleContentLinks(opts) {
           mediaAttachments: [
             {
               type: 'image',
-              url: target.src,
-              description: target.title || target.alt,
+              url: (target as HTMLImageElement).src,
+              description:
+                (target as HTMLImageElement).title ||
+                (target as HTMLImageElement).alt,
             },
           ],
         };
@@ -37,19 +69,19 @@ function handleContentLinks(opts) {
       }
     }
 
-    target = target.closest('a');
+    target = target!.closest('a') as LinkClickTarget | null;
     if (!target) return;
     // Only handle links inside, not itself or anything outside
-    if (!e.currentTarget.contains(target)) return;
+    if (!(e.currentTarget as Node | null)?.contains(target)) return;
 
-    const { href } = target;
+    const { href } = target as HTMLAnchorElement;
     if (isLeafletUrl(href)) {
       e.preventDefault();
       e.stopPropagation();
       states.showEmbedModal = {
         iframeUrl: href,
         url: href,
-        title: target.innerText.trim() || href,
+        title: (target as HTMLAnchorElement).innerText.trim() || href,
       };
       return;
     }
@@ -57,8 +89,9 @@ function handleContentLinks(opts) {
     const prevText = target.previousSibling?.textContent;
     const textBeforeLinkIsAt =
       prevText?.endsWith('@') || prevText?.endsWith('＠');
+    const targetInnerText = (target as HTMLAnchorElement).innerText;
     const textStartsWithAt =
-      target.innerText.startsWith('@') || target.innerText.startsWith('＠');
+      targetInnerText.startsWith('@') || targetInnerText.startsWith('＠');
     if (
       ((target.classList.contains('u-url') ||
         target.classList.contains('mention')) &&
@@ -66,7 +99,8 @@ function handleContentLinks(opts) {
       (textBeforeLinkIsAt && !textStartsWithAt)
     ) {
       const targetText = (
-        target.querySelector('span') || target
+        (target.querySelector('span') as HTMLElement | null) ||
+        (target as HTMLElement)
       ).innerText.trim();
       const username = targetText.replace(/^[@＠]/, '');
       // Only fallback to acct/username check if url doesn't match
@@ -101,27 +135,41 @@ function handleContentLinks(opts) {
       if (target.classList.contains('hashtag') || textBeforeLinkIsHash) {
         e.preventDefault();
         e.stopPropagation();
-        const tag = target.innerText.replace(/^[#＃]/, '').trim();
+        const tag = targetInnerText.replace(/^[#＃]/, '').trim();
         const hashURL = instance ? `#/${instance}/t/${tag}` : `#/t/${tag}`;
         console.log({ hashURL });
         location.hash = hashURL;
         return;
-      } else if (states.unfurledLinks[href]?.url && statusURL !== href) {
+      } else if (
+        (states.unfurledLinks as Record<string, { url?: string } | undefined>)[
+          href
+        ]?.url &&
+        statusURL !== href
+      ) {
         // If unfurled AND not self-referential
         e.preventDefault();
         e.stopPropagation();
         states.prevLocation = {
           pathname: location.hash.replace(/^#/, ''),
         };
-        location.hash = `#${states.unfurledLinks[href].url}`;
+        location.hash = `#${
+          (
+            states.unfurledLinks as Record<
+              string,
+              { url?: string } | undefined
+            >
+          )[href]!.url
+        }`;
         return;
       }
     }
 
     try {
       const urlObj = URL.parse(href);
-      const domain = urlObj.hostname.replace(/^www\./i, '');
-      const containsDomain = target.innerText
+      // Preserve original JS: don't null-check; rely on the try/catch to absorb
+      // a TypeError if URL.parse returns null.
+      const domain = urlObj!.hostname.replace(/^www\./i, '');
+      const containsDomain = targetInnerText
         .toLowerCase()
         .includes(domain.toLowerCase());
       // Only show this on non-hover devices (touch-only)
@@ -130,7 +178,7 @@ function handleContentLinks(opts) {
       if (!containsDomain && !supportsHover) {
         e.preventDefault();
         e.stopPropagation();
-        const linkText = target.innerText.trim();
+        const linkText = targetInnerText.trim();
         states.showOpenLink = {
           url: href,
           linkText,
