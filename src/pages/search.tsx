@@ -2,19 +2,21 @@ import './search.css';
 
 import { useAutoAnimate } from '@formkit/auto-animate/preact';
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { InView } from 'react-intersection-observer';
+import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import AccountBlock from '../components/account-block';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
-import NavMenu from '../components/nav-menu';
+import NavMenuUntyped from '../components/nav-menu';
 import RecentSearches from '../components/recent-searches';
 import SearchForm from '../components/search-form';
-import Status from '../components/status';
+import StatusUntyped from '../components/status';
 import { api } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import shortenNumber from '../utils/shorten-number';
@@ -25,24 +27,74 @@ const SHORT_LIMIT = 5;
 const LIMIT = 40;
 const emptySearchParams = new URLSearchParams();
 
-const scrollIntoViewOptions = {
+const scrollIntoViewOptions: ScrollIntoViewOptions = {
   block: 'start',
   inline: 'center',
-  behavior: 'instant',
+  behavior: 'instant' as ScrollBehavior,
 };
 
-function Search({ columnMode, ...props }) {
+const NavMenu = NavMenuUntyped as unknown as ComponentType<
+  Record<string, never>
+>;
+const Status = StatusUntyped as unknown as ComponentType<{
+  status: mastodon.v1.Status;
+}>;
+const InView = InViewUntyped as unknown as ComponentType<{
+  onChange?: (inView: boolean) => void;
+  children?: unknown;
+}>;
+
+interface SearchFormHandle {
+  setValue: (value: string) => void;
+  focus: () => void;
+  select: () => void;
+  blur: () => void;
+}
+
+interface SearchProps {
+  columnMode?: boolean;
+  query?: string;
+  type?: string;
+  [key: string]: unknown;
+}
+
+interface SearchListParams {
+  q: string;
+  resolve: boolean;
+  limit: number;
+  type?: string;
+  cursor?: string;
+  offset?: number;
+}
+
+interface SearchResultsLike {
+  statuses?: mastodon.v1.Status[];
+  accounts?: mastodon.v1.Account[];
+  hashtags?: mastodon.v1.Tag[];
+  _pagination?: Record<string, string | undefined>;
+  [key: string]: unknown;
+}
+
+interface SearchApi {
+  list(params: SearchListParams): Promise<SearchResultsLike>;
+}
+
+type ResultsTypeKey = 'statuses' | 'accounts' | 'hashtags';
+
+function Search({ columnMode, ...props }: SearchProps) {
   const { t } = useLingui();
-  const params = columnMode ? {} : useParams();
+  const params = (columnMode
+    ? {}
+    : (useParams() as { instance?: string })) as { instance?: string };
   const { masto, instance, authenticated, client } = api({
     instance: params.instance,
   });
   const atproto = !!client?.atproto;
   const [uiState, setUIState] = useState('default');
   const [searchParams] = columnMode ? [emptySearchParams] : useSearchParams();
-  const searchFormRef = useRef();
+  const searchFormRef = useRef<SearchFormHandle | null>(null);
   const q = props?.query || searchParams.get('q');
-  const type = columnMode
+  const type: string | null = columnMode
     ? 'statuses'
     : props?.type || searchParams.get('type');
   let title = t`Search`;
@@ -65,40 +117,50 @@ function Search({ columnMode, ...props }) {
 
   const [showMore, setShowMore] = useState(false);
   const offsetRef = useRef(0);
-  const cursorRef = useRef({});
+  const cursorRef = useRef<Record<string, string | undefined>>({});
   useEffect(() => {
     offsetRef.current = 0;
     cursorRef.current = {};
   }, [q, type]);
 
-  const scrollableRef = useRef();
+  const scrollableRef = useRef<HTMLDivElement | null>(null);
   useLayoutEffect(() => {
     scrollableRef.current?.scrollTo?.(0, 0);
   }, [q, type]);
 
-  const [statusResults, setStatusResults] = useState([]);
-  const [accountResults, setAccountResults] = useState([]);
-  const [hashtagResults, setHashtagResults] = useState([]);
+  const [statusResults, setStatusResults] = useState<mastodon.v1.Status[]>([]);
+  const [accountResults, setAccountResults] = useState<mastodon.v1.Account[]>(
+    [],
+  );
+  const [hashtagResults, setHashtagResults] = useState<mastodon.v1.Tag[]>([]);
   useEffect(() => {
     setStatusResults([]);
     setAccountResults([]);
     setHashtagResults([]);
   }, [q]);
-  const typeResults = {
+  const typeResults: Record<ResultsTypeKey, unknown[]> = {
     statuses: statusResults,
     accounts: accountResults,
     hashtags: hashtagResults,
   };
-  const setTypeResultsFunc = {
-    statuses: setStatusResults,
-    accounts: setAccountResults,
-    hashtags: setHashtagResults,
+  type ResultsSetter = (
+    value: readonly unknown[] | ((prev: readonly unknown[]) => unknown[]),
+  ) => void;
+  const setTypeResultsFunc: Record<ResultsTypeKey, ResultsSetter> = {
+    statuses: setStatusResults as unknown as ResultsSetter,
+    accounts: setAccountResults as unknown as ResultsSetter,
+    hashtags: setHashtagResults as unknown as ResultsSetter,
   };
 
-  const [relationshipsMap, setRelationshipsMap] = useState({});
-  const loadRelationships = async (accounts) => {
+  const [relationshipsMap, setRelationshipsMap] = useState<
+    Record<string, unknown>
+  >({});
+  const loadRelationships = async (accounts: mastodon.v1.Account[] | undefined) => {
     if (!accounts?.length) return;
-    const relationships = await fetchRelationships(accounts, relationshipsMap);
+    const relationships = await fetchRelationships(
+      accounts as unknown as Parameters<typeof fetchRelationships>[0],
+      relationshipsMap as unknown as Parameters<typeof fetchRelationships>[1],
+    );
     if (relationships) {
       setRelationshipsMap({
         ...relationshipsMap,
@@ -107,7 +169,7 @@ function Search({ columnMode, ...props }) {
     }
   };
 
-  function loadResults(firstLoad) {
+  function loadResults(firstLoad?: boolean) {
     if (firstLoad) {
       offsetRef.current = 0;
     }
@@ -125,8 +187,8 @@ function Search({ columnMode, ...props }) {
     }
 
     (async () => {
-      const params = {
-        q,
+      const params: SearchListParams = {
+        q: q as string,
         resolve: authenticated,
         limit: SHORT_LIMIT,
       };
@@ -147,40 +209,59 @@ function Search({ columnMode, ...props }) {
       }
 
       try {
-        const results = await masto.v2.search.list(params);
+        const searchApi = masto.v2.search as unknown as SearchApi;
+        const results = await searchApi.list(params);
         console.log(results);
         if (type) {
-          const nextCursor = results._pagination?.[type];
+          const typedResults = results as SearchResultsLike;
+          const typeKey = type as ResultsTypeKey;
+          const nextCursor = typedResults._pagination?.[type];
           if (firstLoad) {
-            setTypeResultsFunc[type](results[type]);
-            const length = results[type]?.length;
+            setTypeResultsFunc[typeKey](
+              typedResults[type] as unknown[],
+            );
+            const length = (typedResults[type] as unknown[] | undefined)?.length;
             offsetRef.current = LIMIT;
             cursorRef.current[type] = nextCursor;
             setShowMore(atproto ? !!nextCursor : !!length);
           } else if (atproto) {
-            setTypeResultsFunc[type]((prev) => [...prev, ...results[type]]);
+            setTypeResultsFunc[typeKey]((prev: readonly unknown[]) => [
+              ...prev,
+              ...(typedResults[type] as unknown[]),
+            ]);
             cursorRef.current[type] = nextCursor;
             setShowMore(!!nextCursor);
           } else {
             // If first item is the same, it means API doesn't support offset
             // I know this is a very basic check, but it works for now
-            if (results[type]?.[0]?.id === typeResults[type]?.[0]?.id) {
+            const currentList = typedResults[type] as
+              | Array<{ id?: string }>
+              | undefined;
+            const existingList = typeResults[typeKey] as
+              | Array<{ id?: string }>
+              | undefined;
+            if (currentList?.[0]?.id === existingList?.[0]?.id) {
               setShowMore(false);
             } else {
-              setTypeResultsFunc[type]((prev) => [...prev, ...results[type]]);
-              const length = results[type]?.length;
+              setTypeResultsFunc[typeKey]((prev: readonly unknown[]) => [
+                ...prev,
+                ...(typedResults[type] as unknown[]),
+              ]);
+              const length = (typedResults[type] as unknown[] | undefined)?.length;
               offsetRef.current = offsetRef.current + LIMIT;
               setShowMore(!!length);
             }
           }
         } else {
-          setStatusResults(results.statuses || []);
-          setAccountResults(results.accounts || []);
-          setHashtagResults(results.hashtags || []);
+          const typedResults = results as SearchResultsLike;
+          setStatusResults(typedResults.statuses || []);
+          setAccountResults(typedResults.accounts || []);
+          setHashtagResults(typedResults.hashtags || []);
           offsetRef.current = 0;
           setShowMore(false);
         }
-        if (authenticated) loadRelationships(results.accounts);
+        if (authenticated)
+          loadRelationships((results as SearchResultsLike).accounts);
 
         setUIState('default');
       } catch (err) {
@@ -190,11 +271,11 @@ function Search({ columnMode, ...props }) {
     })();
   }
 
-  const lastHiddenTime = useRef();
-  usePageVisibility((visible) => {
+  const lastHiddenTime = useRef<number | undefined>(undefined);
+  usePageVisibility((visible: boolean) => {
     const reachStart = scrollableRef.current?.scrollTop === 0;
     if (visible && reachStart) {
-      const timeDiff = Date.now() - lastHiddenTime.current;
+      const timeDiff = Date.now() - (lastHiddenTime.current as number);
       if (!lastHiddenTime.current || timeDiff > 1000 * 3) {
         // 3 seconds
         loadResults(true);
@@ -205,7 +286,7 @@ function Search({ columnMode, ...props }) {
   });
 
   useEffect(() => {
-    let timer;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     searchFormRef.current?.setValue?.(q || '');
     if (q) {
       loadResults(true);
@@ -219,14 +300,14 @@ function Search({ columnMode, ...props }) {
 
   useHotkeys(
     ['Slash', '/'],
-    (e) => {
+    () => {
       searchFormRef.current?.focus?.();
       searchFormRef.current?.select?.();
     },
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e) => {
+      ignoreEventWhen: (e: KeyboardEvent) => {
         // Allow '/' even with Shift (e.g. German keyboards)
         if (e.key === '/') return false;
         return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
@@ -238,15 +319,20 @@ function Search({ columnMode, ...props }) {
   const jRef = useHotkeys(
     'j',
     () => {
-      const activeItem = document.activeElement.closest(itemsSelector);
+      const activeElement = document.activeElement as HTMLElement | null;
+      const activeItem = activeElement?.closest(itemsSelector) as
+        | HTMLElement
+        | null
+        | undefined;
       const activeItemRect = activeItem?.getBoundingClientRect();
+      const scrollable = scrollableRef.current as HTMLDivElement;
       const allItems = Array.from(
-        scrollableRef.current.querySelectorAll(itemsSelector),
+        scrollable.querySelectorAll<HTMLElement>(itemsSelector),
       );
       if (
         activeItem &&
-        activeItemRect.top < scrollableRef.current.clientHeight &&
-        activeItemRect.bottom > 0
+        (activeItemRect as DOMRect).top < scrollable.clientHeight &&
+        (activeItemRect as DOMRect).bottom > 0
       ) {
         const activeItemIndex = allItems.indexOf(activeItem);
         let nextItem = allItems[activeItemIndex + 1];
@@ -267,7 +353,7 @@ function Search({ columnMode, ...props }) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) =>
+      ignoreEventWhen: (e: KeyboardEvent) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -280,15 +366,20 @@ function Search({ columnMode, ...props }) {
     'k',
     () => {
       // focus on previous status after active item
-      const activeItem = document.activeElement.closest(itemsSelector);
+      const activeElement = document.activeElement as HTMLElement | null;
+      const activeItem = activeElement?.closest(itemsSelector) as
+        | HTMLElement
+        | null
+        | undefined;
       const activeItemRect = activeItem?.getBoundingClientRect();
+      const scrollable = scrollableRef.current as HTMLDivElement;
       const allItems = Array.from(
-        scrollableRef.current.querySelectorAll(itemsSelector),
+        scrollable.querySelectorAll<HTMLElement>(itemsSelector),
       );
       if (
         activeItem &&
-        activeItemRect.top < scrollableRef.current.clientHeight &&
-        activeItemRect.bottom > 0
+        (activeItemRect as DOMRect).top < scrollable.clientHeight &&
+        (activeItemRect as DOMRect).bottom > 0
       ) {
         const activeItemIndex = allItems.indexOf(activeItem);
         let prevItem = allItems[activeItemIndex - 1];
@@ -309,7 +400,7 @@ function Search({ columnMode, ...props }) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) =>
+      ignoreEventWhen: (e: KeyboardEvent) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -324,11 +415,11 @@ function Search({ columnMode, ...props }) {
     <div
       id="search-page"
       class="deck-container"
-      tabIndex="-1"
-      ref={(node) => {
+      tabIndex={-1}
+      ref={(node: HTMLDivElement | null) => {
         scrollableRef.current = node;
-        jRef.current = node;
-        kRef.current = node;
+        (jRef as unknown as { current: HTMLDivElement | null }).current = node;
+        (kRef as unknown as { current: HTMLDivElement | null }).current = node;
       }}
     >
       <div class="timeline-deck deck">
@@ -415,7 +506,11 @@ function Search({ columnMode, ...props }) {
                               account={account}
                               instance={instance}
                               showStats
-                              relationship={relationshipsMap[account.id]}
+                              relationship={
+                                relationshipsMap[
+                                  account.id
+                                ] as Partial<mastodon.v1.Relationship> | null
+                              }
                             />
                           </li>
                         ))}

@@ -1,5 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
+import type { JSX } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useDebouncedCallback } from 'use-debounce';
 
@@ -15,9 +16,100 @@ import Icon from './icon';
 import Menu2 from './menu2';
 import Modal from './modal';
 
-const { PHANPY_IMG_ALT_API_URL: IMG_ALT_API_URL } = import.meta.env;
+const { PHANPY_IMG_ALT_API_URL: IMG_ALT_API_URL } = import.meta.env as {
+  PHANPY_IMG_ALT_API_URL?: string;
+};
 
-function scaleDimension(matrix, matrixLimit, width, height) {
+interface AttachmentLike {
+  id?: string;
+  type: string;
+  url?: string;
+  description?: string;
+  size?: number;
+  fileData?: BlobPart;
+  fileName?: string;
+  file?: File;
+  [key: string]: unknown;
+}
+
+interface MediaAttachmentProps {
+  attachment: AttachmentLike;
+  disabled?: boolean;
+  lang?: string;
+  supportedMimeTypes?: string[];
+  descriptionLimit?: number;
+  onDescriptionChange?: (description: string | undefined) => void;
+  onRemove?: () => void;
+}
+
+interface MediaConfiguration {
+  imageSizeLimit?: number;
+  imageMatrixLimit?: number;
+  videoSizeLimit?: number;
+  videoMatrixLimit?: number;
+  videoFrameRateLimit?: number;
+}
+
+interface ConfigurationWithMedia {
+  mediaAttachments?: MediaConfiguration;
+}
+
+interface ImageMatrixState {
+  matrix?: number;
+  width?: number;
+  height?: number;
+}
+
+type VideoMatrixState = ImageMatrixState;
+
+interface MaxErrorImageSize {
+  type: 'imageSizeLimit';
+  details: { imageSize: number; imageSizeLimit: number };
+}
+interface MaxErrorVideoSize {
+  type: 'videoSizeLimit';
+  details: { videoSize: number; videoSizeLimit: number };
+}
+interface MaxErrorImageMatrix {
+  type: 'imageMatrixLimit';
+  details: {
+    imageMatrix: number | undefined;
+    imageMatrixLimit: number;
+    width: number | undefined;
+    height: number | undefined;
+  };
+}
+interface MaxErrorVideoMatrix {
+  type: 'videoMatrixLimit';
+  details: {
+    videoMatrix: number | undefined;
+    videoMatrixLimit: number;
+    width: number | undefined;
+    height: number | undefined;
+  };
+}
+interface MaxErrorVideoFrameRate {
+  type: 'videoFrameRateLimit';
+  details?: undefined;
+}
+
+type MaxError =
+  | MaxErrorImageSize
+  | MaxErrorVideoSize
+  | MaxErrorImageMatrix
+  | MaxErrorVideoMatrix
+  | MaxErrorVideoFrameRate;
+
+interface ToastHandle {
+  hideToast?: () => void;
+}
+
+function scaleDimension(
+  matrix: number,
+  matrixLimit: number,
+  width: number,
+  height: number,
+) {
   // matrix = number of pixels
   // matrixLimit = max number of pixels
   // Calculate new width and height, downsize to within the limit, preserve aspect ratio, no decimals
@@ -35,7 +127,7 @@ function MediaAttachment({
   descriptionLimit = 1500,
   onDescriptionChange = () => {},
   onRemove = () => {},
-}) {
+}: MediaAttachmentProps) {
   const { i18n, t } = useLingui();
   const [uiState, setUIState] = useState('default');
   const supportsEdit =
@@ -68,7 +160,9 @@ function MediaAttachment({
   console.log({ attachment });
 
   const checkMaxError = !!fileSize;
-  const configuration = checkMaxError ? getCurrentInstanceConfiguration() : {};
+  const configuration: ConfigurationWithMedia = checkMaxError
+    ? (getCurrentInstanceConfiguration() as unknown as ConfigurationWithMedia)
+    : {};
   const {
     mediaAttachments: {
       imageSizeLimit,
@@ -79,29 +173,29 @@ function MediaAttachment({
     } = {},
   } = configuration || {};
 
-  const [maxError, setMaxError] = useState(() => {
+  const [maxError, setMaxError] = useState<MaxError | null>(() => {
     if (!checkMaxError) return null;
     if (
       type.startsWith('image') &&
       imageSizeLimit &&
-      fileSize > imageSizeLimit
+      (fileSize as number) > imageSizeLimit
     ) {
       return {
         type: 'imageSizeLimit',
         details: {
-          imageSize: fileSize,
+          imageSize: fileSize as number,
           imageSizeLimit,
         },
       };
     } else if (
       type.startsWith('video') &&
       videoSizeLimit &&
-      fileSize > videoSizeLimit
+      (fileSize as number) > videoSizeLimit
     ) {
       return {
         type: 'videoSizeLimit',
         details: {
-          videoSize: fileSize,
+          videoSize: fileSize as number,
           videoSizeLimit,
         },
       };
@@ -109,10 +203,10 @@ function MediaAttachment({
     return null;
   });
 
-  const [imageMatrix, setImageMatrix] = useState({});
+  const [imageMatrix, setImageMatrix] = useState<ImageMatrixState>({});
   useEffect(() => {
     if (!checkMaxError || !imageMatrixLimit) return;
-    if (imageMatrix?.matrix > imageMatrixLimit) {
+    if ((imageMatrix?.matrix as number) > imageMatrixLimit) {
       setMaxError({
         type: 'imageMatrixLimit',
         details: {
@@ -125,10 +219,10 @@ function MediaAttachment({
     }
   }, [imageMatrix, imageMatrixLimit, checkMaxError]);
 
-  const [videoMatrix, setVideoMatrix] = useState({});
+  const [videoMatrix, setVideoMatrix] = useState<VideoMatrixState>({});
   useEffect(() => {
     if (!checkMaxError || !videoMatrixLimit) return;
-    if (videoMatrix?.matrix > videoMatrixLimit) {
+    if ((videoMatrix?.matrix as number) > videoMatrixLimit) {
       setMaxError({
         type: 'videoMatrixLimit',
         details: {
@@ -185,8 +279,8 @@ function MediaAttachment({
   let [suffixType, subtype] = type.split('/');
   // If type is not supported, try to find a supported type with the same subtype
   // E.g. application/ogg -> audio/ogg
-  const suffixTypes = new Set();
-  const subTypeMap = {};
+  const suffixTypes = new Set<string>();
+  const subTypeMap: Record<string, string> = {};
   if (supportedMimeTypes?.length) {
     supportedMimeTypes.forEach((mimeType) => {
       const [t, st] = mimeType.split('/');
@@ -207,12 +301,12 @@ function MediaAttachment({
   }, [description, debouncedOnDescriptionChange]);
 
   const [showModal, setShowModal] = useState(false);
-  const textareaRef = useRef(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   useEffect(() => {
-    let timer;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     if (showModal && textareaRef.current) {
       timer = setTimeout(() => {
-        textareaRef.current.focus();
+        textareaRef.current!.focus();
       }, 100);
     }
     return () => {
@@ -237,23 +331,25 @@ function MediaAttachment({
           value={description || ''}
           lang={lang}
           placeholder={
-            {
-              image: t`Image description`,
-              video: t`Video description`,
-              gifv: t`Video description`,
-              audio: t`Audio description`,
-            }[suffixType]
+            (
+              {
+                image: t`Image description`,
+                video: t`Video description`,
+                gifv: t`Video description`,
+                audio: t`Audio description`,
+              } as Record<string, string>
+            )[suffixType]
           }
           autoCapitalize="sentences"
           autoComplete="on"
           autoCorrect="on"
-          spellCheck="true"
+          spellcheck={true}
           dir="auto"
           disabled={disabled || uiState === 'loading'}
           class={uiState === 'loading' ? 'loading' : ''}
           maxlength={descriptionLimit} // Not unicode-aware :(
-          onInput={(e) => {
-            const { value } = e.target;
+          onInput={(e: JSX.TargetedEvent<HTMLTextAreaElement, Event>) => {
+            const { value } = e.target as HTMLTextAreaElement;
             setDescription(value);
             // debouncedOnDescriptionChange(value);
           }}
@@ -262,55 +358,54 @@ function MediaAttachment({
     </>
   );
 
-  const toastRef = useRef(null);
+  const toastRef = useRef<ToastHandle | null>(null);
   useEffect(() => {
     return () => {
       toastRef.current?.hideToast?.();
     };
   }, []);
 
-  const maxErrorToast = useRef(null);
+  const maxErrorToast = useRef<ToastHandle | null>(null);
 
-  const maxErrorText = (err) => {
-    const { type, details } = err;
-    switch (type) {
+  const maxErrorText = (err: MaxError) => {
+    switch (err.type) {
       case 'imageSizeLimit': {
-        const { imageSize, imageSizeLimit } = details;
+        const { imageSize, imageSizeLimit } = err.details;
         return t`File size too large. Uploading might encounter issues. Try reduce the file size from ${prettyBytes(
           imageSize,
         )} to ${prettyBytes(imageSizeLimit)} or lower.`;
       }
       case 'imageMatrixLimit': {
-        const { imageMatrix, imageMatrixLimit, width, height } = details;
+        const { imageMatrix, imageMatrixLimit, width, height } = err.details;
         const { newWidth, newHeight } = scaleDimension(
-          imageMatrix,
+          imageMatrix as number,
           imageMatrixLimit,
-          width,
-          height,
+          width as number,
+          height as number,
         );
         return t`Dimension too large. Uploading might encounter issues. Try reduce dimension from ${i18n.number(
-          width,
-        )}×${i18n.number(height)}px to ${i18n.number(newWidth)}×${i18n.number(
+          width as number,
+        )}×${i18n.number(height as number)}px to ${i18n.number(newWidth)}×${i18n.number(
           newHeight,
         )}px.`;
       }
       case 'videoSizeLimit': {
-        const { videoSize, videoSizeLimit } = details;
+        const { videoSize, videoSizeLimit } = err.details;
         return t`File size too large. Uploading might encounter issues. Try reduce the file size from ${prettyBytes(
           videoSize,
         )} to ${prettyBytes(videoSizeLimit)} or lower.`;
       }
       case 'videoMatrixLimit': {
-        const { videoMatrix, videoMatrixLimit, width, height } = details;
+        const { videoMatrix, videoMatrixLimit, width, height } = err.details;
         const { newWidth, newHeight } = scaleDimension(
-          videoMatrix,
+          videoMatrix as number,
           videoMatrixLimit,
-          width,
-          height,
+          width as number,
+          height as number,
         );
         return t`Dimension too large. Uploading might encounter issues. Try reduce dimension from ${i18n.number(
-          width,
-        )}×${i18n.number(height)}px to ${i18n.number(newWidth)}×${i18n.number(
+          width as number,
+        )}×${i18n.number(height as number)}px to ${i18n.number(newWidth)}×${i18n.number(
           newHeight,
         )}px.`;
       }
@@ -326,18 +421,19 @@ function MediaAttachment({
       <div class="media-attachment">
         <div
           class="media-preview"
-          tabIndex="0"
+          tabIndex={0}
           onClick={() => {
             setShowModal(true);
           }}
         >
           {suffixType === 'image' ? (
             <img
-              src={url}
+              src={url as string}
               alt=""
-              onLoad={(e) => {
+              onLoad={(e: JSX.TargetedEvent<HTMLImageElement, Event>) => {
                 if (!checkMaxError) return;
-                const { naturalWidth, naturalHeight } = e.target;
+                const { naturalWidth, naturalHeight } =
+                  e.target as HTMLImageElement;
                 setImageMatrix({
                   matrix: naturalWidth * naturalHeight,
                   width: naturalWidth,
@@ -352,9 +448,12 @@ function MediaAttachment({
               muted
               disablePictureInPicture
               preload="metadata"
-              onLoadedMetadata={(e) => {
+              onLoadedMetadata={(
+                e: JSX.TargetedEvent<HTMLVideoElement, Event>,
+              ) => {
                 if (!checkMaxError) return;
-                const { videoWidth, videoHeight } = e.target;
+                const { videoWidth, videoHeight } =
+                  e.target as HTMLVideoElement;
                 if (videoWidth && videoHeight) {
                   setVideoMatrix({
                     matrix: videoWidth * videoHeight,
@@ -365,7 +464,7 @@ function MediaAttachment({
               }}
             />
           ) : suffixType === 'audio' ? (
-            <audio src={url} controls />
+            <audio src={url as string} controls />
           ) : null}
         </div>
         {descTextarea}
@@ -385,7 +484,7 @@ function MediaAttachment({
               title={maxErrorText(maxError)}
               onClick={() => {
                 if (maxErrorToast.current) {
-                  maxErrorToast.current.hideToast();
+                  (maxErrorToast.current.hideToast as () => void)();
                 }
                 maxErrorToast.current = showToast({
                   text: maxErrorText(maxError),
@@ -417,23 +516,25 @@ function MediaAttachment({
             <header>
               <h2>
                 {
-                  {
-                    image: t`Edit image description`,
-                    video: t`Edit video description`,
-                    gifv: t`Edit video description`,
-                    audio: t`Edit audio description`,
-                  }[suffixType]
+                  (
+                    {
+                      image: t`Edit image description`,
+                      video: t`Edit video description`,
+                      gifv: t`Edit video description`,
+                      audio: t`Edit audio description`,
+                    } as Record<string, string>
+                  )[suffixType]
                 }
               </h2>
             </header>
-            <main tabIndex="-1">
+            <main tabIndex={-1}>
               <div class="media-preview">
                 {suffixType === 'image' ? (
-                  <img src={url} alt="" />
+                  <img src={url as string} alt="" />
                 ) : suffixType === 'video' || suffixType === 'gifv' ? (
-                  <video src={url} playsinline controls />
+                  <video src={url as string} playsinline controls />
                 ) : suffixType === 'audio' ? (
-                  <audio src={url} controls />
+                  <audio src={url as string} controls />
                 ) : null}
               </div>
               <div class="media-form">
@@ -478,20 +579,24 @@ function MediaAttachment({
                                       type,
                                     })
                                   : file;
-                                body.append('image', fileObj);
-                                const response = await fetch(IMG_ALT_API_URL, {
-                                  method: 'POST',
-                                  body,
-                                }).then((r) => r.json());
+                                body.append('image', fileObj as File);
+                                const response = await fetch(
+                                  IMG_ALT_API_URL as string,
+                                  {
+                                    method: 'POST',
+                                    body,
+                                  },
+                                ).then((r) => r.json());
                                 if (response.error) {
                                   throw new Error(response.error);
                                 }
                                 setDescription(response.description);
                               } catch (e) {
                                 console.error(e);
+                                const err = e as { message?: string };
                                 showToast(
-                                  e.message
-                                    ? t`Failed to generate description: ${e.message}`
+                                  err.message
+                                    ? t`Failed to generate description: ${err.message}`
                                     : t`Failed to generate description`,
                                 );
                               } finally {
@@ -534,10 +639,10 @@ function MediaAttachment({
                                         { type },
                                       )
                                     : file;
-                                  body.append('image', fileObj);
+                                  body.append('image', fileObj as File);
                                   const params = `?lang=${lang}`;
                                   const response = await fetch(
-                                    IMG_ALT_API_URL + params,
+                                    (IMG_ALT_API_URL as string) + params,
                                     {
                                       method: 'POST',
                                       body,
@@ -549,9 +654,10 @@ function MediaAttachment({
                                   setDescription(response.description);
                                 } catch (e) {
                                   console.error(e);
+                                  const err = e as { message?: string } | null;
                                   showToast(
                                     t`Failed to generate description${
-                                      e?.message ? `: ${e.message}` : ''
+                                      err?.message ? `: ${err.message}` : ''
                                     }`,
                                   );
                                 } finally {
