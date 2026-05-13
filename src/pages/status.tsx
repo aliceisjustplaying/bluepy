@@ -266,7 +266,7 @@ function StatusPage(params: StatusPageParams) {
         document.head.removeChild(canonicalLink);
       }
     };
-  }, [heroStatus?.url]);
+  }, [heroStatus]);
 
   const closeLink = useMemo(() => {
     const { prevLocation } = states;
@@ -301,6 +301,9 @@ function StatusPage(params: StatusPageParams) {
         }
       })();
     }
+    // TODO(oxlint:react-hooks/exhaustive-deps): one-shot fetch when media-only
+    // view loads without a cached hero status. The other deps are stable for
+    // the page lifecycle; refetching on each would defeat the cache.
   }, [showMedia]);
 
   const mediaStatusKey = statusKey(mediaStatusID, instance);
@@ -330,7 +333,7 @@ function StatusPage(params: StatusPageParams) {
         setSearchParams(searchParams);
       }
     }
-  }, [showMediaOnly, closeLink, snapStates.prevLocation]);
+  }, [showMediaOnly, closeLink, snapStates.prevLocation, searchParams, setSearchParams]);
   const handleMediaClose = useCallback(
     (
       _e: unknown,
@@ -398,7 +401,7 @@ function StatusPage(params: StatusPageParams) {
         mediaClose();
       }
     },
-    [showMedia, showMediaOnly],
+    [showMedia, showMediaOnly, id, mediaClose],
   );
 
   useEffect(() => {
@@ -474,7 +477,7 @@ function StatusParent(props: StatusParentProps) {
   return linkable ? (
     <Link class="status-link" to={to} onClick={onClick} {...restProps} />
   ) : (
-    <div class="status-focus" tabIndex={0} {...restProps} />
+    <div class="status-focus" tabIndex={0} role="article" {...restProps} />
   );
 }
 
@@ -540,24 +543,26 @@ function StatusThread({
   useEffect(() => {
     scrollableRef.current?.focus();
   }, []);
+  const isLoading = uiState === 'loading';
   useEffect(() => {
     const onScroll = debounce(() => {
       // console.log('onScroll');
       if (!scrollableRef.current) return;
       const { scrollTop } = scrollableRef.current;
-      if (uiState !== 'loading') {
+      if (!isLoading) {
         scrollPositions[id] = scrollTop;
       }
     }, 50);
-    scrollableRef.current?.addEventListener('scroll', onScroll, {
+    const scrollEl = scrollableRef.current;
+    scrollEl?.addEventListener('scroll', onScroll, {
       passive: true,
     });
     onScroll();
     return () => {
       onScroll.cancel();
-      scrollableRef.current?.removeEventListener('scroll', onScroll);
+      scrollEl?.removeEventListener('scroll', onScroll);
     };
-  }, [id, uiState !== 'loading']);
+  }, [id, isLoading]);
 
   const { editHistoryMode, initEditHistory, editedAtIndex, editHistoryRef } =
     useEditHistory();
@@ -908,6 +913,9 @@ function StatusThread({
     return () => {};
   };
 
+  // TODO(oxlint:react-hooks/exhaustive-deps): `initContext` closes over many
+  // page-level values; we trigger explicitly on `id`/`masto` only so the
+  // context only re-fetches when the URL changes or the API client is swapped.
   useEffect(initContext, [id, masto]);
 
   useEffect(() => {
@@ -915,8 +923,10 @@ function StatusThread({
       const restructured = restructureContext();
       if (restructured) setStatuses(restructured.allStatuses);
     } catch {}
-    // Only run this when editHistoryMode changes
-    // If id changes, initContext will run instead, so don't worry
+    // TODO(oxlint:react-hooks/exhaustive-deps): only run when editHistoryMode
+    // toggles or edited index changes. If id changes, initContext effect above
+    // re-runs instead. `restructureContext` is recreated each render and would
+    // cause an infinite re-set if added.
   }, [editHistoryMode, editedAtIndex]);
 
   const [showRefresh, setShowRefresh] = useState(false);
@@ -974,7 +984,7 @@ function StatusThread({
 
     // RESET
     scrollOffsets.current = null;
-  }, [statuses]);
+  }, [statuses, id]);
 
   useEffect(() => {
     if (snapStates.reloadStatusPage <= 0) return;
@@ -997,7 +1007,10 @@ function StatusThread({
         console.error(e);
       }
     })();
-  }, [snapStates.reloadStatusPage]);
+    // TODO(oxlint:react-hooks/exhaustive-deps): `initContext` is recreated
+    // each render and closes over many setters; adding it would loop. `id` is
+    // stable for the page lifecycle.
+  }, [snapStates.reloadStatusPage, id]);
 
   useEffect(() => {
     return () => {
@@ -1008,6 +1021,8 @@ function StatusThread({
       cachedRepliesToggle = {};
       statusWeightCache.clear();
     };
+    // TODO(oxlint:react-hooks/exhaustive-deps): mount/unmount-only cleanup of
+    // module-level caches. Empty deps array is intentional.
   }, []);
 
   const heroStatus = (snapStates.statuses[sKey] ||
@@ -1269,7 +1284,7 @@ function StatusThread({
         mediaStatusID: status.id,
       });
     },
-    [id],
+    [setSearchParams],
   );
 
   const handleStatusLinkClick = useCallback(
@@ -1542,6 +1557,10 @@ function StatusThread({
         </li>
       );
     },
+    // TODO(oxlint:react-hooks/exhaustive-deps): `currentMasto.v2.search` is a
+    // masto proxy recreated per access; adding it would loop the render.
+    // `t` (lingui), `currentInstance`, and the heroStatus url/repliesCount are
+    // added below.
     [
       id,
       instance,
@@ -1552,6 +1571,10 @@ function StatusThread({
       handleMediaClick,
       handleStatusLinkClick,
       hasDescendants,
+      t,
+      currentInstance,
+      heroStatus?.url,
+      heroStatus?.repliesCount,
     ],
   );
 
@@ -1565,6 +1588,9 @@ function StatusThread({
       }
     }
     return STATUS_URL_REGEX.test(states.prevLocation?.pathname ?? '');
+    // TODO(oxlint:react-hooks/exhaustive-deps): trigger is `sKey` (route key)
+    // so the memo recomputes on status route changes; the *value* uses
+    // `states.prevLocation` directly. Keeping `sKey` as the explicit trigger.
   }, [sKey]);
 
   interface StatusKeyish {
@@ -1664,7 +1690,7 @@ function StatusThread({
     }
 
     return result;
-  }, [statuses, limit, renderStatus, editHistoryMode, editedAtIndex]);
+  }, [statuses, limit, renderStatus]);
 
   // If there's spoiler in hero status, auto-expand it
   useEffect(() => {
@@ -2137,7 +2163,7 @@ function SubComments({
         mediaStatusID: status.id,
       });
     },
-    [],
+    [setSearchParams],
   );
 
   // The Container element is either `div` or `details` depending on `open`.
@@ -2152,11 +2178,12 @@ function SubComments({
         target.dataset.scrollLeft = String(target.scrollLeft);
       }
     }
-    detailsRef.current?.addEventListener('scroll', handleScroll, {
+    const detailsEl = detailsRef.current;
+    detailsEl?.addEventListener('scroll', handleScroll, {
       passive: true,
     });
     return () => {
-      detailsRef.current?.removeEventListener('scroll', handleScroll);
+      detailsEl?.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -2277,7 +2304,7 @@ function SubComments({
                 resetScrollPosition(r.id);
               }}
             > */}
-              <div class="status-focus" tabIndex={0}>
+              <div class="status-focus" tabIndex={0} role="article">
                 <Status
                   statusID={r.id}
                   instance={instance}

@@ -3,7 +3,7 @@ import './accounts.css';
 import { useAutoAnimate } from '@formkit/auto-animate/preact';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
-import { useReducer } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 
 import Avatar from '../components/avatar';
 import Icon from '../components/icon';
@@ -53,7 +53,8 @@ function Accounts({ onClose }: AccountsProps) {
   const currentAccount = getCurrentAccountID();
   const moreThanOneAccount = accounts.length > 1;
 
-  const [, reload] = useReducer<number, void>((x: number) => x + 1, 0);
+  const [, setReloadTick] = useState(0);
+  const reload = () => setReloadTick((x) => x + 1);
   const [accountsListParent] = useAutoAnimate<HTMLUListElement>();
 
   return (

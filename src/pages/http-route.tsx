@@ -69,6 +69,11 @@ export default function HttpRoute() {
         }
       }
     })();
+    // TODO(oxlint:react-hooks/exhaustive-deps): `statusObject` is recreated on
+    // every render by `getInstanceStatusObject(url)`; adding it would loop
+    // `loading -> error -> loading`. `url` is the meaningful trigger, captured
+    // here transitively via `statusURL`. `statusObject` and `url` are stable
+    // for a given `statusURL`.
   }, [statusURL]);
 
   return (

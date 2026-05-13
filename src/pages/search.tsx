@@ -298,6 +298,9 @@ function Search({ columnMode, ...props }: SearchProps) {
       }, 150); // Right after focusDeck runs
     }
     return () => clearTimeout(timer);
+    // TODO(oxlint:react-hooks/exhaustive-deps): `loadResults` is recreated each
+    // render and closes over many state setters; adding it would cause a
+    // refetch loop. Refactor would require useCallback with all upstream deps.
   }, [q, type, instance]);
 
   useHotkeys(
@@ -473,6 +476,9 @@ function Search({ columnMode, ...props }: SearchProps) {
                   to: `/search?q=${encodeURIComponent(q)}&type=statuses`,
                 },
               ]
+                // TODO(oxlint:unicorn/no-array-sort): `Array#toSorted()` is
+                // ES2023; project target is ES2022. Mutating an inline literal
+                // is safe here.
                 .sort((a, b) => {
                   if (a.type === type) return -1;
                   if (b.type === type) return 1;

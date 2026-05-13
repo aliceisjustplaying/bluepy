@@ -54,7 +54,7 @@ export default function LangSelector() {
       if (a.code > b.code) return 1;
       return 0;
     });
-  }, []);
+  }, [i18n.locale]);
 
   return (
     <label class="lang-selector">

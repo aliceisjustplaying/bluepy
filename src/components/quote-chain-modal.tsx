@@ -2,7 +2,6 @@ import './quote-chain-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import type { Ref } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
@@ -10,35 +9,14 @@ import { api } from '../utils/api';
 import { getStatus } from '../utils/states';
 import useTruncated from '../utils/useTruncated';
 
-import IconUntyped from './icon';
+import Icon from './icon';
 import Link, { type LinkProps } from './link';
-import LoaderUntyped from './loader';
-import StatusUntyped from './status';
-
-type IconProps = {
-  icon: string;
-  alt?: string;
-  [key: string]: unknown;
-};
-
-type LoaderProps = {
-  abrupt?: boolean;
-  [key: string]: unknown;
-};
-
-type StatusProps = {
-  status: mastodon.v1.Status;
-  instance?: string;
-  size?: string;
-  readOnly?: boolean;
-  showCommentCount?: boolean;
-  showQuoteCount?: boolean | ((c: number) => boolean);
-  [key: string]: unknown;
-};
-
-const Icon = IconUntyped as unknown as ComponentType<IconProps>;
-const Loader = LoaderUntyped as unknown as ComponentType<LoaderProps>;
-const Status = StatusUntyped as unknown as ComponentType<StatusProps>;
+import Loader from './loader';
+// TODO(oxlint:import/no-cycle): status <-> quote-chain-modal cycle. status
+// renders QuoteChainModal on quote click; QuoteChainModal renders Status for
+// each post. Breaking it requires lazy/dynamic import or extracting a shared
+// child wrapper — architectural, out of scope.
+import Status from './status';
 
 type QuotedStatus = mastodon.v1.Status & {
   quote?: {
@@ -153,6 +131,10 @@ export default function QuoteChainModal({
     return () => {
       abortControllerRef.current?.abort();
     };
+    // TODO(oxlint:react-hooks/exhaustive-deps): fetchQuoteChain is recreated
+    // every render (no useCallback) and closes over `posts`, `instance`, and
+    // `masto`. Adding it would loop; refactoring into a stable callback (e.g.
+    // useCallback + refs for live posts) is a behavioral change out of scope.
   }, [statusId]);
 
   return (
@@ -196,12 +178,12 @@ export default function QuoteChainModal({
                 }}
               >
                 <Status
-                  status={post}
+                  status={post as mastodon.v1.Status & Record<string, unknown>}
                   instance={instance}
                   size="s"
                   readOnly
                   showCommentCount
-                  showQuoteCount={(c: number) => c > 1}
+                  showQuoteCount={(c) => (c ?? 0) > 1}
                 />
               </TruncatedLink>
             </li>
