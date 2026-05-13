@@ -6,7 +6,7 @@ import { activateLang } from '../utils/lang';
 import localeCode2Text from '../utils/localeCode2Text';
 import store from '../utils/store';
 
-const regionMaps = {
+const regionMaps: Record<string, string | undefined> = {
   'zh-CN': 'zh-Hans',
   'zh-TW': 'zh-Hant',
   'pt-BR': 'pt-BR',
@@ -43,8 +43,11 @@ export default function LangSelector() {
         native,
       };
     }).sort((a, b) => {
-      // Sort by common name
-      const order = a._common.localeCompare(b._common, i18n.locale);
+      // Sort by common name. The JS original assumes `_common` is always a
+      // string (catalogs supply a `name` fallback); keep the same assumption
+      // so an undefined value still surfaces as a runtime error instead of
+      // silently sorting as empty.
+      const order = a._common!.localeCompare(b._common!, i18n.locale);
       if (order !== 0) return order;
       // Sort by code (fallback)
       if (a.code < b.code) return -1;
@@ -60,8 +63,9 @@ export default function LangSelector() {
         class="small"
         value={i18n.locale || DEFAULT_LANG}
         onChange={(e) => {
-          store.local.set('lang', e.target.value);
-          activateLang(e.target.value);
+          const { value } = e.currentTarget;
+          store.local.set('lang', value);
+          activateLang(value);
         }}
       >
         {populatedLocales.map(({ code, regionlessCode, native }) => {

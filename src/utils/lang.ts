@@ -13,9 +13,21 @@ import localeMatch from '../utils/locale-match';
 
 const { PHANPY_DEFAULT_LANG } = import.meta.env;
 
-const langFileMaps = {
+const langFileMaps: Record<string, string> = {
   // kab: 'kab-KAB',
 };
+
+// intl-locale-textinfo-polyfill ships only a global `Intl.Locale` ambient
+// declaration; the default export is the same Locale class. Some runtimes
+// expose `textInfo` as a getter rather than the spec'd `getTextInfo()` method,
+// so the original JS reads both. Model both surfaces here.
+interface LocaleTextInfo {
+  direction: 'ltr' | 'rtl';
+}
+interface LocaleCompat {
+  getTextInfo?: () => LocaleTextInfo;
+  textInfo: LocaleTextInfo;
+}
 
 i18n.load(DEFAULT_LANG, messages);
 i18n.on('change', () => {
@@ -25,7 +37,7 @@ i18n.on('change', () => {
     document.documentElement.lang = lang;
     // LTR or RTL
     try {
-      const loc = new Locale(lang);
+      const loc = new Locale(lang) as unknown as LocaleCompat;
       const { direction } = loc.getTextInfo?.() || loc.textInfo;
       document.documentElement.dir = direction;
     } catch (e) {
@@ -34,7 +46,7 @@ i18n.on('change', () => {
   }
 });
 
-export async function activateLang(lang) {
+export async function activateLang(lang: string | false | undefined | null) {
   if (!lang || lang === DEFAULT_LANG) {
     i18n.activate(DEFAULT_LANG);
     console.log('💬 ACTIVATE LANG', DEFAULT_LANG, lang);
@@ -62,9 +74,17 @@ export function initActivateLang() {
     PHANPY_DEFAULT_LANG,
     DEFAULT_LANG,
   );
+  // Original JS calls localeMatch with two args; the wrapper catches the
+  // resulting TypeError (defaultLocale required) and returns `false`, which
+  // activateLang then treats as falsy and falls back to DEFAULT_LANG.
+  // Preserve that exact two-arg call shape via a narrowed type assertion.
+  const localeMatchTwoArg = localeMatch as unknown as (
+    requested: readonly string[],
+    available: readonly string[],
+  ) => string | false;
   const matchedLang =
     languages.find((l) => ALL_LOCALES.includes(l)) ||
-    localeMatch(languages, ALL_LOCALES);
+    localeMatchTwoArg(languages, ALL_LOCALES);
   activateLang(matchedLang);
 
   // const yes = confirm(t`Reload to apply language setting?`);
