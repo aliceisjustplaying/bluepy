@@ -591,8 +591,7 @@ function YearInPosts() {
             boost: types.boost,
           };
         })
-        // TODO(oxlint:unicorn/no-array-sort): toSorted() is ES2023; project target is ES2022.
-        .sort((a, b) => a.month - b.month)
+        .toSorted((a, b) => a.month - b.month)
     );
   }, [posts, monthHeatmaps, monthMediaGrids]);
 
@@ -742,8 +741,7 @@ function YearInPosts() {
     // Sort the filtered posts
     let sorted = filtered;
     if (sortBy !== 'relevance') {
-      // TODO(oxlint:unicorn/no-array-sort): toSorted() is ES2023; project target is ES2022.
-      sorted = [...filtered].sort((a, b) => {
+      sorted = filtered.toSorted((a, b) => {
         const postA = a.reblog || a;
         const postB = b.reblog || b;
         let valueA: number | Date;

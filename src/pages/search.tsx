@@ -531,10 +531,7 @@ function Search({ columnMode, ...props }: SearchProps) {
                   to: `/search?q=${encodeURIComponent(q)}&type=statuses`,
                 },
               ]
-                // TODO(oxlint:unicorn/no-array-sort): `Array#toSorted()` is
-                // ES2023; project target is ES2022. Mutating an inline literal
-                // is safe here.
-                .sort((a, b) => {
+                .toSorted((a, b) => {
                   if (a.type === type) return -1;
                   if (b.type === type) return 1;
                   return 0;
