@@ -1,4 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useDebouncedCallback } from 'use-debounce';
@@ -10,20 +12,42 @@ import AccountBlock from './account-block';
 import Icon from './icon';
 import Loader from './loader';
 
+interface AccountSearchEndpoint {
+  readonly v1: {
+    readonly accounts: {
+      readonly search: {
+        list(params: {
+          q: string;
+          limit: number;
+          resolve: boolean;
+        }): Promise<mastodon.v1.Account[]>;
+      };
+    };
+  };
+}
+
+interface MentionModalProps {
+  onClose?: () => void;
+  onSelect?: (socialAddress: string) => void;
+  defaultSearchTerm?: string;
+}
+
 function MentionModal({
   onClose = () => {},
   onSelect = () => {},
   defaultSearchTerm,
-}) {
+}: MentionModalProps) {
   const { t } = useLingui();
   const { masto } = api();
   const [uiState, setUIState] = useState('default');
-  const [accounts, setAccounts] = useState([]);
-  const [relationshipsMap, setRelationshipsMap] = useState({});
+  const [accounts, setAccounts] = useState<mastodon.v1.Account[]>([]);
+  const [relationshipsMap, setRelationshipsMap] = useState<
+    Record<string, mastodon.v1.Relationship>
+  >({});
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const loadRelationships = async (accounts) => {
+  const loadRelationships = async (accounts: mastodon.v1.Account[]) => {
     if (!accounts?.length) return;
     const relationships = await fetchRelationships(accounts, relationshipsMap);
     if (relationships) {
@@ -34,12 +58,14 @@ function MentionModal({
     }
   };
 
-  const loadAccounts = (term) => {
+  const loadAccounts = (term?: string) => {
     if (!term) return;
     setUIState('loading');
     (async () => {
       try {
-        const accounts = await masto.v1.accounts.search.list({
+        const accounts = await (
+          masto as unknown as AccountSearchEndpoint
+        ).v1.accounts.search.list({
           q: term,
           limit: 40,
           resolve: false,
@@ -60,7 +86,7 @@ function MentionModal({
     loadAccounts();
   }, [loadAccounts]);
 
-  const inputRef = useRef();
+  const inputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
@@ -78,7 +104,7 @@ function MentionModal({
     }
   }, [defaultSearchTerm]);
 
-  const selectAccount = (account) => {
+  const selectAccount = (account: mastodon.v1.Account) => {
     const socialAddress = account.acct;
     onSelect(socialAddress);
     onClose();
@@ -96,11 +122,12 @@ function MentionModal({
       preventDefault: true,
       enableOnFormTags: ['input'],
       useKey: true,
-      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e: KeyboardEvent) =>
+        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
-  const listRef = useRef();
+  const listRef = useRef<HTMLUListElement | null>(null);
   useHotkeys(
     'down',
     () => {
@@ -110,7 +137,7 @@ function MentionModal({
         setSelectedIndex(0);
       }
       setTimeout(() => {
-        const selectedItem = listRef.current.querySelector('.selected');
+        const selectedItem = listRef.current?.querySelector('.selected');
         if (selectedItem) {
           selectedItem.scrollIntoView({
             behavior: 'smooth',
@@ -124,7 +151,8 @@ function MentionModal({
       preventDefault: true,
       enableOnFormTags: ['input'],
       useKey: true,
-      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e: KeyboardEvent) =>
+        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
@@ -137,7 +165,7 @@ function MentionModal({
         setSelectedIndex(accounts.length - 1);
       }
       setTimeout(() => {
-        const selectedItem = listRef.current.querySelector('.selected');
+        const selectedItem = listRef.current?.querySelector('.selected');
         if (selectedItem) {
           selectedItem.scrollIntoView({
             behavior: 'smooth',
@@ -151,7 +179,8 @@ function MentionModal({
       preventDefault: true,
       enableOnFormTags: ['input'],
       useKey: true,
-      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e: KeyboardEvent) =>
+        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
@@ -177,14 +206,14 @@ function MentionModal({
             type="search"
             class="block"
             placeholder={t`Search accounts`}
-            onInput={(e) => {
-              const { value } = e.target;
+            onInput={(e: JSX.TargetedEvent<HTMLInputElement>) => {
+              const { value } = e.currentTarget;
               debouncedLoadAccounts(value);
             }}
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"
-            spellCheck="false"
+            spellcheck={false}
             dir="auto"
             enterKeyHint="search"
             defaultValue={defaultSearchTerm || ''}

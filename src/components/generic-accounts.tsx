@@ -1,8 +1,10 @@
 import './generic-accounts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { InView } from 'react-intersection-observer';
+import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useSnapshot } from 'valtio';
 
 import { api } from '../utils/api';
@@ -14,7 +16,52 @@ import AccountBlock from './account-block';
 import Icon from './icon';
 import Link from './link';
 import Loader from './loader';
-import Status from './status';
+import StatusUntyped from './status';
+
+// `status.jsx` has not been migrated yet; type it permissively here.
+const Status = StatusUntyped as unknown as ComponentType<{
+  status?: unknown;
+  size?: string;
+  readOnly?: boolean;
+  [key: string]: unknown;
+}>;
+
+// `react-intersection-observer`'s `InView` ships without working JSX
+// component typings under our preact compat resolution. Re-type as a
+// preact component with the props this batch actually uses.
+const InViewTyped = InViewUntyped as unknown as ComponentType<{
+  onChange?: (inView: boolean) => void;
+  children?: unknown;
+}>;
+
+interface AccountWithTypes extends mastodon.v1.Account {
+  _types: string[];
+}
+
+// Fetched accounts may or may not have `_types`; we coerce when adding to
+// the local list. The local list always carries `_types`.
+type FetchedAccount = mastodon.v1.Account & { _types?: string[] };
+
+interface FetchAccountsResult {
+  done: boolean;
+  value?: FetchedAccount[];
+}
+
+interface ShowGenericAccountsState {
+  id?: string;
+  heading?: string;
+  fetchAccounts?: (firstLoad?: boolean) => Promise<FetchAccountsResult>;
+  accounts?: AccountWithTypes[];
+  showReactions?: boolean;
+}
+
+interface GenericAccountsProps {
+  instance?: string;
+  excludeRelationshipAttrs?: readonly string[];
+  postID?: string;
+  onClose?: () => void;
+  blankCopy?: string;
+}
 
 export default function GenericAccounts({
   instance,
@@ -22,7 +69,7 @@ export default function GenericAccounts({
   postID,
   onClose = () => {},
   blankCopy,
-}) {
+}: GenericAccountsProps) {
   const { t } = useLingui();
   const { masto, instance: currentInstance } = api();
   const isCurrentInstance = instance ? instance === currentInstance : true;
@@ -43,15 +90,17 @@ export default function GenericAccounts({
     fetchAccounts,
     accounts: staticAccounts,
     showReactions,
-  } = snapStates.showGenericAccounts;
+  } = snapStates.showGenericAccounts as ShowGenericAccountsState;
 
-  const [accounts, setAccounts] = useState(
+  const [accounts, setAccounts] = useState<AccountWithTypes[]>(
     staticAccounts?.length ? staticAccounts : [],
   );
 
-  const [relationshipsMap, setRelationshipsMap] = useState({});
+  const [relationshipsMap, setRelationshipsMap] = useState<
+    Record<string, mastodon.v1.Relationship>
+  >({});
 
-  const loadRelationships = async (accounts) => {
+  const loadRelationships = async (accounts: AccountWithTypes[]) => {
     if (!accounts?.length) return;
     if (!isCurrentInstance) return;
     const relationships = await fetchRelationships(accounts, relationshipsMap);
@@ -63,7 +112,7 @@ export default function GenericAccounts({
     }
   };
 
-  const loadAccounts = (firstLoad) => {
+  const loadAccounts = (firstLoad?: boolean) => {
     if (!fetchAccounts) return;
     if (firstLoad && !accounts?.length) setAccounts([]);
     setUIState('loading');
@@ -72,7 +121,7 @@ export default function GenericAccounts({
         const { done, value } = await fetchAccounts(firstLoad);
         if (Array.isArray(value)) {
           if (firstLoad) {
-            const accounts = [];
+            const accounts: AccountWithTypes[] = [];
             for (let i = 0; i < value.length; i++) {
               const account = value[i];
               const theAccount = accounts.find(
@@ -80,11 +129,11 @@ export default function GenericAccounts({
               );
               if (!theAccount) {
                 accounts.push({
-                  _types: [],
                   ...account,
+                  _types: account._types ?? [],
                 });
               } else {
-                theAccount._types.push(...account._types);
+                theAccount._types.push(...(account._types as string[]));
               }
             }
             setAccounts(accounts);
@@ -96,9 +145,9 @@ export default function GenericAccounts({
               for (const account of value) {
                 const theAccount = newAccounts.find((a) => a.id === account.id);
                 if (!theAccount) {
-                  newAccounts.push(account);
+                  newAccounts.push(account as AccountWithTypes);
                 } else {
-                  theAccount._types.push(...account._types);
+                  theAccount._types.push(...(account._types as string[]));
                 }
               }
               return newAccounts;
@@ -106,7 +155,7 @@ export default function GenericAccounts({
           }
           setShowMore(!done);
 
-          loadRelationships(value);
+          loadRelationships(value as AccountWithTypes[]);
         } else {
           setShowMore(false);
         }
@@ -143,10 +192,10 @@ export default function GenericAccounts({
     }
   }, [snapStates.reloadGenericAccounts.counter]);
 
-  const post = states.statuses[postID];
+  const post = postID ? states.statuses[postID] : undefined;
 
   return (
-    <div id="generic-accounts-container" class="sheet" tabindex="-1">
+    <div id="generic-accounts-container" class="sheet" tabindex={-1}>
       <button type="button" class="sheet-close" onClick={onClose}>
         <Icon icon="x" alt={t`Close`} />
       </button>
@@ -199,8 +248,8 @@ export default function GenericAccounts({
             </ul>
             {uiState === 'default' ? (
               showMore ? (
-                <InView
-                  onChange={(inView) => {
+                <InViewTyped
+                  onChange={(inView: boolean) => {
                     if (inView) {
                       loadAccounts();
                     }
@@ -213,7 +262,7 @@ export default function GenericAccounts({
                   >
                     <Trans>Show more…</Trans>
                   </button>
-                </InView>
+                </InViewTyped>
               ) : (
                 <p class="ui-state insignificant">
                   <Trans>The end.</Trans>
