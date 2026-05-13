@@ -764,9 +764,7 @@ function Catchup() {
     return (
       filteredPosts
         .filter((post) => !post.__HIDDEN)
-        // TODO(oxlint:unicorn/no-array-sort): `toSorted()` is ES2023; project
-        // target is ES2022. Mutating a `.filter()` result is safe.
-        .sort((aIn, bIn) => {
+        .toSorted((aIn, bIn) => {
           let a: CatchupPost = aIn;
           let b: CatchupPost = bIn;
           if (groupBy === 'account') {
