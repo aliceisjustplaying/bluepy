@@ -1,3 +1,4 @@
+import type { JSX, Ref } from 'preact';
 import { forwardRef } from 'preact/compat';
 import { useEffect, useState } from 'preact/hooks';
 
@@ -5,7 +6,22 @@ import shortenNumber from '../utils/shorten-number';
 
 import Icon from './icon';
 
-const StatusButton = forwardRef((props, ref) => {
+interface StatusButtonProps
+  extends Omit<JSX.HTMLAttributes<HTMLButtonElement>, 'title' | 'class'> {
+  checked?: boolean;
+  count?: number;
+  extraCount?: number;
+  class?: string;
+  title: string | [string, string];
+  alt: string | [string, string];
+  size?: string;
+  icon?: string;
+  iconSize?: string;
+  onClick?: (e: JSX.TargetedMouseEvent<HTMLButtonElement>) => void;
+}
+
+const StatusButton = forwardRef<HTMLButtonElement, StatusButtonProps>(
+  (props: StatusButtonProps, ref: Ref<HTMLButtonElement>) => {
   let {
     checked,
     count,
@@ -59,10 +75,12 @@ const StatusButton = forwardRef((props, ref) => {
       {(!!count || !!extraCount) && (
         <>
           {' '}
-          {!!count && <small title={count}>{shortenNumber(count)}</small>}
+          {!!count && (
+            <small title={String(count)}>{shortenNumber(count)}</small>
+          )}
           {!!count && !!extraCount && <small>+</small>}
           {!!extraCount && (
-            <small title={extraCount}>{shortenNumber(extraCount)}</small>
+            <small title={String(extraCount)}>{shortenNumber(extraCount)}</small>
           )}
         </>
       )}
