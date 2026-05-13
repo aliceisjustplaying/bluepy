@@ -2,7 +2,7 @@ import './account-block.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { JSX } from 'preact';
+import type { TargetedMouseEvent } from 'preact';
 
 // import { useNavigate } from 'react-router-dom';
 import enhanceContent from '../utils/enhance-content';
@@ -24,7 +24,7 @@ interface AccountBlockProps {
   instance?: string;
   external?: boolean;
   internal?: boolean;
-  onClick?: (e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => void;
+  onClick?: (e: TargetedMouseEvent<HTMLAnchorElement>) => void;
   showActivity?: boolean;
   showStats?: boolean;
   accountInstance?: string;
@@ -83,14 +83,13 @@ function AccountBlock({
     lastStatusAt,
     bot,
     fields,
-    note,
     group,
     followersCount,
     createdAt,
     locked,
     roles,
   } = account;
-  let [_, acct1, acct2] = acct.match(/([^@]+)(@.+)/i) || [, acct];
+  let [, acct1, acct2] = acct.match(/([^@]+)(@.+)/i) || [undefined, acct];
   if (accountInstance) {
     acct2 = `@${accountInstance}`;
   }
@@ -114,11 +113,15 @@ function AccountBlock({
       class="account-block"
       href={url}
       target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
       title={acct2 ? acct : `@${acct}`}
       onClick={(e) => {
         if (external) return;
         e.preventDefault();
-        if (onClick) return onClick(e);
+        if (onClick) {
+          onClick(e);
+          return;
+        }
         if (internal) {
           // navigate(`/${instance}/a/${id}`);
           location.hash = `/${instance}/a/${id}`;
@@ -194,7 +197,7 @@ function AccountBlock({
                 </span>
               </>
             )}
-            {!!group && (
+            {group && (
               <>
                 <span class="tag collapsed">
                   <Icon icon="group" /> <Trans>Group</Trans>

@@ -67,7 +67,7 @@ function PrivateNoteSheet({
             const note = formData.get('note') as string | null;
             if (note?.trim() !== initialNote?.trim()) {
               setUIState('loading');
-              (async () => {
+              void (async () => {
                 try {
                   const accounts = masto.v1
                     .accounts as unknown as AccountsResource;
@@ -80,11 +80,11 @@ function PrivateNoteSheet({
                   setUIState('default');
                   onRelationshipChange(newRelationship);
                   onClose();
-                } catch (e) {
-                  console.error(e);
+                } catch (err) {
+                  console.error(err);
                   setUIState('error');
                   alert(
-                    (e as { message?: string })?.message ||
+                    (err as { message?: string })?.message ||
                       t`Unable to update private note.`,
                   );
                 }
