@@ -1,10 +1,11 @@
 import './avatar.css';
 
+import type { JSX } from 'preact';
 import { useRef } from 'preact/hooks';
 
 import mem from '../utils/mem';
 
-const SIZES = {
+const SIZES: Record<string, number> = {
   s: 16,
   m: 20,
   l: 24,
@@ -13,35 +14,52 @@ const SIZES = {
   xxxl: 64,
 };
 
-const alphaCache = new Map();
+const alphaCache = new Map<string | undefined, boolean>();
 
-const canvas = window.OffscreenCanvas
+const canvas: OffscreenCanvas | HTMLCanvasElement = window.OffscreenCanvas
   ? new OffscreenCanvas(1, 1)
   : document.createElement('canvas');
 const ctx = canvas.getContext('2d', {
   willReadFrequently: true,
-});
+}) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 ctx.imageSmoothingEnabled = false;
 
 const scheduleTask =
   typeof requestIdleCallback === 'function'
-    ? (fn) => requestIdleCallback(fn, { timeout: 500 })
-    : (fn) => setTimeout(fn, 1);
+    ? (fn: () => void) => requestIdleCallback(fn, { timeout: 500 })
+    : (fn: () => void) => setTimeout(fn, 1);
 
 const MISSING_IMAGE_PATH_REGEX = /missing\.png$/;
 
-function Avatar({ url, staticUrl, size, alt = '', squircle, ...props }) {
+interface AvatarProps {
+  url?: string;
+  staticUrl?: string;
+  size?: string | number;
+  alt?: string;
+  squircle?: boolean;
+  [key: string]: unknown;
+}
+
+function Avatar({
+  url,
+  staticUrl,
+  size,
+  alt = '',
+  squircle,
+  ...props
+}: AvatarProps) {
   if (!url) {
     url = staticUrl;
     staticUrl = undefined;
   }
-  size = SIZES[size] || size || SIZES.m;
-  const avatarRef = useRef();
-  const isMissing = MISSING_IMAGE_PATH_REGEX.test(url);
-  const canCheckAlpha = url && !/\/\/cdn\.bsky\.app\//.test(url);
+  size =
+    (typeof size === 'string' ? SIZES[size] : undefined) || size || SIZES.m;
+  const avatarRef = useRef<HTMLElement>(null);
+  const isMissing = MISSING_IMAGE_PATH_REGEX.test(url ?? '');
+  const canCheckAlpha = !!url && !/\/\/cdn\.bsky\.app\//.test(url);
   return (
     <picture
-      ref={avatarRef}
+      ref={avatarRef as unknown as JSX.HTMLAttributes<HTMLElement>['ref']}
       class={`avatar ${squircle ? 'squircle' : ''} ${
         alphaCache.get(url) ? 'has-alpha' : ''
       }`}
@@ -70,13 +88,16 @@ function Avatar({ url, staticUrl, size, alt = '', squircle, ...props }) {
               : undefined
           }
           onError={(e) => {
-            if (e.target.crossOrigin) {
-              e.target.crossOrigin = null;
-              e.target.src = url;
+            const target = e.target as HTMLImageElement | null;
+            if (target?.crossOrigin) {
+              target.crossOrigin = null;
+              target.src = url;
             }
           }}
           onLoad={(e) => {
-            if (avatarRef.current) avatarRef.current.dataset.loaded = true;
+            const target = e.target as unknown as HTMLImageElement;
+            if (avatarRef.current)
+              avatarRef.current.dataset.loaded = 'true';
             if (alphaCache.has(url)) return;
             if (isMissing) return;
             if (!canCheckAlpha) return;
@@ -84,13 +105,13 @@ function Avatar({ url, staticUrl, size, alt = '', squircle, ...props }) {
               try {
                 // Check if image has alpha channel
                 // Sample at reduced resolution to avoid processing large images
-                const { naturalWidth: nw, naturalHeight: nh } = e.target;
+                const { naturalWidth: nw, naturalHeight: nh } = target;
                 const scale = Math.min(1, SIZES.xxxl / Math.max(nw, nh));
                 const sampleW = Math.max(1, Math.round(nw * scale));
                 const sampleH = Math.max(1, Math.round(nh * scale));
                 if (canvas.width !== sampleW) canvas.width = sampleW;
                 if (canvas.height !== sampleH) canvas.height = sampleH;
-                ctx.drawImage(e.target, 0, 0, sampleW, sampleH);
+                ctx.drawImage(target, 0, 0, sampleW, sampleH);
                 const { data } = ctx.getImageData(0, 0, sampleW, sampleH);
                 // Early-exit loop: stop once 10% of pixels have alpha <= 128
                 const totalPixels = data.length / 4;
