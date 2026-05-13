@@ -1,26 +1,63 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Menu, MenuItem } from '@szhsin/react-menu';
+import { MenuItem } from '@szhsin/react-menu';
+import type { ComponentType } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
-import localeMatch from '../utils/locale-match';
+import localeMatchDefault from '../utils/locale-match';
 import { speak, supportsTTS } from '../utils/speech';
 import states from '../utils/states';
 
 import Icon from './icon';
 import Menu2 from './menu2';
-import TranslationBlock from './translation-block';
+import TranslationBlockUntyped from './translation-block';
+
+// `localeMatch` is called throughout the codebase with 2 args (omitting the
+// required `defaultLocale`). The wrapper catches the resulting throw and
+// returns `false`. The `availableLocales` argument can in practice contain
+// `false` (when `getTranslateTargetLanguage` returns `false`) — the wrapper's
+// try/catch handles that. Cast to a permissive signature reflecting both
+// realities so we can keep matching the existing call shape without churning
+// the rest of the codebase in this batch.
+const localeMatch = localeMatchDefault as unknown as (
+  requestedLocales: readonly string[],
+  availableLocales: readonly (string | false)[],
+  defaultLocale?: string,
+) => string | false;
+
+interface TranslationBlockProps {
+  forceTranslate?: boolean;
+  sourceLanguage?: string;
+  text?: string;
+  mini?: boolean;
+  autoDetected?: boolean;
+}
+const TranslationBlock =
+  TranslationBlockUntyped as unknown as ComponentType<TranslationBlockProps>;
 
 const FORCE_TRANSLATE_LIMIT = 140;
 
-export default function MediaAltModal({ alt, lang, onClose }) {
+interface MediaAltModalProps {
+  alt: string;
+  lang?: string;
+  onClose?: () => void;
+}
+
+export default function MediaAltModal({
+  alt,
+  lang,
+  onClose,
+}: MediaAltModalProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const [forceTranslate, setForceTranslate] = useState(false);
   const targetLanguage = getTranslateTargetLanguage(true);
   const contentTranslationHideLanguages =
     snapStates.settings.contentTranslationHideLanguages || [];
+  // Preserve original JS behavior: even when `targetLanguage` is `false`, the
+  // wrapper's try/catch hides the runtime throw from `Intl.match` and returns
+  // `false`, so the `!localeMatch(...)` test passes through.
   const differentLanguage =
     !!lang &&
     lang !== targetLanguage &&
@@ -30,14 +67,14 @@ export default function MediaAltModal({ alt, lang, onClose }) {
     );
 
   useEffect(() => {
-    const isShortAlt = alt?.length > 0 && alt?.length <= FORCE_TRANSLATE_LIMIT;
+    const isShortAlt = alt.length > 0 && alt.length <= FORCE_TRANSLATE_LIMIT;
     if (differentLanguage && isShortAlt) {
       setForceTranslate(true);
     }
   }, [differentLanguage, alt]);
 
   return (
-    <div class="sheet" tabindex="-1">
+    <div class="sheet" tabIndex={-1}>
       {!!onClose && (
         <button type="button" class="sheet-close outer" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />

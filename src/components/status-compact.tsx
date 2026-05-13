@@ -11,9 +11,20 @@ import { getCurrentAccID } from '../utils/store-utils';
 import Avatar from './avatar';
 import LazyRender from './lazy-render';
 
-function StatusCompact({ sKey }) {
+interface StatusCompactProps {
+  sKey: string;
+}
+
+interface StatusReplyEntry {
+  id?: string;
+  instance?: string;
+}
+
+function StatusCompact({ sKey }: StatusCompactProps) {
   const snapStates = useSnapshot(states);
-  const statusReply = snapStates.statusReply[sKey];
+  const statusReply = snapStates.statusReply[sKey] as
+    | StatusReplyEntry
+    | undefined;
   if (!statusReply) return null;
 
   const { id, instance } = statusReply;
@@ -29,26 +40,41 @@ function StatusCompact({ sKey }) {
     content,
     language,
     filtered,
-  } = status;
+  } = status as {
+    account: {
+      id?: string;
+      avatar?: string;
+      avatarStatic?: string;
+      bot?: boolean;
+    };
+    sensitive?: boolean;
+    spoilerText?: string;
+    visibility?: string;
+    content?: string;
+    language?: string;
+    filtered?: Parameters<typeof isFiltered>[0];
+  };
   if (sensitive || spoilerText) return null;
   if (!content) return null;
 
   const srKey = statusKey(id, instance);
-  const statusPeekText = statusPeek(status);
+  const statusPeekText = statusPeek(status as Parameters<typeof statusPeek>[0]);
 
   const currentAccount = getCurrentAccID();
   const isSelf = currentAccount && currentAccount === accountId;
 
   const filterContext = useContext(FilterContext);
-  let filterInfo = !isSelf && isFiltered(filtered, filterContext);
+  let filterInfo = isSelf
+    ? (false as const)
+    : isFiltered(filtered, filterContext as string);
 
   // This is fine. Images are converted to emojis so they are
   // in a way, already "obscured"
-  if (filterInfo?.action === 'blur') filterInfo = null;
+  if (filterInfo && filterInfo.action === 'blur') filterInfo = false;
 
-  if (filterInfo?.action === 'hide') return null;
+  if (filterInfo && filterInfo.action === 'hide') return null;
 
-  const filterTitleStr = filterInfo?.titlesStr || '';
+  const filterTitleStr = filterInfo ? filterInfo.titlesStr : '';
 
   return (
     <LazyRender

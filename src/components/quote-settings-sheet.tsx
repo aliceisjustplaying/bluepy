@@ -1,6 +1,8 @@
 import './quote-settings-sheet.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentType, JSX } from 'preact';
 import { useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
@@ -8,27 +10,67 @@ import showToast from '../utils/show-toast';
 import { saveStatus } from '../utils/states';
 
 import Icon from './icon';
-import Status from './status';
+import StatusUntyped from './status';
 
-function QuoteSettingsSheet({ onClose, post, currentPolicy }) {
+interface StatusComponentProps {
+  status?: mastodon.v1.Status;
+  size?: 's' | 'm' | 'l';
+  readOnly?: boolean;
+}
+const Status = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
+
+const QUOTE_POLICIES = ['public', 'followers', 'nobody'] as const;
+type QuotePolicy = (typeof QUOTE_POLICIES)[number];
+
+function isQuotePolicy(value: unknown): value is QuotePolicy {
+  return (
+    typeof value === 'string' &&
+    (QUOTE_POLICIES as readonly string[]).includes(value)
+  );
+}
+
+interface QuoteSettingsSheetProps {
+  onClose: (arg?: unknown) => void;
+  post: mastodon.v1.Status & { instance?: string };
+  currentPolicy?: string | null;
+}
+
+interface InteractionPolicyClient {
+  update(params: { quote_approval_policy: string }): Promise<mastodon.v1.Status>;
+}
+
+interface StatusesSelector {
+  $select(id: string): { interactionPolicy: InteractionPolicyClient };
+}
+
+function QuoteSettingsSheet({
+  onClose,
+  post,
+  currentPolicy,
+}: QuoteSettingsSheetProps) {
   const { t } = useLingui();
   const { masto } = api();
-  const [uiState, setUIState] = useState('default');
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
 
-  const [selectedPolicy, setSelectedPolicy] = useState(
+  const [selectedPolicy, setSelectedPolicy] = useState<string>(
     currentPolicy || 'public',
   );
 
-  const handleFormSubmit = async (e) => {
+  const handleFormSubmit = async (e: JSX.TargetedEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const quoteApprovalPolicy = formData.get('quoteApprovalPolicy');
+    const formData = new FormData(e.target as HTMLFormElement);
+    const raw = formData.get('quoteApprovalPolicy');
+    if (!isQuotePolicy(raw)) return;
+    const quoteApprovalPolicy: QuotePolicy = raw;
 
     setSelectedPolicy(quoteApprovalPolicy);
     setUIState('loading');
 
     try {
-      const newStatus = await masto.v1.statuses
+      const statuses = masto.v1.statuses as unknown as StatusesSelector;
+      const newStatus = await statuses
         .$select(post.id)
         .interactionPolicy.update({
           quote_approval_policy: quoteApprovalPolicy,
@@ -38,10 +80,14 @@ function QuoteSettingsSheet({ onClose, post, currentPolicy }) {
       setUIState('default');
 
       // Update the status with new quote policy
-      saveStatus(newStatus, post.instance, {
-        skipThreading: true,
-        skipUnfurling: true,
-      });
+      saveStatus(
+        newStatus as unknown as Parameters<typeof saveStatus>[0],
+        post.instance,
+        {
+          skipThreading: true,
+          skipUnfurling: true,
+        },
+      );
     } catch (e) {
       console.error(e);
       showToast(t`Failed to update quote settings`);
