@@ -2,6 +2,7 @@ import './scheduled-posts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
+import type { ComponentType } from 'preact';
 import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
@@ -11,31 +12,116 @@ import Loader from '../components/loader';
 import MenuConfirm from '../components/menu-confirm';
 import Menu2 from '../components/menu2';
 import Modal from '../components/modal';
-import NavMenu from '../components/nav-menu';
+import NavMenuUntyped from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
 import ScheduledAtField, {
   getLocalTimezoneName,
 } from '../components/ScheduledAtField';
-import Status from '../components/status';
+import StatusUntyped from '../components/status';
 import { api } from '../utils/api';
 import niceDateTime from '../utils/nice-date-time';
 import showToast from '../utils/show-toast';
-import states, { saveStatus, statusKey } from '../utils/states';
+import states from '../utils/states';
 import useTitle from '../utils/useTitle';
 
+const NavMenu = NavMenuUntyped as unknown as ComponentType<
+  Record<string, never>
+>;
+
+const Status = StatusUntyped as unknown as ComponentType<{
+  status?: unknown;
+  size?: string;
+  previewMode?: boolean;
+  readOnly?: boolean;
+  onMediaClick?: (
+    e: Event,
+    i: number,
+    media: unknown,
+    status: unknown,
+  ) => void;
+  [key: string]: unknown;
+}>;
+
 const LIMIT = 40;
+
+interface ScheduledPostPoll {
+  expiresIn: number;
+  options: string[];
+  [key: string]: unknown;
+}
+
+interface ScheduledPostParams {
+  inReplyToId?: string;
+  language?: string;
+  poll?: ScheduledPostPoll | null;
+  sensitive?: boolean;
+  spoilerText?: string;
+  text: string;
+  visibility?: string;
+  quotedStatusId?: string;
+  quoteApprovalPolicy?: unknown;
+  [key: string]: unknown;
+}
+
+interface ScheduledPost {
+  id: string;
+  params: ScheduledPostParams;
+  scheduledAt: string;
+  mediaAttachments?: unknown;
+}
+
+interface ScheduledStatusPreview {
+  id: string;
+  inReplyToId?: string;
+  language?: string;
+  mediaAttachments?: unknown;
+  poll?: unknown;
+  sensitive?: boolean;
+  spoilerText?: string;
+  text: string;
+  visibility?: string;
+  content: string;
+  quotedStatusId?: string;
+  quoteApprovalPolicy?: unknown;
+}
+
+interface MastoScheduledStatusesClient {
+  v1: {
+    scheduledStatuses: {
+      list(options: { limit: number }): {
+        values(): AsyncIterator<ScheduledPost[]>;
+      };
+      $select(id: string): {
+        update(params: { scheduledAt: string }): Promise<unknown>;
+        remove(): Promise<unknown>;
+      };
+    };
+  };
+}
+
+interface ScheduledPostModalState {
+  post: ScheduledStatusPreview;
+  scheduledAt: Date;
+}
 
 export default function ScheduledPosts() {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   useTitle(t`Scheduled Posts`, '/sp');
-  const { masto } = api();
-  const [scheduledPosts, setScheduledPosts] = useState([]);
-  const [uiState, setUIState] = useState('default');
-  const [reloadCount, reload] = useReducer((c) => c + 1, 0);
-  const [showScheduledPostModal, setShowScheduledPostModal] = useState(false);
+  const { masto: mastoBase } = api();
+  const masto = mastoBase as unknown as MastoScheduledStatusesClient;
+  const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([]);
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
+  const [reloadCount, reload] = useReducer<number, void>((c) => c + 1, 0);
+  const [showScheduledPostModal, setShowScheduledPostModal] = useState<
+    ScheduledPostModalState | false
+  >(false);
 
-  useEffect(reload, [snapStates.reloadScheduledPosts]);
+  useEffect(() => {
+    reload();
+  }, [snapStates.reloadScheduledPosts]);
 
   useEffect(() => {
     setUIState('loading');
@@ -44,8 +130,8 @@ export default function ScheduledPosts() {
         const postsIterator = masto.v1.scheduledStatuses
           .list({ limit: LIMIT })
           .values();
-        const allPosts = [];
-        let posts;
+        const allPosts: ScheduledPost[] = [];
+        let posts: ScheduledPost[] | undefined;
         do {
           const result = await postsIterator.next();
           posts = result.value;
@@ -64,7 +150,7 @@ export default function ScheduledPosts() {
   }, [reloadCount]);
 
   return (
-    <div id="scheduled-posts-page" class="deck-container" tabIndex="-1">
+    <div id="scheduled-posts-page" class="deck-container" tabIndex={-1}>
       <div class="timeline-deck deck">
         <header>
           <div class="header-grid">
@@ -124,7 +210,7 @@ export default function ScheduledPosts() {
                   quotedStatusId,
                   quoteApprovalPolicy,
                 } = params;
-                const status = {
+                const status: ScheduledStatusPreview = {
                   // account: account.info,
                   id,
                   inReplyToId,
@@ -133,7 +219,9 @@ export default function ScheduledPosts() {
                   poll: poll
                     ? {
                         ...poll,
-                        expiresAt: new Date(Date.now() + poll.expiresIn * 1000),
+                        expiresAt: new Date(
+                          Date.now() + poll.expiresIn * 1000,
+                        ),
                         options: poll.options.map((option) => ({
                           title: option,
                           votesCount: 0,
@@ -188,7 +276,17 @@ export default function ScheduledPosts() {
   );
 }
 
-function ScheduledPostPreview({ status, scheduledAt, onClick }) {
+interface ScheduledPostPreviewProps {
+  status: ScheduledStatusPreview;
+  scheduledAt: string;
+  onClick: () => void;
+}
+
+function ScheduledPostPreview({
+  status,
+  scheduledAt,
+  onClick,
+}: ScheduledPostPreviewProps) {
   // Look at scheduledAt, if it's months away, ICON = 'month'. If it's days away, ICON = 'day', else ICON = 'time'
   const icon = useMemo(() => {
     const hours = (Date.parse(scheduledAt) - Date.now()) / (1000 * 60 * 60);
@@ -230,18 +328,33 @@ function ScheduledPostPreview({ status, scheduledAt, onClick }) {
   );
 }
 
-function ScheduledPostEdit({ post, scheduledAt, onClose }) {
-  const { masto, instance } = api();
+interface ScheduledPostEditProps {
+  post: ScheduledStatusPreview;
+  scheduledAt: Date;
+  onClose: () => void;
+}
+
+function ScheduledPostEdit({
+  post,
+  scheduledAt,
+  onClose,
+}: ScheduledPostEditProps) {
+  const { masto: mastoBase } = api();
+  const masto = mastoBase as unknown as MastoScheduledStatusesClient;
   const { t } = useLingui();
-  const [uiState, setUIState] = useState('default');
-  const [newScheduledAt, setNewScheduledAt] = useState();
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
+  const [newScheduledAt, setNewScheduledAt] = useState<Date | undefined>(
+    undefined,
+  );
   const differentScheduledAt =
     newScheduledAt && newScheduledAt.getTime() !== scheduledAt.getTime();
   const localTZ = getLocalTimezoneName();
-  const pastSchedule = scheduledAt && scheduledAt <= Date.now();
+  const pastSchedule = scheduledAt && scheduledAt.getTime() <= Date.now();
 
-  const { inReplyToId } = post;
-  const [replyToStatus, setReplyToStatus] = useState(null);
+  // const { inReplyToId } = post;
+  const [replyToStatus] = useState<unknown>(null);
   // TODO: Uncomment this once https://github.com/mastodon/mastodon/issues/34000 is fixed
   // useEffect(() => {
   //   if (inReplyToId) {
@@ -256,7 +369,7 @@ function ScheduledPostEdit({ post, scheduledAt, onClose }) {
   //   }
   // }, [inReplyToId]);
 
-  const { quotedStatusId } = post;
+  // const { quotedStatusId } = post;
   // TODO: Uncomment this once https://github.com/mastodon/mastodon/issues/36536 is fixed
   // useEffect(() => {
   //   if (post.id && quotedStatusId) {
@@ -306,7 +419,7 @@ function ScheduledPostEdit({ post, scheduledAt, onClose }) {
           </small>
         </h2>
       </header>
-      <main tabIndex="-1">
+      <main tabIndex={-1}>
         {!!replyToStatus && (
           <div class="status-reply">
             <Status status={replyToStatus} size="s" previewMode readOnly />
@@ -317,7 +430,7 @@ function ScheduledPostEdit({ post, scheduledAt, onClose }) {
           size="s"
           previewMode
           readOnly
-          onMediaClick={(e, i, media, status) => {
+          onMediaClick={(e, i) => {
             e.preventDefault();
             states.showMediaModal = {
               mediaAttachments: post.mediaAttachments,
@@ -328,16 +441,18 @@ function ScheduledPostEdit({ post, scheduledAt, onClose }) {
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            if (!newScheduledAt) return;
             setUIState('loading');
+            const targetScheduledAt = newScheduledAt;
             (async () => {
               try {
                 await masto.v1.scheduledStatuses.$select(post.id).update({
-                  scheduledAt: newScheduledAt.toISOString(),
+                  scheduledAt: targetScheduledAt.toISOString(),
                 });
                 showToast(t`Scheduled post rescheduled`);
                 onClose();
                 setUIState('default');
-                states.reloadScheduledPosts++;
+                (states.reloadScheduledPosts as number)++;
               } catch (e) {
                 setUIState('error');
                 console.error(e);
@@ -351,7 +466,7 @@ function ScheduledPostEdit({ post, scheduledAt, onClose }) {
               <span>
                 <ScheduledAtField
                   scheduledAt={scheduledAt}
-                  setScheduledAt={(date) => {
+                  setScheduledAt={(date: Date) => {
                     setNewScheduledAt(date);
                   }}
                 />{' '}
@@ -361,7 +476,9 @@ function ScheduledPostEdit({ post, scheduledAt, onClose }) {
             <div class="row">
               <button
                 disabled={
-                  !differentScheduledAt || uiState === 'loading' || pastSchedule
+                  !differentScheduledAt ||
+                  uiState === 'loading' ||
+                  !!pastSchedule
                 }
               >
                 <Trans>Reschedule</Trans>
@@ -375,13 +492,16 @@ function ScheduledPostEdit({ post, scheduledAt, onClose }) {
                   setUIState('loading');
                   (async () => {
                     try {
-                      await api()
-                        .masto.v1.scheduledStatuses.$select(post.id)
+                      const apiResult = api();
+                      const innerMasto =
+                        apiResult.masto as unknown as MastoScheduledStatusesClient;
+                      await innerMasto.v1.scheduledStatuses
+                        .$select(post.id)
                         .remove();
                       showToast(t`Scheduled post deleted`);
                       onClose();
                       setUIState('default');
-                      states.reloadScheduledPosts++;
+                      (states.reloadScheduledPosts as number)++;
                     } catch (e) {
                       setUIState('error');
                       console.error(e);
@@ -393,7 +513,7 @@ function ScheduledPostEdit({ post, scheduledAt, onClose }) {
                 <button
                   type="button"
                   class="light danger"
-                  disabled={uiState === 'loading' || pastSchedule}
+                  disabled={uiState === 'loading' || !!pastSchedule}
                 >
                   <Trans>Delete…</Trans>
                 </button>
