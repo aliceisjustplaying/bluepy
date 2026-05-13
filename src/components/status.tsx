@@ -559,12 +559,17 @@ function StatusInner({
       | undefined;
     sKeyMaybe = statusKey(status?.id, instance);
   }
-  // TODO(oxlint:rules-of-hooks) Hooks below this guard run conditionally,
-  // since the `!status` path mounts with fewer hooks than the populated
-  // path. Fixing this properly requires extracting everything after this
-  // return into a status-present inner component (>3000-line restructure
-  // beyond the scope of a single oxlint batch). Pre-existing architectural
-  // shape; behavior unchanged by this batch.
+  // TODO(oxlint:rules-of-hooks) ~44 hooks below this guard run conditionally,
+  // since the `!status` path mounts with 4 hooks (preamble) while the populated
+  // path runs ~44 more. Additional internal cliffs at the filter-hide/blur and
+  // reblog returns (lines ~706, ~723, ~836) compound the issue. Fixing this
+  // properly requires extracting StatusInnerBody (~3000-line restructure with
+  // careful prop forwarding) plus likely a separate StatusReblogWrapper sub-
+  // component so useHotkeys/useLongPress side effects don't fire in the reblog
+  // wrapper branch. Beyond the scope of an isolated hooks-fix batch — the only
+  // safe paths are (a) the full restructure or (b) ref-pattern + null-tolerant
+  // hooks hoisted above every return. Pre-existing architectural shape;
+  // behavior unchanged by this batch.
   if (!status) {
     return null;
   }
@@ -799,7 +804,13 @@ function StatusInner({
       };
     }
     return undefined;
-  }, [withinContext, inReplyToAccount, inReplyToAccountId]);
+  }, [
+    withinContext,
+    inReplyToAccount,
+    inReplyToAccountId,
+    instance,
+    masto,
+  ]);
   const mentionSelf =
     (inReplyToAccountId && inReplyToAccountId === currentAccount) ||
     mentions?.find(
@@ -3987,11 +3998,17 @@ function EditedAtModal({
   );
   const [editHistory, setEditHistory] = useState<AnyStatus[]>([]);
 
+  // `fetchStatusHistory` is a prop callback recreated on every parent render.
+  // We want a mount-only fetch, so stash the latest callback in a ref and let
+  // the effect read through it. The effect itself has no missing deps.
+  const fetchStatusHistoryRef = useRef(fetchStatusHistory);
+  fetchStatusHistoryRef.current = fetchStatusHistory;
+
   useEffect(() => {
     setUIState('loading');
     void (async () => {
       try {
-        const fetchedHistory = await fetchStatusHistory();
+        const fetchedHistory = await fetchStatusHistoryRef.current();
         console.log(fetchedHistory);
         setEditHistory(fetchedHistory ?? []);
         setUIState('default');
@@ -4000,9 +4017,6 @@ function EditedAtModal({
         setUIState('error');
       }
     })();
-    // TODO(oxlint:exhaustive-deps) `fetchStatusHistory` comes in as a prop and
-    // is recreated on every parent render; adding it would re-fetch the
-    // history on each parent re-render. Intentionally a mount-only effect.
   }, []);
 
   return (
