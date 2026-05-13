@@ -413,7 +413,8 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
     AsyncIterator<mastodon.v1.Account[]> | undefined
   >(undefined);
 
-  async function fetchMembers(firstLoad?: boolean) {
+  const fetchMembersRef = useRef<((firstLoad?: boolean) => void) | null>(null);
+  fetchMembersRef.current = (firstLoad?: boolean) => {
     setShowMore(false);
     setUIState('loading');
     void (async () => {
@@ -435,7 +436,7 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
           if (firstLoad) {
             setMembers(value);
           } else {
-            setMembers(members.concat(value));
+            setMembers((prev) => prev.concat(value));
           }
           setShowMore(!done);
         } else {
@@ -446,10 +447,16 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
         setUIState('error');
       }
     })();
-  }
+  };
+  const fetchMembers = (firstLoad?: boolean): void => {
+    fetchMembersRef.current?.(firstLoad);
+  };
 
   useEffect(() => {
-    void fetchMembers(true);
+    fetchMembers(true);
+    // TODO(oxlint:react-hooks/exhaustive-deps): mount-only initial load. The
+    // fetchMembers reference is intentionally read via a ref so the effect
+    // does not retrigger when masto proxy access recreates the closure.
   }, []);
 
   return (
@@ -476,14 +483,14 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
             <InView
               as="li"
               onChange={(inView) => {
-                if (inView) void fetchMembers();
+                if (inView) fetchMembers();
               }}
             >
               <button
                 type="button"
                 class="light block"
                 onClick={() => {
-                  void fetchMembers();
+                  fetchMembers();
                 }}
               >
                 <Trans>Show more…</Trans>

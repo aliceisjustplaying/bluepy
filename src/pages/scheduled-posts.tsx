@@ -109,13 +109,16 @@ export default function ScheduledPosts() {
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
   );
-  const [reloadCount, reload] = useReducer<number, void>((c) => c + 1, 0);
+  const [reloadCount, reload] = useReducer<number, undefined>(
+    (c) => c + 1,
+    0,
+  );
   const [showScheduledPostModal, setShowScheduledPostModal] = useState<
     ScheduledPostModalState | false
   >(false);
 
   useEffect(() => {
-    reload();
+    reload(undefined);
   }, [snapStates.reloadScheduledPosts]);
 
   useEffect(() => {
@@ -142,6 +145,8 @@ export default function ScheduledPosts() {
         setUIState('default');
       }
     })();
+    // TODO(oxlint:react-hooks/exhaustive-deps): masto.v1.scheduledStatuses
+    // is a masto proxy recreated per-access; adding it would loop.
   }, [reloadCount]);
 
   return (
@@ -173,7 +178,7 @@ export default function ScheduledPosts() {
               >
                 <MenuItem
                   onClick={() => {
-                    reload();
+                    reload(undefined);
                   }}
                 >
                   <Icon icon="refresh" size="l" />

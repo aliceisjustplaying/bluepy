@@ -226,6 +226,13 @@ export default memo(function NotificationService() {
                 <Trans>This notification is from your other account.</Trans>
               </p>
             )}
+            {/* TODO(oxlint:jsx-a11y/no-static-element-interactions,
+                jsx-a11y/click-events-have-key-events): the wrapper div
+                listens for click bubbles so it can auto-dismiss the toast
+                when the user clicks a child button/link. Adding a keyboard
+                mirror would intercept Enter before the child's own
+                activation logic runs (closing the sheet first). The
+                children themselves own their keyboard semantics. */}
             <div
               class="notification-peek"
               // style={{

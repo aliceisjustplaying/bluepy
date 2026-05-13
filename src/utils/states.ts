@@ -8,6 +8,9 @@ import pmem from './pmem';
 import rateLimit from './ratelimit';
 import { shouldFetchThreadParent } from './reply-context';
 import store from './store';
+// TODO(oxlint:import/no-cycle): states <-> unfurl-link cycle is structural;
+// breaking it requires extracting unfurled-link types into a separate module
+// shared by states.ts. Out of scope for the oxlint cleanup batch.
 import unfurlMastodonLinkRaw from './unfurl-link';
 
 // Intentionally loose typings — this hub is mutated by 60+ consumers and 139

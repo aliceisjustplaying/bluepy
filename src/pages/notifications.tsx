@@ -1,7 +1,7 @@
 import './notifications.css';
 
 import type { MessageDescriptor } from '@lingui/core';
-import { msg, t } from '@lingui/core/macro';
+import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { ComponentType, TargetedEvent, TargetedMouseEvent } from 'preact';
 import { Fragment } from 'preact';
@@ -583,11 +583,16 @@ function Notifications({ columnMode }: NotificationsProps) {
 
   useEffect(() => {
     loadNotifications(true);
+    // TODO(oxlint:react-hooks/exhaustive-deps): loadNotifications is
+    // recreated every render (closures over masto + setters); mount-only
+    // initial load is intentional.
   }, []);
   useEffect(() => {
     if (reachStart) {
       loadNotifications(true);
     }
+    // TODO(oxlint:react-hooks/exhaustive-deps): loadNotifications is
+    // recreated every render; scroll-to-top reload triggers off reachStart.
   }, [reachStart]);
 
   // useEffect(() => {
@@ -621,6 +626,9 @@ function Notifications({ columnMode }: NotificationsProps) {
         loadNotifications(true);
       }
     },
+    // TODO(oxlint:react-hooks/exhaustive-deps): loadNotifications is
+    // recreated every render (closures over masto + setters); adding it
+    // would invalidate this callback constantly.
     [snapStates.settings.autoRefresh, uiState],
   );
   // useEffect(loadUpdates, [snapStates.notificationsShowNew]);
@@ -1530,11 +1538,9 @@ interface NotificationRequestModalButtonProps {
 function NotificationRequestModalButton({
   request,
 }: NotificationRequestModalButtonProps) {
-  // NOTE: The JS original used the `t` macro inside this component without
-  // a `useLingui()` call in scope. Lingui's macro transforms `t\`text\``
-  // at build time; the runtime resolution depends on `t` being importable
-  // in this module. We import `t` from `@lingui/core/macro` at the top of
-  // the file to keep that contract — no runtime change.
+  // Use the runtime `t` from useLingui to avoid shadowing the module-level
+  // macro import; mirrors the pattern used elsewhere in the codebase.
+  const { t } = useLingui();
   const { instance } = api();
   const [uiState, setUIState] = useState('loading');
   const { account } = request;

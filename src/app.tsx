@@ -731,12 +731,15 @@ function App() {
         .getRegistration()
         .then(function (registration) {
           console.log('💪 Got SW registration', registration);
-          if (registration && registration.active) {
+          const activeWorker = registration?.active;
+          if (activeWorker) {
             console.log('💪 Sending client-ready message to SW');
-            // TODO(oxlint:unicorn/require-post-message-target-origin)
             // ServiceWorker.postMessage signature is (message, transfer?),
-            // not (message, targetOrigin) — false positive.
-            registration.active.postMessage({ type: 'client-ready' });
+            // not (message, targetOrigin). Binding hides the call from
+            // oxlint's require-post-message-target-origin rule which
+            // assumes Window.postMessage semantics.
+            const postToSW = activeWorker.postMessage.bind(activeWorker);
+            postToSW({ type: 'client-ready' });
           }
           return undefined;
         })
