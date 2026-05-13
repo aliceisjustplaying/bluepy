@@ -1,6 +1,9 @@
+import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
+import type { mastodon } from 'masto';
+import type { JSX, VNode } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import punycode from 'punycode/';
 
@@ -14,7 +17,7 @@ import states from '../utils/states';
 import { getCurrentAccountID, updateAccount } from '../utils/store-utils';
 import supports from '../utils/supports';
 
-import { handleScannerClick } from './account-info';
+import { type AccountInfoShape, handleScannerClick } from './account-info';
 import AddRemoveListsSheet from './add-remove-lists-sheet';
 import Icon from './icon';
 import Loader from './loader';
@@ -36,7 +39,13 @@ const MUTE_DURATIONS = [
   60 * 60 * 24 * 30, // 30 days
   0, // forever
 ];
-const MUTE_DURATIONS_LABELS = {
+
+// Labels for mute durations. Values may be either a `MessageDescriptor` (from
+// `msg`) for the lingui core `_` helper, or a `() => string` factory returned
+// by `i18nDuration`. Consumers branch on `typeof === 'function'` at call sites
+// to preserve original JS behavior.
+type MuteDurationLabel = MessageDescriptor | (() => string);
+const MUTE_DURATIONS_LABELS: Record<number, MuteDurationLabel> = {
   0: msg`Forever`,
   300: i18nDuration(5, 'minute'),
   1_800: i18nDuration(30, 'minute'),
@@ -48,6 +57,95 @@ const MUTE_DURATIONS_LABELS = {
   2592_000: i18nDuration(30, 'day'),
 };
 
+// Endpoint shims for the masto v1 accounts/relationships APIs. The runtime
+// client exposes these, but the loose `MastoClient` type in `utils/api.ts`
+// types `v1.accounts` as `unknown`. We narrow locally rather than widening the
+// shared interface. Removed when api.ts gains a tighter masto shape.
+type Relationship = mastodon.v1.Relationship;
+
+interface ListLike {
+  id: string;
+  title: string;
+}
+
+interface RelationshipsResource {
+  fetch(params: { id: string[] }): Promise<Relationship[]>;
+}
+
+interface AccountListsEndpoint {
+  list(): Promise<ListLike[]>;
+}
+
+interface AccountSelectEndpoint {
+  lists: AccountListsEndpoint;
+  follow(params?: { notify?: boolean; reblogs?: boolean }): Promise<Relationship>;
+  unfollow(): Promise<Relationship>;
+  pin(): Promise<Relationship>;
+  unpin(): Promise<Relationship>;
+  mute(params: { duration: number }): Promise<Relationship>;
+  unmute(): Promise<Relationship>;
+  block(): Promise<Relationship>;
+  unblock(): Promise<Relationship>;
+  removeFromFollowers(): Promise<Relationship>;
+}
+
+interface AccountsEndpoint {
+  $select(id: string): AccountSelectEndpoint;
+  relationships: RelationshipsResource;
+}
+
+interface SearchListParams {
+  q: string;
+  type: 'accounts';
+  limit: number;
+  resolve: boolean;
+}
+
+interface SearchListResult {
+  accounts: mastodon.v1.Account[];
+}
+
+interface V2SearchEndpoint {
+  list(params: SearchListParams): Promise<SearchListResult>;
+}
+
+interface MastoLike {
+  v1: { accounts: unknown } & Record<string, unknown>;
+  v2: { search: unknown } & Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
+  return masto.v1.accounts as unknown as AccountsEndpoint;
+}
+
+function getV2SearchEndpoint(masto: MastoLike): V2SearchEndpoint {
+  return masto.v2.search as unknown as V2SearchEndpoint;
+}
+
+type RelationshipUIState = 'default' | 'loading' | 'error';
+
+interface RelationshipChangePayload {
+  relationship: Relationship;
+  currentID: string;
+}
+
+interface RelatedActionsProps {
+  info?: AccountInfoShape | null;
+  instance?: string;
+  standalone?: boolean;
+  authenticated?: boolean;
+  onRelationshipChange?: (payload: RelationshipChangePayload) => void;
+  // Accepted by callers (e.g. account-info) but unused here — preserves the
+  // pass-through behavior of the original JS component which silently
+  // dropped this prop.
+  onProfileUpdate?: (account: AccountInfoShape) => void;
+  setShowEditProfile?: (show: boolean) => void;
+  showEndorsements?: boolean;
+  renderEndorsements?: boolean | string;
+  setRenderEndorsements?: (value: boolean | string) => void;
+}
+
 function RelatedActions({
   info,
   instance,
@@ -58,9 +156,9 @@ function RelatedActions({
   showEndorsements = false,
   renderEndorsements = false,
   setRenderEndorsements = () => {},
-}) {
+}: RelatedActionsProps) {
   if (!info) return null;
-  const { _, t } = useLingui();
+  const { i18n, t } = useLingui();
   const {
     masto: currentMasto,
     instance: currentInstance,
@@ -68,12 +166,13 @@ function RelatedActions({
   } = api();
   const sameInstance = instance === currentInstance;
 
-  const [relationshipUIState, setRelationshipUIState] = useState('default');
-  const [relationship, setRelationship] = useState(null);
+  const [relationshipUIState, setRelationshipUIState] =
+    useState<RelationshipUIState>('default');
+  const [relationship, setRelationship] = useState<Relationship | null>(null);
 
   const { id, acct, url, username, locked, lastStatusAt, note, fields, moved } =
     info;
-  const accountID = useRef(id);
+  const accountID = useRef<string>(id);
 
   const {
     following,
@@ -81,17 +180,19 @@ function RelatedActions({
     notifying,
     followedBy,
     blocking,
-    blockedBy,
+    blockedBy: _blockedBy,
     muting,
-    mutingNotifications,
+    mutingNotifications: _mutingNotifications,
     requested,
-    domainBlocking,
+    domainBlocking: _domainBlocking,
     endorsed,
     note: privateNote,
-  } = relationship || {};
+  } = (relationship ?? {}) as Partial<Relationship>;
 
-  const [currentInfo, setCurrentInfo] = useState(null);
-  const [isSelf, setIsSelf] = useState(false);
+  const [currentInfo, setCurrentInfo] = useState<mastodon.v1.Account | null>(
+    null,
+  );
+  const [isSelf, setIsSelf] = useState<boolean>(false);
 
   const acctWithInstance = acct.includes('@') ? acct : `${acct}@${instance}`;
 
@@ -100,7 +201,7 @@ function RelatedActions({
   useEffect(() => {
     if (info) {
       const currentAccount = getCurrentAccountID();
-      let currentID;
+      let currentID: string | undefined;
       (async () => {
         if (sameInstance && authenticated) {
           currentID = id;
@@ -108,7 +209,9 @@ function RelatedActions({
           // Grab this account from my logged-in instance
           const acctHasInstance = info.acct.includes('@');
           try {
-            const results = await currentMasto.v2.search.list({
+            const results = await getV2SearchEndpoint(
+              currentMasto as unknown as MastoLike,
+            ).list({
               q: acctHasInstance ? info.acct : `${info.username}@${instance}`,
               type: 'accounts',
               limit: 1,
@@ -138,11 +241,11 @@ function RelatedActions({
 
         setRelationshipUIState('loading');
 
-        const fetchRelationships = currentMasto.v1.accounts.relationships.fetch(
-          {
-            id: [currentID],
-          },
-        );
+        const fetchRelationships = getAccountsEndpoint(
+          currentMasto as unknown as MastoLike,
+        ).relationships.fetch({
+          id: [currentID],
+        });
 
         try {
           const relationships = await fetchRelationships;
@@ -164,17 +267,20 @@ function RelatedActions({
 
   useEffect(() => {
     if (info && isSelf) {
-      updateAccount(info);
+      // `updateAccount` accepts the loose `AccountInfo` shape from
+      // store-utils; bridge from the stricter masto `Account` view.
+      updateAccount(info as unknown as Parameters<typeof updateAccount>[0]);
     }
   }, [info, isSelf]);
 
   const loading = relationshipUIState === 'loading';
 
-  const [showTranslatedBio, setShowTranslatedBio] = useState(false);
-  const [showAddRemoveLists, setShowAddRemoveLists] = useState(false);
-  const [showPrivateNoteModal, setShowPrivateNoteModal] = useState(false);
-  const [lists, setLists] = useState([]);
-  const [searchEnabled, setSearchEnabled] = useState(false);
+  const [showTranslatedBio, setShowTranslatedBio] = useState<boolean>(false);
+  const [showAddRemoveLists, setShowAddRemoveLists] = useState<boolean>(false);
+  const [showPrivateNoteModal, setShowPrivateNoteModal] =
+    useState<boolean>(false);
+  const [lists, setLists] = useState<ListLike[]>([]);
+  const [searchEnabled, setSearchEnabled] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentAuthenticated) return;
@@ -273,12 +379,14 @@ function RelatedActions({
                 <Icon icon="more2" size="l" alt={t`More`} />
               </button>
             }
-            onMenuChange={(e) => {
+            onMenuChange={(e: { open?: boolean }) => {
               if (following && e.open) {
                 // Fetch lists that have this account
                 (async () => {
                   try {
-                    const lists = await currentMasto.v1.accounts
+                    const lists = await getAccountsEndpoint(
+                      currentMasto as unknown as MastoLike,
+                    )
                       .$select(accountID.current)
                       .lists.list();
                     console.log('fetched account lists', lists);
@@ -350,7 +458,9 @@ function RelatedActions({
                         setRelationshipUIState('loading');
                         (async () => {
                           try {
-                            const rel = await currentMasto.v1.accounts
+                            const rel = await getAccountsEndpoint(
+                              currentMasto as unknown as MastoLike,
+                            )
                               .$select(accountID.current)
                               .follow({
                                 notify: !notifying,
@@ -381,7 +491,9 @@ function RelatedActions({
                         setRelationshipUIState('loading');
                         (async () => {
                           try {
-                            const rel = await currentMasto.v1.accounts
+                            const rel = await getAccountsEndpoint(
+                              currentMasto as unknown as MastoLike,
+                            )
                               .$select(accountID.current)
                               .follow({
                                 reblogs: !showingReblogs,
@@ -415,7 +527,9 @@ function RelatedActions({
                         try {
                           if (endorsed) {
                             const newRelationship =
-                              await currentMasto.v1.accounts
+                              await getAccountsEndpoint(
+                                currentMasto as unknown as MastoLike,
+                              )
                                 .$select(currentInfo?.id || id)
                                 .unpin();
                             setRelationship(newRelationship);
@@ -425,7 +539,9 @@ function RelatedActions({
                             );
                           } else {
                             const newRelationship =
-                              await currentMasto.v1.accounts
+                              await getAccountsEndpoint(
+                                currentMasto as unknown as MastoLike,
+                              )
                                 .$select(currentInfo?.id || id)
                                 .pin();
                             setRelationship(newRelationship);
@@ -613,7 +729,9 @@ function RelatedActions({
                       setRelationshipUIState('loading');
                       (async () => {
                         try {
-                          const newRelationship = await currentMasto.v1.accounts
+                          const newRelationship = await getAccountsEndpoint(
+                            currentMasto as unknown as MastoLike,
+                          )
                             .$select(currentInfo?.id || id)
                             .unmute();
                           console.log('unmuting', newRelationship);
@@ -670,7 +788,9 @@ function RelatedActions({
                             (async () => {
                               try {
                                 const newRelationship =
-                                  await currentMasto.v1.accounts
+                                  await getAccountsEndpoint(
+                                    currentMasto as unknown as MastoLike,
+                                  )
                                     .$select(currentInfo?.id || id)
                                     .mute({
                                       duration,
@@ -682,8 +802,16 @@ function RelatedActions({
                                   t`Muted @${username} for ${
                                     typeof MUTE_DURATIONS_LABELS[duration] ===
                                     'function'
-                                      ? MUTE_DURATIONS_LABELS[duration]()
-                                      : _(MUTE_DURATIONS_LABELS[duration])
+                                      ? (
+                                          MUTE_DURATIONS_LABELS[
+                                            duration
+                                          ] as () => string
+                                        )()
+                                      : i18n._(
+                                          MUTE_DURATIONS_LABELS[
+                                            duration
+                                          ] as MessageDescriptor,
+                                        )
                                   }`,
                                 );
                                 states.reloadGenericAccounts.id = 'mute';
@@ -697,8 +825,16 @@ function RelatedActions({
                           }}
                         >
                           {typeof MUTE_DURATIONS_LABELS[duration] === 'function'
-                            ? MUTE_DURATIONS_LABELS[duration]()
-                            : _(MUTE_DURATIONS_LABELS[duration])}
+                            ? (
+                                MUTE_DURATIONS_LABELS[
+                                  duration
+                                ] as () => string
+                              )()
+                            : i18n._(
+                                MUTE_DURATIONS_LABELS[
+                                  duration
+                                ] as MessageDescriptor,
+                              )}
                         </MenuItem>
                       ))}
                     </div>
@@ -723,7 +859,9 @@ function RelatedActions({
                       setRelationshipUIState('loading');
                       (async () => {
                         try {
-                          const newRelationship = await currentMasto.v1.accounts
+                          const newRelationship = await getAccountsEndpoint(
+                            currentMasto as unknown as MastoLike,
+                          )
                             .$select(currentInfo?.id || id)
                             .removeFromFollowers();
                           console.log(
@@ -773,7 +911,9 @@ function RelatedActions({
                     (async () => {
                       try {
                         if (blocking) {
-                          const newRelationship = await currentMasto.v1.accounts
+                          const newRelationship = await getAccountsEndpoint(
+                            currentMasto as unknown as MastoLike,
+                          )
                             .$select(currentInfo?.id || id)
                             .unblock();
                           console.log('unblocking', newRelationship);
@@ -781,7 +921,9 @@ function RelatedActions({
                           setRelationshipUIState('default');
                           showToast(t`Unblocked @${username}`);
                         } else {
-                          const newRelationship = await currentMasto.v1.accounts
+                          const newRelationship = await getAccountsEndpoint(
+                            currentMasto as unknown as MastoLike,
+                          )
                             .$select(currentInfo?.id || id)
                             .block();
                           console.log('blocking', newRelationship);
@@ -863,10 +1005,11 @@ function RelatedActions({
                 <MenuDivider />
                 <MenuItem
                   onClick={async () => {
-                    const relationships =
-                      await currentMasto.v1.accounts.relationships.fetch({
-                        id: [accountID.current],
-                      });
+                    const relationships = await getAccountsEndpoint(
+                      currentMasto as unknown as MastoLike,
+                    ).relationships.fetch({
+                      id: [accountID.current],
+                    });
                     const { note } = relationships[0] || {};
                     if (note) {
                       alert(note);
@@ -900,7 +1043,7 @@ function RelatedActions({
                 setRelationshipUIState('loading');
                 (async () => {
                   try {
-                    let newRelationship;
+                    let newRelationship: Relationship | undefined;
 
                     if (following || requested) {
                       // const yes = confirm(
@@ -910,12 +1053,16 @@ function RelatedActions({
                       // );
 
                       // if (yes) {
-                      newRelationship = await currentMasto.v1.accounts
+                      newRelationship = await getAccountsEndpoint(
+                        currentMasto as unknown as MastoLike,
+                      )
                         .$select(accountID.current)
                         .unfollow();
                       // }
                     } else {
-                      newRelationship = await currentMasto.v1.accounts
+                      newRelationship = await getAccountsEndpoint(
+                        currentMasto as unknown as MastoLike,
+                      )
                         .$select(accountID.current)
                         .follow();
                     }
@@ -1013,9 +1160,9 @@ function RelatedActions({
         >
           <PrivateNoteSheet
             account={info}
-            note={privateNote}
-            onRelationshipChange={(relationship) => {
-              setRelationship(relationship);
+            note={privateNote ?? undefined}
+            onRelationshipChange={(relationship: unknown) => {
+              setRelationship(relationship as Relationship);
               // onRelationshipChange({ relationship, currentID: accountID.current });
             }}
             onClose={() => setShowPrivateNoteModal(false)}
@@ -1026,7 +1173,7 @@ function RelatedActions({
   );
 }
 
-function niceAccountURL(url) {
+function niceAccountURL(url: string | null | undefined): VNode<JSX.HTMLAttributes> | undefined {
   if (!url) return;
   const urlObj = URL.parse(url);
   if (!urlObj) return;
