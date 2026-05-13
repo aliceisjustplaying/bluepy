@@ -1,5 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import prettify from 'html-prettify';
+import type { JSX } from 'preact';
 
 import emojifyText from '../utils/emojify-text';
 import showToast from '../utils/show-toast';
@@ -7,7 +8,65 @@ import states, { statusKey } from '../utils/states';
 
 import Icon from './icon';
 
-function generateHTMLCode(post, instance, level = 0) {
+interface EmojiLike {
+  shortcode: string;
+  url: string;
+  staticUrl?: string;
+}
+
+interface MediaAttachment {
+  id: string;
+  type: string;
+  description?: string;
+  meta?: {
+    original?: { width?: number; height?: number };
+    small?: { width?: number; height?: number };
+  };
+  previewRemoteUrl?: string;
+  previewUrl?: string;
+  remoteUrl?: string;
+  url: string;
+}
+
+interface PostLike {
+  account: {
+    url?: string;
+    displayName?: string;
+    acct?: string;
+    username?: string;
+    emojis?: EmojiLike[];
+    bot?: boolean;
+    group?: boolean;
+  };
+  id: string;
+  poll?: { options?: { title: string; votesCount?: number }[] };
+  spoilerText?: string;
+  language?: string;
+  editedAt?: string;
+  createdAt?: string;
+  content?: string;
+  mediaAttachments?: MediaAttachment[];
+  url?: string;
+  emojis?: EmojiLike[];
+}
+
+interface QuoteRef {
+  id: string;
+  instance?: string;
+  url?: string;
+}
+
+interface PostEmbedModalProps {
+  post: PostLike;
+  instance?: string;
+  onClose?: () => void;
+}
+
+function generateHTMLCode(
+  post: PostLike,
+  instance: string | undefined,
+  level = 0,
+): string {
   const {
     account: {
       url: accountURL,
@@ -31,29 +90,38 @@ function generateHTMLCode(post, instance, level = 0) {
   } = post;
 
   const sKey = statusKey(id, instance);
-  const quotes = states.statusQuotes[sKey] || [];
-  const uniqueQuotes = quotes.filter(
-    (q, i, arr) => arr.findIndex((q2) => q2.url === q.url) === i,
+  const quotes = (sKey ? states.statusQuotes[sKey] : undefined) || [];
+  const uniqueQuotes = (quotes as QuoteRef[]).filter(
+    (q: QuoteRef, i: number, arr: QuoteRef[]) =>
+      arr.findIndex((q2: QuoteRef) => q2.url === q.url) === i,
   );
   const quoteStatusesHTML =
     uniqueQuotes.length && level <= 2
       ? uniqueQuotes
-          .map((quote) => {
+          .map((quote: QuoteRef) => {
             const { id, instance } = quote;
             const sKey = statusKey(id, instance);
-            const s = states.statuses[sKey];
+            const s = sKey ? states.statuses[sKey] : undefined;
             if (s) {
-              return generateHTMLCode(s, instance, ++level);
+              // states.statuses values are typed as Record<string, unknown> in
+              // states.ts; PostLike is the structural shape this component
+              // expects. Cast is debt until states.ts grows a tighter Status
+              // export shared with this component.
+              return generateHTMLCode(
+                s as unknown as PostLike,
+                instance,
+                ++level,
+              );
             }
           })
           .join('')
       : '';
 
-  const createdAtDate = new Date(createdAt);
+  const createdAtDate = new Date(createdAt as string);
   // const editedAtDate = editedAt && new Date(editedAt);
 
   const contentHTML =
-    emojifyText(content, emojis) +
+    emojifyText(content as string, emojis) +
     '\n' +
     quoteStatusesHTML +
     '\n' +
@@ -63,20 +131,20 @@ function generateHTMLCode(post, instance, level = 0) {
         <ul>
         ${poll.options
           .map(
-            (option) => `
+            (option: { title: string; votesCount?: number }) => `
               <li>
                 ${option.title}
-                ${option.votesCount >= 0 ? ` (${option.votesCount})` : ''}
+                ${(option.votesCount ?? -1) >= 0 ? ` (${option.votesCount})` : ''}
               </li>
             `,
           )
           .join('')}
         </ul>`
       : '') +
-    (mediaAttachments.length > 0
+    (mediaAttachments!.length > 0
       ? '\n' +
-        mediaAttachments
-          .map((media) => {
+        mediaAttachments!
+          .map((media: MediaAttachment) => {
             const {
               description,
               meta,
@@ -155,7 +223,7 @@ function generateHTMLCode(post, instance, level = 0) {
       }
       <footer>
         — ${emojifyText(
-          displayName,
+          displayName as string,
           accountEmojis,
         )} (@${acct}) ${!!createdAt ? `<a href="${url}"><time datetime="${createdAtDate.toISOString()}">${createdAtDate.toLocaleString()}</time></a>` : ''}
       </footer>
@@ -165,7 +233,7 @@ function generateHTMLCode(post, instance, level = 0) {
   return prettify(htmlCode);
 }
 
-function PostEmbedModal({ post, instance, onClose }) {
+function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
   const { t } = useLingui();
   const {
     account: {
@@ -201,15 +269,15 @@ function PostEmbedModal({ post, instance, onClose }) {
           <Trans>Embed post</Trans>
         </h2>
       </header>
-      <main tabIndex="-1">
+      <main tabIndex={-1}>
         <h3>
           <Trans>HTML Code</Trans>
         </h3>
         <textarea
           class="embed-code"
-          readonly
-          onClick={(e) => {
-            e.target.select();
+          readOnly
+          onClick={(e: JSX.TargetedMouseEvent<HTMLTextAreaElement>) => {
+            e.currentTarget.select();
           }}
           dir="auto"
         >
@@ -238,7 +306,7 @@ function PostEmbedModal({ post, instance, onClose }) {
               <Trans>Media attachments:</Trans>
             </p>
             <ol class="links-list">
-              {mediaAttachments.map((media) => {
+              {mediaAttachments.map((media: MediaAttachment) => {
                 return (
                   <li key={media.id}>
                     <a
@@ -260,7 +328,7 @@ function PostEmbedModal({ post, instance, onClose }) {
               <Trans>Account Emojis:</Trans>
             </p>
             <ul>
-              {accountEmojis.map((emoji) => {
+              {accountEmojis.map((emoji: EmojiLike) => {
                 return (
                   <li key={emoji.shortcode}>
                     <picture>
@@ -305,7 +373,7 @@ function PostEmbedModal({ post, instance, onClose }) {
               <Trans>Emojis:</Trans>
             </p>
             <ul>
-              {emojis.map((emoji) => {
+              {emojis.map((emoji: EmojiLike) => {
                 return (
                   <li key={emoji.shortcode}>
                     <picture>

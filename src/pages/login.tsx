@@ -2,6 +2,7 @@ import './login.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import Fuse from 'fuse.js';
+import type { JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useSearchParams } from 'react-router-dom';
 
@@ -31,14 +32,19 @@ import {
 } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 
-const { PHANPY_DEFAULT_INSTANCE: DEFAULT_INSTANCE } = import.meta.env;
+interface CredentialApplicationShape extends Record<string, unknown> {
+  client_id?: string;
+  client_secret?: string;
+}
 
 function Login() {
   const { t } = useLingui();
   useTitle(t`Log in`, '/login');
-  const instanceURLRef = useRef();
+  const instanceURLRef = useRef<HTMLInputElement | null>(null);
   const cachedInstanceURL = store.local.get('instanceURL');
-  const [uiState, setUIState] = useState('default');
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
   const [bskyIdentifier, setBskyIdentifier] = useState('');
   const [bskyPassword, setBskyPassword] = useState('');
   const [bskyService, setBskyService] = useState('');
@@ -49,8 +55,8 @@ function Login() {
     instance || cachedInstanceURL?.toLowerCase() || '',
   );
 
-  const [instancesList, setInstancesList] = useState([]);
-  const searcher = useRef();
+  const [instancesList, setInstancesList] = useState<string[]>([]);
+  const searcher = useRef<Fuse<string> | undefined>(undefined);
   useEffect(() => {
     (async () => {
       try {
@@ -71,7 +77,7 @@ function Login() {
   //   }
   // }, []);
 
-  const submitInstance = (instanceURL) => {
+  const submitInstance = (instanceURL: string | null | undefined) => {
     if (!instanceURL) return;
 
     (async () => {
@@ -86,8 +92,8 @@ function Login() {
         // Get Link[template]
         const link = xmlDoc.getElementsByTagName('Link')[0];
         const template = link.getAttribute('template');
-        const url = URL.parse(template);
-        const { host } = url; // host includes the port
+        const url = URL.parse(template!);
+        const { host } = url!; // host includes the port
         if (instanceURL !== host) {
           console.log(`💫 ${instanceURL} -> ${host}`);
           instanceURL = host;
@@ -101,15 +107,17 @@ function Login() {
 
       setUIState('loading');
       try {
-        let credentialApplication = getCredentialApplication(instanceURL);
+        let credentialApplication = getCredentialApplication(
+          instanceURL,
+        ) as CredentialApplicationShape | null;
         if (
           !credentialApplication ||
           !credentialApplication.client_id ||
           !credentialApplication.client_secret
         ) {
-          credentialApplication = await registerApplication({
+          credentialApplication = (await registerApplication({
             instanceURL,
-          });
+          })) as CredentialApplicationShape;
           storeCredentialApplication(instanceURL, credentialApplication);
         }
 
@@ -184,8 +192,8 @@ function Login() {
         .trim()
     : null;
   const instanceTextLooksLikeDomain =
-    /[^\s\r\n\t\/\\]+\.[^\s\r\n\t\/\\]+/.test(cleanInstanceText) &&
-    !/[\s\/\\@]/.test(cleanInstanceText);
+    /[^\s\r\n\t\/\\]+\.[^\s\r\n\t\/\\]+/.test(cleanInstanceText as string) &&
+    !/[\s\/\\@]/.test(cleanInstanceText as string);
 
   const instancesSuggestions = cleanInstanceText
     ? searcher.current
@@ -203,7 +211,7 @@ function Login() {
         ? instancesList.find((instance) => instance.includes(instanceText))
         : null;
 
-  const onSubmit = (e) => {
+  const onSubmit = (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
     e.preventDefault();
     // const { elements } = e.target;
     // let instanceURL = elements.instanceURL.value.toLowerCase();
@@ -220,7 +228,7 @@ function Login() {
     submitInstance(selectedInstanceText);
   };
 
-  const submitBluesky = (e) => {
+  const submitBluesky = (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
     e.preventDefault();
     if (!bskyIdentifier || !bskyPassword) return;
     (async () => {
@@ -259,7 +267,9 @@ function Login() {
     })();
   };
 
-  const submitBlueskyOAuth = (e) => {
+  const submitBlueskyOAuth = (
+    e: JSX.TargetedEvent<HTMLButtonElement, Event>,
+  ) => {
     e.preventDefault();
     if (!bskyIdentifier) return;
     (async () => {
@@ -301,9 +311,11 @@ function Login() {
               autocorrect="off"
               autocapitalize="off"
               autocomplete="username"
-              spellCheck={false}
+              spellcheck={false}
               placeholder="alice.bsky.social"
-              onInput={(e) => setBskyIdentifier(e.target.value)}
+              onInput={(e: JSX.TargetedEvent<HTMLInputElement, Event>) =>
+                setBskyIdentifier(e.currentTarget.value)
+              }
             />
           </label>
           <div>
@@ -325,7 +337,9 @@ function Login() {
                 class="large"
                 disabled={uiState === 'loading'}
                 autocomplete="current-password"
-                onInput={(e) => setBskyPassword(e.target.value)}
+                onInput={(e: JSX.TargetedEvent<HTMLInputElement, Event>) =>
+                  setBskyPassword(e.currentTarget.value)
+                }
               />
             </label>
             <label>
@@ -338,9 +352,11 @@ function Login() {
                 autocorrect="off"
                 autocapitalize="off"
                 autocomplete="url"
-                spellCheck={false}
+                spellcheck={false}
                 placeholder="pds.example.com"
-                onInput={(e) => setBskyService(e.target.value)}
+                onInput={(e: JSX.TargetedEvent<HTMLInputElement, Event>) =>
+                  setBskyService(e.currentTarget.value)
+                }
               />
             </label>
             <div>
