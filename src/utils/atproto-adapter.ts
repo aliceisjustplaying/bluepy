@@ -26,6 +26,7 @@ import {
 import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
 
 import { BSKY_PDS, resolveAtprotoLoginService } from './atproto-login-service';
+import store from './store';
 import { compressAtprotoImageIfNeeded } from './atproto-image-compression';
 import { createAtprotoOAuthAgent } from './atproto-oauth';
 import { encodeAtprotoID } from './atproto-route';
@@ -34,6 +35,32 @@ import { createAtprotoExternalEmbed, getFirstPostURL } from './atproto-unfurl';
 const BSKY_APPVIEW = 'https://public.api.bsky.app';
 const BSKY_APPVIEW_DID = 'did:web:api.bsky.app';
 const BSKY_APPVIEW_PROXY = `${BSKY_APPVIEW_DID}#bsky_appview`;
+
+const BLACKSKY_APPVIEW = 'https://api.blacksky.community';
+const BLACKSKY_APPVIEW_DID = 'did:web:api.blacksky.community';
+const BLACKSKY_APPVIEW_PROXY = `${BLACKSKY_APPVIEW_DID}#bsky_appview`;
+
+export const APPVIEW_OPTIONS: Record<string, { label: string; url: string; proxy: string }> = {
+  bluesky: {
+    label: 'Bluesky',
+    url: BSKY_APPVIEW,
+    proxy: BSKY_APPVIEW_PROXY,
+  },
+  blacksky: {
+    label: 'Blacksky',
+    url: BLACKSKY_APPVIEW,
+    proxy: BLACKSKY_APPVIEW_PROXY,
+  },
+};
+
+export function getActiveAppview(): string {
+  return (store.local.get('settings-appview') as string) || 'bluesky';
+}
+
+function getActiveAppviewConfig() {
+  return APPVIEW_OPTIONS[getActiveAppview()] ?? APPVIEW_OPTIONS.bluesky;
+}
+
 export const BSKY_INSTANCE = 'bsky.social';
 const BSKY_DISCOVER_FEED =
   'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot';
@@ -1917,7 +1944,7 @@ export function createAtprotoClient({
   if (!agentOrNull) throw new Error('Missing Bluesky OAuth session');
   const agent: AtprotoAgent = agentOrNull;
   if (!isBskyAppViewService(service) && isAtprotoProxyAgent(agent)) {
-    agent.configureProxy(BSKY_APPVIEW_PROXY);
+    agent.configureProxy(getActiveAppviewConfig().proxy);
   }
   const agentLoose: AtprotoAgentInternals = isAtprotoAgentInternals(agent)
     ? agent
@@ -3440,5 +3467,5 @@ export async function loginAtproto({
 }
 
 export function createPublicAtprotoClient() {
-  return createAtprotoClient({ service: BSKY_APPVIEW });
+  return createAtprotoClient({ service: getActiveAppviewConfig().url });
 }

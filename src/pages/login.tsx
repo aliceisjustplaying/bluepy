@@ -13,7 +13,12 @@ import Link from '../components/link';
 import Loader from '../components/loader';
 import instancesListURL from '../data/instances.json?url';
 import { initClient, initInstance, initPreferences } from '../utils/api';
-import { BSKY_INSTANCE, loginAtproto } from '../utils/atproto-adapter';
+import {
+  APPVIEW_OPTIONS,
+  BSKY_INSTANCE,
+  getActiveAppview,
+  loginAtproto,
+} from '../utils/atproto-adapter';
 import { startAtprotoOAuthLogin } from '../utils/atproto-oauth';
 import {
   getAuthorizationURL,
@@ -49,6 +54,30 @@ function Login() {
   const [bskyIdentifier, setBskyIdentifier] = useState('');
   const [bskyPassword, setBskyPassword] = useState('');
   const [bskyService, setBskyService] = useState('');
+  const [appview, setAppview] = useState(getActiveAppview());
+  const HANDLE_SUFFIXES = [
+    '.bsky.social', '.blacksky.app', '.eurosky.social', '.pckt.cafe', '.com',
+    '.tngl.sh', '.myatproto.social', '.margin.cafe', '.selfhosted.social', '.npmx.social',
+  ];
+  const remainingSuffixes = useRef<string[]>([]);
+  const [currentSuffix, setCurrentSuffix] = useState(HANDLE_SUFFIXES[0]);
+  const [suffixFading, setSuffixFading] = useState(false);
+  const [handleFocused, setHandleFocused] = useState(false);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSuffixFading(true);
+      setTimeout(() => {
+        setCurrentSuffix((prev: string) => {
+          if (remainingSuffixes.current.length === 0) {
+            remainingSuffixes.current = HANDLE_SUFFIXES.filter((s) => s !== prev).sort(() => Math.random() - 0.5);
+          }
+          return remainingSuffixes.current.pop()!;
+        });
+        setSuffixFading(false);
+      }, 250);
+    }, 1250);
+    return () => clearInterval(id);
+  }, []);
   const [searchParams] = useSearchParams();
   const instance = searchParams.get('instance');
   const submit = searchParams.get('submit');
@@ -218,6 +247,7 @@ function Login() {
     e.preventDefault();
     if (!bskyIdentifier || !bskyPassword) return;
     void (async () => {
+      store.local.set('settings-appview', appview);
       setUIState('loading');
       try {
         const { account, session, service } = await loginAtproto({
@@ -260,6 +290,7 @@ function Login() {
     e.preventDefault();
     if (!bskyIdentifier) return;
     void (async () => {
+      store.local.set('settings-appview', appview);
       setUIState('loading');
       try {
         await startAtprotoOAuthLogin(bskyIdentifier.trim());
@@ -300,28 +331,68 @@ function Login() {
           <h2>Bluesky</h2>
           <label>
             <p>Handle or PDS URL</p>
-            <input
-              value={bskyIdentifier}
-              type="text"
-              className="large"
-              disabled={uiState === 'loading'}
-              autoCorrect="off"
-              autoCapitalize="off"
-              autoComplete="username"
-              spellCheck={false}
-              placeholder="alice.bsky.social"
-              onInput={(e: SyntheticEvent<HTMLInputElement>) => {
-                setBskyIdentifier(e.currentTarget.value);
-              }}
-            />
+            <div style={{ position: 'relative', display: 'inline-block', width: '100%' }}>
+              <input
+                value={bskyIdentifier}
+                type="text"
+                className="large"
+                disabled={uiState === 'loading'}
+                autoCorrect="off"
+                autoCapitalize="off"
+                autoComplete="username"
+                spellCheck={false}
+                onInput={(e: SyntheticEvent<HTMLInputElement>) => {
+                  setBskyIdentifier(e.currentTarget.value);
+                }}
+                onFocus={() => setHandleFocused(true)}
+                onBlur={() => setHandleFocused(false)}
+                style={{ width: '100%' }}
+              />
+              {!bskyIdentifier && !handleFocused && (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    pointerEvents: 'none',
+                    color: 'var(--placeholder-color, #999)',
+                    whiteSpace: 'nowrap',
+                    fontSize: 'inherit',
+                  }}
+                >
+                  you
+                  <span
+                    style={{
+                      opacity: suffixFading ? 0 : 1,
+                      transition: 'opacity 0.25s ease',
+                    }}
+                  >
+                    {currentSuffix}
+                  </span>
+                </span>
+              )}
+            </div>
           </label>
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5em', marginTop: '1em' }}>
+            <label>AppView: </label>
+            <select
+              value={appview}
+              onChange={(e) => setAppview((e.target as HTMLSelectElement).value)}
+            >
+              {Object.entries(APPVIEW_OPTIONS).map(([key, { label }]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ marginTop: '1em' }}>
             <button
               type="button"
               disabled={uiState === 'loading' || !bskyIdentifier}
               onClick={submitBlueskyOAuth}
             >
-              Continue with OAuth
+              Connect to Atmosphere
             </button>
           </div>
           <details className="bsky-advanced-login">
