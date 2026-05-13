@@ -1,23 +1,12 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentChildren, ComponentType } from 'preact';
 import { useRef } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import shortenNumber from '../utils/shorten-number';
 import states from '../utils/states';
 
-import LinkUntyped from './link';
-
-interface LinkProps {
-  to: string;
-  class?: string;
-  children?: ComponentChildren;
-}
-function Link(props: LinkProps) {
-  const Inner = LinkUntyped as unknown as ComponentType<LinkProps>;
-  return <Inner {...props} />;
-}
+import Link from './link';
 
 const LIMIT = 80;
 

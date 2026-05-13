@@ -148,7 +148,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           if (height) {
             textExpanderRef.current.setStyle({
               minHeight: height + 'px',
-            } as unknown as Partial<CSSStyleDeclaration>);
+            });
           }
         }
       },
@@ -212,7 +212,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     return (
       <TextExpander
-        ref={textExpanderRef as unknown as Ref<TextExpanderHandle>}
+        ref={textExpanderRef}
         keys="@ ＠ : # ＃"
         class="compose-field-container"
         onTrigger={onTrigger}

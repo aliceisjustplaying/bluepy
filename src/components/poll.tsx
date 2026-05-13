@@ -140,7 +140,7 @@ export default function Poll({
     >
       {resultsView ? (
         <>
-          <div class="poll-options" ref={ref as unknown as Ref<HTMLDivElement>}>
+          <div class="poll-options" ref={ref as Ref<HTMLDivElement>}>
             {options.slice(0, visibleOptionsCount).map((option, i) => {
               const { title, votesCount: optionVotesCountRaw } = option;
               const optionVotesCount = optionVotesCountRaw ?? 0;
@@ -245,7 +245,7 @@ export default function Poll({
             })();
           }}
         >
-          <div class="poll-options" ref={ref as unknown as Ref<HTMLDivElement>}>
+          <div class="poll-options" ref={ref as Ref<HTMLDivElement>}>
             {options.slice(0, visibleOptionsCount).map((option, i) => {
               const { title } = option;
               const isSelected = Array.isArray(selectedOptions)

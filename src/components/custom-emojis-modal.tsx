@@ -219,7 +219,7 @@ function CustomEmojisModal({
     if (newSize === EMOJI_SIZE_MIN) {
       store.local.del(CUSTOM_EMOJI_SIZE);
     } else {
-      store.local.set(CUSTOM_EMOJI_SIZE, newSize as unknown as string);
+      store.local.set(CUSTOM_EMOJI_SIZE, String(newSize));
     }
   }, [emojiSize]);
 
@@ -229,7 +229,7 @@ function CustomEmojisModal({
     if (newSize === EMOJI_SIZE_MIN) {
       store.local.del(CUSTOM_EMOJI_SIZE);
     } else {
-      store.local.set(CUSTOM_EMOJI_SIZE, newSize as unknown as string);
+      store.local.set(CUSTOM_EMOJI_SIZE, String(newSize));
     }
   }, [emojiSize]);
 

@@ -1,27 +1,10 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 
 import getHTMLText from '../utils/get-html-text';
 
 import Icon from './icon';
-import TranslationBlockUntyped from './translation-block';
-
-interface TranslationBlockProps {
-  forceTranslate?: boolean;
-  sourceLanguage?: string;
-  onTranslate?: (params: {
-    text: string;
-    source?: string;
-    target?: string;
-    signal?: AbortSignal;
-  }) => Promise<unknown>;
-  text?: string;
-  mini?: boolean;
-  autoDetected?: boolean;
-}
-const TranslationBlock =
-  TranslationBlockUntyped as unknown as ComponentType<TranslationBlockProps>;
+import TranslationBlock from './translation-block';
 
 interface TranslatedBioSheetProps {
   note?: string;
