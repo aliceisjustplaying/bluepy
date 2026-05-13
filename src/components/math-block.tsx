@@ -1,7 +1,7 @@
 import 'temml/dist/Temml-Local.css';
 
 import { useLingui } from '@lingui/react/macro';
-import type { JSX, RefObject } from 'preact';
+import type { RefObject, TargetedMouseEvent } from 'preact';
 import { useCallback, useState } from 'preact/hooks';
 import type Temml from 'temml';
 
@@ -101,15 +101,10 @@ interface MathBlockProps {
 }
 
 const MathBlock = ({ content, contentRef, onRevert }: MathBlockProps) => {
-  DELIMITERS_REGEX.lastIndex = 0; // Reset index to prevent g trap
-  const hasLatexContent = DELIMITERS_REGEX.test(content);
-
-  if (!hasLatexContent) return null;
-
   const { t } = useLingui();
   const [mathRendered, setMathRendered] = useState(false);
   const toggleMathRendering = useCallback(
-    async (e: JSX.TargetedMouseEvent<HTMLButtonElement>) => {
+    async (e: TargetedMouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
       e.stopPropagation();
       if (mathRendered) {
@@ -144,18 +139,29 @@ const MathBlock = ({ content, contentRef, onRevert }: MathBlockProps) => {
             setMathRendered(false);
             onRevert(); // Revert because DOM modified by cleanDOMForTemml
           }
-        } catch (e) {
-          console.error('Failed to LaTeX:', e);
+        } catch (err) {
+          console.error('Failed to LaTeX:', err);
         }
       }
     },
-    [mathRendered],
+    [mathRendered, contentRef, onRevert, t],
   );
+
+  DELIMITERS_REGEX.lastIndex = 0; // Reset index to prevent g trap
+  const hasLatexContent = DELIMITERS_REGEX.test(content);
+
+  if (!hasLatexContent) return null;
 
   return (
     <div class="math-block">
       <Icon icon="formula" size="s" /> <span>{t`Math expressions found.`}</span>{' '}
-      <button type="button" class="light small" onClick={toggleMathRendering}>
+      <button
+        type="button"
+        class="light small"
+        onClick={(e) => {
+          void toggleMathRendering(e);
+        }}
+      >
         {mathRendered
           ? t({
               comment:

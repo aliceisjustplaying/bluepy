@@ -2,7 +2,7 @@ import './quote-settings-sheet.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType, JSX } from 'preact';
+import type { ComponentType, TargetedEvent } from 'preact';
 import { useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
@@ -60,7 +60,7 @@ function QuoteSettingsSheet({
     currentPolicy || 'public',
   );
 
-  const handleFormSubmit = async (e: JSX.TargetedEvent<HTMLFormElement>) => {
+  const handleFormSubmit = async (e: TargetedEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const raw = formData.get('quoteApprovalPolicy');
@@ -71,7 +71,7 @@ function QuoteSettingsSheet({
     setUIState('loading');
 
     try {
-      const statuses = masto.v1.statuses as unknown as StatusesSelector;
+      const statuses = masto.v1.statuses as StatusesSelector;
       const newStatus = await statuses
         .$select(post.id)
         .interactionPolicy.update({
@@ -90,8 +90,8 @@ function QuoteSettingsSheet({
           skipUnfurling: true,
         },
       );
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
       showToast(t`Failed to update quote settings`);
       setUIState('error');
     }
@@ -120,7 +120,11 @@ function QuoteSettingsSheet({
             <Status status={post} size="s" readOnly />
           </div>
         )}
-        <form onSubmit={handleFormSubmit}>
+        <form
+          onSubmit={(e) => {
+            void handleFormSubmit(e);
+          }}
+        >
           <select
             value={selectedPolicy}
             name="quoteApprovalPolicy"

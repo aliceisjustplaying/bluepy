@@ -41,13 +41,13 @@ export default function useScrollFn(
   }: UseScrollFnOpts,
   callback?: ScrollFnCallback,
 ): { resetScrollDirection: () => void } | undefined {
-  if (!callback) return;
   const isVertical = direction === 'vertical';
   const previousScrollStart = useRef<number | null>(null);
   const scrollDirection = useRef<ScrollDirection>(null);
 
   const onScroll = useThrottledCallback(
     () => {
+      if (!callback) return;
       let reachStart = false;
       let reachEnd = false;
       let nearReachStart = false;
@@ -110,7 +110,9 @@ export default function useScrollFn(
     },
   );
 
+  const hasCallback = !!callback;
   useLayoutEffect(() => {
+    if (!hasCallback) return undefined;
     const scrollableElement = scrollableRef.current;
     if (scrollableElement) {
       previousScrollStart.current =
@@ -127,15 +129,18 @@ export default function useScrollFn(
         );
       }
     };
-  }, []);
+  }, [hasCallback]);
 
   useEffect(() => {
+    if (!hasCallback) return;
     if (init && scrollableRef.current) {
       queueMicrotask(() => {
         scrollableRef.current!.dispatchEvent(new Event('scroll'));
       });
     }
-  }, [init]);
+  }, [init, hasCallback]);
+
+  if (!callback) return undefined;
 
   return {
     resetScrollDirection: () => {

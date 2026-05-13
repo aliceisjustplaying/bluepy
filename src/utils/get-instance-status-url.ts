@@ -2,12 +2,12 @@
 // export const statusNoteRegex = /\/notes\/([^\/]+)\/?$/i;
 
 const statusPostRegexes = [
-  /^\/@[^@\/]+\/(?:statuses|posts)\/([^\/]+)/i, // GoToSocial, Takahe
-  /\/notes\/([^\/]+)/i, // Misskey, Firefish
+  /^\/@[^@/]+\/(?:statuses|posts)\/([^/]+)/i, // GoToSocial, Takahe
+  /\/notes\/([^/]+)/i, // Misskey, Firefish
   /^\/(?:notice|objects)\/([a-z0-9-]+)/i, // Pleroma
-  /\/@[^@\/]+\/post\/([^\/]+)/i, // Threads
-  /\/@[^@\/]+@?[^\/]+?\/([^\/]+)/i, // Mastodon
-  /^\/p\/[^\/]+\/([^\/]+)/i, // Pixelfed
+  /\/@[^@/]+\/post\/([^/]+)/i, // Threads
+  /\/@[^@/]+@?[^/]+?\/([^/]+)/i, // Mastodon
+  /^\/p\/[^/]+\/([^/]+)/i, // Pixelfed
 ];
 
 export function getInstanceStatusObject(
