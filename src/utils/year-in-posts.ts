@@ -1,3 +1,5 @@
+import type { mastodon } from 'masto';
+
 import { api } from './api';
 import db from './db';
 import isSearchEnabled from './is-search-enabled';
@@ -6,9 +8,70 @@ import { getCurrentAccount, getCurrentAccountNS } from './store-utils';
 
 const YEAR_IN_POSTS_LIST_KEY = 'year-in-posts-list';
 
-export function loadAvailableYears() {
+// Entry shape stored under `YEAR_IN_POSTS_LIST_KEY`, keyed by year.
+interface YearInPostsListEntry {
+  count: number;
+  size: number;
+  fetchedAt: number;
+  timezoneOffset: number;
+}
+
+type YearInPostsList = Record<string, YearInPostsListEntry>;
+
+// `loadAvailableYears` returns this entry shape: stored metadata flattened
+// with the numeric year from the map key.
+export interface AvailableYear extends YearInPostsListEntry {
+  year: number;
+}
+
+export interface YearInPostsRecord extends YearInPostsListEntry {
+  id: string;
+  posts: mastodon.v1.Status[];
+  year: number;
+}
+
+export interface FetchYearPostsResult {
+  posts: mastodon.v1.Status[];
+  searchEnabled: boolean;
+  gapsFilled: boolean;
+}
+
+// Minimal account-statuses endpoint shape we touch. The shared `MastoClient`
+// interface in `api.ts` types nested members as `unknown`, and the real masto
+// types use camelCase params whereas this codebase passes snake_case directly
+// to the underlying client. Cast through a narrow local interface so the
+// snake_case params are preserved at runtime exactly as in the JS original.
+interface AccountStatusesListParams {
+  limit?: number;
+  exclude_replies?: boolean;
+  exclude_reblogs?: boolean;
+  max_id?: string;
+  min_id?: string;
+}
+
+interface AccountStatusesEndpoint {
+  list(params: AccountStatusesListParams): {
+    values(): AsyncIterator<mastodon.v1.Status[] | undefined>;
+  };
+}
+
+interface AccountsEndpoint {
+  $select(id: string): { statuses: AccountStatusesEndpoint };
+}
+
+interface SearchV2Endpoint {
+  list(params: {
+    q: string;
+    type: 'statuses';
+    limit: number;
+  }): Promise<{ statuses?: { id: string }[] } | null | undefined>;
+}
+
+export function loadAvailableYears(): AvailableYear[] {
   try {
-    const list = store.account.get(YEAR_IN_POSTS_LIST_KEY) || {};
+    const list =
+      (store.account.get(YEAR_IN_POSTS_LIST_KEY) as YearInPostsList | null) ||
+      {};
     const sortedYears = Object.entries(list)
       .map(([year, data]) => ({ year: parseInt(year), ...data }))
       .sort((a, b) => b.year - a.year);
@@ -19,13 +82,15 @@ export function loadAvailableYears() {
   }
 }
 
-export async function removeYear(yearToRemove) {
+export async function removeYear(yearToRemove: number): Promise<boolean> {
   try {
     const NS = getCurrentAccountNS();
     const dataId = `${NS}-${yearToRemove}`;
     await db.yearInPosts.del(dataId);
 
-    const list = store.account.get(YEAR_IN_POSTS_LIST_KEY) || {};
+    const list =
+      (store.account.get(YEAR_IN_POSTS_LIST_KEY) as YearInPostsList | null) ||
+      {};
     delete list[yearToRemove];
     store.account.set(YEAR_IN_POSTS_LIST_KEY, list);
 
@@ -36,16 +101,18 @@ export async function removeYear(yearToRemove) {
   }
 }
 
-function isPostInYear(createdAt, year) {
+function isPostInYear(createdAt: string, year: number): boolean {
   const postDate = new Date(createdAt);
   const startOfYear = new Date(year, 0, 1);
   const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
   return postDate >= startOfYear && postDate <= endOfYear;
 }
 
-export async function fetchYearPosts(year) {
+export async function fetchYearPosts(
+  year: number,
+): Promise<FetchYearPostsResult> {
   const { masto, instance } = api();
-  const allResults = [];
+  const allResults: mastodon.v1.Status[] = [];
   let gapsFilled = false;
 
   const account = getCurrentAccount();
@@ -53,18 +120,20 @@ export async function fetchYearPosts(year) {
     throw new Error('No current account');
   }
   const accountId = account.info.id;
-  const accountAcct = account.info.acct;
+  const accountAcct = account.info.acct as string | undefined;
 
   const startOfYear = new Date(year, 0, 1);
   const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
 
   const searchEnabled = await isSearchEnabled(instance);
 
+  const accountsEndpoint = masto.v1.accounts as unknown as AccountsEndpoint;
+
   // Use search strategies if available
-  let maxId = null;
+  let maxId: string | null = null;
   if (searchEnabled) {
     try {
-      const latestPostIterator = masto.v1.accounts
+      const latestPostIterator = accountsEndpoint
         .$select(accountId)
         .statuses.list({
           limit: 1,
@@ -80,7 +149,9 @@ export async function fetchYearPosts(year) {
           // Use "before" search to find last post before year ends
           const beforeStr = `${year + 1}-01-02`;
           try {
-            const beforeResults = await masto.v2.search.list({
+            const searchEndpoint =
+              masto.v2.search as unknown as SearchV2Endpoint;
+            const beforeResults = await searchEndpoint.list({
               q: `from:${accountAcct} before:${beforeStr}`,
               type: 'statuses',
               limit: 1,
@@ -99,7 +170,7 @@ export async function fetchYearPosts(year) {
     }
   }
 
-  const statusIterator = masto.v1.accounts
+  const statusIterator = accountsEndpoint
     .$select(accountId)
     .statuses.list({
       limit: 40,
@@ -141,7 +212,10 @@ export async function fetchYearPosts(year) {
     }
   }
 
-  allResults.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  allResults.sort(
+    (a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
 
   // Forward verification to check for gaps
   if (allResults.length > 0) {
@@ -150,7 +224,7 @@ export async function fetchYearPosts(year) {
       const earliestId = earliestFetched.id;
 
       // Loop to fetch all posts forward from earliest within the year
-      const gapCheckIterator = masto.v1.accounts
+      const gapCheckIterator = accountsEndpoint
         .$select(accountId)
         .statuses.list({
           limit: 40,
@@ -194,7 +268,8 @@ export async function fetchYearPosts(year) {
 
       if (gapsFilled) {
         allResults.sort(
-          (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         );
       }
     } catch (e) {
@@ -213,7 +288,7 @@ export async function fetchYearPosts(year) {
   const dataId = `${NS}-${year}`;
   const timezoneOffset = new Date().getTimezoneOffset();
 
-  await db.yearInPosts.set(dataId, {
+  const record: YearInPostsRecord = {
     id: dataId,
     posts: allResults,
     count: allResults.length,
@@ -221,9 +296,11 @@ export async function fetchYearPosts(year) {
     size: totalSize,
     fetchedAt: Date.now(),
     timezoneOffset,
-  });
+  };
+  await db.yearInPosts.set(dataId, record);
 
-  const list = store.account.get(YEAR_IN_POSTS_LIST_KEY) || {};
+  const list =
+    (store.account.get(YEAR_IN_POSTS_LIST_KEY) as YearInPostsList | null) || {};
   list[year] = {
     count: allResults.length,
     size: totalSize,
