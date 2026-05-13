@@ -1,36 +1,85 @@
 import './quotes-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 
-import Icon from './icon';
+import IconUntyped from './icon';
 import Link from './link';
-import Loader from './loader';
-import Status from './status';
+import LoaderUntyped from './loader';
+import StatusUntyped from './status';
+
+type IconProps = {
+  icon: string;
+  alt?: string;
+  [key: string]: unknown;
+};
+
+type LoaderProps = {
+  abrupt?: boolean;
+  [key: string]: unknown;
+};
+
+type StatusProps = {
+  status: mastodon.v1.Status;
+  instance?: string;
+  size?: string;
+  readOnly?: boolean;
+  showCommentCount?: boolean;
+  showQuoteCount?: boolean | ((c: number) => boolean);
+  [key: string]: unknown;
+};
+
+const Icon = IconUntyped as unknown as ComponentType<IconProps>;
+const Loader = LoaderUntyped as unknown as ComponentType<LoaderProps>;
+const Status = StatusUntyped as unknown as ComponentType<StatusProps>;
 
 const LIMIT = 20;
+
+type StatusesQuotesResource = {
+  list(opts: { limit: number }): {
+    values(): AsyncIterator<mastodon.v1.Status[]>;
+  };
+};
+
+type StatusesSelectFn = (id: string) => {
+  quotes: StatusesQuotesResource;
+};
+
+interface QuotesModalProps {
+  statusId: string;
+  instance?: string;
+  onClose?: () => void;
+}
 
 export default function QuotesModal({
   statusId,
   instance,
   onClose = () => {},
-}) {
+}: QuotesModalProps) {
   const { t } = useLingui();
   const { masto } = api();
 
-  const [posts, setPosts] = useState([]);
-  const [uiState, setUIState] = useState('default');
+  const [posts, setPosts] = useState<mastodon.v1.Status[]>([]);
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
   const [showMore, setShowMore] = useState(false);
 
-  const quotesIterator = useRef();
+  const quotesIterator = useRef<
+    AsyncIterator<mastodon.v1.Status[]> | undefined
+  >(undefined);
   const firstLoad = useRef(true);
 
   const loadQuotes = (isFirstLoad = false) => {
     if (isFirstLoad || !quotesIterator.current) {
-      quotesIterator.current = masto.v1.statuses
-        .$select(statusId)
+      const statusesSelect = (
+        masto.v1 as unknown as { statuses: { $select: StatusesSelectFn } }
+      ).statuses.$select;
+      quotesIterator.current = statusesSelect(statusId)
         .quotes.list({
           limit: LIMIT,
         })
@@ -39,9 +88,13 @@ export default function QuotesModal({
 
     setUIState('loading');
 
-    (async () => {
+    void (async () => {
       try {
-        let { done, value } = await quotesIterator.current.next();
+        const iterator = quotesIterator.current;
+        if (!iterator) return;
+        const result = await iterator.next();
+        let { done } = result;
+        const { value } = result;
 
         if (Array.isArray(value)) {
           if (isFirstLoad) {
@@ -70,7 +123,7 @@ export default function QuotesModal({
   }, [statusId]);
 
   return (
-    <div id="quotes-modal" class="sheet" tabindex="-1">
+    <div id="quotes-modal" class="sheet" tabindex={-1}>
       {onClose && (
         <button type="button" class="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
@@ -92,13 +145,14 @@ export default function QuotesModal({
                       instance ? `/${instance}/s/${post.id}` : `/s/${post.id}`
                     }
                     class="status-link"
-                    onContextMenu={(e) => {
-                      const post = e.target.querySelector('.status');
-                      if (post) {
+                    onContextMenu={(e: MouseEvent) => {
+                      const target = e.target as Element | null;
+                      const postEl = target?.querySelector('.status');
+                      if (postEl) {
                         // Fire a custom event to open the context menu
                         if (e.metaKey) return;
                         e.preventDefault();
-                        post.dispatchEvent(
+                        postEl.dispatchEvent(
                           new MouseEvent('contextmenu', {
                             clientX: e.clientX,
                             clientY: e.clientY,
