@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
+import type { ComponentType } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { subscribe, useSnapshot } from 'valtio';
@@ -17,7 +18,7 @@ import EmbedModal from './embed-modal';
 import GenericAccounts from './generic-accounts';
 import ImportExportAccounts from './import-export-accounts';
 import MediaAltModal from './media-alt-modal';
-import MediaModal from './media-modal';
+import MediaModalUntyped from './media-modal';
 import Modal from './modal';
 import OpenLinkSheet from './open-link-sheet';
 import QrCodeModal from './qr-code-modal';
@@ -25,10 +26,33 @@ import QrScannerModal from './qr-scanner-modal';
 import ReportModal from './report-modal';
 import ShortcutsSettings from './shortcuts-settings';
 
+// `media-modal.jsx` is still untyped; permissive shim for the props we use.
+const MediaModal = MediaModalUntyped as unknown as ComponentType<{
+  mediaAttachments?: unknown;
+  statusID?: string;
+  instance?: string;
+  lang?: string;
+  index?: number;
+  onClose?: () => void;
+}>;
+
+// `show*` payloads in `states` are typed as `unknown` because the same key
+// holds either `false` or a payload object describing what to render. Cast
+// to `Payload` (loose record) at the read site rather than introducing many
+// narrow interfaces.
+type Payload = Record<string, unknown>;
+const p = (v: unknown): Payload => (v as Payload) || ({} as Payload);
+
+type WindowWithCompose = Window & {
+  __COMPOSE__?: Payload | null;
+  __SHARED_DATA__?: unknown;
+};
+
 subscribe(states, (changes) => {
-  for (const [action, path, value, prevValue] of changes) {
+  for (const [, path, value] of changes) {
     // When closing modal, focus on deck
-    if (/^show/i.test(path) && !value) {
+    const pathString = Array.isArray(path) ? path.join('.') : String(path);
+    if (/^show/i.test(pathString) && !value) {
       focusDeck();
     }
   }
@@ -45,48 +69,57 @@ export default function Modals() {
     setTimeout(preload, 1000);
   }, []);
 
+  const composerState = snapStates.composerState as Payload;
+  const composeWindow = window as WindowWithCompose;
+
   return (
     <>
       {isLoggedIn && !!snapStates.showCompose && (
         <Modal
-          class={`solid ${snapStates.composerState.minimized ? 'min' : ''}`}
-          minimized={!!snapStates.composerState.minimized}
+          class={`solid ${composerState.minimized ? 'min' : ''}`}
+          minimized={!!composerState.minimized}
         >
           <ComposeSuspense
             replyToStatus={
               typeof snapStates.showCompose !== 'boolean'
-                ? snapStates.showCompose.replyToStatus
-                : window.__COMPOSE__?.replyToStatus || null
+                ? p(snapStates.showCompose).replyToStatus
+                : composeWindow.__COMPOSE__?.replyToStatus || null
             }
             replyMode={
-              states.showCompose?.replyMode ||
-              window.__COMPOSE__?.replyMode ||
+              p(states.showCompose).replyMode ||
+              composeWindow.__COMPOSE__?.replyMode ||
               'all'
             }
             editStatus={
-              states.showCompose?.editStatus ||
-              window.__COMPOSE__?.editStatus ||
+              p(states.showCompose).editStatus ||
+              composeWindow.__COMPOSE__?.editStatus ||
               null
             }
             draftStatus={
-              states.showCompose?.draftStatus ||
-              window.__COMPOSE__?.draftStatus ||
+              p(states.showCompose).draftStatus ||
+              composeWindow.__COMPOSE__?.draftStatus ||
               null
             }
             quoteStatus={
-              states.showCompose?.quoteStatus ||
-              window.__COMPOSE__?.quoteStatus ||
+              p(states.showCompose).quoteStatus ||
+              composeWindow.__COMPOSE__?.quoteStatus ||
               null
             }
-            sharedData={window.__SHARED_DATA__ || null}
-            onClose={(results) => {
-              const { newStatus, instance, type, scheduledAt } = results || {};
+            sharedData={composeWindow.__SHARED_DATA__ || null}
+            onClose={(results: Payload | undefined) => {
+              const { newStatus, instance, type, scheduledAt } = (results ||
+                {}) as {
+                newStatus?: { id: string } | null;
+                instance?: string | null;
+                type?: 'post' | 'reply' | 'edit';
+                scheduledAt?: string | null;
+              };
               states.showCompose = false;
-              window.__COMPOSE__ = null;
-              window.__SHARED_DATA__ = null;
+              composeWindow.__COMPOSE__ = null;
+              composeWindow.__SHARED_DATA__ = null;
               if (newStatus) {
-                states.reloadStatusPage++;
-                if (scheduledAt) states.reloadScheduledPosts++;
+                (states.reloadStatusPage as number)++;
+                if (scheduledAt) (states.reloadScheduledPosts as number)++;
                 showToast({
                   text: {
                     post: scheduledAt
@@ -99,9 +132,11 @@ export default function Modals() {
                   }[type || 'post'],
                   delay: 1000,
                   duration: 10_000, // 10 seconds
-                  onClick: (toast) => {
+                  onClick: (toast: { hideToast: () => void }) => {
                     toast.hideToast();
-                    states.prevLocation = location;
+                    states.prevLocation = location as unknown as NonNullable<
+                      typeof states.prevLocation
+                    >;
                     if (scheduledAt) {
                       navigate('/sp');
                     } else {
@@ -151,9 +186,14 @@ export default function Modals() {
           }}
         >
           <AccountSheet
-            account={snapStates.showAccount?.account || snapStates.showAccount}
-            instance={snapStates.showAccount?.instance}
-            onClose={({ destination } = {}) => {
+            account={
+              (p(snapStates.showAccount).account ||
+                snapStates.showAccount) as Parameters<
+                typeof AccountSheet
+              >[0]['account']
+            }
+            instance={p(snapStates.showAccount).instance as string | undefined}
+            onClose={() => {
               states.showAccount = false;
               // states.showGenericAccounts = false;
               // if (destination) {
@@ -170,8 +210,8 @@ export default function Modals() {
           }}
         >
           <OpenLinkSheet
-            url={snapStates.showOpenLink.url}
-            linkText={snapStates.showOpenLink.linkText}
+            url={p(snapStates.showOpenLink).url as string}
+            linkText={p(snapStates.showOpenLink).linkText as string | undefined}
             onClose={() => {
               states.showOpenLink = false;
             }}
@@ -190,19 +230,22 @@ export default function Modals() {
       {!!snapStates.showMediaModal && (
         <Modal
           onClick={(e) => {
+            const target = e.target as HTMLElement | null;
             if (
-              e.target === e.currentTarget ||
-              e.target.classList.contains('media')
+              target === e.currentTarget ||
+              target?.classList?.contains('media')
             ) {
               states.showMediaModal = false;
             }
           }}
         >
           <MediaModal
-            mediaAttachments={snapStates.showMediaModal.mediaAttachments}
-            instance={snapStates.showMediaModal.instance}
-            index={snapStates.showMediaModal.mediaIndex}
-            statusID={snapStates.showMediaModal.statusID}
+            mediaAttachments={p(snapStates.showMediaModal).mediaAttachments}
+            instance={
+              p(snapStates.showMediaModal).instance as string | undefined
+            }
+            index={p(snapStates.showMediaModal).mediaIndex as number}
+            statusID={p(snapStates.showMediaModal).statusID as string}
             onClose={() => {
               states.showMediaModal = false;
             }}
@@ -227,25 +270,35 @@ export default function Modals() {
           }}
         >
           <GenericAccounts
-            instance={snapStates.showGenericAccounts.instance}
-            excludeRelationshipAttrs={
-              snapStates.showGenericAccounts.excludeRelationshipAttrs
+            instance={
+              p(snapStates.showGenericAccounts).instance as string | undefined
             }
-            postID={snapStates.showGenericAccounts.postID}
+            excludeRelationshipAttrs={
+              p(snapStates.showGenericAccounts)
+                .excludeRelationshipAttrs as readonly string[] | undefined
+            }
+            postID={
+              p(snapStates.showGenericAccounts).postID as string | undefined
+            }
             onClose={() => (states.showGenericAccounts = false)}
-            blankCopy={snapStates.showGenericAccounts.blankCopy}
+            blankCopy={
+              p(snapStates.showGenericAccounts).blankCopy as string | undefined
+            }
           />
         </Modal>
       )}
       {!!snapStates.showMediaAlt && (
         <Modal
-          onClose={(e) => {
+          onClose={() => {
             states.showMediaAlt = false;
           }}
         >
           <MediaAltModal
-            alt={snapStates.showMediaAlt.alt || snapStates.showMediaAlt}
-            lang={snapStates.showMediaAlt?.lang}
+            alt={
+              (p(snapStates.showMediaAlt).alt ||
+                snapStates.showMediaAlt) as string
+            }
+            lang={p(snapStates.showMediaAlt).lang as string | undefined}
             onClose={() => {
               states.showMediaAlt = false;
             }}
@@ -260,12 +313,18 @@ export default function Modals() {
           }}
         >
           <EmbedModal
-            html={snapStates.showEmbedModal.html}
-            url={snapStates.showEmbedModal.url}
-            iframeUrl={snapStates.showEmbedModal.iframeUrl}
-            title={snapStates.showEmbedModal.title}
-            width={snapStates.showEmbedModal.width}
-            height={snapStates.showEmbedModal.height}
+            html={p(snapStates.showEmbedModal).html as string | undefined}
+            url={p(snapStates.showEmbedModal).url as string | undefined}
+            iframeUrl={
+              p(snapStates.showEmbedModal).iframeUrl as string | undefined
+            }
+            title={p(snapStates.showEmbedModal).title as string | undefined}
+            width={
+              p(snapStates.showEmbedModal).width as number | string | undefined
+            }
+            height={
+              p(snapStates.showEmbedModal).height as number | string | undefined
+            }
             onClose={() => {
               states.showEmbedModal = false;
             }}
@@ -279,8 +338,16 @@ export default function Modals() {
           }}
         >
           <ReportModal
-            account={snapStates.showReportModal.account}
-            post={snapStates.showReportModal.post}
+            account={
+              p(snapStates.showReportModal).account as Parameters<
+                typeof ReportModal
+              >[0]['account']
+            }
+            post={
+              p(snapStates.showReportModal).post as Parameters<
+                typeof ReportModal
+              >[0]['post']
+            }
             onClose={() => {
               states.showReportModal = false;
             }}
@@ -295,14 +362,22 @@ export default function Modals() {
           }}
         >
           <QrCodeModal
-            text={snapStates.showQrCodeModal.text}
-            arena={snapStates.showQrCodeModal.arena}
-            backgroundMask={snapStates.showQrCodeModal.backgroundMask}
-            caption={snapStates.showQrCodeModal.caption}
+            text={p(snapStates.showQrCodeModal).text as string}
+            arena={p(snapStates.showQrCodeModal).arena as string | undefined}
+            backgroundMask={
+              p(snapStates.showQrCodeModal).backgroundMask as string | undefined
+            }
+            caption={
+              p(snapStates.showQrCodeModal).caption as string | undefined
+            }
             onClose={() => {
               states.showQrCodeModal = false;
             }}
-            onScannerClick={snapStates.showQrCodeModal.onScannerClick}
+            onScannerClick={
+              p(snapStates.showQrCodeModal).onScannerClick as
+                | (() => void)
+                | undefined
+            }
           />
         </Modal>
       )}
@@ -314,11 +389,22 @@ export default function Modals() {
           }}
         >
           <QrScannerModal
-            checkValidity={snapStates.showQrScannerModal.checkValidity}
-            actionableText={snapStates.showQrScannerModal.actionableText}
-            onClose={(...args) => {
-              if (snapStates.showQrScannerModal.onClose) {
-                snapStates.showQrScannerModal.onClose(...args);
+            checkValidity={
+              p(snapStates.showQrScannerModal).checkValidity as
+                | ((text: string) => boolean)
+                | undefined
+            }
+            actionableText={
+              p(snapStates.showQrScannerModal).actionableText as
+                | string
+                | undefined
+            }
+            onClose={(arg?: { text: string } | MouseEvent) => {
+              const onClose = p(snapStates.showQrScannerModal).onClose as
+                | ((arg?: { text: string } | MouseEvent) => void)
+                | undefined;
+              if (onClose) {
+                onClose(arg);
               }
               states.showQrScannerModal = false;
             }}
@@ -337,7 +423,9 @@ export default function Modals() {
             }}
             exportDisabled={
               typeof snapStates.showImportExportAccounts === 'object'
-                ? snapStates.showImportExportAccounts.exportDisabled
+                ? (p(snapStates.showImportExportAccounts).exportDisabled as
+                    | boolean
+                    | undefined)
                 : false
             }
           />
