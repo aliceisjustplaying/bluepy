@@ -1,6 +1,6 @@
 import { i18n } from '@lingui/core';
 import { t } from '@lingui/core/macro';
-import { useEffect, useMemo, useReducer } from 'preact/hooks';
+import { useEffect, useMemo, useState } from 'preact/hooks';
 
 import DateTimeFormat from '../utils/date-time-format';
 import RTF from '../utils/relative-time-format';
@@ -65,15 +65,23 @@ interface RelativeTimeProps {
 }
 
 export default function RelativeTime({ datetime, format }: RelativeTimeProps) {
-  if (!datetime) return null;
-  const [renderCount, rerender] = useReducer<number, void>(
-    (x: number) => x + 1,
-    0,
+  // `tick` increments from a self-scheduled timer to force the rendered
+  // relative string to refresh on its own cadence. It's intentionally part of
+  // the memo dep arrays so the formatted output recomputes when the tick
+  // changes, even though `tick` is not read inside the callback bodies.
+  const [tick, setTick] = useState(0);
+  const date = useMemo(
+    () => (datetime ? new Date(datetime) : null),
+    [datetime],
   );
-  const date = useMemo(() => new Date(datetime), [datetime]);
   const [dateStr, dt, title] = useMemo(() => {
-    if (!isValidDate(date))
-      return ['' + (typeof datetime === 'string' ? datetime : ''), '', ''];
+    if (!date || !isValidDate(date)) {
+      // tick is intentionally in the deps array to force recomputation; it is
+      // also referenced here so oxlint sees it as used.
+      void tick;
+      return [typeof datetime === 'string' ? datetime : '', '', ''];
+    }
+    void tick;
     let str;
     if (format === 'micro') {
       // If date <= 1 day ago or day is within this year
@@ -98,19 +106,20 @@ export default function RelativeTime({ datetime, format }: RelativeTimeProps) {
     }
     if (!str) str = rtfFromNow(date);
     return [str, date.toISOString(), date.toLocaleString()];
-  }, [date, format, renderCount]);
+  }, [date, datetime, format, tick]);
 
   useEffect(() => {
-    if (!isValidDate(date)) return;
+    if (!date || !isValidDate(date)) return undefined;
     let timeout: ReturnType<typeof setTimeout> | undefined;
     let raf: number | undefined;
     function rafRerender() {
       raf = requestAnimationFrame(() => {
-        rerender();
+        setTick((c) => c + 1);
         scheduleRerender();
       });
     }
     function scheduleRerender() {
+      if (!date) return;
       // If less than 1 minute, rerender every 10s
       // If less than 1 hour rerender every 1m
       // Else, don't need to rerender
@@ -126,7 +135,9 @@ export default function RelativeTime({ datetime, format }: RelativeTimeProps) {
       clearTimeout(timeout);
       if (raf !== undefined) cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [date]);
+
+  if (!datetime) return null;
 
   return (
     <time datetime={dt} title={title}>

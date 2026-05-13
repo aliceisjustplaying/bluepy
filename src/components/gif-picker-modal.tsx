@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { JSX } from 'preact';
+import type { CSSProperties } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useDebouncedCallback } from 'use-debounce';
 
@@ -79,7 +79,7 @@ function GIFPickerModal({
       left: 0,
       behavior: 'smooth',
     });
-    (async () => {
+    void (async () => {
       try {
         const query = {
           api_key: GIPHY_API_KEY ?? '',
@@ -91,7 +91,8 @@ function GIFPickerModal({
           lang: i18n.locale || 'en',
         };
         const response: GiphyResponse = await fetch(
-          'https://api.giphy.com/v1/gifs/search?' + new URLSearchParams(query),
+          'https://api.giphy.com/v1/gifs/search?' +
+            new URLSearchParams(query).toString(),
           {
             referrerPolicy: 'no-referrer',
           },
@@ -199,13 +200,14 @@ function GIFPickerModal({
                     <button
                       type="button"
                       onClick={() => {
-                        const { mp4, url } = original;
-                        const theURL = mp4 || url;
-                        const urlObj = URL.parse(theURL)!;
-                        const strippedURL = urlObj.origin + urlObj.pathname;
+                        const { mp4, url: originalUrl } = original;
+                        const theURL = mp4 || originalUrl;
+                        const originalUrlObj = URL.parse(theURL)!;
+                        const originalStrippedURL =
+                          originalUrlObj.origin + originalUrlObj.pathname;
                         onClose();
                         onSelect({
-                          url: strippedURL,
+                          url: originalStrippedURL,
                           type: mp4 ? 'video/mp4' : 'image/gif',
                           alt_text: alt_text || title,
                         });
@@ -216,7 +218,7 @@ function GIFPickerModal({
                           {
                             '--figure-width': width + 'px',
                             // width: width + 'px'
-                          } as JSX.CSSProperties
+                          } as CSSProperties
                         }
                       >
                         <picture>

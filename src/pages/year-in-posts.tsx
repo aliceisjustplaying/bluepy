@@ -1,8 +1,8 @@
 import './year-in-posts.css';
 
-import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import { MenuDivider, MenuItem } from '@szhsin/react-menu';
-import FlexSearch from 'flexsearch';
+import { Trans, useLingui } from '@lingui/react/macro';
+import { MenuItem } from '@szhsin/react-menu';
+import { Document as FlexSearchIndexDocument } from 'flexsearch';
 import type { mastodon } from 'masto';
 import type { ComponentType } from 'preact';
 import { forwardRef } from 'preact/compat';
@@ -34,7 +34,6 @@ import niceDateTime from '../utils/nice-date-time';
 import prettyBytes from '../utils/pretty-bytes';
 import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
-import store from '../utils/store';
 import { getCurrentAccountNS } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 import {
@@ -231,7 +230,7 @@ function YearInPosts() {
   const [uiState, setUIState] = useState<UIState>('default');
   const [posts, setPosts] = useState<MastoStatus[]>([]);
   const [availableYears, setAvailableYears] = useState<AvailableYear[]>([]);
-  const [searchEnabled, setSearchEnabled] = useState<boolean>(true);
+  const [searchEnabled] = useState<boolean>(true);
   const [showSearchField, setShowSearchField] =
     useState<boolean>(!!searchQuery);
   const [searchLimit, setSearchLimit] = useState<number>(
@@ -341,12 +340,12 @@ function YearInPosts() {
     }
   };
 
-  async function handleRegenerate(year: number) {
+  async function handleRegenerate(yearToRegen: number) {
     try {
       setUIState('generating');
-      await fetchYearPosts(year);
-      setSearchParams({ year: String(year) });
-    } catch (_e) {
+      await fetchYearPosts(yearToRegen);
+      setSearchParams({ year: String(yearToRegen) });
+    } catch {
       setUIState('error');
       // Preserve original JS behavior: the pre-conversion source referenced
       // an undeclared identifier `error` here, which throws ReferenceError
@@ -595,7 +594,7 @@ function YearInPosts() {
   const searchIndexRef = useRef<FlexSearchDocument | null>(null);
   useEffect(() => {
     if (totalPosts > 0) {
-      const index = new FlexSearch.Document({
+      const index = new FlexSearchIndexDocument({
         preset: 'match',
         document: {
           id: 'id',
@@ -660,14 +659,14 @@ function YearInPosts() {
   const [filterCounts, monthPosts] = useMemo<
     [FilterCounts, MastoStatus[]]
   >(() => {
-    const monthPosts = searchedPosts.filter((post) => {
+    const monthFilteredPosts = searchedPosts.filter((post) => {
       if (searchQuery) return true;
       const postMonth = new Date(post.createdAt).getMonth();
       return month !== null && postMonth === month;
     });
 
     const counts: FilterCounts = {
-      all: monthPosts.length,
+      all: monthFilteredPosts.length,
       original: 0,
       replies: 0,
       quotes: 0,
@@ -675,7 +674,7 @@ function YearInPosts() {
       media: 0,
     };
 
-    monthPosts.forEach((post) => {
+    monthFilteredPosts.forEach((post) => {
       const p = post as StatusWithExtras;
       if (p.reblog) {
         counts.boosts++;
@@ -696,7 +695,7 @@ function YearInPosts() {
       }
     });
 
-    return [counts, monthPosts];
+    return [counts, monthFilteredPosts];
   }, [searchedPosts, month, searchQuery]);
 
   const [filteredPosts, hasMore] = useMemo<[MastoStatus[], boolean]>(() => {
@@ -731,8 +730,8 @@ function YearInPosts() {
     let sorted = filtered;
     if (sortBy !== 'relevance') {
       sorted = [...filtered].sort((a, b) => {
-        const postA = (a.reblog || a) as MastoStatus;
-        const postB = (b.reblog || b) as MastoStatus;
+        const postA = a.reblog || a;
+        const postB = b.reblog || b;
         let valueA: number | Date;
         let valueB: number | Date;
 
@@ -785,7 +784,7 @@ function YearInPosts() {
       return;
     }
 
-    (async () => {
+    void (async () => {
       setUIState('loading');
       try {
         const dataId = `${NS}-${year}`;
@@ -994,7 +993,12 @@ function YearInPosts() {
                     </p>
                   </details>
 
-                  <form class="year-generate" onSubmit={handleGenerate}>
+                  <form
+                    class="year-generate"
+                    onSubmit={(e) => {
+                      void handleGenerate(e);
+                    }}
+                  >
                     <label>
                       <input
                         type="number"
@@ -1048,19 +1052,25 @@ function YearInPosts() {
                   <p>Archived Year in Posts:</p>
                   <ul>
                     {availableYears.map(
-                      ({ year, count, fetchedAt, size, timezoneOffset }) => {
+                      ({
+                        year: archivedYear,
+                        count,
+                        fetchedAt,
+                        size,
+                        timezoneOffset,
+                      }) => {
                         const currentOffset = getCurrentTimezoneOffset();
                         const tzMismatch =
                           timezoneOffset !== undefined &&
                           timezoneOffset !== currentOffset;
 
                         return (
-                          <li key={year}>
+                          <li key={archivedYear}>
                             <Link
-                              to={`/yip?year=${year}`}
+                              to={`/yip?year=${archivedYear}`}
                               class="year-card available"
                             >
-                              <Icon icon="month" /> {year}
+                              <Icon icon="month" /> {archivedYear}
                             </Link>{' '}
                             <small class="ib insignificant">
                               {/* <Plural value={count} one="# post" other="# posts" /> */}
@@ -1078,10 +1088,10 @@ function YearInPosts() {
                             <MenuConfirm
                               align="end"
                               confirmLabel={
-                                <span>Regenerate {year} posts?</span>
+                                <span>Regenerate {archivedYear} posts?</span>
                               }
                               onClick={() => {
-                                handleRegenerate(year);
+                                void handleRegenerate(archivedYear);
                               }}
                             >
                               <button
@@ -1125,7 +1135,7 @@ function YearInPosts() {
                               class="light danger small"
                               onClick={(e) => {
                                 e.preventDefault();
-                                handleRemoveYear(year);
+                                void handleRemoveYear(archivedYear);
                               }}
                             >
                               <Icon icon="x" alt="Remove" />
@@ -1383,13 +1393,14 @@ const IntersectionPostItem = ({
   const [show, setShow] = useState<boolean>(defaultShow);
 
   useEffect(() => {
-    if (defaultShow) return;
+    if (defaultShow) return undefined;
+    const node = ref.current;
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
         if (entry.isIntersecting) {
           queueMicrotask(() => setShow(true));
-          observer.unobserve(ref.current as Element);
+          if (node) observer.unobserve(node);
         }
       },
       {
@@ -1397,9 +1408,9 @@ const IntersectionPostItem = ({
         rootMargin: `${Math.max(320, screen.height * 0.75)}px`,
       },
     );
-    if (ref.current) observer.observe(ref.current);
+    if (node) observer.observe(node);
     return () => {
-      if (ref.current) observer.unobserve(ref.current);
+      if (node) observer.unobserve(node);
     };
   }, [defaultShow]);
 
@@ -1492,9 +1503,7 @@ function CalendarBar({
                           return <span key={i} class="media-day no-media" />;
                         const status = item.post as MastoStatus;
                         // hasMedia guarantees mediaAttachments[0] exists.
-                        const media = (
-                          status.mediaAttachments as mastodon.v1.MediaAttachment[]
-                        )[0] as {
+                        const media = (status.mediaAttachments ?? [])[0] as {
                           previewUrl?: string | null;
                           url?: string | null;
                           previewRemoteUrl?: string | null;
@@ -1530,13 +1539,13 @@ function CalendarBar({
                     <div class="month-heatmap">
                       {heatmap.map((dayData, i) => {
                         const total = dayData.count || 0;
-                        const originalRatio =
+                        const dayOriginalRatio =
                           total > 0 ? dayData.original / total : 0;
-                        const replyRatio =
+                        const dayReplyRatio =
                           total > 0 ? dayData.reply / total : 0;
-                        const quoteRatio =
+                        const dayQuoteRatio =
                           total > 0 ? dayData.quote / total : 0;
-                        const boostRatio =
+                        const dayBoostRatio =
                           total > 0 ? dayData.boost / total : 0;
 
                         return (
@@ -1546,10 +1555,10 @@ function CalendarBar({
                             data-ratio={dayData.ratio}
                             style={{
                               '--ratio': dayData.ratio,
-                              '--original-ratio': originalRatio,
-                              '--reply-ratio': replyRatio,
-                              '--quote-ratio': quoteRatio,
-                              '--boost-ratio': boostRatio,
+                              '--original-ratio': dayOriginalRatio,
+                              '--reply-ratio': dayReplyRatio,
+                              '--quote-ratio': dayQuoteRatio,
+                              '--boost-ratio': dayBoostRatio,
                             }}
                           />
                         );

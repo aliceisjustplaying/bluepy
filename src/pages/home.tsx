@@ -3,7 +3,7 @@ import './notifications-menu.css';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
-import type { JSX, RefObject } from 'preact';
+import type { RefObject, TargetedMouseEvent } from 'preact';
 import { memo } from 'preact/compat';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
@@ -40,7 +40,7 @@ function Home() {
   const snapStates = useSnapshot(states);
   __BENCHMARK.end('time-to-home');
   useEffect(() => {
-    (async () => {
+    void (async () => {
       const keys = (await db.drafts.keys()) as string[];
       if (keys.length) {
         const ns = getCurrentAccountNS();
@@ -119,7 +119,7 @@ function NotificationsLink() {
         class={`button plain notifications-button ${
           snapStates.notificationsShowNew ? 'has-badge' : ''
         } ${menuState || ''}`}
-        onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
+        onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
           e.stopPropagation();
           if (window.matchMedia('(min-width: calc(40em))').matches) {
             e.preventDefault();
@@ -197,7 +197,7 @@ function NotificationsMenu({
 
       // Update last read marker
       (
-        masto.v1.markers as unknown as {
+        masto.v1.markers as {
           create(options: {
             notifications: { lastReadId: string };
           }): Promise<unknown>;
@@ -219,7 +219,7 @@ function NotificationsMenu({
   const [hasFollowRequests, setHasFollowRequests] = useState(false);
   function fetchFollowRequests() {
     return (
-      masto.v1.followRequests as unknown as {
+      masto.v1.followRequests as {
         list(options: { limit: number }): Promise<unknown[]>;
       }
     ).list({
@@ -229,7 +229,7 @@ function NotificationsMenu({
 
   function loadNotifications({ skipFollowRequests = false } = {}) {
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
         await fetchNotifications();
         if (!skipFollowRequests) {
@@ -237,7 +237,7 @@ function NotificationsMenu({
           setHasFollowRequests(!!followRequests?.length);
         }
         setUIState('default');
-      } catch (e) {
+      } catch {
         setUIState('error');
       }
     })();

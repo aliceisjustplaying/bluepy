@@ -83,15 +83,15 @@ type ResultsTypeKey = 'statuses' | 'accounts' | 'hashtags';
 
 function Search({ columnMode, ...props }: SearchProps) {
   const { t } = useLingui();
-  const params = (columnMode ? {} : (useParams() as { instance?: string })) as {
-    instance?: string;
-  };
+  const routeParams = useParams() as { instance?: string };
+  const [routeSearchParams] = useSearchParams();
+  const params: { instance?: string } = columnMode ? {} : routeParams;
   const { masto, instance, authenticated, client } = api({
     instance: params.instance,
   });
   const atproto = !!client?.atproto;
   const [uiState, setUIState] = useState('default');
-  const [searchParams] = columnMode ? [emptySearchParams] : useSearchParams();
+  const searchParams = columnMode ? emptySearchParams : routeSearchParams;
   const searchFormRef = useRef<SearchFormHandle | null>(null);
   const q = props?.query || searchParams.get('q');
   const type: string | null = columnMode
@@ -109,6 +109,7 @@ function Search({ columnMode, ...props }: SearchProps) {
       case 'hashtags':
         title = t`Search: ${q} (Hashtags)`;
         break;
+      case null:
       default:
         title = t`Search: ${q}`;
     }
@@ -188,15 +189,15 @@ function Search({ columnMode, ...props }: SearchProps) {
       setHashtagResults(hashtagResults.slice(0, SHORT_LIMIT));
     }
 
-    (async () => {
-      const params: SearchListParams = {
+    void (async () => {
+      const searchListParams: SearchListParams = {
         q: q as string,
         resolve: authenticated,
         limit: SHORT_LIMIT,
       };
       if (type) {
-        params.limit = LIMIT;
-        params.type = type;
+        searchListParams.limit = LIMIT;
+        searchListParams.type = type;
         if (atproto) {
           const cursor = cursorRef.current[type];
           if (!firstLoad && !cursor) {
@@ -204,18 +205,18 @@ function Search({ columnMode, ...props }: SearchProps) {
             setUIState('default');
             return;
           }
-          if (cursor) params.cursor = cursor;
+          if (cursor) searchListParams.cursor = cursor;
         } else if (authenticated) {
-          params.offset = offsetRef.current;
+          searchListParams.offset = offsetRef.current;
         }
       }
 
       try {
         const searchApi = masto.v2.search as unknown as SearchApi;
-        const results = await searchApi.list(params);
+        const results = await searchApi.list(searchListParams);
         console.log(results);
         if (type) {
-          const typedResults = results as SearchResultsLike;
+          const typedResults = results;
           const typeKey = type as ResultsTypeKey;
           const nextCursor = typedResults._pagination?.[type];
           if (firstLoad) {
@@ -255,15 +256,14 @@ function Search({ columnMode, ...props }: SearchProps) {
             }
           }
         } else {
-          const typedResults = results as SearchResultsLike;
+          const typedResults = results;
           setStatusResults(typedResults.statuses || []);
           setAccountResults(typedResults.accounts || []);
           setHashtagResults(typedResults.hashtags || []);
           offsetRef.current = 0;
           setShowMore(false);
         }
-        if (authenticated)
-          loadRelationships((results as SearchResultsLike).accounts);
+        if (authenticated) void loadRelationships(results.accounts);
 
         setUIState('default');
       } catch (err) {
@@ -485,7 +485,7 @@ function Search({ columnMode, ...props }: SearchProps) {
                 ))}
             </div>
           )}
-          {!!q ? (
+          {q ? (
             <>
               {(!type || type === 'accounts') && (
                 <>
