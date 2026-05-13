@@ -88,7 +88,7 @@ interface MastoClient {
 type StreamingClient = unknown;
 
 interface ApiClient {
-  _streamingCallback?: ((streaming: StreamingClient) => void) | null;
+  streamingCallback?: ((streaming: StreamingClient) => void) | null;
   accessToken?: string | null;
   atproto?: boolean;
   instance: string;
@@ -243,7 +243,7 @@ export function initClient({
       instance: normalizedInstance,
       masto,
       onStreamingReady(callback) {
-        this._streamingCallback = callback;
+        this.streamingCallback = callback;
       },
     };
     cacheClient(client);
@@ -264,7 +264,7 @@ export function initClient({
     instance: normalizedInstance,
     masto,
     onStreamingReady(callback) {
-      this._streamingCallback = callback;
+      this.streamingCallback = callback;
     },
   };
   cacheClient(client);
@@ -434,13 +434,13 @@ export async function initInstance(
     // Masto.ws = streamClient;
     console.log('🎏 Streaming API client:', client);
 
-    if (client._streamingCallback) {
+    if (client.streamingCallback) {
       try {
-        client._streamingCallback(streamClient);
+        client.streamingCallback(streamClient);
       } catch (error) {
         console.error('Error in streaming callback:', error);
       }
-      client._streamingCallback = null;
+      client.streamingCallback = null;
     }
   }
   __BENCHMARK.end('init-instance');

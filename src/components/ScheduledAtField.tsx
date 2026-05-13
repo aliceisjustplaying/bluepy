@@ -1,4 +1,4 @@
-import type { JSX } from 'preact';
+import type { TargetedEvent } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 
 export const MIN_SCHEDULED_AT = 6 * 60 * 1000; // 6 mins
@@ -20,17 +20,16 @@ export default function ScheduledAtField({
   scheduledAt,
   setScheduledAt,
 }: ScheduledAtFieldProps) {
-  if (!scheduledAt || !(scheduledAt as Partial<DateLike>)?.getTime) {
-    // Not using "instanceof Date" check due to "cross-realm" issues
-    console.warn('scheduledAt is invalid', scheduledAt);
-    return;
-  }
-  const validScheduledAt = scheduledAt as DateLike;
+  const isValid = !!(
+    scheduledAt && (scheduledAt as Partial<DateLike>)?.getTime
+  );
+  const validScheduledAt = isValid ? (scheduledAt as DateLike) : null;
   const [minStr, setMinStr] = useState<string | undefined>();
   const [maxStr, setMaxStr] = useState<string | undefined>();
-  const timezoneOffset = validScheduledAt.getTimezoneOffset();
+  const timezoneOffset = validScheduledAt?.getTimezoneOffset() ?? 0;
 
   useEffect(() => {
+    if (!isValid) return undefined;
     function updateMinStr() {
       const min = new Date(Date.now() + MIN_SCHEDULED_AT);
       const str = new Date(min.getTime() - timezoneOffset * 60000)
@@ -55,7 +54,13 @@ export default function ScheduledAtField({
       updateMaxStr();
     }, 1000 * 10);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [isValid, timezoneOffset]);
+
+  if (!validScheduledAt) {
+    // Not using "instanceof Date" check due to "cross-realm" issues
+    console.warn('scheduledAt is invalid', scheduledAt);
+    return null;
+  }
 
   const defaultValue = new Date(
     validScheduledAt.getTime() - validScheduledAt.getTimezoneOffset() * 60000,
@@ -71,8 +76,8 @@ export default function ScheduledAtField({
       min={minStr}
       max={maxStr}
       required
-      onChange={(e: JSX.TargetedEvent<HTMLInputElement, Event>) => {
-        setScheduledAt(new Date((e.target as HTMLInputElement).value));
+      onChange={(e: TargetedEvent<HTMLInputElement>) => {
+        setScheduledAt(new Date(e.currentTarget.value));
       }}
     />
   );

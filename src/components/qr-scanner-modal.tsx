@@ -260,7 +260,7 @@ function QrScannerModal({
 
               let animationId: number;
               const rafLoop = () => {
-                mainLoop();
+                void mainLoop();
                 animationId = requestAnimationFrame(rafLoop);
               };
               rafLoop();
@@ -290,7 +290,7 @@ function QrScannerModal({
     };
 
     if (isScanning) {
-      startCamera();
+      void startCamera();
     }
 
     return () => {

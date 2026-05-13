@@ -10,7 +10,7 @@ import {
 import type { mastodon } from 'masto';
 import type { ComponentType } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import Icon from '../components/icon';
 import MenuConfirm from '../components/menu-confirm';
@@ -124,16 +124,14 @@ interface HashtagShortcut {
 function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const { t } = useLingui();
   // const navigate = useNavigate();
-  let { hashtag: rawHashtag, ...params } = (
-    columnMode ? {} : (useParams() as { hashtag?: string; instance?: string })
-  ) as {
+  const routerParams = useParams() as {
     hashtag?: string;
     instance?: string;
   };
+  let { hashtag: rawHashtag, ...params } = columnMode ? {} : routerParams;
   if (props.hashtag) rawHashtag = props.hashtag;
-  let hashtags = (rawHashtag as string).trim().split(/[\s+]+/);
-  hashtags.sort();
-  let hashtag: string = hashtags[0];
+  const hashtags = (rawHashtag as string).trim().split(/[\s+]+/).toSorted();
+  const hashtag: string = hashtags[0];
   const [searchParams, setSearchParams] = useSearchParams();
   const media = mediaView || !!searchParams.get('media');
   const linkParams = media ? '?media=1' : '';
@@ -142,11 +140,10 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
     instance: props?.instance || params.instance,
   });
   const {
-    masto: currentMasto,
     instance: currentInstance,
     authenticated: currentAuthenticated,
   } = api();
-  const hashtagTitle = hashtags.map((t) => `#${t}`).join(' ');
+  const hashtagTitle = hashtags.map((tag) => `#${tag}`).join(' ');
   const title = instance
     ? media
       ? t`${hashtagTitle} (Media only) on ${instance}`
@@ -168,8 +165,8 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const tagTimelines = (
     masto.v1 as unknown as { timelines: { tag: HashtagTimelineEndpoint } }
   ).timelines.tag;
-  const tagsApi = masto.v1.tags as unknown as TagsApi;
-  const featuredTagsApi = masto.v1.featuredTags as unknown as FeaturedTagsApi;
+  const tagsApi = masto.v1.tags as TagsApi;
+  const featuredTagsApi = masto.v1.featuredTags as FeaturedTagsApi;
 
   // const hashtagsIterator = useRef();
   const maxID = useRef<string | undefined>(undefined);
@@ -255,7 +252,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
         return true;
       }
       return false;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -263,12 +260,16 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const [followUIState, setFollowUIState] = useState('default');
   const [info, setInfo] = useState<HashtagInfo | undefined>();
   // Get hashtag info
+  // NOTE: deliberately omits `tagsApi` from deps. `masto.v1.tags` is a proxy
+  // recreated on every property access, so including it would refetch every
+  // render. The proxy delegates to a stable underlying client, so capturing
+  // the reference once per `hashtag` change is fine.
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
-        const info = await tagsApi.$select(hashtag).fetch();
-        console.log(info);
-        setInfo(info);
+        const fetchedInfo = await tagsApi.$select(hashtag).fetch();
+        console.log(fetchedInfo);
+        setInfo(fetchedInfo);
       } catch (e) {
         console.error(e);
       }
@@ -280,14 +281,16 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const [featuredUIState, setFeaturedUIState] = useState('default');
   const [featuredTags, setFeaturedTags] = useState<FeaturedTag[]>([]);
   const [isFeaturedTag, setIsFeaturedTag] = useState(false);
+  // NOTE: deliberately omits `featuredTagsApi` from deps. `masto.v1.featuredTags`
+  // is a proxy recreated on every property access; including it would loop.
   useEffect(() => {
     if (!authenticated) return;
-    (async () => {
+    void (async () => {
       try {
-        const featuredTags = await featuredTagsApi.list();
-        setFeaturedTags(featuredTags);
+        const fetchedFeaturedTags = await featuredTagsApi.list();
+        setFeaturedTags(fetchedFeaturedTags);
         setIsFeaturedTag(
-          featuredTags.some(
+          fetchedFeaturedTags.some(
             (tag) => tag.name.toLowerCase() === hashtag.toLowerCase(),
           ),
         );
@@ -295,7 +298,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
         console.error(e);
       }
     })();
-  }, []);
+  }, [authenticated, hashtag]);
 
   return (
     <>
@@ -358,12 +361,13 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                       //   setFollowUIState('default');
                       //   return;
                       // }
-                      tagsApi
+                      void tagsApi
                         .$select(hashtag)
                         .unfollow()
                         .then(() => {
                           setInfo({ ...info, following: false });
                           showToast(t`Unfollowed #${hashtag}`);
+                          return undefined;
                         })
                         .catch((e) => {
                           alert(e);
@@ -373,12 +377,13 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                           setFollowUIState('default');
                         });
                     } else {
-                      tagsApi
+                      void tagsApi
                         .$select(hashtag)
                         .follow()
                         .then(() => {
                           setInfo({ ...info, following: true });
                           showToast(t`Followed #${hashtag}`);
+                          return undefined;
                         })
                         .catch((e) => {
                           alert(e);
@@ -420,7 +425,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                         ) as FeaturedTag
                       ).id;
                       if (featuredTagID) {
-                        featuredTagsApi
+                        void featuredTagsApi
                           .$select(featuredTagID)
                           .remove()
                           .then(() => {
@@ -431,6 +436,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                                 (tag) => tag.id !== featuredTagID,
                               ),
                             );
+                            return undefined;
                           })
                           .catch((e) => {
                             console.error(e);
@@ -442,7 +448,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                         showToast(t`Unable to unfeature on profile`);
                       }
                     } else {
-                      featuredTagsApi
+                      void featuredTagsApi
                         .create({
                           name: hashtag,
                         })
@@ -450,6 +456,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                           setIsFeaturedTag(true);
                           showToast(t`Featured on profile`);
                           setFeaturedTags(featuredTags.concat(value));
+                          return undefined;
                         })
                         .catch((e) => {
                           console.error(e);
@@ -486,7 +493,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                 </MenuHeader>
                 <MenuItem
                   type="checkbox"
-                  checked={!!media}
+                  checked={media}
                   onClick={() => {
                     if (media) {
                       searchParams.delete('media');
@@ -517,7 +524,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                     if (
                       newHashtag &&
                       !hashtags.some(
-                        (t) => t.toLowerCase() === newHashtag.toLowerCase(),
+                        (h) => h.toLowerCase() === newHashtag.toLowerCase(),
                       )
                     ) {
                       hashtags.push(newHashtag);
@@ -608,11 +615,11 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                     s.type === shortcut.type &&
                     s.hashtag
                       .split(/[\s+]+/)
-                      .sort()
+                      .toSorted()
                       .join(' ') ===
                       shortcut.hashtag
                         .split(/[\s+]+/)
-                        .sort()
+                        .toSorted()
                         .join(' ') &&
                     (s.instance ? s.instance === shortcut.instance : true) &&
                     (s.media ? !!s.media === !!shortcut.media : true),

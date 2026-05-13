@@ -103,8 +103,11 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   const [headerPreview, setHeaderPreview] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
+  // NOTE: deliberately runs once on mount. `masto.v1.accounts` is a proxy
+  // recreated on every property access; using it as a dep would loop. The
+  // underlying client is stable for the component's lifetime.
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         const acc = (await masto.v1.accounts.verifyCredentials()) as
           | ProfileAccount
@@ -112,8 +115,8 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
           | undefined;
         setAccount(acc ?? null);
         setUIState('default');
-      } catch (e) {
-        console.error(e);
+      } catch (err) {
+        console.error(err);
         setUIState('error');
       }
     })();
@@ -183,7 +186,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                 }
               });
 
-              (async () => {
+              void (async () => {
                 try {
                   const accountsApi = masto.v1
                     .accounts as unknown as MastoAccountsUpdate;
@@ -199,9 +202,9 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                     state: 'success',
                     account: newAccount,
                   });
-                } catch (e) {
-                  console.error(e);
-                  const message = (e as { message?: string })?.message;
+                } catch (err) {
+                  console.error(err);
+                  const message = (err as { message?: string })?.message;
                   alert(message || t`Unable to update profile.`);
                 }
               })();
@@ -225,9 +228,15 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
               </label>
               <div class="edit-profile-media-field">
                 {header ? (
-                  <div
-                    class="edit-media"
-                    tabIndex={0}
+                  <button
+                    type="button"
+                    class="edit-media plain"
+                    style={{
+                      padding: 0,
+                      backgroundColor: 'transparent',
+                      font: 'inherit',
+                      lineHeight: 0,
+                    }}
                     onClick={() => {
                       states.showMediaModal = {
                         mediaAttachments: headerMediaAttachments,
@@ -236,16 +245,22 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                     }}
                   >
                     <img src={header} alt="" />
-                  </div>
+                  </button>
                 ) : (
                   <div class="edit-media"></div>
                 )}
                 {headerPreview && (
                   <>
                     <Icon icon="arrow-right" />
-                    <div
-                      class="edit-media"
-                      tabIndex={0}
+                    <button
+                      type="button"
+                      class="edit-media plain"
+                      style={{
+                        padding: 0,
+                        backgroundColor: 'transparent',
+                        font: 'inherit',
+                        lineHeight: 0,
+                      }}
                       onClick={() => {
                         states.showMediaModal = {
                           mediaAttachments: headerMediaAttachments,
@@ -254,7 +269,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                       }}
                     >
                       <img src={headerPreview} alt="" />
-                    </div>
+                    </button>
                   </>
                 )}
               </div>
@@ -277,9 +292,15 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
               </label>
               <div class="edit-profile-media-field">
                 {avatar ? (
-                  <div
-                    class="edit-media"
-                    tabIndex={0}
+                  <button
+                    type="button"
+                    class="edit-media plain"
+                    style={{
+                      padding: 0,
+                      backgroundColor: 'transparent',
+                      font: 'inherit',
+                      lineHeight: 0,
+                    }}
                     onClick={() => {
                       states.showMediaModal = {
                         mediaAttachments: avatarMediaAttachments,
@@ -288,16 +309,22 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                     }}
                   >
                     <img src={avatar} alt="" />
-                  </div>
+                  </button>
                 ) : (
                   <div class="edit-media"></div>
                 )}
                 {avatarPreview && (
                   <>
                     <Icon icon="arrow-right" />
-                    <div
-                      class="edit-media"
-                      tabIndex={0}
+                    <button
+                      type="button"
+                      class="edit-media plain"
+                      style={{
+                        padding: 0,
+                        backgroundColor: 'transparent',
+                        font: 'inherit',
+                        lineHeight: 0,
+                      }}
                       onClick={() => {
                         states.showMediaModal = {
                           mediaAttachments: avatarMediaAttachments,
@@ -306,7 +333,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                       }}
                     >
                       <img src={avatarPreview} alt="" />
-                    </div>
+                    </button>
                   </>
                 )}
               </div>

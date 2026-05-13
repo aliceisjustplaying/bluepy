@@ -30,7 +30,7 @@ function Bookmarks() {
   async function fetchBookmarks(firstLoad?: boolean) {
     if (firstLoad || !bookmarksIterator.current) {
       bookmarksIterator.current = (
-        masto.v1.bookmarks as unknown as mastodon.rest.v1.BookmarksResource
+        masto.v1.bookmarks as mastodon.rest.v1.BookmarksResource
       )
         .list({ limit: LIMIT })
         .values();
