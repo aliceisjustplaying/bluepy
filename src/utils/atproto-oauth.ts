@@ -1,11 +1,17 @@
 import { Agent } from '@atproto/api';
-import { BrowserOAuthClient } from '@atproto/oauth-client-browser';
+import {
+  BrowserOAuthClient,
+  type BrowserOAuthClientOptions,
+  type OAuthSession,
+} from '@atproto/oauth-client-browser';
 
 import { BSKY_PDS } from './atproto-login-service';
 
 export const ATPROTO_OAUTH_SCOPE = 'atproto transition:generic';
 
-function buildClientMetadata(origin) {
+function buildClientMetadata(
+  origin: string,
+): NonNullable<BrowserOAuthClientOptions['clientMetadata']> {
   return {
     client_id: `${origin}/oauth-client-metadata.json`,
     client_name: 'Bluepy',
@@ -23,11 +29,11 @@ function buildClientMetadata(origin) {
   };
 }
 
-const oauthSessions = new Map();
-let oauthClientPromise;
-let oauthInitPromise;
+const oauthSessions = new Map<string, OAuthSession>();
+let oauthClientPromise: Promise<BrowserOAuthClient> | undefined;
+let oauthInitPromise: ReturnType<BrowserOAuthClient['init']> | undefined;
 
-function isLoopbackOrigin(origin = location.origin) {
+function isLoopbackOrigin(origin: string = location.origin): boolean {
   try {
     const { protocol, hostname } = new URL(origin);
     return (
@@ -41,7 +47,9 @@ function isLoopbackOrigin(origin = location.origin) {
   }
 }
 
-export function getAtprotoOAuthClientOptions(origin = location.origin) {
+export function getAtprotoOAuthClientOptions(
+  origin: string = location.origin,
+): BrowserOAuthClientOptions {
   return {
     handleResolver: BSKY_PDS,
     responseMode: 'query',
@@ -51,26 +59,42 @@ export function getAtprotoOAuthClientOptions(origin = location.origin) {
   };
 }
 
-export function createAtprotoOAuthAccessToken(sub) {
+export interface AtprotoOAuthAccessTokenPayload {
+  type: 'atproto-oauth';
+  sub: string;
+}
+
+export function createAtprotoOAuthAccessToken(sub: string): string {
   return JSON.stringify({
     type: 'atproto-oauth',
     sub,
-  });
+  } satisfies AtprotoOAuthAccessTokenPayload);
 }
 
-export function parseAtprotoOAuthAccessToken(accessToken) {
+export function parseAtprotoOAuthAccessToken(
+  accessToken: string | null | undefined,
+): AtprotoOAuthAccessTokenPayload | null {
   if (!accessToken) return null;
   try {
-    const data = JSON.parse(accessToken);
-    return data?.type === 'atproto-oauth' && data?.sub ? data : null;
+    const data: unknown = JSON.parse(accessToken);
+    if (
+      data !== null &&
+      typeof data === 'object' &&
+      (data as { type?: unknown }).type === 'atproto-oauth' &&
+      typeof (data as { sub?: unknown }).sub === 'string' &&
+      (data as { sub: string }).sub.length > 0
+    ) {
+      return data as AtprotoOAuthAccessTokenPayload;
+    }
+    return null;
   } catch {
     return null;
   }
 }
 
-export async function getAtprotoOAuthClient() {
+export async function getAtprotoOAuthClient(): Promise<BrowserOAuthClient> {
   if (window.__BLUEPY_OAUTH_TEST_CLIENT__) {
-    return window.__BLUEPY_OAUTH_TEST_CLIENT__;
+    return window.__BLUEPY_OAUTH_TEST_CLIENT__ as BrowserOAuthClient;
   }
   if (!oauthClientPromise) {
     oauthClientPromise = Promise.resolve(
@@ -80,7 +104,9 @@ export async function getAtprotoOAuthClient() {
   return oauthClientPromise;
 }
 
-export async function initAtprotoOAuthClient() {
+export async function initAtprotoOAuthClient(): ReturnType<
+  BrowserOAuthClient['init']
+> {
   const client = await getAtprotoOAuthClient();
   if (!client.init) return undefined;
   if (!oauthInitPromise) {
@@ -94,25 +120,34 @@ export async function initAtprotoOAuthClient() {
   return oauthInitPromise;
 }
 
-export async function restoreAtprotoOAuthSession(sub, refresh) {
+export async function restoreAtprotoOAuthSession(
+  sub: string | null | undefined,
+  refresh?: boolean,
+): Promise<OAuthSession | null> {
   if (!sub) return null;
-  if (oauthSessions.has(sub)) return oauthSessions.get(sub);
+  if (oauthSessions.has(sub)) return oauthSessions.get(sub) as OAuthSession;
   const client = await getAtprotoOAuthClient();
   const session = await client.restore(sub, refresh);
   oauthSessions.set(sub, session);
   return session;
 }
 
-export function getCachedAtprotoOAuthSession(sub) {
-  return oauthSessions.get(sub) || null;
+export function getCachedAtprotoOAuthSession(
+  sub: string | null | undefined,
+): OAuthSession | null {
+  return oauthSessions.get(sub as string) || null;
 }
 
-export function createAtprotoOAuthAgent(session) {
+export function createAtprotoOAuthAgent(
+  session: OAuthSession | null | undefined,
+): Agent | null {
   if (!session) return null;
   return new Agent(session);
 }
 
-export async function startAtprotoOAuthLogin(input) {
+export async function startAtprotoOAuthLogin(
+  input: string,
+): Promise<OAuthSession> {
   const client = await getAtprotoOAuthClient();
   return client.signIn(input, {
     scope: ATPROTO_OAUTH_SCOPE,
