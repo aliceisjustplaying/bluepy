@@ -7,6 +7,8 @@ import {
   MenuHeader,
   MenuItem,
 } from '@szhsin/react-menu';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -14,7 +16,7 @@ import Icon from '../components/icon';
 import MenuConfirm from '../components/menu-confirm';
 import Menu2 from '../components/menu2';
 import { SHORTCUTS_LIMIT } from '../components/shortcuts-settings';
-import Timeline from '../components/timeline';
+import TimelineUntyped from '../components/timeline';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import showToast from '../utils/show-toast';
@@ -31,14 +33,111 @@ const LIMIT = 20;
 const TAGS_LIMIT_PER_MODE = 4;
 const TOTAL_TAGS_LIMIT = TAGS_LIMIT_PER_MODE + 1;
 
-function Hashtags({ media: mediaView, columnMode, ...props }) {
+type HashtagStatus = mastodon.v1.Status;
+
+interface FetchHashtagsResult {
+  done?: boolean;
+  value: HashtagStatus[] | undefined;
+}
+
+interface HashtagListOptions {
+  limit: number;
+  any?: string[];
+  maxId?: string;
+  onlyMedia?: boolean;
+  since_id?: string;
+}
+
+interface HashtagTimelineEndpoint {
+  $select(hashtag: string): {
+    list(options: HashtagListOptions): {
+      values(): AsyncIterator<HashtagStatus[]>;
+    };
+  };
+}
+
+interface HashtagInfo {
+  name: string;
+  following?: boolean;
+  [key: string]: unknown;
+}
+
+interface FeaturedTag {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+interface TagsApi {
+  $select(hashtag: string): {
+    fetch(): Promise<HashtagInfo>;
+    follow(): Promise<unknown>;
+    unfollow(): Promise<unknown>;
+  };
+}
+
+interface FeaturedTagsApi {
+  list(): Promise<FeaturedTag[]>;
+  create(params: { name: string }): Promise<FeaturedTag>;
+  $select(id: string): {
+    remove(): Promise<unknown>;
+  };
+}
+
+interface TimelineProps {
+  key?: string;
+  title?: string;
+  titleComponent?: preact.ComponentChildren;
+  id?: string;
+  timelineKey?: string;
+  instance?: string;
+  emptyText?: string;
+  errorText?: string;
+  fetchItems?: (firstLoad?: boolean) => Promise<FetchHashtagsResult>;
+  checkForUpdates?: () => Promise<boolean>;
+  useItemID?: boolean;
+  view?: string;
+  refresh?: unknown;
+  filterContext?: string;
+  headerEnd?: preact.ComponentChildren;
+}
+
+const Timeline = TimelineUntyped as unknown as ComponentType<TimelineProps>;
+
+type TimelineAccess = string | null;
+
+interface HashtagsProps {
+  hashtag?: string;
+  media?: boolean;
+  columnMode?: boolean;
+  instance?: string;
+  [key: string]: unknown;
+}
+
+interface HashtagShortcut {
+  type: 'hashtag';
+  hashtag: string;
+  instance?: string;
+  media?: 'on' | undefined;
+}
+
+function Hashtags({
+  media: mediaView,
+  columnMode,
+  ...props
+}: HashtagsProps) {
   const { t } = useLingui();
   // const navigate = useNavigate();
-  let { hashtag, ...params } = columnMode ? {} : useParams();
-  if (props.hashtag) hashtag = props.hashtag;
-  let hashtags = hashtag.trim().split(/[\s+]+/);
+  let { hashtag: rawHashtag, ...params } = (columnMode
+    ? {}
+    : (useParams() as { hashtag?: string; instance?: string })) as {
+    hashtag?: string;
+    instance?: string;
+  };
+  if (props.hashtag) rawHashtag = props.hashtag;
+  let hashtags = (rawHashtag as string).trim().split(/[\s+]+/);
   hashtags.sort();
-  hashtag = hashtags[0];
+  let hashtag: string = hashtags[0];
   const [searchParams, setSearchParams] = useSearchParams();
   const media = mediaView || !!searchParams.get('media');
   const linkParams = media ? '?media=1' : '';
@@ -60,19 +159,24 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
       ? t`${hashtagTitle} (Media only)`
       : t`${hashtagTitle}`;
   useTitle(title, `/:instance?/t/:hashtag`);
-  const latestItem = useRef();
+  const latestItem = useRef<string | undefined>();
 
   const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
 
   // Timeline access: public, authenticated, disabled
-  const [timelineAccess, setTimelineAccess] = useState(null);
+  const [timelineAccess, setTimelineAccess] = useState<TimelineAccess>(null);
   const isDisabled = timelineAccess === 'disabled';
   const requiresAuth = timelineAccess === 'authenticated';
   const isPrivate = requiresAuth && !authenticated;
 
+  const tagTimelines = (masto.v1 as unknown as { timelines: { tag: HashtagTimelineEndpoint } })
+    .timelines.tag;
+  const tagsApi = masto.v1.tags as unknown as TagsApi;
+  const featuredTagsApi = masto.v1.featuredTags as unknown as FeaturedTagsApi;
+
   // const hashtagsIterator = useRef();
-  const maxID = useRef(undefined);
-  async function fetchHashtags(firstLoad) {
+  const maxID = useRef<string | undefined>(undefined);
+  async function fetchHashtags(firstLoad?: boolean): Promise<FetchHashtagsResult> {
     // if (firstLoad || !hashtagsIterator.current) {
     //   hashtagsIterator.current = masto.v1.timelines.tag.$select(hashtag).list({
     //     limit: LIMIT,
@@ -87,7 +191,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
       feedType: 'local',
       instance,
     });
-    setTimelineAccess(access);
+    setTimelineAccess(access as TimelineAccess);
     if (
       access === 'disabled' ||
       (access === 'authenticated' && !authenticated)
@@ -98,7 +202,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
       };
     }
 
-    const results = await masto.v1.timelines.tag
+    const results = await tagTimelines
       .$select(hashtag)
       .list({
         limit: LIMIT,
@@ -108,7 +212,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
       })
       .values()
       .next();
-    let { value } = results;
+    let { value } = results as { value: HashtagStatus[] | undefined };
     if (value?.length) {
       if (firstLoad) {
         latestItem.current = value[0].id;
@@ -116,7 +220,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
 
       // value = filteredItems(value, 'public');
       value.forEach((item) => {
-        saveStatus(item, instance, {
+        saveStatus(item as unknown as Parameters<typeof saveStatus>[0], instance, {
           skipThreading: media || mediaFirst, // If media view, no need to form threads
         });
       });
@@ -124,14 +228,14 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
       maxID.current = value[value.length - 1].id;
     }
     return {
-      ...results,
+      ...(results as { done?: boolean }),
       value,
     };
   }
 
-  async function checkForUpdates() {
+  async function checkForUpdates(): Promise<boolean> {
     try {
-      const results = await masto.v1.timelines.tag
+      const results = await tagTimelines
         .$select(hashtag)
         .list({
           limit: 1,
@@ -141,10 +245,10 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
         })
         .values()
         .next();
-      let { value } = results;
+      let { value } = results as { value: HashtagStatus[] };
       const valueContainsLatestItem = value[0]?.id === latestItem.current; // since_id might not be supported
       if (value?.length && !valueContainsLatestItem) {
-        value = filteredItems(value, 'public');
+        value = filteredItems(value, 'public') as HashtagStatus[];
         return true;
       }
       return false;
@@ -154,12 +258,12 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
   }
 
   const [followUIState, setFollowUIState] = useState('default');
-  const [info, setInfo] = useState();
+  const [info, setInfo] = useState<HashtagInfo | undefined>();
   // Get hashtag info
   useEffect(() => {
     (async () => {
       try {
-        const info = await masto.v1.tags.$select(hashtag).fetch();
+        const info = await tagsApi.$select(hashtag).fetch();
         console.log(info);
         setInfo(info);
       } catch (e) {
@@ -171,13 +275,13 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
   const reachLimit = hashtags.length >= TOTAL_TAGS_LIMIT;
 
   const [featuredUIState, setFeaturedUIState] = useState('default');
-  const [featuredTags, setFeaturedTags] = useState([]);
+  const [featuredTags, setFeaturedTags] = useState<FeaturedTag[]>([]);
   const [isFeaturedTag, setIsFeaturedTag] = useState(false);
   useEffect(() => {
     if (!authenticated) return;
     (async () => {
       try {
-        const featuredTags = await masto.v1.featuredTags.list();
+        const featuredTags = await featuredTagsApi.list();
         setFeaturedTags(featuredTags);
         setIsFeaturedTag(
           featuredTags.some(
@@ -251,7 +355,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
                       //   setFollowUIState('default');
                       //   return;
                       // }
-                      masto.v1.tags
+                      tagsApi
                         .$select(hashtag)
                         .unfollow()
                         .then(() => {
@@ -266,7 +370,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
                           setFollowUIState('default');
                         });
                     } else {
-                      masto.v1.tags
+                      tagsApi
                         .$select(hashtag)
                         .follow()
                         .then(() => {
@@ -306,12 +410,14 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
                   onClick={() => {
                     setFeaturedUIState('loading');
                     if (isFeaturedTag) {
-                      const featuredTagID = featuredTags.find(
-                        (tag) =>
-                          tag.name.toLowerCase() === hashtag.toLowerCase(),
+                      const featuredTagID = (
+                        featuredTags.find(
+                          (tag) =>
+                            tag.name.toLowerCase() === hashtag.toLowerCase(),
+                        ) as FeaturedTag
                       ).id;
                       if (featuredTagID) {
-                        masto.v1.featuredTags
+                        featuredTagsApi
                           .$select(featuredTagID)
                           .remove()
                           .then(() => {
@@ -333,7 +439,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
                         showToast(t`Unable to unfeature on profile`);
                       }
                     } else {
-                      masto.v1.featuredTags
+                      featuredTagsApi
                         .create({
                           name: hashtag,
                         })
@@ -396,11 +502,14 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
               </>
             )}
             <FocusableItem className="menu-field" disabled={reachLimit}>
-              {({ ref }) => (
+              {({ ref }: { ref: preact.Ref<HTMLInputElement> }) => (
                 <form
-                  onSubmit={(e) => {
+                  onSubmit={(e: Event) => {
                     e.preventDefault();
-                    const newHashtag = e.target[0].value?.trim?.();
+                    const target = e.target as unknown as Array<{
+                      value?: { trim?: () => string };
+                    }>;
+                    const newHashtag = target[0].value?.trim?.();
                     // Use includes but need to be case insensitive
                     if (
                       newHashtag &&
@@ -435,7 +544,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
                     required
                     autocorrect="off"
                     autocapitalize="off"
-                    spellCheck={false}
+                    spellcheck={false}
                     // no spaces, no hashtags
                     pattern="[^#＃][^\s#＃]+[^#＃]"
                     disabled={reachLimit}
@@ -450,7 +559,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
                 <MenuItem
                   key={tag}
                   disabled={hashtags.length === 1}
-                  onClick={(e) => {
+                  onClick={() => {
                     hashtags.splice(i, 1);
                     hashtags.sort();
                     // navigate(
@@ -484,14 +593,14 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
                   );
                   return;
                 }
-                const shortcut = {
+                const shortcut: HashtagShortcut = {
                   type: 'hashtag',
                   hashtag: hashtags.join(' '),
                   instance,
                   media: media ? 'on' : undefined,
                 };
                 // Check if already exists
-                const exists = states.shortcuts.some(
+                const exists = (states.shortcuts as HashtagShortcut[]).some(
                   (s) =>
                     s.type === shortcut.type &&
                     s.hashtag
@@ -508,7 +617,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
                 if (exists) {
                   alert(t`This shortcut already exists`);
                 } else {
-                  states.shortcuts.push(shortcut);
+                  (states.shortcuts as HashtagShortcut[]).push(shortcut);
                   showToast(t`Hashtag shortcut added`);
                 }
               }}
@@ -523,7 +632,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }) {
                 let newInstance = prompt(
                   t`Enter a new server e.g. "mastodon.social"`,
                 );
-                if (!/\./.test(newInstance)) {
+                if (!/\./.test(newInstance as string)) {
                   if (newInstance) alert(t`Invalid server`);
                   return;
                 }
