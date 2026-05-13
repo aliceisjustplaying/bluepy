@@ -1,18 +1,42 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 
 import getHTMLText from '../utils/get-html-text';
 
 import Icon from './icon';
-import TranslationBlock from './translation-block';
+import TranslationBlockUntyped from './translation-block';
 
-function TranslatedBioSheet({ note, fields, onClose }) {
+interface TranslationBlockProps {
+  forceTranslate?: boolean;
+  sourceLanguage?: string;
+  onTranslate?: (params: {
+    text: string;
+    source?: string;
+    target?: string;
+    signal?: AbortSignal;
+  }) => Promise<unknown>;
+  text?: string;
+  mini?: boolean;
+  autoDetected?: boolean;
+}
+const TranslationBlock =
+  TranslationBlockUntyped as unknown as ComponentType<TranslationBlockProps>;
+
+interface TranslatedBioSheetProps {
+  note?: string;
+  fields?: mastodon.v1.AccountField[];
+  onClose?: () => void;
+}
+
+function TranslatedBioSheet({ note, fields, onClose }: TranslatedBioSheetProps) {
   const { t } = useLingui();
   const fieldsText =
     fields
       ?.map(({ name, value }) => `${name}\n${getHTMLText(value)}`)
       .join('\n\n') || '';
 
-  const text = getHTMLText(note) + (fieldsText ? `\n\n${fieldsText}` : '');
+  const text = getHTMLText(note ?? '') + (fieldsText ? `\n\n${fieldsText}` : '');
 
   return (
     <div class="sheet">

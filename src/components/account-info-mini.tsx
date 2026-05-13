@@ -1,15 +1,36 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentChildren, ComponentType } from 'preact';
 import { useRef } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import shortenNumber from '../utils/shorten-number';
 import states from '../utils/states';
 
-import Link from './link';
+import LinkUntyped from './link';
+
+interface LinkProps {
+  to: string;
+  class?: string;
+  children?: ComponentChildren;
+}
+const Link = LinkUntyped as unknown as ComponentType<LinkProps>;
 
 const LIMIT = 80;
 
-export default function AccountInfoMini({ account, instance }) {
+type AccountWithHideCollections = mastodon.v1.Account & {
+  hideCollections?: boolean | null;
+};
+
+interface AccountInfoMiniProps {
+  account?: AccountWithHideCollections | null;
+  instance?: string;
+}
+
+export default function AccountInfoMini({
+  account,
+  instance,
+}: AccountInfoMiniProps) {
   const { t } = useLingui();
 
   if (!account) return null;
@@ -19,12 +40,16 @@ export default function AccountInfoMini({ account, instance }) {
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
 
   const { masto } = api({ instance });
+  const accountsResource =
+    masto.v1.accounts as unknown as mastodon.rest.v1.AccountsResource;
 
-  const followersIterator = useRef();
-  async function fetchFollowers(firstLoad) {
+  const followersIterator = useRef<
+    AsyncIterator<mastodon.v1.Account[]> | undefined
+  >(undefined);
+  async function fetchFollowers(firstLoad?: boolean) {
     if (!id) return { value: [], done: true };
     if (firstLoad || !followersIterator.current) {
-      followersIterator.current = masto.v1.accounts
+      followersIterator.current = accountsResource
         .$select(id)
         .followers.list({ limit: LIMIT })
         .values();
@@ -32,11 +57,13 @@ export default function AccountInfoMini({ account, instance }) {
     return await followersIterator.current.next();
   }
 
-  const followingIterator = useRef();
-  async function fetchFollowing(firstLoad) {
+  const followingIterator = useRef<
+    AsyncIterator<mastodon.v1.Account[]> | undefined
+  >(undefined);
+  async function fetchFollowing(firstLoad?: boolean) {
     if (!id) return { value: [], done: true };
     if (firstLoad || !followingIterator.current) {
-      followingIterator.current = masto.v1.accounts
+      followingIterator.current = accountsResource
         .$select(id)
         .following.list({ limit: LIMIT })
         .values();
@@ -68,7 +95,7 @@ export default function AccountInfoMini({ account, instance }) {
               value={followersCount}
               one={
                 <Trans>
-                  <span title={followersCount}>
+                  <span title={String(followersCount)}>
                     {shortenNumber(followersCount)}
                   </span>{' '}
                   Follower
@@ -76,7 +103,7 @@ export default function AccountInfoMini({ account, instance }) {
               }
               other={
                 <Trans>
-                  <span title={followersCount}>
+                  <span title={String(followersCount)}>
                     {shortenNumber(followersCount)}
                   </span>{' '}
                   Followers
@@ -107,7 +134,7 @@ export default function AccountInfoMini({ account, instance }) {
               value={followingCount}
               other={
                 <Trans>
-                  <span title={followingCount}>
+                  <span title={String(followingCount)}>
                     {shortenNumber(followingCount)}
                   </span>{' '}
                   Following
@@ -120,7 +147,7 @@ export default function AccountInfoMini({ account, instance }) {
               value={statusesCount}
               one={
                 <Trans>
-                  <span title={statusesCount}>
+                  <span title={String(statusesCount)}>
                     {shortenNumber(statusesCount)}
                   </span>{' '}
                   Post
@@ -128,7 +155,7 @@ export default function AccountInfoMini({ account, instance }) {
               }
               other={
                 <Trans>
-                  <span title={statusesCount}>
+                  <span title={String(statusesCount)}>
                     {shortenNumber(statusesCount)}
                   </span>{' '}
                   Posts

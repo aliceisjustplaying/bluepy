@@ -1,21 +1,37 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentChildren, ComponentType } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 
 import Icon from '../components/icon';
-import Link from '../components/link';
+import LinkUntyped from '../components/link';
 import Loader from '../components/loader';
-import NavMenu from '../components/nav-menu';
+import NavMenuUntyped from '../components/nav-menu';
 import { api } from '../utils/api';
 import { fetchFollowedTags } from '../utils/followed-tags';
 import useTitle from '../utils/useTitle';
+
+interface LinkProps {
+  to: string;
+  class?: string;
+  children?: ComponentChildren;
+}
+const Link = LinkUntyped as unknown as ComponentType<LinkProps>;
+const NavMenu = NavMenuUntyped as unknown as ComponentType<
+  Record<string, never>
+>;
 
 function FollowedHashtags() {
   const { t } = useLingui();
   const { masto, instance } = api();
   useTitle(t`Followed Hashtags`, `/fh`);
-  const [uiState, setUIState] = useState('default');
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
 
-  const [followedHashtags, setFollowedHashtags] = useState([]);
+  const [followedHashtags, setFollowedHashtags] = useState<mastodon.v1.Tag[]>(
+    [],
+  );
   useEffect(() => {
     setUIState('loading');
     (async () => {
@@ -31,7 +47,7 @@ function FollowedHashtags() {
   }, []);
 
   return (
-    <div id="followed-hashtags-page" class="deck-container" tabIndex="-1">
+    <div id="followed-hashtags-page" class="deck-container" tabIndex={-1}>
       <div class="timeline-deck deck">
         <header>
           <div class="header-grid">

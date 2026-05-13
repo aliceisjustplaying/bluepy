@@ -1,15 +1,38 @@
 import './quote-suggestion.css';
 
 import { Trans } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 
-import Status from './status';
+import StatusUntyped from './status';
+
+interface StatusProps {
+  status?: mastodon.v1.Status;
+  instance?: string;
+  size?: 's' | 'm' | 'l';
+  readOnly?: boolean;
+}
+const Status = StatusUntyped as unknown as ComponentType<StatusProps>;
+
+interface QuoteSuggestionData {
+  url?: string;
+  status?: mastodon.v1.Status;
+  instance?: string;
+}
+
+interface QuoteSuggestionProps {
+  quoteSuggestion?: QuoteSuggestionData | null;
+  hasCurrentQuoteStatus?: boolean;
+  onAccept?: () => void;
+  onCancel?: () => void;
+}
 
 export default function QuoteSuggestion({
   quoteSuggestion,
   hasCurrentQuoteStatus,
   onAccept,
   onCancel,
-}) {
+}: QuoteSuggestionProps) {
   if (!quoteSuggestion) return null;
 
   return (
