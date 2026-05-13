@@ -130,7 +130,9 @@
   },
   "browserslist": [
     "defaults",
-    "android >= 4"
+    "not op_mini all",
+    "not kaios 2.5",
+    "not kaios 3.0-3.1"
   ],
   "exifreader": {
     "include": {
