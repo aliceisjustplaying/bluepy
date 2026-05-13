@@ -149,9 +149,7 @@ function fetchAccount(
 ) {
   return accountQueue.add(
     () => (masto as unknown as FullMasto).v1.accounts.$select(id).fetch(),
-    {
-      signal,
-    } as unknown as { signal?: AbortSignal },
+    { signal },
   );
 }
 const memFetchAccount = pmem(fetchAccount);
@@ -302,7 +300,7 @@ const detectLang = pmem(
     }
 
     if (langDetector) {
-      const langs = await langDetector.detect(text as unknown as string);
+      const langs = await langDetector.detect(text as string);
       console.groupCollapsed(
         '💬 DETECTLANG BROWSER',
         langs.slice(0, 3).map((l) => l.detectedLanguage),
@@ -320,7 +318,7 @@ const detectLang = pmem(
     }
 
     const { detectAll } = await import('tinyld/light');
-    const langs = detectAll(text as unknown as string);
+    const langs = detectAll(text as string);
     console.groupCollapsed(
       '💬 DETECTLANG TINYLD',
       langs.slice(0, 3).map((l) => l.lang),
@@ -742,7 +740,7 @@ function StatusInner({
   }
 
   const createdAtDate = new Date(createdAt);
-  const editedAtDate = new Date(editedAt as unknown as string);
+  const editedAtDate = new Date(editedAt as string);
 
   const atproto = statusAny._atproto as
     | {
@@ -817,7 +815,7 @@ function StatusInner({
     inReplyToAccountId,
   });
 
-  const prefs = getPreferences() as unknown as Record<string, unknown>;
+  const prefs = getPreferences();
   const readingExpandSpoilers = !!prefs['reading:expand:spoilers'];
 
   // default | show_all | hide_all
@@ -987,11 +985,9 @@ function StatusInner({
 
   // `useTruncated` exposes `Ref<HTMLElement>` but JSX targets are usually
   // narrower (HTMLDivElement, HTMLSpanElement). Cast at the boundary.
-  const spoilerContentRef =
-    useTruncated() as unknown as RefObject<HTMLDivElement>;
-  const contentRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
-  const mediaContainerRef =
-    useTruncated() as unknown as RefObject<HTMLDivElement>;
+  const spoilerContentRef = useTruncated() as RefObject<HTMLDivElement>;
+  const contentRef = useTruncated() as RefObject<HTMLDivElement>;
+  const mediaContainerRef = useTruncated() as RefObject<HTMLDivElement>;
 
   const statusRef = useRef<HTMLElement | null>(null);
   const [reloadPostContentCount, reloadPostContent] = useReducer(
@@ -1074,7 +1070,7 @@ function StatusInner({
       const newWin = openCompose({
         replyToStatus: status,
         replyMode,
-      } as unknown as Parameters<typeof openCompose>[0]);
+      });
       if (newWin) return;
     }
     showCompose({
@@ -3011,7 +3007,7 @@ function StatusInner({
                   <MathBlock
                     content={content}
                     contentRef={contentRef}
-                    onRevert={reloadPostContent as unknown as () => void}
+                    onRevert={reloadPostContent as () => void}
                   />
                 )}
                 {!!poll && (
@@ -3909,7 +3905,7 @@ const QuoteStatuses = memo(
     const { i18n } = useLingui();
     const _ = i18n._.bind(i18n);
     const snapStates = useSnapshot(states);
-    const containerRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
+    const containerRef = useTruncated() as RefObject<HTMLDivElement>;
     if (!id || !instance) return null;
     const sKey = statusKey(id, instance);
     const quotes = (sKey ? snapStates.statusQuotes[sKey] : undefined) as
@@ -4037,7 +4033,7 @@ function EditedAtModal({
           <ol>
             {editHistory.map((status: AnyStatus) => {
               const { createdAt } = status;
-              const createdAtDate = new Date(createdAt as unknown as string);
+              const createdAtDate = new Date(createdAt as string);
               return (
                 <li key={createdAt} class="history-item">
                   <h3>
@@ -4104,7 +4100,7 @@ function FilteredStatus({
   };
   const isReblog = !!reblog;
   const filterTitleStr = filterInfo?.titlesStr || '';
-  const createdAtDate = new Date(createdAt as unknown as string);
+  const createdAtDate = new Date(createdAt as string);
   const statusPeekText = statusPeek(
     (reblog || status) as unknown as Parameters<typeof statusPeek>[0],
   );
@@ -4122,8 +4118,7 @@ function FilteredStatus({
     } as unknown as Parameters<typeof useLongPress>[1],
   );
 
-  const statusPeekRef =
-    useTruncated() as unknown as RefObject<HTMLAnchorElement>;
+  const statusPeekRef = useTruncated() as RefObject<HTMLAnchorElement>;
   const sKey = statusKey(status.id, instance);
   const ssKey =
     statusKey(status.id, instance) +

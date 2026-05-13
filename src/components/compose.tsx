@@ -59,7 +59,7 @@ import AccountBlockUntyped from './account-block';
 import CameraCaptureInputRaw, {
   supportsCameraCapture,
 } from './camera-capture-input';
-import CharCountMeterUntyped from './char-count-meter';
+import CharCountMeter from './char-count-meter';
 import ComposePoll, { expiryOptions, type PollState } from './compose-poll';
 import TextareaRaw from './compose-textarea';
 
@@ -105,7 +105,7 @@ import CustomEmojisModalUntyped from './custom-emojis-modal';
 import FilePickerInputRaw from './file-picker-input';
 import GIFPickerModalUntyped from './gif-picker-modal';
 import Icon from './icon';
-import LoaderUntyped from './loader';
+import Loader from './loader';
 import MediaAttachmentUntyped from './media-attachment';
 import MentionModalUntyped from './mention-modal';
 import Menu2 from './menu2';
@@ -292,28 +292,6 @@ function AccountBlock(props: {
   accountInstance?: string;
   hideDisplayName?: boolean;
   useAvatarStatic?: boolean;
-}>;
-  return <Inner {...props} />;
-}
-
-function CharCountMeter(props: {
-  maxCharacters?: number;
-  hidden?: boolean;
-}) {
-  const Inner = CharCountMeterUntyped as unknown as ComponentType<{
-  maxCharacters?: number;
-  hidden?: boolean;
-}>;
-  return <Inner {...props} />;
-}
-
-function Loader(props: {
-  abrupt?: boolean;
-  hidden?: boolean;
-}) {
-  const Inner = LoaderUntyped as unknown as ComponentType<{
-  abrupt?: boolean;
-  hidden?: boolean;
 }>;
   return <Inner {...props} />;
 }
@@ -559,8 +537,8 @@ function insertTextAtCursor({
 
   // Original JS reads selectionStart/selectionEnd directly; for text-y
   // inputs these are numbers in practice. Narrow with non-null assertion.
-  const selectionStart = targetElement.selectionStart as unknown as number;
-  const selectionEnd = targetElement.selectionEnd as unknown as number;
+  const selectionStart = targetElement.selectionStart as number;
+  const selectionEnd = targetElement.selectionEnd as number;
   const { value } = targetElement;
   let textBeforeInsert = value.slice(0, selectionStart);
 
@@ -605,8 +583,7 @@ function Compose({
   const { i18n, t } = useLingui();
   // Lingui macro hides `_` on the returned object; the runtime still exposes
   // it on i18n. Mirror the JS destructure for compatibility with `_(msg)`.
-  const _ = (descriptor: MessageDescriptor): string =>
-    i18n._(descriptor as unknown as Parameters<typeof i18n._>[0]);
+  const _ = (descriptor: MessageDescriptor): string => i18n._(descriptor);
   const rtf = RTF(i18n.locale);
   const lf = LF(i18n.locale);
 
@@ -1085,7 +1062,7 @@ function Compose({
             setQuoteApprovalPolicy(postQuoteApprovalPolicy);
           }
           setSensitive(!!editSensitive);
-          if (composablePoll) setPoll(composablePoll as unknown as PollState);
+          if (composablePoll) setPoll(composablePoll);
           setMediaAttachments(editMediaAttachments ?? []);
           setUIState('default');
         } catch (e) {
@@ -1165,7 +1142,7 @@ function Compose({
       if (draftSensitiveMedia !== null)
         setSensitiveMedia(!!draftSensitiveMedia);
       if (draftSensitive !== null) setSensitive(!!draftSensitive);
-      if (composablePoll) setPoll(composablePoll as unknown as PollState);
+      if (composablePoll) setPoll(composablePoll);
       if (draftMediaAttachments) setMediaAttachments(draftMediaAttachments);
       if (draftScheduledAt) {
         const d =
@@ -2169,7 +2146,7 @@ function Compose({
                   if (action?.name === 'custom-emojis') {
                     setShowEmoji2Picker({
                       targetElement:
-                        spoilerTextRef as unknown as RefObject<HTMLElement | null>,
+                        spoilerTextRef as RefObject<HTMLElement | null>,
                       defaultSearchTerm: action?.defaultSearchTerm || null,
                     });
                   }
