@@ -6,11 +6,11 @@ import states from './states';
 
 const TOAST_DURATION = 5_000; // 5 seconds
 
-export default function showCompose(opts) {
+export default function showCompose(opts?: unknown): void {
   if (!opts) opts = true;
 
   if (states.showCompose) {
-    if (states.composerState.minimized) {
+    if ((states.composerState as { minimized?: unknown }).minimized) {
       showToast({
         duration: TOAST_DURATION,
         text: t`A draft post is currently minimized. Post or discard it before creating a new one.`,
