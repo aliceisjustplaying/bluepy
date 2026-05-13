@@ -195,8 +195,9 @@ export default function GenericAccounts({
       loadAccounts(true);
       firstLoad.current = false;
     }
-    // Intentionally only reacts to `fetchAccounts` identity changes — adding
-    // `accounts`/`loadAccounts`/`loadRelationships` would cause refetch loops.
+    // TODO(oxlint:react-hooks/exhaustive-deps): intentionally only reacts to
+    // `fetchAccounts` identity changes; adding `accounts`/`loadAccounts`/
+    // `loadRelationships` would cause refetch loops.
   }, [fetchAccounts]);
 
   useEffect(() => {
@@ -206,7 +207,9 @@ export default function GenericAccounts({
     if (snapStates.reloadGenericAccounts?.id === id) {
       loadAccounts(true);
     }
-    // Intentionally only triggers on counter change.
+    // TODO(oxlint:react-hooks/exhaustive-deps): intentionally only triggers on
+    // counter change; `id` and `loadAccounts` would loop and we want
+    // counter-triggered refresh, not id-triggered.
   }, [snapStates.reloadGenericAccounts.counter]);
 
   if (!showGenericAccountsState) {

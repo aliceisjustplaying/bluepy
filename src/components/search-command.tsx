@@ -116,6 +116,10 @@ export default memo(function SearchCommand({
   const hidden = !showSearch;
 
   return (
+    // TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
+    // backdrop-style overlay; Esc-close is wired via `useHotkeys('esc', ...)`
+    // above. Adding keyboard handlers to the backdrop itself would be
+    // duplicative no-ops.
     <div
       id="search-command-container"
       hidden={hidden}

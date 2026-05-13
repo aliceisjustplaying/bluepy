@@ -763,6 +763,8 @@ function Catchup() {
     });
     return filteredPosts
       .filter((post) => !post.__HIDDEN)
+      // TODO(oxlint:unicorn/no-array-sort): `toSorted()` is ES2023; project
+      // target is ES2022. Mutating a `.filter()` result is safe.
       .sort((aIn, bIn) => {
         let a: CatchupPost = aIn;
         let b: CatchupPost = bIn;
@@ -1243,6 +1245,10 @@ function Catchup() {
       tabIndex={-1}
     >
       <div class="timeline-deck deck wide">
+        {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
+            click-to-scroll on the header; semantically a non-interactive
+            scrollback affordance, not a button. Keyboard equivalent is the
+            standard browser Home key on the focusable container. */}
         <header
           class={uiState === 'loading' ? 'loading' : ''}
           onClick={(e) => {

@@ -1,7 +1,7 @@
 import { useAutoAnimate } from '@formkit/auto-animate/preact';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { TargetedMouseEvent } from 'preact';
-import { useReducer } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import {
@@ -23,7 +23,8 @@ interface RecentSearchesProps {
 export default function RecentSearches({ onItemClick }: RecentSearchesProps) {
   const { t } = useLingui();
   const { instance } = api();
-  const [, reload] = useReducer<number, void>((c: number) => c + 1, 0);
+  const [, setReloadTick] = useState(0);
+  const reload = () => setReloadTick((c) => c + 1);
   const history = getSearchHistory();
 
   const handleClearAll = () => {

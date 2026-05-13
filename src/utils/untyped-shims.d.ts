@@ -1,7 +1,26 @@
 // Ambient module declarations for untyped peer deps used by leaf utilities.
 // These shims keep the converted .ts files free of inline ts-ignore.
+//
+// This file is intentionally kept in *script* mode (no top-level imports or
+// exports). Top-level `declare module 'foo'` here is a global module
+// declaration, not a module augmentation, so untyped packages get types here.
 
 type ColorConverter = (...args: unknown[]) => number[];
+
+declare module '*.po' {
+  export const messages: Record<string, string>;
+}
+
+declare module 'punycode/' {
+  const punycode: {
+    toASCII(domain: string): string;
+    toUnicode(domain: string): string;
+  };
+
+  export function toASCII(domain: string): string;
+  export function toUnicode(domain: string): string;
+  export default punycode;
+}
 
 declare module 'chroma-js/src/io/oklab/oklab2rgb.js' {
   const oklab2rgb: ColorConverter;

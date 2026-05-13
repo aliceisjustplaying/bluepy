@@ -581,6 +581,9 @@ function Timeline({
         });
       }
     };
+    // TODO(oxlint:react-hooks/exhaustive-deps): mount-only effect to restore
+    // cached scroll position and seed initial items. Adding `loadItems` or
+    // `cachedData.*` would loop.
   }, []);
   const firstLoad = useRef(true);
   useEffect(() => {
@@ -593,6 +596,9 @@ function Timeline({
       setItems([]);
     }
     loadItems(true);
+    // TODO(oxlint:react-hooks/exhaustive-deps): only reacts to refresh-trigger
+    // changes; `loadItems` is recreated each render and `items.length` change
+    // would refetch on every append.
   }, [clearWhenRefresh, refresh]);
 
   // useEffect(() => {
@@ -686,6 +692,11 @@ function Timeline({
 
   return (
     <FilterContext.Provider value={filterContext}>
+      {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
+          the deck container click handler is a side-channel for unhiding the
+          header when the user clicks a timeline item; it is not a primary
+          control. Keyboard interaction on timeline items is handled by their
+          own focusable controls. */}
       <div
         id={`${id}-page`}
         class={`deck-container ${
@@ -714,6 +725,10 @@ function Timeline({
         }}
       >
         <div class="timeline-deck deck">
+          {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
+              click-to-scroll-to-top on the timeline header is a navigational
+              convenience, not a primary control; keyboard equivalent is the
+              standard Home key on the focusable timeline container. */}
           <header
             ref={headerRef}
             // hidden={hiddenUI}
