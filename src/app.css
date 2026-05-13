@@ -537,6 +537,7 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   > li.descendant:not(.thread)
   > :is(.status-link, .status-focus) {
   padding-inline-start: var(--line-start);
+  background-color: var(--status-bg-color);
 }
 .timeline.contextual .replies[data-scroll-left]:not([data-scroll-left='0']) {
   background-color: var(--bg-color);
@@ -1069,6 +1070,9 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   max-width: var(--main-width);
 }
 
+:is(.status-link, .status-focus) {
+  background-color: var(--status-bg-color);
+}
 .status-link {
   display: block;
   text-decoration-line: none;
@@ -1089,13 +1093,13 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
 }
 @media not (pointer: coarse) {
   :is(.status-link, .status-focus):is(:focus, .is-active) {
-    background-color: var(--link-bg-hover-color);
+    background-color: var(--status-bg-hover-color);
     outline-offset: -2px;
   }
 }
 @media (hover: hover) {
   .status-link:hover {
-    background-color: var(--link-bg-hover-color);
+    background-color: var(--status-bg-hover-color);
     outline-offset: -2px;
   }
 }
@@ -3163,10 +3167,10 @@ ul.link-list li a .icon {
 @media (min-width: 40em) {
   html,
   body {
-    background-color: var(--meta-theme-color, var(--bg-faded-color));
+    background-color: var(--meta-theme-color, var(--bg-color));
   }
   .deck-container {
-    background-color: var(--bg-faded-color);
+    background-color: var(--bg-color);
   }
   #app {
     display: flex;
@@ -3198,7 +3202,7 @@ ul.link-list li a .icon {
   .timeline-deck > header .header-grid {
     border-bottom: 0;
     border-radius: 16px;
-    background-color: var(--bg-faded-blur-color);
+    background-color: var(--header-bg-blur-color);
     backdrop-filter: blur(16px);
     background-image: none;
     border-radius: 16px;
@@ -3225,7 +3229,7 @@ ul.link-list li a .icon {
     --item-radius: 16px;
     border: 1px solid var(--divider-color);
     margin: 16px 0;
-    background-color: var(--bg-color);
+    background-color: var(--status-bg-color);
     border-radius: var(--item-radius);
     overflow: hidden;
     box-shadow: 0px 1px var(--bg-blur-color);
