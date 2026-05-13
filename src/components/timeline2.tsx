@@ -1,6 +1,8 @@
 import './timeline2.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentChildren, ComponentType, JSX, RefObject } from 'preact';
 import {
   useCallback,
   useEffect,
@@ -35,26 +37,104 @@ import {
   useOHotkeys,
 } from './timeline';
 
+// `timeline.jsx` is still JS; cast to ComponentType so we can pass typed props.
+interface TimelineItemProps {
+  status: TimelineEntry;
+  instance?: string;
+  useItemID?: boolean;
+  filterContext?: string;
+  showFollowedTags?: boolean;
+  showReplyParent?: boolean;
+}
+const TimelineItemTyped =
+  TimelineItem as unknown as ComponentType<TimelineItemProps>;
+
+// `status.jsx` is still JS; we only use the skeleton variant here.
+const StatusTyped = Status as unknown as ComponentType<{ skeleton?: boolean }>;
+
+// `icon.jsx` is still JS; minimal prop shape covers all usages in this file.
+interface IconProps {
+  icon: string;
+  size?: string;
+  alt?: string;
+}
+const IconTyped = Icon as unknown as ComponentType<IconProps>;
+
+// `loader.jsx` is still JS.
+const LoaderTyped = Loader as unknown as ComponentType<{ abrupt?: boolean }>;
+
+// `link.jsx` is still JS; we only need `to`, `class`, and children.
+interface LinkProps {
+  to: string;
+  class?: string;
+  children?: ComponentChildren;
+}
+const LinkTyped = Link as unknown as ComponentType<LinkProps>;
+
+// `nav-menu.jsx` is still JS; takes no props in this usage.
+const NavMenuTyped = NavMenu as unknown as ComponentType<
+  Record<string, never>
+>;
+
 // Batch size (Mastodon API limit is around 20-40)
 const BATCH_SIZE = 20;
 const TIMELINE_LIMIT = 50;
 const CACHE_AGE = 1000 * 60 * 15; // 15 minutes
 
-function getLastItem(items) {
+// Mirrors the `TimelineItem` union in `timeline-utils.ts`: either a flat
+// status augmented with mutation flags, or a grouping wrapper that carries
+// nested statuses under `items`.
+type TimelineStatusEntry = mastodon.v1.Status & {
+  _pinned?: unknown;
+  _differentAuthor?: boolean;
+};
+
+interface TimelineGroupEntry {
+  id: string | string[];
+  items: TimelineStatusEntry[];
+  type: 'boosts' | 'thread' | 'conversation' | 'pinned';
+}
+
+type TimelineEntry = TimelineStatusEntry | TimelineGroupEntry;
+
+function isGroupEntry(entry: TimelineEntry): entry is TimelineGroupEntry {
+  return (
+    Array.isArray((entry as TimelineGroupEntry).items) &&
+    (entry as TimelineGroupEntry).items !== undefined
+  );
+}
+
+function getLastItem(items: readonly TimelineEntry[]): TimelineStatusEntry {
   const item = items[items.length - 1];
-  return item.items ? item.items[item.items.length - 1] : item;
+  if (isGroupEntry(item)) {
+    return item.items[item.items.length - 1];
+  }
+  return item;
 }
 
-function getFirstItem(items) {
+function getFirstItem(items: readonly TimelineEntry[]): TimelineStatusEntry {
   const item = items[0];
-  return item.items ? item.items[0] : item;
+  if (isGroupEntry(item)) {
+    return item.items[0];
+  }
+  return item;
 }
 
-function getScrollAnchor(scrollable) {
+interface ScrollAnchor {
+  itemId: string[];
+  offset: number;
+  direction?: 'next' | 'prev';
+}
+
+function getScrollAnchor(
+  scrollable: HTMLElement | null,
+): ScrollAnchor | null {
   if (!scrollable) return null;
 
   const containerRect = scrollable.getBoundingClientRect();
-  const itemElements = scrollable.querySelectorAll('[data-state-post-id]');
+  const itemElements = scrollable.querySelectorAll<HTMLElement>(
+    '[data-state-post-id]',
+  );
 
   for (const el of itemElements) {
     const rect = el.getBoundingClientRect();
@@ -75,6 +155,56 @@ function getScrollAnchor(scrollable) {
   return null;
 }
 
+interface FetchItemsResult {
+  done?: boolean;
+  value?: TimelineStatusEntry[];
+  originalValue: TimelineStatusEntry[];
+}
+
+interface FetchItemsParams {
+  max_id?: string;
+  min_id?: string;
+}
+
+interface CheckForUpdatesParams {
+  minID?: string | null;
+}
+
+interface CachedTimelineData {
+  items?: TimelineEntry[];
+  minID?: string | null;
+  maxID?: string | null;
+  showNewer?: boolean;
+  showOlder?: boolean;
+  scrollAnchor?: ScrollAnchor | null;
+  updatedAt?: number;
+}
+
+type LoadState = 'start' | 'next' | 'prev' | null;
+type UIState = 'start' | 'loading' | 'default' | 'error';
+
+interface Timeline2Props {
+  title?: string;
+  titleComponent?: ComponentChildren;
+  id: string;
+  instance?: string;
+  emptyText?: ComponentChildren;
+  errorText?: ComponentChildren;
+  useItemID?: boolean;
+  fetchItems?: (params?: FetchItemsParams) => Promise<FetchItemsResult>;
+  checkForUpdates?: (params: CheckForUpdatesParams) => Promise<boolean>;
+  checkForUpdatesInterval?: number;
+  headerStart?: ComponentChildren;
+  headerEnd?: ComponentChildren;
+  timelineStart?: ComponentChildren;
+  refresh?: unknown;
+  filterContext?: string;
+  showFollowedTags?: boolean;
+  showReplyParent?: boolean;
+  dedupeBoosts?: boolean;
+  // clearWhenRefresh?: boolean;
+}
+
 function Timeline2({
   title,
   titleComponent,
@@ -83,8 +213,11 @@ function Timeline2({
   emptyText,
   errorText,
   useItemID,
-  fetchItems = async () => {},
-  checkForUpdates = async () => {},
+  // Match JS default: returns undefined, which then throws in destructuring
+  // and falls into the error UI state. Preserving that behavior is the safest
+  // surface change for this conversion.
+  fetchItems = async () => undefined as unknown as FetchItemsResult,
+  checkForUpdates = async () => false,
   checkForUpdatesInterval = 15_000,
   headerStart,
   headerEnd,
@@ -95,21 +228,24 @@ function Timeline2({
   showReplyParent,
   dedupeBoosts: shouldDedupeBoosts,
   // clearWhenRefresh,
-}) {
+}: Timeline2Props) {
   const { t } = useLingui();
   const { masto } = api({ instance });
 
   const cacheKey = `timeline2-${id}`;
-  const cachedData = useRef(null);
+  const cachedData = useRef<CachedTimelineData | null>(null);
   if (cachedData.current === null) {
-    cachedData.current = store.account.get(cacheKey) || null;
+    cachedData.current =
+      store.account.get<CachedTimelineData>(cacheKey) || null;
   }
   const hasCachedData = !!cachedData.current?.items?.length;
   const cachedUpdatedAt = cachedData.current?.updatedAt;
   const cacheAge = cachedUpdatedAt ? Date.now() - cachedUpdatedAt : 0;
 
-  const loadStateRef = useRef();
-  const [uiState, setUIState] = useState(hasCachedData ? 'default' : 'start');
+  const loadStateRef = useRef<LoadState>(null);
+  const [uiState, setUIState] = useState<UIState>(
+    hasCachedData ? 'default' : 'start',
+  );
   const [showNewer, setShowNewer] = useState(
     (cachedData.current?.showNewer ?? false) || cacheAge > CACHE_AGE,
   );
@@ -117,10 +253,10 @@ function Timeline2({
     cachedData.current?.showOlder ?? true,
   );
   const [visible, setVisible] = useState(true);
-  const scrollableRef = useRef();
+  const scrollableRef = useRef<HTMLDivElement | null>(null);
 
   const firstLoad = useRef(true);
-  const [items, setItems] = useState(() => {
+  const [items, setItems] = useState<TimelineEntry[]>(() => {
     const cached = cachedData.current;
     console.log('🔍 Restore', {
       cached,
@@ -130,12 +266,20 @@ function Timeline2({
     if (!items?.length) return [];
     // Populate statuses
     items.forEach((item) => {
-      if (item.items) {
+      if (isGroupEntry(item)) {
         item.items.forEach((subItem) => {
-          saveStatus(subItem, instance, { sync: true });
+          saveStatus(
+            subItem as unknown as Parameters<typeof saveStatus>[0],
+            instance,
+            { sync: true },
+          );
         });
       } else {
-        saveStatus(item, instance, { sync: true });
+        saveStatus(
+          item as unknown as Parameters<typeof saveStatus>[0],
+          instance,
+          { sync: true },
+        );
       }
     });
     return items;
@@ -150,27 +294,35 @@ function Timeline2({
       : Infinity;
     if (cacheAge <= CACHE_AGE) return;
 
-    const statusIds = [];
+    const statusIds: string[] = [];
     cached.items.forEach((item) => {
-      if (item.items) {
+      if (isGroupEntry(item)) {
         item.items.forEach((subItem) => {
-          statusIds.push(subItem.id);
+          if (subItem.id) statusIds.push(subItem.id);
         });
-      } else {
+      } else if (item.id) {
         statusIds.push(item.id);
       }
     });
 
     if (statusIds.length === 0) return;
 
-    const deletedStatuses = [];
+    const deletedStatuses: string[] = [];
+    // The runtime `masto.v1.statuses` resource has a `list({ id })` batch
+    // fetch that masto's TS types don't expose; mirror the same shim used in
+    // timeline-utils.ts.
+    interface MastoStatusesBatchList {
+      list(params: { id: readonly string[] }): Promise<mastodon.v1.Status[]>;
+    }
+    const statusesResource = masto.v1
+      .statuses as unknown as MastoStatusesBatchList;
     (async () => {
       try {
         // Process in batches
         for (let i = 0; i < statusIds.length; i += BATCH_SIZE) {
           const batchIds = statusIds.slice(i, i + BATCH_SIZE);
           try {
-            const hydratedStatuses = await masto.v1.statuses.list({
+            const hydratedStatuses = await statusesResource.list({
               id: batchIds,
             });
             const returnedIds = new Set(
@@ -184,7 +336,11 @@ function Timeline2({
             });
             if (hydratedStatuses?.length) {
               hydratedStatuses.forEach((status) => {
-                saveStatus(status, instance, { sync: true });
+                saveStatus(
+                  status as unknown as Parameters<typeof saveStatus>[0],
+                  instance,
+                  { sync: true },
+                );
               });
             }
           } catch (e) {
@@ -195,7 +351,7 @@ function Timeline2({
         // Mark deleted statuses
         deletedStatuses.forEach((id) => {
           const key = statusKey(id, instance);
-          if (states.statuses[key]) {
+          if (key && states.statuses[key]) {
             states.statuses[key]._deleted = true;
           }
         });
@@ -220,65 +376,80 @@ function Timeline2({
     [hydrateCache],
   );
 
-  const scrollAnchorRef = useRef(cachedData.current?.scrollAnchor || null);
+  const scrollAnchorRef = useRef<ScrollAnchor | null>(
+    cachedData.current?.scrollAnchor || null,
+  );
 
-  const saveScrollAnchor = useCallback(({ items, direction }) => {
-    console.log('🔍 saveScrollAnchor', {
-      direction,
-      items,
-    });
-    if (!items?.length) return;
-    if (!scrollableRef.current) return;
-    const getItem = direction === 'next' ? getLastItem : getFirstItem;
-    const item = getItem(items);
-    const postID = statusKey(item?.id, instance);
-    const targetElement = scrollableRef.current.querySelector(
-      `[data-state-post-id~="${postID}"]`,
-    );
-    console.log('🔍 saveScrollAnchor 2', {
-      postID,
-      targetElement,
-      direction,
-      items,
-    });
-    if (targetElement) {
-      const containerRect = scrollableRef.current.getBoundingClientRect();
-      const targetRect = targetElement.getBoundingClientRect();
-      scrollAnchorRef.current = {
-        itemId: postID,
-        offset: targetRect.top - containerRect.top,
+  interface SaveScrollAnchorArgs {
+    items: readonly TimelineEntry[];
+    direction: 'next' | 'prev';
+  }
+  const saveScrollAnchor = useCallback(
+    ({ items, direction }: SaveScrollAnchorArgs) => {
+      console.log('🔍 saveScrollAnchor', {
         direction,
-      };
-    } else {
-      console.warn('🔍 Target element not found', {
+        items,
+      });
+      if (!items?.length) return;
+      if (!scrollableRef.current) return;
+      const getItem = direction === 'next' ? getLastItem : getFirstItem;
+      const item = getItem(items);
+      const postID = statusKey(item?.id, instance);
+      if (!postID) return;
+      const targetElement = scrollableRef.current.querySelector(
+        `[data-state-post-id~="${postID}"]`,
+      );
+      console.log('🔍 saveScrollAnchor 2', {
         postID,
         targetElement,
         direction,
         items,
       });
-    }
-  }, []);
+      if (targetElement) {
+        const containerRect = scrollableRef.current.getBoundingClientRect();
+        const targetRect = targetElement.getBoundingClientRect();
+        scrollAnchorRef.current = {
+          itemId: [postID],
+          offset: targetRect.top - containerRect.top,
+          direction,
+        };
+      } else {
+        console.warn('🔍 Target element not found', {
+          postID,
+          targetElement,
+          direction,
+          items,
+        });
+      }
+    },
+    [instance],
+  );
 
   console.debug('RENDER Timeline2', id, refresh);
   __BENCHMARK.start(`timeline-${id}-load`);
 
-  const minID = useRef(cachedData.current?.minID || null);
-  const maxID = useRef(cachedData.current?.maxID || null);
+  const minID = useRef<string | null | undefined>(
+    cachedData.current?.minID || null,
+  );
+  const maxID = useRef<string | null | undefined>(
+    cachedData.current?.maxID || null,
+  );
 
   const loadItems = useDebouncedCallback(
-    (params = {}) => {
+    (params: FetchItemsParams = {}) => {
       console.log('🔍 loadItems', { params });
       const { max_id, min_id } = params;
-      const loadState =
+      const loadState: LoadState =
         !max_id && !min_id ? 'start' : max_id ? 'next' : min_id ? 'prev' : null;
       loadStateRef.current = loadState;
       setUIState('loading');
       (async () => {
         try {
-          let result = await fetchItems(params);
+          const result = await fetchItems(params);
 
           const { max_id, min_id } = params;
-          let { value, originalValue, done } = result;
+          let { value } = result;
+          const { originalValue, done } = result;
           const hasOlder = !done;
           const minIDValue = originalValue[0]?.id;
           const maxIDValue = originalValue[originalValue.length - 1]?.id;
@@ -286,23 +457,38 @@ function Timeline2({
 
           if (value?.length) {
             if (shouldDedupeBoosts) {
-              value = dedupeBoosts(value, instance);
+              // dedupeBoosts requires `instance: string`; the JS caller passed
+              // it through unconditionally. Preserve that exact behavior — an
+              // undefined instance would have stringified into the cache key
+              // there, and we mirror that with a non-null assertion rather
+              // than silently skipping the dedupe step.
+              value = dedupeBoosts(value, instance!);
             }
-            value = filterHiddenStatuses(value, filterContext);
-            value = groupContext(value, instance);
+            value = filterHiddenStatuses(
+              value,
+              filterContext,
+            ) as TimelineStatusEntry[];
+            // groupContext expects `instance: string`; JS passed `undefined`
+            // through when the prop was omitted (only reply-hint code paths
+            // care, and they short-circuit on falsy keys). Preserve runtime
+            // behavior via a non-null assertion.
+            const grouped = groupContext(
+              value,
+              instance!,
+            ) as TimelineEntry[];
 
             if (loadState === 'start') {
               minID.current = minIDValue;
               maxID.current = maxIDValue;
-              setItems(value);
+              setItems(grouped);
               setShowOlder(hasOlder);
               setShowNewer(false);
             } else if (loadState === 'next') {
               maxID.current = maxIDValue;
-              scrollableRef.current.classList.add('scrolling-next');
+              scrollableRef.current?.classList.add('scrolling-next');
               setItems((prevItems) => {
                 saveScrollAnchor({ items: prevItems, direction: 'next' });
-                const newItems = [...prevItems, ...value].slice(
+                const newItems = [...prevItems, ...grouped].slice(
                   -TIMELINE_LIMIT,
                 );
                 minID.current = [newItems[0].id].flat()[0];
@@ -312,14 +498,14 @@ function Timeline2({
               setShowNewer(true);
             } else if (loadState === 'prev') {
               minID.current = minIDValue;
-              scrollableRef.current.classList.add('scrolling-prev');
+              scrollableRef.current?.classList.add('scrolling-prev');
               setItems((prevItems) => {
                 saveScrollAnchor({ items: prevItems, direction: 'prev' });
-                const newItems = [...value, ...prevItems].slice(
+                const newItems = [...grouped, ...prevItems].slice(
                   0,
                   TIMELINE_LIMIT,
                 );
-                maxID.current = [newItems.at(-1).id].flat().at(-1);
+                maxID.current = [newItems.at(-1)?.id].flat().at(-1);
                 return newItems;
               });
               setShowOlder(true);
@@ -349,18 +535,24 @@ function Timeline2({
     { leading: true },
   );
 
-  const jRef = useJHotkeys(scrollableRef);
-  const kRef = useKHotkeys(scrollableRef);
-  const oRef = useOHotkeys();
+  // `timeline.jsx` exports these hotkey hooks untyped; they return a ref-like
+  // mutable container compatible with Preact's `RefObject<HTMLDivElement>`.
+  type HotkeyRef = ReturnType<typeof useJHotkeys> & {
+    current: HTMLDivElement | null;
+  };
+  const jRef = useJHotkeys(scrollableRef) as unknown as HotkeyRef;
+  const kRef = useKHotkeys(scrollableRef) as unknown as HotkeyRef;
+  const oRef = useOHotkeys() as unknown as HotkeyRef;
 
-  const headerRef = useRef();
+  const headerRef = useRef<HTMLElement | null>(null);
 
   // Cache items whenever they change
   useEffect(() => {
     if (firstLoad.current) return;
     if (items.length > 0) {
       console.log('🔍 Cache items', { items });
-      const existing = store.account.get(cacheKey) || {};
+      const existing =
+        store.account.get<CachedTimelineData>(cacheKey) || {};
       store.account.set(cacheKey, {
         ...existing,
         items,
@@ -381,7 +573,7 @@ function Timeline2({
 
     const scrollAnchor = getScrollAnchor(scrollableRef.current);
     if (scrollAnchor) {
-      const cached = store.account.get(cacheKey) || {};
+      const cached = store.account.get<CachedTimelineData>(cacheKey) || {};
       store.account.set(cacheKey, {
         ...cached,
         scrollAnchor,
@@ -389,8 +581,12 @@ function Timeline2({
     }
   }, 500);
 
+  interface ScrollFnArgs {
+    scrollDirection: 'end' | 'start' | null;
+    nearReachStart: boolean;
+  }
   const scrollFnCallback = useCallback(
-    ({ scrollDirection, nearReachStart }) => {
+    ({ scrollDirection, nearReachStart }: ScrollFnArgs) => {
       if (headerRef.current) {
         console.log('🔍 scrollFnCallback', {
           scrollDirection,
@@ -403,14 +599,15 @@ function Timeline2({
     },
     [cacheScrollAnchor],
   );
-  const { resetScrollDirection } = useScrollFn(
+  const scrollFn = useScrollFn(
     {
-      scrollableRef,
+      scrollableRef: scrollableRef as RefObject<HTMLElement>,
       distanceFromEnd: 2,
       scrollThresholdStart: 44,
     },
     scrollFnCallback,
   );
+  const resetScrollDirection = scrollFn?.resetScrollDirection;
 
   // Restore from cache or load fresh items on mount
   useEffect(() => {
@@ -443,12 +640,12 @@ function Timeline2({
     setShowNewer(hasUpdates);
   }, [checkForUpdates]);
 
-  const lastHiddenTime = useRef();
+  const lastHiddenTime = useRef<number | undefined>(undefined);
   usePageVisibility(
     (visible) => {
       if (firstLoad.current) return;
       if (visible) {
-        const timeDiff = Date.now() - lastHiddenTime.current;
+        const timeDiff = Date.now() - (lastHiddenTime.current ?? 0);
         if (!lastHiddenTime.current || timeDiff > 1000 * 3) {
           checkUpdates();
         }
@@ -501,7 +698,9 @@ function Timeline2({
         scrollableRef.current.scrollTop += delta;
       }
       setTimeout(() => {
-        scrollableRef.current?.classList.remove(`scrolling-${direction}`);
+        if (direction) {
+          scrollableRef.current?.classList.remove(`scrolling-${direction}`);
+        }
       }, 300);
     } else {
       console.warn('Target element not found', {
@@ -523,15 +722,16 @@ function Timeline2({
           kRef.current = node;
           oRef.current = node;
         }}
-        tabIndex="-1"
-        onClick={(e) => {
+        tabIndex={-1}
+        onClick={(e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+          const target = e.target as Element | null;
           if (
             headerRef.current &&
-            e.target.closest('.timeline-item, .timeline-item-alt')
+            target?.closest('.timeline-item, .timeline-item-alt')
           ) {
             setTimeout(() => {
-              headerRef.current.hidden = false;
-              resetScrollDirection();
+              if (headerRef.current) headerRef.current.hidden = false;
+              resetScrollDirection?.();
             }, 250);
           }
         }}
@@ -539,16 +739,18 @@ function Timeline2({
         <div class="timeline-deck deck">
           <header
             ref={headerRef}
-            onClick={(e) => {
-              if (!e.target.closest('a, button')) {
+            onClick={(e: JSX.TargetedMouseEvent<HTMLElement>) => {
+              const target = e.target as Element | null;
+              if (!target?.closest('a, button')) {
                 scrollableRef.current?.scrollTo({
                   top: 0,
                   behavior: 'smooth',
                 });
               }
             }}
-            onDblClick={(e) => {
-              if (!e.target.closest('a, button')) {
+            onDblClick={(e: JSX.TargetedMouseEvent<HTMLElement>) => {
+              const target = e.target as Element | null;
+              if (!target?.closest('a, button')) {
                 loadItems();
               }
             }}
@@ -556,13 +758,13 @@ function Timeline2({
           >
             <div class="header-grid">
               <div class="header-side">
-                <NavMenu />
+                <NavMenuTyped />
                 {headerStart !== null && headerStart !== undefined ? (
                   headerStart
                 ) : (
-                  <Link to="/" class="button plain home-button">
-                    <Icon icon="home" size="l" alt={t`Home`} />
-                  </Link>
+                  <LinkTyped to="/" class="button plain home-button">
+                    <IconTyped icon="home" size="l" alt={t`Home`} />
+                  </LinkTyped>
                 )}
               </div>
               {title && (titleComponent ? titleComponent : <h1>{title}</h1>)}
@@ -576,7 +778,7 @@ function Timeline2({
               {timelineStart}
             </div>
           )}
-          {!!items.length ? (
+          {items.length ? (
             <>
               {showNewer && (
                 <div
@@ -594,9 +796,9 @@ function Timeline2({
                   >
                     {uiState === 'loading' &&
                     loadStateRef.current === 'start' ? (
-                      <Loader abrupt />
+                      <LoaderTyped abrupt />
                     ) : (
-                      <Icon icon="arrow-up-top" size="l" />
+                      <IconTyped icon="arrow-up-top" size="l" />
                     )}
                   </button>
                   <button
@@ -604,27 +806,27 @@ function Timeline2({
                     data-pagination-trigger="prev"
                     class={`plain4 ${uiState === 'loading' && loadStateRef.current === 'start' ? '' : 'block'}`}
                     onClick={() => {
-                      loadItems({ min_id: minID.current });
+                      loadItems({ min_id: minID.current ?? undefined });
                     }}
                     disabled={uiState === 'loading'}
                   >
                     {uiState === 'loading' &&
                     loadStateRef.current === 'prev' ? (
-                      <Loader abrupt />
+                      <LoaderTyped abrupt />
                     ) : (
-                      <Icon icon="arrow-up" size="l" />
+                      <IconTyped icon="arrow-up" size="l" />
                     )}
                   </button>
                 </div>
               )}
               <ul class="timeline">
                 {items.map((status) => (
-                  <TimelineItem
+                  <TimelineItemTyped
                     status={status}
                     instance={instance}
                     useItemID={useItemID}
                     filterContext={filterContext}
-                    key={status.id}
+                    key={Array.isArray(status.id) ? status.id.join(',') : status.id}
                     showFollowedTags={showFollowedTags}
                     showReplyParent={showReplyParent}
                   />
@@ -647,14 +849,14 @@ function Timeline2({
                     class="plain4 block"
                     data-pagination-trigger="next"
                     onClick={() => {
-                      loadItems({ max_id: maxID.current });
+                      loadItems({ max_id: maxID.current ?? undefined });
                     }}
                     disabled={uiState === 'loading'}
                   >
                     {uiState === 'loading' ? (
-                      <Loader abrupt />
+                      <LoaderTyped abrupt />
                     ) : (
-                      <Icon icon="arrow-down" size="l" />
+                      <IconTyped icon="arrow-down" size="l" />
                     )}
                   </button>
                 </div>
@@ -668,7 +870,7 @@ function Timeline2({
             <ul class="timeline">
               {Array.from({ length: 5 }).map((_, i) => (
                 <li key={i}>
-                  <Status skeleton />
+                  <StatusTyped skeleton />
                 </li>
               ))}
             </ul>
