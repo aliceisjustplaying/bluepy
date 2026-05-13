@@ -120,7 +120,7 @@ export default function ScheduledPosts() {
 
   useEffect(() => {
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
         const postsIterator = masto.v1.scheduledStatuses
           .list({ limit: LIMIT })
@@ -437,7 +437,7 @@ function ScheduledPostEdit({
             if (!newScheduledAt) return;
             setUIState('loading');
             const targetScheduledAt = newScheduledAt;
-            (async () => {
+            void (async () => {
               try {
                 await masto.v1.scheduledStatuses.$select(post.id).update({
                   scheduledAt: targetScheduledAt.toISOString(),
@@ -446,9 +446,9 @@ function ScheduledPostEdit({
                 onClose();
                 setUIState('default');
                 states.reloadScheduledPosts++;
-              } catch (e) {
+              } catch (err) {
                 setUIState('error');
-                console.error(e);
+                console.error(err);
                 showToast(t`Failed to reschedule post`);
               }
             })();
@@ -471,7 +471,7 @@ function ScheduledPostEdit({
                 disabled={
                   !differentScheduledAt ||
                   uiState === 'loading' ||
-                  !!pastSchedule
+                  pastSchedule
                 }
               >
                 <Trans>Reschedule</Trans>
@@ -483,7 +483,7 @@ function ScheduledPostEdit({
                 confirmLabel={t`Delete scheduled post?`}
                 onClick={() => {
                   setUIState('loading');
-                  (async () => {
+                  void (async () => {
                     try {
                       const apiResult = api();
                       const innerMasto =
@@ -506,7 +506,7 @@ function ScheduledPostEdit({
                 <button
                   type="button"
                   class="light danger"
-                  disabled={uiState === 'loading' || !!pastSchedule}
+                  disabled={uiState === 'loading' || pastSchedule}
                 >
                   <Trans>Delete…</Trans>
                 </button>

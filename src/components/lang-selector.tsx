@@ -30,7 +30,7 @@ export default function LangSelector() {
 
       // Not used when rendering because it'll change based on current locale
       // Only used for sorting on render
-      const _common = localeCode2Text({
+      const commonName = localeCode2Text({
         code: regionlessCode,
         locale: i18n.locale,
         fallback: CATALOGS.find((c) => c.code === lang)?.name,
@@ -39,15 +39,15 @@ export default function LangSelector() {
       return {
         code: lang,
         regionlessCode,
-        _common,
+        commonName,
         native,
       };
-    }).sort((a, b) => {
-      // Sort by common name. The JS original assumes `_common` is always a
+    }).toSorted((a, b) => {
+      // Sort by common name. The JS original assumes `commonName` is always a
       // string (catalogs supply a `name` fallback); keep the same assumption
       // so an undefined value still surfaces as a runtime error instead of
       // silently sorting as empty.
-      const order = a._common!.localeCompare(b._common!, i18n.locale);
+      const order = a.commonName!.localeCompare(b.commonName!, i18n.locale);
       if (order !== 0) return order;
       // Sort by code (fallback)
       if (a.code < b.code) return -1;
@@ -65,7 +65,7 @@ export default function LangSelector() {
         onChange={(e) => {
           const { value } = e.currentTarget;
           store.local.set('lang', value);
-          activateLang(value);
+          void activateLang(value);
         }}
       >
         {populatedLocales.map(({ code, regionlessCode, native }) => {

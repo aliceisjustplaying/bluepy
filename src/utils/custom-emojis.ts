@@ -13,12 +13,12 @@ interface MastoCustomEmojisApi {
   list(): Promise<CustomEmoji[]>;
 }
 
-async function _getCustomEmojis(
+async function getCustomEmojisRaw(
   instance: string,
 ): Promise<[CustomEmoji[], Fuse<CustomEmoji>]> {
   const { masto } = api({ instance });
   const emojis = await (
-    masto.v1.customEmojis as unknown as MastoCustomEmojisApi
+    masto.v1.customEmojis as MastoCustomEmojisApi
   ).list();
   const visibleEmojis = emojis.filter((e) => e.visibleInPicker);
   const searcher = new Fuse(visibleEmojis, {
@@ -28,10 +28,10 @@ async function _getCustomEmojis(
   return [visibleEmojis, searcher];
 }
 
-const getCustomEmojis = pmem(_getCustomEmojis, {
+const getCustomEmojis = pmem(getCustomEmojisRaw, {
   // Limit by time to reduce memory usage
   expires: 30 * 60 * 1000, // 30 minutes
 });
 
-export { getCustomEmojis, _getCustomEmojis };
+export { getCustomEmojis, getCustomEmojisRaw };
 export default getCustomEmojis;

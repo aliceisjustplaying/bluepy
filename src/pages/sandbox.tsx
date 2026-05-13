@@ -1,6 +1,10 @@
 import './sandbox.css';
 
-import type { ComponentType, JSX } from 'preact';
+import type {
+  ComponentType,
+  TargetedEvent,
+  TargetedMouseEvent,
+} from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { uid } from 'uid/single';
 
@@ -24,19 +28,23 @@ const Status = UntypedStatus as unknown as ComponentType<StatusComponentProps>;
 
 type UnknownRecord = Record<string, unknown>;
 
+function stringifyPrimitive(value: unknown): string {
+  return String(
+    value as string | number | boolean | symbol | bigint | null | undefined,
+  );
+}
+
 function hashID(obj: unknown): string {
   if (!obj) return '';
-  if (typeof obj !== 'object') return String(obj);
+  if (typeof obj !== 'object') return stringifyPrimitive(obj);
   return Object.entries(obj as UnknownRecord)
     .map(([k, v]) =>
       typeof v === 'object' && v !== null && !Array.isArray(v)
         ? `${k}:${hashID(v)}`
-        : `${k}:${String(v)}`,
+        : `${k}:${stringifyPrimitive(v)}`,
     )
     .join('|');
 }
-
-const DEFAULT_INSTANCE = 'mastodon.social';
 
 interface Toggles {
   loading?: boolean;
@@ -523,7 +531,7 @@ export default function Sandbox() {
     });
 
     // Create a backup of the original method
-    const originalGet = store.account.get;
+    const originalGet = store.account.get.bind(store.account);
 
     // Stub the store.account.get method to return our custom preferences
     const stubbedGet = ((key: string): unknown => {
@@ -934,6 +942,7 @@ export default function Sandbox() {
     toggleState.pollMultiple,
     toggleState.pollExpired,
     toggleState.pollVoted,
+    currentInstance,
   ]);
 
   // Handler for filter checkboxes
@@ -986,7 +995,7 @@ export default function Sandbox() {
       </header>
       <div
         class={`sandbox-preview ${toggleState.displayStyle}`}
-        onClickCapture={(e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+        onClickCapture={(e: TargetedMouseEvent<HTMLDivElement>) => {
           const target = e.target as Element | null;
           const isAllowed = target?.closest(
             '.media, .media-caption, .spoiler-button, .spoiler-media-button, .math-block button, .status-card-unfulfilled button, .poll .poll-results-button, .poll .poll-hide-results-button, .poll-options .poll-option',
@@ -994,7 +1003,6 @@ export default function Sandbox() {
           if (isAllowed) return;
           e.preventDefault();
           e.stopPropagation();
-          return false;
         }}
       >
         <FilterContext.Provider value={'home'}>
@@ -1320,7 +1328,7 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={parseInt(toggleState.mediaCount) > 0}
-                    onChange={(e: JSX.TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
                       const newHasMedia = e.currentTarget.checked;
                       const updates: Partial<ToggleState> = {
                         mediaCount: newHasMedia ? '1' : '0',
@@ -1346,9 +1354,9 @@ export default function Sandbox() {
                         : toggleState.mediaCount
                     }
                     step="1"
-                    onChange={(e: JSX.TargetedEvent<HTMLInputElement>) => {
-                      const value = parseInt(e.currentTarget.value) || 1;
-                      updateToggles(({ mediaTypes = [] }) => {
+                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                      const value = parseInt(e.currentTarget.value, 10) || 1;
+                      updateToggles(({ mediaTypes }) => {
                         mediaTypes[value - 1] = 'image';
                         return {
                           mediaCount: String(value),
@@ -1356,7 +1364,7 @@ export default function Sandbox() {
                         };
                       });
                     }}
-                    disabled={parseInt(toggleState.mediaCount) === 0}
+                    disabled={parseInt(toggleState.mediaCount, 10) === 0}
                   />
                 </label>
 
@@ -1443,7 +1451,7 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={parseInt(toggleState.pollCount) > 0}
-                    onChange={(e: JSX.TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
                       const updates: Partial<ToggleState> = {
                         pollCount: e.currentTarget.checked ? '2' : '0',
                       };
@@ -1464,7 +1472,7 @@ export default function Sandbox() {
                     autocomplete="off"
                     value={toggleState.pollCount}
                     step="2"
-                    onChange={(e: JSX.TargetedEvent<HTMLInputElement>) =>
+                    onChange={(e: TargetedEvent<HTMLInputElement>) =>
                       updateToggles({ pollCount: e.currentTarget.value })
                     }
                     disabled={parseInt(toggleState.pollCount) === 0}
@@ -1582,7 +1590,7 @@ export default function Sandbox() {
                     max="10"
                     value={toggleState.quotesCount}
                     step="1"
-                    onChange={(e: JSX.TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
                       // Make sure to convert to a number first to avoid string concatenation
                       const count = parseInt(e.currentTarget.value, 10) || 1;
                       updateToggles({ quotesCount: String(count) });
@@ -1602,7 +1610,7 @@ export default function Sandbox() {
                           value={toggleState.quoteNestingLevel}
                           step="1"
                           onChange={(
-                            e: JSX.TargetedEvent<HTMLInputElement>,
+                            e: TargetedEvent<HTMLInputElement>,
                           ) => {
                             // Make sure to convert to a number first to avoid string concatenation
                             const level =
@@ -1624,7 +1632,7 @@ export default function Sandbox() {
                               value="accepted"
                               checked={toggleState.quoteState === 'accepted'}
                               onChange={(
-                                e: JSX.TargetedEvent<HTMLInputElement>,
+                                e: TargetedEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1642,7 +1650,7 @@ export default function Sandbox() {
                               value="deleted"
                               checked={toggleState.quoteState === 'deleted'}
                               onChange={(
-                                e: JSX.TargetedEvent<HTMLInputElement>,
+                                e: TargetedEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1662,7 +1670,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'unauthorized'
                               }
                               onChange={(
-                                e: JSX.TargetedEvent<HTMLInputElement>,
+                                e: TargetedEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1680,7 +1688,7 @@ export default function Sandbox() {
                               value="pending"
                               checked={toggleState.quoteState === 'pending'}
                               onChange={(
-                                e: JSX.TargetedEvent<HTMLInputElement>,
+                                e: TargetedEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1698,7 +1706,7 @@ export default function Sandbox() {
                               value="rejected"
                               checked={toggleState.quoteState === 'rejected'}
                               onChange={(
-                                e: JSX.TargetedEvent<HTMLInputElement>,
+                                e: TargetedEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1716,7 +1724,7 @@ export default function Sandbox() {
                               value="revoked"
                               checked={toggleState.quoteState === 'revoked'}
                               onChange={(
-                                e: JSX.TargetedEvent<HTMLInputElement>,
+                                e: TargetedEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1736,7 +1744,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'blocked_account'
                               }
                               onChange={(
-                                e: JSX.TargetedEvent<HTMLInputElement>,
+                                e: TargetedEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1756,7 +1764,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'blocked_domain'
                               }
                               onChange={(
-                                e: JSX.TargetedEvent<HTMLInputElement>,
+                                e: TargetedEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1776,7 +1784,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'muted_account'
                               }
                               onChange={(
-                                e: JSX.TargetedEvent<HTMLInputElement>,
+                                e: TargetedEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -2065,14 +2073,18 @@ export default function Sandbox() {
           </ul>
           <p>
             Images are from{' '}
-            <a href="https://picsum.photos/" target="_blank" rel="noopener">
+            <a
+              href="https://picsum.photos/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Lorem Picsum
             </a>
             . Videos and audio are extracted from{' '}
             <a
               href="https://en.wikipedia.org/wiki/Big_Buck_Bunny"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               Big Buck Bunny
             </a>

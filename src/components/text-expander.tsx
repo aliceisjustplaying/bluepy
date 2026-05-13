@@ -1,12 +1,12 @@
 import '@github/text-expander-element';
 
 import { useLingui } from '@lingui/react/macro';
-import type { JSX, Ref } from 'preact';
+import type { HTMLAttributes, Ref } from 'preact';
 import { forwardRef, useImperativeHandle } from 'preact/compat';
 import { useEffect, useRef } from 'preact/hooks';
 
 import { api } from '../utils/api';
-import getCustomEmojis from '../utils/custom-emojis';
+import { getCustomEmojis } from '../utils/custom-emojis';
 import emojifyText from '../utils/emojify-text';
 import getDomain from '../utils/get-domain';
 import isRTL from '../utils/is-rtl';
@@ -58,7 +58,7 @@ export interface TextExpanderHandle {
 }
 
 interface TextExpanderProps extends Omit<
-  JSX.HTMLAttributes<HTMLElement>,
+  HTMLAttributes<HTMLElement>,
   'onTrigger' | 'keys'
 > {
   onTrigger?: ((payload: Record<string, unknown>) => void) | null;
@@ -117,26 +117,30 @@ function TextExpander(
   useEffect(() => {
     if (searcherRef.current) return; // Already set up
 
-    (getCustomEmojis(instance) as unknown as Promise<[unknown, EmojiSearcher]>)
-      .then(([, searcher]) => {
+    void (async () => {
+      try {
+        const [, searcher] = (await getCustomEmojis(instance)) as unknown as [
+          unknown,
+          EmojiSearcher,
+        ];
         searcherRef.current = searcher;
-      })
-      .catch((e: unknown) => {
+      } catch (e: unknown) {
         console.error(e);
-      });
+      }
+    })();
   }, [instance]);
 
   useEffect(() => {
     const textExpander = textExpanderRef.current;
-    if (!textExpander) return;
+    if (!textExpander) return undefined;
 
     const handleChange = (e: Event) => {
       const detail = (e as CustomEvent<TextExpanderChangeDetail>).detail;
-      const { key, provide, text } = detail;
+      const { key, text } = detail;
       textExpanderTextRef.current = text;
 
       if (text === '') {
-        provide(
+        detail.provide(
           Promise.resolve({
             matched: false,
           }),
@@ -162,11 +166,11 @@ function TextExpander(
             </li>`;
         });
         if (showMore) {
-          html += `<li role="option" data-value="" data-more="${text}">${'More…'}</li>`;
+          html += `<li role="option" data-value="" data-more="${text}">More…</li>`;
         }
         menu.innerHTML = html;
 
-        provide(
+        detail.provide(
           Promise.resolve({
             matched: (results?.length || 0) > 0,
             fragment: menu,
@@ -186,12 +190,12 @@ function TextExpander(
       )[key];
 
       if (type) {
-        provide(
-          new Promise(async (resolve) => {
+        detail.provide(
+          (async () => {
             try {
               let searchResults: AccountResult[];
               if (type === 'accounts') {
-                searchResults = (await (
+                searchResults = await (
                   masto.v1.accounts as unknown as {
                     search: {
                       list(options: {
@@ -205,9 +209,9 @@ function TextExpander(
                   q: text,
                   limit: 5,
                   resolve: false,
-                })) as AccountResult[];
+                });
               } else {
-                const response = (await (
+                const response = await (
                   masto.v2.search as unknown as {
                     list(options: {
                       type: string;
@@ -219,13 +223,16 @@ function TextExpander(
                   type,
                   q: text,
                   limit: 5,
-                })) as Record<string, AccountResult[] | undefined>;
+                });
                 searchResults =
                   response[type] || (response as unknown as AccountResult[]);
               }
 
               if (text !== textExpanderTextRef.current) {
-                return;
+                // Stale request: never resolve so the in-flight suggestion
+                // menu isn't dismissed by an older response.
+                await new Promise<never>(() => {});
+                return { matched: false };
               }
 
               const results = searchResults;
@@ -262,17 +269,21 @@ function TextExpander(
                           acct,
                         )}</span>
                         ${
-                          roles?.map(
-                            (role) => ` <span class="tag collapsed">
+                          roles
+                            ?.map(
+                              (role) =>
+                                ` <span class="tag collapsed">
                             ${role.name}
                             ${
-                              !!accountInstance &&
-                              `<span class="more-insignificant">
+                              accountInstance
+                                ? `<span class="more-insignificant">
                                 ${accountInstance}
                               </span>`
+                                : false
                             }
                           </span>`,
-                          ) || ''
+                            )
+                            .join(',') ?? ''
                         }
                       </span>
                     </li>
@@ -298,23 +309,23 @@ function TextExpander(
                 html += `<li role="option" data-value="" data-more="${text}">${t`More…`}</li>`;
               }
               menu.innerHTML = html;
-              resolve({
+              return {
                 matched: results.length > 0,
                 fragment: menu,
-              });
+              };
             } catch (error) {
               console.error('Search error:', error);
-              resolve({
+              return {
                 matched: false,
-              });
+              };
             }
-          }),
+          })(),
         );
         return;
       }
 
       // No other keys supported
-      provide(
+      detail.provide(
         Promise.resolve({
           matched: false,
         }),
@@ -407,13 +418,13 @@ function TextExpander(
         handleDeactivate,
       );
     };
-  }, [searcherRef.current, onTrigger, t, masto]);
+  }, [onTrigger, t, masto]);
 
   const TextExpanderTag = 'text-expander' as unknown as 'div';
   return (
     <TextExpanderTag
       ref={textExpanderRef as unknown as Ref<HTMLDivElement>}
-      {...(props as JSX.HTMLAttributes<HTMLDivElement>)}
+      {...(props as HTMLAttributes<HTMLDivElement>)}
     />
   );
 }
