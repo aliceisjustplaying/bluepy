@@ -207,9 +207,9 @@ function StatusPage(params: StatusPageParams) {
   useEffect(() => {
     if (!heroStatus || !heroStatus.url) return undefined;
 
-    const existingCanonical = document.querySelector(
+    const existingCanonical = document.querySelector<HTMLLinkElement>(
       'link[rel="canonical"]',
-    ) as HTMLLinkElement | null;
+    );
     let originalHref: string | null = null;
     let canonicalLink: HTMLLinkElement | undefined;
 
@@ -398,9 +398,9 @@ function StatusPage(params: StatusPageParams) {
   useEffect(() => {
     let timer = setTimeout(() => {
       // carouselRef.current?.focus?.();
-      const $carousel = document.querySelector(
+      const $carousel = document.querySelector<HTMLElement>(
         '.carousel',
-      ) as HTMLElement | null;
+      );
       if ($carousel) {
         $carousel.focus();
       }
@@ -468,7 +468,12 @@ function StatusParent(props: StatusParentProps) {
   return linkable ? (
     <Link class="status-link" to={to} onClick={onClick} {...restProps} />
   ) : (
-    <div class="status-focus" tabIndex={0} role="article" {...restProps} />
+    <div
+      class="status-focus"
+      tabIndex={-1}
+      role="article"
+      {...restProps}
+    />
   );
 }
 
@@ -1120,13 +1125,13 @@ function StatusThread({
   useHotkeys(
     'j',
     () => {
-      const activeStatus = document.activeElement?.closest(
+      const activeStatus = document.activeElement?.closest<HTMLElement>(
         '.status-link, .status-focus',
-      ) as HTMLElement | null | undefined;
+      );
       const activeStatusRect = activeStatus?.getBoundingClientRect();
       const allStatusLinks = Array.from(
-        scrollableRef.current!.querySelectorAll(STATUSES_SELECTOR),
-      ) as HTMLElement[];
+        scrollableRef.current!.querySelectorAll<HTMLElement>(STATUSES_SELECTOR),
+      );
       console.log({ allStatusLinks });
       if (
         activeStatus &&
@@ -1166,13 +1171,13 @@ function StatusThread({
   useHotkeys(
     'k',
     () => {
-      const activeStatus = document.activeElement?.closest(
+      const activeStatus = document.activeElement?.closest<HTMLElement>(
         '.status-link, .status-focus',
-      ) as HTMLElement | null | undefined;
+      );
       const activeStatusRect = activeStatus?.getBoundingClientRect();
       const allStatusLinks = Array.from(
-        scrollableRef.current!.querySelectorAll(STATUSES_SELECTOR),
-      ) as HTMLElement[];
+        scrollableRef.current!.querySelectorAll<HTMLElement>(STATUSES_SELECTOR),
+      );
       if (
         activeStatus &&
         activeStatusRect &&
@@ -1243,9 +1248,9 @@ function StatusThread({
         '.status-link, .status-focus',
       );
       if (activeStatus) {
-        const mediaLink = activeStatus.querySelector(
+        const mediaLink = activeStatus.querySelector<HTMLAnchorElement>(
           'a.media:not(.status-card a.media)',
-        ) as HTMLAnchorElement | null;
+        );
         if (mediaLink) {
           mediaLink.click();
         }
@@ -1295,9 +1300,9 @@ function StatusThread({
     let timer: ReturnType<typeof setTimeout> | undefined;
     if (mediaStatusID && showMedia) {
       timer = setTimeout(() => {
-        const status = scrollableRef.current?.querySelector(
+        const status = scrollableRef.current?.querySelector<HTMLElement>(
           `.status-link[href*="/${mediaStatusID}"]`,
-        ) as HTMLElement | null | undefined;
+        );
         if (status) {
           status.scrollIntoView(scrollIntoViewOptions);
         }
@@ -1689,9 +1694,9 @@ function StatusThread({
   useEffect(() => {
     let timer = setTimeout(() => {
       if (!heroStatusRef.current) return;
-      const spoilerButton = heroStatusRef.current.querySelector(
+      const spoilerButton = heroStatusRef.current.querySelector<HTMLElement>(
         '.spoiler-button:not(.spoiling), .spoiler-media-button:not(.spoiling)',
-      ) as HTMLElement | null;
+      );
       if (spoilerButton) spoilerButton.click();
     }, 1000);
     return () => clearTimeout(timer);
@@ -1937,10 +1942,10 @@ function StatusThread({
                   onClick={() => {
                     // Click all buttons with class .spoiler but not .spoiling
                     const buttons = Array.from(
-                      scrollableRef.current!.querySelectorAll(
+                      scrollableRef.current!.querySelectorAll<HTMLElement>(
                         '.spoiler-button:not(.spoiling), .spoiler-media-button:not(.spoiling)',
                       ),
-                    ) as HTMLElement[];
+                    );
                     buttons.forEach((button) => {
                       button.click();
                     });
@@ -2297,7 +2302,11 @@ function SubComments({
                 resetScrollPosition(r.id);
               }}
             > */}
-              <div class="status-focus" tabIndex={0} role="article">
+              <div
+                class="status-focus"
+                tabIndex={-1}
+                role="article"
+              >
                 <Status
                   statusID={r.id}
                   instance={instance}

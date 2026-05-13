@@ -1,0 +1,435 @@
+import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentChildren, CSSProperties, RefObject } from 'preact';
+
+import states from '../utils/states';
+
+import EmojiText from './emoji-text';
+import Icon from './icon';
+import MathBlock from './math-block';
+import MediaFirstContainer from './media-first-container';
+import Poll from './poll';
+import PostContent from './post-content';
+import QuoteStatuses, { type FallbackQuote } from './status-quotes';
+import StatusCard from './status-card';
+import StatusMediaEmbeds from './status-media-embeds';
+import { getPostText, isTranslateble, readMoreText } from './status-helpers';
+import type { AnyStatus, FullMasto } from './status-types';
+import StatusTags from './status-tags';
+import TranslationBlock from './translation-block';
+import type { StatusComponentProps } from './status-view';
+
+type FilterInfoMaybe = {
+  action: 'hide' | 'blur' | 'warn';
+  titlesStr?: string;
+};
+
+interface StatusPostBodyProps {
+  mediaFirst?: boolean;
+  hasMediaAttachments: boolean;
+  spoilerText?: string | null;
+  sensitive?: boolean | null;
+  filterInfoMaybe?: FilterInfoMaybe;
+  readingExpandMedia?: string;
+  showSpoiler: boolean;
+  showSpoilerMedia: boolean;
+  contentTextWeight?: boolean;
+  textWeight: () => number;
+  isSizeLarge: boolean;
+  readingExpandSpoilers: boolean;
+  language?: string | null;
+  spoilerContentRef: RefObject<HTMLDivElement>;
+  emojis?: mastodon.v1.CustomEmoji[];
+  id: string;
+  mediaAttachments: mastodon.v1.MediaAttachment[];
+  instance: string;
+  content?: string | null;
+  contentRef: RefObject<HTMLDivElement>;
+  status: AnyStatus;
+  previewMode?: boolean;
+  reloadPostContentCount: number;
+  reloadPostContent: () => void;
+  poll?: mastodon.v1.Poll | null;
+  readOnly?: boolean;
+  sameInstance: boolean;
+  authenticated?: boolean;
+  masto: FullMasto;
+  sKey: string;
+  enableTranslate?: boolean;
+  inlineTranslate?: boolean;
+  differentLanguage?: boolean;
+  forceTranslate?: boolean;
+  withinContext?: boolean;
+  languageAutoDetected?: boolean;
+  displayedMediaAttachments: mastodon.v1.MediaAttachment[];
+  showMultipleMediaCaptions: boolean;
+  captionChildren: ComponentChildren;
+  mediaContainerRef: RefObject<HTMLDivElement>;
+  onMediaClick?: (
+    e: MouseEvent,
+    index: number,
+    media: mastodon.v1.MediaAttachment,
+    status: AnyStatus,
+  ) => void;
+  quoted?: boolean | number;
+  quote?: unknown;
+  renderStatus: (props: StatusComponentProps) => ComponentChildren;
+  card?: mastodon.v1.PreviewCard | null;
+  statusQuoteState?: unknown;
+  currentInstance: string;
+  accountURL?: string | null;
+  size: string;
+  tags?: mastodon.v1.Tag[];
+  showCommentCount?: boolean;
+  showQuoteCount?: boolean;
+  repliesCount?: number;
+  quotesCount?: number;
+}
+
+export default function StatusPostBody({
+  mediaFirst,
+  hasMediaAttachments,
+  spoilerText,
+  sensitive,
+  filterInfoMaybe,
+  readingExpandMedia,
+  showSpoiler,
+  showSpoilerMedia,
+  contentTextWeight,
+  textWeight,
+  isSizeLarge,
+  readingExpandSpoilers,
+  language,
+  spoilerContentRef,
+  emojis,
+  id,
+  mediaAttachments,
+  instance,
+  content,
+  contentRef,
+  status,
+  previewMode,
+  reloadPostContentCount,
+  reloadPostContent,
+  poll,
+  readOnly,
+  sameInstance,
+  authenticated,
+  masto,
+  sKey,
+  enableTranslate,
+  inlineTranslate,
+  differentLanguage,
+  forceTranslate,
+  withinContext,
+  languageAutoDetected,
+  displayedMediaAttachments,
+  showMultipleMediaCaptions,
+  captionChildren,
+  mediaContainerRef,
+  onMediaClick,
+  quoted,
+  quote,
+  renderStatus,
+  card,
+  statusQuoteState,
+  currentInstance,
+  accountURL,
+  size,
+  tags,
+  showCommentCount,
+  showQuoteCount,
+  repliesCount = 0,
+  quotesCount = 0,
+}: StatusPostBodyProps) {
+  const { t, i18n } = useLingui();
+  const _ = i18n._.bind(i18n);
+
+  return (
+    <>
+      <div
+        class={`content-container ${
+          spoilerText ||
+          sensitive ||
+          filterInfoMaybe?.action === 'blur' ||
+          readingExpandMedia === 'hide_all'
+            ? 'has-spoiler'
+            : ''
+        } ${showSpoiler ? 'show-spoiler' : ''} ${
+          showSpoilerMedia ? 'show-media' : ''
+        }`}
+        data-content-text-weight={contentTextWeight ? textWeight() : null}
+        style={
+          isSizeLarge || contentTextWeight
+            ? ({
+                '--content-text-weight': textWeight(),
+              } as unknown as CSSProperties)
+            : undefined
+        }
+      >
+        {mediaFirst && hasMediaAttachments ? (
+          <>
+            {(!!spoilerText || sensitive) && !readingExpandSpoilers && (
+              <>
+                {!!spoilerText && (
+                  <span
+                    class="spoiler-content media-first-spoiler-content"
+                    lang={language ?? undefined}
+                    dir="auto"
+                    ref={spoilerContentRef}
+                    data-read-more={_(readMoreText)}
+                  >
+                    <EmojiText text={spoilerText} emojis={emojis} />{' '}
+                  </span>
+                )}
+                <SpoilerButton
+                  id={id}
+                  showSpoiler={showSpoiler}
+                  readingExpandSpoilers={readingExpandSpoilers}
+                  mediaFirst
+                />
+              </>
+            )}
+            <MediaFirstContainer
+              mediaAttachments={
+                mediaAttachments as unknown as Parameters<
+                  typeof MediaFirstContainer
+                >[0]['mediaAttachments']
+              }
+              language={language ?? undefined}
+              postID={id}
+              instance={instance}
+            />
+            {!!content && (
+              <div class="media-first-content content" ref={contentRef}>
+                <PostContent
+                  post={status as unknown as Parameters<typeof PostContent>[0]['post']}
+                  instance={instance}
+                  previewMode={previewMode}
+                />
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {!!spoilerText && (
+              <>
+                <div
+                  class="content spoiler-content"
+                  lang={language ?? undefined}
+                  dir="auto"
+                  ref={spoilerContentRef}
+                  data-read-more={_(readMoreText)}
+                >
+                  <p>
+                    <EmojiText text={spoilerText} emojis={emojis} />
+                  </p>
+                </div>
+                {readingExpandSpoilers || previewMode ? (
+                  <div class="spoiler-divider">
+                    <Icon icon="eye-open" /> <Trans>Content warning</Trans>
+                  </div>
+                ) : (
+                  <SpoilerButton
+                    id={id}
+                    showSpoiler={showSpoiler}
+                    readingExpandSpoilers={readingExpandSpoilers}
+                  />
+                )}
+              </>
+            )}
+            {!!content && (
+              <div
+                class="content"
+                ref={contentRef}
+                data-read-more={_(readMoreText)}
+                inert={!!spoilerText && !showSpoiler ? true : undefined}
+              >
+                <PostContent
+                  key={reloadPostContentCount}
+                  post={status as unknown as Parameters<typeof PostContent>[0]['post']}
+                  instance={instance}
+                  previewMode={previewMode}
+                />
+              </div>
+            )}
+            {!!content && (
+              <MathBlock
+                content={content}
+                contentRef={contentRef}
+                onRevert={reloadPostContent}
+              />
+            )}
+            {!!poll && (
+              <Poll
+                {...({
+                  lang: language ?? undefined,
+                  poll,
+                  readOnly: readOnly || !sameInstance || !authenticated,
+                  onUpdate: (newPoll: unknown) => {
+                    (states.statuses[sKey] as Record<string, unknown>).poll =
+                      newPoll;
+                  },
+                  refresh: () => {
+                    return masto.v1.polls
+                      .$select(poll.id)
+                      .fetch()
+                      .then((pollResponse) => {
+                        (states.statuses[sKey] as Record<string, unknown>).poll =
+                          pollResponse;
+                        return undefined;
+                      })
+                      .catch((_e: unknown) => {});
+                  },
+                  votePoll: (choices: number[]) => {
+                    return masto.v1.polls
+                      .$select(poll.id)
+                      .votes.create({
+                        choices,
+                      })
+                      .then((pollResponse) => {
+                        (states.statuses[sKey] as Record<string, unknown>).poll =
+                          pollResponse;
+                        return undefined;
+                      });
+                  },
+                } as unknown as Parameters<typeof Poll>[0])}
+              />
+            )}
+            {(((!!content &&
+              (enableTranslate || inlineTranslate) &&
+              isTranslateble(content, emojis) &&
+              differentLanguage) ||
+              forceTranslate) && (
+              <TranslationBlock
+                forceTranslate={forceTranslate || inlineTranslate}
+                mini={!isSizeLarge && !withinContext}
+                sourceLanguage={language ?? undefined}
+                autoDetected={!!languageAutoDetected}
+                text={getPostText(status, {
+                  maskCustomEmojis: true,
+                  maskURLs: true,
+                  hideInlineQuote: true,
+                })}
+              />
+              ))}
+            <StatusMediaEmbeds
+              previewMode={previewMode}
+              sensitive={sensitive}
+              filterInfoMaybe={filterInfoMaybe}
+              readingExpandMedia={readingExpandMedia}
+              readingExpandSpoilers={readingExpandSpoilers}
+              spoilerText={spoilerText}
+              mediaAttachments={mediaAttachments}
+              showSpoilerMedia={showSpoilerMedia}
+              isSizeLarge={isSizeLarge}
+              withinContext={withinContext}
+              size={size}
+              language={language}
+              instance={instance}
+              id={id}
+              onMediaClick={onMediaClick}
+              status={status}
+              showMultipleMediaCaptions={showMultipleMediaCaptions}
+              captionChildren={captionChildren}
+              mediaContainerRef={mediaContainerRef}
+              displayedMediaAttachments={displayedMediaAttachments}
+              content={content}
+            />
+            <QuoteStatuses
+              id={id}
+              instance={instance}
+              level={typeof quoted === 'number' ? quoted : undefined}
+              collapsed={!isSizeLarge && !withinContext}
+              fallbackQuote={quote as FallbackQuote | null | undefined}
+              renderStatus={(quoteStatusProps) =>
+                renderStatus({
+                  ...quoteStatusProps,
+                  size: 's',
+                  quoted: quoteStatusProps.level,
+                  enableCommentHint: true,
+                })
+              }
+            />
+            {!!card &&
+              /^https/i.test(card?.url) &&
+              !sensitive &&
+              !spoilerText &&
+              !poll &&
+              !mediaAttachments.length &&
+              !statusQuoteState && (
+                <StatusCard
+                  card={card as unknown as Parameters<typeof StatusCard>[0]['card']}
+                  selfReferential={card?.url === status.url || card?.url === status.uri}
+                  selfAuthor={card?.authors?.some(
+                    (a: mastodon.v1.PreviewCardAuthor) => a.account?.url === accountURL,
+                  )}
+                  instance={currentInstance}
+                />
+              )}
+            {size !== 's' && <StatusTags tags={tags} content={content ?? undefined} />}
+          </>
+        )}
+      </div>
+      {!isSizeLarge && (showCommentCount || showQuoteCount) && (
+        <div class="content-comment-hint insignificant">
+          {showCommentCount && (
+            <>
+              <Icon icon="comment2" alt={t`Replies`} /> {repliesCount}
+            </>
+          )}{' '}
+          {showQuoteCount && (
+            <>
+              <Icon icon="quote" alt={t`Quotes`} /> {quotesCount}
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+function SpoilerButton({
+  id,
+  showSpoiler,
+  readingExpandSpoilers,
+  mediaFirst,
+}: {
+  id: string;
+  showSpoiler: boolean;
+  readingExpandSpoilers: boolean;
+  mediaFirst?: boolean;
+}) {
+  const { t } = useLingui();
+  return (
+    <button
+      class={[
+        'light',
+        'spoiler-button',
+        mediaFirst ? 'media-first-spoiler-button' : '',
+        showSpoiler ? 'spoiling' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (showSpoiler) {
+          delete states.spoilers[id];
+          if (!readingExpandSpoilers) {
+            delete states.spoilersMedia[id];
+          }
+        } else {
+          states.spoilers[id] = true;
+          if (!readingExpandSpoilers) {
+            states.spoilersMedia[id] = true;
+          }
+        }
+      }}
+    >
+      <Icon icon={showSpoiler ? 'eye-open' : 'eye-close'} />{' '}
+      {showSpoiler ? t`Show less` : t`Show content`}
+    </button>
+  );
+}

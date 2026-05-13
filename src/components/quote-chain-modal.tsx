@@ -12,11 +12,7 @@ import useTruncated from '../utils/useTruncated';
 import Icon from './icon';
 import Link, { type LinkProps } from './link';
 import Loader from './loader';
-// TODO(oxlint:import/no-cycle): status <-> quote-chain-modal cycle. status
-// renders QuoteChainModal on quote click; QuoteChainModal renders Status for
-// each post. Breaking it requires lazy/dynamic import or extracting a shared
-// child wrapper — architectural, out of scope.
-import Status from './status';
+import type { AnyStatus, RenderStatus } from './status-types';
 
 type QuotedStatus = mastodon.v1.Status & {
   quote?: {
@@ -42,12 +38,14 @@ interface QuoteChainModalProps {
   statusId: string;
   instance?: string;
   onClose?: () => void;
+  renderStatus: RenderStatus;
 }
 
 export default function QuoteChainModal({
   statusId,
   instance,
   onClose = () => {},
+  renderStatus,
 }: QuoteChainModalProps) {
   const { t } = useLingui();
   const { masto } = api();
@@ -193,14 +191,14 @@ export default function QuoteChainModal({
                   }
                 }}
               >
-                <Status
-                  status={post as mastodon.v1.Status & Record<string, unknown>}
-                  instance={instance}
-                  size="s"
-                  readOnly
-                  showCommentCount
-                  showQuoteCount={(c) => (c ?? 0) > 1}
-                />
+                {renderStatus({
+                  status: post as AnyStatus,
+                  instance,
+                  size: 's',
+                  readOnly: true,
+                  showCommentCount: true,
+                  showQuoteCount: (c?: number) => (c ?? 0) > 1,
+                })}
               </TruncatedLink>
             </li>
           ))}
