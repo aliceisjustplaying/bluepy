@@ -5,7 +5,7 @@ import { useEffect, useMemo, useReducer } from 'preact/hooks';
 import DateTimeFormat from '../utils/date-time-format';
 import RTF from '../utils/relative-time-format';
 
-function isValidDate(value) {
+function isValidDate(value: Date | string | number): boolean {
   if (value instanceof Date) {
     return !isNaN(value.getTime());
   } else {
@@ -18,7 +18,7 @@ const minute = 60;
 const hour = 60 * minute;
 const day = 24 * hour;
 
-const rtfFromNow = (date) => {
+const rtfFromNow = (date: Date): string => {
   // date = Date object
   const rtf = RTF(i18n.locale);
   const seconds = (date.getTime() - Date.now()) / 1000;
@@ -38,7 +38,7 @@ const rtfFromNow = (date) => {
   }
 };
 
-const twitterFromNow = (date) => {
+const twitterFromNow = (date: Date): string => {
   // date = Date object
   const seconds = (Date.now() - date.getTime()) / 1000;
   if (seconds < minute) {
@@ -59,9 +59,17 @@ const twitterFromNow = (date) => {
   }
 };
 
-export default function RelativeTime({ datetime, format }) {
+interface RelativeTimeProps {
+  datetime?: Date | string | number | null;
+  format?: string;
+}
+
+export default function RelativeTime({ datetime, format }: RelativeTimeProps) {
   if (!datetime) return null;
-  const [renderCount, rerender] = useReducer((x) => x + 1, 0);
+  const [renderCount, rerender] = useReducer<number, void>(
+    (x: number) => x + 1,
+    0,
+  );
   const date = useMemo(() => new Date(datetime), [datetime]);
   const [dateStr, dt, title] = useMemo(() => {
     if (!isValidDate(date))
@@ -94,8 +102,8 @@ export default function RelativeTime({ datetime, format }) {
 
   useEffect(() => {
     if (!isValidDate(date)) return;
-    let timeout;
-    let raf;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let raf: number | undefined;
     function rafRerender() {
       raf = requestAnimationFrame(() => {
         rerender();
@@ -116,7 +124,7 @@ export default function RelativeTime({ datetime, format }) {
     scheduleRerender();
     return () => {
       clearTimeout(timeout);
-      cancelAnimationFrame(raf);
+      if (raf !== undefined) cancelAnimationFrame(raf);
     };
   }, []);
 
