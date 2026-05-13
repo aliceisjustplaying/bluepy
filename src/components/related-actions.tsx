@@ -224,7 +224,7 @@ function RelatedActions({
           const acctHasInstance = info.acct.includes('@');
           try {
             const results = await getV2SearchEndpoint(
-              currentMasto as unknown as MastoLike,
+              currentMasto,
             ).list({
               q: acctHasInstance ? info.acct : `${info.username}@${instance}`,
               type: 'accounts',
@@ -256,7 +256,7 @@ function RelatedActions({
         setRelationshipUIState('loading');
 
         const fetchRelationships = getAccountsEndpoint(
-          currentMasto as unknown as MastoLike,
+          currentMasto,
         ).relationships.fetch({
           id: [currentID],
         });
@@ -413,7 +413,7 @@ function RelatedActions({
                 void (async () => {
                   try {
                     const fetchedLists = await getAccountsEndpoint(
-                      currentMasto as unknown as MastoLike,
+                      currentMasto,
                     )
                       .$select(accountID.current)
                       .lists.list();
@@ -487,7 +487,7 @@ function RelatedActions({
                         void (async () => {
                           try {
                             const rel = await getAccountsEndpoint(
-                              currentMasto as unknown as MastoLike,
+                              currentMasto,
                             )
                               .$select(accountID.current)
                               .follow({
@@ -520,7 +520,7 @@ function RelatedActions({
                         void (async () => {
                           try {
                             const rel = await getAccountsEndpoint(
-                              currentMasto as unknown as MastoLike,
+                              currentMasto,
                             )
                               .$select(accountID.current)
                               .follow({
@@ -555,7 +555,7 @@ function RelatedActions({
                         try {
                           if (endorsed) {
                             const newRelationship = await getAccountsEndpoint(
-                              currentMasto as unknown as MastoLike,
+                              currentMasto,
                             )
                               .$select(currentInfo?.id || id)
                               .unpin();
@@ -566,7 +566,7 @@ function RelatedActions({
                             );
                           } else {
                             const newRelationship = await getAccountsEndpoint(
-                              currentMasto as unknown as MastoLike,
+                              currentMasto,
                             )
                               .$select(currentInfo?.id || id)
                               .pin();
@@ -756,7 +756,7 @@ function RelatedActions({
                       void (async () => {
                         try {
                           const newRelationship = await getAccountsEndpoint(
-                            currentMasto as unknown as MastoLike,
+                            currentMasto,
                           )
                             .$select(currentInfo?.id || id)
                             .unmute();
@@ -816,7 +816,7 @@ function RelatedActions({
                               try {
                                 const newRelationship =
                                   await getAccountsEndpoint(
-                                    currentMasto as unknown as MastoLike,
+                                    currentMasto,
                                   )
                                     .$select(currentInfo?.id || id)
                                     .mute({
@@ -877,7 +877,7 @@ function RelatedActions({
                       void (async () => {
                         try {
                           const newRelationship = await getAccountsEndpoint(
-                            currentMasto as unknown as MastoLike,
+                            currentMasto,
                           )
                             .$select(currentInfo?.id || id)
                             .removeFromFollowers();
@@ -929,7 +929,7 @@ function RelatedActions({
                       try {
                         if (blocking) {
                           const newRelationship = await getAccountsEndpoint(
-                            currentMasto as unknown as MastoLike,
+                            currentMasto,
                           )
                             .$select(currentInfo?.id || id)
                             .unblock();
@@ -939,7 +939,7 @@ function RelatedActions({
                           showToast(t`Unblocked @${username}`);
                         } else {
                           const newRelationship = await getAccountsEndpoint(
-                            currentMasto as unknown as MastoLike,
+                            currentMasto,
                           )
                             .$select(currentInfo?.id || id)
                             .block();
@@ -1023,7 +1023,7 @@ function RelatedActions({
                 <MenuItem
                   onClick={async () => {
                     const relationships = await getAccountsEndpoint(
-                      currentMasto as unknown as MastoLike,
+                      currentMasto,
                     ).relationships.fetch({
                       id: [accountID.current],
                     });
@@ -1071,14 +1071,14 @@ function RelatedActions({
 
                       // if (yes) {
                       newRelationship = await getAccountsEndpoint(
-                        currentMasto as unknown as MastoLike,
+                        currentMasto,
                       )
                         .$select(accountID.current)
                         .unfollow();
                       // }
                     } else {
                       newRelationship = await getAccountsEndpoint(
-                        currentMasto as unknown as MastoLike,
+                        currentMasto,
                       )
                         .$select(accountID.current)
                         .follow();

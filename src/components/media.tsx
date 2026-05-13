@@ -328,7 +328,7 @@ function Media({
   }
   const Figure: ComponentType<{ children?: ComponentChildren }> =
     !showInlineDesc
-      ? (Fragment as unknown as ComponentType<{
+      ? (Fragment as ComponentType<{
           children?: ComponentChildren;
         }>)
       : (props: { children?: ComponentChildren }) => {
@@ -430,8 +430,7 @@ function Media({
     void (async () => {
       try {
         await fetch(mediaURL as string, { mode: 'no-cors' });
-        (mediaRef.current as unknown as HTMLImageElement).src =
-          mediaURL as string;
+        (mediaRef.current as HTMLImageElement).src = mediaURL as string;
       } catch {
         // Ignore
       }
@@ -447,7 +446,7 @@ function Media({
     return (
       <Figure>
         <Parent
-          ref={parentRef as unknown as Ref<HTMLElement>}
+          ref={parentRef}
           class={`media media-image ${className}`}
           onClick={interceptOnClick}
           data-orientation={orientation}
@@ -468,7 +467,7 @@ function Media({
           {showOriginal ? (
             <QuickPinchZoom {...quickPinchZoomProps}>
               <img
-                ref={mediaRef as unknown as Ref<HTMLImageElement>}
+                ref={mediaRef as Ref<HTMLImageElement>}
                 src={mediaURL}
                 alt={description as string | undefined}
                 width={width}
@@ -681,7 +680,7 @@ function Media({
     return (
       <Figure>
         <Parent
-          ref={parentRef as unknown as Ref<HTMLElement>}
+          ref={parentRef}
           class={`media ${className} media-${isGIF ? 'gif' : 'video'} ${
             autoGIFAnimate ? 'media-contain' : ''
           } ${hoverAnimate ? 'media-hover-animate' : ''}`}
@@ -743,7 +742,7 @@ function Media({
             isGIF && showOriginal ? (
               <QuickPinchZoom {...quickPinchZoomProps} enabled>
                 <div
-                  ref={mediaRef as unknown as Ref<HTMLDivElement>}
+                  ref={mediaRef as Ref<HTMLDivElement>}
                   dangerouslySetInnerHTML={{
                     __html: gifHTML,
                   }}
