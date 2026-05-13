@@ -537,7 +537,6 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   > li.descendant:not(.thread)
   > :is(.status-link, .status-focus) {
   padding-inline-start: var(--line-start);
-  background-color: var(--status-bg-color);
 }
 .timeline.contextual .replies[data-scroll-left]:not([data-scroll-left='0']) {
   background-color: var(--bg-color);
@@ -1072,6 +1071,9 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
 
 :is(.status-link, .status-focus) {
   background-color: var(--status-bg-color);
+}
+.timeline.contextual :is(.status-link, .status-focus) {
+  background-color: transparent;
 }
 .status-link {
   display: block;
