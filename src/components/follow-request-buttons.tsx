@@ -28,8 +28,7 @@ function FollowRequestButtons({
 }: FollowRequestButtonsProps) {
   const { t } = useLingui();
   const { masto } = api();
-  const followRequests = masto.v1
-    .followRequests as unknown as FollowRequestsResource;
+  const followRequests = masto.v1.followRequests as FollowRequestsResource;
   const [uiState, setUIState] = useState('default');
   const [requestState, setRequestState] = useState<RequestState>(null); // accept, reject
   const [relationship, setRelationship] = useState<Relationship>(null);
@@ -42,10 +41,10 @@ function FollowRequestButtons({
         type="button"
         disabled={uiState === 'loading' || hasRelationship}
         onClick={() => {
-          haptics.trigger('success');
+          void haptics.trigger('success');
           setUIState('loading');
           setRequestState('accept');
-          (async () => {
+          void (async () => {
             try {
               const rel = await followRequests.$select(accountID).authorize();
               if (!rel?.followedBy) {
@@ -67,10 +66,10 @@ function FollowRequestButtons({
         disabled={uiState === 'loading' || hasRelationship}
         class="light danger"
         onClick={() => {
-          haptics.trigger('light');
+          void haptics.trigger('light');
           setUIState('loading');
           setRequestState('reject');
-          (async () => {
+          void (async () => {
             try {
               const rel = await followRequests.$select(accountID).reject();
               if (rel?.followedBy) {

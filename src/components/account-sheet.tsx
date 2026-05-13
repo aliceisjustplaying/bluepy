@@ -61,7 +61,7 @@ function AccountSheet({
       states.accounts[`${account.id}@${instance}`] =
         account as unknown as Record<string, unknown>;
     }
-  }, [account]);
+  }, [account, isString, instance]);
 
   useLocationChange(onClose ?? null);
 
@@ -102,7 +102,7 @@ function AccountSheet({
                 skip_webfinger: false,
               });
               return info;
-            } catch (e) {
+            } catch {
               const result = await searchEndpoint.list({
                 q: account,
                 type: 'accounts',
@@ -125,14 +125,14 @@ function AccountSheet({
                     pathname.replace(/^\//, '').replace(/\/$/, '') +
                     '@' +
                     hostname;
-                  const result = await searchEndpoint.list({
+                  const urlResult = await searchEndpoint.list({
                     q: acct,
                     type: 'accounts',
                     limit: 1,
                     resolve: authenticated,
                   });
-                  if (result.accounts.length) {
-                    return result.accounts[0];
+                  if (urlResult.accounts.length) {
+                    return urlResult.accounts[0];
                   }
                 }
               }

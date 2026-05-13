@@ -4,8 +4,8 @@ import type { mastodon } from 'masto';
 import type {
   ComponentChildren,
   ComponentType,
-  JSX,
   RefObject,
+  TargetedMouseEvent,
   VNode,
 } from 'preact';
 import { memo } from 'preact/compat';
@@ -110,7 +110,7 @@ function hasItems(entry: TimelineEntry): entry is TimelineGroupEntry {
 function isFilteredGroup(
   entry: TimelineItemEntry,
 ): entry is TimelineFilteredGroup {
-  return (entry as TimelineFilteredGroup)._grouped === true;
+  return (entry as TimelineFilteredGroup)._grouped ?? false;
 }
 
 const scrollIntoViewOptions: ScrollIntoViewOptions = {
@@ -147,7 +147,7 @@ export function useJHotkeys(scrollableRef: ScrollableRef) {
       if (e.shiftKey !== handler.shift) return;
 
       // focus on next status after active item
-      const activeItem = (document.activeElement as Element | null)?.closest(
+      const activeItem = document.activeElement?.closest(
         itemsSelector,
       ) as HTMLElement | null;
       const activeItemRect = activeItem?.getBoundingClientRect();
@@ -189,7 +189,6 @@ export function useJHotkeys(scrollableRef: ScrollableRef) {
         const topmostItem = allItems.find((item) => {
           const itemRect = item.getBoundingClientRect();
           return itemRect.top >= 44 && itemRect.left >= 0; // 44 is the magic number for header height, not real
-          return itemRect.top >= 44 && itemRect.left >= 0;
         });
         if (topmostItem) {
           topmostItem.focus();
@@ -212,7 +211,7 @@ export function useKHotkeys(scrollableRef: ScrollableRef) {
       // Fix bug: shift+k is fired even when k is pressed due to useKey: true
       if (e.shiftKey !== handler.shift) return;
 
-      const activeItem = (document.activeElement as Element | null)?.closest(
+      const activeItem = document.activeElement?.closest(
         itemsSelector,
       ) as HTMLElement | null;
       const activeItemRect = activeItem?.getBoundingClientRect();
@@ -254,7 +253,6 @@ export function useKHotkeys(scrollableRef: ScrollableRef) {
         const topmostItem = allItems.find((item) => {
           const itemRect = item.getBoundingClientRect();
           return itemRect.top >= 44 && itemRect.left >= 0; // 44 is the magic number for header height, not real
-          return itemRect.top >= 44 && itemRect.left >= 0;
         });
         if (topmostItem) {
           topmostItem.focus();
@@ -286,8 +284,8 @@ export function useOHotkeys() {
           if (mediaLink) {
             // if link is ?media-only=1, change to media=1 and go to it
             const url = mediaLink.getAttribute('href');
-            if (url && /media\-only=/i.test(url)) {
-              const newURL = url.replace(/media\-only=/i, 'media=');
+            if (url && /media-only=/i.test(url)) {
+              const newURL = url.replace(/media-only=/i, 'media=');
               setTimeout(() => {
                 // Need timeout to prevent propagate to the o key handler in pages/status.jsx
                 location.hash = newURL;
@@ -338,7 +336,7 @@ interface TimelineProps {
   useItemID?: boolean;
   boostsCarousel?: boolean;
   fetchItems?: (firstLoad?: boolean) => Promise<FetchItemsResult>;
-  checkForUpdates?: () => Promise<boolean> | boolean | void;
+  checkForUpdates?: () => Promise<boolean> | boolean | undefined;
   checkForUpdatesInterval?: number;
   headerStart?: ComponentChildren;
   headerEnd?: ComponentChildren;
@@ -362,7 +360,7 @@ function Timeline({
   useItemID, // use statusID instead of status object, assuming it's already in states
   boostsCarousel,
   fetchItems = () => Promise.resolve({} as FetchItemsResult),
-  checkForUpdates = () => {},
+  checkForUpdates = () => undefined,
   checkForUpdatesInterval = 15_000, // 15 seconds
   headerStart,
   headerEnd,
@@ -417,7 +415,7 @@ function Timeline({
       setShowNew(false);
       // if (uiState === 'loading') return;
       setUIState('loading');
-      (async () => {
+      void (async () => {
         try {
           const ts = (loadItemsTS.current = Date.now());
           let { done, value } = await fetchItems(firstLoad);
@@ -464,7 +462,7 @@ function Timeline({
             if (firstLoad) {
               setItems(processed);
             } else {
-              setItems((items) => [...items, ...processed]);
+              setItems((prev) => [...prev, ...processed]);
             }
             if (!processed.length) done = true;
             setShowMore(!done);
@@ -533,12 +531,16 @@ function Timeline({
     reachStart: boolean;
   }
   const scrollFnCallback = useCallback(
-    ({ scrollDirection, nearReachStart, reachStart }: ScrollFnArgs) => {
+    ({
+      scrollDirection,
+      nearReachStart: nearReachStartArg,
+      reachStart,
+    }: ScrollFnArgs) => {
       if (headerRef.current) {
-        const hiddenUI = scrollDirection === 'end' && !nearReachStart;
+        const hiddenUI = scrollDirection === 'end' && !nearReachStartArg;
         headerRef.current.hidden = hiddenUI;
       }
-      setNearReachStart(nearReachStart);
+      setNearReachStart(nearReachStartArg);
       if (reachStart) {
         loadItems(true);
       }
@@ -565,11 +567,15 @@ function Timeline({
     return () => {
       loadItems.cancel?.();
       if (!cachePayloadRef.current) return;
-      const { cacheKey, items, showMore } = cachePayloadRef.current;
-      if (items?.length) {
-        timelineCache.set(cacheKey, {
-          items,
-          showMore,
+      const {
+        cacheKey: cachedCacheKey,
+        items: cachedItems,
+        showMore: cachedShowMore,
+      } = cachePayloadRef.current;
+      if (cachedItems?.length) {
+        timelineCache.set(cachedCacheKey, {
+          items: cachedItems,
+          showMore: cachedShowMore,
           scrollTop: scrollableRef.current?.scrollTop ?? 0,
           ts: Date.now(),
         });
@@ -649,26 +655,28 @@ function Timeline({
 
   const lastHiddenTime = useRef<number | undefined>(undefined);
   usePageVisibility(
-    (visible) => {
-      if (visible) {
+    (isVisible) => {
+      if (isVisible) {
         const timeDiff = Date.now() - (lastHiddenTime.current ?? 0);
         if (!lastHiddenTime.current || timeDiff > 1000 * 3) {
           // 3 seconds
-          loadOrCheckUpdates({
+          void loadOrCheckUpdates({
             disableIdleCheck: true,
           });
         }
       } else {
         lastHiddenTime.current = Date.now();
       }
-      setVisible(visible);
+      setVisible(isVisible);
     },
     [checkForUpdates, loadOrCheckUpdates, snapStates.settings.autoRefresh],
   );
 
   // checkForUpdates interval
   useInterval(
-    loadOrCheckUpdates,
+    () => {
+      void loadOrCheckUpdates();
+    },
     visible && !showNew
       ? checkForUpdatesInterval * (nearReachStart ? 1 : 2)
       : null,
@@ -691,7 +699,7 @@ function Timeline({
           dotRef.current = node;
         }}
         tabIndex={-1}
-        onClick={(e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+        onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
           // If click on timeline item, unhide header
           const target = e.target as Element | null;
           if (
@@ -709,7 +717,7 @@ function Timeline({
           <header
             ref={headerRef}
             // hidden={hiddenUI}
-            onClick={(e: JSX.TargetedMouseEvent<HTMLElement>) => {
+            onClick={(e: TargetedMouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {
                 scrollableRef.current?.scrollTo({
@@ -718,7 +726,7 @@ function Timeline({
                 });
               }
             }}
-            onDblClick={(e: JSX.TargetedMouseEvent<HTMLElement>) => {
+            onDblClick={(e: TargetedMouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {
                 loadItems(true);
@@ -772,7 +780,7 @@ function Timeline({
                     filterContext={filterContext}
                     key={`${
                       Array.isArray(status.id) ? status.id.join(',') : status.id
-                    }${(status as TimelineStatusEntry)._pinned}${view}`}
+                    }${String((status as TimelineStatusEntry)._pinned)}${view}`}
                     view={view}
                     showFollowedTags={showFollowedTags}
                     showReplyParent={showReplyParent}
@@ -831,6 +839,7 @@ function Timeline({
               {Array.from({ length: 5 }).map((_, i) =>
                 view === 'media' ? (
                   <div
+                    key={i}
                     style={{
                       height: '50vh',
                     }}
@@ -891,10 +900,9 @@ export const TimelineItem = memo(
       Array.isArray(status.id) ? status.id.join(',') : status.id,
     );
     const groupView = hasItems(status);
-    const statusID = (status as TimelineStatusEntry).id as string;
+    const statusID = (status as TimelineStatusEntry).id;
     const reblog = (status as TimelineStatusEntry).reblog;
-    const _pinned = (status as TimelineStatusEntry | TimelineGroupEntry)
-      ._pinned;
+    const _pinned = status._pinned;
     if (_pinned) useItemID = false;
     const actualStatusID = reblog?.id || statusID;
     const url = instance
@@ -902,7 +910,7 @@ export const TimelineItem = memo(
       : `/s/${actualStatusID}`;
 
     if (groupView) {
-      const groupEntry = status as TimelineGroupEntry;
+      const groupEntry = status;
       const type = groupEntry.type;
       let fItems = filteredItems(
         groupEntry.items as readonly TimelineStatusEntry[],
@@ -993,6 +1001,7 @@ export const TimelineItem = memo(
                         if (innerPinned) useItemID = false;
                         return (
                           <Link
+                            key={innerID}
                             class="status-carousel-link timeline-item-alt"
                             to={innerURL}
                           >
@@ -1117,7 +1126,7 @@ export const TimelineItem = memo(
       });
     }
 
-    const itemKey = `timeline-${statusID}${_pinned}`;
+    const itemKey = `timeline-${statusID}${String(_pinned)}`;
 
     if (view === 'media') {
       return useItemID ? (
@@ -1172,12 +1181,10 @@ export const TimelineItem = memo(
     );
   },
   (oldProps, newProps) => {
-    const oldID = (
-      (oldProps.status as TimelineStatusEntry | undefined)?.id || ''
-    ).toString();
-    const newID = (
-      (newProps.status as TimelineStatusEntry | undefined)?.id || ''
-    ).toString();
+    const oldID =
+      (oldProps.status as TimelineStatusEntry | undefined)?.id || '';
+    const newID =
+      (newProps.status as TimelineStatusEntry | undefined)?.id || '';
     return (
       oldID === newID &&
       oldProps.instance === newProps.instance &&

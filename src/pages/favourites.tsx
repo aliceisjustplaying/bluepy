@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro';
+import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { ComponentType } from 'preact';
 import { useRef } from 'preact/hooks';
@@ -30,7 +30,7 @@ function Favourites() {
   async function fetchFavourites(firstLoad?: boolean) {
     if (firstLoad || !favouritesIterator.current) {
       favouritesIterator.current = (
-        masto.v1.favourites as unknown as mastodon.rest.v1.FavouritesResource
+        masto.v1.favourites as mastodon.rest.v1.FavouritesResource
       )
         .list({ limit: LIMIT })
         .values();

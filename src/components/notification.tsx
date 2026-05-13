@@ -2,7 +2,14 @@ import type { MessageDescriptor } from '@lingui/core';
 import { msg, t } from '@lingui/core/macro';
 import { Plural, Select, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentChildren, ComponentType, JSX, Ref, VNode } from 'preact';
+import type {
+  ComponentChildren,
+  ComponentType,
+  JSX,
+  Ref,
+  TargetedMouseEvent,
+  VNode,
+} from 'preact';
 import { Fragment } from 'preact';
 import { memo } from 'preact/compat';
 
@@ -565,11 +572,11 @@ function Notification({
   let reblogsCount = 0;
   if (type === 'favourite+reblog') {
     if (_accounts) {
-      for (const account of _accounts) {
-        if (account._types?.includes('favourite')) {
+      for (const acct of _accounts) {
+        if (acct._types?.includes('favourite')) {
           favsCount++;
         }
-        if (account._types?.includes('reblog')) {
+        if (acct._types?.includes('reblog')) {
           reblogsCount++;
         }
       }
@@ -658,7 +665,7 @@ function Notification({
         ) : sampleAccounts?.[0] ? (
           <NameText account={sampleAccounts[0]} showAvatar />
         ) : null,
-        count: count as number | undefined,
+        count,
         postsCount,
         postType: isReplyToOthers ? 'reply' : 'post',
         components: { Subject },
@@ -718,26 +725,26 @@ function Notification({
             // The JS original accessed `.value` without checking `.status`;
             // rejected entries crashed at the destructure below. Preserve
             // that behavior via an unchecked cast.
-            const [key, _accounts] = (
+            const [key, keyAccountsList] = (
               keyAccount as PromiseFulfilledResult<
                 [string, AccountWithBot[] | undefined]
               >
             ).value;
-            const type = /^favourite/.test(key)
+            const reactionType = key.startsWith('favourite')
               ? 'favourite'
-              : /^reblog/.test(key)
+              : key.startsWith('reblog')
                 ? 'reblog'
                 : null;
-            // if (!type) continue;
+            // if (!reactionType) continue;
             // JS original iterated `_accounts` directly; an exhausted iterator
             // (undefined) would crash here. Cast preserves that contract.
-            for (const account of _accounts as AccountWithBot[]) {
-              const theAccount = accounts.find((a) => a.id === account.id);
-              if (theAccount && type) {
-                theAccount._types!.push(type);
+            for (const acct of keyAccountsList as AccountWithBot[]) {
+              const theAccount = accounts.find((a) => a.id === acct.id);
+              if (theAccount && reactionType) {
+                theAccount._types!.push(reactionType);
               } else {
-                if (type) account._types = [type];
-                accounts.push(account);
+                if (reactionType) acct._types = [reactionType];
+                accounts.push(acct);
               }
             }
           }
@@ -763,7 +770,7 @@ function Notification({
   console.debug('RENDER Notification', notification.id);
 
   // If there's a status and filter action is 'hide', then the notification is hidden
-  if (!!status?.filtered) {
+  if (status?.filtered) {
     const isOwnPost = status?.account?.id === currentAccount;
     const filterInfo = isFiltered(status.filtered, 'notifications');
     if (!isSelf && !isOwnPost && filterInfo && filterInfo.action === 'hide') {
@@ -771,7 +778,7 @@ function Notification({
     }
   }
 
-  const debugHover = (e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+  const debugHover = (e: TargetedMouseEvent<HTMLDivElement>) => {
     if (e.shiftKey) {
       console.log({
         ...notification,
@@ -897,20 +904,20 @@ function Notification({
         )}
         {_accounts && _accounts.length > 1 && (
           <p class="avatars-stack">
-            {_accounts.slice(0, AVATARS_LIMIT).map((account) => (
-              <Fragment key={account.id}>
+            {_accounts.slice(0, AVATARS_LIMIT).map((acct) => (
+              <Fragment key={acct.id}>
                 <a
-                  key={account.id}
-                  href={account.url}
+                  key={acct.id}
+                  href={acct.url}
                   rel="noopener"
                   class="account-avatar-stack"
                   onClick={(e) => {
                     e.preventDefault();
-                    states.showAccount = account;
+                    states.showAccount = acct;
                   }}
                 >
                   <Avatar
-                    url={account.avatarStatic}
+                    url={acct.avatarStatic}
                     size={
                       _accounts.length <= 10
                         ? 'xxl'
@@ -918,19 +925,20 @@ function Notification({
                           ? 'xl'
                           : 'l'
                     }
-                    key={account.id}
-                    alt={`${account.displayName} @${account.acct}`}
-                    squircle={account?.bot}
+                    key={acct.id}
+                    alt={`${acct.displayName} @${acct.acct}`}
+                    squircle={acct?.bot}
                   />
                   {type === 'favourite+reblog' && (
                     <div class="account-sub-icons">
                       {/* JS original accessed `_types` directly without a
                           guard. Preserve crash-on-missing behavior. */}
-                      {(account._types as string[]).map((type) => (
+                      {(acct._types as string[]).map((iconType) => (
                         <Icon
-                          icon={NOTIFICATION_ICONS[type]}
+                          key={iconType}
+                          icon={NOTIFICATION_ICONS[iconType]}
                           size="s"
-                          class={`${type}-icon`}
+                          class={`${iconType}-icon`}
                         />
                       ))}
                     </div>
@@ -972,24 +980,24 @@ function Notification({
                 entries (from `accounts.find(...) => undefined` in
                 `massageNotifications2`) would crash here in both JS and TS;
                 preserve that contract with a non-null cast on the entries. */}
-            {(sampleAccounts as AccountWithBot[]).map((account) => (
-              <Fragment key={account.id}>
+            {(sampleAccounts as AccountWithBot[]).map((acct) => (
+              <Fragment key={acct.id}>
                 <a
-                  key={account.id}
-                  href={account.url}
+                  key={acct.id}
+                  href={acct.url}
                   rel="noopener"
                   class="account-avatar-stack"
                   onClick={(e) => {
                     e.preventDefault();
-                    states.showAccount = account;
+                    states.showAccount = acct;
                   }}
                 >
                   <Avatar
-                    url={account.avatarStatic}
+                    url={acct.avatarStatic}
                     size="xxl"
-                    key={account.id}
-                    alt={`${account.displayName} @${account.acct}`}
-                    squircle={account?.bot}
+                    key={acct.id}
+                    alt={`${acct.displayName} @${acct.acct}`}
+                    squircle={acct?.bot}
                   />
                   {/* {type === 'favourite+reblog' && (
                     <div class="account-sub-icons">
@@ -1021,16 +1029,18 @@ function Notification({
         )}
         {_statuses && _statuses.length > 1 && (
           <ul class="notification-group-statuses">
-            {(_statuses as mastodon.v1.Status[]).map((status) => (
-              <li key={status.id}>
+            {(_statuses as mastodon.v1.Status[]).map((groupStatus) => (
+              <li key={groupStatus.id}>
                 <TruncatedLink
                   class={`status-link status-type-${type}`}
                   to={
-                    instance ? `/${instance}/s/${status.id}` : `/s/${status.id}`
+                    instance
+                      ? `/${instance}/s/${groupStatus.id}`
+                      : `/s/${groupStatus.id}`
                   }
                 >
                   <Status
-                    status={status}
+                    status={groupStatus}
                     size="s"
                     previewMode
                     allowContextMenu
@@ -1051,7 +1061,7 @@ function Notification({
             }
             onContextMenu={
               !disableContextMenu
-                ? (e: JSX.TargetedMouseEvent<HTMLElement>) => {
+                ? (e: TargetedMouseEvent<HTMLElement>) => {
                     const target = e.target as HTMLElement | null;
                     const post = target?.querySelector('.status');
                     if (post) {
