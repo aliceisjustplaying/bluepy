@@ -1,6 +1,6 @@
 # Bluepy Agent Runbook
 
-> CLAUDE.md and AGENTS.md must stay byte-identical. After editing either, copy it over the other and commit them together.
+> CLAUDE.md and AGENTS.md must stay aligned. They may differ only where review tooling must be reciprocal: Codex-facing instructions use Claude as reviewer, and Claude-facing instructions use Codex as reviewer. Commit both files together.
 
 ## Deployment Source Of Truth
 
@@ -28,8 +28,8 @@ Make small commits by concern. Push deploy-relevant commits to `fork/bluesky`. R
 
 ## TypeScript Migration: Roles
 
-- **Coder**: Claude Opus (the active session, or worker subagents in parallel-worktree mode). Owns file conversions, type annotations, fixes, verification, and commits.
-- **Reviewer**: Codex (via the Codex Claude Code plugin companion). Owns review verdicts only. Codex output is read-only signal; Codex does not edit files in this workflow.
+- **Coder**: The active coding agent, or worker subagents in parallel-worktree mode. Owns file conversions, type annotations, fixes, verification, and commits.
+- **Reviewer**: Codex through the local `codex` CLI. Owns review verdicts only. Codex output is read-only signal; Codex does not edit files in this workflow.
 
 Coder writes, Codex reviews, Coder fixes. Loop until Codex reports no actionable findings, then commit.
 
@@ -53,7 +53,7 @@ Pick batches leaves-first by import graph — modules whose dependencies are alr
 
 ### Parallel-Worktree Wave Mode
 
-For high-throughput migration runs, run multiple workers in parallel rather than serially. The coordinator (Claude Opus, main session) drives waves of up to 5 worker subagents.
+For high-throughput migration runs, run multiple workers in parallel rather than serially. The coordinator drives waves of up to 5 worker subagents.
 
 Per wave:
 
@@ -62,7 +62,7 @@ Per wave:
    ```bash
    git worktree add -b ts/<wave>-<batch-name> /tmp/bluepy-<wave>/<batch-name> typescript
    ```
-3. Coordinator spawns one Claude Opus worker subagent per worktree. Each worker is given: worktree path, file list, and the OODA loop above (steps 2–7). Workers commit on their branch but do **not** push.
+3. Coordinator spawns one worker subagent per worktree. Each worker is given: worktree path, file list, and the OODA loop above (steps 2–7). Workers commit on their branch but do **not** push.
 4. As each worker returns SUCCESS, coordinator runs `git merge --no-ff ts/<wave>-<batch-name>` from the `typescript` branch in the main checkout. Trivial conflicts (unrelated import paths) — coordinator resolves. Real conflicts — coordinator halts and surfaces them.
 5. After all wave branches merged, coordinator pushes once: `git push fork typescript`.
 6. Coordinator removes wave worktrees (`git worktree remove --force <path>`) and deletes their branches.
@@ -79,7 +79,7 @@ Worker constraints (enforce in every worker prompt):
 
 ### Codex Review CLI
 
-The Codex Claude Code plugin is intentionally disabled. Reviews call the `codex` CLI directly. **Always** use `gpt-5.5` at `high` reasoning effort — never rely on config defaults.
+Reviews call the local `codex` CLI directly. Always use `gpt-5.5` at high reasoning effort, and do not use Claude to review Claude-authored code.
 
 Canonical review invocation (run from inside the worktree where the batch is staged):
 
@@ -128,10 +128,9 @@ EOF
 ```
 
 - `--dangerously-bypass-approvals-and-sandbox` enables yolo mode (no prompts, no sandbox). Safe for review because Codex only reads the prompt; it does not need to edit files.
-- The plugin's `review` subcommand rejects custom prompts when scoped to `--uncommitted`, so we use `exec` with the diff embedded.
 - Read Codex's output: actionable findings (bugs, unsafe casts, regressions, missing tests for changed behavior, over-decomposition, rule bypasses) → fix in code. Explicitly non-actionable residual risks → acceptable; commit anyway.
 
-Do not let Codex edit files during review. Treat Codex output as review input only; the Coder (Claude Opus) owns code changes, verification, and commits.
+Do not let Codex edit files during review. Treat Codex output as review input only; the coding agent owns code changes, verification, and commits.
 
 For smoke testing Codex availability:
 
