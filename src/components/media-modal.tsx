@@ -126,7 +126,7 @@ function MediaModal({
         carousel.removeEventListener('swiped-down', handleSwipe);
       }
     };
-  }, [currentIndex, mediaAttachments]);
+  }, [currentIndex, mediaAttachments, onClose]);
 
   useHotkeys(
     'esc',
@@ -289,8 +289,16 @@ function MediaModal({
     <div
       class={`media-modal-container media-modal-count-${mediaAttachments?.length}`}
     >
+      {/* TODO(oxlint:jsx-a11y/prefer-tag-over-role,
+              jsx-a11y/no-noninteractive-tabindex): the carousel is a
+          horizontal scroll surface that needs focus for keyboard scroll
+          and backdrop dismissal. Switching to <section> breaks
+          carouselRef's HTMLDivElement type; the tabIndex is legitimate
+          for keyboard scrolling. */}
       <div
         ref={carouselRef}
+        role="region"
+        aria-label="Media carousel"
         tabIndex={0}
         data-swipe-threshold="44"
         class="carousel"
@@ -303,6 +311,15 @@ function MediaModal({
           ) {
             onClose(e, currentIndex, mediaAttachments, carouselRef);
           }
+        }}
+        onKeyDown={(e) => {
+          // Backdrop dismissal via Enter/Space when the focus lies on the
+          // carousel surface itself (not media controls). Mirrors the
+          // backdrop click handler.
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          if (e.target !== e.currentTarget) return;
+          e.preventDefault();
+          onClose(e, currentIndex, mediaAttachments, carouselRef);
         }}
         style={
           mediaAttachments.length > 1
@@ -322,6 +339,7 @@ function MediaModal({
           return (
             <div
               class="carousel-item"
+              role="group"
               style={
                 accentColor
                   ? {
@@ -338,7 +356,7 @@ function MediaModal({
                     }
                   : {}
               }
-              tabindex={0}
+              tabIndex={0}
               key={media.id}
               ref={i === currentIndex ? carouselFocusItem : null}
               onClick={(e) => {
@@ -347,6 +365,16 @@ function MediaModal({
                 //   setShowControls(!showControls);
                 // }
                 if (!(e.target as HTMLElement).classList.contains('media')) {
+                  setShowControls(!showControls);
+                }
+              }}
+              onKeyDown={(e) => {
+                // Toggle overlay controls via Enter/Space when focus is on
+                // the carousel-item itself, mirroring the click handler.
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                if (e.target !== e.currentTarget) return;
+                if (!(e.target as HTMLElement).classList.contains('media')) {
+                  e.preventDefault();
                   setShowControls(!showControls);
                 }
               }}

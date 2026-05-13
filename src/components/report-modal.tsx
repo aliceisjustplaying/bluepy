@@ -362,7 +362,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
           </section>
           <section class="report-comment">
             <p>
-              <label for="report-comment">
+              <label htmlFor="report-comment">
                 <Trans>Additional info</Trans>
               </label>
             </p>

@@ -280,6 +280,11 @@ function RelatedActions({
         }
       })();
     }
+    // TODO(oxlint:react-hooks/exhaustive-deps): currentMasto is a masto proxy,
+    // onRelationshipChange is a parent-supplied callback not memoized at the
+    // call site, and id/instance/sameInstance/currentAuthenticated are derived
+    // values that should not retrigger this fetch. Restructuring requires
+    // upstream changes in account-info.tsx.
   }, [info, authenticated]);
 
   useEffect(() => {

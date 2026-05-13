@@ -1,20 +1,8 @@
 import type { HTMLAttributes, Ref, TargetedMouseEvent } from 'preact';
 import { forwardRef } from 'preact/compat';
-import { useLocation } from 'react-router-dom';
+import { useInRouterContext, useLocation } from 'react-router-dom';
 
 import states from '../utils/states';
-
-// TODO(oxlint:react-hooks/rules-of-hooks): useLocation throws if Link is
-// rendered outside a Router (e.g. static previews). The defensive try/catch
-// trips the lint rule but mirrors original behavior — proper fix requires
-// gating Link via Router context detection.
-function useSafeLocation(): ReturnType<typeof useLocation> | undefined {
-  try {
-    return useLocation();
-  } catch {
-    return undefined;
-  }
-}
 
 /* NOTES
    =====
@@ -36,14 +24,44 @@ export interface LinkProps extends Omit<
   [key: string]: unknown;
 }
 
+// useLocation throws if Link renders outside a Router (static previews).
+// useInRouterContext is documented as safe to call anywhere and returns a
+// boolean; gating on it keeps both render branches hook-rule compliant
+// because each inner component (with vs without useLocation) is itself
+// consistent across all of its own renders.
+const LinkInsideRouter = forwardRef<HTMLAnchorElement, LinkProps>(
+  (props: LinkProps, ref: Ref<HTMLAnchorElement>) => {
+    const routerLocation = useLocation();
+    return <LinkBody {...props} ref={ref} routerLocation={routerLocation} />;
+  },
+);
+
+const LinkOutsideRouter = forwardRef<HTMLAnchorElement, LinkProps>(
+  (props: LinkProps, ref: Ref<HTMLAnchorElement>) => {
+    return <LinkBody {...props} ref={ref} routerLocation={undefined} />;
+  },
+);
+
+interface LinkBodyProps extends LinkProps {
+  routerLocation: ReturnType<typeof useLocation> | undefined;
+}
+
 const Link = forwardRef<HTMLAnchorElement, LinkProps>(
   (props: LinkProps, ref: Ref<HTMLAnchorElement>) => {
-    // useLocation throws if Link is rendered outside a Router; the wrapper
-    // hook catches that defensively for static/preview contexts.
-    const routerLocation = useSafeLocation();
+    const inRouter = useInRouterContext();
+    return inRouter ? (
+      <LinkInsideRouter {...props} ref={ref} />
+    ) : (
+      <LinkOutsideRouter {...props} ref={ref} />
+    );
+  },
+);
+
+const LinkBody = forwardRef<HTMLAnchorElement, LinkBodyProps>(
+  (props: LinkBodyProps, ref: Ref<HTMLAnchorElement>) => {
     let hash = (location.hash || '').replace(/^#/, '').trim();
     if (hash === '') hash = '/';
-    const { to, children, ...restProps } = props;
+    const { to, children, routerLocation, ...restProps } = props;
 
     // Handle encodeURIComponent of searchParams values
     if (!!hash && hash !== '/' && hash.includes('?')) {
@@ -71,10 +89,12 @@ const Link = forwardRef<HTMLAnchorElement, LinkProps>(
             // If this <a> is nested inside another <a>
             e.stopPropagation();
           }
-          if (routerLocation)
-            states.prevLocation = routerLocation as unknown as NonNullable<
-              typeof states.prevLocation
-            >;
+          if (routerLocation) {
+            // react-router Location has typed fields that don't widen to
+            // PrevLocation's unknown index signature; spread into the
+            // PrevLocation shape to satisfy both types without a shim.
+            states.prevLocation = { ...routerLocation };
+          }
           (
             props.onClick as
               | ((ev: TargetedMouseEvent<HTMLAnchorElement>) => void)

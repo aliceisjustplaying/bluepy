@@ -42,7 +42,7 @@ function PrivateNoteSheet({
     return () => {
       clearTimeout(timer);
     };
-  }, []);
+  }, [initialNote]);
 
   return (
     <div class="sheet" id="private-note-container">

@@ -141,6 +141,8 @@ function Filters() {
         setUIState('error');
       }
     })();
+    // TODO(oxlint:react-hooks/exhaustive-deps): masto.v2.filters is a masto
+    // proxy recreated per-access; adding it would loop.
   }, [reloadCount]);
 
   return (
@@ -446,6 +448,8 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
           }}
         >
           <div class="filter-form-row">
+            {/* TODO(oxlint:jsx-a11y/label-has-associated-control): rule does
+                not look through <Trans> children for accessible text. */}
             <label>
               <b>
                 <Trans>Title</Trans>

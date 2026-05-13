@@ -129,7 +129,7 @@ export default function useScrollFn(
         );
       }
     };
-  }, [hasCallback]);
+  }, [hasCallback, scrollableRef, isVertical, onScroll]);
 
   useEffect(() => {
     if (!hasCallback) return;
@@ -138,7 +138,7 @@ export default function useScrollFn(
         scrollableRef.current!.dispatchEvent(new Event('scroll'));
       });
     }
-  }, [init, hasCallback]);
+  }, [init, hasCallback, scrollableRef]);
 
   if (!callback) return undefined;
 
