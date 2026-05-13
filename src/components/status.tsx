@@ -4,7 +4,9 @@ import { msg, plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu, MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { shallowEqual } from 'fast-equals';
+import type { mastodon } from 'masto';
 import PQueue from 'p-queue';
+import type { ComponentChildren, ComponentType, JSX, RefObject } from 'preact';
 import { Fragment } from 'preact';
 import { memo } from 'preact/compat';
 import {
@@ -30,7 +32,7 @@ import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import getHTMLText from '../utils/get-html-text';
 import haptics from '../utils/haptics';
 import htmlContentLength from '../utils/html-content-length';
-import localeMatch from '../utils/locale-match';
+import localeMatchDefault from '../utils/locale-match';
 import mem from '../utils/mem';
 import niceDateTime from '../utils/nice-date-time';
 import openCompose from '../utils/open-compose';
@@ -89,15 +91,63 @@ import TranslationBlock from './translation-block';
 const SHOW_COMMENT_COUNT_LIMIT = 280;
 const INLINE_TRANSLATE_LIMIT = 140;
 
+// `localeMatch` is called here with 2 args (omitting the required
+// `defaultLocale`). The wrapper catches the resulting throw and returns
+// `false`. Cast to a permissive signature reflecting that reality so we can
+// keep matching the existing call shape without churning the wrapper.
+const localeMatch = localeMatchDefault as unknown as (
+  requestedLocales: readonly string[],
+  availableLocales: readonly (string | false)[],
+  defaultLocale?: string,
+) => string | false;
+
+// Loose status type: some non-API extension fields (e.g. `_atproto`, `_deleted`,
+// `_pinned`, `emojiReactions`, `quoteApproval`) are added at runtime. We keep
+// the mastodon shape as a base and treat the runtime additions as untyped.
+type AnyStatus = mastodon.v1.Status & Record<string, unknown>;
+// `NameText` declares its own narrower `NameTextAccount` shape with an
+// index signature. The runtime accounts we hand it are always richer, but
+// the structural mismatch needs a shim at the boundary.
+type NameTextAccountShim = Parameters<typeof NameText>[0]['account'];
+// Permissive event shim for menu-item / button onClick handlers. The runtime
+// always provides at least the modifier-key flags and an optional
+// `syntheticEvent` proxy for menu adapters.
+type LooseClickEvent = {
+  shiftKey?: boolean;
+  syntheticEvent?: { shiftKey?: boolean };
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
+  target?: EventTarget | null;
+  currentTarget?: EventTarget | null;
+  key?: string;
+  keyCode?: number;
+};
+type AnyAccount = mastodon.v1.Account & Record<string, unknown>;
+type AnyPoll = mastodon.v1.Poll & {
+  emojis?: mastodon.v1.CustomEmoji[];
+} & Record<string, unknown>;
+// The project-local MastoClient interface is intentionally narrow. The runtime
+// instance is the full mastodon REST client, so cast back through the masto
+// types for richer call signatures.
+type FullMasto = mastodon.rest.Client;
+type MastoClientFromApi = ReturnType<typeof api>['masto'];
+
 const accountQueue = new PQueue({
   concurrency: 1,
   interval: 1000,
   intervalCap: 1,
 });
-function fetchAccount(id, masto, signal) {
-  return accountQueue.add(() => masto.v1.accounts.$select(id).fetch(), {
-    signal,
-  });
+function fetchAccount(
+  id: string,
+  masto: MastoClientFromApi,
+  signal?: AbortSignal,
+) {
+  return accountQueue.add(
+    () => (masto as unknown as FullMasto).v1.accounts.$select(id).fetch(),
+    {
+      signal,
+    } as unknown as { signal?: AbortSignal },
+  );
 }
 const memFetchAccount = pmem(fetchAccount);
 
@@ -107,12 +157,21 @@ const isIOS =
 
 const REACTIONS_LIMIT = 80;
 
-function getPollText(poll) {
+function getPollText(poll: AnyPoll | null | undefined): string {
   if (!poll?.options?.length) return '';
-  return `📊:\n${poll.options.map((option) => `- ${option.title}`).join('\n')}`;
+  return `📊:\n${poll.options
+    .map((option: mastodon.v1.PollOption) => `- ${option.title}`)
+    .join('\n')}`;
 }
 
-function getPostText(status, opts) {
+interface GetPostTextOpts {
+  maskCustomEmojis?: boolean;
+  maskURLs?: boolean;
+  hideInlineQuote?: boolean;
+  htmlTextOpts?: Record<string, unknown>;
+}
+
+function getPostText(status: AnyStatus, opts?: GetPostTextOpts): string {
   const {
     maskCustomEmojis,
     maskURLs,
@@ -123,7 +182,7 @@ function getPostText(status, opts) {
   let { content } = status;
   if (maskCustomEmojis && emojis?.length) {
     const emojisRegex = new RegExp(
-      `:(${emojis.map((e) => e.shortcode).join('|')}):`,
+      `:(${emojis.map((e: mastodon.v1.CustomEmoji) => e.shortcode).join('|')}):`,
       'g',
     );
     content = content.replace(emojisRegex, '⬚');
@@ -133,8 +192,8 @@ function getPostText(status, opts) {
     getHTMLText(content, {
       ...htmlTextOpts,
       preProcess:
-        (maskURLs || hideInlineQuote) &&
-        ((dom) => {
+        maskURLs || hideInlineQuote
+          ? (dom: DocumentFragment) => {
           // Remove links that contains text that starts with https?://
           if (maskURLs) {
             for (const a of dom.querySelectorAll('a')) {
@@ -151,16 +210,20 @@ function getPostText(status, opts) {
               reContainer.remove();
             }
           }
-        }),
+        }
+          : undefined,
     }),
-    getPollText(poll),
+    getPollText(poll as AnyPoll | null | undefined),
   ]
     .join('\n\n')
     .trim();
   return fullText;
 }
 
-function forgivingQSA(selectors = [], dom = document) {
+function forgivingQSA(
+  selectors: string[] = [],
+  dom: ParentNode = document,
+): NodeListOf<Element> | Element[] {
   // Run QSA for list of selectors
   // If a selector return invalid selector error, try the next one
   for (const selector of selectors) {
@@ -171,11 +234,12 @@ function forgivingQSA(selectors = [], dom = document) {
   return [];
 }
 
-const getHTMLTextForDetectLang = mem((content, emojis) => {
+const getHTMLTextForDetectLang = mem(
+  (content: string, emojis?: mastodon.v1.CustomEmoji[]): string => {
   if (!content) return '';
   if (emojis?.length) {
     const emojisRegex = new RegExp(
-      `:(${emojis.map((e) => e.shortcode).join('|')}):`,
+      `:(${emojis.map((e: mastodon.v1.CustomEmoji) => e.shortcode).join('|')}):`,
       'g',
     );
     content = content.replace(emojisRegex, '');
@@ -183,7 +247,7 @@ const getHTMLTextForDetectLang = mem((content, emojis) => {
   content = content.trim();
   if (!content) return '';
   return getHTMLText(content, {
-    preProcess: (dom) => {
+    preProcess: (dom: DocumentFragment) => {
       // Remove anything that can skew the language detection
 
       // Remove .mention, .hashtag, pre, code, a:has(.invisible)
@@ -206,9 +270,13 @@ const getHTMLTextForDetectLang = mem((content, emojis) => {
       }
     },
   });
-});
+  },
+);
 
-function isTranslateble(content, emojis) {
+function isTranslateble(
+  content: string,
+  emojis?: mastodon.v1.CustomEmoji[],
+): boolean {
   return !!getHTMLTextForDetectLang(content, emojis);
 }
 
@@ -218,17 +286,18 @@ const SIZE_CLASS = {
   l: 'large',
 };
 
-const detectLang = pmem(async (text) => {
+const detectLang = pmem(
+  async (text: string | null | undefined): Promise<string | null> => {
   text = text?.trim();
 
   // Ref: https://github.com/komodojp/tinyld/blob/develop/docs/benchmark.md
   // 500 should be enough for now, also the default max chars for Mastodon
-  if (text?.length > 500) {
+  if ((text?.length ?? 0) > 500) {
     return null;
   }
 
   if (langDetector) {
-    const langs = await langDetector.detect(text);
+    const langs = await langDetector.detect(text as unknown as string);
     console.groupCollapsed(
       '💬 DETECTLANG BROWSER',
       langs.slice(0, 3).map((l) => l.detectedLanguage),
@@ -236,13 +305,17 @@ const detectLang = pmem(async (text) => {
     console.log(text, langs.slice(0, 3));
     console.groupEnd();
     const lang = langs[0];
-    if (lang?.detectedLanguage && lang?.confidence > 0.5) {
+    if (
+      lang?.detectedLanguage &&
+      lang?.confidence !== undefined &&
+      lang.confidence > 0.5
+    ) {
       return lang.detectedLanguage;
     }
   }
 
   const { detectAll } = await import('tinyld/light');
-  const langs = detectAll(text);
+  const langs = detectAll(text as unknown as string);
   console.groupCollapsed(
     '💬 DETECTLANG TINYLD',
     langs.slice(0, 3).map((l) => l.lang),
@@ -257,18 +330,20 @@ const detectLang = pmem(async (text) => {
     return lang.lang;
   }
   return null;
-});
+  },
+);
 
 const readMoreText = msg`Read more →`;
 
 // All this work just to make sure this only lazy-run once
 // Because first run is slow due to intl-localematcher
-const DIFFERENT_LANG_CHECK = {};
-const diffLangCheckCacheKey = (l, hls) => `${l}:${hls.join('|')}`;
+const DIFFERENT_LANG_CHECK: Record<string, boolean> = {};
+const diffLangCheckCacheKey = (l: string, hls: string[]) =>
+  `${l}:${hls.join('|')}`;
 const checkDifferentLanguage = (
-  language,
-  contentTranslationHideLanguages = [],
-) => {
+  language: string | null | undefined,
+  contentTranslationHideLanguages: string[] = [],
+): boolean => {
   if (!language) return false;
   const cacheKey = diffLangCheckCacheKey(
     language,
@@ -279,7 +354,7 @@ const checkDifferentLanguage = (
     language !== targetLanguage &&
     !localeMatch([language], [targetLanguage]) &&
     !contentTranslationHideLanguages.find(
-      (l) => language === l || localeMatch([language], [l]),
+      (l: string) => language === l || localeMatch([language], [l]),
     );
   if (different) {
     DIFFERENT_LANG_CHECK[cacheKey] = true;
@@ -304,6 +379,50 @@ const quoteApprovalPolicyMessages = {
 const QUESTION_REGEX = /[??？︖❓❔⁇⁈⁉¿‽؟]/;
 
 const { DEV } = import.meta.env;
+
+type StatusSize = 's' | 'm' | 'l';
+
+interface GhostInfo {
+  inReplyToAccountId?: string | null;
+}
+
+interface StatusComponentProps {
+  statusID?: string | null;
+  status?: AnyStatus | null;
+  instance?: string;
+  size?: StatusSize;
+  contentTextWeight?: boolean;
+  readOnly?: boolean;
+  enableCommentHint?: boolean;
+  withinContext?: boolean;
+  skeleton?: boolean;
+  enableTranslate?: boolean;
+  forceTranslate?: boolean;
+  previewMode?: boolean;
+  allowFilters?: boolean;
+  onMediaClick?: (
+    e: MouseEvent,
+    i: number,
+    media: mastodon.v1.MediaAttachment,
+    status: AnyStatus,
+  ) => void;
+  quoted?: number | boolean;
+  quoteDomain?: string;
+  onStatusLinkClick?: (
+    e: MouseEvent | KeyboardEvent,
+    status: AnyStatus,
+  ) => void;
+  showFollowedTags?: boolean;
+  allowContextMenu?: boolean;
+  showActionsBar?: boolean;
+  showReplyParent?: boolean;
+  mediaFirst?: boolean;
+  showCommentCount?:
+    | boolean
+    | ((count?: number) => boolean);
+  showQuoteCount?: boolean | ((count?: number) => boolean);
+  ghost?: GhostInfo | null;
+}
 
 function Status({
   statusID,
@@ -331,15 +450,18 @@ function Status({
   showCommentCount: forceShowCommentCount,
   showQuoteCount: forceShowQuoteCount,
   ghost,
-}) {
-  const { _, t, i18n } = useLingui();
+}: StatusComponentProps) {
+  const { t, i18n } = useLingui();
+  // Macro `useLingui` from @lingui/react/macro doesn't expose `_`; the
+  // underlying i18n object on the same context does.
+  const _ = i18n._.bind(i18n);
   const rtf = RTF(i18n.locale);
 
   if (ghost) {
     const { inReplyToAccountId } = ghost;
-    const ghostAccount = inReplyToAccountId
-      ? states.accounts[inReplyToAccountId]
-      : null;
+    const ghostAccount = (
+      inReplyToAccountId ? states.accounts[inReplyToAccountId] : null
+    ) as AnyAccount | null;
     return (
       <article
         class={`status ghost ${mediaFirst ? 'status-media-first small' : ''}`}
@@ -347,8 +469,11 @@ function Status({
         {!mediaFirst && (
           <Avatar
             size="xxl"
-            url={ghostAccount?.avatarStatic || ghostAccount?.avatar}
-            squircle={ghostAccount?.bot}
+            url={
+              (ghostAccount?.avatarStatic as string | undefined) ||
+              (ghostAccount?.avatar as string | undefined)
+            }
+            squircle={ghostAccount?.bot as boolean | undefined}
           />
         )}
         <div class="container">
@@ -356,12 +481,18 @@ function Status({
             {(size === 's' || mediaFirst) && (
               <Avatar
                 size="m"
-                url={ghostAccount?.avatarStatic || ghostAccount?.avatar}
-                squircle={ghostAccount?.bot}
+                url={
+                  (ghostAccount?.avatarStatic as string | undefined) ||
+                  (ghostAccount?.avatar as string | undefined)
+                }
+                squircle={ghostAccount?.bot as boolean | undefined}
               />
             )}
             {ghostAccount && (
-              <NameText account={ghostAccount} showAvatar={false} />
+              <NameText
+                account={ghostAccount as Parameters<typeof NameText>[0]['account']}
+                showAvatar={false}
+              />
             )}
           </div>
           <div class="content-container">
@@ -399,19 +530,36 @@ function Status({
       </div>
     );
   }
-  const { masto, instance, authenticated } = api({ instance: propInstance });
+  const apiResult = api({ instance: propInstance });
+  const instance = apiResult.instance;
+  const authenticated = apiResult.authenticated;
+  // The project-local MastoClient is intentionally narrow; cast the runtime
+  // client to the full mastodon REST client for the rich endpoints below.
+  const masto = apiResult.masto as unknown as FullMasto;
   const { instance: currentInstance } = api();
   const sameInstance = instance === currentInstance;
 
-  let sKey = statusKey(statusID || status?.id, instance);
+  let sKeyMaybe: string | undefined = statusKey(
+    statusID || status?.id,
+    instance,
+  );
   const snapStates = useSnapshot(states);
   if (!status) {
-    status = snapStates.statuses[sKey] || snapStates.statuses[statusID];
-    sKey = statusKey(status?.id, instance);
+    status = ((sKeyMaybe ? snapStates.statuses[sKeyMaybe] : undefined) ||
+      (statusID ? snapStates.statuses[statusID] : undefined)) as
+      | AnyStatus
+      | null
+      | undefined;
+    sKeyMaybe = statusKey(status?.id, instance);
   }
   if (!status) {
     return null;
   }
+
+  // After the early return above, sKey is always a non-null string in the
+  // codepaths we reach. Re-bind under a non-null name for the indexed reads
+  // and writes below.
+  const sKey: string = sKeyMaybe as string;
 
   // const originalStatus = useRef(status);
   const { editHistoryRef, editHistoryMode, editedAtIndex } = useEditHistory();
@@ -420,14 +568,15 @@ function Status({
     if (eStatus) {
       status = {
         ...status,
-        ...eStatus,
-      };
+        ...(eStatus as object),
+      } as unknown as AnyStatus;
     }
   } else {
     // Revert back to original status
     // Don't need to do anything, re-render will use the original status above
   }
 
+  const statusAny = status as unknown as AnyStatus;
   const {
     account: {
       acct,
@@ -440,7 +589,7 @@ function Status({
       emojis: accountEmojis,
       bot,
       group,
-    } = {},
+    } = {} as Partial<AnyAccount>,
     id,
     repliesCount,
     reblogged,
@@ -478,14 +627,30 @@ function Status({
     // _filtered,
     // Non-Mastodon
     emojiReactions,
-  } = status;
+  } = statusAny as AnyStatus & {
+    account?: Partial<AnyAccount>;
+    quoteApproval?: {
+      currentUser?: string;
+      automatic?: readonly string[];
+      manual?: readonly string[];
+    };
+    emojiReactions?: readonly Record<string, unknown>[];
+    _deleted?: boolean;
+    _pinned?: boolean;
+    _atproto?: {
+      replyParentAccount?: AnyAccount | null;
+      replyParentUnavailable?: boolean;
+    };
+  };
 
-  const [languageAutoDetected, setLanguageAutoDetected] = useState(null);
+  const [languageAutoDetected, setLanguageAutoDetected] = useState<
+    string | null
+  >(null);
   useEffect(() => {
     if (!content) return;
     if (_language) return;
     if (languageAutoDetected) return;
-    let timer;
+    let timer: ReturnType<typeof setTimeout>;
     timer = setTimeout(async () => {
       let detected = await detectLang(
         getHTMLTextForDetectLang(content, emojis),
@@ -504,18 +669,31 @@ function Status({
   const isSelf = currentAccount && currentAccount == accountId;
 
   const filterContext = useContext(FilterContext);
-  const filterInfo =
-    !isSelf &&
+  // The short-circuited `&&` chain narrows to `false | FilterState`; in
+  // practice JS treated the boolean fall-through as a falsy value. The cast
+  // surfaces the FilterState shape for the optional property accesses below.
+  type FilterInfoShape = {
+    action: 'hide' | 'blur' | 'warn';
+    titles?: string[];
+    titlesStr?: string;
+  };
+  const filterInfo = (!isSelf &&
     ((!readOnly && !previewMode) || allowFilters) &&
-    isFiltered(filtered, filterContext);
+    isFiltered(filtered, filterContext as string)) as
+    | FilterInfoShape
+    | false
+    | undefined;
+  // Narrowed accessor for `?.action` style reads — boolean fall-through is
+  // treated as no filter at all (matches JS runtime).
+  const filterInfoMaybe = filterInfo || undefined;
 
-  if (filterInfo?.action === 'hide') {
+  if (filterInfoMaybe && filterInfoMaybe.action === 'hide') {
     return null;
   }
 
   console.debug('RENDER Status', id, status?.account?.displayName, quoted);
 
-  const debugHover = (e) => {
+  const debugHover = (e: MouseEvent) => {
     if (e.shiftKey) {
       console.log({
         ...status,
@@ -543,35 +721,59 @@ function Status({
   }
 
   const createdAtDate = new Date(createdAt);
-  const editedAtDate = new Date(editedAt);
+  const editedAtDate = new Date(editedAt as unknown as string);
 
-  let inReplyToAccountRef =
-    status._atproto?.replyParentAccount ||
-    mentions?.find((mention) => mention.id === inReplyToAccountId);
+  const atproto = statusAny._atproto as
+    | {
+        replyParentAccount?: AnyAccount | null;
+        replyParentUnavailable?: boolean;
+      }
+    | undefined;
+  type ReplyToAccount =
+    | AnyAccount
+    | { url?: string; username?: string; displayName?: string }
+    | null
+    | undefined;
+  let inReplyToAccountRef: ReplyToAccount =
+    atproto?.replyParentAccount ||
+    mentions?.find(
+      (mention: mastodon.v1.StatusMention) => mention.id === inReplyToAccountId,
+    );
   if (!inReplyToAccountRef && inReplyToAccountId === id) {
     inReplyToAccountRef = { url: accountURL, username, displayName };
   }
   const isAtprotoReplyParentUnavailable =
     instance === 'bsky.social' &&
     !!inReplyToId &&
-    !!status._atproto?.replyParentUnavailable;
-  const [inReplyToAccount, setInReplyToAccount] = useState(inReplyToAccountRef);
+    !!atproto?.replyParentUnavailable;
+  const [inReplyToAccount, setInReplyToAccount] =
+    useState<ReplyToAccount>(inReplyToAccountRef);
   useEffect(() => {
     if (instance === 'bsky.social') return;
     if (!withinContext && !inReplyToAccount && inReplyToAccountId) {
-      const account = states.accounts[inReplyToAccountId];
+      const account = states.accounts[inReplyToAccountId] as
+        | AnyAccount
+        | undefined;
       if (account) {
         setInReplyToAccount(account);
         return;
       }
 
       const abortController = new AbortController();
-      memFetchAccount(inReplyToAccountId, masto, abortController.signal)
-        .then((account) => {
-          setInReplyToAccount(account);
-          states.accounts[account.id] = account;
+      memFetchAccount(
+        inReplyToAccountId,
+        masto as unknown as MastoClientFromApi,
+        abortController.signal,
+      )
+        .then((account: AnyAccount | unknown) => {
+          const acc = account as AnyAccount;
+          setInReplyToAccount(acc);
+          states.accounts[acc.id as string] = acc as unknown as Record<
+            string,
+            unknown
+          >;
         })
-        .catch((e) => {});
+        .catch((_e: unknown) => {});
 
       return () => {
         abortController.abort();
@@ -580,7 +782,9 @@ function Status({
   }, [withinContext, inReplyToAccount, inReplyToAccountId]);
   const mentionSelf =
     (inReplyToAccountId && inReplyToAccountId === currentAccount) ||
-    mentions?.find((mention) => mention.id === currentAccount);
+    mentions?.find(
+      (mention: mastodon.v1.StatusMention) => mention.id === currentAccount,
+    );
   const showReplyBadge = shouldShowReplyBadge({
     inReplyToId,
     inReplyToAccount,
@@ -591,12 +795,13 @@ function Status({
     inReplyToAccountId,
   });
 
-  const prefs = getPreferences();
+  const prefs = getPreferences() as unknown as Record<string, unknown>;
   const readingExpandSpoilers = !!prefs['reading:expand:spoilers'];
 
   // default | show_all | hide_all
   const readingExpandMedia =
-    prefs['reading:expand:media']?.toLowerCase() || 'default';
+    (prefs['reading:expand:media'] as string | undefined)?.toLowerCase() ||
+    'default';
 
   // FOR TESTING:
   // const readingExpandSpoilers = true;
@@ -605,7 +810,7 @@ function Status({
     previewMode || readingExpandSpoilers || !!snapStates.spoilers[id];
   const showSpoilerMedia =
     previewMode ||
-    (readingExpandMedia === 'show_all' && filterInfo?.action !== 'blur') ||
+    (readingExpandMedia === 'show_all' && filterInfoMaybe?.action !== 'blur') ||
     !!snapStates.spoilersMedia[id];
 
   if (reblog) {
@@ -620,11 +825,19 @@ function Status({
         >
           <div class="status-pre-meta">
             <Icon icon="group" size="l" alt={t`Group`} />{' '}
-            <NameText account={status.account} instance={instance} showAvatar />
+            <NameText
+              account={
+                status.account as unknown as Parameters<
+                  typeof NameText
+                >[0]['account']
+              }
+              instance={instance}
+              showAvatar
+            />
           </div>
           <Status
-            status={statusID ? null : reblog}
-            statusID={statusID ? reblog.id : null}
+            status={statusID ? null : (reblog as unknown as AnyStatus)}
+            statusID={statusID ? (reblog as AnyStatus).id : null}
             instance={instance}
             size={size}
             contentTextWeight={contentTextWeight}
@@ -644,13 +857,21 @@ function Status({
         <div class="status-pre-meta">
           <Icon icon="rocket" size="l" />{' '}
           <Trans>
-            <NameText account={status.account} instance={instance} showAvatar />{' '}
+            <NameText
+              account={
+                status.account as unknown as Parameters<
+                  typeof NameText
+                >[0]['account']
+              }
+              instance={instance}
+              showAvatar
+            />{' '}
             <span>boosted</span>
           </Trans>
         </div>
         <Status
-          status={statusID ? null : reblog}
-          statusID={statusID ? reblog.id : null}
+          status={statusID ? null : (reblog as unknown as AnyStatus)}
+          statusID={statusID ? (reblog as AnyStatus).id : null}
           instance={instance}
           size={size}
           contentTextWeight={contentTextWeight}
@@ -664,7 +885,7 @@ function Status({
 
   // Check followedTags
   const FollowedTagsParent = useCallback(
-    ({ children }) => (
+    ({ children }: { children?: ComponentChildren }) => (
       <div
         data-state-post-id={sKey}
         class="status-followed-tags"
@@ -672,23 +893,32 @@ function Status({
       >
         <div class="status-pre-meta">
           <Icon icon="hashtag" size="l" />{' '}
-          {snapStates.statusFollowedTags[sKey].slice(0, 3).map((tag) => (
-            <Link
-              key={tag}
-              to={instance ? `/${instance}/t/${tag}` : `/t/${tag}`}
-              class="status-followed-tag-item"
-            >
-              {tag}
-            </Link>
-          ))}
+          {(
+            snapStates.statusFollowedTags[sKey as string] as
+              | readonly string[]
+              | undefined
+          )!
+            .slice(0, 3)
+            .map((tag: string) => (
+              <Link
+                key={tag}
+                to={instance ? `/${instance}/t/${tag}` : `/t/${tag}`}
+                class="status-followed-tag-item"
+              >
+                {tag}
+              </Link>
+            ))}
         </div>
         {children}
       </div>
     ),
-    [sKey, instance, snapStates.statusFollowedTags[sKey]],
+    [sKey, instance, snapStates.statusFollowedTags[sKey as string]],
   );
+  const followedTagsForKey = snapStates.statusFollowedTags[sKey as string] as
+    | readonly string[]
+    | undefined;
   const StatusParent =
-    showFollowedTags && !!snapStates.statusFollowedTags[sKey]?.length
+    showFollowedTags && !!followedTagsForKey?.length
       ? FollowedTagsParent
       : Fragment;
 
@@ -734,17 +964,19 @@ function Status({
     contentLength,
   ]);
 
-  const [showEdited, setShowEdited] = useState(false);
+  const [showEdited, setShowEdited] = useState<string | false>(false);
   const [showEmbed, setShowEmbed] = useState(false);
   const [showQuoteSettings, setShowQuoteSettings] = useState(false);
   const [showQuotes, setShowQuotes] = useState(false);
   const [showQuoteChain, setShowQuoteChain] = useState(false);
 
-  const spoilerContentRef = useTruncated();
-  const contentRef = useTruncated();
-  const mediaContainerRef = useTruncated();
+  // `useTruncated` exposes `Ref<HTMLElement>` but JSX targets are usually
+  // narrower (HTMLDivElement, HTMLSpanElement). Cast at the boundary.
+  const spoilerContentRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
+  const contentRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
+  const mediaContainerRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
 
-  const statusRef = useRef(null);
+  const statusRef = useRef<HTMLElement | null>(null);
   const [reloadPostContentCount, reloadPostContent] = useReducer(
     (c) => c + 1,
     0,
@@ -777,7 +1009,7 @@ function Status({
   // Quote logic blatantly copied from https://github.com/mastodon/mastodon/blob/854aaec6fe69df02e6d850cb90eef37032b4d72f/app/javascript/mastodon/components/status/boost_button_utils.ts#L131-L163
   let quoteDisabled = false;
   let quoteText = t`Quote`;
-  let quoteMetaText;
+  let quoteMetaText: string | undefined;
 
   if (supportsNativeQuote()) {
     const isMine = isSelf;
@@ -807,9 +1039,16 @@ function Status({
   }
   const canQuote = supportsNativeQuote() && !quoteDisabled;
 
-  const postQuoteApprovalPolicy = getPostQuoteApprovalPolicy(quoteApproval);
+  const postQuoteApprovalPolicy = getPostQuoteApprovalPolicy(
+    quoteApproval as unknown as Record<string, unknown> | null | undefined,
+  );
 
-  const replyStatus = (e, replyMode = 'all') => {
+  type ReplyEvent =
+    | (MouseEvent & { syntheticEvent?: { shiftKey?: boolean } })
+    | (KeyboardEvent & { syntheticEvent?: { shiftKey?: boolean } })
+    | { shiftKey?: boolean; syntheticEvent?: { shiftKey?: boolean } }
+    | undefined;
+  const replyStatus = (e?: ReplyEvent, replyMode: string = 'all') => {
     if (!sameInstance || !authenticated) {
       return alert(unauthInteractionErrorMessage);
     }
@@ -818,25 +1057,26 @@ function Status({
       const newWin = openCompose({
         replyToStatus: status,
         replyMode,
-      });
+      } as unknown as Parameters<typeof openCompose>[0]);
       if (newWin) return;
     }
     showCompose({
       replyToStatus: status,
       replyMode,
-    });
+    } as unknown as Parameters<typeof showCompose>[0]);
   };
 
   // Check if media has no descriptions
   const mediaNoDesc = useMemo(() => {
     return mediaAttachments.some(
-      (attachment) => !attachment.description?.trim?.(),
+      (attachment: mastodon.v1.MediaAttachment) =>
+        !attachment.description?.trim?.(),
     );
   }, [mediaAttachments]);
 
   const statusMonthsAgo = useMemo(() => {
     return Math.floor(
-      (new Date() - createdAtDate) / (1000 * 60 * 60 * 24 * 30),
+      (Date.now() - createdAtDate.getTime()) / (1000 * 60 * 60 * 24 * 30),
     );
   }, [createdAtDate]);
 
@@ -889,19 +1129,25 @@ function Status({
         ...status,
         reblogged: !reblogged,
         reblogsCount: reblogsCount + (reblogged ? -1 : 1),
-      };
+      } as unknown as Record<string, unknown>;
       if (reblogged) {
         const newStatus = await masto.v1.statuses.$select(id).unreblog();
-        saveStatus(newStatus, instance);
+        saveStatus(
+          newStatus as unknown as Record<string, unknown>,
+          instance,
+        );
       } else {
         const newStatus = await masto.v1.statuses.$select(id).reblog();
-        saveStatus(newStatus, instance);
+        saveStatus(
+          newStatus as unknown as Record<string, unknown>,
+          instance,
+        );
       }
       return true;
     } catch (e) {
       console.error(e);
       // Revert optimistism
-      states.statuses[sKey] = status;
+      states.statuses[sKey] = status as unknown as Record<string, unknown>;
       return false;
     }
   };
@@ -917,19 +1163,25 @@ function Status({
         ...status,
         favourited: !favourited,
         favouritesCount: favouritesCount + (favourited ? -1 : 1),
-      };
+      } as unknown as Record<string, unknown>;
       if (favourited) {
         const newStatus = await masto.v1.statuses.$select(id).unfavourite();
-        saveStatus(newStatus, instance);
+        saveStatus(
+          newStatus as unknown as Record<string, unknown>,
+          instance,
+        );
       } else {
         const newStatus = await masto.v1.statuses.$select(id).favourite();
-        saveStatus(newStatus, instance);
+        saveStatus(
+          newStatus as unknown as Record<string, unknown>,
+          instance,
+        );
       }
       return true;
     } catch (e) {
       console.error(e);
       // Revert optimistism
-      states.statuses[sKey] = status;
+      states.statuses[sKey] = status as unknown as Record<string, unknown>;
       return false;
     }
   };
@@ -958,19 +1210,25 @@ function Status({
       states.statuses[sKey] = {
         ...status,
         bookmarked: !bookmarked,
-      };
+      } as unknown as Record<string, unknown>;
       if (bookmarked) {
         const newStatus = await masto.v1.statuses.$select(id).unbookmark();
-        saveStatus(newStatus, instance);
+        saveStatus(
+          newStatus as unknown as Record<string, unknown>,
+          instance,
+        );
       } else {
         const newStatus = await masto.v1.statuses.$select(id).bookmark();
-        saveStatus(newStatus, instance);
+        saveStatus(
+          newStatus as unknown as Record<string, unknown>,
+          instance,
+        );
       }
       return true;
     } catch (e) {
       console.error(e);
       // Revert optimistism
-      states.statuses[sKey] = status;
+      states.statuses[sKey] = status as unknown as Record<string, unknown>;
       return false;
     }
   };
@@ -995,11 +1253,15 @@ function Status({
   //   !contentTranslationHideLanguages.find(
   //     (l) => language === l || localeMatch([language], [l]),
   //   );
-  const contentTranslationHideLanguages =
-    snapStates.settings.contentTranslationHideLanguages || [];
-  const [differentLanguage, setDifferentLanguage] = useState(
-    DIFFERENT_LANG_CHECK[
-      diffLangCheckCacheKey(language, contentTranslationHideLanguages)
+  const contentTranslationHideLanguages: string[] = [
+    ...(snapStates.settings.contentTranslationHideLanguages || []),
+  ];
+  const [differentLanguage, setDifferentLanguage] = useState<boolean>(
+    !!DIFFERENT_LANG_CHECK[
+      diffLangCheckCacheKey(
+        language as string,
+        contentTranslationHideLanguages,
+      )
     ],
   );
   useEffect(() => {
@@ -1025,33 +1287,54 @@ function Status({
     return () => clearTimeout(timeout);
   }, [language, differentLanguage]);
 
-  const reblogIterator = useRef();
-  const favouriteIterator = useRef();
-  async function fetchBoostedLikedByAccounts(firstLoad) {
+  type ReactionIterator = AsyncIterableIterator<AnyAccount[]>;
+  const reblogIterator = useRef<ReactionIterator | null>(null);
+  const favouriteIterator = useRef<ReactionIterator | null>(null);
+  async function fetchBoostedLikedByAccounts(firstLoad?: boolean) {
     if (firstLoad) {
-      reblogIterator.current = masto.v1.statuses
-        .$select(statusID)
-        .rebloggedBy.list({
-          limit: REACTIONS_LIMIT,
-        })
-        .values();
-      favouriteIterator.current = masto.v1.statuses
-        .$select(statusID)
-        .favouritedBy.list({
-          limit: REACTIONS_LIMIT,
-        })
-        .values();
+      const stmtSel = masto.v1.statuses.$select(statusID as string);
+      reblogIterator.current = (
+        stmtSel.rebloggedBy.list as unknown as (
+          opts?: Record<string, unknown>,
+        ) => { values: () => ReactionIterator }
+      )({
+        limit: REACTIONS_LIMIT,
+      }).values();
+      favouriteIterator.current = (
+        stmtSel.favouritedBy.list as unknown as (
+          opts?: Record<string, unknown>,
+        ) => { values: () => ReactionIterator }
+      )({
+        limit: REACTIONS_LIMIT,
+      }).values();
     }
+    // Promise.allSettled wraps each result as `{ status, value }` (fulfilled)
+    // or `{ status, reason }` (rejected). The JS original destructured `value`
+    // directly; rejected pages would surface as `undefined` and the subsequent
+    // `.value.length` access would throw, letting the caller's error handling
+    // run. Preserve that behavior by leaving the chains un-narrowed.
+    // `Promise.allSettled` wraps each entry as `{ status, value }` (fulfilled)
+    // or `{ status, reason }` (rejected). The destructure below pulls `.value`
+    // from each settled result. For fulfilled entries that is the iterator
+    // output `{ value, done }`; for rejected entries the destructured binding
+    // is `undefined`. The JS original then dereferenced `.value`/`.done`
+    // unconditionally and would throw on rejection, letting the surrounding
+    // caller's error handling run. Preserve that exact shape — including the
+    // unguarded property accesses — by leaving the binding non-optional.
+    type IteratorResult = { value?: AnyAccount[]; done?: boolean };
     const [{ value: reblogResults }, { value: favouriteResults }] =
-      await Promise.allSettled([
-        reblogIterator.current.next(),
-        favouriteIterator.current.next(),
-      ]);
+      (await Promise.allSettled([
+        reblogIterator.current!.next(),
+        favouriteIterator.current!.next(),
+      ])) as unknown as [
+        { value: IteratorResult },
+        { value: IteratorResult },
+      ];
     if (reblogResults.value?.length || favouriteResults.value?.length) {
-      const accounts = [];
+      const accounts: AnyAccount[] = [];
       if (reblogResults.value?.length) {
         accounts.push(
-          ...reblogResults.value.map((a) => {
+          ...reblogResults.value.map((a: AnyAccount) => {
             a._types = ['reblog'];
             return a;
           }),
@@ -1059,7 +1342,7 @@ function Status({
       }
       if (favouriteResults.value?.length) {
         accounts.push(
-          ...favouriteResults.value.map((a) => {
+          ...favouriteResults.value.map((a: AnyAccount) => {
             a._types = ['favourite'];
             return a;
           }),
@@ -1076,11 +1359,15 @@ function Status({
     };
   }
 
+  const quoteAny = quote as unknown as {
+    state?: string;
+    quotedStatus?: { account?: { id?: string } | null } | null;
+  } | undefined;
   const isQuotingMyPost =
-    quote?.state === 'accepted' &&
-    quote?.quotedStatus?.account?.id === currentAccount;
+    quoteAny?.state === 'accepted' &&
+    quoteAny?.quotedStatus?.account?.id === currentAccount;
 
-  const actionsRef = useRef();
+  const actionsRef = useRef<HTMLDivElement | null>(null);
   const isPinnable = ['public', 'unlisted', 'private'].includes(visibility);
   const menuFooter =
     mediaNoDesc && !reblogged ? (
@@ -1101,9 +1388,12 @@ function Status({
         </div>
       )
     );
-  const mentionsCount = useMemo(() => {
-    if (!mentions?.length) return false;
-    const allMentions = new Set([accountId, ...mentions.map((m) => m.id)]);
+  const mentionsCount = useMemo<number>(() => {
+    if (!mentions?.length) return 0;
+    const allMentions = new Set([
+      accountId,
+      ...mentions.map((m: mastodon.v1.StatusMention) => m.id),
+    ]);
     return [...allMentions].filter((m) => m !== currentAccount).length;
   }, [accountId, mentions?.length, currentAccount]);
   const tooManyMentions = mentionsCount > 3;
@@ -1122,7 +1412,7 @@ function Status({
   const replyModeMenuItems = (
     <>
       <MenuItem
-        onClick={(e) => {
+        onClick={(e: LooseClickEvent) => {
           haptics.trigger('light');
           replyStatus(e, 'all');
         }}
@@ -1136,7 +1426,7 @@ function Status({
         </small>
       </MenuItem>
       <MenuItem
-        onClick={(e) => {
+        onClick={(e: LooseClickEvent) => {
           haptics.trigger('light');
           replyStatus(e, 'author-first');
         }}
@@ -1158,7 +1448,7 @@ function Status({
         </small>
       </MenuItem>
       <MenuItem
-        onClick={(e) => {
+        onClick={(e: LooseClickEvent) => {
           haptics.trigger('light');
           replyStatus(e, 'author-only');
         }}
@@ -1194,7 +1484,7 @@ function Status({
               </SubMenu2>
             ) : (
               <MenuItem
-                onClick={(e) => {
+                onClick={(e: LooseClickEvent) => {
                   haptics.trigger('light');
                   replyStatus(e);
                 }}
@@ -1349,7 +1639,8 @@ function Status({
               </span>
             </MenuItem>
           )}
-          {quote?.quotedStatus?.quote && (
+          {(quote as mastodon.v1.Quote | null | undefined)?.quotedStatus
+            ?.quote && (
             <MenuItem
               onClick={() => {
                 setShowQuoteChain(true);
@@ -1445,7 +1736,7 @@ function Status({
         <>
           <MenuLink
             to={instance ? `/${instance}/s/${id}` : `/s/${id}`}
-            onClick={(e) => {
+            onClick={(e: MouseEvent) => {
               onStatusLinkClick(e, status);
             }}
           >
@@ -1497,7 +1788,7 @@ function Status({
           onClick={() => {
             // Copy url to clipboard
             try {
-              navigator.clipboard.writeText(url);
+              navigator.clipboard.writeText(url as string);
               showToast(t`Link copied`);
             } catch (e) {
               console.error(e);
@@ -1513,13 +1804,13 @@ function Status({
         {isPublic &&
           navigator?.share &&
           navigator?.canShare?.({
-            url,
+            url: url as string | undefined,
           }) && (
             <MenuItem
               onClick={() => {
                 try {
                   navigator.share({
-                    url,
+                    url: url as string | undefined,
                   });
                 } catch (e) {
                   console.error(e);
@@ -1557,7 +1848,10 @@ function Status({
                   const newStatus = await masto.v1.statuses
                     .$select(id)
                     [muted ? 'unmute' : 'mute']();
-                  saveStatus(newStatus, instance);
+                  saveStatus(
+          newStatus as unknown as Record<string, unknown>,
+          instance,
+        );
                   showToast(
                     muted ? t`Conversation unmuted` : t`Conversation muted`,
                   );
@@ -1596,7 +1890,10 @@ function Status({
                   const newStatus = await masto.v1.statuses
                     .$select(id)
                     [pinned ? 'unpin' : 'pin']();
-                  saveStatus(newStatus, instance);
+                  saveStatus(
+          newStatus as unknown as Record<string, unknown>,
+          instance,
+        );
                   showToast(
                     pinned
                       ? t`Post unpinned from profile`
@@ -1638,7 +1935,9 @@ function Status({
                       <br />
                       <span class="more-insignificant">
                         {_(
-                          quoteApprovalPolicyMessages[postQuoteApprovalPolicy],
+                          quoteApprovalPolicyMessages[
+                            postQuoteApprovalPolicy as keyof typeof quoteApprovalPolicyMessages
+                          ],
                         )}
                       </span>
                     </small>
@@ -1650,8 +1949,13 @@ function Status({
                     onClick={() => {
                       showCompose({
                         editStatus: status,
-                        quoteStatus: status.quote?.quotedStatus,
-                      });
+                        quoteStatus: (
+                          status.quote as
+                            | mastodon.v1.Quote
+                            | null
+                            | undefined
+                        )?.quotedStatus,
+                      } as unknown as Parameters<typeof showCompose>[0]);
                     }}
                   >
                     <Icon icon="pencil" />
@@ -1681,7 +1985,7 @@ function Status({
                       (async () => {
                         try {
                           await masto.v1.statuses.$select(id).remove();
-                          const cachedStatus = getStatus(id, instance);
+                          const cachedStatus = getStatus(id, instance)!;
                           cachedStatus._deleted = true;
                           showToast(t`Post deleted`);
                         } catch (e) {
@@ -1728,11 +2032,19 @@ function Status({
                     (async () => {
                       try {
                         // POST /api/v1/statuses/:id/quotes/:quoting_status_id/revoke
-                        const quotedStatusID = quote.quotedStatus.id;
-                        await masto.v1.statuses
-                          .$select(quotedStatusID)
-                          .quotes.$select(id)
-                          .revoke.create();
+                        const quotedStatusID = (
+                          quote as mastodon.v1.Quote
+                        ).quotedStatus!.id;
+                        // `quotes.$select(...)` is supported at runtime but the
+                        // typed resource doesn't expose it; cast through unknown.
+                        const quotesResource = masto.v1.statuses.$select(
+                          quotedStatusID,
+                        ).quotes as unknown as {
+                          $select: (id: string) => {
+                            revoke: { create: () => Promise<unknown> };
+                          };
+                        };
+                        await quotesResource.$select(id).revoke.create();
                         showToast(t`Quote removed`);
                         states.reloadStatusPage++;
                       } catch (e) {
@@ -1767,9 +2079,24 @@ function Status({
     </>
   );
 
-  const contextMenuRef = useRef();
-  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-  const [contextMenuProps, setContextMenuProps] = useState({});
+  type ContextMenuHandle = { closeMenu?: () => void };
+  const contextMenuRef = useRef<ContextMenuHandle | null>(null);
+  // `isContextMenuOpen` is a tri-state in practice: false, true, or the
+  // string 'actions-bar' (when opened from the action bar). Loose-type to
+  // preserve that runtime semantics.
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState<
+    boolean | string
+  >(false);
+  type ContextMenuPropsShape = {
+    anchorRef?: { current: Element | null };
+    anchorPoint?: { x: number; y: number };
+    align?: 'start' | 'center' | 'end';
+    direction?: 'left' | 'right' | 'top' | 'bottom';
+    gap?: number;
+    shift?: number;
+  };
+  const [contextMenuProps, setContextMenuProps] =
+    useState<ContextMenuPropsShape>({});
 
   const showContextMenu =
     allowContextMenu || (!isSizeLarge && !previewMode && !_deleted && !quoted);
@@ -1778,17 +2105,18 @@ function Status({
   // Some comments report iPadOS might support contextmenu if a mouse is connected
   const bindLongPressContext = useLongPress(
     isIOS && showContextMenu
-      ? (e) => {
-          if (e.pointerType === 'mouse') return;
+      ? (e: PointerEvent | (TouchEvent & { pointerType?: string })) => {
+          if ((e as PointerEvent).pointerType === 'mouse') return;
           // There's 'pen' too, but not sure if contextmenu event would trigger from a pen
 
-          const { clientX, clientY } = e.touches?.[0] || e;
+          const { clientX, clientY } =
+            (e as TouchEvent).touches?.[0] || (e as PointerEvent);
           // link detection copied from onContextMenu because here it works
-          const link = e.target.closest('a');
+          const link = (e.target as Element).closest('a');
           if (
             link &&
-            statusRef.current.contains(link) &&
-            !link.getAttribute('href').startsWith('#')
+            statusRef.current!.contains(link) &&
+            !link.getAttribute('href')!.startsWith('#')
           )
             return;
           e.preventDefault();
@@ -1807,7 +2135,7 @@ function Status({
       captureEvent: true,
       detect: 'touch',
       cancelOnMovement: 2, // true allows movement of up to 25 pixels
-    },
+    } as unknown as Parameters<typeof useLongPress>[1],
   );
 
   const hotkeysEnabled = !readOnly && !previewMode && !quoted;
@@ -1821,13 +2149,13 @@ function Status({
     {
       enabled: hotkeysEnabled,
       useKey: true,
-      ignoreEventWhen: (e) =>
+      ignoreEventWhen: (e: KeyboardEvent) =>
         e.metaKey || e.ctrlKey || e.altKey || e.key.toLowerCase() !== 'r',
     },
   );
   const fRef = useHotkeys('f, l', favouriteStatusNotify, {
     enabled: hotkeysEnabled,
-    ignoreEventWhen: (e) =>
+    ignoreEventWhen: (e: KeyboardEvent) =>
       e.metaKey ||
       e.ctrlKey ||
       e.altKey ||
@@ -1838,7 +2166,7 @@ function Status({
   const dRef = useHotkeys('d', bookmarkStatusNotify, {
     enabled: hotkeysEnabled,
     useKey: true,
-    ignoreEventWhen: (e) =>
+    ignoreEventWhen: (e: KeyboardEvent) =>
       e.metaKey ||
       e.ctrlKey ||
       e.altKey ||
@@ -1867,27 +2195,27 @@ function Status({
     {
       enabled: hotkeysEnabled && canBoost,
       useKey: true,
-      ignoreEventWhen: (e) =>
+      ignoreEventWhen: (e: KeyboardEvent) =>
         e.metaKey || e.ctrlKey || e.altKey || e.key.toLowerCase() !== 'b',
     },
   );
   const xRef = useHotkeys(
     'x',
-    (e) => {
-      const activeStatus = document.activeElement.closest(
+    (e: KeyboardEvent) => {
+      const activeStatus = document.activeElement!.closest(
         '.status-link, .status-focus',
       );
       if (activeStatus) {
         const spoilerButton = activeStatus.querySelector(
           '.spoiler-button:not(.spoiling)',
-        );
+        ) as HTMLElement | null;
         if (spoilerButton) {
           e.stopPropagation();
           spoilerButton.click();
         } else {
           const spoilerMediaButton = activeStatus.querySelector(
             '.spoiler-media-button:not(.spoiling)',
-          );
+          ) as HTMLElement | null;
           if (spoilerMediaButton) {
             e.stopPropagation();
             spoilerMediaButton.click();
@@ -1897,7 +2225,7 @@ function Status({
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) =>
+      ignoreEventWhen: (e: KeyboardEvent) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -1907,18 +2235,18 @@ function Status({
   );
   const qRef = useHotkeys(
     'q',
-    (e) => {
+    (_e: KeyboardEvent) => {
       if (!sameInstance || !authenticated) {
         return alert(unauthInteractionErrorMessage);
       }
 
       if (supportsNativeQuote()) {
         if (quoteDisabled) {
-          showToast(quoteMetaText);
+          showToast(quoteMetaText as string);
         } else {
           showCompose({
             quoteStatus: status,
-          });
+          } as unknown as Parameters<typeof showCompose>[0]);
         }
         // Don't fallback to non-native if quoteDisabled
       } else {
@@ -1926,13 +2254,13 @@ function Status({
           draftStatus: {
             status: `\n${url}`,
           },
-        });
+        } as unknown as Parameters<typeof showCompose>[0]);
       }
     },
     {
       enabled: hotkeysEnabled,
       useKey: true,
-      ignoreEventWhen: (e) =>
+      ignoreEventWhen: (e: KeyboardEvent) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -1952,36 +2280,44 @@ function Status({
     );
   const captionChildren = useMemo(() => {
     if (!showMultipleMediaCaptions) return null;
-    const attachments = [];
-    displayedMediaAttachments.forEach((media, i) => {
-      if (!media.description) return;
-      const index = attachments.findIndex(
-        (attachment) => attachment.media.description === media.description,
-      );
-      if (index === -1) {
-        attachments.push({
-          media,
-          indices: [i],
-        });
-      } else {
-        attachments[index].indices.push(i);
-      }
-    });
+    interface CaptionAttachment {
+      media: mastodon.v1.MediaAttachment;
+      indices: number[];
+    }
+    const attachments: CaptionAttachment[] = [];
+    displayedMediaAttachments.forEach(
+      (media: mastodon.v1.MediaAttachment, i: number) => {
+        if (!media.description) return;
+        const index = attachments.findIndex(
+          (attachment) =>
+            attachment.media.description === media.description,
+        );
+        if (index === -1) {
+          attachments.push({
+            media,
+            indices: [i],
+          });
+        } else {
+          attachments[index].indices.push(i);
+        }
+      },
+    );
     return attachments.map(({ media, indices }) => (
       <div
         key={media.id}
-        data-caption-index={indices.map((i) => i + 1).join(' ')}
-        onClick={(e) => {
+        data-caption-index={indices.map((i: number) => i + 1).join(' ')}
+        onClick={(e: MouseEvent) => {
           e.preventDefault();
           e.stopPropagation();
           states.showMediaAlt = {
-            alt: media.description,
-            lang: language,
-          };
+            alt: media.description as string,
+            lang: language as string | undefined,
+          } as unknown as Record<string, unknown>;
         }}
-        title={media.description}
+        title={media.description ?? undefined}
       >
-        <sup>{indices.map((i) => i + 1).join(' ')}</sup> {media.description}
+        <sup>{indices.map((i: number) => i + 1).join(' ')}</sup>{' '}
+        {media.description}
       </div>
     ));
 
@@ -2073,9 +2409,13 @@ function Status({
   ]);
 
   // Keep this simple for now, unlike showCommentCount
+  // The prop may be passed as a function (custom predicate) or a boolean.
+  // Keep both shapes at the boundary; cast for the runtime check.
   const showQuoteCount =
     typeof forceShowQuoteCount === 'function'
-      ? forceShowQuoteCount(quotesCount)
+      ? (forceShowQuoteCount as (count: number | undefined) => boolean)(
+          quotesCount,
+        )
       : forceShowQuoteCount && quotesCount > 0;
 
   return (
@@ -2085,7 +2425,7 @@ function Status({
       )}
       <article
         data-state-post-id={sKey}
-        ref={(node) => {
+        ref={(node: HTMLElement | null) => {
           statusRef.current = node;
           // Use parent node if it's in focus
           // Use case: <a><status /></a>
@@ -2095,14 +2435,14 @@ function Status({
             node?.closest?.(
               '.timeline-item, .timeline-item-alt, .status-link, .status-focus',
             ) || node;
-          rRef.current = nodeRef;
-          fRef.current = nodeRef;
-          dRef.current = nodeRef;
-          bRef.current = nodeRef;
-          xRef.current = nodeRef;
-          qRef.current = nodeRef;
+          (rRef as { current: Element | null }).current = nodeRef;
+          (fRef as { current: Element | null }).current = nodeRef;
+          (dRef as { current: Element | null }).current = nodeRef;
+          (bRef as { current: Element | null }).current = nodeRef;
+          (xRef as { current: Element | null }).current = nodeRef;
+          (qRef as { current: Element | null }).current = nodeRef;
         }}
-        tabindex="-1"
+        tabindex={-1}
         class={`status ${
           !withinContext && inReplyToId && inReplyToAccount
             ? 'status-reply-to'
@@ -2113,22 +2453,22 @@ function Status({
           isContextMenuOpen ? 'status-menu-open' : ''
         } ${mediaFirst && hasMediaAttachments ? 'status-media-first' : ''}`}
         onMouseEnter={debugHover}
-        onContextMenu={(e) => {
+        onContextMenu={(e: MouseEvent) => {
           if (!showContextMenu) return;
           if (e.metaKey) return;
           // console.log('context menu', e);
-          const link = e.target.closest('a');
+          const link = (e.target as Element).closest('a');
           if (
             link &&
-            statusRef.current.contains(link) &&
-            !link.getAttribute('href').startsWith('#')
+            statusRef.current!.contains(link) &&
+            !link.getAttribute('href')!.startsWith('#')
           )
             return;
 
           // If there's selected text, don't show custom context menu
           const selection = window.getSelection?.();
-          if (selection.toString().length > 0) {
-            const { anchorNode } = selection;
+          if (selection!.toString().length > 0) {
+            const { anchorNode } = selection!;
             if (statusRef.current?.contains(anchorNode)) {
               return;
             }
@@ -2150,11 +2490,13 @@ function Status({
             ref={contextMenuRef}
             state={isContextMenuOpen ? 'open' : undefined}
             {...contextMenuProps}
-            onClose={(e) => {
+            onClose={(e?: { reason?: string }) => {
               setIsContextMenuOpen(false);
               // statusRef.current?.focus?.();
               if (e?.reason === 'click') {
-                statusRef.current?.closest('[tabindex]')?.focus?.();
+                (
+                  statusRef.current?.closest('[tabindex]') as HTMLElement | null
+                )?.focus?.();
               }
             }}
             portal={{
@@ -2196,14 +2538,14 @@ function Status({
                 iconSize="m"
                 // Menu doesn't work here
                 // Temporary solution: reply author-first if too many mentions
-                onClick={(e) => {
+                onClick={(e: LooseClickEvent) => {
                   haptics.trigger('light');
                   replyStatus(e, tooManyMentions ? 'author-first' : 'all');
                 }}
               />
               <StatusButton
                 size="s"
-                checked={favourited}
+                checked={favourited ?? undefined}
                 title={[t`Like`, t`Unlike`]}
                 alt={[t`Like`, t`Liked`]}
                 class="favourite-button"
@@ -2216,12 +2558,12 @@ function Status({
                 type="button"
                 title={t`More`}
                 class="plain more-button"
-                onClick={(e) => {
+                onClick={(e: MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
                   setContextMenuProps({
                     anchorRef: {
-                      current: e.currentTarget,
+                      current: e.currentTarget as Element,
                     },
                     align: 'start',
                     direction: 'left',
@@ -2259,19 +2601,26 @@ function Status({
         {size !== 's' && (
           <a
             href={accountURL}
-            tabindex="-1"
+            tabindex={-1}
             // target="_blank"
             title={`@${acct}`}
-            onClick={(e) => {
+            onClick={(e: MouseEvent) => {
               e.preventDefault();
               e.stopPropagation();
               states.showAccount = {
                 account: status.account,
                 instance,
-              };
+              } as unknown as Record<string, unknown>;
             }}
           >
-            <Avatar url={avatarStatic || avatar} size="xxl" squircle={bot} />
+            <Avatar
+              url={
+                (avatarStatic as string | undefined) ||
+                (avatar as string | undefined)
+              }
+              size="xxl"
+              squircle={bot as boolean | undefined}
+            />
           </a>
         )}
         <div class="container">
@@ -2284,7 +2633,9 @@ function Status({
             <div class="meta">
               <span class="meta-name">
                 <NameText
-                  account={status.account}
+                  account={
+                    status.account as unknown as NameTextAccountShim
+                  }
                   instance={instance}
                   showAvatar={size === 's'}
                   showAcct={isSizeLarge}
@@ -2293,7 +2644,9 @@ function Status({
               {withinContext && isThread && (
                 <ThreadBadge
                   showIcon={isSizeLarge}
-                  index={snapStates.statusThreadNumber[sKey]}
+                  index={
+                    snapStates.statusThreadNumber[sKey] as number | undefined
+                  }
                 />
               )}
               {/* {inReplyToAccount && !withinContext && size !== 's' && (
@@ -2314,7 +2667,7 @@ function Status({
                 ) : url && !previewMode && !readOnly && !quoted ? (
                   <Link
                     to={instance ? `/${instance}/s/${id}` : `/s/${id}`}
-                    onClick={(e) => {
+                    onClick={(e: MouseEvent) => {
                       if (
                         e.metaKey ||
                         e.ctrlKey ||
@@ -2329,7 +2682,7 @@ function Status({
                       onStatusLinkClick?.(e, status);
                       setContextMenuProps({
                         anchorRef: {
-                          current: e.currentTarget,
+                          current: e.currentTarget as Element,
                         },
                         align: 'end',
                         direction: 'bottom',
@@ -2454,7 +2807,9 @@ function Status({
                     <Icon icon="reply" />{' '}
                     {inReplyToAccount ? (
                       <NameText
-                        account={inReplyToAccount}
+                        account={
+                          inReplyToAccount as unknown as NameTextAccountShim
+                        }
                         instance={instance}
                         short
                       />
@@ -2469,7 +2824,7 @@ function Status({
             class={`content-container ${
               spoilerText ||
               sensitive ||
-              filterInfo?.action === 'blur' ||
+              filterInfoMaybe?.action === 'blur' ||
               readingExpandMedia === 'hide_all'
                 ? 'has-spoiler'
                 : ''
@@ -2478,9 +2833,11 @@ function Status({
             }`}
             data-content-text-weight={contentTextWeight ? textWeight() : null}
             style={
-              (isSizeLarge || contentTextWeight) && {
-                '--content-text-weight': textWeight(),
-              }
+              isSizeLarge || contentTextWeight
+                ? ({
+                    '--content-text-weight': textWeight(),
+                  } as unknown as JSX.CSSProperties)
+                : undefined
             }
           >
             {mediaFirst && hasMediaAttachments ? (
@@ -2490,7 +2847,7 @@ function Status({
                     {!!spoilerText && (
                       <span
                         class="spoiler-content media-first-spoiler-content"
-                        lang={language}
+                        lang={language ?? undefined}
                         dir="auto"
                         ref={spoilerContentRef}
                         data-read-more={_(readMoreText)}
@@ -2525,15 +2882,19 @@ function Status({
                   </>
                 )}
                 <MediaFirstContainer
-                  mediaAttachments={mediaAttachments}
-                  language={language}
-                  postID={id}
-                  instance={instance}
+                  mediaAttachments={
+                    mediaAttachments as unknown as Parameters<
+                      typeof MediaFirstContainer
+                    >[0]['mediaAttachments']
+                  }
+                  language={language ?? undefined}
+                  postID={id as string}
+                  instance={instance as string}
                 />
                 {!!content && (
                   <div class="media-first-content content" ref={contentRef}>
                     <PostContent
-                      post={status}
+                      post={status as unknown as Parameters<typeof PostContent>[0]['post']}
                       instance={instance}
                       previewMode={previewMode}
                     />
@@ -2546,7 +2907,7 @@ function Status({
                   <>
                     <div
                       class="content spoiler-content"
-                      lang={language}
+                      lang={language ?? undefined}
                       dir="auto"
                       ref={spoilerContentRef}
                       data-read-more={_(readMoreText)}
@@ -2596,7 +2957,7 @@ function Status({
                   >
                     <PostContent
                       key={reloadPostContentCount}
-                      post={status}
+                      post={status as unknown as Parameters<typeof PostContent>[0]['post']}
                       instance={instance}
                       previewMode={previewMode}
                     />
@@ -2606,36 +2967,47 @@ function Status({
                   <MathBlock
                     content={content}
                     contentRef={contentRef}
-                    onRevert={reloadPostContent}
+                    onRevert={reloadPostContent as unknown as () => void}
                   />
                 )}
                 {!!poll && (
                   <Poll
-                    lang={language}
-                    poll={poll}
-                    readOnly={readOnly || !sameInstance || !authenticated}
-                    onUpdate={(newPoll) => {
-                      states.statuses[sKey].poll = newPoll;
-                    }}
-                    refresh={() => {
-                      return masto.v1.polls
-                        .$select(poll.id)
-                        .fetch()
-                        .then((pollResponse) => {
-                          states.statuses[sKey].poll = pollResponse;
-                        })
-                        .catch((e) => {}); // Silently fail
-                    }}
-                    votePoll={(choices) => {
-                      return masto.v1.polls
-                        .$select(poll.id)
-                        .votes.create({
-                          choices,
-                        })
-                        .then((pollResponse) => {
-                          states.statuses[sKey].poll = pollResponse;
-                        });
-                    }}
+                    {...({
+                      lang: language ?? undefined,
+                      poll,
+                      readOnly: readOnly || !sameInstance || !authenticated,
+                      // `onUpdate` is unused by Poll but the JS callsite passed
+                      // it; preserve runtime by keeping it.
+                      onUpdate: (newPoll: unknown) => {
+                        (states.statuses[sKey] as Record<string, unknown>).poll =
+                          newPoll;
+                      },
+                      refresh: () => {
+                        return masto.v1.polls
+                          .$select(poll.id)
+                          .fetch()
+                          .then((pollResponse) => {
+                            (states.statuses[sKey] as Record<
+                              string,
+                              unknown
+                            >).poll = pollResponse;
+                          })
+                          .catch((_e: unknown) => {}); // Silently fail
+                      },
+                      votePoll: (choices: number[]) => {
+                        return masto.v1.polls
+                          .$select(poll.id)
+                          .votes.create({
+                            choices,
+                          })
+                          .then((pollResponse) => {
+                            (states.statuses[sKey] as Record<
+                              string,
+                              unknown
+                            >).poll = pollResponse;
+                          });
+                      },
+                    } as unknown as Parameters<typeof Poll>[0])}
                   />
                 )}
                 {(((enableTranslate || inlineTranslate) &&
@@ -2645,8 +3017,8 @@ function Status({
                   <TranslationBlock
                     forceTranslate={forceTranslate || inlineTranslate}
                     mini={!isSizeLarge && !withinContext}
-                    sourceLanguage={language}
-                    autoDetected={languageAutoDetected}
+                    sourceLanguage={language ?? undefined}
+                    autoDetected={!!languageAutoDetected}
                     text={getPostText(status, {
                       maskCustomEmojis: true,
                       maskURLs: true,
@@ -2658,11 +3030,11 @@ function Status({
                 )}
                 {!previewMode &&
                   (sensitive ||
-                    filterInfo?.action === 'blur' ||
+                    filterInfoMaybe?.action === 'blur' ||
                     readingExpandMedia === 'hide_all') &&
                   !!mediaAttachments.length &&
                   (readingExpandMedia !== 'show_all' ||
-                    filterInfo?.action === 'blur') && (
+                    filterInfoMaybe?.action === 'blur') && (
                     <button
                       class={`plain spoiler-media-button ${
                         showSpoilerMedia ? 'spoiling' : ''
@@ -2683,9 +3055,9 @@ function Status({
                         icon={showSpoilerMedia ? 'eye-open' : 'eye-close'}
                       />{' '}
                       <span>
-                        {filterInfo?.action === 'blur' && (
+                        {filterInfoMaybe?.action === 'blur' && (
                           <small>
-                            <Trans>Filtered: {filterInfo?.titlesStr}</Trans>
+                            <Trans>Filtered: {filterInfoMaybe?.titlesStr}</Trans>
                             <br />
                           </small>
                         )}
@@ -2697,29 +3069,37 @@ function Status({
                   (mediaAttachments.length > 1 &&
                   (isSizeLarge || (withinContext && size === 'm')) ? (
                     <div class="media-large-container">
-                      {mediaAttachments.map((media, i) => (
-                        <div key={media.id} class={`media-container media-eq1`}>
-                          <Media
-                            media={media}
-                            autoAnimate
-                            showCaption
-                            allowLongerCaption={!content || isSizeLarge}
-                            lang={language}
-                            to={`/${instance}/s/${id}?${
-                              withinContext ? 'media' : 'media-only'
-                            }=${i + 1}`}
-                            onClick={
-                              onMediaClick
-                                ? (e) => onMediaClick(e, i, media, status)
-                                : undefined
-                            }
-                          />
-                        </div>
-                      ))}
+                      {mediaAttachments.map(
+                        (media: mastodon.v1.MediaAttachment, i: number) => (
+                          <div
+                            key={media.id}
+                            class={`media-container media-eq1`}
+                          >
+                            <Media
+                              media={
+                                media as unknown as Parameters<typeof Media>[0]['media']
+                              }
+                              autoAnimate
+                              showCaption
+                              allowLongerCaption={!content || isSizeLarge}
+                              lang={language ?? undefined}
+                              to={`/${instance}/s/${id}?${
+                                withinContext ? 'media' : 'media-only'
+                              }=${i + 1}`}
+                              onClick={
+                                onMediaClick
+                                  ? (e: MouseEvent) =>
+                                      onMediaClick(e, i, media, status)
+                                  : undefined
+                              }
+                            />
+                          </div>
+                        ),
+                      )}
                     </div>
                   ) : (
                     <MultipleMediaFigure
-                      lang={language}
+                      lang={language ?? undefined}
                       enabled={showMultipleMediaCaptions}
                       captionChildren={captionChildren}
                     >
@@ -2731,43 +3111,50 @@ function Status({
                           mediaAttachments.length > 4 ? 'media-gt4' : ''
                         }`}
                       >
-                        {displayedMediaAttachments.map((media, i) => (
-                          <Media
-                            key={media.id}
-                            media={media}
-                            autoAnimate={isSizeLarge}
-                            showCaption={mediaAttachments.length === 1}
-                            allowLongerCaption={
-                              !content && mediaAttachments.length === 1
-                            }
-                            lang={language}
-                            altIndex={
-                              showMultipleMediaCaptions &&
-                              !!media.description &&
-                              i + 1
-                            }
-                            to={`/${instance}/s/${id}?${
-                              withinContext ? 'media' : 'media-only'
-                            }=${i + 1}`}
-                            onClick={
-                              onMediaClick
-                                ? (e) => {
-                                    onMediaClick(e, i, media, status);
-                                  }
-                                : undefined
-                            }
-                            checkAspectRatio={mediaAttachments.length === 1}
-                          />
-                        ))}
+                        {displayedMediaAttachments.map(
+                          (media: mastodon.v1.MediaAttachment, i: number) => (
+                            <Media
+                              key={media.id}
+                              media={
+                                media as unknown as Parameters<typeof Media>[0]['media']
+                              }
+                              autoAnimate={isSizeLarge}
+                              showCaption={mediaAttachments.length === 1}
+                              allowLongerCaption={
+                                !content && mediaAttachments.length === 1
+                              }
+                              lang={language ?? undefined}
+                              altIndex={
+                                showMultipleMediaCaptions &&
+                                !!media.description
+                                  ? i + 1
+                                  : undefined
+                              }
+                              to={`/${instance}/s/${id}?${
+                                withinContext ? 'media' : 'media-only'
+                              }=${i + 1}`}
+                              onClick={
+                                onMediaClick
+                                  ? (e: MouseEvent) => {
+                                      onMediaClick(e, i, media, status);
+                                    }
+                                  : undefined
+                              }
+                              checkAspectRatio={mediaAttachments.length === 1}
+                            />
+                          ),
+                        )}
                       </div>
                     </MultipleMediaFigure>
                   ))}
                 <QuoteStatuses
                   id={id}
                   instance={instance}
-                  level={quoted}
+                  level={typeof quoted === 'number' ? quoted : undefined}
                   collapsed={!isSizeLarge && !withinContext}
-                  fallbackQuote={quote}
+                  fallbackQuote={
+                    quote as unknown as FallbackQuote | null | undefined
+                  }
                 />
                 {!!card &&
                   /^https/i.test(card?.url) &&
@@ -2777,12 +3164,15 @@ function Status({
                   !mediaAttachments.length &&
                   !snapStates.statusQuotes[sKey] && (
                     <StatusCard
-                      card={card}
+                      card={
+                        card as unknown as Parameters<typeof StatusCard>[0]['card']
+                      }
                       selfReferential={
                         card?.url === status.url || card?.url === status.uri
                       }
                       selfAuthor={card?.authors?.some(
-                        (a) => a.account?.url === accountURL,
+                        (a: mastodon.v1.PreviewCardAuthor) =>
+                          a.account?.url === accountURL,
                       )}
                       instance={currentInstance}
                     />
@@ -2816,7 +3206,7 @@ function Status({
                   <>
                     <Icon icon={visibilityIconsMap[visibility]} alt="" />{' '}
                     <span>{_(visibilityText[visibility])}</span> &bull;{' '}
-                    <a href={url} target="_blank" rel="noopener">
+                    <a href={url ?? undefined} target="_blank" rel="noopener">
                       {
                         // within a day
                         Date.now() - createdAtDate.getTime() < 86400000 && (
@@ -2844,7 +3234,7 @@ function Status({
                         {' '}
                         &bull; <Icon icon="pencil" alt={t`Edited`} />{' '}
                         <time
-                          tabIndex="0"
+                          tabIndex={0}
                           class="edited"
                           datetime={editedAtDate.toISOString()}
                           onClick={() => {
@@ -2860,8 +3250,20 @@ function Status({
               </div>
               {!!emojiReactions?.length && (
                 <div class="emoji-reactions">
-                  {emojiReactions.map((emojiReaction) => {
-                    const { name, count, me, url, staticUrl } = emojiReaction;
+                  {emojiReactions.map((emojiReaction: Record<string, unknown>) => {
+                    const {
+                      name,
+                      count,
+                      me,
+                      url,
+                      staticUrl,
+                    } = emojiReaction as {
+                      name: string;
+                      count?: number;
+                      me?: boolean;
+                      url?: string;
+                      staticUrl?: string;
+                    };
                     if (url) {
                       // Some servers return url and staticUrl
                       return (
@@ -2881,8 +3283,8 @@ function Status({
                     }
                     const isShortCode = /^:.+?:$/.test(name);
                     if (isShortCode) {
-                      const emoji = emojis.find(
-                        (e) =>
+                      const emoji = emojis?.find(
+                        (e: mastodon.v1.CustomEmoji) =>
                           e.shortcode ===
                           name.replace(/^:/, '').replace(/:$/, ''),
                       );
@@ -3037,50 +3439,51 @@ function Status({
                     menuFooter={menuFooter}
                   >
                     <StatusButton
-                      checked={reblogged}
-                      title={[
-                        canQuote ? t`Boost/Quote…` : t`Boost…`,
-                        t`Unboost`,
-                      ]}
-                      alt={[t`Boost`, t`Boosted`]}
-                      class="reblog-button"
-                      icon={
-                        reblogsCount <= 0 && quotesCount > 0
-                          ? 'quote'
-                          : 'rocket'
-                      }
-                      count={reblogsCount}
-                      extraCount={quotesCount}
-                      // onClick={boostStatus}
-                      disabled={!canBoost}
+                      {...({
+                        checked: reblogged ?? undefined,
+                        title: [
+                          canQuote ? t`Boost/Quote…` : t`Boost…`,
+                          t`Unboost`,
+                        ],
+                        alt: [t`Boost`, t`Boosted`],
+                        class: 'reblog-button',
+                        icon:
+                          reblogsCount <= 0 && quotesCount > 0
+                            ? 'quote'
+                            : 'rocket',
+                        count: reblogsCount,
+                        extraCount: quotesCount,
+                        // onClick={boostStatus}
+                        disabled: !canBoost,
+                      } as unknown as Parameters<typeof StatusButton>[0])}
                     />
                   </MenuConfirm>
                 </div>
                 <div class="action has-count">
                   <StatusButton
-                    checked={favourited}
+                    checked={favourited ?? undefined}
                     title={[t`Like`, t`Unlike`]}
                     alt={[t`Like`, t`Liked`]}
                     class="favourite-button"
                     icon="heart"
                     count={favouritesCount}
-                    onClick={(e) => {
+                    onClick={(_e: LooseClickEvent) => {
                       haptics.trigger('light');
-                      favouriteStatus(e);
+                      favouriteStatus();
                     }}
                   />
                 </div>
                 {supports('@mastodon/post-bookmark') && (
                   <div class="action">
                     <StatusButton
-                      checked={bookmarked}
+                      checked={bookmarked ?? undefined}
                       title={[t`Bookmark`, t`Unbookmark`]}
                       alt={[t`Bookmark`, t`Bookmarked`]}
                       class="bookmark-button"
                       icon="bookmark"
-                      onClick={(e) => {
+                      onClick={(_e: LooseClickEvent) => {
                         haptics.trigger('light');
-                        bookmarkStatus(e);
+                        bookmarkStatus();
                       }}
                     />
                   </div>
@@ -3122,11 +3525,15 @@ function Status({
             }}
           >
             <EditedAtModal
-              statusID={showEdited}
+              statusID={showEdited as string}
               instance={instance}
-              fetchStatusHistory={() => {
-                return masto.v1.statuses.$select(showEdited).history.list();
-              }}
+              fetchStatusHistory={
+                (() => {
+                  return masto.v1.statuses
+                    .$select(showEdited as string)
+                    .history.list();
+                }) as unknown as () => Promise<AnyStatus[] | undefined>
+              }
               onClose={() => {
                 setShowEdited(false);
                 statusRef.current?.focus();
@@ -3141,7 +3548,7 @@ function Status({
             }}
           >
             <PostEmbedModal
-              post={status}
+              post={status as unknown as Parameters<typeof PostEmbedModal>[0]['post']}
               instance={instance}
               onClose={() => {
                 setShowEmbed(false);
@@ -3161,7 +3568,7 @@ function Status({
                 setShowQuoteSettings(false);
                 states.reloadStatusPage++;
               }}
-              post={status}
+              post={status as unknown as Parameters<typeof QuoteSettingsSheet>[0]['post']}
               currentPolicy={postQuoteApprovalPolicy}
             />
           </Modal>
@@ -3201,7 +3608,7 @@ function Status({
   );
 }
 
-function nicePostURL(url) {
+function nicePostURL(url: string | null | undefined) {
   if (!url) return;
   const urlObj = URL.parse(url);
   if (!urlObj) return;
@@ -3247,14 +3654,33 @@ const unfulfilledText = {
   unauthorized: msg`Post unavailable`,
   rejected: msg`Post unavailable`,
   revoked: msg`Post removed by author`,
-  blocked_account: (name) => msg`Post hidden because you've blocked @${name}.`,
-  blocked_domain: (domain) =>
+  blocked_account: (name: string) =>
+    msg`Post hidden because you've blocked @${name}.`,
+  blocked_domain: (domain: string) =>
     msg`Post hidden because you've blocked ${domain}.`,
-  muted_account: (name) => msg`Post hidden because you've muted @${name}.`,
+  muted_account: (name: string) =>
+    msg`Post hidden because you've muted @${name}.`,
 };
 
-const QuoteStatus = memo(({ quote, level = 0 }) => {
-  const { _ } = useLingui();
+interface QuoteRef {
+  id?: string | null;
+  instance?: string;
+  state?: string;
+  native?: boolean;
+  url?: string;
+  quoteStatus?: AnyStatus | null;
+  originalDomain?: string;
+  account?: AnyAccount | null;
+}
+
+interface QuoteStatusProps {
+  quote: QuoteRef;
+  level?: number;
+}
+
+const QuoteStatus = memo(({ quote, level = 0 }: QuoteStatusProps) => {
+  const { i18n } = useLingui();
+  const _ = i18n._.bind(i18n);
   const snapStates = useSnapshot(states);
   const filterContext = useContext(FilterContext);
   const currentAccount = getCurrentAccID();
@@ -3265,14 +3691,22 @@ const QuoteStatus = memo(({ quote, level = 0 }) => {
   // Static as in there's no live update (edited, liked, etc.)
   const isStaticQuote = !!q.quoteStatus;
 
-  const quoteStatus =
-    snapStates.statuses[statusKey(q.id, q.instance)] || q.quoteStatus;
+  const quoteStatusKey = statusKey(q.id, q.instance);
+  const quoteStatus = ((quoteStatusKey
+    ? snapStates.statuses[quoteStatusKey]
+    : undefined) || q.quoteStatus) as unknown as
+    | AnyStatus
+    | null
+    | undefined;
   if (quoteStatus) {
     const isSelf = currentAccount && currentAccount === quoteStatus.account?.id;
-    const filterInfo =
-      !isSelf && isFiltered(quoteStatus.filtered, filterContext);
+    const filterInfo = (!isSelf &&
+      isFiltered(
+        quoteStatus.filtered as readonly mastodon.v1.FilterResult[] | undefined,
+        filterContext as string,
+      )) as { action?: string } | false;
 
-    if (filterInfo?.action === 'hide') {
+    if (filterInfo && filterInfo.action === 'hide') {
       unfulfilledState = 'filterHidden';
     }
   }
@@ -3283,27 +3717,38 @@ const QuoteStatus = memo(({ quote, level = 0 }) => {
     );
   }
 
-  const isRevealable = revealableUnfulfilledStates.includes(unfulfilledState);
+  const isRevealable = revealableUnfulfilledStates.includes(
+    unfulfilledState as string,
+  );
   const quoteKey = q.id ? statusKey(q.id, q.instance) : null;
   const isRevealed = quoteKey && snapStates.revealedQuotes[quoteKey];
 
   if (unfulfilledState && (!isRevealable || !isRevealed)) {
     // Get account info for revealable states
-    const quotedAccount = quoteStatus?.account;
+    const quotedAccount = quoteStatus?.account as
+      | { acct?: string }
+      | null
+      | undefined;
     const quotedAccountAcct = quotedAccount?.acct;
     const domain = quotedAccountAcct?.split('@')[1];
 
-    let message;
+    let message: string | undefined;
     if (isRevealable) {
       if (unfulfilledState === 'blocked_account') {
-        message = _(unfulfilledText.blocked_account(quotedAccountAcct));
+        message = _(
+          unfulfilledText.blocked_account(quotedAccountAcct as string),
+        );
       } else if (unfulfilledState === 'blocked_domain') {
-        message = _(unfulfilledText.blocked_domain(domain));
+        message = _(unfulfilledText.blocked_domain(domain as string));
       } else if (unfulfilledState === 'muted_account') {
-        message = _(unfulfilledText.muted_account(quotedAccountAcct));
+        message = _(
+          unfulfilledText.muted_account(quotedAccountAcct as string),
+        );
       }
     } else {
-      message = _(unfulfilledText[unfulfilledState]);
+      message = _(
+        unfulfilledText[unfulfilledState as keyof typeof unfulfilledText] as unknown as Parameters<typeof _>[0],
+      );
     }
 
     return (
@@ -3333,10 +3778,15 @@ const QuoteStatus = memo(({ quote, level = 0 }) => {
   }
 
   const Parent = q.native ? Fragment : LazyShazam;
+  // Original JS code concats q.instance + q.id directly; undefined entries
+  // would coerce to the string "undefined" at runtime. Cast through unknown
+  // to keep that behavior intact.
+  const qKey = ((q.instance as unknown as string) +
+    (q.id as unknown as string)) as string;
   return (
-    <Parent id={q.instance + q.id} key={q.instance + q.id}>
+    <Parent id={qKey} key={qKey}>
       <Link
-        key={q.instance + q.id}
+        key={qKey}
         to={`${q.instance ? `/${q.instance}` : ''}/s/${q.id}`}
         class={`status-card-link ${q.native ? 'quote-post-native' : ''}`}
         data-read-more={_(readMoreText)}
@@ -3355,8 +3805,8 @@ const QuoteStatus = memo(({ quote, level = 0 }) => {
   );
 });
 
-const ShallowQuote = ({ quote } = {}) => {
-  const { account, native, instance } = quote || {};
+const ShallowQuote = ({ quote }: { quote?: QuoteRef } = {}) => {
+  const { account, native, instance } = quote || ({} as QuoteRef);
   if (!account) return null;
   return (
     <div class="status-card-container">
@@ -3370,18 +3820,42 @@ const ShallowQuote = ({ quote } = {}) => {
   );
 };
 
+interface FallbackQuote {
+  quotedStatus?: AnyStatus | null;
+  id?: string | null;
+  state?: string;
+}
+
+interface QuoteStatusesProps {
+  id?: string | null;
+  instance?: string;
+  level?: number;
+  collapsed?: boolean;
+  fallbackQuote?: FallbackQuote | null;
+}
+
 const QuoteStatuses = memo(
-  ({ id, instance, level = 0, collapsed = false, fallbackQuote }) => {
+  ({
+    id,
+    instance,
+    level = 0,
+    collapsed = false,
+    fallbackQuote,
+  }: QuoteStatusesProps) => {
     if (!id || !instance) return;
-    const { _ } = useLingui();
+    const { i18n } = useLingui();
+    const _ = i18n._.bind(i18n);
     const snapStates = useSnapshot(states);
     const sKey = statusKey(id, instance);
-    const quotes = snapStates.statusQuotes[sKey];
+    const quotes = (sKey
+      ? snapStates.statusQuotes[sKey]
+      : undefined) as readonly QuoteRef[] | undefined;
     let uniqueQuotes = quotes?.filter(
-      (q, i, arr) => q.native || arr.findIndex((q2) => q2.url === q.url) === i,
+      (q: QuoteRef, i: number, arr: readonly QuoteRef[]) =>
+        q.native || arr.findIndex((q2) => q2.url === q.url) === i,
     );
 
-    const containerRef = useTruncated();
+    const containerRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
 
     if (!uniqueQuotes?.length && fallbackQuote?.quotedStatus) {
       // Just render it
@@ -3436,15 +3910,24 @@ const QuoteStatuses = memo(
   },
 );
 
+interface EditedAtModalProps {
+  statusID?: string | null;
+  instance?: string;
+  fetchStatusHistory?: () => Promise<AnyStatus[] | undefined>;
+  onClose?: () => void;
+}
+
 function EditedAtModal({
   statusID,
   instance,
-  fetchStatusHistory = () => {},
+  fetchStatusHistory = () => Promise.resolve([]),
   onClose,
-}) {
+}: EditedAtModalProps) {
   const { t } = useLingui();
-  const [uiState, setUIState] = useState('default');
-  const [editHistory, setEditHistory] = useState([]);
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
+  const [editHistory, setEditHistory] = useState<AnyStatus[]>([]);
 
   useEffect(() => {
     setUIState('loading');
@@ -3452,7 +3935,7 @@ function EditedAtModal({
       try {
         const editHistory = await fetchStatusHistory();
         console.log(editHistory);
-        setEditHistory(editHistory);
+        setEditHistory((editHistory ?? []) as AnyStatus[]);
         setUIState('default');
       } catch (e) {
         console.error(e);
@@ -3483,12 +3966,12 @@ function EditedAtModal({
           </p>
         )}
       </header>
-      <main tabIndex="-1">
+      <main tabIndex={-1}>
         {editHistory.length > 0 && (
           <ol>
-            {editHistory.map((status) => {
+            {editHistory.map((status: AnyStatus) => {
               const { createdAt } = status;
-              const createdAtDate = new Date(createdAt);
+              const createdAtDate = new Date(createdAt as unknown as string);
               return (
                 <li key={createdAt} class="history-item">
                   <h3>
@@ -3519,6 +4002,19 @@ function EditedAtModal({
   );
 }
 
+interface FilteredStatusProps {
+  status: AnyStatus;
+  filterInfo?: {
+    action?: 'hide' | 'blur' | 'warn';
+    titles?: string[];
+    titlesStr?: string;
+  };
+  instance?: string;
+  containerProps?: JSX.HTMLAttributes<HTMLDivElement>;
+  showFollowedTags?: boolean;
+  quoted?: number | boolean;
+}
+
 function FilteredStatus({
   status,
   filterInfo,
@@ -3526,20 +4022,26 @@ function FilteredStatus({
   containerProps = {},
   showFollowedTags,
   quoted,
-}) {
-  const { _, t } = useLingui();
+}: FilteredStatusProps) {
+  const { t, i18n } = useLingui();
+  const _ = i18n._.bind(i18n);
   const snapStates = useSnapshot(states);
   const {
     id: statusID,
-    account: { avatar, avatarStatic, bot, group },
+    account: { avatar, avatarStatic, bot, group } = {} as Partial<AnyAccount>,
     createdAt,
     visibility,
     reblog,
-  } = status;
+  } = status as AnyStatus & {
+    account?: Partial<AnyAccount>;
+    reblog?: AnyStatus | null;
+  };
   const isReblog = !!reblog;
   const filterTitleStr = filterInfo?.titlesStr || '';
-  const createdAtDate = new Date(createdAt);
-  const statusPeekText = statusPeek(status.reblog || status);
+  const createdAtDate = new Date(createdAt as unknown as string);
+  const statusPeekText = statusPeek(
+    ((reblog || status) as unknown) as Parameters<typeof statusPeek>[0],
+  );
 
   const [showPeek, setShowPeek] = useState(false);
   const bindLongPressPeek = useLongPress(
@@ -3551,22 +4053,29 @@ function FilteredStatus({
       captureEvent: true,
       detect: 'touch',
       cancelOnMovement: 2, // true allows movement of up to 25 pixels
-    },
+    } as unknown as Parameters<typeof useLongPress>[1],
   );
 
-  const statusPeekRef = useTruncated();
-  const sKey = statusKey(status.id, instance);
+  const statusPeekRef =
+    useTruncated() as unknown as RefObject<HTMLAnchorElement>;
+  const sKey = statusKey(status.id as string, instance);
   const ssKey =
-    statusKey(status.id, instance) +
+    statusKey(status.id as string, instance) +
     ' ' +
-    (statusKey(reblog?.id, instance) || '');
+    (statusKey(reblog?.id as string | undefined, instance) || '');
 
   const actualStatusID = reblog?.id || statusID;
   const url = instance
     ? `/${instance}/s/${actualStatusID}`
     : `/s/${actualStatusID}`;
   const isFollowedTags =
-    showFollowedTags && !!snapStates.statusFollowedTags[sKey]?.length;
+    showFollowedTags &&
+    !!(
+      sKey &&
+      (
+        snapStates.statusFollowedTags[sKey] as readonly unknown[] | undefined
+      )?.length
+    );
 
   return (
     <div
@@ -3583,7 +4092,7 @@ function FilteredStatus({
       } visibility-${visibility}`}
       {...containerProps}
       // title={statusPeekText}
-      onContextMenu={(e) => {
+      onContextMenu={(e: MouseEvent) => {
         e.preventDefault();
         setShowPeek(true);
       }}
@@ -3592,12 +4101,12 @@ function FilteredStatus({
       <article
         data-state-post-id={ssKey}
         class={`status filtered ${quoted ? 'status-card' : ''}`}
-        tabindex="-1"
+        tabindex={-1}
       >
         <b
           class="status-filtered-badge clickable badge-meta"
           title={filterTitleStr}
-          onClick={(e) => {
+          onClick={(e: MouseEvent) => {
             e.preventDefault();
             setShowPeek(true);
           }}
@@ -3607,31 +4116,67 @@ function FilteredStatus({
           </span>
           <span>{filterTitleStr}</span>
         </b>{' '}
-        <Avatar url={avatarStatic || avatar} squircle={bot} />
+        <Avatar
+          url={
+            (avatarStatic as string | undefined) ||
+            (avatar as string | undefined)
+          }
+          squircle={bot as boolean | undefined}
+        />
         <span class="status-filtered-info">
           <span class="status-filtered-info-1">
             {isReblog ? (
               <Trans comment="[Name] [Visibility icon] boosted">
-                <NameText account={status.account} instance={instance} />{' '}
+                <NameText
+                  account={
+                    status.account as unknown as NameTextAccountShim
+                  }
+                  instance={instance}
+                />{' '}
                 <Icon
-                  icon={visibilityIconsMap[visibility]}
-                  alt={_(visibilityText[visibility])}
+                  icon={
+                    visibilityIconsMap[
+                      visibility as keyof typeof visibilityIconsMap
+                    ]
+                  }
+                  alt={_(
+                    visibilityText[
+                      visibility as keyof typeof visibilityText
+                    ],
+                  )}
                   size="s"
                 />{' '}
                 boosted
               </Trans>
             ) : isFollowedTags ? (
               <>
-                <NameText account={status.account} instance={instance} />{' '}
+                <NameText
+                  account={
+                    status.account as unknown as NameTextAccountShim
+                  }
+                  instance={instance}
+                />{' '}
                 <Icon
-                  icon={visibilityIconsMap[visibility]}
-                  alt={_(visibilityText[visibility])}
+                  icon={
+                    visibilityIconsMap[
+                      visibility as keyof typeof visibilityIconsMap
+                    ]
+                  }
+                  alt={_(
+                    visibilityText[
+                      visibility as keyof typeof visibilityText
+                    ],
+                  )}
                   size="s"
                 />{' '}
                 <span>
-                  {snapStates.statusFollowedTags[sKey]
+                  {(
+                    snapStates.statusFollowedTags[sKey as string] as
+                      | readonly string[]
+                      | undefined
+                  )!
                     .slice(0, 3)
-                    .map((tag) => (
+                    .map((tag: string) => (
                       <span key={tag} class="status-followed-tag-item">
                         #{tag}
                       </span>
@@ -3640,10 +4185,23 @@ function FilteredStatus({
               </>
             ) : (
               <>
-                <NameText account={status.account} instance={instance} />{' '}
+                <NameText
+                  account={
+                    status.account as unknown as NameTextAccountShim
+                  }
+                  instance={instance}
+                />{' '}
                 <Icon
-                  icon={visibilityIconsMap[visibility]}
-                  alt={_(visibilityText[visibility])}
+                  icon={
+                    visibilityIconsMap[
+                      visibility as keyof typeof visibilityIconsMap
+                    ]
+                  }
+                  alt={_(
+                    visibilityText[
+                      visibility as keyof typeof visibilityText
+                    ],
+                  )}
                   size="s"
                 />{' '}
                 <RelativeTime datetime={createdAtDate} format="micro" />
@@ -3654,8 +4212,14 @@ function FilteredStatus({
             {isReblog && (
               <>
                 <Avatar
-                  url={reblog.account.avatarStatic || reblog.account.avatar}
-                  squircle={bot}
+                  url={
+                    (reblog.account as Partial<AnyAccount>)
+                      .avatarStatic as string | undefined ||
+                    ((reblog.account as Partial<AnyAccount>).avatar as
+                      | string
+                      | undefined)
+                  }
+                  squircle={bot as boolean | undefined}
                 />{' '}
               </>
             )}
@@ -3665,7 +4229,7 @@ function FilteredStatus({
       </article>
       {!!showPeek && (
         <Modal
-          onClick={(e) => {
+          onClick={(e: MouseEvent) => {
             if (e.target === e.currentTarget) {
               setShowPeek(false);
             }
@@ -3685,7 +4249,7 @@ function FilteredStatus({
               </b>{' '}
               {filterTitleStr}
             </header>
-            <main tabIndex="-1">
+            <main tabIndex={-1}>
               <Link
                 ref={statusPeekRef}
                 class="status-link"
