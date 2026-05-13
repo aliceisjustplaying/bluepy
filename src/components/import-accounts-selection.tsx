@@ -1,32 +1,74 @@
 import './import-accounts-selection.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import type { ComponentType } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 
 import states from '../utils/states';
-import { getAccounts, saveAccounts } from '../utils/store-utils';
+import {
+  getAccounts,
+  saveAccounts,
+  type StoredAccount,
+} from '../utils/store-utils';
 
-import Avatar from './avatar';
+import AvatarUntyped from './avatar';
 import Icon from './icon';
 import Loader from './loader';
-import NameText from './name-text';
+import NameTextUntyped from './name-text';
 
-function ImportAccountsSelection({ accounts: importedAccounts, onClose }) {
+const Avatar = AvatarUntyped as unknown as ComponentType<{
+  url?: string;
+  staticUrl?: string;
+  size?: string | number;
+  alt?: string;
+  squircle?: boolean;
+  [key: string]: unknown;
+}>;
+
+const NameText = NameTextUntyped as unknown as ComponentType<{
+  account?: unknown;
+  instance?: string;
+  showAvatar?: boolean;
+  showAcct?: boolean;
+  short?: boolean;
+  external?: boolean;
+  onClick?: (event: Event) => void;
+  [key: string]: unknown;
+}>;
+
+type ImportStatus = 'duplicate' | 'new';
+
+type ImportableAccount = StoredAccount & { __status: ImportStatus };
+
+interface ImportAccountsSelectionProps {
+  accounts: StoredAccount[];
+  onClose: () => void;
+}
+
+function ImportAccountsSelection({
+  accounts: importedAccounts,
+  onClose,
+}: ImportAccountsSelectionProps) {
   const { t } = useLingui();
   const existingAccounts = getAccounts();
 
-  const { accountsToImport } = useMemo(() => {
+  const { accountsToImport } = useMemo<{
+    accountsToImport: ImportableAccount[];
+  }>(() => {
     if (!importedAccounts) return { accountsToImport: [] };
 
-    const statusOrder = { duplicate: 0, new: 1 };
-    const accountsToImport = importedAccounts
+    const statusOrder: Record<ImportStatus, number> = {
+      duplicate: 0,
+      new: 1,
+    };
+    const accountsToImport: ImportableAccount[] = importedAccounts
       .map((account) => {
         const existing = existingAccounts.find(
           (a) =>
             a.info.id === account.info.id &&
             a.instanceURL === account.instanceURL,
         );
-        const status = existing ? 'duplicate' : 'new';
+        const status: ImportStatus = existing ? 'duplicate' : 'new';
         return {
           ...account,
           __status: status,
@@ -39,8 +81,10 @@ function ImportAccountsSelection({ accounts: importedAccounts, onClose }) {
     return { accountsToImport };
   }, [importedAccounts, existingAccounts]);
 
-  const [selectedAccounts, setSelectedAccounts] = useState(() => {
-    const initialSelection = {};
+  const [selectedAccounts, setSelectedAccounts] = useState<
+    Record<string, boolean>
+  >(() => {
+    const initialSelection: Record<string, boolean> = {};
     accountsToImport.forEach((a) => {
       if (a.__status === 'duplicate') {
         initialSelection[a.info.id + a.instanceURL] = false;
@@ -51,11 +95,11 @@ function ImportAccountsSelection({ accounts: importedAccounts, onClose }) {
     return initialSelection;
   });
 
-  const [uiState, setUIState] = useState('default');
+  const [uiState, setUIState] = useState<string>('default');
 
   const handleImportSelection = () => {
     setUIState('importing');
-    const newAccounts = [
+    const newAccounts: StoredAccount[] = [
       ...existingAccounts,
       ...importedAccounts.filter(
         (account) => selectedAccounts[account.info.id + account.instanceURL],
@@ -103,7 +147,7 @@ function ImportAccountsSelection({ accounts: importedAccounts, onClose }) {
                   }
                   onChange={(e) => {
                     const newSelection = { ...selectedAccounts };
-                    const shouldSelect = e.target.checked;
+                    const shouldSelect = (e.target as HTMLInputElement).checked;
                     accountsToImport.forEach((a) => {
                       if (a.__status !== 'duplicate') {
                         newSelection[a.info.id + a.instanceURL] = shouldSelect;
@@ -133,21 +177,24 @@ function ImportAccountsSelection({ accounts: importedAccounts, onClose }) {
                       onChange={(e) => {
                         setSelectedAccounts({
                           ...selectedAccounts,
-                          [key]: e.target.checked,
+                          [key]: (e.target as HTMLInputElement).checked,
                         });
                       }}
                       disabled={
                         uiState === 'importing' || status === 'duplicate'
                       }
                     />
-                    <Avatar url={account.info.avatarStatic} size="xl" />
+                    <Avatar
+                      url={account.info.avatarStatic as string | undefined}
+                      size="xl"
+                    />
                     <div class="account-info">
                       <NameText
                         account={{
                           ...account.info,
-                          acct: /@/.test(account.info.acct)
-                            ? account.info.acct
-                            : `${account.info.acct}@${account.instanceURL}`,
+                          acct: /@/.test(account.info.acct as string)
+                            ? (account.info.acct as string)
+                            : `${account.info.acct as string}@${account.instanceURL}`,
                         }}
                         showAcct
                       />
