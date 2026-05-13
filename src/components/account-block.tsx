@@ -1,6 +1,8 @@
 import './account-block.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { JSX } from 'preact';
 
 // import { useNavigate } from 'react-router-dom';
 import enhanceContent from '../utils/enhance-content';
@@ -12,6 +14,24 @@ import Avatar from './avatar';
 import EmojiText from './emoji-text';
 import Icon from './icon';
 import RolesTags from './roles-tags';
+
+interface AccountBlockProps {
+  skeleton?: boolean;
+  account?: mastodon.v1.Account | null;
+  avatarSize?: string;
+  avatarDescription?: string;
+  useAvatarStatic?: boolean;
+  instance?: string;
+  external?: boolean;
+  internal?: boolean;
+  onClick?: (e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => void;
+  showActivity?: boolean;
+  showStats?: boolean;
+  accountInstance?: string;
+  hideDisplayName?: boolean;
+  relationship?: Partial<mastodon.v1.Relationship> | null;
+  excludeRelationshipAttrs?: readonly string[];
+}
 
 function AccountBlock({
   skeleton,
@@ -29,7 +49,7 @@ function AccountBlock({
   hideDisplayName = false,
   relationship = {},
   excludeRelationshipAttrs = [],
-}) {
+}: AccountBlockProps) {
   const { t } = useLingui();
   if (skeleton) {
     return (
@@ -77,10 +97,11 @@ function AccountBlock({
 
   const verifiedField = fields?.find((f) => !!f.verifiedAt && !!f.value);
 
-  const excludedRelationship = {};
-  for (const r in relationship) {
+  const excludedRelationship: Record<string, unknown> = {};
+  const relationshipRecord = relationship as Record<string, unknown>;
+  for (const r in relationshipRecord) {
     if (!excludeRelationshipAttrs.includes(r)) {
-      excludedRelationship[r] = relationship[r];
+      excludedRelationship[r] = relationshipRecord[r];
     }
   }
   const hasRelationship =
@@ -92,7 +113,7 @@ function AccountBlock({
     <a
       class="account-block"
       href={url}
-      target={external ? '_blank' : null}
+      target={external ? '_blank' : undefined}
       title={acct2 ? acct : `@${acct}`}
       onClick={(e) => {
         if (external) return;
@@ -181,7 +202,7 @@ function AccountBlock({
               </>
             )}
             {hasRelationship && (
-              <div key={relationship.id} class="shazam-container-horizontal">
+              <div key={relationship?.id} class="shazam-container-horizontal">
                 <div class="shazam-container-inner">
                   {excludedRelationship.following &&
                   excludedRelationship.followedBy ? (
@@ -218,7 +239,9 @@ function AccountBlock({
                 <Icon icon="check-circle" size="s" alt={t`Verified`} />{' '}
                 <span
                   dangerouslySetInnerHTML={{
-                    __html: enhanceContent(verifiedField.value, { emojis }),
+                    __html: enhanceContent(verifiedField.value, {
+                      emojis,
+                    }) as string,
                   }}
                 />
               </span>

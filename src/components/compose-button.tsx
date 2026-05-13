@@ -1,5 +1,8 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu, MenuDivider, MenuItem } from '@szhsin/react-menu';
+import type { MenuInstance } from '@szhsin/react-menu';
+import type { mastodon } from 'masto';
+import type { JSX } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useLongPress } from 'use-long-press';
@@ -23,10 +26,34 @@ import MenuLink from './menu-link';
 import RelativeTime from './relative-time';
 import SubMenu2 from './submenu2';
 
+// Minimal shape of the masto client surface used here. The shared
+// MastoClient interface in utils/api intentionally keeps v1 endpoints loose
+// (`[key: string]: unknown`), so we narrow locally for type-safe calls.
+interface AccountStatusesEndpoint {
+  readonly v1: {
+    readonly accounts: {
+      $select(id: string): {
+        readonly statuses: {
+          list(params: {
+            limit: number;
+            exclude_replies: boolean;
+            exclude_reblogs: boolean;
+          }): {
+            values(): AsyncIterator<mastodon.v1.Status[]>;
+          };
+        };
+      };
+    };
+  };
+}
+
 // Function to fetch the latest posts from the current user
 // Use pmem to memoize fetch results for 1 minute
 const fetchLatestPostsMemoized = pmem(
-  async (masto, currentAccountID) => {
+  async (
+    masto: AccountStatusesEndpoint,
+    currentAccountID: string,
+  ): Promise<mastodon.v1.Status[]> => {
     const statusesIterator = masto.v1.accounts
       .$select(currentAccountID)
       .statuses.list({
@@ -48,17 +75,23 @@ export default function ComposeButton() {
 
   // Context menu state
   const [menuOpen, setMenuOpen] = useState(false);
-  const [latestPosts, setLatestPosts] = useState([]);
+  const [latestPosts, setLatestPosts] = useState<mastodon.v1.Status[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
-  const buttonRef = useRef(null);
-  const menuRef = useRef(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<MenuInstance | null>(null);
 
   const columnMode = false;
 
-  function handleButton(e) {
+  function handleButton(
+    e:
+      | JSX.TargetedMouseEvent<HTMLButtonElement>
+      | KeyboardEvent
+      | { key?: string; shiftKey?: boolean },
+  ) {
     // useKey will even listen to Shift
     // e.g. press Shift (without c) will trigger this 😱
-    if (e.key && e.key.toLowerCase() !== 'c') return;
+    const ev = e as { key?: string; shiftKey?: boolean };
+    if (ev.key && ev.key.toLowerCase() !== 'c') return;
 
     if (snapStates.composerState.minimized) {
       states.composerState.minimized = false;
@@ -66,14 +99,15 @@ export default function ComposeButton() {
       return;
     }
 
-    const composeDataElements = document.querySelectorAll('data.compose-data');
+    const composeDataElements =
+      document.querySelectorAll<HTMLDataElement>('data.compose-data');
     // If there's a lot of them, ignore
     const opts =
       !columnMode && composeDataElements.length === 1
         ? JSON.parse(composeDataElements[0].value)
         : undefined;
 
-    if (e.shiftKey) {
+    if (ev.shiftKey) {
       const newWin = openCompose(opts);
 
       if (!newWin) {
@@ -87,7 +121,7 @@ export default function ComposeButton() {
 
   useHotkeys('c, shift+c', handleButton, {
     useKey: true,
-    ignoreEventWhen: (e) => {
+    ignoreEventWhen: (e: KeyboardEvent) => {
       const hasModal = !!document.querySelector('#modal-container > *');
       return hasModal || e.metaKey || e.ctrlKey || e.altKey;
     },
@@ -110,7 +144,10 @@ export default function ComposeButton() {
       if (!currentAccountID) {
         return;
       }
-      const posts = await fetchLatestPostsMemoized(masto, currentAccountID);
+      const posts = await fetchLatestPostsMemoized(
+        masto as unknown as AccountStatusesEndpoint,
+        currentAccountID,
+      );
       setLatestPosts(posts);
     } catch (error) {
     } finally {
@@ -119,7 +156,7 @@ export default function ComposeButton() {
   }, [masto]);
 
   // Function to handle opening the compose window to reply to a post
-  const handleReplyToPost = useCallback((post) => {
+  const handleReplyToPost = useCallback((post: mastodon.v1.Status) => {
     showCompose({
       replyToStatus: post,
     });
@@ -205,7 +242,9 @@ export default function ComposeButton() {
               return (
                 <MenuItem key={post.id} onClick={() => handleReplyToPost(post)}>
                   <small>
-                    <div class="menu-post-text">{statusPeek(post)}</div>
+                    <div class="menu-post-text">
+                      {statusPeek(post as unknown as Parameters<typeof statusPeek>[0])}
+                    </div>
                     <span className="more-insignificant">
                       {/* Show relative time if within a day */}
                       {isWithinDay && (
