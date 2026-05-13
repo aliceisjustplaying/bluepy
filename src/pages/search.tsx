@@ -4,7 +4,14 @@ import { useAutoAnimate } from '@formkit/auto-animate/preact';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { ComponentType, ComponentChildren } from 'preact';
-import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -151,139 +158,178 @@ function Search({ columnMode, ...props }: SearchProps) {
     setAccountResults([]);
     setHashtagResults([]);
   }, [q]);
-  const typeResults: Record<ResultsTypeKey, unknown[]> = {
-    statuses: statusResults,
-    accounts: accountResults,
-    hashtags: hashtagResults,
-  };
   type ResultsSetter = (
     value: readonly unknown[] | ((prev: readonly unknown[]) => unknown[]),
   ) => void;
-  const setTypeResultsFunc: Record<ResultsTypeKey, ResultsSetter> = {
-    statuses: setStatusResults as unknown as ResultsSetter,
-    accounts: setAccountResults as unknown as ResultsSetter,
-    hashtags: setHashtagResults as unknown as ResultsSetter,
-  };
+  // Setters from useState are stable, so this map only needs to be created
+  // once; that lets `loadResults` depend on it without churning.
+  const setTypeResultsFunc = useMemo<Record<ResultsTypeKey, ResultsSetter>>(
+    () => ({
+      statuses: setStatusResults as unknown as ResultsSetter,
+      accounts: setAccountResults as unknown as ResultsSetter,
+      hashtags: setHashtagResults as unknown as ResultsSetter,
+    }),
+    [],
+  );
 
   const [relationshipsMap, setRelationshipsMap] = useState<
     Record<string, unknown>
   >({});
-  const loadRelationships = async (
-    accounts: mastodon.v1.Account[] | undefined,
-  ) => {
-    if (!accounts?.length) return;
-    const relationships = await fetchRelationships(
-      accounts as unknown as Parameters<typeof fetchRelationships>[0],
-      relationshipsMap as unknown as Parameters<typeof fetchRelationships>[1],
-    );
-    if (relationships) {
-      setRelationshipsMap({
-        ...relationshipsMap,
-        ...relationships,
+  // Stable callback: uses the functional setter and reads the previous map
+  // via a transient peek so it never needs `relationshipsMap` as a dep.
+  const loadRelationships = useCallback(
+    async (accounts: mastodon.v1.Account[] | undefined) => {
+      if (!accounts?.length) return;
+      let snapshot: Record<string, unknown> = {};
+      setRelationshipsMap((prev) => {
+        snapshot = prev;
+        return prev;
       });
-    }
+      const relationships = await fetchRelationships(
+        accounts as unknown as Parameters<typeof fetchRelationships>[0],
+        snapshot as unknown as Parameters<typeof fetchRelationships>[1],
+      );
+      if (relationships) {
+        setRelationshipsMap((prev) => ({
+          ...prev,
+          ...relationships,
+        }));
+      }
+    },
+    [],
+  );
+
+  // Mirror the type-keyed result lists into refs so the stable
+  // `loadResults` callback below can compare the previous first-id without
+  // re-creating on every state update.
+  const typeResultsRef = useRef<Record<ResultsTypeKey, unknown[]>>({
+    statuses: statusResults,
+    accounts: accountResults,
+    hashtags: hashtagResults,
+  });
+  typeResultsRef.current = {
+    statuses: statusResults,
+    accounts: accountResults,
+    hashtags: hashtagResults,
   };
 
-  function loadResults(firstLoad?: boolean) {
-    if (firstLoad) {
-      offsetRef.current = 0;
-    }
-
-    if (!firstLoad && !authenticated && !atproto) {
-      // Search results pagination is only available to authenticated users
-      return;
-    }
-
-    setUIState('loading');
-    if (firstLoad && !type) {
-      setStatusResults(statusResults.slice(0, SHORT_LIMIT));
-      setAccountResults(accountResults.slice(0, SHORT_LIMIT));
-      setHashtagResults(hashtagResults.slice(0, SHORT_LIMIT));
-    }
-
-    void (async () => {
-      const searchListParams: SearchListParams = {
-        q: q as string,
-        resolve: authenticated,
-        limit: SHORT_LIMIT,
-      };
-      if (type) {
-        searchListParams.limit = LIMIT;
-        searchListParams.type = type;
-        if (atproto) {
-          const cursor = cursorRef.current[type];
-          if (!firstLoad && !cursor) {
-            setShowMore(false);
-            setUIState('default');
-            return;
-          }
-          if (cursor) searchListParams.cursor = cursor;
-        } else if (authenticated) {
-          searchListParams.offset = offsetRef.current;
-        }
+  const loadResults = useCallback(
+    (firstLoad?: boolean) => {
+      if (firstLoad) {
+        offsetRef.current = 0;
       }
 
-      try {
-        const searchApi = masto.v2.search as unknown as SearchApi;
-        const results = await searchApi.list(searchListParams);
-        console.log(results);
+      if (!firstLoad && !authenticated && !atproto) {
+        // Search results pagination is only available to authenticated users
+        return;
+      }
+
+      setUIState('loading');
+      if (firstLoad && !type) {
+        setStatusResults((prev) => prev.slice(0, SHORT_LIMIT));
+        setAccountResults((prev) => prev.slice(0, SHORT_LIMIT));
+        setHashtagResults((prev) => prev.slice(0, SHORT_LIMIT));
+      }
+
+      void (async () => {
+        const searchListParams: SearchListParams = {
+          q: q as string,
+          resolve: authenticated,
+          limit: SHORT_LIMIT,
+        };
         if (type) {
-          const typedResults = results;
-          const typeKey = type as ResultsTypeKey;
-          const nextCursor = typedResults._pagination?.[type];
-          if (firstLoad) {
-            setTypeResultsFunc[typeKey](typedResults[type] as unknown[]);
-            const length = (typedResults[type] as unknown[] | undefined)
-              ?.length;
-            offsetRef.current = LIMIT;
-            cursorRef.current[type] = nextCursor;
-            setShowMore(atproto ? !!nextCursor : !!length);
-          } else if (atproto) {
-            setTypeResultsFunc[typeKey]((prev: readonly unknown[]) => [
-              ...prev,
-              ...(typedResults[type] as unknown[]),
-            ]);
-            cursorRef.current[type] = nextCursor;
-            setShowMore(!!nextCursor);
-          } else {
-            // If first item is the same, it means API doesn't support offset
-            // I know this is a very basic check, but it works for now
-            const currentList = typedResults[type] as
-              | Array<{ id?: string }>
-              | undefined;
-            const existingList = typeResults[typeKey] as
-              | Array<{ id?: string }>
-              | undefined;
-            if (currentList?.[0]?.id === existingList?.[0]?.id) {
+          searchListParams.limit = LIMIT;
+          searchListParams.type = type;
+          if (atproto) {
+            const cursor = cursorRef.current[type];
+            if (!firstLoad && !cursor) {
               setShowMore(false);
-            } else {
-              setTypeResultsFunc[typeKey]((prev: readonly unknown[]) => [
-                ...prev,
-                ...(typedResults[type] as unknown[]),
-              ]);
+              setUIState('default');
+              return;
+            }
+            if (cursor) searchListParams.cursor = cursor;
+          } else if (authenticated) {
+            searchListParams.offset = offsetRef.current;
+          }
+        }
+
+        try {
+          const searchApi = masto.v2.search as unknown as SearchApi;
+          const results = await searchApi.list(searchListParams);
+          console.log(results);
+          if (type) {
+            const typedResults = results;
+            const typeKey = type as ResultsTypeKey;
+            const nextCursor = typedResults._pagination?.[type];
+            if (firstLoad) {
+              setTypeResultsFunc[typeKey](
+                typedResults[type] as unknown[],
+              );
               const length = (typedResults[type] as unknown[] | undefined)
                 ?.length;
-              offsetRef.current = offsetRef.current + LIMIT;
-              setShowMore(!!length);
+              offsetRef.current = LIMIT;
+              cursorRef.current[type] = nextCursor;
+              setShowMore(atproto ? !!nextCursor : !!length);
+            } else if (atproto) {
+              setTypeResultsFunc[typeKey](
+                (prev: readonly unknown[]) => [
+                  ...prev,
+                  ...(typedResults[type] as unknown[]),
+                ],
+              );
+              cursorRef.current[type] = nextCursor;
+              setShowMore(!!nextCursor);
+            } else {
+              // If first item is the same, it means API doesn't support offset
+              // I know this is a very basic check, but it works for now
+              const currentList = typedResults[type] as
+                | Array<{ id?: string }>
+                | undefined;
+              const existingList = typeResultsRef.current[typeKey] as
+                | Array<{ id?: string }>
+                | undefined;
+              if (currentList?.[0]?.id === existingList?.[0]?.id) {
+                setShowMore(false);
+              } else {
+                setTypeResultsFunc[typeKey](
+                  (prev: readonly unknown[]) => [
+                    ...prev,
+                    ...(typedResults[type] as unknown[]),
+                  ],
+                );
+                const length = (typedResults[type] as unknown[] | undefined)
+                  ?.length;
+                offsetRef.current = offsetRef.current + LIMIT;
+                setShowMore(!!length);
+              }
             }
+          } else {
+            const typedResults = results;
+            setStatusResults(typedResults.statuses || []);
+            setAccountResults(typedResults.accounts || []);
+            setHashtagResults(typedResults.hashtags || []);
+            offsetRef.current = 0;
+            setShowMore(false);
           }
-        } else {
-          const typedResults = results;
-          setStatusResults(typedResults.statuses || []);
-          setAccountResults(typedResults.accounts || []);
-          setHashtagResults(typedResults.hashtags || []);
-          offsetRef.current = 0;
-          setShowMore(false);
-        }
-        if (authenticated) void loadRelationships(results.accounts);
+          if (authenticated) void loadRelationships(results.accounts);
 
-        setUIState('default');
-      } catch (err) {
-        console.error(err);
-        setUIState('error');
-      }
-    })();
-  }
+          setUIState('default');
+        } catch (err) {
+          console.error(err);
+          setUIState('error');
+        }
+      })();
+    },
+    [
+      q,
+      type,
+      atproto,
+      authenticated,
+      masto,
+      loadRelationships,
+      setTypeResultsFunc,
+    ],
+  );
 
   const lastHiddenTime = useRef<number | undefined>(undefined);
   usePageVisibility((visible: boolean) => {
@@ -310,10 +356,7 @@ function Search({ columnMode, ...props }: SearchProps) {
       }, 150); // Right after focusDeck runs
     }
     return () => clearTimeout(timer);
-    // TODO(oxlint:react-hooks/exhaustive-deps): `loadResults` is recreated each
-    // render and closes over many state setters; adding it would cause a
-    // refetch loop. Refactor would require useCallback with all upstream deps.
-  }, [q, type, instance]);
+  }, [q, type, instance, loadResults]);
 
   useHotkeys(
     ['Slash', '/'],

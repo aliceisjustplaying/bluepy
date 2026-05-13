@@ -138,9 +138,10 @@ export default function ScheduledPosts() {
 
   useEffect(() => {
     setUIState('loading');
+    const scheduledStatusesResource = masto.v1.scheduledStatuses;
     void (async () => {
       try {
-        const postsIterator = masto.v1.scheduledStatuses
+        const postsIterator = scheduledStatusesResource
           .list({ limit: LIMIT })
           .values();
         const allPosts: ScheduledPost[] = [];
@@ -160,9 +161,7 @@ export default function ScheduledPosts() {
         setUIState('default');
       }
     })();
-    // TODO(oxlint:react-hooks/exhaustive-deps): masto.v1.scheduledStatuses
-    // is a masto proxy recreated per-access; adding it would loop.
-  }, [reloadCount]);
+  }, [reloadCount, masto]);
 
   return (
     <div id="scheduled-posts-page" class="deck-container" tabIndex={-1}>

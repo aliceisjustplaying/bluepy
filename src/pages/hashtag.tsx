@@ -239,37 +239,34 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
 
   const [followUIState, setFollowUIState] = useState('default');
   const [info, setInfo] = useState<HashtagInfo | undefined>();
-  // Get hashtag info
-  // TODO(oxlint:react-hooks/exhaustive-deps): deliberately omits `tagsApi`
-  // from deps. `masto.v1.tags` is a proxy recreated on every property access,
-  // so including it would refetch every render. The proxy delegates to a
-  // stable underlying client, so capturing the reference once per `hashtag`
-  // change is fine.
+  // Get hashtag info. `masto` is a cached client (api() returns a stable
+  // reference per instance/access-token), so capturing the proxy inside the
+  // effect body avoids the per-render `masto.v1.tags` proxy churn while
+  // keeping the dep list accurate.
   useEffect(() => {
+    const tagsResource = masto.v1.tags as TagsApi;
     void (async () => {
       try {
-        const fetchedInfo = await tagsApi.$select(hashtag).fetch();
+        const fetchedInfo = await tagsResource.$select(hashtag).fetch();
         console.log(fetchedInfo);
         setInfo(fetchedInfo);
       } catch (e) {
         console.error(e);
       }
     })();
-  }, [hashtag]);
+  }, [hashtag, masto]);
 
   const reachLimit = hashtags.length >= TOTAL_TAGS_LIMIT;
 
   const [featuredUIState, setFeaturedUIState] = useState('default');
   const [featuredTags, setFeaturedTags] = useState<FeaturedTag[]>([]);
   const [isFeaturedTag, setIsFeaturedTag] = useState(false);
-  // TODO(oxlint:react-hooks/exhaustive-deps): deliberately omits
-  // `featuredTagsApi` from deps. `masto.v1.featuredTags` is a proxy recreated
-  // on every property access; including it would loop.
   useEffect(() => {
     if (!authenticated) return;
+    const featuredTagsResource = masto.v1.featuredTags as FeaturedTagsApi;
     void (async () => {
       try {
-        const fetchedFeaturedTags = await featuredTagsApi.list();
+        const fetchedFeaturedTags = await featuredTagsResource.list();
         setFeaturedTags(fetchedFeaturedTags);
         setIsFeaturedTag(
           fetchedFeaturedTags.some(
@@ -280,7 +277,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
         console.error(e);
       }
     })();
-  }, [authenticated, hashtag]);
+  }, [authenticated, hashtag, masto]);
 
   return (
     <>

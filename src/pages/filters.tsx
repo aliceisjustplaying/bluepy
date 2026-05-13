@@ -120,9 +120,9 @@ function Filters() {
   const [filters, setFilters] = useState<FilterV2[]>([]);
   useEffect(() => {
     setUIState('loading');
+    const filtersResource = masto.v2.filters as FiltersV2Resource;
     void (async () => {
       try {
-        const filtersResource = masto.v2.filters as FiltersV2Resource;
         // The JS treats the awaited value as an array; the typed surface is a
         // Paginator. The runtime returns the array directly here.
         const fetchedFilters =
@@ -144,9 +144,7 @@ function Filters() {
         setUIState('error');
       }
     })();
-    // TODO(oxlint:react-hooks/exhaustive-deps): masto.v2.filters is a masto
-    // proxy recreated per-access; adding it would loop.
-  }, [reloadCount]);
+  }, [reloadCount, masto]);
 
   return (
     <div id="filters-page" class="deck-container" tabIndex={-1}>
