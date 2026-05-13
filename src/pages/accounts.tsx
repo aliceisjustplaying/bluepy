@@ -24,23 +24,40 @@ import {
   getCurrentAccountID,
   saveAccounts,
   setCurrentAccountID,
+  type StoredAccount,
 } from '../utils/store-utils';
+
+type OAuthAccount = Omit<StoredAccount, 'accessToken'> & {
+  accessToken?: string;
+  clientId?: string;
+  clientSecret?: string;
+};
+
+interface MastoAccountsSelect {
+  $select(id: string): {
+    fetch(): Promise<unknown>;
+  };
+}
+
+interface AccountsProps {
+  onClose?: () => void;
+}
 
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
-function Accounts({ onClose }) {
+function Accounts({ onClose }: AccountsProps) {
   const { t } = useLingui();
   const { masto } = api();
   // Accounts
-  const accounts = getAccounts();
+  const accounts = getAccounts() as OAuthAccount[];
   const currentAccount = getCurrentAccountID();
   const moreThanOneAccount = accounts.length > 1;
 
-  const [_, reload] = useReducer((x) => x + 1, 0);
-  const [accountsListParent] = useAutoAnimate();
+  const [, reload] = useReducer<number, void>((x: number) => x + 1, 0);
+  const [accountsListParent] = useAutoAnimate<HTMLUListElement>();
 
   return (
-    <div id="accounts-container" class="sheet" tabIndex="-1">
+    <div id="accounts-container" class="sheet" tabIndex={-1}>
       {!!onClose && (
         <button type="button" class="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
@@ -61,7 +78,7 @@ function Accounts({ onClose }) {
 
               const removeAccount = () => {
                 accounts.splice(i, 1);
-                saveAccounts(accounts);
+                saveAccounts(accounts as unknown as StoredAccount[]);
                 try {
                   if (store.session.get('currentAccount') === account.info.id) {
                     store.session.del('currentAccount');
@@ -70,13 +87,25 @@ function Accounts({ onClose }) {
               };
 
               const logOutAccount = async () => {
+                // JS original forwarded `clientId`/`clientSecret`/token as-is
+                // (which may be `undefined` on older/logged-out accounts).
+                // Preserve that by casting; do not coerce to ''.
                 await revokeAccessToken({
                   instanceURL: account.instanceURL,
-                  client_id: account.clientId,
-                  client_secret: account.clientSecret,
-                  token: account.accessToken,
+                  client_id: account.clientId as unknown as string,
+                  client_secret: account.clientSecret as unknown as string,
+                  token: account.accessToken as unknown as string,
                 });
               };
+
+              // JS treats these as untyped strings; cast preserves runtime
+              // behavior (NameText interpolates them as-is). `avatarStatic` is
+              // typed `unknown` on AccountInfo, so cast at the read site.
+              const acct = account.info.acct as unknown as string;
+              const avatarStatic = account.info.avatarStatic as
+                | string
+                | undefined;
+              const username = account.info.username as unknown as string;
 
               return (
                 <li key={account.info.id}>
@@ -87,17 +116,19 @@ function Accounts({ onClose }) {
                       </span>
                     )}
                     <Avatar
-                      url={account.info.avatarStatic}
+                      url={avatarStatic}
                       size="xxl"
                       onDblClick={async () => {
                         if (isCurrent) {
                           try {
-                            const info = await masto.v1.accounts
+                            const accountsApi = masto.v1
+                              .accounts as unknown as MastoAccountsSelect;
+                            const info = await accountsApi
                               .$select(account.info.id)
                               .fetch();
                             console.log('fetched account info', info);
-                            account.info = info;
-                            saveAccounts(accounts);
+                            (account as { info: unknown }).info = info;
+                            saveAccounts(accounts as unknown as StoredAccount[]);
                             reload();
                           } catch (e) {}
                         }
@@ -105,23 +136,25 @@ function Accounts({ onClose }) {
                     />
                     <NameText
                       account={
-                        moreThanOneAccount
+                        (moreThanOneAccount
                           ? {
                               ...account.info,
-                              acct: /@/.test(account.info.acct)
-                                ? account.info.acct
-                                : `${account.info.acct}@${account.instanceURL}`,
+                              acct: /@/.test(acct)
+                                ? acct
+                                : `${acct}@${account.instanceURL}`,
                             }
-                          : account.info
+                          : account.info) as unknown as Parameters<
+                          typeof NameText
+                        >[0]['account']
                       }
                       showAcct
                       onClick={() => {
                         haptics.trigger('medium');
                         if (isLoggedOut) {
                           location.href = `/#/login?instance=${account.instanceURL}`;
-                          onClose();
+                          onClose?.();
                         } else if (isCurrent) {
-                          states.showAccount = `${account.info.username}@${account.instanceURL}`;
+                          states.showAccount = `${username}@${account.instanceURL}`;
                         } else {
                           setCurrentAccountID(account.info.id);
                           location.reload();
@@ -178,7 +211,7 @@ function Accounts({ onClose }) {
                       )}
                       <MenuItem
                         onClick={() => {
-                          states.showAccount = `${account.info.username}@${account.instanceURL}`;
+                          states.showAccount = `${username}@${account.instanceURL}`;
                         }}
                       >
                         <Icon icon="user" />
@@ -195,7 +228,7 @@ function Accounts({ onClose }) {
                               // Move account to the top of the list
                               accounts.splice(i, 1);
                               accounts.unshift(account);
-                              saveAccounts(accounts);
+                              saveAccounts(accounts as unknown as StoredAccount[]);
                               reload();
                             }}
                           >
@@ -210,7 +243,7 @@ function Accounts({ onClose }) {
                               // Move account one position up
                               accounts.splice(i, 1);
                               accounts.splice(i - 1, 0, account);
-                              saveAccounts(accounts);
+                              saveAccounts(accounts as unknown as StoredAccount[]);
                               reload();
                             }}
                           >
@@ -225,7 +258,7 @@ function Accounts({ onClose }) {
                               // Move account one position down
                               accounts.splice(i, 1);
                               accounts.splice(i + 1, 0, account);
-                              saveAccounts(accounts);
+                              saveAccounts(accounts as unknown as StoredAccount[]);
                               reload();
                             }}
                           >
@@ -246,10 +279,7 @@ function Accounts({ onClose }) {
                               <span>
                                 <Trans>
                                   Log out{' '}
-                                  <span class="bidi-isolate">
-                                    @{account.info.acct}
-                                  </span>
-                                  ?
+                                  <span class="bidi-isolate">@{acct}</span>?
                                 </Trans>
                               </span>
                             </>
@@ -257,8 +287,9 @@ function Accounts({ onClose }) {
                           menuItemClassName="danger"
                           onClick={async () => {
                             await logOutAccount();
-                            delete account.accessToken;
-                            saveAccounts(accounts);
+                            delete (account as { accessToken?: string })
+                              .accessToken;
+                            saveAccounts(accounts as unknown as StoredAccount[]);
                             reload();
                           }}
                           menuExtras={
@@ -274,9 +305,7 @@ function Accounts({ onClose }) {
                               <span>
                                 <Trans>
                                   Log out and remove{' '}
-                                  <span class="bidi-isolate">
-                                    @{account.info.acct}
-                                  </span>
+                                  <span class="bidi-isolate">@{acct}</span>
                                 </Trans>
                               </span>
                             </MenuItem>
@@ -296,10 +325,7 @@ function Accounts({ onClose }) {
                               <span>
                                 <Trans>
                                   Remove{' '}
-                                  <span class="bidi-isolate">
-                                    @{account.info.acct}
-                                  </span>
-                                  ?
+                                  <span class="bidi-isolate">@{acct}</span>?
                                 </Trans>
                               </span>
                             </>
