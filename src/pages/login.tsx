@@ -265,14 +265,20 @@ function Login() {
     })();
   };
 
+  // Intentional one-shot: mirror the JS original's `if (submit) {
+  // useEffect(..., []) }` semantics by capturing the relevant values into a
+  // ref the first time the effect runs and ignoring all subsequent updates.
+  const submitOnMountRef = useRef({
+    submit,
+    instance,
+    selectedInstanceText,
+    submitInstance,
+  });
   useEffect(() => {
-    if (submit) {
-      submitInstance(instance || selectedInstanceText);
+    const initial = submitOnMountRef.current;
+    if (initial.submit) {
+      initial.submitInstance(initial.instance || initial.selectedInstanceText);
     }
-    // TODO(oxlint:react-hooks/exhaustive-deps): submitInstance,
-    // selectedInstanceText, and instance are intentionally captured at first
-    // render to mirror the JS original's `if (submit) { useEffect(..., []) }`
-    // semantics. Adding them would re-run the redirect on every render.
   }, []);
 
   return (

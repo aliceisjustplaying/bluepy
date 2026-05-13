@@ -84,30 +84,26 @@ export default function AnnualReport() {
   const [uiState, setUIState] = useState<string>('default');
 
   useEffect(() => {
-    if (year) {
-      void (async () => {
-        setUIState('loading');
-        const mastoUntyped = masto as unknown as {
-          v1: {
-            annualReports: {
-              $select(year: string): {
-                fetch(): Promise<AnnualReportResponse>;
-              };
-            };
+    if (!year) return;
+    const mastoUntyped = masto as unknown as {
+      v1: {
+        annualReports: {
+          $select(year: string): {
+            fetch(): Promise<AnnualReportResponse>;
           };
         };
-        const fetched = await mastoUntyped.v1.annualReports
-          .$select(year)
-          .fetch();
-        console.log('REPORT', fetched);
-        setResults(fetched);
-        setUIState('default');
-      })();
-    }
-    // TODO(oxlint:react-hooks/exhaustive-deps): `masto` is a masto client
-    // proxy recreated per-access; adding it to deps would refetch on every
-    // render. The api() singleton is stable for the current instance.
-  }, [year]);
+      };
+    };
+    void (async () => {
+      setUIState('loading');
+      const fetched = await mastoUntyped.v1.annualReports
+        .$select(year)
+        .fetch();
+      console.log('REPORT', fetched);
+      setResults(fetched);
+      setUIState('default');
+    })();
+  }, [year, masto]);
 
   const { accounts, annualReports, statuses } = results || {};
   const report = annualReports?.find((entry) => entry.year == year)?.data;

@@ -5,7 +5,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
 import type { RefObject, TargetedMouseEvent } from 'preact';
 import { memo } from 'preact/compat';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
 import Columns from '../components/columns';
@@ -165,81 +165,75 @@ function NotificationsMenu({
     'default',
   );
 
-  const notificationsIterator = mastoFetchNotifications() as AsyncIterator<
-    unknown[]
-  >;
-
-  async function fetchNotifications() {
-    const allNotifications = await notificationsIterator.next();
-    const notifications = massageNotifications2(
-      allNotifications.value as Parameters<typeof massageNotifications2>[0],
-    ) as NotificationItem[] | undefined;
-
-    if (notifications?.length) {
-      notifications.forEach((notification) => {
-        saveStatus(
-          notification.status as Parameters<typeof saveStatus>[0],
-          instance,
-          {
-            skipThreading: true,
-          },
-        );
-      });
-
-      const groupedNotifications = getGroupedNotifications(
-        notifications,
-      ) as NotificationItem[];
-
-      states.notificationsLast = groupedNotifications[0];
-      states.notifications = groupedNotifications;
-
-      // Update last read marker
-      (
-        masto.v1.markers as {
-          create(options: {
-            notifications: { lastReadId: string };
-          }): Promise<unknown>;
-        }
-      )
-        .create({
-          notifications: {
-            lastReadId: groupedNotifications[0].id,
-          },
-        })
-        .catch(() => {});
-    }
-
-    states.notificationsShowNew = false;
-    states.notificationsLastFetchTime = Date.now();
-    return allNotifications;
-  }
-
   const [hasFollowRequests, setHasFollowRequests] = useState(false);
-  function fetchFollowRequests() {
-    return (
-      masto.v1.followRequests as {
-        list(options: { limit: number }): Promise<unknown[]>;
-      }
-    ).list({
-      limit: 1,
-    });
-  }
 
-  function loadNotifications({ skipFollowRequests = false } = {}) {
-    setUIState('loading');
-    void (async () => {
-      try {
-        await fetchNotifications();
-        if (!skipFollowRequests) {
-          const followRequests = await fetchFollowRequests();
-          setHasFollowRequests(!!followRequests?.length);
+  const loadNotifications = useCallback(
+    ({ skipFollowRequests = false }: { skipFollowRequests?: boolean } = {}) => {
+      setUIState('loading');
+      void (async () => {
+        try {
+          const notificationsIterator =
+            mastoFetchNotifications() as AsyncIterator<unknown[]>;
+          const allNotifications = await notificationsIterator.next();
+          const notifications = massageNotifications2(
+            allNotifications.value as Parameters<
+              typeof massageNotifications2
+            >[0],
+          ) as NotificationItem[] | undefined;
+
+          if (notifications?.length) {
+            notifications.forEach((notification) => {
+              saveStatus(
+                notification.status as Parameters<typeof saveStatus>[0],
+                instance,
+                {
+                  skipThreading: true,
+                },
+              );
+            });
+
+            const groupedNotifications = getGroupedNotifications(
+              notifications,
+            ) as NotificationItem[];
+
+            states.notificationsLast = groupedNotifications[0];
+            states.notifications = groupedNotifications;
+
+            // Update last read marker
+            (
+              masto.v1.markers as {
+                create(options: {
+                  notifications: { lastReadId: string };
+                }): Promise<unknown>;
+              }
+            )
+              .create({
+                notifications: {
+                  lastReadId: groupedNotifications[0].id,
+                },
+              })
+              .catch(() => {});
+          }
+
+          states.notificationsShowNew = false;
+          states.notificationsLastFetchTime = Date.now();
+
+          if (!skipFollowRequests) {
+            const followRequests = await (
+              masto.v1.followRequests as {
+                list(options: { limit: number }): Promise<unknown[]>;
+              }
+            ).list({ limit: 1 });
+            setHasFollowRequests(!!followRequests?.length);
+          }
+          setUIState('default');
+        } catch {
+          setUIState('error');
         }
-        setUIState('default');
-      } catch {
-        setUIState('error');
-      }
-    })();
-  }
+      })();
+    },
+    [masto, instance],
+  );
 
   const menuRef = useRef<ControlledMenuHandle | null>(null);
   const headerHeight = 52;
@@ -255,10 +249,7 @@ function NotificationsMenu({
     } else {
       loadNotifications();
     }
-    // TODO(oxlint:react-hooks/exhaustive-deps): `loadNotifications` is recreated
-    // every render and transitively reads from the masto.v1 proxy; adding it
-    // would loop. The effect intentionally re-runs only on menu open/close.
-  }, [state, snapStates.notificationsShowNew]);
+  }, [state, snapStates.notificationsShowNew, loadNotifications]);
 
   return (
     <ControlledMenu

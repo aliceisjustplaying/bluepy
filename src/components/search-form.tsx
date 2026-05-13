@@ -6,7 +6,12 @@ import type {
   TargetedKeyboardEvent,
 } from 'preact';
 import { forwardRef } from 'preact/compat';
-import { useImperativeHandle, useMemo, useRef, useState } from 'preact/hooks';
+import {
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'preact/hooks';
 import { useSearchParams } from 'react-router-dom';
 
 import { api } from '../utils/api';
@@ -137,14 +142,20 @@ const SearchForm = forwardRef(
       },
     }));
 
-    // TODO(oxlint:react-hooks/exhaustive-deps): `props?.hidden` is used as a
-    // refresh trigger — when the search form transitions from hidden to
-    // visible, recompute the history. The dep is intentional even though
-    // the memo body doesn't read it.
-    const searchHistory = useMemo(
-      () => getSearchHistory({ limit: 5 }),
-      [props?.hidden],
+    // `props?.hidden` is the refresh trigger — when the search form
+    // transitions visibility, the underlying localStorage history may have
+    // changed (e.g. via another panel), so re-read it. We do this
+    // synchronously during render so the first visible paint already has
+    // the fresh suggestions (an effect-based refresh would lag a paint).
+    const lastHiddenRef = useRef<boolean | undefined>(props?.hidden);
+    const searchHistoryRef = useRef<SearchHistoryEntry[]>(
+      getSearchHistory({ limit: 5 }),
     );
+    if (props?.hidden !== lastHiddenRef.current) {
+      lastHiddenRef.current = props?.hidden;
+      searchHistoryRef.current = getSearchHistory({ limit: 5 });
+    }
+    const searchHistory = searchHistoryRef.current;
 
     const searchSuggestionsData = useMemo(() => {
       if (!query) return [];
