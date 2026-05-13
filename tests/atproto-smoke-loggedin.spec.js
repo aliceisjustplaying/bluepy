@@ -1,4 +1,5 @@
 // @ts-check
+/// <reference types="node" />
 /**
  * Logged-in smoke test suite for Bluepy / ATProto.
  *
@@ -32,6 +33,11 @@ import path from 'node:path';
 
 import { expect, test as base } from '@playwright/test';
 
+/** @typedef {import('@playwright/test').Page} Page */
+/** @typedef {import('@playwright/test').Locator} Locator */
+/** @typedef {Record<string, unknown> & { showCompose?: unknown }} TestStates */
+/** @typedef {Window & { __STATES__?: TestStates }} TestWindow */
+
 const IDENTIFIER = process.env.ATPROTO_TEST_IDENTIFIER;
 const PASSWORD = process.env.ATPROTO_TEST_PASSWORD;
 const HAS_CREDS = Boolean(IDENTIFIER && PASSWORD);
@@ -47,6 +53,8 @@ const STORAGE_FILE = path.join(
 /**
  * Walk the bluepy login UI end-to-end via app-password and assert
  * we land off the login page.
+ *
+ * @param {Page} page
  */
 async function loginViaUI(page) {
   await page.goto('/#/login');
@@ -76,15 +84,36 @@ base.beforeAll(async ({ browser }) => {
  * Test fixture: each test gets a fresh context with storageState restored.
  */
 const test = base.extend({
-  context: async ({ browser }, use) => {
+  context: async ({ browser }, fixtureUse) => {
     const ctx = await browser.newContext({ storageState: STORAGE_FILE });
-    await use(ctx);
+    await fixtureUse(ctx);
     await ctx.close();
   },
 });
 
 /** HashRouter convenience. */
+/** @param {Page} page @param {string} route */
 const goto = (page, route) => page.goto(`/#${route}`);
+
+/**
+ * @param {Locator} locator
+ * @param {string} label
+ */
+async function getRequiredTitle(locator, label) {
+  const title = await locator.getAttribute('title');
+  expect(title, `${label} must expose a title`).toBeTruthy();
+  if (!title) throw new Error(`${label} missing title`);
+  return title;
+}
+
+/** @param {Page} page */
+async function openFirstStatusDetail(page) {
+  await page.goto('/#/');
+  const statusLink = page.locator('.status-link[href*="/s/"]').first();
+  await statusLink.waitFor({ timeout: 30_000 });
+  await statusLink.click();
+  await expect(page).toHaveURL(/\/s\//, { timeout: 15_000 });
+}
 
 // ---------------------------------------------------------------------------
 // LOGIN
@@ -125,13 +154,7 @@ test.describe('read flows', () => {
   });
 
   test('clicking a status opens its detail view', async ({ page }) => {
-    await page.goto('/#/');
-    const statusLink = page
-      .locator('[data-state-post-id], article.status, .status-link')
-      .first();
-    await statusLink.waitFor({ timeout: 30_000 });
-    await statusLink.click();
-    await expect(page).toHaveURL(/\/s\//, { timeout: 15_000 });
+    await openFirstStatusDetail(page);
   });
 
   test('notifications page renders', async ({ page }) => {
@@ -220,15 +243,22 @@ test.describe('read flows', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('modals', () => {
+  /**
+   * @param {Page} page
+   * @param {string} stateKey
+   */
   async function openModal(page, stateKey) {
     await page.goto('/#/');
     await expect(page.locator('.deck-container').first()).toBeVisible({
       timeout: 30_000,
     });
     await page.evaluate((k) => {
-      // @ts-ignore — runtime global exported in src/utils/states.ts
-      if (typeof window.__STATES__ === 'object' && window.__STATES__) {
-        window.__STATES__[k] = true;
+      const appWindow = /** @type {TestWindow} */ (window);
+      if (
+        typeof appWindow.__STATES__ === 'object' &&
+        appWindow.__STATES__
+      ) {
+        appWindow.__STATES__[k] = true;
       }
     }, stateKey);
   }
@@ -274,15 +304,22 @@ test.describe('modals', () => {
 const CREATED = [];
 
 test.describe('write flows', () => {
+  /**
+   * @param {Page} page
+   * @param {string} body
+   */
   async function composeAndPublish(page, body) {
     await page.goto('/#/');
     await expect(page.locator('.deck-container').first()).toBeVisible({
       timeout: 30_000,
     });
     await page.evaluate(() => {
-      // @ts-ignore
-      if (typeof window.__STATES__ === 'object' && window.__STATES__) {
-        window.__STATES__.showCompose = true;
+      const appWindow = /** @type {TestWindow} */ (window);
+      if (
+        typeof appWindow.__STATES__ === 'object' &&
+        appWindow.__STATES__
+      ) {
+        appWindow.__STATES__.showCompose = true;
       }
     });
     const textarea = page.locator('textarea').first();
@@ -360,38 +397,32 @@ test.describe('write flows', () => {
   test('reply UI opens compose modal from a status detail', async ({
     page,
   }) => {
-    await page.goto('/#/');
-    const firstStatus = page
-      .locator('[data-state-post-id], article.status, .status-link')
-      .first();
-    await firstStatus.waitFor({ timeout: 30_000 });
-    await firstStatus.click();
-    await expect(page).toHaveURL(/\/s\//, { timeout: 15_000 });
+    await openFirstStatusDetail(page);
 
-    const replyBtn = page.locator('button[title="Reply"]').first();
+    const replyBtn = page
+      .locator('.deck-backdrop .status-deck button[title="Reply"]')
+      .first();
     await replyBtn.waitFor({ timeout: 15_000 });
     await replyBtn.click();
 
-    await expect(page.locator('textarea').first()).toBeVisible({
-      timeout: 15_000,
-    });
+    const textarea = page.locator('textarea').first();
+    try {
+      await expect(textarea).toBeVisible({ timeout: 3_000 });
+    } catch {
+      await page.getByRole('menuitem', { name: /^Reply/ }).first().click();
+      await expect(textarea).toBeVisible({ timeout: 15_000 });
+    }
   });
 
   test('like + unlike persists across reload', async ({ page }) => {
-    await page.goto('/#/');
-    const firstStatus = page
-      .locator('[data-state-post-id], article.status, .status-link')
-      .first();
-    await firstStatus.waitFor({ timeout: 30_000 });
-    await firstStatus.click();
-    await expect(page).toHaveURL(/\/s\//, { timeout: 15_000 });
+    await openFirstStatusDetail(page);
     const url = page.url();
 
     const likeBtn = page
       .locator('button[title="Like"], button[title="Unlike"]')
       .first();
     await likeBtn.waitFor({ timeout: 15_000 });
-    const initialTitle = await likeBtn.getAttribute('title');
+    const initialTitle = await getRequiredTitle(likeBtn, 'like button');
     await likeBtn.click();
     await expect(likeBtn).not.toHaveAttribute('title', initialTitle, {
       timeout: 15_000,
@@ -413,13 +444,7 @@ test.describe('write flows', () => {
   });
 
   test('bookmark + unbookmark persists across reload', async ({ page }) => {
-    await page.goto('/#/');
-    const firstStatus = page
-      .locator('[data-state-post-id], article.status, .status-link')
-      .first();
-    await firstStatus.waitFor({ timeout: 30_000 });
-    await firstStatus.click();
-    await expect(page).toHaveURL(/\/s\//, { timeout: 15_000 });
+    await openFirstStatusDetail(page);
     const url = page.url();
 
     const bmBtn = page
@@ -432,7 +457,7 @@ test.describe('write flows', () => {
       );
     }
     await bmBtn.waitFor({ timeout: 15_000 });
-    const initial = await bmBtn.getAttribute('title');
+    const initial = await getRequiredTitle(bmBtn, 'bookmark button');
     await bmBtn.click();
     await expect(bmBtn).not.toHaveAttribute('title', initial, {
       timeout: 15_000,
@@ -459,20 +484,14 @@ test.describe('write flows', () => {
   test.skip('boost + unboost (self-boost is supported on Bluesky)', async ({
     page,
   }) => {
-    await page.goto('/#/');
-    const firstStatus = page
-      .locator('[data-state-post-id], article.status, .status-link')
-      .first();
-    await firstStatus.waitFor({ timeout: 30_000 });
-    await firstStatus.click();
-    await expect(page).toHaveURL(/\/s\//, { timeout: 15_000 });
+    await openFirstStatusDetail(page);
     const url = page.url();
 
     const boostBtn = page
       .locator('button[title="Boost"], button[title="Unboost"]')
       .first();
     await boostBtn.waitFor({ timeout: 15_000 });
-    const initial = await boostBtn.getAttribute('title');
+    const initial = await getRequiredTitle(boostBtn, 'boost button');
     await boostBtn.click();
     // Bluepy shows a confirmation menu for boost/unboost.
     const confirm = page
