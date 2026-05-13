@@ -4,18 +4,29 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { useState } from 'preact/hooks';
 
 import showToast from '../utils/show-toast';
-import { getAccounts } from '../utils/store-utils';
+import { getAccounts, type StoredAccount } from '../utils/store-utils';
 
 import Icon from './icon';
 import ImportAccountsSelection from './import-accounts-selection';
 import Modal from './modal';
 
-export default function ImportExportAccounts({ onClose }) {
+interface ImportExportAccountsProps {
+  onClose: () => void;
+  // exportDisabled is passed by modals.jsx but currently unused by this
+  // component; declared here so callers (still in JS) keep typechecking.
+  exportDisabled?: boolean;
+}
+
+export default function ImportExportAccounts({
+  onClose,
+}: ImportExportAccountsProps) {
   const { t } = useLingui();
   const accounts = getAccounts();
-  const [uiState, setUIState] = useState('default');
-  const [importedAccounts, setImportedAccounts] = useState(null);
-  const [dragOver, setDragOver] = useState(false);
+  const [uiState, setUIState] = useState<string>('default');
+  const [importedAccounts, setImportedAccounts] = useState<
+    StoredAccount[] | null
+  >(null);
+  const [dragOver, setDragOver] = useState<boolean>(false);
 
   const handleExport = async () => {
     setUIState('exporting');
@@ -54,7 +65,7 @@ export default function ImportExportAccounts({ onClose }) {
     }
   };
 
-  const processFile = async (file) => {
+  const processFile = async (file: File | undefined) => {
     if (!file) return;
 
     setUIState('importing');
@@ -65,7 +76,7 @@ export default function ImportExportAccounts({ onClose }) {
       const accounts = json?.accounts;
       if (!Array.isArray(accounts)) throw new Error('Invalid backup file');
 
-      setImportedAccounts(accounts);
+      setImportedAccounts(accounts as StoredAccount[]);
       setUIState('default');
     } catch (e) {
       console.error(e);
@@ -74,12 +85,13 @@ export default function ImportExportAccounts({ onClose }) {
     }
   };
 
-  const handleImport = (e) => {
-    const file = e.target.files[0];
+  const handleImport = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = (target.files as FileList)[0];
     processFile(file);
   };
 
-  const onDragOver = (e) => {
+  const onDragOver = (e: DragEvent) => {
     e.preventDefault();
     setDragOver(true);
   };
@@ -88,10 +100,10 @@ export default function ImportExportAccounts({ onClose }) {
     setDragOver(false);
   };
 
-  const onDrop = (e) => {
+  const onDrop = (e: DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files[0];
+    const file = (e.dataTransfer as DataTransfer).files[0];
     processFile(file);
   };
 
@@ -121,7 +133,7 @@ export default function ImportExportAccounts({ onClose }) {
             class={`section-button button-import button plain4 ${
               dragOver ? 'drag-over' : ''
             }`}
-            tabindex="0"
+            tabIndex={0}
           >
             <Icon icon="arrow-down-circle" size="xxl" />
             <b>
