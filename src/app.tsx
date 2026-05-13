@@ -4,6 +4,7 @@ import 'swiped-events';
 
 import { useLingui } from '@lingui/react';
 import debounce from 'just-debounce-it';
+import type { ComponentType, VNode } from 'preact';
 import { lazy, memo, Suspense } from 'preact/compat';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import {
@@ -33,29 +34,40 @@ import NotificationService from './components/notification-service';
 import SearchCommand from './components/search-command';
 import Shortcuts from './components/shortcuts';
 import NotFound from './pages/404';
-import AccountStatuses from './pages/account-statuses';
+import AccountStatusesRaw from './pages/account-statuses';
 import AnnualReport from './pages/annual-report';
 import Bookmarks from './pages/bookmarks';
-import Catchup from './pages/catchup';
+import CatchupRaw from './pages/catchup';
 import Favourites from './pages/favourites';
-import Filters from './pages/filters';
+import FiltersRaw from './pages/filters';
 import FollowedHashtags from './pages/followed-hashtags';
 import Following from './pages/following';
 import Following2 from './pages/following2';
-import Hashtag from './pages/hashtag';
+import HashtagRaw from './pages/hashtag';
 import Home from './pages/home';
 import HttpRoute from './pages/http-route';
 import List from './pages/list';
 import Lists from './pages/lists';
 import Login from './pages/login';
 import Mentions from './pages/mentions';
-import Notifications from './pages/notifications';
+import NotificationsRaw from './pages/notifications';
 import Public from './pages/public';
 import ScheduledPosts from './pages/scheduled-posts';
-import Search from './pages/search';
+import SearchRaw from './pages/search';
 import StatusRoute from './pages/status-route';
-import Trending from './pages/trending';
+import TrendingRaw from './pages/trending';
 import Welcome from './pages/welcome';
+
+// Shims for peer pages still authored as .jsx — required props inferred
+// from destructuring become "required" in JSX-strict mode. These shims
+// erase the JSX requirement until the page itself is converted.
+const AccountStatuses = AccountStatusesRaw as unknown as ComponentType;
+const Catchup = CatchupRaw as unknown as ComponentType;
+const Filters = FiltersRaw as unknown as ComponentType;
+const Hashtag = HashtagRaw as unknown as ComponentType;
+const Notifications = NotificationsRaw as unknown as ComponentType;
+const Search = SearchRaw as unknown as ComponentType;
+const Trending = TrendingRaw as unknown as ComponentType;
 import {
   api,
   hasInstance,
@@ -99,18 +111,31 @@ const YearInPosts = lazy(() => import('./pages/year-in-posts'));
 function QrScanTest() {
   useEffect(() => {
     states.showQrScannerModal = {
-      onClose: ({ text } = {}) => {
+      onClose: ({ text }: { text?: string } = {}) => {
         hideAllModals();
         location.hash = text ? `/${text}` : '/';
       },
-    };
+    } as unknown as typeof states.showQrScannerModal;
   }, []);
 
   return null;
 }
 
-window.__STATES__ = states;
-window.__STATES_STATS__ = () => {
+interface AppWindow extends Window {
+  __STATES__?: typeof states;
+  __STATES_STATS__?: () => void;
+  __IDLE__?: boolean;
+  __IGNORE_GET_ACCOUNT_ERROR__?: boolean;
+  __BENCH_RESULTS?: Map<string, number>;
+  __BENCHMARK: {
+    start: (name: string) => void;
+    end: (name: string) => void;
+  };
+}
+const appWindow = window as unknown as AppWindow;
+
+appWindow.__STATES__ = states;
+appWindow.__STATES_STATS__ = () => {
   const keys = [
     'statuses',
     'accounts',
@@ -118,21 +143,24 @@ window.__STATES_STATS__ = () => {
     'unfurledLinks',
     'statusQuotes',
   ];
-  const counts = {};
+  const counts: Record<string, number> = {};
   keys.forEach((key) => {
-    counts[key] = Object.keys(states[key]).length;
+    counts[key] = Object.keys(
+      (states as unknown as Record<string, Record<string, unknown>>)[key],
+    ).length;
   });
   console.warn('STATE stats', counts);
 
   const { statuses } = states;
-  const mountedKeys = new Set();
+  const mountedKeys = new Set<string>();
   document
     .querySelectorAll('[data-state-post-id], [data-state-post-ids]')
     .forEach(($post) => {
-      const id = $post.dataset.statePostId?.trim?.();
-      const ids = $post.dataset.statePostIds?.trim?.();
+      const el = $post as HTMLElement;
+      const id = el.dataset.statePostId?.trim?.();
+      const ids = el.dataset.statePostIds?.trim?.();
       if (id) mountedKeys.add(id);
-      if (ids) ids.split(/\s+/).forEach((key) => mountedKeys.add(key));
+      if (ids) ids.split(/\s+/).forEach((key: string) => mountedKeys.add(key));
     });
   const unmountedPosts = Object.keys(statuses).filter(
     (key) => !mountedKeys.has(key),
@@ -145,30 +173,36 @@ window.__STATES_STATS__ = () => {
 // Only posts for now
 setInterval(
   () => {
-    if (!window.__IDLE__) return;
+    if (!appWindow.__IDLE__) return;
     const { statuses, unfurledLinks, notifications } = states;
     let keysCount = 0;
     const { instance } = api();
-    const mountedKeys = new Set();
+    const mountedKeys = new Set<string>();
     document
       .querySelectorAll('[data-state-post-id], [data-state-post-ids]')
       .forEach(($post) => {
-        const id = $post.dataset.statePostId;
-        const ids = $post.dataset.statePostIds;
+        const el = $post as HTMLElement;
+        const id = el.dataset.statePostId;
+        const ids = el.dataset.statePostIds;
         if (id) mountedKeys.add(id);
-        if (ids) ids.split(/\s+/).forEach((key) => mountedKeys.add(key));
+        if (ids) ids.split(/\s+/).forEach((key: string) => mountedKeys.add(key));
       });
     for (const key in statuses) {
-      if (!window.__IDLE__) break;
+      if (!appWindow.__IDLE__) break;
       try {
-        const postInNotifications = notifications.some(
-          (n) => key === statusKey(n.status?.id, instance),
-        );
+        const postInNotifications = (
+          notifications as unknown as Array<{
+            status?: { id?: string };
+          }>
+        ).some((n) => key === statusKey(n.status?.id, instance));
         if (!mountedKeys.has(key) && !postInNotifications) {
           delete states.statuses[key];
           delete states.statusQuotes[key];
           for (const link in unfurledLinks) {
-            const unfurled = unfurledLinks[link];
+            const unfurled = unfurledLinks[link] as unknown as {
+              id?: string;
+              instance?: string;
+            };
             const sKey = statusKey(unfurled.id, unfurled.instance);
             if (sKey === key) {
               delete states.unfurledLinks[link];
@@ -190,21 +224,28 @@ setInterval(
 // There's probably a better way to do this
 // Related: https://github.com/vitejs/vite/issues/10600
 setTimeout(() => {
-  for (const icon in ICONS) {
+  const iconsMap = ICONS as unknown as Record<
+    string,
+    | (() => Promise<unknown>)
+    | [() => Promise<unknown>, ...unknown[]]
+    | { module?: () => Promise<unknown> }
+  >;
+  for (const icon in iconsMap) {
     setTimeout(() => {
-      if (Array.isArray(ICONS[icon])) {
-        ICONS[icon][0]?.();
-      } else if (typeof ICONS[icon] === 'object') {
-        ICONS[icon].module?.();
+      const entry = iconsMap[icon];
+      if (Array.isArray(entry)) {
+        entry[0]?.();
+      } else if (typeof entry === 'object') {
+        entry.module?.();
       } else {
-        ICONS[icon]?.();
+        (entry as (() => Promise<unknown>) | undefined)?.();
       }
     }, 1);
   }
 }, 5000);
 
 (() => {
-  window.__IDLE__ = true;
+  appWindow.__IDLE__ = true;
   const nonIdleEvents = [
     'mousemove',
     'mousedown',
@@ -216,12 +257,12 @@ setTimeout(() => {
     'wheel',
   ];
   const setIdle = () => {
-    window.__IDLE__ = true;
+    appWindow.__IDLE__ = true;
   };
   const IDLE_TIME = 3_000; // 3 seconds
   const debouncedSetIdle = debounce(setIdle, IDLE_TIME);
   const onNonIdle = () => {
-    window.__IDLE__ = false;
+    appWindow.__IDLE__ = false;
     debouncedSetIdle();
   };
   nonIdleEvents.forEach((event) => {
@@ -237,7 +278,10 @@ setTimeout(() => {
   document.documentElement.addEventListener(
     'mouseleave',
     (e) => {
-      if (!e.relatedTarget && !e.toElement) {
+      if (
+        !e.relatedTarget &&
+        !(e as MouseEvent & { toElement?: EventTarget | null }).toElement
+      ) {
         setIdle();
       }
     },
@@ -271,10 +315,10 @@ if (isIOS) {
       if (showingMediaModal) return;
 
       const theme = store.local.get('theme');
-      let $meta;
+      let $meta: HTMLMetaElement | null;
       if (theme) {
         // Get current meta
-        $meta = document.querySelector(
+        $meta = document.querySelector<HTMLMetaElement>(
           `meta[name="theme-color"][data-theme-setting="manual"]`,
         );
         if ($meta) {
@@ -285,7 +329,7 @@ if (isIOS) {
               : $meta.dataset.themeDarkColorTemp;
           $meta.content = tempColor || '';
           setTimeout(() => {
-            $meta.content = color;
+            ($meta as HTMLMetaElement).content = color;
           }, 10);
         }
       } else {
@@ -295,7 +339,7 @@ if (isIOS) {
           ? 'dark'
           : 'light';
         // Get current theme-color
-        $meta = document.querySelector(
+        $meta = document.querySelector<HTMLMetaElement>(
           `meta[name="theme-color"][media*="${colorScheme}"]`,
         );
         if ($meta) {
@@ -303,7 +347,7 @@ if (isIOS) {
           const tempColor = $meta.dataset.contentTemp;
           $meta.content = tempColor || '';
           setTimeout(() => {
-            $meta.content = color;
+            ($meta as HTMLMetaElement).content = color as string;
           }, 10);
         }
       }
@@ -317,23 +361,23 @@ if (isIOS) {
   if (theme) {
     // dark | light
     document.documentElement.classList.add(`is-${theme}`);
-    document
-      .querySelector('meta[name="color-scheme"]')
-      .setAttribute('content', theme || 'light dark');
+    (
+      document.querySelector('meta[name="color-scheme"]') as HTMLMetaElement
+    ).setAttribute('content', theme || 'light dark');
 
     // Enable manual theme <meta>
-    const $manualMeta = document.querySelector(
+    const $manualMeta = document.querySelector<HTMLMetaElement>(
       'meta[data-theme-setting="manual"]',
     );
     if ($manualMeta) {
       $manualMeta.name = 'theme-color';
       $manualMeta.content =
-        theme === 'light'
+        (theme === 'light'
           ? $manualMeta.dataset.themeLightColor
-          : $manualMeta.dataset.themeDarkColor;
+          : $manualMeta.dataset.themeDarkColor) as string;
     }
     // Disable auto theme <meta>s
-    const $autoMetas = document.querySelectorAll(
+    const $autoMetas = document.querySelectorAll<HTMLMetaElement>(
       'meta[data-theme-setting="auto"]',
     );
     $autoMetas.forEach((m) => {
@@ -347,50 +391,54 @@ if (isIOS) {
 }
 
 subscribe(states, (changes) => {
-  for (const [action, path, value, prevValue] of changes) {
+  for (const [, path, value] of changes as unknown as Array<
+    [unknown, string[], unknown, unknown]
+  >) {
     // Change #app dataset based on settings.shortcutsViewMode
     if (path.join('.') === 'settings.shortcutsViewMode') {
       const $app = document.getElementById('app');
       if ($app) {
-        $app.dataset.shortcutsViewMode = states.shortcuts?.length ? value : '';
+        $app.dataset.shortcutsViewMode = states.shortcuts?.length
+          ? (value as string)
+          : '';
       }
     }
 
     // Add/Remove cloak class to body
     if (path.join('.') === 'settings.cloakMode') {
       const $body = document.body;
-      $body.classList.toggle('cloak', value);
+      $body.classList.toggle('cloak', value as boolean);
     }
 
     // Add/Remove no-animations class to body
     if (path.join('.') === 'settings.noAnimations') {
       const $body = document.body;
-      $body.classList.toggle('no-animations', value);
+      $body.classList.toggle('no-animations', value as boolean);
     }
   }
 });
 
-const BENCHES = new Map();
-window.__BENCH_RESULTS = new Map();
-window.__BENCHMARK = {
-  start(name) {
+const BENCHES = new Map<string, number>();
+appWindow.__BENCH_RESULTS = new Map<string, number>();
+const __BENCHMARK = (appWindow.__BENCHMARK = {
+  start(name: string) {
     if (!import.meta.env.DEV && !import.meta.env.PHANPY_DEV) return;
     // If already started, ignore
     if (BENCHES.has(name)) return;
     const start = performance.now();
     BENCHES.set(name, start);
   },
-  end(name) {
+  end(name: string) {
     if (!import.meta.env.DEV && !import.meta.env.PHANPY_DEV) return;
     const start = BENCHES.get(name);
     if (start) {
       const end = performance.now();
       const duration = end - start;
-      __BENCH_RESULTS.set(name, duration);
+      appWindow.__BENCH_RESULTS!.set(name, duration);
       BENCHES.delete(name);
     }
   },
-};
+});
 
 if (import.meta.env.DEV) {
   // If press shift down, set --time-scale to 10 in root
@@ -411,14 +459,15 @@ if (import.meta.env.DEV) {
   // May be removed in the future
   document.body.classList.toggle(
     'exp-tab-bar-v2',
-    store.local.get('experiments-tabBarV2') ?? false,
+    Boolean(store.local.get('experiments-tabBarV2') ?? false),
   );
 }
 
 // const isPWA = true; // testing
 const isPWA =
   window.matchMedia('(display-mode: standalone)').matches ||
-  window.navigator.standalone === true;
+  (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+    true;
 const PATH_RESTORE_TIME_LIMIT = 1 * 60 * 60 * 1000; // 1 hour, should be good enough
 
 function App() {
@@ -508,25 +557,34 @@ function App() {
           client_id: clientID,
           client_secret: clientSecret,
           vapid_key,
-        } = getCredentialApplication(instanceURL) || {};
-        const vapidKey = getVapidKey(instanceURL) || vapid_key;
+        } = (getCredentialApplication(instanceURL as string) || {}) as {
+          client_id?: string;
+          client_secret?: string;
+          vapid_key?: string;
+        };
+        const vapidKey =
+          (
+            getVapidKey as unknown as (
+              instance?: string | null,
+            ) => unknown
+          )(instanceURL) || vapid_key;
         const verifier = store.sessionCookie.get('codeVerifier');
 
         setUIState('loading');
-        const { access_token: accessToken } = await getAccessToken({
-          instanceURL,
-          client_id: clientID,
+        const { access_token: accessToken } = (await getAccessToken({
+          instanceURL: instanceURL as string,
+          client_id: clientID as string,
           client_secret: clientSecret,
           code,
           code_verifier: verifier || undefined,
-        });
+        })) as { access_token?: string };
 
         if (accessToken) {
           const client = initClient({ instance: instanceURL, accessToken });
           await Promise.allSettled([
             initPreferences(client),
-            initInstance(client, instanceURL),
-            initAccount(client, instanceURL, accessToken, vapidKey),
+            initInstance(client, instanceURL as string),
+            initAccount(client, instanceURL as string, accessToken, vapidKey as string | null | undefined),
           ]);
           initStates();
           window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
@@ -637,7 +695,9 @@ function App() {
     const isRootPath = !location.pathname || location.pathname === '/';
     if (!isRootPath) return;
     if (isPWA && isLoggedIn && uiState === 'default') {
-      const lastPath = store.local.getJSON(lastPathKey);
+      const lastPath = store.local.getJSON(lastPathKey) as
+        | { path?: string; lastAccessed?: number }
+        | null;
       if (lastPath) {
         setTimeout(() => {
           if (lastPath?.path) {
@@ -707,7 +767,7 @@ function Root() {
   return isLoggedIn ? <Home /> : <Welcome />;
 }
 
-function isRootPath(pathname) {
+function isRootPath(pathname: string) {
   return /^\/(login|welcome|_sandbox|_qr-scan|_mock)/i.test(pathname);
 }
 
@@ -727,7 +787,7 @@ const PrimaryRoutes = memo(() => {
       <Route
         path="/_mock/home"
         element={
-          <Suspense>
+          <Suspense fallback={undefined}>
             <MockHome />
           </Suspense>
         }
@@ -750,7 +810,7 @@ const PrimaryRoutes = memo(() => {
 });
 
 // Auth route wrapper that redirects to login if not authenticated
-function AuthRoute({ children }) {
+function AuthRoute({ children }: { children: VNode }) {
   const isLoggedIn = useAuth();
   const location = useLocation();
 
@@ -916,7 +976,7 @@ function SecondaryRoutes() {
                 <div
                   id="year-in-posts-page"
                   class="deck-container"
-                  tabIndex="-1"
+                  tabIndex={-1}
                 >
                   {/* Prevent flash of no background as this is lazy-loaded */}
                   <Loader />
