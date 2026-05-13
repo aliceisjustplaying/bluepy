@@ -81,7 +81,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
         exclusiveFieldRef.current.checked = !!list.exclusive;
       }
     }
-  }, [editMode]);
+  }, [editMode, list]);
   const supportsExclusive =
     supports('@mastodon/list-exclusive') ||
     supports('@gotosocial/list-exclusive');

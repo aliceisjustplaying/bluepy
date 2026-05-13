@@ -151,6 +151,10 @@ function Settings({ onClose }: SettingsProps): VNode {
           <ul>
             <li>
               <div>
+                {/* TODO(oxlint:jsx-a11y/label-has-associated-control): visual
+                    section heading; not a form control label. The form below
+                    has no single primary input for htmlFor. Keeping <label>
+                    for the styling hook in settings.css. */}
                 <label>
                   <Trans>Appearance</Trans>
                 </label>
@@ -229,6 +233,10 @@ function Settings({ onClose }: SettingsProps): VNode {
                     }
                   }}
                 >
+                  {/* TODO(oxlint:jsx-a11y/label-has-associated-control): radio
+                      labels wrap their <input> and contain <Trans> text inside
+                      a <span>; the rule's static analysis doesn't see <Trans>
+                      output as accessible text, but it renders to a string. */}
                   <div class="radio-group">
                     <label>
                       <input
@@ -271,6 +279,8 @@ function Settings({ onClose }: SettingsProps): VNode {
             </li>
             <li>
               <div>
+                {/* TODO(oxlint:jsx-a11y/label-has-associated-control): visual
+                    section heading for a multi-button control. */}
                 <label>
                   <Trans>Text size</Trans>
                 </label>
@@ -279,6 +289,9 @@ function Settings({ onClose }: SettingsProps): VNode {
             </li>
             <li>
               <span>
+                {/* TODO(oxlint:jsx-a11y/label-has-associated-control): visual
+                    label sibling to <LangSelector />'s internal <select>; no
+                    stable id to point htmlFor at. */}
                 <label>
                   <Trans>Display language</Trans>
                 </label>{' '}

@@ -103,9 +103,10 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   const [headerPreview, setHeaderPreview] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  // NOTE: deliberately runs once on mount. `masto.v1.accounts` is a proxy
-  // recreated on every property access; using it as a dep would loop. The
-  // underlying client is stable for the component's lifetime.
+  // TODO(oxlint:react-hooks/exhaustive-deps): deliberately runs once on mount.
+  // `masto.v1.accounts` is a proxy recreated on every property access; using
+  // it as a dep would loop. The underlying client is stable for the
+  // component's lifetime.
   useEffect(() => {
     void (async () => {
       try {

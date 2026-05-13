@@ -367,7 +367,7 @@ function Timeline2({
 
   useEffect(() => {
     hydrateCache();
-  }, []);
+  }, [hydrateCache]);
 
   usePageVisibility(
     (isVisible) => {
@@ -604,6 +604,14 @@ function Timeline2({
   );
   const resetScrollDirection = scrollFn?.resetScrollDirection;
 
+  const checkUpdates = useCallback(async () => {
+    if (!minID.current) return;
+    const hasUpdates = await checkForUpdates({
+      minID: minID.current,
+    });
+    setShowNewer(hasUpdates);
+  }, [checkForUpdates]);
+
   // Restore from cache or load fresh items on mount
   useEffect(() => {
     if (firstLoad.current) {
@@ -618,7 +626,7 @@ function Timeline2({
         });
       }
     }
-  }, [loadItems]);
+  }, [loadItems, checkUpdates]);
 
   // useEffect(() => {
   //   if (firstLoad.current) return;
@@ -628,14 +636,6 @@ function Timeline2({
   //   }
   //   loadItems();
   // }, [clearWhenRefresh, refresh]);
-
-  const checkUpdates = useCallback(async () => {
-    if (!minID.current) return;
-    const hasUpdates = await checkForUpdates({
-      minID: minID.current,
-    });
-    setShowNewer(hasUpdates);
-  }, [checkForUpdates]);
 
   const lastHiddenTime = useRef<number | undefined>(undefined);
   usePageVisibility(
@@ -716,6 +716,11 @@ function Timeline2({
 
   return (
     <FilterContext.Provider value={filterContext}>
+      {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
+          deck container's click handler is a delegated "show header again"
+          gesture triggered by clicking child timeline items, not a primary
+          interactive surface. Keyboard users interact via the actual links
+          and buttons inside. */}
       <div
         id={`${id}-page`}
         class="deck-container timeline-2-container"
@@ -740,6 +745,10 @@ function Timeline2({
         }}
       >
         <div class="timeline-deck deck">
+          {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
+              header click is a tap-to-scroll-to-top affordance for touch;
+              keyboard users press Home. dblclick reloads. Real interactive
+              children (links, buttons) own keyboard navigation. */}
           <header
             ref={headerRef}
             onClick={(e: TargetedMouseEvent<HTMLElement>) => {

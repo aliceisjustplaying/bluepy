@@ -61,6 +61,10 @@ const PostContent =
         }
       }
       divRef.current.replaceChildren(dom.cloneNode(true));
+      // TODO(oxlint:react-hooks/exhaustive-deps): intentional perf optimization
+      // — depend on `emojis?.length` instead of `emojis` to avoid re-running
+      // the DOM-enhancement work when the parent passes a new emoji array
+      // reference with the same contents.
     }, [content, emojis?.length]);
 
     useEffect(() => {
@@ -78,9 +82,15 @@ const PostContent =
           }
         }
       }
+      // TODO(oxlint:react-hooks/exhaustive-deps): intentional perf optimization
+      // — depend on `quotes?.length` instead of the full `quotes` array.
     }, [quotes?.length]);
 
     return (
+      // TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
+      // delegated click handler captures clicks on dynamically-inserted anchor
+      // tags (mentions, hashtags) inside the rendered post HTML. Keyboard users
+      // interact with the actual anchors via Tab+Enter, which works natively.
       <div
         ref={divRef}
         lang={language}

@@ -257,6 +257,9 @@ function NotificationsMenu({
     } else {
       loadNotifications();
     }
+    // TODO(oxlint:react-hooks/exhaustive-deps): `loadNotifications` is recreated
+    // every render and transitively reads from the masto.v1 proxy; adding it
+    // would loop. The effect intentionally re-runs only on menu open/close.
   }, [state, snapStates.notificationsShowNew]);
 
   return (
