@@ -1,29 +1,81 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { ComponentChildren, ComponentType } from 'preact';
 import { useEffect, useReducer, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import { getUserLists } from '../utils/lists';
 
 import Icon from './icon';
-import ListAddEdit from './list-add-edit';
+import ListAddEditUntyped from './list-add-edit';
 import Loader from './loader';
 import Modal from './modal';
 
-function AddRemoveListsSheet({ accountID, onClose }) {
+interface ListLike {
+  id: string;
+  title: string;
+}
+
+interface AccountListsEndpoint {
+  $select(id: string): {
+    lists: { list(): Promise<ListLike[]> };
+  };
+}
+
+interface ListsAccountsEndpoint {
+  $select(id: string): {
+    accounts: {
+      create(params: { accountIds: string[] }): Promise<unknown>;
+      remove(params: { accountIds: string[] }): Promise<unknown>;
+    };
+  };
+}
+
+interface ListAddEditResult {
+  state?: string;
+}
+
+interface ListAddEditProps {
+  list?: ListLike | null;
+  onClose?: (result: ListAddEditResult) => void;
+}
+const ListAddEdit = ListAddEditUntyped as unknown as ComponentType<ListAddEditProps>;
+
+type ListAddEditModalState = boolean | { list?: ListLike };
+
+type UIState = 'default' | 'loading' | 'error';
+
+interface AddRemoveListsSheetProps {
+  accountID: string;
+  onClose?: ((event?: Event) => void) | null;
+  children?: ComponentChildren;
+}
+
+function AddRemoveListsSheet({
+  accountID,
+  onClose,
+}: AddRemoveListsSheetProps) {
   const { t } = useLingui();
   const { masto } = api();
-  const [uiState, setUIState] = useState('default');
-  const [lists, setLists] = useState([]);
-  const [listsContainingAccount, setListsContainingAccount] = useState([]);
-  const [reloadCount, reload] = useReducer((c) => c + 1, 0);
+  const [uiState, setUIState] = useState<UIState>('default');
+  const [lists, setLists] = useState<ListLike[]>([]);
+  const [listsContainingAccount, setListsContainingAccount] = useState<
+    ListLike[]
+  >([]);
+  const [reloadCount, reload] = useReducer<number, void, number>(
+    (c) => c + 1,
+    0,
+    (init) => init,
+  );
 
   useEffect(() => {
     setUIState('loading');
     (async () => {
       try {
         const lists = await getUserLists();
-        setLists(lists);
-        const listsContainingAccount = await masto.v1.accounts
+        setLists(lists as ListLike[]);
+        const accountsEndpoint =
+          masto.v1.accounts as unknown as AccountListsEndpoint;
+        const listsContainingAccount = await accountsEndpoint
           .$select(accountID)
           .lists.list();
         console.log({ lists, listsContainingAccount });
@@ -36,12 +88,13 @@ function AddRemoveListsSheet({ accountID, onClose }) {
     })();
   }, [reloadCount]);
 
-  const [showListAddEditModal, setShowListAddEditModal] = useState(false);
+  const [showListAddEditModal, setShowListAddEditModal] =
+    useState<ListAddEditModalState>(false);
 
   return (
     <div class="sheet" id="list-add-remove-container">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" class="sheet-close" onClick={(e) => onClose(e)}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -67,14 +120,16 @@ function AddRemoveListsSheet({ accountID, onClose }) {
                       setUIState('loading');
                       (async () => {
                         try {
+                          const listsEndpoint =
+                            masto.v1.lists as unknown as ListsAccountsEndpoint;
                           if (inList) {
-                            await masto.v1.lists
+                            await listsEndpoint
                               .$select(list.id)
                               .accounts.remove({
                                 accountIds: [accountID],
                               });
                           } else {
-                            await masto.v1.lists
+                            await listsEndpoint
                               .$select(list.id)
                               .accounts.create({
                                 accountIds: [accountID],
@@ -135,7 +190,11 @@ function AddRemoveListsSheet({ accountID, onClose }) {
           }}
         >
           <ListAddEdit
-            list={showListAddEditModal?.list}
+            list={
+              typeof showListAddEditModal === 'object'
+                ? showListAddEditModal.list
+                : undefined
+            }
             onClose={(result) => {
               if (result.state === 'success') {
                 reload();
