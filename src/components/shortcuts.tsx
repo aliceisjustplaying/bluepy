@@ -1,12 +1,21 @@
 import './shortcuts.css';
 
+import type { MessageDescriptor } from '@lingui/core';
+import { useLingui as useLinguiCore } from '@lingui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { ControlledMenu, MenuDivider, MenuHeader } from '@szhsin/react-menu';
+import {
+  ControlledMenu,
+  type MenuInstance,
+  type MenuState,
+  MenuDivider,
+  MenuHeader,
+} from '@szhsin/react-menu';
+import type { JSX } from 'preact';
 import { memo } from 'preact/compat';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useNavigate } from 'react-router-dom';
-import { useLongPress } from 'use-long-press';
+import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
 import { SHORTCUTS_META } from '../components/shortcuts-settings';
@@ -24,7 +33,34 @@ import MenuLink from './menu-link';
 import Menu2 from './menu2';
 import SubMenu2 from './submenu2';
 
-function ListsMenuContent({ lists }) {
+interface ListLike {
+  id: string;
+  title: string;
+  exclusive?: boolean;
+  [key: string]: unknown;
+}
+
+interface AltIconValue {
+  url?: string;
+  type?: string;
+}
+
+interface FormattedShortcut {
+  id?: string;
+  path?: string;
+  title?: string | Promise<string>;
+  subtitle?: string | Promise<string>;
+  icon?: string;
+  altIcon?: AltIconValue;
+}
+
+interface ShortcutPin {
+  type?: string;
+  instance?: string;
+  [key: string]: unknown;
+}
+
+function ListsMenuContent({ lists }: { lists: ListLike[] }) {
   const { lists: userLists, feeds } = splitListsAndFeeds(lists);
   return (
     <>
@@ -71,7 +107,8 @@ function ListsMenuContent({ lists }) {
 }
 
 function Shortcuts() {
-  const { t, _ } = useLingui();
+  const { t } = useLingui();
+  const { i18n } = useLinguiCore();
   const { instance } = api();
   const snapStates = useSnapshot(states);
   const { shortcuts, settings } = snapStates;
@@ -84,21 +121,34 @@ function Shortcuts() {
       (!settings.shortcutsViewMode && settings.shortcutsColumnsMode)) &&
     !!shortcuts.length;
 
-  const menuRef = useRef();
-  const tabBarRef = useRef();
+  const menuRef = useRef<MenuInstance | null>(null);
+  const tabBarRef = useRef<HTMLElement | null>(null);
 
   const hasLists = useRef(false);
-  const formattedShortcuts = shortcuts
-    .map((pin, i) => {
+  const shortcutsMeta = SHORTCUTS_META as unknown as Record<
+    string,
+    {
+      id?: unknown;
+      path?: unknown;
+      title?: unknown;
+      subtitle?: unknown;
+      icon?: unknown;
+      altIcon?: unknown;
+    }
+  >;
+  const formattedShortcuts: FormattedShortcut[] = (
+    shortcuts as ShortcutPin[]
+  )
+    .map((pin, i): FormattedShortcut | null => {
       const { type, ...data } = pin;
-      if (!SHORTCUTS_META[type]) return null;
-      let { id, path, title, subtitle, icon, altIcon } = SHORTCUTS_META[type];
+      if (!type || !shortcutsMeta[type]) return null;
+      let { id, path, title, subtitle, icon, altIcon } = shortcutsMeta[type];
 
       if (typeof id === 'function') {
-        id = id(data, i);
+        id = (id as (d: unknown, i: number) => unknown)(data, i);
       }
       if (typeof path === 'function') {
-        path = path(
+        path = (path as (d: unknown, i: number) => unknown)(
           {
             ...data,
             instance: data.instance || instance,
@@ -107,22 +157,30 @@ function Shortcuts() {
         );
       }
       if (typeof title === 'function') {
-        title = title(data, i);
-      } else if (title?.id) {
+        title = (title as (d: unknown, i: number) => unknown)(data, i);
+      } else if (
+        title &&
+        typeof title === 'object' &&
+        'id' in (title as Record<string, unknown>)
+      ) {
         // Check if it's MessageDescriptor
-        title = _(title);
+        title = i18n._(title as MessageDescriptor);
       }
       if (typeof subtitle === 'function') {
-        subtitle = subtitle(data, i);
-      } else if (subtitle?.id) {
+        subtitle = (subtitle as (d: unknown, i: number) => unknown)(data, i);
+      } else if (
+        subtitle &&
+        typeof subtitle === 'object' &&
+        'id' in (subtitle as Record<string, unknown>)
+      ) {
         // Check if it's MessageDescriptor
-        subtitle = _(subtitle);
+        subtitle = i18n._(subtitle as MessageDescriptor);
       }
       if (typeof icon === 'function') {
-        icon = icon(data, i);
+        icon = (icon as (d: unknown, i: number) => unknown)(data, i);
       }
       if (typeof altIcon === 'function') {
-        altIcon = altIcon(data, i);
+        altIcon = (altIcon as (d: unknown, i: number) => unknown)(data, i);
       }
 
       if (id === 'lists') {
@@ -130,15 +188,15 @@ function Shortcuts() {
       }
 
       return {
-        id,
-        path,
-        title,
-        subtitle,
-        icon,
-        altIcon,
+        id: id as string | undefined,
+        path: path as string | undefined,
+        title: title as string | Promise<string> | undefined,
+        subtitle: subtitle as string | Promise<string> | undefined,
+        icon: icon as string | undefined,
+        altIcon: altIcon as AltIconValue | undefined,
       };
     })
-    .filter(Boolean);
+    .filter((item): item is FormattedShortcut => item !== null);
 
   // Auto-scroll to active tab on first render
   useEffect(() => {
@@ -148,7 +206,7 @@ function Shortcuts() {
     ) {
       const timeoutId = setTimeout(() => {
         const activeTab = tabBarRef.current?.querySelector('.is-active');
-        if (activeTab) {
+        if (activeTab instanceof HTMLElement) {
           activeTab.scrollIntoView({
             behavior: 'smooth',
             block: 'nearest',
@@ -177,7 +235,7 @@ function Shortcuts() {
     {
       enabled: !isMultiColumnMode,
       useKey: true,
-      ignoreEventWhen: (e) => {
+      ignoreEventWhen: (e: KeyboardEvent) => {
         // Allow number even with Shift (e.g. French AZERTY requires Shift for numbers)
         if (/^[1-9]$/.test(e.key)) return false;
         return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
@@ -185,11 +243,13 @@ function Shortcuts() {
     },
   );
 
-  const [lists, setLists] = useState([]);
+  const [lists, setLists] = useState<ListLike[]>([]);
 
-  const listsMenuRef = useRef();
-  const listsLinkRef = useRef();
-  const [listsMenuState, setListsMenuState] = useState(undefined);
+  const listsMenuRef = useRef<MenuInstance | null>(null);
+  const listsLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const [listsMenuState, setListsMenuState] = useState<MenuState | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     if (listsMenuState === 'open') {
@@ -203,7 +263,7 @@ function Shortcuts() {
     },
     {
       threshold: 600,
-      detect: 'touch',
+      detect: LongPressEventType.Touch,
       cancelOnMovement: true,
     },
   );
@@ -214,7 +274,7 @@ function Shortcuts() {
     },
     {
       threshold: 600,
-      detect: 'touch',
+      detect: LongPressEventType.Touch,
       cancelOnMovement: true,
     },
   );
@@ -238,11 +298,11 @@ function Shortcuts() {
             <ul>
               {formattedShortcuts.map(
                 ({ id, path, title, subtitle, icon, altIcon }, i) => {
-                  const extraProps =
+                  const extraProps: Record<string, unknown> =
                     id === 'lists'
                       ? {
                           ref: listsLinkRef,
-                          onContextMenu(e) {
+                          onContextMenu(e: MouseEvent) {
                             e.preventDefault();
                             e.stopPropagation();
                             setListsMenuState('open');
@@ -251,7 +311,7 @@ function Shortcuts() {
                         }
                       : id === 'profile'
                         ? {
-                            onContextMenu(e) {
+                            onContextMenu(e: MouseEvent) {
                               e.preventDefault();
                               e.stopPropagation();
                               states.showAccounts = true;
@@ -264,16 +324,17 @@ function Shortcuts() {
                     <li key={`${i}-${id}-${title}-${subtitle}-${path}`}>
                       <Link
                         class={subtitle ? 'has-subtitle' : ''}
-                        to={path}
-                        onClick={(e) => {
-                          if (e.target.classList.contains('is-active')) {
+                        to={path ?? ''}
+                        onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
+                          const target = e.target as HTMLElement;
+                          if (target.classList.contains('is-active')) {
                             e.preventDefault();
                             const page = document.getElementById(`${id}-page`);
                             if (page) {
                               page.scrollTop = 0;
                               const updatesButton =
                                 page.querySelector('.updates-button');
-                              if (updatesButton) {
+                              if (updatesButton instanceof HTMLElement) {
                                 updatesButton.click();
                               }
                             }
@@ -298,7 +359,7 @@ function Shortcuts() {
                           <Icon icon={icon} size="xl" />
                         )}
                         <span>
-                          <AsyncText>{title}</AsyncText>
+                          <AsyncText>{title ?? ''}</AsyncText>
                           {subtitle && (
                             <>
                               <br />
@@ -357,8 +418,11 @@ function Shortcuts() {
               onTransitionStart={(e) => {
                 // Close menu if the button disappears
                 try {
-                  const { target } = e;
-                  if (getComputedStyle(target).pointerEvents === 'none') {
+                  const target = e.target as Element | null;
+                  if (
+                    target &&
+                    getComputedStyle(target).pointerEvents === 'none'
+                  ) {
                     menuRef.current?.closeMenu?.();
                   }
                 } catch (e) {}
@@ -379,7 +443,7 @@ function Shortcuts() {
                     <>
                       <Icon icon={icon} size="l" />
                       <span class="menu-grow">
-                        <AsyncText>{title}</AsyncText>
+                        <AsyncText>{title ?? ''}</AsyncText>
                       </span>
                       <Icon icon="chevron-right" />
                     </>
@@ -399,7 +463,7 @@ function Shortcuts() {
                 <Icon icon={icon} size="l" />{' '}
                 <span class="menu-grow">
                   <span>
-                    <AsyncText>{title}</AsyncText>
+                    <AsyncText>{title ?? ''}</AsyncText>
                   </span>
                   {subtitle && (
                     <>
