@@ -5,7 +5,14 @@ import { msg, plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { deepEqual } from 'fast-equals';
-import type { ComponentChildren, ComponentType, JSX, RefObject } from 'preact';
+import type {
+  ComponentChildren,
+  ComponentType,
+  RefObject,
+  TargetedEvent,
+  TargetedKeyboardEvent,
+  TextareaHTMLAttributes,
+} from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { uid } from 'uid/single';
@@ -61,7 +68,7 @@ import TextareaRaw from './compose-textarea';
 // generic `HTMLAttributes`. The underlying component already forwards all
 // extra attrs to the DOM textarea, so this is a typing-only shim.
 const Textarea = TextareaRaw as unknown as ComponentType<
-  JSX.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  TextareaHTMLAttributes & {
     maxCharacters?: number;
     onTrigger?: ((payload: ToolbarAction) => void) | null;
     ref?: RefObject<HTMLTextAreaElement | null> | null;
@@ -423,7 +430,7 @@ const DEFAULT_LANG: string =
   ) || 'en';
 
 // https://github.com/mastodon/mastodon/blob/c4a429ed47e85a6bbf0d470a41cc2f64cf120c19/app/javascript/mastodon/features/compose/util/counter.js
-const usernameRegex = /(^|[^\/\w])[@＠](([a-z0-9_]+)@[a-z0-9\.\-]+[a-z0-9]+)/gi;
+const usernameRegex = /(^|[^/\w])[@＠](([a-z0-9_]+)@[a-z0-9.-]+[a-z0-9]+)/gi;
 const urlPlaceholder = '$2xxxxxxxxxxxxxxxxxxxxxxx';
 function countableText(inputText: string): string {
   return inputText
@@ -476,6 +483,49 @@ function fixLanguage(language: unknown): string | null {
     return fixedLanguage;
   }
   return null;
+}
+
+function insertTextAtCursor({
+  targetElement,
+  text,
+}: {
+  targetElement: HTMLInputElement | HTMLTextAreaElement | null | undefined;
+  text: string;
+}): void {
+  if (!targetElement) return;
+
+  // Original JS reads selectionStart/selectionEnd directly; for text-y
+  // inputs these are numbers in practice. Narrow with non-null assertion.
+  const selectionStart = targetElement.selectionStart as unknown as number;
+  const selectionEnd = targetElement.selectionEnd as unknown as number;
+  const { value } = targetElement;
+  let textBeforeInsert = value.slice(0, selectionStart);
+
+  // Remove zero-width space from end of text
+  textBeforeInsert = textBeforeInsert.replace(/​$/, '');
+
+  const spaceBeforeInsert = textBeforeInsert
+    ? /[\s\t\n\r]$/.test(textBeforeInsert)
+      ? ''
+      : ' '
+    : '';
+
+  const textAfterInsert = value.slice(selectionEnd);
+  const spaceAfterInsert = /^[\s\t\n\r]/.test(textAfterInsert) ? '' : ' ';
+
+  const newText =
+    textBeforeInsert +
+    spaceBeforeInsert +
+    text +
+    spaceAfterInsert +
+    textAfterInsert;
+
+  targetElement.value = newText;
+  const newPos = selectionEnd + text.length + spaceAfterInsert.length;
+  targetElement.selectionStart = newPos;
+  targetElement.selectionEnd = newPos;
+  targetElement.focus();
+  targetElement.dispatchEvent(new Event('input'));
 }
 
 function Compose({
@@ -549,15 +599,9 @@ function Compose({
     statuses: {
       maxCharacters,
       maxMediaAttachments, // Beware: it can be undefined!
-      charactersReservedPerUrl,
     } = {},
     mediaAttachments: {
       supportedMimeTypes,
-      imageSizeLimit,
-      imageMatrixLimit,
-      videoSizeLimit,
-      videoMatrixLimit,
-      videoFrameRateLimit,
       descriptionLimit,
     } = {},
     polls: {
@@ -634,18 +678,20 @@ function Compose({
     const requestId = linkPreviewRef.current.id + 1;
     linkPreviewRef.current.id = requestId;
     setLinkPreview({ url, loading: true });
-    linkPreviewRef.current.timeout = setTimeout(async () => {
-      try {
-        const metadata = (await fetchAtprotoLinkMetadata(url)) as
-          | LinkPreviewMetadata
-          | null
-          | undefined;
-        if (requestId !== linkPreviewRef.current.id) return;
-        setLinkPreview(metadata ? { url, metadata } : null);
-      } catch (e) {
-        console.error(e);
-        if (requestId === linkPreviewRef.current.id) setLinkPreview(null);
-      }
+    linkPreviewRef.current.timeout = setTimeout(() => {
+      void (async () => {
+        try {
+          const metadata = (await fetchAtprotoLinkMetadata(url)) as
+            | LinkPreviewMetadata
+            | null
+            | undefined;
+          if (requestId !== linkPreviewRef.current.id) return;
+          setLinkPreview(metadata ? { url, metadata } : null);
+        } catch (e) {
+          console.error(e);
+          if (requestId === linkPreviewRef.current.id) setLinkPreview(null);
+        }
+      })();
     }, 300);
   };
 
@@ -653,12 +699,15 @@ function Compose({
   const checkQuoteEligibility = (status: StatusLike): boolean => {
     if (!supportsNativeQuote()) return false;
 
-    const { visibility, quoteApproval, account } = status;
-    const isSelf = !!(
-      currentAccountInfo && currentAccountInfo.id === account?.id
-    );
-    const isPublic = ['public', 'unlisted'].includes(visibility ?? '');
-    const isMineAndPrivate = isSelf && visibility === 'private';
+    const {
+      visibility: statusVisibility,
+      quoteApproval,
+      account,
+    } = status;
+    const isSelf =
+      !!currentAccountInfo && currentAccountInfo.id === account?.id;
+    const isPublic = ['public', 'unlisted'].includes(statusVisibility ?? '');
+    const isMineAndPrivate = isSelf && statusVisibility === 'private';
 
     const quoteApprovalNarrowed = quoteApproval as
       | { currentUser?: string }
@@ -718,7 +767,7 @@ function Compose({
               other: 'You can only attach up to # files.',
             }),
           );
-          return;
+          return undefined;
         }
         allowedFiles = allowedFiles.slice(0, max);
       }
@@ -815,48 +864,6 @@ function Compose({
       textareaRef.current?.focus();
     }, 300);
   };
-  const insertTextAtCursor = ({
-    targetElement,
-    text,
-  }: {
-    targetElement: HTMLInputElement | HTMLTextAreaElement | null | undefined;
-    text: string;
-  }): void => {
-    if (!targetElement) return;
-
-    // Original JS reads selectionStart/selectionEnd directly; for text-y
-    // inputs these are numbers in practice. Narrow with non-null assertion.
-    const selectionStart = targetElement.selectionStart as unknown as number;
-    const selectionEnd = targetElement.selectionEnd as unknown as number;
-    const { value } = targetElement;
-    let textBeforeInsert = value.slice(0, selectionStart);
-
-    // Remove zero-width space from end of text
-    textBeforeInsert = textBeforeInsert.replace(/\u200B$/, '');
-
-    const spaceBeforeInsert = textBeforeInsert
-      ? /[\s\t\n\r]$/.test(textBeforeInsert)
-        ? ''
-        : ' '
-      : '';
-
-    const textAfterInsert = value.slice(selectionEnd);
-    const spaceAfterInsert = /^[\s\t\n\r]/.test(textAfterInsert) ? '' : ' ';
-
-    const newText =
-      textBeforeInsert +
-      spaceBeforeInsert +
-      text +
-      spaceAfterInsert +
-      textAfterInsert;
-
-    targetElement.value = newText;
-    const newPos = selectionEnd + text.length + spaceAfterInsert.length;
-    targetElement.selectionStart = newPos;
-    targetElement.selectionEnd = newPos;
-    targetElement.focus();
-    targetElement.dispatchEvent(new Event('input'));
-  };
   const lastFocusedFieldRef = useRef<HTMLElement | null>(null);
   const lastFocusedEmojiFieldRef = useRef<HTMLElement | null>(null);
   const focusLastFocusedField = (): void => {
@@ -907,7 +914,11 @@ function Compose({
     if (replyToStatus) {
       // sensitive read here only for parity with the original JS destructure
       // (it is read from `!!spoilerText` below). Keep destructure shape stable.
-      const { spoilerText, visibility, language } = replyToStatus;
+      const {
+        spoilerText,
+        visibility: replyVisibility,
+        language: replyLanguage,
+      } = replyToStatus;
       if (spoilerText && spoilerTextRef.current) {
         spoilerTextRef.current.value = spoilerText;
       }
@@ -959,38 +970,39 @@ function Compose({
       const defaultVisPref = prefString('posting:default:visibility');
       // Preserve original: passes `visibility` directly when no pref override.
       setVisibility(
-        visibility === 'public' && defaultVisPref
+        replyVisibility === 'public' && defaultVisPref
           ? defaultVisPref.toLowerCase()
-          : (visibility as string),
+          : (replyVisibility as string),
       );
       setLanguage(
-        fixLanguage(language) ||
+        fixLanguage(replyLanguage) ||
           prefString('posting:default:language')?.toLowerCase() ||
           DEFAULT_LANG,
       );
       setSensitive(!!spoilerText);
     } else if (editStatus) {
       const {
-        visibility,
-        language,
-        sensitive,
-        poll,
-        mediaAttachments,
+        visibility: editVisibility,
+        language: editLanguage,
+        sensitive: editSensitive,
+        poll: editPoll,
+        mediaAttachments: editMediaAttachments,
         quoteApproval,
       } = editStatus;
-      const composablePoll = poll?.options
+      const composablePoll = editPoll?.options
         ? {
-            ...poll,
-            options: poll.options.map(
+            ...editPoll,
+            options: editPoll.options.map(
               (o) => (typeof o === 'string' ? o : o?.title || o) as string,
             ),
             expiresIn:
-              poll?.expiresIn || expiresInFromExpiresAt(poll.expiresAt),
-            multiple: !!poll.multiple,
+              editPoll?.expiresIn ||
+              expiresInFromExpiresAt(editPoll.expiresAt),
+            multiple: !!editPoll.multiple,
           }
         : null;
       setUIState('loading');
-      (async () => {
+      void (async () => {
         try {
           const statusSource = await masto.v1.statuses
             .$select(editStatus.id)
@@ -1006,9 +1018,9 @@ function Compose({
           }
           // Original JS passed `visibility` directly; preserve that (may be
           // undefined for some statuses, mirroring the JS state shape).
-          setVisibility(visibility as string);
+          setVisibility(editVisibility as string);
           setLanguage(
-            language ||
+            editLanguage ||
               prefString('posting:default:language')?.toLowerCase() ||
               DEFAULT_LANG,
           );
@@ -1017,9 +1029,9 @@ function Compose({
               getPostQuoteApprovalPolicy(quoteApproval);
             setQuoteApprovalPolicy(postQuoteApprovalPolicy);
           }
-          setSensitive(!!sensitive);
+          setSensitive(!!editSensitive);
           if (composablePoll) setPoll(composablePoll as unknown as PollState);
-          setMediaAttachments(mediaAttachments ?? []);
+          setMediaAttachments(editMediaAttachments ?? []);
           setUIState('default');
         } catch (e) {
           console.error(e);
@@ -1045,8 +1057,8 @@ function Compose({
       if (defaultQuotePolicy) {
         let policy = defaultQuotePolicy.toLowerCase();
         if (defaultVis) {
-          const visibility = defaultVis.toLowerCase();
-          if (visibility === 'private' || visibility === 'direct') {
+          const visLower = defaultVis.toLowerCase();
+          if (visLower === 'private' || visLower === 'direct') {
             policy = 'nobody';
           }
         }
@@ -1057,24 +1069,25 @@ function Compose({
       const {
         status,
         spoilerText,
-        visibility,
-        language,
-        sensitive,
-        sensitiveMedia,
-        poll,
-        mediaAttachments,
-        scheduledAt,
-        quoteApprovalPolicy,
+        visibility: draftVisibility,
+        language: draftLanguage,
+        sensitive: draftSensitive,
+        sensitiveMedia: draftSensitiveMedia,
+        poll: draftPoll,
+        mediaAttachments: draftMediaAttachments,
+        scheduledAt: draftScheduledAt,
+        quoteApprovalPolicy: draftQuoteApprovalPolicy,
       } = draftStatus;
-      const composablePoll = poll?.options
+      const composablePoll = draftPoll?.options
         ? {
-            ...poll,
-            options: poll.options.map(
+            ...draftPoll,
+            options: draftPoll.options.map(
               (o) => (typeof o === 'string' ? o : o?.title || o) as string,
             ),
             expiresIn:
-              poll?.expiresIn || expiresInFromExpiresAt(poll.expiresAt),
-            multiple: !!poll.multiple,
+              draftPoll?.expiresIn ||
+              expiresInFromExpiresAt(draftPoll.expiresAt),
+            multiple: !!draftPoll.multiple,
           }
         : null;
       textareaRef.current!.value = status ?? '';
@@ -1084,9 +1097,9 @@ function Compose({
       focusTextarea(cursorPos);
       if (spoilerText && spoilerTextRef.current)
         spoilerTextRef.current.value = spoilerText;
-      if (visibility) setVisibility(visibility);
+      if (draftVisibility) setVisibility(draftVisibility);
       setLanguage(
-        language ||
+        draftLanguage ||
           prefString('posting:default:language')?.toLowerCase() ||
           DEFAULT_LANG,
       );
@@ -1094,16 +1107,20 @@ function Compose({
       // because the state is typed boolean; undefined would silently set the
       // store to undefined in JS, which downstream readers already treat as
       // falsy via `!!` checks.
-      if (sensitiveMedia !== null) setSensitiveMedia(!!sensitiveMedia);
-      if (sensitive !== null) setSensitive(!!sensitive);
+      if (draftSensitiveMedia !== null)
+        setSensitiveMedia(!!draftSensitiveMedia);
+      if (draftSensitive !== null) setSensitive(!!draftSensitive);
       if (composablePoll) setPoll(composablePoll as unknown as PollState);
-      if (mediaAttachments) setMediaAttachments(mediaAttachments);
-      if (scheduledAt) {
+      if (draftMediaAttachments) setMediaAttachments(draftMediaAttachments);
+      if (draftScheduledAt) {
         const d =
-          scheduledAt instanceof Date ? scheduledAt : new Date(scheduledAt);
+          draftScheduledAt instanceof Date
+            ? draftScheduledAt
+            : new Date(draftScheduledAt);
         setScheduledAt(d);
       }
-      if (quoteApprovalPolicy) setQuoteApprovalPolicy(quoteApprovalPolicy);
+      if (draftQuoteApprovalPolicy)
+        setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
     }
   }, [draftStatus, editStatus, replyToStatus, replyMode]);
 
@@ -1122,6 +1139,7 @@ function Compose({
             if (mediaFiles) {
               setMediaAttachments(mediaFiles);
             }
+            return undefined;
           })
           .catch((err) => {
             console.error('Failed to process file(s):', err);
@@ -1216,6 +1234,9 @@ function Compose({
     const handleBeforeUnload = (e: BeforeUnloadEvent): void => {
       if (!canClose()) {
         e.preventDefault();
+        // TODO(oxlint:typescript/no-deprecated): returnValue is deprecated, but
+        // some browsers still require it as a fallback alongside preventDefault.
+        // The custom string also lets browsers show our message when supported.
         e.returnValue = beforeUnloadCopy;
       }
     };
@@ -1363,6 +1384,7 @@ function Compose({
         })
         .then(() => {
           console.debug('DRAFT saved', key, backgroundDraft);
+          return undefined;
         })
         .catch((e: unknown) => {
           console.error('DRAFT failed', key, e);
@@ -1376,9 +1398,9 @@ function Compose({
     // If unmounted, means user discarded the draft
     // Also means pop-out 🙈, but it's okay because the pop-out will persist the ID and re-create the draft
     return () => {
-      (db.drafts as unknown as { del(key: string): Promise<unknown> }).del(
-        draftKey(),
-      );
+      void (
+        db.drafts as unknown as { del(key: string): Promise<unknown> }
+      ).del(draftKey());
     };
   }, []);
 
@@ -1407,6 +1429,7 @@ function Compose({
             if (mediaFiles) {
               setMediaAttachments((prev) => [...prev, ...mediaFiles]);
             }
+            return undefined;
           })
           .catch((err: unknown) => {
             console.error('Failed to process file(s):', err);
@@ -1470,7 +1493,7 @@ function Compose({
       if (codeB === language) return 1;
       return commonA.localeCompare(commonB);
     });
-    restLanguages.sort(([codeA, commonA], [codeB, commonB]) =>
+    restLanguages.sort(([, commonA], [, commonB]) =>
       commonA.localeCompare(commonB),
     );
     return [topLanguages, restLanguages];
@@ -1499,7 +1522,7 @@ function Compose({
     !!poll; /* ||
     !!currentQuoteStatus?.id; */
 
-  const cwButtonDisabled = uiState === 'loading' || !!sensitive;
+  const cwButtonDisabled = uiState === 'loading' || sensitive;
   const onCWButtonClick = (): void => {
     setSensitive(true);
     setTimeout(() => {
@@ -1792,17 +1815,20 @@ function Compose({
               }
             }, 10);
           }}
-          onKeyDown={(e: JSX.TargetedKeyboardEvent<HTMLFormElement>) => {
-            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+          onKeyDown={(keyEvent: TargetedKeyboardEvent<HTMLFormElement>) => {
+            if (
+              keyEvent.key === 'Enter' &&
+              (keyEvent.ctrlKey || keyEvent.metaKey)
+            ) {
               formRef.current!.dispatchEvent(
                 new Event('submit', { cancelable: true }),
               );
             }
           }}
-          onSubmit={(e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
-            e.preventDefault();
+          onSubmit={(submitEvent: TargetedEvent<HTMLFormElement>) => {
+            submitEvent.preventDefault();
 
-            const formData = new FormData(e.target as HTMLFormElement);
+            const formData = new FormData(submitEvent.target as HTMLFormElement);
             const entries = Object.fromEntries(formData.entries()) as Record<
               string,
               FormDataEntryValue
@@ -1830,9 +1856,9 @@ function Compose({
               typeof rawStatus === 'string' ? rawStatus : undefined;
             let spoilerText: string | undefined =
               typeof rawSpoilerText === 'string' ? rawSpoilerText : undefined;
-            const visibility: string | undefined =
+            const submitVisibility: string | undefined =
               typeof rawVisibility === 'string' ? rawVisibility : undefined;
-            const quoteApprovalPolicy: string | undefined =
+            const submitQuoteApprovalPolicy: string | undefined =
               typeof rawQuoteApprovalPolicy === 'string'
                 ? rawQuoteApprovalPolicy
                 : undefined;
@@ -1885,7 +1911,7 @@ function Compose({
             // states.composerState.minimized = true;
             composerState.publishing = true;
             setUIState('loading');
-            (async () => {
+            void (async () => {
               try {
                 console.log('MEDIA ATTACHMENTS', mediaAttachments);
                 if (mediaAttachments.length > 0) {
@@ -1896,7 +1922,7 @@ function Compose({
                     console.log('UPLOADING', attachment);
                     if (id) {
                       // If already uploaded
-                      return attachment;
+                      return Promise.resolve(attachment);
                     } else {
                       // Reconstruct File from fileData, or fall back to legacy file object
                       const fileObj = fileData
@@ -1938,7 +1964,7 @@ function Compose({
                         // bug, not changed in this TS migration.
                         const i: number | undefined = undefined;
                         alert(
-                          (result as PromiseRejectedResult).reason ||
+                          result.reason ||
                             t`Attachment #${i} failed`,
                         );
                       }
@@ -1988,12 +2014,12 @@ function Compose({
                   }
                 } else {
                   if (supportsNativeQuote()) {
-                    params.quote_approval_policy = quoteApprovalPolicy;
+                    params.quote_approval_policy = submitQuoteApprovalPolicy;
                     if (currentQuoteStatus?.id) {
                       params.quoted_status_id = currentQuoteStatus.id;
                     }
                   }
-                  params.visibility = visibility;
+                  params.visibility = submitVisibility;
                   // params.inReplyToId = replyToStatus?.id || undefined;
                   params.in_reply_to_id = replyToStatus?.id || undefined;
                   params.scheduled_at = scheduledAtIso;
@@ -2027,7 +2053,7 @@ function Compose({
                         },
                       },
                     });
-                  } catch (_) {
+                  } catch {
                     // If idempotency key fails, try again without it
                     newStatus = await masto.v1.statuses.create(params);
                   }
@@ -2093,7 +2119,7 @@ function Compose({
                     updateCharCount();
                   }}
                   onKeyDown={(
-                    e: JSX.TargetedKeyboardEvent<HTMLInputElement>,
+                    e: TargetedKeyboardEvent<HTMLInputElement>,
                   ) => {
                     if (
                       e.key === 'Enter' &&
@@ -2126,7 +2152,7 @@ function Compose({
                   ? t`Post your reply`
                   : editStatus
                     ? t`Edit your post`
-                    : !!poll
+                    : poll
                       ? t`Ask a question`
                       : t`What are you doing?`
               }
@@ -2154,7 +2180,7 @@ function Compose({
                 ) {
                   setAutoDetectedLanguages(action.languages);
                 } else if (action?.name === 'pasted-link' && action?.url) {
-                  handlePastedLink(action.url);
+                  void handlePastedLink(action.url);
                 }
               }}
             />
@@ -2211,13 +2237,14 @@ function Compose({
             <div class="media-attachments">
               {mediaAttachments.map((attachment, i) => {
                 const { id, file } = attachment;
-                // Preserve original JS template-string-via-`+`: if any of
-                // file.size/type/name is undefined, the result is the JS
-                // concatenation result ("undefinedundefinedundefined" etc).
-                const fileID =
-                  (file?.size as number | undefined)! +
-                  (file?.type as string | undefined)! +
-                  (file?.name as string | undefined)!;
+                // Preserve original JS arithmetic exactly. The original was
+                // `file?.size + file?.type + file?.name`, which yields NaN
+                // (falsy → fallback to `i`) when `file` is undefined, and a
+                // stable string ("5image/pngimg.png") when fully populated.
+                const fileID: string | number =
+                  (file?.size as unknown as number) +
+                  (file?.type as unknown as string) +
+                  (file?.name as unknown as string);
                 return (
                   <MediaAttachment
                     key={id || fileID || i}
@@ -2238,7 +2265,7 @@ function Compose({
                     }}
                     onRemove={() => {
                       setMediaAttachments((attachments) => {
-                        return attachments.filter((_, j) => j !== i);
+                        return attachments.filter((_a, j) => j !== i);
                       });
                     }}
                   />
@@ -2250,10 +2277,10 @@ function Compose({
                   type="checkbox"
                   checked={sensitiveMedia}
                   disabled={uiState === 'loading'}
-                  onChange={(e: JSX.TargetedEvent<HTMLInputElement, Event>) => {
-                    const sensitiveMedia = (e.target as HTMLInputElement)
+                  onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                    const nextSensitiveMedia = (e.target as HTMLInputElement)
                       .checked;
-                    setSensitiveMedia(sensitiveMedia);
+                    setSensitiveMedia(nextSensitiveMedia);
                   }}
                 />{' '}
                 <span>
@@ -2272,9 +2299,9 @@ function Compose({
               maxCharactersPerOption={maxCharactersPerOption}
               poll={poll}
               disabled={uiState === 'loading'}
-              onInput={(poll) => {
-                if (poll) {
-                  const newPoll = { ...poll };
+              onInput={(nextPoll) => {
+                if (nextPoll) {
+                  const newPoll = { ...nextPoll };
                   setPoll(newPoll);
                 } else {
                   setPoll(null);
@@ -2454,7 +2481,7 @@ function Compose({
                     <Icon icon="emoji2" />{' '}
                     <span>{_(ADD_LABELS.customEmoji)}</span>
                   </MenuItem>
-                  {!!states.settings.composerGIFPicker && (
+                  {states.settings.composerGIFPicker && (
                     <MenuItem
                       disabled={mediaButtonDisabled}
                       onClick={() => {
@@ -2546,7 +2573,7 @@ function Compose({
                 >
                   <Icon icon="emoji2" alt={_(ADD_LABELS.customEmoji)} />
                 </button>
-                {!!states.settings.composerGIFPicker && (
+                {states.settings.composerGIFPicker && (
                   <button
                     type="button"
                     class="toolbar-button gif-picker-button"
@@ -2601,7 +2628,7 @@ function Compose({
                   name="quoteApprovalPolicy"
                   value={quoteApprovalPolicy}
                   onChange={(
-                    e: JSX.TargetedEvent<HTMLSelectElement, Event>,
+                    e: TargetedEvent<HTMLSelectElement>,
                   ) => {
                     setQuoteApprovalPolicy(
                       (e.target as HTMLSelectElement).value,
@@ -2647,7 +2674,7 @@ function Compose({
               <select
                 name="visibility"
                 value={visibility}
-                onChange={(e: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
+                onChange={(e: TargetedEvent<HTMLSelectElement>) => {
                   const target = e.target as HTMLSelectElement;
                   setVisibility(target.value);
                   if (target.value === 'private' || target.value === 'direct') {
@@ -2717,7 +2744,7 @@ function Compose({
               <select
                 name="language"
                 value={language}
-                onChange={(e: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
+                onChange={(e: TargetedEvent<HTMLSelectElement>) => {
                   const { value } = e.target as HTMLSelectElement;
                   setLanguage(value || DEFAULT_LANG);
                   store.session.set('currentLanguage', value || DEFAULT_LANG);
@@ -2755,7 +2782,9 @@ function Compose({
             <button
               type="submit"
               disabled={uiState === 'loading'}
-              onClick={() => haptics.trigger('medium')}
+              onClick={() => {
+                void haptics.trigger('medium');
+              }}
             >
               {scheduledAt
                 ? t`Schedule`
@@ -2866,7 +2895,7 @@ function Compose({
                 return;
               }
               // Download the GIF and insert it as media attachment
-              (async () => {
+              void (async () => {
                 let theToast: { hideToast?: () => void } | undefined;
                 try {
                   theToast = showToast({

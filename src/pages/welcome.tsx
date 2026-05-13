@@ -229,23 +229,39 @@ function Welcome() {
           </p>
         )}
         <p>
-          <a href="https://github.com/cheeaun/phanpy" target="_blank">
+          <a
+            href="https://github.com/cheeaun/phanpy"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Built
           </a>{' '}
           by{' '}
-          <a href="https://github.com/cheeaun" target="_blank">
+          <a
+            href="https://github.com/cheeaun"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             @cheeaun
           </a>
           , forked for ATProto by{' '}
-          <a href="https://bsky.app/profile/alice.mosphere.at" target="_blank">
+          <a
+            href="https://bsky.app/profile/alice.mosphere.at"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             @alice.mosphere.at
           </a>{' '}
           and{' '}
-          <a href="https://bsky.app/profile/quillmatiq.com" target="_blank">
+          <a
+            href="https://bsky.app/profile/quillmatiq.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Anuj Ahooja (@quillmatiq.com)
           </a>
           .{' '}
-          <a href={PRIVACY_POLICY_URL} target="_blank">
+          <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer">
             <Trans>Privacy Policy</Trans>
           </a>
           .

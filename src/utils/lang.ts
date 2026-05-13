@@ -52,11 +52,11 @@ export async function activateLang(lang: string | false | undefined | null) {
     console.log('💬 ACTIVATE LANG', DEFAULT_LANG, lang);
   } else {
     try {
-      const { messages } = await import(
+      const { messages: loadedMessages } = await import(
         `../locales/${langFileMaps[lang] || lang}.po`
       );
-      i18n.loadAndActivate({ locale: lang, messages });
-      console.log('💬 ACTIVATE LANG', lang, messages);
+      i18n.loadAndActivate({ locale: lang, messages: loadedMessages });
+      console.log('💬 ACTIVATE LANG', lang, loadedMessages);
     } catch (e) {
       console.error(e);
       // Fallback to default language
@@ -85,7 +85,7 @@ export function initActivateLang() {
   const matchedLang =
     languages.find((l) => ALL_LOCALES.includes(l)) ||
     localeMatchTwoArg(languages, ALL_LOCALES);
-  activateLang(matchedLang);
+  void activateLang(matchedLang);
 
   // const yes = confirm(t`Reload to apply language setting?`);
   // if (yes) {
