@@ -39,7 +39,6 @@ import handleContentLinks from '../utils/handle-content-links';
 import haptics from '../utils/haptics';
 import mem from '../utils/mem';
 import niceDateTime from '../utils/nice-date-time';
-import { getRegistration } from '../utils/push-notifications';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
@@ -49,6 +48,7 @@ import supports from '../utils/supports';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScroll from '../utils/useScroll';
 import useTitle from '../utils/useTitle';
+import { getRegistration } from '../utils/web-push-subscriptions';
 
 // `InView` is still untyped for our preact/react interop; shim with just the
 // surface this page uses.

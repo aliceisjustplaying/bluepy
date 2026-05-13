@@ -1,4 +1,4 @@
-// Utils for push notifications
+// Utils for web push subscriptions
 import { api } from './api';
 import { getVapidKey } from './store-utils';
 
