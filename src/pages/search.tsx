@@ -376,10 +376,7 @@ function Search({ columnMode, ...props }: SearchProps) {
     'j',
     () => {
       const activeElement = document.activeElement as HTMLElement | null;
-      const activeItem = activeElement?.closest(itemsSelector) as
-        | HTMLElement
-        | null
-        | undefined;
+      const activeItem = activeElement?.closest<HTMLElement>(itemsSelector);
       const activeItemRect = activeItem?.getBoundingClientRect();
       const scrollable = scrollableRef.current as HTMLDivElement;
       const allItems = Array.from(
@@ -423,10 +420,7 @@ function Search({ columnMode, ...props }: SearchProps) {
     () => {
       // focus on previous status after active item
       const activeElement = document.activeElement as HTMLElement | null;
-      const activeItem = activeElement?.closest(itemsSelector) as
-        | HTMLElement
-        | null
-        | undefined;
+      const activeItem = activeElement?.closest<HTMLElement>(itemsSelector);
       const activeItemRect = activeItem?.getBoundingClientRect();
       const scrollable = scrollableRef.current as HTMLDivElement;
       const allItems = Array.from(

@@ -75,9 +75,9 @@ const PostContent =
         returnDOM: true,
       });
       // Remove target="_blank" from links
-      for (const a of dom.querySelectorAll(
+      for (const a of dom.querySelectorAll<HTMLAnchorElement>(
         'a.u-url[target="_blank"]',
-      ) as NodeListOf<HTMLAnchorElement>) {
+      )) {
         if (!HTTP_REGEX.test(a.innerText.trim())) {
           a.removeAttribute('target');
         }

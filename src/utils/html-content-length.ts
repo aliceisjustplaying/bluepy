@@ -4,16 +4,12 @@ interface InnerTextNode extends ChildNode {
   readonly innerText: string;
 }
 
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types
 function hasInnerText(n: ChildNode): n is InnerTextNode {
-  // oxlint-disable-next-line unicorn/prefer-dom-node-text-content
   return 'innerText' in n && typeof n.innerText === 'string';
 }
 
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types
 function getNodeText(n: ChildNode): string {
   if (hasInnerText(n)) {
-    // oxlint-disable-next-line unicorn/prefer-dom-node-text-content
     const { innerText } = n;
     if (innerText === '') {
       return n.textContent ?? '';
