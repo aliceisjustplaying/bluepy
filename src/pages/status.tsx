@@ -28,17 +28,17 @@ import { InView as InViewUntyped } from 'react-intersection-observer';
 import { matchPath, useSearchParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
-import AvatarUntyped from '../components/avatar';
+import Avatar from '../components/avatar';
 import EditHistoryControls from '../components/edit-history-controls';
-import IconUntyped from '../components/icon';
-import LinkUntyped, { type LinkProps } from '../components/link';
+import Icon from '../components/icon';
+import Link from '../components/link';
 import Loader from '../components/loader';
 import { getSafeViewTransitionName } from '../components/media';
 import MediaModal from '../components/media-modal';
 import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
-import StatusUntyped from '../components/status';
+import Status from '../components/status';
 import { api } from '../utils/api';
 import {
   EditHistoryProvider,
@@ -58,63 +58,6 @@ import { ThreadCountContext } from '../utils/thread-count-context';
 import useTitle from '../utils/useTitle';
 
 import getInstanceStatusURL from './../utils/get-instance-status-url';
-
-// `status.jsx`, `icon.jsx`, `avatar.tsx`, and `link.tsx` ship JSX components
-// whose prop shapes don't fully line up with the call sites here. Wrap the
-// raw imports with the minimal prop surface this file actually uses; these
-// shims will go away as the peers narrow their public types.
-interface StatusComponentProps {
-  statusID?: string;
-  instance?: string;
-  withinContext?: boolean;
-  size?: 's' | 'm' | 'l';
-  enableTranslate?: boolean;
-  forceTranslate?: boolean;
-  onMediaClick?: (
-    e: Event,
-    i: number,
-    media: unknown,
-    status: { id: string },
-  ) => void;
-  onStatusLinkClick?: (e: Event, status: { id: string }) => void;
-  showActionsBar?: boolean;
-  skeleton?: boolean;
-  ghost?: GhostMeta;
-}
-function Status(props: StatusComponentProps) {
-  const Inner = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
-  return <Inner {...props} />;
-}
-
-interface AvatarComponentProps {
-  url?: string;
-  staticUrl?: string;
-  size?: string;
-  alt?: string;
-  title?: string;
-  squircle?: boolean;
-}
-function Avatar(props: AvatarComponentProps) {
-  const Inner = AvatarUntyped as unknown as ComponentType<AvatarComponentProps>;
-  return <Inner {...props} />;
-}
-
-interface IconComponentProps {
-  icon: string;
-  size?: string;
-  alt?: string;
-  title?: string;
-  class?: string;
-}
-function Icon(props: IconComponentProps) {
-  const Inner = IconUntyped as unknown as ComponentType<IconComponentProps>;
-  return <Inner {...props} />;
-}
-
-function Link(props: LinkProps) {
-  const Inner = LinkUntyped as unknown as ComponentType<LinkProps>;
-  return <Inner {...props} />;
-}
 
 // `react-intersection-observer`'s `InView` ships without working JSX
 // component typings under our preact compat resolution. Re-type as a preact

@@ -189,7 +189,7 @@ const NOTIFICATIONS_LIMIT = 80;
 const NOTIFICATIONS_GROUPED_LIMIT = 20;
 const emptySearchParams = new URLSearchParams();
 
-const scrollIntoViewOptions = {
+const scrollIntoViewOptions: ScrollIntoViewOptions = {
   block: 'start',
   inline: 'center',
   behavior: 'instant',
@@ -786,9 +786,7 @@ function Notifications({ columnMode }: NotificationsProps) {
         let nextItem = allItems[activeItemIndex + 1];
         if (nextItem) {
           nextItem.focus();
-          nextItem.scrollIntoView(
-            scrollIntoViewOptions as unknown as ScrollIntoViewOptions,
-          );
+          nextItem.scrollIntoView(scrollIntoViewOptions);
         }
       } else {
         const topmostItem = allItems.find((item) => {
@@ -797,9 +795,7 @@ function Notifications({ columnMode }: NotificationsProps) {
         });
         if (topmostItem) {
           topmostItem.focus();
-          topmostItem.scrollIntoView(
-            scrollIntoViewOptions as unknown as ScrollIntoViewOptions,
-          );
+          topmostItem.scrollIntoView(scrollIntoViewOptions);
         }
       }
     },
@@ -848,9 +844,7 @@ function Notifications({ columnMode }: NotificationsProps) {
         });
         if (topmostItem) {
           topmostItem.focus();
-          topmostItem.scrollIntoView(
-            scrollIntoViewOptions as unknown as ScrollIntoViewOptions,
-          );
+          topmostItem.scrollIntoView(scrollIntoViewOptions);
         }
       }
     },

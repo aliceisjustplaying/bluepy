@@ -8,7 +8,6 @@ import {
   MenuItem,
 } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useParams, useSearchParams } from 'react-router-dom';
 
@@ -16,7 +15,7 @@ import Icon from '../components/icon';
 import MenuConfirm from '../components/menu-confirm';
 import Menu2 from '../components/menu2';
 import { SHORTCUTS_LIMIT } from '../components/shortcuts-settings';
-import TimelineUntyped from '../components/timeline';
+import Timeline from '../components/timeline';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import showToast from '../utils/show-toast';
@@ -82,29 +81,6 @@ interface FeaturedTagsApi {
   $select(id: string): {
     remove(): Promise<unknown>;
   };
-}
-
-interface TimelineProps {
-  key?: string;
-  title?: string;
-  titleComponent?: preact.ComponentChildren;
-  id?: string;
-  timelineKey?: string;
-  instance?: string;
-  emptyText?: string;
-  errorText?: string;
-  fetchItems?: (firstLoad?: boolean) => Promise<FetchHashtagsResult>;
-  checkForUpdates?: () => Promise<boolean>;
-  useItemID?: boolean;
-  view?: string;
-  refresh?: unknown;
-  filterContext?: string;
-  headerEnd?: preact.ComponentChildren;
-}
-
-function Timeline(props: TimelineProps) {
-  const Inner = TimelineUntyped as unknown as ComponentType<TimelineProps>;
-  return <Inner {...props} />;
 }
 
 type TimelineAccess = string | null;

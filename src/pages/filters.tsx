@@ -5,7 +5,7 @@ import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import { Fragment } from 'preact';
-import type { ComponentType, TargetedEvent } from 'preact';
+import type { TargetedEvent } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 import Icon from '../components/icon';
@@ -13,22 +13,13 @@ import Link from '../components/link';
 import Loader from '../components/loader';
 import MenuConfirm from '../components/menu-confirm';
 import Modal from '../components/modal';
-import NavMenuUntyped from '../components/nav-menu';
+import NavMenu from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
 import { api } from '../utils/api';
 import i18nDuration from '../utils/i18n-duration';
 import { getAPIVersions } from '../utils/store-utils';
 import useInterval from '../utils/useInterval';
 import useTitle from '../utils/useTitle';
-
-function NavMenu(props:
-  Record<string, never>
-) {
-  const Inner = NavMenuUntyped as unknown as ComponentType<
-  Record<string, never>
->;
-  return <Inner {...props} />;
-}
 
 // The filters endpoint isn't surfaced on the loose MastoClient shape.
 // Use the real masto v2 resource type via a cast.

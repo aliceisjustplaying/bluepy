@@ -18,7 +18,7 @@ import MenuConfirm from '../components/menu-confirm';
 import MenuLink from '../components/menu-link';
 import Menu2 from '../components/menu2';
 import Modal from '../components/modal';
-import TimelineUntyped from '../components/timeline';
+import Timeline from '../components/timeline';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import {
@@ -64,28 +64,6 @@ interface ListMembersEndpoint {
       remove(params: { accountIds: string[] }): Promise<unknown>;
     };
   };
-}
-
-interface TimelineProps {
-  title?: string;
-  id?: string;
-  timelineKey?: string;
-  emptyText?: string;
-  errorText?: string;
-  instance?: string;
-  fetchItems?: (firstLoad?: boolean) => Promise<FetchItemsResult>;
-  checkForUpdates?: () => Promise<boolean>;
-  useItemID?: boolean;
-  boostsCarousel?: boolean;
-  filterContext?: string;
-  showReplyParent?: boolean;
-  headerStart?: preact.ComponentChildren;
-  headerEnd?: preact.ComponentChildren;
-}
-
-function Timeline(props: TimelineProps) {
-  const Inner = TimelineUntyped as unknown as ComponentType<TimelineProps>;
-  return <Inner {...props} />;
 }
 
 // react-intersection-observer's InView ships without working JSX

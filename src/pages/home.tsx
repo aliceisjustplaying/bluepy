@@ -54,9 +54,7 @@ function Home() {
 
   const expTimeline2 = useRef(false);
   if (!expTimeline2.current) {
-    expTimeline2.current =
-      (store.local.get('experiments-timeline2') as unknown as boolean | null) ??
-      false;
+    expTimeline2.current = !!store.local.get('experiments-timeline2');
   }
   const homeTimeline = (snapStates.homeTimeline ||
     store.account.get('homeTimeline')) as HomeTimeline | null | undefined;

@@ -65,7 +65,7 @@ const {
   PHANPY_IMG_ALT_API_URL: IMG_ALT_API_URL,
   PHANPY_GIPHY_API_KEY: GIPHY_API_KEY,
   PHANPY_CLIENT_NAME: CLIENT_NAME,
-} = import.meta.env as unknown as Record<string, string | undefined>;
+} = import.meta.env;
 
 const targetLanguages = Object.entries(
   (languages as { tl: Record<string, string> }).tl,
@@ -1045,7 +1045,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               class="plain2 small"
               onClick={() => {
                 void (async () => {
-                  alert((await getCachesKeys()) as unknown as string);
+                  alert(await getCachesKeys());
                 })();
               }}
             >
@@ -1056,7 +1056,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               class="plain2 small"
               onClick={() => {
                 void (async () => {
-                  alert((await getCachesSize()) as unknown as string);
+                  alert(await getCachesSize());
                 })();
               }}
             >
@@ -1207,7 +1207,7 @@ async function getCachesSize(): Promise<Record<string, string>> {
         total[key] = (total[key] || 0) + blob.size;
         TOTAL += blob.size;
       } catch (e) {
-        alert('Failed to get cache size for ' + (item as unknown as string));
+        alert('Failed to get cache size for ' + item);
         alert(e);
       }
     }

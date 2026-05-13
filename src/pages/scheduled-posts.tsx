@@ -12,7 +12,7 @@ import Loader from '../components/loader';
 import MenuConfirm from '../components/menu-confirm';
 import Menu2 from '../components/menu2';
 import Modal from '../components/modal';
-import NavMenuUntyped from '../components/nav-menu';
+import NavMenu from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
 import ScheduledAtField, {
   getLocalTimezoneName,
@@ -23,15 +23,6 @@ import niceDateTime from '../utils/nice-date-time';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import useTitle from '../utils/useTitle';
-
-function NavMenu(props:
-  Record<string, never>
-) {
-  const Inner = NavMenuUntyped as unknown as ComponentType<
-  Record<string, never>
->;
-  return <Inner {...props} />;
-}
 
 function Status(props: {
   status?: unknown;
