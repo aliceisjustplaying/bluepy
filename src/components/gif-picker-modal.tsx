@@ -1,4 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useDebouncedCallback } from 'use-debounce';
 
@@ -11,16 +12,65 @@ const { PHANPY_GIPHY_API_KEY: GIPHY_API_KEY } = import.meta.env;
 
 const GIFS_PER_PAGE = 20;
 
-function GIFPickerModal({ onClose = () => {}, onSelect = () => {} }) {
-  const { i18n, t } = useLingui();
-  const [uiState, setUIState] = useState('default');
-  const [results, setResults] = useState([]);
-  const formRef = useRef(null);
-  const qRef = useRef(null);
-  const currentOffset = useRef(0);
-  const scrollableRef = useRef(null);
+interface GiphyImage {
+  url: string;
+  webp?: string;
+  mp4?: string;
+  width: number | string;
+  height: number | string;
+}
 
-  function fetchGIFs({ offset }) {
+interface GiphyImages {
+  fixed_height_small?: GiphyImage;
+  fixed_height_downsampled?: GiphyImage;
+  fixed_height: GiphyImage;
+  original: GiphyImage;
+}
+
+interface GiphyGif {
+  id: string;
+  images: GiphyImages;
+  title?: string;
+  alt_text?: string;
+}
+
+interface GiphyPagination {
+  offset: number;
+  count: number;
+  total_count: number;
+}
+
+interface GiphyResponse {
+  data: GiphyGif[];
+  pagination?: GiphyPagination;
+}
+
+interface GIFSelectPayload {
+  url: string;
+  type: 'video/mp4' | 'image/gif';
+  alt_text: string | undefined;
+}
+
+interface GIFPickerModalProps {
+  onClose?: (e?: unknown) => void;
+  onSelect?: (payload: GIFSelectPayload) => void;
+}
+
+function GIFPickerModal({
+  onClose = () => {},
+  onSelect = () => {},
+}: GIFPickerModalProps) {
+  const { i18n, t } = useLingui();
+  const [uiState, setUIState] = useState<
+    'default' | 'loading' | 'results' | 'error'
+  >('default');
+  const [results, setResults] = useState<GiphyResponse | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const qRef = useRef<HTMLInputElement>(null);
+  const currentOffset = useRef(0);
+  const scrollableRef = useRef<HTMLElement>(null);
+
+  function fetchGIFs({ offset }: { offset: number }) {
     console.log('fetchGIFs', { offset });
     if (!qRef.current?.value) return;
     setUIState('loading');
@@ -32,15 +82,15 @@ function GIFPickerModal({ onClose = () => {}, onSelect = () => {} }) {
     (async () => {
       try {
         const query = {
-          api_key: GIPHY_API_KEY,
-          q: qRef.current.value,
+          api_key: GIPHY_API_KEY ?? '',
+          q: qRef.current?.value ?? '',
           rating: 'g',
-          limit: GIFS_PER_PAGE,
+          limit: String(GIFS_PER_PAGE),
           bundle: 'messaging_non_clips',
-          offset,
+          offset: String(offset),
           lang: i18n.locale || 'en',
         };
-        const response = await fetch(
+        const response: GiphyResponse = await fetch(
           'https://api.giphy.com/v1/gifs/search?' + new URLSearchParams(query),
           {
             referrerPolicy: 'no-referrer',
@@ -88,7 +138,7 @@ function GIFPickerModal({ onClose = () => {}, onSelect = () => {} }) {
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"
-            spellCheck="false"
+            spellcheck={false}
             dir="auto"
             enterKeyHint="search"
             onInput={debouncedOnInput}
@@ -116,7 +166,7 @@ function GIFPickerModal({ onClose = () => {}, onSelect = () => {} }) {
             <Loader abrupt />
           </div>
         )}
-        {results?.data?.length > 0 ? (
+        {results?.data?.length ? (
           <>
             <ul>
               {results.data.map((gif) => {
@@ -134,14 +184,14 @@ function GIFPickerModal({ onClose = () => {}, onSelect = () => {} }) {
                     : fixed_height;
                 let { url, webp, width, height } = theImage;
                 if (+height > 100) {
-                  width = (width / height) * 100;
+                  width = (+width / +height) * 100;
                   height = 100;
                 }
-                const urlObj = URL.parse(url);
+                const urlObj = URL.parse(url)!;
                 const strippedURL = urlObj.origin + urlObj.pathname;
-                let strippedWebP;
+                let strippedWebP: string | undefined;
                 if (webp) {
-                  const webpObj = URL.parse(webp);
+                  const webpObj = URL.parse(webp)!;
                   strippedWebP = webpObj.origin + webpObj.pathname;
                 }
                 return (
@@ -151,7 +201,7 @@ function GIFPickerModal({ onClose = () => {}, onSelect = () => {} }) {
                       onClick={() => {
                         const { mp4, url } = original;
                         const theURL = mp4 || url;
-                        const urlObj = URL.parse(theURL);
+                        const urlObj = URL.parse(theURL)!;
                         const strippedURL = urlObj.origin + urlObj.pathname;
                         onClose();
                         onSelect({
@@ -162,10 +212,12 @@ function GIFPickerModal({ onClose = () => {}, onSelect = () => {} }) {
                       }}
                     >
                       <figure
-                        style={{
-                          '--figure-width': width + 'px',
-                          // width: width + 'px'
-                        }}
+                        style={
+                          {
+                            '--figure-width': width + 'px',
+                            // width: width + 'px'
+                          } as JSX.CSSProperties
+                        }
                       >
                         <picture>
                           {strippedWebP && (
@@ -180,7 +232,8 @@ function GIFPickerModal({ onClose = () => {}, onSelect = () => {} }) {
                             alt={alt_text}
                             referrerpolicy="no-referrer"
                             onLoad={(e) => {
-                              e.target.style.backgroundColor = 'transparent';
+                              e.currentTarget.style.backgroundColor =
+                                'transparent';
                             }}
                           />
                         </picture>
@@ -192,14 +245,14 @@ function GIFPickerModal({ onClose = () => {}, onSelect = () => {} }) {
               })}
             </ul>
             <p class="pagination">
-              {results.pagination?.offset > 0 && (
+              {(results.pagination?.offset ?? 0) > 0 && (
                 <button
                   type="button"
                   class="light small"
                   disabled={uiState === 'loading'}
                   onClick={() => {
                     fetchGIFs({
-                      offset: results.pagination?.offset - GIFS_PER_PAGE,
+                      offset: (results.pagination?.offset ?? 0) - GIFS_PER_PAGE,
                     });
                   }}
                 >
@@ -210,15 +263,16 @@ function GIFPickerModal({ onClose = () => {}, onSelect = () => {} }) {
                 </button>
               )}
               <span />
-              {results.pagination?.offset + results.pagination?.count <
-                results.pagination?.total_count && (
+              {(results.pagination?.offset ?? 0) +
+                (results.pagination?.count ?? 0) <
+                (results.pagination?.total_count ?? 0) && (
                 <button
                   type="button"
                   class="light small"
                   disabled={uiState === 'loading'}
                   onClick={() => {
                     fetchGIFs({
-                      offset: results.pagination?.offset + GIFS_PER_PAGE,
+                      offset: (results.pagination?.offset ?? 0) + GIFS_PER_PAGE,
                     });
                   }}
                 >
