@@ -1,6 +1,7 @@
 import './name-text.css';
 
 import { useLingui } from '@lingui/react';
+import type { JSX } from 'preact';
 
 import { api } from '../utils/api';
 import mem from '../utils/mem';
@@ -10,8 +11,42 @@ import Avatar from './avatar';
 import EmojiText from './emoji-text';
 import RolesTags from './roles-tags';
 
-const nameCollator = mem((locale) => {
-  const options = {
+interface NameTextEmoji {
+  shortcode: string;
+  url: string;
+  staticUrl?: string;
+}
+
+interface NameTextRole {
+  name?: string;
+}
+
+interface NameTextAccount {
+  acct: string;
+  avatar?: string;
+  avatarStatic?: string;
+  id: string;
+  url: string;
+  displayName?: string;
+  emojis?: readonly NameTextEmoji[];
+  bot?: boolean;
+  username: string;
+  roles?: NameTextRole[] | null;
+  [key: string]: unknown;
+}
+
+interface NameTextProps {
+  account: NameTextAccount | null | undefined;
+  instance?: string;
+  showAvatar?: boolean;
+  showAcct?: boolean;
+  short?: boolean;
+  external?: boolean;
+  onClick?: (e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => unknown;
+}
+
+const nameCollator = mem((locale: string | undefined) => {
+  const options: Intl.CollatorOptions = {
     sensitivity: 'base',
   };
   try {
@@ -34,7 +69,7 @@ function NameText({
   short,
   external,
   onClick,
-}) {
+}: NameTextProps) {
   const { i18n } = useLingui();
   if (!account) return null;
   const {
@@ -78,7 +113,7 @@ function NameText({
     <a
       class={`name-text ${showAcct ? 'show-acct' : ''} ${short ? 'short' : ''}`}
       href={url}
-      target={external ? '_blank' : null}
+      target={external ? '_blank' : undefined}
       title={
         displayName
           ? `${displayName} (${acct2 ? '' : '@'}${acct})`
