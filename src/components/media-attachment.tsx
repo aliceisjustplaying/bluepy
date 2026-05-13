@@ -238,14 +238,36 @@ function MediaAttachment({
 
   const [description, setDescription] = useState(attachment.description);
 
-  // Extract description from images that's not uploaded yet
+  // Snapshot the mount-time props for the metadata extraction effect below.
+  // The extraction must run exactly once per attachment lifetime; later
+  // changes to `description`, `id`, `file`, etc. (e.g. user edits, upload
+  // completion) must not re-extract and clobber the user's input. Capturing
+  // a single immutable snapshot at construction time keeps the effect's
+  // dependency list literal (`[snapshot]`) and stable.
+  const extractionInputsRef = useRef({
+    file,
+    fileData,
+    fileName,
+    type,
+    id,
+    description: attachment.description,
+  });
+
   useEffect(() => {
-    const hasFileData = fileData || file;
+    const {
+      file: snapFile,
+      fileData: snapFileData,
+      fileName: snapFileName,
+      type: snapType,
+      id: snapId,
+      description: snapDescription,
+    } = extractionInputsRef.current;
+    const hasFileData = snapFileData || snapFile;
     if (
       !hasFileData ||
-      !type.startsWith('image/') ||
-      id ||
-      attachment.description
+      !snapType.startsWith('image/') ||
+      snapId ||
+      snapDescription
     ) {
       return undefined;
     }
@@ -256,9 +278,11 @@ function MediaAttachment({
       setUIState('loading');
       try {
         // Reconstruct File from fileData, or fall back to legacy file object
-        const fileObj = fileData
-          ? new File([fileData], fileName || 'upload', { type })
-          : file;
+        const fileObj = snapFileData
+          ? new File([snapFileData], snapFileName || 'upload', {
+              type: snapType,
+            })
+          : snapFile;
         const extractedDescription = await extractImageDescription(fileObj);
         if (!cancelled && extractedDescription) {
           setDescription(extractedDescription);
@@ -275,10 +299,6 @@ function MediaAttachment({
     return () => {
       cancelled = true;
     };
-    // TODO(oxlint:react-hooks/exhaustive-deps): this is a mount-only metadata
-    // extraction. The props (file, fileData, type, id, fileName,
-    // attachment.description) are read once per attachment lifetime; adding
-    // them would re-extract and overwrite user edits.
   }, []);
 
   let [suffixType, subtype] = type.split('/');

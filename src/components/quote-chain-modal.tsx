@@ -3,7 +3,7 @@ import './quote-chain-modal.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { Ref } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import { getStatus } from '../utils/states';
@@ -60,82 +60,98 @@ export default function QuoteChainModal({
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchQuoteChain = async (postID: string) => {
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
+  // Memoize the statuses.$select endpoint so the loader callback's identity
+  // is tied to the stable `masto` client, not to per-render proxy access.
+  const statusesSelect = useMemo(
+    () =>
+      (
+        masto.v1 as unknown as {
+          statuses: { $select: StatusesSelectFn };
+        }
+      ).statuses.$select,
+    [masto],
+  );
 
-    setUIState('loading');
-    let fetchCount = 0;
-    let currentPostID: string | undefined | null = postID;
+  // Track the live `posts` array via a ref so the cycle-detection check
+  // inside the async loop reads the latest value without subscribing to it
+  // (subscribing would recreate the callback after every setPosts, breaking
+  // the long-running while loop).
+  const postsRef = useRef(posts);
+  useEffect(() => {
+    postsRef.current = posts;
+  }, [posts]);
 
-    while (currentPostID && !signal.aborted && fetchCount < BATCH_LIMIT) {
-      console.log('🔗 WHILE', { currentPostID, fetchCount });
-      // Break circular reference if it somehow happens
-      // Note that origin post could be edited to add a quote that might reference to any post in the chain ♻️
-      if (posts.some((p) => p.id === currentPostID)) {
-        break;
-      }
+  const fetchQuoteChain = useCallback(
+    async (postID: string) => {
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
 
-      let fullStatus = getStatus(currentPostID, instance) as
-        | QuotedStatus
-        | undefined;
-      const cached = !!fullStatus;
+      setUIState('loading');
+      let fetchCount = 0;
+      let currentPostID: string | undefined | null = postID;
 
-      if (!cached) {
-        try {
-          const statusesSelect = (
-            masto.v1 as unknown as {
-              statuses: { $select: StatusesSelectFn };
-            }
-          ).statuses.$select;
-          fullStatus = await statusesSelect(currentPostID).fetch();
-          fetchCount++;
-        } catch (e) {
-          console.error('Error fetching quote:', e);
-          setUIState('error');
+      while (currentPostID && !signal.aborted && fetchCount < BATCH_LIMIT) {
+        console.log('🔗 WHILE', { currentPostID, fetchCount });
+        // Break circular reference if it somehow happens
+        // Note that origin post could be edited to add a quote that might
+        // reference any post in the chain ♻️
+        if (postsRef.current.some((p) => p.id === currentPostID)) {
           break;
+        }
+
+        let fullStatus = getStatus(currentPostID, instance) as
+          | QuotedStatus
+          | undefined;
+        const cached = !!fullStatus;
+
+        if (!cached) {
+          try {
+            fullStatus = await statusesSelect(currentPostID).fetch();
+            fetchCount++;
+          } catch (e) {
+            console.error('Error fetching quote:', e);
+            setUIState('error');
+            break;
+          }
+        }
+
+        console.log('🔗 PUSH', fullStatus);
+        if (fullStatus) {
+          const pushed = fullStatus;
+          setPosts((prev) => [...prev, pushed]);
+        }
+
+        currentPostID =
+          fullStatus?.quote?.quotedStatusId ||
+          fullStatus?.quote?.quotedStatus?.id;
+
+        // Add delay before next fetch to avoid rate limiting
+        if (
+          !cached &&
+          currentPostID &&
+          !signal.aborted &&
+          fetchCount < BATCH_LIMIT
+        ) {
+          await new Promise<void>((resolve) => {
+            setTimeout(resolve, FETCH_DELAY);
+          });
         }
       }
 
-      console.log('🔗 PUSH', fullStatus);
-      if (fullStatus) {
-        const pushed = fullStatus;
-        setPosts((prev) => [...prev, pushed]);
+      if (!signal.aborted) {
+        setNextPostID(currentPostID || null);
+        setUIState('default');
       }
-
-      currentPostID =
-        fullStatus?.quote?.quotedStatusId ||
-        fullStatus?.quote?.quotedStatus?.id;
-
-      // Add delay before next fetch to avoid rate limiting
-      if (
-        !cached &&
-        currentPostID &&
-        !signal.aborted &&
-        fetchCount < BATCH_LIMIT
-      ) {
-        await new Promise<void>((resolve) => {
-          setTimeout(resolve, FETCH_DELAY);
-        });
-      }
-    }
-
-    if (!signal.aborted) {
-      setNextPostID(currentPostID || null);
-      setUIState('default');
-    }
-  };
+    },
+    [instance, statusesSelect],
+  );
 
   useEffect(() => {
     void fetchQuoteChain(statusId);
     return () => {
       abortControllerRef.current?.abort();
     };
-    // TODO(oxlint:react-hooks/exhaustive-deps): fetchQuoteChain is recreated
-    // every render (no useCallback) and closes over `posts`, `instance`, and
-    // `masto`. Adding it would loop; refactoring into a stable callback (e.g.
-    // useCallback + refs for live posts) is a behavioral change out of scope.
-  }, [statusId]);
+  }, [statusId, fetchQuoteChain]);
 
   return (
     <div id="quote-chain-modal" class="sheet" tabindex={-1}>
