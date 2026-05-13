@@ -222,66 +222,40 @@ export function initStates(): void {
   // init all account based states
   // all keys that uses store.account.get() should be initialized here
   states.notificationsLast = store.account.get('notificationsLast') || null;
-  states.shortcuts =
-    (store.account.get('shortcuts') as unknown[] | null | undefined) ?? [];
+  states.shortcuts = store.account.get<unknown[]>('shortcuts') ?? [];
   states.settings.autoRefresh =
-    (store.account.get('settings-autoRefresh') as boolean | null | undefined) ??
-    false;
-  const shortcutsViewMode = store.account.get('settings-shortcutsViewMode') as
-    | string
-    | null
-    | undefined;
+    store.account.get<boolean>('settings-autoRefresh') ?? false;
+  const shortcutsViewMode = store.account.get<string>(
+    'settings-shortcutsViewMode',
+  );
   states.settings.shortcutsViewMode =
     shortcutsViewMode === 'multi-column' ? null : (shortcutsViewMode ?? null);
   states.settings.shortcutsColumnsMode = false;
   states.settings.boostsCarousel =
-    (store.account.get('settings-boostsCarousel') as
-      | boolean
-      | null
-      | undefined) ?? true;
+    store.account.get<boolean>('settings-boostsCarousel') ?? true;
   states.settings.contentTranslation =
-    (store.account.get('settings-contentTranslation') as
-      | boolean
-      | null
-      | undefined) ?? true;
+    store.account.get<boolean>('settings-contentTranslation') ?? true;
   states.settings.contentTranslationTargetLanguage =
-    (store.account.get('settings-contentTranslationTargetLanguage') as
-      | string
-      | null
-      | undefined) || null;
+    store.account.get<string>('settings-contentTranslationTargetLanguage') ||
+    null;
   states.settings.contentTranslationHideLanguages =
-    (store.account.get('settings-contentTranslationHideLanguages') as
-      | string[]
-      | null
-      | undefined) || [];
+    store.account.get<string[]>('settings-contentTranslationHideLanguages') ||
+    [];
   states.settings.contentTranslationAutoInline =
-    (store.account.get('settings-contentTranslationAutoInline') as
-      | boolean
-      | null
-      | undefined) ?? false;
-  states.settings.shortcutSettingsCloudImportExport =
-    (store.account.get('settings-shortcutSettingsCloudImportExport') as
-      | boolean
-      | null
-      | undefined) ?? false;
-  states.settings.mediaAltGenerator =
-    (store.account.get('settings-mediaAltGenerator') as
-      | boolean
-      | null
-      | undefined) ?? false;
-  states.settings.composerGIFPicker =
-    (store.account.get('settings-composerGIFPicker') as
-      | boolean
-      | null
-      | undefined) ?? false;
-  states.settings.cloakMode =
-    (store.account.get('settings-cloakMode') as boolean | null | undefined) ??
+    store.account.get<boolean>('settings-contentTranslationAutoInline') ??
     false;
+  states.settings.shortcutSettingsCloudImportExport =
+    store.account.get<boolean>(
+      'settings-shortcutSettingsCloudImportExport',
+    ) ?? false;
+  states.settings.mediaAltGenerator =
+    store.account.get<boolean>('settings-mediaAltGenerator') ?? false;
+  states.settings.composerGIFPicker =
+    store.account.get<boolean>('settings-composerGIFPicker') ?? false;
+  states.settings.cloakMode =
+    store.account.get<boolean>('settings-cloakMode') ?? false;
   states.settings.noAnimations =
-    (store.account.get('settings-noAnimations') as
-      | boolean
-      | null
-      | undefined) ?? false;
+    store.account.get<boolean>('settings-noAnimations') ?? false;
   // Apply persisted body classes on init (subscribe handlers only fire on change)
   if (typeof document !== 'undefined' && document.body) {
     document.body.classList.toggle(
@@ -369,7 +343,7 @@ export function statusKey(
   id: string | null | undefined,
   instance?: string | null,
 ): string | undefined {
-  if (!id) return;
+  if (!id) return undefined;
   return instance ? `${instance}/${id}` : id;
 }
 
@@ -500,7 +474,7 @@ export function saveStatus(
     resolvedOpts = instance;
     resolvedInstance = null;
   } else {
-    resolvedInstance = instance as string | null | undefined;
+    resolvedInstance = instance;
   }
   const {
     override = true,
@@ -534,48 +508,54 @@ export function saveStatus(
   }
 }
 
-function _threadifyStatus(
-  status: Status,
+function threadifyStatusInternal(
+  rootStatus: Status,
   propInstance?: string | null,
 ): Promise<void> | void {
   const { masto, instance } = api({ instance: propInstance ?? undefined });
   // Return all statuses in the thread, via inReplyToId, if inReplyToAccountId === account.id
   let fetchIndex = 0;
-  async function traverse(status: Status, index = 0): Promise<Status[]> {
-    if (!shouldFetchThreadParent({ status, instance })) {
-      return [status];
+  async function traverse(
+    currentStatus: Status,
+    index = 0,
+  ): Promise<Status[]> {
+    if (!shouldFetchThreadParent({ status: currentStatus, instance })) {
+      return [currentStatus];
     }
-    const { inReplyToId } = status;
+    const { inReplyToId } = currentStatus;
     const key = statusKey(inReplyToId, instance);
     let prevStatus: Status | undefined = key ? states.statuses[key] : undefined;
     if (!prevStatus) {
-      if (fetchIndex++ > 3) throw 'Too many fetches for thread'; // Some people revive old threads
-      await new Promise<void>((r) => setTimeout(r, 500 * fetchIndex)); // Be nice to rate limits
+      if (fetchIndex++ > 3) throw new Error('Too many fetches for thread'); // Some people revive old threads
+      await new Promise<void>((r) => {
+        setTimeout(r, 500 * fetchIndex);
+      }); // Be nice to rate limits
       // prevStatus = await masto.v1.statuses.$.select(inReplyToId).fetch();
-      prevStatus = (await fetchStatus(inReplyToId as string, masto)) as Status;
+      prevStatus = await fetchStatus(inReplyToId as string, masto);
       saveStatus(prevStatus, instance, { skipThreading: true });
     }
     // Prepend so that first status in thread will be index 0
-    return [...(await traverse(prevStatus, ++index)), status];
+    return [...(await traverse(prevStatus, ++index)), currentStatus];
   }
-  return traverse(status)
+  return traverse(rootStatus)
     .then((statuses) => {
       if (statuses.length > 1) {
         console.debug('THREAD', statuses);
-        statuses.forEach((status, index) => {
-          const key = statusKey(status.id, instance);
+        statuses.forEach((threadStatus, index) => {
+          const key = statusKey(threadStatus.id, instance);
           if (key) {
             states.statusThreadNumber[key] = index + 1;
           }
         });
       }
+      return undefined;
     })
     .catch((e: unknown) => {
-      console.error(e, status);
+      console.error(e, rootStatus);
     });
 }
 export const threadifyStatus = rateLimit(
-  _threadifyStatus as (this: unknown, ...args: unknown[]) => void,
+  threadifyStatusInternal as (this: unknown, ...args: unknown[]) => void,
   100,
 ) as (status: Status, propInstance?: string | null) => void;
 
@@ -601,26 +581,31 @@ export function unfurlStatus(
         return !isPostItself && isMastodonLinkMaybe(url);
       })
       .forEach((a, i) => {
-        unfurlMastodonLink(currentInstance, a.href).then((result) => {
-          if (!result) return;
-          if (!sKey) return;
-          if (result?.id === status?.id) {
-            // Unfurled post is the post itself???
-            // Scenario:
-            // 1. Post with [URL]
-            // 2. Unfurl [URL], API returns the same post that contains [URL]
-            // 3. 💥 Recursive quote posts 💥
-            // Note: Mastodon search doesn't return posts that contains [URL], it's actually used to *resolve* the URL
-            // But some non-Mastodon servers, their search API will eventually search posts that contains [URL] and return them
-            return;
-          }
-          if (!Array.isArray(states.statusQuotes[sKey])) {
-            states.statusQuotes[sKey] = [];
-          }
-          if (!states.statusQuotes[sKey][i]) {
-            states.statusQuotes[sKey].splice(i, 0, result);
-          }
-        });
+        void unfurlMastodonLink(currentInstance, a.href)
+          .then((result) => {
+            if (!result) return undefined;
+            if (!sKey) return undefined;
+            if (result?.id === status?.id) {
+              // Unfurled post is the post itself???
+              // Scenario:
+              // 1. Post with [URL]
+              // 2. Unfurl [URL], API returns the same post that contains [URL]
+              // 3. 💥 Recursive quote posts 💥
+              // Note: Mastodon search doesn't return posts that contains [URL], it's actually used to *resolve* the URL
+              // But some non-Mastodon servers, their search API will eventually search posts that contains [URL] and return them
+              return undefined;
+            }
+            if (!Array.isArray(states.statusQuotes[sKey])) {
+              states.statusQuotes[sKey] = [];
+            }
+            if (!states.statusQuotes[sKey][i]) {
+              states.statusQuotes[sKey].splice(i, 0, result);
+            }
+            return undefined;
+          })
+          .catch((err: unknown) => {
+            console.error(err);
+          });
       });
   }
 }

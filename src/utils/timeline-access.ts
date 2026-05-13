@@ -107,7 +107,7 @@ export async function checkTimelineAccess({
     const timelinesAccess = instanceInfo?.configuration?.timelinesAccess;
     const accessLevel = timelinesAccess?.[feed as string]?.[feedType as string];
     return accessLevel || 'public';
-  } catch (e) {
+  } catch {
     return feeds ? {} : 'public';
   }
 }

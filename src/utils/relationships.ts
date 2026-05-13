@@ -19,7 +19,7 @@ export async function fetchRelationships(
   accounts: readonly AccountLike[] | null | undefined,
   relationshipsMap: Record<string, mastodon.v1.Relationship> = {},
 ): Promise<Record<string, mastodon.v1.Relationship> | null | undefined> {
-  if (!accounts?.length) return;
+  if (!accounts?.length) return undefined;
   const { masto } = api();
 
   const currentAccount = getCurrentAccountID();

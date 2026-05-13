@@ -37,22 +37,49 @@ const SentryErrorBoundary = Sentry.ErrorBoundary as unknown as ComponentType<{
   children?: unknown;
 }>;
 
+interface ShareData {
+  title?: string;
+  text?: string;
+  url?: string;
+  files?: readonly File[];
+}
+interface SharedDataPayload {
+  initialText: string;
+  files: readonly File[];
+}
+function processShareData(
+  data: ShareData | null | undefined,
+): SharedDataPayload | null {
+  if (!data) return null;
+
+  const textParts: string[] = [];
+  if (data.title) textParts.push(data.title);
+  if (data.text) textParts.push(data.text);
+  if (data.url) textParts.push(data.url);
+
+  return {
+    initialText: textParts.join('\n\n'),
+    files: data.files || [],
+  };
+}
+
 if (!redirectLegacyOrigin()) {
-  importLegacyOriginStorage().finally(() => {
+  void importLegacyOriginStorage().finally(() => {
     initActivateLang();
     initPWAViewport();
 
     if (import.meta.env.DEV) {
-      import('preact/debug');
+      void import('preact/debug');
     }
 
     if (import.meta.env.DEV && 'serviceWorker' in navigator) {
-      navigator.serviceWorker
+      void navigator.serviceWorker
         .getRegistrations()
         .then((registrations) => {
           registrations.forEach((registration) => {
-            registration.unregister();
+            void registration.unregister();
           });
+          return undefined;
         })
         .catch(() => {});
     }
@@ -80,7 +107,7 @@ if (!redirectLegacyOrigin()) {
       try {
         // Clean up old settings key
         localStorage.removeItem('settings-groupedNotificationsAlpha');
-      } catch (e) {}
+      } catch {}
     }, 5000);
 
     // Service worker cache cleanup
@@ -97,51 +124,29 @@ if (!redirectLegacyOrigin()) {
             for (const key of keys) {
               if (IGNORE_CACHE_KEYS.includes(key)) continue;
               const cache = await caches.open(key);
-              const _keys = await cache.keys();
-              if (_keys.length > MAX_SW_CACHE_SIZE) {
-                console.warn('Cleaning cache', key, _keys.length);
-                const deleteKeys = _keys.slice(MAX_SW_CACHE_SIZE);
+              const cacheKeys = await cache.keys();
+              if (cacheKeys.length > MAX_SW_CACHE_SIZE) {
+                console.warn('Cleaning cache', key, cacheKeys.length);
+                const deleteKeys = cacheKeys.slice(MAX_SW_CACHE_SIZE);
                 for (const deleteKey of deleteKeys) {
                   await cache.delete(deleteKey);
                 }
               }
             }
             clearRanOnce = true;
-          } catch (e) {} // Silent fail
+          } catch {} // Silent fail
         }
         // Once cleared, clear again at slower interval
-        setTimeout(clearCaches, clearRanOnce ? SLOW_INTERVAL : FAST_INTERVAL);
+        setTimeout(() => {
+          void clearCaches();
+        }, clearRanOnce ? SLOW_INTERVAL : FAST_INTERVAL);
       }
-      setTimeout(clearCaches, FAST_INTERVAL);
+      setTimeout(() => {
+        void clearCaches();
+      }, FAST_INTERVAL);
     }
 
     if ('serviceWorker' in navigator) {
-      interface ShareData {
-        title?: string;
-        text?: string;
-        url?: string;
-        files?: readonly File[];
-      }
-      interface SharedDataPayload {
-        initialText: string;
-        files: readonly File[];
-      }
-      function processShareData(
-        data: ShareData | null | undefined,
-      ): SharedDataPayload | null {
-        if (!data) return null;
-
-        const textParts: string[] = [];
-        if (data.title) textParts.push(data.title);
-        if (data.text) textParts.push(data.text);
-        if (data.url) textParts.push(data.url);
-
-        return {
-          initialText: textParts.join('\n\n'),
-          files: data.files || [],
-        };
-      }
-
       navigator.serviceWorker.addEventListener('message', (event) => {
         const { data, action } =
           (event.data as { data?: ShareData; action?: string } | undefined) ||

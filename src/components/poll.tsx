@@ -42,7 +42,6 @@ export default function Poll({
   const {
     expired,
     expiresAt,
-    id,
     multiple,
     options,
     ownVotes,
@@ -94,8 +93,8 @@ export default function Poll({
   >(multiple ? [] : null);
 
   useEffect(() => {
-    if (!loadMoreRef.current) return;
-    if (visibleOptionsCount >= options.length) return;
+    if (!loadMoreRef.current) return undefined;
+    if (visibleOptionsCount >= options.length) return undefined;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -221,7 +220,7 @@ export default function Poll({
         </>
       ) : (
         <form
-          onSubmit={async (e) => {
+          onSubmit={(e) => {
             e.preventDefault();
             const choices: number[] = Array.isArray(selectedOptions)
               ? selectedOptions
@@ -230,14 +229,16 @@ export default function Poll({
                 : [];
             if (!choices.length) return;
             setUIState('loading');
-            try {
-              await votePoll(choices);
-            } catch (e) {
-              console.error(e);
-              showToast(t`Unable to vote in poll`);
-            } finally {
-              setUIState('default');
-            }
+            void (async () => {
+              try {
+                await votePoll(choices);
+              } catch (err) {
+                console.error(err);
+                showToast(t`Unable to vote in poll`);
+              } finally {
+                setUIState('default');
+              }
+            })();
           }}
         >
           <div class="poll-options" ref={ref as unknown as Ref<HTMLDivElement>}>
@@ -291,7 +292,9 @@ export default function Poll({
                 uiState === 'loading' ||
                 voteOptionsSelectionCount === 0
               }
-              onClick={() => haptics.trigger('medium')}
+              onClick={() => {
+                void haptics.trigger('medium');
+              }}
             >
               <Trans>Vote</Trans>
             </button>{' '}
@@ -379,7 +382,7 @@ export default function Poll({
           )}{' '}
           &bull;{' '}
           {expired ? (
-            !!expiresAtDate ? (
+            expiresAtDate ? (
               <span class="ib">
                 <Trans>
                   Ended <RelativeTime datetime={expiresAtDate} />
@@ -388,7 +391,7 @@ export default function Poll({
             ) : (
               t`Ended`
             )
-          ) : !!expiresAtDate ? (
+          ) : expiresAtDate ? (
             <span class="ib">
               <Trans>
                 Ending <RelativeTime datetime={expiresAtDate} />
@@ -424,7 +427,7 @@ export default function Poll({
               e.preventDefault();
               setUIState('loading');
 
-              (async () => {
+              void (async () => {
                 await refresh();
                 setUIState('default');
               })();

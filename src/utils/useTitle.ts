@@ -15,12 +15,12 @@ export default function useTitle(
   function setTitle() {
     const { currentLocation } = states;
     const hasPaths = Array.isArray(path);
-    let paths: string[] = hasPaths ? (path as string[]) : [];
+    let paths: string[] = hasPaths ? path : [];
     // Workaround for matchPath not working for optional path segments
     // https://github.com/remix-run/react-router/discussions/9862
-    if (!hasPaths && /:?\w+\?/.test(path as string)) {
-      paths.push((path as string).replace(/(:\w+)\?/g, '$1'));
-      paths.push((path as string).replace(/\/?:\w+\?/g, ''));
+    if (!hasPaths && /:?\w+\?/.test(path)) {
+      paths.push(path.replace(/(:\w+)\?/g, '$1'));
+      paths.push(path.replace(/\/?:\w+\?/g, ''));
     }
     let matched: unknown = false;
     if (paths.length) {
