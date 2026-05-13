@@ -1,14 +1,17 @@
 import '@justinribeiro/lite-youtube';
 
 import { decodeBlurHash, getBlurHashAverageColor } from 'fast-blurhash';
-import type { JSX } from 'preact';
+import type {
+  HTMLAttributes as PreactHTMLAttributes,
+  TargetedMouseEvent,
+} from 'preact';
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
 declare module 'preact' {
   namespace JSX {
     interface IntrinsicElements {
-      'lite-youtube': JSX.HTMLAttributes<HTMLElement> & {
+      'lite-youtube': PreactHTMLAttributes<HTMLElement> & {
         videoid?: string;
         playlistid?: string;
         videotitle?: string;
@@ -53,7 +56,7 @@ interface CardData {
   image?: string;
   imageDescription?: string;
   url?: string;
-  type?: 'link' | 'photo' | 'video' | 'rich' | string;
+  type?: string;
   embedUrl?: string;
   language?: string;
   publishedAt?: string;
@@ -97,9 +100,7 @@ function StatusCard({
     description,
     html,
     providerName,
-    providerUrl,
     authorName,
-    authorUrl,
     width,
     height,
     image,
@@ -137,29 +138,32 @@ function StatusCard({
       !instance ||
       !isMastodonLinkMaybe(url)
     ) {
-      return;
+      return undefined;
     }
 
     const abortController = new AbortController();
-    unfurlMastodonLink(instance, url, abortController.signal).then((result) => {
-      if (!result) return;
-      const { url: resultUrl } = result;
-      if (!resultUrl) return;
-      setCardStatusURL('#' + resultUrl);
+    void unfurlMastodonLink(instance, url, abortController.signal).then(
+      (result) => {
+        if (!result) return undefined;
+        const { url: resultUrl } = result;
+        if (!resultUrl) return undefined;
+        setCardStatusURL('#' + resultUrl);
 
-      // NOTE: This is for quote post
-      // (async () => {
-      //   const { masto } = api({ instance });
-      //   const status = await masto.v1.statuses.$select(id).fetch();
-      //   saveStatus(status, instance);
-      //   setCardStatusID(id);
-      // })();
-    });
+        // NOTE: This is for quote post
+        // (async () => {
+        //   const { masto } = api({ instance });
+        //   const status = await masto.v1.statuses.$select(id).fetch();
+        //   saveStatus(status, instance);
+        //   setCardStatusID(id);
+        // })();
+        return undefined;
+      },
+    );
 
     return () => {
       abortController.abort();
     };
-  }, [hasText, image, selfReferential]);
+  }, [hasText, image, selfReferential, url, instance]);
 
   // if (cardStatusID) {
   //   return (
@@ -167,13 +171,10 @@ function StatusCard({
   //   );
   // }
 
-  const unfurledLinks = snapStates.unfurledLinks as Record<string, unknown>;
-  if (url && unfurledLinks[url]) return null;
-
   const hasIframeHTML = !!html && /<iframe/i.test(html);
   const canReadInline = canReadCardInline(card);
   const handleClick = useCallback(
-    (e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
+    (e: TargetedMouseEvent<HTMLAnchorElement>) => {
       if (hasIframeHTML) {
         e.preventDefault();
         states.showEmbedModal = {
@@ -191,10 +192,14 @@ function StatusCard({
         };
       }
     },
-    [canReadInline, hasIframeHTML],
+    [canReadInline, hasIframeHTML, html, embedUrl, url, width, height, title],
   );
 
   const [blurhashImage, setBlurhashImage] = useState<string | null>(null);
+
+  const unfurledLinks = snapStates.unfurledLinks as Record<string, unknown>;
+  if (url && unfurledLinks[url]) return null;
+
   if (hasText && (image || (type === 'photo' && blurhash))) {
     const domain = getDomain(url ?? '');
     const rgbAverageColor =
@@ -208,10 +213,7 @@ function StatusCard({
         : document.createElement('canvas');
       canvas.width = w;
       canvas.height = h;
-      const ctx = canvas.getContext('2d') as
-        | OffscreenCanvasRenderingContext2D
-        | CanvasRenderingContext2D
-        | null;
+      const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.imageSmoothingEnabled = false;
         const imageData = ctx.createImageData(w, h);
@@ -220,8 +222,9 @@ function StatusCard({
       }
       try {
         if (window.OffscreenCanvas) {
-          (canvas as OffscreenCanvas).convertToBlob().then((blob) => {
+          void (canvas as OffscreenCanvas).convertToBlob().then((blob) => {
             setBlurhashImage(URL.createObjectURL(blob));
+            return undefined;
           });
         } else {
           setBlurhashImage((canvas as HTMLCanvasElement).toDataURL());
@@ -303,7 +306,7 @@ function StatusCard({
       <a
         href={url}
         target="_blank"
-        rel="nofollow noopener"
+        rel="nofollow noopener noreferrer"
         class="card photo"
         onClick={handleClick}
       >
@@ -327,7 +330,13 @@ function StatusCard({
         const videoID = url ? url.match(/watch\?v=([^&]+)/)?.[1] : undefined;
         if (videoID) {
           return (
-            <a class="card video" onClick={handleClick}>
+            <a
+              href={url}
+              target="_blank"
+              rel="nofollow noopener noreferrer"
+              class="card video"
+              onClick={handleClick}
+            >
               <lite-youtube videoid={videoID} nocookie autoPause></lite-youtube>
             </a>
           );
@@ -381,6 +390,7 @@ function StatusCard({
       );
     }
   }
+  return null;
 }
 
 export default StatusCard;

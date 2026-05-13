@@ -22,7 +22,9 @@ interface StatusTagsProps {
 
 const fauxDiv = document.createElement('div');
 const HASHTAG_REGEX = /^[#＃][^#＃]+$/;
-const ANOTHER_HASHTAG_REGEX = /^[^#＃#️⃣]*[#＃#️⃣]+/;
+// Keycap "#️⃣" is U+0023 U+FE0F U+20E3 (multi-code-point) — match it via
+// alternation so it never appears inside a character class.
+const ANOTHER_HASHTAG_REGEX = /^(?:#️⃣|[^#＃])*(?:#️⃣|[#＃])+/u;
 
 const collator = new Intl.Collator(undefined, {
   sensitivity: 'base',
@@ -38,7 +40,7 @@ const extractTagsFromStatus = (content: string | undefined): string[] => {
 
   const allLinks = fauxDiv.querySelectorAll('a[href]');
   for (const link of allLinks) {
-    const text = link.textContent!.trim();
+    const text = link.textContent.trim();
     const isHashtagLink =
       link.classList.contains('hashtag') || HASHTAG_REGEX.test(text);
 
@@ -51,11 +53,10 @@ const extractTagsFromStatus = (content: string | undefined): string[] => {
 };
 
 export default function StatusTags({ tags, content }: StatusTagsProps) {
-  if (!tags?.length) return null;
-
   const { instance } = api();
 
   const tagsToShow = useMemo(() => {
+    if (!tags?.length) return [];
     const hashtagsInContent = extractTagsFromStatus(content);
     if (!hashtagsInContent.length) return tags;
     return tags.filter(

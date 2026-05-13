@@ -1,7 +1,7 @@
 import './qr-code.css';
 
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import encodeQR from 'qr';
+import { encodeQR } from 'qr';
 
 interface QrCodeProps {
   text?: string;
@@ -46,7 +46,7 @@ export default function QrCode({
     if (arena) {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.onload = () => {
+      const handleLoad = () => {
         setArenaLoaded(true);
         try {
           const { width, height } = img;
@@ -66,29 +66,36 @@ export default function QrCode({
             }
           }
           setArenaHasAlpha(hasAlpha);
-        } catch (e) {
+        } catch {
           setArenaHasAlpha(false);
         }
       };
-      img.onerror = (error) => {
+      const handleError = (error: Event) => {
         console.error('Failed to load arena image:', error);
         setArenaLoaded(true); // Still show the image even on CORS error
       };
+      img.addEventListener('load', handleLoad);
+      img.addEventListener('error', handleError);
       img.src = arena;
+      return () => {
+        img.removeEventListener('load', handleLoad);
+        img.removeEventListener('error', handleError);
+      };
     } else {
       setArenaLoaded(false);
     }
+    return undefined;
   }, [arena]);
-
-  if (!text) return null;
 
   const qrData = useMemo(
     () =>
-      encodeQR(text, 'raw', {
-        ecc: 'high',
-        border: 0,
-        scale: 1,
-      }),
+      text
+        ? encodeQR(text, 'raw', {
+            ecc: 'high',
+            border: 0,
+            scale: 1,
+          })
+        : [],
     [text],
   );
   const gridSize = qrData.length;
@@ -97,45 +104,45 @@ export default function QrCode({
   const centerStart = Math.floor((gridSize - centerExcludeSize) / 2);
   const centerEnd = centerStart + centerExcludeSize;
 
-  const isFilled = (x: number, y: number) => {
-    if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) return false;
-
-    if (
-      arenaLoaded &&
-      x >= centerStart &&
-      x < centerEnd &&
-      y >= centerStart &&
-      y < centerEnd
-    ) {
-      if (arenaCircle) {
-        const centerX = (centerStart + centerEnd) / 2;
-        const centerY = (centerStart + centerEnd) / 2;
-        const radius = centerExcludeSize / 2;
-        const dx = x + 0.5 - centerX;
-        const dy = y + 0.5 - centerY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance < radius) return false;
-      } else {
-        return false;
-      }
-    }
-
-    return qrData[y][x];
-  };
-
-  const isFilledInGrid = (x: number, y: number) => {
-    if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) return false;
-    return isFilled(x, y);
-  };
-
-  const isInPositionMarker = (x: number, y: number) => {
-    if (x < 7 && y < 7) return true;
-    if (x >= gridSize - 7 && y < 7) return true;
-    if (x < 7 && y >= gridSize - 7) return true;
-    return false;
-  };
-
   const pathData = useMemo(() => {
+    const isFilled = (x: number, y: number): boolean => {
+      if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) return false;
+
+      if (
+        arenaLoaded &&
+        x >= centerStart &&
+        x < centerEnd &&
+        y >= centerStart &&
+        y < centerEnd
+      ) {
+        if (arenaCircle) {
+          const centerX = (centerStart + centerEnd) / 2;
+          const centerY = (centerStart + centerEnd) / 2;
+          const radius = centerExcludeSize / 2;
+          const dx = x + 0.5 - centerX;
+          const dy = y + 0.5 - centerY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < radius) return false;
+        } else {
+          return false;
+        }
+      }
+
+      return qrData[y]?.[x] ?? false;
+    };
+
+    const isFilledInGrid = (x: number, y: number): boolean => {
+      if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) return false;
+      return isFilled(x, y);
+    };
+
+    const isInPositionMarker = (x: number, y: number): boolean => {
+      if (x < 7 && y < 7) return true;
+      if (x >= gridSize - 7 && y < 7) return true;
+      if (x < 7 && y >= gridSize - 7) return true;
+      return false;
+    };
+
     let data = '';
 
     for (let y = 0; y < gridSize; y++) {
@@ -174,8 +181,10 @@ export default function QrCode({
     centerStart,
     centerEnd,
     centerExcludeSize,
-    effectiveArenaCircle,
+    arenaCircle,
   ]);
+
+  if (!text) return null;
 
   const markerPositions = [
     { x: 0, y: 0 }, // Top-left

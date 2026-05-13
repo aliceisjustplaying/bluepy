@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { JSX } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { TargetedEvent } from 'preact';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useDebouncedCallback } from 'use-debounce';
 
@@ -47,38 +47,50 @@ function MentionModal({
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const loadRelationships = async (accounts: mastodon.v1.Account[]) => {
-    if (!accounts?.length) return;
-    const relationships = await fetchRelationships(accounts, relationshipsMap);
-    if (relationships) {
-      setRelationshipsMap({
-        ...relationshipsMap,
-        ...relationships,
-      });
-    }
-  };
+  const relationshipsMapRef = useRef(relationshipsMap);
+  relationshipsMapRef.current = relationshipsMap;
 
-  const loadAccounts = (term?: string) => {
-    if (!term) return;
-    setUIState('loading');
-    (async () => {
-      try {
-        const accounts = await (
-          masto as unknown as AccountSearchEndpoint
-        ).v1.accounts.search.list({
-          q: term,
-          limit: 40,
-          resolve: false,
-        });
-        setAccounts(accounts);
-        loadRelationships(accounts);
-        setUIState('default');
-      } catch (e) {
-        setUIState('error');
-        console.error(e);
+  const loadRelationships = useCallback(
+    async (fetchedAccounts: mastodon.v1.Account[]) => {
+      if (!fetchedAccounts?.length) return;
+      const relationships = await fetchRelationships(
+        fetchedAccounts,
+        relationshipsMapRef.current,
+      );
+      if (relationships) {
+        setRelationshipsMap((prev) => ({
+          ...prev,
+          ...relationships,
+        }));
       }
-    })();
-  };
+    },
+    [],
+  );
+
+  const loadAccounts = useCallback(
+    (term?: string) => {
+      if (!term) return;
+      setUIState('loading');
+      void (async () => {
+        try {
+          const fetchedAccounts = await (
+            masto as unknown as AccountSearchEndpoint
+          ).v1.accounts.search.list({
+            q: term,
+            limit: 40,
+            resolve: false,
+          });
+          setAccounts(fetchedAccounts);
+          void loadRelationships(fetchedAccounts);
+          setUIState('default');
+        } catch (e) {
+          setUIState('error');
+          console.error(e);
+        }
+      })();
+    },
+    [masto, loadRelationships],
+  );
 
   const debouncedLoadAccounts = useDebouncedCallback(loadAccounts, 1000);
 
@@ -102,7 +114,7 @@ function MentionModal({
     if (defaultSearchTerm) {
       loadAccounts(defaultSearchTerm);
     }
-  }, [defaultSearchTerm]);
+  }, [defaultSearchTerm, loadAccounts]);
 
   const selectAccount = (account: mastodon.v1.Account) => {
     const socialAddress = account.acct;
@@ -206,7 +218,7 @@ function MentionModal({
             type="search"
             class="block"
             placeholder={t`Search accounts`}
-            onInput={(e: JSX.TargetedEvent<HTMLInputElement>) => {
+            onInput={(e: TargetedEvent<HTMLInputElement>) => {
               const { value } = e.currentTarget;
               debouncedLoadAccounts(value);
             }}
