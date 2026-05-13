@@ -29,6 +29,10 @@ function buildClientMetadata(
   };
 }
 
+export const ATPROTO_OAUTH_CLIENT_METADATA = buildClientMetadata(
+  'https://bluepy.social',
+);
+
 const oauthSessions = new Map<string, OAuthSession>();
 let oauthClientPromise: Promise<BrowserOAuthClient> | undefined;
 let oauthInitPromise: ReturnType<BrowserOAuthClient['init']> | undefined;
