@@ -947,7 +947,23 @@ function Compose({
     };
   }, []);
 
+  // Latest-value refs so the load effect below can read fresh values
+  // (prefs, masto proxy, current account acct) without depending on their
+  // identity (they would otherwise re-run the effect on every render).
+  const prefStringRef = useRef(prefString);
+  prefStringRef.current = prefString;
+  const prefsRef = useRef(prefs);
+  prefsRef.current = prefs;
+  const mastoRef = useRef(masto);
+  mastoRef.current = masto;
+  const currentAccountAcctRef = useRef(currentAccountInfo.acct);
+  currentAccountAcctRef.current = currentAccountInfo.acct;
+
   useEffect(() => {
+    const prefStringFn = prefStringRef.current;
+    const prefsLocal = prefsRef.current;
+    const mastoLocal = mastoRef.current;
+    const currentAcct = currentAccountAcctRef.current;
     if (replyToStatus) {
       // sensitive read here only for parity with the original JS destructure
       // (it is read from `!!spoilerText` below). Keep destructure shape stable.
@@ -966,8 +982,7 @@ function Compose({
         ...mentionsList.map((m) => m.acct),
       ]);
       const allMentions = [...mentions].filter(
-        (m): m is string =>
-          typeof m === 'string' && m !== currentAccountInfo.acct,
+        (m): m is string => typeof m === 'string' && m !== currentAcct,
       );
 
       if (allMentions.length > 0) {
@@ -1004,7 +1019,7 @@ function Compose({
           focusTextarea();
         }
       }
-      const defaultVisPref = prefString('posting:default:visibility');
+      const defaultVisPref = prefStringFn('posting:default:visibility');
       // Preserve original: passes `visibility` directly when no pref override.
       setVisibility(
         replyVisibility === 'public' && defaultVisPref
@@ -1013,7 +1028,7 @@ function Compose({
       );
       setLanguage(
         fixLanguage(replyLanguage) ||
-          prefString('posting:default:language')?.toLowerCase() ||
+          prefStringFn('posting:default:language')?.toLowerCase() ||
           DEFAULT_LANG,
       );
       setSensitive(!!spoilerText);
@@ -1040,7 +1055,7 @@ function Compose({
       setUIState('loading');
       void (async () => {
         try {
-          const statusSource = await masto.v1.statuses
+          const statusSource = await mastoLocal.v1.statuses
             .$select(editStatus.id)
             .source.fetch();
           console.log({ statusSource });
@@ -1057,7 +1072,7 @@ function Compose({
           setVisibility(editVisibility as string);
           setLanguage(
             editLanguage ||
-              prefString('posting:default:language')?.toLowerCase() ||
+              prefStringFn('posting:default:language')?.toLowerCase() ||
               DEFAULT_LANG,
           );
           if (supportsNativeQuote()) {
@@ -1077,19 +1092,19 @@ function Compose({
       })();
     } else {
       focusTextarea();
-      console.log('Apply prefs', prefs);
-      const defaultVis = prefString('posting:default:visibility');
+      console.log('Apply prefs', prefsLocal);
+      const defaultVis = prefStringFn('posting:default:visibility');
       if (defaultVis) {
         setVisibility(defaultVis.toLowerCase());
       }
-      const defaultLang = prefString('posting:default:language');
+      const defaultLang = prefStringFn('posting:default:language');
       if (defaultLang) {
         setLanguage(defaultLang.toLowerCase());
       }
-      if (prefs['posting:default:sensitive']) {
-        setSensitive(!!prefs['posting:default:sensitive']);
+      if (prefsLocal['posting:default:sensitive']) {
+        setSensitive(!!prefsLocal['posting:default:sensitive']);
       }
-      const defaultQuotePolicy = prefString('posting:default:quote_policy');
+      const defaultQuotePolicy = prefStringFn('posting:default:quote_policy');
       if (defaultQuotePolicy) {
         let policy = defaultQuotePolicy.toLowerCase();
         if (defaultVis) {
@@ -1136,7 +1151,7 @@ function Compose({
       if (draftVisibility) setVisibility(draftVisibility);
       setLanguage(
         draftLanguage ||
-          prefString('posting:default:language')?.toLowerCase() ||
+          prefStringFn('posting:default:language')?.toLowerCase() ||
           DEFAULT_LANG,
       );
       // Match JS guard: only skip when explicitly null. Coerce to boolean
@@ -1158,11 +1173,17 @@ function Compose({
       if (draftQuoteApprovalPolicy)
         setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
     }
-    // TODO(oxlint:react-hooks/exhaustive-deps): prefString/prefs are read
-    // through valtio snapshots; currentAccountInfo.acct is stable per
-    // session; masto.v1.statuses is a masto proxy. Adding any of these
-    // would re-run this load effect on unrelated renders.
+    // Effect deliberately runs only when an explicit source status changes;
+    // prefString/prefs/masto/currentAccountInfo are read through latest-value
+    // refs declared below so we always see fresh values without re-running on
+    // every render.
   }, [draftStatus, editStatus, replyToStatus, replyMode]);
+
+  // Latest-value ref so the sharedData effect can dispatch the current
+  // processFiles without re-running on every render (the function is
+  // recreated each render but its observable behavior is stable).
+  const processFilesRef = useRef(processFiles);
+  processFilesRef.current = processFiles;
 
   useEffect(() => {
     if (sharedData) {
@@ -1174,7 +1195,8 @@ function Compose({
       }
 
       if (files && files.length > 0) {
-        processFiles(files)
+        processFilesRef
+          .current(files)
           .then((mediaFiles) => {
             if (mediaFiles) {
               setMediaAttachments(mediaFiles);
@@ -1186,8 +1208,6 @@ function Compose({
           });
       }
     }
-    // TODO(oxlint:react-hooks/exhaustive-deps): processFiles is recreated on
-    // every render (closures over masto + setters); adding it would loop.
   }, [sharedData]);
 
   // focus textarea when state.composerState.minimized turns false
@@ -1271,15 +1291,22 @@ function Compose({
     return true;
   };
 
+  // Latest-value refs so the mount-only beforeunload handler always sees
+  // fresh canClose() and beforeUnloadCopy without re-binding the listener
+  // on every render.
+  const canCloseRef = useRef(canClose);
+  canCloseRef.current = canClose;
+  const beforeUnloadCopyRef = useRef(beforeUnloadCopy);
+  beforeUnloadCopyRef.current = beforeUnloadCopy;
   useEffect(() => {
     // Show warning if user tries to close window with unsaved changes
     const handleBeforeUnload = (e: BeforeUnloadEvent): void => {
-      if (!canClose()) {
+      if (!canCloseRef.current()) {
         e.preventDefault();
         // TODO(oxlint:typescript/no-deprecated): returnValue is deprecated, but
         // some browsers still require it as a fallback alongside preventDefault.
         // The custom string also lets browsers show our message when supported.
-        e.returnValue = beforeUnloadCopy;
+        e.returnValue = beforeUnloadCopyRef.current;
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload, {
@@ -1289,11 +1316,6 @@ function Compose({
       window.removeEventListener('beforeunload', handleBeforeUnload, {
         capture: true,
       });
-    // TODO(oxlint:react-hooks/exhaustive-deps): handleBeforeUnload closes
-    // over canClose and beforeUnloadCopy; both are recreated every render
-    // (canClose accesses live refs). Re-running this effect would re-bind
-    // the listener constantly. The closure reads current values via
-    // canClose() invocation, which is the intended behavior.
   }, []);
 
   const getCharCount = (): number => {
@@ -1440,8 +1462,12 @@ function Compose({
     }
   };
   useInterval(saveUnsavedDraft, 5000); // background save every 5s
+  // Latest-value ref so the mount-only initial-save effect below always sees
+  // the current saveUnsavedDraft without re-running on every render.
+  const saveUnsavedDraftRef = useRef(saveUnsavedDraft);
+  saveUnsavedDraftRef.current = saveUnsavedDraft;
   useEffect(() => {
-    saveUnsavedDraft();
+    saveUnsavedDraftRef.current();
     // If unmounted, means user discarded the draft
     // Also means pop-out 🙈, but it's okay because the pop-out will persist the ID and re-create the draft
     return () => {
@@ -1449,9 +1475,6 @@ function Compose({
         draftKey(),
       );
     };
-    // TODO(oxlint:react-hooks/exhaustive-deps): saveUnsavedDraft is recreated
-    // every render (closures over refs + setters); this effect is mount-only
-    // to save the initial draft. Adding it would re-save on every render.
   }, []);
 
   useEffect(() => {
@@ -1474,7 +1497,8 @@ function Compose({
       if (files.length > 0) {
         e.preventDefault();
         e.stopPropagation();
-        processFiles(files)
+        processFilesRef
+          .current(files)
           .then((mediaFiles) => {
             if (mediaFiles) {
               setMediaAttachments((prev) => [...prev, ...mediaFiles]);
@@ -1501,10 +1525,9 @@ function Compose({
       window.removeEventListener('dragover', handleDragover);
       window.removeEventListener('drop', handleItems);
     };
-    // TODO(oxlint:react-hooks/exhaustive-deps): processFiles is recreated on
-    // every render; adding it would rebind window listeners constantly. The
-    // mediaAttachments dep rebinds when the attachment count changes, which
-    // is the only state the handlers care about.
+    // mediaAttachments rebinds when the attachment count changes, which is
+    // the only state the inner handler cares about (read indirectly through
+    // its closure). processFiles is read through processFilesRef.
   }, [mediaAttachments]);
 
   const [showMentionPicker, setShowMentionPicker] = useState<
