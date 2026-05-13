@@ -1,6 +1,6 @@
 import './avatar.css';
 
-import type { JSX } from 'preact';
+import type { Ref } from 'preact';
 import { useRef } from 'preact/hooks';
 
 import mem from '../utils/mem';
@@ -59,7 +59,7 @@ function Avatar({
   const canCheckAlpha = !!url && !/\/\/cdn\.bsky\.app\//.test(url);
   return (
     <picture
-      ref={avatarRef as unknown as JSX.HTMLAttributes<HTMLElement>['ref']}
+      ref={avatarRef as unknown as Ref<HTMLElement>}
       class={`avatar ${squircle ? 'squircle' : ''} ${
         alphaCache.get(url) ? 'has-alpha' : ''
       }`}
@@ -94,8 +94,8 @@ function Avatar({
               target.src = url;
             }
           }}
-          onLoad={(e) => {
-            const target = e.target as unknown as HTMLImageElement;
+          onLoad={(loadEvent) => {
+            const target = loadEvent.target as unknown as HTMLImageElement;
             if (avatarRef.current) avatarRef.current.dataset.loaded = 'true';
             if (alphaCache.has(url)) return;
             if (isMissing) return;
@@ -124,7 +124,7 @@ function Avatar({
                   avatarRef.current?.classList.add('has-alpha');
                 }
                 alphaCache.set(url, hasAlpha);
-              } catch (e) {
+              } catch {
                 // Silent fail
                 alphaCache.set(url, false);
               }

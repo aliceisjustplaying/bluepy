@@ -3,9 +3,9 @@ import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { JSX, VNode } from 'preact';
+import type { HTMLAttributes, VNode } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import punycode from 'punycode/';
+import { toUnicode as punycodeToUnicode } from 'punycode/';
 
 import { api } from '../utils/api';
 import i18nDuration from '../utils/i18n-duration';
@@ -119,11 +119,11 @@ interface MastoLike {
 }
 
 function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
-  return masto.v1.accounts as unknown as AccountsEndpoint;
+  return masto.v1.accounts as AccountsEndpoint;
 }
 
 function getV2SearchEndpoint(masto: MastoLike): V2SearchEndpoint {
-  return masto.v2.search as unknown as V2SearchEndpoint;
+  return masto.v2.search as V2SearchEndpoint;
 }
 
 type RelationshipUIState = 'default' | 'loading' | 'error';
@@ -160,7 +160,6 @@ function RelatedActions({
   renderEndorsements = false,
   setRenderEndorsements = () => {},
 }: RelatedActionsProps) {
-  if (!info) return null;
   const { i18n, t } = useLingui();
   const {
     masto: currentMasto,
@@ -173,8 +172,20 @@ function RelatedActions({
     useState<RelationshipUIState>('default');
   const [relationship, setRelationship] = useState<Relationship | null>(null);
 
-  const { id, acct, url, username, locked, lastStatusAt, note, fields, moved } =
-    info;
+  // `info` may be null on initial render. Hooks below must still be called in
+  // the same order on every render, so we destructure with safe fallbacks and
+  // defer the early-return until after every Hook has run. `url` is
+  // re-extracted post early-return so callers see its non-optional type.
+  const {
+    id = '',
+    acct = '',
+    username,
+    locked,
+    lastStatusAt,
+    note,
+    fields,
+    moved,
+  } = info ?? {};
   const accountID = useRef<string>(id);
 
   const {
@@ -205,7 +216,7 @@ function RelatedActions({
     if (info) {
       const currentAccount = getCurrentAccountID();
       let currentID: string | undefined;
-      (async () => {
+      void (async () => {
         if (sameInstance && authenticated) {
           currentID = id;
         } else if (!sameInstance && currentAuthenticated) {
@@ -256,9 +267,12 @@ function RelatedActions({
           setRelationshipUIState('default');
 
           if (relationships.length) {
-            const relationship = relationships[0];
-            setRelationship(relationship);
-            onRelationshipChange({ relationship, currentID });
+            const fetchedRelationship = relationships[0];
+            setRelationship(fetchedRelationship);
+            onRelationshipChange({
+              relationship: fetchedRelationship,
+              currentID,
+            });
           }
         } catch (e) {
           console.error(e);
@@ -286,16 +300,22 @@ function RelatedActions({
   const [searchEnabled, setSearchEnabled] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!currentAuthenticated) return;
-    (async () => {
+    if (!currentAuthenticated) return undefined;
+    void (async () => {
       const enabled = await isSearchEnabled(currentInstance);
       setSearchEnabled(enabled);
     })();
+    return undefined;
   }, [currentInstance, currentAuthenticated]);
 
+  if (!info) return null;
+
+  // After the early-return, `info` is present. Re-narrow `url` so downstream
+  // usages get its non-undefined type.
+  const url = info.url;
   let { headerStatic, avatarStatic } = info;
-  if (!headerStatic || /missing\.png$/.test(headerStatic)) {
-    if (avatarStatic && !/missing\.png$/.test(avatarStatic)) {
+  if (!headerStatic || headerStatic.endsWith('missing.png')) {
+    if (avatarStatic && !avatarStatic.endsWith('missing.png')) {
       headerStatic = avatarStatic;
     }
   }
@@ -308,7 +328,7 @@ function RelatedActions({
             <span class="tag">
               <Trans>Follows you</Trans>
             </span>
-          ) : !!lastStatusAt ? (
+          ) : lastStatusAt ? (
             <small class="insignificant">
               <Trans>
                 Last post:{' '}
@@ -382,18 +402,18 @@ function RelatedActions({
                 <Icon icon="more2" size="l" alt={t`More`} />
               </button>
             }
-            onMenuChange={(e: { open?: boolean }) => {
-              if (following && e.open) {
+            onMenuChange={(menuEvent: { open?: boolean }) => {
+              if (following && menuEvent.open) {
                 // Fetch lists that have this account
-                (async () => {
+                void (async () => {
                   try {
-                    const lists = await getAccountsEndpoint(
+                    const fetchedLists = await getAccountsEndpoint(
                       currentMasto as unknown as MastoLike,
                     )
                       .$select(accountID.current)
                       .lists.list();
-                    console.log('fetched account lists', lists);
-                    setLists(lists);
+                    console.log('fetched account lists', fetchedLists);
+                    setLists(fetchedLists);
                   } catch (e) {
                     console.error(e);
                   }
@@ -459,7 +479,7 @@ function RelatedActions({
                     <MenuItem
                       onClick={() => {
                         setRelationshipUIState('loading');
-                        (async () => {
+                        void (async () => {
                           try {
                             const rel = await getAccountsEndpoint(
                               currentMasto as unknown as MastoLike,
@@ -492,7 +512,7 @@ function RelatedActions({
                     <MenuItem
                       onClick={() => {
                         setRelationshipUIState('loading');
-                        (async () => {
+                        void (async () => {
                           try {
                             const rel = await getAccountsEndpoint(
                               currentMasto as unknown as MastoLike,
@@ -526,7 +546,7 @@ function RelatedActions({
                   <MenuItem
                     onClick={() => {
                       setRelationshipUIState('loading');
-                      (async () => {
+                      void (async () => {
                         try {
                           if (endorsed) {
                             const newRelationship = await getAccountsEndpoint(
@@ -643,7 +663,7 @@ function RelatedActions({
               onClick={() => {
                 const handle = `@${currentInfo?.acct || acctWithInstance}`;
                 try {
-                  navigator.clipboard.writeText(handle);
+                  void navigator.clipboard.writeText(handle);
                   showToast(t`Handle copied`);
                 } catch (e) {
                   console.error(e);
@@ -669,7 +689,7 @@ function RelatedActions({
                 onClick={() => {
                   // Copy url to clipboard
                   try {
-                    navigator.clipboard.writeText(url);
+                    void navigator.clipboard.writeText(url);
                     showToast(t`Link copied`);
                   } catch (e) {
                     console.error(e);
@@ -689,7 +709,7 @@ function RelatedActions({
                   <MenuItem
                     onClick={() => {
                       try {
-                        navigator.share({
+                        void navigator.share({
                           url,
                         });
                       } catch (e) {
@@ -728,7 +748,7 @@ function RelatedActions({
                   <MenuItem
                     onClick={() => {
                       setRelationshipUIState('loading');
-                      (async () => {
+                      void (async () => {
                         try {
                           const newRelationship = await getAccountsEndpoint(
                             currentMasto as unknown as MastoLike,
@@ -784,9 +804,10 @@ function RelatedActions({
                     <div class="menu-wrap">
                       {MUTE_DURATIONS.map((duration) => (
                         <MenuItem
+                          key={duration}
                           onClick={() => {
                             setRelationshipUIState('loading');
-                            (async () => {
+                            void (async () => {
                               try {
                                 const newRelationship =
                                   await getAccountsEndpoint(
@@ -808,11 +829,7 @@ function RelatedActions({
                                             duration
                                           ] as () => string
                                         )()
-                                      : i18n._(
-                                          MUTE_DURATIONS_LABELS[
-                                            duration
-                                          ] as MessageDescriptor,
-                                        )
+                                      : i18n._(MUTE_DURATIONS_LABELS[duration])
                                   }`,
                                 );
                                 states.reloadGenericAccounts.id = 'mute';
@@ -829,11 +846,7 @@ function RelatedActions({
                             ? (
                                 MUTE_DURATIONS_LABELS[duration] as () => string
                               )()
-                            : i18n._(
-                                MUTE_DURATIONS_LABELS[
-                                  duration
-                                ] as MessageDescriptor,
-                              )}
+                            : i18n._(MUTE_DURATIONS_LABELS[duration])}
                         </MenuItem>
                       ))}
                     </div>
@@ -856,7 +869,7 @@ function RelatedActions({
                     }
                     onClick={() => {
                       setRelationshipUIState('loading');
-                      (async () => {
+                      void (async () => {
                         try {
                           const newRelationship = await getAccountsEndpoint(
                             currentMasto as unknown as MastoLike,
@@ -907,7 +920,7 @@ function RelatedActions({
                     //   return;
                     // }
                     setRelationshipUIState('loading');
-                    (async () => {
+                    void (async () => {
                       try {
                         if (blocking) {
                           const newRelationship = await getAccountsEndpoint(
@@ -1009,10 +1022,10 @@ function RelatedActions({
                     ).relationships.fetch({
                       id: [accountID.current],
                     });
-                    const { note } = relationships[0] || {};
-                    if (note) {
-                      alert(note);
-                      console.log(note);
+                    const { note: fetchedNote } = relationships[0] || {};
+                    if (fetchedNote) {
+                      alert(fetchedNote);
+                      console.log(fetchedNote);
                     }
                   }}
                 >
@@ -1040,7 +1053,7 @@ function RelatedActions({
               disabled={loading}
               onClick={() => {
                 setRelationshipUIState('loading');
-                (async () => {
+                void (async () => {
                   try {
                     let newRelationship: Relationship | undefined;
 
@@ -1089,7 +1102,7 @@ function RelatedActions({
             >
               <button
                 type="button"
-                class={`${following || requested ? 'light swap' : ''}`}
+                class={following || requested ? 'light swap' : ''}
                 data-swap-state={following || requested ? 'danger' : ''}
                 disabled={loading}
               >
@@ -1126,7 +1139,7 @@ function RelatedActions({
           )}
         </span>
       </div>
-      {!!showTranslatedBio && (
+      {showTranslatedBio && (
         <Modal
           onClose={() => {
             setShowTranslatedBio(false);
@@ -1139,7 +1152,7 @@ function RelatedActions({
           />
         </Modal>
       )}
-      {!!showAddRemoveLists && (
+      {showAddRemoveLists && (
         <Modal
           onClose={() => {
             setShowAddRemoveLists(false);
@@ -1151,7 +1164,7 @@ function RelatedActions({
           />
         </Modal>
       )}
-      {!!showPrivateNoteModal && (
+      {showPrivateNoteModal && (
         <Modal
           onClose={() => {
             setShowPrivateNoteModal(false);
@@ -1160,9 +1173,9 @@ function RelatedActions({
           <PrivateNoteSheet
             account={info}
             note={privateNote ?? undefined}
-            onRelationshipChange={(relationship: unknown) => {
-              setRelationship(relationship as Relationship);
-              // onRelationshipChange({ relationship, currentID: accountID.current });
+            onRelationshipChange={(nextRelationship: unknown) => {
+              setRelationship(nextRelationship as Relationship);
+              // onRelationshipChange({ relationship: nextRelationship, currentID: accountID.current });
             }}
             onClose={() => setShowPrivateNoteModal(false)}
           />
@@ -1174,15 +1187,15 @@ function RelatedActions({
 
 function niceAccountURL(
   url: string | null | undefined,
-): VNode<JSX.HTMLAttributes> | undefined {
-  if (!url) return;
+): VNode<HTMLAttributes<HTMLElement>> | undefined {
+  if (!url) return undefined;
   const urlObj = URL.parse(url);
-  if (!urlObj) return;
+  if (!urlObj) return undefined;
   const { host, pathname } = urlObj;
   const path = pathname.replace(/\/$/, '').replace(/^\//, '');
   return (
     <>
-      <span class="more-insignificant">{punycode.toUnicode(host)}/</span>
+      <span class="more-insignificant">{punycodeToUnicode(host)}/</span>
       <wbr />
       <span>{path}</span>
     </>
