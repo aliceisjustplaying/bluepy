@@ -7,6 +7,15 @@ import QrCode from './qr-code';
 
 export const mediaDevicesSupported = !!navigator.mediaDevices?.getUserMedia;
 
+interface QrCodeModalProps {
+  text?: string;
+  arena?: string;
+  backgroundMask?: string;
+  caption?: string;
+  onClose?: () => void;
+  onScannerClick?: () => void;
+}
+
 function QrCodeModal({
   text,
   arena,
@@ -14,7 +23,7 @@ function QrCodeModal({
   caption,
   onClose,
   onScannerClick,
-}) {
+}: QrCodeModalProps) {
   const { t } = useLingui();
   console.log('onScannerClick', onScannerClick);
 
