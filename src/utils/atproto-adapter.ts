@@ -223,6 +223,17 @@ interface AtprotoEmbed {
   record?: AtprotoEmbedRecord;
 }
 
+type AtprotoEmbedInput =
+  | AtprotoEmbed
+  | AtprotoEmbed[]
+  | AppBskyFeedDefs.PostView['embed']
+  | AppBskyFeedPost.Record['embed']
+  | undefined;
+
+function isAtprotoEmbedObject(embed: AtprotoEmbedInput): embed is AtprotoEmbed {
+  return isRecord(embed);
+}
+
 interface AtprotoPostRecord extends Partial<
   Omit<AppBskyFeedPost.Record, 'reply' | 'embed'>
 > {
@@ -825,7 +836,7 @@ interface EmbedParts {
 }
 
 function embedToParts(
-  embed: AtprotoEmbed | AtprotoEmbed[] | undefined,
+  embed: AtprotoEmbedInput,
   agent: AtprotoAgent,
 ): EmbedParts {
   const mediaAttachments: AdaptedMediaAttachment[] = [];
@@ -842,6 +853,7 @@ function embedToParts(
     });
     return { mediaAttachments, card, quote };
   }
+  if (!isAtprotoEmbedObject(embed)) return { mediaAttachments, card, quote };
 
   const images: AtprotoEmbedImage[] = embed.images || embed.media?.images || [];
   images.forEach((image, index) => {
@@ -949,6 +961,12 @@ function embedToParts(
   }
 
   return { mediaAttachments, card, quote };
+}
+
+function firstEmbed(...embeds: AtprotoEmbedInput[]): AtprotoEmbedInput {
+  return embeds.find((embed) =>
+    Array.isArray(embed) ? embed.length > 0 : Boolean(embed),
+  );
 }
 
 function postURL(post: AtprotoPost): string {
@@ -1460,7 +1478,7 @@ export function postToStatus(
   // collapsing to "" and colliding.
   const id = encodeAtprotoID(String(post.uri));
   const { mediaAttachments, card, quote } = embedToParts(
-    post.embed || post.embeds || record.embed || record.embeds,
+    firstEmbed(post.embed, post.embeds, record.embed, record.embeds),
     agent,
   );
   const mentions: AdaptedMention[] = (record.facets || []).flatMap((facet) => {

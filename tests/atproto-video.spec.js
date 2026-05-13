@@ -146,6 +146,46 @@ test.describe('ATProto video mapping', () => {
     expect(status.quote.quotedStatus.quotesCount).toBe(1);
   });
 
+  test('keeps link cards on quoted Bluesky record embeds', () => {
+    const status = postToStatus(
+      postWithEmbed({
+        $type: 'app.bsky.embed.record#view',
+        record: {
+          $type: 'app.bsky.embed.record#viewRecord',
+          uri: 'at://did:plc:bob/app.bsky.feed.post/quoted-link',
+          cid: 'quoted-link-cid',
+          author: {
+            did: 'did:plc:bob',
+            handle: 'bob.test',
+            displayName: 'Bob',
+          },
+          value: {
+            $type: 'app.bsky.feed.post',
+            text: 'quoted link post',
+            createdAt: '2026-05-08T00:00:00.000Z',
+            embed: {
+              $type: 'app.bsky.embed.external',
+              external: {
+                uri: 'https://example.com/story',
+                title: 'Example Story',
+                description: 'A linked story',
+              },
+            },
+          },
+          embeds: [],
+          indexedAt: '2026-05-08T00:01:00.000Z',
+        },
+      }),
+    );
+
+    expect(status.quote.quotedStatus.card).toMatchObject({
+      url: 'https://example.com/story',
+      title: 'Example Story',
+      description: 'A linked story',
+      type: 'link',
+    });
+  });
+
   test('accepts bare video job status responses while polling', () => {
     expect(
       getVideoJobStatus({
