@@ -1,8 +1,10 @@
 import { useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
-import Timeline from '../components/timeline';
+import TimelineUntyped from '../components/timeline';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
@@ -15,9 +17,59 @@ import {
 } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
+const Timeline = TimelineUntyped as unknown as ComponentType<{
+  title?: string;
+  id?: string;
+  emptyText?: string;
+  errorText?: string;
+  instance?: string;
+  fetchItems?: (
+    firstLoad?: boolean,
+  ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
+  checkForUpdates?: () => Promise<boolean>;
+  useItemID?: boolean;
+  boostsCarousel?: boolean;
+  filterContext?: string;
+  showFollowedTags?: boolean;
+  showReplyParent?: boolean;
+  [key: string]: unknown;
+}>;
+
+type StreamingEntry = {
+  event: string;
+  payload: unknown;
+};
+
+interface StreamingSubscription extends AsyncIterable<StreamingEntry> {
+  unsubscribe?: () => void;
+}
+
+interface StreamingUser {
+  user: {
+    subscribe(): StreamingSubscription;
+  };
+}
+
+interface FollowingProps {
+  title?: string;
+  path?: string;
+  id?: string;
+  [key: string]: unknown;
+}
+
+interface HomeTimelineParams {
+  include_reblogs?: boolean;
+  [key: string]: unknown;
+}
+
+interface HomeIterable {
+  values(): AsyncIterator<mastodon.v1.Status[]>;
+  params?: HomeTimelineParams | string;
+}
+
 const LIMIT = 20;
 
-function Following({ title, path, id, ...props }) {
+function Following({ title, path, id, ...props }: FollowingProps) {
   const { t } = useLingui();
   useTitle(
     title ||
@@ -28,12 +80,14 @@ function Following({ title, path, id, ...props }) {
     path || '/following',
   );
   const { masto, streaming, instance, client } = api();
-  const [streamingClient, setStreamingClient] = useState(streaming);
+  const [streamingClient, setStreamingClient] = useState<unknown>(streaming);
 
   const snapStates = useSnapshot(states);
-  const homeIterable = useRef();
-  const homeIterator = useRef();
-  const latestItem = useRef();
+  const homeIterable = useRef<HomeIterable | undefined>(undefined);
+  const homeIterator = useRef<
+    AsyncIterator<mastodon.v1.Status[]> | undefined
+  >(undefined);
+  const latestItem = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (path === '/') return;
@@ -45,8 +99,8 @@ function Following({ title, path, id, ...props }) {
   // Streaming only happens after instance is initialized
   useEffect(() => {
     if (!streaming && client?.onStreamingReady) {
-      client.onStreamingReady((streamingClient) => {
-        setStreamingClient(streamingClient);
+      client.onStreamingReady((nextStreaming) => {
+        setStreamingClient(nextStreaming);
       });
     }
   }, [client]);
@@ -55,10 +109,23 @@ function Following({ title, path, id, ...props }) {
   console.debug('RENDER Following', title, id);
   const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
 
-  async function fetchHome(firstLoad) {
+  async function fetchHome(
+    firstLoad?: boolean,
+  ): Promise<IteratorResult<mastodon.v1.Status[]>> {
     if (firstLoad || !homeIterator.current) {
       __BENCHMARK.start('fetch-home-first');
-      homeIterable.current = masto.v1.timelines.home.list({ limit: LIMIT });
+      const mastoUntyped = masto as unknown as {
+        v1: {
+          timelines: {
+            home: {
+              list(options: { limit: number }): HomeIterable;
+            };
+          };
+        };
+      };
+      homeIterable.current = mastoUntyped.v1.timelines.home.list({
+        limit: LIMIT,
+      });
       homeIterator.current = homeIterable.current.values();
     }
     if (supportsPixelfed && homeIterable.current?.params) {
@@ -81,8 +148,11 @@ function Following({ title, path, id, ...props }) {
       }
 
       // value = filteredItems(value, 'home');
-      value.forEach((item) => {
-        saveStatus(item, instance);
+      value.forEach((item: mastodon.v1.Status) => {
+        saveStatus(
+          item as unknown as Parameters<typeof saveStatus>[0],
+          instance,
+        );
       });
       value = dedupeBoosts(value, instance);
       if (firstLoad && latestItemChanged) clearFollowedTagsState();
@@ -91,7 +161,7 @@ function Following({ title, path, id, ...props }) {
       }, 100);
 
       // ENFORCE sort by datetime (Latest first)
-      value.sort((a, b) => {
+      value.sort((a: mastodon.v1.Status, b: mastodon.v1.Status) => {
         return Date.parse(b.createdAt) - Date.parse(a.createdAt);
       });
     }
@@ -102,24 +172,42 @@ function Following({ title, path, id, ...props }) {
     };
   }
 
-  async function checkForUpdates() {
+  async function checkForUpdates(): Promise<boolean> {
     try {
-      const opts = {
+      const opts: {
+        limit: number;
+        since_id?: string;
+        include_reblogs?: boolean;
+      } = {
         limit: 5,
         since_id: latestItem.current,
       };
       if (supportsPixelfed) {
         opts.include_reblogs = true;
       }
-      const results = await masto.v1.timelines.home.list(opts).values().next();
+      const mastoUntyped = masto as unknown as {
+        v1: {
+          timelines: {
+            home: {
+              list(o: typeof opts): {
+                values(): AsyncIterator<mastodon.v1.Status[]>;
+              };
+            };
+          };
+        };
+      };
+      const results = await mastoUntyped.v1.timelines.home
+        .list(opts)
+        .values()
+        .next();
       let { value } = results;
       console.log('checkForUpdates', latestItem.current, value);
-      const valueContainsLatestItem = value[0]?.id === latestItem.current; // since_id might not be supported
+      const valueContainsLatestItem = value?.[0]?.id === latestItem.current; // since_id might not be supported
       if (value?.length && !valueContainsLatestItem) {
         latestItem.current = value[0].id;
         value = dedupeBoosts(value, instance);
         value = filteredItems(value, 'home');
-        if (value.some((item) => !item.reblog)) {
+        if (value.some((item: mastodon.v1.Status) => !item.reblog)) {
           return true;
         }
       }
@@ -131,22 +219,26 @@ function Following({ title, path, id, ...props }) {
   }
 
   useEffect(() => {
-    let sub;
+    let sub: StreamingSubscription | null = null;
     (async () => {
       if (streamingClient) {
-        sub = streamingClient.user.subscribe();
+        sub = (streamingClient as StreamingUser).user.subscribe();
         console.log('🎏 Streaming user', sub);
         for await (const entry of sub) {
           if (!sub) break;
           if (entry.event === 'status.update') {
-            const status = entry.payload;
+            const status = entry.payload as NonNullable<
+              Parameters<typeof saveStatus>[0]
+            >;
             console.log(`🔄 Status ${status.id} updated`);
             saveStatus(status, instance);
           } else if (entry.event === 'delete') {
-            const statusID = entry.payload;
+            const statusID = entry.payload as string;
             console.log(`❌ Status ${statusID} deleted`);
             // delete states.statuses[statusID];
-            const s = getStatus(statusID, instance);
+            const s = getStatus(statusID, instance) as
+              | { _deleted?: boolean }
+              | undefined;
             if (s) s._deleted = true;
           }
         }
