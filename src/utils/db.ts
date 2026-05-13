@@ -14,9 +14,9 @@ function initDB(dbName: string, storeName: string) {
   return {
     set: (key: IDBValidKey, val: unknown) => set(key, val, store),
     get: (key: IDBValidKey) => get(key, store),
-    getMany: (keys: IDBValidKey[]) => getMany(keys, store),
+    getMany: (keysArg: IDBValidKey[]) => getMany(keysArg, store),
     del: (key: IDBValidKey) => del(key, store),
-    delMany: (keys: IDBValidKey[]) => delMany(keys, store),
+    delMany: (keysArg: IDBValidKey[]) => delMany(keysArg, store),
     clear: () => clear(store),
     keys: () => keys(store),
   };

@@ -48,7 +48,7 @@ export default function LazyShazam({ id, children }: LazyShazamProps) {
       }
       if (id) shazamIDs[id] = true;
     }
-  }, []);
+  }, [id]);
 
   if (visibleStart) return children;
 

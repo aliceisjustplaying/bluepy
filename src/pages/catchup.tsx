@@ -1,7 +1,7 @@
 import '../components/links-bar.css';
 import './catchup.css';
 
-import autoAnimate from '@formkit/auto-animate';
+import { autoAnimate } from '@formkit/auto-animate';
 import type { I18n, MessageDescriptor } from '@lingui/core';
 import { msg, select } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
@@ -14,7 +14,6 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useReducer,
   useRef,
   useState,
 } from 'preact/hooks';
@@ -266,16 +265,19 @@ function Catchup() {
   const currentAccount = useMemo(() => {
     return getCurrentAccountID();
   }, []);
-  const isSelf = (accountID: string | null | undefined): boolean =>
-    accountID === currentAccount;
+  const isSelf = useCallback(
+    (accountID: string | null | undefined): boolean =>
+      accountID === currentAccount,
+    [currentAccount],
+  );
 
   const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
 
-  async function fetchHome({
+  const fetchHome = useCallback(async ({
     maxCreatedAt,
   }: {
     maxCreatedAt: number | null;
-  }): Promise<CatchupPost[]> {
+  }): Promise<CatchupPost[]> => {
     console.debug('fetchHome', maxCreatedAt);
     const allResults: CatchupPost[] = [];
     const mastoUntyped = masto as unknown as {
@@ -345,7 +347,9 @@ function Catchup() {
           break mainloop;
         }
         // Pause 1s
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 1000);
+        });
       } catch (e) {
         console.error(e);
         break mainloop;
@@ -366,7 +370,7 @@ function Catchup() {
     });
 
     return allResults;
-  }
+  }, [masto, supportsPixelfed, instance, isSelf]);
 
   const [posts, setPosts] = useState<CatchupPost[]>([]);
   const catchupRangeRef = useRef<HTMLInputElement | null>(null);
@@ -402,12 +406,12 @@ function Catchup() {
         console.error(e, results);
       }
     },
-    [],
+    [dtf, fetchHome, NS, setSearchParams],
   );
 
   useEffect(() => {
     if (id) {
-      (async () => {
+      void (async () => {
         const catchup = (await db.catchup.get(id)) as CatchupRecord | undefined;
         if (catchup) {
           catchup.posts.sort((a, b) => (a.createdAt > b.createdAt ? 1 : -1));
@@ -419,12 +423,12 @@ function Catchup() {
       setPosts([]);
       setUIState('start');
     }
-  }, [id]);
+  }, [id, uiState]);
 
-  const [reloadCatchupsCount, reloadCatchups] = useReducer<number, void>(
-    (c) => c + 1,
-    0,
-  );
+  const [reloadCatchupsCount, setReloadCatchupsCount] = useState(0);
+  const reloadCatchups = useCallback(() => {
+    setReloadCatchupsCount((c) => c + 1);
+  }, []);
   const [lastCatchupEndAt, setLastCatchupEndAt] = useState<number | null>(null);
   const [prevCatchups, setPrevCatchups] = useState<CatchupSummary[]>([]);
 
@@ -442,7 +446,7 @@ function Catchup() {
   }, [prevCatchups]);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         const catchups = (await db.catchup.keys()) as string[];
         if (catchups.length) {
@@ -459,9 +463,9 @@ function Catchup() {
             let restCatchups: CatchupRecord[] | null = ownCatchups.slice(3);
 
             const trimmedCatchups: CatchupSummary[] = lastCatchups.map((c) => {
-              const { id, count, startAt, endAt } = c;
+              const { id: catchupId, count, startAt, endAt } = c;
               return {
-                id,
+                id: catchupId,
                 count,
                 startAt,
                 endAt,
@@ -482,6 +486,7 @@ function Catchup() {
                   .then(() => {
                     // GC time
                     restCatchups = null;
+                    return undefined;
                   })
                   .catch((e) => {
                     console.error(e);
@@ -502,7 +507,7 @@ function Catchup() {
     if (uiState === 'start') {
       reloadCatchups();
     }
-  }, [uiState === 'start']);
+  }, [uiState, reloadCatchups]);
 
   const [filterCounts, links] = useMemo((): [FilterCounts, TopLink[]] => {
     let filtered = 0,
@@ -512,7 +517,7 @@ function Catchup() {
       replies = 0,
       followedTags = 0,
       original = 0;
-    const links: Record<string, LinkAggregate> = {};
+    const linksMap: Record<string, LinkAggregate> = {};
     for (const post of posts) {
       if (post._filtered && post._filtered.action !== 'blur') {
         filtered++;
@@ -551,8 +556,8 @@ function Catchup() {
       ) {
         const { favouritesCount, reblogsCount } = thePost;
         let url = card.url.replace(/\/$/, '');
-        if (!links[url]) {
-          links[url] = {
+        if (!linksMap[url]) {
+          linksMap[url] = {
             postID: thePost.id,
             card,
             shared: 1,
@@ -561,23 +566,23 @@ function Catchup() {
             boosts: reblogsCount,
           };
         } else {
-          if (links[url].sharers.find((a) => a?.id === post.account.id)) {
+          if (linksMap[url].sharers.find((a) => a?.id === post.account.id)) {
             continue;
           }
-          links[url].shared++;
-          links[url].sharers.push(post.account);
-          if (links[url].postID !== thePost.id) {
-            links[url].likes += favouritesCount;
-            links[url].boosts += reblogsCount;
+          linksMap[url].shared++;
+          linksMap[url].sharers.push(post.account);
+          if (linksMap[url].postID !== thePost.id) {
+            linksMap[url].likes += favouritesCount;
+            linksMap[url].boosts += reblogsCount;
           }
         }
       }
     }
 
     let topLinks: TopLink[] = [];
-    for (const link in links) {
+    for (const link in linksMap) {
       topLinks.push({
-        ...links[link],
+        ...linksMap[link],
         url: link,
       });
     }
@@ -685,7 +690,7 @@ function Catchup() {
     const authorsHash: Record<string, CatchupPost['account']> = {};
     const authorCountsMap = new Map<string, number>();
 
-    let filteredPosts = posts.filter((post) => {
+    let filtered = posts.filter((post) => {
       const postFilterMatches =
         selectedFilterCategory === 'all' ||
         post.__FILTER === selectedFilterCategory;
@@ -703,7 +708,7 @@ function Catchup() {
 
     // Deduplicate boosts
     const boostedPosts: Record<string, CatchupPost> = {};
-    filteredPosts.forEach((post) => {
+    filtered.forEach((post) => {
       if (post.reblog) {
         if (boostedPosts[post.reblog.id]) {
           const existing = boostedPosts[post.reblog.id];
@@ -722,14 +727,14 @@ function Catchup() {
     });
 
     if (selectedAuthor && authorCountsMap.has(selectedAuthor)) {
-      filteredPosts = filteredPosts.filter(
+      filtered = filtered.filter(
         (post) =>
           post.account.id === selectedAuthor ||
           [...(post.__BOOSTERS || [])].find((a) => a.id === selectedAuthor),
       );
     }
 
-    return [filteredPosts, authorsHash, Object.fromEntries(authorCountsMap)];
+    return [filtered, authorsHash, Object.fromEntries(authorCountsMap)];
   }, [selectedFilterCategory, selectedAuthor, posts]);
 
   const filteredPostsMap = useMemo((): Record<string, CatchupPost> => {
@@ -824,42 +829,42 @@ function Catchup() {
     if (postsBarType !== '2d') return null;
     return posts.map((post) => {
       // If part of filteredPosts
-      const isFiltered = filteredPostsMap[post.id];
+      const postIsFiltered = filteredPostsMap[post.id];
       return (
         <span
           key={post.id}
-          class={`post-dot ${isFiltered ? 'post-dot-highlight' : ''}`}
+          class={`post-dot ${postIsFiltered ? 'post-dot-highlight' : ''}`}
         />
       );
     });
-  }, [filteredPostsMap]);
+  }, [filteredPostsMap, posts, postsBarType]);
 
   const postsBins = useMemo(() => {
     if (postsBarType !== '3d') return null;
     if (!posts?.length) return null;
     const bins = binByTime(posts, 'createdAt', 320);
-    return bins.map((posts, i) => {
+    return bins.map((postsInBin, i) => {
       return (
         <div class="posts-bin" key={i}>
-          {posts.map((post) => {
-            const isFiltered = filteredPostsMap[post.id];
+          {postsInBin.map((post) => {
+            const postIsFiltered = filteredPostsMap[post.id];
             return (
               <span
                 key={post.id}
-                class={`post-dot ${isFiltered ? 'post-dot-highlight' : ''}`}
+                class={`post-dot ${postIsFiltered ? 'post-dot-highlight' : ''}`}
               />
             );
           })}
         </div>
       );
     });
-  }, [filteredPostsMap]);
+  }, [filteredPostsMap, posts, postsBarType]);
 
   const scrollableRef = useRef<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
-    if (!id || uiState !== 'results' || !scrollableRef.current) return;
-    if (!sortedFilteredPosts.length) return;
+    if (!id || uiState !== 'results' || !scrollableRef.current) return undefined;
+    if (!sortedFilteredPosts.length) return undefined;
 
     const savedState = store.session.getJSON<CatchupSessionState>(
       `${CATCHUP_NS}-${id}`,
@@ -876,10 +881,11 @@ function Catchup() {
 
       return () => clearTimeout(timeoutId);
     }
+    return undefined;
   }, [id, uiState, sortedFilteredPosts.length]);
 
   useEffect(() => {
-    if (!id || uiState !== 'results' || !scrollableRef.current) return;
+    if (!id || uiState !== 'results' || !scrollableRef.current) return undefined;
 
     const handleScroll = () => {
       if (!scrollableRef.current) return;
@@ -903,10 +909,10 @@ function Catchup() {
     // return hour, not ms
     if (!lastCatchupEndAt) return null;
     return (Date.now() - lastCatchupEndAt) / 1000 / 60 / 60;
-  }, [lastCatchupEndAt, range]);
+  }, [lastCatchupEndAt]);
 
   useEffect(() => {
-    if (uiState !== 'results') return;
+    if (uiState !== 'results') return undefined;
     const authorUsername =
       selectedAuthor && authors[selectedAuthor]
         ? authors[selectedAuthor].username
@@ -975,15 +981,16 @@ function Catchup() {
     sortOrder,
     groupBy,
     authors,
+    t,
   ]);
 
   useEffect(() => {
     if (selectedAuthor) {
       if (authors[selectedAuthor]) {
         // Check if author is visible and within the scrollable area viewport
-        const authorElement = authorsListParent.current!.querySelector(
+        const authorElement = authorsListParent.current!.querySelector<HTMLElement>(
           `[data-author="${selectedAuthor}"]`,
-        ) as HTMLElement | null;
+        );
         const scrollableRect =
           authorsListParent.current?.getBoundingClientRect();
         const authorRect = authorElement?.getBoundingClientRect();
@@ -1024,8 +1031,9 @@ function Catchup() {
       ) as HTMLElement | null;
       const activeItemRect = activeItem?.getBoundingClientRect();
       const allItems = Array.from(
-        scrollableRef.current?.querySelectorAll(itemsSelector) ?? [],
-      ) as HTMLElement[];
+        scrollableRef.current?.querySelectorAll<HTMLElement>(itemsSelector) ??
+          [],
+      );
       if (
         activeItem &&
         activeItemRect &&
@@ -1078,8 +1086,9 @@ function Catchup() {
       ) as HTMLElement | null;
       const activeItemRect = activeItem?.getBoundingClientRect();
       const allItems = Array.from(
-        scrollableRef.current?.querySelectorAll(itemsSelector) ?? [],
-      ) as HTMLElement[];
+        scrollableRef.current?.querySelectorAll<HTMLElement>(itemsSelector) ??
+          [],
+      );
       if (
         activeItem &&
         activeItemRect &&
@@ -1229,7 +1238,7 @@ function Catchup() {
     >
       <div class="timeline-deck deck wide">
         <header
-          class={`${uiState === 'loading' ? 'loading' : ''}`}
+          class={uiState === 'loading' ? 'loading' : ''}
           onClick={(e) => {
             if (!(e.target as HTMLElement | null)?.closest('a, button')) {
               scrollableRef.current?.scrollTo({
@@ -1354,7 +1363,7 @@ function Catchup() {
                 </span>
                 <datalist id="catchup-ranges">
                   {RANGES.map(({ label, value }) => (
-                    <option value={value} label={_(label)} />
+                    <option key={value} value={value} label={_(label)} />
                   ))}
                 </datalist>{' '}
                 <button
@@ -1376,7 +1385,7 @@ function Catchup() {
                         // Don't need to set duration
                       }
                     }
-                    handleCatchupClick({ duration });
+                    void handleCatchupClick({ duration });
                   }}
                 >
                   <Trans>Catch up</Trans>
@@ -1443,9 +1452,10 @@ function Catchup() {
                           <button
                             type="button"
                             class="light danger small"
-                            onClick={async () => {
+                            onClick={() => {
                               const yes = confirm(t`Remove this catch-up?`);
-                              if (yes) {
+                              if (!yes) return;
+                              void (async () => {
                                 let st = showToast(
                                   t`Removing Catch-up ${pc.id}`,
                                 );
@@ -1453,7 +1463,7 @@ function Catchup() {
                                 st?.hideToast?.();
                                 showToast(t`Catch-up ${pc.id} removed`);
                                 reloadCatchups();
-                              }
+                              })();
                             }}
                           >
                             <Icon icon="x" alt={t`Remove`} />
@@ -1543,7 +1553,7 @@ function Catchup() {
                 <div class="shazam-container-inner">
                   <div class="catchup-top-links links-bar">
                     {links.map((link) => {
-                      const { card, shared, sharers, likes, boosts } = link;
+                      const { card, sharers } = link;
                       const {
                         blurhash,
                         title,
@@ -1573,7 +1583,7 @@ function Catchup() {
                           key={url}
                           href={url}
                           target="_blank"
-                          rel="noopener"
+                          rel="noopener noreferrer"
                           class="link-block"
                           style={
                             accentColor
@@ -1642,9 +1652,10 @@ function Catchup() {
                                 <Trans>
                                   Shared by{' '}
                                   {sharers.map((s) => {
-                                    const { avatarStatic, displayName } = s;
+                                    const { id: sharerId, avatarStatic, displayName } = s;
                                     return (
                                       <button
+                                        key={sharerId}
                                         type="button"
                                         class="plain"
                                         style={{
@@ -1654,8 +1665,7 @@ function Catchup() {
                                           e.preventDefault();
                                           e.stopPropagation();
                                           // Reset and filter to author
-                                          const { id } = s;
-                                          setSelectedAuthor(id);
+                                          setSelectedAuthor(sharerId);
                                           setSelectedFilterCategory('all');
                                         }}
                                       >
@@ -1908,7 +1918,7 @@ function Catchup() {
                 } ${groupBy ? `catchup-group-${groupBy}` : ''}`}
               >
                 {sortedFilteredPosts.map((post, i) => {
-                  const id = post.reblog?.id || post.id;
+                  const postId = post.reblog?.id || post.id;
                   let showSeparator = false;
                   if (groupBy === 'account') {
                     if (
@@ -1924,7 +1934,7 @@ function Catchup() {
                     <Fragment key={`${post.id}-${showSeparator}`}>
                       {showSeparator && <li class="separator" />}
                       <IntersectionPostLineItem
-                        to={`/${instance}/s/${id}`}
+                        to={`/${instance}/s/${postId}`}
                         post={post}
                         root={scrollableRef.current}
                       />
@@ -2091,7 +2101,6 @@ interface PostLineProps {
 const PostLine = memo(
   function ({ post }: PostLineProps) {
     const {
-      id,
       account,
       group,
       reblog,
@@ -2104,7 +2113,7 @@ const PostLine = memo(
       __BOOSTERS,
     } = post;
     const isReplyTo = inReplyToId && inReplyToAccountId !== account.id;
-    const isFiltered = !!filterInfo && filterInfo.action !== 'blur';
+    const postIsFiltered = !!filterInfo && filterInfo.action !== 'blur';
 
     const debugHover = (e: MouseEvent) => {
       if (e.shiftKey) {
@@ -2127,7 +2136,7 @@ const PostLine = memo(
                   ? 'followed-tags'
                   : ''
         } ${isReplyTo ? 'reply-to' : ''} ${
-          isFiltered ? 'filtered' : ''
+          postIsFiltered ? 'filtered' : ''
         } visibility-${visibility}`}
         onMouseEnter={debugHover}
       >
@@ -2140,7 +2149,11 @@ const PostLine = memo(
               />
               {__BOOSTERS && __BOOSTERS.size > 0
                 ? [...__BOOSTERS].map((b) => (
-                    <Avatar url={b.avatarStatic || b.avatar} squircle={b.bot} />
+                    <Avatar
+                      key={b.id}
+                      url={b.avatarStatic || b.avatar}
+                      squircle={b.bot}
+                    />
                   ))
                 : ''}{' '}
               <Icon icon="rocket" />{' '}
@@ -2225,11 +2238,12 @@ const IntersectionPostLineItem = ({
         rootMargin: `${Math.max(320, screen.height * 0.75)}px`,
       },
     );
-    if (ref.current) observer.observe(ref.current);
+    const node = ref.current;
+    if (node) observer.observe(node);
     return () => {
-      if (ref.current) observer.unobserve(ref.current);
+      if (node) observer.unobserve(node);
     };
-  }, []);
+  }, [root]);
 
   return show ? (
     <li>
@@ -2294,9 +2308,9 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
       ? ((quote!.quotedStatus as QuoteLike | null | undefined) ?? quote ?? null)
       : null;
   if (theQuote?.spoilerText || theQuote?.sensitive) theQuote = null;
-  if (theQuote?.emojis) emojis.push(...(theQuote.emojis as typeof emojis));
+  if (theQuote?.emojis) emojis.push(...theQuote.emojis);
   if (!mediaAttachments?.length && theQuote?.mediaAttachments?.length) {
-    mediaAttachments = theQuote.mediaAttachments as typeof mediaAttachments;
+    mediaAttachments = theQuote.mediaAttachments;
   }
   const cardLike = card as CardLike | null | undefined;
 
@@ -2336,9 +2350,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
           <>
             {!!spoilerText && (
               <span class="post-peek-spoiler">
-                <Icon
-                  icon={`${readingExpandSpoilers ? 'eye-open' : 'eye-close'}`}
-                />{' '}
+                <Icon icon={readingExpandSpoilers ? 'eye-open' : 'eye-close'} />{' '}
                 {spoilerText}
               </span>
             )}
@@ -2356,7 +2368,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                     dangerouslySetInnerHTML={{
                       __html:
                         emojifyText(content, emojis) +
-                        (!!theQuote?.content
+                        (theQuote?.content
                           ? `<blockquote class="post-peek-quote">${theQuote.content}</blockquote>`
                           : ''),
                     }}
@@ -2364,7 +2376,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                 )}
                 {!!poll?.options?.length &&
                   poll.options.map((o: { title: string }) => (
-                    <div>
+                    <div key={o.title}>
                       {poll.multiple ? '▪️' : '•'} {o.title}
                     </div>
                   ))}
@@ -2389,7 +2401,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
               <Trans>Poll</Trans>
             </span>
           )}
-          {!!mediaAttachments?.length
+          {mediaAttachments?.length
             ? mediaAttachments.map((m: mastodon.v1.MediaAttachment) => {
                 const mediaURL = m.previewUrl || m.url;
                 const remoteMediaURL = m.previewRemoteUrl || m.remoteUrl;

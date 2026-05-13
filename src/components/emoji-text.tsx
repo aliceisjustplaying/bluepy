@@ -30,7 +30,7 @@ const throttledFetch = (
   ...args: Parameters<typeof fetch>
 ) => fetchQueue.add(() => fetch(...args), { signal: signal ?? undefined });
 
-const SHORTCODES_REGEX = /(\:(\w|\+|\-)+\:)(?=|[\!\.\?]|$)/g;
+const SHORTCODES_REGEX = /(:(\w|\+|-)+:)(?=|[!.?]|$)/g;
 
 const shortcodesRegexp = mem((shortcodes: readonly string[]) => {
   return new RegExp(`:(${shortcodes.join('|')}):`, 'g');
@@ -51,7 +51,7 @@ const resolveEmojis = async (resolverURL: string): Promise<ResolvedEmoji[]> => {
       referrerPolicy: 'no-referrer',
     });
 
-    const data = (await (response as Response).json()) as {
+    const data = (await response.json()) as {
       tag?: EmojiTag[];
     };
     const emojiTags: EmojiTag[] =
@@ -155,12 +155,12 @@ function EmojiText({
 
     setLoading(true);
 
-    (async () => {
-      const emojis = await resolveEmojis(resolverURL);
-      setResolvedEmojis(emojis);
+    void (async () => {
+      const resolved = await resolveEmojis(resolverURL);
+      setResolvedEmojis(resolved);
       setLoading(false);
     })();
-  }, [resolverURL, text, emojis?.length]);
+  }, [resolverURL, text, emojis]);
 
   if (!text) return '';
   if (!text.includes(':')) return text;

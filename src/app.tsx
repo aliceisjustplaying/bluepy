@@ -33,7 +33,6 @@ import NavigationCommand from './components/navigation-command';
 import NotificationService from './components/notification-service';
 import SearchCommand from './components/search-command';
 import Shortcuts from './components/shortcuts';
-import NotFound from './pages/404';
 import AccountStatusesRaw from './pages/account-statuses';
 import AnnualReport from './pages/annual-report';
 import Bookmarks from './pages/bookmarks';
@@ -115,7 +114,7 @@ function QrScanTest() {
         hideAllModals();
         location.hash = text ? `/${text}` : '/';
       },
-    } as unknown as typeof states.showQrScannerModal;
+    };
   }, []);
 
   return null;
@@ -200,7 +199,7 @@ setInterval(
           delete states.statuses[key];
           delete states.statusQuotes[key];
           for (const link in unfurledLinks) {
-            const unfurled = unfurledLinks[link] as unknown as {
+            const unfurled = unfurledLinks[link] as {
               id?: string;
               instance?: string;
             };
@@ -212,7 +211,7 @@ setInterval(
           }
           keysCount++;
         }
-      } catch (e) {}
+      } catch {}
     }
     if (keysCount) {
       console.info(`GC: Removed ${keysCount} keys`);
@@ -235,11 +234,11 @@ setTimeout(() => {
     setTimeout(() => {
       const entry = iconsMap[icon];
       if (Array.isArray(entry)) {
-        entry[0]?.();
+        void entry[0]?.();
       } else if (typeof entry === 'object') {
-        entry.module?.();
+        void entry.module?.();
       } else {
-        (entry as (() => Promise<unknown>) | undefined)?.();
+        void (entry as (() => Promise<unknown>) | undefined)?.();
       }
     }, 1);
   }
@@ -485,7 +484,7 @@ function App() {
   useLingui();
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       const instanceURL = store.local.get('instanceURL');
       const isAtprotoOAuthCallback =
         !!window.location.search.match(/[?&]code=/) &&
@@ -521,7 +520,8 @@ function App() {
       }
 
       const code = decodeURIComponent(
-        (window.location.search.match(/code=([^&]+)/) || [, ''])[1],
+        (window.location.search.match(/code=([^&]+)/) || [undefined, ''])[1] ??
+          '',
       );
 
       if (code) {
@@ -610,7 +610,10 @@ function App() {
       } else {
         window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
         const searchAccount = decodeURIComponent(
-          (window.location.search.match(/account=([^&]+)/) || [, ''])[1],
+          (window.location.search.match(/account=([^&]+)/) || [
+            undefined,
+            '',
+          ])[1] ?? '',
         );
         let account;
         if (searchAccount) {
@@ -641,15 +644,16 @@ function App() {
           try {
             if (hasPreferences() && hasInstance(instance)) {
               // Non-blocking
-              initPreferences(client);
-              initInstance(client, instance);
+              void initPreferences(client);
+              void initInstance(client, instance);
             } else {
               await Promise.allSettled([
                 initPreferences(client),
                 initInstance(client, instance),
               ]);
             }
-          } catch (e) {
+          } catch {
+            // ignore — fall through to mark logged in below
           } finally {
             setIsLoggedIn(true);
             setUIState('default');
@@ -697,13 +701,13 @@ function App() {
   // Restore last page on PWA reopen
   useEffect(() => {
     if (restoredRef.current) return;
-    const isRootPath = !location.pathname || location.pathname === '/';
-    if (!isRootPath) return;
+    const atRootPath = !location.pathname || location.pathname === '/';
+    if (!atRootPath) return;
     if (isPWA && isLoggedIn && uiState === 'default') {
-      const lastPath = store.local.getJSON(lastPathKey) as {
+      const lastPath = store.local.getJSON<{
         path?: string;
         lastAccessed?: number;
-      } | null;
+      }>(lastPathKey);
       if (lastPath) {
         setTimeout(() => {
           if (lastPath?.path) {
@@ -718,7 +722,7 @@ function App() {
       }
       restoredRef.current = true;
     }
-  }, [uiState, isLoggedIn]);
+  }, [uiState, isLoggedIn, location.pathname]);
 
   // Signal to service worker that this client is ready to receive share data
   useEffect(() => {
@@ -729,14 +733,18 @@ function App() {
           console.log('💪 Got SW registration', registration);
           if (registration && registration.active) {
             console.log('💪 Sending client-ready message to SW');
+            // TODO(oxlint:unicorn/require-post-message-target-origin)
+            // ServiceWorker.postMessage signature is (message, transfer?),
+            // not (message, targetOrigin) — false positive.
             registration.active.postMessage({ type: 'client-ready' });
           }
+          return undefined;
         })
         .catch(function (err) {
           console.error('Could not get registration', err);
         });
     }
-  }, [isPWA, uiState]);
+  }, [uiState]);
 
   if (/\/https?:/.test(location.pathname)) {
     return <HttpRoute />;
@@ -842,7 +850,7 @@ function SecondaryRoutes() {
       matchPath('/:instance/s/:id', location.pathname) ||
       matchPath('/s/:id', location.pathname)
     );
-  }, [location.pathname, matchPath]);
+  }, [location.pathname]);
 
   // Persist prevLocation to sessionStorage while on a status/post page so it
   // survives a page reload. Clear it when navigating away.
