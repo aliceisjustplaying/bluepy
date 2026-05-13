@@ -5,7 +5,6 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import { getBlurHashAverageColor } from 'fast-blurhash';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
@@ -16,7 +15,7 @@ import Loader from '../components/loader';
 import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
-import TimelineRaw from '../components/timeline';
+import Timeline from '../components/timeline';
 import { api } from '../utils/api';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import { filteredItems } from '../utils/filters';
@@ -26,10 +25,6 @@ import shortenNumber from '../utils/shorten-number';
 import states, { saveStatus } from '../utils/states';
 import supports from '../utils/supports';
 import useTitle from '../utils/useTitle';
-
-const Timeline = TimelineRaw as unknown as ComponentType<
-  Record<string, unknown>
->;
 
 const LIMIT = 20;
 const TREND_CACHE_TIME = 10 * 60 * 1000; // 10 minutes
@@ -185,7 +180,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   const [links, setLinks] = useState<LinkItem[]>([]);
   const trendIterator = useRef<AsyncListIterator | undefined>(undefined);
 
-  async function fetchTrends(firstLoad: boolean) {
+  async function fetchTrends(firstLoad?: boolean) {
     console.log('fetchTrend', firstLoad);
     if (firstLoad || !trendIterator.current) {
       trendIterator.current = fetchTrendsStatuses(masto as MastoTrendingClient);
@@ -267,7 +262,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   }, [currentLink]);
 
   const prevCurrentLink = useRef<string | null>(null);
-  async function fetchLinkMentions(firstLoad: boolean) {
+  async function fetchLinkMentions(firstLoad?: boolean) {
     if (firstLoad || !currentLinkMentionsIterator.current) {
       setCurrentLinkMentionsLoading(true);
       currentLinkMentionsIterator.current = fetchLinkList(

@@ -2,12 +2,11 @@ import './mentions.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import { useMemo, useRef, useState } from 'preact/hooks';
 import { useSearchParams } from 'react-router-dom';
 
 import Link from '../components/link';
-import TimelineUntyped from '../components/timeline';
+import Timeline from '../components/timeline';
 import { api } from '../utils/api';
 import { fixNotifications } from '../utils/group-notifications';
 import { fetchRelationships } from '../utils/relationships';
@@ -50,26 +49,6 @@ interface MastoConversationsApi {
 interface FetchItemsResult {
   done?: boolean;
   value: (StatusLike | null | undefined)[] | undefined;
-}
-
-interface TimelineProps {
-  title?: string;
-  id?: string;
-  timelineKey?: string;
-  emptyText?: string;
-  errorText?: string;
-  instance?: string;
-  fetchItems?: (firstLoad?: boolean) => Promise<FetchItemsResult>;
-  checkForUpdates?: () => Promise<boolean>;
-  useItemID?: boolean;
-  timelineStart?: preact.ComponentChildren;
-  refresh?: string;
-  filterContext?: string;
-}
-
-function Timeline(props: TimelineProps) {
-  const Inner = TimelineUntyped as unknown as ComponentType<TimelineProps>;
-  return <Inner {...props} />;
 }
 
 interface MentionsProps {

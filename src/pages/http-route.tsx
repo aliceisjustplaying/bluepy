@@ -1,22 +1,12 @@
 import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentChildren, ComponentType } from 'preact';
 import { useLayoutEffect, useState } from 'preact/hooks';
 import { useLocation } from 'react-router-dom';
 
-import LinkUntyped from '../components/link';
+import Link from '../components/link';
 import Loader from '../components/loader';
 import { api } from '../utils/api';
 import { getInstanceStatusObject } from '../utils/get-instance-status-url';
-
-interface LinkProps {
-  to: string;
-  children?: ComponentChildren;
-}
-function Link(props: LinkProps) {
-  const Inner = LinkUntyped as unknown as ComponentType<LinkProps>;
-  return <Inner {...props} />;
-}
 
 export default function HttpRoute() {
   const location = useLocation();

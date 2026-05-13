@@ -1,9 +1,8 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 
-import Timeline2Untyped from '../components/timeline2';
+import Timeline2 from '../components/timeline2';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
@@ -33,26 +32,6 @@ type HomeTimelineResource = {
     values(): AsyncIterator<mastodon.v1.Status[]>;
   };
 };
-
-interface Timeline2Props {
-  title?: string;
-  id?: string;
-  emptyText?: string;
-  errorText?: string;
-  instance?: string;
-  fetchItems?: (params?: {
-    max_id?: string;
-    min_id?: string;
-  }) => Promise<unknown>;
-  checkForUpdates?: (params: { minID?: string }) => Promise<boolean>;
-  useItemID?: boolean;
-  filterContext?: string;
-  showFollowedTags?: boolean;
-  showReplyParent?: boolean;
-  path?: string;
-}
-
-const Timeline2 = Timeline2Untyped as unknown as ComponentType<Timeline2Props>;
 
 interface StreamingEntry {
   event: 'status.update' | 'delete' | (string & {});
@@ -163,12 +142,12 @@ function Following2({ title, path, id, ...props }: Following2Props) {
   async function checkForUpdates({
     minID,
   }: {
-    minID?: string;
+    minID?: string | null;
   }): Promise<boolean> {
     try {
       const opts: FetchOpts = {
         limit: 5,
-        since_id: minID,
+        since_id: minID ?? undefined,
       };
       if (supportsPixelfed) {
         opts.include_reblogs = true;
