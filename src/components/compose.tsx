@@ -1,15 +1,17 @@
 import './compose.css';
 
+import type { MessageDescriptor } from '@lingui/core';
 import { msg, plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { deepEqual } from 'fast-equals';
+import type { ComponentChildren, ComponentType, JSX, RefObject } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { uid } from 'uid/single';
 import { useSnapshot } from 'valtio';
 
-import supportedLanguages from '../data/status-supported-languages';
+import supportedLanguages from '../data/status-supported-languages.json';
 import { api, getPreferences } from '../utils/api';
 import {
   fetchAtprotoLinkMetadata,
@@ -31,7 +33,6 @@ import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
 import store from '../utils/store';
 import {
-  getAPIVersions,
   getCurrentAccount,
   getCurrentAccountNS,
   getCurrentInstanceConfiguration,
@@ -46,21 +47,60 @@ import useThrottledResizeObserver from '../utils/useThrottledResizeObserver';
 import visibilityIconsMap from '../utils/visibility-icons-map';
 import visibilityText from '../utils/visibility-text';
 
-import AccountBlock from './account-block';
+import AccountBlockUntyped from './account-block';
 // import Avatar from './avatar';
-import CameraCaptureInput, {
+import CameraCaptureInputRaw, {
   supportsCameraCapture,
 } from './camera-capture-input';
-import CharCountMeter from './char-count-meter';
-import ComposePoll, { expiryOptions } from './compose-poll';
-import Textarea from './compose-textarea';
-import CustomEmojisModal from './custom-emojis-modal';
-import FilePickerInput from './file-picker-input';
-import GIFPickerModal from './gif-picker-modal';
+import CharCountMeterUntyped from './char-count-meter';
+import ComposePoll, { expiryOptions, type PollState } from './compose-poll';
+import TextareaRaw from './compose-textarea';
+
+// Widen TextareaRaw's props to include textarea-specific attrs (placeholder,
+// required) that preact JSX puts on `TextareaHTMLAttributes` rather than the
+// generic `HTMLAttributes`. The underlying component already forwards all
+// extra attrs to the DOM textarea, so this is a typing-only shim.
+const Textarea = TextareaRaw as unknown as ComponentType<
+  JSX.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+    maxCharacters?: number;
+    onTrigger?: ((payload: ToolbarAction) => void) | null;
+    ref?: RefObject<HTMLTextAreaElement | null> | null;
+  }
+>;
+
+type MediaAttachmentsSetter = (
+  updater:
+    | MediaAttachmentLike[]
+    | ((prev: MediaAttachmentLike[]) => MediaAttachmentLike[]),
+) => void;
+
+// CameraCaptureInput and FilePickerInput hardcode a narrow MediaAttachment
+// shape that requires fileData; compose uses the wider MediaAttachmentLike
+// shape with optional fileData (legacy drafts may carry `file` instead).
+// Cast the setters at the boundary so both worlds line up.
+const CameraCaptureInput = CameraCaptureInputRaw as unknown as ComponentType<{
+  hidden?: boolean;
+  disabled?: boolean;
+  supportedMimeTypes?: string[];
+  mediaAttachments?: MediaAttachmentLike[];
+  setMediaAttachments: MediaAttachmentsSetter;
+}>;
+
+const FilePickerInput = FilePickerInputRaw as unknown as ComponentType<{
+  hidden?: boolean;
+  supportedMimeTypes?: string[];
+  maxMediaAttachments?: number;
+  mediaAttachments: MediaAttachmentLike[];
+  disabled?: boolean;
+  setMediaAttachments: MediaAttachmentsSetter;
+}>;
+import CustomEmojisModalUntyped from './custom-emojis-modal';
+import FilePickerInputRaw from './file-picker-input';
+import GIFPickerModalUntyped from './gif-picker-modal';
 import Icon from './icon';
-import Loader from './loader';
-import MediaAttachment from './media-attachment';
-import MentionModal from './mention-modal';
+import LoaderUntyped from './loader';
+import MediaAttachmentUntyped from './media-attachment';
+import MentionModalUntyped from './mention-modal';
 import Menu2 from './menu2';
 import Modal from './modal';
 import QuoteSuggestion from './quote-suggestion';
@@ -68,10 +108,271 @@ import ScheduledAtField, {
   getLocalTimezoneName,
   MIN_SCHEDULED_AT,
 } from './ScheduledAtField';
-import Status from './status';
-import TextExpander from './text-expander';
+import StatusUntyped from './status';
+import TextExpanderRaw from './text-expander';
 
-const supportedLanguagesMap = supportedLanguages.reduce((acc, l) => {
+// ---------------------------------------------------------------------------
+// Local type shims for still-untyped peers — narrow to what compose uses.
+// These mirror the shapes already exposed by compose-textarea.tsx,
+// compose-poll.tsx, and drafts.tsx so the modal stays consistent.
+// ---------------------------------------------------------------------------
+
+interface AccountInfoLike {
+  id?: string;
+  acct?: string;
+  username?: string;
+  avatarStatic?: string;
+  bot?: boolean;
+  [key: string]: unknown;
+}
+
+interface MastodonMention {
+  acct: string;
+  [key: string]: unknown;
+}
+
+interface PollOption {
+  title?: string;
+  [key: string]: unknown;
+}
+
+interface StatusPoll {
+  options?: Array<PollOption | string>;
+  expiresIn?: number | string;
+  expiresAt?: string | number | null;
+  multiple?: boolean;
+  [key: string]: unknown;
+}
+
+interface MediaAttachmentLike {
+  id?: string | null;
+  fileData?: ArrayBuffer;
+  fileName?: string;
+  file?: File;
+  type?: string;
+  size?: number;
+  url?: string;
+  description?: string | null;
+  [key: string]: unknown;
+}
+
+interface StatusLike {
+  id?: string;
+  account?: AccountInfoLike;
+  mentions?: MastodonMention[];
+  visibility?: string;
+  language?: string | null;
+  sensitive?: boolean;
+  spoilerText?: string;
+  poll?: StatusPoll | null;
+  mediaAttachments?: MediaAttachmentLike[];
+  quoteApproval?: Record<string, unknown> | null;
+  quoteApprovalPolicy?: string;
+  createdAt?: string;
+  url?: string;
+  [key: string]: unknown;
+}
+
+interface DraftStatusLike {
+  uid?: string;
+  status?: string;
+  spoilerText?: string;
+  visibility?: string;
+  language?: string | null;
+  sensitive?: boolean | null;
+  sensitiveMedia?: boolean | null;
+  poll?: StatusPoll | null;
+  mediaAttachments?: MediaAttachmentLike[];
+  scheduledAt?: Date | string | null;
+  quoteApprovalPolicy?: string;
+  [key: string]: unknown;
+}
+
+interface LinkPreviewMetadata {
+  title?: string;
+  description?: string;
+  image?: string;
+  url?: string;
+  [key: string]: unknown;
+}
+
+interface LinkPreviewState {
+  url: string;
+  loading?: boolean;
+  removed?: boolean;
+  metadata?: LinkPreviewMetadata | null;
+}
+
+interface QuoteSuggestionState {
+  status: StatusLike;
+  instance?: string;
+  url: string;
+}
+
+interface EmojiPickerState {
+  targetElement?: RefObject<HTMLElement | null> | null;
+  defaultSearchTerm?: string | null;
+}
+
+interface MentionPickerState {
+  defaultSearchTerm?: string | null;
+}
+
+interface SharedData {
+  initialText?: string;
+  files?: File[] | FileList;
+}
+
+type ToolbarAction = {
+  name?: string;
+  defaultSearchTerm?: string | null;
+  languages?: string[];
+  url?: string;
+  [key: string]: unknown;
+};
+
+interface OnCloseInfo {
+  type?: 'edit' | 'reply' | 'post';
+  newStatus?: unknown;
+  instance?: string;
+  scheduledAt?: string | undefined;
+  fn?: () => void;
+}
+
+interface ComposeProps {
+  onClose: (info?: OnCloseInfo) => void;
+  replyToStatus?: StatusLike | null;
+  replyMode?: 'all' | 'author-only' | 'author-first';
+  editStatus?: StatusLike | null;
+  draftStatus?: DraftStatusLike | null;
+  quoteStatus?: StatusLike | null;
+  standalone?: boolean;
+  hasOpener?: boolean;
+  sharedData?: SharedData | null;
+}
+
+interface ComposerStateShape {
+  publishing?: boolean;
+  publishingError?: boolean;
+  minimized?: boolean;
+  [key: string]: unknown;
+}
+
+// Window globals used by pop-out compose plumbing. Kept as a local cast type
+// rather than a global augmentation because `__STATES__` is declared as the
+// full `states` proxy in app.tsx; we narrow at usage sites instead.
+interface ComposeWindowStates {
+  showCompose?: unknown;
+  showDrafts?: unknown;
+  composerState: ComposerStateShape;
+  [key: string]: unknown;
+}
+
+type ComposeOpenerWindow = Window & {
+  __COMPOSE__?: unknown;
+  __STATES__?: ComposeWindowStates;
+};
+
+// Narrow the still-untyped peers to the props that compose actually passes.
+const AccountBlock = AccountBlockUntyped as unknown as ComponentType<{
+  account?: AccountInfoLike | null;
+  accountInstance?: string;
+  hideDisplayName?: boolean;
+  useAvatarStatic?: boolean;
+}>;
+
+const CharCountMeter = CharCountMeterUntyped as unknown as ComponentType<{
+  maxCharacters?: number;
+  hidden?: boolean;
+}>;
+
+const Loader = LoaderUntyped as unknown as ComponentType<{
+  abrupt?: boolean;
+  hidden?: boolean;
+}>;
+
+const MediaAttachment = MediaAttachmentUntyped as unknown as ComponentType<{
+  attachment: MediaAttachmentLike;
+  disabled?: boolean;
+  lang?: string;
+  supportedMimeTypes?: string[];
+  descriptionLimit?: number;
+  onDescriptionChange?: (value: string) => void;
+  onRemove?: () => void;
+}>;
+
+const Status = StatusUntyped as unknown as ComponentType<{
+  status?: StatusLike | null;
+  instance?: string;
+  size?: 's' | 'm' | 'l';
+  previewMode?: boolean;
+  readOnly?: boolean;
+}>;
+
+const CustomEmojisModal =
+  CustomEmojisModalUntyped as unknown as ComponentType<{
+    instance?: string;
+    onClose: () => void;
+    defaultSearchTerm?: string | null;
+    onSelect: (emojiShortcode: string) => void;
+  }>;
+
+const MentionModal = MentionModalUntyped as unknown as ComponentType<{
+  masto: unknown;
+  instance?: string;
+  onClose: () => void;
+  defaultSearchTerm?: string | null;
+  onSelect: (socialAddress: string) => void;
+}>;
+
+const GIFPickerModal = GIFPickerModalUntyped as unknown as ComponentType<{
+  onClose: () => void;
+  onSelect: (payload: {
+    url: string;
+    type: string;
+    alt_text?: string;
+  }) => void;
+}>;
+
+const TextExpander = TextExpanderRaw as unknown as ComponentType<{
+  keys?: string;
+  class?: string;
+  onTrigger?: ((payload: ToolbarAction) => void) | null;
+  children?: ComponentChildren;
+}>;
+
+// Narrow shape for masto v1/v2 used here. Mirrors what drafts.tsx shims.
+interface MastoStatusesEditableSelector {
+  $select(id: string | undefined): {
+    fetch(): Promise<StatusLike>;
+    update(params: Record<string, unknown>): Promise<unknown>;
+    source: {
+      fetch(): Promise<{ text: string; spoilerText: string }>;
+    };
+  };
+  create(
+    params: Record<string, unknown>,
+    options?: { requestInit?: { headers?: Record<string, string> } },
+  ): Promise<unknown>;
+}
+
+interface MastoClientShim {
+  v1: { statuses: MastoStatusesEditableSelector };
+  v2: {
+    media: {
+      create(params: Record<string, unknown>): Promise<{ id?: string }>;
+    };
+  };
+}
+
+type SupportedLanguageEntry = readonly [string, string, string];
+type PreferencesShape = Record<string, unknown>;
+
+const supportedLanguagesList = supportedLanguages as unknown as SupportedLanguageEntry[];
+
+const supportedLanguagesMap = supportedLanguagesList.reduce<
+  Record<string, { common: string; native: string }>
+>((acc, l) => {
   const [code, common, native] = l;
   acc[code] = {
     common,
@@ -82,7 +383,7 @@ const supportedLanguagesMap = supportedLanguages.reduce((acc, l) => {
 
 // Convert camelCase to kebab-case for language codes
 // e.g., "mnMong" → "mn-Mong", "msArab" → "ms-Arab"
-const camelToKebabCase = (str) => {
+const camelToKebabCase = (str: string): string => {
   return str.replace(/([a-z])([A-Z])/g, '$1-$2');
 };
 
@@ -99,29 +400,47 @@ const isPopOutNotSupported =
 const expirySeconds = Object.keys(expiryOptions);
 const oneDay = 24 * 60 * 60;
 
-const expiresInFromExpiresAt = (expiresAt) => {
+const expiresInFromExpiresAt = (
+  expiresAt: string | number | Date | null | undefined,
+): number | string => {
   if (!expiresAt) return oneDay;
-  const delta = (Date.parse(expiresAt) - Date.now()) / 1000;
-  return expirySeconds.find((s) => s >= delta) || oneDay;
+  // Preserve JS behavior: Date.parse accepts strings, Date objects coerce via
+  // toString, numbers also coerce.
+  const delta =
+    (Date.parse(expiresAt as unknown as string) - Date.now()) / 1000;
+  // Original JS compared string seconds to numeric delta; find on string keys
+  // returned a string. Coerce-compare to keep equivalent runtime semantics.
+  return (
+    expirySeconds.find((s) => Number(s) >= delta) || oneDay
+  );
 };
 
-const DEFAULT_LANG = localeMatch(
-  [getDtfLocale(), ...navigator.languages],
-  supportedLanguages.map((l) => l[0]),
-  'en',
-);
+// localeMatch can return false when no match exists; original JS silently
+// stored that value and relied on `|| DEFAULT_LANG` chains to handle the
+// falsy case. Mirror the behavior — narrow to a runtime string where set,
+// fall back to 'en' otherwise.
+const DEFAULT_LANG: string =
+  localeMatch(
+    [getDtfLocale(), ...navigator.languages].filter(
+      (l): l is string => typeof l === 'string',
+    ),
+    supportedLanguagesList.map((l) => l[0]),
+    'en',
+  ) || 'en';
 
 // https://github.com/mastodon/mastodon/blob/c4a429ed47e85a6bbf0d470a41cc2f64cf120c19/app/javascript/mastodon/features/compose/util/counter.js
 const usernameRegex = /(^|[^\/\w])[@＠](([a-z0-9_]+)@[a-z0-9\.\-]+[a-z0-9]+)/gi;
 const urlPlaceholder = '$2xxxxxxxxxxxxxxxxxxxxxxx';
-function countableText(inputText) {
+function countableText(inputText: string): string {
   return inputText
     .replace(urlRegexObj, urlPlaceholder)
     .replace(usernameRegex, '$1@$3');
 }
 
 // const rtf = new Intl.RelativeTimeFormat();
-const LF = mem((locale) => new Intl.ListFormat(locale || undefined));
+const LF = mem(
+  (locale: string | undefined) => new Intl.ListFormat(locale || undefined),
+);
 
 const ADD_LABELS = {
   camera: msg`Take photo or video`,
@@ -135,14 +454,17 @@ const ADD_LABELS = {
 
 const DEFAULT_SCHEDULED_AT = Math.max(10 * 60 * 1000, MIN_SCHEDULED_AT); // 10 mins
 
-function isMimeTypeSupported(fileType, supportedMimeTypes) {
+function isMimeTypeSupported(
+  fileType: string,
+  supportedMimeTypes: string[] | undefined,
+): boolean {
   if (!supportedMimeTypes) return true;
   if (supportedMimeTypes.includes(fileType)) return true;
 
   // If type is not supported, try to find a supported type with the same subtype
   // E.g. application/ogg -> audio/ogg
-  const [suffixType, subtype] = fileType.split('/');
-  const subTypeMap = {};
+  const subtype = fileType.split('/')[1];
+  const subTypeMap: Record<string, string> = {};
   supportedMimeTypes.forEach((mimeType) => {
     const [t, st] = mimeType.split('/');
     subTypeMap[st] = t;
@@ -151,7 +473,7 @@ function isMimeTypeSupported(fileType, supportedMimeTypes) {
   return !!subTypeMap[subtype];
 }
 
-function fixLanguage(language) {
+function fixLanguage(language: unknown): string | null {
   if (!language || typeof language !== 'string') return null;
   // If inside list, return it, else fix it
   if (supportedLanguagesMap[language]) return language;
@@ -172,21 +494,61 @@ function Compose({
   standalone,
   hasOpener,
   sharedData,
-}) {
-  const { i18n, _, t } = useLingui();
+}: ComposeProps) {
+  const { i18n, t } = useLingui();
+  // Lingui macro hides `_` on the returned object; the runtime still exposes
+  // it on i18n. Mirror the JS destructure for compatibility with `_(msg)`.
+  const _ = (descriptor: MessageDescriptor): string =>
+    i18n._(descriptor as unknown as Parameters<typeof i18n._>[0]);
   const rtf = RTF(i18n.locale);
   const lf = LF(i18n.locale);
 
   console.warn('RENDER COMPOSER');
-  const { masto, instance } = api();
-  const [uiState, setUIState] = useState('default');
+  const apiResult = api();
+  const masto = apiResult.masto as unknown as MastoClientShim;
+  const { instance } = apiResult;
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
   const UID = useRef(draftStatus?.uid || uid());
   console.log('Compose UID', UID.current);
 
-  const currentAccount = useMemo(getCurrentAccount, []);
+  // Original JS treats currentAccount as non-null when reading `.info`;
+  // the `?.atproto` / `?.instanceURL` reads are defensive. Mirror that.
+  const currentAccount = useMemo(getCurrentAccount, []) as unknown as {
+    info: AccountInfoLike;
+    instanceURL?: string;
+    atproto?: boolean;
+  };
   const currentAccountInfo = currentAccount.info;
 
-  const configuration = getCurrentInstanceConfiguration();
+  interface ConfigurationShape {
+    statuses?: {
+      maxCharacters?: number;
+      maxMediaAttachments?: number;
+      charactersReservedPerUrl?: number;
+    };
+    mediaAttachments?: {
+      supportedMimeTypes?: string[];
+      imageSizeLimit?: number;
+      imageMatrixLimit?: number;
+      videoSizeLimit?: number;
+      videoMatrixLimit?: number;
+      videoFrameRateLimit?: number;
+      descriptionLimit?: number;
+    };
+    polls?: {
+      maxOptions?: number;
+      maxCharactersPerOption?: number;
+      maxExpiration?: number;
+      minExpiration?: number;
+    };
+  }
+
+  const configuration = getCurrentInstanceConfiguration() as
+    | ConfigurationShape
+    | null
+    | undefined;
   console.log('⚙️ Configuration', configuration);
 
   const {
@@ -211,31 +573,45 @@ function Compose({
       minExpiration,
     } = {},
   } = configuration || {};
-  const supportedImagesVideosTypes = supportedMimeTypes?.filter((mimeType) =>
-    /^(image|video)/i.test(mimeType),
+  const supportedImagesVideosTypes = supportedMimeTypes?.filter(
+    (mimeType: string) => /^(image|video)/i.test(mimeType),
   );
 
-  const textareaRef = useRef();
-  const spoilerTextRef = useRef();
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const spoilerTextRef = useRef<HTMLInputElement | null>(null);
 
-  const [visibility, setVisibility] = useState('public');
-  const [quoteApprovalPolicy, setQuoteApprovalPolicy] = useState('public');
-  const [sensitive, setSensitive] = useState(false);
-  const [sensitiveMedia, setSensitiveMedia] = useState(false);
-  const [language, setLanguage] = useState(
+  const [visibility, setVisibility] = useState<string>('public');
+  const [quoteApprovalPolicy, setQuoteApprovalPolicy] = useState<string>(
+    'public',
+  );
+  const [sensitive, setSensitive] = useState<boolean>(false);
+  const [sensitiveMedia, setSensitiveMedia] = useState<boolean>(false);
+  const [language, setLanguage] = useState<string>(
     store.session.get('currentLanguage') || DEFAULT_LANG,
   );
-  const prevLanguage = useRef(language);
-  const [mediaAttachments, setMediaAttachments] = useState([]);
-  const [poll, setPoll] = useState(null);
-  const [scheduledAt, setScheduledAt] = useState(null);
-  const [quoteSuggestion, setQuoteSuggestion] = useState(null);
-  const [localQuoteStatus, setLocalQuoteStatus] = useState(quoteStatus);
-  const [quoteCleared, setQuoteCleared] = useState(false);
-  const [linkPreview, setLinkPreview] = useState(null);
-  const linkPreviewRef = useRef({ id: 0, timeout: null });
+  const prevLanguage = useRef<string>(language);
+  const [mediaAttachments, setMediaAttachments] = useState<
+    MediaAttachmentLike[]
+  >([]);
+  const [poll, setPoll] = useState<PollState | null>(null);
+  const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
+  const [quoteSuggestion, setQuoteSuggestion] =
+    useState<QuoteSuggestionState | null>(null);
+  const [localQuoteStatus, setLocalQuoteStatus] = useState<
+    StatusLike | null | undefined
+  >(quoteStatus);
+  const [quoteCleared, setQuoteCleared] = useState<boolean>(false);
+  const [linkPreview, setLinkPreview] = useState<LinkPreviewState | null>(null);
+  const linkPreviewRef = useRef<{
+    id: number;
+    timeout: ReturnType<typeof setTimeout> | null;
+  }>({ id: 0, timeout: null });
 
-  const prefs = getPreferences();
+  const prefs = getPreferences() as PreferencesShape;
+  const prefString = (key: string): string | undefined => {
+    const v = prefs[key];
+    return typeof v === 'string' ? v : undefined;
+  };
 
   const currentQuoteStatus = quoteCleared
     ? null
@@ -246,8 +622,10 @@ function Compose({
     !currentQuoteStatus?.id &&
     mediaAttachments.length === 0;
 
-  const updateLinkPreview = (text) => {
-    clearTimeout(linkPreviewRef.current.timeout);
+  const updateLinkPreview = (text: string): void => {
+    if (linkPreviewRef.current.timeout) {
+      clearTimeout(linkPreviewRef.current.timeout);
+    }
     if (!canShowLinkPreview) {
       setLinkPreview(null);
       return;
@@ -265,7 +643,10 @@ function Compose({
     setLinkPreview({ url, loading: true });
     linkPreviewRef.current.timeout = setTimeout(async () => {
       try {
-        const metadata = await fetchAtprotoLinkMetadata(url);
+        const metadata = (await fetchAtprotoLinkMetadata(url)) as
+          | LinkPreviewMetadata
+          | null
+          | undefined;
         if (requestId !== linkPreviewRef.current.id) return;
         setLinkPreview(metadata ? { url, metadata } : null);
       } catch (e) {
@@ -276,19 +657,26 @@ function Compose({
   };
 
   // Quote eligibility logic duplicated from status.jsx
-  const checkQuoteEligibility = (status) => {
+  const checkQuoteEligibility = (status: StatusLike): boolean => {
     if (!supportsNativeQuote()) return false;
 
     const { visibility, quoteApproval, account } = status;
-    const isSelf = currentAccountInfo && currentAccountInfo.id === account.id;
-    const isPublic = ['public', 'unlisted'].includes(visibility);
+    const isSelf = !!(
+      currentAccountInfo && currentAccountInfo.id === account?.id
+    );
+    const isPublic = ['public', 'unlisted'].includes(visibility ?? '');
     const isMineAndPrivate = isSelf && visibility === 'private';
 
+    const quoteApprovalNarrowed = quoteApproval as
+      | { currentUser?: string }
+      | null
+      | undefined;
     const isQuoteAutomaticallyAccepted =
-      quoteApproval?.currentUser === 'automatic' &&
+      quoteApprovalNarrowed?.currentUser === 'automatic' &&
       (isPublic || isMineAndPrivate);
     const isQuoteManuallyAccepted =
-      quoteApproval?.currentUser === 'manual' && (isPublic || isMineAndPrivate);
+      quoteApprovalNarrowed?.currentUser === 'manual' &&
+      (isPublic || isMineAndPrivate);
 
     if (!isPublic && !isSelf) {
       return false;
@@ -301,9 +689,11 @@ function Compose({
     }
   };
 
-  const processFiles = async (files) => {
-    const supportedFiles = [];
-    const unsupportedFiles = [];
+  const processFiles = async (
+    files: File[] | FileList | null | undefined,
+  ): Promise<MediaAttachmentLike[] | null | undefined> => {
+    const supportedFiles: File[] = [];
+    const unsupportedFiles: File[] = [];
     for (const file of files || []) {
       if (!isMimeTypeSupported(file.type, supportedMimeTypes)) {
         unsupportedFiles.push(file);
@@ -354,7 +744,7 @@ function Compose({
     return null;
   };
 
-  const handlePastedLink = async (url) => {
+  const handlePastedLink = async (url: string): Promise<void> => {
     // Handle QP links
     if (supportsNativeQuote()) {
       // Quotes cannot coexist with media attachments or polls
@@ -373,10 +763,22 @@ function Compose({
       }
 
       try {
-        const unfurledData = await unfurlMastodonLink(instance, url);
+        // unfurl-link.ts exposes a snapshot type without `id`/`instance`/
+        // `originalURL` keys publicly; the runtime data does carry them on
+        // resolved hits, so narrow here for the keys we read.
+        const unfurledData = (await unfurlMastodonLink(instance, url)) as
+          | {
+              id?: string;
+              instance?: string;
+              originalURL?: string;
+              [key: string]: unknown;
+            }
+          | null
+          | undefined;
         if (unfurledData?.id) {
-          const status =
-            states.statuses[`${unfurledData.instance}/${unfurledData.id}`];
+          const status = (
+            states.statuses as Record<string, StatusLike | undefined>
+          )[`${unfurledData.instance}/${unfurledData.id}`];
           if (status && checkQuoteEligibility(status)) {
             // Don't show suggestion if it's the same as current quote
             if (currentQuoteStatus?.id === status.id) {
@@ -386,7 +788,7 @@ function Compose({
             setQuoteSuggestion({
               status,
               instance: unfurledData.instance,
-              url: unfurledData.originalURL,
+              url: unfurledData.originalURL ?? url,
             });
           }
         }
@@ -398,16 +800,18 @@ function Compose({
 
   useEffect(() => {
     if (!canShowLinkPreview) {
-      clearTimeout(linkPreviewRef.current.timeout);
+      if (linkPreviewRef.current.timeout) {
+        clearTimeout(linkPreviewRef.current.timeout);
+      }
       setLinkPreview(null);
     }
   }, [canShowLinkPreview]);
 
-  const oninputTextarea = () => {
+  const oninputTextarea = (): void => {
     if (!textareaRef.current) return;
     textareaRef.current.dispatchEvent(new Event('input'));
   };
-  const focusTextarea = (cursorPosition) => {
+  const focusTextarea = (cursorPosition?: number): void => {
     setTimeout(() => {
       if (!textareaRef.current) return;
       // If cursor position is provided, set it
@@ -418,10 +822,20 @@ function Compose({
       textareaRef.current?.focus();
     }, 300);
   };
-  const insertTextAtCursor = ({ targetElement, text }) => {
+  const insertTextAtCursor = ({
+    targetElement,
+    text,
+  }: {
+    targetElement: HTMLInputElement | HTMLTextAreaElement | null | undefined;
+    text: string;
+  }): void => {
     if (!targetElement) return;
 
-    const { selectionStart, selectionEnd, value } = targetElement;
+    // Original JS reads selectionStart/selectionEnd directly; for text-y
+    // inputs these are numbers in practice. Narrow with non-null assertion.
+    const selectionStart = targetElement.selectionStart as unknown as number;
+    const selectionEnd = targetElement.selectionEnd as unknown as number;
+    const { value } = targetElement;
     let textBeforeInsert = value.slice(0, selectionStart);
 
     // Remove zero-width space from end of text
@@ -444,29 +858,33 @@ function Compose({
       textAfterInsert;
 
     targetElement.value = newText;
-    targetElement.selectionStart = targetElement.selectionEnd =
-      selectionEnd + text.length + spaceAfterInsert.length;
+    const newPos = selectionEnd + text.length + spaceAfterInsert.length;
+    targetElement.selectionStart = newPos;
+    targetElement.selectionEnd = newPos;
     targetElement.focus();
     targetElement.dispatchEvent(new Event('input'));
   };
-  const lastFocusedFieldRef = useRef(null);
-  const lastFocusedEmojiFieldRef = useRef(null);
-  const focusLastFocusedField = () => {
+  const lastFocusedFieldRef = useRef<HTMLElement | null>(null);
+  const lastFocusedEmojiFieldRef = useRef<HTMLElement | null>(null);
+  const focusLastFocusedField = (): void => {
     setTimeout(() => {
       if (!lastFocusedFieldRef.current) return;
       lastFocusedFieldRef.current.focus();
     }, 0);
   };
-  const composeContainerRef = useRef(null);
+  const composeContainerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    const handleFocus = (e) => {
+    const handleFocus = (e: FocusEvent): void => {
       // Toggle focused if in or out if any fields are focused
-      composeContainerRef.current.classList.toggle(
+      // The container is non-null at handler time (the listener is only
+      // attached when composeContainer was defined). Mirror the original JS
+      // direct access.
+      (composeContainerRef.current as HTMLDivElement).classList.toggle(
         'focused',
         e.type === 'focusin',
       );
 
-      const target = e.target;
+      const target = e.target as HTMLElement;
       if (target.hasAttribute('data-allow-custom-emoji')) {
         lastFocusedEmojiFieldRef.current = target;
       }
@@ -494,60 +912,66 @@ function Compose({
 
   useEffect(() => {
     if (replyToStatus) {
-      const { spoilerText, visibility, language, sensitive } = replyToStatus;
+      // sensitive read here only for parity with the original JS destructure
+      // (it is read from `!!spoilerText` below). Keep destructure shape stable.
+      const { spoilerText, visibility, language } = replyToStatus;
       if (spoilerText && spoilerTextRef.current) {
         spoilerTextRef.current.value = spoilerText;
       }
-      const mentions = new Set([
-        replyToStatus.account.acct,
-        ...replyToStatus.mentions.map((m) => m.acct),
+      const account = replyToStatus.account ?? {};
+      const mentionsList = replyToStatus.mentions ?? [];
+      const mentions = new Set<string | undefined>([
+        account.acct,
+        ...mentionsList.map((m) => m.acct),
       ]);
       const allMentions = [...mentions].filter(
-        (m) => m !== currentAccountInfo.acct,
+        (m): m is string => typeof m === 'string' && m !== currentAccountInfo.acct,
       );
 
       if (allMentions.length > 0) {
-        const authorMention = `@${replyToStatus.account.acct}`;
+        const authorMention = `@${account.acct ?? ''}`;
         const otherMentions = allMentions
-          .filter((m) => m !== replyToStatus.account.acct)
+          .filter((m) => m !== account.acct)
           .map((m) => `@${m}`);
 
         if (replyMode === 'author-only') {
           // Mode 1: Only mention the author
-          textareaRef.current.value = `${authorMention} `;
+          textareaRef.current!.value = `${authorMention} `;
           oninputTextarea();
           focusTextarea();
         } else if (replyMode === 'author-first') {
           // Mode 2: Mention author first, then others at the end after 2 newlines
           if (otherMentions.length > 0) {
-            textareaRef.current.value = `${authorMention} \n\n${otherMentions.join(' ')}`;
+            textareaRef.current!.value = `${authorMention} \n\n${otherMentions.join(' ')}`;
             oninputTextarea();
             // Set cursor position after the author mention
             const cursorPosition = authorMention.length + 1; // +1 for the space
             focusTextarea(cursorPosition);
           } else {
             // If no other mentions, just mention the author
-            textareaRef.current.value = `${authorMention} `;
+            textareaRef.current!.value = `${authorMention} `;
             oninputTextarea();
             focusTextarea();
           }
         } else {
           // Mode 3 (default 'all'): All mentions at the beginning
-          textareaRef.current.value = `${allMentions
+          textareaRef.current!.value = `${allMentions
             .map((m) => `@${m}`)
             .join(' ')} `;
           oninputTextarea();
           focusTextarea();
         }
       }
+      const defaultVisPref = prefString('posting:default:visibility');
+      // Preserve original: passes `visibility` directly when no pref override.
       setVisibility(
-        visibility === 'public' && prefs['posting:default:visibility']
-          ? prefs['posting:default:visibility'].toLowerCase()
-          : visibility,
+        visibility === 'public' && defaultVisPref
+          ? defaultVisPref.toLowerCase()
+          : (visibility as string),
       );
       setLanguage(
         fixLanguage(language) ||
-          prefs['posting:default:language']?.toLowerCase() ||
+          prefString('posting:default:language')?.toLowerCase() ||
           DEFAULT_LANG,
       );
       setSensitive(!!spoilerText);
@@ -560,11 +984,17 @@ function Compose({
         mediaAttachments,
         quoteApproval,
       } = editStatus;
-      const composablePoll = !!poll?.options && {
-        ...poll,
-        options: poll.options.map((o) => o?.title || o),
-        expiresIn: poll?.expiresIn || expiresInFromExpiresAt(poll.expiresAt),
-      };
+      const composablePoll = poll?.options
+        ? {
+            ...poll,
+            options: poll.options.map(
+              (o) => (typeof o === 'string' ? o : o?.title || o) as string,
+            ),
+            expiresIn:
+              poll?.expiresIn || expiresInFromExpiresAt(poll.expiresAt),
+            multiple: !!poll.multiple,
+          }
+        : null;
       setUIState('loading');
       (async () => {
         try {
@@ -573,15 +1003,19 @@ function Compose({
             .source.fetch();
           console.log({ statusSource });
           const { text, spoilerText } = statusSource;
-          textareaRef.current.value = text;
-          textareaRef.current.dataset.source = text;
+          textareaRef.current!.value = text;
+          textareaRef.current!.dataset.source = text;
           oninputTextarea();
           focusTextarea();
-          spoilerTextRef.current.value = spoilerText;
-          setVisibility(visibility);
+          if (spoilerTextRef.current) {
+            spoilerTextRef.current.value = spoilerText;
+          }
+          // Original JS passed `visibility` directly; preserve that (may be
+          // undefined for some statuses, mirroring the JS state shape).
+          setVisibility(visibility as string);
           setLanguage(
             language ||
-              prefs['posting:default:language']?.toLowerCase() ||
+              prefString('posting:default:language')?.toLowerCase() ||
               DEFAULT_LANG,
           );
           if (supportsNativeQuote()) {
@@ -589,32 +1023,36 @@ function Compose({
               getPostQuoteApprovalPolicy(quoteApproval);
             setQuoteApprovalPolicy(postQuoteApprovalPolicy);
           }
-          setSensitive(sensitive);
-          if (composablePoll) setPoll(composablePoll);
-          setMediaAttachments(mediaAttachments);
+          setSensitive(!!sensitive);
+          if (composablePoll)
+            setPoll(composablePoll as unknown as PollState);
+          setMediaAttachments(mediaAttachments ?? []);
           setUIState('default');
         } catch (e) {
           console.error(e);
-          alert(e?.reason || e);
+          alert((e as { reason?: string } | null)?.reason || (e as string));
           setUIState('error');
         }
       })();
     } else {
       focusTextarea();
       console.log('Apply prefs', prefs);
-      if (prefs['posting:default:visibility']) {
-        setVisibility(prefs['posting:default:visibility'].toLowerCase());
+      const defaultVis = prefString('posting:default:visibility');
+      if (defaultVis) {
+        setVisibility(defaultVis.toLowerCase());
       }
-      if (prefs['posting:default:language']) {
-        setLanguage(prefs['posting:default:language'].toLowerCase());
+      const defaultLang = prefString('posting:default:language');
+      if (defaultLang) {
+        setLanguage(defaultLang.toLowerCase());
       }
       if (prefs['posting:default:sensitive']) {
         setSensitive(!!prefs['posting:default:sensitive']);
       }
-      if (prefs['posting:default:quote_policy']) {
-        let policy = prefs['posting:default:quote_policy'].toLowerCase();
-        if (prefs['posting:default:visibility']) {
-          const visibility = prefs['posting:default:visibility'].toLowerCase();
+      const defaultQuotePolicy = prefString('posting:default:quote_policy');
+      if (defaultQuotePolicy) {
+        let policy = defaultQuotePolicy.toLowerCase();
+        if (defaultVis) {
+          const visibility = defaultVis.toLowerCase();
           if (visibility === 'private' || visibility === 'direct') {
             policy = 'nobody';
           }
@@ -635,28 +1073,43 @@ function Compose({
         scheduledAt,
         quoteApprovalPolicy,
       } = draftStatus;
-      const composablePoll = !!poll?.options && {
-        ...poll,
-        options: poll.options.map((o) => o?.title || o),
-        expiresIn: poll?.expiresIn || expiresInFromExpiresAt(poll.expiresAt),
-      };
-      textareaRef.current.value = status;
+      const composablePoll = poll?.options
+        ? {
+            ...poll,
+            options: poll.options.map(
+              (o) => (typeof o === 'string' ? o : o?.title || o) as string,
+            ),
+            expiresIn:
+              poll?.expiresIn || expiresInFromExpiresAt(poll.expiresAt),
+            multiple: !!poll.multiple,
+          }
+        : null;
+      textareaRef.current!.value = status ?? '';
       oninputTextarea();
       // status starts with newline or space, focus on first position
-      const cursorPos = /^\n|\s/.test(status) ? 0 : undefined;
+      const cursorPos = /^\n|\s/.test(status ?? '') ? 0 : undefined;
       focusTextarea(cursorPos);
-      if (spoilerText) spoilerTextRef.current.value = spoilerText;
+      if (spoilerText && spoilerTextRef.current)
+        spoilerTextRef.current.value = spoilerText;
       if (visibility) setVisibility(visibility);
       setLanguage(
         language ||
-          prefs['posting:default:language']?.toLowerCase() ||
+          prefString('posting:default:language')?.toLowerCase() ||
           DEFAULT_LANG,
       );
-      if (sensitiveMedia !== null) setSensitiveMedia(sensitiveMedia);
-      if (sensitive !== null) setSensitive(sensitive);
-      if (composablePoll) setPoll(composablePoll);
+      // Match JS guard: only skip when explicitly null. Coerce to boolean
+      // because the state is typed boolean; undefined would silently set the
+      // store to undefined in JS, which downstream readers already treat as
+      // falsy via `!!` checks.
+      if (sensitiveMedia !== null) setSensitiveMedia(!!sensitiveMedia);
+      if (sensitive !== null) setSensitive(!!sensitive);
+      if (composablePoll) setPoll(composablePoll as unknown as PollState);
       if (mediaAttachments) setMediaAttachments(mediaAttachments);
-      if (scheduledAt) setScheduledAt(scheduledAt);
+      if (scheduledAt) {
+        const d =
+          scheduledAt instanceof Date ? scheduledAt : new Date(scheduledAt);
+        setScheduledAt(d);
+      }
       if (quoteApprovalPolicy) setQuoteApprovalPolicy(quoteApprovalPolicy);
     }
   }, [draftStatus, editStatus, replyToStatus, replyMode]);
@@ -685,18 +1138,20 @@ function Compose({
   }, [sharedData]);
 
   // focus textarea when state.composerState.minimized turns false
-  const snapStates = useSnapshot(states);
+  const snapStates = useSnapshot(states) as unknown as {
+    composerState: ComposerStateShape;
+  };
   useEffect(() => {
     if (!snapStates.composerState.minimized) {
       focusTextarea();
     }
   }, [snapStates.composerState.minimized]);
 
-  const formRef = useRef();
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const beforeUnloadCopy = t`You have unsaved changes. Discard this post?`;
-  const canClose = () => {
-    const { value, dataset } = textareaRef.current;
+  const canClose = (): boolean => {
+    const { value, dataset } = textareaRef.current!;
 
     // check if loading
     if (uiState === 'loading') {
@@ -724,9 +1179,10 @@ function Compose({
     }
 
     // check if status contains only "@acct", if replying
-    const isSelf = replyToStatus?.account.id === currentAccountInfo.id;
+    const isSelf = replyToStatus?.account?.id === currentAccountInfo.id;
     const hasOnlyAcct =
-      replyToStatus && value.trim() === `@${replyToStatus.account.acct}`;
+      !!replyToStatus &&
+      value.trim() === `@${replyToStatus.account?.acct ?? ''}`;
     // TODO: check for mentions, or maybe just generic "@username<space>", including multiple mentions like "@username1<space>@username2<space>"
     if (!isSelf && hasOnlyAcct) {
       console.log('canClose', { isSelf, hasOnlyAcct });
@@ -754,7 +1210,7 @@ function Compose({
     return false;
   };
 
-  const confirmClose = () => {
+  const confirmClose = (): boolean => {
     if (!canClose()) {
       const yes = confirm(beforeUnloadCopy);
       return yes;
@@ -764,7 +1220,7 @@ function Compose({
 
   useEffect(() => {
     // Show warning if user tries to close window with unsaved changes
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent): void => {
       if (!canClose()) {
         e.preventDefault();
         e.returnValue = beforeUnloadCopy;
@@ -779,19 +1235,19 @@ function Compose({
       });
   }, []);
 
-  const getCharCount = () => {
-    const { value } = textareaRef.current;
-    const { value: spoilerText } = spoilerTextRef.current;
+  const getCharCount = (): number => {
+    const { value } = textareaRef.current!;
+    const { value: spoilerText } = spoilerTextRef.current!;
     return stringLength(countableText(value)) + stringLength(spoilerText);
   };
-  const updateCharCount = () => {
+  const updateCharCount = (): void => {
     const count = getCharCount();
-    states.composerCharacterCount = count;
+    (states as unknown as { composerCharacterCount: number }).composerCharacterCount = count;
   };
   useEffect(updateCharCount, []);
 
-  const supportsCloseWatcher = window.CloseWatcher;
-  const escDownRef = useRef(false);
+  const supportsCloseWatcher = (window as unknown as { CloseWatcher?: unknown }).CloseWatcher;
+  const escDownRef = useRef<boolean>(false);
   useHotkeys(
     'esc',
     () => {
@@ -802,7 +1258,8 @@ function Compose({
       enabled: !supportsCloseWatcher,
       enableOnFormTags: true,
       useKey: true,
-      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e: KeyboardEvent) =>
+        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
   useHotkeys(
@@ -818,7 +1275,7 @@ function Compose({
       enableOnFormTags: true,
       // Use keyup because Esc keydown will close the confirm dialog on Safari
       keyup: true,
-      ignoreEventWhen: (e) => {
+      ignoreEventWhen: (e: KeyboardEvent) => {
         const modals = document.querySelectorAll('#modal-container > *');
         const hasModal = !!modals;
         const hasOnlyComposer =
@@ -840,19 +1297,20 @@ function Compose({
     }
   }, []);
 
-  const prevBackgroundDraft = useRef({});
-  const draftKey = () => {
+  const prevBackgroundDraft = useRef<Record<string, unknown>>({});
+  const draftKey = (): string => {
     const ns = getCurrentAccountNS();
     return `${ns}#${UID.current}`;
   };
-  const saveUnsavedDraft = () => {
+  const composerState = (states as unknown as { composerState: ComposerStateShape }).composerState;
+  const saveUnsavedDraft = (): void => {
     // Not enabling this for editing status
     // I don't think this warrant a draft mode for a status that's already posted
     // Maybe it could be a big edit change but it should be rare
     if (editStatus) return;
-    if (states.composerState.minimized) return;
+    if (composerState.minimized) return;
     const key = draftKey();
-    const backgroundDraft = {
+    const backgroundDraft: Record<string, unknown> = {
       key,
       replyTo: replyToStatus
         ? {
@@ -863,16 +1321,16 @@ function Compose({
             */
             id: replyToStatus.id,
             account: {
-              id: replyToStatus.account.id,
-              username: replyToStatus.account.username,
-              acct: replyToStatus.account.acct,
+              id: replyToStatus.account?.id,
+              username: replyToStatus.account?.username,
+              acct: replyToStatus.account?.acct,
             },
           }
         : null,
       draftStatus: {
         uid: UID.current,
-        status: textareaRef.current.value,
-        spoilerText: spoilerTextRef.current.value,
+        status: textareaRef.current!.value,
+        spoilerText: spoilerTextRef.current!.value,
         visibility,
         language,
         sensitive,
@@ -894,7 +1352,15 @@ function Compose({
       !canClose()
     ) {
       console.debug('not equal', backgroundDraft, prevBackgroundDraft.current);
-      db.drafts
+      (
+        db.drafts as unknown as {
+          set(
+            key: string,
+            value: Record<string, unknown>,
+          ): Promise<unknown>;
+          del(key: string): Promise<unknown>;
+        }
+      )
         .set(key, {
           ...backgroundDraft,
           state: 'unsaved',
@@ -903,7 +1369,7 @@ function Compose({
         .then(() => {
           console.debug('DRAFT saved', key, backgroundDraft);
         })
-        .catch((e) => {
+        .catch((e: unknown) => {
           console.error('DRAFT failed', key, e);
         });
       prevBackgroundDraft.current = structuredClone(backgroundDraft);
@@ -915,21 +1381,27 @@ function Compose({
     // If unmounted, means user discarded the draft
     // Also means pop-out 🙈, but it's okay because the pop-out will persist the ID and re-create the draft
     return () => {
-      db.drafts.del(draftKey());
+      (
+        db.drafts as unknown as { del(key: string): Promise<unknown> }
+      ).del(draftKey());
     };
   }, []);
 
   useEffect(() => {
-    const handleItems = (e) => {
+    const handleItems = (e: ClipboardEvent | DragEvent): void => {
       // Ignore drops when a sheet is open
       if (document.querySelector('.sheet')) return;
 
-      const { items } = e.clipboardData || e.dataTransfer;
-      const files = [];
+      const clipboardData =
+        (e as ClipboardEvent).clipboardData || (e as DragEvent).dataTransfer;
+      if (!clipboardData) return;
+      const { items } = clipboardData;
+      const files: File[] = [];
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if (item.kind === 'file') {
-          files.push(item.getAsFile());
+          const f = item.getAsFile();
+          if (f) files.push(f);
         }
       }
       if (files.length > 0) {
@@ -941,15 +1413,15 @@ function Compose({
               setMediaAttachments((prev) => [...prev, ...mediaFiles]);
             }
           })
-          .catch((err) => {
+          .catch((err: unknown) => {
             console.error('Failed to process file(s):', err);
           });
       }
     };
     window.addEventListener('paste', handleItems);
-    const handleDragover = (e) => {
+    const handleDragover = (e: DragEvent): void => {
       // Prevent default if there's files
-      if (e.dataTransfer.items.length > 0) {
+      if (e.dataTransfer && e.dataTransfer.items.length > 0) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -963,16 +1435,28 @@ function Compose({
     };
   }, [mediaAttachments]);
 
-  const [showMentionPicker, setShowMentionPicker] = useState(false);
-  const [showEmoji2Picker, setShowEmoji2Picker] = useState(false);
-  const [showGIFPicker, setShowGIFPicker] = useState(false);
+  const [showMentionPicker, setShowMentionPicker] = useState<
+    boolean | MentionPickerState
+  >(false);
+  const [showEmoji2Picker, setShowEmoji2Picker] = useState<
+    boolean | EmojiPickerState
+  >(false);
+  const [showGIFPicker, setShowGIFPicker] = useState<boolean>(false);
 
-  const [autoDetectedLanguages, setAutoDetectedLanguages] = useState(null);
-  const [topSupportedLanguages, restSupportedLanguages] = useMemo(() => {
-    const topLanguages = [];
-    const restLanguages = [];
-    const { contentTranslationHideLanguages = [] } = states.settings;
-    supportedLanguages.forEach((l) => {
+  const [autoDetectedLanguages, setAutoDetectedLanguages] = useState<
+    string[] | null
+  >(null);
+  const [topSupportedLanguages, restSupportedLanguages] = useMemo<
+    [SupportedLanguageEntry[], SupportedLanguageEntry[]]
+  >(() => {
+    const topLanguages: SupportedLanguageEntry[] = [];
+    const restLanguages: SupportedLanguageEntry[] = [];
+    const settings = states.settings as unknown as {
+      contentTranslationHideLanguages?: string[];
+    };
+    const contentTranslationHideLanguages =
+      settings.contentTranslationHideLanguages ?? [];
+    supportedLanguagesList.forEach((l) => {
       const [code] = l;
       if (
         code === language ||
@@ -997,19 +1481,20 @@ function Compose({
     return [topLanguages, restLanguages];
   }, [language, autoDetectedLanguages]);
 
-  const replyToStatusMonthsAgo = useMemo(
+  const replyToStatusMonthsAgo = useMemo<number>(
     () =>
-      !!replyToStatus?.createdAt &&
-      Math.floor(
-        (Date.now() - Date.parse(replyToStatus.createdAt)) /
-          (1000 * 60 * 60 * 24 * 30),
-      ),
+      replyToStatus?.createdAt
+        ? Math.floor(
+            (Date.now() - Date.parse(replyToStatus.createdAt)) /
+              (1000 * 60 * 60 * 24 * 30),
+          )
+        : 0,
     [replyToStatus],
   );
 
-  const onMinimize = () => {
+  const onMinimize = (): void => {
     saveUnsavedDraft();
-    states.composerState.minimized = true;
+    composerState.minimized = true;
   };
 
   const mediaButtonDisabled =
@@ -1020,7 +1505,7 @@ function Compose({
     !!currentQuoteStatus?.id; */
 
   const cwButtonDisabled = uiState === 'loading' || !!sensitive;
-  const onCWButtonClick = () => {
+  const onCWButtonClick = (): void => {
     setSensitive(true);
     setTimeout(() => {
       spoilerTextRef.current?.focus();
@@ -1032,7 +1517,7 @@ function Compose({
   const pollButtonDisabled =
     uiState === 'loading' || !!poll || !!mediaAttachments.length; /* ||
     !!currentQuoteStatus?.id; */
-  const onPollButtonClick = () => {
+  const onPollButtonClick = (): void => {
     setPoll({
       options: ['', ''],
       expiresIn: 24 * 60 * 60, // 1 day
@@ -1041,7 +1526,7 @@ function Compose({
     // Focus first choice field
     setTimeout(() => {
       composeContainerRef.current
-        ?.querySelector('.poll-choice input[type="text"]')
+        ?.querySelector<HTMLInputElement>('.poll-choice input[type="text"]')
         ?.focus();
     }, 0);
   };
@@ -1056,26 +1541,29 @@ function Compose({
   const disableQuotePolicy =
     visibility === 'private' || visibility === 'direct';
 
-  const addSubToolbarRef = useRef();
-  const [showAddButton, setShowAddButton] = useState(true);
+  const addSubToolbarRef = useRef<HTMLSpanElement | null>(null);
+  const [showAddButton, setShowAddButton] = useState<boolean>(true);
   const BUTTON_WIDTH = 42; // roughly one button width
-  useThrottledResizeObserver({
+  useThrottledResizeObserver<HTMLSpanElement>({
     ref: addSubToolbarRef,
     box: 'border-box',
     onResize: ({ width }) => {
       // If scrollable, it's truncated
-      const { scrollWidth } = addSubToolbarRef.current;
-      const truncated = scrollWidth > width;
-      const overTruncated = width < BUTTON_WIDTH * 4;
+      const { scrollWidth } = addSubToolbarRef.current!;
+      // width is undefined on the first synthetic call; let JS NaN semantics
+      // mirror the original (both comparisons evaluate to false).
+      const w = width as unknown as number;
+      const truncated = scrollWidth > w;
+      const overTruncated = w < BUTTON_WIDTH * 4;
       setShowAddButton(overTruncated || truncated);
-      addSubToolbarRef.current.hidden = overTruncated;
+      addSubToolbarRef.current!.hidden = overTruncated;
     },
   });
 
   const showScheduledAt =
     !editStatus && currentAccount?.instanceURL !== 'bsky.social';
   const scheduledAtButtonDisabled = uiState === 'loading' || !!scheduledAt;
-  const onScheduledAtClick = () => {
+  const onScheduledAtClick = (): void => {
     const date = new Date(Date.now() + DEFAULT_SCHEDULED_AT);
     setScheduledAt(date);
   };
@@ -1132,8 +1620,8 @@ function Compose({
                       replyToStatus,
                       draftStatus: {
                         uid: UID.current,
-                        status: textareaRef.current.value,
-                        spoilerText: spoilerTextRef.current.value,
+                        status: textareaRef.current!.value,
+                        spoilerText: spoilerTextRef.current!.value,
                         visibility,
                         language,
                         sensitive,
@@ -1199,8 +1687,11 @@ function Compose({
                     return;
                   }
 
-                  if (window.opener.__STATES__.showCompose) {
-                    if (window.opener.__STATES__.composerState?.publishing) {
+                  const opener = window.opener as ComposeOpenerWindow;
+                  const openerStates = opener.__STATES__ as ComposeWindowStates;
+
+                  if (openerStates.showCompose) {
+                    if (openerStates.composerState?.publishing) {
                       alert(
                         t`Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later.`,
                       );
@@ -1224,8 +1715,8 @@ function Compose({
                         replyMode,
                         draftStatus: {
                           uid: UID.current,
-                          status: textareaRef.current.value,
-                          spoilerText: spoilerTextRef.current.value,
+                          status: textareaRef.current!.value,
+                          spoilerText: spoilerTextRef.current!.value,
                           visibility,
                           language,
                           sensitive,
@@ -1236,18 +1727,18 @@ function Compose({
                         },
                         quoteStatus: currentQuoteStatus,
                       };
-                      window.opener.__COMPOSE__ = passData; // Pass it here instead of `showCompose` due to some weird proxy issue again
-                      if (window.opener.__STATES__.showCompose) {
-                        window.opener.__STATES__.showCompose = false;
+                      opener.__COMPOSE__ = passData; // Pass it here instead of `showCompose` due to some weird proxy issue again
+                      if (openerStates.showCompose) {
+                        openerStates.showCompose = false;
                         setTimeout(() => {
-                          window.opener.__STATES__.showCompose = true;
+                          openerStates.showCompose = true;
                         }, 10);
                       } else {
-                        window.opener.__STATES__.showCompose = true;
+                        openerStates.showCompose = true;
                       }
-                      if (window.opener.__STATES__.composerState.minimized) {
+                      if (openerStates.composerState.minimized) {
                         // Maximize it
-                        window.opener.__STATES__.composerState.minimized = false;
+                        openerStates.composerState.minimized = false;
                       }
                     },
                   });
@@ -1265,7 +1756,7 @@ function Compose({
               {replyToStatusMonthsAgo > 0 ? (
                 <Trans>
                   Replying to @
-                  {replyToStatus.account.acct || replyToStatus.account.username}
+                  {replyToStatus.account?.acct || replyToStatus.account?.username}
                   &rsquo;s post (
                   <strong>
                     {rtf.format(-replyToStatusMonthsAgo, 'month')}
@@ -1275,7 +1766,7 @@ function Compose({
               ) : (
                 <Trans>
                   Replying to @
-                  {replyToStatus.account.acct || replyToStatus.account.username}
+                  {replyToStatus.account?.acct || replyToStatus.account?.username}
                   &rsquo;s post
                 </Trans>
               )}
@@ -1304,38 +1795,50 @@ function Compose({
               }
             }, 10);
           }}
-          onKeyDown={(e) => {
+          onKeyDown={(e: JSX.TargetedKeyboardEvent<HTMLFormElement>) => {
             if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-              formRef.current.dispatchEvent(
+              formRef.current!.dispatchEvent(
                 new Event('submit', { cancelable: true }),
               );
             }
           }}
-          onSubmit={(e) => {
+          onSubmit={(e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
             e.preventDefault();
 
-            const formData = new FormData(e.target);
-            const entries = Object.fromEntries(formData.entries());
+            const formData = new FormData(e.target as HTMLFormElement);
+            const entries = Object.fromEntries(formData.entries()) as Record<
+              string,
+              FormDataEntryValue
+            >;
             console.log('ENTRIES', entries);
-            let {
-              status,
-              visibility,
-              sensitive,
-              sensitiveMedia,
-              spoilerText,
-              scheduledAt,
-              quoteApprovalPolicy,
-            } = entries;
+            const rawStatus = entries.status;
+            const rawVisibility = entries.visibility;
+            const rawSensitive = entries.sensitive;
+            const rawSensitiveMedia = entries.sensitiveMedia;
+            const rawSpoilerText = entries.spoilerText;
+            const rawScheduledAt = entries.scheduledAt;
+            const rawQuoteApprovalPolicy = entries.quoteApprovalPolicy;
 
             // Pre-cleanup
             // checkboxes return "on" if checked
-            sensitive = sensitive === 'on';
-            sensitiveMedia = sensitiveMedia === 'on';
+            const sensitiveBool: boolean = rawSensitive === 'on';
+            const sensitiveMediaBool: boolean = rawSensitiveMedia === 'on';
 
             // Convert datetime-local input value to RFC3339 Date string value
-            scheduledAt = scheduledAt
-              ? new Date(scheduledAt).toISOString()
+            const scheduledAtIso: string | undefined = rawScheduledAt
+              ? new Date(rawScheduledAt as string).toISOString()
               : undefined;
+
+            let status: string | undefined =
+              typeof rawStatus === 'string' ? rawStatus : undefined;
+            let spoilerText: string | undefined =
+              typeof rawSpoilerText === 'string' ? rawSpoilerText : undefined;
+            const visibility: string | undefined =
+              typeof rawVisibility === 'string' ? rawVisibility : undefined;
+            const quoteApprovalPolicy: string | undefined =
+              typeof rawQuoteApprovalPolicy === 'string'
+                ? rawQuoteApprovalPolicy
+                : undefined;
 
             // Validation
             /* Let the backend validate this
@@ -1379,11 +1882,11 @@ function Compose({
             }
 
             // Post-cleanup
-            spoilerText = (sensitive && spoilerText) || undefined;
+            spoilerText = (sensitiveBool && spoilerText) || undefined;
             status = status === '' ? undefined : status;
 
             // states.composerState.minimized = true;
-            states.composerState.publishing = true;
+            composerState.publishing = true;
             setUIState('loading');
             (async () => {
               try {
@@ -1419,17 +1922,28 @@ function Compose({
                   // If any failed, return
                   if (
                     results.some((result) => {
-                      return result.status === 'rejected' || !result.value?.id;
+                      return (
+                        result.status === 'rejected' ||
+                        !(result.value as { id?: string } | undefined)?.id
+                      );
                     })
                   ) {
-                    states.composerState.publishing = false;
-                    states.composerState.publishingError = true;
+                    composerState.publishing = false;
+                    composerState.publishingError = true;
                     setUIState('error');
                     // Alert all the reasons
                     results.forEach((result) => {
                       if (result.status === 'rejected') {
                         console.error(result);
-                        alert(result.reason || t`Attachment #${i} failed`);
+                        // Note: original referenced `i` which wasn't in scope;
+                        // preserve that pre-existing behavior — message reads
+                        // "Attachment #undefined failed" at runtime. Follow-up
+                        // bug, not changed in this TS migration.
+                        const i: number | undefined = undefined;
+                        alert(
+                          (result as PromiseRejectedResult).reason ||
+                            t`Attachment #${i} failed`,
+                        );
                       }
                     });
                     return;
@@ -1444,12 +1958,12 @@ function Compose({
 
                 // TODO: Note above is no longer true in Masto.js v6. Revisit this.
               */
-                let params = {
+                let params: Record<string, unknown> = {
                   status,
                   // spoilerText,
                   spoiler_text: spoilerText,
                   language,
-                  sensitive: sensitive || sensitiveMedia,
+                  sensitive: sensitiveBool || sensitiveMediaBool,
                   poll,
                   // mediaIds: mediaAttachments.map((attachment) => attachment.id),
                   media_ids: mediaAttachments.map(
@@ -1485,7 +1999,7 @@ function Compose({
                   params.visibility = visibility;
                   // params.inReplyToId = replyToStatus?.id || undefined;
                   params.in_reply_to_id = replyToStatus?.id || undefined;
-                  params.scheduled_at = scheduledAt;
+                  params.scheduled_at = scheduledAtIso;
                   if (linkPreview?.removed) {
                     params.disable_card = true;
                   } else if (linkPreview?.metadata) {
@@ -1495,14 +2009,18 @@ function Compose({
                 params = removeNullUndefined(params);
                 console.log('POST', params);
 
-                let newStatus;
+                let newStatus: unknown;
                 if (editStatus) {
                   newStatus = await masto.v1.statuses
                     .$select(editStatus.id)
                     .update(params);
-                  saveStatus(newStatus, instance, {
-                    skipThreading: true,
-                  });
+                  saveStatus(
+                    newStatus as Parameters<typeof saveStatus>[0],
+                    instance,
+                    {
+                      skipThreading: true,
+                    },
+                  );
                 } else {
                   try {
                     newStatus = await masto.v1.statuses.create(params, {
@@ -1517,8 +2035,8 @@ function Compose({
                     newStatus = await masto.v1.statuses.create(params);
                   }
                 }
-                states.composerState.minimized = false;
-                states.composerState.publishing = false;
+                composerState.minimized = false;
+                composerState.publishing = false;
                 setUIState('default');
 
                 // Close
@@ -1527,13 +2045,13 @@ function Compose({
                   type: editStatus ? 'edit' : replyToStatus ? 'reply' : 'post',
                   newStatus,
                   instance,
-                  scheduledAt,
+                  scheduledAt: scheduledAtIso,
                 });
               } catch (e) {
-                states.composerState.publishing = false;
-                states.composerState.publishingError = true;
+                composerState.publishing = false;
+                composerState.publishingError = true;
                 console.error(e);
-                alert(e?.reason || e);
+                alert((e as { reason?: string } | null)?.reason || (e as string));
                 setUIState('error');
               }
             })();
@@ -1553,7 +2071,8 @@ function Compose({
                 onTrigger={(action) => {
                   if (action?.name === 'custom-emojis') {
                     setShowEmoji2Picker({
-                      targetElement: spoilerTextRef,
+                      targetElement:
+                        spoilerTextRef as unknown as RefObject<HTMLElement | null>,
                       defaultSearchTerm: action?.defaultSearchTerm || null,
                     });
                   }
@@ -1568,13 +2087,15 @@ function Compose({
                   disabled={uiState === 'loading'}
                   class="spoiler-text-field"
                   lang={language}
-                  spellCheck="true"
+                  spellcheck
                   autocomplete="off"
                   dir="auto"
                   onInput={() => {
                     updateCharCount();
                   }}
-                  onKeyDown={(e) => {
+                  onKeyDown={(
+                    e: JSX.TargetedKeyboardEvent<HTMLInputElement>,
+                  ) => {
                     if (
                       e.key === 'Enter' &&
                       !e.ctrlKey &&
@@ -1592,7 +2113,7 @@ function Compose({
                 class="close-button plain4 small"
                 onClick={() => {
                   setSensitive(false);
-                  textareaRef.current.focus();
+                  textareaRef.current!.focus();
                 }}
               >
                 <Icon icon="x" alt={t`Cancel`} />
@@ -1618,7 +2139,7 @@ function Compose({
                 updateLinkPreview(textareaRef.current?.value || '');
               }}
               maxCharacters={maxCharacters}
-              onTrigger={(action) => {
+              onTrigger={(action: ToolbarAction) => {
                 if (action?.name === 'custom-emojis') {
                   setShowEmoji2Picker({
                     targetElement: lastFocusedEmojiFieldRef,
@@ -1674,8 +2195,12 @@ function Compose({
                 type="button"
                 class="plain4 close-button small"
                 onClick={() => {
-                  clearTimeout(linkPreviewRef.current.timeout);
-                  setLinkPreview({ ...linkPreview, removed: true });
+                  if (linkPreviewRef.current.timeout) {
+                    clearTimeout(linkPreviewRef.current.timeout);
+                  }
+                  setLinkPreview(
+                    linkPreview ? { ...linkPreview, removed: true } : null,
+                  );
                   focusTextarea();
                 }}
               >
@@ -1687,7 +2212,13 @@ function Compose({
             <div class="media-attachments">
               {mediaAttachments.map((attachment, i) => {
                 const { id, file } = attachment;
-                const fileID = file?.size + file?.type + file?.name;
+                // Preserve original JS template-string-via-`+`: if any of
+                // file.size/type/name is undefined, the result is the JS
+                // concatenation result ("undefinedundefinedundefined" etc).
+                const fileID =
+                  (file?.size as number | undefined)! +
+                  (file?.type as string | undefined)! +
+                  (file?.name as string | undefined)!;
                 return (
                   <MediaAttachment
                     key={id || fileID || i}
@@ -1720,8 +2251,9 @@ function Compose({
                   type="checkbox"
                   checked={sensitiveMedia}
                   disabled={uiState === 'loading'}
-                  onChange={(e) => {
-                    const sensitiveMedia = e.target.checked;
+                  onChange={(e: JSX.TargetedEvent<HTMLInputElement, Event>) => {
+                    const sensitiveMedia = (e.target as HTMLInputElement)
+                      .checked;
                     setSensitiveMedia(sensitiveMedia);
                   }}
                 />{' '}
@@ -1735,9 +2267,9 @@ function Compose({
           {!!poll && (
             <ComposePoll
               lang={language}
-              maxOptions={maxOptions}
-              maxExpiration={maxExpiration}
-              minExpiration={minExpiration}
+              maxOptions={maxOptions as number}
+              maxExpiration={maxExpiration as number}
+              minExpiration={minExpiration as number}
               maxCharactersPerOption={maxCharactersPerOption}
               poll={poll}
               disabled={uiState === 'loading'}
@@ -1791,9 +2323,14 @@ function Compose({
             </div>
           )}
           <QuoteSuggestion
-            quoteSuggestion={quoteSuggestion}
+            quoteSuggestion={
+              quoteSuggestion as unknown as Parameters<
+                typeof QuoteSuggestion
+              >[0]['quoteSuggestion']
+            }
             hasCurrentQuoteStatus={!!currentQuoteStatus?.id}
             onAccept={() => {
+              if (!quoteSuggestion) return;
               const { status } = quoteSuggestion;
 
               // Remove the pasted link from textarea
@@ -1819,8 +2356,13 @@ function Compose({
                 setLocalQuoteStatus(status);
               } else {
                 // Transition the unfurled quote to the quote preview
-                if (document.startViewTransition) {
-                  document.startViewTransition(() => {
+                const startVT = (
+                  document as unknown as {
+                    startViewTransition?: (cb: () => void) => unknown;
+                  }
+                ).startViewTransition;
+                if (startVT) {
+                  startVT(() => {
                     setQuoteSuggestion(null);
                     setLocalQuoteStatus(status);
                   });
@@ -1845,7 +2387,7 @@ function Compose({
                       zIndex: 1001,
                     },
                   }}
-                  menuButton={({ open }) => (
+                  menuButton={({ open }: { open: boolean }) => (
                     <button
                       type="button"
                       class={`toolbar-button add-button ${
@@ -2040,7 +2582,9 @@ function Compose({
             ) : (
               <CharCountMeter
                 maxCharacters={maxCharacters}
-                hidden={uiState === 'loading'}
+                // After the ternary uiState is narrowed away from 'loading';
+                // mirror the JS expression for behavior parity.
+                hidden={(uiState as string) === 'loading'}
               />
             )}
             {supportsNativeQuote() && (
@@ -2057,8 +2601,12 @@ function Compose({
                 <select
                   name="quoteApprovalPolicy"
                   value={quoteApprovalPolicy}
-                  onChange={(e) => {
-                    setQuoteApprovalPolicy(e.target.value);
+                  onChange={(
+                    e: JSX.TargetedEvent<HTMLSelectElement, Event>,
+                  ) => {
+                    setQuoteApprovalPolicy(
+                      (e.target as HTMLSelectElement).value,
+                    );
                   }}
                   disabled={uiState === 'loading'}
                   dir="auto"
@@ -2077,41 +2625,54 @@ function Compose({
             )}
             <label
               class={`toolbar-button ${highlightVisibilityField ? 'highlight' : ''}`}
-              title={_(visibilityText[visibility])}
+              title={_(
+                visibilityText[visibility as keyof typeof visibilityText],
+              )}
             >
               {visibility === 'public' || visibility === 'direct' ? (
                 <Icon
-                  icon={visibilityIconsMap[visibility]}
-                  alt={_(visibilityText[visibility])}
+                  icon={
+                    visibilityIconsMap[
+                      visibility as keyof typeof visibilityIconsMap
+                    ]
+                  }
+                  alt={_(
+                    visibilityText[visibility as keyof typeof visibilityText],
+                  )}
                 />
               ) : (
-                <span class="icon-text">{_(visibilityText[visibility])}</span>
+                <span class="icon-text">
+                  {_(
+                    visibilityText[visibility as keyof typeof visibilityText],
+                  )}
+                </span>
               )}
               <select
                 name="visibility"
                 value={visibility}
-                onChange={(e) => {
-                  setVisibility(e.target.value);
+                onChange={(e: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
+                  const target = e.target as HTMLSelectElement;
+                  setVisibility(target.value);
                   if (
-                    e.target.value === 'private' ||
-                    e.target.value === 'direct'
+                    target.value === 'private' ||
+                    target.value === 'direct'
                   ) {
                     setQuoteApprovalPolicy('nobody');
                   }
 
-                  if (e.target.value === 'direct' && currentQuoteStatus?.id) {
+                  if (target.value === 'direct' && currentQuoteStatus?.id) {
                     const quoteURL = currentQuoteStatus.url;
                     if (quoteURL) {
-                      const currentText = textareaRef.current.value;
+                      const currentText = textareaRef.current!.value;
                       if (!currentText.includes(quoteURL)) {
-                        textareaRef.current.value =
+                        textareaRef.current!.value =
                           currentText + (currentText ? '\n' : '') + quoteURL;
                         oninputTextarea();
                       }
                     }
                     setQuoteCleared(true);
                     showToast(t`Quotes can't be embedded in private mentions.`);
-                  } else if (e.target.value !== 'direct' && quoteCleared) {
+                  } else if (target.value !== 'direct' && quoteCleared) {
                     const quoteURL = (localQuoteStatus || quoteStatus)?.url;
                     if (quoteURL && textareaRef.current) {
                       const currentValue = textareaRef.current.value;
@@ -2162,8 +2723,8 @@ function Compose({
               <select
                 name="language"
                 value={language}
-                onChange={(e) => {
-                  const { value } = e.target;
+                onChange={(e: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
+                  const { value } = e.target as HTMLSelectElement;
                   setLanguage(value || DEFAULT_LANG);
                   store.session.set('currentLanguage', value || DEFAULT_LANG);
                 }}
@@ -2229,8 +2790,12 @@ function Compose({
             onClose={() => {
               setShowMentionPicker(false);
             }}
-            defaultSearchTerm={showMentionPicker?.defaultSearchTerm}
-            onSelect={(socialAddress) => {
+            defaultSearchTerm={
+              typeof showMentionPicker === 'object'
+                ? showMentionPicker?.defaultSearchTerm
+                : undefined
+            }
+            onSelect={(socialAddress: string) => {
               const textarea = textareaRef.current;
               if (textarea) {
                 insertTextAtCursor({
@@ -2254,10 +2819,20 @@ function Compose({
             onClose={() => {
               setShowEmoji2Picker(false);
             }}
-            defaultSearchTerm={showEmoji2Picker?.defaultSearchTerm}
-            onSelect={(emojiShortcode) => {
+            defaultSearchTerm={
+              typeof showEmoji2Picker === 'object'
+                ? showEmoji2Picker?.defaultSearchTerm
+                : undefined
+            }
+            onSelect={(emojiShortcode: string) => {
+              const emojiState =
+                typeof showEmoji2Picker === 'object' ? showEmoji2Picker : null;
               const targetElement =
-                showEmoji2Picker?.targetElement?.current || textareaRef.current;
+                (emojiState?.targetElement?.current as
+                  | HTMLInputElement
+                  | HTMLTextAreaElement
+                  | null
+                  | undefined) || textareaRef.current;
               if (targetElement) {
                 insertTextAtCursor({ targetElement, text: emojiShortcode });
               }
@@ -2274,11 +2849,22 @@ function Compose({
         >
           <GIFPickerModal
             onClose={() => setShowGIFPicker(false)}
-            onSelect={({ url, type, alt_text }) => {
+            onSelect={({
+              url,
+              type,
+              alt_text,
+            }: {
+              url: string;
+              type: string;
+              alt_text?: string;
+            }) => {
               console.log('GIF URL', url);
-              if (mediaAttachments.length >= maxMediaAttachments) {
+              // Preserve original JS: `>= undefined` evaluates to false via
+              // NaN coercion. plural(undefined, ...) would explode, but the
+              // guard above means it is only called when max is defined.
+              if (mediaAttachments.length >= (maxMediaAttachments as number)) {
                 alert(
-                  plural(maxMediaAttachments, {
+                  plural(maxMediaAttachments as number, {
                     one: 'You can only attach up to 1 file.',
                     other: 'You can only attach up to # files.',
                   }),
@@ -2287,7 +2873,7 @@ function Compose({
               }
               // Download the GIF and insert it as media attachment
               (async () => {
-                let theToast;
+                let theToast: { hideToast?: () => void } | undefined;
                 try {
                   theToast = showToast({
                     text: t`Downloading GIF…`,
@@ -2297,7 +2883,7 @@ function Compose({
                     referrerPolicy: 'no-referrer',
                   }).then((res) => res.blob());
                   const fileData = await blob.arrayBuffer();
-                  const newMediaAttachments = [
+                  const newMediaAttachments: MediaAttachmentLike[] = [
                     ...mediaAttachments,
                     {
                       fileData,
@@ -2325,8 +2911,10 @@ function Compose({
   );
 }
 
-function removeNullUndefined(obj) {
-  for (let key in obj) {
+function removeNullUndefined(
+  obj: Record<string, unknown>,
+): Record<string, unknown> {
+  for (const key in obj) {
     if (obj[key] === null || obj[key] === undefined) {
       delete obj[key];
     }
