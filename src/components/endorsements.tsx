@@ -1,33 +1,65 @@
 import { Trans } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import supports from '../utils/supports';
 
-import AccountBlock from './account-block';
+import AccountBlockUntyped from './account-block';
 import Loader from './loader';
 
+interface AccountEndorsementsEndpoint {
+  $select(id: string): {
+    endorsements: {
+      list(params: { limit: number }): Promise<mastodon.v1.Account[]>;
+    };
+  };
+}
+
+interface AccountBlockProps {
+  account: mastodon.v1.Account;
+  showStats?: boolean;
+  avatarSize?: string;
+  relationship?: mastodon.v1.Relationship;
+}
+const AccountBlock = AccountBlockUntyped as unknown as ComponentType<AccountBlockProps>;
+
 const ENDORSEMENTS_LIMIT = 80;
+
+type EndorsementsUIState = 'default' | 'loading' | 'error';
+
+interface EndorsementsProps {
+  accountID: string;
+  info: { username: string };
+  open?: boolean | string;
+  onlyOpenIfHasEndorsements?: boolean;
+}
 
 function Endorsements({
   accountID: id,
   info,
   open = false,
   onlyOpenIfHasEndorsements = false,
-}) {
+}: EndorsementsProps) {
   const { masto } = api();
-  const endorsementsContainer = useRef();
-  const [endorsementsUIState, setEndorsementsUIState] = useState('default');
-  const [endorsements, setEndorsements] = useState([]);
-  const [relationshipsMap, setRelationshipsMap] = useState({});
+  const endorsementsContainer = useRef<HTMLDivElement | null>(null);
+  const [endorsementsUIState, setEndorsementsUIState] =
+    useState<EndorsementsUIState>('default');
+  const [endorsements, setEndorsements] = useState<mastodon.v1.Account[]>([]);
+  const [relationshipsMap, setRelationshipsMap] = useState<
+    Record<string, mastodon.v1.Relationship>
+  >({});
   useEffect(() => {
     if (!supports('@mastodon/endorsements')) return;
     if (!open) return;
     (async () => {
       setEndorsementsUIState('loading');
       try {
-        const accounts = await masto.v1.accounts.$select(id).endorsements.list({
+        const accountsEndpoint =
+          masto.v1.accounts as unknown as AccountEndorsementsEndpoint;
+        const accounts = await accountsEndpoint.$select(id).endorsements.list({
           limit: ENDORSEMENTS_LIMIT,
         });
         console.log({ endorsements: accounts });
@@ -38,7 +70,7 @@ function Endorsements({
         setEndorsements(accounts);
         setEndorsementsUIState('default');
         setTimeout(() => {
-          endorsementsContainer.current.scrollIntoView({
+          endorsementsContainer.current?.scrollIntoView({
             behavior: 'smooth',
             block: 'nearest',
           });
