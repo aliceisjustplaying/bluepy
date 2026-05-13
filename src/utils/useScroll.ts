@@ -1,5 +1,5 @@
-import { useLayoutEffect, useState } from 'preact/hooks';
 import type { RefObject } from 'preact';
+import { useLayoutEffect, useState } from 'preact/hooks';
 
 type ScrollDirection = 'end' | 'start' | null;
 type ScrollAxis = 'vertical' | 'horizontal';

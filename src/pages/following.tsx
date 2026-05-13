@@ -84,9 +84,9 @@ function Following({ title, path, id, ...props }: FollowingProps) {
 
   const snapStates = useSnapshot(states);
   const homeIterable = useRef<HomeIterable | undefined>(undefined);
-  const homeIterator = useRef<
-    AsyncIterator<mastodon.v1.Status[]> | undefined
-  >(undefined);
+  const homeIterator = useRef<AsyncIterator<mastodon.v1.Status[]> | undefined>(
+    undefined,
+  );
   const latestItem = useRef<string | undefined>(undefined);
 
   useEffect(() => {

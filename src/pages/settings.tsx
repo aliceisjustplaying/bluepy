@@ -1028,7 +1028,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               type="button"
               class="plain2 small"
               onClick={async () =>
-                alert(await getCachesKeys() as unknown as string)
+                alert((await getCachesKeys()) as unknown as string)
               }
             >
               Show keys count
@@ -1037,7 +1037,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               type="button"
               class="plain2 small"
               onClick={async () =>
-                alert(await getCachesSize() as unknown as string)
+                alert((await getCachesSize()) as unknown as string)
               }
             >
               Show cache size
@@ -1238,9 +1238,9 @@ function PushNotificationsSection({
       setUIState('loading');
       try {
         const result = await initSubscription();
-        const backendSubscription = (
-          result?.backendSubscription as BackendPushSubscriptionShape | null
-        ) ?? null;
+        const backendSubscription =
+          (result?.backendSubscription as BackendPushSubscriptionShape | null) ??
+          null;
         if (
           backendSubscription?.policy &&
           backendSubscription.policy !== 'none'
@@ -1258,9 +1258,7 @@ function PushNotificationsSection({
             if (policyEl) policyEl.value = policy;
             // alerts is {}, iterate it
             Object.entries(alerts).forEach(([alert, value]) => {
-              const el = elements.namedItem(alert) as
-                | HTMLInputElement
-                | null;
+              const el = elements.namedItem(alert) as HTMLInputElement | null;
               if (el?.type === 'checkbox') {
                 el.checked = !!value;
               }

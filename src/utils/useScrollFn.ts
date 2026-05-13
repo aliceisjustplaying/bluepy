@@ -1,6 +1,6 @@
+import type { RefObject } from 'preact';
 import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
 import { useThrottledCallback } from 'use-debounce';
-import type { RefObject } from 'preact';
 
 type ScrollDirection = 'end' | 'start' | null;
 type ScrollAxis = 'vertical' | 'horizontal';

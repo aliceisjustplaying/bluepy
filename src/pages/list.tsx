@@ -48,10 +48,7 @@ interface FetchItemsResult {
 
 interface ListTimelineEndpoint {
   $select(id: string): {
-    list(options: {
-      limit: number;
-      since_id?: string;
-    }): {
+    list(options: { limit: number; since_id?: string }): {
       values(): AsyncIterator<StatusLike[]>;
     } & Promise<{ value?: StatusLike[] } | StatusLike[]>;
   };
@@ -137,7 +134,10 @@ function List(props: ListProps) {
 
       // value = filteredItems(value, 'home');
       value.forEach((item) => {
-        saveStatus(item as unknown as Parameters<typeof saveStatus>[0], instance);
+        saveStatus(
+          item as unknown as Parameters<typeof saveStatus>[0],
+          instance,
+        );
       });
     }
     return {
@@ -148,12 +148,12 @@ function List(props: ListProps) {
 
   async function checkForUpdates(): Promise<boolean> {
     try {
-      const results = (await (
-        timelinesApi.list.$select(id ?? '').list({
-          limit: 1,
-          since_id: latestItem.current,
-        }) as unknown as Promise<StatusLike[] | { value?: StatusLike[] }>
-      )) as StatusLike[] | { value?: StatusLike[] };
+      const results = (await (timelinesApi.list.$select(id ?? '').list({
+        limit: 1,
+        since_id: latestItem.current,
+      }) as unknown as Promise<StatusLike[] | { value?: StatusLike[] }>)) as
+        | StatusLike[]
+        | { value?: StatusLike[] };
       let value: StatusLike[] | undefined = Array.isArray(results)
         ? results
         : results?.value;

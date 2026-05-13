@@ -437,9 +437,7 @@ function NavMenu(props: Record<string, unknown>) {
 
 function ListMenu({ menuState }: { menuState: MenuStateValue }) {
   const supportsLists = supports('@mastodon/lists');
-  const [lists, setLists] = useState<
-    Awaited<ReturnType<typeof getLists>>
-  >([]);
+  const [lists, setLists] = useState<Awaited<ReturnType<typeof getLists>>>([]);
   const { lists: userLists, feeds } = splitListsAndFeeds(lists);
   useEffect(() => {
     if (!supportsLists) return;

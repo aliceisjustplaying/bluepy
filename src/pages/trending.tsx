@@ -5,12 +5,11 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import { getBlurHashAverageColor } from 'fast-blurhash';
 import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import punycode from 'punycode/';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
-
-import type { ComponentType } from 'preact';
 
 import Icon from '../components/icon';
 import Link from '../components/link';
@@ -101,8 +100,10 @@ interface StatusItem {
 
 const fetchLinks = pmem(
   (masto: MastoTrendingClient, _instance?: string) => {
-    return (masto as { v1: { trends: { links: TrendingApiList } } }).v1.trends
-      .links.list()
+    return (
+      masto as { v1: { trends: { links: TrendingApiList } } }
+    ).v1.trends.links
+      .list()
       .values()
       .next() as Promise<IteratorYield<LinkItem[]>>;
   },
@@ -113,8 +114,10 @@ const fetchLinks = pmem(
 
 const fetchHashtags = pmem(
   (masto: MastoTrendingClient) => {
-    return (masto as { v1: { trends: { tags: TrendingApiList } } }).v1.trends
-      .tags.list()
+    return (
+      masto as { v1: { trends: { tags: TrendingApiList } } }
+    ).v1.trends.tags
+      .list()
       .values()
       .next() as Promise<IteratorYield<HashtagItem[]>>;
   },
@@ -137,8 +140,10 @@ function fetchTrendsStatuses(masto: MastoTrendingClient): AsyncListIterator {
       })
       .values();
   }
-  return (masto as { v1: { trends: { statuses: TrendingApiList } } }).v1.trends
-    .statuses.list({
+  return (
+    masto as { v1: { trends: { statuses: TrendingApiList } } }
+  ).v1.trends.statuses
+    .list({
       limit: LIMIT,
     })
     .values();
@@ -148,8 +153,10 @@ function fetchLinkList(
   masto: MastoTrendingClient,
   params: Record<string, unknown>,
 ): AsyncListIterator {
-  return (masto as { v1: { timelines: { link: TrendingApiList } } }).v1
-    .timelines.link.list(params)
+  return (
+    masto as { v1: { timelines: { link: TrendingApiList } } }
+  ).v1.timelines.link
+    .list(params)
     .values();
 }
 
@@ -181,9 +188,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   async function fetchTrends(firstLoad: boolean) {
     console.log('fetchTrend', firstLoad);
     if (firstLoad || !trendIterator.current) {
-      trendIterator.current = fetchTrendsStatuses(
-        masto as MastoTrendingClient,
-      );
+      trendIterator.current = fetchTrendsStatuses(masto as MastoTrendingClient);
 
       // Get hashtags
       if (supports('@mastodon/trending-hashtags')) {
@@ -374,7 +379,9 @@ function Trending({ columnMode, ...props }: TrendingProps) {
               let accentColor: readonly number[] | undefined;
               if (blurhash) {
                 const averageColor = getBlurHashAverageColor(blurhash);
-                const labAverageColor = rgb2oklab(averageColor) as readonly number[];
+                const labAverageColor = rgb2oklab(
+                  averageColor,
+                ) as readonly number[];
                 accentColor = oklab2rgb([
                   0.6,
                   labAverageColor[1],

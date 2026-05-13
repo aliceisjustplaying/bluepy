@@ -275,10 +275,8 @@ export function initStates(): void {
       | null
       | undefined) ?? false;
   states.settings.cloakMode =
-    (store.account.get('settings-cloakMode') as
-      | boolean
-      | null
-      | undefined) ?? false;
+    (store.account.get('settings-cloakMode') as boolean | null | undefined) ??
+    false;
   states.settings.noAnimations =
     (store.account.get('settings-noAnimations') as
       | boolean
@@ -549,9 +547,7 @@ function _threadifyStatus(
     }
     const { inReplyToId } = status;
     const key = statusKey(inReplyToId, instance);
-    let prevStatus: Status | undefined = key
-      ? states.statuses[key]
-      : undefined;
+    let prevStatus: Status | undefined = key ? states.statuses[key] : undefined;
     if (!prevStatus) {
       if (fetchIndex++ > 3) throw 'Too many fetches for thread'; // Some people revive old threads
       await new Promise<void>((r) => setTimeout(r, 500 * fetchIndex)); // Be nice to rate limits

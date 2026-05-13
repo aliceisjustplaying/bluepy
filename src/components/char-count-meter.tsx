@@ -7,10 +7,7 @@ interface CharCountMeterProps {
   hidden?: boolean;
 }
 
-function CharCountMeter({
-  maxCharacters = 500,
-  hidden,
-}: CharCountMeterProps) {
+function CharCountMeter({ maxCharacters = 500, hidden }: CharCountMeterProps) {
   const snapStates = useSnapshot(states);
   const charCount = snapStates.composerCharacterCount as number;
   const leftChars = maxCharacters - charCount;

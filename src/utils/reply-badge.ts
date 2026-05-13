@@ -29,8 +29,7 @@ function shouldShowReplyBadge(options: ShouldShowReplyBadgeOptions): boolean {
     (instance === 'bsky.social' ||
       Boolean(spoilerText) ||
       !mentions.some(
-        (mention: Readonly<ReplyMention>) =>
-          mention.id === inReplyToAccountId,
+        (mention: Readonly<ReplyMention>) => mention.id === inReplyToAccountId,
       ))
   );
 }

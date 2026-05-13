@@ -65,7 +65,10 @@ const FILTER_CONTEXT_UNIMPLEMENTED: readonly FilterContextName[] = [
   'thread',
   'account',
 ];
-const FILTER_CONTEXT_LABELS: Record<FilterContextName, ReturnType<typeof msg>> = {
+const FILTER_CONTEXT_LABELS: Record<
+  FilterContextName,
+  ReturnType<typeof msg>
+> = {
   home: msg`Home and lists`,
   notifications: msg`Notifications`,
   public: msg`Public timelines`,
@@ -84,7 +87,10 @@ const EXPIRY_DURATIONS = [
   60 * 60 * 24 * 30, // 30 days
 ];
 
-const EXPIRY_DURATIONS_LABELS: Record<number, ReturnType<typeof msg> | (() => string)> = {
+const EXPIRY_DURATIONS_LABELS: Record<
+  number,
+  ReturnType<typeof msg> | (() => string)
+> = {
   0: msg`Never`,
   1800: i18nDuration(30, 'minute'),
   3600: i18nDuration(1, 'hour'),
@@ -109,8 +115,8 @@ function Filters() {
     setUIState('loading');
     (async () => {
       try {
-        const filtersResource =
-          masto.v2.filters as unknown as FiltersV2Resource;
+        const filtersResource = masto.v2
+          .filters as unknown as FiltersV2Resource;
         // The JS treats the awaited value as an array; the typed surface is a
         // Paginator. The runtime returns the array directly here.
         const filters = (await filtersResource.list()) as unknown as FilterV2[];
@@ -118,7 +124,8 @@ function Filters() {
         filters.forEach((filter) => {
           if (filter.keywords?.length) {
             filter.keywords.sort(
-              (a, b) => (a.id as unknown as number) - (b.id as unknown as number),
+              (a, b) =>
+                (a.id as unknown as number) - (b.id as unknown as number),
             );
           }
         });
@@ -240,11 +247,7 @@ function Filters() {
                 : undefined
             }
             onClose={(result) => {
-              if (
-                result &&
-                'state' in result &&
-                result.state === 'success'
-              ) {
+              if (result && 'state' in result && result.state === 'success') {
                 reload();
               }
               setShowFiltersAddEditModal(false);
@@ -317,7 +320,9 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
             // );
             // Not using getAll because it skips the empty checkboxes
             const keywordWholeWords = [
-              ...(keywordsRef.current as HTMLDivElement).querySelectorAll<HTMLInputElement>(
+              ...(
+                keywordsRef.current as HTMLDivElement
+              ).querySelectorAll<HTMLInputElement>(
                 'input[name="keyword_attributes[][whole_word]"]',
               ),
             ].map((i) => i.checked);
@@ -375,8 +380,8 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
             (async () => {
               try {
                 let filterResult: FilterV2;
-                const filtersResource =
-                  masto.v2.filters as unknown as FiltersV2Resource;
+                const filtersResource = masto.v2
+                  .filters as unknown as FiltersV2Resource;
 
                 if (editMode) {
                   if (expiresIn === '' || expiresIn === null) {
@@ -671,9 +676,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                   setUIState('loading');
                   (async () => {
                     try {
-                      await (
-                        masto.v2.filters as unknown as FiltersV2Resource
-                      )
+                      await (masto.v2.filters as unknown as FiltersV2Resource)
                         .$select(id as string)
                         .remove();
                       setUIState('default');

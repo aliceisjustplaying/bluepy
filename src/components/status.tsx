@@ -28,8 +28,8 @@ import { langDetector } from '../utils/browser-translator';
 import { useEditHistory } from '../utils/edit-history-context';
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
-import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import getHTMLText from '../utils/get-html-text';
+import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import haptics from '../utils/haptics';
 import htmlContentLength from '../utils/html-content-length';
 import localeMatchDefault from '../utils/locale-match';
@@ -194,23 +194,23 @@ function getPostText(status: AnyStatus, opts?: GetPostTextOpts): string {
       preProcess:
         maskURLs || hideInlineQuote
           ? (dom: DocumentFragment) => {
-          // Remove links that contains text that starts with https?://
-          if (maskURLs) {
-            for (const a of dom.querySelectorAll('a')) {
-              const text = a.innerText.trim();
-              if (/^https?:\/\//i.test(text)) {
-                a.replaceWith('«🔗»');
+              // Remove links that contains text that starts with https?://
+              if (maskURLs) {
+                for (const a of dom.querySelectorAll('a')) {
+                  const text = a.innerText.trim();
+                  if (/^https?:\/\//i.test(text)) {
+                    a.replaceWith('«🔗»');
+                  }
+                }
+              }
+              // Hide inline quote
+              if (hideInlineQuote) {
+                const reContainer = dom.querySelector('.quote-inline');
+                if (reContainer) {
+                  reContainer.remove();
+                }
               }
             }
-          }
-          // Hide inline quote
-          if (hideInlineQuote) {
-            const reContainer = dom.querySelector('.quote-inline');
-            if (reContainer) {
-              reContainer.remove();
-            }
-          }
-        }
           : undefined,
     }),
     getPollText(poll as AnyPoll | null | undefined),
@@ -236,40 +236,40 @@ function forgivingQSA(
 
 const getHTMLTextForDetectLang = mem(
   (content: string, emojis?: mastodon.v1.CustomEmoji[]): string => {
-  if (!content) return '';
-  if (emojis?.length) {
-    const emojisRegex = new RegExp(
-      `:(${emojis.map((e: mastodon.v1.CustomEmoji) => e.shortcode).join('|')}):`,
-      'g',
-    );
-    content = content.replace(emojisRegex, '');
-  }
-  content = content.trim();
-  if (!content) return '';
-  return getHTMLText(content, {
-    preProcess: (dom: DocumentFragment) => {
-      // Remove anything that can skew the language detection
+    if (!content) return '';
+    if (emojis?.length) {
+      const emojisRegex = new RegExp(
+        `:(${emojis.map((e: mastodon.v1.CustomEmoji) => e.shortcode).join('|')}):`,
+        'g',
+      );
+      content = content.replace(emojisRegex, '');
+    }
+    content = content.trim();
+    if (!content) return '';
+    return getHTMLText(content, {
+      preProcess: (dom: DocumentFragment) => {
+        // Remove anything that can skew the language detection
 
-      // Remove .mention, .hashtag, pre, code, a:has(.invisible)
-      for (const a of forgivingQSA(
-        [
-          '.mention, .hashtag, pre, code, a:has(.invisible)',
-          '.mention, .hashtag, pre, code',
-        ],
-        dom,
-      )) {
-        a.remove();
-      }
-
-      // Remove links that contains text that starts with https?://
-      for (const a of dom.querySelectorAll('a')) {
-        const text = a.innerText.trim();
-        if (text.startsWith('https://') || text.startsWith('http://')) {
+        // Remove .mention, .hashtag, pre, code, a:has(.invisible)
+        for (const a of forgivingQSA(
+          [
+            '.mention, .hashtag, pre, code, a:has(.invisible)',
+            '.mention, .hashtag, pre, code',
+          ],
+          dom,
+        )) {
           a.remove();
         }
-      }
-    },
-  });
+
+        // Remove links that contains text that starts with https?://
+        for (const a of dom.querySelectorAll('a')) {
+          const text = a.innerText.trim();
+          if (text.startsWith('https://') || text.startsWith('http://')) {
+            a.remove();
+          }
+        }
+      },
+    });
   },
 );
 
@@ -288,48 +288,48 @@ const SIZE_CLASS = {
 
 const detectLang = pmem(
   async (text: string | null | undefined): Promise<string | null> => {
-  text = text?.trim();
+    text = text?.trim();
 
-  // Ref: https://github.com/komodojp/tinyld/blob/develop/docs/benchmark.md
-  // 500 should be enough for now, also the default max chars for Mastodon
-  if ((text?.length ?? 0) > 500) {
-    return null;
-  }
+    // Ref: https://github.com/komodojp/tinyld/blob/develop/docs/benchmark.md
+    // 500 should be enough for now, also the default max chars for Mastodon
+    if ((text?.length ?? 0) > 500) {
+      return null;
+    }
 
-  if (langDetector) {
-    const langs = await langDetector.detect(text as unknown as string);
+    if (langDetector) {
+      const langs = await langDetector.detect(text as unknown as string);
+      console.groupCollapsed(
+        '💬 DETECTLANG BROWSER',
+        langs.slice(0, 3).map((l) => l.detectedLanguage),
+      );
+      console.log(text, langs.slice(0, 3));
+      console.groupEnd();
+      const lang = langs[0];
+      if (
+        lang?.detectedLanguage &&
+        lang?.confidence !== undefined &&
+        lang.confidence > 0.5
+      ) {
+        return lang.detectedLanguage;
+      }
+    }
+
+    const { detectAll } = await import('tinyld/light');
+    const langs = detectAll(text as unknown as string);
     console.groupCollapsed(
-      '💬 DETECTLANG BROWSER',
-      langs.slice(0, 3).map((l) => l.detectedLanguage),
+      '💬 DETECTLANG TINYLD',
+      langs.slice(0, 3).map((l) => l.lang),
     );
     console.log(text, langs.slice(0, 3));
     console.groupEnd();
     const lang = langs[0];
-    if (
-      lang?.detectedLanguage &&
-      lang?.confidence !== undefined &&
-      lang.confidence > 0.5
-    ) {
-      return lang.detectedLanguage;
+    if (lang?.lang && lang?.accuracy > 0.5) {
+      // If > 50% accurate, use it
+      // It can be accurate if < 50% but better be safe
+      // Though > 50% also can be inaccurate 🤷‍♂️
+      return lang.lang;
     }
-  }
-
-  const { detectAll } = await import('tinyld/light');
-  const langs = detectAll(text as unknown as string);
-  console.groupCollapsed(
-    '💬 DETECTLANG TINYLD',
-    langs.slice(0, 3).map((l) => l.lang),
-  );
-  console.log(text, langs.slice(0, 3));
-  console.groupEnd();
-  const lang = langs[0];
-  if (lang?.lang && lang?.accuracy > 0.5) {
-    // If > 50% accurate, use it
-    // It can be accurate if < 50% but better be safe
-    // Though > 50% also can be inaccurate 🤷‍♂️
-    return lang.lang;
-  }
-  return null;
+    return null;
   },
 );
 
@@ -417,9 +417,7 @@ interface StatusComponentProps {
   showActionsBar?: boolean;
   showReplyParent?: boolean;
   mediaFirst?: boolean;
-  showCommentCount?:
-    | boolean
-    | ((count?: number) => boolean);
+  showCommentCount?: boolean | ((count?: number) => boolean);
   showQuoteCount?: boolean | ((count?: number) => boolean);
   ghost?: GhostInfo | null;
 }
@@ -490,7 +488,9 @@ function Status({
             )}
             {ghostAccount && (
               <NameText
-                account={ghostAccount as Parameters<typeof NameText>[0]['account']}
+                account={
+                  ghostAccount as Parameters<typeof NameText>[0]['account']
+                }
                 showAvatar={false}
               />
             )}
@@ -893,11 +893,9 @@ function Status({
       >
         <div class="status-pre-meta">
           <Icon icon="hashtag" size="l" />{' '}
-          {(
-            snapStates.statusFollowedTags[sKey as string] as
-              | readonly string[]
-              | undefined
-          )!
+          {(snapStates.statusFollowedTags[sKey as string] as
+            | readonly string[]
+            | undefined)!
             .slice(0, 3)
             .map((tag: string) => (
               <Link
@@ -972,9 +970,11 @@ function Status({
 
   // `useTruncated` exposes `Ref<HTMLElement>` but JSX targets are usually
   // narrower (HTMLDivElement, HTMLSpanElement). Cast at the boundary.
-  const spoilerContentRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
+  const spoilerContentRef =
+    useTruncated() as unknown as RefObject<HTMLDivElement>;
   const contentRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
-  const mediaContainerRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
+  const mediaContainerRef =
+    useTruncated() as unknown as RefObject<HTMLDivElement>;
 
   const statusRef = useRef<HTMLElement | null>(null);
   const [reloadPostContentCount, reloadPostContent] = useReducer(
@@ -1132,16 +1132,10 @@ function Status({
       } as unknown as Record<string, unknown>;
       if (reblogged) {
         const newStatus = await masto.v1.statuses.$select(id).unreblog();
-        saveStatus(
-          newStatus as unknown as Record<string, unknown>,
-          instance,
-        );
+        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
       } else {
         const newStatus = await masto.v1.statuses.$select(id).reblog();
-        saveStatus(
-          newStatus as unknown as Record<string, unknown>,
-          instance,
-        );
+        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
       }
       return true;
     } catch (e) {
@@ -1166,16 +1160,10 @@ function Status({
       } as unknown as Record<string, unknown>;
       if (favourited) {
         const newStatus = await masto.v1.statuses.$select(id).unfavourite();
-        saveStatus(
-          newStatus as unknown as Record<string, unknown>,
-          instance,
-        );
+        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
       } else {
         const newStatus = await masto.v1.statuses.$select(id).favourite();
-        saveStatus(
-          newStatus as unknown as Record<string, unknown>,
-          instance,
-        );
+        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
       }
       return true;
     } catch (e) {
@@ -1213,16 +1201,10 @@ function Status({
       } as unknown as Record<string, unknown>;
       if (bookmarked) {
         const newStatus = await masto.v1.statuses.$select(id).unbookmark();
-        saveStatus(
-          newStatus as unknown as Record<string, unknown>,
-          instance,
-        );
+        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
       } else {
         const newStatus = await masto.v1.statuses.$select(id).bookmark();
-        saveStatus(
-          newStatus as unknown as Record<string, unknown>,
-          instance,
-        );
+        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
       }
       return true;
     } catch (e) {
@@ -1258,10 +1240,7 @@ function Status({
   ];
   const [differentLanguage, setDifferentLanguage] = useState<boolean>(
     !!DIFFERENT_LANG_CHECK[
-      diffLangCheckCacheKey(
-        language as string,
-        contentTranslationHideLanguages,
-      )
+      diffLangCheckCacheKey(language as string, contentTranslationHideLanguages)
     ],
   );
   useEffect(() => {
@@ -1326,10 +1305,7 @@ function Status({
       (await Promise.allSettled([
         reblogIterator.current!.next(),
         favouriteIterator.current!.next(),
-      ])) as unknown as [
-        { value: IteratorResult },
-        { value: IteratorResult },
-      ];
+      ])) as unknown as [{ value: IteratorResult }, { value: IteratorResult }];
     if (reblogResults.value?.length || favouriteResults.value?.length) {
       const accounts: AnyAccount[] = [];
       if (reblogResults.value?.length) {
@@ -1359,10 +1335,12 @@ function Status({
     };
   }
 
-  const quoteAny = quote as unknown as {
-    state?: string;
-    quotedStatus?: { account?: { id?: string } | null } | null;
-  } | undefined;
+  const quoteAny = quote as unknown as
+    | {
+        state?: string;
+        quotedStatus?: { account?: { id?: string } | null } | null;
+      }
+    | undefined;
   const isQuotingMyPost =
     quoteAny?.state === 'accepted' &&
     quoteAny?.quotedStatus?.account?.id === currentAccount;
@@ -1849,9 +1827,9 @@ function Status({
                     .$select(id)
                     [muted ? 'unmute' : 'mute']();
                   saveStatus(
-          newStatus as unknown as Record<string, unknown>,
-          instance,
-        );
+                    newStatus as unknown as Record<string, unknown>,
+                    instance,
+                  );
                   showToast(
                     muted ? t`Conversation unmuted` : t`Conversation muted`,
                   );
@@ -1891,9 +1869,9 @@ function Status({
                     .$select(id)
                     [pinned ? 'unpin' : 'pin']();
                   saveStatus(
-          newStatus as unknown as Record<string, unknown>,
-          instance,
-        );
+                    newStatus as unknown as Record<string, unknown>,
+                    instance,
+                  );
                   showToast(
                     pinned
                       ? t`Post unpinned from profile`
@@ -1950,10 +1928,7 @@ function Status({
                       showCompose({
                         editStatus: status,
                         quoteStatus: (
-                          status.quote as
-                            | mastodon.v1.Quote
-                            | null
-                            | undefined
+                          status.quote as mastodon.v1.Quote | null | undefined
                         )?.quotedStatus,
                       } as unknown as Parameters<typeof showCompose>[0]);
                     }}
@@ -2032,9 +2007,8 @@ function Status({
                     (async () => {
                       try {
                         // POST /api/v1/statuses/:id/quotes/:quoting_status_id/revoke
-                        const quotedStatusID = (
-                          quote as mastodon.v1.Quote
-                        ).quotedStatus!.id;
+                        const quotedStatusID = (quote as mastodon.v1.Quote)
+                          .quotedStatus!.id;
                         // `quotes.$select(...)` is supported at runtime but the
                         // typed resource doesn't expose it; cast through unknown.
                         const quotesResource = masto.v1.statuses.$select(
@@ -2084,9 +2058,9 @@ function Status({
   // `isContextMenuOpen` is a tri-state in practice: false, true, or the
   // string 'actions-bar' (when opened from the action bar). Loose-type to
   // preserve that runtime semantics.
-  const [isContextMenuOpen, setIsContextMenuOpen] = useState<
-    boolean | string
-  >(false);
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState<boolean | string>(
+    false,
+  );
   type ContextMenuPropsShape = {
     anchorRef?: { current: Element | null };
     anchorPoint?: { x: number; y: number };
@@ -2289,8 +2263,7 @@ function Status({
       (media: mastodon.v1.MediaAttachment, i: number) => {
         if (!media.description) return;
         const index = attachments.findIndex(
-          (attachment) =>
-            attachment.media.description === media.description,
+          (attachment) => attachment.media.description === media.description,
         );
         if (index === -1) {
           attachments.push({
@@ -2633,9 +2606,7 @@ function Status({
             <div class="meta">
               <span class="meta-name">
                 <NameText
-                  account={
-                    status.account as unknown as NameTextAccountShim
-                  }
+                  account={status.account as unknown as NameTextAccountShim}
                   instance={instance}
                   showAvatar={size === 's'}
                   showAcct={isSizeLarge}
@@ -2894,7 +2865,11 @@ function Status({
                 {!!content && (
                   <div class="media-first-content content" ref={contentRef}>
                     <PostContent
-                      post={status as unknown as Parameters<typeof PostContent>[0]['post']}
+                      post={
+                        status as unknown as Parameters<
+                          typeof PostContent
+                        >[0]['post']
+                      }
                       instance={instance}
                       previewMode={previewMode}
                     />
@@ -2957,7 +2932,11 @@ function Status({
                   >
                     <PostContent
                       key={reloadPostContentCount}
-                      post={status as unknown as Parameters<typeof PostContent>[0]['post']}
+                      post={
+                        status as unknown as Parameters<
+                          typeof PostContent
+                        >[0]['post']
+                      }
                       instance={instance}
                       previewMode={previewMode}
                     />
@@ -2979,18 +2958,18 @@ function Status({
                       // `onUpdate` is unused by Poll but the JS callsite passed
                       // it; preserve runtime by keeping it.
                       onUpdate: (newPoll: unknown) => {
-                        (states.statuses[sKey] as Record<string, unknown>).poll =
-                          newPoll;
+                        (
+                          states.statuses[sKey] as Record<string, unknown>
+                        ).poll = newPoll;
                       },
                       refresh: () => {
                         return masto.v1.polls
                           .$select(poll.id)
                           .fetch()
                           .then((pollResponse) => {
-                            (states.statuses[sKey] as Record<
-                              string,
-                              unknown
-                            >).poll = pollResponse;
+                            (
+                              states.statuses[sKey] as Record<string, unknown>
+                            ).poll = pollResponse;
                           })
                           .catch((_e: unknown) => {}); // Silently fail
                       },
@@ -3001,10 +2980,9 @@ function Status({
                             choices,
                           })
                           .then((pollResponse) => {
-                            (states.statuses[sKey] as Record<
-                              string,
-                              unknown
-                            >).poll = pollResponse;
+                            (
+                              states.statuses[sKey] as Record<string, unknown>
+                            ).poll = pollResponse;
                           });
                       },
                     } as unknown as Parameters<typeof Poll>[0])}
@@ -3057,7 +3035,9 @@ function Status({
                       <span>
                         {filterInfoMaybe?.action === 'blur' && (
                           <small>
-                            <Trans>Filtered: {filterInfoMaybe?.titlesStr}</Trans>
+                            <Trans>
+                              Filtered: {filterInfoMaybe?.titlesStr}
+                            </Trans>
                             <br />
                           </small>
                         )}
@@ -3077,7 +3057,9 @@ function Status({
                           >
                             <Media
                               media={
-                                media as unknown as Parameters<typeof Media>[0]['media']
+                                media as unknown as Parameters<
+                                  typeof Media
+                                >[0]['media']
                               }
                               autoAnimate
                               showCaption
@@ -3116,7 +3098,9 @@ function Status({
                             <Media
                               key={media.id}
                               media={
-                                media as unknown as Parameters<typeof Media>[0]['media']
+                                media as unknown as Parameters<
+                                  typeof Media
+                                >[0]['media']
                               }
                               autoAnimate={isSizeLarge}
                               showCaption={mediaAttachments.length === 1}
@@ -3125,8 +3109,7 @@ function Status({
                               }
                               lang={language ?? undefined}
                               altIndex={
-                                showMultipleMediaCaptions &&
-                                !!media.description
+                                showMultipleMediaCaptions && !!media.description
                                   ? i + 1
                                   : undefined
                               }
@@ -3165,7 +3148,9 @@ function Status({
                   !snapStates.statusQuotes[sKey] && (
                     <StatusCard
                       card={
-                        card as unknown as Parameters<typeof StatusCard>[0]['card']
+                        card as unknown as Parameters<
+                          typeof StatusCard
+                        >[0]['card']
                       }
                       selfReferential={
                         card?.url === status.url || card?.url === status.uri
@@ -3250,45 +3235,18 @@ function Status({
               </div>
               {!!emojiReactions?.length && (
                 <div class="emoji-reactions">
-                  {emojiReactions.map((emojiReaction: Record<string, unknown>) => {
-                    const {
-                      name,
-                      count,
-                      me,
-                      url,
-                      staticUrl,
-                    } = emojiReaction as {
-                      name: string;
-                      count?: number;
-                      me?: boolean;
-                      url?: string;
-                      staticUrl?: string;
-                    };
-                    if (url) {
-                      // Some servers return url and staticUrl
-                      return (
-                        <span
-                          class={`emoji-reaction tag ${
-                            me ? '' : 'insignificant'
-                          }`}
-                        >
-                          <CustomEmoji
-                            alt={name}
-                            url={url}
-                            staticUrl={staticUrl}
-                          />{' '}
-                          {count}
-                        </span>
-                      );
-                    }
-                    const isShortCode = /^:.+?:$/.test(name);
-                    if (isShortCode) {
-                      const emoji = emojis?.find(
-                        (e: mastodon.v1.CustomEmoji) =>
-                          e.shortcode ===
-                          name.replace(/^:/, '').replace(/:$/, ''),
-                      );
-                      if (emoji) {
+                  {emojiReactions.map(
+                    (emojiReaction: Record<string, unknown>) => {
+                      const { name, count, me, url, staticUrl } =
+                        emojiReaction as {
+                          name: string;
+                          count?: number;
+                          me?: boolean;
+                          url?: string;
+                          staticUrl?: string;
+                        };
+                      if (url) {
+                        // Some servers return url and staticUrl
                         return (
                           <span
                             class={`emoji-reaction tag ${
@@ -3297,24 +3255,48 @@ function Status({
                           >
                             <CustomEmoji
                               alt={name}
-                              url={emoji.url}
-                              staticUrl={emoji.staticUrl}
+                              url={url}
+                              staticUrl={staticUrl}
                             />{' '}
                             {count}
                           </span>
                         );
                       }
-                    }
-                    return (
-                      <span
-                        class={`emoji-reaction tag ${
-                          me ? '' : 'insignificant'
-                        }`}
-                      >
-                        {name} {count}
-                      </span>
-                    );
-                  })}
+                      const isShortCode = /^:.+?:$/.test(name);
+                      if (isShortCode) {
+                        const emoji = emojis?.find(
+                          (e: mastodon.v1.CustomEmoji) =>
+                            e.shortcode ===
+                            name.replace(/^:/, '').replace(/:$/, ''),
+                        );
+                        if (emoji) {
+                          return (
+                            <span
+                              class={`emoji-reaction tag ${
+                                me ? '' : 'insignificant'
+                              }`}
+                            >
+                              <CustomEmoji
+                                alt={name}
+                                url={emoji.url}
+                                staticUrl={emoji.staticUrl}
+                              />{' '}
+                              {count}
+                            </span>
+                          );
+                        }
+                      }
+                      return (
+                        <span
+                          class={`emoji-reaction tag ${
+                            me ? '' : 'insignificant'
+                          }`}
+                        >
+                          {name} {count}
+                        </span>
+                      );
+                    },
+                  )}
                 </div>
               )}
               <div class={`actions ${_deleted ? 'disabled' : ''}`}>
@@ -3548,7 +3530,11 @@ function Status({
             }}
           >
             <PostEmbedModal
-              post={status as unknown as Parameters<typeof PostEmbedModal>[0]['post']}
+              post={
+                status as unknown as Parameters<
+                  typeof PostEmbedModal
+                >[0]['post']
+              }
               instance={instance}
               onClose={() => {
                 setShowEmbed(false);
@@ -3568,7 +3554,11 @@ function Status({
                 setShowQuoteSettings(false);
                 states.reloadStatusPage++;
               }}
-              post={status as unknown as Parameters<typeof QuoteSettingsSheet>[0]['post']}
+              post={
+                status as unknown as Parameters<
+                  typeof QuoteSettingsSheet
+                >[0]['post']
+              }
               currentPolicy={postQuoteApprovalPolicy}
             />
           </Modal>
@@ -3694,10 +3684,7 @@ const QuoteStatus = memo(({ quote, level = 0 }: QuoteStatusProps) => {
   const quoteStatusKey = statusKey(q.id, q.instance);
   const quoteStatus = ((quoteStatusKey
     ? snapStates.statuses[quoteStatusKey]
-    : undefined) || q.quoteStatus) as unknown as
-    | AnyStatus
-    | null
-    | undefined;
+    : undefined) || q.quoteStatus) as unknown as AnyStatus | null | undefined;
   if (quoteStatus) {
     const isSelf = currentAccount && currentAccount === quoteStatus.account?.id;
     const filterInfo = (!isSelf &&
@@ -3741,13 +3728,13 @@ const QuoteStatus = memo(({ quote, level = 0 }: QuoteStatusProps) => {
       } else if (unfulfilledState === 'blocked_domain') {
         message = _(unfulfilledText.blocked_domain(domain as string));
       } else if (unfulfilledState === 'muted_account') {
-        message = _(
-          unfulfilledText.muted_account(quotedAccountAcct as string),
-        );
+        message = _(unfulfilledText.muted_account(quotedAccountAcct as string));
       }
     } else {
       message = _(
-        unfulfilledText[unfulfilledState as keyof typeof unfulfilledText] as unknown as Parameters<typeof _>[0],
+        unfulfilledText[
+          unfulfilledState as keyof typeof unfulfilledText
+        ] as unknown as Parameters<typeof _>[0],
       );
     }
 
@@ -3847,9 +3834,9 @@ const QuoteStatuses = memo(
     const _ = i18n._.bind(i18n);
     const snapStates = useSnapshot(states);
     const sKey = statusKey(id, instance);
-    const quotes = (sKey
-      ? snapStates.statusQuotes[sKey]
-      : undefined) as readonly QuoteRef[] | undefined;
+    const quotes = (sKey ? snapStates.statusQuotes[sKey] : undefined) as
+      | readonly QuoteRef[]
+      | undefined;
     let uniqueQuotes = quotes?.filter(
       (q: QuoteRef, i: number, arr: readonly QuoteRef[]) =>
         q.native || arr.findIndex((q2) => q2.url === q.url) === i,
@@ -4040,7 +4027,7 @@ function FilteredStatus({
   const filterTitleStr = filterInfo?.titlesStr || '';
   const createdAtDate = new Date(createdAt as unknown as string);
   const statusPeekText = statusPeek(
-    ((reblog || status) as unknown) as Parameters<typeof statusPeek>[0],
+    (reblog || status) as unknown as Parameters<typeof statusPeek>[0],
   );
 
   const [showPeek, setShowPeek] = useState(false);
@@ -4072,9 +4059,8 @@ function FilteredStatus({
     showFollowedTags &&
     !!(
       sKey &&
-      (
-        snapStates.statusFollowedTags[sKey] as readonly unknown[] | undefined
-      )?.length
+      (snapStates.statusFollowedTags[sKey] as readonly unknown[] | undefined)
+        ?.length
     );
 
   return (
@@ -4128,9 +4114,7 @@ function FilteredStatus({
             {isReblog ? (
               <Trans comment="[Name] [Visibility icon] boosted">
                 <NameText
-                  account={
-                    status.account as unknown as NameTextAccountShim
-                  }
+                  account={status.account as unknown as NameTextAccountShim}
                   instance={instance}
                 />{' '}
                 <Icon
@@ -4140,9 +4124,7 @@ function FilteredStatus({
                     ]
                   }
                   alt={_(
-                    visibilityText[
-                      visibility as keyof typeof visibilityText
-                    ],
+                    visibilityText[visibility as keyof typeof visibilityText],
                   )}
                   size="s"
                 />{' '}
@@ -4151,9 +4133,7 @@ function FilteredStatus({
             ) : isFollowedTags ? (
               <>
                 <NameText
-                  account={
-                    status.account as unknown as NameTextAccountShim
-                  }
+                  account={status.account as unknown as NameTextAccountShim}
                   instance={instance}
                 />{' '}
                 <Icon
@@ -4163,18 +4143,14 @@ function FilteredStatus({
                     ]
                   }
                   alt={_(
-                    visibilityText[
-                      visibility as keyof typeof visibilityText
-                    ],
+                    visibilityText[visibility as keyof typeof visibilityText],
                   )}
                   size="s"
                 />{' '}
                 <span>
-                  {(
-                    snapStates.statusFollowedTags[sKey as string] as
-                      | readonly string[]
-                      | undefined
-                  )!
+                  {(snapStates.statusFollowedTags[sKey as string] as
+                    | readonly string[]
+                    | undefined)!
                     .slice(0, 3)
                     .map((tag: string) => (
                       <span key={tag} class="status-followed-tag-item">
@@ -4186,9 +4162,7 @@ function FilteredStatus({
             ) : (
               <>
                 <NameText
-                  account={
-                    status.account as unknown as NameTextAccountShim
-                  }
+                  account={status.account as unknown as NameTextAccountShim}
                   instance={instance}
                 />{' '}
                 <Icon
@@ -4198,9 +4172,7 @@ function FilteredStatus({
                     ]
                   }
                   alt={_(
-                    visibilityText[
-                      visibility as keyof typeof visibilityText
-                    ],
+                    visibilityText[visibility as keyof typeof visibilityText],
                   )}
                   size="s"
                 />{' '}
@@ -4213,8 +4185,9 @@ function FilteredStatus({
               <>
                 <Avatar
                   url={
-                    (reblog.account as Partial<AnyAccount>)
-                      .avatarStatic as string | undefined ||
+                    ((reblog.account as Partial<AnyAccount>).avatarStatic as
+                      | string
+                      | undefined) ||
                     ((reblog.account as Partial<AnyAccount>).avatar as
                       | string
                       | undefined)

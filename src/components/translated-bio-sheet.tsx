@@ -29,14 +29,19 @@ interface TranslatedBioSheetProps {
   onClose?: () => void;
 }
 
-function TranslatedBioSheet({ note, fields, onClose }: TranslatedBioSheetProps) {
+function TranslatedBioSheet({
+  note,
+  fields,
+  onClose,
+}: TranslatedBioSheetProps) {
   const { t } = useLingui();
   const fieldsText =
     fields
       ?.map(({ name, value }) => `${name}\n${getHTMLText(value)}`)
       .join('\n\n') || '';
 
-  const text = getHTMLText(note ?? '') + (fieldsText ? `\n\n${fieldsText}` : '');
+  const text =
+    getHTMLText(note ?? '') + (fieldsText ? `\n\n${fieldsText}` : '');
 
   return (
     <div class="sheet">

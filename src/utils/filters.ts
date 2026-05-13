@@ -35,9 +35,9 @@ function _isFiltered(
   if (!filtered?.length) return false;
   const appliedFilters = filtered.filter((f) => {
     const { filter } = f;
-    const hasContext = (
-      filter.context as readonly string[]
-    ).includes(filterContext);
+    const hasContext = (filter.context as readonly string[]).includes(
+      filterContext,
+    );
     if (!hasContext) return false;
     if (!filter.expiresAt) return hasContext;
     return Date.parse(filter.expiresAt) > Date.now();

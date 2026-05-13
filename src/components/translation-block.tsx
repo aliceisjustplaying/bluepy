@@ -133,8 +133,7 @@ const throttledTranslangTranslate = pmem(
       // Preserve JS pass-through: source/target may be undefined. The
       // converted translate helpers type these as `string`, so cast at the
       // boundary to match the original runtime behavior.
-      () =>
-        translangTranslate(text, source as string, target as string),
+      () => translangTranslate(text, source as string, target as string),
       {
         signal,
       },
@@ -233,8 +232,7 @@ function TranslationBlock({
       });
       const { content, detectedSourceLanguage, provider } = (result ??
         {}) as Partial<TranslationResult>;
-      const error =
-        result && 'error' in result ? result.error : undefined;
+      const error = result && 'error' in result ? result.error : undefined;
       const pronunciation =
         result && 'pronunciation' in result ? result.pronunciation : undefined;
       if (content) {
@@ -348,8 +346,9 @@ function TranslationBlock({
               class="translated-source-select"
               disabled={uiState === 'loading'}
               onChange={(e) => {
-                apiSourceLang.current = (e.currentTarget as HTMLSelectElement)
-                  .value;
+                apiSourceLang.current = (
+                  e.currentTarget as HTMLSelectElement
+                ).value;
                 translate();
               }}
             >
@@ -384,11 +383,7 @@ function TranslationBlock({
           ) : (
             !!translatedContent && (
               <>
-                <output
-                  class="translated-content"
-                  lang={targetLang}
-                  dir="auto"
-                >
+                <output class="translated-content" lang={targetLang} dir="auto">
                   {translatedContent}
                 </output>
                 {!!pronunciationContent && (

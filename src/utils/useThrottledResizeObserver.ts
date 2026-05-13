@@ -1,6 +1,6 @@
+import type { RefObject } from 'preact';
 import { useThrottledCallback } from 'use-debounce';
 import useResizeObserver, { type ResizeHandler } from 'use-resize-observer';
-import type { RefObject } from 'preact';
 
 interface ThrottledResizeObserverOpts<T extends Element> {
   ref?: RefObject<T> | T | null;

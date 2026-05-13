@@ -92,9 +92,7 @@ function MockHome() {
       // Convert all snake_case keys to camelCase. The JSON fixture has
       // `id` and the snake→camel mapping is identity for it, so we narrow
       // the result back to MockStatus here without a second cast below.
-      const transformedStatus = toCamelCase(
-        status as JsonLike,
-      ) as MockStatus;
+      const transformedStatus = toCamelCase(status as JsonLike) as MockStatus;
       transformedStatus._instance = instance;
 
       // Mock createdAt dates: now, then 15 minutes ago, 30 minutes ago, etc.

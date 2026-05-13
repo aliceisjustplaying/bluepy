@@ -149,8 +149,8 @@ export async function fetchYearPosts(
           // Use "before" search to find last post before year ends
           const beforeStr = `${year + 1}-01-02`;
           try {
-            const searchEndpoint =
-              masto.v2.search as unknown as SearchV2Endpoint;
+            const searchEndpoint = masto.v2
+              .search as unknown as SearchV2Endpoint;
             const beforeResults = await searchEndpoint.list({
               q: `from:${accountAcct} before:${beforeStr}`,
               type: 'statuses',
@@ -213,8 +213,7 @@ export async function fetchYearPosts(
   }
 
   allResults.sort(
-    (a, b) =>
-      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
 
   // Forward verification to check for gaps

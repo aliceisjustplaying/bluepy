@@ -83,9 +83,9 @@ type ResultsTypeKey = 'statuses' | 'accounts' | 'hashtags';
 
 function Search({ columnMode, ...props }: SearchProps) {
   const { t } = useLingui();
-  const params = (columnMode
-    ? {}
-    : (useParams() as { instance?: string })) as { instance?: string };
+  const params = (columnMode ? {} : (useParams() as { instance?: string })) as {
+    instance?: string;
+  };
   const { masto, instance, authenticated, client } = api({
     instance: params.instance,
   });
@@ -155,7 +155,9 @@ function Search({ columnMode, ...props }: SearchProps) {
   const [relationshipsMap, setRelationshipsMap] = useState<
     Record<string, unknown>
   >({});
-  const loadRelationships = async (accounts: mastodon.v1.Account[] | undefined) => {
+  const loadRelationships = async (
+    accounts: mastodon.v1.Account[] | undefined,
+  ) => {
     if (!accounts?.length) return;
     const relationships = await fetchRelationships(
       accounts as unknown as Parameters<typeof fetchRelationships>[0],
@@ -217,10 +219,9 @@ function Search({ columnMode, ...props }: SearchProps) {
           const typeKey = type as ResultsTypeKey;
           const nextCursor = typedResults._pagination?.[type];
           if (firstLoad) {
-            setTypeResultsFunc[typeKey](
-              typedResults[type] as unknown[],
-            );
-            const length = (typedResults[type] as unknown[] | undefined)?.length;
+            setTypeResultsFunc[typeKey](typedResults[type] as unknown[]);
+            const length = (typedResults[type] as unknown[] | undefined)
+              ?.length;
             offsetRef.current = LIMIT;
             cursorRef.current[type] = nextCursor;
             setShowMore(atproto ? !!nextCursor : !!length);
@@ -247,7 +248,8 @@ function Search({ columnMode, ...props }: SearchProps) {
                 ...prev,
                 ...(typedResults[type] as unknown[]),
               ]);
-              const length = (typedResults[type] as unknown[] | undefined)?.length;
+              const length = (typedResults[type] as unknown[] | undefined)
+                ?.length;
               offsetRef.current = offsetRef.current + LIMIT;
               setShowMore(!!length);
             }

@@ -1,7 +1,7 @@
 import './notifications.css';
 
-import { msg, t } from '@lingui/core/macro';
 import type { MessageDescriptor } from '@lingui/core';
+import { msg, t } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { ComponentType, JSX } from 'preact';
 import { Fragment } from 'preact';
@@ -277,7 +277,9 @@ function Notifications({ columnMode }: NotificationsProps) {
   const scrollableRef = useRef<HTMLDivElement | null>(null);
   const { nearReachEnd, scrollDirection, reachStart, nearReachStart } =
     useScroll({
-      scrollableRef: scrollableRef as unknown as { current: HTMLElement | null },
+      scrollableRef: scrollableRef as unknown as {
+        current: HTMLElement | null;
+      },
     });
   const hiddenUI = scrollDirection === 'end' && !nearReachStart;
   const [followRequests, setFollowRequests] = useState<
@@ -402,9 +404,9 @@ function Notifications({ columnMode }: NotificationsProps) {
     // Note: no pagination here yet because this better be on a separate page. Should be rare use-case???
     try {
       const followRequestsApi = masto.v1.followRequests as unknown as {
-        list(opts: { limit: number }): Promise<
-          { id: string; [key: string]: unknown }[]
-        >;
+        list(opts: {
+          limit: number;
+        }): Promise<{ id: string; [key: string]: unknown }[]>;
       };
       return await followRequestsApi.list({
         limit: 80,
@@ -669,8 +671,9 @@ function Notifications({ columnMode }: NotificationsProps) {
   let currentDay = new Date();
   const showTodayEmpty = !snapStates.notifications.some(
     (notification) =>
-      new Date((notification as NotificationLike).createdAt as string).toDateString() ===
-      todayDate.toDateString(),
+      new Date(
+        (notification as NotificationLike).createdAt as string,
+      ).toDateString() === todayDate.toDateString(),
   );
 
   const announcementsListRef = useRef<HTMLUListElement | null>(null);
@@ -708,49 +711,55 @@ function Notifications({ columnMode }: NotificationsProps) {
   // React/preact ignores the returned promise, but the IIFE-style still
   // fires once on mount, matching original runtime behavior. We preserve
   // that exact shape.
-  useEffect((async () => {
-    // Skip this if not in December
-    const date = new Date();
-    if (date.getMonth() !== 11) return;
-    const dateYear = date.getFullYear();
+  useEffect(
+    (async () => {
+      // Skip this if not in December
+      const date = new Date();
+      if (date.getMonth() !== 11) return;
+      const dateYear = date.getFullYear();
 
-    // Skip if doesn't support annual report
-    if (!supports('@mastodon/annual-report')) return;
+      // Skip if doesn't support annual report
+      if (!supports('@mastodon/annual-report')) return;
 
-    let annualReportNotification = store.account.get(
-      'annualReportNotification',
-    ) as NotificationLike | null;
-    if (annualReportNotification) {
-      const annualReportYear = annualReportNotification?.annualReport?.year;
-      if (annualReportYear == dateYear) {
-        setAnnualReportNotification(annualReportNotification);
-        return;
+      let annualReportNotification = store.account.get(
+        'annualReportNotification',
+      ) as NotificationLike | null;
+      if (annualReportNotification) {
+        const annualReportYear = annualReportNotification?.annualReport?.year;
+        if (annualReportYear == dateYear) {
+          setAnnualReportNotification(annualReportNotification);
+          return;
+        }
       }
-    }
-    const notificationIterator = mastoFetchNotifications({
-      types: ['annual_report'],
-    });
-    try {
-      const notification = await notificationIterator.next();
-      const value = notification?.value as
-        | { notificationGroups?: NotificationLike[] }
-        | undefined;
-      annualReportNotification = value?.notificationGroups?.[0] ?? null;
-      const annualReportYear = annualReportNotification?.annualReport?.year;
-      // If same year, show the annual report
-      if (annualReportYear == dateYear) {
-        console.log(
-          'ANNUAL REPORT',
-          annualReportYear,
-          annualReportNotification,
-        );
-        setAnnualReportNotification(annualReportNotification);
-        store.account.set('annualReportNotification', annualReportNotification);
+      const notificationIterator = mastoFetchNotifications({
+        types: ['annual_report'],
+      });
+      try {
+        const notification = await notificationIterator.next();
+        const value = notification?.value as
+          | { notificationGroups?: NotificationLike[] }
+          | undefined;
+        annualReportNotification = value?.notificationGroups?.[0] ?? null;
+        const annualReportYear = annualReportNotification?.annualReport?.year;
+        // If same year, show the annual report
+        if (annualReportYear == dateYear) {
+          console.log(
+            'ANNUAL REPORT',
+            annualReportYear,
+            annualReportNotification,
+          );
+          setAnnualReportNotification(annualReportNotification);
+          store.account.set(
+            'annualReportNotification',
+            annualReportNotification,
+          );
+        }
+      } catch (e) {
+        console.warn(e);
       }
-    } catch (e) {
-      console.warn(e);
-    }
-  }) as unknown as () => void, []);
+    }) as unknown as () => void,
+    [],
+  );
 
   const itemsSelector = '.notification';
   const jRef = useHotkeys<HTMLDivElement>(
@@ -1001,9 +1010,9 @@ function Notifications({ columnMode }: NotificationsProps) {
                           class="plain2 small"
                           onClick={() => {
                             (
-                              announcementsListRef.current?.children[
-                                index
-                              ] as HTMLElement | undefined
+                              announcementsListRef.current?.children[index] as
+                                | HTMLElement
+                                | undefined
                             )?.scrollIntoView({
                               behavior: 'smooth',
                               block: 'nearest',
@@ -1557,9 +1566,10 @@ function NotificationRequestModalButton({
       // `masto.v1.notifications.list(...)` directly without `.values()`.
       // The masto paginator returns a thenable-ish object; awaiting it
       // resolves to the first-page array. Mirror that runtime contract.
-      const notifs = (await (fetchNotficationsByAccount(
-        request.account.id,
-      ) as unknown as Promise<NotificationLike[] | undefined>)) || [];
+      const notifs =
+        (await (fetchNotficationsByAccount(
+          request.account.id,
+        ) as unknown as Promise<NotificationLike[] | undefined>)) || [];
       setNotifications(notifs);
       setUIState('default');
     })();

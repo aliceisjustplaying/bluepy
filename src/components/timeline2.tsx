@@ -72,9 +72,7 @@ interface LinkProps {
 const LinkTyped = Link as unknown as ComponentType<LinkProps>;
 
 // `nav-menu.jsx` is still JS; takes no props in this usage.
-const NavMenuTyped = NavMenu as unknown as ComponentType<
-  Record<string, never>
->;
+const NavMenuTyped = NavMenu as unknown as ComponentType<Record<string, never>>;
 
 // Batch size (Mastodon API limit is around 20-40)
 const BATCH_SIZE = 20;
@@ -126,9 +124,7 @@ interface ScrollAnchor {
   direction?: 'next' | 'prev';
 }
 
-function getScrollAnchor(
-  scrollable: HTMLElement | null,
-): ScrollAnchor | null {
+function getScrollAnchor(scrollable: HTMLElement | null): ScrollAnchor | null {
   if (!scrollable) return null;
 
   const containerRect = scrollable.getBoundingClientRect();
@@ -472,10 +468,7 @@ function Timeline2({
             // through when the prop was omitted (only reply-hint code paths
             // care, and they short-circuit on falsy keys). Preserve runtime
             // behavior via a non-null assertion.
-            const grouped = groupContext(
-              value,
-              instance!,
-            ) as TimelineEntry[];
+            const grouped = groupContext(value, instance!) as TimelineEntry[];
 
             if (loadState === 'start') {
               minID.current = minIDValue;
@@ -551,8 +544,7 @@ function Timeline2({
     if (firstLoad.current) return;
     if (items.length > 0) {
       console.log('🔍 Cache items', { items });
-      const existing =
-        store.account.get<CachedTimelineData>(cacheKey) || {};
+      const existing = store.account.get<CachedTimelineData>(cacheKey) || {};
       store.account.set(cacheKey, {
         ...existing,
         items,
@@ -826,7 +818,9 @@ function Timeline2({
                     instance={instance}
                     useItemID={useItemID}
                     filterContext={filterContext}
-                    key={Array.isArray(status.id) ? status.id.join(',') : status.id}
+                    key={
+                      Array.isArray(status.id) ? status.id.join(',') : status.id
+                    }
                     showFollowedTags={showFollowedTags}
                     showReplyParent={showReplyParent}
                   />

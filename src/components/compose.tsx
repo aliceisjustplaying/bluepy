@@ -309,13 +309,12 @@ const Status = StatusUntyped as unknown as ComponentType<{
   readOnly?: boolean;
 }>;
 
-const CustomEmojisModal =
-  CustomEmojisModalUntyped as unknown as ComponentType<{
-    instance?: string;
-    onClose: () => void;
-    defaultSearchTerm?: string | null;
-    onSelect: (emojiShortcode: string) => void;
-  }>;
+const CustomEmojisModal = CustomEmojisModalUntyped as unknown as ComponentType<{
+  instance?: string;
+  onClose: () => void;
+  defaultSearchTerm?: string | null;
+  onSelect: (emojiShortcode: string) => void;
+}>;
 
 const MentionModal = MentionModalUntyped as unknown as ComponentType<{
   masto: unknown;
@@ -327,11 +326,7 @@ const MentionModal = MentionModalUntyped as unknown as ComponentType<{
 
 const GIFPickerModal = GIFPickerModalUntyped as unknown as ComponentType<{
   onClose: () => void;
-  onSelect: (payload: {
-    url: string;
-    type: string;
-    alt_text?: string;
-  }) => void;
+  onSelect: (payload: { url: string; type: string; alt_text?: string }) => void;
 }>;
 
 const TextExpander = TextExpanderRaw as unknown as ComponentType<{
@@ -368,7 +363,8 @@ interface MastoClientShim {
 type SupportedLanguageEntry = readonly [string, string, string];
 type PreferencesShape = Record<string, unknown>;
 
-const supportedLanguagesList = supportedLanguages as unknown as SupportedLanguageEntry[];
+const supportedLanguagesList =
+  supportedLanguages as unknown as SupportedLanguageEntry[];
 
 const supportedLanguagesMap = supportedLanguagesList.reduce<
   Record<string, { common: string; native: string }>
@@ -410,9 +406,7 @@ const expiresInFromExpiresAt = (
     (Date.parse(expiresAt as unknown as string) - Date.now()) / 1000;
   // Original JS compared string seconds to numeric delta; find on string keys
   // returned a string. Coerce-compare to keep equivalent runtime semantics.
-  return (
-    expirySeconds.find((s) => Number(s) >= delta) || oneDay
-  );
+  return expirySeconds.find((s) => Number(s) >= delta) || oneDay;
 };
 
 // localeMatch can return false when no match exists; original JS silently
@@ -581,9 +575,8 @@ function Compose({
   const spoilerTextRef = useRef<HTMLInputElement | null>(null);
 
   const [visibility, setVisibility] = useState<string>('public');
-  const [quoteApprovalPolicy, setQuoteApprovalPolicy] = useState<string>(
-    'public',
-  );
+  const [quoteApprovalPolicy, setQuoteApprovalPolicy] =
+    useState<string>('public');
   const [sensitive, setSensitive] = useState<boolean>(false);
   const [sensitiveMedia, setSensitiveMedia] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>(
@@ -925,7 +918,8 @@ function Compose({
         ...mentionsList.map((m) => m.acct),
       ]);
       const allMentions = [...mentions].filter(
-        (m): m is string => typeof m === 'string' && m !== currentAccountInfo.acct,
+        (m): m is string =>
+          typeof m === 'string' && m !== currentAccountInfo.acct,
       );
 
       if (allMentions.length > 0) {
@@ -1024,8 +1018,7 @@ function Compose({
             setQuoteApprovalPolicy(postQuoteApprovalPolicy);
           }
           setSensitive(!!sensitive);
-          if (composablePoll)
-            setPoll(composablePoll as unknown as PollState);
+          if (composablePoll) setPoll(composablePoll as unknown as PollState);
           setMediaAttachments(mediaAttachments ?? []);
           setUIState('default');
         } catch (e) {
@@ -1242,11 +1235,14 @@ function Compose({
   };
   const updateCharCount = (): void => {
     const count = getCharCount();
-    (states as unknown as { composerCharacterCount: number }).composerCharacterCount = count;
+    (
+      states as unknown as { composerCharacterCount: number }
+    ).composerCharacterCount = count;
   };
   useEffect(updateCharCount, []);
 
-  const supportsCloseWatcher = (window as unknown as { CloseWatcher?: unknown }).CloseWatcher;
+  const supportsCloseWatcher = (window as unknown as { CloseWatcher?: unknown })
+    .CloseWatcher;
   const escDownRef = useRef<boolean>(false);
   useHotkeys(
     'esc',
@@ -1302,7 +1298,9 @@ function Compose({
     const ns = getCurrentAccountNS();
     return `${ns}#${UID.current}`;
   };
-  const composerState = (states as unknown as { composerState: ComposerStateShape }).composerState;
+  const composerState = (
+    states as unknown as { composerState: ComposerStateShape }
+  ).composerState;
   const saveUnsavedDraft = (): void => {
     // Not enabling this for editing status
     // I don't think this warrant a draft mode for a status that's already posted
@@ -1354,10 +1352,7 @@ function Compose({
       console.debug('not equal', backgroundDraft, prevBackgroundDraft.current);
       (
         db.drafts as unknown as {
-          set(
-            key: string,
-            value: Record<string, unknown>,
-          ): Promise<unknown>;
+          set(key: string, value: Record<string, unknown>): Promise<unknown>;
           del(key: string): Promise<unknown>;
         }
       )
@@ -1381,9 +1376,9 @@ function Compose({
     // If unmounted, means user discarded the draft
     // Also means pop-out 🙈, but it's okay because the pop-out will persist the ID and re-create the draft
     return () => {
-      (
-        db.drafts as unknown as { del(key: string): Promise<unknown> }
-      ).del(draftKey());
+      (db.drafts as unknown as { del(key: string): Promise<unknown> }).del(
+        draftKey(),
+      );
     };
   }, []);
 
@@ -1756,7 +1751,8 @@ function Compose({
               {replyToStatusMonthsAgo > 0 ? (
                 <Trans>
                   Replying to @
-                  {replyToStatus.account?.acct || replyToStatus.account?.username}
+                  {replyToStatus.account?.acct ||
+                    replyToStatus.account?.username}
                   &rsquo;s post (
                   <strong>
                     {rtf.format(-replyToStatusMonthsAgo, 'month')}
@@ -1766,7 +1762,8 @@ function Compose({
               ) : (
                 <Trans>
                   Replying to @
-                  {replyToStatus.account?.acct || replyToStatus.account?.username}
+                  {replyToStatus.account?.acct ||
+                    replyToStatus.account?.username}
                   &rsquo;s post
                 </Trans>
               )}
@@ -2051,7 +2048,9 @@ function Compose({
                 composerState.publishing = false;
                 composerState.publishingError = true;
                 console.error(e);
-                alert((e as { reason?: string } | null)?.reason || (e as string));
+                alert(
+                  (e as { reason?: string } | null)?.reason || (e as string),
+                );
                 setUIState('error');
               }
             })();
@@ -2642,9 +2641,7 @@ function Compose({
                 />
               ) : (
                 <span class="icon-text">
-                  {_(
-                    visibilityText[visibility as keyof typeof visibilityText],
-                  )}
+                  {_(visibilityText[visibility as keyof typeof visibilityText])}
                 </span>
               )}
               <select
@@ -2653,10 +2650,7 @@ function Compose({
                 onChange={(e: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
                   const target = e.target as HTMLSelectElement;
                   setVisibility(target.value);
-                  if (
-                    target.value === 'private' ||
-                    target.value === 'direct'
-                  ) {
+                  if (target.value === 'private' || target.value === 'direct') {
                     setQuoteApprovalPolicy('nobody');
                   }
 

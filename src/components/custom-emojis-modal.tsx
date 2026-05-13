@@ -107,33 +107,31 @@ interface CustomEmojisListProps {
   onSelect: (shortcode: string) => void;
 }
 
-const CustomEmojisList = memo(
-  ({ emojis, onSelect }: CustomEmojisListProps) => {
-    const { i18n } = useLingui();
-    const [max, setMax] = useState(CUSTOM_EMOJIS_COUNT);
-    const showMore = emojis.length > max;
-    return (
-      <section>
-        {emojis.slice(0, max).map((emoji) => (
-          <CustomEmojiButton
-            key={emoji.shortcode}
-            emoji={emoji}
-            onSelect={onSelect}
-          />
-        ))}
-        {showMore && (
-          <button
-            type="button"
-            class="plain small"
-            onClick={() => setMax(max + CUSTOM_EMOJIS_COUNT)}
-          >
-            <Trans>{i18n.number(emojis.length - max)} more…</Trans>
-          </button>
-        )}
-      </section>
-    );
-  },
-);
+const CustomEmojisList = memo(({ emojis, onSelect }: CustomEmojisListProps) => {
+  const { i18n } = useLingui();
+  const [max, setMax] = useState(CUSTOM_EMOJIS_COUNT);
+  const showMore = emojis.length > max;
+  return (
+    <section>
+      {emojis.slice(0, max).map((emoji) => (
+        <CustomEmojiButton
+          key={emoji.shortcode}
+          emoji={emoji}
+          onSelect={onSelect}
+        />
+      ))}
+      {showMore && (
+        <button
+          type="button"
+          class="plain small"
+          onClick={() => setMax(max + CUSTOM_EMOJIS_COUNT)}
+        >
+          <Trans>{i18n.number(emojis.length - max)} more…</Trans>
+        </button>
+      )}
+    </section>
+  );
+});
 
 const CUSTOM_EMOJI_SIZE = 'composer-customEmojiSize';
 

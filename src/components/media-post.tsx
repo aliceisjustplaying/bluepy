@@ -165,8 +165,7 @@ function MediaPost({
   // `_isFiltered` short-circuits to `false`. The `as string` shim mirrors
   // existing call sites in `src/utils/filters.ts` and preserves that
   // behavior; tightening the type lives with the `filters` typing work.
-  const filterInfo =
-    !isSelf && isFiltered(filtered, filterContext as string);
+  const filterInfo = !isSelf && isFiltered(filtered, filterContext as string);
 
   if (filterInfo && filterInfo.action === 'hide') {
     return null;

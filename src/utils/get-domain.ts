@@ -1,5 +1,6 @@
-import mem from './mem';
 import { toUnicode } from 'punycode/';
+
+import mem from './mem';
 
 function getDomain(url: string): string {
   try {

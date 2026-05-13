@@ -232,8 +232,11 @@ function YearInPosts() {
   const [posts, setPosts] = useState<MastoStatus[]>([]);
   const [availableYears, setAvailableYears] = useState<AvailableYear[]>([]);
   const [searchEnabled, setSearchEnabled] = useState<boolean>(true);
-  const [showSearchField, setShowSearchField] = useState<boolean>(!!searchQuery);
-  const [searchLimit, setSearchLimit] = useState<number>(SEARCH_RESULT_PAGE_SIZE);
+  const [showSearchField, setShowSearchField] =
+    useState<boolean>(!!searchQuery);
+  const [searchLimit, setSearchLimit] = useState<number>(
+    SEARCH_RESULT_PAGE_SIZE,
+  );
   const [sortBy, setSortBy] = useState<SortKey>(
     searchQuery ? 'relevance' : 'createdAt',
   );
@@ -302,16 +305,18 @@ function YearInPosts() {
   const handleGenerate = async (e: Event) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
-    const yearInput = (form.elements as unknown as {
-      year: HTMLInputElement;
-    }).year;
+    const yearInput = (
+      form.elements as unknown as {
+        year: HTMLInputElement;
+      }
+    ).year;
     const generateYear = getYear(yearInput.value);
     if (generateYear) {
       try {
         const dataId = `${NS}-${generateYear}`;
-        const existingData = (await db.yearInPosts.get(
-          dataId,
-        )) as YearInPostsRecord | undefined;
+        const existingData = (await db.yearInPosts.get(dataId)) as
+          | YearInPostsRecord
+          | undefined;
 
         if (existingData && existingData.year === generateYear) {
           // Year already generated, go straight to year view
@@ -414,9 +419,7 @@ function YearInPosts() {
     const result: Record<string, HeatmapDay[]> = {};
     Object.keys(heatmaps).forEach((mKey) => {
       const days = heatmaps[Number(mKey)];
-      const maxCount = Math.max(
-        ...Object.values(days).map((d) => d.total),
-      );
+      const maxCount = Math.max(...Object.values(days).map((d) => d.total));
 
       const firstDayOfMonth = new Date(year ?? 0, parseInt(mKey), 1);
       const firstDayOfWeek = firstDayOfMonth.getDay();
@@ -525,9 +528,7 @@ function YearInPosts() {
             hasMedia = true;
           }
         }
-        calendar.push(
-          bestPost ? { post: bestPost, hasMedia } : { hasMedia },
-        );
+        calendar.push(bestPost ? { post: bestPost, hasMedia } : { hasMedia });
       }
 
       result[mKey] = calendar;
@@ -634,9 +635,7 @@ function YearInPosts() {
     const orderedIds = allResults.flatMap((r) => r.result);
     const uniqueOrderedIds = [...new Set(orderedIds)];
 
-    const postsMap = new Map<string, MastoStatus>(
-      posts.map((p) => [p.id, p]),
-    );
+    const postsMap = new Map<string, MastoStatus>(posts.map((p) => [p.id, p]));
     const postResults = uniqueOrderedIds
       .map((id) => postsMap.get(String(id)))
       .filter((p): p is MastoStatus => Boolean(p));
@@ -710,8 +709,7 @@ function YearInPosts() {
         return !p.reblog && (status.mediaAttachments?.length ?? 0) > 0;
       } else if (postType === 'quotes') {
         return (
-          supportsNativeQuote() &&
-          !!(p.quote?.id || p.quote?.quotedStatus?.id)
+          supportsNativeQuote() && !!(p.quote?.id || p.quote?.quotedStatus?.id)
         );
       } else if (postType === 'replies') {
         return !!p.inReplyToId;
@@ -799,8 +797,7 @@ function YearInPosts() {
         if (data && data.year === year) {
           data.posts.sort(
             (a, b) =>
-              new Date(a.createdAt).getTime() -
-              new Date(b.createdAt).getTime(),
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
           );
           setPosts(data.posts);
           setUIState('results');
@@ -986,9 +983,9 @@ function YearInPosts() {
                       <button
                         type="button"
                         onClick={(e) => {
-                          const details = (
-                            e.target as HTMLElement
-                          ).closest('details') as HTMLDetailsElement;
+                          const details = (e.target as HTMLElement).closest(
+                            'details',
+                          ) as HTMLDetailsElement;
                           details.open = false;
                         }}
                       >
@@ -1165,9 +1162,7 @@ function YearInPosts() {
 
               {(month !== null || searchQuery) && (
                 <div class="post-type-filters">
-                  {(
-                    Object.entries(FILTER_KEYS) as [FilterKey, string][]
-                  ).map(
+                  {(Object.entries(FILTER_KEYS) as [FilterKey, string][]).map(
                     ([key, label]) =>
                       filterCounts[key] > 0 && (
                         <button
@@ -1497,8 +1492,9 @@ function CalendarBar({
                           return <span key={i} class="media-day no-media" />;
                         const status = item.post as MastoStatus;
                         // hasMedia guarantees mediaAttachments[0] exists.
-                        const media = (status.mediaAttachments as
-                          | mastodon.v1.MediaAttachment[])[0] as {
+                        const media = (
+                          status.mediaAttachments as mastodon.v1.MediaAttachment[]
+                        )[0] as {
                           previewUrl?: string | null;
                           url?: string | null;
                           previewRemoteUrl?: string | null;
@@ -1507,9 +1503,7 @@ function CalendarBar({
                         return (
                           <span key={i} class="media-day">
                             <img
-                              src={
-                                (media.previewUrl || media.url) as string
-                              }
+                              src={(media.previewUrl || media.url) as string}
                               loading="lazy"
                               decoding="async"
                               onError={(e) => {
@@ -1632,9 +1626,7 @@ const SearchField = forwardRef<SearchFieldHandle, SearchFieldProps>(
         class="search-field"
         onSubmit={(e) => {
           e.preventDefault();
-          const q = (
-            searchInputRef.current as HTMLInputElement
-          ).value.trim();
+          const q = (searchInputRef.current as HTMLInputElement).value.trim();
           throttledSearch?.cancel();
           throttledSearch(q);
         }}

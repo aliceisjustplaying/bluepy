@@ -1,4 +1,8 @@
-import { SubMenu, type MenuInstance, type SubMenuProps } from '@szhsin/react-menu';
+import {
+  SubMenu,
+  type MenuInstance,
+  type SubMenuProps,
+} from '@szhsin/react-menu';
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 
 export default function SubMenu2(props: SubMenuProps) {

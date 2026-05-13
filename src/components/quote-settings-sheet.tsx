@@ -36,7 +36,9 @@ interface QuoteSettingsSheetProps {
 }
 
 interface InteractionPolicyClient {
-  update(params: { quote_approval_policy: string }): Promise<mastodon.v1.Status>;
+  update(params: {
+    quote_approval_policy: string;
+  }): Promise<mastodon.v1.Status>;
 }
 
 interface StatusesSelector {

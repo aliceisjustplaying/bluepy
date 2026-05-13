@@ -48,11 +48,10 @@ import states, {
 } from '../utils/states';
 import statusPeek from '../utils/status-peek';
 import { getCurrentAccount } from '../utils/store-utils';
+import { ThreadCountContext } from '../utils/thread-count-context';
 import useTitle from '../utils/useTitle';
 
 import getInstanceStatusURL from './../utils/get-instance-status-url';
-
-import { ThreadCountContext } from '../utils/thread-count-context';
 
 // `status.jsx`, `icon.jsx`, `avatar.tsx`, and `link.tsx` ship JSX components
 // whose prop shapes don't fully line up with the call sites here. Wrap the
@@ -206,10 +205,7 @@ function StatusPage(params: StatusPageParams) {
   const [searchParams, setSearchParams] = useSearchParams();
   const mediaParam = searchParams.get('media');
   const mediaOnlyParam = searchParams.get('media-only');
-  const mediaIndex = parseInt(
-    (mediaParam || mediaOnlyParam) as string,
-    10,
-  );
+  const mediaIndex = parseInt((mediaParam || mediaOnlyParam) as string, 10);
   let showMedia = mediaIndex > 0;
   const mediaStatusID = searchParams.get('mediaStatusID');
   const mediaStatus = getStatus(mediaStatusID, instance);
@@ -297,11 +293,13 @@ function StatusPage(params: StatusPageParams) {
 
   const mediaStatusKey = statusKey(mediaStatusID, instance);
   const mediaAttachments = mediaStatusID
-    ? (mediaStatusKey
-        ? (snapStates.statuses[mediaStatusKey] as unknown as
+    ? mediaStatusKey
+      ? (
+          snapStates.statuses[mediaStatusKey] as unknown as
             | RawStatus
-            | undefined)?.mediaAttachments
-        : undefined)
+            | undefined
+        )?.mediaAttachments
+      : undefined
     : heroStatus?.mediaAttachments;
 
   const postViewState = () =>
@@ -332,9 +330,7 @@ function StatusPage(params: StatusPageParams) {
       currentMediaAttachments:
         | readonly { id?: string; blurhash?: string; url?: string }[]
         | undefined,
-      carouselRef:
-        | { current: HTMLElement | null | undefined }
-        | undefined,
+      carouselRef: { current: HTMLElement | null | undefined } | undefined,
     ) => {
       if (postViewState() === 'large' && !showMediaOnly) {
         mediaClose();
@@ -364,11 +360,11 @@ function StatusPage(params: StatusPageParams) {
           );
         }) as Element[];
         // If more than one, get the one in status page
-        const el = (foundEls.length === 1
-          ? foundEls[0]
-          : foundEls.find((candidate) =>
-              !!candidate.closest('.status-deck'),
-            )) as HTMLElement | undefined;
+        const el = (
+          foundEls.length === 1
+            ? foundEls[0]
+            : foundEls.find((candidate) => !!candidate.closest('.status-deck'))
+        ) as HTMLElement | undefined;
 
         console.log('xxx', { media, id, els, el });
         if (el) {
@@ -506,9 +502,11 @@ function StatusThread({
     !states.prevLocation &&
       (history.length === 1 ||
         ('navigation' in window &&
-          (navigation as unknown as {
-            entries?: () => { length: number };
-          })?.entries?.()?.length === 1)),
+          (
+            navigation as unknown as {
+              entries?: () => { length: number };
+            }
+          )?.entries?.()?.length === 1)),
   );
   const [viewMode, setViewMode] = useState<string | null>(
     searchParams.get('view') || firstLoad.current ? 'full' : null,
@@ -1098,7 +1096,8 @@ function StatusThread({
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e: KeyboardEvent) =>
+        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
@@ -1202,9 +1201,8 @@ function StatusThread({
         '.status-link, .status-focus',
       );
       if (activeStatus) {
-        const details = activeStatus.nextElementSibling as
-          | HTMLDetailsElement
-          | null;
+        const details =
+          activeStatus.nextElementSibling as HTMLDetailsElement | null;
         if (details && details.tagName.toLowerCase() === 'details') {
           details.open = !details.open;
         }
@@ -1393,8 +1391,11 @@ function StatusThread({
                               limit: 1,
                             });
                             const resultStatuses =
-                              (results as { statuses?: { id: string }[] } | null)
-                                ?.statuses ?? [];
+                              (
+                                results as {
+                                  statuses?: { id: string }[];
+                                } | null
+                              )?.statuses ?? [];
                             if (resultStatuses.length) {
                               const status = resultStatuses[0];
                               location.hash = currentInstance
@@ -1553,9 +1554,8 @@ function StatusThread({
   const prevLocationIsStatusPage = useMemo(() => {
     // Navigation API
     if ('navigation' in window && navigation?.entries) {
-      const prevEntry = navigation.entries()[
-        (navigation.currentEntry?.index ?? 0) - 1
-      ];
+      const prevEntry =
+        navigation.entries()[(navigation.currentEntry?.index ?? 0) - 1];
       if (prevEntry?.url) {
         return STATUS_URL_REGEX.test(prevEntry.url);
       }
@@ -1896,10 +1896,12 @@ function StatusThread({
                 >
                   <Icon
                     icon={
-                      ({
-                        '': 'layout5',
-                        full: 'layout4',
-                      } as Record<string, string>)[viewMode || ''] as string
+                      (
+                        {
+                          '': 'layout5',
+                          full: 'layout4',
+                        } as Record<string, string>
+                      )[viewMode || ''] as string
                     }
                   />
                   <span>
@@ -1994,8 +1996,11 @@ function StatusThread({
                       <Avatar
                         key={status.id}
                         url={
-                          (status.account as { avatarStatic?: string } | undefined)
-                            ?.avatarStatic
+                          (
+                            status.account as
+                              | { avatarStatic?: string }
+                              | undefined
+                          )?.avatarStatic
                         }
                         // title={`${status.avatar.displayName} (@${status.avatar.acct})`}
                       />
@@ -2115,8 +2120,7 @@ function SubComments({
   } else if (totalWeight <= MAX_WEIGHT) {
     open = true;
   } else if (!hasParentThread && totalComments === 1) {
-    const shortReply =
-      calcStatusWeight(replies[0] as unknown as RawStatus) < 2;
+    const shortReply = calcStatusWeight(replies[0] as unknown as RawStatus) < 2;
     if (shortReply) open = true;
   }
   const openBefore = cachedRepliesToggle[replies[0].id];
@@ -2176,9 +2180,7 @@ function SubComments({
 
   return (
     <Container
-      ref={
-        detailsRef as unknown as JSX.HTMLAttributes<HTMLElement>['ref']
-      }
+      ref={detailsRef as unknown as JSX.HTMLAttributes<HTMLElement>['ref']}
       class="replies"
       open={isDetails ? openBefore || open : undefined}
       onToggle={
@@ -2351,13 +2353,12 @@ function calcStatusWeight(status: CalcStatusWeightInput | RawStatus): number {
   );
   const ma = mediaAttachments as { length?: number } | null | undefined;
   const mediaLength = ma?.length ? MEDIA_VIRTUAL_LENGTH : 0;
-  const pollOptions = (poll as { options?: { length?: number } } | null | undefined)
-    ?.options;
+  const pollOptions = (
+    poll as { options?: { length?: number } } | null | undefined
+  )?.options;
   const pollLength = (pollOptions?.length || 0) * POLL_VIRTUAL_LENGTH;
   const cardLength =
-    card && (ma?.length || pollOptions?.length)
-      ? 0
-      : CARD_VIRTUAL_LENGTH;
+    card && (ma?.length || pollOptions?.length) ? 0 : CARD_VIRTUAL_LENGTH;
   const totalLength = length + mediaLength + pollLength + cardLength;
   const weight = totalLength / WEIGHT_SEGMENT;
   statusWeightCache.set(s.id as string, weight);

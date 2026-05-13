@@ -36,20 +36,13 @@ interface ConversationLike {
 type StatusLike = mastodon.v1.Status;
 
 interface MastoNotificationsApi {
-  list(options: {
-    limit: number;
-    types?: string[];
-    since_id?: string;
-  }): {
+  list(options: { limit: number; types?: string[]; since_id?: string }): {
     values(): AsyncIterator<NotificationLike[]>;
   };
 }
 
 interface MastoConversationsApi {
-  list(options: {
-    limit: number;
-    since_id?: string;
-  }): {
+  list(options: { limit: number; since_id?: string }): {
     values(): AsyncIterator<ConversationLike[]>;
   };
 }
@@ -85,12 +78,16 @@ interface MentionsProps {
 function Mentions({ columnMode, ...props }: MentionsProps) {
   const { t } = useLingui();
   const { masto, instance } = api();
-  const notificationsApi = (masto.v1 as unknown as {
-    notifications: MastoNotificationsApi;
-  }).notifications;
-  const conversationsApi = (masto.v1 as unknown as {
-    conversations: MastoConversationsApi;
-  }).conversations;
+  const notificationsApi = (
+    masto.v1 as unknown as {
+      notifications: MastoNotificationsApi;
+    }
+  ).notifications;
+  const conversationsApi = (
+    masto.v1 as unknown as {
+      conversations: MastoConversationsApi;
+    }
+  ).conversations;
   const [searchParams] = columnMode ? [emptySearchParams] : useSearchParams();
   const [stateType, setStateType] = useState<string | null>(null);
   const type = props?.type || searchParams.get('type') || stateType;
@@ -326,7 +323,9 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
               type="checkbox"
               checked={onlyFollowings}
               onChange={(e) => {
-                setOnlyFollowings((e.currentTarget as HTMLInputElement).checked);
+                setOnlyFollowings(
+                  (e.currentTarget as HTMLInputElement).checked,
+                );
               }}
             />{' '}
             <Trans>Only followings</Trans>

@@ -62,7 +62,9 @@ export type AccountInfoShape = mastodon.v1.Account & {
 // declared MastoClient in utils/api.ts intentionally leaves these as
 // `unknown`. We narrow locally rather than widening the shared interface.
 interface FamiliarFollowersEndpoint {
-  fetch(params: { id: readonly string[] }): Promise<mastodon.v1.FamiliarFollowers[]>;
+  fetch(params: {
+    id: readonly string[];
+  }): Promise<mastodon.v1.FamiliarFollowers[]>;
 }
 interface AccountStatusesListParams {
   limit?: number;
@@ -703,10 +705,10 @@ function AccountInfo({
                     );
                     try {
                       // Get color from four corners of image
-                      const canvas: OffscreenCanvas | HTMLCanvasElement = window
-                        .OffscreenCanvas
-                        ? new OffscreenCanvas(1, 1)
-                        : document.createElement('canvas');
+                      const canvas: OffscreenCanvas | HTMLCanvasElement =
+                        window.OffscreenCanvas
+                          ? new OffscreenCanvas(1, 1)
+                          : document.createElement('canvas');
                       const ctx = canvas.getContext('2d', {
                         willReadFrequently: true,
                       }) as
@@ -804,7 +806,10 @@ function AccountInfo({
                     }
                   >
                     <div class="szh-menu__header">
-                      <AccountHandleInfo acct={acct ?? ''} instance={instance} />
+                      <AccountHandleInfo
+                        acct={acct ?? ''}
+                        instance={instance}
+                      />
                     </div>
                     <MenuItem
                       onClick={() => {
@@ -979,7 +984,9 @@ function AccountInfo({
                           </b>
                           <p
                             dangerouslySetInnerHTML={{
-                              __html: enhanceContent(value, { emojis }) as string,
+                              __html: enhanceContent(value, {
+                                emojis,
+                              }) as string,
                             }}
                           />
                         </div>
@@ -1362,7 +1369,12 @@ function AccountInfo({
 
 const FAMILIAR_FOLLOWERS_LIMIT = 3;
 
-function lightenRGB([r, g, b]: readonly number[]): [number, number, number, number] {
+function lightenRGB([r, g, b]: readonly number[]): [
+  number,
+  number,
+  number,
+  number,
+] {
   const luminence = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   console.log('luminence', luminence);
   let alpha: number;

@@ -115,8 +115,10 @@ const detectLangs = async (text: string): Promise<string[] | null> => {
   return null;
 };
 
-interface TextareaProps
-  extends Omit<JSX.HTMLAttributes<HTMLTextAreaElement>, 'onTrigger'> {
+interface TextareaProps extends Omit<
+  JSX.HTMLAttributes<HTMLTextAreaElement>,
+  'onTrigger'
+> {
   maxCharacters?: number;
   onTrigger?: ((payload: Record<string, unknown>) => void) | null;
 }
@@ -166,7 +168,8 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       console.debug('HIGHLIGHT PERF', {
         start,
         end,
-        diff: end !== undefined && start !== undefined ? end - start : undefined,
+        diff:
+          end !== undefined && start !== undefined ? end - start : undefined,
       });
       if (start && end && end - start > 50) {
         // if slow, increment
@@ -178,9 +181,9 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     const debouncedAutoDetectLanguage = useDebouncedCallback(() => {
       // Make use of the highlightRef to get the DOM
       // Clone the dom
-      const dom = composeHighlightRef.current?.cloneNode(
-        true,
-      ) as HTMLElement | undefined;
+      const dom = composeHighlightRef.current?.cloneNode(true) as
+        | HTMLElement
+        | undefined;
       if (!dom) return;
       // Remove mark
       dom.querySelectorAll('mark').forEach((mark: HTMLElement) => {
@@ -272,9 +275,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             autoResizeTextarea(target);
             (
               props.onInput as
-                | ((
-                    ev: JSX.TargetedEvent<HTMLTextAreaElement, Event>,
-                  ) => void)
+                | ((ev: JSX.TargetedEvent<HTMLTextAreaElement, Event>) => void)
                 | undefined
             )?.(e);
             throttleHighlightText(text);

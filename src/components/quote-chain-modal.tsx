@@ -3,13 +3,12 @@ import './quote-chain-modal.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { ComponentType } from 'preact';
+import type { Ref } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import { getStatus } from '../utils/states';
 import useTruncated from '../utils/useTruncated';
-
-import type { Ref } from 'preact';
 
 import IconUntyped from './icon';
 import Link, { type LinkProps } from './link';

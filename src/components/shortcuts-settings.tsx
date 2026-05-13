@@ -431,9 +431,10 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                 let subtitle: unknown = meta.subtitle;
                 let excludeViewMode: unknown = meta.excludeViewMode;
                 if (typeof title === 'function') {
-                  title = (
-                    title as (s: ShortcutEntry, i: number) => unknown
-                  )(shortcut, i);
+                  title = (title as (s: ShortcutEntry, i: number) => unknown)(
+                    shortcut,
+                    i,
+                  );
                 } else {
                   title = _(title as MessageDescriptor);
                 }
@@ -445,16 +446,14 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                   subtitle = _(subtitle as MessageDescriptor);
                 }
                 if (typeof icon === 'function') {
-                  icon = (
-                    icon as (s: ShortcutEntry, i: number) => unknown
-                  )(shortcut, i);
+                  icon = (icon as (s: ShortcutEntry, i: number) => unknown)(
+                    shortcut,
+                    i,
+                  );
                 }
                 if (typeof excludeViewMode === 'function') {
                   excludeViewMode = (
-                    excludeViewMode as (
-                      s: ShortcutEntry,
-                      i: number,
-                    ) => unknown
+                    excludeViewMode as (s: ShortcutEntry, i: number) => unknown
                   )(shortcut, i);
                 }
                 const excludedViewMode = (
@@ -464,9 +463,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                   <li key={key}>
                     <Icon icon={icon as string | undefined} />
                     <span class="shortcut-text">
-                      <AsyncText>
-                        {title as string | Promise<string>}
-                      </AsyncText>
+                      <AsyncText>{title as string | Promise<string>}</AsyncText>
                       {(subtitle as unknown) && (
                         <>
                           {' '}
@@ -737,9 +734,9 @@ function ShortcutForm({
       if (!form) return;
       (TYPE_PARAMS as Record<string, TypeParam[]>)[currentType].forEach(
         ({ name, type }) => {
-          const input = form.querySelector(`[name="${name}"]`) as
-            | HTMLInputElement
-            | null;
+          const input = form.querySelector(
+            `[name="${name}"]`,
+          ) as HTMLInputElement | null;
           if (input && shortcut && shortcut[name]) {
             if (type === 'checkbox') {
               input.checked = shortcut[name] === 'on' ? true : false;
@@ -862,9 +859,7 @@ function ShortcutForm({
                   return (
                     <p>
                       <label>
-                        <span>
-                          {typeof text === 'string' ? text : _(text)}
-                        </span>{' '}
+                        <span>{typeof text === 'string' ? text : _(text)}</span>{' '}
                         {(() => {
                           // `switch` is a non-standard HTML attribute used by
                           // some toggle-style styling; not in Preact's
@@ -1036,9 +1031,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
               placeholder={t`Paste shortcuts here`}
               class="block"
               onInput={(e) => {
-                setImportShortcutStr(
-                  (e.target as HTMLInputElement).value,
-                );
+                setImportShortcutStr((e.target as HTMLInputElement).value);
               }}
               dir="auto"
             />
@@ -1087,9 +1080,11 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                           note,
                         )
                       ) {
-                        const settings = (note.match(
-                          /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/,
-                        ) as RegExpMatchArray)[1];
+                        const settings = (
+                          note.match(
+                            /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/,
+                          ) as RegExpMatchArray
+                        )[1];
                         const { v, dt, data } = JSON.parse(settings) as {
                           v: string;
                           dt: number;
@@ -1167,8 +1162,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                               shortcut[name] ? (
                                 <>
                                   <span class="tag collapsed insignificant">
-                                    {typeof text === 'string' ? text : _(text)}
-                                    :{' '}
+                                    {typeof text === 'string' ? text : _(text)}:{' '}
                                     {type === 'checkbox'
                                       ? shortcut[name] === 'on'
                                         ? '✅'
@@ -1227,19 +1221,15 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                     // is null, so the assertion below matches the JS original
                     // — which would throw on `.filter` if null reached here.
                     const parsed = parsedImportShortcutStr as unknown[];
-                    const nonUniqueShortcuts = parsed.filter(
-                      (rawShortcut) => {
-                        const shortcut = rawShortcut as Record<string, unknown>;
-                        return !(
-                          statesShortcuts.shortcuts as ShortcutEntry[]
-                        ).some((s) =>
-                          // Compare all properties
-                          Object.keys(s).every(
-                            (key) => s[key] === shortcut[key],
-                          ),
-                        );
-                      },
-                    );
+                    const nonUniqueShortcuts = parsed.filter((rawShortcut) => {
+                      const shortcut = rawShortcut as Record<string, unknown>;
+                      return !(
+                        statesShortcuts.shortcuts as ShortcutEntry[]
+                      ).some((s) =>
+                        // Compare all properties
+                        Object.keys(s).every((key) => s[key] === shortcut[key]),
+                      );
+                    });
                     if (!nonUniqueShortcuts.length) {
                       showToast(t`No new shortcuts to import`);
                       return;
@@ -1348,8 +1338,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                   setImportUIState('cloud-uploading');
                   const currentAccount = getCurrentAccountID();
                   try {
-                    const mastoShim =
-                      masto as unknown as ShortcutsMastoClient;
+                    const mastoShim = masto as unknown as ShortcutsMastoClient;
                     const relationships =
                       await mastoShim.v1.accounts.relationships.fetch({
                         id: [currentAccount as string],

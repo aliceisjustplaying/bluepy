@@ -105,7 +105,9 @@ interface MockStatus {
   [key: string]: unknown;
 }
 
-const MOCK_STATUS = ({ toggles = {} as Toggles }: { toggles?: Toggles } = {}): MockStatus => {
+const MOCK_STATUS = ({
+  toggles = {} as Toggles,
+}: { toggles?: Toggles } = {}): MockStatus => {
   console.log('toggles', toggles);
   const {
     contentType,
@@ -496,9 +498,7 @@ export default function Sandbox() {
 
   // Update function with view transitions
   type ToggleUpdates = Partial<ToggleState>;
-  type ToggleUpdater =
-    | ToggleUpdates
-    | ((prev: ToggleState) => ToggleUpdates);
+  type ToggleUpdater = ToggleUpdates | ((prev: ToggleState) => ToggleUpdates);
   const updateToggles = (updates: ToggleUpdater) => {
     const resolvedUpdates: ToggleUpdates =
       typeof updates === 'function' ? updates(toggleState) : updates;
@@ -1605,7 +1605,8 @@ export default function Sandbox() {
                             e: JSX.TargetedEvent<HTMLInputElement>,
                           ) => {
                             // Make sure to convert to a number first to avoid string concatenation
-                            const level = parseInt(e.currentTarget.value, 10) || 0;
+                            const level =
+                              parseInt(e.currentTarget.value, 10) || 0;
                             updateToggles({ quoteNestingLevel: String(level) });
                           }}
                         />

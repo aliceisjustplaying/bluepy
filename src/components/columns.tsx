@@ -28,9 +28,7 @@ interface Shortcut extends ShortcutParams {
   type: string;
 }
 
-type ColumnComponent = ComponentType<
-  ShortcutParams & { columnMode?: boolean }
->;
+type ColumnComponent = ComponentType<ShortcutParams & { columnMode?: boolean }>;
 
 const scrollIntoViewOptions: ScrollIntoViewOptions = {
   block: 'nearest',
@@ -46,22 +44,26 @@ function Columns() {
 
   console.debug('RENDER Columns', shortcuts);
 
-  const components = (shortcuts as readonly (Shortcut | null | undefined)[]).map((shortcut) => {
+  const components = (
+    shortcuts as readonly (Shortcut | null | undefined)[]
+  ).map((shortcut) => {
     if (!shortcut) return null;
     const { type, ...params } = shortcut;
-    const Component = ({
-      following: Following,
-      notifications: Notifications,
-      list: List,
-      public: Public,
-      bookmarks: Bookmarks,
-      favourites: Favourites,
-      hashtag: Hashtag,
-      mentions: Mentions,
-      trending: Trending,
-      search: Search,
-      profile: AccountStatuses,
-    } as unknown as Record<string, ColumnComponent | undefined>)[type];
+    const Component = (
+      {
+        following: Following,
+        notifications: Notifications,
+        list: List,
+        public: Public,
+        bookmarks: Bookmarks,
+        favourites: Favourites,
+        hashtag: Hashtag,
+        mentions: Mentions,
+        trending: Trending,
+        search: Search,
+        profile: AccountStatuses,
+      } as unknown as Record<string, ColumnComponent | undefined>
+    )[type];
     if (!Component) return null;
     // Don't show Search column with no query, for now
     if (type === 'search' && !params.query) return null;
@@ -81,9 +83,8 @@ function Columns() {
     (e) => {
       try {
         const index = parseInt(e.key, 10) - 1;
-        const $column = document.querySelectorAll<HTMLElement>(
-          '#columns > *',
-        )[index];
+        const $column =
+          document.querySelectorAll<HTMLElement>('#columns > *')[index];
         if ($column) {
           $column.focus();
           $column.scrollIntoView(scrollIntoViewOptions);
@@ -167,10 +168,7 @@ function Columns() {
           document
             .querySelectorAll<HTMLElement>('#columns > *')
             .forEach((column) => {
-              column.classList.toggle(
-                'focus',
-                column === currentFocusedColumn,
-              );
+              column.classList.toggle('focus', column === currentFocusedColumn);
             });
         }
       }}

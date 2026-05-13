@@ -1,10 +1,9 @@
 import '@justinribeiro/lite-youtube';
 
+import { decodeBlurHash, getBlurHashAverageColor } from 'fast-blurhash';
 import type { JSX } from 'preact';
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
-
-import { decodeBlurHash, getBlurHashAverageColor } from 'fast-blurhash';
 
 declare module 'preact' {
   namespace JSX {

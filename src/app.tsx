@@ -185,7 +185,8 @@ setInterval(
         const id = el.dataset.statePostId;
         const ids = el.dataset.statePostIds;
         if (id) mountedKeys.add(id);
-        if (ids) ids.split(/\s+/).forEach((key: string) => mountedKeys.add(key));
+        if (ids)
+          ids.split(/\s+/).forEach((key: string) => mountedKeys.add(key));
       });
     for (const key in statuses) {
       if (!appWindow.__IDLE__) break;
@@ -371,10 +372,11 @@ if (isIOS) {
     );
     if ($manualMeta) {
       $manualMeta.name = 'theme-color';
-      $manualMeta.content =
-        (theme === 'light'
+      $manualMeta.content = (
+        theme === 'light'
           ? $manualMeta.dataset.themeLightColor
-          : $manualMeta.dataset.themeDarkColor) as string;
+          : $manualMeta.dataset.themeDarkColor
+      ) as string;
     }
     // Disable auto theme <meta>s
     const $autoMetas = document.querySelectorAll<HTMLMetaElement>(
@@ -563,11 +565,9 @@ function App() {
           vapid_key?: string;
         };
         const vapidKey =
-          (
-            getVapidKey as unknown as (
-              instance?: string | null,
-            ) => unknown
-          )(instanceURL) || vapid_key;
+          (getVapidKey as unknown as (instance?: string | null) => unknown)(
+            instanceURL,
+          ) || vapid_key;
         const verifier = store.sessionCookie.get('codeVerifier');
 
         setUIState('loading');
@@ -584,7 +584,12 @@ function App() {
           await Promise.allSettled([
             initPreferences(client),
             initInstance(client, instanceURL as string),
-            initAccount(client, instanceURL as string, accessToken, vapidKey as string | null | undefined),
+            initAccount(
+              client,
+              instanceURL as string,
+              accessToken,
+              vapidKey as string | null | undefined,
+            ),
           ]);
           initStates();
           window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
@@ -695,9 +700,10 @@ function App() {
     const isRootPath = !location.pathname || location.pathname === '/';
     if (!isRootPath) return;
     if (isPWA && isLoggedIn && uiState === 'default') {
-      const lastPath = store.local.getJSON(lastPathKey) as
-        | { path?: string; lastAccessed?: number }
-        | null;
+      const lastPath = store.local.getJSON(lastPathKey) as {
+        path?: string;
+        lastAccessed?: number;
+      } | null;
       if (lastPath) {
         setTimeout(() => {
           if (lastPath?.path) {

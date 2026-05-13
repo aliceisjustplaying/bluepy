@@ -1,8 +1,6 @@
 import { decompressFrames, parseGIF } from 'gifuct-js';
 
-export async function getGifFirstFrame(
-  gifUrl: string,
-): Promise<string | null> {
+export async function getGifFirstFrame(gifUrl: string): Promise<string | null> {
   try {
     const response = await fetch(gifUrl);
     const buffer = await response.arrayBuffer();

@@ -96,8 +96,7 @@ function Avatar({
           }}
           onLoad={(e) => {
             const target = e.target as unknown as HTMLImageElement;
-            if (avatarRef.current)
-              avatarRef.current.dataset.loaded = 'true';
+            if (avatarRef.current) avatarRef.current.dataset.loaded = 'true';
             if (alphaCache.has(url)) return;
             if (isMissing) return;
             if (!canCheckAlpha) return;

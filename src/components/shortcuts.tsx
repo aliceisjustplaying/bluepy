@@ -136,9 +136,7 @@ function Shortcuts() {
       altIcon?: unknown;
     }
   >;
-  const formattedShortcuts: FormattedShortcut[] = (
-    shortcuts as ShortcutPin[]
-  )
+  const formattedShortcuts: FormattedShortcut[] = (shortcuts as ShortcutPin[])
     .map((pin, i): FormattedShortcut | null => {
       const { type, ...data } = pin;
       if (!type || !shortcutsMeta[type]) return null;
@@ -325,7 +323,9 @@ function Shortcuts() {
                       <Link
                         class={subtitle ? 'has-subtitle' : ''}
                         to={path ?? ''}
-                        onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
+                        onClick={(
+                          e: JSX.TargetedMouseEvent<HTMLAnchorElement>,
+                        ) => {
                           const target = e.target as HTMLElement;
                           if (target.classList.contains('is-active')) {
                             e.preventDefault();

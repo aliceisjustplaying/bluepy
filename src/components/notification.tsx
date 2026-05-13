@@ -1,14 +1,8 @@
-import { msg, t } from '@lingui/core/macro';
 import type { MessageDescriptor } from '@lingui/core';
+import { msg, t } from '@lingui/core/macro';
 import { Plural, Select, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type {
-  ComponentChildren,
-  ComponentType,
-  JSX,
-  Ref,
-  VNode,
-} from 'preact';
+import type { ComponentChildren, ComponentType, JSX, Ref, VNode } from 'preact';
 import { Fragment } from 'preact';
 import { memo } from 'preact/compat';
 
@@ -219,11 +213,7 @@ quote = Someone quoted one of your statuses
 quoted_update = A status you have quoted has been edited
 */
 
-function emojiText({
-  account,
-  emoji,
-  emojiURL,
-}: ContentTextArgs): JSX.Element {
+function emojiText({ account, emoji, emojiURL }: ContentTextArgs): JSX.Element {
   let url: string | undefined;
   let staticUrl: string | undefined;
   if (typeof emojiURL === 'string') {
@@ -282,7 +272,8 @@ const contentText: Record<string, ContentTextRenderer> = {
             _reply={
               <Trans>
                 <Subject clickable={count > 1}>
-                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                  <span title={String(count)}>{shortenNumber(count)}</span>{' '}
+                  people
                 </Subject>{' '}
                 boosted your reply.
               </Trans>
@@ -290,7 +281,8 @@ const contentText: Record<string, ContentTextRenderer> = {
             other={
               <Trans>
                 <Subject clickable={count > 1}>
-                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                  <span title={String(count)}>{shortenNumber(count)}</span>{' '}
+                  people
                 </Subject>{' '}
                 boosted your post.
               </Trans>
@@ -354,7 +346,8 @@ const contentText: Record<string, ContentTextRenderer> = {
             _reply={
               <Trans>
                 <Subject clickable={count > 1}>
-                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                  <span title={String(count)}>{shortenNumber(count)}</span>{' '}
+                  people
                 </Subject>{' '}
                 liked your reply.
               </Trans>
@@ -362,7 +355,8 @@ const contentText: Record<string, ContentTextRenderer> = {
             other={
               <Trans>
                 <Subject clickable={count > 1}>
-                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                  <span title={String(count)}>{shortenNumber(count)}</span>{' '}
+                  people
                 </Subject>{' '}
                 liked your post.
               </Trans>
@@ -413,7 +407,8 @@ const contentText: Record<string, ContentTextRenderer> = {
             _reply={
               <Trans>
                 <Subject clickable={count > 1}>
-                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                  <span title={String(count)}>{shortenNumber(count)}</span>{' '}
+                  people
                 </Subject>{' '}
                 boosted & liked your reply.
               </Trans>
@@ -421,7 +416,8 @@ const contentText: Record<string, ContentTextRenderer> = {
             other={
               <Trans>
                 <Subject clickable={count > 1}>
-                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                  <span title={String(count)}>{shortenNumber(count)}</span>{' '}
+                  people
                 </Subject>{' '}
                 boosted & liked your post.
               </Trans>
@@ -610,8 +606,7 @@ function Notification({
   // change behavior).
   const diffCount =
     (notificationsCount as number) > 0 &&
-    (notificationsCount as number) >
-      (sampleAccounts?.length as number);
+    (notificationsCount as number) > (sampleAccounts?.length as number);
   const expandAccounts: 'remote' | 'local' = diffCount ? 'remote' : 'local';
 
   if (typeof text === 'function') {
@@ -641,12 +636,12 @@ function Notification({
       (type === 'emoji_reaction' || type === 'pleroma:emoji_reaction') &&
       notification.emoji
     ) {
-      const emojiShortcode = notification.emoji.replace(/^:/, '').replace(/:$/, '');
+      const emojiShortcode = notification.emoji
+        .replace(/^:/, '')
+        .replace(/:$/, '');
       const emojiURL: string | EmojiUrlObject | undefined =
         notification.emoji_url || // This is string
-        status?.emojis?.find?.(
-          (emoji) => emoji?.shortcode === emojiShortcode,
-        ); // Emoji object instead of string
+        status?.emojis?.find?.((emoji) => emoji?.shortcode === emojiShortcode); // Emoji object instead of string
       text = renderer({
         account: <NameText account={account} showAvatar />,
         emoji: notification.emoji,
@@ -660,11 +655,9 @@ function Notification({
       text = renderer({
         account: account ? (
           <NameText account={account} showAvatar />
-        ) : (
-          sampleAccounts?.[0] ? (
-            <NameText account={sampleAccounts[0]} showAvatar />
-          ) : null
-        ),
+        ) : sampleAccounts?.[0] ? (
+          <NameText account={sampleAccounts[0]} showAvatar />
+        ) : null,
         count: count as number | undefined,
         postsCount,
         postType: isReplyToOthers ? 'reply' : 'post',
@@ -678,12 +671,14 @@ function Notification({
 
   const genericAccountsHeading =
     (type !== undefined &&
-      ({
-        'favourite+reblog': t`Boosted/Liked by…`,
-        favourite: t`Liked by…`,
-        reblog: t`Boosted by…`,
-        follow: t`Followed by…`,
-      } as Record<string, string>)[type]) ||
+      (
+        {
+          'favourite+reblog': t`Boosted/Liked by…`,
+          favourite: t`Liked by…`,
+          reblog: t`Boosted by…`,
+          follow: t`Followed by…`,
+        } as Record<string, string>
+      )[type]) ||
     t`Accounts`;
   const showRemoteAccounts =
     (type === 'favourite+reblog' ||
@@ -771,12 +766,7 @@ function Notification({
   if (!!status?.filtered) {
     const isOwnPost = status?.account?.id === currentAccount;
     const filterInfo = isFiltered(status.filtered, 'notifications');
-    if (
-      !isSelf &&
-      !isOwnPost &&
-      filterInfo &&
-      filterInfo.action === 'hide'
-    ) {
+    if (!isSelf && !isOwnPost && filterInfo && filterInfo.action === 'hide') {
       return null;
     }
   }
@@ -841,7 +831,9 @@ function Notification({
             {type === 'follow_request' && (
               // JS original passed `account.id` unconditionally; missing
               // account would crash here. Preserve that contract.
-              <FollowRequestButtons accountID={(account as AccountWithBot).id!} />
+              <FollowRequestButtons
+                accountID={(account as AccountWithBot).id!}
+              />
             )}
             {type === 'severed_relationships' && (
               <div>
@@ -1013,17 +1005,18 @@ function Notification({
                 </a>{' '}
               </Fragment>
             ))}
-            {(notificationsCount ?? 0) > sampleAccounts.length && status?.id && (
-              <Link
-                to={
-                  instance ? `/${instance}/s/${status.id}` : `/s/${status.id}`
-                }
-                class="button small plain centered"
-              >
-                +{(notificationsCount as number) - sampleAccounts.length}
-                <Icon icon="chevron-right" />
-              </Link>
-            )}
+            {(notificationsCount ?? 0) > sampleAccounts.length &&
+              status?.id && (
+                <Link
+                  to={
+                    instance ? `/${instance}/s/${status.id}` : `/s/${status.id}`
+                  }
+                  class="button small plain centered"
+                >
+                  +{(notificationsCount as number) - sampleAccounts.length}
+                  <Icon icon="chevron-right" />
+                </Link>
+              )}
           </p>
         )}
         {_statuses && _statuses.length > 1 && (

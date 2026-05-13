@@ -35,8 +35,8 @@ export default function HttpRoute() {
         const { instance, id } = statusObject;
         if (id) {
           const { masto } = api({ instance });
-          const statusesResource =
-            masto.v1.statuses as unknown as mastodon.rest.v1.StatusesResource;
+          const statusesResource = masto.v1
+            .statuses as unknown as mastodon.rest.v1.StatusesResource;
           const status = await statusesResource.$select(id).fetch();
           if (status) {
             window.location.hash = statusURL + '?view=full';
@@ -48,8 +48,8 @@ export default function HttpRoute() {
       // Fallback to search
       {
         const { masto: currentMasto, instance: currentInstance } = api();
-        const searchResource =
-          currentMasto.v2.search as unknown as mastodon.rest.v2.SearchResource;
+        const searchResource = currentMasto.v2
+          .search as unknown as mastodon.rest.v2.SearchResource;
         const result = await searchResource.list({
           q: url,
           limit: 1,
