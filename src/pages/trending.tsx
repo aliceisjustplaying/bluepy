@@ -4,10 +4,13 @@ import './trending.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import { getBlurHashAverageColor } from 'fast-blurhash';
+import type { mastodon } from 'masto';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import punycode from 'punycode/';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
+
+import type { ComponentType } from 'preact';
 
 import Icon from '../components/icon';
 import Link from '../components/link';
@@ -15,7 +18,7 @@ import Loader from '../components/loader';
 import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
-import Timeline from '../components/timeline';
+import TimelineRaw from '../components/timeline';
 import { api } from '../utils/api';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import { filteredItems } from '../utils/filters';
@@ -26,12 +29,82 @@ import states, { saveStatus } from '../utils/states';
 import supports from '../utils/supports';
 import useTitle from '../utils/useTitle';
 
+const Timeline = TimelineRaw as unknown as ComponentType<
+  Record<string, unknown>
+>;
+
 const LIMIT = 20;
 const TREND_CACHE_TIME = 10 * 60 * 1000; // 10 minutes
 
+interface IteratorYield<T> {
+  value: T;
+  done?: boolean;
+}
+
+interface AsyncListIterator {
+  next(): Promise<IteratorYield<unknown>>;
+}
+
+interface TrendingApiList {
+  list(params?: Record<string, unknown>): {
+    values(): AsyncListIterator;
+  };
+}
+
+type MastoTrendingClient = Record<string, unknown>;
+
+interface HashtagHistoryEntry {
+  uses: number | string;
+  [key: string]: unknown;
+}
+
+interface HashtagItem {
+  name: string;
+  history: HashtagHistoryEntry[];
+  [key: string]: unknown;
+}
+
+interface AuthorAccount {
+  id: string;
+  acct: string;
+  url: string;
+  username: string;
+  [key: string]: unknown;
+}
+
+interface LinkItem {
+  authors?: { account?: AuthorAccount }[];
+  authorName?: string;
+  authorUrl?: string;
+  blurhash?: string;
+  description?: string;
+  height?: number;
+  image?: string;
+  imageDescription?: string;
+  language?: string;
+  providerName?: string;
+  providerUrl?: string;
+  publishedAt?: string;
+  title: string;
+  type?: string;
+  url: string;
+  width?: number;
+  [key: string]: unknown;
+}
+
+interface StatusItem {
+  id: string;
+  filtered?: readonly mastodon.v1.FilterResult[] | null;
+  account?: { id?: string } & Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 const fetchLinks = pmem(
-  (masto) => {
-    return masto.v1.trends.links.list().values().next();
+  (masto: MastoTrendingClient, _instance?: string) => {
+    return (masto as { v1: { trends: { links: TrendingApiList } } }).v1.trends
+      .links.list()
+      .values()
+      .next() as Promise<IteratorYield<LinkItem[]>>;
   },
   {
     expires: TREND_CACHE_TIME,
@@ -39,62 +112,86 @@ const fetchLinks = pmem(
 );
 
 const fetchHashtags = pmem(
-  (masto) => {
-    return masto.v1.trends.tags.list().values().next();
+  (masto: MastoTrendingClient) => {
+    return (masto as { v1: { trends: { tags: TrendingApiList } } }).v1.trends
+      .tags.list()
+      .values()
+      .next() as Promise<IteratorYield<HashtagItem[]>>;
   },
   {
     expires: TREND_CACHE_TIME,
   },
 );
 
-function fetchTrendsStatuses(masto) {
+function fetchTrendsStatuses(masto: MastoTrendingClient): AsyncListIterator {
   if (supports('@pixelfed/trending')) {
-    return masto.pixelfed.v2.discover.posts.trending
+    return (
+      masto as {
+        pixelfed: {
+          v2: { discover: { posts: { trending: TrendingApiList } } };
+        };
+      }
+    ).pixelfed.v2.discover.posts.trending
       .list({
         range: 'daily',
       })
       .values();
   }
-  return masto.v1.trends.statuses
-    .list({
+  return (masto as { v1: { trends: { statuses: TrendingApiList } } }).v1.trends
+    .statuses.list({
       limit: LIMIT,
     })
     .values();
 }
 
-function fetchLinkList(masto, params) {
-  return masto.v1.timelines.link.list(params).values();
+function fetchLinkList(
+  masto: MastoTrendingClient,
+  params: Record<string, unknown>,
+): AsyncListIterator {
+  return (masto as { v1: { timelines: { link: TrendingApiList } } }).v1
+    .timelines.link.list(params)
+    .values();
 }
 
-function Trending({ columnMode, ...props }) {
+interface TrendingProps {
+  columnMode?: boolean;
+  instance?: string;
+  [key: string]: unknown;
+}
+
+function Trending({ columnMode, ...props }: TrendingProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const params = columnMode ? {} : useParams();
+  const params = (columnMode ? {} : useParams()) as Record<string, string>;
   const { masto, instance, authenticated } = api({
-    instance: props?.instance || params.instance,
+    instance: (props?.instance as string | undefined) || params.instance,
   });
   const { masto: currentMasto, instance: currentInstance } = api();
   const title = t`Trending (${instance})`;
   useTitle(title, `/:instance?/trending`);
   // const navigate = useNavigate();
-  const latestItem = useRef();
+  const latestItem = useRef<string | undefined>(undefined);
 
   const sameCurrentInstance = instance === currentInstance;
 
-  const [hashtags, setHashtags] = useState([]);
-  const [links, setLinks] = useState([]);
-  const trendIterator = useRef();
+  const [hashtags, setHashtags] = useState<HashtagItem[]>([]);
+  const [links, setLinks] = useState<LinkItem[]>([]);
+  const trendIterator = useRef<AsyncListIterator | undefined>(undefined);
 
-  async function fetchTrends(firstLoad) {
+  async function fetchTrends(firstLoad: boolean) {
     console.log('fetchTrend', firstLoad);
     if (firstLoad || !trendIterator.current) {
-      trendIterator.current = fetchTrendsStatuses(masto);
+      trendIterator.current = fetchTrendsStatuses(
+        masto as MastoTrendingClient,
+      );
 
       // Get hashtags
       if (supports('@mastodon/trending-hashtags')) {
         try {
           // const iterator = masto.v1.trends.tags.list();
-          const { value: tags } = await fetchHashtags(masto);
+          const { value: tags } = await fetchHashtags(
+            masto as MastoTrendingClient,
+          );
           console.log('tags', tags);
           if (tags?.length) {
             setHashtags(tags);
@@ -107,7 +204,10 @@ function Trending({ columnMode, ...props }) {
       // Get links
       if (supports('@mastodon/trending-links')) {
         try {
-          const { value } = await fetchLinks(masto, instance);
+          const { value } = await fetchLinks(
+            masto as MastoTrendingClient,
+            instance,
+          );
           // 4 types available: link, photo, video, rich
           // Only want links for now
           const links = value?.filter?.((link) => link.type === 'link');
@@ -121,14 +221,14 @@ function Trending({ columnMode, ...props }) {
       }
     }
     const results = await trendIterator.current.next();
-    let { value } = results;
+    const value = results.value as StatusItem[] | undefined;
     if (value?.length) {
       if (firstLoad) {
         latestItem.current = value[0].id;
       }
 
       // value = filteredItems(value, 'public'); // Might not work here
-      value.forEach((item) => {
+      value.forEach((item: StatusItem) => {
         saveStatus(item, instance);
       });
     }
@@ -142,10 +242,12 @@ function Trending({ columnMode, ...props }) {
   // https://github.com/mastodon/mastodon/pull/30381
   const [currentLinkMentionsLoading, setCurrentLinkMentionsLoading] =
     useState(false);
-  const currentLinkMentionsIterator = useRef();
-  const [currentLink, setCurrentLink] = useState(null);
+  const currentLinkMentionsIterator = useRef<AsyncListIterator | undefined>(
+    undefined,
+  );
+  const [currentLink, setCurrentLink] = useState<string | null>(null);
   const hasCurrentLink = !!currentLink;
-  const currentLinkRef = useRef();
+  const currentLinkRef = useRef<HTMLAnchorElement | null>(null);
   const supportsTrendingLinkPosts =
     sameCurrentInstance && supports('@mastodon/trending-link-posts');
 
@@ -159,20 +261,23 @@ function Trending({ columnMode, ...props }) {
     }
   }, [currentLink]);
 
-  const prevCurrentLink = useRef();
-  async function fetchLinkMentions(firstLoad) {
+  const prevCurrentLink = useRef<string | null>(null);
+  async function fetchLinkMentions(firstLoad: boolean) {
     if (firstLoad || !currentLinkMentionsIterator.current) {
       setCurrentLinkMentionsLoading(true);
-      currentLinkMentionsIterator.current = fetchLinkList(masto, {
-        url: currentLink,
-      });
+      currentLinkMentionsIterator.current = fetchLinkList(
+        masto as MastoTrendingClient,
+        {
+          url: currentLink,
+        },
+      );
     }
     prevCurrentLink.current = currentLink;
     const results = await currentLinkMentionsIterator.current.next();
-    let { value } = results;
+    let value = results.value as StatusItem[] | undefined;
     if (value?.length) {
-      value = filteredItems(value, 'public');
-      value.forEach((item) => {
+      value = filteredItems(value, 'public') as StatusItem[];
+      value.forEach((item: StatusItem) => {
         saveStatus(item, instance);
       });
     }
@@ -187,7 +292,11 @@ function Trending({ columnMode, ...props }) {
 
   async function checkForUpdates() {
     try {
-      const results = await masto.v1.trends.statuses
+      const results = await (
+        masto as unknown as {
+          v1: { trends: { statuses: TrendingApiList } };
+        }
+      ).v1.trends.statuses
         .list({
           limit: 1,
           // NOT SUPPORTED
@@ -195,8 +304,8 @@ function Trending({ columnMode, ...props }) {
         })
         .values()
         .next();
-      let { value } = results;
-      value = filteredItems(value, 'public');
+      let value = results.value as StatusItem[] | undefined;
+      value = filteredItems(value, 'public') as StatusItem[];
       if (value?.length && value[0].id !== latestItem.current) {
         latestItem.current = value[0].id;
         return true;
@@ -213,9 +322,12 @@ function Trending({ columnMode, ...props }) {
         {!!hashtags.length && (
           <div class="filter-bar expandable">
             <Icon icon="chart" class="insignificant" size="l" />
-            {hashtags.map((tag, i) => {
+            {hashtags.map((tag: HashtagItem, i: number) => {
               const { name, history } = tag;
-              const total = history.reduce((acc, cur) => acc + +cur.uses, 0);
+              const total = history.reduce(
+                (acc: number, cur: HashtagHistoryEntry) => acc + +cur.uses,
+                0,
+              );
               return (
                 <Link to={`/${instance}/t/${name}`} key={name}>
                   <span dir="auto">
@@ -235,7 +347,7 @@ function Trending({ columnMode, ...props }) {
                 <Trans>Trending News</Trans>
               </h3>
             </header>
-            {links.map((link) => {
+            {links.map((link: LinkItem) => {
               const {
                 authors,
                 authorName,
@@ -259,15 +371,15 @@ function Trending({ columnMode, ...props }) {
               const isShortTitle = title.length < 30;
               const hasAuthor = !!(authorName || author);
               const domain = getDomain(url);
-              let accentColor;
+              let accentColor: readonly number[] | undefined;
               if (blurhash) {
                 const averageColor = getBlurHashAverageColor(blurhash);
-                const labAverageColor = rgb2oklab(averageColor);
+                const labAverageColor = rgb2oklab(averageColor) as readonly number[];
                 accentColor = oklab2rgb([
                   0.6,
                   labAverageColor[1],
                   labAverageColor[2],
-                ]);
+                ]) as readonly number[];
               }
 
               return (
@@ -416,7 +528,7 @@ function Trending({ columnMode, ...props }) {
                   <Trans>
                     Showing posts mentioning{' '}
                     <span class="link-text">
-                      {currentLink
+                      {currentLink!
                         .replace(/^https?:\/\/(www\.)?/i, '')
                         .replace(/\/$/, '')}
                     </span>
@@ -481,7 +593,7 @@ function Trending({ columnMode, ...props }) {
               let newInstance = prompt(
                 t`Enter a new server e.g. "mastodon.social"`,
               );
-              if (!/\./.test(newInstance)) {
+              if (!/\./.test(newInstance as string)) {
                 if (newInstance) alert(t`Invalid server`);
                 return;
               }

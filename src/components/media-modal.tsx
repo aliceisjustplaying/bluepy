@@ -1,6 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { getBlurHashAverageColor } from 'fast-blurhash';
+import type { ComponentType } from 'preact';
 import {
   useEffect,
   useLayoutEffect,
@@ -18,11 +19,56 @@ import store from '../utils/store';
 
 import Icon from './icon';
 import Link from './link';
-import Media from './media';
+import MediaRaw from './media';
 import MenuLink from './menu-link';
 import Menu2 from './menu2';
 
 const { PHANPY_IMG_ALT_API_URL: IMG_ALT_API_URL } = import.meta.env;
+
+interface MediaAttachment {
+  id: string;
+  blurhash?: string;
+  description?: string;
+  type?: string;
+  url?: string;
+  remoteUrl?: string;
+  [key: string]: unknown;
+}
+
+interface ToastHandle {
+  showToast(): void;
+  hideToast(): void;
+}
+
+type RGB = readonly number[];
+
+interface AccentColor {
+  light: RGB;
+  dark: RGB;
+  default: RGB;
+}
+
+type CarouselCloseHandler = (
+  e?: unknown,
+  currentIndex?: number,
+  mediaAttachments?: MediaAttachment[],
+  carouselRef?: { current: HTMLDivElement | null },
+) => void;
+
+interface MediaModalProps {
+  mediaAttachments: MediaAttachment[];
+  statusID?: string;
+  instance?: string;
+  lang?: string;
+  index?: number;
+  onClose?: CarouselCloseHandler;
+}
+
+const Media = MediaRaw as unknown as ComponentType<{
+  media: MediaAttachment;
+  showOriginal?: boolean;
+  lang?: string;
+}>;
 
 function MediaModal({
   mediaAttachments,
@@ -31,13 +77,13 @@ function MediaModal({
   lang,
   index = 0,
   onClose = () => {},
-}) {
+}: MediaModalProps) {
   const { t } = useLingui();
-  const [uiState, setUIState] = useState('default');
-  const carouselRef = useRef(null);
+  const [uiState, setUIState] = useState<'default' | 'loading'>('default');
+  const carouselRef = useRef<HTMLDivElement | null>(null);
 
   const [currentIndex, setCurrentIndex] = useState(index);
-  const carouselFocusItem = useRef(null);
+  const carouselFocusItem = useRef<HTMLDivElement | null>(null);
   useLayoutEffect(() => {
     carouselFocusItem.current?.scrollIntoView();
 
@@ -54,11 +100,12 @@ function MediaModal({
   }, []);
   const prevStatusID = useRef(statusID);
   useEffect(() => {
-    const scrollLeft = index * carouselRef.current.clientWidth;
+    const carousel = carouselRef.current!;
+    const scrollLeft = index * carousel.clientWidth;
     const differentStatusID = prevStatusID.current !== statusID;
     if (differentStatusID) prevStatusID.current = statusID;
-    carouselRef.current.focus();
-    carouselRef.current.scrollTo({
+    carousel.focus();
+    carousel.scrollTo({
       left: scrollLeft * (isRTL() ? -1 : 1),
       behavior: differentStatusID ? 'auto' : 'smooth',
     });
@@ -67,7 +114,7 @@ function MediaModal({
   const [showControls, setShowControls] = useState(true);
 
   useEffect(() => {
-    let handleSwipe = (e) => {
+    const handleSwipe = (e: Event) => {
       onClose(e, currentIndex, mediaAttachments, carouselRef);
     };
     if (carouselRef.current) {
@@ -86,7 +133,7 @@ function MediaModal({
       onClose(e, currentIndex, mediaAttachments, carouselRef);
     },
     {
-      ignoreEventWhen: (e) => {
+      ignoreEventWhen: (e: KeyboardEvent) => {
         const hasModal = !!document.querySelector('#modal-container > *');
         return hasModal || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
       },
@@ -96,8 +143,8 @@ function MediaModal({
   );
 
   useEffect(() => {
-    let handleScroll = () => {
-      const { clientWidth, scrollLeft } = carouselRef.current;
+    const handleScroll = () => {
+      const { clientWidth, scrollLeft } = carouselRef.current!;
       const index = Math.round(Math.abs(scrollLeft) / clientWidth);
       setCurrentIndex(index);
     };
@@ -121,31 +168,31 @@ function MediaModal({
   }, []);
 
   const mediaOkColors = useMemo(() => {
-    return mediaAttachments?.map((media) => {
+    return mediaAttachments?.map((media: MediaAttachment) => {
       const { blurhash } = media;
       if (blurhash) {
         const averageColor = getBlurHashAverageColor(blurhash);
-        return rgb2oklch(averageColor);
+        return rgb2oklch(averageColor) as readonly number[];
       }
       return null;
     });
   }, [mediaAttachments]);
   const mediaAccentColors = useMemo(() => {
-    return mediaOkColors?.map((okColor) => {
+    return mediaOkColors?.map((okColor: readonly number[] | null) => {
       if (okColor) {
         return {
           light: oklch2rgb([0.95, 0.01, okColor[2]]),
           dark: oklch2rgb([0.35, 0.01, okColor[2]]),
           default: oklch2rgb([0.6, okColor[1], okColor[2]]),
-        };
+        } satisfies AccentColor;
       }
       return null;
     });
-  });
+  }, undefined);
   const mediaAccentGradients = useMemo(() => {
     const gap = 5;
-    const range = 100 / mediaAccentColors.length;
-    const colors = mediaAccentColors.map((color, i) => {
+    const range = 100 / mediaAccentColors!.length;
+    const colors = mediaAccentColors!.map((color, i) => {
       const start = i * range + gap;
       const end = (i + 1) * range - gap;
       if (color?.light && color?.dark) {
@@ -180,7 +227,7 @@ function MediaModal({
     };
   }, [mediaAccentColors]);
 
-  let toastRef = useRef(null);
+  const toastRef = useRef<ToastHandle | null>(null);
   useEffect(() => {
     return () => {
       toastRef.current?.hideToast?.();
@@ -188,15 +235,15 @@ function MediaModal({
   }, []);
 
   useLayoutEffect(() => {
-    const currentColor = mediaAccentColors[currentIndex];
-    let $meta;
-    let metaColor;
+    const currentColor = mediaAccentColors![currentIndex];
+    let $meta: HTMLMetaElement | null | undefined;
+    let metaColor: string | undefined;
     if (currentColor) {
-      const theme = store.local.get('theme');
+      const theme = store.local.get('theme') as 'light' | 'dark' | null;
       if (theme) {
         const mediaColor = `rgb(${currentColor[theme].join(',')})`;
         console.log({ mediaColor });
-        $meta = document.querySelector(
+        $meta = document.querySelector<HTMLMetaElement>(
           `meta[name="theme-color"][data-theme-setting="manual"]`,
         );
         if ($meta) {
@@ -214,7 +261,7 @@ function MediaModal({
           : 'light';
         const mediaColor = `rgb(${currentColor[colorScheme].join(',')})`;
         console.log({ mediaColor });
-        $meta = document.querySelector(
+        $meta = document.querySelector<HTMLMetaElement>(
           `meta[name="theme-color"][media*="${colorScheme}"]`,
         );
         if ($meta) {
@@ -242,14 +289,15 @@ function MediaModal({
     >
       <div
         ref={carouselRef}
-        tabIndex="0"
+        tabIndex={0}
         data-swipe-threshold="44"
         class="carousel"
         onClick={(e) => {
+          const target = e.target as HTMLElement;
           if (
-            e.target.classList.contains('carousel-item') ||
-            e.target.classList.contains('media') ||
-            e.target.classList.contains('media-zoom')
+            target.classList.contains('carousel-item') ||
+            target.classList.contains('media') ||
+            target.classList.contains('media-zoom')
           ) {
             onClose(e, currentIndex, mediaAttachments, carouselRef);
           }
@@ -266,9 +314,9 @@ function MediaModal({
             : {}
         }
       >
-        {mediaAttachments?.map((media, i) => {
+        {mediaAttachments?.map((media: MediaAttachment, i: number) => {
           const accentColor =
-            mediaAttachments.length === 1 ? mediaAccentColors[i] : null;
+            mediaAttachments.length === 1 ? mediaAccentColors![i] : null;
           return (
             <div
               class="carousel-item"
@@ -288,7 +336,7 @@ function MediaModal({
                     }
                   : {}
               }
-              tabindex="0"
+              tabindex={0}
               key={media.id}
               ref={i === currentIndex ? carouselFocusItem : null}
               onClick={(e) => {
@@ -296,7 +344,7 @@ function MediaModal({
                 // if (e.target !== e.currentTarget) {
                 //   setShowControls(!showControls);
                 // }
-                if (!e.target.classList.contains('media')) {
+                if (!(e.target as HTMLElement).classList.contains('media')) {
                   setShowControls(!showControls);
                 }
               }}
@@ -338,7 +386,7 @@ function MediaModal({
         </span>
         {mediaAttachments?.length > 1 ? (
           <span class="carousel-dots">
-            {mediaAttachments?.map((media, i) => (
+            {mediaAttachments?.map((media: MediaAttachment, i: number) => (
               <button
                 key={media.id}
                 type="button"
@@ -347,10 +395,10 @@ function MediaModal({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  const left =
-                    carouselRef.current.clientWidth * i * (isRTL() ? -1 : 1);
-                  carouselRef.current.focus();
-                  carouselRef.current.scrollTo({ left, behavior: 'smooth' });
+                  const carousel = carouselRef.current!;
+                  const left = carousel.clientWidth * i * (isRTL() ? -1 : 1);
+                  carousel.focus();
+                  carousel.scrollTo({ left, behavior: 'smooth' });
                 }}
               >
                 <Icon icon="round" size="s" alt="⸱" />
@@ -398,6 +446,8 @@ function MediaModal({
                   <MenuItem
                     disabled={uiState === 'loading'}
                     onClick={() => {
+                      const currentUrl =
+                        mediaAttachments[currentIndex]?.url;
                       setUIState('loading');
                       toastRef.current = showToast({
                         text: t`Attempting to describe image. Please wait…`,
@@ -407,7 +457,7 @@ function MediaModal({
                         try {
                           const response = await fetch(
                             `${IMG_ALT_API_URL}?image=${encodeURIComponent(
-                              mediaAttachments[currentIndex]?.url,
+                              currentUrl as string,
                             )}`,
                           ).then((r) => r.json());
                           states.showMediaAlt = {
@@ -465,10 +515,11 @@ function MediaModal({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              carouselRef.current.focus();
-              carouselRef.current.scrollTo({
+              const carousel = carouselRef.current!;
+              carousel.focus();
+              carousel.scrollTo({
                 left:
-                  carouselRef.current.clientWidth *
+                  carousel.clientWidth *
                   (currentIndex - 1) *
                   (isRTL() ? -1 : 1),
                 behavior: 'smooth',
@@ -484,10 +535,11 @@ function MediaModal({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              carouselRef.current.focus();
-              carouselRef.current.scrollTo({
+              const carousel = carouselRef.current!;
+              carousel.focus();
+              carousel.scrollTo({
                 left:
-                  carouselRef.current.clientWidth *
+                  carousel.clientWidth *
                   (currentIndex + 1) *
                   (isRTL() ? -1 : 1),
                 behavior: 'smooth',

@@ -9,7 +9,7 @@ import {
 } from '@szhsin/react-menu';
 import { memo } from 'preact/compat';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { useLongPress } from 'use-long-press';
+import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
 import { api } from '../utils/api';
@@ -26,7 +26,20 @@ import ListExclusiveBadge from './list-exclusive-badge';
 import MenuLink from './menu-link';
 import SubMenu2 from './submenu2';
 
-function NavMenu(props) {
+interface ShortcutLike {
+  type?: string;
+  [key: string]: unknown;
+}
+
+interface MutesBlocksApi {
+  list(options: { limit: number }): {
+    values(): AsyncIterator<unknown>;
+  };
+}
+
+type MenuStateValue = 'open' | 'closed' | 'opening' | 'closing' | undefined;
+
+function NavMenu(props: Record<string, unknown>) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const { masto, instance, authenticated } = api();
@@ -36,13 +49,15 @@ function NavMenu(props) {
     const acc =
       accounts.find((account) => account.info.id === getCurrentAccountID()) ||
       accounts[0];
-    return [acc, accounts.length > 1];
+    return [acc, accounts.length > 1] as const;
   }, []);
 
   // Don't show avatar in nav button if profile shortcut is already showing
   const tabMenuHasProfile =
     snapStates.settings.shortcutsViewMode === 'tab-menu-bar' &&
-    snapStates.shortcuts.some((pin) => pin.type === 'profile');
+    (snapStates.shortcuts as readonly ShortcutLike[]).some(
+      (pin) => pin.type === 'profile',
+    );
   const showAvatarInButton = moreThanOneAccount && !tabMenuHasProfile;
 
   const showFollowing = authenticated;
@@ -53,13 +68,13 @@ function NavMenu(props) {
     },
     {
       threshold: 600,
-      detect: 'touch',
+      detect: LongPressEventType.Touch,
       cancelOnMovement: true,
     },
   );
 
-  const buttonRef = useRef();
-  const [menuState, setMenuState] = useState(undefined);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [menuState, setMenuState] = useState<MenuStateValue>(undefined);
 
   const boundingBoxPadding = safeBoundingBoxPadding([
     0,
@@ -68,10 +83,12 @@ function NavMenu(props) {
     0,
   ]);
 
-  const mutesIterator = useRef();
-  async function fetchMutes(firstLoad) {
+  const mastoV1 = (masto as { v1: Record<string, unknown> }).v1;
+
+  const mutesIterator = useRef<AsyncIterator<unknown> | undefined>(undefined);
+  async function fetchMutes(firstLoad: boolean) {
     if (firstLoad || !mutesIterator.current) {
-      mutesIterator.current = masto.v1.mutes
+      mutesIterator.current = (mastoV1.mutes as MutesBlocksApi)
         .list({
           limit: 80,
         })
@@ -81,10 +98,10 @@ function NavMenu(props) {
     return results;
   }
 
-  const blocksIterator = useRef();
-  async function fetchBlocks(firstLoad) {
+  const blocksIterator = useRef<AsyncIterator<unknown> | undefined>(undefined);
+  async function fetchBlocks(firstLoad: boolean) {
     if (firstLoad || !blocksIterator.current) {
-      blocksIterator.current = masto.v1.blocks
+      blocksIterator.current = (mastoV1.blocks as MutesBlocksApi)
         .list({
           limit: 80,
         })
@@ -94,7 +111,7 @@ function NavMenu(props) {
     return results;
   }
 
-  const buttonClickTS = useRef();
+  const buttonClickTS = useRef<number>(0);
   return (
     <>
       <button
@@ -106,7 +123,9 @@ function NavMenu(props) {
         style={{ position: 'relative' }}
         onClick={() => {
           buttonClickTS.current = Date.now();
-          setMenuState((state) => (!state ? 'open' : undefined));
+          setMenuState((state: MenuStateValue) =>
+            !state ? 'open' : undefined,
+          );
         }}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -117,10 +136,13 @@ function NavMenu(props) {
         {showAvatarInButton && (
           <Avatar
             url={
-              currentAccount?.info?.avatar || currentAccount?.info?.avatarStatic
+              (currentAccount?.info?.avatar ||
+                (currentAccount?.info?.avatarStatic as string | undefined)) as
+                | string
+                | undefined
             }
             size="l"
-            squircle={currentAccount?.info?.bot}
+            squircle={currentAccount?.info?.bot as boolean | undefined}
           />
         )}
         <Icon icon="menu" size={showAvatarInButton ? 's' : 'l'} alt={t`Menu`} />
@@ -413,9 +435,11 @@ function NavMenu(props) {
   );
 }
 
-function ListMenu({ menuState }) {
+function ListMenu({ menuState }: { menuState: MenuStateValue }) {
   const supportsLists = supports('@mastodon/lists');
-  const [lists, setLists] = useState([]);
+  const [lists, setLists] = useState<
+    Awaited<ReturnType<typeof getLists>>
+  >([]);
   const { lists: userLists, feeds } = splitListsAndFeeds(lists);
   useEffect(() => {
     if (!supportsLists) return;
