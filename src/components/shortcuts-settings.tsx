@@ -1,12 +1,15 @@
 import './shortcuts-settings.css';
 
 import { useAutoAnimate } from '@formkit/auto-animate/preact';
+import type { MessageDescriptor } from '@lingui/core';
 import { msg, t } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import {
   compressToEncodedURIComponent,
   decompressFromEncodedURIComponent,
 } from 'lz-string';
+import type { mastodon } from 'masto';
+import type { JSX } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
@@ -29,9 +32,81 @@ import MenuConfirm from './menu-confirm';
 import Modal from './modal';
 import { mediaDevicesSupported } from './qr-code-modal';
 
+// A shortcut record stored in the user's shortcut list. `type` selects which
+// timeline; remaining string keys are per-type params (id, instance, query,
+// hashtag, local, media, ...). Form submissions only ever produce string
+// values (FormData), so non-`type` fields are typed loosely as string.
+interface ShortcutEntry {
+  type: string;
+  [key: string]: string | undefined;
+}
+
+// `states.shortcuts` is typed as `unknown[]` in the central proxy. Locally we
+// narrow it to ShortcutEntry[] at the read boundary.
+const statesShortcuts = states as unknown as {
+  shortcuts: ShortcutEntry[];
+  settings: {
+    shortcutsViewMode: string | null;
+    shortcutSettingsCloudImportExport: boolean;
+    [key: string]: unknown;
+  };
+  showQrScannerModal: unknown;
+  showQrCodeModal: unknown;
+  [key: string]: unknown;
+};
+
+// `api().masto` is loosely typed at the hub (open index signature). Shim a
+// narrower view for the v1 endpoints touched here.
+interface AccountFetchClient {
+  fetch(): Promise<{
+    username?: string;
+    acct?: string;
+    displayName?: string;
+  }>;
+}
+interface AccountSelectClient {
+  fetch(): Promise<{
+    username?: string;
+    acct?: string;
+    displayName?: string;
+  }>;
+  note: {
+    create(opts: { comment: string }): Promise<unknown>;
+  };
+}
+interface RelationshipsClient {
+  fetch(opts: { id: string[] }): Promise<Array<{ note?: string }>>;
+}
+interface MastoV1AccountsForShortcuts {
+  $select(id: string): AccountSelectClient;
+  relationships: RelationshipsClient;
+}
+interface ShortcutsMastoClient {
+  v1: {
+    accounts: MastoV1AccountsForShortcuts;
+  };
+}
+
+function shortcutsMasto(): ShortcutsMastoClient {
+  return api().masto as unknown as ShortcutsMastoClient;
+}
+
+// Lingui macro returns `Omit<I18nContext, "_"> & { t }`. Other tsx call sites
+// use `i18n._(msg)` to translate MessageDescriptors; we follow that pattern.
+type Translator = (descriptor: MessageDescriptor) => string;
+
 export const SHORTCUTS_LIMIT = 9;
 
-const TYPES = [
+interface TypeParam {
+  text: string | MessageDescriptor;
+  name: string;
+  type?: string;
+  placeholder?: string | MessageDescriptor;
+  pattern?: string;
+  notRequired?: boolean;
+}
+
+const TYPES: string[] = [
   'following',
   'mentions',
   'notifications',
@@ -46,7 +121,7 @@ const TYPES = [
   // NOTE: Hide for now
   // 'account-statuses', // Need @acct search first
 ];
-const TYPE_TEXT = {
+const TYPE_TEXT: Record<string, MessageDescriptor> = {
   following: msg`Home / Following`,
   notifications: msg`Notifications`,
   list: msg`Lists & Feeds`,
@@ -60,7 +135,7 @@ const TYPE_TEXT = {
   mentions: msg`Mentions`,
   profile: msg`Profile`,
 };
-const TYPE_PARAMS = {
+const TYPE_PARAMS: Record<string, TypeParam[]> = {
   list: [
     {
       text: msg`List ID`,
@@ -130,14 +205,34 @@ const TYPE_PARAMS = {
     },
   ],
 };
-const fetchAccountTitle = pmem(async ({ id }) => {
-  const account = await api().masto.v1.accounts.$select(id).fetch();
-  return account.username || account.acct || account.displayName;
-});
-export const SHORTCUTS_META = {
+const fetchAccountTitle = pmem(
+  async ({ id }: { id: string }): Promise<string> => {
+    const account = await shortcutsMasto().v1.accounts.$select(id).fetch();
+    return account.username || account.acct || account.displayName || '';
+  },
+);
+
+// SHORTCUTS_META describes per-shortcut-type metadata. Some fields are static
+// strings/MessageDescriptors and some are functions of the shortcut entry.
+// Consumers (this file + shortcuts.tsx) already widen via
+// `as unknown as Record<string, ...>`, so loose entry shapes are fine.
+type ShortcutMetaValue<T> =
+  | T
+  | ((shortcut: ShortcutEntry, index?: number) => T);
+interface ShortcutMetaEntry {
+  id: ShortcutMetaValue<string>;
+  title: ShortcutMetaValue<string | MessageDescriptor | Promise<string>>;
+  subtitle?: ShortcutMetaValue<string | undefined>;
+  path: ShortcutMetaValue<string>;
+  icon: ShortcutMetaValue<string>;
+  altIcon?: () => { url?: string; type: string };
+  excludeViewMode?: ShortcutMetaValue<string[]>;
+}
+
+export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
   following: {
     id: 'home',
-    title: (_, index) =>
+    title: (_shortcut, index) =>
       index === 0
         ? t`Home`
         : t({ id: 'following.title', message: 'Following' }),
@@ -192,16 +287,21 @@ export const SHORTCUTS_META = {
     icon: 'user',
     altIcon: () => {
       const account = getCurrentAccount();
+      const info = account?.info as
+        | { avatarStatic?: string; avatar?: string }
+        | undefined;
       return {
         // Prefer static URL
-        url: account?.info?.avatarStatic || account?.info?.avatar,
+        url: info?.avatarStatic || info?.avatar,
         type: 'avatar',
       };
     },
   },
   'account-statuses': {
     id: 'account-statuses',
-    title: fetchAccountTitle,
+    title: fetchAccountTitle as unknown as ShortcutMetaValue<
+      string | Promise<string>
+    >,
     path: ({ id }) => `/a/${id}`,
     icon: 'user',
   },
@@ -219,27 +319,40 @@ export const SHORTCUTS_META = {
   },
   hashtag: {
     id: 'hashtag',
-    title: ({ hashtag }) => hashtag,
+    title: ({ hashtag }) => hashtag as string,
     subtitle: ({ instance }) => instance || api().instance,
     path: ({ hashtag, instance, media }) =>
-      `${instance ? `/${instance}` : ''}/t/${hashtag.split(/\s+/).join('+')}${
-        media ? '?media=1' : ''
-      }`,
+      `${instance ? `/${instance}` : ''}/t/${(hashtag as string)
+        .split(/\s+/)
+        .join('+')}${media ? '?media=1' : ''}`,
     icon: 'hashtag',
   },
 };
 
-function ShortcutsSettings({ onClose }) {
-  const { _ } = useLingui();
-  const snapStates = useSnapshot(states);
+interface ShortcutsSettingsProps {
+  onClose?: () => void;
+}
+
+type ShortcutFormState =
+  | false
+  | true
+  | { shortcut: ShortcutEntry; shortcutIndex: number };
+
+function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
+  const { i18n } = useLingui();
+  const _: Translator = (descriptor) => i18n._(descriptor);
+  const snapStates = useSnapshot(states) as unknown as {
+    shortcuts: ShortcutEntry[];
+    settings: { shortcutsViewMode: string | null };
+  };
   const { shortcuts } = snapStates;
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState<ShortcutFormState>(false);
   const [showImportExport, setShowImportExport] = useState(false);
 
-  const [shortcutsListParent] = useAutoAnimate();
+  const [shortcutsListParent] = useAutoAnimate<HTMLOListElement>();
 
   return (
-    <div id="shortcuts-settings-container" class="sheet" tabindex="-1">
+    <div id="shortcuts-settings-container" class="sheet" tabIndex={-1}>
       {!!onClose && (
         <button type="button" class="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
@@ -293,7 +406,9 @@ function ShortcutsSettings({ onClose }) {
                   value={value}
                   checked={checked}
                   onChange={(e) => {
-                    states.settings.shortcutsViewMode = e.target.value;
+                    states.settings.shortcutsViewMode = (
+                      e.target as HTMLInputElement
+                    ).value;
                   }}
                 />{' '}
                 <img src={imgURL} alt="" width="80" height="58" />{' '}
@@ -310,36 +425,54 @@ function ShortcutsSettings({ onClose }) {
                 const key = Object.values(shortcut).join('-');
                 const { type } = shortcut;
                 if (!SHORTCUTS_META[type]) return null;
-                let { icon, title, subtitle, excludeViewMode } =
-                  SHORTCUTS_META[type];
+                const meta = SHORTCUTS_META[type];
+                let icon: unknown = meta.icon;
+                let title: unknown = meta.title;
+                let subtitle: unknown = meta.subtitle;
+                let excludeViewMode: unknown = meta.excludeViewMode;
                 if (typeof title === 'function') {
-                  title = title(shortcut, i);
+                  title = (
+                    title as (s: ShortcutEntry, i: number) => unknown
+                  )(shortcut, i);
                 } else {
-                  title = _(title);
+                  title = _(title as MessageDescriptor);
                 }
                 if (typeof subtitle === 'function') {
-                  subtitle = subtitle(shortcut, i);
+                  subtitle = (
+                    subtitle as (s: ShortcutEntry, i: number) => unknown
+                  )(shortcut, i);
                 } else {
-                  subtitle = _(subtitle);
+                  subtitle = _(subtitle as MessageDescriptor);
                 }
                 if (typeof icon === 'function') {
-                  icon = icon(shortcut, i);
+                  icon = (
+                    icon as (s: ShortcutEntry, i: number) => unknown
+                  )(shortcut, i);
                 }
                 if (typeof excludeViewMode === 'function') {
-                  excludeViewMode = excludeViewMode(shortcut, i);
+                  excludeViewMode = (
+                    excludeViewMode as (
+                      s: ShortcutEntry,
+                      i: number,
+                    ) => unknown
+                  )(shortcut, i);
                 }
-                const excludedViewMode = excludeViewMode?.includes(
-                  snapStates.settings.shortcutsViewMode,
-                );
+                const excludedViewMode = (
+                  excludeViewMode as string[] | undefined
+                )?.includes(snapStates.settings.shortcutsViewMode as string);
                 return (
                   <li key={key}>
-                    <Icon icon={icon} />
+                    <Icon icon={icon as string | undefined} />
                     <span class="shortcut-text">
-                      <AsyncText>{title}</AsyncText>
-                      {subtitle && (
+                      <AsyncText>
+                        {title as string | Promise<string>}
+                      </AsyncText>
+                      {(subtitle as unknown) && (
                         <>
                           {' '}
-                          <small class="ib insignificant">{subtitle}</small>
+                          <small class="ib insignificant">
+                            {subtitle as string}
+                          </small>
                         </>
                       )}
                       {excludedViewMode && (
@@ -484,12 +617,22 @@ function ShortcutsSettings({ onClose }) {
           }}
         >
           <ShortcutForm
-            shortcut={showForm.shortcut}
-            shortcutIndex={showForm.shortcutIndex}
+            shortcut={
+              typeof showForm === 'object' ? showForm.shortcut : undefined
+            }
+            shortcutIndex={
+              typeof showForm === 'object' ? showForm.shortcutIndex : undefined
+            }
             onSubmit={({ result, mode }) => {
               console.log('onSubmit', result);
               if (mode === 'edit') {
-                states.shortcuts[showForm.shortcutIndex] = result;
+                // `showForm` is set to `{ shortcut, shortcutIndex }` in edit
+                // mode (see Edit button onClick). In add mode `showForm` is
+                // `true`; the form never emits `mode === 'edit'` then. Cast
+                // to keep original write-through-`undefined-index` behavior
+                // if that ever changes.
+                const sf = showForm as { shortcutIndex: number };
+                states.shortcuts[sf.shortcutIndex] = result;
               } else {
                 states.shortcuts.push(result);
               }
@@ -516,10 +659,25 @@ function ShortcutsSettings({ onClose }) {
   );
 }
 
-const FORM_NOTES = {
+const FORM_NOTES: Record<string, MessageDescriptor> = {
   list: msg`Specific list is optional.`,
   hashtag: msg`Multiple hashtags are supported. Space-separated.`,
 };
+
+interface ShortcutFormSubmission {
+  result: ShortcutEntry;
+  mode: 'edit' | 'add';
+}
+
+interface ShortcutFormProps {
+  onSubmit: (submission: ShortcutFormSubmission) => void;
+  disabled?: boolean;
+  shortcut?: ShortcutEntry;
+  shortcutIndex?: number;
+  onClose?: () => void;
+}
+
+type ListLike = Awaited<ReturnType<typeof getLists>>[number];
 
 function ShortcutForm({
   onSubmit,
@@ -527,16 +685,21 @@ function ShortcutForm({
   shortcut,
   shortcutIndex,
   onClose,
-}) {
-  const { _ } = useLingui();
+}: ShortcutFormProps) {
+  const { i18n } = useLingui();
+  const _: Translator = (descriptor) => i18n._(descriptor);
   console.log('shortcut', shortcut);
   const editMode = !!shortcut;
-  const [currentType, setCurrentType] = useState(shortcut?.type || null);
+  const [currentType, setCurrentType] = useState<string | null>(
+    shortcut?.type || null,
+  );
 
   const [uiState, setUIState] = useState('default');
-  const [lists, setLists] = useState([]);
+  const [lists, setLists] = useState<ListLike[]>([]);
   const { lists: userLists, feeds } = splitListsAndFeeds(lists);
-  const [followedHashtags, setFollowedHashtags] = useState([]);
+  const [followedHashtags, setFollowedHashtags] = useState<mastodon.v1.Tag[]>(
+    [],
+  );
   useEffect(() => {
     (async () => {
       if (currentType !== 'list') return;
@@ -562,21 +725,30 @@ function ShortcutForm({
     })();
   }, [currentType]);
 
-  const formRef = useRef();
+  const formRef = useRef<HTMLFormElement | null>(null);
   useEffect(() => {
-    if (editMode && currentType && TYPE_PARAMS[currentType]) {
+    if (
+      editMode &&
+      currentType &&
+      (TYPE_PARAMS as Record<string, TypeParam[] | undefined>)[currentType]
+    ) {
       // Populate form
       const form = formRef.current;
-      TYPE_PARAMS[currentType].forEach(({ name, type }) => {
-        const input = form.querySelector(`[name="${name}"]`);
-        if (input && shortcut[name]) {
-          if (type === 'checkbox') {
-            input.checked = shortcut[name] === 'on' ? true : false;
-          } else {
-            input.value = shortcut[name];
+      if (!form) return;
+      (TYPE_PARAMS as Record<string, TypeParam[]>)[currentType].forEach(
+        ({ name, type }) => {
+          const input = form.querySelector(`[name="${name}"]`) as
+            | HTMLInputElement
+            | null;
+          if (input && shortcut && shortcut[name]) {
+            if (type === 'checkbox') {
+              input.checked = shortcut[name] === 'on' ? true : false;
+            } else {
+              input.value = shortcut[name] as string;
+            }
           }
-        }
-      });
+        },
+      );
     }
   }, [editMode, currentType]);
 
@@ -590,16 +762,20 @@ function ShortcutForm({
       <header>
         <h2>{editMode ? t`Edit shortcut` : t`Add shortcut`}</h2>
       </header>
-      <main tabindex="-1">
+      <main tabIndex={-1}>
         <form
           ref={formRef}
           onSubmit={(e) => {
             // Construct a nice object from form
             e.preventDefault();
-            const data = new FormData(e.target);
-            const result = {};
+            const formEl = e.target as HTMLFormElement;
+            const data = new FormData(formEl);
+            const result: Record<string, string> = {};
             data.forEach((value, key) => {
-              result[key] = value?.trim();
+              // Original JS: `value?.trim()`. FormData entries are
+              // `string | File`; this form only collects text/checkbox
+              // values (strings), so cast to preserve runtime behavior.
+              result[key] = (value as string)?.trim();
               if (key === 'instance') {
                 // Remove protocol and trailing slash
                 result[key] = result[key]
@@ -612,11 +788,11 @@ function ShortcutForm({
             console.log('result', result);
             if (!result.type) return;
             onSubmit({
-              result,
+              result: result as ShortcutEntry,
               mode: editMode ? 'edit' : 'add',
             });
             // Reset
-            e.target.reset();
+            formEl.reset();
             setCurrentType(null);
             onClose?.();
           }}
@@ -630,9 +806,9 @@ function ShortcutForm({
                 required
                 disabled={disabled}
                 onChange={(e) => {
-                  setCurrentType(e.target.value);
+                  setCurrentType((e.target as HTMLSelectElement).value);
                 }}
-                defaultValue={editMode ? shortcut.type : undefined}
+                defaultValue={editMode && shortcut ? shortcut.type : undefined}
                 name="type"
                 dir="auto"
               >
@@ -643,84 +819,110 @@ function ShortcutForm({
               </select>
             </label>
           </p>
-          {TYPE_PARAMS[currentType]?.map?.(
-            ({ text, name, type, placeholder, pattern, notRequired }) => {
-              if (currentType === 'list') {
-                return (
-                  <p>
-                    <label>
-                      <span>
-                        <Trans>List</Trans>
-                      </span>
-                      <select
-                        name="id"
-                        required={!notRequired}
-                        disabled={disabled || uiState === 'loading'}
-                        defaultValue={editMode ? shortcut.id : undefined}
-                        dir="auto"
-                      >
-                        <option value=""></option>
-                        {userLists.length > 0 && (
-                          <optgroup label={t`Lists`}>
-                            {userLists.map((list) => (
-                              <option value={list.id}>{list.title}</option>
-                            ))}
-                          </optgroup>
-                        )}
-                        {feeds.length > 0 && (
-                          <optgroup label={t`Feeds`}>
-                            {feeds.map((feed) => (
-                              <option value={feed.id}>{feed.title}</option>
-                            ))}
-                          </optgroup>
-                        )}
-                      </select>
-                    </label>
-                  </p>
-                );
-              }
+          {currentType
+            ? TYPE_PARAMS[currentType]?.map?.(
+                ({ text, name, type, placeholder, pattern, notRequired }) => {
+                  if (currentType === 'list') {
+                    return (
+                      <p>
+                        <label>
+                          <span>
+                            <Trans>List</Trans>
+                          </span>
+                          <select
+                            name="id"
+                            required={!notRequired}
+                            disabled={disabled || uiState === 'loading'}
+                            defaultValue={
+                              editMode && shortcut ? shortcut.id : undefined
+                            }
+                            dir="auto"
+                          >
+                            <option value=""></option>
+                            {userLists.length > 0 && (
+                              <optgroup label={t`Lists`}>
+                                {userLists.map((list) => (
+                                  <option value={list.id}>{list.title}</option>
+                                ))}
+                              </optgroup>
+                            )}
+                            {feeds.length > 0 && (
+                              <optgroup label={t`Feeds`}>
+                                {feeds.map((feed) => (
+                                  <option value={feed.id}>{feed.title}</option>
+                                ))}
+                              </optgroup>
+                            )}
+                          </select>
+                        </label>
+                      </p>
+                    );
+                  }
 
-              return (
-                <p>
-                  <label>
-                    <span>{_(text)}</span>{' '}
-                    <input
-                      type={type}
-                      switch={type === 'checkbox' || undefined}
-                      name={name}
-                      placeholder={_(placeholder)}
-                      required={type === 'text' && !notRequired}
-                      disabled={disabled}
-                      list={
-                        currentType === 'hashtag'
-                          ? 'followed-hashtags-datalist'
-                          : null
-                      }
-                      autocorrect="off"
-                      autocapitalize="off"
-                      spellCheck={false}
-                      pattern={pattern}
-                      dir="auto"
-                    />
-                    {currentType === 'hashtag' &&
-                      followedHashtags.length > 0 && (
-                        <datalist id="followed-hashtags-datalist">
-                          {followedHashtags.map((tag) => (
-                            <option value={tag.name} />
-                          ))}
-                        </datalist>
-                      )}
-                  </label>
-                </p>
-              );
-            },
-          )}
-          {!!FORM_NOTES[currentType] && (
-            <p class="form-note insignificant">
-              <Icon icon="info" />
-              {_(FORM_NOTES[currentType])}
-            </p>
-          )}
+                  return (
+                    <p>
+                      <label>
+                        <span>
+                          {typeof text === 'string' ? text : _(text)}
+                        </span>{' '}
+                        {(() => {
+                          // `switch` is a non-standard HTML attribute used by
+                          // some toggle-style styling; not in Preact's
+                          // InputHTMLAttributes. Assemble props loosely then
+                          // cast at the JSX boundary to keep the JS shape.
+                          const inputProps = {
+                            type,
+                            switch: type === 'checkbox' || undefined,
+                            name,
+                            placeholder:
+                              placeholder === undefined
+                                ? undefined
+                                : typeof placeholder === 'string'
+                                  ? placeholder
+                                  : _(placeholder),
+                            required: type === 'text' && !notRequired,
+                            disabled,
+                            // Original JS passed `null` here. Preact treats
+                            // null/undefined the same for HTML attributes.
+                            list:
+                              currentType === 'hashtag'
+                                ? 'followed-hashtags-datalist'
+                                : null,
+                            autocorrect: 'off',
+                            autocapitalize: 'off',
+                            spellCheck: false,
+                            pattern,
+                            dir: 'auto',
+                          } as unknown as JSX.HTMLAttributes<HTMLInputElement>;
+                          return <input {...inputProps} />;
+                        })()}
+                        {currentType === 'hashtag' &&
+                          followedHashtags.length > 0 && (
+                            <datalist id="followed-hashtags-datalist">
+                              {followedHashtags.map((tag) => (
+                                <option value={tag.name} />
+                              ))}
+                            </datalist>
+                          )}
+                      </label>
+                    </p>
+                  );
+                },
+              )
+            : null}
+          {currentType &&
+            !!(FORM_NOTES as Record<string, MessageDescriptor | undefined>)[
+              currentType
+            ] && (
+              <p class="form-note insignificant">
+                <Icon icon="info" />
+                {_(
+                  (FORM_NOTES as Record<string, MessageDescriptor>)[
+                    currentType
+                  ],
+                )}
+              </p>
+            )}
           <footer>
             <button
               type="submit"
@@ -734,7 +936,10 @@ function ShortcutForm({
                 type="button"
                 class="light danger"
                 onClick={() => {
-                  states.shortcuts.splice(shortcutIndex, 1);
+                  // shortcutIndex is required in edit mode; cast retains the
+                  // original splice-with-undefined runtime behavior if it
+                  // were ever absent.
+                  states.shortcuts.splice(shortcutIndex as number, 1);
                   onClose?.();
                 }}
               >
@@ -748,8 +953,14 @@ function ShortcutForm({
   );
 }
 
-function ImportExport({ shortcuts, onClose }) {
-  const { _ } = useLingui();
+interface ImportExportProps {
+  shortcuts: readonly ShortcutEntry[];
+  onClose?: () => void;
+}
+
+function ImportExport({ shortcuts, onClose }: ImportExportProps) {
+  const { i18n } = useLingui();
+  const _: Translator = (descriptor) => i18n._(descriptor);
   const { masto } = api();
   const shortcutsStr = useMemo(() => {
     if (!shortcuts) return '';
@@ -760,13 +971,16 @@ function ImportExport({ shortcuts, onClose }) {
   }, [shortcuts]);
   const [importShortcutStr, setImportShortcutStr] = useState('');
   const [importUIState, setImportUIState] = useState('default');
-  const parsedImportShortcutStr = useMemo(() => {
+  // Parsed import payload — the original JS only checks `Array.isArray`, so
+  // individual entries can be anything. Keep the element type `unknown` and
+  // narrow per-element at the use sites.
+  const parsedImportShortcutStr = useMemo<unknown[] | null>(() => {
     if (!importShortcutStr) {
       setImportUIState('default');
       return null;
     }
     try {
-      const parsed = JSON.parse(
+      const parsed: unknown = JSON.parse(
         decompressFromEncodedURIComponent(importShortcutStr),
       );
       // Very basic validation, I know
@@ -778,7 +992,7 @@ function ImportExport({ shortcuts, onClose }) {
       // Fallback to JSON string parsing
       // There's a chance that someone might want to import a JSON string instead of the compressed version
       try {
-        const parsed = JSON.parse(importShortcutStr);
+        const parsed: unknown = JSON.parse(importShortcutStr);
         if (!Array.isArray(parsed)) throw new Error('Not an array');
         setImportUIState('default');
         return parsed;
@@ -790,7 +1004,7 @@ function ImportExport({ shortcuts, onClose }) {
   }, [importShortcutStr]);
   const hasCurrentSettings = states.shortcuts.length > 0;
 
-  const shortcutsImportFieldRef = useRef();
+  const shortcutsImportFieldRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <div id="import-export-container" class="sheet">
@@ -806,7 +1020,7 @@ function ImportExport({ shortcuts, onClose }) {
           </Trans>
         </h2>
       </header>
-      <main tabindex="-1">
+      <main tabIndex={-1}>
         <section>
           <h3>
             <Icon icon="arrow-down-circle" size="l" class="insignificant" />{' '}
@@ -822,7 +1036,9 @@ function ImportExport({ shortcuts, onClose }) {
               placeholder={t`Paste shortcuts here`}
               class="block"
               onInput={(e) => {
-                setImportShortcutStr(e.target.value);
+                setImportShortcutStr(
+                  (e.target as HTMLInputElement).value,
+                );
               }}
               dir="auto"
             />
@@ -832,13 +1048,14 @@ function ImportExport({ shortcuts, onClose }) {
                 class="plain2 small"
                 onClick={() => {
                   states.showQrScannerModal = {
-                    onClose: ({ text } = {}) => {
+                    onClose: ({ text }: { text?: string } = {}) => {
                       if (text) {
                         setImportShortcutStr(text);
-                        shortcutsImportFieldRef.current.value = text;
-                        shortcutsImportFieldRef.current.dispatchEvent(
-                          new Event('input'),
-                        );
+                        const field = shortcutsImportFieldRef.current;
+                        if (field) {
+                          field.value = text;
+                          field.dispatchEvent(new Event('input'));
+                        }
                       }
                     },
                   };
@@ -847,7 +1064,7 @@ function ImportExport({ shortcuts, onClose }) {
                 <Icon icon="scan" alt={t`Scan QR code`} />
               </button>
             )}
-            {states.settings.shortcutSettingsCloudImportExport && (
+            {statesShortcuts.settings.shortcutSettingsCloudImportExport && (
               <button
                 type="button"
                 class="plain2 small"
@@ -857,10 +1074,11 @@ function ImportExport({ shortcuts, onClose }) {
                   const currentAccount = getCurrentAccountID();
                   showToast(t`Downloading saved shortcuts from server…`);
                   try {
-                    const relationships =
-                      await masto.v1.accounts.relationships.fetch({
-                        id: [currentAccount],
-                      });
+                    const relationships = await (
+                      masto as unknown as ShortcutsMastoClient
+                    ).v1.accounts.relationships.fetch({
+                      id: [currentAccount as string],
+                    });
                     const relationship = relationships[0];
                     if (relationship) {
                       const { note = '' } = relationship;
@@ -869,14 +1087,19 @@ function ImportExport({ shortcuts, onClose }) {
                           note,
                         )
                       ) {
-                        const settings = note.match(
+                        const settings = (note.match(
                           /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/,
-                        )[1];
-                        const { v, dt, data } = JSON.parse(settings);
-                        shortcutsImportFieldRef.current.value = data;
-                        shortcutsImportFieldRef.current.dispatchEvent(
-                          new Event('input'),
-                        );
+                        ) as RegExpMatchArray)[1];
+                        const { v, dt, data } = JSON.parse(settings) as {
+                          v: string;
+                          dt: number;
+                          data: string;
+                        };
+                        const field = shortcutsImportFieldRef.current;
+                        if (field) {
+                          field.value = data;
+                          field.dispatchEvent(new Event('input'));
+                        }
                       }
                     }
                     setImportUIState('default');
@@ -904,54 +1127,61 @@ function ImportExport({ shortcuts, onClose }) {
                   </small>
                 </p>
                 <ol class="import-settings-list">
-                  {parsedImportShortcutStr.map((shortcut) => (
-                    <li>
-                      <span
-                        style={{
-                          opacity: shortcuts.some((s) =>
-                            // Compare all properties
-                            Object.keys(s).every((key) => {
-                              if (!(key in shortcut)) return true;
-                              const val = shortcut[key];
-                              if (
-                                val === '' ||
-                                val === null ||
-                                val === undefined
-                              ) {
-                                return true;
-                              }
-                              return s[key] === val;
-                            }),
-                          )
-                            ? 1
-                            : 0,
-                        }}
-                      >
-                        *
-                      </span>
-                      <span>
-                        {_(TYPE_TEXT[shortcut.type])}
-                        {shortcut.type === 'list' &&
-                          !!shortcut.id &&
-                          ' ⚠️'}{' '}
-                        {TYPE_PARAMS[shortcut.type]?.map?.(
-                          ({ text, name, type }) =>
-                            shortcut[name] ? (
-                              <>
-                                <span class="tag collapsed insignificant">
-                                  {_(text)}:{' '}
-                                  {type === 'checkbox'
-                                    ? shortcut[name] === 'on'
-                                      ? '✅'
-                                      : '❌'
-                                    : shortcut[name]}
-                                </span>{' '}
-                              </>
-                            ) : null,
-                        )}
-                      </span>
-                    </li>
-                  ))}
+                  {parsedImportShortcutStr.map((rawShortcut) => {
+                    // The JS original accesses fields directly without
+                    // validating each entry. We treat each parsed element as
+                    // a loose string-record to preserve that.
+                    const shortcut = rawShortcut as Record<string, string>;
+                    return (
+                      <li>
+                        <span
+                          style={{
+                            opacity: shortcuts.some((s: ShortcutEntry) =>
+                              // Compare all properties
+                              Object.keys(s).every((key) => {
+                                if (!(key in shortcut)) return true;
+                                const val = shortcut[key];
+                                if (
+                                  val === '' ||
+                                  val === null ||
+                                  val === undefined
+                                ) {
+                                  return true;
+                                }
+                                return s[key] === val;
+                              }),
+                            )
+                              ? 1
+                              : 0,
+                          }}
+                        >
+                          *
+                        </span>
+                        <span>
+                          {_(TYPE_TEXT[shortcut.type])}
+                          {shortcut.type === 'list' &&
+                            !!shortcut.id &&
+                            ' ⚠️'}{' '}
+                          {TYPE_PARAMS[shortcut.type]?.map?.(
+                            ({ text, name, type }) =>
+                              shortcut[name] ? (
+                                <>
+                                  <span class="tag collapsed insignificant">
+                                    {typeof text === 'string' ? text : _(text)}
+                                    :{' '}
+                                    {type === 'checkbox'
+                                      ? shortcut[name] === 'on'
+                                        ? '✅'
+                                        : '❌'
+                                      : shortcut[name]}
+                                  </span>{' '}
+                                </>
+                              ) : null,
+                          )}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ol>
                 <p>
                   <small>
@@ -992,21 +1222,29 @@ function ImportExport({ shortcuts, onClose }) {
                     //   ...states.shortcuts,
                     //   ...parsedImportShortcutStr,
                     // ];
-                    // Append non-unique shortcuts only
-                    const nonUniqueShortcuts = parsedImportShortcutStr.filter(
-                      (shortcut) =>
-                        !states.shortcuts.some((s) =>
+                    // Append non-unique shortcuts only.
+                    // The trigger button is disabled when parsedImportShortcutStr
+                    // is null, so the assertion below matches the JS original
+                    // — which would throw on `.filter` if null reached here.
+                    const parsed = parsedImportShortcutStr as unknown[];
+                    const nonUniqueShortcuts = parsed.filter(
+                      (rawShortcut) => {
+                        const shortcut = rawShortcut as Record<string, unknown>;
+                        return !(
+                          statesShortcuts.shortcuts as ShortcutEntry[]
+                        ).some((s) =>
                           // Compare all properties
                           Object.keys(s).every(
                             (key) => s[key] === shortcut[key],
                           ),
-                        ),
+                        );
+                      },
                     );
                     if (!nonUniqueShortcuts.length) {
                       showToast(t`No new shortcuts to import`);
                       return;
                     }
-                    let newShortcuts = [
+                    let newShortcuts: unknown[] = [
                       ...states.shortcuts,
                       ...nonUniqueShortcuts,
                     ];
@@ -1042,7 +1280,11 @@ function ImportExport({ shortcuts, onClose }) {
               }
               menuItemClassName={hasCurrentSettings ? 'danger' : undefined}
               onClick={() => {
-                states.shortcuts = parsedImportShortcutStr;
+                // Trigger button is disabled when parsed is null; the
+                // assertion below mirrors the original JS assignment which
+                // wrote `null` through to `states.shortcuts` if it ever
+                // reached this point.
+                states.shortcuts = parsedImportShortcutStr as unknown[];
                 showToast(t`Shortcuts imported`);
                 onClose?.();
               }}
@@ -1071,11 +1313,12 @@ function ImportExport({ shortcuts, onClose }) {
               value={shortcutsStr}
               readOnly
               onClick={(e) => {
-                if (!e.target.value) return;
-                e.target.select();
+                const target = e.target as HTMLInputElement;
+                if (!target.value) return;
+                target.select();
                 // Copy url to clipboard
                 try {
-                  navigator.clipboard.writeText(e.target.value);
+                  navigator.clipboard.writeText(target.value);
                   showToast(t`Shortcuts copied`);
                 } catch (e) {
                   console.error(e);
@@ -1096,7 +1339,7 @@ function ImportExport({ shortcuts, onClose }) {
             >
               <Icon icon="qrcode" alt={t`QR code`} />
             </button>
-            {states.settings.shortcutSettingsCloudImportExport && (
+            {statesShortcuts.settings.shortcutSettingsCloudImportExport && (
               <button
                 type="button"
                 class="plain2 small"
@@ -1105,9 +1348,11 @@ function ImportExport({ shortcuts, onClose }) {
                   setImportUIState('cloud-uploading');
                   const currentAccount = getCurrentAccountID();
                   try {
+                    const mastoShim =
+                      masto as unknown as ShortcutsMastoClient;
                     const relationships =
-                      await masto.v1.accounts.relationships.fetch({
-                        id: [currentAccount],
+                      await mastoShim.v1.accounts.relationships.fetch({
+                        id: [currentAccount as string],
                       });
                     const relationship = relationships[0];
                     if (relationship) {
@@ -1132,8 +1377,8 @@ function ImportExport({ shortcuts, onClose }) {
                         newNote = `${note}\n\n\n<phanpy-shortcuts-settings>${settingsJSON}</phanpy-shortcuts-settings>`;
                       }
                       showToast(t`Saving shortcuts to server…`);
-                      await masto.v1.accounts
-                        .$select(currentAccount)
+                      await mastoShim.v1.accounts
+                        .$select(currentAccount as string)
                         .note.create({
                           comment: newNote,
                         });
@@ -1221,7 +1466,7 @@ function ImportExport({ shortcuts, onClose }) {
             </details>
           )}
         </section>
-        {states.settings.shortcutSettingsCloudImportExport && (
+        {statesShortcuts.settings.shortcutSettingsCloudImportExport && (
           <footer>
             <p>
               <Icon icon="cloud" />{' '}
