@@ -1,13 +1,29 @@
 import {
   type Agent,
+  type AppBskyActorDefs,
+  type AppBskyEmbedExternal,
+  type AppBskyEmbedImages,
+  type AppBskyEmbedRecord,
+  type AppBskyEmbedRecordWithMedia,
+  type AppBskyEmbedVideo,
+  type AppBskyFeedDefs,
+  type AppBskyFeedPost,
+  type AppBskyGraphDefs,
+  type AppBskyNotificationListNotifications,
+  AppBskyVideoDefs,
+  AppBskyRichtextFacet,
   AtpAgent,
   type AtpAgentOptions,
+  type AtpPersistSessionHandler,
   type AtpSessionData,
+  BlobRef,
+  type ComAtprotoModerationCreateReport,
+  type ComAtprotoRepoApplyWrites,
+  type ComAtprotoRepoStrongRef,
+  type $Typed,
   RichText,
-  type RichTextProps,
 } from '@atproto/api';
-import { getPdsEndpoint } from '@atproto/common-web';
-import type { OAuthSession } from '@atproto/oauth-client-browser';
+import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
 
 import { BSKY_PDS, resolveAtprotoLoginService } from './atproto-login-service';
 import { createAtprotoOAuthAgent } from './atproto-oauth';
@@ -41,92 +57,155 @@ type AtprotoRecord = Record<string, unknown>;
 /** Strong reference as stored on records. */
 interface AtprotoStrongRef {
   uri: string;
-  cid: string;
+  cid?: string;
   [key: string]: unknown;
 }
 
-interface BlobRefLike {
-  ref?: { toString?: () => string; $link?: string };
-  // Full blob payload is opaque from our side.
-  [key: string]: unknown;
+type BlobRefLike = BlobRef;
+type TypedRecordEmbed = $Typed<AppBskyEmbedRecord.Main>;
+type TypedVideoEmbed = $Typed<AppBskyEmbedVideo.Main>;
+type TypedImagesEmbed = $Typed<AppBskyEmbedImages.Main>;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
 }
 
-interface AtprotoActor {
+interface AtprotoAgentSessionManagerInternals {
+  pdsUrl?: URL;
+  getTokenInfo?: () => Promise<{ aud?: string } | undefined>;
+  session?: AtpSessionData;
+}
+
+interface AtprotoAgentInternals {
   did?: string;
-  handle?: string;
-  displayName?: string;
-  description?: string;
-  avatar?: string;
-  banner?: string;
-  followersCount?: number;
-  followsCount?: number;
-  postsCount?: number;
-  viewer?: {
-    muted?: boolean;
-    following?: string;
-    blockedBy?: boolean;
-    blocking?: string;
-    threadMuted?: boolean;
-    repost?: string;
-    like?: string;
-    bookmarked?: boolean;
+  sessionManager?: AtprotoAgentSessionManagerInternals;
+  dispatchUrl?: string | URL;
+}
+
+interface AtprotoProxyAgent {
+  configureProxy: (proxy: string) => void;
+}
+
+type AtprotoOAuthAgentSession = NonNullable<
+  Parameters<typeof createAtprotoOAuthAgent>[0]
+>;
+
+function isAtpSessionData(value: unknown): value is AtpSessionData {
+  return (
+    isRecord(value) &&
+    typeof value.refreshJwt === 'string' &&
+    typeof value.accessJwt === 'string' &&
+    typeof value.handle === 'string' &&
+    typeof value.did === 'string' &&
+    typeof value.active === 'boolean'
+  );
+}
+
+function isAgentSessionManager(
+  value: unknown,
+): value is AtprotoAgentSessionManagerInternals {
+  if (!isRecord(value)) return false;
+  return (
+    (value.pdsUrl === undefined || value.pdsUrl instanceof URL) &&
+    (value.getTokenInfo === undefined ||
+      typeof value.getTokenInfo === 'function') &&
+    (value.session === undefined || isAtpSessionData(value.session))
+  );
+}
+
+function isAtprotoAgentInternals(
+  value: unknown,
+): value is AtprotoAgentInternals {
+  if (!isRecord(value)) return false;
+  return (
+    (value.did === undefined || typeof value.did === 'string') &&
+    (value.sessionManager === undefined ||
+      isAgentSessionManager(value.sessionManager)) &&
+    (value.dispatchUrl === undefined ||
+      typeof value.dispatchUrl === 'string' ||
+      value.dispatchUrl instanceof URL)
+  );
+}
+
+function isAtprotoProxyAgent(value: unknown): value is AtprotoProxyAgent {
+  return isRecord(value) && typeof value.configureProxy === 'function';
+}
+
+function isAtprotoOAuthAgentSession(
+  value: unknown,
+): value is AtprotoOAuthAgentSession {
+  return (
+    typeof value === 'function' ||
+    (isRecord(value) && typeof value.fetchHandler === 'function')
+  );
+}
+
+function isAtprotoActor(value: unknown): value is AtprotoActor {
+  return isRecord(value);
+}
+
+function isAtprotoPostRecord(value: unknown): value is AtprotoPostRecord {
+  return isRecord(value);
+}
+
+function isAtprotoRelationship(value: unknown): value is AtprotoRelationship {
+  return isRecord(value) && typeof value.did === 'string';
+}
+
+type AtprotoActor = Partial<
+  Omit<AppBskyActorDefs.ProfileViewDetailed, '$type'>
+> &
+  Partial<Omit<AppBskyActorDefs.ProfileView, '$type'>> &
+  Partial<Omit<AppBskyActorDefs.ProfileViewBasic, '$type'>> & {
+    $type?: string;
   };
-  [key: string]: unknown;
-}
 
-interface AtprotoFacetFeature {
-  $type?: string;
-  did?: string;
-  uri?: string;
-  tag?: string;
-  [key: string]: unknown;
-}
-
-interface AtprotoFacet {
-  index?: { byteStart: number; byteEnd: number };
-  features?: AtprotoFacetFeature[];
-}
+type AtprotoFacet = AppBskyRichtextFacet.Main;
 
 interface AtprotoReplyRefLike {
+  $type?: string;
   uri?: string;
   cid?: string;
   author?: AtprotoActor;
-  record?: AtprotoRecord;
-  value?: AtprotoRecord;
-  // Some refs lack post-view fields; we treat them all as loose shapes.
-  [key: string]: unknown;
+  record?: AtprotoPostRecord;
+  value?: AtprotoPostRecord;
 }
 
-interface AtprotoEmbedImage {
-  fullsize?: string;
+interface AtprotoEmbedImage
+  extends
+    Partial<Omit<AppBskyEmbedImages.ViewImage, '$type'>>,
+    Partial<Omit<AppBskyEmbedImages.Image, '$type'>> {}
+
+type AtprotoEmbedExternal =
+  | AppBskyEmbedExternal.ViewExternal
+  | AppBskyEmbedExternal.External
+  | (Partial<AppBskyEmbedExternal.External> & {
+      uri: string;
+      associatedRecord?: unknown;
+      associated_record?: unknown;
+    });
+
+interface AtprotoEmbedVideo
+  extends
+    Partial<Omit<AppBskyEmbedVideo.View, '$type' | 'aspectRatio'>>,
+    Partial<Omit<AppBskyEmbedVideo.Main, '$type' | 'aspectRatio'>> {
   thumb?: string;
-  alt?: string;
   aspectRatio?: { width?: number; height?: number };
 }
 
-interface AtprotoEmbedExternal {
-  uri: string;
-  title?: string;
-  description?: string;
-  thumb?: string;
-  associatedRecord?: unknown;
-  associated_record?: unknown;
-}
-
-interface AtprotoEmbedVideo {
-  cid?: string;
-  playlist?: string;
-  thumbnail?: string;
-  thumb?: string;
-  alt?: string;
-  aspectRatio?: { width?: number; height?: number };
-}
-
-interface AtprotoEmbedRecord extends AtprotoReplyRefLike {
+interface AtprotoEmbedRecord {
   uri?: string;
+  cid?: string;
   author?: AtprotoActor;
   value?: AtprotoRecord;
   record?: AtprotoEmbedRecord;
+  embeds?: AtprotoEmbed[];
+  labels?: unknown[];
+  replyCount?: number;
+  repostCount?: number;
+  likeCount?: number;
+  quoteCount?: number;
+  indexedAt?: string;
 }
 
 interface AtprotoEmbed {
@@ -142,10 +221,11 @@ interface AtprotoEmbed {
   aspectRatio?: { width?: number; height?: number };
   media?: AtprotoEmbed;
   record?: AtprotoEmbedRecord;
-  [key: string]: unknown;
 }
 
-interface AtprotoPostRecord {
+interface AtprotoPostRecord extends Partial<
+  Omit<AppBskyFeedPost.Record, 'reply' | 'embed'>
+> {
   text?: string;
   facets?: AtprotoFacet[];
   langs?: string[];
@@ -154,7 +234,11 @@ interface AtprotoPostRecord {
     root?: AtprotoReplyRefLike;
     parent?: AtprotoReplyRefLike;
   };
-  embed?: AtprotoEmbed | AtprotoEmbed[];
+  embed?:
+    | AtprotoEmbed
+    | AtprotoEmbed[]
+    | AppBskyFeedDefs.PostView['embed']
+    | AppBskyFeedPost.Record['embed'];
   embeds?: AtprotoEmbed[];
   subject?: { uri?: string; cid?: string };
   [key: string]: unknown;
@@ -169,13 +253,23 @@ interface AtprotoPostRecord {
  * type mirrors that contract. Callers must therefore tolerate missing
  * `uri`/`cid`/`author`/`record` and short-circuit on those branches.
  */
-interface AtprotoPost {
+interface AtprotoPost extends Partial<
+  Omit<
+    AppBskyFeedDefs.PostView,
+    '$type' | 'author' | 'record' | 'embed' | 'viewer' | 'labels'
+  >
+> {
+  $type?: string;
   uri?: string;
   cid?: string;
   author?: AtprotoActor;
   record?: AtprotoPostRecord;
   value?: AtprotoPostRecord;
-  embed?: AtprotoEmbed | AtprotoEmbed[];
+  embed?:
+    | AtprotoEmbed
+    | AtprotoEmbed[]
+    | AppBskyFeedDefs.PostView['embed']
+    | AppBskyFeedPost.Record['embed'];
   embeds?: AtprotoEmbed[];
   labels?: unknown[];
   replyCount?: number;
@@ -183,19 +277,18 @@ interface AtprotoPost {
   likeCount?: number;
   quoteCount?: number;
   indexedAt?: string;
-  viewer?: AtprotoActor['viewer'];
+  viewer?: AppBskyFeedDefs.ViewerState;
   reply?: { root?: AtprotoReplyRefLike; parent?: AtprotoReplyRefLike };
-  [key: string]: unknown;
 }
 
-interface AtprotoReason {
-  $type?: string;
-  by?: AtprotoActor;
-  indexedAt?: string;
-  [key: string]: unknown;
-}
+type AtprotoReason =
+  | AppBskyFeedDefs.ReasonRepost
+  | AppBskyFeedDefs.ReasonPin
+  | { $type?: string; by?: AtprotoActor; indexedAt?: string };
 
-interface AtprotoFeedItem {
+interface AtprotoFeedItem extends Partial<
+  Omit<AppBskyFeedDefs.FeedViewPost, 'post' | 'reply' | 'reason'>
+> {
   post?: AtprotoPost;
   reply?: {
     root?: AtprotoReplyRefLike;
@@ -203,10 +296,17 @@ interface AtprotoFeedItem {
     grandparentAuthor?: AtprotoActor;
   };
   reason?: AtprotoReason;
-  [key: string]: unknown;
 }
 
-interface AtprotoNotification {
+interface AtprotoThreadNode {
+  post?: AtprotoPost;
+  replies?: AtprotoThreadNode[];
+  parent?: AtprotoThreadNode;
+}
+
+interface AtprotoNotification extends Partial<
+  Omit<AppBskyNotificationListNotifications.Notification, 'author' | 'record'>
+> {
   uri?: string;
   cid?: string;
   author?: AtprotoActor;
@@ -214,30 +314,25 @@ interface AtprotoNotification {
   reasonSubject?: string;
   record?: AtprotoRecord & { subject?: { uri?: string } };
   indexedAt?: string;
-  [key: string]: unknown;
 }
 
-interface AtprotoList {
-  uri?: string;
-  cid?: string;
-  name?: string;
+interface AtprotoList
+  extends
+    Partial<Omit<AppBskyGraphDefs.ListView, '$type'>>,
+    Partial<Omit<AppBskyGraphDefs.ListViewBasic, '$type'>> {
   displayName?: string;
-  purpose?: string;
 }
 
-interface AtprotoFeedGenerator {
-  uri?: string;
-  cid?: string;
-  displayName?: string;
+interface AtprotoFeedGenerator extends Partial<
+  Omit<AppBskyFeedDefs.GeneratorView, '$type'>
+> {
   name?: string;
 }
 
-interface AtprotoRelationship {
-  did?: string;
-  following?: string;
-  followedBy?: string;
-  blocking?: string;
-  blockedBy?: boolean;
+interface AtprotoRelationship extends Partial<
+  Omit<AppBskyGraphDefs.Relationship, '$type'>
+> {
+  $type?: string;
 }
 
 interface AdaptedMediaAttachment {
@@ -455,28 +550,20 @@ interface Collection<T> {
   values(): AsyncIteratorLike<T>;
 }
 
-interface JobStatus {
-  state?: string;
+type VideoJobStatus = Omit<AppBskyVideoDefs.JobStatus, 'blob' | 'did'> & {
   blob?: BlobRefLike;
-  message?: string;
-  error?: string;
-  jobId?: string;
-  jobStatus?: JobStatus;
-}
+  did?: string;
+};
 
 interface CreateAtprotoClientOptions {
-  // Accept loose runtime types from callers; the adapter shims to concrete
-  // @atproto types at use sites. `session` and `oauthSession` are typed as
-  // `unknown` to document that callers may pass either the concrete
-  // AtpSessionData/OAuthSession shape or a looser runtime value.
   session?: unknown;
   oauthSession?: unknown;
   service?: string;
-  persistSession?: unknown;
+  persistSession?: AtpPersistSessionHandler;
 }
 
-function getServiceAuthAudFromUrl(url: string): string {
-  const { hostname } = new URL(url);
+function getServiceAuthAudFromUrl(url: string | URL): string {
+  const { hostname } = typeof url === 'string' ? new URL(url) : url;
   return `did:web:${hostname}`;
 }
 
@@ -511,6 +598,65 @@ async function getServiceAuthToken({
   return res.data.token;
 }
 
+function blobRefFromUnknown(value: unknown): BlobRefLike | undefined {
+  if (value instanceof BlobRef) return value;
+  const direct = BlobRef.asBlobRef(value);
+  if (direct) return direct;
+  if (!isRecord(value)) return undefined;
+  const ref = value.ref;
+  if (!isRecord(ref) || typeof ref.$link !== 'string') return undefined;
+  const mimeType =
+    typeof value.mimeType === 'string'
+      ? value.mimeType
+      : 'application/octet-stream';
+  return (
+    BlobRef.asBlobRef({
+      cid: ref.$link,
+      mimeType,
+    }) ?? undefined
+  );
+}
+
+export function getVideoJobStatus(value: unknown): VideoJobStatus {
+  const candidate =
+    isRecord(value) && 'jobStatus' in value ? value.jobStatus : value;
+  const result = AppBskyVideoDefs.validateJobStatus(candidate);
+  if (result.success) return result.value;
+  if (
+    isRecord(candidate) &&
+    typeof candidate.jobId === 'string' &&
+    typeof candidate.state === 'string'
+  ) {
+    const status: VideoJobStatus = {
+      jobId: candidate.jobId,
+      state: candidate.state,
+    };
+    if (candidate.$type === 'app.bsky.video.defs#jobStatus') {
+      status.$type = candidate.$type;
+    }
+    if (typeof candidate.did === 'string') status.did = candidate.did;
+    if (typeof candidate.progress === 'number') {
+      status.progress = candidate.progress;
+    }
+    const blob = blobRefFromUnknown(candidate.blob);
+    if (blob) status.blob = blob;
+    if (typeof candidate.error === 'string') status.error = candidate.error;
+    if (typeof candidate.message === 'string')
+      status.message = candidate.message;
+    return status;
+  }
+  if (isRecord(candidate)) {
+    const message =
+      typeof candidate.message === 'string' ? candidate.message : undefined;
+    const error =
+      typeof candidate.error === 'string' ? candidate.error : undefined;
+    if (message || error) {
+      throw new Error(message || error);
+    }
+  }
+  throw new Error('Invalid Bluesky video job status response');
+}
+
 async function uploadVideoBlob(
   agent: AtprotoAgent,
   file: File,
@@ -518,33 +664,27 @@ async function uploadVideoBlob(
   if (file.type !== 'video/mp4') {
     throw new Error('Only MP4 video uploads are supported for Bluesky posts');
   }
-  const agentLoose = agent as unknown as {
-    did?: string;
-    sessionManager?: {
-      pdsUrl?: URL;
-      getTokenInfo?: () => Promise<{ aud?: string } | undefined>;
-      session?: AtpSessionData;
-    };
-    dispatchUrl?: string;
-  };
+  if (!isAtprotoAgentInternals(agent)) {
+    throw new Error('Missing Bluesky session');
+  }
+  const agentLoose = agent;
   if (!agentLoose.did) throw new Error('Missing Bluesky session');
 
   if (agentLoose.sessionManager && !agentLoose.sessionManager.pdsUrl) {
     const session = await agent.com.atproto.server.getSession();
-    const pdsEndpoint = session.data.didDoc
-      ? getPdsEndpoint(
-          session.data.didDoc as Parameters<typeof getPdsEndpoint>[0],
-        )
+    const pdsEndpoint = isValidDidDoc(session.data.didDoc)
+      ? getPdsEndpoint(session.data.didDoc)
       : null;
     if (pdsEndpoint) agentLoose.sessionManager.pdsUrl = new URL(pdsEndpoint);
   }
   const dispatchUrl =
     agentLoose.dispatchUrl ||
     (await agentLoose.sessionManager?.getTokenInfo?.())?.aud;
+  if (!dispatchUrl) throw new Error('Missing Bluesky dispatch URL');
 
   const uploadToken = await getServiceAuthToken({
     agent,
-    aud: getServiceAuthAudFromUrl(dispatchUrl as string),
+    aud: getServiceAuthAudFromUrl(dispatchUrl),
     lxm: 'com.atproto.repo.uploadBlob',
     exp: Date.now() / 1000 + 60 * 30,
   });
@@ -568,8 +708,7 @@ async function uploadVideoBlob(
       `Failed to upload video (${uploadRes.status})${message ? `: ${message}` : ''}`,
     );
   }
-  let jobStatus = (await uploadRes.json()) as JobStatus;
-  if (jobStatus.jobStatus) jobStatus = jobStatus.jobStatus;
+  let jobStatus = getVideoJobStatus(await uploadRes.json());
   if (jobStatus.error) {
     throw new Error(jobStatus.message || jobStatus.error);
   }
@@ -593,12 +732,10 @@ async function uploadVideoBlob(
       setTimeout(resolve, 1_000);
     });
     const statusRes = await videoAgent.app.bsky.video.getJobStatus(
-      { jobId: jobStatus.jobId as string },
+      { jobId: jobStatus.jobId },
       { headers: { authorization: `Bearer ${statusToken}` } },
     );
-    jobStatus =
-      (statusRes.data as { jobStatus?: JobStatus }).jobStatus ||
-      (statusRes.data as unknown as JobStatus);
+    jobStatus = getVideoJobStatus(statusRes.data);
   }
   throw new Error('Timed out waiting for Bluesky video processing');
 }
@@ -624,7 +761,7 @@ function richTextToHTML(
   if (!facets?.length) return textToHTML(text);
   const richText = new RichText({
     text: text || '',
-    facets: facets as unknown as RichTextProps['facets'],
+    facets,
   });
   return Array.from(richText.segments())
     .map((segment) => {
@@ -731,16 +868,40 @@ function embedToParts(
       url: external.uri,
       title: external.title || external.uri,
       description: external.description || '',
-      image: external.thumb,
-      associatedRecord: external.associatedRecord || external.associated_record,
+      image: typeof external.thumb === 'string' ? external.thumb : undefined,
+      associatedRecord:
+        ('associatedRecord' in external
+          ? external.associatedRecord
+          : undefined) ||
+        ('associated_record' in external
+          ? external.associated_record
+          : undefined),
       type: 'link',
     };
   }
 
   const videoCandidate: AtprotoEmbedVideo | undefined =
-    (embed.playlist && (embed as AtprotoEmbedVideo)) ||
+    (embed.playlist
+      ? {
+          cid: embed.cid,
+          playlist: embed.playlist,
+          thumbnail: embed.thumbnail,
+          thumb: embed.thumb,
+          alt: embed.alt,
+          aspectRatio: embed.aspectRatio,
+        }
+      : undefined) ||
     embed.video ||
-    (embed.media?.playlist && (embed.media as AtprotoEmbedVideo)) ||
+    (embed.media?.playlist
+      ? {
+          cid: embed.media.cid,
+          playlist: embed.media.playlist,
+          thumbnail: embed.media.thumbnail,
+          thumb: embed.media.thumb,
+          alt: embed.media.alt,
+          aspectRatio: embed.media.aspectRatio,
+        }
+      : undefined) ||
     embed.media?.video;
   const video = videoCandidate;
   if (video?.playlist) {
@@ -767,7 +928,21 @@ function embedToParts(
       id: encodeAtprotoID(record.uri),
       state: 'accepted',
       quotedStatus: postToStatus(
-        { post: record as unknown as AtprotoPost },
+        {
+          post: {
+            uri: record.uri,
+            cid: record.cid,
+            author: record.author,
+            value: record.value,
+            embeds: record.embeds,
+            labels: record.labels,
+            replyCount: record.replyCount,
+            repostCount: record.repostCount,
+            likeCount: record.likeCount,
+            quoteCount: record.quoteCount,
+            indexedAt: record.indexedAt,
+          },
+        },
         agent,
       ),
     };
@@ -822,7 +997,7 @@ function listToPhanpyList(list: AtprotoList = {}): AdaptedList {
     // Preserve the JS adapter's degenerate output for malformed data:
     // `encodeURIComponent(undefined)` stringifies to "undefined" rather than
     // collapsing to "" (which would alias all malformed list IDs).
-    id: encodeURIComponent(uri as string),
+    id: encodeURIComponent(String(uri)),
     title: list.name || list.displayName || uri || '',
     repliesPolicy: 'list',
     exclusive: false,
@@ -841,7 +1016,7 @@ function feedGeneratorToPhanpyList(
   const uri = feed.uri;
   return {
     // See note in listToPhanpyList — preserve JS's "undefined" fallback.
-    id: encodeURIComponent(uri as string),
+    id: encodeURIComponent(String(uri)),
     title: feed.displayName || feed.name || uri || '',
     repliesPolicy: 'list',
     exclusive: false,
@@ -859,17 +1034,126 @@ function atUriRepo(uri: string | undefined): string | null {
 
 function strongRef(
   value: AtprotoReplyRefLike | AtprotoStrongRef | undefined,
-): AtprotoStrongRef | AtprotoReplyRefLike | undefined {
-  if (!value?.uri) return value;
+): AtprotoStrongRef | undefined {
+  if (!value?.uri) return undefined;
   return {
     uri: value.uri,
-    cid: (value as AtprotoStrongRef).cid,
+    cid: value.cid,
   };
 }
 
 function isPostView(value: unknown): value is AtprotoPost {
-  const v = value as AtprotoPost | null | undefined;
-  return !!(v?.uri && v?.author && v?.record);
+  return !!(
+    value &&
+    typeof value === 'object' &&
+    'uri' in value &&
+    'author' in value &&
+    'record' in value &&
+    typeof value.uri === 'string' &&
+    value.author &&
+    value.record
+  );
+}
+
+function isAtprotoFeedItem(
+  value: AtprotoFeedItem | AtprotoPost | AtprotoReplyRefLike | undefined,
+): value is AtprotoFeedItem {
+  return !!(
+    value &&
+    typeof value === 'object' &&
+    ('post' in value ||
+      'reason' in value ||
+      ('reply' in value && !('uri' in value)))
+  );
+}
+
+function postLikeToPost(
+  value: AtprotoFeedItem | AtprotoPost | AtprotoReplyRefLike | undefined,
+): AtprotoPost {
+  if (!value) return {};
+  const base = isRecord(value) ? value : {};
+  return {
+    ...base,
+    uri:
+      'uri' in value && typeof value.uri === 'string' ? value.uri : undefined,
+    cid:
+      'cid' in value && typeof value.cid === 'string' ? value.cid : undefined,
+    author:
+      'author' in value && isAtprotoActor(value.author)
+        ? value.author
+        : undefined,
+    record:
+      'record' in value && isAtprotoPostRecord(value.record)
+        ? value.record
+        : undefined,
+    value:
+      'value' in value && isAtprotoPostRecord(value.value)
+        ? value.value
+        : undefined,
+    embed: 'embed' in value ? value.embed : undefined,
+    embeds: 'embeds' in value ? value.embeds : undefined,
+    labels:
+      'labels' in value && Array.isArray(value.labels)
+        ? value.labels
+        : undefined,
+    reply:
+      'reply' in value && !Array.isArray(value.reply) && isRecord(value.reply)
+        ? {
+            root:
+              'root' in value.reply && isRecord(value.reply.root)
+                ? value.reply.root
+                : undefined,
+            parent:
+              'parent' in value.reply && isRecord(value.reply.parent)
+                ? value.reply.parent
+                : undefined,
+          }
+        : undefined,
+    replyCount:
+      'replyCount' in value && typeof value.replyCount === 'number'
+        ? value.replyCount
+        : undefined,
+    repostCount:
+      'repostCount' in value && typeof value.repostCount === 'number'
+        ? value.repostCount
+        : undefined,
+    likeCount:
+      'likeCount' in value && typeof value.likeCount === 'number'
+        ? value.likeCount
+        : undefined,
+    quoteCount:
+      'quoteCount' in value && typeof value.quoteCount === 'number'
+        ? value.quoteCount
+        : undefined,
+    indexedAt:
+      'indexedAt' in value && typeof value.indexedAt === 'string'
+        ? value.indexedAt
+        : undefined,
+    viewer:
+      'viewer' in value && isRecord(value.viewer) ? value.viewer : undefined,
+  };
+}
+
+function isThreadNode(
+  value: AtprotoThreadNode | undefined,
+): value is AtprotoThreadNode {
+  return !!value;
+}
+
+function threadNodeFromView(
+  value:
+    | AppBskyFeedDefs.ThreadViewPost
+    | AppBskyFeedDefs.NotFoundPost
+    | AppBskyFeedDefs.BlockedPost
+    | { $type: string }
+    | undefined,
+): AtprotoThreadNode | undefined {
+  if (!value || !('post' in value)) return undefined;
+  return {
+    post: value.post,
+    parent: threadNodeFromView(value.parent),
+    replies: value.replies?.map(threadNodeFromView).filter(isThreadNode),
+  };
 }
 
 function replyContextSourceForPost(
@@ -879,17 +1163,18 @@ function replyContextSourceForPost(
   if (!feedItem?.reply || feedItem.post?.uri === post?.uri) return feedItem;
   const parent = feedItem.reply.parent;
   if (
+    post &&
     parent?.uri === post?.uri &&
     feedItem.reply.grandparentAuthor &&
-    (post as AtprotoPost)?.record?.reply?.parent?.uri
+    post.record?.reply?.parent?.uri
   ) {
-    const postRecord = (post as AtprotoPost).record;
+    const postRecord = post.record;
     return {
-      post: post as AtprotoPost,
+      post: { ...post },
       reply: {
         root: feedItem.reply.root,
         parent: {
-          ...(postRecord?.reply?.parent as AtprotoStrongRef),
+          ...postRecord?.reply?.parent,
           author: feedItem.reply.grandparentAuthor,
         },
       },
@@ -925,12 +1210,12 @@ export async function hydrateFeedReplyContext(
   for (let i = 0; i < missingURIs.length; i += BSKY_GET_POSTS_LIMIT) {
     const uris = missingURIs.slice(i, i + BSKY_GET_POSTS_LIMIT);
     const res = await agent.getPosts({ uris });
-    hydratedPosts.push(...((res.data.posts || []) as unknown as AtprotoPost[]));
+    hydratedPosts.push(...(res.data.posts || []));
   }
   if (!hydratedPosts.length) return feed;
 
   const postsByURI: Record<string, AtprotoPost> = Object.fromEntries(
-    hydratedPosts.map((post) => [post.uri as string, post]),
+    hydratedPosts.flatMap((post) => (post.uri ? [[post.uri, post]] : [])),
   );
   const hydrateRef = (ref: AtprotoReplyRefLike | undefined) =>
     (ref?.uri && postsByURI[ref.uri]) || ref;
@@ -952,7 +1237,7 @@ function feedItemToStatuses(
   feedItem: AtprotoFeedItem,
   agent: AtprotoAgent,
 ): AdaptedStatus[] {
-  const post = feedItem?.post || (feedItem as unknown as AtprotoPost);
+  const post: AtprotoPost = feedItem.post || {};
   if (feedItem?.reason?.$type === 'app.bsky.feed.defs#reasonRepost') {
     return [postToStatus(feedItem, agent)];
   }
@@ -998,12 +1283,25 @@ function feedToProfileStatuses(
   return feed.map((item) => postToStatus(item, agent));
 }
 
-function isReasonRepost(reason: AtprotoReason | undefined): boolean {
+function isReasonRepost(
+  reason: AtprotoReason | undefined,
+): reason is AppBskyFeedDefs.ReasonRepost {
   return reason?.$type === 'app.bsky.feed.defs#reasonRepost';
 }
 
 function isReasonPin(reason: AtprotoReason | undefined): boolean {
   return reason?.$type === 'app.bsky.feed.defs#reasonPin';
+}
+
+function blobRefID(blob: BlobRefLike): string {
+  const json = blob.toJSON();
+  if (isRecord(json)) {
+    if (typeof json.cid === 'string' && json.cid) return json.cid;
+    const ref = json.ref;
+    if (typeof ref === 'string' && ref) return ref;
+    if (isRecord(ref) && typeof ref.$link === 'string') return ref.$link;
+  }
+  return crypto.randomUUID();
 }
 
 function isActorProfile(
@@ -1136,19 +1434,22 @@ export function postToStatus(
     | undefined,
   agent: AtprotoAgent,
 ): AdaptedStatus {
-  const post: AtprotoPost =
-    ((feedItemOrPost as AtprotoFeedItem)?.post as AtprotoPost) ||
-    (feedItemOrPost as AtprotoPost);
+  const feedItem = isAtprotoFeedItem(feedItemOrPost)
+    ? feedItemOrPost
+    : undefined;
+  const post: AtprotoPost = feedItem
+    ? feedItem.post || {}
+    : postLikeToPost(feedItemOrPost);
   const record: AtprotoPostRecord = post?.record || post?.value || {};
-  const feedReply = (feedItemOrPost as AtprotoFeedItem)?.reply;
+  const feedReply = feedItem?.reply;
   const replyParent: AtprotoReplyRefLike | undefined =
     feedReply?.parent || post.reply?.parent;
   const replyParentRef = strongRef(
     record.reply?.parent || post.reply?.parent || feedReply?.parent,
-  ) as AtprotoStrongRef | undefined;
+  );
   const replyRootRef = strongRef(
     record.reply?.root || post.reply?.root || feedReply?.root,
-  ) as AtprotoStrongRef | undefined;
+  );
   const replyParentURI = replyParentRef?.uri;
   const replyParentAuthorDid =
     replyParent?.author?.did ||
@@ -1157,7 +1458,7 @@ export function postToStatus(
   // Preserve JS behavior: `encodeAtprotoID(undefined)` stringifies to
   // "undefined" so malformed inputs each get the same noisy id rather than
   // collapsing to "" and colliding.
-  const id = encodeAtprotoID(post.uri as string);
+  const id = encodeAtprotoID(String(post.uri));
   const { mediaAttachments, card, quote } = embedToParts(
     post.embed || post.embeds || record.embed || record.embeds,
     agent,
@@ -1166,12 +1467,12 @@ export function postToStatus(
     const matched = Array.from(
       new RichText({
         text: record.text || '',
-        facets: [facet] as unknown as RichTextProps['facets'],
+        facets: [facet],
       }).segments(),
     ).find((seg) => seg.facet);
     const text = matched?.text;
     return (facet.features || [])
-      .filter((feature) => feature.$type === 'app.bsky.richtext.facet#mention')
+      .filter(AppBskyRichtextFacet.isMention)
       .map((feature) => {
         const username = (text || feature.did || '').replace(/^@/, '');
         return {
@@ -1206,7 +1507,7 @@ export function postToStatus(
     mentions,
     tags: (record.facets || [])
       .flatMap((facet) => facet.features || [])
-      .filter((feature) => feature.$type === 'app.bsky.richtext.facet#tag')
+      .filter(AppBskyRichtextFacet.isTag)
       .map((feature) => ({
         name: feature.tag ?? '',
         url: `/t/${encodeURIComponent(feature.tag ?? '')}`,
@@ -1237,8 +1538,8 @@ export function postToStatus(
     },
   };
 
-  const reason = (feedItemOrPost as AtprotoFeedItem)?.reason;
-  if (reason?.$type === 'app.bsky.feed.defs#reasonRepost') {
+  const reason = feedItem?.reason;
+  if (isReasonRepost(reason)) {
     return {
       ...status,
       id: `${id}-repost-${reason.indexedAt}`,
@@ -1275,10 +1576,10 @@ function makeCollection<T>(fetchPage: CollectionFetcher<T>): Collection<T> {
   };
 }
 
-function emptyCollection<T>(): Collection<T> {
-  return makeCollection<T>(async () => ({
+function emptyCollection<T>(): Collection<T[]> {
+  return makeCollection<T[]>(async () => ({
     cursor: undefined,
-    items: [] as unknown as T,
+    items: [],
   }));
 }
 
@@ -1434,9 +1735,8 @@ async function createMediaUpload({
     const res = await agent.uploadBlob(file, {
       encoding: file.type,
     });
-    const blob = res.data.blob as unknown as BlobRefLike;
-    const id =
-      blob?.ref?.toString?.() || blob?.ref?.$link || crypto.randomUUID();
+    const blob = res.data.blob;
+    const id = blobRefID(blob);
     const media: AdaptedUploadedMedia = {
       id,
       type: 'image',
@@ -1451,8 +1751,7 @@ async function createMediaUpload({
 
   if (file.type?.startsWith('video/')) {
     const blob = await uploadVideoBlob(agent, file);
-    const id =
-      blob?.ref?.toString?.() || blob?.ref?.$link || crypto.randomUUID();
+    const id = blobRefID(blob);
     const media: AdaptedUploadedMedia = {
       id,
       type: 'video',
@@ -1485,7 +1784,7 @@ async function uploadProfileImage(
   const res = await agent.uploadBlob(file, {
     encoding: file.type,
   });
-  return res.data.blob as unknown as BlobRefLike;
+  return res.data.blob;
 }
 
 function isBskyAppViewService(service: string): boolean {
@@ -1503,26 +1802,28 @@ export function createAtprotoClient({
   service = BSKY_PDS,
   persistSession,
 }: CreateAtprotoClientOptions) {
-  const agentOrNull: AtprotoAgent | null = oauthSession
-    ? createAtprotoOAuthAgent(oauthSession as OAuthSession)
-    : new AtpAgent({
-        service,
-        persistSession: persistSession as AtpAgentOptions['persistSession'],
-      } satisfies AtpAgentOptions);
+  let agentOrNull: AtprotoAgent | null;
+  if (oauthSession) {
+    if (!isAtprotoOAuthAgentSession(oauthSession)) {
+      throw new Error('Unrecognized Bluesky OAuth session');
+    }
+    agentOrNull = createAtprotoOAuthAgent(oauthSession);
+  } else {
+    agentOrNull = new AtpAgent({
+      service,
+      persistSession,
+    } satisfies AtpAgentOptions);
+  }
   if (!agentOrNull) throw new Error('Missing Bluesky OAuth session');
   const agent: AtprotoAgent = agentOrNull;
-  if (!isBskyAppViewService(service)) {
-    (
-      agent as unknown as { configureProxy: (p: string) => void }
-    ).configureProxy(BSKY_APPVIEW_PROXY);
+  if (!isBskyAppViewService(service) && isAtprotoProxyAgent(agent)) {
+    agent.configureProxy(BSKY_APPVIEW_PROXY);
   }
-  const agentLoose = agent as unknown as {
-    did?: string;
-    sessionManager?: { session?: AtpSessionData };
-    [key: string]: unknown;
-  };
-  if (session && agentLoose.sessionManager) {
-    agentLoose.sessionManager.session = session as AtpSessionData;
+  const agentLoose: AtprotoAgentInternals = isAtprotoAgentInternals(agent)
+    ? agent
+    : {};
+  if (isAtpSessionData(session) && agentLoose.sessionManager) {
+    agentLoose.sessionManager.session = session;
   }
   const uploadedMedia = new Map<string, AdaptedUploadedMedia>();
 
@@ -1537,12 +1838,12 @@ export function createAtprotoClient({
       const profile = await agent.getProfile({ actor: parsed.actor });
       const quoteURI = `at://${profile.data.did}/app.bsky.feed.post/${parsed.rkey}`;
       const quoteRes = await agent.getPosts({ uris: [quoteURI] });
-      const quotePost = (quoteRes.data.posts as unknown as AtprotoPost[])?.[0];
+      const quotePost = quoteRes.data.posts[0];
       if (!quotePost) return status;
       return {
         ...status,
         quote: {
-          id: encodeAtprotoID(quotePost.uri as string),
+          id: encodeAtprotoID(quotePost.uri),
           state: 'accepted',
           quotedStatus: postToStatus(quotePost, agent),
         },
@@ -1551,7 +1852,7 @@ export function createAtprotoClient({
     return {
       async fetch(): Promise<AdaptedStatus> {
         const res = await agent.getPosts({ uris: [uri] });
-        const post = (res.data.posts as unknown as AtprotoPost[])?.[0];
+        const post = res.data.posts[0];
         if (!post) throw new Error('Post not found');
         const status = await hydrateLegacyLinkQuote(postToStatus(post, agent));
         return status;
@@ -1563,20 +1864,17 @@ export function createAtprotoClient({
             depth: BSKY_THREAD_CONTEXT_DEPTH,
             parentHeight: BSKY_THREAD_CONTEXT_DEPTH,
           });
-          interface ThreadNode {
-            post?: AtprotoPost;
-            replies?: ThreadNode[];
-            parent?: ThreadNode;
-          }
           const flatten = (
-            node: ThreadNode | undefined,
+            node: AtprotoThreadNode | undefined,
             bucket: AdaptedStatus[] = [],
           ): AdaptedStatus[] => {
             if (node?.post) bucket.push(postToStatus(node.post, agent));
-            node?.replies?.forEach((reply) => flatten(reply, bucket));
+            node?.replies?.forEach((reply) => {
+              flatten(reply, bucket);
+            });
             return bucket;
           };
-          const thread = res.data.thread as unknown as ThreadNode;
+          const thread = threadNodeFromView(res.data.thread);
           const ancestors: AdaptedStatus[] = [];
           let parent = thread?.parent;
           while (parent?.post) {
@@ -1628,9 +1926,7 @@ export function createAtprotoClient({
             });
             return {
               cursor: res.data.cursor,
-              items: res.data.repostedBy.map((actor) =>
-                actorToAccount(actor as unknown as AtprotoActor),
-              ),
+              items: res.data.repostedBy.map(actorToAccount),
             };
           });
         },
@@ -1645,9 +1941,7 @@ export function createAtprotoClient({
             });
             return {
               cursor: res.data.cursor,
-              items: res.data.likes.map((like) =>
-                actorToAccount(like.actor as unknown as AtprotoActor),
-              ),
+              items: res.data.likes.map((like) => actorToAccount(like.actor)),
             };
           });
         },
@@ -1662,9 +1956,7 @@ export function createAtprotoClient({
             });
             return {
               cursor: res.data.cursor,
-              items: (res.data.posts as unknown as AtprotoPost[]).map((post) =>
-                postToStatus(post, agent),
-              ),
+              items: res.data.posts.map((post) => postToStatus(post, agent)),
             };
           });
         },
@@ -1731,30 +2023,15 @@ export function createAtprotoClient({
       },
       async bookmark(): Promise<AdaptedStatus> {
         const current = await this.fetch();
-        await (
-          agent.app.bsky as unknown as {
-            bookmark: {
-              createBookmark: (args: {
-                uri: string;
-                cid?: string;
-              }) => Promise<unknown>;
-            };
-          }
-        ).bookmark.createBookmark({
+        await agent.app.bsky.bookmark.createBookmark({
           uri,
-          cid: current._atproto.cid,
+          cid: current._atproto.cid ?? '',
         });
         return { ...current, bookmarked: true };
       },
       async unbookmark(): Promise<AdaptedStatus> {
         const current = await this.fetch();
-        await (
-          agent.app.bsky as unknown as {
-            bookmark: {
-              deleteBookmark: (args: { uri: string }) => Promise<unknown>;
-            };
-          }
-        ).bookmark.deleteBookmark({ uri });
+        await agent.app.bsky.bookmark.deleteBookmark({ uri });
         return { ...current, bookmarked: false };
       },
       async remove() {
@@ -1792,16 +2069,15 @@ export function createAtprotoClient({
       others: [profileRes.data.did],
     });
     return relationshipFromAtproto(
-      relationshipsRes.data
-        .relationships?.[0] as unknown as AtprotoRelationship,
-      profileRes.data as unknown as AtprotoActor,
+      relationshipsRes.data.relationships.find(isAtprotoRelationship),
+      profileRes.data,
     );
   }
 
   const accountAPI = (id: string) => ({
     async fetch(): Promise<AdaptedAccount> {
       const res = await agent.getProfile({ actor: normalizeActor(id) ?? '' });
-      return actorToAccount(res.data as unknown as AtprotoActor);
+      return actorToAccount(res.data);
     },
     statuses: {
       list({
@@ -1819,7 +2095,7 @@ export function createAtprotoClient({
         tagged?: string;
         pinned?: boolean;
       } = {}) {
-        if (pinned) return emptyCollection<AdaptedStatus[]>();
+        if (pinned) return emptyCollection<AdaptedStatus>();
         return makeCollection<AdaptedStatus[]>(async (cursor) => {
           const filter = onlyMedia
             ? 'posts_with_media'
@@ -1835,10 +2111,7 @@ export function createAtprotoClient({
             includePins: filter === 'posts_and_author_threads',
           });
           const feed = filterAuthorFeed(
-            await hydrateFeedReplyContext(
-              res.data.feed as unknown as AtprotoFeedItem[],
-              agent,
-            ),
+            await hydrateFeedReplyContext(res.data.feed, agent),
             actor,
             filter,
           );
@@ -1867,9 +2140,7 @@ export function createAtprotoClient({
           });
           return {
             cursor: res.data.cursor,
-            items: res.data.followers.map((actor) =>
-              actorToAccount(actor as unknown as AtprotoActor),
-            ),
+            items: res.data.followers.map(actorToAccount),
           };
         });
       },
@@ -1884,9 +2155,7 @@ export function createAtprotoClient({
           });
           return {
             cursor: res.data.cursor,
-            items: res.data.follows.map((actor) =>
-              actorToAccount(actor as unknown as AtprotoActor),
-            ),
+            items: res.data.follows.map(actorToAccount),
           };
         });
       },
@@ -1989,15 +2258,13 @@ export function createAtprotoClient({
           const res = await agent.app.bsky.feed.getFeedGenerator({
             feed: uri,
           });
-          return feedGeneratorToPhanpyList(
-            res.data.view as unknown as AtprotoFeedGenerator,
-          );
+          return feedGeneratorToPhanpyList(res.data.view);
         }
         const res = await agent.app.bsky.graph.getList({
           list: uri,
           limit: 1,
         });
-        return listToPhanpyList(res.data.list as unknown as AtprotoList);
+        return listToPhanpyList(res.data.list);
       },
       async update({ title }: { title?: string } = {}): Promise<AdaptedList> {
         if (uri.includes('/app.bsky.feed.generator/')) {
@@ -2041,7 +2308,11 @@ export function createAtprotoClient({
           cursor = res.cursor;
         } while (cursor);
 
-        const deleteWrite = (recordURI: string) => ({
+        const deleteWrite = (
+          recordURI: string,
+        ): ComAtprotoRepoApplyWrites.Delete & {
+          $type: 'com.atproto.repo.applyWrites#delete';
+        } => ({
           $type: 'com.atproto.repo.applyWrites#delete',
           collection: recordURI.split('/').slice(-2, -1)[0],
           rkey: atprotoRkey(recordURI) ?? '',
@@ -2051,9 +2322,7 @@ export function createAtprotoClient({
           await agent.com.atproto.repo.applyWrites({
             repo: agentLoose.did ?? '',
             writes: writes.slice(i, i + 10),
-          } as unknown as Parameters<
-            typeof agent.com.atproto.repo.applyWrites
-          >[0]);
+          });
         }
         return {};
       },
@@ -2067,9 +2336,7 @@ export function createAtprotoClient({
             });
             return {
               cursor: res.data.cursor,
-              items: res.data.items.map((item) =>
-                actorToAccount(item.subject as unknown as AtprotoActor),
-              ),
+              items: res.data.items.map((item) => actorToAccount(item.subject)),
             };
           });
         },
@@ -2150,9 +2417,7 @@ export function createAtprotoClient({
     const blockedTypes = excludeTypes?.length
       ? new Set<AdaptedNotificationType>(excludeTypes)
       : null;
-    const notifications = (
-      res.data.notifications as unknown as AtprotoNotification[]
-    ).filter((notification) => {
+    const notifications = res.data.notifications.filter((notification) => {
       const type = notificationType(notification.reason);
       if (allowedTypes && !allowedTypes.has(type)) return false;
       if (blockedTypes?.has(type)) return false;
@@ -2168,12 +2433,13 @@ export function createAtprotoClient({
     const posts: AtprotoPost[] = statusURIs.length
       ? await agent
           .getPosts({ uris: statusURIs })
-          .then((postsRes) => postsRes.data.posts as unknown as AtprotoPost[])
-          .catch(() => [] as AtprotoPost[])
+          .then((postsRes) => postsRes.data.posts)
+          .catch(() => [])
       : [];
-    const postMap: Record<string, AdaptedStatus> = Object.fromEntries(
-      posts.map((post) => [post.uri as string, postToStatus(post, agent)]),
-    );
+    const postMap = posts.reduce<Record<string, AdaptedStatus>>((map, post) => {
+      if (post.uri) map[post.uri] = postToStatus(post, agent);
+      return map;
+    }, {});
     const items: AdaptedNotification[] = notifications.map((notification) => {
       const statusURI = notificationStatusURI(notification);
       return {
@@ -2207,7 +2473,7 @@ export function createAtprotoClient({
           const profile = await agent.getProfile({
             actor: agentLoose.did ?? '',
           });
-          return actorToAccount(profile.data as unknown as AtprotoActor);
+          return actorToAccount(profile.data);
         },
         async updateCredentials({
           avatar,
@@ -2223,7 +2489,7 @@ export function createAtprotoClient({
           source?: unknown;
         } = {}): Promise<AdaptedAccount> {
           if (source) return this.verifyCredentials();
-          const current = (await agent.com.atproto.repo
+          const current = await agent.com.atproto.repo
             .getRecord({
               repo: agentLoose.did ?? '',
               collection: 'app.bsky.actor.profile',
@@ -2232,7 +2498,7 @@ export function createAtprotoClient({
             .then((res) => res.data.value)
             .catch(() => ({
               $type: 'app.bsky.actor.profile',
-            }))) as AtprotoRecord;
+            }));
           const next: AtprotoRecord = {
             ...current,
           };
@@ -2258,7 +2524,7 @@ export function createAtprotoClient({
           const profile = await agent.getProfile({
             actor: normalizeActor(acct) ?? '',
           });
-          return actorToAccount(profile.data as unknown as AtprotoActor);
+          return actorToAccount(profile.data);
         },
         $select: accountAPI,
         relationships: {
@@ -2267,30 +2533,36 @@ export function createAtprotoClient({
           > {
             const ids = Array.isArray(id)
               ? id
-              : ([id].filter(Boolean) as string[]);
+              : [id].filter((value): value is string => Boolean(value));
             if (!ids.length) return [];
+            const actors = ids.map((value) => normalizeActor(value) ?? '');
             const profilesRes = await agent.getProfiles({
-              actors: ids.map((value) => normalizeActor(value) ?? ''),
+              actors,
             });
             const relationshipsRes =
               await agent.app.bsky.graph.getRelationships({
                 actor: agentLoose.did ?? '',
-                others: ids.map((value) => normalizeActor(value) ?? ''),
+                others: actors,
               });
             const profiles: Record<string, AtprotoActor> = Object.fromEntries(
-              (profilesRes.data.profiles as unknown as AtprotoActor[]).map(
-                (profile) => [profile.did ?? '', profile],
-              ),
+              profilesRes.data.profiles.map((profile) => [
+                profile.did ?? '',
+                profile,
+              ]),
             );
-            return (
-              relationshipsRes.data
-                .relationships as unknown as AtprotoRelationship[]
-            ).map((relationship) =>
-              relationshipFromAtproto(
-                relationship,
-                profiles[relationship.did ?? ''],
-              ),
-            );
+            const relationships = new Map<string, AtprotoRelationship>();
+            for (const relationship of relationshipsRes.data.relationships) {
+              if (isAtprotoRelationship(relationship)) {
+                relationships.set(relationship.did, relationship);
+              }
+            }
+            return profilesRes.data.profiles.map((profile) => {
+              const did = profile.did;
+              return relationshipFromAtproto(
+                did ? relationships.get(did) : undefined,
+                did ? profiles[did] : undefined,
+              );
+            });
           },
         },
         familiarFollowers: {
@@ -2299,7 +2571,7 @@ export function createAtprotoClient({
           > {
             const ids = Array.isArray(id)
               ? id
-              : ([id].filter(Boolean) as string[]);
+              : [id].filter((value): value is string => Boolean(value));
             return ids.map((accountID) => ({ id: accountID, accounts: [] }));
           },
         },
@@ -2314,9 +2586,11 @@ export function createAtprotoClient({
               limit,
               cursor,
             });
-            const accounts = (res.data.actors as unknown as AtprotoActor[]).map(
+            const accounts = res.data.actors.map(
               actorToAccount,
-            ) as AdaptedAccount[] & { _pagination?: { cursor?: string } };
+            ) as AdaptedAccount[] & {
+              _pagination?: { cursor?: string };
+            };
             accounts._pagination = { cursor: res.data.cursor };
             return accounts;
           },
@@ -2327,10 +2601,7 @@ export function createAtprotoClient({
           list({ limit = 20 }: { limit?: number } = {}) {
             return makeCollection<AdaptedStatus[]>(async (cursor) => {
               const res = await agent.getTimeline({ limit, cursor });
-              const feed = await hydrateFeedReplyContext(
-                res.data.feed as unknown as AtprotoFeedItem[],
-                agent,
-              );
+              const feed = await hydrateFeedReplyContext(res.data.feed, agent);
               const processedFeed = postProcessFollowingFeed(
                 feed,
                 agentLoose.did,
@@ -2350,10 +2621,7 @@ export function createAtprotoClient({
                 limit,
                 cursor,
               });
-              const feed = await hydrateFeedReplyContext(
-                res.data.feed as unknown as AtprotoFeedItem[],
-                agent,
-              );
+              const feed = await hydrateFeedReplyContext(res.data.feed, agent);
               return {
                 cursor: res.data.cursor,
                 items: feedToStatuses(feed, agent),
@@ -2383,8 +2651,8 @@ export function createAtprotoClient({
                     limit,
                     cursor,
                   });
-                  let items = (res.data.posts as unknown as AtprotoPost[]).map(
-                    (post) => postToStatus(post, agent),
+                  let items = res.data.posts.map((post) =>
+                    postToStatus(post, agent),
                   );
                   if (onlyMedia) {
                     items = items.filter(
@@ -2399,7 +2667,7 @@ export function createAtprotoClient({
         },
         link: {
           list({ url, limit = 20 }: { url?: string; limit?: number } = {}) {
-            if (!url) return emptyCollection<AdaptedStatus[]>();
+            if (!url) return emptyCollection<AdaptedStatus>();
             return makeCollection<AdaptedStatus[]>(async (cursor) => {
               const res = await agent.app.bsky.feed.searchPosts({
                 q: url,
@@ -2408,9 +2676,7 @@ export function createAtprotoClient({
               });
               return {
                 cursor: res.data.cursor,
-                items: (res.data.posts as unknown as AtprotoPost[]).map(
-                  (post) => postToStatus(post, agent),
-                ),
+                items: res.data.posts.map((post) => postToStatus(post, agent)),
               };
             });
           },
@@ -2421,23 +2687,19 @@ export function createAtprotoClient({
             return {
               list({ limit = 20 }: { limit?: number } = {}) {
                 return makeCollection<AdaptedStatus[]>(async (cursor) => {
-                  const method = uri.includes('/app.bsky.feed.generator/')
-                    ? 'getFeed'
-                    : 'getListFeed';
-                  const key = method === 'getFeed' ? 'feed' : 'list';
-                  const feedApi = agent.app.bsky.feed as unknown as Record<
-                    string,
-                    (args: Record<string, unknown>) => Promise<{
-                      data: { feed: unknown[]; cursor?: string };
-                    }>
-                  >;
-                  const res = await feedApi[method]({
-                    [key]: uri,
-                    limit,
-                    cursor,
-                  });
+                  const res = uri.includes('/app.bsky.feed.generator/')
+                    ? await agent.app.bsky.feed.getFeed({
+                        feed: uri,
+                        limit,
+                        cursor,
+                      })
+                    : await agent.app.bsky.feed.getListFeed({
+                        list: uri,
+                        limit,
+                        cursor,
+                      });
                   const feed = await hydrateFeedReplyContext(
-                    res.data.feed as unknown as AtprotoFeedItem[],
+                    res.data.feed,
                     agent,
                   );
                   return {
@@ -2461,7 +2723,7 @@ export function createAtprotoClient({
               cursor,
             });
             lists.push(
-              ...(res.data.lists as unknown as AtprotoList[])
+              ...res.data.lists
                 .filter(
                   (list) => list.purpose === 'app.bsky.graph.defs#curatelist',
                 )
@@ -2470,12 +2732,7 @@ export function createAtprotoClient({
             cursor = res.data.cursor;
           } while (cursor);
           const preferences = await agent.getPreferences().catch(() => null);
-          const savedFeeds =
-            (
-              preferences as unknown as {
-                savedFeeds?: Array<{ type?: string; value: string }>;
-              } | null
-            )?.savedFeeds || [];
+          const savedFeeds = preferences?.savedFeeds || [];
           const savedFeedURIs = [
             BSKY_DISCOVER_FEED,
             ...savedFeeds
@@ -2487,27 +2744,23 @@ export function createAtprotoClient({
                 .getFeedGenerators({
                   feeds: [...new Set(savedFeedURIs)],
                 })
-                .then(
-                  (res) => res.data.feeds as unknown as AtprotoFeedGenerator[],
-                )
-                .catch(() => [] as AtprotoFeedGenerator[])
+                .then((res) => res.data.feeds)
+                .catch(() => [])
             : [];
           const actorFeeds: AtprotoFeedGenerator[] = await agent.app.bsky.feed
             .getActorFeeds({
               actor: agentLoose.did ?? '',
               limit: 100,
             })
-            .then((res) => res.data.feeds as unknown as AtprotoFeedGenerator[])
-            .catch(() => [] as AtprotoFeedGenerator[]);
+            .then((res) => res.data.feeds)
+            .catch(() => []);
           const savedLists = await Promise.all(
             savedFeeds
               .filter((feed) => feed.type === 'list')
               .map((feed) =>
                 agent.app.bsky.graph
                   .getList({ list: feed.value, limit: 1 })
-                  .then((res) =>
-                    listToPhanpyList(res.data.list as unknown as AtprotoList),
-                  )
+                  .then((res) => listToPhanpyList(res.data.list))
                   .catch(() => null),
               ),
           );
@@ -2559,10 +2812,7 @@ export function createAtprotoClient({
               limit,
               cursor,
             });
-            const feed = await hydrateFeedReplyContext(
-              res.data.feed as unknown as AtprotoFeedItem[],
-              agent,
-            );
+            const feed = await hydrateFeedReplyContext(res.data.feed, agent);
             return {
               cursor: res.data.cursor,
               items: feedToStatuses(feed, agent),
@@ -2579,9 +2829,7 @@ export function createAtprotoClient({
             });
             return {
               cursor: res.data.cursor,
-              items: (res.data.mutes as unknown as AtprotoActor[]).map(
-                actorToAccount,
-              ),
+              items: res.data.mutes.map(actorToAccount),
             };
           });
         },
@@ -2595,9 +2843,7 @@ export function createAtprotoClient({
             });
             return {
               cursor: res.data.cursor,
-              items: (res.data.blocks as unknown as AtprotoActor[]).map(
-                actorToAccount,
-              ),
+              items: res.data.blocks.map(actorToAccount),
             };
           });
         },
@@ -2624,7 +2870,7 @@ export function createAtprotoClient({
       },
       followedTags: {
         list() {
-          return emptyCollection<unknown[]>();
+          return emptyCollection<unknown>();
         },
       },
       featuredTags: {
@@ -2645,12 +2891,12 @@ export function createAtprotoClient({
       trends: {
         tags: {
           list() {
-            return emptyCollection<unknown[]>();
+            return emptyCollection<unknown>();
           },
         },
         links: {
           list() {
-            return emptyCollection<unknown[]>();
+            return emptyCollection<unknown>();
           },
         },
         statuses: {
@@ -2661,10 +2907,7 @@ export function createAtprotoClient({
                 limit,
                 cursor,
               });
-              const feed = await hydrateFeedReplyContext(
-                res.data.feed as unknown as AtprotoFeedItem[],
-                agent,
-              );
+              const feed = await hydrateFeedReplyContext(res.data.feed, agent);
               return {
                 cursor: res.data.cursor,
                 items: feedToStatuses(feed, agent),
@@ -2718,7 +2961,7 @@ export function createAtprotoClient({
       },
       conversations: {
         list() {
-          return emptyCollection<unknown[]>();
+          return emptyCollection<unknown>();
         },
         $select() {
           return {
@@ -2779,7 +3022,7 @@ export function createAtprotoClient({
       },
       scheduledStatuses: {
         list() {
-          return emptyCollection<unknown[]>();
+          return emptyCollection<unknown>();
         },
         $select() {
           return {
@@ -2799,13 +3042,11 @@ export function createAtprotoClient({
         > {
           const ids = Array.isArray(id)
             ? id
-            : ([id].filter(Boolean) as string[]);
+            : [id].filter((value): value is string => Boolean(value));
           if (!ids.length) return [];
           const uris = ids.map((value) => decodeURIComponent(value));
           const res = await agent.getPosts({ uris });
-          return (res.data.posts as unknown as AtprotoPost[]).map((post) =>
-            postToStatus(post, agent),
-          );
+          return res.data.posts.map((post) => postToStatus(post, agent));
         },
         async create(
           params: {
@@ -2839,16 +3080,20 @@ export function createAtprotoClient({
             params.quoted_status_id || params.quote_id || params.quoteId;
           const rt = new RichText({ text: params.status || '' });
           await rt.detectFacets(agent);
-          const record: AtprotoPostRecord = {
+          const facets = rt.facets || [];
+          const record: AppBskyFeedPost.Record = {
+            $type: 'app.bsky.feed.post',
             text: rt.text,
-            facets: rt.facets as unknown as AtprotoFacet[],
+            facets,
             createdAt: new Date().toISOString(),
           };
+          let quoteEmbed: TypedRecordEmbed | undefined;
           if (inReplyToId) {
             const parent = await statusAPI(inReplyToId).fetch();
-            const root: AtprotoStrongRef = parent._atproto?.root || {
-              uri: parent.uri ?? '',
-              cid: parent._atproto.cid ?? '',
+            const storedRoot = parent._atproto?.root;
+            const root: ComAtprotoRepoStrongRef.Main = {
+              uri: storedRoot?.uri || parent.uri || '',
+              cid: storedRoot?.cid || parent._atproto.cid || '',
             };
             record.reply = {
               root,
@@ -2860,13 +3105,14 @@ export function createAtprotoClient({
           }
           if (quoteId) {
             const quote = await statusAPI(quoteId).fetch();
-            record.embed = {
+            quoteEmbed = {
               $type: 'app.bsky.embed.record',
               record: {
-                uri: quote.uri,
-                cid: quote._atproto.cid,
+                uri: quote.uri ?? '',
+                cid: quote._atproto.cid ?? '',
               },
-            } as unknown as AtprotoEmbed;
+            };
+            record.embed = quoteEmbed;
           }
           const mediaIds = params.media_ids || params.mediaIds || [];
           if (mediaIds.length) {
@@ -2876,7 +3122,7 @@ export function createAtprotoClient({
                 Boolean(item?.blob),
               );
             const videos = media.filter((item) => item.type === 'video');
-            const images = media
+            const images: AppBskyEmbedImages.Image[] = media
               .filter((item) => item.type === 'image')
               .map((item) => ({
                 image: item.blob,
@@ -2889,35 +3135,33 @@ export function createAtprotoClient({
               throw new Error('Bluesky posts support one video');
             }
             if (videos.length) {
-              const videoEmbed = {
+              const videoEmbed: TypedVideoEmbed = {
                 $type: 'app.bsky.embed.video',
                 video: videos[0].blob,
                 alt: videos[0].description || '',
               };
-              if (record.embed) {
+              if (quoteEmbed) {
                 record.embed = {
                   $type: 'app.bsky.embed.recordWithMedia',
-                  record: record.embed,
+                  record: quoteEmbed,
                   media: videoEmbed,
-                } as unknown as AtprotoEmbed;
+                } satisfies AppBskyEmbedRecordWithMedia.Main;
               } else {
-                record.embed = videoEmbed as unknown as AtprotoEmbed;
+                record.embed = videoEmbed;
               }
             } else if (images.length) {
-              if (record.embed) {
+              const imagesEmbed: TypedImagesEmbed = {
+                $type: 'app.bsky.embed.images',
+                images,
+              };
+              if (quoteEmbed) {
                 record.embed = {
                   $type: 'app.bsky.embed.recordWithMedia',
-                  record: record.embed,
-                  media: {
-                    $type: 'app.bsky.embed.images',
-                    images,
-                  },
-                } as unknown as AtprotoEmbed;
+                  record: quoteEmbed,
+                  media: imagesEmbed,
+                } satisfies AppBskyEmbedRecordWithMedia.Main;
               } else {
-                record.embed = {
-                  $type: 'app.bsky.embed.images',
-                  images,
-                } as unknown as AtprotoEmbed;
+                record.embed = imagesEmbed;
               }
             }
           }
@@ -2929,18 +3173,13 @@ export function createAtprotoClient({
               params.externalUrl ||
               getFirstPostURL(rt.text);
             const externalEmbed = externalUrl
-              ? await createAtprotoExternalEmbed(
-                  agent as unknown as Agent,
-                  externalUrl,
-                )
+              ? await createAtprotoExternalEmbed(agent, externalUrl)
               : null;
             if (externalEmbed) {
-              record.embed = externalEmbed as unknown as AtprotoEmbed;
+              record.embed = externalEmbed;
             }
           }
-          const res = await agent.post(
-            record as unknown as Parameters<typeof agent.post>[0],
-          );
+          const res = await agent.post(record);
           const id = encodeAtprotoID(res.uri);
           for (let i = 0; i < 10; i++) {
             try {
@@ -2956,11 +3195,9 @@ export function createAtprotoClient({
             {
               uri: res.uri,
               cid: res.cid,
-              author: profile.data as unknown as AtprotoActor,
+              author: profile.data,
               record,
-              reply: record.reply as
-                | { root?: AtprotoReplyRefLike; parent?: AtprotoReplyRefLike }
-                | undefined,
+              reply: record.reply,
             },
             agent,
           );
@@ -3028,10 +3265,11 @@ export function createAtprotoClient({
           category?: string;
           comment?: string;
         } = {}) {
-          let subject: Record<string, unknown> = {
-            $type: 'com.atproto.admin.defs#repoRef',
-            did: normalizeActor(accountId) ?? '',
-          };
+          let subject: ComAtprotoModerationCreateReport.InputSchema['subject'] =
+            {
+              $type: 'com.atproto.admin.defs#repoRef',
+              did: normalizeActor(accountId) ?? '',
+            };
           if (statusIds?.length) {
             const status = await statusAPI(statusIds[0]).fetch();
             subject = {
@@ -3047,9 +3285,7 @@ export function createAtprotoClient({
                 : 'com.atproto.moderation.defs#reasonViolation',
             reason: comment,
             subject,
-          } as unknown as Parameters<
-            typeof agent.com.atproto.moderation.createReport
-          >[0]);
+          });
         },
       },
     },
@@ -3129,7 +3365,7 @@ export function createAtprotoClient({
           type?: 'accounts' | 'statuses' | 'hashtags';
           limit?: number;
           cursor?: string;
-          sort?: string;
+          sort?: 'top' | 'latest' | (string & {});
         } = {}) {
           const wanted = type ? [type] : ['accounts', 'statuses', 'hashtags'];
           const results: {
@@ -3151,9 +3387,7 @@ export function createAtprotoClient({
                 limit,
                 cursor,
               });
-              results.accounts = (
-                res.data.actors as unknown as AtprotoActor[]
-              ).map(actorToAccount);
+              results.accounts = res.data.actors.map(actorToAccount);
               results._pagination.accounts = res.data.cursor;
             } catch (err) {
               if (wanted.length === 1) throw err;
@@ -3167,12 +3401,10 @@ export function createAtprotoClient({
                 limit,
                 cursor,
                 sort,
-              } as unknown as Parameters<
-                typeof agent.app.bsky.feed.searchPosts
-              >[0]);
-              results.statuses = (
-                res.data.posts as unknown as AtprotoPost[]
-              ).map((post) => postToStatus(post, agent));
+              });
+              results.statuses = res.data.posts.map((post) =>
+                postToStatus(post, agent),
+              );
               results._pagination.statuses = res.data.cursor;
             } catch (err) {
               if (wanted.length === 1) throw err;
@@ -3248,7 +3480,7 @@ export async function loginAtproto({
   });
   return {
     agent,
-    account: actorToAccount(profile.data as unknown as AtprotoActor),
+    account: actorToAccount(profile.data),
     session: agent.session,
     service,
   };
