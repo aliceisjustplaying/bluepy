@@ -18,6 +18,10 @@ Do not turn off lint rules without explicit permission in the current turn. If a
 
 Use Bun for installs and scripts: `bun install`, `bun run ...`, and `bunx ...`. Runtime remains browser/Cloudflare Workers, not Bun.
 
+## Browser Verification
+
+Use authenticated views when checking visual or behavioral regressions. Do not use logged-out routes as correctness evidence for authenticated timeline, post, compose, notification, or account flows.
+
 ## Long-Running Work
 
 Make small commits by concern. Push deploy-relevant commits to `fork/bluesky`. Report any remaining dirty files explicitly.
