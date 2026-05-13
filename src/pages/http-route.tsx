@@ -1,13 +1,21 @@
 import { Trans } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentChildren, ComponentType } from 'preact';
 import { useLayoutEffect, useState } from 'preact/hooks';
 import { useLocation } from 'react-router-dom';
 
-import Link from '../components/link';
+import LinkUntyped from '../components/link';
 import Loader from '../components/loader';
 import { api } from '../utils/api';
 import getInstanceStatusURL, {
   getInstanceStatusObject,
 } from '../utils/get-instance-status-url';
+
+interface LinkProps {
+  to: string;
+  children?: ComponentChildren;
+}
+const Link = LinkUntyped as unknown as ComponentType<LinkProps>;
 
 export default function HttpRoute() {
   const location = useLocation();
@@ -17,7 +25,7 @@ export default function HttpRoute() {
   const statusURL = statusObject?.instance
     ? `/${statusObject.instance}/s/${statusObject.id}`
     : null;
-  const [uiState, setUIState] = useState('loading');
+  const [uiState, setUIState] = useState<'loading' | 'error'>('loading');
 
   useLayoutEffect(() => {
     setUIState('loading');
@@ -27,7 +35,9 @@ export default function HttpRoute() {
         const { instance, id } = statusObject;
         if (id) {
           const { masto } = api({ instance });
-          const status = await masto.v1.statuses.$select(id).fetch();
+          const statusesResource =
+            masto.v1.statuses as unknown as mastodon.rest.v1.StatusesResource;
+          const status = await statusesResource.$select(id).fetch();
           if (status) {
             window.location.hash = statusURL + '?view=full';
             return;
@@ -38,7 +48,9 @@ export default function HttpRoute() {
       // Fallback to search
       {
         const { masto: currentMasto, instance: currentInstance } = api();
-        const result = await currentMasto.v2.search.list({
+        const searchResource =
+          currentMasto.v2.search as unknown as mastodon.rest.v2.SearchResource;
+        const result = await searchResource.list({
           q: url,
           limit: 1,
           resolve: true,
@@ -60,7 +72,7 @@ export default function HttpRoute() {
   }, [statusURL]);
 
   return (
-    <div class="ui-state" tabIndex="-1">
+    <div class="ui-state" tabIndex={-1}>
       {uiState === 'loading' ? (
         <>
           <Loader abrupt />
