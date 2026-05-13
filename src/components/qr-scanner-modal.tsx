@@ -15,14 +15,59 @@ if (!hasBarcodeDetector) {
 import Icon from './icon';
 import Loader from './loader';
 
+// Minimal shape of qr/dom.js QRCanvas usage in this file. The module has no
+// type declarations; we shim only the surface used here.
+interface QrCanvasLike {
+  drawImage: (
+    player: HTMLVideoElement,
+    height: number,
+    width: number,
+  ) => string | undefined | null;
+  clear: () => void;
+}
+
+// Minimal shape of qr/dom.js as consumed here.
+interface QrDomModule {
+  QRCanvas: new (
+    targets: { overlay: HTMLCanvasElement | null },
+    options: {
+      cropToSquare: boolean;
+      overlayMainColor: string;
+      overlayFinderColor: string;
+    },
+  ) => QrCanvasLike;
+  frameLoop: (cb: () => void) => () => void;
+}
+
+// Minimal shape of the experimental BarcodeDetector API (not in lib.dom).
+interface BarcodeDetectorResult {
+  rawValue: string;
+}
+interface BarcodeDetectorLike {
+  detect: (source: HTMLVideoElement) => Promise<BarcodeDetectorResult[]>;
+}
+interface BarcodeDetectorCtor {
+  new (options: { formats: string[] }): BarcodeDetectorLike;
+}
+
+// Placeholder for the demo-style getSize helper from qr/dom.js. Retained to
+// preserve original behavior: readFrame in non-fullSize mode calls it, which
+// would have ReferenceError'd in JS too. Marked unused-safe via cast.
+declare function getSize(player: HTMLVideoElement): {
+  height: number;
+  width: number;
+};
+
 // Copied from qr/dom.js because it's not exported
 class QRCamera {
-  constructor(stream, player) {
+  stream: MediaStream;
+  player: HTMLVideoElement;
+  constructor(stream: MediaStream, player: HTMLVideoElement) {
     this.stream = stream;
     this.player = player;
     this.setStream(stream);
   }
-  setStream(stream) {
+  setStream(stream: MediaStream) {
     this.stream = stream;
     const { player } = this;
     player.setAttribute('autoplay', '');
@@ -41,14 +86,14 @@ class QRCamera {
         label: i.label || `Camera ${i.deviceId}`,
       }));
   }
-  async setDevice(deviceId) {
+  async setDevice(deviceId: string) {
     this.stop();
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { deviceId: { exact: deviceId } },
     });
     this.setStream(stream);
   }
-  readFrame(canvas, fullSize = false) {
+  readFrame(canvas: QrCanvasLike, fullSize = false) {
     const { player } = this;
     if (fullSize)
       return canvas.drawImage(player, player.videoHeight, player.videoWidth);
@@ -61,11 +106,11 @@ class QRCamera {
 }
 
 // Copy of frontalCamera from qr/dom.js, but with custom constraints
-const createQRCamera = async (player) => {
+const createQRCamera = async (player: HTMLVideoElement) => {
   if (navigator.permissions?.query) {
     try {
       const permission = await navigator.permissions.query({
-        name: 'camera',
+        name: 'camera' as PermissionName,
       });
       console.log('Camera permission status:', permission.state);
 
@@ -87,11 +132,21 @@ const createQRCamera = async (player) => {
   return new QRCamera(stream, player);
 };
 
-function QrScannerModal({ onClose, checkValidity, actionableText }) {
-  const { t, _ } = useLingui();
-  const containerRef = useRef(null);
-  const videoRef = useRef(null);
-  const overlayRef = useRef(null);
+interface QrScannerModalProps {
+  onClose: (arg?: { text: string } | MouseEvent) => void;
+  checkValidity?: (text: string) => boolean;
+  actionableText?: string;
+}
+
+function QrScannerModal({
+  onClose,
+  checkValidity,
+  actionableText,
+}: QrScannerModalProps) {
+  const { t, i18n } = useLingui();
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const overlayRef = useRef<HTMLCanvasElement | null>(null);
   const [decodedText, setDecodedText] = useState('');
   const [isScanning, setIsScanning] = useState(true);
   const [uiState, setUIState] = useState('loading');
@@ -99,7 +154,7 @@ function QrScannerModal({ onClose, checkValidity, actionableText }) {
   // Based on screen, not viewport or window
   useEffect(() => {
     // portrait as default
-    let handleScreenOrientationChange;
+    let handleScreenOrientationChange: (() => void) | undefined;
     if (screen?.orientation?.type && containerRef.current) {
       handleScreenOrientationChange = () => {
         const screenOrientation = /landscape/.test(
@@ -107,7 +162,7 @@ function QrScannerModal({ onClose, checkValidity, actionableText }) {
         )
           ? 'landscape'
           : 'portrait';
-        containerRef.current.classList.toggle(
+        containerRef.current?.classList.toggle(
           'landscape',
           screenOrientation === 'landscape',
         );
@@ -133,20 +188,23 @@ function QrScannerModal({ onClose, checkValidity, actionableText }) {
   }, []);
 
   useEffect(() => {
-    let cancelMainLoop;
-    let cam;
-    let qrCanvas;
-    let detector;
-    let qrDom;
+    let cancelMainLoop: (() => void) | undefined;
+    let cam: QRCamera | undefined;
+    let qrCanvas: QrCanvasLike | undefined;
+    let detector: BarcodeDetectorLike | undefined;
+    let qrDom: QrDomModule | undefined;
 
     const startCamera = async () => {
       try {
-        cam = await createQRCamera(videoRef.current);
+        cam = await createQRCamera(videoRef.current as HTMLVideoElement);
 
         if (hasBarcodeDetector) {
-          detector = new BarcodeDetector({ formats: ['qr_code'] });
+          const BarcodeDetectorCtor = (
+            window as unknown as { BarcodeDetector: BarcodeDetectorCtor }
+          ).BarcodeDetector;
+          detector = new BarcodeDetectorCtor({ formats: ['qr_code'] });
         } else {
-          qrDom = await import('qr/dom.js');
+          qrDom = (await import('qr/dom.js')) as unknown as QrDomModule;
           qrCanvas = new qrDom.QRCanvas(
             {
               overlay: overlayRef.current,
@@ -175,20 +233,22 @@ function QrScannerModal({ onClose, checkValidity, actionableText }) {
             console.log('📹', { cam, video });
 
             if (width && height) {
-              containerRef.current.style.setProperty(
+              containerRef.current?.style.setProperty(
                 '--long-dimension',
-                Math.max(width, height),
+                String(Math.max(width, height)),
               );
-              containerRef.current.style.setProperty(
+              containerRef.current?.style.setProperty(
                 '--short-dimension',
-                Math.min(width, height),
+                String(Math.min(width, height)),
               );
             }
 
             if (hasBarcodeDetector) {
               const mainLoop = async () => {
                 try {
-                  const results = await detector.detect(videoRef.current);
+                  const results = await detector!.detect(
+                    videoRef.current as HTMLVideoElement,
+                  );
                   if (results.length > 0) {
                     console.log('Scan result:', results[0].rawValue);
                     setDecodedText(results[0].rawValue);
@@ -198,7 +258,7 @@ function QrScannerModal({ onClose, checkValidity, actionableText }) {
                 }
               };
 
-              let animationId;
+              let animationId: number;
               const rafLoop = () => {
                 mainLoop();
                 animationId = requestAnimationFrame(rafLoop);
@@ -208,7 +268,7 @@ function QrScannerModal({ onClose, checkValidity, actionableText }) {
             } else {
               const mainLoop = () => {
                 try {
-                  const result = cam.readFrame(qrCanvas, true);
+                  const result = cam!.readFrame(qrCanvas!, true);
                   if (result !== undefined && result !== null) {
                     console.log('Scan result:', result);
                     setDecodedText(result);
@@ -218,7 +278,7 @@ function QrScannerModal({ onClose, checkValidity, actionableText }) {
                 }
               };
 
-              cancelMainLoop = qrDom.frameLoop(mainLoop);
+              cancelMainLoop = qrDom!.frameLoop(mainLoop);
             }
           });
         }
@@ -266,7 +326,12 @@ function QrScannerModal({ onClose, checkValidity, actionableText }) {
       ) : (
         <>
           <div ref={containerRef} class="qr-scanner-video-container">
-            <video ref={videoRef} playsInline muted disablepictureinpicture />
+            <video
+              ref={videoRef}
+              playsInline
+              muted
+              disablePictureInPicture
+            />
             {!hasBarcodeDetector && (
               <canvas ref={overlayRef} class="qr-scanner-canvas" />
             )}
@@ -318,7 +383,7 @@ function QrScannerModal({ onClose, checkValidity, actionableText }) {
                     }}
                   >
                     {actionableText ? (
-                      _(actionableText)
+                      i18n._(actionableText)
                     ) : (
                       <Icon icon="arrow-right" />
                     )}
