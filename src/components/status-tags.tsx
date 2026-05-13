@@ -1,15 +1,8 @@
-import type { ComponentChildren, ComponentType } from 'preact';
 import { useMemo } from 'preact/hooks';
 
 import { api } from '../utils/api';
 
-import LinkRaw from './link';
-
-interface LinkProps {
-  to: string;
-  children?: ComponentChildren;
-}
-const Link = LinkRaw as unknown as ComponentType<LinkProps>;
+import Link from './link';
 
 interface StatusTag {
   name: string;

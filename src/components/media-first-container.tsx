@@ -3,18 +3,13 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 
 import isRTL from '../utils/is-rtl';
 
-import IconRaw from './icon';
+import Icon from './icon';
 import MediaRaw from './media';
 
 interface MediaAttachment {
   id: string;
   [key: string]: unknown;
 }
-
-const Icon = IconRaw as unknown as ComponentType<{
-  icon?: string;
-  size?: string;
-}>;
 
 const Media = MediaRaw as unknown as ComponentType<{
   media: MediaAttachment;

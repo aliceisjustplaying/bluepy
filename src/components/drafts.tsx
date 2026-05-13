@@ -332,7 +332,7 @@ function MiniDraft({ draft }: MiniDraftProps) {
               firstImageMedia
                 ? ({
                     '--bg-image': `url(${firstImageMedia})`,
-                  } as unknown as CSSProperties)
+                  } as CSSProperties)
                 : {}
             }
           >

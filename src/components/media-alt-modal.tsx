@@ -1,6 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
-import type { ComponentType } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
@@ -11,7 +10,7 @@ import states from '../utils/states';
 
 import Icon from './icon';
 import Menu2 from './menu2';
-import TranslationBlockUntyped from './translation-block';
+import TranslationBlock from './translation-block';
 
 // `localeMatch` is called throughout the codebase with 2 args (omitting the
 // required `defaultLocale`). The wrapper catches the resulting throw and
@@ -25,16 +24,6 @@ const localeMatch = localeMatchDefault as unknown as (
   availableLocales: readonly (string | false)[],
   defaultLocale?: string,
 ) => string | false;
-
-interface TranslationBlockProps {
-  forceTranslate?: boolean;
-  sourceLanguage?: string;
-  text?: string;
-  mini?: boolean;
-  autoDetected?: boolean;
-}
-const TranslationBlock =
-  TranslationBlockUntyped as unknown as ComponentType<TranslationBlockProps>;
 
 const FORCE_TRANSLATE_LIMIT = 140;
 
