@@ -3269,7 +3269,7 @@ export async function loginAtproto({
   const agent = new AtpAgent({ service });
   await agent.login({ identifier, password });
   const profile = await agent.getProfile({
-    actor: (agent as unknown as { did?: string }).did ?? '',
+    actor: agent.did ?? '',
   });
   return {
     agent,
