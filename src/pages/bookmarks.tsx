@@ -18,15 +18,15 @@ function Timeline(props: {
   ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
 }) {
   const Inner = TimelineUntyped as unknown as ComponentType<{
-  title?: string;
-  id?: string;
-  emptyText?: string;
-  errorText?: string;
-  instance?: string;
-  fetchItems?: (
-    firstLoad?: boolean,
-  ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
-}>;
+    title?: string;
+    id?: string;
+    emptyText?: string;
+    errorText?: string;
+    instance?: string;
+    fetchItems?: (
+      firstLoad?: boolean,
+    ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
+  }>;
   return <Inner {...props} />;
 }
 

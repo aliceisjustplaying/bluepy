@@ -3,7 +3,12 @@ import './notifications.css';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType, TargetedEvent, TargetedMouseEvent, ComponentChildren } from 'preact';
+import type {
+  ComponentType,
+  TargetedEvent,
+  TargetedMouseEvent,
+  ComponentChildren,
+} from 'preact';
 import { Fragment } from 'preact';
 import { memo } from 'preact/compat';
 import {
@@ -56,9 +61,9 @@ function InView(props: {
   children?: ComponentChildren;
 }) {
   const Inner = InViewUntyped as unknown as ComponentType<{
-  onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
-}>;
+    onChange?: (inView: boolean) => void;
+    children?: ComponentChildren;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -70,10 +75,10 @@ function Status(props: {
   readOnly?: boolean;
 }) {
   const Inner = StatusUntyped as unknown as ComponentType<{
-  status?: unknown;
-  size?: 's' | 'm' | 'l';
-  readOnly?: boolean;
-}>;
+    status?: unknown;
+    size?: 's' | 'm' | 'l';
+    readOnly?: boolean;
+  }>;
   return <Inner {...props} />;
 }
 

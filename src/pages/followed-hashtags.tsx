@@ -20,12 +20,10 @@ function Link(props: LinkProps) {
   const Inner = LinkUntyped as unknown as ComponentType<LinkProps>;
   return <Inner {...props} />;
 }
-function NavMenu(props:
-  Record<string, never>
-) {
+function NavMenu(props: Record<string, never>) {
   const Inner = NavMenuUntyped as unknown as ComponentType<
-  Record<string, never>
->;
+    Record<string, never>
+  >;
   return <Inner {...props} />;
 }
 

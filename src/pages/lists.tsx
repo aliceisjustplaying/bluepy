@@ -33,12 +33,10 @@ interface ListAddEditProps {
 const ListAddEdit =
   ListAddEditUntyped as unknown as ComponentType<ListAddEditProps>;
 
-function NavMenu(props:
-  Record<string, never>
-) {
+function NavMenu(props: Record<string, never>) {
   const Inner = NavMenuUntyped as unknown as ComponentType<
-  Record<string, never>
->;
+    Record<string, never>
+  >;
   return <Inner {...props} />;
 }
 

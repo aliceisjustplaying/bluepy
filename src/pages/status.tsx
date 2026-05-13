@@ -127,12 +127,12 @@ function InView(props: {
   children?: ComponentChildren;
 }) {
   const Inner = InViewUntyped as unknown as ComponentType<{
-  threshold?: number;
-  class?: string;
-  tabIndex?: number;
-  onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
-}>;
+    threshold?: number;
+    class?: string;
+    tabIndex?: number;
+    onChange?: (inView: boolean) => void;
+    children?: ComponentChildren;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -354,7 +354,13 @@ function StatusPage(params: StatusPageParams) {
         setSearchParams(searchParams);
       }
     }
-  }, [showMediaOnly, closeLink, snapStates.prevLocation, searchParams, setSearchParams]);
+  }, [
+    showMediaOnly,
+    closeLink,
+    snapStates.prevLocation,
+    searchParams,
+    setSearchParams,
+  ]);
   const handleMediaClose = useCallback(
     (
       _e: unknown,

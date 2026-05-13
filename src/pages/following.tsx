@@ -35,22 +35,22 @@ function Timeline(props: {
   [key: string]: unknown;
 }) {
   const Inner = TimelineUntyped as unknown as ComponentType<{
-  title?: string;
-  id?: string;
-  emptyText?: string;
-  errorText?: string;
-  instance?: string;
-  fetchItems?: (
-    firstLoad?: boolean,
-  ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
-  checkForUpdates?: () => Promise<boolean>;
-  useItemID?: boolean;
-  boostsCarousel?: boolean;
-  filterContext?: string;
-  showFollowedTags?: boolean;
-  showReplyParent?: boolean;
-  [key: string]: unknown;
-}>;
+    title?: string;
+    id?: string;
+    emptyText?: string;
+    errorText?: string;
+    instance?: string;
+    fetchItems?: (
+      firstLoad?: boolean,
+    ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
+    checkForUpdates?: () => Promise<boolean>;
+    useItemID?: boolean;
+    boostsCarousel?: boolean;
+    filterContext?: string;
+    showFollowedTags?: boolean;
+    showReplyParent?: boolean;
+    [key: string]: unknown;
+  }>;
   return <Inner {...props} />;
 }
 

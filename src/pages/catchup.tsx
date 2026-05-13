@@ -761,57 +761,59 @@ function Catchup() {
     authorCountsList.forEach((authorID, index) => {
       authorIndices[authorID] = index;
     });
-    return filteredPosts
-      .filter((post) => !post.__HIDDEN)
-      // TODO(oxlint:unicorn/no-array-sort): `toSorted()` is ES2023; project
-      // target is ES2022. Mutating a `.filter()` result is safe.
-      .sort((aIn, bIn) => {
-        let a: CatchupPost = aIn;
-        let b: CatchupPost = bIn;
-        if (groupBy === 'account') {
-          const aAccountID = a.account.id;
-          const bAccountID = b.account.id;
-          const aIndex = authorIndices[aAccountID];
-          const bIndex = authorIndices[bAccountID];
-          const order = aIndex - bIndex;
-          if (order !== 0) {
-            return order;
+    return (
+      filteredPosts
+        .filter((post) => !post.__HIDDEN)
+        // TODO(oxlint:unicorn/no-array-sort): `toSorted()` is ES2023; project
+        // target is ES2022. Mutating a `.filter()` result is safe.
+        .sort((aIn, bIn) => {
+          let a: CatchupPost = aIn;
+          let b: CatchupPost = bIn;
+          if (groupBy === 'account') {
+            const aAccountID = a.account.id;
+            const bAccountID = b.account.id;
+            const aIndex = authorIndices[aAccountID];
+            const bIndex = authorIndices[bAccountID];
+            const order = aIndex - bIndex;
+            if (order !== 0) {
+              return order;
+            }
           }
-        }
-        if (sortBy !== 'createdAt') {
-          a = (a.reblog as CatchupPost | null | undefined) || a;
-          b = (b.reblog as CatchupPost | null | undefined) || b;
-          if (
-            sortBy !== 'density' &&
-            (a as unknown as Record<string, unknown>)[sortBy] ===
-              (b as unknown as Record<string, unknown>)[sortBy]
-          ) {
-            return a.createdAt > b.createdAt ? 1 : -1;
+          if (sortBy !== 'createdAt') {
+            a = (a.reblog as CatchupPost | null | undefined) || a;
+            b = (b.reblog as CatchupPost | null | undefined) || b;
+            if (
+              sortBy !== 'density' &&
+              (a as unknown as Record<string, unknown>)[sortBy] ===
+                (b as unknown as Record<string, unknown>)[sortBy]
+            ) {
+              return a.createdAt > b.createdAt ? 1 : -1;
+            }
           }
-        }
-        if (sortBy === 'density') {
-          const aDensity = postDensity(a);
-          const bDensity = postDensity(b);
+          if (sortBy === 'density') {
+            const aDensity = postDensity(a);
+            const bDensity = postDensity(b);
+            if (sortOrder === 'asc') {
+              return aDensity > bDensity ? 1 : -1;
+            } else {
+              return bDensity > aDensity ? 1 : -1;
+            }
+          }
+          const aRec = a as unknown as Record<string, unknown>;
+          const bRec = b as unknown as Record<string, unknown>;
           if (sortOrder === 'asc') {
-            return aDensity > bDensity ? 1 : -1;
+            return (aRec[sortBy] as number | string) >
+              (bRec[sortBy] as number | string)
+              ? 1
+              : -1;
           } else {
-            return bDensity > aDensity ? 1 : -1;
+            return (bRec[sortBy] as number | string) >
+              (aRec[sortBy] as number | string)
+              ? 1
+              : -1;
           }
-        }
-        const aRec = a as unknown as Record<string, unknown>;
-        const bRec = b as unknown as Record<string, unknown>;
-        if (sortOrder === 'asc') {
-          return (aRec[sortBy] as number | string) >
-            (bRec[sortBy] as number | string)
-            ? 1
-            : -1;
-        } else {
-          return (bRec[sortBy] as number | string) >
-            (aRec[sortBy] as number | string)
-            ? 1
-            : -1;
-        }
-      });
+        })
+    );
   }, [filteredPosts, sortBy, sortOrder, groupBy, authorCountsList]);
 
   const prevGroup = useRef<string | null>(null);

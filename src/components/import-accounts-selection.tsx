@@ -25,13 +25,13 @@ function Avatar(props: {
   [key: string]: unknown;
 }) {
   const Inner = AvatarUntyped as unknown as ComponentType<{
-  url?: string;
-  staticUrl?: string;
-  size?: string | number;
-  alt?: string;
-  squircle?: boolean;
-  [key: string]: unknown;
-}>;
+    url?: string;
+    staticUrl?: string;
+    size?: string | number;
+    alt?: string;
+    squircle?: boolean;
+    [key: string]: unknown;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -46,15 +46,15 @@ function NameText(props: {
   [key: string]: unknown;
 }) {
   const Inner = NameTextUntyped as unknown as ComponentType<{
-  account?: unknown;
-  instance?: string;
-  showAvatar?: boolean;
-  showAcct?: boolean;
-  short?: boolean;
-  external?: boolean;
-  onClick?: (event: Event) => void;
-  [key: string]: unknown;
-}>;
+    account?: unknown;
+    instance?: string;
+    showAvatar?: boolean;
+    showAcct?: boolean;
+    short?: boolean;
+    external?: boolean;
+    onClick?: (event: Event) => void;
+    [key: string]: unknown;
+  }>;
   return <Inner {...props} />;
 }
 

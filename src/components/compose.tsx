@@ -288,33 +288,27 @@ function AccountBlock(props: {
   useAvatarStatic?: boolean;
 }) {
   const Inner = AccountBlockUntyped as unknown as ComponentType<{
-  account?: AccountInfoLike | null;
-  accountInstance?: string;
-  hideDisplayName?: boolean;
-  useAvatarStatic?: boolean;
-}>;
+    account?: AccountInfoLike | null;
+    accountInstance?: string;
+    hideDisplayName?: boolean;
+    useAvatarStatic?: boolean;
+  }>;
   return <Inner {...props} />;
 }
 
-function CharCountMeter(props: {
-  maxCharacters?: number;
-  hidden?: boolean;
-}) {
+function CharCountMeter(props: { maxCharacters?: number; hidden?: boolean }) {
   const Inner = CharCountMeterUntyped as unknown as ComponentType<{
-  maxCharacters?: number;
-  hidden?: boolean;
-}>;
+    maxCharacters?: number;
+    hidden?: boolean;
+  }>;
   return <Inner {...props} />;
 }
 
-function Loader(props: {
-  abrupt?: boolean;
-  hidden?: boolean;
-}) {
+function Loader(props: { abrupt?: boolean; hidden?: boolean }) {
   const Inner = LoaderUntyped as unknown as ComponentType<{
-  abrupt?: boolean;
-  hidden?: boolean;
-}>;
+    abrupt?: boolean;
+    hidden?: boolean;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -328,14 +322,14 @@ function MediaAttachment(props: {
   onRemove?: () => void;
 }) {
   const Inner = MediaAttachmentUntyped as unknown as ComponentType<{
-  attachment: MediaAttachmentLike;
-  disabled?: boolean;
-  lang?: string;
-  supportedMimeTypes?: string[];
-  descriptionLimit?: number;
-  onDescriptionChange?: (value: string) => void;
-  onRemove?: () => void;
-}>;
+    attachment: MediaAttachmentLike;
+    disabled?: boolean;
+    lang?: string;
+    supportedMimeTypes?: string[];
+    descriptionLimit?: number;
+    onDescriptionChange?: (value: string) => void;
+    onRemove?: () => void;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -347,12 +341,12 @@ function Status(props: {
   readOnly?: boolean;
 }) {
   const Inner = StatusUntyped as unknown as ComponentType<{
-  status?: StatusLike | null;
-  instance?: string;
-  size?: 's' | 'm' | 'l';
-  previewMode?: boolean;
-  readOnly?: boolean;
-}>;
+    status?: StatusLike | null;
+    instance?: string;
+    size?: 's' | 'm' | 'l';
+    previewMode?: boolean;
+    readOnly?: boolean;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -363,11 +357,11 @@ function CustomEmojisModal(props: {
   onSelect: (emojiShortcode: string) => void;
 }) {
   const Inner = CustomEmojisModalUntyped as unknown as ComponentType<{
-  instance?: string;
-  onClose: () => void;
-  defaultSearchTerm?: string | null;
-  onSelect: (emojiShortcode: string) => void;
-}>;
+    instance?: string;
+    onClose: () => void;
+    defaultSearchTerm?: string | null;
+    onSelect: (emojiShortcode: string) => void;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -379,12 +373,12 @@ function MentionModal(props: {
   onSelect: (socialAddress: string) => void;
 }) {
   const Inner = MentionModalUntyped as unknown as ComponentType<{
-  masto: unknown;
-  instance?: string;
-  onClose: () => void;
-  defaultSearchTerm?: string | null;
-  onSelect: (socialAddress: string) => void;
-}>;
+    masto: unknown;
+    instance?: string;
+    onClose: () => void;
+    defaultSearchTerm?: string | null;
+    onSelect: (socialAddress: string) => void;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -393,9 +387,13 @@ function GIFPickerModal(props: {
   onSelect: (payload: { url: string; type: string; alt_text?: string }) => void;
 }) {
   const Inner = GIFPickerModalUntyped as unknown as ComponentType<{
-  onClose: () => void;
-  onSelect: (payload: { url: string; type: string; alt_text?: string }) => void;
-}>;
+    onClose: () => void;
+    onSelect: (payload: {
+      url: string;
+      type: string;
+      alt_text?: string;
+    }) => void;
+  }>;
   return <Inner {...props} />;
 }
 

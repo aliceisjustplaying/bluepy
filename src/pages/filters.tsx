@@ -21,12 +21,10 @@ import { getAPIVersions } from '../utils/store-utils';
 import useInterval from '../utils/useInterval';
 import useTitle from '../utils/useTitle';
 
-function NavMenu(props:
-  Record<string, never>
-) {
+function NavMenu(props: Record<string, never>) {
   const Inner = NavMenuUntyped as unknown as ComponentType<
-  Record<string, never>
->;
+    Record<string, never>
+  >;
   return <Inner {...props} />;
 }
 
