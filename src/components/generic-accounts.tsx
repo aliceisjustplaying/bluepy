@@ -3,7 +3,7 @@ import './generic-accounts.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { ComponentType, ComponentChildren } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useSnapshot } from 'valtio';
 
@@ -128,102 +128,138 @@ export default function GenericAccounts({
     ? showGenericAccountsState.showReactions
     : undefined;
 
-  const loadRelationships = async (loadFor: AccountWithTypes[]) => {
-    if (!loadFor?.length) return;
-    if (!isCurrentInstance) return;
-    const relationships = await fetchRelationships(loadFor, relationshipsMap);
-    if (relationships) {
-      setRelationshipsMap({
-        ...relationshipsMap,
-        ...relationships,
-      });
-    }
-  };
+  // Mirror `accounts` into a ref so the stable callbacks below can read the
+  // latest value without listing `accounts` as a dep (which would refetch on
+  // every change).
+  const accountsRef = useRef(accounts);
+  accountsRef.current = accounts;
 
-  const loadAccounts = (firstLoadFlag?: boolean) => {
-    if (!fetchAccounts) return;
-    if (firstLoadFlag && !accounts?.length) setAccounts([]);
-    setUIState('loading');
-    void (async () => {
-      try {
-        const { done, value } = await fetchAccounts(firstLoadFlag);
-        if (Array.isArray(value)) {
-          if (firstLoadFlag) {
-            const merged: AccountWithTypes[] = [];
-            for (let i = 0; i < value.length; i++) {
-              const account = value[i];
-              const theAccount = merged.find(
-                (a, j) => a.id === account.id && i !== j,
-              );
-              if (!theAccount) {
-                merged.push({
-                  ...account,
-                  _types: account._types ?? [],
-                });
-              } else {
-                theAccount._types.push(...(account._types as string[]));
-              }
-            }
-            setAccounts(merged);
-          } else {
-            // setAccounts((prev) => [...prev, ...value]);
-            // Merge accounts by id and _types
-            setAccounts((prev) => {
-              const newAccounts = prev;
-              for (const account of value) {
-                const theAccount = newAccounts.find((a) => a.id === account.id);
+  const loadRelationships = useCallback(
+    async (loadFor: AccountWithTypes[]) => {
+      if (!loadFor?.length) return;
+      if (!isCurrentInstance) return;
+      // Functional updater so we don't need `relationshipsMap` as a dep; we
+      // still pass the latest known map to `fetchRelationships` so it can
+      // skip already-fetched ids.
+      let snapshot: Record<string, mastodon.v1.Relationship> = {};
+      setRelationshipsMap((prev) => {
+        snapshot = prev;
+        return prev;
+      });
+      const relationships = await fetchRelationships(loadFor, snapshot);
+      if (relationships) {
+        setRelationshipsMap((prev) => ({
+          ...prev,
+          ...relationships,
+        }));
+      }
+    },
+    [isCurrentInstance],
+  );
+
+  const loadAccounts = useCallback(
+    (firstLoadFlag?: boolean) => {
+      if (!fetchAccounts) return;
+      if (firstLoadFlag && !accountsRef.current?.length) setAccounts([]);
+      setUIState('loading');
+      void (async () => {
+        try {
+          const { done, value } = await fetchAccounts(firstLoadFlag);
+          if (Array.isArray(value)) {
+            if (firstLoadFlag) {
+              const merged: AccountWithTypes[] = [];
+              for (let i = 0; i < value.length; i++) {
+                const account = value[i];
+                const theAccount = merged.find(
+                  (a, j) => a.id === account.id && i !== j,
+                );
                 if (!theAccount) {
-                  newAccounts.push(account as AccountWithTypes);
+                  merged.push({
+                    ...account,
+                    _types: account._types ?? [],
+                  });
                 } else {
                   theAccount._types.push(...(account._types as string[]));
                 }
               }
-              return newAccounts;
-            });
-          }
-          setShowMore(!done);
+              setAccounts(merged);
+            } else {
+              // setAccounts((prev) => [...prev, ...value]);
+              // Merge accounts by id and _types
+              setAccounts((prev) => {
+                const newAccounts = prev;
+                for (const account of value) {
+                  const theAccount = newAccounts.find(
+                    (a) => a.id === account.id,
+                  );
+                  if (!theAccount) {
+                    newAccounts.push(account as AccountWithTypes);
+                  } else {
+                    theAccount._types.push(...(account._types as string[]));
+                  }
+                }
+                return newAccounts;
+              });
+            }
+            setShowMore(!done);
 
-          void loadRelationships(value as AccountWithTypes[]);
-        } else {
-          setShowMore(false);
+            void loadRelationships(value as AccountWithTypes[]);
+          } else {
+            setShowMore(false);
+          }
+          setUIState('default');
+        } catch (e) {
+          console.error(e);
+          setUIState('error');
         }
-        setUIState('default');
-      } catch (e) {
-        console.error(e);
-        setUIState('error');
-      }
-    })();
-  };
+      })();
+    },
+    [fetchAccounts, loadRelationships],
+  );
+
+  // Mirror the latest stateful inputs into refs so the two effects below
+  // stay narrowly triggered (matching the JS original): the first by
+  // `fetchAccounts` identity, the second by `reloadGenericAccounts.counter`.
+  // We read showGenericAccountsState/id/loadAccounts/loadRelationships via
+  // refs to avoid spurious refires when the valtio snapshot reference
+  // changes or when the stable callbacks recompute.
+  const showStateRef = useRef(showGenericAccountsState);
+  showStateRef.current = showGenericAccountsState;
+  const reloadIdRef = useRef(id);
+  reloadIdRef.current = id;
+  const loadAccountsRef = useRef(loadAccounts);
+  loadAccountsRef.current = loadAccounts;
+  const loadRelationshipsRef = useRef(loadRelationships);
+  loadRelationshipsRef.current = loadRelationships;
+  const reloadEventIdRef = useRef(snapStates.reloadGenericAccounts?.id);
+  reloadEventIdRef.current = snapStates.reloadGenericAccounts?.id;
 
   useEffect(() => {
-    if (!showGenericAccountsState) return;
-    if (accounts?.length > 0) {
+    if (!showStateRef.current) return;
+    if ((accountsRef.current?.length ?? 0) > 0) {
       // setAccounts(staticAccounts);
       if (fetchAccounts) {
-        loadAccounts(true);
+        loadAccountsRef.current(true);
         firstLoad.current = false;
       } else {
-        void loadRelationships(accounts);
+        void loadRelationshipsRef.current(accountsRef.current);
       }
     } else {
-      loadAccounts(true);
+      loadAccountsRef.current(true);
       firstLoad.current = false;
     }
-    // TODO(oxlint:react-hooks/exhaustive-deps): intentionally only reacts to
-    // `fetchAccounts` identity changes; adding `accounts`/`loadAccounts`/
-    // `loadRelationships` would cause refetch loops.
+    // Intentionally reacts only to `fetchAccounts` identity; everything else
+    // is read through refs so a valtio snapshot churn or stable-callback
+    // recompute does not retrigger a load. This matches the JS original.
   }, [fetchAccounts]);
 
   useEffect(() => {
     if (firstLoad.current) return;
-    // reloadGenericAccounts contains value like {id: 'mute', counter: 1}
-    // We only need to reload if the id matches
-    if (snapStates.reloadGenericAccounts?.id === id) {
-      loadAccounts(true);
+    // reloadGenericAccounts contains value like {id: 'mute', counter: 1}.
+    // We only need to reload if the id matches the currently-shown sheet.
+    if (reloadEventIdRef.current === reloadIdRef.current) {
+      loadAccountsRef.current(true);
     }
-    // TODO(oxlint:react-hooks/exhaustive-deps): intentionally only triggers on
-    // counter change; `id` and `loadAccounts` would loop and we want
-    // counter-triggered refresh, not id-triggered.
   }, [snapStates.reloadGenericAccounts.counter]);
 
   if (!showGenericAccountsState) {

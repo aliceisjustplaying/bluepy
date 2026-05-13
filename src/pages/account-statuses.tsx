@@ -378,6 +378,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   }, [id, masto]);
 
   useEffect(() => {
+    const accountsResource = masto.v1
+      .accounts as unknown as mastodon.rest.v1.AccountsResource;
     void (async () => {
       try {
         const acc = await refetchAccount();
@@ -390,9 +392,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       // TODO: Revisit this
       if (!mediaFirst) {
         try {
-          const fetchedFeaturedTags = await (
-            masto.v1.accounts as unknown as mastodon.rest.v1.AccountsResource
-          )
+          const fetchedFeaturedTags = await accountsResource
             .$select(id as string)
             .featuredTags.list();
           console.log({ fetchedFeaturedTags });
@@ -402,10 +402,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         }
       }
     })();
-    // TODO(oxlint:react-hooks/exhaustive-deps): `refetchAccount` and
-    // `masto.v1.accounts` are stable identity within an `id`/`mediaFirst`
-    // cohort. Adding them would cause refetch loops here.
-  }, [id, mediaFirst]);
+  }, [id, mediaFirst, refetchAccount, masto]);
 
   const { displayName, acct, emojis } = account || ({} as Partial<Account>);
 
@@ -657,10 +654,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         )}
       </>
     );
-    // TODO(oxlint:react-hooks/exhaustive-deps): `TimelineStart` is a JSX
-    // expression closing over many props/state. Listing every dep here is
-    // intentional minimal coverage; a refetch on every input would defeat
-    // the memoization. Treated as render-only state.
+    // `TimelineStart` is a JSX expression that legitimately closes over
+    // many props/state — locale, account fields, search params, and the
+    // memoized callbacks. Listing them all keeps the rendered output in
+    // sync with the underlying values; identity churn is fine because the
+    // callbacks are stable and primitive values rarely change in lockstep.
   }, [
     id,
     instance,
@@ -673,6 +671,17 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     excludeBoosts,
     tagged,
     media,
+    mediaFirst,
+    searchParams,
+    account,
+    t,
+    i18n.locale,
+    columnMode,
+    snapStates.accounts,
+    toggleParam,
+    isSelf,
+    setSearchParams,
+    clearAndSetParam,
   ]);
 
   useEffect(() => {

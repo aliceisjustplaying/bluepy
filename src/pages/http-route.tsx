@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useLayoutEffect, useState } from 'preact/hooks';
+import { useLayoutEffect, useMemo, useState } from 'preact/hooks';
 import { useLocation } from 'react-router-dom';
 
 import Link from '../components/link';
@@ -11,7 +11,9 @@ import { getInstanceStatusObject } from '../utils/get-instance-status-url';
 export default function HttpRoute() {
   const location = useLocation();
   const url = location.pathname.replace(/^\//, '');
-  const statusObject = getInstanceStatusObject(url);
+  // Memoize so `statusObject` identity is stable per `url` and the
+  // useLayoutEffect dep list below can include it without looping.
+  const statusObject = useMemo(() => getInstanceStatusObject(url), [url]);
   // const statusURL = getInstanceStatusURL(url);
   const statusURL = statusObject?.instance
     ? `/${statusObject.instance}/s/${statusObject.id}`
@@ -62,12 +64,7 @@ export default function HttpRoute() {
         }
       }
     })();
-    // TODO(oxlint:react-hooks/exhaustive-deps): `statusObject` is recreated on
-    // every render by `getInstanceStatusObject(url)`; adding it would loop
-    // `loading -> error -> loading`. `url` is the meaningful trigger, captured
-    // here transitively via `statusURL`. `statusObject` and `url` are stable
-    // for a given `statusURL`.
-  }, [statusURL]);
+  }, [statusURL, url, statusObject]);
 
   return (
     <div class="ui-state" tabIndex={-1}>
