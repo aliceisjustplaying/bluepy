@@ -3,7 +3,11 @@ import './lists.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ComponentChildren, ComponentType, TargetedMouseEvent } from 'preact';
+import type {
+  ComponentChildren,
+  ComponentType,
+  TargetedMouseEvent,
+} from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
@@ -74,10 +78,10 @@ function InView(props: {
   children?: ComponentChildren;
 }) {
   const Inner = InViewUntyped as unknown as ComponentType<{
-  as?: string;
-  onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
-}>;
+    as?: string;
+    onChange?: (inView: boolean) => void;
+    children?: ComponentChildren;
+  }>;
   return <Inner {...props} />;
 }
 

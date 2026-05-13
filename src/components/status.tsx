@@ -1089,8 +1089,7 @@ function StatusInner({
 
   const statusMonthsAgo = useMemo(() => {
     return Math.floor(
-      (Date.now() - new Date(createdAt).getTime()) /
-        (1000 * 60 * 60 * 24 * 30),
+      (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30),
     );
   }, [createdAt]);
 
