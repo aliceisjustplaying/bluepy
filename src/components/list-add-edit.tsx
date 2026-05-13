@@ -9,20 +9,76 @@ import Icon from './icon';
 import ListExclusiveBadge from './list-exclusive-badge';
 import MenuConfirm from './menu-confirm';
 
-function ListAddEdit({ list, onClose }) {
+interface ListLike {
+  id: string;
+  title: string;
+  repliesPolicy?: string;
+  exclusive?: boolean;
+  [key: string]: unknown;
+}
+
+interface ListAddEditCloseSuccess {
+  state: 'success';
+  list: ListLike;
+}
+
+interface ListAddEditCloseDeleted {
+  state: 'deleted';
+}
+
+type ListAddEditCloseResult = ListAddEditCloseSuccess | ListAddEditCloseDeleted;
+
+// onClose is invoked in three ways:
+// - From the sheet-close button: receives the raw click MouseEvent (preserves
+//   JS contract where consumers read `result?.state` from whatever object the
+//   button passes through; the click event has no `state` field so existing
+//   consumers see `undefined`).
+// - From a successful create/update: receives ListAddEditCloseSuccess.
+// - From a successful delete: receives ListAddEditCloseDeleted.
+type ListAddEditCloseArg = ListAddEditCloseResult | Event;
+
+interface ListAddEditProps {
+  list?: ListLike | null;
+  onClose?: (result?: ListAddEditCloseArg) => void;
+}
+
+interface MastoListsApi {
+  create(params: {
+    title: FormDataEntryValue | null;
+    replies_policy: FormDataEntryValue | null;
+    exclusive: boolean;
+  }): Promise<ListLike>;
+  $select(id: string): {
+    update(params: {
+      title: FormDataEntryValue | null;
+      replies_policy: FormDataEntryValue | null;
+      exclusive: boolean;
+    }): Promise<ListLike>;
+    remove(): Promise<unknown>;
+  };
+}
+
+type UIState = 'default' | 'loading' | 'error';
+
+function ListAddEdit({ list, onClose }: ListAddEditProps) {
   const { t } = useLingui();
   const { masto } = api();
-  const [uiState, setUIState] = useState('default');
+  const listsApi = (masto.v1 as unknown as { lists: MastoListsApi }).lists;
+  const [uiState, setUIState] = useState<UIState>('default');
   const editMode = !!list;
-  const nameFieldRef = useRef();
-  const repliesPolicyFieldRef = useRef();
-  const exclusiveFieldRef = useRef();
+  const nameFieldRef = useRef<HTMLInputElement | null>(null);
+  const repliesPolicyFieldRef = useRef<HTMLSelectElement | null>(null);
+  const exclusiveFieldRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
-    if (editMode) {
-      nameFieldRef.current.value = list.title;
-      repliesPolicyFieldRef.current.value = list.repliesPolicy;
+    if (editMode && list) {
+      if (nameFieldRef.current) {
+        nameFieldRef.current.value = list.title;
+      }
+      if (repliesPolicyFieldRef.current) {
+        repliesPolicyFieldRef.current.value = list.repliesPolicy ?? '';
+      }
       if (exclusiveFieldRef.current) {
-        exclusiveFieldRef.current.checked = list.exclusive;
+        exclusiveFieldRef.current.checked = !!list.exclusive;
       }
     }
   }, [editMode]);
@@ -33,7 +89,11 @@ function ListAddEdit({ list, onClose }) {
   return (
     <div class="sheet">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button
+          type="button"
+          class="sheet-close"
+          onClick={(e) => onClose?.(e)}
+        >
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}{' '}
@@ -46,7 +106,7 @@ function ListAddEdit({ list, onClose }) {
           onSubmit={(e) => {
             e.preventDefault(); // Get form values
 
-            const formData = new FormData(e.target);
+            const formData = new FormData(e.target as HTMLFormElement);
             const title = formData.get('title');
             const repliesPolicy = formData.get('replies_policy');
             const exclusive = formData.get('exclusive') === 'on';
@@ -59,16 +119,16 @@ function ListAddEdit({ list, onClose }) {
 
             (async () => {
               try {
-                let listResult;
+                let listResult: ListLike;
 
-                if (editMode) {
-                  listResult = await masto.v1.lists.$select(list.id).update({
+                if (editMode && list) {
+                  listResult = await listsApi.$select(list.id).update({
                     title,
                     replies_policy: repliesPolicy,
                     exclusive,
                   });
                 } else {
-                  listResult = await masto.v1.lists.create({
+                  listResult = await listsApi.create({
                     title,
                     replies_policy: repliesPolicy,
                     exclusive,
@@ -160,11 +220,12 @@ function ListAddEdit({ list, onClose }) {
                 onClick={() => {
                   // const yes = confirm('Delete this list?');
                   // if (!yes) return;
+                  if (!list) return;
                   setUIState('loading');
 
                   (async () => {
                     try {
-                      await masto.v1.lists.$select(list.id).remove();
+                      await listsApi.$select(list.id).remove();
                       setUIState('default');
                       onClose?.({
                         state: 'deleted',

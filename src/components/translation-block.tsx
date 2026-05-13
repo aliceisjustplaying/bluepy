@@ -3,12 +3,14 @@ import './translation-block.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import PQueue from 'p-queue';
 import pRetry from 'p-retry';
+import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
-import languages from '../data/translang-languages';
+import languages from '../data/translang-languages.json';
 import {
   translate as browserTranslate,
   supportsBrowserTranslator,
+  type TranslateResult as BrowserTranslateResult,
 } from '../utils/browser-translator';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import localeCode2Text from '../utils/localeCode2Text';
@@ -18,13 +20,31 @@ import Icon from './icon';
 import LazyShazam from './lazy-shazam';
 import Loader from './loader';
 
-const sourceLanguages = Object.entries(languages.sl).map(([code, name]) => ({
+interface TranslangResult {
+  provider: 'translang';
+  content?: string;
+  detectedSourceLanguage?: string;
+  pronunciation?: string;
+}
+
+interface TranslateInvocation {
+  text: string;
+  source?: string;
+  target?: string;
+  signal?: AbortSignal;
+}
+
+const sourceLanguages = Object.entries(
+  (languages as { sl: Record<string, string> }).sl,
+).map(([code, name]) => ({
   code,
   name,
 }));
 
-const { PHANPY_TRANSLANG_INSTANCES } = import.meta.env;
-const TRANSLANG_INSTANCES = PHANPY_TRANSLANG_INSTANCES
+const { PHANPY_TRANSLANG_INSTANCES } = import.meta.env as {
+  PHANPY_TRANSLANG_INSTANCES?: string;
+};
+const TRANSLANG_INSTANCES: string[] = PHANPY_TRANSLANG_INSTANCES
   ? PHANPY_TRANSLANG_INSTANCES.split(/\s+/)
   : [];
 
@@ -37,7 +57,11 @@ const translationQueue = new PQueue({
 const TRANSLATED_MAX_AGE = 1000 * 60 * 60; // 1 hour
 let currentTranslangInstance = 0;
 
-function _translangTranslate(text, source, target) {
+function _translangTranslate(
+  text: string,
+  source: string,
+  target: string,
+): Promise<TranslangResult> {
   console.log('TRANSLATE', text, source, target);
   const fetchCall = () => {
     let instance = TRANSLANG_INSTANCES[currentTranslangInstance];
@@ -73,9 +97,13 @@ function _translangTranslate(text, source, target) {
     return fetchPromise
       .then((res) => {
         if (!res.ok) throw new Error(res.statusText);
-        return res.json();
+        return res.json() as Promise<{
+          translated_text?: string;
+          detected_language?: string;
+          pronunciation?: string;
+        }>;
       })
-      .then((res) => {
+      .then((res): TranslangResult => {
         return {
           provider: 'translang',
           content: res.translated_text,
@@ -86,7 +114,7 @@ function _translangTranslate(text, source, target) {
   };
   return pRetry(fetchCall, {
     retries: 3,
-    onFailedAttempt: (e) => {
+    onFailedAttempt: () => {
       currentTranslangInstance =
         (currentTranslangInstance + 1) % TRANSLANG_INSTANCES.length;
       console.log(
@@ -100,20 +128,52 @@ const translangTranslate = pmem(_translangTranslate, {
   expires: TRANSLATED_MAX_AGE,
 });
 const throttledTranslangTranslate = pmem(
-  ({ signal, text, source, target }) =>
-    translationQueue.add(() => translangTranslate(text, source, target), {
-      signal,
-    }),
+  ({ signal, text, source, target }: TranslateInvocation) =>
+    translationQueue.add(
+      // Preserve JS pass-through: source/target may be undefined. The
+      // converted translate helpers type these as `string`, so cast at the
+      // boundary to match the original runtime behavior.
+      () =>
+        translangTranslate(text, source as string, target as string),
+      {
+        signal,
+      },
+    ) as Promise<TranslangResult | void>,
   {
     // I know, this is double-layered memoization
     expires: TRANSLATED_MAX_AGE,
   },
 );
 
-const throttledBrowserTranslate = ({ text, source, target, signal }) =>
-  translationQueue.add(() => browserTranslate(text, source, target), {
-    signal,
-  });
+const throttledBrowserTranslate = ({
+  text,
+  source,
+  target,
+  signal,
+}: TranslateInvocation): Promise<BrowserTranslateResult | void> =>
+  translationQueue.add(
+    () => browserTranslate(text, source as string, target as string),
+    {
+      signal,
+    },
+  );
+
+type TranslationResult = TranslangResult | BrowserTranslateResult;
+
+type OnTranslateFn = (
+  params: TranslateInvocation,
+) => Promise<TranslationResult | void>;
+
+interface TranslationBlockProps {
+  forceTranslate?: boolean;
+  sourceLanguage?: string;
+  onTranslate?: OnTranslateFn;
+  text?: string;
+  mini?: boolean;
+  autoDetected?: boolean;
+}
+
+type UIState = 'default' | 'loading' | 'error';
 
 function TranslationBlock({
   forceTranslate,
@@ -122,21 +182,26 @@ function TranslationBlock({
   text = '',
   mini,
   autoDetected,
-}) {
+}: TranslationBlockProps): ComponentChildren {
   const { t } = useLingui();
-  const targetLang = getTranslateTargetLanguage(true);
-  const [uiState, setUIState] = useState('default');
-  const [pronunciationContent, setPronunciationContent] = useState(null);
-  const [translatedContent, setTranslatedContent] = useState(null);
-  const [detectedLang, setDetectedLang] = useState(null);
-  const detailsRef = useRef();
-  const abortControllerRef = useRef();
+  const targetLangRaw = getTranslateTargetLanguage(true);
+  const targetLang: string | undefined = targetLangRaw || undefined;
+  const [uiState, setUIState] = useState<UIState>('default');
+  const [pronunciationContent, setPronunciationContent] = useState<
+    string | null
+  >(null);
+  const [translatedContent, setTranslatedContent] = useState<string | null>(
+    null,
+  );
+  const [detectedLang, setDetectedLang] = useState<string | null>(null);
+  const detailsRef = useRef<HTMLDetailsElement | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const sourceLangText = sourceLanguage
     ? localeCode2Text(sourceLanguage)
     : null;
-  const targetLangText = localeCode2Text(targetLang);
-  const apiSourceLang = useRef('auto');
+  const targetLangText = targetLang ? localeCode2Text(targetLang) : undefined;
+  const apiSourceLang = useRef<string>('auto');
 
   if (!onTranslate) {
     onTranslate = async ({ text, source, target, signal }) => {
@@ -153,27 +218,31 @@ function TranslationBlock({
       }
       return mini
         ? await throttledTranslangTranslate({ signal, text, source, target })
-        : await translangTranslate(text, source, target);
+        : await translangTranslate(text, source as string, target as string);
     };
   }
 
   const translate = async () => {
     setUIState('loading');
     try {
-      const { content, detectedSourceLanguage, provider, error, ...props } =
-        await onTranslate({
-          text,
-          source: apiSourceLang.current,
-          target: targetLang,
-          signal: abortControllerRef.current?.signal,
-        });
+      const result = await onTranslate!({
+        text,
+        source: apiSourceLang.current,
+        target: targetLang,
+        signal: abortControllerRef.current?.signal,
+      });
+      const { content, detectedSourceLanguage, provider } = (result ??
+        {}) as Partial<TranslationResult>;
+      const error =
+        result && 'error' in result ? result.error : undefined;
+      const pronunciation =
+        result && 'pronunciation' in result ? result.pronunciation : undefined;
       if (content) {
         if (detectedSourceLanguage) {
           const detectedLangText = localeCode2Text(detectedSourceLanguage);
-          setDetectedLang(detectedLangText);
+          setDetectedLang(detectedLangText ?? null);
         }
         if (provider === 'translang') {
-          const pronunciation = props?.pronunciation;
           if (pronunciation) {
             setPronunciationContent(pronunciation);
           }
@@ -192,7 +261,7 @@ function TranslationBlock({
         setUIState('error');
       }
     } catch (e) {
-      if (e.name !== 'AbortError') {
+      if ((e as { name?: string })?.name !== 'AbortError') {
         console.error(e);
         setUIState('error');
       }
@@ -208,7 +277,7 @@ function TranslationBlock({
   useEffect(() => {
     abortControllerRef.current = new AbortController();
     return () => {
-      abortControllerRef.current.abort();
+      abortControllerRef.current?.abort();
     };
   }, []);
 
@@ -223,7 +292,7 @@ function TranslationBlock({
           <div class="status-translation-block-mini">
             <Icon
               icon="translate"
-              alt={t`Auto-translated from ${sourceLangText}`}
+              alt={t`Auto-translated from ${sourceLangText ?? ''}`}
             />
             <output
               lang={targetLang}
@@ -254,7 +323,9 @@ function TranslationBlock({
             onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
-              detailsRef.current.open = !detailsRef.current.open;
+              if (detailsRef.current) {
+                detailsRef.current.open = !detailsRef.current.open;
+              }
               if (uiState === 'loading') return;
               if (!translatedContent) translate();
             }}
@@ -277,7 +348,8 @@ function TranslationBlock({
               class="translated-source-select"
               disabled={uiState === 'loading'}
               onChange={(e) => {
-                apiSourceLang.current = e.target.value;
+                apiSourceLang.current = (e.currentTarget as HTMLSelectElement)
+                  .value;
                 translate();
               }}
             >
@@ -312,7 +384,11 @@ function TranslationBlock({
           ) : (
             !!translatedContent && (
               <>
-                <output class="translated-content" lang={targetLang} dir="auto">
+                <output
+                  class="translated-content"
+                  lang={targetLang}
+                  dir="auto"
+                >
                   {translatedContent}
                 </output>
                 {!!pronunciationContent && (
@@ -320,7 +396,9 @@ function TranslationBlock({
                     class="translated-pronunciation-content"
                     tabIndex={-1}
                     onClick={(e) => {
-                      e.target.classList.toggle('expand');
+                      (e.currentTarget as HTMLElement).classList.toggle(
+                        'expand',
+                      );
                     }}
                   >
                     {pronunciationContent}

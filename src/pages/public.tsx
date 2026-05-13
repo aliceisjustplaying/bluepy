@@ -1,12 +1,14 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { useRef, useState } from 'preact/hooks';
 import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
 import Icon from '../components/icon';
 import Menu2 from '../components/menu2';
-import Timeline from '../components/timeline';
+import TimelineUntyped from '../components/timeline';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { saveStatus } from '../utils/states';
@@ -17,11 +19,69 @@ import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
 
-function Public({ local, columnMode, ...props }) {
+interface PublicTimelineItem {
+  id: string;
+  account?: { id?: string } | null;
+  filtered?: readonly mastodon.v1.FilterResult[] | null;
+  [key: string]: unknown;
+}
+
+interface PublicTimelineListOptions {
+  limit: number;
+  local?: boolean;
+  remote?: boolean;
+  since_id?: string;
+}
+
+interface PublicTimelinesApi {
+  public: {
+    list(options: PublicTimelineListOptions): {
+      values(): AsyncIterator<PublicTimelineItem[]>;
+    };
+  };
+}
+
+interface FetchItemsResult {
+  done?: boolean;
+  value: PublicTimelineItem[];
+}
+
+interface TimelineProps {
+  key?: string;
+  title?: string;
+  titleComponent?: preact.ComponentChildren;
+  id?: string;
+  timelineKey?: string;
+  instance?: string;
+  emptyText?: string;
+  errorText?: string;
+  fetchItems?: (firstLoad?: boolean) => Promise<FetchItemsResult>;
+  checkForUpdates?: () => Promise<boolean>;
+  useItemID?: boolean;
+  headerStart?: preact.ComponentChildren;
+  headerEnd?: preact.ComponentChildren;
+  boostsCarousel?: boolean;
+  filterContext?: string;
+}
+
+const Timeline = TimelineUntyped as unknown as ComponentType<TimelineProps>;
+
+type TimelineAccess = string | null;
+
+interface PublicProps {
+  local?: boolean;
+  columnMode?: boolean;
+  instance?: string;
+  [key: string]: unknown;
+}
+
+function Public({ local, columnMode, ...props }: PublicProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const isLocal = !!local;
-  const params = columnMode ? {} : useParams();
+  const params = (columnMode
+    ? {}
+    : (useParams() as { instance?: string })) as { instance?: string };
   const { masto, authenticated, instance } = api({
     instance: props?.instance || params.instance,
   });
@@ -31,22 +91,29 @@ function Public({ local, columnMode, ...props }) {
     : t`Federated timeline (${instance})`;
   useTitle(title, isLocal ? `/:instance?/p/l` : `/:instance?/p`);
   // const navigate = useNavigate();
-  const latestItem = useRef();
+  const latestItem = useRef<string | undefined>(undefined);
 
   // Timeline access: public, authenticated, disabled
-  const [timelineAccess, setTimelineAccess] = useState(null);
+  const [timelineAccess, setTimelineAccess] = useState<TimelineAccess>(null);
   const isDisabled = timelineAccess === 'disabled';
   const requiresAuth = timelineAccess === 'authenticated';
   const isPrivate = requiresAuth && !authenticated;
 
-  const publicIterator = useRef();
-  async function fetchPublic(firstLoad) {
+  const timelinesApi = (masto.v1 as unknown as { timelines: PublicTimelinesApi })
+    .timelines;
+
+  const publicIterator = useRef<
+    AsyncIterator<PublicTimelineItem[]> | undefined
+  >(undefined);
+  async function fetchPublic(firstLoad?: boolean): Promise<FetchItemsResult> {
     if (firstLoad || !publicIterator.current) {
-      const access = await checkTimelineAccess({
+      const accessResult = await checkTimelineAccess({
         feed: 'liveFeeds',
         feedType: isLocal ? 'local' : 'remote',
         instance,
       });
+      const access: TimelineAccess =
+        typeof accessResult === 'string' ? accessResult : null;
       setTimelineAccess(access);
       if (
         access === 'disabled' ||
@@ -58,17 +125,20 @@ function Public({ local, columnMode, ...props }) {
         };
       }
 
-      const opts = {
+      const opts: PublicTimelineListOptions = {
         limit: LIMIT,
         local: isLocal || undefined,
       };
       if (!isLocal && supports('@pixelfed/global-feed')) {
         opts.remote = true;
       }
-      publicIterator.current = masto.v1.timelines.public.list(opts).values();
+      publicIterator.current = timelinesApi.public.list(opts).values();
     }
     const results = await publicIterator.current.next();
-    let { value } = results;
+    let { value } = results as {
+      done?: boolean;
+      value: PublicTimelineItem[] | undefined;
+    };
     if (value?.length) {
       if (firstLoad) {
         latestItem.current = value[0].id;
@@ -76,19 +146,22 @@ function Public({ local, columnMode, ...props }) {
 
       // value = filteredItems(value, 'public');
       value.forEach((item) => {
-        saveStatus(item, instance);
+        saveStatus(
+          item as unknown as Parameters<typeof saveStatus>[0],
+          instance,
+        );
       });
     }
     return {
-      ...results,
-      value,
+      ...(results as { done?: boolean }),
+      value: value ?? [],
     };
   }
 
-  async function checkForUpdates() {
+  async function checkForUpdates(): Promise<boolean> {
     if (isDisabled || isPrivate) return false;
     try {
-      const results = await masto.v1.timelines.public
+      const results = await timelinesApi.public
         .list({
           limit: 1,
           local: isLocal,
@@ -96,10 +169,10 @@ function Public({ local, columnMode, ...props }) {
         })
         .values()
         .next();
-      let { value } = results;
-      const valueContainsLatestItem = value[0]?.id === latestItem.current; // since_id might not be supported
+      let { value } = results as { value: PublicTimelineItem[] | undefined };
+      const valueContainsLatestItem = value?.[0]?.id === latestItem.current; // since_id might not be supported
       if (value?.length && !valueContainsLatestItem) {
-        value = filteredItems(value, 'public');
+        value = filteredItems(value, 'public') as PublicTimelineItem[];
         return true;
       }
       return false;
@@ -172,7 +245,7 @@ function Public({ local, columnMode, ...props }) {
               let newInstance = prompt(
                 t`Enter a new server e.g. "mastodon.social"`,
               );
-              if (!/\./.test(newInstance)) {
+              if (!/\./.test(newInstance ?? '')) {
                 if (newInstance) alert(t`Invalid server`);
                 return;
               }
