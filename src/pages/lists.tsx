@@ -33,9 +33,14 @@ interface ListAddEditProps {
 const ListAddEdit =
   ListAddEditUntyped as unknown as ComponentType<ListAddEditProps>;
 
-const NavMenu = NavMenuUntyped as unknown as ComponentType<
+function NavMenu(props:
+  Record<string, never>
+) {
+  const Inner = NavMenuUntyped as unknown as ComponentType<
   Record<string, never>
 >;
+  return <Inner {...props} />;
+}
 
 type ListAddEditModalState = boolean | { list?: ListItem };
 type UIState = 'default' | 'loading' | 'error';

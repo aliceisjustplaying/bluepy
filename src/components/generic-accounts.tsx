@@ -2,7 +2,7 @@ import './generic-accounts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
+import type { ComponentType, ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useSnapshot } from 'valtio';
@@ -19,20 +19,34 @@ import Loader from './loader';
 import StatusUntyped from './status';
 
 // `status.jsx` has not been migrated yet; type it permissively here.
-const Status = StatusUntyped as unknown as ComponentType<{
+function Status(props: {
+  status?: unknown;
+  size?: string;
+  readOnly?: boolean;
+  [key: string]: unknown;
+}) {
+  const Inner = StatusUntyped as unknown as ComponentType<{
   status?: unknown;
   size?: string;
   readOnly?: boolean;
   [key: string]: unknown;
 }>;
+  return <Inner {...props} />;
+}
 
 // `react-intersection-observer`'s `InView` ships without working JSX
 // component typings under our preact compat resolution. Re-type as a
 // preact component with the props this batch actually uses.
-const InViewTyped = InViewUntyped as unknown as ComponentType<{
+function InViewTyped(props: {
   onChange?: (inView: boolean) => void;
-  children?: unknown;
+  children?: ComponentChildren;
+}) {
+  const Inner = InViewUntyped as unknown as ComponentType<{
+  onChange?: (inView: boolean) => void;
+  children?: ComponentChildren;
 }>;
+  return <Inner {...props} />;
+}
 
 // TODO(oxlint:no-underscore-dangle) `_types` is a shared internal cache key
 // on account records used by status.tsx and notification.tsx. Renaming requires

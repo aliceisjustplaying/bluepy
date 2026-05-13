@@ -81,7 +81,10 @@ interface StatusComponentProps {
   skeleton?: boolean;
   ghost?: GhostMeta;
 }
-const Status = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
+function Status(props: StatusComponentProps) {
+  const Inner = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
+  return <Inner {...props} />;
+}
 
 interface AvatarComponentProps {
   url?: string;
@@ -91,7 +94,10 @@ interface AvatarComponentProps {
   title?: string;
   squircle?: boolean;
 }
-const Avatar = AvatarUntyped as unknown as ComponentType<AvatarComponentProps>;
+function Avatar(props: AvatarComponentProps) {
+  const Inner = AvatarUntyped as unknown as ComponentType<AvatarComponentProps>;
+  return <Inner {...props} />;
+}
 
 interface IconComponentProps {
   icon: string;
@@ -100,20 +106,35 @@ interface IconComponentProps {
   title?: string;
   class?: string;
 }
-const Icon = IconUntyped as unknown as ComponentType<IconComponentProps>;
+function Icon(props: IconComponentProps) {
+  const Inner = IconUntyped as unknown as ComponentType<IconComponentProps>;
+  return <Inner {...props} />;
+}
 
-const Link = LinkUntyped as unknown as ComponentType<LinkProps>;
+function Link(props: LinkProps) {
+  const Inner = LinkUntyped as unknown as ComponentType<LinkProps>;
+  return <Inner {...props} />;
+}
 
 // `react-intersection-observer`'s `InView` ships without working JSX
 // component typings under our preact compat resolution. Re-type as a preact
 // component with the props this file actually uses.
-const InView = InViewUntyped as unknown as ComponentType<{
+function InView(props: {
+  threshold?: number;
+  class?: string;
+  tabIndex?: number;
+  onChange?: (inView: boolean) => void;
+  children?: ComponentChildren;
+}) {
+  const Inner = InViewUntyped as unknown as ComponentType<{
   threshold?: number;
   class?: string;
   tabIndex?: number;
   onChange?: (inView: boolean) => void;
   children?: ComponentChildren;
 }>;
+  return <Inner {...props} />;
+}
 
 const { PHANPY_DEFAULT_INSTANCE: DEFAULT_INSTANCE } = import.meta.env as {
   PHANPY_DEFAULT_INSTANCE?: string;

@@ -17,13 +17,22 @@ import Icon from './icon';
 import Loader from './loader';
 import StatusUntyped from './status';
 
-const Status = StatusUntyped as unknown as ComponentType<{
+function Status(props: {
+  status?: unknown;
+  size?: string;
+  previewMode?: boolean;
+  readOnly?: boolean;
+  [key: string]: unknown;
+}) {
+  const Inner = StatusUntyped as unknown as ComponentType<{
   status?: unknown;
   size?: string;
   previewMode?: boolean;
   readOnly?: boolean;
   [key: string]: unknown;
 }>;
+  return <Inner {...props} />;
+}
 
 // NOTE: `dislike` hidden for now, it's actually not used for reporting
 // Mastodon shows another screen for unfollowing, muting or blocking instead of reporting

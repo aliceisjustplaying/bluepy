@@ -21,9 +21,14 @@ import { getAPIVersions } from '../utils/store-utils';
 import useInterval from '../utils/useInterval';
 import useTitle from '../utils/useTitle';
 
-const NavMenu = NavMenuUntyped as unknown as ComponentType<
+function NavMenu(props:
+  Record<string, never>
+) {
+  const Inner = NavMenuUntyped as unknown as ComponentType<
   Record<string, never>
 >;
+  return <Inner {...props} />;
+}
 
 // The filters endpoint isn't surfaced on the loose MastoClient shape.
 // Use the real masto v2 resource type via a cast.

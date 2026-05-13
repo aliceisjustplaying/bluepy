@@ -281,24 +281,53 @@ type ComposeOpenerWindow = Window & {
 };
 
 // Narrow the still-untyped peers to the props that compose actually passes.
-const AccountBlock = AccountBlockUntyped as unknown as ComponentType<{
+function AccountBlock(props: {
+  account?: AccountInfoLike | null;
+  accountInstance?: string;
+  hideDisplayName?: boolean;
+  useAvatarStatic?: boolean;
+}) {
+  const Inner = AccountBlockUntyped as unknown as ComponentType<{
   account?: AccountInfoLike | null;
   accountInstance?: string;
   hideDisplayName?: boolean;
   useAvatarStatic?: boolean;
 }>;
+  return <Inner {...props} />;
+}
 
-const CharCountMeter = CharCountMeterUntyped as unknown as ComponentType<{
+function CharCountMeter(props: {
+  maxCharacters?: number;
+  hidden?: boolean;
+}) {
+  const Inner = CharCountMeterUntyped as unknown as ComponentType<{
   maxCharacters?: number;
   hidden?: boolean;
 }>;
+  return <Inner {...props} />;
+}
 
-const Loader = LoaderUntyped as unknown as ComponentType<{
+function Loader(props: {
+  abrupt?: boolean;
+  hidden?: boolean;
+}) {
+  const Inner = LoaderUntyped as unknown as ComponentType<{
   abrupt?: boolean;
   hidden?: boolean;
 }>;
+  return <Inner {...props} />;
+}
 
-const MediaAttachment = MediaAttachmentUntyped as unknown as ComponentType<{
+function MediaAttachment(props: {
+  attachment: MediaAttachmentLike;
+  disabled?: boolean;
+  lang?: string;
+  supportedMimeTypes?: string[];
+  descriptionLimit?: number;
+  onDescriptionChange?: (value: string) => void;
+  onRemove?: () => void;
+}) {
+  const Inner = MediaAttachmentUntyped as unknown as ComponentType<{
   attachment: MediaAttachmentLike;
   disabled?: boolean;
   lang?: string;
@@ -307,34 +336,68 @@ const MediaAttachment = MediaAttachmentUntyped as unknown as ComponentType<{
   onDescriptionChange?: (value: string) => void;
   onRemove?: () => void;
 }>;
+  return <Inner {...props} />;
+}
 
-const Status = StatusUntyped as unknown as ComponentType<{
+function Status(props: {
+  status?: StatusLike | null;
+  instance?: string;
+  size?: 's' | 'm' | 'l';
+  previewMode?: boolean;
+  readOnly?: boolean;
+}) {
+  const Inner = StatusUntyped as unknown as ComponentType<{
   status?: StatusLike | null;
   instance?: string;
   size?: 's' | 'm' | 'l';
   previewMode?: boolean;
   readOnly?: boolean;
 }>;
+  return <Inner {...props} />;
+}
 
-const CustomEmojisModal = CustomEmojisModalUntyped as unknown as ComponentType<{
+function CustomEmojisModal(props: {
+  instance?: string;
+  onClose: () => void;
+  defaultSearchTerm?: string | null;
+  onSelect: (emojiShortcode: string) => void;
+}) {
+  const Inner = CustomEmojisModalUntyped as unknown as ComponentType<{
   instance?: string;
   onClose: () => void;
   defaultSearchTerm?: string | null;
   onSelect: (emojiShortcode: string) => void;
 }>;
+  return <Inner {...props} />;
+}
 
-const MentionModal = MentionModalUntyped as unknown as ComponentType<{
+function MentionModal(props: {
+  masto: unknown;
+  instance?: string;
+  onClose: () => void;
+  defaultSearchTerm?: string | null;
+  onSelect: (socialAddress: string) => void;
+}) {
+  const Inner = MentionModalUntyped as unknown as ComponentType<{
   masto: unknown;
   instance?: string;
   onClose: () => void;
   defaultSearchTerm?: string | null;
   onSelect: (socialAddress: string) => void;
 }>;
+  return <Inner {...props} />;
+}
 
-const GIFPickerModal = GIFPickerModalUntyped as unknown as ComponentType<{
+function GIFPickerModal(props: {
+  onClose: () => void;
+  onSelect: (payload: { url: string; type: string; alt_text?: string }) => void;
+}) {
+  const Inner = GIFPickerModalUntyped as unknown as ComponentType<{
   onClose: () => void;
   onSelect: (payload: { url: string; type: string; alt_text?: string }) => void;
 }>;
+  return <Inner {...props} />;
+}
 
 const TextExpander = TextExpanderRaw as unknown as ComponentType<{
   keys?: string;

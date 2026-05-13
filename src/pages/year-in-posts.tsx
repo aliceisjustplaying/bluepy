@@ -97,7 +97,15 @@ interface MonthWithPosts {
   boost: number;
 }
 
-const Status = StatusUntyped as unknown as ComponentType<{
+function Status(props: {
+  status?: unknown;
+  instance?: string;
+  size?: string;
+  showCommentCount?: boolean;
+  showQuoteCount?: boolean;
+  [key: string]: unknown;
+}) {
+  const Inner = StatusUntyped as unknown as ComponentType<{
   status?: unknown;
   instance?: string;
   size?: string;
@@ -105,6 +113,8 @@ const Status = StatusUntyped as unknown as ComponentType<{
   showQuoteCount?: boolean;
   [key: string]: unknown;
 }>;
+  return <Inner {...props} />;
+}
 
 const MIN_YEAR = 2005; // https://en.wikipedia.org/wiki/Microblogging#Origin
 

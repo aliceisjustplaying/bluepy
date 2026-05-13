@@ -3,7 +3,7 @@ import './lists.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ComponentType, TargetedMouseEvent } from 'preact';
+import type { ComponentChildren, ComponentType, TargetedMouseEvent } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
@@ -83,15 +83,25 @@ interface TimelineProps {
   headerEnd?: preact.ComponentChildren;
 }
 
-const Timeline = TimelineUntyped as unknown as ComponentType<TimelineProps>;
+function Timeline(props: TimelineProps) {
+  const Inner = TimelineUntyped as unknown as ComponentType<TimelineProps>;
+  return <Inner {...props} />;
+}
 
 // react-intersection-observer's InView ships without working JSX
 // component typings under preact compat resolution. Re-type for our usage.
-const InView = InViewUntyped as unknown as ComponentType<{
+function InView(props: {
   as?: string;
   onChange?: (inView: boolean) => void;
-  children?: unknown;
+  children?: ComponentChildren;
+}) {
+  const Inner = InViewUntyped as unknown as ComponentType<{
+  as?: string;
+  onChange?: (inView: boolean) => void;
+  children?: ComponentChildren;
 }>;
+  return <Inner {...props} />;
+}
 
 interface ListProps {
   id?: string;

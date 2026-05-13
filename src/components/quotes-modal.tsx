@@ -36,9 +36,18 @@ type StatusProps = {
   [key: string]: unknown;
 };
 
-const Icon = IconUntyped as unknown as ComponentType<IconProps>;
-const Loader = LoaderUntyped as unknown as ComponentType<LoaderProps>;
-const Status = StatusUntyped as unknown as ComponentType<StatusProps>;
+function Icon(props: IconProps) {
+  const Inner = IconUntyped as unknown as ComponentType<IconProps>;
+  return <Inner {...props} />;
+}
+function Loader(props: LoaderProps) {
+  const Inner = LoaderUntyped as unknown as ComponentType<LoaderProps>;
+  return <Inner {...props} />;
+}
+function Status(props: StatusProps) {
+  const Inner = StatusUntyped as unknown as ComponentType<StatusProps>;
+  return <Inner {...props} />;
+}
 
 const LIMIT = 20;
 

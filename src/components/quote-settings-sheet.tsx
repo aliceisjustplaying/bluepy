@@ -21,7 +21,16 @@ interface StatusComponentProps {
   size?: 's' | 'm' | 'l';
   readOnly?: boolean;
 }
-const Status = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
+// Wrapper instead of `const Status = StatusUntyped as ...` at module top
+// level: the circular import status.tsx ↔ quote-settings-sheet.tsx puts
+// `StatusUntyped` in the TDZ at module-init time, so reading it eagerly
+// throws `ReferenceError: Cannot access 'StatusUntyped' before initialization`
+// the first time quote-settings-sheet evaluates. Deferring the read into
+// the render body resolves the cycle naturally.
+function Status(props: StatusComponentProps) {
+  const Inner = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
+  return <Inner {...props} />;
+}
 
 const QUOTE_POLICIES = ['public', 'followers', 'nobody'] as const;
 type QuotePolicy = (typeof QUOTE_POLICIES)[number];

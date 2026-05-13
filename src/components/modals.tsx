@@ -27,7 +27,15 @@ import ReportModal from './report-modal';
 import ShortcutsSettings from './shortcuts-settings';
 
 // `media-modal.jsx` is still untyped; permissive shim for the props we use.
-const MediaModal = MediaModalUntyped as unknown as ComponentType<{
+function MediaModal(props: {
+  mediaAttachments?: unknown;
+  statusID?: string;
+  instance?: string;
+  lang?: string;
+  index?: number;
+  onClose?: () => void;
+}) {
+  const Inner = MediaModalUntyped as unknown as ComponentType<{
   mediaAttachments?: unknown;
   statusID?: string;
   instance?: string;
@@ -35,6 +43,8 @@ const MediaModal = MediaModalUntyped as unknown as ComponentType<{
   index?: number;
   onClose?: () => void;
 }>;
+  return <Inner {...props} />;
+}
 
 // `show*` payloads in `states` are typed as `unknown` because the same key
 // holds either `false` or a payload object describing what to render. Cast

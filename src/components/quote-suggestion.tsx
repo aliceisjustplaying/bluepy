@@ -12,7 +12,10 @@ interface StatusProps {
   size?: 's' | 'm' | 'l';
   readOnly?: boolean;
 }
-const Status = StatusUntyped as unknown as ComponentType<StatusProps>;
+function Status(props: StatusProps) {
+  const Inner = StatusUntyped as unknown as ComponentType<StatusProps>;
+  return <Inner {...props} />;
+}
 
 interface QuoteSuggestionData {
   url?: string;

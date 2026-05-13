@@ -16,7 +16,15 @@ import Icon from './icon';
 import Loader from './loader';
 import NameTextUntyped from './name-text';
 
-const Avatar = AvatarUntyped as unknown as ComponentType<{
+function Avatar(props: {
+  url?: string;
+  staticUrl?: string;
+  size?: string | number;
+  alt?: string;
+  squircle?: boolean;
+  [key: string]: unknown;
+}) {
+  const Inner = AvatarUntyped as unknown as ComponentType<{
   url?: string;
   staticUrl?: string;
   size?: string | number;
@@ -24,8 +32,20 @@ const Avatar = AvatarUntyped as unknown as ComponentType<{
   squircle?: boolean;
   [key: string]: unknown;
 }>;
+  return <Inner {...props} />;
+}
 
-const NameText = NameTextUntyped as unknown as ComponentType<{
+function NameText(props: {
+  account?: unknown;
+  instance?: string;
+  showAvatar?: boolean;
+  showAcct?: boolean;
+  short?: boolean;
+  external?: boolean;
+  onClick?: (event: Event) => void;
+  [key: string]: unknown;
+}) {
+  const Inner = NameTextUntyped as unknown as ComponentType<{
   account?: unknown;
   instance?: string;
   showAvatar?: boolean;
@@ -35,6 +55,8 @@ const NameText = NameTextUntyped as unknown as ComponentType<{
   onClick?: (event: Event) => void;
   [key: string]: unknown;
 }>;
+  return <Inner {...props} />;
+}
 
 type ImportStatus = 'duplicate' | 'new';
 

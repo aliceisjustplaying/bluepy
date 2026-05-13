@@ -63,7 +63,10 @@ interface TimelineProps {
   filterContext?: string;
 }
 
-const Timeline = TimelineUntyped as unknown as ComponentType<TimelineProps>;
+function Timeline(props: TimelineProps) {
+  const Inner = TimelineUntyped as unknown as ComponentType<TimelineProps>;
+  return <Inner {...props} />;
+}
 
 type TimelineAccess = string | null;
 

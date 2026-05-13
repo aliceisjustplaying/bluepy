@@ -24,11 +24,24 @@ import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import useTitle from '../utils/useTitle';
 
-const NavMenu = NavMenuUntyped as unknown as ComponentType<
+function NavMenu(props:
+  Record<string, never>
+) {
+  const Inner = NavMenuUntyped as unknown as ComponentType<
   Record<string, never>
 >;
+  return <Inner {...props} />;
+}
 
-const Status = StatusUntyped as unknown as ComponentType<{
+function Status(props: {
+  status?: unknown;
+  size?: string;
+  previewMode?: boolean;
+  readOnly?: boolean;
+  onMediaClick?: (e: Event, i: number, media: unknown, status: unknown) => void;
+  [key: string]: unknown;
+}) {
+  const Inner = StatusUntyped as unknown as ComponentType<{
   status?: unknown;
   size?: string;
   previewMode?: boolean;
@@ -36,6 +49,8 @@ const Status = StatusUntyped as unknown as ComponentType<{
   onMediaClick?: (e: Event, i: number, media: unknown, status: unknown) => void;
   [key: string]: unknown;
 }>;
+  return <Inner {...props} />;
+}
 
 const LIMIT = 40;
 

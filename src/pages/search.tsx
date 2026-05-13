@@ -3,7 +3,7 @@ import './search.css';
 import { useAutoAnimate } from '@formkit/auto-animate/preact';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
+import type { ComponentType, ComponentChildren } from 'preact';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
@@ -33,16 +33,32 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   behavior: 'instant' as ScrollBehavior,
 };
 
-const NavMenu = NavMenuUntyped as unknown as ComponentType<
+function NavMenu(props:
+  Record<string, never>
+) {
+  const Inner = NavMenuUntyped as unknown as ComponentType<
   Record<string, never>
 >;
-const Status = StatusUntyped as unknown as ComponentType<{
+  return <Inner {...props} />;
+}
+function Status(props: {
+  status: mastodon.v1.Status;
+}) {
+  const Inner = StatusUntyped as unknown as ComponentType<{
   status: mastodon.v1.Status;
 }>;
-const InView = InViewUntyped as unknown as ComponentType<{
+  return <Inner {...props} />;
+}
+function InView(props: {
   onChange?: (inView: boolean) => void;
-  children?: unknown;
+  children?: ComponentChildren;
+}) {
+  const Inner = InViewUntyped as unknown as ComponentType<{
+  onChange?: (inView: boolean) => void;
+  children?: ComponentChildren;
 }>;
+  return <Inner {...props} />;
+}
 
 interface SearchFormHandle {
   setValue: (value: string) => void;

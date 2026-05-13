@@ -3,7 +3,7 @@ import './notifications.css';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType, TargetedEvent, TargetedMouseEvent } from 'preact';
+import type { ComponentType, TargetedEvent, TargetedMouseEvent, ComponentChildren } from 'preact';
 import { Fragment } from 'preact';
 import { memo } from 'preact/compat';
 import {
@@ -51,18 +51,31 @@ import useTitle from '../utils/useTitle';
 
 // `InView` is still untyped for our preact/react interop; shim with just the
 // surface this page uses.
-const InView = InViewUntyped as unknown as ComponentType<{
+function InView(props: {
   onChange?: (inView: boolean) => void;
-  children?: unknown;
+  children?: ComponentChildren;
+}) {
+  const Inner = InViewUntyped as unknown as ComponentType<{
+  onChange?: (inView: boolean) => void;
+  children?: ComponentChildren;
 }>;
+  return <Inner {...props} />;
+}
 
 // `status.jsx` is still untyped (later wave). Mirror just the prop surface
 // used on this page.
-const Status = StatusUntyped as unknown as ComponentType<{
+function Status(props: {
+  status?: unknown;
+  size?: 's' | 'm' | 'l';
+  readOnly?: boolean;
+}) {
+  const Inner = StatusUntyped as unknown as ComponentType<{
   status?: unknown;
   size?: 's' | 'm' | 'l';
   readOnly?: boolean;
 }>;
+  return <Inner {...props} />;
+}
 
 // Loose shape for the notification objects this page renders. These come
 // from `getGroupedNotifications` which returns the union of the v1/v2 group

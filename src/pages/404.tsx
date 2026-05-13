@@ -8,7 +8,10 @@ interface LinkProps {
   to: string;
   children?: ComponentChildren;
 }
-const Link = LinkUntyped as unknown as ComponentType<LinkProps>;
+function Link(props: LinkProps) {
+  const Inner = LinkUntyped as unknown as ComponentType<LinkProps>;
+  return <Inner {...props} />;
+}
 
 export default function NotFound() {
   return (
