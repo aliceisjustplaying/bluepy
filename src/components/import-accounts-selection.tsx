@@ -38,7 +38,7 @@ const NameText = NameTextUntyped as unknown as ComponentType<{
 
 type ImportStatus = 'duplicate' | 'new';
 
-type ImportableAccount = StoredAccount & { __status: ImportStatus };
+type ImportableAccount = StoredAccount & { importStatus: ImportStatus };
 
 interface ImportAccountsSelectionProps {
   accounts: StoredAccount[];
@@ -61,24 +61,23 @@ function ImportAccountsSelection({
       duplicate: 0,
       new: 1,
     };
-    const accountsToImport: ImportableAccount[] = importedAccounts
-      .map((account) => {
-        const existing = existingAccounts.find(
-          (a) =>
-            a.info.id === account.info.id &&
-            a.instanceURL === account.instanceURL,
-        );
-        const status: ImportStatus = existing ? 'duplicate' : 'new';
-        return {
-          ...account,
-          __status: status,
-        };
-      })
-      .sort((a, b) => {
-        return statusOrder[a.__status] - statusOrder[b.__status];
-      });
+    const mapped: ImportableAccount[] = importedAccounts.map((account) => {
+      const existing = existingAccounts.find(
+        (a) =>
+          a.info.id === account.info.id &&
+          a.instanceURL === account.instanceURL,
+      );
+      const status: ImportStatus = existing ? 'duplicate' : 'new';
+      return {
+        ...account,
+        importStatus: status,
+      };
+    });
+    const sorted = mapped.toSorted((a, b) => {
+      return statusOrder[a.importStatus] - statusOrder[b.importStatus];
+    });
 
-    return { accountsToImport };
+    return { accountsToImport: sorted };
   }, [importedAccounts, existingAccounts]);
 
   const [selectedAccounts, setSelectedAccounts] = useState<
@@ -86,7 +85,7 @@ function ImportAccountsSelection({
   >(() => {
     const initialSelection: Record<string, boolean> = {};
     accountsToImport.forEach((a) => {
-      if (a.__status === 'duplicate') {
+      if (a.importStatus === 'duplicate') {
         initialSelection[a.info.id + a.instanceURL] = false;
       } else {
         initialSelection[a.info.id + a.instanceURL] = true;
@@ -132,24 +131,24 @@ function ImportAccountsSelection({
       </header>
       <main>
         <div class="import-selection">
-          {accountsToImport.filter((a) => a.__status !== 'duplicate').length >
+          {accountsToImport.filter((a) => a.importStatus !== 'duplicate').length >
             3 && (
             <div class="accounts-list-header">
-              <label class="account-item">
+              <label class="account-item" aria-label={t`Select all`}>
                 <input
                   type="checkbox"
                   checked={
-                    accountsToImport.filter((a) => a.__status !== 'duplicate')
+                    accountsToImport.filter((a) => a.importStatus !== 'duplicate')
                       .length > 0 &&
                     accountsToImport
-                      .filter((a) => a.__status !== 'duplicate')
+                      .filter((a) => a.importStatus !== 'duplicate')
                       .every((a) => selectedAccounts[a.info.id + a.instanceURL])
                   }
                   onChange={(e) => {
                     const newSelection = { ...selectedAccounts };
                     const shouldSelect = (e.target as HTMLInputElement).checked;
                     accountsToImport.forEach((a) => {
-                      if (a.__status !== 'duplicate') {
+                      if (a.importStatus !== 'duplicate') {
                         newSelection[a.info.id + a.instanceURL] = shouldSelect;
                       }
                     });
@@ -167,7 +166,7 @@ function ImportAccountsSelection({
             {accountsToImport.map((account) => {
               const key = account.info.id + account.instanceURL;
               const isSelected = selectedAccounts[key];
-              const { __status: status } = account;
+              const { importStatus: status } = account;
               return (
                 <li key={key}>
                   <label class="account-item">

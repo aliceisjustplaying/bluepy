@@ -33,6 +33,13 @@ export default function AccountInfoMini({
 }: AccountInfoMiniProps) {
   const { t } = useLingui();
 
+  const followersIterator = useRef<
+    AsyncIterator<mastodon.v1.Account[]> | undefined
+  >(undefined);
+  const followingIterator = useRef<
+    AsyncIterator<mastodon.v1.Account[]> | undefined
+  >(undefined);
+
   if (!account) return null;
 
   const { followersCount, followingCount, statusesCount, id, hideCollections } =
@@ -43,9 +50,6 @@ export default function AccountInfoMini({
   const accountsResource = masto.v1
     .accounts as unknown as mastodon.rest.v1.AccountsResource;
 
-  const followersIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
-  >(undefined);
   async function fetchFollowers(firstLoad?: boolean) {
     if (!id) return { value: [], done: true };
     if (firstLoad || !followersIterator.current) {
@@ -57,9 +61,6 @@ export default function AccountInfoMini({
     return await followersIterator.current.next();
   }
 
-  const followingIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
-  >(undefined);
   async function fetchFollowing(firstLoad?: boolean) {
     if (!id) return { value: [], done: true };
     if (firstLoad || !followingIterator.current) {
@@ -71,6 +72,14 @@ export default function AccountInfoMini({
     return await followingIterator.current.next();
   }
 
+  // TODO(oxlint:jsx-a11y/no-static-element-interactions,
+  //      jsx-a11y/no-noninteractive-tabindex,
+  //      jsx-a11y/click-events-have-key-events) The two stats triggers are
+  // rendered as `<div>` to match the existing `.account-container .stats`
+  // visual layout — converting to `<button class="plain">` adds a
+  // backdrop-filter and link-color tint that visibly regress the UI. A
+  // proper a11y fix requires accompanying CSS in `account-info.css`
+  // (outside this batch); leaving as a div for now.
   return (
     <div class="account-container mini">
       <div class="account-metadata-box">

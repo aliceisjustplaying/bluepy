@@ -2,12 +2,16 @@ import Cookies from 'js-cookie';
 
 import { getCurrentAccountNS } from './store-utils';
 
+// TODO(oxlint:typescript/no-unnecessary-type-parameters) `Result` is used only
+// in the return type. Keeping the generic preserves the existing call-site API
+// `store.local.getJSON<Foo>('key')` used by ~34 sites; changing it is out of
+// scope for this batch.
 interface StorageNamespace {
-  del(key: string): void | null;
+  del(key: string): undefined | null;
   get(key: string): string | null;
   getJSON<Result = unknown>(key: string): Result | null;
-  set(key: string, value: string): void | null;
-  setJSON(key: string, value: unknown): void | null;
+  set(key: string, value: string): undefined | null;
+  setJSON(key: string, value: unknown): undefined | null;
 }
 
 interface CookieNamespace {
@@ -23,9 +27,9 @@ interface SessionCookieNamespace {
 }
 
 interface AccountNamespace {
-  del(key: string): void | null;
+  del(key: string): undefined | null;
   get<Result = unknown>(key: string): Result | null;
-  set(key: string, value: unknown): void | null;
+  set(key: string, value: unknown): undefined | null;
 }
 
 export interface Store {
@@ -56,7 +60,8 @@ const canSetSecureCookie =
 const local: StorageNamespace = {
   del: (key) => {
     try {
-      return localStorage.removeItem(key);
+      localStorage.removeItem(key);
+      return undefined;
     } catch (error) {
       console.warn(error);
       return null;
@@ -81,7 +86,8 @@ const local: StorageNamespace = {
   },
   set: (key, value) => {
     try {
-      return localStorage.setItem(key, value);
+      localStorage.setItem(key, value);
+      return undefined;
     } catch (error) {
       console.warn(error);
       return null;
@@ -100,7 +106,8 @@ const local: StorageNamespace = {
 const session: StorageNamespace = {
   del: (key) => {
     try {
-      return sessionStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+      return undefined;
     } catch (error) {
       console.warn(error);
       return null;
@@ -125,7 +132,8 @@ const session: StorageNamespace = {
   },
   set: (key, value) => {
     try {
-      return sessionStorage.setItem(key, value);
+      sessionStorage.setItem(key, value);
+      return undefined;
     } catch (error) {
       console.warn(error);
       return null;

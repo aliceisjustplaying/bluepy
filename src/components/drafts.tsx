@@ -1,7 +1,7 @@
 import './drafts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { JSX } from 'preact';
+import type { CSSProperties } from 'preact';
 import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
@@ -57,24 +57,24 @@ function Drafts({ onClose }: DraftsProps) {
   );
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [reloadCount, reload] = useReducer(
-    (c: number, _action?: void) => c + 1,
+    (c: number, _action?: undefined) => c + 1,
     0,
   );
 
   useEffect(() => {
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
         const keys = (await db.drafts.keys()) as string[];
         if (keys.length) {
           const ns = getCurrentAccountNS();
           const ownKeys = keys.filter((key) => key.startsWith(ns));
           if (ownKeys.length) {
-            const drafts = (await db.drafts.getMany(ownKeys)) as Draft[];
-            drafts.sort(
+            const ownDrafts = (await db.drafts.getMany(ownKeys)) as Draft[];
+            ownDrafts.sort(
               (a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
             );
-            setDrafts(drafts);
+            setDrafts(ownDrafts);
           } else {
             setDrafts([]);
           }
@@ -146,14 +146,15 @@ function Drafts({ onClose }: DraftsProps) {
                         align="end"
                         disabled={uiState === 'loading'}
                         onClick={() => {
-                          (async () => {
+                          void (async () => {
                             try {
                               // const yes = confirm('Delete this draft?');
                               // if (yes) {
                               await db.drafts.del(key);
-                              reload();
+                              reload(undefined);
                               // }
                             } catch (e) {
+                              console.error(e);
                               alert(t`Error deleting draft! Please try again.`);
                             }
                           })();
@@ -172,58 +173,63 @@ function Drafts({ onClose }: DraftsProps) {
                       type="button"
                       disabled={uiState === 'loading'}
                       class="draft-item"
-                      onClick={async () => {
-                        // console.log({ draftStatus });
-                        let replyToStatus: unknown;
-                        let quoteStatus: unknown;
-                        if (replyTo?.id || quote?.id) {
-                          setUIState('loading');
-                          if (replyTo) {
-                            try {
-                              replyToStatus = await (
-                                masto.v1.statuses as unknown as {
-                                  $select(id: string | undefined): {
-                                    fetch(): Promise<unknown>;
-                                  };
-                                }
-                              )
-                                .$select(replyTo.id)
-                                .fetch();
-                            } catch (e) {
-                              console.error(e);
-                              alert(t`Error fetching reply-to status!`);
-                              setUIState('default');
-                              return;
+                      onClick={() => {
+                        void (async () => {
+                          // console.log({ draftStatus });
+                          let replyToStatus: unknown;
+                          let quoteStatus: unknown;
+                          if (replyTo?.id || quote?.id) {
+                            setUIState('loading');
+                            if (replyTo) {
+                              try {
+                                replyToStatus = await (
+                                  masto.v1.statuses as {
+                                    $select(id: string | undefined): {
+                                      fetch(): Promise<unknown>;
+                                    };
+                                  }
+                                )
+                                  .$select(replyTo.id)
+                                  .fetch();
+                              } catch (e) {
+                                console.error(e);
+                                alert(t`Error fetching reply-to status!`);
+                                setUIState('default');
+                                return;
+                              }
                             }
-                          }
-                          if (quote) {
-                            try {
-                              quoteStatus = await (
-                                masto.v1.statuses as unknown as {
-                                  $select(id: string | undefined): {
-                                    fetch(): Promise<unknown>;
-                                  };
-                                }
-                              )
-                                .$select(quote.id)
-                                .fetch();
-                            } catch (e) {
-                              console.error(e);
-                              alert(t`Error fetching quoted status!`);
-                              setUIState('default');
-                              // Don't return. Fail and still allow draft without quote
-                              // return;
+                            if (quote) {
+                              try {
+                                quoteStatus = await (
+                                  masto.v1.statuses as {
+                                    $select(id: string | undefined): {
+                                      fetch(): Promise<unknown>;
+                                    };
+                                  }
+                                )
+                                  .$select(quote.id)
+                                  .fetch();
+                              } catch (e) {
+                                console.error(e);
+                                alert(t`Error fetching quoted status!`);
+                                setUIState('default');
+                                // Don't return. Fail and still allow draft without quote
+                                // return;
+                              }
                             }
+                            setUIState('default');
                           }
-                          setUIState('default');
-                        }
-                        window.__COMPOSE__ = {
-                          draftStatus,
-                          replyToStatus,
-                          quoteStatus,
-                        };
-                        states.showCompose = true;
-                        states.showDrafts = false;
+                          // TODO(oxlint:no-underscore-dangle) `__COMPOSE__` is
+                          // an intentional cross-window global used by compose
+                          // flow; renaming is out of scope.
+                          window.__COMPOSE__ = {
+                            draftStatus,
+                            replyToStatus,
+                            quoteStatus,
+                          };
+                          states.showCompose = true;
+                          states.showDrafts = false;
+                        })();
                       }}
                     >
                       <MiniDraft draft={draft} />
@@ -243,7 +249,7 @@ function Drafts({ onClose }: DraftsProps) {
                   menuItemClassName="danger"
                   disabled={uiState === 'loading'}
                   onClick={() => {
-                    (async () => {
+                    void (async () => {
                       // const yes = confirm('Delete all drafts?');
                       // if (yes) {
                       setUIState('loading');
@@ -252,7 +258,7 @@ function Drafts({ onClose }: DraftsProps) {
                           drafts.map((draft) => draft.key),
                         );
                         setUIState('default');
-                        reload();
+                        reload(undefined);
                       } catch (e) {
                         console.error(e);
                         alert(t`Error deleting drafts! Please try again.`);
@@ -289,16 +295,16 @@ interface MiniDraftProps {
 
 function MiniDraft({ draft }: MiniDraftProps) {
   const { t } = useLingui();
-  const { draftStatus, replyTo, quote } = draft;
+  const { draftStatus, quote } = draft;
   const { status, spoilerText, poll, mediaAttachments } = draftStatus;
   const hasPoll = (poll?.options?.length ?? 0) > 0;
   const hasMedia = (mediaAttachments?.length ?? 0) > 0;
   const hasQuote = !!quote?.id;
   const hasPollOrMedia = hasPoll || hasMedia || hasQuote;
   const firstImageMedia = useMemo<string | null | undefined>(() => {
-    if (!hasMedia || !mediaAttachments) return;
+    if (!hasMedia || !mediaAttachments) return undefined;
     const image = mediaAttachments.find((media) => /image/.test(media.type));
-    if (!image) return;
+    if (!image) return undefined;
     const { fileData, type, file, url } = image;
     if (fileData) {
       const blob = new Blob([fileData], { type });
@@ -326,7 +332,7 @@ function MiniDraft({ draft }: MiniDraftProps) {
               firstImageMedia
                 ? ({
                     '--bg-image': `url(${firstImageMedia})`,
-                  } as unknown as JSX.CSSProperties)
+                  } as unknown as CSSProperties)
                 : {}
             }
           >

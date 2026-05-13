@@ -3,7 +3,12 @@ import './account-statuses.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ComponentType, JSX, VNode } from 'preact';
+import type {
+  ComponentType,
+  TargetedEvent,
+  TargetedMouseEvent,
+  VNode,
+} from 'preact';
 import {
   useCallback,
   useEffect,
@@ -12,7 +17,7 @@ import {
   useRef,
   useState,
 } from 'preact/hooks';
-import punycode from 'punycode/';
+import { toUnicode as punycodeToUnicode } from 'punycode/';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
@@ -96,7 +101,7 @@ const supportsInputMonth = mem(() => {
     const input = document.createElement('input');
     input.setAttribute('type', 'month');
     return input.type === 'month';
-  } catch (e) {
+  } catch {
     return false;
   }
 });
@@ -104,59 +109,61 @@ const supportsInputMonth = mem(() => {
 function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   const { i18n, t } = useLingui();
   const snapStates = useSnapshot(states);
+  const routeParams = useParams() as { id?: string; instance?: string };
+  const routeSearchParams = useSearchParams() as unknown as readonly [
+    URLSearchParams,
+    (next: SearchParamsUpdater) => void,
+  ];
   const { id, ...params } = columnMode
-    ? { id: props.id as string | undefined }
-    : (useParams() as { id?: string; instance?: string });
+    ? { id: props.id }
+    : routeParams;
 
   // `URLSearchParams` accepts `Record<string, string>`; the JS `{ replies: 1 }`
   // is coerced to "1" at runtime — preserve via string init.
   const profileSearchParamsRef = useRef(new URLSearchParams({ replies: '1' }));
-  const [, forceUpdate] = useReducer<number, void>((c) => c + 1, 0);
+  const [, forceUpdate] = useReducer<number, undefined>((c) => c + 1, 0);
   const profileSetSearchParams = useCallback((objOrFn: SearchParamsUpdater) => {
-    const params = profileSearchParamsRef.current;
+    const localParams = profileSearchParamsRef.current;
     if (typeof objOrFn === 'function') {
-      objOrFn(params);
+      objOrFn(localParams);
     } else if (objOrFn instanceof URLSearchParams) {
-      [...params.keys()].forEach((key) => params.delete(key));
-      objOrFn.forEach((value, key) => params.set(key, value));
+      [...localParams.keys()].forEach((key) => localParams.delete(key));
+      objOrFn.forEach((value, key) => localParams.set(key, value));
     } else {
       Object.entries(objOrFn).forEach(([key, value]) => {
         if (value) {
-          params.set(key, String(value));
+          localParams.set(key, String(value));
         } else {
-          params.delete(key);
+          localParams.delete(key);
         }
       });
     }
-    forceUpdate();
+    forceUpdate(undefined);
   }, []);
   const [searchParams, setSearchParams] = columnMode
     ? ([profileSearchParamsRef.current, profileSetSearchParams] as const)
-    : (useSearchParams() as unknown as readonly [
-        URLSearchParams,
-        (next: SearchParamsUpdater) => void,
-      ]);
+    : routeSearchParams;
   const clearAndSetParam = useCallback(
     (paramName?: string, paramValue?: string) => {
-      const params = new URLSearchParams(
+      const localParams = new URLSearchParams(
         columnMode ? { replies: '1' } : undefined,
       );
       if (paramValue !== undefined) {
-        params.set(paramName as string, paramValue);
+        localParams.set(paramName as string, paramValue);
       }
-      setSearchParams(params);
+      setSearchParams(localParams);
     },
-    [setSearchParams],
+    [setSearchParams, columnMode],
   );
   const toggleParam = useCallback(
     (paramName: string, paramValue?: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (params.get(paramName)) {
-        params.delete(paramName);
+      const localParams = new URLSearchParams(searchParams.toString());
+      if (localParams.get(paramName)) {
+        localParams.delete(paramName);
       } else {
-        params.set(paramName, paramValue ?? '1');
+        localParams.set(paramName, paramValue ?? '1');
       }
-      setSearchParams(params);
+      setSearchParams(localParams);
     },
     [setSearchParams, searchParams],
   );
@@ -193,7 +200,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     // Most remote instances don't allow unauthenticated searches
     if (!sameCurrentInstance) return;
     if (!account?.acct) return;
-    (async () => {
+    void (async () => {
       const enabled = await isSearchEnabled(instance);
       console.log({ enabled });
       setSearchEnabled(enabled);
@@ -319,9 +326,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         } as unknown as mastodon.rest.v1.ListAccountStatusesParams)
         .values();
     }
-    const { value, done } = await (
-      accountStatusesIterator.current as AsyncIterator<Status[]>
-    ).next();
+    const { value, done } = await accountStatusesIterator.current.next();
     if (value?.length) {
       if (!supports('@mastodon/pinned-posts')) {
         // Check if value is same as pinned post (results)
@@ -337,6 +342,9 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
           ) {
             pinnedStatusesIds = (first as PinnedGroup).id;
           } else {
+            // TODO(oxlint:no-underscore-dangle) `_pinned` is the project-wide
+            // pinned-status marker shared with timeline.tsx; renaming is out
+            // of scope.
             pinnedStatusesIds = (
               results as Array<Status & { _pinned?: boolean }>
             )
@@ -392,14 +400,14 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   }
   useTitle(title, '/:instance?/a/:id');
 
-  const fetchAccount = useCallback(() => {
+  const refetchAccount = useCallback(() => {
     return memFetchAccount(id as string, masto);
   }, [id, masto]);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
-        const acc = await fetchAccount();
+        const acc = await refetchAccount();
         console.log(acc);
         setAccount(acc);
       } catch (e) {
@@ -409,18 +417,20 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       // TODO: Revisit this
       if (!mediaFirst) {
         try {
-          const featuredTags = await (
+          const fetchedFeaturedTags = await (
             masto.v1.accounts as unknown as mastodon.rest.v1.AccountsResource
           )
             .$select(id as string)
             .featuredTags.list();
-          console.log({ featuredTags });
-          setFeaturedTags(featuredTags);
+          console.log({ fetchedFeaturedTags });
+          setFeaturedTags(fetchedFeaturedTags);
         } catch (e) {
           console.error(e);
         }
       }
     })();
+    // `refetchAccount` and `masto.v1.accounts` are stable identity within an
+    // `id`/`mediaFirst` cohort — adding them would cause refetch loops here.
   }, [id, mediaFirst]);
 
   const { displayName, acct, emojis } = account || ({} as Partial<Account>);
@@ -440,15 +450,15 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     const buildParamStr = (
       updates: Record<string, string | null | undefined>,
     ): string => {
-      const params = new URLSearchParams(searchParams.toString());
+      const next = new URLSearchParams(searchParams.toString());
       for (const [key, val] of Object.entries(updates)) {
         if (val == null) {
-          params.delete(key);
+          next.delete(key);
         } else {
-          params.set(key, val);
+          next.set(key, val);
         }
       }
-      const str = params.toString();
+      const str = next.toString();
       return str ? `?${str}` : '';
     };
 
@@ -460,7 +470,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
           <AccountInfo
             instance={instance}
             account={(cachedAccount as unknown as Account) || (id as string)}
-            fetchAccount={fetchAccount}
+            fetchAccount={refetchAccount}
             authenticated={authenticated}
             standalone
             showEndorsements
@@ -480,7 +490,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                 class="insignificant filter-clear"
                 title={t`Reset filters`}
                 key="clear-filters"
-                onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
+                onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
                   if (columnMode) {
                     e.preventDefault();
                     clearAndSetParam();
@@ -535,7 +545,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
               to={`/${instance}/a/${id}${buildParamStr({
                 media: media ? null : '1',
               })}`}
-              onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
+              onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
                 if (columnMode) {
                   e.preventDefault();
                   toggleParam('media', '1');
@@ -550,8 +560,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             </Link>
             {featuredTags.length > 0 && (
               <div class="filter-bar-group">
-                {[...featuredTags]
-                  .sort((a, b) => {
+                {featuredTags
+                  .toSorted((a, b) => {
                     if (a.name === tagged) return -1;
                     if (b.name === tagged) return 1;
                     return 0;
@@ -563,19 +573,19 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                         tagged: tagged === tag.name ? null : tag.name,
                       })}`}
                       onClick={(
-                        e: JSX.TargetedMouseEvent<HTMLAnchorElement>,
+                        e: TargetedMouseEvent<HTMLAnchorElement>,
                       ) => {
                         if (columnMode) {
                           e.preventDefault();
-                          const params = new URLSearchParams(
+                          const next = new URLSearchParams(
                             searchParams.toString(),
                           );
-                          if (params.get('tagged') === tag.name) {
-                            params.delete('tagged');
+                          if (next.get('tagged') === tag.name) {
+                            next.delete('tagged');
                           } else {
-                            params.set('tagged', tag.name);
+                            next.set('tagged', tag.name);
                           }
-                          setSearchParams(params);
+                          setSearchParams(next);
                         }
                         if (tagged !== tag.name) {
                           showToast(t`Showing posts tagged with #${tag.name}`);
@@ -605,7 +615,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                       min={MIN_YEAR_MONTH}
                       max={new Date().toISOString().slice(0, 7)}
                       onInput={(
-                        e: JSX.TargetedEvent<HTMLInputElement, Event>,
+                        e: TargetedEvent<HTMLInputElement>,
                       ) => {
                         const { value, validity } = e.currentTarget;
                         if (!validity.valid) return;
@@ -616,8 +626,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                               }
                             : {},
                         );
-                        const [year, month] = value.split('-');
-                        const monthIndex = parseInt(month, 10) - 1;
+                        const [year, monthStr] = value.split('-');
+                        const monthIndex = parseInt(monthStr, 10) - 1;
                         const date = new Date(
                           year as unknown as number,
                           monthIndex,
@@ -685,7 +695,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     instance,
     authenticated,
     featuredTags,
-    fetchAccount,
+    refetchAccount,
     searchEnabled,
     ...allSearchParams,
   ]);
@@ -720,7 +730,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     <>
       <Timeline
         key={id}
-        title={`${account?.acct ? '@' + account.acct : t`Posts`}`}
+        title={account?.acct ? `@${account.acct}` : t`Posts`}
         titleComponent={
           <h1
             class="header-double-lines header-account"
@@ -786,18 +796,18 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             <MenuItem
               disabled={!allowSwitch}
               onClick={() => {
-                (async () => {
+                void (async () => {
                   try {
-                    const { masto } = api({
+                    const { masto: instanceMasto } = api({
                       instance: accountInstance as string | undefined,
                     });
-                    const accountsResource = masto.v1
+                    const accountsResource = instanceMasto.v1
                       .accounts as unknown as mastodon.rest.v1.AccountsResource;
                     const acc = await accountsResource.lookup({
                       acct: (account as Account).acct,
                     });
-                    const { id } = acc;
-                    location.hash = `/${accountInstance}/a/${id}`;
+                    const { id: lookupId } = acc;
+                    location.hash = `/${accountInstance}/a/${lookupId}`;
                   } catch (e) {
                     console.error(e);
                     alert(t`Unable to fetch account info`);
@@ -812,7 +822,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                   {accountInstance ? (
                     <>
                       {' '}
-                      (<b>{punycode.toUnicode(accountInstance)}</b>)
+                      (<b>{punycodeToUnicode(accountInstance)}</b>)
                     </>
                   ) : null}
                 </Trans>
@@ -821,15 +831,15 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             {!sameCurrentInstance && (
               <MenuItem
                 onClick={() => {
-                  (async () => {
+                  void (async () => {
                     try {
                       const accountsResource = currentMasto.v1
                         .accounts as unknown as mastodon.rest.v1.AccountsResource;
                       const acc = await accountsResource.lookup({
                         acct: (account as Account).acct + '@' + instance,
                       });
-                      const { id } = acc;
-                      location.hash = `/${currentInstance}/a/${id}`;
+                      const { id: lookupId } = acc;
+                      location.hash = `/${currentInstance}/a/${lookupId}`;
                     } catch (e) {
                       console.error(e);
                       alert(t`Unable to fetch account info`);
@@ -907,16 +917,15 @@ function MonthPicker(props: MonthPickerProps) {
         ref={monthFieldRef}
         disabled={disabled}
         value={_month || ''}
-        onInput={(e: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
+        onInput={(e: TargetedEvent<HTMLSelectElement>) => {
           const { value: month } = e.currentTarget;
           const year = (yearFieldRef.current as HTMLInputElement).value;
-          if (!checkValidity(month, year))
-            return {
-              value: '',
-              validity: {
-                valid: false,
-              },
-            };
+          if (!checkValidity(month, year)) {
+            // JS original `return { value: '', validity: { valid: false } }`
+            // here, but the return value of an `onInput` handler is discarded;
+            // preserve the early-exit behavior without the dead object.
+            return;
+          }
           onInput({
             value: month ? `${year}-${month}` : '',
             validity: {
@@ -950,16 +959,15 @@ function MonthPicker(props: MonthPickerProps) {
         value={_year || new Date().getFullYear()}
         min={min?.slice(0, 4) || MIN_YEAR}
         max={max?.slice(0, 4) || new Date().getFullYear()}
-        onInput={(e: JSX.TargetedEvent<HTMLInputElement, Event>) => {
+        onInput={(e: TargetedEvent<HTMLInputElement>) => {
           const { value: year, validity } = e.currentTarget;
           const month = (monthFieldRef.current as HTMLSelectElement).value;
-          if (!validity.valid || !checkValidity(month, year))
-            return {
-              value: '',
-              validity: {
-                valid: false,
-              },
-            };
+          if (!validity.valid || !checkValidity(month, year)) {
+            // JS original `return { value: '', validity: { valid: false } }`
+            // here, but the return value of an `onInput` handler is discarded;
+            // preserve the early-exit behavior without the dead object.
+            return;
+          }
           onInput({
             value: year ? `${year}-${month}` : '',
             validity: {
@@ -979,8 +987,7 @@ function fetchAccount(
   id: string,
   masto: { v1: { accounts: unknown } },
 ): Promise<Account> {
-  const accountsResource = masto.v1
-    .accounts as unknown as mastodon.rest.v1.AccountsResource;
+  const accountsResource = masto.v1.accounts as mastodon.rest.v1.AccountsResource;
   return accountsResource.$select(id).fetch();
 }
 const memFetchAccount = pmem(fetchAccount, {

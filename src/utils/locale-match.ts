@@ -7,18 +7,21 @@ const CACHE_STORE = 'localeMatchCache';
 
 type MatchArgs = Parameters<typeof match>;
 
-export function _localeMatch(...args: MatchArgs): string | false {
+export function baseLocaleMatch(...args: MatchArgs): string | false {
   try {
     return match(...args);
-  } catch (e) {
+  } catch {
     const defaultLocale = args[2];
     return defaultLocale || false;
   }
 }
 
 if (typeof window !== 'undefined') {
-  (window as unknown as { _localeMatch: typeof _localeMatch })._localeMatch =
-    _localeMatch; // For debugging
+  // TODO(oxlint:no-underscore-dangle) Intentional debug global; renaming would
+  // break existing devtools workflows that rely on `_localeMatch`.
+  (
+    window as unknown as { _localeMatch: typeof baseLocaleMatch }
+  )._localeMatch = baseLocaleMatch;
 }
 
 function cacheMem<Args extends readonly unknown[], Result>(
@@ -32,7 +35,7 @@ function cacheMem<Args extends readonly unknown[], Result>(
     let cache: Record<string, Result>;
     try {
       cache = store.session.getJSON<Record<string, Result>>(CACHE_STORE) || {};
-    } catch (e) {
+    } catch {
       // If fails, just call the function
       return fn(...args);
     }
@@ -44,7 +47,7 @@ function cacheMem<Args extends readonly unknown[], Result>(
     try {
       cache[cacheKey] = result;
       store.session.setJSON(CACHE_STORE, cache);
-    } catch (e) {
+    } catch {
       // Ignore errors
     }
 
@@ -52,6 +55,6 @@ function cacheMem<Args extends readonly unknown[], Result>(
   };
 }
 
-const localeMatch = mem(cacheMem(_localeMatch));
+const localeMatch = mem(cacheMem(baseLocaleMatch));
 
 export default localeMatch;
