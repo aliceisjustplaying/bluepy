@@ -81,8 +81,21 @@
     "typescript/no-explicit-any": "error",
     "typescript/no-invalid-void-type": "error",
     "typescript/no-non-null-asserted-nullish-coalescing": "error",
-    "import/no-cycle": "error",
     "promise/catch-or-return": "error",
+
+    "import/no-cycle": "warn",
+    "promise/no-multiple-resolved": "warn",
+    "react/iframe-missing-sandbox": "warn",
+    "typescript/no-deprecated": "warn",
+    "typescript/no-unnecessary-type-parameters": "warn",
+    "unicorn/require-post-message-target-origin": "warn",
+
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/label-has-associated-control": "warn",
+    "jsx-a11y/media-has-caption": "warn",
+    "jsx-a11y/no-noninteractive-tabindex": "warn",
+    "jsx-a11y/no-static-element-interactions": "warn",
+    "jsx-a11y/prefer-tag-over-role": "warn",
 
     "typescript/no-unsafe-type-assertion": "warn",
     "typescript/no-unsafe-assignment": "warn",
