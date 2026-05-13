@@ -82,7 +82,7 @@ function IDN(inputCode, outputCode) {
 
 const fullCatalogs = Object.entries(catalogs)
   // sort by key
-  .sort((a, b) => a[0].localeCompare(b[0]))
+  .toSorted((a, b) => a[0].localeCompare(b[0]))
   .map(([code, completion]) => {
     const nativeName = IDN(code, code);
     const name = IDN('en', code);
@@ -102,7 +102,7 @@ const listedCatalogs = fullCatalogs.map((catalog) => ({
 }));
 
 // Sort by completion
-const sortedCatalogs = [...listedCatalogs].sort(
+const sortedCatalogs = listedCatalogs.toSorted(
   (a, b) => b.completion - a.completion,
 );
 

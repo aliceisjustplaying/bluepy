@@ -4046,7 +4046,7 @@ function EditedAtModal({
           <ol>
             {editHistory.map((status: AnyStatus) => {
               const { createdAt } = status;
-              const createdAtDate = new Date(createdAt as string);
+              const createdAtDate = new Date(createdAt);
               return (
                 <li key={createdAt} class="history-item">
                   <h3>
@@ -4113,7 +4113,7 @@ function FilteredStatus({
   };
   const isReblog = !!reblog;
   const filterTitleStr = filterInfo?.titlesStr || '';
-  const createdAtDate = new Date(createdAt as string);
+  const createdAtDate = new Date(createdAt);
   const statusPeekText = statusPeek(
     (reblog || status) as unknown as Parameters<typeof statusPeek>[0],
   );
