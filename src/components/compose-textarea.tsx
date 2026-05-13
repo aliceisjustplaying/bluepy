@@ -1,6 +1,14 @@
-import type { JSX, Ref, RefObject } from 'preact';
+import type {
+  HTMLAttributes,
+  Ref,
+  RefObject,
+  TargetedClipboardEvent,
+  TargetedEvent,
+  TargetedKeyboardEvent,
+  TargetedUIEvent,
+} from 'preact';
 import { forwardRef } from 'preact/compat';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 import { useDebouncedCallback, useThrottledCallback } from 'use-debounce';
 
 import { langDetector } from '../utils/browser-translator';
@@ -34,7 +42,7 @@ const SCAN_RE = new RegExp(
 const segmenter = new Intl.Segmenter();
 
 function highlightText(
-  text: string,
+  rawText: string,
   { maxCharacters = Infinity }: { maxCharacters?: number },
 ): string {
   // Exceeded characters limit
@@ -45,7 +53,7 @@ function highlightText(
     // Highlight exceeded characters
     let withinLimitHTML = '',
       exceedLimitHTML = '';
-    const htmlSegments = segmenter.segment(text);
+    const htmlSegments = segmenter.segment(rawText);
     for (const { segment, index } of htmlSegments) {
       if (index < maxCharacters) {
         withinLimitHTML += segment;
@@ -62,7 +70,7 @@ function highlightText(
     return escapeHTML(withinLimitHTML) + exceedLimitHTML;
   }
 
-  return escapeHTML(text)
+  return escapeHTML(rawText)
     .replace(urlRegexObj, '$2<mark class="compose-highlight-url">$3</mark>') // URLs
     .replace(MENTION_RE, '$1<mark class="compose-highlight-mention">$2</mark>') // Mentions
     .replace(HASHTAG_RE, '$1<mark class="compose-highlight-hashtag">$2</mark>') // Hashtags
@@ -91,10 +99,10 @@ interface LanguageDetectionResult {
   lang?: string;
 }
 
-const detectLangs = async (text: string): Promise<string[] | null> => {
+const detectLangs = async (input: string): Promise<string[] | null> => {
   if (langDetector) {
     const langs = (await langDetector.detect(
-      text,
+      input,
     )) as LanguageDetectionResult[];
     if (langs?.length) {
       return langs
@@ -104,7 +112,7 @@ const detectLangs = async (text: string): Promise<string[] | null> => {
     }
   }
   const { detectAll } = await import('tinyld/light');
-  const langs = (detectAll as (t: string) => LanguageDetectionResult[])(text);
+  const langs = (detectAll as (t: string) => LanguageDetectionResult[])(input);
   if (langs?.length) {
     // return max 2
     return langs
@@ -116,7 +124,7 @@ const detectLangs = async (text: string): Promise<string[] | null> => {
 };
 
 interface TextareaProps extends Omit<
-  JSX.HTMLAttributes<HTMLTextAreaElement>,
+  HTMLAttributes<HTMLTextAreaElement>,
   'onTrigger'
 > {
   maxCharacters?: number;
@@ -148,7 +156,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     const slowHighlightPerf = useRef(0); // increment if slow
     const composeHighlightRef = useRef<HTMLDivElement | null>(null);
-    const throttleHighlightText = useThrottledCallback((text: string) => {
+    const throttleHighlightText = useThrottledCallback((input: string) => {
       if (!composeHighlightRef.current) return;
       if (slowHighlightPerf.current > 3) {
         // After 3 times of lag, disable highlighting
@@ -161,7 +169,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       let end: number | undefined;
       if (slowHighlightPerf.current <= 3) start = Date.now();
       composeHighlightRef.current.innerHTML =
-        highlightText(text, {
+        highlightText(input, {
           maxCharacters,
         }) + '\n';
       if (slowHighlightPerf.current <= 3) end = Date.now();
@@ -189,10 +197,10 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       dom.querySelectorAll('mark').forEach((mark: HTMLElement) => {
         mark.remove();
       });
-      const text = dom.innerText?.trim();
-      if (!text) return;
-      (async () => {
-        const langs = await detectLangs(text);
+      const detectText = dom.innerText?.trim();
+      if (!detectText) return;
+      void (async () => {
+        const langs = await detectLangs(detectText);
         if (langs?.length) {
           onTrigger?.({
             name: 'auto-detect-language',
@@ -222,7 +230,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           name="status"
           value={text}
-          onKeyDown={(e: JSX.TargetedKeyboardEvent<HTMLTextAreaElement>) => {
+          onKeyDown={(e: TargetedKeyboardEvent<HTMLTextAreaElement>) => {
             // Get line before cursor position after pressing 'Enter'
             const { key } = e;
             const target = e.currentTarget;
@@ -246,9 +254,13 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                       e.preventDefault();
                       const [number] = bullet.match(/\d+/) || [];
                       const newBullet = number ? `${+number + 1}.` : '-';
-                      const text = `\n${preSpaces}${newBullet}${postSpaces}`;
-                      target.setRangeText(text, selectionStart, selectionStart);
-                      const pos = selectionStart + text.length;
+                      const bulletText = `\n${preSpaces}${newBullet}${postSpaces}`;
+                      target.setRangeText(
+                        bulletText,
+                        selectionStart,
+                        selectionStart,
+                      );
+                      const pos = selectionStart + bulletText.length;
                       target.setSelectionRange(pos, pos);
                     } else {
                       // trim the line before the cursor, then insert new line
@@ -259,35 +271,35 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                     target.dispatchEvent(new Event('input'));
                   }
                 }
-              } catch (e) {
+              } catch (err) {
                 // silent fail
-                console.error(e);
+                console.error(err);
               }
             }
             if (composeHighlightRef.current) {
               composeHighlightRef.current.scrollTop = target.scrollTop;
             }
           }}
-          onInput={(e: JSX.TargetedEvent<HTMLTextAreaElement, Event>) => {
+          onInput={(e: TargetedEvent<HTMLTextAreaElement>) => {
             const target = e.currentTarget;
-            const text = target.value;
-            setText(text);
+            const nextText = target.value;
+            setText(nextText);
             autoResizeTextarea(target);
             (
               props.onInput as
-                | ((ev: JSX.TargetedEvent<HTMLTextAreaElement, Event>) => void)
+                | ((ev: TargetedEvent<HTMLTextAreaElement>) => void)
                 | undefined
             )?.(e);
-            throttleHighlightText(text);
+            throttleHighlightText(nextText);
             debouncedAutoDetectLanguage();
           }}
-          onScroll={(e: JSX.TargetedUIEvent<HTMLTextAreaElement>) => {
+          onScroll={(e: TargetedUIEvent<HTMLTextAreaElement>) => {
             if (composeHighlightRef.current) {
               const { scrollTop } = e.currentTarget;
               composeHighlightRef.current.scrollTop = scrollTop;
             }
           }}
-          onPaste={(e: JSX.TargetedClipboardEvent<HTMLTextAreaElement>) => {
+          onPaste={(e: TargetedClipboardEvent<HTMLTextAreaElement>) => {
             try {
               const pastedText = e.clipboardData?.getData('text').trim();
               if (pastedText) {

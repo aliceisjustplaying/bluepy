@@ -1,7 +1,7 @@
 import './embed-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType, JSX } from 'preact';
+import type { ComponentType, CSSProperties } from 'preact';
 
 import IconRaw from './icon';
 
@@ -29,6 +29,9 @@ function EmbedModal({
   height,
   onClose = () => {},
 }: EmbedModalProps) {
+  // Preserve original semantics: falsy title (null, '', undefined) all
+  // fall back to 'Embedded content'.
+  const iframeTitle = title || 'Embedded content';
   const { t } = useLingui();
   return (
     <div class="embed-modal-container">
@@ -37,7 +40,12 @@ function EmbedModal({
           <Icon icon="x" alt={t`Close`} />
         </button>
         {url && (
-          <a href={url} target="_blank" rel="noopener" class="button plain">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="button plain"
+          >
             <span>
               <Trans>Open in new window</Trans>
             </span>{' '}
@@ -47,9 +55,13 @@ function EmbedModal({
       </div>
       {iframeUrl ? (
         <div class="embed-content iframe-content">
+          {/* TODO(oxlint:react/iframe-missing-sandbox): allow-scripts +
+              allow-same-origin together weaken the sandbox, but many oEmbed
+              providers (YouTube, Spotify, Bluesky) require it. Behavioural
+              regression to remove either; needs per-provider audit. */}
           <iframe
             src={iframeUrl}
-            title={title || 'Embedded content'}
+            title={iframeTitle}
             sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
             allow="clipboard-write; fullscreen"
             referrerpolicy="strict-origin-when-cross-origin"
@@ -64,7 +76,7 @@ function EmbedModal({
               '--width': width + 'px',
               '--height': height + 'px',
               '--aspect-ratio': `${width}/${height}`,
-            } as JSX.CSSProperties
+            } as CSSProperties
           }
         />
       )}

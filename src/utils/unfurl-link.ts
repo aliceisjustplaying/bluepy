@@ -3,6 +3,9 @@ import { snapshot } from 'valtio/vanilla';
 
 import { api } from './api';
 import getDomain from './get-domain';
+// TODO(oxlint:import/no-cycle): states <-> unfurl-link cycle is structural;
+// breaking it requires extracting unfurled-link types into a separate module
+// shared by states.ts. Out of scope for the oxlint cleanup batch.
 import states, { saveStatus } from './states';
 
 export const unfurlQueue = new PQueue({
@@ -12,7 +15,7 @@ export const unfurlQueue = new PQueue({
 });
 
 const STATUS_ID_REGEXES = [
-  /\/@[^@\/]+@?[^\/]+?\/(\d+)$/i, // Mastodon
+  /\/@[^@/]+@?[^/]+?\/(\d+)$/i, // Mastodon
   /\/notice\/(\w+)$/i, // Pleroma
 ];
 function getStatusID(path: string): string | null {
@@ -81,16 +84,16 @@ interface SearchV2Endpoint {
 
 const denylistDomains = /(twitter|github)\.com/i;
 const failedUnfurls: Record<string, boolean> = {};
-function _unfurlMastodonLink(
+function unfurlMastodonLinkImpl(
   instance: string,
   url: string,
 ): Promise<UnfurledLinkSnapshot | undefined> | undefined {
   const snapStates = snapshot(states);
   if (denylistDomains.test(url)) {
-    return;
+    return undefined;
   }
   if (failedUnfurls[url]) {
-    return;
+    return undefined;
   }
   const instanceRegex = new RegExp(instance + '/');
   // Snapshot values are `unknown` in states.ts; narrow the single entry we
@@ -105,27 +108,27 @@ function _unfurlMastodonLink(
   let theURL = url;
 
   // https://elk.zone/domain.com/@stest/123 -> https://domain.com/@stest/123
-  if (/\/\/elk\.[^\/]+\/[^\/]+\.[^\/]+/i.test(theURL)) {
-    theURL = theURL.replace(/elk\.[^\/]+\//i, '');
+  if (/\/\/elk\.[^/]+\/[^/]+\.[^/]+/i.test(theURL)) {
+    theURL = theURL.replace(/elk\.[^/]+\//i, '');
   }
 
   // https://trunks.social/status/domain.com/@stest/123 -> https://domain.com/@stest/123
-  if (/\/\/trunks\.[^\/]+\/status\/[^\/]+\.[^\/]+/i.test(theURL)) {
-    theURL = theURL.replace(/trunks\.[^\/]+\/status\//i, '');
+  if (/\/\/trunks\.[^/]+\/status\/[^/]+\.[^/]+/i.test(theURL)) {
+    theURL = theURL.replace(/trunks\.[^/]+\/status\//i, '');
   }
 
   // https://phanpy.social/#/domain.com/s/123 -> https://domain.com/statuses/123
-  if (/\/#\/[^\/]+\.[^\/]+\/s\/.+/i.test(theURL)) {
+  if (/\/#\/[^/]+\.[^/]+\/s\/.+/i.test(theURL)) {
     const urlAfterHash = theURL.split('/#/')[1];
     const finalURL = urlAfterHash.replace(/\/s\//i, '/@fakeUsername/');
     theURL = `https://${finalURL}`;
   }
 
   const urlObj = URL.parse(theURL);
-  if (!urlObj) return;
+  if (!urlObj) return undefined;
   const domain = urlObj.hostname;
   const path = urlObj.pathname;
-  if (!domain) return; // No domain, something is wrong
+  if (!domain) return undefined; // No domain, something is wrong
   // Regex /:username/:id, where username = @username or @username@domain, id = post ID
   let statusMatchID = getStatusID(path);
 
@@ -178,14 +181,14 @@ function _unfurlMastodonLink(
     });
 
   function handleFulfill(result: UnfurlResult): UnfurledLinkData {
-    const { status, instance } = result;
+    const { status, instance: resultInstance } = result;
     const { id } = status;
-    const selfURL = `/${instance}/s/${id}`;
+    const selfURL = `/${resultInstance}/s/${id}`;
     console.debug('🦦 Unfurled URL', url, id, selfURL);
     const hasCanonical = theURL !== url;
     const data: UnfurledLinkData = {
       id,
-      instance,
+      instance: resultInstance,
       url: selfURL,
       originalURL: url,
       originalDomain: getDomain(url),
@@ -193,7 +196,7 @@ function _unfurlMastodonLink(
       canonicalDomain: hasCanonical ? getDomain(theURL) : undefined,
     };
     states.unfurledLinks[url] = data;
-    saveStatus(status, instance, {
+    saveStatus(status, resultInstance, {
       skipThreading: true,
     });
     return data;
@@ -208,12 +211,15 @@ function _unfurlMastodonLink(
     //   .then(handleFulfill)
     //   .catch(handleCatch);
     // If mastoSearchFetch is fulfilled within 3s, return it, else return remoteInstanceFetch
+    const fetchTimeout = remoteInstanceFetch;
     const finalPromise: Promise<UnfurlResult> = Promise.race([
       mastoSearchFetch,
-      new Promise<UnfurlResult>((_resolve, reject) => setTimeout(reject, 3000)),
+      new Promise<UnfurlResult>((_resolve, reject) => {
+        setTimeout(reject, 3000);
+      }),
     ]).catch(() => {
       // If remoteInstanceFetch is fullfilled, return it, else return mastoSearchFetch
-      return remoteInstanceFetch!.catch(() => mastoSearchFetch);
+      return fetchTimeout.catch(() => mastoSearchFetch);
     });
     return finalPromise.then(handleFulfill).catch(handleCatch);
   } else {
@@ -225,10 +231,12 @@ const unfurlMastodonLink = (
   instance: string,
   url: string,
   signal?: AbortSignal,
-): Promise<UnfurledLinkSnapshot | undefined | void> =>
-  // PQueue's Task accepts `T | PromiseLike<T>`; `_unfurlMastodonLink` can
+): Promise<UnfurledLinkSnapshot | undefined> =>
+  // PQueue's Task accepts `T | PromiseLike<T>`; `unfurlMastodonLinkImpl` can
   // return `Promise<T> | undefined`, which only fits after async wrapping.
   // Observationally identical: PQueue resolves the returned promise either
   // way (it internally awaits a Promise.resolve(taskResult)).
-  unfurlQueue.add(async () => _unfurlMastodonLink(instance, url), { signal });
+  unfurlQueue.add(async () => unfurlMastodonLinkImpl(instance, url), {
+    signal,
+  });
 export default unfurlMastodonLink;

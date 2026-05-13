@@ -15,14 +15,17 @@ function useCloseWatcher(
   fn: ((event: Event) => void) | null | undefined,
   deps: readonly unknown[] = [],
 ): void {
-  if (!fn || typeof fn !== 'function') return;
   useEffect(() => {
+    if (!fn || typeof fn !== 'function') return undefined;
     console.log('useCloseWatcher');
     const watcher = new (CloseWatcher as CloseWatcherCtor)();
     watcher.addEventListener('close', fn);
     return () => {
       watcher.destroy();
     };
+    // TODO(oxlint:react-hooks/exhaustive-deps): deps is a parameter array, not
+    // an array literal; this is the hook's documented API for caller-supplied
+    // dependencies. Cannot statically verify, by design.
   }, deps);
 }
 

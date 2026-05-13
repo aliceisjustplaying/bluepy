@@ -2,7 +2,7 @@ import './login.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import Fuse from 'fuse.js';
-import type { JSX } from 'preact';
+import type { TargetedEvent } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useSearchParams } from 'react-router-dom';
 
@@ -40,7 +40,6 @@ interface CredentialApplicationShape extends Record<string, unknown> {
 function Login() {
   const { t } = useLingui();
   useTitle(t`Log in`, '/login');
-  const instanceURLRef = useRef<HTMLInputElement | null>(null);
   const cachedInstanceURL = store.local.get('instanceURL');
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
@@ -51,14 +50,14 @@ function Login() {
   const [searchParams] = useSearchParams();
   const instance = searchParams.get('instance');
   const submit = searchParams.get('submit');
-  const [instanceText, setInstanceText] = useState(
+  const [instanceText] = useState(
     instance || cachedInstanceURL?.toLowerCase() || '',
   );
 
   const [instancesList, setInstancesList] = useState<string[]>([]);
   const searcher = useRef<Fuse<string> | undefined>(undefined);
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         const res = await fetch(instancesListURL);
         const data = await res.json();
@@ -80,7 +79,7 @@ function Login() {
   const submitInstance = (instanceURL: string | null | undefined) => {
     if (!instanceURL) return;
 
-    (async () => {
+    void (async () => {
       // WEB_DOMAIN vs LOCAL_DOMAIN negotiation time
       // https://docs.joinmastodon.org/admin/config/#web_domain
       try {
@@ -192,8 +191,8 @@ function Login() {
         .trim()
     : null;
   const instanceTextLooksLikeDomain =
-    /[^\s\r\n\t\/\\]+\.[^\s\r\n\t\/\\]+/.test(cleanInstanceText as string) &&
-    !/[\s\/\\@]/.test(cleanInstanceText as string);
+    /[^\s\r\n\t/\\]+\.[^\s\r\n\t/\\]+/.test(cleanInstanceText as string) &&
+    !/[\s/\\@]/.test(cleanInstanceText as string);
 
   const instancesSuggestions = cleanInstanceText
     ? searcher.current
@@ -208,30 +207,13 @@ function Login() {
     : instancesSuggestions?.length
       ? instancesSuggestions[0]
       : instanceText
-        ? instancesList.find((instance) => instance.includes(instanceText))
+        ? instancesList.find((item) => item.includes(instanceText))
         : null;
 
-  const onSubmit = (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
-    e.preventDefault();
-    // const { elements } = e.target;
-    // let instanceURL = elements.instanceURL.value.toLowerCase();
-    // // Remove protocol from instance URL
-    // instanceURL = instanceURL.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-    // // Remove @acct@ or acct@ from instance URL
-    // instanceURL = instanceURL.replace(/^@?[^@]+@/, '');
-    // if (!/\./.test(instanceURL)) {
-    //   instanceURL = instancesList.find((instance) =>
-    //     instance.includes(instanceURL),
-    //   );
-    // }
-    // submitInstance(instanceURL);
-    submitInstance(selectedInstanceText);
-  };
-
-  const submitBluesky = (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
+  const submitBluesky = (e: TargetedEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!bskyIdentifier || !bskyPassword) return;
-    (async () => {
+    void (async () => {
       setUIState('loading');
       try {
         const { account, session, service } = await loginAtproto({
@@ -258,8 +240,8 @@ function Login() {
           initInstance(client, BSKY_INSTANCE),
         ]);
         location.href = location.pathname || '/';
-      } catch (e) {
-        console.error(e);
+      } catch (err) {
+        console.error(err);
         setUIState('error');
       } finally {
         setUIState('default');
@@ -267,17 +249,15 @@ function Login() {
     })();
   };
 
-  const submitBlueskyOAuth = (
-    e: JSX.TargetedEvent<HTMLButtonElement, Event>,
-  ) => {
+  const submitBlueskyOAuth = (e: TargetedEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!bskyIdentifier) return;
-    (async () => {
+    void (async () => {
       setUIState('loading');
       try {
         await startAtprotoOAuthLogin(bskyIdentifier.trim());
-      } catch (e) {
-        console.error(e);
+      } catch (err) {
+        console.error(err);
         setUIState('error');
       } finally {
         setUIState('default');
@@ -285,11 +265,15 @@ function Login() {
     })();
   };
 
-  if (submit) {
-    useEffect(() => {
+  useEffect(() => {
+    if (submit) {
       submitInstance(instance || selectedInstanceText);
-    }, []);
-  }
+    }
+    // TODO(oxlint:react-hooks/exhaustive-deps): submitInstance,
+    // selectedInstanceText, and instance are intentionally captured at first
+    // render to mirror the JS original's `if (submit) { useEffect(..., []) }`
+    // semantics. Adding them would re-run the redirect on every render.
+  }, []);
 
   return (
     <main id="login" style={{ textAlign: 'center' }}>
@@ -313,7 +297,7 @@ function Login() {
               autocomplete="username"
               spellcheck={false}
               placeholder="alice.bsky.social"
-              onInput={(e: JSX.TargetedEvent<HTMLInputElement, Event>) =>
+              onInput={(e: TargetedEvent<HTMLInputElement>) =>
                 setBskyIdentifier(e.currentTarget.value)
               }
             />
@@ -337,7 +321,7 @@ function Login() {
                 class="large"
                 disabled={uiState === 'loading'}
                 autocomplete="current-password"
-                onInput={(e: JSX.TargetedEvent<HTMLInputElement, Event>) =>
+                onInput={(e: TargetedEvent<HTMLInputElement>) =>
                   setBskyPassword(e.currentTarget.value)
                 }
               />
@@ -354,7 +338,7 @@ function Login() {
                 autocomplete="url"
                 spellcheck={false}
                 placeholder="pds.example.com"
-                onInput={(e: JSX.TargetedEvent<HTMLInputElement, Event>) =>
+                onInput={(e: TargetedEvent<HTMLInputElement>) =>
                   setBskyService(e.currentTarget.value)
                 }
               />
