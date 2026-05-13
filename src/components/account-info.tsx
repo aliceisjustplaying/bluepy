@@ -41,14 +41,14 @@ import Icon from './icon';
 import Link from './link';
 import Menu2 from './menu2';
 import Modal from './modal';
-import RelatedActionsUntyped from './related-actions';
+import RelatedActions from './related-actions';
 
 // Augmented Account shape used internally. Adds optional fields the app
 // reads but the masto.v1.Account base does not declare: `_atproto` cache
 // flag, `hideCollections` (Mastodon API extension surfaced by some forks),
 // `roles` (server-specific), and `avatarDescription` /
 // `headerDescription` (Mastodon 4.x media alt-text extensions).
-type AccountInfoShape = mastodon.v1.Account & {
+export type AccountInfoShape = mastodon.v1.Account & {
   _atproto?: { hasProfileCounts?: boolean } & Record<string, unknown>;
   hideCollections?: boolean | null;
   roles?: ReadonlyArray<{ name?: string } & Record<string, unknown>>;
@@ -124,24 +124,6 @@ interface EditProfileSheetProps {
 }
 const EditProfileSheet =
   EditProfileSheetUntyped as unknown as ComponentType<EditProfileSheetProps>;
-
-interface RelatedActionsProps {
-  info: AccountInfoShape;
-  instance?: string;
-  standalone?: boolean;
-  authenticated?: boolean;
-  onRelationshipChange?: (args: {
-    relationship: mastodon.v1.Relationship;
-    currentID: string;
-  }) => void;
-  onProfileUpdate?: (account: AccountInfoShape) => void;
-  setShowEditProfile?: (show: boolean) => void;
-  showEndorsements?: boolean;
-  renderEndorsements?: boolean | string;
-  setRenderEndorsements?: (value: boolean | string) => void;
-}
-const RelatedActions =
-  RelatedActionsUntyped as unknown as ComponentType<RelatedActionsProps>;
 
 // Posting stats are derived locally. `daysSinceLastPost` is conditionally
 // set inside fetchPostingStats — keep it optional in the type.
