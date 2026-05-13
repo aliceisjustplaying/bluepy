@@ -1,4 +1,4 @@
-import type { JSX } from 'preact';
+import type { TargetedEvent } from 'preact';
 
 interface CustomEmojiProps {
   staticUrl?: string;
@@ -22,14 +22,14 @@ export default function CustomEmoji({ staticUrl, alt, url }: CustomEmojiProps) {
         loading="lazy"
         decoding="async"
         fetchPriority="low"
-        onLoad={(e: JSX.TargetedEvent<HTMLImageElement, Event>) => {
+        onLoad={(e: TargetedEvent<HTMLImageElement>) => {
           try {
             const target = e.currentTarget;
             target.dataset.isLarger = String(
               target.naturalWidth > target.width * 2 ||
                 target.naturalHeight > target.height * 2,
             );
-          } catch (e) {}
+          } catch {}
         }}
       />
     </picture>

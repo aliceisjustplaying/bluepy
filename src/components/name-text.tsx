@@ -1,7 +1,7 @@
 import './name-text.css';
 
 import { useLingui } from '@lingui/react';
-import type { JSX } from 'preact';
+import type { TargetedMouseEvent } from 'preact';
 
 import { api } from '../utils/api';
 import mem from '../utils/mem';
@@ -42,7 +42,7 @@ interface NameTextProps {
   showAcct?: boolean;
   short?: boolean;
   external?: boolean;
-  onClick?: (e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => unknown;
+  onClick?: (e: TargetedMouseEvent<HTMLAnchorElement>) => unknown;
 }
 
 const nameCollator = mem((locale: string | undefined) => {
@@ -51,15 +51,15 @@ const nameCollator = mem((locale: string | undefined) => {
   };
   try {
     return new Intl.Collator(locale || undefined, options);
-  } catch (e) {
+  } catch {
     return new Intl.Collator(undefined, options);
   }
 });
 
 const ACCT_REGEX = /([^@]+)(@.+)/i;
-const SHORTCODES_REGEX = /(\:(\w|\+|\-)+\:)(?=|[\!\.\?]|$)/g;
+const SHORTCODES_REGEX = /(:(\w|\+|-)+:)(?=|[!.?]|$)/g;
 const SPACES_REGEX = /\s+/g;
-const NON_ALPHA_NUMERIC_REGEX = /[^a-z0-9@\.]/gi;
+const NON_ALPHA_NUMERIC_REGEX = /[^a-z0-9@.]/gi;
 
 function NameText({
   account,
@@ -84,7 +84,7 @@ function NameText({
     username,
     roles,
   } = account;
-  const [_, acct1, acct2] = acct.match(ACCT_REGEX) || [, acct];
+  const [, acct1, acct2] = acct.match(ACCT_REGEX) || [undefined, acct];
 
   if (!instance) instance = api().instance;
 
@@ -114,6 +114,7 @@ function NameText({
       class={`name-text ${showAcct ? 'show-acct' : ''} ${short ? 'short' : ''}`}
       href={url}
       target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
       title={
         displayName
           ? `${displayName} (${acct2 ? '' : '@'}${acct})`
@@ -124,8 +125,11 @@ function NameText({
         if (e.shiftKey) return; // Save link? 🤷‍♂️
         e.preventDefault();
         e.stopPropagation();
-        if (onClick) return onClick(e);
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) {
+        if (onClick) {
+          onClick(e);
+          return;
+        }
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) {
           const internalURL = `#/${instance}/a/${id}`;
           window.open(internalURL, '_blank');
           return;

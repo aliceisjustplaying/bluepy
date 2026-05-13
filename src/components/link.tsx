@@ -1,8 +1,24 @@
-import type { JSX, Ref } from 'preact';
+import type {
+  HTMLAttributes,
+  Ref,
+  TargetedMouseEvent,
+} from 'preact';
 import { forwardRef } from 'preact/compat';
 import { useLocation } from 'react-router-dom';
 
 import states from '../utils/states';
+
+// TODO(oxlint:react-hooks/rules-of-hooks): useLocation throws if Link is
+// rendered outside a Router (e.g. static previews). The defensive try/catch
+// trips the lint rule but mirrors original behavior — proper fix requires
+// gating Link via Router context detection.
+function useSafeLocation(): ReturnType<typeof useLocation> | undefined {
+  try {
+    return useLocation();
+  } catch {
+    return undefined;
+  }
+}
 
 /* NOTES
    =====
@@ -17,7 +33,7 @@ import states from '../utils/states';
 // else mirrors anchor attributes via JSX.HTMLAttributes plus an index
 // signature for ad-hoc props (e.g. `data-*`, valtio snapshot fields).
 export interface LinkProps extends Omit<
-  JSX.HTMLAttributes<HTMLAnchorElement>,
+  HTMLAttributes<HTMLAnchorElement>,
   'href'
 > {
   to: string;
@@ -26,13 +42,12 @@ export interface LinkProps extends Omit<
 
 const Link = forwardRef<HTMLAnchorElement, LinkProps>(
   (props: LinkProps, ref: Ref<HTMLAnchorElement>) => {
-    let routerLocation: ReturnType<typeof useLocation> | undefined;
-    try {
-      routerLocation = useLocation();
-    } catch (e) {}
+    // useLocation throws if Link is rendered outside a Router; the wrapper
+    // hook catches that defensively for static/preview contexts.
+    const routerLocation = useSafeLocation();
     let hash = (location.hash || '').replace(/^#/, '').trim();
     if (hash === '') hash = '/';
-    const { to, ...restProps } = props;
+    const { to, children, ...restProps } = props;
 
     // Handle encodeURIComponent of searchParams values
     if (!!hash && hash !== '/' && hash.includes('?')) {
@@ -46,13 +61,16 @@ const Link = forwardRef<HTMLAnchorElement, LinkProps>(
     }
 
     const isActive = hash === to || decodeURIComponent(hash) === to;
+    const classProp = props.class;
+    const classStr =
+      typeof classProp === 'string' ? classProp : '';
     return (
       <a
         ref={ref}
         href={`#${to}`}
-        {...(restProps as JSX.HTMLAttributes<HTMLAnchorElement>)}
-        class={`${props.class || ''} ${isActive ? 'is-active' : ''}`}
-        onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
+        {...(restProps as HTMLAttributes<HTMLAnchorElement>)}
+        class={`${classStr} ${isActive ? 'is-active' : ''}`}
+        onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
           const parent = e.currentTarget?.parentNode as Element | null;
           if (parent?.closest?.('a')) {
             // If this <a> is nested inside another <a>
@@ -64,11 +82,13 @@ const Link = forwardRef<HTMLAnchorElement, LinkProps>(
             >;
           (
             props.onClick as
-              | ((ev: JSX.TargetedMouseEvent<HTMLAnchorElement>) => void)
+              | ((ev: TargetedMouseEvent<HTMLAnchorElement>) => void)
               | undefined
           )?.(e);
         }}
-      />
+      >
+        {children}
+      </a>
     );
   },
 );

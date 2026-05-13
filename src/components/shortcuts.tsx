@@ -10,7 +10,7 @@ import {
   MenuDivider,
   MenuHeader,
 } from '@szhsin/react-menu';
-import type { JSX } from 'preact';
+import type { TargetedMouseEvent } from 'preact';
 import { memo } from 'preact/compat';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -106,6 +106,22 @@ function ListsMenuContent({ lists }: { lists: ListLike[] }) {
   );
 }
 
+function stringifyKeyPart(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (value == null) return '';
+  return '';
+}
+
+function keyFor(
+  i: number,
+  id: string | undefined,
+  title: string | Promise<string> | undefined,
+  subtitle: string | Promise<string> | undefined,
+  path: string | undefined,
+): string {
+  return `${i}-${id ?? ''}-${stringifyKeyPart(title)}-${stringifyKeyPart(subtitle)}-${path ?? ''}`;
+}
+
 function Shortcuts() {
   const { t } = useLingui();
   const { i18n } = useLinguiCore();
@@ -113,9 +129,6 @@ function Shortcuts() {
   const snapStates = useSnapshot(states);
   const { shortcuts, settings } = snapStates;
 
-  if (!shortcuts.length) {
-    return null;
-  }
   const isMultiColumnMode =
     (settings.shortcutsViewMode === 'multi-column' ||
       (!settings.shortcutsViewMode && settings.shortcutsColumnsMode)) &&
@@ -215,7 +228,8 @@ function Shortcuts() {
 
       return () => clearTimeout(timeoutId);
     }
-  }, []);
+    return undefined;
+  }, [snapStates.settings.shortcutsViewMode]);
 
   const navigate = useNavigate();
   useHotkeys(
@@ -251,7 +265,7 @@ function Shortcuts() {
 
   useEffect(() => {
     if (listsMenuState === 'open') {
-      getLists().then(setLists);
+      void getLists().then(setLists);
     }
   }, [listsMenuState]);
 
@@ -277,7 +291,7 @@ function Shortcuts() {
     },
   );
 
-  if (isMultiColumnMode) {
+  if (!shortcuts.length || isMultiColumnMode) {
     return null;
   }
 
@@ -319,12 +333,12 @@ function Shortcuts() {
                         : {};
 
                   return (
-                    <li key={`${i}-${id}-${title}-${subtitle}-${path}`}>
+                    <li key={keyFor(i, id, title, subtitle, path)}>
                       <Link
                         class={subtitle ? 'has-subtitle' : ''}
                         to={path ?? ''}
                         onClick={(
-                          e: JSX.TargetedMouseEvent<HTMLAnchorElement>,
+                          e: TargetedMouseEvent<HTMLAnchorElement>,
                         ) => {
                           const target = e.target as HTMLElement;
                           if (target.classList.contains('is-active')) {
@@ -403,7 +417,7 @@ function Shortcuts() {
           position="anchor"
           onMenuChange={(e) => {
             if (e.open && hasLists.current) {
-              getLists().then(setLists);
+              void getLists().then(setLists);
             }
           }}
           menuButton={
@@ -425,7 +439,7 @@ function Shortcuts() {
                   ) {
                     menuRef.current?.closeMenu?.();
                   }
-                } catch (e) {}
+                } catch {}
               }}
             >
               <Icon icon="shortcut" size="xl" alt={t`Shortcuts`} />
@@ -436,6 +450,7 @@ function Shortcuts() {
             if (id === 'lists') {
               return (
                 <SubMenu2
+                  key={keyFor(i, id, title, subtitle, path)}
                   menuClassName="glass-menu lists-picker-menu"
                   overflow="auto"
                   gap={-8}
@@ -457,7 +472,7 @@ function Shortcuts() {
             return (
               <MenuLink
                 to={path}
-                key={`${i}-${id}-${title}-${subtitle}-${path}`}
+                key={keyFor(i, id, title, subtitle, path)}
                 class="glass-menu-item"
               >
                 <Icon icon={icon} size="l" />{' '}
