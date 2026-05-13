@@ -3,6 +3,7 @@ import './notifications-menu.css';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
+import type { JSX, RefObject } from 'preact';
 import { memo } from 'preact/compat';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
@@ -28,13 +29,19 @@ import {
   mastoFetchNotifications,
 } from './notifications';
 
+interface HomeTimeline {
+  type?: string;
+  id?: string;
+}
+
 function Home() {
-  const { _ } = useLingui();
+  const { i18n } = useLingui();
+  const _ = i18n._.bind(i18n);
   const snapStates = useSnapshot(states);
   __BENCHMARK.end('time-to-home');
   useEffect(() => {
     (async () => {
-      const keys = await db.drafts.keys();
+      const keys = (await db.drafts.keys()) as string[];
       if (keys.length) {
         const ns = getCurrentAccountNS();
         const ownKeys = keys.filter((key) => key.startsWith(ns));
@@ -47,10 +54,12 @@ function Home() {
 
   const expTimeline2 = useRef(false);
   if (!expTimeline2.current) {
-    expTimeline2.current = store.local.get('experiments-timeline2') ?? false;
+    expTimeline2.current =
+      (store.local.get('experiments-timeline2') as unknown as boolean | null) ??
+      false;
   }
-  const homeTimeline =
-    snapStates.homeTimeline || store.account.get('homeTimeline');
+  const homeTimeline = (snapStates.homeTimeline ||
+    store.account.get('homeTimeline')) as HomeTimeline | null | undefined;
   const defaultFeedID =
     homeTimeline?.type === 'feed' && homeTimeline?.id ? homeTimeline.id : null;
   const defaultFollowing = homeTimeline?.type === 'following';
@@ -95,11 +104,13 @@ function Home() {
   );
 }
 
+type MenuState = 'open' | 'closed' | undefined;
+
 function NotificationsLink() {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const notificationLinkRef = useRef();
-  const [menuState, setMenuState] = useState(undefined);
+  const notificationLinkRef = useRef<HTMLAnchorElement>(null);
+  const [menuState, setMenuState] = useState<MenuState>(undefined);
   return (
     <>
       <Link
@@ -108,7 +119,7 @@ function NotificationsLink() {
         class={`button plain notifications-button ${
           snapStates.notificationsShowNew ? 'has-badge' : ''
         } ${menuState || ''}`}
-        onClick={(e) => {
+        onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
           e.stopPropagation();
           if (window.matchMedia('(min-width: calc(40em))').matches) {
             e.preventDefault();
@@ -127,32 +138,71 @@ function NotificationsLink() {
   );
 }
 
+interface NotificationsMenuProps {
+  anchorRef: RefObject<HTMLAnchorElement>;
+  state: MenuState;
+  onClose: () => void;
+}
+
+interface NotificationItem {
+  id: string;
+  _ids?: string;
+  status?: unknown;
+}
+
+interface ControlledMenuHandle {
+  closeMenu?: () => void;
+  scrollTop?: number;
+}
+
 const NOTIFICATIONS_DISPLAY_LIMIT = 5;
-function NotificationsMenu({ anchorRef, state, onClose }) {
+function NotificationsMenu({
+  anchorRef,
+  state,
+  onClose,
+}: NotificationsMenuProps) {
   const { masto, instance } = api();
   const snapStates = useSnapshot(states);
-  const [uiState, setUIState] = useState('default');
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
 
-  const notificationsIterator = mastoFetchNotifications();
+  const notificationsIterator = mastoFetchNotifications() as AsyncIterator<
+    unknown[]
+  >;
 
   async function fetchNotifications() {
     const allNotifications = await notificationsIterator.next();
-    const notifications = massageNotifications2(allNotifications.value);
+    const notifications = massageNotifications2(
+      allNotifications.value as Parameters<typeof massageNotifications2>[0],
+    ) as NotificationItem[] | undefined;
 
     if (notifications?.length) {
       notifications.forEach((notification) => {
-        saveStatus(notification.status, instance, {
-          skipThreading: true,
-        });
+        saveStatus(
+          notification.status as Parameters<typeof saveStatus>[0],
+          instance,
+          {
+            skipThreading: true,
+          },
+        );
       });
 
-      const groupedNotifications = getGroupedNotifications(notifications);
+      const groupedNotifications = getGroupedNotifications(
+        notifications,
+      ) as NotificationItem[];
 
       states.notificationsLast = groupedNotifications[0];
       states.notifications = groupedNotifications;
 
       // Update last read marker
-      masto.v1.markers
+      (
+        masto.v1.markers as unknown as {
+          create(options: {
+            notifications: { lastReadId: string };
+          }): Promise<unknown>;
+        }
+      )
         .create({
           notifications: {
             lastReadId: groupedNotifications[0].id,
@@ -168,7 +218,11 @@ function NotificationsMenu({ anchorRef, state, onClose }) {
 
   const [hasFollowRequests, setHasFollowRequests] = useState(false);
   function fetchFollowRequests() {
-    return masto.v1.followRequests.list({
+    return (
+      masto.v1.followRequests as unknown as {
+        list(options: { limit: number }): Promise<unknown[]>;
+      }
+    ).list({
       limit: 1,
     });
   }
@@ -189,13 +243,13 @@ function NotificationsMenu({ anchorRef, state, onClose }) {
     })();
   }
 
-  const menuRef = useRef();
+  const menuRef = useRef<ControlledMenuHandle | null>(null);
   const headerHeight = 52;
   useEffect(() => {
     if (state !== 'open') return;
     if (snapStates.notificationsShowNew) {
       const menuElement = menuRef.current;
-      if (menuElement?.scrollTop <= headerHeight) {
+      if ((menuElement?.scrollTop ?? 0) <= headerHeight) {
         loadNotifications({
           skipFollowRequests: true,
         });
@@ -207,10 +261,10 @@ function NotificationsMenu({ anchorRef, state, onClose }) {
 
   return (
     <ControlledMenu
-      ref={menuRef}
+      ref={menuRef as unknown as RefObject<HTMLElement>}
       menuClassName="notifications-menu"
       state={state}
-      anchorRef={anchorRef}
+      anchorRef={anchorRef as unknown as RefObject<Element>}
       onClose={onClose}
       portal={{
         target: document.body,
@@ -235,13 +289,17 @@ function NotificationsMenu({ anchorRef, state, onClose }) {
         <main>
           {snapStates.notifications.length ? (
             <>
-              {snapStates.notifications
+              {(snapStates.notifications as NotificationItem[])
                 .slice(0, NOTIFICATIONS_DISPLAY_LIMIT)
                 .map((notification) => (
                   <Notification
                     key={notification._ids || notification.id}
                     instance={instance}
-                    notification={notification}
+                    notification={
+                      notification as Parameters<
+                        typeof Notification
+                      >[0]['notification']
+                    }
                     disableContextMenu
                   />
                 ))}
@@ -257,7 +315,7 @@ function NotificationsMenu({ anchorRef, state, onClose }) {
                   <Trans>Unable to fetch notifications.</Trans>
                 </p>
                 <p>
-                  <button type="button" onClick={loadNotifications}>
+                  <button type="button" onClick={() => loadNotifications()}>
                     <Trans>Try again</Trans>
                   </button>
                 </p>
