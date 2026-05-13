@@ -1,7 +1,11 @@
 import { expect, test } from '@playwright/test';
 
-import { postToStatus } from '../src/utils/atproto-adapter.js';
+import {
+  getVideoJobStatus,
+  postToStatus,
+} from '../src/utils/atproto-adapter.js';
 
+/** @param {Record<string, unknown>} embed */
 function postWithEmbed(embed) {
   return {
     uri: 'at://did:plc:alice/app.bsky.feed.post/video',
@@ -85,5 +89,97 @@ test.describe('ATProto video mapping', () => {
         meta: { original: { width: 1080, height: 1920 } },
       },
     ]);
+  });
+
+  test('keeps media on quoted Bluesky record embeds', () => {
+    const status = postToStatus(
+      postWithEmbed({
+        $type: 'app.bsky.embed.record#view',
+        record: {
+          $type: 'app.bsky.embed.record#viewRecord',
+          uri: 'at://did:plc:bob/app.bsky.feed.post/quoted',
+          cid: 'quoted-cid',
+          author: {
+            did: 'did:plc:bob',
+            handle: 'bob.test',
+            displayName: 'Bob',
+          },
+          value: {
+            $type: 'app.bsky.feed.post',
+            text: 'quoted video post',
+            createdAt: '2026-05-08T00:00:00.000Z',
+          },
+          embeds: [
+            {
+              $type: 'app.bsky.embed.video#view',
+              cid: 'quoted-video-cid',
+              playlist:
+                'https://video.bsky.app/watch/did%3Aplc%3Abob/quoted/playlist.m3u8',
+              thumbnail:
+                'https://video.bsky.app/watch/did%3Aplc%3Abob/quoted/thumbnail.jpg',
+              alt: 'Quoted video alt text',
+              aspectRatio: { width: 1280, height: 720 },
+            },
+          ],
+          replyCount: 4,
+          repostCount: 3,
+          likeCount: 2,
+          quoteCount: 1,
+          indexedAt: '2026-05-08T00:01:00.000Z',
+        },
+      }),
+    );
+
+    expect(status.quote.quotedStatus.mediaAttachments).toMatchObject([
+      {
+        id: 'quoted-video-cid',
+        type: 'video',
+        url: 'https://video.bsky.app/watch/did%3Aplc%3Abob/quoted/playlist.m3u8',
+        previewUrl:
+          'https://video.bsky.app/watch/did%3Aplc%3Abob/quoted/thumbnail.jpg',
+        description: 'Quoted video alt text',
+      },
+    ]);
+    expect(status.quote.quotedStatus.repliesCount).toBe(4);
+    expect(status.quote.quotedStatus.reblogsCount).toBe(3);
+    expect(status.quote.quotedStatus.favouritesCount).toBe(2);
+    expect(status.quote.quotedStatus.quotesCount).toBe(1);
+  });
+
+  test('accepts bare video job status responses while polling', () => {
+    expect(
+      getVideoJobStatus({
+        jobId: 'video-job',
+        state: 'JOB_STATE_PROCESSING',
+      }),
+    ).toMatchObject({
+      jobId: 'video-job',
+      state: 'JOB_STATE_PROCESSING',
+    });
+  });
+
+  test('keeps plain JSON blobs from bare video job status responses', () => {
+    const status = getVideoJobStatus({
+      jobId: 'video-job',
+      state: 'JOB_STATE_COMPLETED',
+      blob: {
+        cid: 'bafyreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku',
+        mimeType: 'video/mp4',
+      },
+    });
+
+    expect(status.blob?.toJSON()).toEqual({
+      cid: 'bafyreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku',
+      mimeType: 'video/mp4',
+    });
+  });
+
+  test('surfaces video job status error payload messages', () => {
+    expect(() =>
+      getVideoJobStatus({
+        error: 'UploadFailed',
+        message: 'transcode failed',
+      }),
+    ).toThrow('transcode failed');
   });
 });

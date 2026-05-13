@@ -9,6 +9,8 @@ type Fetcher = (
   init?: RequestInit,
 ) => Promise<Response>;
 
+type AtprotoBlobUploader = Pick<Agent, 'uploadBlob'>;
+
 interface AtprotoLinkMetadata {
   url?: string;
   title?: string;
@@ -37,7 +39,7 @@ function getAssociatedRecord(
   value: unknown,
 ): Record<string, unknown> | undefined {
   if (!value || typeof value !== 'object') return undefined;
-  return value as Record<string, unknown>;
+  return Object.fromEntries(Object.entries(value));
 }
 
 export async function fetchAtprotoLinkMetadata(
@@ -51,13 +53,24 @@ export async function fetchAtprotoLinkMetadata(
   if (!res.ok) return null;
   const parsed: unknown = await res.json();
   if (parsed === null || typeof parsed !== 'object') return null;
-  const metadata = parsed as AtprotoLinkMetadata;
+  const values = Object.fromEntries(Object.entries(parsed));
+  const metadata: AtprotoLinkMetadata = {
+    ...values,
+    url: typeof values.url === 'string' ? values.url : undefined,
+    title: typeof values.title === 'string' ? values.title : undefined,
+    description:
+      typeof values.description === 'string' ? values.description : undefined,
+    image: typeof values.image === 'string' ? values.image : undefined,
+    associatedRecord: values.associatedRecord,
+    associated_record: values.associated_record,
+    error: values.error,
+  };
   if (metadata.error) return null;
   return metadata;
 }
 
 export async function createAtprotoExternalEmbed(
-  agent: Agent,
+  agent: AtprotoBlobUploader,
   uri: string,
   { fetcher = fetch as Fetcher }: { fetcher?: Fetcher } = {},
 ): Promise<{

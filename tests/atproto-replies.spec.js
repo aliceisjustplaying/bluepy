@@ -16,6 +16,26 @@ const parentUri = 'at://did:plc:parent/app.bsky.feed.post/root';
 const childUri = 'at://did:plc:child/app.bsky.feed.post/reply';
 const rootUri = 'at://did:plc:root/app.bsky.feed.post/root';
 
+/**
+ * @typedef {{
+ *   post?: Record<string, unknown>;
+ *   reply?: Record<string, unknown>;
+ * }} FeedReplyOverrides
+ *
+ * @typedef {{
+ *   post: Record<string, unknown>;
+ *   reply: {
+ *     parent: Record<string, unknown> & { author: Record<string, unknown> };
+ *     root: Record<string, unknown>;
+ *   };
+ *   reason?: Record<string, unknown>;
+ * }} FeedReplyItem
+ */
+
+/**
+ * @param {FeedReplyOverrides} [overrides]
+ * @returns {FeedReplyItem}
+ */
 function feedReply(overrides = {}) {
   return {
     post: {
@@ -91,6 +111,30 @@ test.describe('ATProto reply mapping', () => {
     expect(status.inReplyToAccountId).toBe('did:plc:parent');
     expect(status._atproto.replyParentAccount).toBeUndefined();
     expect(status._atproto.replyParentUnavailable).toBe(true);
+  });
+
+  test('keeps reply parent URIs when the parent cid is absent', () => {
+    const item = feedReply({
+      post: {
+        record: {
+          $type: 'app.bsky.feed.post',
+          text: 'reply text',
+          createdAt: '2026-05-08T00:00:00.000Z',
+          reply: {
+            root: { uri: rootUri },
+            parent: { uri: parentUri },
+          },
+        },
+      },
+      reply: undefined,
+    });
+    delete item.reply;
+
+    const status = postToStatus(item);
+
+    expect(status.inReplyToId).toBe(encodeURIComponent(parentUri));
+    expect(status._atproto.parent).toEqual({ uri: parentUri, cid: undefined });
+    expect(status._atproto.root).toEqual({ uri: rootUri, cid: undefined });
   });
 
   test('shows Bluesky reply badges even when the reply mentions the parent actor', () => {
@@ -261,34 +305,38 @@ test.describe('ATProto reply mapping', () => {
   test('batch hydrates missing feed reply parents before timeline render', async () => {
     const item = feedReply({ reply: undefined });
     delete item.reply;
+    /** @type {string[] | undefined} */
     let requestedURIs;
 
-    const feed = await hydrateFeedReplyContext([item], {
-      getPosts: async ({ uris }) => {
-        requestedURIs = uris;
-        return {
-          data: {
-            posts: [
-              {
-                uri: parentUri,
-                cid: 'parent-cid',
-                author: {
-                  did: 'did:plc:parent',
-                  handle: 'parent.test',
-                  displayName: 'Parent',
-                  avatar: 'https://cdn.example/avatar.jpg',
-                },
-                record: {
-                  $type: 'app.bsky.feed.post',
-                  text: 'parent text',
-                  createdAt: '2026-05-08T00:00:00.000Z',
-                },
-                indexedAt: '2026-05-08T00:00:00.000Z',
+    /** @param {{ uris: string[] }} params */
+    const getPosts = async ({ uris }) => {
+      requestedURIs = uris;
+      return {
+        data: {
+          posts: [
+            {
+              uri: parentUri,
+              cid: 'parent-cid',
+              author: {
+                did: 'did:plc:parent',
+                handle: 'parent.test',
+                displayName: 'Parent',
+                avatar: 'https://cdn.example/avatar.jpg',
               },
-            ],
-          },
-        };
-      },
+              record: {
+                $type: 'app.bsky.feed.post',
+                text: 'parent text',
+                createdAt: '2026-05-08T00:00:00.000Z',
+              },
+              indexedAt: '2026-05-08T00:00:00.000Z',
+            },
+          ],
+        },
+      };
+    };
+
+    const feed = await hydrateFeedReplyContext([item], {
+      getPosts,
     });
     const statuses = feedToStatuses(feed);
 
