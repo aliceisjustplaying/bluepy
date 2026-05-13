@@ -3,6 +3,8 @@ import './year-in-posts.css';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import FlexSearch from 'flexsearch';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { forwardRef } from 'preact/compat';
 import {
   useEffect,
@@ -23,7 +25,7 @@ import Loader from '../components/loader';
 import MenuConfirm from '../components/menu-confirm';
 import Menu2 from '../components/menu2';
 import NavMenu from '../components/nav-menu';
-import Status from '../components/status';
+import StatusUntyped from '../components/status';
 import { api } from '../utils/api';
 import DateTimeFormat from '../utils/date-time-format';
 import db from '../utils/db';
@@ -36,14 +38,78 @@ import store from '../utils/store';
 import { getCurrentAccountNS } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 import {
+  type AvailableYear,
   fetchYearPosts,
   loadAvailableYears,
   removeYear,
+  type YearInPostsRecord,
 } from '../utils/year-in-posts';
+
+type MastoStatus = mastodon.v1.Status;
+
+type StatusWithExtras = MastoStatus & {
+  quote?: { id?: string; quotedStatus?: { id?: string } } | null;
+};
+
+type StatusWithQuotes = MastoStatus & {
+  quotesCount?: number;
+};
+
+interface DayCounts {
+  total: number;
+  original: number;
+  reply: number;
+  quote: number;
+  boost: number;
+}
+
+interface HeatmapDay {
+  day: number | null;
+  count: number;
+  ratio: number;
+  original: number;
+  reply: number;
+  quote: number;
+  boost: number;
+}
+
+interface MediaGridCell {
+  post?: MastoStatus;
+  hasMedia: boolean;
+}
+
+type MediaGridItem = MediaGridCell | null;
+
+interface MonthTypeCounts {
+  original: number;
+  reply: number;
+  quote: number;
+  boost: number;
+}
+
+interface MonthWithPosts {
+  month: number;
+  count: number;
+  heatmap: HeatmapDay[];
+  mediaGrid: MediaGridItem[];
+  original: number;
+  reply: number;
+  quote: number;
+  boost: number;
+}
+
+const Status = StatusUntyped as unknown as ComponentType<{
+  status?: unknown;
+  instance?: string;
+  size?: string;
+  showCommentCount?: boolean;
+  showQuoteCount?: boolean;
+  [key: string]: unknown;
+}>;
 
 const MIN_YEAR = 2005; // https://en.wikipedia.org/wiki/Microblogging#Origin
 
-function getDefaultYear() {
+function getDefaultYear(): number {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
@@ -57,7 +123,7 @@ function getDefaultYear() {
   return currentYear;
 }
 
-function formatTimezoneOffset(offset) {
+function formatTimezoneOffset(offset: number): string {
   // offset is in minutes, negative for east of UTC
   const sign = offset <= 0 ? '+' : '-';
   const absOffset = Math.abs(offset);
@@ -66,11 +132,13 @@ function formatTimezoneOffset(offset) {
   return `UTC${sign}${hours}${minutes > 0 ? `:${String(minutes).padStart(2, '0')}` : ''}`;
 }
 
-function getCurrentTimezoneOffset() {
+function getCurrentTimezoneOffset(): number {
   return new Date().getTimezoneOffset();
 }
 
-const FILTER_KEYS = {
+type FilterKey = 'all' | 'original' | 'replies' | 'quotes' | 'boosts' | 'media';
+
+const FILTER_KEYS: Record<FilterKey, string> = {
   all: 'All',
   original: 'Original',
   replies: 'Replies',
@@ -79,7 +147,19 @@ const FILTER_KEYS = {
   media: 'Media',
 };
 
-const SORT_OPTIONS = [
+type SortKey =
+  | 'relevance'
+  | 'createdAt'
+  | 'repliesCount'
+  | 'favouritesCount'
+  | 'reblogsCount';
+
+interface SortOption {
+  key: SortKey;
+  condition?: string;
+}
+
+const SORT_OPTIONS: SortOption[] = [
   { key: 'relevance', condition: 'searchQuery' },
   { key: 'createdAt' },
   { key: 'repliesCount' },
@@ -87,30 +167,52 @@ const SORT_OPTIONS = [
   { key: 'reblogsCount' },
 ];
 
-function getMonthName(month, locale, format = 'short') {
+function getMonthName(
+  month: number,
+  locale?: string,
+  format: Intl.DateTimeFormatOptions['month'] = 'short',
+): string {
   const date = new Date(2000, month, 1);
-  return DateTimeFormat(locale, { month: format }).format(date);
+  return DateTimeFormat(locale as string, { month: format }).format(date);
 }
 
-function getYear(year) {
-  year = parseInt(year, 10);
-  return year >= MIN_YEAR && year <= new Date().getFullYear() ? year : null;
+function getYear(year: string | number | null | undefined): number | null {
+  const parsed = parseInt(year as string, 10);
+  return parsed >= MIN_YEAR && parsed <= new Date().getFullYear()
+    ? parsed
+    : null;
 }
 
-function getMonth(month) {
-  month = parseInt(month, 10);
-  return month >= 0 && month <= 11 ? month : null;
+function getMonth(month: string | number | null | undefined): number | null {
+  const parsed = parseInt(month as string, 10);
+  return parsed >= 0 && parsed <= 11 ? parsed : null;
 }
 
 const SEARCH_RESULT_PAGE_SIZE = 30;
+
+type UIState =
+  | 'default'
+  | 'loading'
+  | 'generating'
+  | 'results'
+  | 'no-data'
+  | 'error';
+
+type SortOrder = 'asc' | 'desc';
+
+interface SearchFieldHandle {
+  focus: () => void;
+  setValue: (val: string) => void;
+  isFocused: () => boolean;
+}
 
 function YearInPosts() {
   const { i18n } = useLingui();
   const [searchParams, setSearchParams] = useSearchParams();
   const yearParam = searchParams.get('year');
   const monthParam = searchParams.get('month');
-  const [postType, setPostType] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [postType, setPostType] = useState<FilterKey>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const year = getYear(yearParam);
   const month = getMonth(monthParam);
 
@@ -126,22 +228,24 @@ function YearInPosts() {
   );
 
   const { instance } = api();
-  const [uiState, setUIState] = useState('default');
-  const [posts, setPosts] = useState([]);
-  const [availableYears, setAvailableYears] = useState([]);
-  const [searchEnabled, setSearchEnabled] = useState(true);
-  const [showSearchField, setShowSearchField] = useState(!!searchQuery);
-  const [searchLimit, setSearchLimit] = useState(SEARCH_RESULT_PAGE_SIZE);
-  const [sortBy, setSortBy] = useState(searchQuery ? 'relevance' : 'createdAt');
-  const [sortOrder, setSortOrder] = useState('asc');
-  const searchFieldRef = useRef(null);
-  const scrollableRef = useRef(null);
+  const [uiState, setUIState] = useState<UIState>('default');
+  const [posts, setPosts] = useState<MastoStatus[]>([]);
+  const [availableYears, setAvailableYears] = useState<AvailableYear[]>([]);
+  const [searchEnabled, setSearchEnabled] = useState<boolean>(true);
+  const [showSearchField, setShowSearchField] = useState<boolean>(!!searchQuery);
+  const [searchLimit, setSearchLimit] = useState<number>(SEARCH_RESULT_PAGE_SIZE);
+  const [sortBy, setSortBy] = useState<SortKey>(
+    searchQuery ? 'relevance' : 'createdAt',
+  );
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const searchFieldRef = useRef<SearchFieldHandle | null>(null);
+  const scrollableRef = useRef<HTMLDivElement | null>(null);
   const NS = useMemo(() => getCurrentAccountNS(), []);
 
   // Intercept slash key to focus search field on this page
   useHotkeys(
     ['Slash', '/'],
-    (e) => {
+    () => {
       if (!showSearchField) {
         setShowSearchField(true);
         setTimeout(() => {
@@ -155,9 +259,10 @@ function YearInPosts() {
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e) => {
+      ignoreEventWhen: (e: KeyboardEvent) => {
         const hasModal = !!document.querySelector('#modal-container > *');
-        const isInput = ['INPUT', 'TEXTAREA'].includes(e.target.tagName);
+        const target = e.target as HTMLElement | null;
+        const isInput = ['INPUT', 'TEXTAREA'].includes(target?.tagName ?? '');
         // Allow '/' even with Shift (e.g. German keyboards)
         if (e.key === '/') return false;
         return (
@@ -194,22 +299,28 @@ function YearInPosts() {
     loadYears();
   }, [year]);
 
-  const handleGenerate = async (e) => {
+  const handleGenerate = async (e: Event) => {
     e.preventDefault();
-    const generateYear = getYear(e.target.elements.year.value);
+    const form = e.target as HTMLFormElement;
+    const yearInput = (form.elements as unknown as {
+      year: HTMLInputElement;
+    }).year;
+    const generateYear = getYear(yearInput.value);
     if (generateYear) {
       try {
         const dataId = `${NS}-${generateYear}`;
-        const existingData = await db.yearInPosts.get(dataId);
+        const existingData = (await db.yearInPosts.get(
+          dataId,
+        )) as YearInPostsRecord | undefined;
 
         if (existingData && existingData.year === generateYear) {
           // Year already generated, go straight to year view
-          setSearchParams({ year: generateYear });
+          setSearchParams({ year: String(generateYear) });
         } else {
           // Year not generated, show generating UI and fetch data
           setUIState('generating');
           await fetchYearPosts(generateYear);
-          setSearchParams({ year: generateYear });
+          setSearchParams({ year: String(generateYear) });
         }
       } catch (error) {
         setUIState('error');
@@ -225,14 +336,22 @@ function YearInPosts() {
     }
   };
 
-  async function handleRegenerate(year) {
+  async function handleRegenerate(year: number) {
     try {
       setUIState('generating');
       await fetchYearPosts(year);
-      setSearchParams({ year });
-    } catch (e) {
+      setSearchParams({ year: String(year) });
+    } catch (_e) {
       setUIState('error');
-      console.error('Failed to regenerate year posts:', error);
+      // Preserve original JS behavior: the pre-conversion source referenced
+      // an undeclared identifier `error` here, which throws ReferenceError
+      // before showToast runs. Reproduce that exact runtime behavior.
+      const undeclared: { readonly error: unknown } = {
+        get error(): unknown {
+          throw new ReferenceError('error is not defined');
+        },
+      };
+      console.error('Failed to regenerate year posts:', undeclared.error);
       showToast('Unable to regenerate year posts. Please try again.');
     } finally {
       if (uiState === 'generating') {
@@ -241,7 +360,7 @@ function YearInPosts() {
     }
   }
 
-  async function handleRemoveYear(yearToRemove) {
+  async function handleRemoveYear(yearToRemove: number) {
     if (!confirm(`Remove year ${yearToRemove} posts?`)) return;
     try {
       await removeYear(yearToRemove);
@@ -255,16 +374,16 @@ function YearInPosts() {
   }
 
   const monthHeatmaps = useMemo(() => {
-    const heatmaps = {};
+    const heatmaps: Record<number, Record<number, DayCounts>> = {};
     posts.forEach((post) => {
       const date = new Date(post.createdAt);
-      const month = date.getMonth();
+      const m = date.getMonth();
       const day = date.getDate();
-      if (!heatmaps[month]) {
-        heatmaps[month] = {};
+      if (!heatmaps[m]) {
+        heatmaps[m] = {};
       }
-      if (!heatmaps[month][day]) {
-        heatmaps[month][day] = {
+      if (!heatmaps[m][day]) {
+        heatmaps[m][day] = {
           total: 0,
           original: 0,
           reply: 0,
@@ -274,32 +393,35 @@ function YearInPosts() {
       }
 
       // Categorize post type
-      const dayData = heatmaps[month][day];
+      const dayData = heatmaps[m][day];
       dayData.total++;
 
-      if (post.reblog) {
+      const p = post as StatusWithExtras;
+      if (p.reblog) {
         dayData.boost++;
       } else if (
         supportsNativeQuote() &&
-        (post.quote?.id || post.quote?.quotedStatus?.id)
+        (p.quote?.id || p.quote?.quotedStatus?.id)
       ) {
         dayData.quote++;
-      } else if (post.inReplyToId) {
+      } else if (p.inReplyToId) {
         dayData.reply++;
       } else {
         dayData.original++;
       }
     });
 
-    const result = {};
-    Object.keys(heatmaps).forEach((month) => {
-      const days = heatmaps[month];
-      const maxCount = Math.max(...Object.values(days).map((d) => d.total));
+    const result: Record<string, HeatmapDay[]> = {};
+    Object.keys(heatmaps).forEach((mKey) => {
+      const days = heatmaps[Number(mKey)];
+      const maxCount = Math.max(
+        ...Object.values(days).map((d) => d.total),
+      );
 
-      const firstDayOfMonth = new Date(year, parseInt(month), 1);
+      const firstDayOfMonth = new Date(year ?? 0, parseInt(mKey), 1);
       const firstDayOfWeek = firstDayOfMonth.getDay();
 
-      const calendar = [];
+      const calendar: HeatmapDay[] = [];
 
       for (let i = 0; i < firstDayOfWeek; i++) {
         calendar.push({
@@ -328,15 +450,15 @@ function YearInPosts() {
         });
       }
 
-      result[month] = calendar;
+      result[mKey] = calendar;
     });
 
     return result;
   }, [posts, year]);
 
-  const monthMediaGrids = useMemo(() => {
+  const monthMediaGrids = useMemo<Record<string, MediaGridItem[]>>(() => {
     if (postType !== 'media') return {};
-    const grids = {};
+    const grids: Record<number, Record<number, MastoStatus[]>> = {};
     posts.forEach((post) => {
       const date = new Date(post.createdAt);
       const m = date.getMonth();
@@ -346,20 +468,21 @@ function YearInPosts() {
       grids[m][d].push(post);
     });
 
-    Object.keys(grids).forEach((month) => {
-      const days = grids[month];
-      const firstDayOfMonth = new Date(year, parseInt(month), 1);
+    const result: Record<string, MediaGridItem[]> = {};
+    Object.keys(grids).forEach((mKey) => {
+      const days = grids[Number(mKey)];
+      const firstDayOfMonth = new Date(year ?? 0, parseInt(mKey), 1);
       const firstDayOfWeek = firstDayOfMonth.getDay();
 
-      const calendar = [];
+      const calendar: MediaGridItem[] = [];
 
       for (let i = 0; i < firstDayOfWeek; i++) {
         calendar.push(null);
       }
 
       for (let day = 1; day <= 31; day++) {
-        const dayPosts = days[day] || [];
-        let bestPost = null;
+        const dayPosts: MastoStatus[] = days[day] || [];
+        let bestPost: MastoStatus | null = null;
         let hasMedia = false;
         if (dayPosts.length > 0) {
           const postsWithMedia = dayPosts.filter((post) => {
@@ -377,46 +500,51 @@ function YearInPosts() {
           });
 
           if (postsWithMedia.length > 0) {
-            bestPost = postsWithMedia.reduce((topPost, post) => {
-              const actualPost = post;
-              const totalCount =
-                (actualPost.favouritesCount || 0) +
-                (actualPost.reblogsCount || 0) +
-                (actualPost.repliesCount || 0) +
-                (actualPost.quotesCount || 0);
+            bestPost = postsWithMedia.reduce<MastoStatus | null>(
+              (topPost, post) => {
+                const actualPost = post as StatusWithQuotes;
+                const totalCount =
+                  (actualPost.favouritesCount || 0) +
+                  (actualPost.reblogsCount || 0) +
+                  (actualPost.repliesCount || 0) +
+                  (actualPost.quotesCount || 0);
 
-              const topTotalCount = topPost
-                ? (topPost.favouritesCount || 0) +
-                  (topPost.reblogsCount || 0) +
-                  (topPost.repliesCount || 0) +
-                  (topPost.quotesCount || 0)
-                : -1;
+                const topTotalCount = topPost
+                  ? ((topPost as StatusWithQuotes).favouritesCount || 0) +
+                    ((topPost as StatusWithQuotes).reblogsCount || 0) +
+                    ((topPost as StatusWithQuotes).repliesCount || 0) +
+                    ((topPost as StatusWithQuotes).quotesCount || 0)
+                  : -1;
 
-              if (totalCount > topTotalCount) return post;
-              if (totalCount === topTotalCount) return topPost || post;
-              return topPost;
-            }, null);
+                if (totalCount > topTotalCount) return post;
+                if (totalCount === topTotalCount) return topPost || post;
+                return topPost;
+              },
+              null,
+            );
             hasMedia = true;
           }
         }
-        calendar.push(bestPost ? { post: bestPost, hasMedia } : { hasMedia });
+        calendar.push(
+          bestPost ? { post: bestPost, hasMedia } : { hasMedia },
+        );
       }
 
-      grids[month] = calendar;
+      result[mKey] = calendar;
     });
 
-    return grids;
+    return result;
   }, [posts, year, postType]);
 
-  const monthsWithPosts = useMemo(() => {
-    const monthCounts = {};
-    const monthTypes = {};
+  const monthsWithPosts = useMemo<MonthWithPosts[]>(() => {
+    const monthCounts: Record<number, number> = {};
+    const monthTypes: Record<number, MonthTypeCounts> = {};
     posts.forEach((post) => {
-      const month = new Date(post.createdAt).getMonth();
-      monthCounts[month] = (monthCounts[month] || 0) + 1;
+      const m = new Date(post.createdAt).getMonth();
+      monthCounts[m] = (monthCounts[m] || 0) + 1;
 
-      if (!monthTypes[month]) {
-        monthTypes[month] = {
+      if (!monthTypes[m]) {
+        monthTypes[m] = {
           original: 0,
           reply: 0,
           quote: 0,
@@ -424,27 +552,28 @@ function YearInPosts() {
         };
       }
 
-      if (post.reblog) {
-        monthTypes[month].boost++;
+      const p = post as StatusWithExtras;
+      if (p.reblog) {
+        monthTypes[m].boost++;
       } else if (
         supportsNativeQuote() &&
-        (post.quote?.id || post.quote?.quotedStatus?.id)
+        (p.quote?.id || p.quote?.quotedStatus?.id)
       ) {
-        monthTypes[month].quote++;
-      } else if (post.inReplyToId) {
-        monthTypes[month].reply++;
+        monthTypes[m].quote++;
+      } else if (p.inReplyToId) {
+        monthTypes[m].reply++;
       } else {
-        monthTypes[month].original++;
+        monthTypes[m].original++;
       }
     });
     return Object.entries(monthCounts)
-      .map(([month, count]) => {
-        const types = monthTypes[month];
+      .map(([mKey, count]) => {
+        const types = monthTypes[Number(mKey)];
         return {
-          month: parseInt(month),
+          month: parseInt(mKey),
           count,
-          heatmap: monthHeatmaps[month] || [],
-          mediaGrid: monthMediaGrids[month] || [],
+          heatmap: monthHeatmaps[mKey] || [],
+          mediaGrid: monthMediaGrids[mKey] || [],
           original: types.original,
           reply: types.reply,
           quote: types.quote,
@@ -454,7 +583,15 @@ function YearInPosts() {
       .sort((a, b) => a.month - b.month);
   }, [posts, monthHeatmaps, monthMediaGrids]);
 
-  const searchIndexRef = useRef(null);
+  interface FlexSearchDocument {
+    add(doc: Record<string, unknown>): void;
+    search(
+      query: string,
+      options?: { limit?: number },
+    ): Array<{ field?: string; result: Array<string | number> }>;
+  }
+
+  const searchIndexRef = useRef<FlexSearchDocument | null>(null);
   useEffect(() => {
     if (totalPosts > 0) {
       const index = new FlexSearch.Document({
@@ -463,7 +600,7 @@ function YearInPosts() {
           id: 'id',
           index: ['content', 'spoilerText', 'poll', 'media', 'card'],
         },
-      });
+      }) as unknown as FlexSearchDocument;
       posts.forEach((p) => {
         const status = p.reblog || p;
         const pollText = status.poll?.options?.map((o) => o.title).join(' ');
@@ -486,7 +623,7 @@ function YearInPosts() {
     }
   }, [posts]);
 
-  const searchedPosts = useMemo(() => {
+  const searchedPosts = useMemo<MastoStatus[]>(() => {
     if (!searchQuery) return posts;
     if (!searchIndexRef.current) return [];
     console.time(`search: '${searchQuery}'`);
@@ -497,10 +634,12 @@ function YearInPosts() {
     const orderedIds = allResults.flatMap((r) => r.result);
     const uniqueOrderedIds = [...new Set(orderedIds)];
 
-    const postsMap = new Map(posts.map((p) => [p.id, p]));
+    const postsMap = new Map<string, MastoStatus>(
+      posts.map((p) => [p.id, p]),
+    );
     const postResults = uniqueOrderedIds
-      .map((id) => postsMap.get(id))
-      .filter(Boolean);
+      .map((id) => postsMap.get(String(id)))
+      .filter((p): p is MastoStatus => Boolean(p));
     return postResults;
   }, [posts, searchQuery]);
 
@@ -517,14 +656,18 @@ function YearInPosts() {
     }
   }, [searchQuery, sortBy]);
 
-  const [filterCounts, monthPosts] = useMemo(() => {
+  type FilterCounts = Record<FilterKey, number>;
+
+  const [filterCounts, monthPosts] = useMemo<
+    [FilterCounts, MastoStatus[]]
+  >(() => {
     const monthPosts = searchedPosts.filter((post) => {
       if (searchQuery) return true;
       const postMonth = new Date(post.createdAt).getMonth();
       return month !== null && postMonth === month;
     });
 
-    const counts = {
+    const counts: FilterCounts = {
       all: monthPosts.length,
       original: 0,
       replies: 0,
@@ -534,21 +677,22 @@ function YearInPosts() {
     };
 
     monthPosts.forEach((post) => {
-      if (post.reblog) {
+      const p = post as StatusWithExtras;
+      if (p.reblog) {
         counts.boosts++;
       } else if (
         supportsNativeQuote() &&
-        (post.quote?.id || post.quote?.quotedStatus?.id)
+        (p.quote?.id || p.quote?.quotedStatus?.id)
       ) {
         counts.quotes++;
-      } else if (post.inReplyToId) {
+      } else if (p.inReplyToId) {
         counts.replies++;
       } else {
         counts.original++;
       }
 
-      const status = post.reblog || post;
-      if (!post.reblog && status.mediaAttachments?.length > 0) {
+      const status = p.reblog || p;
+      if (!p.reblog && (status.mediaAttachments?.length ?? 0) > 0) {
         counts.media++;
       }
     });
@@ -556,28 +700,29 @@ function YearInPosts() {
     return [counts, monthPosts];
   }, [searchedPosts, month, searchQuery]);
 
-  const [filteredPosts, hasMore] = useMemo(() => {
+  const [filteredPosts, hasMore] = useMemo<[MastoStatus[], boolean]>(() => {
     const filtered = monthPosts.filter((post) => {
+      const p = post as StatusWithExtras;
       if (postType === 'boosts') {
-        return !!post.reblog;
+        return !!p.reblog;
       } else if (postType === 'media') {
-        const status = post.reblog || post;
-        return !post.reblog && status.mediaAttachments?.length > 0;
+        const status = p.reblog || p;
+        return !p.reblog && (status.mediaAttachments?.length ?? 0) > 0;
       } else if (postType === 'quotes') {
         return (
           supportsNativeQuote() &&
-          (post.quote?.id || post.quote?.quotedStatus?.id)
+          !!(p.quote?.id || p.quote?.quotedStatus?.id)
         );
       } else if (postType === 'replies') {
-        return !!post.inReplyToId;
+        return !!p.inReplyToId;
       } else if (postType === 'original') {
         return (
-          !post.reblog &&
+          !p.reblog &&
           !(
             supportsNativeQuote() &&
-            (post.quote?.id || post.quote?.quotedStatus?.id)
+            (p.quote?.id || p.quote?.quotedStatus?.id)
           ) &&
-          !post.inReplyToId
+          !p.inReplyToId
         );
       }
 
@@ -588,16 +733,17 @@ function YearInPosts() {
     let sorted = filtered;
     if (sortBy !== 'relevance') {
       sorted = [...filtered].sort((a, b) => {
-        const postA = a.reblog || a;
-        const postB = b.reblog || b;
-        let valueA, valueB;
+        const postA = (a.reblog || a) as MastoStatus;
+        const postB = (b.reblog || b) as MastoStatus;
+        let valueA: number | Date;
+        let valueB: number | Date;
 
         if (sortBy === 'createdAt') {
           valueA = new Date(a.createdAt);
           valueB = new Date(b.createdAt);
         } else {
-          valueA = postA[sortBy] || 0;
-          valueB = postB[sortBy] || 0;
+          valueA = (postA[sortBy] as number | undefined) || 0;
+          valueB = (postB[sortBy] as number | undefined) || 0;
         }
 
         if (sortOrder === 'asc') {
@@ -646,11 +792,15 @@ function YearInPosts() {
       try {
         const dataId = `${NS}-${year}`;
         console.time(`fetchYearPosts-${year}`);
-        const data = await db.yearInPosts.get(dataId);
+        const data = (await db.yearInPosts.get(dataId)) as
+          | YearInPostsRecord
+          | undefined;
         console.timeEnd(`fetchYearPosts-${year}`);
         if (data && data.year === year) {
           data.posts.sort(
-            (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+            (a, b) =>
+              new Date(a.createdAt).getTime() -
+              new Date(b.createdAt).getTime(),
           );
           setPosts(data.posts);
           setUIState('results');
@@ -666,7 +816,7 @@ function YearInPosts() {
 
   useEffect(() => {
     if (month !== null && uiState === 'results') {
-      const monthFilter = document.querySelector(
+      const monthFilter = document.querySelector<HTMLElement>(
         `.calendar-bar .month-filter[data-month="${month}"]`,
       );
       monthFilter?.focus();
@@ -683,7 +833,7 @@ function YearInPosts() {
       ref={scrollableRef}
       id="year-in-posts-page"
       class="deck-container"
-      tabIndex="-1"
+      tabIndex={-1}
       style={{
         '--month': month || 0,
       }}
@@ -692,7 +842,7 @@ function YearInPosts() {
         <header
           class={uiState === 'loading' ? 'loading' : ''}
           onClick={(e) => {
-            if (!e.target.closest('a, button')) {
+            if (!(e.target as HTMLElement).closest('a, button')) {
               scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }}
@@ -836,7 +986,10 @@ function YearInPosts() {
                       <button
                         type="button"
                         onClick={(e) => {
-                          e.target.closest('details').open = false;
+                          const details = (
+                            e.target as HTMLElement
+                          ).closest('details') as HTMLDetailsElement;
+                          details.open = false;
                         }}
                       >
                         Let's explore my posts
@@ -852,10 +1005,13 @@ function YearInPosts() {
                         max={new Date().getFullYear()}
                         name="year"
                         defaultValue={getDefaultYear()}
-                        disabled={uiState === 'generating'}
+                        disabled={(uiState as string) === 'generating'}
                       />
                     </label>
-                    <button type="submit" disabled={uiState === 'generating'}>
+                    <button
+                      type="submit"
+                      disabled={(uiState as string) === 'generating'}
+                    >
                       <Icon icon="arrow-right" alt="Generate" size="l" />
                     </button>
                   </form>
@@ -935,7 +1091,7 @@ function YearInPosts() {
                                 type="button"
                                 class="light small"
                                 disabled={uiState === 'loading'}
-                                title={fetchedAt}
+                                title={String(fetchedAt)}
                               >
                                 <Icon
                                   icon="refresh"
@@ -1009,7 +1165,9 @@ function YearInPosts() {
 
               {(month !== null || searchQuery) && (
                 <div class="post-type-filters">
-                  {Object.entries(FILTER_KEYS).map(
+                  {(
+                    Object.entries(FILTER_KEYS) as [FilterKey, string][]
+                  ).map(
                     ([key, label]) =>
                       filterCounts[key] > 0 && (
                         <button
@@ -1213,9 +1371,21 @@ function YearInPosts() {
   );
 }
 
-const IntersectionPostItem = ({ root, post, instance, defaultShow }) => {
-  const ref = useRef();
-  const [show, setShow] = useState(defaultShow);
+interface IntersectionPostItemProps {
+  root: Element | null;
+  post: MastoStatus;
+  instance: string;
+  defaultShow: boolean;
+}
+
+const IntersectionPostItem = ({
+  root,
+  post,
+  instance,
+  defaultShow,
+}: IntersectionPostItemProps) => {
+  const ref = useRef<HTMLLIElement | null>(null);
+  const [show, setShow] = useState<boolean>(defaultShow);
 
   useEffect(() => {
     if (defaultShow) return;
@@ -1224,7 +1394,7 @@ const IntersectionPostItem = ({ root, post, instance, defaultShow }) => {
         const entry = entries[0];
         if (entry.isIntersecting) {
           queueMicrotask(() => setShow(true));
-          observer.unobserve(ref.current);
+          observer.unobserve(ref.current as Element);
         }
       },
       {
@@ -1267,7 +1437,19 @@ const IntersectionPostItem = ({ root, post, instance, defaultShow }) => {
   );
 };
 
-function CalendarBar({ year, month, monthsWithPosts, postType }) {
+interface CalendarBarProps {
+  year: number;
+  month: number | null;
+  monthsWithPosts: MonthWithPosts[];
+  postType: FilterKey;
+}
+
+function CalendarBar({
+  year,
+  month,
+  monthsWithPosts,
+  postType,
+}: CalendarBarProps) {
   const { i18n } = useLingui();
   return (
     <div
@@ -1313,24 +1495,34 @@ function CalendarBar({ year, month, monthsWithPosts, postType }) {
                           return <span key={i} class="media-day empty" />;
                         if (!item.hasMedia)
                           return <span key={i} class="media-day no-media" />;
-                        const status = item.post;
-                        const media = status.mediaAttachments?.[0];
+                        const status = item.post as MastoStatus;
+                        // hasMedia guarantees mediaAttachments[0] exists.
+                        const media = (status.mediaAttachments as
+                          | mastodon.v1.MediaAttachment[])[0] as {
+                          previewUrl?: string | null;
+                          url?: string | null;
+                          previewRemoteUrl?: string | null;
+                          remoteUrl?: string | null;
+                        };
                         return (
                           <span key={i} class="media-day">
                             <img
-                              src={media.previewUrl || media.url}
+                              src={
+                                (media.previewUrl || media.url) as string
+                              }
                               loading="lazy"
                               decoding="async"
                               onError={(e) => {
-                                const { src } = e.target;
+                                const target = e.target as HTMLImageElement;
+                                const { src } = target;
                                 if (
                                   src === media.previewUrl ||
                                   src === media.url
                                 ) {
-                                  e.target.src =
-                                    media.previewRemoteUrl || media.remoteUrl;
+                                  target.src = (media.previewRemoteUrl ||
+                                    media.remoteUrl) as string;
                                 } else {
-                                  e.target.remove();
+                                  target.remove();
                                 }
                               }}
                               alt=""
@@ -1409,16 +1601,24 @@ function CalendarLegend() {
   );
 }
 
-const SearchField = forwardRef(
+interface SearchFieldProps {
+  searchQuery: string;
+  onSearch: (val: string) => void;
+  placeholder?: string;
+  onEscape?: () => void;
+}
+
+const SearchField = forwardRef<SearchFieldHandle, SearchFieldProps>(
   ({ searchQuery, onSearch, placeholder, onEscape }, ref) => {
-    const searchInputRef = useRef(null);
+    const searchInputRef = useRef<HTMLInputElement | null>(null);
 
     useImperativeHandle(ref, () => ({
       focus: () => {
         searchInputRef.current?.focus();
       },
-      setValue: (val) => {
-        searchInputRef.current.value = val;
+      setValue: (val: string) => {
+        // Original JS dereferenced without null-check; preserve.
+        (searchInputRef.current as HTMLInputElement).value = val;
       },
       isFocused: () => {
         return document.activeElement === searchInputRef.current;
@@ -1432,7 +1632,9 @@ const SearchField = forwardRef(
         class="search-field"
         onSubmit={(e) => {
           e.preventDefault();
-          const q = searchInputRef.current.value.trim();
+          const q = (
+            searchInputRef.current as HTMLInputElement
+          ).value.trim();
           throttledSearch?.cancel();
           throttledSearch(q);
         }}
@@ -1448,14 +1650,17 @@ const SearchField = forwardRef(
           autocomplete="off"
           autocorrect="off"
           autocapitalize="off"
-          spellCheck="false"
+          spellcheck={false}
           enterKeyHint="search"
           onInput={(e) => {
-            const val = e.target.value;
+            const val = (e.target as HTMLInputElement).value;
             throttledSearch(val);
           }}
           onKeyDown={(e) => {
-            if (e.key === 'Escape' && !e.target.value.trim()) {
+            if (
+              e.key === 'Escape' &&
+              !(e.target as HTMLInputElement).value.trim()
+            ) {
               onEscape?.();
             }
           }}
