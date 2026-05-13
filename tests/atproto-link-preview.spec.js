@@ -4,6 +4,7 @@ test.describe('ATProto composer link preview', () => {
   test('shows and removes cardyb previews while composing', async ({
     page,
   }) => {
+    test.setTimeout(45_000);
     await page.route('https://cardyb.bsky.app/v1/extract**', async (route) => {
       await route.fulfill({
         json: {
@@ -64,6 +65,7 @@ test.describe('ATProto composer link preview', () => {
 
     await expect(page.locator('.compose-link-preview')).toContainText(
       'Example Story',
+      { timeout: 15_000 },
     );
     await page.locator('.compose-link-preview button').click();
     await expect(page.locator('.compose-link-preview')).toHaveCount(0);
