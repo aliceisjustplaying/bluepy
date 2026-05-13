@@ -3,7 +3,14 @@ import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
 export const BSKY_APPVIEW = 'https://public.api.bsky.app';
 export const BSKY_PDS = 'https://bsky.social';
 
-function normalizeAtprotoService(service) {
+type Fetcher = (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) => Promise<Response>;
+
+function normalizeAtprotoService(
+  service: string | null | undefined,
+): string | null {
   if (!service) return null;
   const normalized = service
     .trim()
@@ -13,11 +20,13 @@ function normalizeAtprotoService(service) {
   return /^https?:\/\//.test(normalized) ? normalized : `https://${normalized}`;
 }
 
-function normalizeAtprotoIdentifier(identifier) {
+function normalizeAtprotoIdentifier(
+  identifier: string | null | undefined,
+): string {
   return (identifier || '').trim().replace(/^@/, '');
 }
 
-function isBskyHostedPds(service) {
+function isBskyHostedPds(service: string): boolean {
   try {
     const { hostname } = new URL(service);
     return (
@@ -28,20 +37,32 @@ function isBskyHostedPds(service) {
   }
 }
 
-async function resolveAtprotoDid(identifier, fetchFn) {
+async function resolveAtprotoDid(
+  identifier: string,
+  fetchFn: Fetcher,
+): Promise<string> {
   if (identifier.startsWith('did:')) return identifier;
 
   const url = new URL('/xrpc/com.atproto.identity.resolveHandle', BSKY_APPVIEW);
   url.searchParams.set('handle', identifier);
   const res = await fetchFn(url);
   if (!res.ok) throw new Error(`Failed to resolve Bluesky handle`);
-  const data = await res.json();
-  if (!data?.did) throw new Error(`Bluesky handle has no DID`);
-  return data.did;
+  const data: unknown = await res.json();
+  const did =
+    data !== null && typeof data === 'object'
+      ? (data as { did?: unknown }).did
+      : undefined;
+  if (typeof did !== 'string' || !did) {
+    throw new Error(`Bluesky handle has no DID`);
+  }
+  return did;
 }
 
-async function resolveAtprotoDidDoc(did, fetchFn) {
-  let url;
+async function resolveAtprotoDidDoc(
+  did: string,
+  fetchFn: Fetcher,
+): Promise<Parameters<typeof getPdsEndpoint>[0]> {
+  let url: string;
   if (did.startsWith('did:plc:')) {
     url = `https://plc.directory/${encodeURIComponent(did)}`;
   } else if (did.startsWith('did:web:')) {
@@ -57,16 +78,22 @@ async function resolveAtprotoDidDoc(did, fetchFn) {
 
   const res = await fetchFn(url);
   if (!res.ok) throw new Error(`Failed to resolve Bluesky DID document`);
-  const didDoc = await res.json();
+  const didDoc: unknown = await res.json();
   if (!isValidDidDoc(didDoc)) throw new Error(`Invalid Bluesky DID document`);
   return didDoc;
+}
+
+export interface ResolveAtprotoLoginServiceOptions {
+  identifier?: string | null;
+  service?: string | null;
+  fetch?: Fetcher;
 }
 
 export async function resolveAtprotoLoginService({
   identifier,
   service,
   fetch: fetchFn = globalThis.fetch,
-}) {
+}: ResolveAtprotoLoginServiceOptions): Promise<string> {
   const explicitService = normalizeAtprotoService(service);
   if (explicitService) return explicitService;
 
