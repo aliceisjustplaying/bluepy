@@ -15,7 +15,55 @@ const SUPPORTED_IMAGE_FORMATS = [
 ];
 const SUPPORTED_IMAGE_FORMATS_STR = SUPPORTED_IMAGE_FORMATS.join(',');
 
-function FieldsAttributesRow({ name, value, disabled, index: i }) {
+interface ProfileField {
+  name?: string;
+  value?: string;
+  [key: string]: unknown;
+}
+
+interface ProfileAccount {
+  displayName?: string;
+  avatar?: string;
+  header?: string;
+  source?: {
+    note?: string;
+    fields?: ProfileField[];
+  };
+  [key: string]: unknown;
+}
+
+interface MastoAccountsUpdate {
+  updateCredentials(params: {
+    header?: FormDataEntryValue | null;
+    avatar?: FormDataEntryValue | null;
+    displayName?: FormDataEntryValue | null;
+    note?: FormDataEntryValue | null;
+    fieldsAttributes: ProfileField[];
+  }): Promise<ProfileAccount>;
+}
+
+interface FieldsAttributesRowProps {
+  name?: string;
+  value?: string;
+  disabled?: boolean;
+  index: number;
+}
+
+interface EditProfileSheetCloseResult {
+  state: 'success';
+  account: ProfileAccount;
+}
+
+interface EditProfileSheetProps {
+  onClose?: (result?: EditProfileSheetCloseResult) => void;
+}
+
+function FieldsAttributesRow({
+  name,
+  value,
+  disabled,
+  index: i,
+}: FieldsAttributesRowProps) {
   const [hasValue, setHasValue] = useState(!!value);
   return (
     <tr>
@@ -47,19 +95,22 @@ function FieldsAttributesRow({ name, value, disabled, index: i }) {
   );
 }
 
-function EditProfileSheet({ onClose = () => {} }) {
+function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   const { t } = useLingui();
   const { masto } = api();
   const [uiState, setUIState] = useState('loading');
-  const [account, setAccount] = useState(null);
-  const [headerPreview, setHeaderPreview] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [account, setAccount] = useState<ProfileAccount | null>(null);
+  const [headerPreview, setHeaderPreview] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const acc = await masto.v1.accounts.verifyCredentials();
-        setAccount(acc);
+        const acc = (await masto.v1.accounts.verifyCredentials()) as
+          | ProfileAccount
+          | null
+          | undefined;
+        setAccount(acc ?? null);
         setUIState('default');
       } catch (e) {
         console.error(e);
@@ -71,7 +122,7 @@ function EditProfileSheet({ onClose = () => {} }) {
   console.log('EditProfileSheet', account);
   const { displayName, source, avatar, header } = account || {};
   const { note, fields } = source || {};
-  const fieldsAttributesRef = useRef(null);
+  const fieldsAttributesRef = useRef<HTMLTableElement | null>(null);
 
   const avatarMediaAttachments = [
     ...(avatar ? [{ type: 'image', url: avatar }] : []),
@@ -85,7 +136,7 @@ function EditProfileSheet({ onClose = () => {} }) {
   return (
     <div class="sheet" id="edit-profile-container">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" class="sheet-close" onClick={() => onClose()}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -103,24 +154,26 @@ function EditProfileSheet({ onClose = () => {} }) {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
-              const header = formData.get('header');
-              const avatar = formData.get('avatar');
-              const displayName = formData.get('display_name');
-              const note = formData.get('note');
+              const form = e.currentTarget;
+              const formData = new FormData(form);
+              const headerField = formData.get('header');
+              const avatarField = formData.get('avatar');
+              const displayNameField = formData.get('display_name');
+              const noteField = formData.get('note');
               const fieldsAttributesFields =
-                fieldsAttributesRef.current.querySelectorAll(
+                fieldsAttributesRef.current?.querySelectorAll<HTMLInputElement>(
                   'input[name^="fields_attributes"]',
                 );
-              const fieldsAttributes = [];
-              fieldsAttributesFields.forEach((field) => {
-                const name = field.name;
-                const [_, index, key] =
-                  name.match(/fields_attributes\[(\d+)\]\[(.+)\]/) || [];
+              const fieldsAttributes: ProfileField[] = [];
+              fieldsAttributesFields?.forEach((field) => {
+                const fieldName = field.name;
+                const [, indexStr, key] =
+                  fieldName.match(/fields_attributes\[(\d+)\]\[(.+)\]/) || [];
                 const value = field.value ? field.value.trim() : '';
-                if (index && key && value) {
-                  if (!fieldsAttributes[index]) fieldsAttributes[index] = {};
-                  fieldsAttributes[index][key] = value;
+                if (indexStr && key && value) {
+                  const idx = Number(indexStr);
+                  if (!fieldsAttributes[idx]) fieldsAttributes[idx] = {};
+                  fieldsAttributes[idx][key] = value;
                 }
               });
               // Fill in the blanks
@@ -132,11 +185,13 @@ function EditProfileSheet({ onClose = () => {} }) {
 
               (async () => {
                 try {
-                  const newAccount = await masto.v1.accounts.updateCredentials({
-                    header,
-                    avatar,
-                    displayName,
-                    note,
+                  const accountsApi = masto.v1
+                    .accounts as unknown as MastoAccountsUpdate;
+                  const newAccount = await accountsApi.updateCredentials({
+                    header: headerField,
+                    avatar: avatarField,
+                    displayName: displayNameField,
+                    note: noteField,
                     fieldsAttributes,
                   });
                   console.log('updated account', newAccount);
@@ -146,7 +201,8 @@ function EditProfileSheet({ onClose = () => {} }) {
                   });
                 } catch (e) {
                   console.error(e);
-                  alert(e?.message || t`Unable to update profile.`);
+                  const message = (e as { message?: string })?.message;
+                  alert(message || t`Unable to update profile.`);
                 }
               })();
             }}
@@ -159,7 +215,7 @@ function EditProfileSheet({ onClose = () => {} }) {
                   name="header"
                   accept={SUPPORTED_IMAGE_FORMATS_STR}
                   onChange={(e) => {
-                    const file = e.target.files[0];
+                    const file = e.currentTarget.files?.[0];
                     if (file) {
                       const blob = URL.createObjectURL(file);
                       setHeaderPreview(blob);
@@ -171,7 +227,7 @@ function EditProfileSheet({ onClose = () => {} }) {
                 {header ? (
                   <div
                     class="edit-media"
-                    tabIndex="0"
+                    tabIndex={0}
                     onClick={() => {
                       states.showMediaModal = {
                         mediaAttachments: headerMediaAttachments,
@@ -189,7 +245,7 @@ function EditProfileSheet({ onClose = () => {} }) {
                     <Icon icon="arrow-right" />
                     <div
                       class="edit-media"
-                      tabIndex="0"
+                      tabIndex={0}
                       onClick={() => {
                         states.showMediaModal = {
                           mediaAttachments: headerMediaAttachments,
@@ -211,7 +267,7 @@ function EditProfileSheet({ onClose = () => {} }) {
                   name="avatar"
                   accept={SUPPORTED_IMAGE_FORMATS_STR}
                   onChange={(e) => {
-                    const file = e.target.files[0];
+                    const file = e.currentTarget.files?.[0];
                     if (file) {
                       const blob = URL.createObjectURL(file);
                       setAvatarPreview(blob);
@@ -223,7 +279,7 @@ function EditProfileSheet({ onClose = () => {} }) {
                 {avatar ? (
                   <div
                     class="edit-media"
-                    tabIndex="0"
+                    tabIndex={0}
                     onClick={() => {
                       states.showMediaModal = {
                         mediaAttachments: avatarMediaAttachments,
@@ -241,7 +297,7 @@ function EditProfileSheet({ onClose = () => {} }) {
                     <Icon icon="arrow-right" />
                     <div
                       class="edit-media"
-                      tabIndex="0"
+                      tabIndex={0}
                       onClick={() => {
                         states.showMediaModal = {
                           mediaAttachments: avatarMediaAttachments,
@@ -276,7 +332,7 @@ function EditProfileSheet({ onClose = () => {} }) {
                   defaultValue={note}
                   name="note"
                   maxLength={500}
-                  rows="5"
+                  rows={5}
                   disabled={uiState === 'loading'}
                   dir="auto"
                 />
@@ -298,20 +354,23 @@ function EditProfileSheet({ onClose = () => {} }) {
                 </tr>
               </thead>
               <tbody>
-                {Array.from({ length: Math.max(4, fields.length) }).map(
-                  (_, i) => {
-                    const { name = '', value = '' } = fields[i] || {};
-                    return (
-                      <FieldsAttributesRow
-                        key={i}
-                        name={name}
-                        value={value}
-                        index={i}
-                        disabled={uiState === 'loading'}
-                      />
-                    );
-                  },
-                )}
+                {Array.from({
+                  // JS original used `fields.length` unchecked; preserve that
+                  // (throws when `source.fields` is missing — same as before).
+                  length: Math.max(4, (fields as ProfileField[]).length),
+                }).map((_, i) => {
+                  const { name = '', value = '' } =
+                    (fields as ProfileField[])[i] || {};
+                  return (
+                    <FieldsAttributesRow
+                      key={i}
+                      name={name}
+                      value={value}
+                      index={i}
+                      disabled={uiState === 'loading'}
+                    />
+                  );
+                })}
               </tbody>
             </table>
             <footer>
