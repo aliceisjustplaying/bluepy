@@ -3,6 +3,7 @@ import './settings.css';
 import '../components/button-install';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import type { JSX, VNode } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useDebounce } from 'use-debounce';
 import { useSnapshot } from 'valtio';
@@ -13,7 +14,7 @@ import Icon from '../components/icon';
 import LangSelector from '../components/lang-selector';
 import Link from '../components/link';
 import RelativeTime from '../components/relative-time';
-import languages from '../data/translang-languages';
+import languages from '../data/translang-languages.json';
 import { api, getPreferences, setPreferences } from '../utils/api';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import localeCode2Text from '../utils/localeCode2Text';
@@ -30,6 +31,29 @@ import {
   updateSubscription,
 } from '../utils/web-push-subscriptions';
 
+// `button-install` is a custom element registered in
+// `../components/button-install`. Declare its JSX shape so the wrapper below
+// type-checks without touching the existing untyped runtime behavior.
+declare module 'preact' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'button-install': JSX.HTMLAttributes<HTMLElement>;
+    }
+  }
+}
+
+// `masto.v1.accounts` in the typed api.ts shim only exposes
+// `verifyCredentials`. `updateCredentials` is used here at runtime to sync
+// posting preferences. Shim the call surface locally; the wave that fully
+// types the masto client removes this.
+interface AccountsUpdateCredentialsClient {
+  updateCredentials(params: {
+    source: { privacy?: string; quote_policy?: string };
+  }): Promise<unknown>;
+}
+
+type Preferences = Record<string, unknown>;
+
 const DEFAULT_TEXT_SIZE = 16;
 const TEXT_SIZES = [14, 15, 16, 17, 18, 19, 20];
 const SMALLEST_TEXT_SIZE = TEXT_SIZES[0];
@@ -41,27 +65,40 @@ const {
   PHANPY_IMG_ALT_API_URL: IMG_ALT_API_URL,
   PHANPY_GIPHY_API_KEY: GIPHY_API_KEY,
   PHANPY_CLIENT_NAME: CLIENT_NAME,
-} = import.meta.env;
+} = import.meta.env as unknown as Record<string, string | undefined>;
 
-const targetLanguages = Object.entries(languages.tl).map(([code, name]) => ({
+const targetLanguages = Object.entries(
+  (languages as { tl: Record<string, string> }).tl,
+).map(([code, name]) => ({
   code,
   name,
 }));
 
 const TRANSLATION_API_NAME = 'TransLang API';
 
-function Settings({ onClose }) {
+interface SettingsProps {
+  onClose?: () => void;
+}
+
+function Settings({ onClose }: SettingsProps): VNode {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const currentTheme = store.local.get('theme') || 'auto';
-  const themeFormRef = useRef();
+  const themeFormRef = useRef<HTMLFormElement | null>(null);
   const targetLanguage =
     snapStates.settings.contentTranslationTargetLanguage || null;
   const systemTargetLanguage = getTranslateTargetLanguage();
-  const systemTargetLanguageText = localeCode2Text(systemTargetLanguage);
-  const currentTextSize = store.local.get('textSize') || DEFAULT_TEXT_SIZE;
+  const systemTargetLanguageText = systemTargetLanguage
+    ? localeCode2Text(systemTargetLanguage)
+    : undefined;
+  // `textSize` is written via `localStorage.setItem`, which stringifies values
+  // on store. Normalize back to number on read so arithmetic (`size - 1`,
+  // `Math.min(..., size + 1)`) doesn't string-concatenate.
+  const storedTextSize = store.local.get('textSize');
+  const currentTextSize: number =
+    parseInt(storedTextSize as string, 10) || DEFAULT_TEXT_SIZE;
 
-  const [prefs, setPrefs] = useState(getPreferences());
+  const [prefs, setPrefs] = useState<Preferences>(getPreferences());
   const { masto, authenticated, instance } = api();
 
   // Get preferences every time Settings is opened
@@ -80,11 +117,11 @@ function Settings({ onClose }) {
   //   })();
   // }, []);
 
-  const [expTabBarV2, setExpTabBarV2] = useState(
+  const [expTabBarV2, setExpTabBarV2] = useState<string | boolean>(
     store.local.get('experiments-tabBarV2') ?? false,
   );
 
-  const [expTimeline2, setExpTimeline2] = useState(
+  const [expTimeline2, setExpTimeline2] = useState<string | boolean>(
     store.local.get('experiments-timeline2') ?? false,
   );
 
@@ -94,7 +131,7 @@ function Settings({ onClose }) {
     <div
       id="settings-container"
       class="sheet"
-      tabIndex="-1"
+      tabIndex={-1}
       style={{
         '--current-text-size': `${currentTextSize}px`,
       }}
@@ -124,8 +161,10 @@ function Settings({ onClose }) {
                   onInput={(e) => {
                     console.log(e);
                     e.preventDefault();
-                    const formData = new FormData(themeFormRef.current);
-                    const theme = formData.get('theme');
+                    const form = themeFormRef.current;
+                    if (!form) return;
+                    const formData = new FormData(form);
+                    const theme = formData.get('theme') as string | null;
                     const html = document.documentElement;
 
                     if (theme === 'auto') {
@@ -134,14 +173,14 @@ function Settings({ onClose }) {
                       // Disable manual theme <meta>
                       const $manualMeta = document.querySelector(
                         'meta[data-theme-setting="manual"]',
-                      );
+                      ) as HTMLMetaElement | null;
                       if ($manualMeta) {
                         $manualMeta.name = '';
                       }
                       // Enable auto theme <meta>s
                       const $autoMetas = document.querySelectorAll(
                         'meta[data-theme-setting="auto"]',
-                      );
+                      ) as NodeListOf<HTMLMetaElement>;
                       $autoMetas.forEach((m) => {
                         m.name = 'theme-color';
                       });
@@ -152,33 +191,41 @@ function Settings({ onClose }) {
                       // Enable manual theme <meta>
                       const $manualMeta = document.querySelector(
                         'meta[data-theme-setting="manual"]',
-                      );
+                      ) as
+                        | (HTMLMetaElement & {
+                            dataset: DOMStringMap & {
+                              themeLightColor?: string;
+                              themeDarkColor?: string;
+                            };
+                          })
+                        | null;
                       if ($manualMeta) {
                         $manualMeta.name = 'theme-color';
                         $manualMeta.content =
                           theme === 'light'
-                            ? $manualMeta.dataset.themeLightColor
-                            : $manualMeta.dataset.themeDarkColor;
+                            ? ($manualMeta.dataset.themeLightColor as string)
+                            : ($manualMeta.dataset.themeDarkColor as string);
                       }
                       // Disable auto theme <meta>s
                       const $autoMetas = document.querySelectorAll(
                         'meta[data-theme-setting="auto"]',
-                      );
+                      ) as NodeListOf<HTMLMetaElement>;
                       $autoMetas.forEach((m) => {
                         m.name = '';
                       });
                     }
-                    document
-                      .querySelector('meta[name="color-scheme"]')
-                      .setAttribute(
-                        'content',
-                        theme === 'auto' ? 'light dark' : theme,
-                      );
+                    const $colorScheme = document.querySelector(
+                      'meta[name="color-scheme"]',
+                    );
+                    $colorScheme!.setAttribute(
+                      'content',
+                      theme === 'auto' ? 'light dark' : (theme as string),
+                    );
 
                     if (theme === 'auto') {
                       store.local.del('theme');
                     } else {
-                      store.local.set('theme', theme);
+                      store.local.set('theme', theme as string);
                     }
                   }}
                 >
@@ -263,17 +310,24 @@ function Settings({ onClose }) {
                   </label>
                   <select
                     id="posting-privacy-field"
-                    value={prefs['posting:default:visibility'] || 'public'}
+                    value={
+                      (prefs['posting:default:visibility'] as
+                        | string
+                        | undefined) || 'public'
+                    }
                     onChange={(e) => {
-                      const { value } = e.target;
+                      const { value } = e.currentTarget;
                       (async () => {
                         try {
-                          await masto.v1.accounts.updateCredentials({
+                          await (
+                            masto.v1
+                              .accounts as unknown as AccountsUpdateCredentialsClient
+                          ).updateCredentials({
                             source: {
                               privacy: value,
                             },
                           });
-                          const newPrefs = {
+                          const newPrefs: Preferences = {
                             ...prefs,
                             'posting:default:visibility': value,
                           };
@@ -283,9 +337,9 @@ function Settings({ onClose }) {
                           setPrefs(newPrefs);
                           setPreferences(newPrefs);
                           showToast(t`Default visibility updated`);
-                        } catch (e) {
+                        } catch (err) {
                           alert(t`Failed to update default visibility`);
-                          console.error(e);
+                          console.error(err);
                         }
                       })();
                     }}
@@ -312,28 +366,33 @@ function Settings({ onClose }) {
                       value={
                         disableQuotePolicy
                           ? 'nobody'
-                          : prefs['posting:default:quote_policy'] || 'public'
+                          : (prefs['posting:default:quote_policy'] as
+                              | string
+                              | undefined) || 'public'
                       }
                       disabled={disableQuotePolicy}
                       onChange={(e) => {
-                        const { value } = e.target;
+                        const { value } = e.currentTarget;
                         (async () => {
                           try {
-                            await masto.v1.accounts.updateCredentials({
+                            await (
+                              masto.v1
+                                .accounts as unknown as AccountsUpdateCredentialsClient
+                            ).updateCredentials({
                               source: {
                                 quote_policy: value,
                               },
                             });
-                            const newPrefs = {
+                            const newPrefs: Preferences = {
                               ...prefs,
                               'posting:default:quote_policy': value,
                             };
                             setPrefs(newPrefs);
                             setPreferences(newPrefs);
                             showToast(t`Quote settings updated`);
-                          } catch (e) {
+                          } catch (err) {
                             alert(t`Failed to update quote settings`);
-                            console.error(e);
+                            console.error(err);
                           }
                         })();
                       }}
@@ -380,7 +439,7 @@ function Settings({ onClose }) {
                   type="checkbox"
                   checked={snapStates.settings.autoRefresh}
                   onChange={(e) => {
-                    states.settings.autoRefresh = e.target.checked;
+                    states.settings.autoRefresh = e.currentTarget.checked;
                   }}
                 />{' '}
                 <Trans>Auto refresh timeline posts</Trans>
@@ -392,7 +451,7 @@ function Settings({ onClose }) {
                   type="checkbox"
                   checked={snapStates.settings.boostsCarousel}
                   onChange={(e) => {
-                    states.settings.boostsCarousel = e.target.checked;
+                    states.settings.boostsCarousel = e.currentTarget.checked;
                   }}
                 />{' '}
                 <Trans>Boosts carousel</Trans>
@@ -405,7 +464,7 @@ function Settings({ onClose }) {
                     type="checkbox"
                     checked={snapStates.settings.contentTranslation}
                     onChange={(e) => {
-                      const { checked } = e.target;
+                      const { checked } = e.currentTarget;
                       states.settings.contentTranslation = checked;
                       if (!checked) {
                         states.settings.contentTranslationTargetLanguage = null;
@@ -430,7 +489,7 @@ function Settings({ onClose }) {
                         style={{ width: '10em' }}
                         onChange={(e) => {
                           states.settings.contentTranslationTargetLanguage =
-                            e.target.value || null;
+                            e.currentTarget.value || null;
                         }}
                       >
                         <option value="">
@@ -487,7 +546,7 @@ function Settings({ onClose }) {
                                 lang.code,
                               )}
                               onChange={(e) => {
-                                const { checked } = e.target;
+                                const { checked } = e.currentTarget;
                                 if (checked) {
                                   states.settings.contentTranslationHideLanguages.push(
                                     lang.code,
@@ -540,7 +599,7 @@ function Settings({ onClose }) {
                         disabled={!snapStates.settings.contentTranslation}
                         onChange={(e) => {
                           states.settings.contentTranslationAutoInline =
-                            e.target.checked;
+                            e.currentTarget.checked;
                         }}
                       />{' '}
                       <Trans>Auto inline translation</Trans>
@@ -563,12 +622,12 @@ function Settings({ onClose }) {
                 <label>
                   <input
                     type="checkbox"
-                    checked={expTimeline2}
+                    checked={!!expTimeline2}
                     onChange={(e) => {
-                      const { checked } = e.target;
+                      const { checked } = e.currentTarget;
                       setExpTimeline2(checked);
                       if (checked) {
-                        store.local.set('experiments-timeline2', true);
+                        store.local.set('experiments-timeline2', 'true');
                       } else {
                         store.local.del('experiments-timeline2');
                       }
@@ -595,7 +654,8 @@ function Settings({ onClose }) {
                     type="checkbox"
                     checked={snapStates.settings.composerGIFPicker}
                     onChange={(e) => {
-                      states.settings.composerGIFPicker = e.target.checked;
+                      states.settings.composerGIFPicker =
+                        e.currentTarget.checked;
                     }}
                   />{' '}
                   <Trans>GIF Picker for composer</Trans>
@@ -628,7 +688,8 @@ function Settings({ onClose }) {
                     type="checkbox"
                     checked={snapStates.settings.mediaAltGenerator}
                     onChange={(e) => {
-                      states.settings.mediaAltGenerator = e.target.checked;
+                      states.settings.mediaAltGenerator =
+                        e.currentTarget.checked;
                     }}
                   />{' '}
                   <Trans>Image description generator</Trans>{' '}
@@ -668,7 +729,7 @@ function Settings({ onClose }) {
                     }
                     onChange={(e) => {
                       states.settings.shortcutSettingsCloudImportExport =
-                        e.target.checked;
+                        e.currentTarget.checked;
                     }}
                   />{' '}
                   <Trans>"Cloud" import/export for shortcuts settings</Trans>{' '}
@@ -700,7 +761,7 @@ function Settings({ onClose }) {
                   type="checkbox"
                   checked={snapStates.settings.cloakMode}
                   onChange={(e) => {
-                    states.settings.cloakMode = e.target.checked;
+                    states.settings.cloakMode = e.currentTarget.checked;
                   }}
                 />{' '}
                 <Trans>
@@ -725,7 +786,7 @@ function Settings({ onClose }) {
                   type="checkbox"
                   checked={snapStates.settings.noAnimations}
                   onChange={(e) => {
-                    states.settings.noAnimations = e.target.checked;
+                    states.settings.noAnimations = e.currentTarget.checked;
                   }}
                 />{' '}
                 <Trans>Disable all animations</Trans>
@@ -899,18 +960,19 @@ function Settings({ onClose }) {
                   type="text"
                   class="version-string"
                   readOnly
-                  size="18" // Manually calculated here
+                  size={18} // Manually calculated here
                   value={`${__COMMIT_TIME__.slice(0, 10).replace(/-/g, '.')}${
                     __COMMIT_HASH__ ? `.${__COMMIT_HASH__}` : ''
                   }`}
                   onClick={(e) => {
-                    e.target.select();
+                    const target = e.currentTarget;
+                    target.select();
                     // Copy to clipboard
                     try {
-                      navigator.clipboard.writeText(e.target.value);
+                      navigator.clipboard.writeText(target.value);
                       showToast(t`Version string copied`);
-                    } catch (e) {
-                      console.warn(e);
+                    } catch (err) {
+                      console.warn(err);
                       showToast(t`Unable to copy version string`);
                     }
                   }}
@@ -946,31 +1008,37 @@ function Settings({ onClose }) {
             </p>
             <p>Debugging</p>
             <p>
-              <b>Vapid key</b>: {getVapidKey()}
+              <b>Vapid key</b>:{' '}
+              {getVapidKey() as string | number | null | undefined}
             </p>
-            {__BENCH_RESULTS?.size > 0 && (
+            {(window.__BENCH_RESULTS as Map<string, unknown> | undefined)
+              ?.size! > 0 && (
               <ul>
-                {Array.from(__BENCH_RESULTS.entries()).map(
-                  ([name, duration]) => (
-                    <li>
-                      <b>{name}</b>: {duration}ms
-                    </li>
-                  ),
-                )}
+                {Array.from(
+                  (window.__BENCH_RESULTS as Map<string, unknown>).entries(),
+                ).map(([name, duration]) => (
+                  <li>
+                    <b>{name}</b>: {duration as number}ms
+                  </li>
+                ))}
               </ul>
             )}
             <p>Service Worker Cache</p>
             <button
               type="button"
               class="plain2 small"
-              onClick={async () => alert(await getCachesKeys())}
+              onClick={async () =>
+                alert(await getCachesKeys() as unknown as string)
+              }
             >
               Show keys count
             </button>{' '}
             <button
               type="button"
               class="plain2 small"
-              onClick={async () => alert(await getCachesSize())}
+              onClick={async () =>
+                alert(await getCachesSize() as unknown as string)
+              }
             >
               Show cache size
             </button>{' '}
@@ -982,8 +1050,8 @@ function Settings({ onClose }) {
                 if (!key) return;
                 try {
                   clearCacheKey(key);
-                } catch (e) {
-                  alert(e);
+                } catch (err) {
+                  alert(err as unknown as string);
                 }
               }}
             >
@@ -995,8 +1063,8 @@ function Settings({ onClose }) {
               onClick={() => {
                 try {
                   clearCaches();
-                } catch (e) {
-                  alert(e);
+                } catch (err) {
+                  alert(err as unknown as string);
                 }
               }}
             >
@@ -1006,13 +1074,13 @@ function Settings({ onClose }) {
             <label>
               <input
                 type="checkbox"
-                checked={expTabBarV2}
+                checked={!!expTabBarV2}
                 onChange={(e) => {
-                  const { checked } = e.target;
+                  const { checked } = e.currentTarget;
                   document.body.classList.toggle('exp-tab-bar-v2', checked);
                   setExpTabBarV2(checked);
                   if (checked) {
-                    store.local.set('experiments-tabBarV2', true);
+                    store.local.set('experiments-tabBarV2', 'true');
                   } else {
                     store.local.del('experiments-tabBarV2');
                   }
@@ -1027,9 +1095,13 @@ function Settings({ onClose }) {
   );
 }
 
-function TextSizeControl({ currentTextSize }) {
-  const textSizeFieldRef = useRef(null);
-  const [size, setSize] = useState(currentTextSize);
+interface TextSizeControlProps {
+  currentTextSize: number;
+}
+
+function TextSizeControl({ currentTextSize }: TextSizeControlProps): VNode {
+  const textSizeFieldRef = useRef<HTMLInputElement | null>(null);
+  const [size, setSize] = useState<number>(currentTextSize);
   const [debouncedSize] = useDebounce(size, 1000);
 
   useEffect(() => {
@@ -1040,7 +1112,7 @@ function TextSizeControl({ currentTextSize }) {
     if (debouncedSize === DEFAULT_TEXT_SIZE) {
       store.local.del('textSize');
     } else {
-      store.local.set('textSize', debouncedSize);
+      store.local.set('textSize', String(debouncedSize));
     }
   }, [debouncedSize]);
 
@@ -1062,11 +1134,11 @@ function TextSizeControl({ currentTextSize }) {
         type="range"
         min={SMALLEST_TEXT_SIZE}
         max={LARGEST_TEXT_SIZE}
-        step="1"
+        step={1}
         value={size}
         list="sizes"
         onChange={(e) => {
-          const value = parseInt(e.target.value, 10);
+          const value = parseInt(e.currentTarget.value, 10);
           setSize(value);
         }}
       />{' '}
@@ -1082,17 +1154,17 @@ function TextSizeControl({ currentTextSize }) {
         <Trans comment="Preview of one character, in largest size">A</Trans>
       </button>
       <datalist id="sizes">
-        {TEXT_SIZES.map((size) => (
-          <option value={size} />
+        {TEXT_SIZES.map((s) => (
+          <option value={s} />
         ))}
       </datalist>
     </div>
   );
 }
 
-async function getCachesKeys() {
+async function getCachesKeys(): Promise<Record<string, number>> {
   const keys = await caches.keys();
-  const total = {};
+  const total: Record<string, number> = {};
   for (const key of keys) {
     const cache = await caches.open(key);
     const k = await cache.keys();
@@ -1101,9 +1173,9 @@ async function getCachesKeys() {
   return total;
 }
 
-async function getCachesSize() {
+async function getCachesSize(): Promise<Record<string, string>> {
   const keys = await caches.keys();
-  let total = {};
+  const total: Record<string, number> = {};
   let TOTAL = 0;
   for (const key of keys) {
     const cache = await caches.open(key);
@@ -1111,12 +1183,12 @@ async function getCachesSize() {
     for (const item of k) {
       try {
         const response = await cache.match(item);
-        const blob = await response.blob();
+        const blob = await response!.blob();
         total[key] = (total[key] || 0) + blob.size;
         TOTAL += blob.size;
       } catch (e) {
-        alert('Failed to get cache size for ' + item);
-        alert(e);
+        alert('Failed to get cache size for ' + (item as unknown as string));
+        alert(e as unknown as string);
       }
     }
   }
@@ -1128,32 +1200,47 @@ async function getCachesSize() {
   };
 }
 
-function clearCacheKey(key) {
+function clearCacheKey(key: string): Promise<boolean> {
   return caches.delete(key);
 }
 
-async function clearCaches() {
+async function clearCaches(): Promise<void> {
   const keys = await caches.keys();
   for (const key of keys) {
     await caches.delete(key);
   }
 }
 
-function PushNotificationsSection({ onClose }) {
+interface PushNotificationsSectionProps {
+  onClose?: () => void;
+}
+
+interface BackendPushSubscriptionShape {
+  alerts: Record<string, unknown>;
+  policy: string;
+  [key: string]: unknown;
+}
+
+function PushNotificationsSection({
+  onClose,
+}: PushNotificationsSectionProps): VNode | null {
   const { t } = useLingui();
   if (!isPushSupported()) return null;
 
   const { instance } = api();
-  const [uiState, setUIState] = useState('default');
-  const pushFormRef = useRef();
-  const [allowNotifications, setAllowNotifications] = useState(false);
-  const [needRelogin, setNeedRelogin] = useState(false);
-  const previousPolicyRef = useRef();
+  const [uiState, setUIState] = useState<string>('default');
+  const pushFormRef = useRef<HTMLFormElement | null>(null);
+  const [allowNotifications, setAllowNotifications] = useState<boolean>(false);
+  const [needRelogin, setNeedRelogin] = useState<boolean>(false);
+  const previousPolicyRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     (async () => {
       setUIState('loading');
       try {
-        const { subscription, backendSubscription } = await initSubscription();
+        const result = await initSubscription();
+        const backendSubscription = (
+          result?.backendSubscription as BackendPushSubscriptionShape | null
+        ) ?? null;
         if (
           backendSubscription?.policy &&
           backendSubscription.policy !== 'none'
@@ -1162,24 +1249,32 @@ function PushNotificationsSection({ onClose }) {
           const { alerts, policy } = backendSubscription;
           console.log('backendSubscription', backendSubscription);
           previousPolicyRef.current = policy;
-          const { elements } = pushFormRef.current;
-          const policyEl = elements.namedItem('policy');
-          if (policyEl) policyEl.value = policy;
-          // alerts is {}, iterate it
-          Object.entries(alerts).forEach(([alert, value]) => {
-            const el = elements.namedItem(alert);
-            if (el?.type === 'checkbox') {
-              el.checked = !!value;
-            }
-          });
+          const form = pushFormRef.current;
+          if (form) {
+            const { elements } = form;
+            const policyEl = elements.namedItem('policy') as
+              | (HTMLElement & { value: string })
+              | null;
+            if (policyEl) policyEl.value = policy;
+            // alerts is {}, iterate it
+            Object.entries(alerts).forEach(([alert, value]) => {
+              const el = elements.namedItem(alert) as
+                | HTMLInputElement
+                | null;
+              if (el?.type === 'checkbox') {
+                el.checked = !!value;
+              }
+            });
+          }
         }
         setUIState('default');
       } catch (err) {
         console.warn(err);
-        if (/outside.*authorized/i.test(err.message)) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (/outside.*authorized/i.test(message)) {
           setNeedRelogin(true);
         } else {
-          alert(err?.message || err);
+          alert(message);
         }
         setUIState('error');
       }
@@ -1193,11 +1288,28 @@ function PushNotificationsSection({ onClose }) {
       ref={pushFormRef}
       onChange={() => {
         setTimeout(() => {
-          const values = Object.fromEntries(new FormData(pushFormRef.current));
+          const form = pushFormRef.current;
+          if (!form) return;
+          const values = Object.fromEntries(new FormData(form)) as Record<
+            string,
+            FormDataEntryValue
+          >;
           const allowNotifications = !!values['policy-allow'];
-          const params = {
+          // NOTE: original JS nested `policy` under `data` and did not pass a
+          // top-level `policy` argument to `updateSubscription`. The util
+          // destructures `policy` only at the top level, so the original code
+          // effectively sent `policy: undefined` to the backend update helper.
+          // Preserving that exact shape here; fixing the bug is out of scope
+          // for this TS migration batch.
+          const params: {
             data: {
-              policy: values.policy,
+              policy: string;
+              alerts: Record<string, boolean>;
+            };
+            policy: undefined;
+          } = {
+            data: {
+              policy: values.policy as string,
               alerts: {
                 mention: !!values.mention,
                 favourite: !!values.favourite,
@@ -1209,6 +1321,7 @@ function PushNotificationsSection({ onClose }) {
                 status: !!values.status,
               },
             },
+            policy: undefined,
           };
 
           let alertsCount = 0;
@@ -1269,7 +1382,7 @@ function PushNotificationsSection({ onClose }) {
                 name="policy-allow"
                 checked={allowNotifications}
                 onChange={async (e) => {
-                  const { checked } = e.target;
+                  const { checked } = e.currentTarget;
                   if (checked) {
                     // Request permission
                     const permission = await Notification.requestPermission();
