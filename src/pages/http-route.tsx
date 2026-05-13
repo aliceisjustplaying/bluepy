@@ -7,9 +7,7 @@ import { useLocation } from 'react-router-dom';
 import LinkUntyped from '../components/link';
 import Loader from '../components/loader';
 import { api } from '../utils/api';
-import getInstanceStatusURL, {
-  getInstanceStatusObject,
-} from '../utils/get-instance-status-url';
+import { getInstanceStatusObject } from '../utils/get-instance-status-url';
 
 interface LinkProps {
   to: string;
@@ -29,21 +27,23 @@ export default function HttpRoute() {
 
   useLayoutEffect(() => {
     setUIState('loading');
-    (async () => {
+    void (async () => {
       // Check if status returns 200
       try {
         const { instance, id } = statusObject;
         if (id) {
           const { masto } = api({ instance });
           const statusesResource = masto.v1
-            .statuses as unknown as mastodon.rest.v1.StatusesResource;
+            .statuses as mastodon.rest.v1.StatusesResource;
           const status = await statusesResource.$select(id).fetch();
           if (status) {
             window.location.hash = statusURL + '?view=full';
             return;
           }
         }
-      } catch (e) {}
+      } catch {
+        // ignore: fall through to search fallback
+      }
 
       // Fallback to search
       {
@@ -80,7 +80,7 @@ export default function HttpRoute() {
             <Trans>Resolving…</Trans>
           </h2>
           <p>
-            <a href={url} target="_blank" rel="noopener">
+            <a href={url} target="_blank" rel="noopener noreferrer">
               {url}
             </a>
           </p>
@@ -91,7 +91,7 @@ export default function HttpRoute() {
             <Trans>Unable to resolve URL</Trans>
           </h2>
           <p>
-            <a href={url} target="_blank" rel="noopener">
+            <a href={url} target="_blank" rel="noopener noreferrer">
               {url}
             </a>
           </p>

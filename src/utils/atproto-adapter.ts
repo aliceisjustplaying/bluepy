@@ -1,8 +1,8 @@
 import {
   type Agent,
+  AtpAgent,
   type AtpAgentOptions,
   type AtpSessionData,
-  BskyAgent,
   RichText,
   type RichTextProps,
 } from '@atproto/api';
@@ -26,13 +26,13 @@ const BSKY_VIDEO_SERVICE_DID = 'did:web:video.bsky.app';
 export { BSKY_PDS, resolveAtprotoLoginService };
 
 /**
- * The adapter accepts both regular and OAuth-authenticated BskyAgent / Agent
+ * The adapter accepts both regular and OAuth-authenticated AtpAgent / Agent
  * instances. Both expose the same surface used by this module, so we type the
  * argument as the more permissive structural shape. Internally we treat it as
  * an opaque agent whose methods are validated by the @atproto/api types at the
  * call sites.
  */
-type AtprotoAgent = BskyAgent | Agent;
+type AtprotoAgent = AtpAgent | Agent;
 
 // Generic loose record for AT proto runtime data whose deep shape varies.
 type AtprotoRecord = Record<string, unknown>;
@@ -465,9 +465,11 @@ interface JobStatus {
 
 interface CreateAtprotoClientOptions {
   // Accept loose runtime types from callers; the adapter shims to concrete
-  // @atproto types at use sites.
-  session?: AtpSessionData | unknown;
-  oauthSession?: OAuthSession | null | unknown;
+  // @atproto types at use sites. `session` and `oauthSession` are typed as
+  // `unknown` to document that callers may pass either the concrete
+  // AtpSessionData/OAuthSession shape or a looser runtime value.
+  session?: unknown;
+  oauthSession?: unknown;
   service?: string;
   persistSession?: unknown;
 }
@@ -571,7 +573,7 @@ async function uploadVideoBlob(
     throw new Error(jobStatus.message || jobStatus.error);
   }
 
-  const videoAgent = new BskyAgent({ service: BSKY_VIDEO_SERVICE });
+  const videoAgent = new AtpAgent({ service: BSKY_VIDEO_SERVICE });
   const statusToken = await getServiceAuthToken({
     agent,
     aud: BSKY_VIDEO_SERVICE_DID,
@@ -586,7 +588,9 @@ async function uploadVideoBlob(
         jobStatus.message || jobStatus.error || 'Video upload failed',
       );
     }
-    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 1_000);
+    });
     const statusRes = await videoAgent.app.bsky.video.getJobStatus(
       { jobId: jobStatus.jobId as string },
       { headers: { authorization: `Bearer ${statusToken}` } },
@@ -598,7 +602,8 @@ async function uploadVideoBlob(
   throw new Error('Timed out waiting for Bluesky video processing');
 }
 
-function escapeHTML(value: string | undefined = ''): string {
+// Coerce non-string runtime values (some ATProto fields arrive as unknown).
+function escapeHTML(value: unknown = ''): string {
   return String(value)
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
@@ -731,12 +736,12 @@ function embedToParts(
     };
   }
 
-  const videoCandidate: AtprotoEmbed | AtprotoEmbedVideo | undefined =
-    (embed.playlist && embed) ||
+  const videoCandidate: AtprotoEmbedVideo | undefined =
+    (embed.playlist && (embed as AtprotoEmbedVideo)) ||
     embed.video ||
-    (embed.media?.playlist && embed.media) ||
+    (embed.media?.playlist && (embed.media as AtprotoEmbedVideo)) ||
     embed.media?.video;
-  const video = videoCandidate as AtprotoEmbedVideo | undefined;
+  const video = videoCandidate;
   if (video?.playlist) {
     mediaAttachments.push({
       id: video.cid || video.playlist,
@@ -778,7 +783,7 @@ function postURL(post: AtprotoPost): string {
 function parseBskyPostURL(
   text: string | undefined = '',
 ): { actor: string; rkey: string } | null {
-  const match = String(text).match(
+  const match = text.match(
     /https?:\/\/bsky\.app\/profile\/([^/\s]+)\/post\/([^?\s#]+)/i,
   );
   if (!match) return null;
@@ -790,7 +795,7 @@ function parseBskyPostURL(
 
 function normalizeActor(actor: string | undefined): string | undefined {
   if (!actor) return actor;
-  return String(actor)
+  return actor
     .replace(/^@/, '')
     .replace(/^https?:\/\/bsky\.app\/profile\//, '')
     .replace(/\/+$/, '');
@@ -805,7 +810,9 @@ function atprotoRkey(uri: string | undefined): string | undefined {
 }
 
 async function wait(ms: number): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, ms));
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 function listToPhanpyList(list: AtprotoList = {}): AdaptedList {
@@ -1134,22 +1141,17 @@ export function postToStatus(
   const record: AtprotoPostRecord = post?.record || post?.value || {};
   const feedReply = (feedItemOrPost as AtprotoFeedItem)?.reply;
   const replyParent: AtprotoReplyRefLike | undefined =
-    feedReply?.parent ||
-    (post.reply?.parent as AtprotoReplyRefLike | undefined);
+    feedReply?.parent || post.reply?.parent;
   const replyParentRef = strongRef(
-    (record.reply?.parent || post.reply?.parent || feedReply?.parent) as
-      | AtprotoReplyRefLike
-      | undefined,
+    record.reply?.parent || post.reply?.parent || feedReply?.parent,
   ) as AtprotoStrongRef | undefined;
   const replyRootRef = strongRef(
-    (record.reply?.root || post.reply?.root || feedReply?.root) as
-      | AtprotoReplyRefLike
-      | undefined,
+    record.reply?.root || post.reply?.root || feedReply?.root,
   ) as AtprotoStrongRef | undefined;
   const replyParentURI = replyParentRef?.uri;
   const replyParentAuthorDid =
     replyParent?.author?.did ||
-    (post.reply?.parent as AtprotoReplyRefLike | undefined)?.author?.did ||
+    post.reply?.parent?.author?.did ||
     atUriRepo(replyParentURI);
   // Preserve JS behavior: `encodeAtprotoID(undefined)` stringifies to
   // "undefined" so malformed inputs each get the same noisy id rather than
@@ -1160,13 +1162,13 @@ export function postToStatus(
     agent,
   );
   const mentions: AdaptedMention[] = (record.facets || []).flatMap((facet) => {
-    const segment = Array.from(
+    const matched = Array.from(
       new RichText({
         text: record.text || '',
         facets: [facet] as unknown as RichTextProps['facets'],
       }).segments(),
-    ).find((segment) => segment.facet);
-    const text = segment?.text;
+    ).find((seg) => seg.facet);
+    const text = matched?.text;
     return (facet.features || [])
       .filter((feature) => feature.$type === 'app.bsky.richtext.facet#mention')
       .map((feature) => {
@@ -1332,6 +1334,7 @@ export function notificationType(
       return 'mention';
     case 'follow':
       return 'follow';
+    case undefined:
     default:
       return 'status';
   }
@@ -1431,9 +1434,8 @@ async function createMediaUpload({
       encoding: file.type,
     });
     const blob = res.data.blob as unknown as BlobRefLike;
-    const id = String(
-      blob?.ref?.toString?.() || blob?.ref?.$link || crypto.randomUUID(),
-    );
+    const id =
+      blob?.ref?.toString?.() || blob?.ref?.$link || crypto.randomUUID();
     const media: AdaptedUploadedMedia = {
       id,
       type: 'image',
@@ -1448,9 +1450,8 @@ async function createMediaUpload({
 
   if (file.type?.startsWith('video/')) {
     const blob = await uploadVideoBlob(agent, file);
-    const id = String(
-      blob?.ref?.toString?.() || blob?.ref?.$link || crypto.randomUUID(),
-    );
+    const id =
+      blob?.ref?.toString?.() || blob?.ref?.$link || crypto.randomUUID();
     const media: AdaptedUploadedMedia = {
       id,
       type: 'video',
@@ -1503,7 +1504,7 @@ export function createAtprotoClient({
 }: CreateAtprotoClientOptions) {
   const agentOrNull: AtprotoAgent | null = oauthSession
     ? createAtprotoOAuthAgent(oauthSession as OAuthSession)
-    : new BskyAgent({
+    : new AtpAgent({
         service,
         persistSession: persistSession as AtpAgentOptions['persistSession'],
       } satisfies AtpAgentOptions);
@@ -2166,7 +2167,7 @@ export function createAtprotoClient({
     const posts: AtprotoPost[] = statusURIs.length
       ? await agent
           .getPosts({ uris: statusURIs })
-          .then((res) => res.data.posts as unknown as AtprotoPost[])
+          .then((postsRes) => postsRes.data.posts as unknown as AtprotoPost[])
           .catch(() => [] as AtprotoPost[])
       : [];
     const postMap: Record<string, AdaptedStatus> = Object.fromEntries(
@@ -2268,16 +2269,12 @@ export function createAtprotoClient({
               : ([id].filter(Boolean) as string[]);
             if (!ids.length) return [];
             const profilesRes = await agent.getProfiles({
-              actors: ids.map(
-                (value) => normalizeActor(value) ?? '',
-              ) as string[],
+              actors: ids.map((value) => normalizeActor(value) ?? ''),
             });
             const relationshipsRes =
               await agent.app.bsky.graph.getRelationships({
                 actor: agentLoose.did ?? '',
-                others: ids.map(
-                  (value) => normalizeActor(value) ?? '',
-                ) as string[],
+                others: ids.map((value) => normalizeActor(value) ?? ''),
               });
             const profiles: Record<string, AtprotoActor> = Object.fromEntries(
               (profilesRes.data.profiles as unknown as AtprotoActor[]).map(
@@ -2377,7 +2374,7 @@ export function createAtprotoClient({
               } = {}) {
                 const q = [tag, ...any]
                   .filter(Boolean)
-                  .map((value) => `#${String(value).replace(/^#/, '')}`)
+                  .map((value) => `#${value.replace(/^#/, '')}`)
                   .join(' ');
                 return makeCollection<AdaptedStatus[]>(async (cursor) => {
                   const res = await agent.app.bsky.feed.searchPosts({
@@ -2565,7 +2562,7 @@ export function createAtprotoClient({
             // typed as `unknown` so no incorrect shape claim is introduced.
             return {
               cursor: res.data.cursor,
-              items: (res.data.bookmarks as unknown[]).map((bookmark) =>
+              items: res.data.bookmarks.map((bookmark) =>
                 postToStatus(
                   bookmark as
                     | AtprotoFeedItem
@@ -2900,15 +2897,15 @@ export function createAtprotoClient({
           if (mediaIds.length) {
             const media = mediaIds
               .map((id) => uploadedMedia.get(id))
-              .filter((media): media is AdaptedUploadedMedia =>
-                Boolean(media?.blob),
+              .filter((item): item is AdaptedUploadedMedia =>
+                Boolean(item?.blob),
               );
-            const videos = media.filter((media) => media.type === 'video');
+            const videos = media.filter((item) => item.type === 'video');
             const images = media
-              .filter((media) => media.type === 'image')
-              .map((media) => ({
-                image: media.blob,
-                alt: media.description || '',
+              .filter((item) => item.type === 'image')
+              .map((item) => ({
+                image: item.blob,
+                alt: item.description || '',
               }));
             if (videos.length && images.length) {
               throw new Error('Bluesky posts cannot mix images and video');
@@ -3269,7 +3266,7 @@ export async function loginAtproto({
   service?: string;
 }) {
   service = await resolveAtprotoLoginService({ identifier, service });
-  const agent = new BskyAgent({ service });
+  const agent = new AtpAgent({ service });
   await agent.login({ identifier, password });
   const profile = await agent.getProfile({
     actor: (agent as unknown as { did?: string }).did ?? '',

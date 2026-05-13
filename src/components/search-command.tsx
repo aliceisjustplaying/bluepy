@@ -1,6 +1,11 @@
 import './search-command.css';
 
-import type { ComponentType, JSX, Ref } from 'preact';
+import type {
+  ComponentType,
+  Ref,
+  TargetedEvent,
+  TargetedMouseEvent,
+} from 'preact';
 import { memo } from 'preact/compat';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -19,7 +24,7 @@ interface SearchFormHandle {
 
 interface SearchFormProps {
   hidden?: boolean;
-  onSubmit?: (e: JSX.TargetedEvent<HTMLFormElement>) => void;
+  onSubmit?: (e: TargetedEvent<HTMLFormElement>) => void;
   ref?: Ref<SearchFormHandle>;
 }
 
@@ -114,7 +119,7 @@ export default memo(function SearchCommand({
     <div
       id="search-command-container"
       hidden={hidden}
-      onClick={(e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+      onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
         console.log(e);
         if (e.target === e.currentTarget) {
           closeSearch();

@@ -9,7 +9,7 @@ import {
   decompressFromEncodedURIComponent,
 } from 'lz-string';
 import type { mastodon } from 'masto';
-import type { JSX } from 'preact';
+import type { HTMLAttributes } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
@@ -23,7 +23,6 @@ import { getLists, getListTitle, splitListsAndFeeds } from '../utils/lists';
 import pmem from '../utils/pmem';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
-import store from '../utils/store';
 import { getCurrentAccount, getCurrentAccountID } from '../utils/store-utils';
 
 import AsyncText from './AsyncText';
@@ -57,13 +56,6 @@ const statesShortcuts = states as unknown as {
 
 // `api().masto` is loosely typed at the hub (open index signature). Shim a
 // narrower view for the v1 endpoints touched here.
-interface AccountFetchClient {
-  fetch(): Promise<{
-    username?: string;
-    acct?: string;
-    displayName?: string;
-  }>;
-}
 interface AccountSelectClient {
   fetch(): Promise<{
     username?: string;
@@ -464,7 +456,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                     <Icon icon={icon as string | undefined} />
                     <span class="shortcut-text">
                       <AsyncText>{title as string | Promise<string>}</AsyncText>
-                      {(subtitle as unknown) && (
+                      {!!subtitle && (
                         <>
                           {' '}
                           <small class="ib insignificant">
@@ -698,12 +690,12 @@ function ShortcutForm({
     [],
   );
   useEffect(() => {
-    (async () => {
+    void (async () => {
       if (currentType !== 'list') return;
       try {
         setUIState('loading');
-        const lists = await getLists();
-        setLists(lists);
+        const fetchedLists = await getLists();
+        setLists(fetchedLists);
         setUIState('default');
       } catch (e) {
         console.error(e);
@@ -711,7 +703,7 @@ function ShortcutForm({
       }
     })();
 
-    (async () => {
+    void (async () => {
       if (currentType !== 'hashtag') return;
       try {
         const tags = await fetchFollowedTags();
@@ -732,16 +724,15 @@ function ShortcutForm({
       // Populate form
       const form = formRef.current;
       if (!form) return;
-      (TYPE_PARAMS as Record<string, TypeParam[]>)[currentType].forEach(
-        ({ name, type }) => {
-          const input = form.querySelector(
+      TYPE_PARAMS[currentType]?.forEach(({ name, type }) => {
+          const input = form.querySelector<HTMLInputElement>(
             `[name="${name}"]`,
-          ) as HTMLInputElement | null;
+          );
           if (input && shortcut && shortcut[name]) {
             if (type === 'checkbox') {
-              input.checked = shortcut[name] === 'on' ? true : false;
+              input.checked = shortcut[name] === 'on';
             } else {
-              input.value = shortcut[name] as string;
+              input.value = shortcut[name];
             }
           }
         },
@@ -811,7 +802,9 @@ function ShortcutForm({
               >
                 <option></option>
                 {TYPES.map((type) => (
-                  <option value={type}>{_(TYPE_TEXT[type])}</option>
+                  <option key={type} value={type}>
+                    {_(TYPE_TEXT[type])}
+                  </option>
                 ))}
               </select>
             </label>
@@ -821,7 +814,7 @@ function ShortcutForm({
                 ({ text, name, type, placeholder, pattern, notRequired }) => {
                   if (currentType === 'list') {
                     return (
-                      <p>
+                      <p key={name}>
                         <label>
                           <span>
                             <Trans>List</Trans>
@@ -839,14 +832,18 @@ function ShortcutForm({
                             {userLists.length > 0 && (
                               <optgroup label={t`Lists`}>
                                 {userLists.map((list) => (
-                                  <option value={list.id}>{list.title}</option>
+                                  <option key={list.id} value={list.id}>
+                                    {list.title}
+                                  </option>
                                 ))}
                               </optgroup>
                             )}
                             {feeds.length > 0 && (
                               <optgroup label={t`Feeds`}>
                                 {feeds.map((feed) => (
-                                  <option value={feed.id}>{feed.title}</option>
+                                  <option key={feed.id} value={feed.id}>
+                                    {feed.title}
+                                  </option>
                                 ))}
                               </optgroup>
                             )}
@@ -857,7 +854,7 @@ function ShortcutForm({
                   }
 
                   return (
-                    <p>
+                    <p key={name}>
                       <label>
                         <span>{typeof text === 'string' ? text : _(text)}</span>{' '}
                         {(() => {
@@ -888,14 +885,14 @@ function ShortcutForm({
                             spellCheck: false,
                             pattern,
                             dir: 'auto',
-                          } as unknown as JSX.HTMLAttributes<HTMLInputElement>;
+                          } as unknown as HTMLAttributes<HTMLInputElement>;
                           return <input {...inputProps} />;
                         })()}
                         {currentType === 'hashtag' &&
                           followedHashtags.length > 0 && (
                             <datalist id="followed-hashtags-datalist">
                               {followedHashtags.map((tag) => (
-                                <option value={tag.name} />
+                                <option key={tag.name} value={tag.name} />
                               ))}
                             </datalist>
                           )}
@@ -911,11 +908,7 @@ function ShortcutForm({
             ] && (
               <p class="form-note insignificant">
                 <Icon icon="info" />
-                {_(
-                  (FORM_NOTES as Record<string, MessageDescriptor>)[
-                    currentType
-                  ],
-                )}
+                {_(FORM_NOTES[currentType])}
               </p>
             )}
           <footer>
@@ -983,15 +976,17 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
       setImportUIState('default');
       console.log('⚡ Parsed imported shortcuts', parsed);
       return parsed;
-    } catch (err) {
+    } catch {
       // Fallback to JSON string parsing
       // There's a chance that someone might want to import a JSON string instead of the compressed version
       try {
         const parsed: unknown = JSON.parse(importShortcutStr);
-        if (!Array.isArray(parsed)) throw new Error('Not an array');
+        if (!Array.isArray(parsed)) {
+          throw new Error('Not an array');
+        }
         setImportUIState('default');
         return parsed;
-      } catch (err) {
+      } catch {
         setImportUIState('error');
         return null;
       }
@@ -1062,7 +1057,8 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 type="button"
                 class="plain2 small"
                 disabled={importUIState === 'cloud-downloading'}
-                onClick={async () => {
+                onClick={() => {
+                  void (async () => {
                   setImportUIState('cloud-downloading');
                   const currentAccount = getCurrentAccountID();
                   showToast(t`Downloading saved shortcuts from server…`);
@@ -1085,7 +1081,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                             /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/,
                           ) as RegExpMatchArray
                         )[1];
-                        const { v, dt, data } = JSON.parse(settings) as {
+                        const { data } = JSON.parse(settings) as {
                           v: string;
                           dt: number;
                           data: string;
@@ -1103,6 +1099,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                     setImportUIState('error');
                     showToast(t`Unable to download shortcuts`);
                   }
+                  })();
                 }}
                 title={t`Download shortcuts from server`}
               >
@@ -1122,13 +1119,13 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                   </small>
                 </p>
                 <ol class="import-settings-list">
-                  {parsedImportShortcutStr.map((rawShortcut) => {
+                  {parsedImportShortcutStr.map((rawShortcut, idx) => {
                     // The JS original accesses fields directly without
                     // validating each entry. We treat each parsed element as
                     // a loose string-record to preserve that.
                     const shortcut = rawShortcut as Record<string, string>;
                     return (
-                      <li>
+                      <li key={idx}>
                         <span
                           style={{
                             opacity: shortcuts.some((s: ShortcutEntry) =>
@@ -1223,9 +1220,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                     const parsed = parsedImportShortcutStr as unknown[];
                     const nonUniqueShortcuts = parsed.filter((rawShortcut) => {
                       const shortcut = rawShortcut as Record<string, unknown>;
-                      return !(
-                        statesShortcuts.shortcuts as ShortcutEntry[]
-                      ).some((s) =>
+                      return !statesShortcuts.shortcuts.some((s) =>
                         // Compare all properties
                         Object.keys(s).every((key) => s[key] === shortcut[key]),
                       );
@@ -1307,13 +1302,15 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 if (!target.value) return;
                 target.select();
                 // Copy url to clipboard
-                try {
-                  navigator.clipboard.writeText(target.value);
-                  showToast(t`Shortcuts copied`);
-                } catch (e) {
-                  console.error(e);
-                  showToast(t`Unable to copy shortcuts`);
-                }
+                void (async () => {
+                  try {
+                    await navigator.clipboard.writeText(target.value);
+                    showToast(t`Shortcuts copied`);
+                  } catch (err) {
+                    console.error(err);
+                    showToast(t`Unable to copy shortcuts`);
+                  }
+                })();
               }}
               dir="auto"
             />
@@ -1334,7 +1331,8 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 type="button"
                 class="plain2 small"
                 disabled={importUIState === 'cloud-uploading'}
-                onClick={async () => {
+                onClick={() => {
+                  void (async () => {
                   setImportUIState('cloud-uploading');
                   const currentAccount = getCurrentAccountID();
                   try {
@@ -1379,6 +1377,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                     setImportUIState('error');
                     showToast(t`Unable to save shortcuts`);
                   }
+                  })();
                 }}
                 title={t`Sync to server`}
               >
@@ -1393,13 +1392,15 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
               class="plain2"
               disabled={!shortcutsStr}
               onClick={() => {
-                try {
-                  navigator.clipboard.writeText(shortcutsStr);
-                  showToast(t`Shortcut settings copied`);
-                } catch (e) {
-                  console.error(e);
-                  showToast(t`Unable to copy shortcut settings`);
-                }
+                void (async () => {
+                  try {
+                    await navigator.clipboard.writeText(shortcutsStr);
+                    showToast(t`Shortcut settings copied`);
+                  } catch (err) {
+                    console.error(err);
+                    showToast(t`Unable to copy shortcut settings`);
+                  }
+                })();
               }}
             >
               <Icon icon="clipboard" />{' '}
@@ -1416,14 +1417,16 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                   class="plain2"
                   disabled={!shortcutsStr}
                   onClick={() => {
-                    try {
-                      navigator.share({
-                        text: shortcutsStr,
-                      });
-                    } catch (e) {
-                      console.error(e);
-                      alert(t`Sharing doesn't seem to work.`);
-                    }
+                    void (async () => {
+                      try {
+                        await navigator.share({
+                          text: shortcutsStr,
+                        });
+                      } catch (err) {
+                        console.error(err);
+                        alert(t`Sharing doesn't seem to work.`);
+                      }
+                    })();
                   }}
                 >
                   <Icon icon="share" />{' '}

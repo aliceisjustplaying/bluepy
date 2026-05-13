@@ -1,6 +1,10 @@
 import './modal.css';
 
-import type { ComponentChildren, JSX } from 'preact';
+import type {
+  ComponentChildren,
+  TargetedFocusEvent,
+  TargetedMouseEvent,
+} from 'preact';
 import { createPortal } from 'preact/compat';
 import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -19,7 +23,7 @@ function getBackdropThemeColor() {
 interface ModalProps {
   children?: ComponentChildren;
   onClose?: ((event?: Event) => void) | null;
-  onClick?: ((event: JSX.TargetedMouseEvent<HTMLDivElement>) => void) | null;
+  onClick?: ((event: TargetedMouseEvent<HTMLDivElement>) => void) | null;
   class?: string;
   minimized?: boolean;
   [key: string]: unknown;
@@ -32,10 +36,10 @@ function Modal({
   class: className,
   minimized,
 }: ModalProps) {
-  if (!children) return null;
-
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const hasChildren = !!children;
   useEffect(() => {
+    if (!hasChildren) return undefined;
     let timer = setTimeout(() => {
       const focusElement = modalRef.current?.querySelector(
         '[tabindex="-1"]',
@@ -45,7 +49,7 @@ function Modal({
       }
     }, 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [hasChildren]);
 
   const supportsCloseWatcher = (window as unknown as { CloseWatcher?: unknown })
     .CloseWatcher;
@@ -71,6 +75,7 @@ function Modal({
   useCloseWatcher(onClose, [onClose]);
 
   useEffect(() => {
+    if (!children) return undefined;
     const $deckContainers = document.querySelectorAll('.deck-container');
     if (minimized) {
       // Similar to focusDeck in focus-deck.jsx
@@ -153,7 +158,9 @@ function Modal({
     };
   }, [children, minimized]);
 
-  const Modal = (
+  if (!children) return null;
+
+  const modalContent = (
     <div
       ref={(node: HTMLDivElement | null) => {
         modalRef.current = node;
@@ -163,7 +170,7 @@ function Modal({
         (escRef as { current: HTMLElement | null }).current = inner || node;
       }}
       className={className}
-      onClick={(e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+      onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
         onClick?.(e);
         if (e.target === e.currentTarget) {
           onClose?.(e);
@@ -171,7 +178,7 @@ function Modal({
       }}
       tabIndex={(minimized ? 0 : '-1') as unknown as number}
       inert={minimized}
-      onFocus={(e: JSX.TargetedFocusEvent<HTMLDivElement>) => {
+      onFocus={(e: TargetedFocusEvent<HTMLDivElement>) => {
         try {
           if (e.target === e.currentTarget) {
             const focusElement = modalRef.current?.querySelector(
@@ -193,7 +200,7 @@ function Modal({
     </div>
   );
 
-  return createPortal(Modal, $modalContainer!);
+  return createPortal(modalContent, $modalContainer!);
 
   // return createPortal(children, $modalContainer);
 }

@@ -33,7 +33,7 @@ const createLocale = mem(
   ): Intl.Locale | LocaleLike | null => {
     try {
       return new Intl.Locale(language, options);
-    } catch (e) {
+    } catch {
       // Fallback to simple string splitting
       // May not work properly due to how complicated this is
       if (!language) return null;
@@ -58,7 +58,7 @@ const createLocale = mem(
   },
 );
 
-const _DateTimeFormat = (
+const createDateTimeFormat = (
   locale: string,
   opts: Intl.DateTimeFormatOptions,
 ): Intl.DateTimeFormat => {
@@ -99,11 +99,11 @@ const _DateTimeFormat = (
       matchedLocale === false ? undefined : matchedLocale,
       options,
     );
-  } catch (e) {
+  } catch {
     return new Intl.DateTimeFormat(undefined, options);
   }
 };
 
-const DateTimeFormat = mem(_DateTimeFormat);
+const DateTimeFormat = mem(createDateTimeFormat);
 
 export default DateTimeFormat;

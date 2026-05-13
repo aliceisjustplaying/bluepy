@@ -3,7 +3,7 @@ import './lists.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ComponentType, JSX } from 'preact';
+import type { ComponentType, TargetedMouseEvent } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
@@ -109,7 +109,7 @@ function List(props: ListProps) {
   const latestItem = useRef<string | undefined>(undefined);
   // const [reloadCount, reload] = useReducer((c) => c + 1, 0);
 
-  const timelinesApi = masto.v1.timelines as unknown as {
+  const timelinesApi = masto.v1.timelines as {
     list: ListTimelineEndpoint;
   };
 
@@ -163,7 +163,7 @@ function List(props: ListProps) {
         return true;
       }
       return false;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -176,7 +176,7 @@ function List(props: ListProps) {
   // const [title, setTitle] = useState(`List`);
   useTitle(list.title, `/l/:id`);
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         const fetchedList = await getList(id ?? '');
         if (fetchedList) {
@@ -227,7 +227,13 @@ function List(props: ListProps) {
             }
             onMenuChange={(e) => {
               if (e.open) {
-                getLists().then(setLists);
+                void (async () => {
+                  try {
+                    setLists(await getLists());
+                  } catch (err) {
+                    console.error(err);
+                  }
+                })();
               }
             }}
           >
@@ -242,11 +248,11 @@ function List(props: ListProps) {
                 <MenuHeader className="plain">
                   <Trans>Lists</Trans>
                 </MenuHeader>
-                {menuLists.map((list) => (
-                  <MenuLink key={list.id} to={`/l/${list.id}`}>
+                {menuLists.map((menuList) => (
+                  <MenuLink key={menuList.id} to={`/l/${menuList.id}`}>
                     <span>
-                      {list.title}
-                      {list.exclusive && (
+                      {menuList.title}
+                      {menuList.exclusive && (
                         <>
                           {' '}
                           <ListExclusiveBadge />
@@ -263,10 +269,10 @@ function List(props: ListProps) {
                 <MenuHeader className="plain">
                   <Trans>Feeds</Trans>
                 </MenuHeader>
-                {menuFeeds.map((list) => (
-                  <MenuLink key={list.id} to={`/l/${list.id}`}>
+                {menuFeeds.map((menuFeed) => (
+                  <MenuLink key={menuFeed.id} to={`/l/${menuFeed.id}`}>
                     <Icon icon="sparkles" />
-                    <span>{list.title}</span>
+                    <span>{menuFeed.title}</span>
                   </MenuLink>
                 ))}
               </>
@@ -327,7 +333,7 @@ function List(props: ListProps) {
       />
       {showListAddEditModal && (
         <Modal
-          onClick={(e: JSX.TargetedMouseEvent<HTMLElement>) => {
+          onClick={(e: TargetedMouseEvent<HTMLElement>) => {
             if (e.target === e.currentTarget) {
               setShowListAddEditModal(false);
             }
@@ -366,7 +372,7 @@ function List(props: ListProps) {
       )}
       {showManageMembersModal && (
         <Modal
-          onClick={(e: JSX.TargetedMouseEvent<HTMLElement>) => {
+          onClick={(e: TargetedMouseEvent<HTMLElement>) => {
             if (e.target === e.currentTarget) {
               setShowManageMembersModal(false);
             }
@@ -401,7 +407,7 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
   );
   const [showMore, setShowMore] = useState(false);
 
-  const listsApi = masto.v1.lists as unknown as ListMembersEndpoint;
+  const listsApi = masto.v1.lists as ListMembersEndpoint;
 
   const membersIterator = useRef<
     AsyncIterator<mastodon.v1.Account[]> | undefined
@@ -410,7 +416,7 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
   async function fetchMembers(firstLoad?: boolean) {
     setShowMore(false);
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
         if (firstLoad || !membersIterator.current) {
           membersIterator.current = listsApi
@@ -436,14 +442,14 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
           setShowMore(false);
         }
         setUIState('default');
-      } catch (e) {
+      } catch {
         setUIState('error');
       }
     })();
   }
 
   useEffect(() => {
-    fetchMembers(true);
+    void fetchMembers(true);
   }, []);
 
   return (
@@ -467,11 +473,18 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
             </li>
           ))}
           {showMore && uiState === 'default' && (
-            <InView as="li" onChange={(inView) => inView && fetchMembers()}>
+            <InView
+              as="li"
+              onChange={(inView) => {
+                if (inView) void fetchMembers();
+              }}
+            >
               <button
                 type="button"
                 class="light block"
-                onClick={() => fetchMembers()}
+                onClick={() => {
+                  void fetchMembers();
+                }}
               >
                 <Trans>Show more…</Trans>
               </button>
@@ -495,7 +508,7 @@ function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
     'default',
   );
   const [removed, setRemoved] = useState(false);
-  const listsApi = masto.v1.lists as unknown as ListMembersEndpoint;
+  const listsApi = masto.v1.lists as ListMembersEndpoint;
 
   return (
     <MenuConfirm
@@ -513,14 +526,14 @@ function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
       onClick={() => {
         if (removed) {
           setUIState('loading');
-          (async () => {
+          void (async () => {
             try {
               await listsApi.$select(listID).accounts.create({
                 accountIds: [account.id],
               });
               setUIState('default');
               setRemoved(false);
-            } catch (e) {
+            } catch {
               setUIState('error');
             }
           })();
@@ -529,14 +542,14 @@ function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
           // if (!yes) return;
           setUIState('loading');
 
-          (async () => {
+          void (async () => {
             try {
               await listsApi.$select(listID).accounts.remove({
                 accountIds: [account.id],
               });
               setUIState('default');
               setRemoved(true);
-            } catch (e) {
+            } catch {
               setUIState('error');
             }
           })();

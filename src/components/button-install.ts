@@ -19,8 +19,10 @@ class ButtonInstall extends HTMLElement {
       this.button!.remove();
       return;
     }
-    this.button!.addEventListener('click', async (ev) => {
-      await nav.install!();
+    this.button!.addEventListener('click', () => {
+      nav.install!().catch((err: unknown) => {
+        console.error(err);
+      });
     });
   }
 }

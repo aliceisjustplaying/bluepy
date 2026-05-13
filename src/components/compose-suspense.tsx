@@ -8,10 +8,11 @@ const supportsIntlSegmenter = !shouldPolyfill();
 
 type ComposeModule = { default: ComponentType<Record<string, unknown>> };
 
-function importIntlSegmenter() {
+function importIntlSegmenter(): Promise<unknown> {
   if (!supportsIntlSegmenter) {
     return import('@formatjs/intl-segmenter/polyfill-force.js').catch(() => {});
   }
+  return Promise.resolve();
 }
 
 function importCompose(): Promise<ComposeModule> {
@@ -21,7 +22,9 @@ function importCompose(): Promise<ComposeModule> {
 export async function preload() {
   try {
     await importIntlSegmenter();
-    importCompose();
+    importCompose().catch((err: unknown) => {
+      console.error(err);
+    });
   } catch (e) {
     console.error(e);
   }
@@ -31,7 +34,7 @@ export default function ComposeSuspense(props: Record<string, unknown>) {
   const [Compose, setCompose] = useState<ComposeModule | null>(null);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         if (supportsIntlSegmenter) {
           const component = await importCompose();

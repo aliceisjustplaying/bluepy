@@ -2,7 +2,12 @@ import './timeline2.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentChildren, ComponentType, JSX, RefObject } from 'preact';
+import type {
+  ComponentChildren,
+  ComponentType,
+  RefObject,
+  TargetedMouseEvent,
+} from 'preact';
 import {
   useCallback,
   useEffect,
@@ -258,10 +263,10 @@ function Timeline2({
       cached,
       itemsCount: cached?.items?.length,
     });
-    const items = cached?.items;
-    if (!items?.length) return [];
+    const cachedItems = cached?.items;
+    if (!cachedItems?.length) return [];
     // Populate statuses
-    items.forEach((item) => {
+    cachedItems.forEach((item) => {
       if (isGroupEntry(item)) {
         item.items.forEach((subItem) => {
           saveStatus(
@@ -278,17 +283,17 @@ function Timeline2({
         );
       }
     });
-    return items;
+    return cachedItems;
   });
 
   // Hydrate cached statuses on mount and when page becomes visible
   const hydrateCache = useCallback(() => {
     const cached = cachedData.current;
     if (!cached?.items?.length) return;
-    const cacheAge = cached.updatedAt
+    const cachedAge = cached.updatedAt
       ? Date.now() - cached.updatedAt
       : Infinity;
-    if (cacheAge <= CACHE_AGE) return;
+    if (cachedAge <= CACHE_AGE) return;
 
     const statusIds: string[] = [];
     cached.items.forEach((item) => {
@@ -310,9 +315,8 @@ function Timeline2({
     interface MastoStatusesBatchList {
       list(params: { id: readonly string[] }): Promise<mastodon.v1.Status[]>;
     }
-    const statusesResource = masto.v1
-      .statuses as unknown as MastoStatusesBatchList;
-    (async () => {
+    const statusesResource = masto.v1.statuses as MastoStatusesBatchList;
+    void (async () => {
       try {
         // Process in batches
         for (let i = 0; i < statusIds.length; i += BATCH_SIZE) {
@@ -325,9 +329,9 @@ function Timeline2({
               hydratedStatuses?.map((s) => s.id) || [],
             );
             // Track deleted statuses (not in returnedIds)
-            batchIds.forEach((id) => {
-              if (!returnedIds.has(id)) {
-                deletedStatuses.push(id);
+            batchIds.forEach((batchId) => {
+              if (!returnedIds.has(batchId)) {
+                deletedStatuses.push(batchId);
               }
             });
             if (hydratedStatuses?.length) {
@@ -345,8 +349,8 @@ function Timeline2({
         }
 
         // Mark deleted statuses
-        deletedStatuses.forEach((id) => {
-          const key = statusKey(id, instance);
+        deletedStatuses.forEach((deletedId) => {
+          const key = statusKey(deletedId, instance);
           if (key && states.statuses[key]) {
             states.statuses[key]._deleted = true;
           }
@@ -366,8 +370,8 @@ function Timeline2({
   }, []);
 
   usePageVisibility(
-    (visible) => {
-      if (visible) hydrateCache();
+    (isVisible) => {
+      if (isVisible) hydrateCache();
     },
     [hydrateCache],
   );
@@ -381,15 +385,15 @@ function Timeline2({
     direction: 'next' | 'prev';
   }
   const saveScrollAnchor = useCallback(
-    ({ items, direction }: SaveScrollAnchorArgs) => {
+    ({ items: anchorItems, direction }: SaveScrollAnchorArgs) => {
       console.log('🔍 saveScrollAnchor', {
         direction,
-        items,
+        items: anchorItems,
       });
-      if (!items?.length) return;
+      if (!anchorItems?.length) return;
       if (!scrollableRef.current) return;
       const getItem = direction === 'next' ? getLastItem : getFirstItem;
-      const item = getItem(items);
+      const item = getItem(anchorItems);
       const postID = statusKey(item?.id, instance);
       if (!postID) return;
       const targetElement = scrollableRef.current.querySelector(
@@ -399,7 +403,7 @@ function Timeline2({
         postID,
         targetElement,
         direction,
-        items,
+        items: anchorItems,
       });
       if (targetElement) {
         const containerRect = scrollableRef.current.getBoundingClientRect();
@@ -414,7 +418,7 @@ function Timeline2({
           postID,
           targetElement,
           direction,
-          items,
+          items: anchorItems,
         });
       }
     },
@@ -439,11 +443,10 @@ function Timeline2({
         !max_id && !min_id ? 'start' : max_id ? 'next' : min_id ? 'prev' : null;
       loadStateRef.current = loadState;
       setUIState('loading');
-      (async () => {
+      void (async () => {
         try {
           const result = await fetchItems(params);
 
-          const { max_id, min_id } = params;
           let { value } = result;
           const { originalValue, done } = result;
           const hasOlder = !done;
@@ -530,9 +533,9 @@ function Timeline2({
 
   // `timeline.jsx` exports these hotkey hooks untyped; they return a ref-like
   // mutable container compatible with Preact's `RefObject<HTMLDivElement>`.
-  type HotkeyRef = ReturnType<typeof useJHotkeys> & {
+  interface HotkeyRef {
     current: HTMLDivElement | null;
-  };
+  }
   const jRef = useJHotkeys(scrollableRef) as unknown as HotkeyRef;
   const kRef = useKHotkeys(scrollableRef) as unknown as HotkeyRef;
   const oRef = useOHotkeys() as unknown as HotkeyRef;
@@ -610,7 +613,9 @@ function Timeline2({
         loadItems();
       } else {
         // If from cache, check for updates
-        checkUpdates();
+        checkUpdates().catch((err: unknown) => {
+          console.error(err);
+        });
       }
     }
   }, [loadItems]);
@@ -634,23 +639,29 @@ function Timeline2({
 
   const lastHiddenTime = useRef<number | undefined>(undefined);
   usePageVisibility(
-    (visible) => {
+    (isVisible) => {
       if (firstLoad.current) return;
-      if (visible) {
+      if (isVisible) {
         const timeDiff = Date.now() - (lastHiddenTime.current ?? 0);
         if (!lastHiddenTime.current || timeDiff > 1000 * 3) {
-          checkUpdates();
+          checkUpdates().catch((err: unknown) => {
+            console.error(err);
+          });
         }
       } else {
         lastHiddenTime.current = Date.now();
       }
-      setVisible(visible);
+      setVisible(isVisible);
     },
     [checkUpdates],
   );
 
   useInterval(
-    checkUpdates,
+    () => {
+      checkUpdates().catch((err: unknown) => {
+        console.error(err);
+      });
+    },
     visible && !showNewer ? checkForUpdatesInterval : null,
   );
 
@@ -668,7 +679,7 @@ function Timeline2({
 
     const { itemId, offset, direction } = anchor;
     const targetElement = scrollableRef.current.querySelector(
-      `[data-state-post-id~="${itemId}"]`,
+      `[data-state-post-id~="${String(itemId)}"]`,
     );
     console.log('🔍 Scroll to?', { itemId, offset, targetElement });
 
@@ -715,7 +726,7 @@ function Timeline2({
           oRef.current = node;
         }}
         tabIndex={-1}
-        onClick={(e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+        onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
           const target = e.target as Element | null;
           if (
             headerRef.current &&
@@ -731,7 +742,7 @@ function Timeline2({
         <div class="timeline-deck deck">
           <header
             ref={headerRef}
-            onClick={(e: JSX.TargetedMouseEvent<HTMLElement>) => {
+            onClick={(e: TargetedMouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {
                 scrollableRef.current?.scrollTo({
@@ -740,7 +751,7 @@ function Timeline2({
                 });
               }
             }}
-            onDblClick={(e: JSX.TargetedMouseEvent<HTMLElement>) => {
+            onDblClick={(e: TargetedMouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {
                 loadItems();
