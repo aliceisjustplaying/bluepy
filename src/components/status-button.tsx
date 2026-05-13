@@ -1,4 +1,4 @@
-import type { JSX, Ref } from 'preact';
+import type { HTMLAttributes, Ref, TargetedMouseEvent } from 'preact';
 import { forwardRef } from 'preact/compat';
 import { useEffect, useState } from 'preact/hooks';
 
@@ -7,7 +7,7 @@ import shortenNumber from '../utils/shorten-number';
 import Icon from './icon';
 
 interface StatusButtonProps extends Omit<
-  JSX.HTMLAttributes<HTMLButtonElement>,
+  HTMLAttributes<HTMLButtonElement>,
   'title' | 'class'
 > {
   checked?: boolean;
@@ -19,7 +19,7 @@ interface StatusButtonProps extends Omit<
   size?: string;
   icon?: string;
   iconSize?: string;
-  onClick?: (e: JSX.TargetedMouseEvent<HTMLButtonElement>) => void;
+  onClick?: (e: TargetedMouseEvent<HTMLButtonElement>) => void;
 }
 
 const StatusButton = forwardRef<HTMLButtonElement, StatusButtonProps>(

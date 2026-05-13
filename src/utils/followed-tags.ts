@@ -19,7 +19,7 @@ const MAX_FETCH = 10;
 
 export async function fetchFollowedTags(): Promise<mastodon.v1.Tag[]> {
   const { masto } = api();
-  const followedTags = masto.v1.followedTags as unknown as FollowedTagsResource;
+  const followedTags = masto.v1.followedTags as FollowedTagsResource;
   const iterator = followedTags
     .list({
       limit: LIMIT,
@@ -57,11 +57,11 @@ export async function getFollowedTags(): Promise<mastodon.v1.Tag[]> {
     if (!tags?.length) return await fetchFollowedTags();
     if (updatedAt !== undefined && Date.now() - updatedAt > MAX_AGE) {
       // Stale-while-revalidate
-      fetchFollowedTags();
+      void fetchFollowedTags();
       return tags;
     }
     return tags;
-  } catch (e) {
+  } catch {
     return [];
   }
 }

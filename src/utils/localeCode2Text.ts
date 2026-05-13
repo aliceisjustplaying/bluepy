@@ -35,7 +35,9 @@ interface LocaleCode2TextOptions {
 
 type LocaleCode2TextInput = string | LocaleCode2TextOptions;
 
-function _localeCode2Text(input: LocaleCode2TextInput): string | undefined {
+function localeCode2TextImpl(
+  input: LocaleCode2TextInput,
+): string | undefined {
   let code: string;
   let locale: string | undefined;
   let fallback: string | undefined;
@@ -56,7 +58,7 @@ function _localeCode2Text(input: LocaleCode2TextInput): string | undefined {
       if (notSameIncaseSensitive(yetAnotherText, code)) return yetAnotherText;
     }
     return fallback || '';
-  } catch (e) {
+  } catch {
     if (codeMappings[code]) {
       try {
         const text = IntlDN(
@@ -72,4 +74,4 @@ function _localeCode2Text(input: LocaleCode2TextInput): string | undefined {
   }
 }
 
-export default mem(_localeCode2Text);
+export default mem(localeCode2TextImpl);

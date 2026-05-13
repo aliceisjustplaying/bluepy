@@ -17,13 +17,19 @@ function useInterval(
   useEffect(() => {
     if (!immediate || delay === null || delay === false) return;
     savedCallback.current();
+    // TODO(oxlint:react-hooks/exhaustive-deps) intentionally fires only on
+    // immediate toggle; including delay would refire on every interval change.
   }, [immediate]);
 
   useEffect(() => {
-    if (delay === null || delay === false) return;
-    const tick = () => savedCallback.current();
+    if (delay === null || delay === false) return undefined;
+    const tick = () => {
+      savedCallback.current();
+    };
     const id = setInterval(tick, delay);
-    return () => clearInterval(id);
+    return () => {
+      clearInterval(id);
+    };
   }, [delay]);
 }
 
