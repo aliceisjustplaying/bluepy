@@ -69,12 +69,10 @@ interface SearchV2Endpoint {
 
 export function loadAvailableYears(): AvailableYear[] {
   try {
-    const list =
-      (store.account.get(YEAR_IN_POSTS_LIST_KEY) as YearInPostsList | null) ||
-      {};
+    const list = store.account.get<YearInPostsList>(YEAR_IN_POSTS_LIST_KEY) || {};
     const sortedYears = Object.entries(list)
-      .map(([year, data]) => ({ year: parseInt(year), ...data }))
-      .sort((a, b) => b.year - a.year);
+      .map(([year, data]) => ({ year: parseInt(year, 10), ...data }))
+      .toSorted((a, b) => b.year - a.year);
     return sortedYears;
   } catch (e) {
     console.error(e);
@@ -88,9 +86,7 @@ export async function removeYear(yearToRemove: number): Promise<boolean> {
     const dataId = `${NS}-${yearToRemove}`;
     await db.yearInPosts.del(dataId);
 
-    const list =
-      (store.account.get(YEAR_IN_POSTS_LIST_KEY) as YearInPostsList | null) ||
-      {};
+    const list = store.account.get<YearInPostsList>(YEAR_IN_POSTS_LIST_KEY) || {};
     delete list[yearToRemove];
     store.account.set(YEAR_IN_POSTS_LIST_KEY, list);
 
@@ -205,7 +201,9 @@ export async function fetchYearPosts(
       // Only break if we didn't find any posts in the year in this batch
       if (!foundInYear && !stillAfterYear) break fetchLoop;
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 500);
+      });
     } catch (e) {
       console.error(e);
       break fetchLoop;
@@ -258,7 +256,9 @@ export async function fetchYearPosts(
           // Only break if we didn't find any posts in the year in this batch
           if (!foundInYear) break gapFillLoop;
 
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          await new Promise((resolve) => {
+        setTimeout(resolve, 500);
+      });
         } catch (e) {
           console.error(e);
           break gapFillLoop;
@@ -298,8 +298,7 @@ export async function fetchYearPosts(
   };
   await db.yearInPosts.set(dataId, record);
 
-  const list =
-    (store.account.get(YEAR_IN_POSTS_LIST_KEY) as YearInPostsList | null) || {};
+  const list = store.account.get<YearInPostsList>(YEAR_IN_POSTS_LIST_KEY) || {};
   list[year] = {
     count: allResults.length,
     size: totalSize,

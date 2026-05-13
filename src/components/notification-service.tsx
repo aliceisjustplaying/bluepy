@@ -65,7 +65,7 @@ const Notification =
     console.log('👂👂👂 Listen to message');
     navigator.serviceWorker.addEventListener('message', (event) => {
       console.log('💥💥💥 Message event', event);
-      const data = (event as MessageEvent)?.data as
+      const data = event?.data as
         | ServiceWorkerNotificationMessage
         | undefined;
       const { type, id, accessToken } = data || {};
@@ -88,7 +88,7 @@ interface NotificationSheetData {
 
 export default memo(function NotificationService() {
   const { t } = useLingui();
-  if (!('serviceWorker' in navigator)) return null;
+  const hasServiceWorker = 'serviceWorker' in navigator;
 
   const snapStates = useSnapshot(states);
   const { routeNotification } = snapStates;
@@ -102,6 +102,7 @@ export default memo(function NotificationService() {
   >(false);
 
   useLayoutEffect(() => {
+    if (!hasServiceWorker) return;
     if (!id || !accessToken) return;
     const { instance: currentInstance } = api();
     const { masto, instance } = api({
@@ -112,7 +113,7 @@ export default memo(function NotificationService() {
     const account = accessToken
       ? getAccountByAccessToken(accessToken)
       : getCurrentAccount();
-    (async () => {
+    void (async () => {
       const notifications = masto.v1.notifications as NotificationsApi;
       const notification = await notifications.$select(id).fetch();
       if (notification && account) {
@@ -156,7 +157,7 @@ export default memo(function NotificationService() {
         console.warn('🛎️ Notification not found', id);
       }
     })();
-  }, [id, accessToken]);
+  }, [id, accessToken, hasServiceWorker]);
 
   // useLayoutEffect(() => {
   //   // Listen to message from service worker
@@ -180,15 +181,17 @@ export default memo(function NotificationService() {
 
   useLayoutEffect(() => {
     if (navigator.clearAppBadge) {
-      navigator.clearAppBadge();
+      void navigator.clearAppBadge();
     }
   }, []);
   usePageVisibility((visible: boolean) => {
     if (visible && navigator.clearAppBadge) {
       console.log('🔰 Clear app badge');
-      navigator.clearAppBadge();
+      void navigator.clearAppBadge();
     }
   });
+
+  if (!hasServiceWorker) return null;
 
   const onClose = () => {
     setShowNotificationSheet(false);

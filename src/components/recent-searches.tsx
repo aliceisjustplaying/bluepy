@@ -1,6 +1,6 @@
 import { useAutoAnimate } from '@formkit/auto-animate/preact';
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { JSX } from 'preact';
+import type { TargetedMouseEvent } from 'preact';
 import { useReducer } from 'preact/hooks';
 
 import { api } from '../utils/api';
@@ -17,7 +17,7 @@ import Link from './link';
 import { generateSearchItemData } from './search-form';
 
 interface RecentSearchesProps {
-  onItemClick?: (e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => void;
+  onItemClick?: (e: TargetedMouseEvent<HTMLAnchorElement>) => void;
 }
 
 export default function RecentSearches({ onItemClick }: RecentSearchesProps) {
@@ -81,7 +81,7 @@ export default function RecentSearches({ onItemClick }: RecentSearchesProps) {
               <Link
                 to={to}
                 class="recent-searches-link"
-                onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
+                onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
                   addToSearchHistory(historyItem.query, historyItem.queryType);
                   onItemClick?.(e);
                 }}

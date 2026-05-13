@@ -67,24 +67,27 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
 
   useEffect(() => {
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
-        const lists = await getUserLists();
-        setLists(lists as ListLike[]);
+        const fetchedLists = await getUserLists();
+        setLists(fetchedLists as ListLike[]);
         const accountsEndpoint = masto.v1
           .accounts as unknown as AccountListsEndpoint;
-        const listsContainingAccount = await accountsEndpoint
+        const fetchedListsContainingAccount = await accountsEndpoint
           .$select(accountID)
           .lists.list();
-        console.log({ lists, listsContainingAccount });
-        setListsContainingAccount(listsContainingAccount);
+        console.log({
+          lists: fetchedLists,
+          listsContainingAccount: fetchedListsContainingAccount,
+        });
+        setListsContainingAccount(fetchedListsContainingAccount);
         setUIState('default');
       } catch (e) {
         console.error(e);
         setUIState('error');
       }
     })();
-  }, [reloadCount]);
+  }, [reloadCount, accountID]);
 
   const [showListAddEditModal, setShowListAddEditModal] =
     useState<ListAddEditModalState>(false);
@@ -109,17 +112,17 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
                 (l) => l.id === list.id,
               );
               return (
-                <li>
+                <li key={list.id}>
                   <button
                     type="button"
                     class={`light ${inList ? 'checked' : ''}`}
                     disabled={uiState === 'loading'}
                     onClick={() => {
                       setUIState('loading');
-                      (async () => {
+                      void (async () => {
                         try {
-                          const listsEndpoint = masto.v1
-                            .lists as unknown as ListsAccountsEndpoint;
+                          const listsEndpoint =
+                            masto.v1.lists as ListsAccountsEndpoint;
                           if (inList) {
                             await listsEndpoint
                               .$select(list.id)
