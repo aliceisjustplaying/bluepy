@@ -24,8 +24,8 @@ async function fetchJSON(url) {
         res.on('end', () => {
           try {
             resolve(JSON.parse(data));
-          } catch (e) {
-            reject(e);
+          } catch (error) {
+            reject(error instanceof Error ? error : new Error(String(error)));
           }
         });
       })

@@ -175,16 +175,16 @@ function Settings({ onClose }: SettingsProps): VNode {
                       html.classList.remove('is-light', 'is-dark');
 
                       // Disable manual theme <meta>
-                      const $manualMeta = document.querySelector(
+                      const $manualMeta = document.querySelector<HTMLMetaElement>(
                         'meta[data-theme-setting="manual"]',
-                      ) as HTMLMetaElement | null;
+                      );
                       if ($manualMeta) {
                         $manualMeta.name = '';
                       }
                       // Enable auto theme <meta>s
-                      const $autoMetas = document.querySelectorAll(
+                      const $autoMetas = document.querySelectorAll<HTMLMetaElement>(
                         'meta[data-theme-setting="auto"]',
-                      ) as NodeListOf<HTMLMetaElement>;
+                      );
                       $autoMetas.forEach((m) => {
                         m.name = 'theme-color';
                       });
@@ -193,27 +193,20 @@ function Settings({ onClose }: SettingsProps): VNode {
                       html.classList.toggle('is-dark', theme === 'dark');
 
                       // Enable manual theme <meta>
-                      const $manualMeta = document.querySelector(
+                      const $manualMeta = document.querySelector<HTMLMetaElement>(
                         'meta[data-theme-setting="manual"]',
-                      ) as
-                        | (HTMLMetaElement & {
-                            dataset: DOMStringMap & {
-                              themeLightColor?: string;
-                              themeDarkColor?: string;
-                            };
-                          })
-                        | null;
+                      );
                       if ($manualMeta) {
                         $manualMeta.name = 'theme-color';
                         $manualMeta.content =
                           theme === 'light'
-                            ? ($manualMeta.dataset.themeLightColor as string)
-                            : ($manualMeta.dataset.themeDarkColor as string);
+                            ? String($manualMeta.dataset.themeLightColor)
+                            : String($manualMeta.dataset.themeDarkColor);
                       }
                       // Disable auto theme <meta>s
-                      const $autoMetas = document.querySelectorAll(
+                      const $autoMetas = document.querySelectorAll<HTMLMetaElement>(
                         'meta[data-theme-setting="auto"]',
-                      ) as NodeListOf<HTMLMetaElement>;
+                      );
                       $autoMetas.forEach((m) => {
                         m.name = '';
                       });
@@ -1207,8 +1200,8 @@ async function getCachesSize(): Promise<Record<string, string>> {
         total[key] = (total[key] || 0) + blob.size;
         TOTAL += blob.size;
       } catch (e) {
-        alert('Failed to get cache size for ' + item);
-        alert(e);
+        alert(`Failed to get cache size for ${item.url}`);
+        alert(e instanceof Error ? e.message : String(e));
       }
     }
   }
