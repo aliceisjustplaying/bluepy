@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'preact';
 import { memo } from 'preact/compat';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
 
 import { ICON_NAMESPACE, useIconSprite } from './icon-sprite-manager';
 import { ICONS } from './ICONS';
@@ -47,17 +47,23 @@ function Icon({
   title = title || alt;
   const { loadIcon, isIconLoaded } = useIconSprite();
 
+  // Both `loadIcon` and `isIconLoaded` are re-created whenever any icon in
+  // the app finishes loading (they close over the provider's `loadedIcons`
+  // set). Subscribing the effect to them would re-fire for every <Icon /> on
+  // every icon load — O(icons^2) no-op work. Forward through refs so the
+  // effect reads the latest closures without subscribing. The provider's
+  // functional setState prevents duplicate loads even from stale closures.
+  const loadIconRef = useRef(loadIcon);
+  const isIconLoadedRef = useRef(isIconLoaded);
   useEffect(() => {
-    if (icon && !isIconLoaded(icon)) {
-      void loadIcon(icon);
+    loadIconRef.current = loadIcon;
+    isIconLoadedRef.current = isIconLoaded;
+  }, [loadIcon, isIconLoaded]);
+
+  useEffect(() => {
+    if (icon && !isIconLoadedRef.current(icon)) {
+      void loadIconRef.current(icon);
     }
-    // TODO(oxlint:react-hooks/exhaustive-deps): omits `isIconLoaded` and
-    // `loadIcon`. Both useCallback closures depend on the provider-level
-    // `loadedIcons` set, so they invalidate whenever any icon in the app
-    // loads. Including them would re-fire this effect for every <Icon /> on
-    // every load, causing many no-op renders. The guard `!isIconLoaded(icon)`
-    // is sufficient — the provider's functional setState prevents duplicate
-    // loads even from stale closures.
   }, [icon]);
 
   if (!icon) return null;

@@ -3,7 +3,7 @@ import './quotes-modal.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { ComponentType } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 
@@ -67,56 +67,63 @@ export default function QuotesModal({
   >(undefined);
   const firstLoad = useRef(true);
 
-  const loadQuotes = (isFirstLoad = false) => {
-    if (isFirstLoad || !quotesIterator.current) {
-      const statusesSelect = (
-        masto.v1 as unknown as { statuses: { $select: StatusesSelectFn } }
-      ).statuses.$select;
-      quotesIterator.current = statusesSelect(statusId)
-        .quotes.list({
-          limit: LIMIT,
-        })
-        .values();
-    }
+  // `masto.v1.statuses` is a proxy yielding a fresh reference per access;
+  // memoize the `$select` lookup so the loader callback below has stable
+  // identity tied to the (stable) `masto` client.
+  const statusesSelect = useMemo(
+    () =>
+      (masto.v1 as unknown as { statuses: { $select: StatusesSelectFn } })
+        .statuses.$select,
+    [masto],
+  );
 
-    setUIState('loading');
-
-    void (async () => {
-      try {
-        const iterator = quotesIterator.current;
-        if (!iterator) return;
-        const result = await iterator.next();
-        let { done } = result;
-        const { value } = result;
-
-        if (Array.isArray(value)) {
-          if (isFirstLoad) {
-            setPosts(value);
-          } else {
-            setPosts((prev) => [...prev, ...value]);
-          }
-          if (value.length < LIMIT) {
-            done = true;
-          }
-          setShowMore(!done);
-        } else {
-          setShowMore(false);
-        }
-        setUIState('default');
-      } catch (e) {
-        console.error('Error loading quotes:', e);
-        setUIState('error');
+  const loadQuotes = useCallback(
+    (isFirstLoad = false) => {
+      if (isFirstLoad || !quotesIterator.current) {
+        quotesIterator.current = statusesSelect(statusId)
+          .quotes.list({
+            limit: LIMIT,
+          })
+          .values();
       }
-    })();
-  };
+
+      setUIState('loading');
+
+      void (async () => {
+        try {
+          const iterator = quotesIterator.current;
+          if (!iterator) return;
+          const result = await iterator.next();
+          let { done } = result;
+          const { value } = result;
+
+          if (Array.isArray(value)) {
+            if (isFirstLoad) {
+              setPosts(value);
+            } else {
+              setPosts((prev) => [...prev, ...value]);
+            }
+            if (value.length < LIMIT) {
+              done = true;
+            }
+            setShowMore(!done);
+          } else {
+            setShowMore(false);
+          }
+          setUIState('default');
+        } catch (e) {
+          console.error('Error loading quotes:', e);
+          setUIState('error');
+        }
+      })();
+    },
+    [statusId, statusesSelect],
+  );
 
   useEffect(() => {
     loadQuotes(true);
     firstLoad.current = false;
-    // TODO(oxlint:react-hooks/exhaustive-deps): loadQuotes is recreated each
-    // render; adding it would loop. Wrapping in useCallback requires also
-    // memoizing the masto.v1 reference. Behavioural-equivalent skip.
-  }, [statusId]);
+  }, [loadQuotes]);
 
   return (
     <div id="quotes-modal" class="sheet" tabindex={-1}>

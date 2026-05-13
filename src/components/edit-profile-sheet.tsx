@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import states from '../utils/states';
@@ -33,6 +33,7 @@ interface ProfileAccount {
 }
 
 interface MastoAccountsUpdate {
+  verifyCredentials(): Promise<ProfileAccount | null | undefined>;
   updateCredentials(params: {
     header?: FormDataEntryValue | null;
     avatar?: FormDataEntryValue | null;
@@ -103,17 +104,19 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   const [headerPreview, setHeaderPreview] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  // TODO(oxlint:react-hooks/exhaustive-deps): deliberately runs once on mount.
-  // `masto.v1.accounts` is a proxy recreated on every property access; using
-  // it as a dep would loop. The underlying client is stable for the
-  // component's lifetime.
+  // `masto.v1.accounts` is a proxy returning a fresh reference on every
+  // property access; depending on the raw expression would re-fire this
+  // effect every render. Snapshot it once — the underlying client is stable
+  // for the sheet's lifetime — and use the memoized reference as the dep.
+  const accountsApi = useMemo(
+    () => masto.v1.accounts as unknown as MastoAccountsUpdate,
+    [masto],
+  );
+
   useEffect(() => {
     void (async () => {
       try {
-        const acc = (await masto.v1.accounts.verifyCredentials()) as
-          | ProfileAccount
-          | null
-          | undefined;
+        const acc = await accountsApi.verifyCredentials();
         setAccount(acc ?? null);
         setUIState('default');
       } catch (err) {
@@ -121,7 +124,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
         setUIState('error');
       }
     })();
-  }, []);
+  }, [accountsApi]);
 
   console.log('EditProfileSheet', account);
   const { displayName, source, avatar, header } = account || {};
@@ -189,8 +192,6 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
 
               void (async () => {
                 try {
-                  const accountsApi = masto.v1
-                    .accounts as unknown as MastoAccountsUpdate;
                   const newAccount = await accountsApi.updateCredentials({
                     header: headerField,
                     avatar: avatarField,

@@ -212,21 +212,56 @@ function RelatedActions({
 
   const supportsEndorsements = supports('@mastodon/endorsements');
 
+  // The relationship fetch should re-run only when `info` or `authenticated`
+  // change — never on every parent render of the (possibly non-memoized)
+  // `onRelationshipChange` callback, never on per-access masto proxy churn,
+  // and never on derived values that update in lockstep with `info`. Forward
+  // those through refs so the effect body reads the latest values without
+  // subscribing to them.
+  const onRelationshipChangeRef = useRef(onRelationshipChange);
+  useEffect(() => {
+    onRelationshipChangeRef.current = onRelationshipChange;
+  }, [onRelationshipChange]);
+
+  const fetchContextRef = useRef({
+    currentMasto,
+    currentAuthenticated,
+    sameInstance,
+    id,
+    instance,
+  });
+  useEffect(() => {
+    fetchContextRef.current = {
+      currentMasto,
+      currentAuthenticated,
+      sameInstance,
+      id,
+      instance,
+    };
+  }, [currentMasto, currentAuthenticated, sameInstance, id, instance]);
+
   useEffect(() => {
     if (info) {
+      const {
+        currentMasto: ctxMasto,
+        currentAuthenticated: ctxCurrentAuth,
+        sameInstance: ctxSameInstance,
+        id: ctxId,
+        instance: ctxInstance,
+      } = fetchContextRef.current;
       const currentAccount = getCurrentAccountID();
       let currentID: string | undefined;
       void (async () => {
-        if (sameInstance && authenticated) {
-          currentID = id;
-        } else if (!sameInstance && currentAuthenticated) {
+        if (ctxSameInstance && authenticated) {
+          currentID = ctxId;
+        } else if (!ctxSameInstance && ctxCurrentAuth) {
           // Grab this account from my logged-in instance
           const acctHasInstance = info.acct.includes('@');
           try {
-            const results = await getV2SearchEndpoint(
-              currentMasto,
-            ).list({
-              q: acctHasInstance ? info.acct : `${info.username}@${instance}`,
+            const results = await getV2SearchEndpoint(ctxMasto).list({
+              q: acctHasInstance
+                ? info.acct
+                : `${info.username}@${ctxInstance}`,
               type: 'accounts',
               limit: 1,
               resolve: true,
@@ -256,7 +291,7 @@ function RelatedActions({
         setRelationshipUIState('loading');
 
         const fetchRelationships = getAccountsEndpoint(
-          currentMasto,
+          ctxMasto,
         ).relationships.fetch({
           id: [currentID],
         });
@@ -269,7 +304,7 @@ function RelatedActions({
           if (relationships.length) {
             const fetchedRelationship = relationships[0];
             setRelationship(fetchedRelationship);
-            onRelationshipChange({
+            onRelationshipChangeRef.current({
               relationship: fetchedRelationship,
               currentID,
             });
@@ -280,11 +315,6 @@ function RelatedActions({
         }
       })();
     }
-    // TODO(oxlint:react-hooks/exhaustive-deps): currentMasto is a masto proxy,
-    // onRelationshipChange is a parent-supplied callback not memoized at the
-    // call site, and id/instance/sameInstance/currentAuthenticated are derived
-    // values that should not retrigger this fetch. Restructuring requires
-    // upstream changes in account-info.tsx.
   }, [info, authenticated]);
 
   useEffect(() => {
