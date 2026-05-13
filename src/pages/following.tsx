@@ -103,7 +103,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
         setStreamingClient(nextStreaming);
       });
     }
-  }, [client]);
+  }, [client, streaming]);
   __BENCHMARK.end('time-to-following');
 
   console.debug('RENDER Following', title, id);
@@ -157,7 +157,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       value = dedupeBoosts(value, instance);
       if (firstLoad && latestItemChanged) clearFollowedTagsState();
       setTimeout(() => {
-        assignFollowedTags(value, instance);
+        void assignFollowedTags(value, instance);
       }, 100);
 
       // ENFORCE sort by datetime (Latest first)
@@ -220,7 +220,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
 
   useEffect(() => {
     let sub: StreamingSubscription | null = null;
-    (async () => {
+    void (async () => {
       if (streamingClient) {
         sub = (streamingClient as StreamingUser).user.subscribe();
         console.log('🎏 Streaming user', sub);
@@ -249,7 +249,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       sub?.unsubscribe?.();
       sub = null;
     };
-  }, [streamingClient]);
+  }, [streamingClient, instance]);
 
   return (
     <Timeline

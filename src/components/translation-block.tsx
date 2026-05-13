@@ -57,7 +57,7 @@ const translationQueue = new PQueue({
 const TRANSLATED_MAX_AGE = 1000 * 60 * 60; // 1 hour
 let currentTranslangInstance = 0;
 
-function _translangTranslate(
+function translangTranslateInner(
   text: string,
   source: string,
   target: string,
@@ -124,7 +124,7 @@ function _translangTranslate(
     },
   });
 }
-const translangTranslate = pmem(_translangTranslate, {
+const translangTranslate = pmem(translangTranslateInner, {
   expires: TRANSLATED_MAX_AGE,
 });
 const throttledTranslangTranslate = pmem(
@@ -137,7 +137,7 @@ const throttledTranslangTranslate = pmem(
       {
         signal,
       },
-    ) as Promise<TranslangResult | void>,
+    ) as Promise<TranslangResult | undefined>,
   {
     // I know, this is double-layered memoization
     expires: TRANSLATED_MAX_AGE,
@@ -149,7 +149,7 @@ const throttledBrowserTranslate = ({
   source,
   target,
   signal,
-}: TranslateInvocation): Promise<BrowserTranslateResult | void> =>
+}: TranslateInvocation): Promise<BrowserTranslateResult | undefined> =>
   translationQueue.add(
     () => browserTranslate(text, source as string, target as string),
     {
@@ -161,7 +161,7 @@ type TranslationResult = TranslangResult | BrowserTranslateResult;
 
 type OnTranslateFn = (
   params: TranslateInvocation,
-) => Promise<TranslationResult | void>;
+) => Promise<TranslationResult | undefined>;
 
 interface TranslationBlockProps {
   forceTranslate?: boolean;
@@ -202,11 +202,12 @@ function TranslationBlock({
   const targetLangText = targetLang ? localeCode2Text(targetLang) : undefined;
   const apiSourceLang = useRef<string>('auto');
 
-  if (!onTranslate) {
-    onTranslate = async ({ text, source, target, signal }) => {
+  const translateFn: OnTranslateFn =
+    onTranslate ??
+    (async ({ text: innerText, source, target, signal }) => {
       if (supportsBrowserTranslator) {
         const result = await throttledBrowserTranslate({
-          text,
+          text: innerText,
           source,
           target,
           signal,
@@ -216,15 +217,23 @@ function TranslationBlock({
         }
       }
       return mini
-        ? await throttledTranslangTranslate({ signal, text, source, target })
-        : await translangTranslate(text, source as string, target as string);
-    };
-  }
+        ? await throttledTranslangTranslate({
+            signal,
+            text: innerText,
+            source,
+            target,
+          })
+        : await translangTranslate(
+            innerText,
+            source as string,
+            target as string,
+          );
+    });
 
   const translate = async () => {
     setUIState('loading');
     try {
-      const result = await onTranslate!({
+      const result = await translateFn({
         text,
         source: apiSourceLang.current,
         target: targetLang,
@@ -266,9 +275,11 @@ function TranslationBlock({
     }
   };
 
+  const translateRef = useRef(translate);
+  translateRef.current = translate;
   useEffect(() => {
     if (forceTranslate) {
-      translate();
+      void translateRef.current();
     }
   }, [forceTranslate]);
 
@@ -307,25 +318,20 @@ function TranslationBlock({
   }
 
   return (
-    <div
-      class="status-translation-block"
-      onClick={(e) => {
-        e.preventDefault();
-      }}
-    >
+    <div class="status-translation-block">
       <details ref={detailsRef}>
         <summary>
           <button
             type="button"
             class={uiState === 'loading' ? 'loading-mask' : ''}
-            onClick={async (e) => {
+            onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               if (detailsRef.current) {
                 detailsRef.current.open = !detailsRef.current.open;
               }
               if (uiState === 'loading') return;
-              if (!translatedContent) translate();
+              if (!translatedContent) void translate();
             }}
           >
             <Icon icon="translate" />{' '}
@@ -346,10 +352,8 @@ function TranslationBlock({
               class="translated-source-select"
               disabled={uiState === 'loading'}
               onChange={(e) => {
-                apiSourceLang.current = (
-                  e.currentTarget as HTMLSelectElement
-                ).value;
-                translate();
+                apiSourceLang.current = e.currentTarget.value;
+                void translate();
               }}
             >
               {sourceLanguages.map((l) => {
@@ -363,7 +367,7 @@ function TranslationBlock({
                 });
                 const showCommon = native && common !== native;
                 return (
-                  <option value={l.code}>
+                  <option key={l.code} value={l.code}>
                     {l.code === 'auto'
                       ? t`Auto (${detectedLang ?? '…'})`
                       : showCommon
@@ -391,9 +395,13 @@ function TranslationBlock({
                     class="translated-pronunciation-content"
                     tabIndex={-1}
                     onClick={(e) => {
-                      (e.currentTarget as HTMLElement).classList.toggle(
-                        'expand',
-                      );
+                      e.currentTarget.classList.toggle('expand');
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.currentTarget.classList.toggle('expand');
+                      }
                     }}
                   >
                     {pronunciationContent}

@@ -1,5 +1,5 @@
 import { FocusableItem } from '@szhsin/react-menu';
-import type { ComponentType, JSX, Ref } from 'preact';
+import type { ComponentType, Ref, TargetedMouseEvent } from 'preact';
 
 import LinkRaw from './link';
 
@@ -12,7 +12,7 @@ interface MenuLinkProps {
 const Link = LinkRaw as unknown as ComponentType<
   {
     ref?: Ref<unknown>;
-    onClick?: (event: JSX.TargetedMouseEvent<HTMLAnchorElement>) => void;
+    onClick?: (event: TargetedMouseEvent<HTMLAnchorElement>) => void;
   } & Record<string, unknown>
 >;
 
@@ -30,9 +30,9 @@ function MenuLink(props: MenuLinkProps) {
         <Link
           {...restProps}
           ref={ref}
-          onClick={({ detail }: JSX.TargetedMouseEvent<HTMLAnchorElement>) =>
-            closeMenu(detail === 0 ? 'Enter' : undefined)
-          }
+          onClick={({ detail }: TargetedMouseEvent<HTMLAnchorElement>) => {
+            closeMenu(detail === 0 ? 'Enter' : undefined);
+          }}
         />
       )}
     </FocusableItem>

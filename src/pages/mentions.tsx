@@ -88,7 +88,8 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
       conversations: MastoConversationsApi;
     }
   ).conversations;
-  const [searchParams] = columnMode ? [emptySearchParams] : useSearchParams();
+  const [routerSearchParams] = useSearchParams();
+  const searchParams = columnMode ? emptySearchParams : routerSearchParams;
   const [stateType, setStateType] = useState<string | null>(null);
   const type = props?.type || searchParams.get('type') || stateType;
   useTitle(type === 'private' ? t`Private mentions` : t`Mentions`, '/mentions');
@@ -117,7 +118,7 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
       }
 
       const relationship = relationshipsMap.current[accountID];
-      return relationship?.following === true;
+      return relationship?.following ?? false;
     });
   }
 
@@ -178,10 +179,8 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
       };
     }
     return {
-      ...(results as { done?: boolean }),
-      value: (value as NotificationLike[] | undefined)?.map(
-        (item) => item.status,
-      ),
+      ...results,
+      value: value?.map((item) => item.status),
     };
   }
 
@@ -288,7 +287,7 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
           return true;
         }
         return false;
-      } catch (e) {
+      } catch {
         return false;
       }
     } else {
@@ -308,7 +307,7 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
           return true;
         }
         return false;
-      } catch (e) {
+      } catch {
         return false;
       }
     }
@@ -323,9 +322,7 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
               type="checkbox"
               checked={onlyFollowings}
               onChange={(e) => {
-                setOnlyFollowings(
-                  (e.currentTarget as HTMLInputElement).checked,
-                );
+                setOnlyFollowings(e.currentTarget.checked);
               }}
             />{' '}
             <Trans>Only followings</Trans>
@@ -359,7 +356,7 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
         </div>
       </>
     );
-  }, [type, onlyFollowings]);
+  }, [type, onlyFollowings, columnMode]);
 
   return (
     <Timeline
