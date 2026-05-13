@@ -5,10 +5,10 @@ import { useLocation } from 'react-router-dom';
 // Won't run on the first render
 
 export default function useLocationChange(fn?: (() => void) | null): void {
-  if (!fn) return;
   const location = useLocation();
   const currentLocationRef = useRef(location.pathname);
   useEffect(() => {
+    if (!fn) return;
     // console.log('location', {
     //   current: currentLocationRef.current,
     //   next: location.pathname,
@@ -17,7 +17,7 @@ export default function useLocationChange(fn?: (() => void) | null): void {
       currentLocationRef.current &&
       location.pathname !== currentLocationRef.current
     ) {
-      fn?.();
+      fn();
     }
   }, [location.pathname, fn]);
 }

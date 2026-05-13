@@ -12,7 +12,6 @@ import TimelineUntyped from '../components/timeline';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { saveStatus } from '../utils/states';
-import store from '../utils/store';
 import supports from '../utils/supports';
 import { checkTimelineAccess } from '../utils/timeline-access';
 import useTitle from '../utils/useTitle';
@@ -79,9 +78,8 @@ function Public({ local, columnMode, ...props }: PublicProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const isLocal = !!local;
-  const params = (columnMode ? {} : (useParams() as { instance?: string })) as {
-    instance?: string;
-  };
+  const routeParams = useParams() as { instance?: string };
+  const params: { instance?: string } = columnMode ? {} : routeParams;
   const { masto, authenticated, instance } = api({
     instance: props?.instance || params.instance,
   });
@@ -177,7 +175,7 @@ function Public({ local, columnMode, ...props }: PublicProps) {
         return true;
       }
       return false;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
