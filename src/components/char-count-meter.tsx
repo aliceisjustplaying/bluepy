@@ -23,7 +23,7 @@ function CharCountMeter({ maxCharacters = 500, hidden }: CharCountMeterProps) {
       }}
     >
       <meter
-        class={`${
+        class={
           leftChars <= -10
             ? 'explode'
             : leftChars <= 0
@@ -31,7 +31,7 @@ function CharCountMeter({ maxCharacters = 500, hidden }: CharCountMeterProps) {
               : leftChars <= 20
                 ? 'warning'
                 : ''
-        }`}
+        }
         value={charCount}
         max={maxCharacters}
       />

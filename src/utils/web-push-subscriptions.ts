@@ -128,7 +128,7 @@ interface InitSubscriptionResult {
 export async function initSubscription(): Promise<
   InitSubscriptionResult | undefined
 > {
-  if (!isPushSupported()) return;
+  if (!isPushSupported()) return undefined;
   const { subscription } = await getSubscription();
   let backendSubscription: BackendPushSubscription | null = null;
   try {
@@ -238,7 +238,7 @@ export async function updateSubscription({
   | undefined
 > {
   console.log('🔔 Updating subscription', { data, policy });
-  if (!isPushSupported()) return;
+  if (!isPushSupported()) return undefined;
   let { registration, subscription } = await getSubscription();
   let backendSubscription: BackendPushSubscription | null = null;
 
@@ -249,7 +249,7 @@ export async function updateSubscription({
         policy,
       });
       // TODO: save subscription in user settings
-    } catch (error) {
+    } catch {
       // Backend doesn't have a subscription for this user
       // Create a new one
       backendSubscription = await createBackendPushSubscription({
