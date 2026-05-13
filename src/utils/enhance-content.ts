@@ -19,7 +19,33 @@ const TWITTER_MENTION_REGEX = /@[a-zA-Z0-9_]+@(twitter|x)\.com/;
 const TWITTER_MENTION_CAPTURE_REGEX = /(@([a-zA-Z0-9_]+)@(twitter|x)\.com)/g;
 const CODE_INLINE_CAPTURE_REGEX = /(`[^]+?`)/g;
 
-function createDOM(html, isDocumentFragment) {
+// `dom` is either an HTMLDivElement (when caller wants HTML back) or a
+// DocumentFragment (when caller wants the live DOM via `returnDOM: true`).
+// Both implement the parent-node methods used here.
+type EnhanceDOM = HTMLDivElement | DocumentFragment;
+
+interface EmojiEntry {
+  shortcode?: string;
+  url?: string;
+  staticUrl?: string;
+}
+
+interface EnhanceOpts {
+  emojis?: readonly EmojiEntry[];
+  returnDOM?: boolean;
+  postEnhanceDOM?: (dom: EnhanceDOM) => void;
+}
+
+function createDOM(html: string, isDocumentFragment: true): DocumentFragment;
+function createDOM(
+  html: string,
+  isDocumentFragment?: false,
+): HTMLDivElement;
+function createDOM(
+  html: string,
+  isDocumentFragment?: boolean,
+): EnhanceDOM;
+function createDOM(html: string, isDocumentFragment?: boolean): EnhanceDOM {
   if (isDocumentFragment) {
     const tpl = document.createElement('template');
     tpl.innerHTML = html;
@@ -31,10 +57,13 @@ function createDOM(html, isDocumentFragment) {
   }
 }
 
-function _enhanceContent(content, opts = {}) {
+function _enhanceContent(
+  content: string | null | undefined,
+  opts: EnhanceOpts = {},
+): string | EnhanceDOM {
   if (!content) return '';
   const { emojis, returnDOM, postEnhanceDOM = () => {} } = opts;
-  let enhancedContent = content;
+  const enhancedContent = content;
   // const dom = document.createElement('div');
   // dom.innerHTML = enhancedContent;
   const dom = createDOM(enhancedContent, returnDOM);
@@ -44,13 +73,15 @@ function _enhanceContent(content, opts = {}) {
   if (hasLink) {
     // Add target="_blank" to all links with no target="_blank"
     // E.g. `note` in `account`
-    const noTargetBlankLinks = dom.querySelectorAll('a:not([target="_blank"])');
+    const noTargetBlankLinks = dom.querySelectorAll<HTMLAnchorElement>(
+      'a:not([target="_blank"])',
+    );
     for (const link of noTargetBlankLinks) {
       link.setAttribute('target', '_blank');
     }
 
     // Remove all classes except `u-url`, `mention`, `hashtag`
-    const links = dom.querySelectorAll('a[class]');
+    const links = dom.querySelectorAll<HTMLAnchorElement>('a[class]');
     for (const link of links) {
       for (const c of link.classList) {
         if (!whitelistLinkClasses.includes(c)) {
@@ -62,9 +93,9 @@ function _enhanceContent(content, opts = {}) {
 
   // Add 'has-url-text' to all links that contains a url
   if (hasLink) {
-    const links = dom.querySelectorAll('a[href]');
+    const links = dom.querySelectorAll<HTMLAnchorElement>('a[href]');
     for (const link of links) {
-      if (HTTP_LINK_REGEX.test(link.textContent.trim())) {
+      if (HTTP_LINK_REGEX.test((link.textContent ?? '').trim())) {
         link.classList.add('has-url-text');
         shortenLink(link);
       }
@@ -73,8 +104,8 @@ function _enhanceContent(content, opts = {}) {
 
   // Spanify un-spanned mentions
   if (hasLink) {
-    const links = dom.querySelectorAll('a[href]');
-    const usernames = [];
+    const links = dom.querySelectorAll<HTMLAnchorElement>('a[href]');
+    const usernames: Array<[string, string | undefined]> = [];
     for (const link of links) {
       const text = link.innerText.trim();
       const hasChildren = link.querySelector('*');
@@ -82,7 +113,7 @@ function _enhanceContent(content, opts = {}) {
       if (MENTION_REGEX.test(text)) {
         // Only show @username
         const atSymbol = text[0]; // Preserve the original @ or ＠
-        const [_, username, domain] = text.split(/[@＠]/);
+        const [, username, domain] = text.split(/[@＠]/);
         if (!hasChildren) {
           if (
             !usernames.some(([u]) => u === username) ||
@@ -117,12 +148,12 @@ function _enhanceContent(content, opts = {}) {
   // EMOJIS
   // ======
   // Convert :shortcode: to <img />
-  let textNodes;
+  let textNodes: Text[];
   if (enhancedContent.includes(':') && emojis?.length) {
     textNodes = extractTextNodes(dom);
     for (const node of textNodes) {
-      let html = escapeHTML(node.nodeValue);
-      html = emojifyText(html, emojis);
+      let html = escapeHTML(node.nodeValue ?? '');
+      html = emojifyText(html, emojis as EmojiEntry[]);
       fauxDiv.innerHTML = html;
       node.replaceWith(...fauxDiv.childNodes);
     }
@@ -132,9 +163,9 @@ function _enhanceContent(content, opts = {}) {
   // ===========
   // Convert ```code``` to <pre><code>code</code></pre>
   if (hasCodeBlock) {
-    const blocks = [...dom.querySelectorAll('p')].filter((p) =>
-      CODE_BLOCK_REGEX.test(p.innerText.trim()),
-    );
+    const blocks = [
+      ...dom.querySelectorAll<HTMLParagraphElement>('p'),
+    ].filter((p) => CODE_BLOCK_REGEX.test(p.innerText.trim()));
     for (const block of blocks) {
       const pre = document.createElement('pre');
       // Replace <br /> with newlines
@@ -148,25 +179,26 @@ function _enhanceContent(content, opts = {}) {
 
   // Convert multi-paragraph code blocks to <pre><code>code</code></pre>
   if (hasCodeBlock) {
-    const paragraphs = [...dom.querySelectorAll('p')];
+    const paragraphs = [...dom.querySelectorAll<HTMLParagraphElement>('p')];
     // Filter out paragraphs with ``` in beginning only
     const codeBlocks = paragraphs.filter((p) =>
       CODE_BLOCK_START_REGEX.test(p.innerText),
     );
     // For each codeBlocks, get all paragraphs until the last paragraph with ``` at the end only
     for (const block of codeBlocks) {
-      const nextParagraphs = [block];
+      const nextParagraphs: HTMLParagraphElement[] = [block];
       let hasCodeBlock = false;
-      let currentBlock = block;
+      let currentBlock: Element = block;
       while (currentBlock.nextElementSibling) {
         const next = currentBlock.nextElementSibling;
         if (next && next.tagName === 'P') {
-          if (CODE_BLOCK_END_REGEX.test(next.innerText)) {
-            nextParagraphs.push(next);
+          const nextP = next as HTMLParagraphElement;
+          if (CODE_BLOCK_END_REGEX.test(nextP.innerText)) {
+            nextParagraphs.push(nextP);
             hasCodeBlock = true;
             break;
           } else {
-            nextParagraphs.push(next);
+            nextParagraphs.push(nextP);
           }
         } else {
           break;
@@ -197,7 +229,7 @@ function _enhanceContent(content, opts = {}) {
   if (enhancedContent.includes('`')) {
     textNodes = extractTextNodes(dom);
     for (const node of textNodes) {
-      let html = escapeHTML(node.nodeValue);
+      let html = escapeHTML(node.nodeValue ?? '');
       if (INLINE_CODE_REGEX.test(html)) {
         html = html.replaceAll(CODE_INLINE_CAPTURE_REGEX, '<code>$1</code>');
       }
@@ -215,7 +247,7 @@ function _enhanceContent(content, opts = {}) {
       rejectFilter: ['A'],
     });
     for (const node of textNodes) {
-      let html = escapeHTML(node.nodeValue);
+      let html = escapeHTML(node.nodeValue ?? '');
       if (TWITTER_MENTION_REGEX.test(html)) {
         html = html.replaceAll(
           TWITTER_MENTION_CAPTURE_REGEX,
@@ -232,47 +264,52 @@ function _enhanceContent(content, opts = {}) {
   // ================
   // Get the <p> that contains a lot of hashtags, add a class to it
   if (enhancedContent.includes('#') || enhancedContent.includes('＃')) {
-    let prevIndex = null;
-    const hashtagStuffedParagraphs = [...dom.querySelectorAll('p')].filter(
-      (p, index) => {
-        let hashtagCount = 0;
-        for (let i = 0; i < p.childNodes.length; i++) {
-          const node = p.childNodes[i];
+    let prevIndex: number | null = null;
+    const hashtagStuffedParagraphs = [
+      ...dom.querySelectorAll<HTMLParagraphElement>('p'),
+    ].filter((p, index) => {
+      let hashtagCount = 0;
+      for (let i = 0; i < p.childNodes.length; i++) {
+        const node = p.childNodes[i];
 
-          if (node.nodeType === Node.TEXT_NODE) {
-            const text = node.textContent.trim();
-            if (text !== '') {
-              return false;
-            }
-          } else if (node.tagName === 'BR') {
-            // Ignore <br />
-          } else if (node.tagName === 'A') {
-            const linkText = node.textContent.trim();
-            if (
-              !linkText ||
-              !(linkText.startsWith('#') || linkText.startsWith('＃'))
-            ) {
-              return false;
-            } else {
-              hashtagCount++;
-            }
-          } else {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = (node.textContent ?? '').trim();
+          if (text !== '') {
             return false;
           }
+        } else if ((node as Element).tagName === 'BR') {
+          // Ignore <br />
+        } else if ((node as Element).tagName === 'A') {
+          const linkText = (node.textContent ?? '').trim();
+          if (
+            !linkText ||
+            !(linkText.startsWith('#') || linkText.startsWith('＃'))
+          ) {
+            return false;
+          } else {
+            hashtagCount++;
+          }
+        } else {
+          return false;
         }
-        // Only consider "stuffing" if:
-        // - there are more than 3 hashtags
-        // - there are more than 1 hashtag in adjacent paragraphs
-        if (hashtagCount > 3) {
-          prevIndex = index;
-          return true;
-        }
-        if (hashtagCount > 1 && prevIndex && index === prevIndex + 1) {
-          prevIndex = index;
-          return true;
-        }
-      },
-    );
+      }
+      // Only consider "stuffing" if:
+      // - there are more than 3 hashtags
+      // - there are more than 1 hashtag in adjacent paragraphs
+      if (hashtagCount > 3) {
+        prevIndex = index;
+        return true;
+      }
+      // Preserve original JS truthiness: `prevIndex && ...` treats both
+      // `null` and `0` as falsy, so adjacency only kicks in when the previous
+      // stuffed paragraph was at index 1 or higher. Behavior change candidate
+      // — fix in its own follow-up, not as a drive-by in this batch.
+      if (hashtagCount > 1 && prevIndex && index === prevIndex + 1) {
+        prevIndex = index;
+        return true;
+      }
+      return false;
+    });
     if (hashtagStuffedParagraphs?.length) {
       for (const p of hashtagStuffedParagraphs) {
         p.classList.add('hashtag-stuffing');
@@ -298,7 +335,10 @@ function _enhanceContent(content, opts = {}) {
   // Workaround for Safari so that `text-decoration-thickness` works
   // Wrap child text nodes in spans
   for (const node of dom.childNodes) {
-    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim?.()) {
+    if (
+      node.nodeType === Node.TEXT_NODE &&
+      (node.textContent ?? '').trim()
+    ) {
       const span = document.createElement('span');
       span.textContent = node.textContent;
       dom.replaceChild(span, node);
@@ -310,7 +350,10 @@ function _enhanceContent(content, opts = {}) {
     // postEnhanceDOM(dom); // mutate dom
   }
 
-  return returnDOM ? dom : dom.innerHTML;
+  if (returnDOM) return dom;
+  // When `returnDOM` is false, `createDOM` returned an HTMLDivElement, which
+  // exposes `innerHTML`. Cast away the union here.
+  return (dom as HTMLDivElement).innerHTML;
 }
 const enhanceContent = mem(_enhanceContent);
 
@@ -346,14 +389,14 @@ const defaultRejectFilter = [
   'SLOT',
   'TEMPLATE',
 ];
-const defaultRejectFilterMap = Object.fromEntries(
+const defaultRejectFilterMap: Record<string, true> = Object.fromEntries(
   defaultRejectFilter.map((nodeName) => [nodeName, true]),
 );
 
 const URL_PREFIX_REGEX = /^(https?:\/\/(www\.)?|xmpp:)/;
 const URL_DISPLAY_LENGTH = 30;
 // Similar to https://github.com/mastodon/mastodon/blob/1666b1955992e16f4605b414c6563ca25b3a3f18/app/lib/text_formatter.rb#L54-L69
-function shortenLink(link) {
+function shortenLink(link: HTMLAnchorElement | null | undefined): void {
   if (!link || link.querySelector?.('*')) {
     return;
   }
@@ -370,35 +413,40 @@ function shortenLink(link) {
     link.innerHTML = `<span class="invisible">${prefix}</span><span class=${
       cutoff ? 'ellipsis' : ''
     }>${displayURL}</span><span class="invisible">${suffix}</span>`;
-  } catch (e) {}
+  } catch (e) {
+    // Silently fail on malformed URLs
+  }
 }
 
-function extractTextNodes(dom, opts = {}) {
-  const textNodes = [];
-  const rejectFilterMap = Object.assign(
+interface ExtractTextNodesOpts {
+  rejectFilter?: readonly string[];
+}
+
+function extractTextNodes(
+  dom: Node,
+  opts: ExtractTextNodesOpts = {},
+): Text[] {
+  const textNodes: Text[] = [];
+  const rejectFilterMap: Record<string, true> = Object.assign(
     {},
     defaultRejectFilterMap,
-    opts.rejectFilter?.reduce((acc, cur) => {
+    opts.rejectFilter?.reduce<Record<string, true>>((acc, cur) => {
       acc[cur] = true;
       return acc;
     }, {}),
   );
-  const walk = document.createTreeWalker(
-    dom,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        if (rejectFilterMap[node.parentNode.nodeName]) {
-          return NodeFilter.FILTER_REJECT;
-        }
-        return NodeFilter.FILTER_ACCEPT;
-      },
+  const walk = document.createTreeWalker(dom, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parentName = node.parentNode?.nodeName;
+      if (parentName && rejectFilterMap[parentName]) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return NodeFilter.FILTER_ACCEPT;
     },
-    false,
-  );
-  let node;
+  });
+  let node: Node | null;
   while ((node = walk.nextNode())) {
-    textNodes.push(node);
+    textNodes.push(node as Text);
   }
   return textNodes;
 }
