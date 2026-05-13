@@ -38,7 +38,8 @@
   "ignorePatterns": [
     "dist/**",
     "node_modules/**",
-    "src/locales/**"
+    "src/locales/**",
+    "rollbar.js"
   ],
   "options": {
     "typeAware": true,
