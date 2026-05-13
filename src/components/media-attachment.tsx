@@ -275,6 +275,10 @@ function MediaAttachment({
     return () => {
       cancelled = true;
     };
+    // TODO(oxlint:react-hooks/exhaustive-deps): this is a mount-only metadata
+    // extraction. The props (file, fileData, type, id, fileName,
+    // attachment.description) are read once per attachment lifetime; adding
+    // them would re-extract and overwrite user edits.
   }, []);
 
   let [suffixType, subtype] = type.split('/');
@@ -432,6 +436,9 @@ function MediaAttachment({
   return (
     <>
       <div class="media-attachment">
+        {/* TODO(oxlint:jsx-a11y/prefer-tag-over-role): replacing the wrapping
+            <div role="button"> with a <button> would nest <audio>/<video>
+            elements inside a button, which breaks their built-in controls. */}
         <div
           class="media-preview"
           role="button"
@@ -482,6 +489,9 @@ function MediaAttachment({
               }}
             />
           ) : suffixType === 'audio' ? (
+            // TODO(oxlint:jsx-a11y/media-has-caption): user-uploaded
+            // attachment preview; no captions track is available, and
+            // emitting an empty <track> would advertise fake captions.
             <audio src={url as string} controls />
           ) : null}
         </div>
@@ -550,8 +560,16 @@ function MediaAttachment({
                 {suffixType === 'image' ? (
                   <img src={url as string} alt="" />
                 ) : suffixType === 'video' || suffixType === 'gifv' ? (
+                  // TODO(oxlint:jsx-a11y/media-has-caption): user-uploaded
+                  // attachment preview; no captions track is available,
+                  // and emitting an empty <track> would advertise fake
+                  // captions.
                   <video src={url as string} playsinline controls />
                 ) : suffixType === 'audio' ? (
+                  // TODO(oxlint:jsx-a11y/media-has-caption): user-uploaded
+                  // attachment preview; no captions track is available,
+                  // and emitting an empty <track> would advertise fake
+                  // captions.
                   <audio src={url as string} controls />
                 ) : null}
               </div>

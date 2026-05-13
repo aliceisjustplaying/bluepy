@@ -1114,6 +1114,10 @@ function Compose({
       if (draftQuoteApprovalPolicy)
         setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
     }
+    // TODO(oxlint:react-hooks/exhaustive-deps): prefString/prefs are read
+    // through valtio snapshots; currentAccountInfo.acct is stable per
+    // session; masto.v1.statuses is a masto proxy. Adding any of these
+    // would re-run this load effect on unrelated renders.
   }, [draftStatus, editStatus, replyToStatus, replyMode]);
 
   useEffect(() => {
@@ -1138,6 +1142,8 @@ function Compose({
           });
       }
     }
+    // TODO(oxlint:react-hooks/exhaustive-deps): processFiles is recreated on
+    // every render (closures over masto + setters); adding it would loop.
   }, [sharedData]);
 
   // focus textarea when state.composerState.minimized turns false
@@ -1239,6 +1245,11 @@ function Compose({
       window.removeEventListener('beforeunload', handleBeforeUnload, {
         capture: true,
       });
+    // TODO(oxlint:react-hooks/exhaustive-deps): handleBeforeUnload closes
+    // over canClose and beforeUnloadCopy; both are recreated every render
+    // (canClose accesses live refs). Re-running this effect would re-bind
+    // the listener constantly. The closure reads current values via
+    // canClose() invocation, which is the intended behavior.
   }, []);
 
   const getCharCount = (): number => {
@@ -1394,6 +1405,9 @@ function Compose({
         draftKey(),
       );
     };
+    // TODO(oxlint:react-hooks/exhaustive-deps): saveUnsavedDraft is recreated
+    // every render (closures over refs + setters); this effect is mount-only
+    // to save the initial draft. Adding it would re-save on every render.
   }, []);
 
   useEffect(() => {
@@ -1443,6 +1457,10 @@ function Compose({
       window.removeEventListener('dragover', handleDragover);
       window.removeEventListener('drop', handleItems);
     };
+    // TODO(oxlint:react-hooks/exhaustive-deps): processFiles is recreated on
+    // every render; adding it would rebind window listeners constantly. The
+    // mediaAttachments dep rebinds when the attachment count changes, which
+    // is the only state the handlers care about.
   }, [mediaAttachments]);
 
   const [showMentionPicker, setShowMentionPicker] = useState<
@@ -2418,6 +2436,10 @@ function Compose({
                       disabled={mediaButtonDisabled}
                       className="compose-menu-add-media"
                     >
+                      {/* TODO(oxlint:jsx-a11y/label-has-associated-control):
+                          the wrapped CameraCaptureInput renders the actual
+                          <input type="file"> — the rule cannot see through
+                          the component boundary. */}
                       <label class="compose-menu-add-media-field">
                         <CameraCaptureInput
                           hidden
@@ -2433,6 +2455,10 @@ function Compose({
                     disabled={mediaButtonDisabled}
                     className="compose-menu-add-media"
                   >
+                    {/* TODO(oxlint:jsx-a11y/label-has-associated-control):
+                        the wrapped FilePickerInput renders the actual
+                        <input type="file"> — the rule cannot see through
+                        the component boundary. */}
                     <label class="compose-menu-add-media-field">
                       <FilePickerInput
                         hidden
@@ -2501,6 +2527,10 @@ function Compose({
                 hidden
               >
                 {supportsCameraCapture && (
+                  // TODO(oxlint:jsx-a11y/label-has-associated-control): the
+                  // wrapped CameraCaptureInput renders the actual <input
+                  // type="file"> — the rule cannot see through the component
+                  // boundary.
                   <label class="toolbar-button">
                     <CameraCaptureInput
                       supportedMimeTypes={supportedImagesVideosTypes}
@@ -2511,6 +2541,10 @@ function Compose({
                     <Icon icon="camera" alt={_(ADD_LABELS.camera)} />
                   </label>
                 )}
+                {/* TODO(oxlint:jsx-a11y/label-has-associated-control): the
+                    wrapped FilePickerInput renders the actual <input
+                    type="file"> — the rule cannot see through the
+                    component boundary. */}
                 <label class="toolbar-button">
                   <FilePickerInput
                     supportedMimeTypes={supportedMimeTypes}

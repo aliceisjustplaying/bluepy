@@ -1,13 +1,12 @@
 import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import supports from '../utils/supports';
 
-import AccountBlockUntyped from './account-block';
+import AccountBlock from './account-block';
 import Loader from './loader';
 
 interface AccountEndorsementsEndpoint {
@@ -17,15 +16,6 @@ interface AccountEndorsementsEndpoint {
     };
   };
 }
-
-interface AccountBlockProps {
-  account: mastodon.v1.Account;
-  showStats?: boolean;
-  avatarSize?: string;
-  relationship?: mastodon.v1.Relationship;
-}
-const AccountBlock =
-  AccountBlockUntyped as unknown as ComponentType<AccountBlockProps>;
 
 const ENDORSEMENTS_LIMIT = 80;
 
@@ -89,6 +79,9 @@ function Endorsements({
         setEndorsementsUIState('error');
       }
     })();
+    // TODO(oxlint:react-hooks/exhaustive-deps): masto.v1.accounts is a masto
+    // proxy recreated per-access and would loop; relationshipsMap is used as a
+    // skip-list input and adding it would refetch after every fetch completes.
   }, [open, id]);
 
   const reallyOpen = onlyOpenIfHasEndorsements

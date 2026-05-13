@@ -40,6 +40,10 @@ import Icon from './icon';
 import Link from './link';
 import Menu2 from './menu2';
 import Modal from './modal';
+// TODO(oxlint:import/no-cycle): account-info <-> related-actions cycle is
+// structural; related-actions consumes AccountInfoShape and handleScannerClick
+// while account-info renders RelatedActions. Breaking it requires extracting
+// scanner-click + types into a shared leaf module.
 import RelatedActions from './related-actions';
 
 // Augmented Account shape used internally. Adds optional fields the app
@@ -314,7 +318,7 @@ function AccountInfo({
         setUIState('error');
       }
     })();
-  }, [isString, account, fetchAccount, reloadCount]);
+  }, [isString, account, fetchAccount, reloadCount, instance]);
 
   // `info` may be null while loading; fall back to an empty placeholder so
   // the destructure stays terse. All consumers below already guard with
@@ -528,11 +532,10 @@ function AccountInfo({
         }
       }
     },
-    // `renderFamiliarFollowers` and `renderPostingStats` are stable enough
-    // for this callback's lifecycle — adding them would cause infinite
-    // refetch loops as they recreate on every render. `id` stays in the
-    // dep list so account switches don't reuse the previous id's posting
-    // stats fetch closure.
+    // TODO(oxlint:react-hooks/exhaustive-deps): `renderFamiliarFollowers`
+    // and `renderPostingStats` recreate every render (closures over masto
+    // proxy); adding them would loop. `id` stays so account switches
+    // rebind the callback with the new account's posting-stats closure.
     [standalone, id, statusesCount],
   );
 

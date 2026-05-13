@@ -83,6 +83,9 @@ export default function AnnualReport() {
         setUIState('default');
       })();
     }
+    // TODO(oxlint:react-hooks/exhaustive-deps): `masto` is a masto client
+    // proxy recreated per-access; adding it to deps would refetch on every
+    // render. The api() singleton is stable for the current instance.
   }, [year]);
 
   const { accounts, annualReports, statuses } = results || {};

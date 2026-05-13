@@ -59,7 +59,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
   const [listsContainingAccount, setListsContainingAccount] = useState<
     ListLike[]
   >([]);
-  const [reloadCount, reload] = useReducer<number, void, number>(
+  const [reloadCount, reload] = useReducer<number, undefined, number>(
     (c) => c + 1,
     0,
     (init) => init,
@@ -87,6 +87,8 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
         setUIState('error');
       }
     })();
+    // TODO(oxlint:react-hooks/exhaustive-deps): masto.v1.accounts is a masto
+    // proxy recreated per-access; adding it to deps would loop.
   }, [reloadCount, accountID]);
 
   const [showListAddEditModal, setShowListAddEditModal] =
@@ -137,7 +139,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
                               });
                           }
                           // setUIState('default');
-                          reload();
+                          reload(undefined);
                         } catch (e) {
                           console.error(e);
                           setUIState('error');
@@ -198,7 +200,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
             }
             onClose={(result) => {
               if (result.state === 'success') {
-                reload();
+                reload(undefined);
               }
               setShowListAddEditModal(false);
             }}
