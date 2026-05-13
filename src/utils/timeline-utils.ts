@@ -1,3 +1,5 @@
+import type { mastodon } from 'masto';
+
 import { api } from './api';
 import { isFiltered } from './filters';
 import { extractTagsFromStatus, getFollowedTags } from './followed-tags';
@@ -9,9 +11,53 @@ import store from './store';
 import { getCurrentAccountID } from './store-utils';
 import supports from './supports';
 
-export function groupBoosts(values) {
-  let newValues = [];
-  let boostStash = [];
+// Status payloads carry a handful of mutation flags the timeline pipeline
+// attaches (`_pinned`, `_differentAuthor`). Keep the type loose so callers
+// passing already-extended objects from `states.statuses` still fit.
+type TimelineStatus = mastodon.v1.Status & {
+  _pinned?: unknown;
+  _differentAuthor?: boolean;
+  account?: mastodon.v1.Status['account'] & { group?: boolean };
+};
+
+interface BoostsGroup {
+  id: string[];
+  items: TimelineStatus[];
+  type: 'boosts';
+}
+
+interface ThreadGroup {
+  id: string[];
+  items: TimelineStatus[];
+  type: 'thread' | 'conversation';
+}
+
+type TimelineItem = TimelineStatus | BoostsGroup | ThreadGroup;
+
+interface BoostedStatusIDsMap {
+  [statusKey: string]: string;
+}
+
+interface ReplyHint {
+  sKey: string;
+  inReplyToId: string;
+}
+
+interface MastoStatusesList {
+  list(params: { id: readonly string[] }): Promise<mastodon.v1.Status[]>;
+  $select(id: string): { fetch(): Promise<mastodon.v1.Status> };
+}
+
+// `saveStatus` accepts the loose record-shaped `Status` declared inside
+// `states.ts`. Masto's `mastodon.v1.Status` lacks an index signature, so a
+// cast bridges the two shapes without introducing `any`.
+type SaveStatusInput = Parameters<typeof saveStatus>[0];
+
+export function groupBoosts(
+  values: readonly TimelineStatus[],
+): TimelineItem[] | readonly TimelineStatus[] {
+  let newValues: TimelineItem[] = [];
+  const boostStash: TimelineStatus[] = [];
   let serialBoosts = 0;
   for (let i = 0; i < values.length; i++) {
     const item = values[i];
@@ -59,8 +105,12 @@ export function groupBoosts(values) {
 }
 
 const BOOSTS_LIMIT = 100;
-export function dedupeBoosts(items, instance) {
-  const boostedStatusIDs = store.account.get('boostedStatusIDs') || {};
+export function dedupeBoosts<T extends TimelineStatus>(
+  items: readonly T[],
+  instance: string,
+): T[] {
+  const boostedStatusIDs =
+    store.account.get<BoostedStatusIDsMap>('boostedStatusIDs') || {};
   const filteredItems = items.filter((item) => {
     if (!item.reblog) return true;
     const statusKey = `${instance}-${item.reblog.id}`;
@@ -88,22 +138,28 @@ export function dedupeBoosts(items, instance) {
   return filteredItems;
 }
 
-export function filterHiddenStatuses(items, filterContext) {
+export function filterHiddenStatuses<T extends TimelineStatus>(
+  items: readonly T[],
+  filterContext: string | null | undefined,
+): readonly T[] {
   if (!filterContext) return items;
   const currentAccount = getCurrentAccountID();
   return items.filter((item) => {
     if (!item?.filtered) return true;
     const isOwnPost = item?.account?.id === currentAccount;
     const filterInfo = isFiltered(item.filtered, filterContext);
-    if (!isOwnPost && filterInfo?.action === 'hide') {
+    if (!isOwnPost && filterInfo && filterInfo.action === 'hide') {
       return false;
     }
     return true;
   });
 }
 
-export function groupContext(items, instance) {
-  const contexts = [];
+export function groupContext(
+  items: readonly TimelineStatus[],
+  instance: string,
+): TimelineItem[] {
+  const contexts: TimelineStatus[][] = [];
   let contextIndex = 0;
   items.forEach((item) => {
     for (let i = 0; i < contexts.length; i++) {
@@ -166,9 +222,9 @@ export function groupContext(items, instance) {
 
   if (contexts.length) console.log('🧵 Contexts', contexts);
 
-  const newItems = [];
-  const appliedContextIndices = [];
-  const inReplyToIds = [];
+  const newItems: TimelineItem[] = [];
+  const appliedContextIndices: number[] = [];
+  const inReplyToIds: ReplyHint[] = [];
   items.forEach((item) => {
     if (item.reblog) {
       newItems.push(item);
@@ -201,7 +257,7 @@ export function groupContext(items, instance) {
       item.inReplyToAccountId !== item.account.id
     ) {
       const sKey = statusKey(item.id, instance);
-      if (!states.statusReply[sKey]) {
+      if (sKey && !states.statusReply[sKey]) {
         // If it's a reply and not a thread
         inReplyToIds.push({
           sKey,
@@ -239,13 +295,19 @@ export function groupContext(items, instance) {
       const { masto } = api({ instance });
       console.log('REPLYHINT', inReplyToIds);
 
+      const statusesResource = masto.v1
+        .statuses as unknown as MastoStatusesList;
+
       // Fallback if batch fetch fails or returns nothing or not supported
-      async function fallbackFetch() {
+      async function fallbackFetch(): Promise<void> {
         for (let i = 0; i < inReplyToIds.length; i++) {
           const { sKey, inReplyToId } = inReplyToIds[i];
           try {
-            const replyToStatus = await fetchStatus(inReplyToId, masto);
-            saveStatus(replyToStatus, instance, {
+            const replyToStatus = await fetchStatus(
+              inReplyToId,
+              statusesResource,
+            );
+            saveStatus(replyToStatus as unknown as SaveStatusInput, instance, {
               skipThreading: true,
             });
             states.statusReply[sKey] = {
@@ -253,7 +315,7 @@ export function groupContext(items, instance) {
               instance,
             };
             // Pause 1s
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise<void>((resolve) => setTimeout(resolve, 1000));
           } catch (e) {
             // Silently fail
             console.error(e);
@@ -267,12 +329,16 @@ export function groupContext(items, instance) {
         const ids = inReplyToIds.map(({ inReplyToId }) => inReplyToId);
         (async () => {
           try {
-            const replyToStatuses = await masto.v1.statuses.list({ id: ids });
+            const replyToStatuses = await statusesResource.list({ id: ids });
             if (replyToStatuses?.length) {
               for (const replyToStatus of replyToStatuses) {
-                saveStatus(replyToStatus, instance, {
-                  skipThreading: true,
-                });
+                saveStatus(
+                  replyToStatus as unknown as SaveStatusInput,
+                  instance,
+                  {
+                    skipThreading: true,
+                  },
+                );
                 const sKey = inReplyToIds.find(
                   ({ inReplyToId }) => inReplyToId === replyToStatus.id,
                 )?.sKey;
@@ -301,24 +367,37 @@ export function groupContext(items, instance) {
   return newItems;
 }
 
-const fetchStatus = pmem((statusID, masto) => {
-  return masto.v1.statuses.$select(statusID).fetch();
-});
+const fetchStatus = pmem(
+  (statusID: string, masto: MastoStatusesList): Promise<mastodon.v1.Status> => {
+    return masto.$select(statusID).fetch();
+  },
+);
 
-export async function assignFollowedTags(items, instance) {
+interface FollowedTagsCandidate {
+  item: TimelineStatus;
+  sKey: string;
+  followedTags: string[];
+}
+
+export async function assignFollowedTags(
+  items: readonly TimelineStatus[],
+  instance: string,
+): Promise<void> {
   const followedTags = await getFollowedTags(); // [{name: 'tag'}, {...}]
   if (!followedTags.length) return;
   const { statusFollowedTags } = states;
   console.log('statusFollowedTags', statusFollowedTags);
-  const statusWithFollowedTags = [];
+  const statusWithFollowedTags: FollowedTagsCandidate[] = [];
   items.forEach((item) => {
     if (item.reblog) return;
     const { id, content, tags = [] } = item;
     const sKey = statusKey(id, instance);
-    if (statusFollowedTags[sKey]?.length) return;
+    if (!sKey) return;
+    const existing = statusFollowedTags[sKey];
+    if (Array.isArray(existing) && existing.length) return;
     const extractedTags = extractTagsFromStatus(content);
     if (!extractedTags.length && !tags.length) return;
-    const itemFollowedTags = followedTags.reduce((acc, tag) => {
+    const itemFollowedTags = followedTags.reduce<string[]>((acc, tag) => {
       if (
         extractedTags.some((t) => t.toLowerCase() === tag.name.toLowerCase()) ||
         tags.some((t) => t.name.toLowerCase() === tag.name.toLowerCase())
@@ -352,6 +431,6 @@ export async function assignFollowedTags(items, instance) {
   }
 }
 
-export function clearFollowedTagsState() {
+export function clearFollowedTagsState(): void {
   states.statusFollowedTags = {};
 }
