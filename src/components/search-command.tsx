@@ -1,5 +1,6 @@
 import './search-command.css';
 
+import type { ComponentType, JSX, Ref } from 'preact';
 import { memo } from 'preact/compat';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -7,16 +8,42 @@ import { useSnapshot } from 'valtio';
 
 import states from '../utils/states';
 
-import SearchForm from './search-form';
+import SearchFormUntyped from './search-form';
 
-export default memo(function SearchCommand({ onClose = () => {} }) {
+interface SearchFormHandle {
+  setValue?: (value: string) => void;
+  focus?: () => void;
+  select?: () => void;
+  blur?: () => void;
+}
+
+interface SearchFormProps {
+  hidden?: boolean;
+  onSubmit?: (e: JSX.TargetedEvent<HTMLFormElement>) => void;
+  ref?: Ref<SearchFormHandle>;
+}
+
+const SearchForm = SearchFormUntyped as unknown as ComponentType<SearchFormProps>;
+
+interface SearchCommandProps {
+  onClose?: () => void;
+}
+
+interface ShowSearchCommandPayload {
+  query?: string;
+}
+
+export default memo(function SearchCommand({
+  onClose = () => {},
+}: SearchCommandProps) {
   const snapStates = useSnapshot(states);
   const [showSearch, setShowSearch] = useState(false);
-  const searchFormRef = useRef(null);
+  const searchFormRef = useRef<SearchFormHandle | null>(null);
 
   useEffect(() => {
     if (snapStates.showSearchCommand) {
-      const { query } = snapStates.showSearchCommand;
+      const { query } =
+        (snapStates.showSearchCommand as ShowSearchCommandPayload) || {};
       setShowSearch(true);
       setTimeout(() => {
         if (query) {
@@ -30,7 +57,7 @@ export default memo(function SearchCommand({ onClose = () => {} }) {
 
   useHotkeys(
     ['Slash', '/'],
-    (e) => {
+    () => {
       setShowSearch(true);
       setTimeout(() => {
         searchFormRef.current?.focus?.();
@@ -40,7 +67,7 @@ export default memo(function SearchCommand({ onClose = () => {} }) {
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e) => {
+      ignoreEventWhen: (e: KeyboardEvent) => {
         const isSearchPage = /\/search/.test(location.hash);
         const isYearInPostsPage = /\/yip/.test(location.hash);
         const hasModal = !!document.querySelector('#modal-container > *');
@@ -66,7 +93,7 @@ export default memo(function SearchCommand({ onClose = () => {} }) {
 
   useHotkeys(
     'esc',
-    (e) => {
+    () => {
       searchFormRef.current?.blur?.();
       closeSearch();
     },
@@ -75,7 +102,8 @@ export default memo(function SearchCommand({ onClose = () => {} }) {
       enableOnFormTags: true,
       preventDefault: true,
       useKey: true,
-      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e: KeyboardEvent) =>
+        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
@@ -85,7 +113,7 @@ export default memo(function SearchCommand({ onClose = () => {} }) {
     <div
       id="search-command-container"
       hidden={hidden}
-      onClick={(e) => {
+      onClick={(e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
         console.log(e);
         if (e.target === e.currentTarget) {
           closeSearch();
@@ -93,7 +121,7 @@ export default memo(function SearchCommand({ onClose = () => {} }) {
       }}
     >
       <SearchForm
-        ref={searchFormRef}
+        ref={searchFormRef as Ref<SearchFormHandle>}
         hidden={hidden}
         onSubmit={() => {
           closeSearch();
