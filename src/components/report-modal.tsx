@@ -161,9 +161,8 @@ interface MastoReportsClient {
 }
 
 function ReportModal({ account, post, onClose }: ReportModalProps) {
-  const lingui = useLingui();
-  const { t, i18n } = lingui;
-  const _ = (lingui as unknown as { _: (msg: MessageDescriptor) => string })._;
+  const { t, i18n } = useLingui();
+  const _ = (msg: MessageDescriptor) => i18n._(msg);
   const { masto: mastoBase } = api();
   const masto = mastoBase as unknown as MastoReportsClient;
   const [uiState, setUIState] = useState<

@@ -118,8 +118,8 @@ export default function Modals() {
               composeWindow.__COMPOSE__ = null;
               composeWindow.__SHARED_DATA__ = null;
               if (newStatus) {
-                (states.reloadStatusPage as number)++;
-                if (scheduledAt) (states.reloadScheduledPosts as number)++;
+                states.reloadStatusPage++;
+                if (scheduledAt) states.reloadScheduledPosts++;
                 showToast({
                   text: {
                     post: scheduledAt
