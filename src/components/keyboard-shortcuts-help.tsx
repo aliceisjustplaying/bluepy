@@ -11,7 +11,7 @@ import Icon from './icon';
 import Modal from './modal';
 
 // Helper component for sequential key shortcuts
-function SequentialKeys({ key1, key2 }) {
+function SequentialKeys({ key1, key2 }: { key1: string; key2: string }) {
   return (
     <Trans>
       <kbd>{key1}</kbd> then <kbd>{key2}</kbd>
@@ -36,7 +36,7 @@ export default memo(function KeyboardShortcutsHelp() {
     {
       useKey: true,
       ignoreModifiers: true,
-      ignoreEventWhen: (e) => {
+      ignoreEventWhen: (e: KeyboardEvent) => {
         const isCatchUpPage = /\/catchup/i.test(location.hash);
         return isCatchUpPage || e.metaKey || e.ctrlKey || e.altKey;
         // const hasModal = !!document.querySelector('#modal-container > *');
@@ -48,7 +48,11 @@ export default memo(function KeyboardShortcutsHelp() {
   return (
     !!snapStates.showKeyboardShortcutsHelp && (
       <Modal onClose={onClose}>
-        <div id="keyboard-shortcuts-help-container" class="sheet" tabindex="-1">
+        <div
+          id="keyboard-shortcuts-help-container"
+          class="sheet"
+          tabIndex={'-1' as unknown as number}
+        >
           <button type="button" class="sheet-close" onClick={onClose}>
             <Icon icon="x" alt={t`Close`} />
           </button>
@@ -60,7 +64,8 @@ export default memo(function KeyboardShortcutsHelp() {
           <main>
             <table>
               <tbody>
-                {[
+                {(
+                  [
                   {
                     action: t`Keyboard shortcuts help`,
                     keys: <kbd>?</kbd>,
@@ -210,8 +215,13 @@ export default memo(function KeyboardShortcutsHelp() {
                     action: t`Go to Bookmarks`,
                     keys: <SequentialKeys key1="g" key2="b" />,
                   },
-                ].map(({ action, className, keys }) => (
-                  <tr key={action}>
+                  ] as ReadonlyArray<{
+                    action: import('preact').ComponentChildren;
+                    className?: string;
+                    keys: import('preact').ComponentChildren;
+                  }>
+                ).map(({ action, className, keys }) => (
+                  <tr key={action as import('preact').Key}>
                     <th class={className}>{action}</th>
                     <td>{keys}</td>
                   </tr>

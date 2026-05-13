@@ -2,9 +2,17 @@ import { useSnapshot } from 'valtio';
 
 import states from '../utils/states';
 
-function CharCountMeter({ maxCharacters = 500, hidden }) {
+interface CharCountMeterProps {
+  maxCharacters?: number;
+  hidden?: boolean;
+}
+
+function CharCountMeter({
+  maxCharacters = 500,
+  hidden,
+}: CharCountMeterProps) {
   const snapStates = useSnapshot(states);
-  const charCount = snapStates.composerCharacterCount;
+  const charCount = snapStates.composerCharacterCount as number;
   const leftChars = maxCharacters - charCount;
   if (hidden) {
     return <span class="char-counter" hidden />;

@@ -6,7 +6,10 @@ import states from '../utils/states';
 import { getCurrentAccount } from '../utils/store-utils';
 
 // ignoreEventWhen doesn't work with sequence shortcuts, so we wrap callbacks instead
-const useGoHotkeys = (key, callback) => {
+const useGoHotkeys = (
+  key: string,
+  callback: (e: KeyboardEvent) => void,
+) => {
   useHotkeys(
     `g>${key}`,
     (e) => {
