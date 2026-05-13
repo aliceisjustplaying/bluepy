@@ -1,10 +1,11 @@
+import type { JSX } from 'preact';
 import { memo } from 'preact/compat';
 import { useEffect } from 'preact/hooks';
 
 import { ICON_NAMESPACE, useIconSprite } from './icon-sprite-manager';
 import { ICONS } from './ICONS';
 
-const SIZES = {
+const SIZES: Record<string, number> = {
   xs: 8,
   s: 12,
   m: 16,
@@ -13,7 +14,27 @@ const SIZES = {
   xxl: 32,
 };
 
+type IconModule = () => Promise<unknown>;
+type IconBlockEntry =
+  | IconModule
+  | [IconModule, string?, string?]
+  | {
+      module: IconModule;
+      rotate?: string;
+      flip?: string;
+      rtl?: boolean;
+    };
+
 const INVALID_ID_CHARS_REGEX = /[^a-zA-Z0-9]/g;
+
+interface IconProps {
+  icon?: string;
+  size?: string;
+  alt?: string;
+  title?: string;
+  class?: string;
+  style?: JSX.CSSProperties;
+}
 
 function Icon({
   icon,
@@ -22,22 +43,24 @@ function Icon({
   title,
   class: className = '',
   style = {},
-}) {
+}: IconProps) {
   title = title || alt;
   const { loadIcon, isIconLoaded } = useIconSprite();
 
   if (!icon) return null;
 
   const iconSize = SIZES[size];
-  let iconBlock = ICONS[icon];
+  let iconBlock = (ICONS as unknown as Partial<Record<string, IconBlockEntry>>)[
+    icon
+  ];
   if (!iconBlock) {
     console.warn(`Icon ${icon} not found`);
     return null;
   }
 
-  let rotate,
-    flip,
-    rtl = false;
+  let rotate: string | undefined,
+    flip: string | undefined,
+    rtl: boolean | undefined = false;
   if (Array.isArray(iconBlock)) {
     [iconBlock, rotate, flip] = iconBlock;
   } else if (typeof iconBlock === 'object') {

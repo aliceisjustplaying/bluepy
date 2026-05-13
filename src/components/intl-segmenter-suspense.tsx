@@ -1,4 +1,5 @@
 import { shouldPolyfill } from '@formatjs/intl-segmenter/should-polyfill.js';
+import type { ComponentChildren } from 'preact';
 import { Suspense } from 'preact/compat';
 import { useEffect, useState } from 'preact/hooks';
 
@@ -15,7 +16,13 @@ setTimeout(() => {
   });
 }, 1000);
 
-export default function IntlSegmenterSuspense({ children }) {
+interface IntlSegmenterSuspenseProps {
+  children?: ComponentChildren;
+}
+
+export default function IntlSegmenterSuspense({
+  children,
+}: IntlSegmenterSuspenseProps) {
   if (supportsIntlSegmenter) {
     return <Suspense fallback={<Loader />}>{children}</Suspense>;
   }

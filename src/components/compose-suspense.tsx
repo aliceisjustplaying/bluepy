@@ -1,9 +1,12 @@
 import { shouldPolyfill } from '@formatjs/intl-segmenter/should-polyfill.js';
+import type { ComponentType } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 
 import Loader from './loader';
 
 const supportsIntlSegmenter = !shouldPolyfill();
+
+type ComposeModule = { default: ComponentType<Record<string, unknown>> };
 
 function importIntlSegmenter() {
   if (!supportsIntlSegmenter) {
@@ -11,8 +14,8 @@ function importIntlSegmenter() {
   }
 }
 
-function importCompose() {
-  return import('./compose');
+function importCompose(): Promise<ComposeModule> {
+  return import('./compose') as unknown as Promise<ComposeModule>;
 }
 
 export async function preload() {
@@ -24,8 +27,8 @@ export async function preload() {
   }
 }
 
-export default function ComposeSuspense(props) {
-  const [Compose, setCompose] = useState(null);
+export default function ComposeSuspense(props: Record<string, unknown>) {
+  const [Compose, setCompose] = useState<ComposeModule | null>(null);
 
   useEffect(() => {
     (async () => {
