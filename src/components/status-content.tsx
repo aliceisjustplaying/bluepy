@@ -20,6 +20,7 @@ import states from '../utils/states';
 import { getCurrentAccID } from '../utils/store-utils';
 import useTruncated from '../utils/useTruncated';
 
+import Avatar from './avatar';
 import { SIZE_CLASS } from './status-helpers';
 import useStatusContextMenu from './status-context-menu';
 import useStatusDisplayState from './status-display-state';
@@ -594,14 +595,30 @@ export default function StatusContent({
           bookmarked={bookmarked}
           pinned={_pinned}
         />
+        {size !== 's' && (
+          <a
+            href={accountURL ?? undefined}
+            tabindex={-1}
+            title={`@${acct}`}
+            onClick={(e: MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
+              states.showAccount = {
+                account: status.account,
+                instance,
+              } as unknown as Record<string, unknown>;
+            }}
+          >
+            <Avatar
+              url={(avatarStatic || avatar) ?? undefined}
+              size="xxl"
+              squircle={bot ?? undefined}
+            />
+          </a>
+        )}
         <div class="container">
           <StatusHeader
             size={size}
-            accountURL={accountURL}
-            acct={acct}
-            avatarStatic={avatarStatic}
-            avatar={avatar}
-            bot={bot}
             status={status}
             instance={instance}
             quoteDomain={quoteDomain}

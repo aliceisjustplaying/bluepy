@@ -1,11 +1,9 @@
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 
-import states from '../utils/states';
 import visibilityIconsMap from '../utils/visibility-icons-map';
 import visibilityText from '../utils/visibility-text';
 
-import Avatar from './avatar';
 import Icon from './icon';
 import LazyRender from './lazy-render';
 import Link from './link';
@@ -19,11 +17,6 @@ type NameTextAccountShim = Parameters<typeof NameText>[0]['account'];
 
 interface StatusHeaderProps {
   size: string;
-  accountURL?: string | null;
-  acct?: string;
-  avatarStatic?: string | null;
-  avatar?: string | null;
-  bot?: boolean | null;
   status: AnyStatus;
   instance: string;
   quoteDomain?: string;
@@ -56,11 +49,6 @@ interface StatusHeaderProps {
 
 export default function StatusHeader({
   size,
-  accountURL,
-  acct,
-  avatarStatic,
-  avatar,
-  bot,
   status,
   instance,
   quoteDomain,
@@ -137,27 +125,6 @@ export default function StatusHeader({
 
   return (
     <>
-      {size !== 's' && (
-        <a
-          href={accountURL ?? undefined}
-          tabindex={-1}
-          title={`@${acct}`}
-          onClick={(e: MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            states.showAccount = {
-              account: status.account,
-              instance,
-            } as unknown as Record<string, unknown>;
-          }}
-        >
-          <Avatar
-            url={(avatarStatic || avatar) ?? undefined}
-            size="xxl"
-            squircle={bot ?? undefined}
-          />
-        </a>
-      )}
       {!!quoteDomain && (
         <div class="status-quote-meta">
           <span class="domain">{quoteDomain}</span>

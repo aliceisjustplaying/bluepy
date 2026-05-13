@@ -3186,32 +3186,6 @@ ul.link-list li a .icon {
     min-width: var(--main-width); */
     border-inline-start: 1px solid var(--divider-color);
   }
-  .deck-backdrop .status-deck {
-    --status-deck-action-gutter: 66px;
-    box-sizing: border-box;
-    width: calc(var(--main-width) + var(--status-deck-action-gutter));
-    padding-inline-start: var(--status-deck-action-gutter);
-    border-inline-start: 0;
-    background-image: linear-gradient(
-      to right,
-      transparent calc(var(--status-deck-action-gutter) - 1px),
-      var(--divider-color) calc(var(--status-deck-action-gutter) - 1px),
-      var(--divider-color) var(--status-deck-action-gutter),
-      var(--bg-color) var(--status-deck-action-gutter)
-    );
-
-    &:dir(rtl) {
-      padding-inline-start: 0;
-      padding-inline-end: var(--status-deck-action-gutter);
-      background-image: linear-gradient(
-        to left,
-        transparent calc(var(--status-deck-action-gutter) - 1px),
-        var(--divider-color) calc(var(--status-deck-action-gutter) - 1px),
-        var(--divider-color) var(--status-deck-action-gutter),
-        var(--bg-color) var(--status-deck-action-gutter)
-      );
-    }
-  }
   .timeline-deck {
     border: 0;
     background-color: transparent;
