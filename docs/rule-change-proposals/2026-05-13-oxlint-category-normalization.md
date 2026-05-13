@@ -168,7 +168,7 @@ Measured effect on this branch with oxlint 1.63.0 after applying the proposed co
   - `typescript/no-confusing-void-expression` 150
 - Cosmetic noise (`capitalized-comments`, `sort-keys`, `sort-imports`, `no-ternary`, `curly`, `no-inline-comments`, `prefer-nullish-coalescing`, `strict-boolean-expressions`, `prefer-readonly-parameter-types`, `explicit-function-return-type`, `unicorn/no-null`, `oxc/no-async-await`, `import/no-relative-parent-imports`, `import/no-named-export`, `eslint/max-statements`, `eslint/max-lines-per-function`, …) drops out entirely.
 
-The target is not "near zero" — it is "the error count tracks real defects". 2 316 errors made almost entirely of `no-shadow`, `no-unused-vars`, `no-floating-promises`, `react/exhaustive-deps + react/rules-of-hooks`, `no-deprecated`, and unnecessary type assertions is qualitatively different from 23 755 errors of which 95% is style preference.
+The target is not "near zero" — it is "the error count tracks real defects". 2 350 errors made almost entirely of `no-shadow`, `no-unused-vars`, `no-floating-promises`, `react/exhaustive-deps`, `react/rules-of-hooks`, `no-deprecated`, and unnecessary type assertions is qualitatively different from 23 755 errors of which 95% is style preference.
 
 ## Blast radius
 
@@ -200,7 +200,7 @@ Revert the single commit that modifies `.oxlintrc.json`. No state is migrated; t
 - Removed redundant individual re-enables for rules that are already at error via the `correctness`/`suspicious` category default: `typescript/no-floating-promises` (correctness), `react/exhaustive-deps` (correctness), `typescript/no-unnecessary-type-assertion` (suspicious), `import/no-self-import` (suspicious). The `rules` block now only contains entries that change behaviour relative to the category defaults.
 - Added bug-catchers from `pedantic` flagged by Codex: `eslint/no-promise-executor-return`, `eslint/array-callback-return`, `eslint/no-prototype-builtins`, `eslint/no-redeclare`, `typescript/only-throw-error`, `typescript/prefer-promise-reject-errors`.
 - Added `typescript/strict-void-return` (61) and `typescript/no-confusing-void-expression` (150) at `warn` so they remain visible without blocking — documented as readability-debt rather than blocked-bug-signal.
-- Updated measured count to **2 316 errors / 4 121 warnings** with full error/warning breakdowns by rule. Removed `react-perf/jsx-no-new-function-as-prop` from the "top remaining errors" list — it is a *warning* under `perf: warn`.
+- Updated measured count and added full error/warning breakdowns by rule. Removed `react-perf/jsx-no-new-function-as-prop` from the "top remaining errors" list — it is a *warning* under `perf: warn`.
 - One claim from Codex round 3 was incorrect against `bunx oxlint --rules`: it asserted that `react/rules-of-hooks` is `correctness`. oxlint 1.63.0 puts it in `pedantic`. The proposal's individual re-enable line is therefore correct and retained.
 
 **Round 4 (2026-05-13): REVISE** — `gpt-5.5` at high reasoning. Fixes:
@@ -212,11 +212,20 @@ Revert the single commit that modifies `.oxlintrc.json`. No state is migrated; t
 - Added `react/jsx-no-target-blank: "error"` — pedantic rule that catches `target="_blank"` links missing `rel="noopener noreferrer"` (tabnabbing prevention; security-relevant rather than style).
 - Updated measured count to **2 350 errors / 4 271 warnings** with both rules enabled.
 
-**Round 6: not run.** The runbook caps Codex review at 5 rounds per batch ("escalate if still not clean by then"). Codex's round-5 findings were both substantive (security + runbook-policy enforcement) and have been incorporated. Each round has produced strictly smaller findings: round 1 corrected three category misattributions and one logic contradiction; round 2 surfaced the `no-unsafe-*` family; round 3 surfaced six additional pedantic bug-catchers plus four redundant entries to remove; round 4 added one nullability rule and one wording normalization; round 5 added two more rules with clear correctness/security value. The trend is asymptotic.
+**Round 6 (2026-05-13): APPROVED** — `gpt-5.5` at high reasoning. User exercised the soft-cap exception to run one additional round. Codex verdict (verbatim):
 
-**Escalation note.** Per the runbook rule-change protocol: this proposal is now committed, the rule change itself is *not yet applied*, and the next step requires either (a) an explicit user OK to apply despite the 5-round cap, or (b) one additional round if the user wants confirmation, treating the cap as soft.
+> APPROVED — re-tier categories to `correctness/suspicious: error`, `perf: warn`, `pedantic/style/restriction/nursery: off`, with the listed rule-level re-enables/demotions.
 
-The author's recommendation: apply the change. Each round's added rules are unambiguously bug-catchers or runbook-policy enforcement, the measured error count is stable around 2 300, and no round has surfaced an actual correctness regression or runbook violation.
+Caveats noted by Codex (all wording, no behavioural change):
+- Hook rule names: use canonical `react/exhaustive-deps` and `react/rules-of-hooks` in config; `react-hooks/*` is diagnostic display wording.
+- The old `<1 000` target is not plausible; the measured ~2.3k target is.
+- Stale prose saying `2 316 errors` updated to the current `2 350`.
+- `typescript/no-unsafe-type-assertion` is `suspicious`; the rest of the unsafe family is `pedantic`.
+- No additional demoted rules are strong enough to block; the kept set covers the main bug / security / runbook signals.
+
+All caveats addressed in this revision.
+
+**Per the runbook rule-change protocol, this proposal is now approved and may be applied** as a single `.oxlintrc.json` commit with message starting `Adjust lint rule:`.
 
 ```bash
 codex exec \
