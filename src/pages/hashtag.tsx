@@ -261,10 +261,11 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const [followUIState, setFollowUIState] = useState('default');
   const [info, setInfo] = useState<HashtagInfo | undefined>();
   // Get hashtag info
-  // NOTE: deliberately omits `tagsApi` from deps. `masto.v1.tags` is a proxy
-  // recreated on every property access, so including it would refetch every
-  // render. The proxy delegates to a stable underlying client, so capturing
-  // the reference once per `hashtag` change is fine.
+  // TODO(oxlint:react-hooks/exhaustive-deps): deliberately omits `tagsApi`
+  // from deps. `masto.v1.tags` is a proxy recreated on every property access,
+  // so including it would refetch every render. The proxy delegates to a
+  // stable underlying client, so capturing the reference once per `hashtag`
+  // change is fine.
   useEffect(() => {
     void (async () => {
       try {
@@ -282,8 +283,9 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const [featuredUIState, setFeaturedUIState] = useState('default');
   const [featuredTags, setFeaturedTags] = useState<FeaturedTag[]>([]);
   const [isFeaturedTag, setIsFeaturedTag] = useState(false);
-  // NOTE: deliberately omits `featuredTagsApi` from deps. `masto.v1.featuredTags`
-  // is a proxy recreated on every property access; including it would loop.
+  // TODO(oxlint:react-hooks/exhaustive-deps): deliberately omits
+  // `featuredTagsApi` from deps. `masto.v1.featuredTags` is a proxy recreated
+  // on every property access; including it would loop.
   useEffect(() => {
     if (!authenticated) return;
     void (async () => {

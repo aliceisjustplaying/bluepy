@@ -336,10 +336,17 @@ function Media({
           return (
             <figure {...(restProps as HTMLAttributes<HTMLElement>)}>
               {children}
+              {/* TODO(oxlint:jsx-a11y/no-noninteractive-tabindex,click-events-have-key-events):
+                  figcaption serves the dual role of semantic caption and an
+                  interactive "expand alt text" surface. We keep the figcaption
+                  for its figure-semantics and add keyboard support. Converting
+                  to <button> would lose the figure semantics and require CSS
+                  rework around .media-caption. */}
               <figcaption
                 class="media-caption"
                 lang={lang}
                 dir="auto"
+                tabIndex={0}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -347,6 +354,16 @@ function Media({
                     alt: description,
                     lang,
                   };
+                }}
+                onKeyDown={(e: KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    states.showMediaAlt = {
+                      alt: description,
+                      lang,
+                    };
+                  }
                 }}
               >
                 {description}
@@ -871,6 +888,10 @@ function Media({
         >
           {showOriginal ? (
             previewUrl ? (
+              // TODO(oxlint:jsx-a11y/media-has-caption): Mastodon's media
+              // model does not surface caption tracks; alt-text is exposed
+              // separately via the figcaption above. Inserting an empty
+              // <track src=""> would advertise a non-existent captions file.
               <video
                 src={(remoteUrl || url) + '#t=0.1'}
                 width={width}
@@ -888,6 +909,8 @@ function Media({
                 playsInline
               />
             ) : (
+              // TODO(oxlint:jsx-a11y/media-has-caption): see note on <video>
+              // above; alt-text is surfaced via the figcaption.
               <audio src={remoteUrl || url} preload="none" controls autoPlay />
             )
           ) : previewUrl ? (

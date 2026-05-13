@@ -580,6 +580,7 @@ function YearInPosts() {
           boost: types.boost,
         };
       })
+      // TODO(oxlint:unicorn/no-array-sort): toSorted() is ES2023; project target is ES2022.
       .sort((a, b) => a.month - b.month);
   }, [posts, monthHeatmaps, monthMediaGrids]);
 
@@ -621,7 +622,7 @@ function YearInPosts() {
       });
       searchIndexRef.current = index;
     }
-  }, [posts]);
+  }, [posts, totalPosts]);
 
   const searchedPosts = useMemo<MastoStatus[]>(() => {
     if (!searchQuery) return posts;
@@ -639,7 +640,7 @@ function YearInPosts() {
       .map((id) => postsMap.get(String(id)))
       .filter((p): p is MastoStatus => Boolean(p));
     return postResults;
-  }, [posts, searchQuery]);
+  }, [posts, searchQuery, totalPosts]);
 
   useEffect(() => {
     setSearchLimit(SEARCH_RESULT_PAGE_SIZE);
@@ -729,6 +730,7 @@ function YearInPosts() {
     // Sort the filtered posts
     let sorted = filtered;
     if (sortBy !== 'relevance') {
+      // TODO(oxlint:unicorn/no-array-sort): toSorted() is ES2023; project target is ES2022.
       sorted = [...filtered].sort((a, b) => {
         const postA = a.reblog || a;
         const postB = b.reblog || b;
@@ -808,7 +810,7 @@ function YearInPosts() {
         setUIState('error');
       }
     })();
-  }, [year]);
+  }, [year, NS]);
 
   useEffect(() => {
     if (month !== null && uiState === 'results') {
@@ -822,7 +824,7 @@ function YearInPosts() {
         inline: 'nearest',
       });
     }
-  }, [month, uiState === 'results']);
+  }, [month, uiState]);
 
   return (
     <div
@@ -835,6 +837,9 @@ function YearInPosts() {
       }}
     >
       <div class="timeline-deck deck">
+        {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
+            header click is a tap-to-scroll-to-top affordance for touch; keyboard
+            users press Home. Adding a stub keyboard handler would be no-op. */}
         <header
           class={uiState === 'loading' ? 'loading' : ''}
           onClick={(e) => {
@@ -999,6 +1004,8 @@ function YearInPosts() {
                       void handleGenerate(e);
                     }}
                   >
+                    {/* TODO(oxlint:jsx-a11y/label-has-associated-control): rule false positive on
+                        wrapped <input>; the input is the implicit control here. */}
                     <label>
                       <input
                         type="number"
@@ -1412,7 +1419,7 @@ const IntersectionPostItem = ({
     return () => {
       if (node) observer.unobserve(node);
     };
-  }, [defaultShow]);
+  }, [defaultShow, root]);
 
   const statusId = post.reblog?.id || post.id;
 

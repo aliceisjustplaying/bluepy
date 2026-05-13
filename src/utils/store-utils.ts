@@ -1,4 +1,6 @@
 import mem from './mem';
+// TODO(oxlint:import/no-cycle): store <-> store-utils cycle is structural; see
+// store.ts for the rationale and break-up plan.
 import store from './store';
 
 type JsonRecord = Record<string, unknown>;

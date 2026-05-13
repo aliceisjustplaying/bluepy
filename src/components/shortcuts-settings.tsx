@@ -549,10 +549,10 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                 Not sure what to add?
                 <br />
                 Try adding{' '}
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
+                <button
+                  type="button"
+                  class="plain"
+                  onClick={() => {
                     states.shortcuts = [
                       {
                         type: 'following',
@@ -564,7 +564,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                   }}
                 >
                   Home / Following and Notifications
-                </a>{' '}
+                </button>{' '}
                 first.
               </Trans>
             </p>
@@ -735,7 +735,7 @@ function ShortcutForm({
         }
       });
     }
-  }, [editMode, currentType]);
+  }, [editMode, currentType, shortcut]);
 
   return (
     <div id="shortcut-settings-form" class="sheet">
