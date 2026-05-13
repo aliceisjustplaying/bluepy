@@ -15,7 +15,7 @@ const STATUS_ID_REGEXES = [
   /\/@[^@\/]+@?[^\/]+?\/(\d+)$/i, // Mastodon
   /\/notice\/(\w+)$/i, // Pleroma
 ];
-function getStatusID(path) {
+function getStatusID(path: string): string | null {
   for (let i = 0; i < STATUS_ID_REGEXES.length; i++) {
     const statusMatchID = path.match(STATUS_ID_REGEXES[i])?.[1];
     if (statusMatchID) {
@@ -25,9 +25,66 @@ function getStatusID(path) {
   return null;
 }
 
+// Minimal unfurled-link shape used here. The valtio proxy stores `unknown`
+// values, so we narrow on read with this local type.
+interface UnfurledLinkSnapshot {
+  url?: string;
+  [key: string]: unknown;
+}
+
+function asUnfurledLinkSnapshot(
+  value: unknown,
+): UnfurledLinkSnapshot | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const candidate = value as { url?: unknown };
+  if (candidate.url !== undefined && typeof candidate.url !== 'string') {
+    return undefined;
+  }
+  return value as UnfurledLinkSnapshot;
+}
+
+// Minimal status shape from masto responses for the codepaths we touch.
+interface UnfurlStatus {
+  id: string;
+  content?: string;
+  [key: string]: unknown;
+}
+
+interface UnfurlResult {
+  status: UnfurlStatus;
+  instance: string;
+}
+
+interface UnfurledLinkData extends UnfurledLinkSnapshot {
+  id: string;
+  instance: string;
+  url: string;
+  originalURL: string;
+  originalDomain: string;
+  canonicalURL: string | undefined;
+  canonicalDomain: string | undefined;
+}
+
+// Minimal masto endpoints we touch. The masto client carries open index
+// signatures, so nested members read as `unknown` and need local narrowing.
+interface StatusesV1Endpoint {
+  $select(id: string): { fetch(): Promise<UnfurlStatus | null | undefined> };
+}
+interface SearchV2Endpoint {
+  fetch(options: {
+    q: string;
+    type: 'statuses';
+    resolve: boolean;
+    limit: number;
+  }): Promise<{ statuses?: UnfurlStatus[] } | null | undefined>;
+}
+
 const denylistDomains = /(twitter|github)\.com/i;
-const failedUnfurls = {};
-function _unfurlMastodonLink(instance, url) {
+const failedUnfurls: Record<string, boolean> = {};
+function _unfurlMastodonLink(
+  instance: string,
+  url: string,
+): Promise<UnfurledLinkSnapshot | undefined> | undefined {
   const snapStates = snapshot(states);
   if (denylistDomains.test(url)) {
     return;
@@ -36,12 +93,15 @@ function _unfurlMastodonLink(instance, url) {
     return;
   }
   const instanceRegex = new RegExp(instance + '/');
-  if (instanceRegex.test(snapStates.unfurledLinks[url]?.url)) {
-    return Promise.resolve(snapStates.unfurledLinks[url]);
+  // Snapshot values are `unknown` in states.ts; narrow the single entry we
+  // read through a small guard rather than asserting the whole record shape.
+  const cached = asUnfurledLinkSnapshot(snapStates.unfurledLinks[url]);
+  if (instanceRegex.test(cached?.url ?? '')) {
+    return Promise.resolve(cached);
   }
   console.debug('🦦 Unfurling URL', url);
 
-  let remoteInstanceFetch;
+  let remoteInstanceFetch: Promise<UnfurlResult> | undefined;
   let theURL = url;
 
   // https://elk.zone/domain.com/@stest/123 -> https://domain.com/@stest/123
@@ -72,7 +132,8 @@ function _unfurlMastodonLink(instance, url) {
   if (statusMatchID) {
     const id = statusMatchID;
     const { masto } = api({ instance: domain });
-    remoteInstanceFetch = masto.v1.statuses
+    const statusesEndpoint = masto.v1.statuses as StatusesV1Endpoint;
+    remoteInstanceFetch = statusesEndpoint
       .$select(id)
       .fetch()
       .then((status) => {
@@ -88,7 +149,8 @@ function _unfurlMastodonLink(instance, url) {
   }
 
   const { masto } = api({ instance });
-  const mastoSearchFetch = masto.v2.search
+  const searchEndpoint = masto.v2.search as unknown as SearchV2Endpoint;
+  const mastoSearchFetch: Promise<UnfurlResult> = searchEndpoint
     .fetch({
       q: theURL,
       type: 'statuses',
@@ -96,8 +158,8 @@ function _unfurlMastodonLink(instance, url) {
       limit: 1,
     })
     .then((results) => {
-      const { statuses } = results;
-      if (statuses.length > 0) {
+      const statuses = results?.statuses;
+      if (statuses && statuses.length > 0) {
         // Filter out statuses that has content that contains the URL, in-case-sensitive
         const theStatuses = statuses.filter(
           (status) =>
@@ -115,13 +177,13 @@ function _unfurlMastodonLink(instance, url) {
       throw new Error('No results');
     });
 
-  function handleFulfill(result) {
+  function handleFulfill(result: UnfurlResult): UnfurledLinkData {
     const { status, instance } = result;
     const { id } = status;
     const selfURL = `/${instance}/s/${id}`;
     console.debug('🦦 Unfurled URL', url, id, selfURL);
     const hasCanonical = theURL !== url;
-    const data = {
+    const data: UnfurledLinkData = {
       id,
       instance,
       url: selfURL,
@@ -136,8 +198,9 @@ function _unfurlMastodonLink(instance, url) {
     });
     return data;
   }
-  function handleCatch(e) {
+  function handleCatch(_e: unknown): undefined {
     failedUnfurls[url] = true;
+    return undefined;
   }
 
   if (remoteInstanceFetch) {
@@ -145,12 +208,14 @@ function _unfurlMastodonLink(instance, url) {
     //   .then(handleFulfill)
     //   .catch(handleCatch);
     // If mastoSearchFetch is fulfilled within 3s, return it, else return remoteInstanceFetch
-    const finalPromise = Promise.race([
+    const finalPromise: Promise<UnfurlResult> = Promise.race([
       mastoSearchFetch,
-      new Promise((resolve, reject) => setTimeout(reject, 3000)),
+      new Promise<UnfurlResult>((_resolve, reject) =>
+        setTimeout(reject, 3000),
+      ),
     ]).catch(() => {
       // If remoteInstanceFetch is fullfilled, return it, else return mastoSearchFetch
-      return remoteInstanceFetch.catch(() => mastoSearchFetch);
+      return remoteInstanceFetch!.catch(() => mastoSearchFetch);
     });
     return finalPromise.then(handleFulfill).catch(handleCatch);
   } else {
@@ -158,6 +223,14 @@ function _unfurlMastodonLink(instance, url) {
   }
 }
 
-const unfurlMastodonLink = (instance, url, signal) =>
-  unfurlQueue.add(() => _unfurlMastodonLink(instance, url), { signal });
+const unfurlMastodonLink = (
+  instance: string,
+  url: string,
+  signal?: AbortSignal,
+): Promise<UnfurledLinkSnapshot | undefined | void> =>
+  // PQueue's Task accepts `T | PromiseLike<T>`; `_unfurlMastodonLink` can
+  // return `Promise<T> | undefined`, which only fits after async wrapping.
+  // Observationally identical: PQueue resolves the returned promise either
+  // way (it internally awaits a Promise.resolve(taskResult)).
+  unfurlQueue.add(async () => _unfurlMastodonLink(instance, url), { signal });
 export default unfurlMastodonLink;
