@@ -21,6 +21,7 @@ export const BSKY_INSTANCE = 'bsky.social';
 const BSKY_DISCOVER_FEED =
   'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot';
 const BSKY_GET_POSTS_LIMIT = 25;
+const BSKY_THREAD_CONTEXT_DEPTH = 1000;
 const BSKY_VIDEO_SERVICE = 'https://video.bsky.app';
 const BSKY_VIDEO_SERVICE_DID = 'did:web:video.bsky.app';
 export { BSKY_PDS, resolveAtprotoLoginService };
@@ -1559,8 +1560,8 @@ export function createAtprotoClient({
         async fetch() {
           const res = await agent.getPostThread({
             uri,
-            depth: 8,
-            parentHeight: 8,
+            depth: BSKY_THREAD_CONTEXT_DEPTH,
+            parentHeight: BSKY_THREAD_CONTEXT_DEPTH,
           });
           interface ThreadNode {
             post?: AtprotoPost;
