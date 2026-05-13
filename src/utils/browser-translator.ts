@@ -59,7 +59,7 @@ export const supportsBrowserTranslator =
 // https://developer.chrome.com/docs/ai/language-detection
 export let langDetector: LanguageDetectorInstance | undefined;
 if (supportsLanguageDetector) {
-  (async () => {
+  void (async () => {
     try {
       const availability = await LanguageDetector.availability();
       if (availability === 'unavailable') {

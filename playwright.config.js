@@ -1,4 +1,5 @@
 // @ts-check
+/// <reference types="node" />
 import { defineConfig, devices } from '@playwright/test';
 
 // Silence console output except errors

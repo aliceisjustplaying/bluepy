@@ -23,13 +23,10 @@ interface IntlSegmenterSuspenseProps {
 export default function IntlSegmenterSuspense({
   children,
 }: IntlSegmenterSuspenseProps) {
-  if (supportsIntlSegmenter) {
-    return <Suspense fallback={<Loader />}>{children}</Suspense>;
-  }
-
-  const [polyfillLoaded, setPolyfillLoaded] = useState(false);
+  const [polyfillLoaded, setPolyfillLoaded] = useState(supportsIntlSegmenter);
   useEffect(() => {
-    (async () => {
+    if (supportsIntlSegmenter) return;
+    void (async () => {
       await import('@formatjs/intl-segmenter/polyfill-force.js');
       setPolyfillLoaded(true);
     })();

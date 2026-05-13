@@ -10,6 +10,9 @@ import { api } from '../utils/api';
 import IconUntyped from './icon';
 import Link from './link';
 import LoaderUntyped from './loader';
+// TODO(oxlint:import/no-cycle): status imports quotes-modal lazily for the
+// "show quotes" sheet; breaking this cycle requires extracting a shared types
+// module. Out of scope for the oxlint cleanup batch.
 import StatusUntyped from './status';
 
 type IconProps = {
@@ -120,6 +123,9 @@ export default function QuotesModal({
   useEffect(() => {
     loadQuotes(true);
     firstLoad.current = false;
+    // TODO(oxlint:react-hooks/exhaustive-deps): loadQuotes is recreated each
+    // render; adding it would loop. Wrapping in useCallback requires also
+    // memoizing the masto.v1 reference. Behavioural-equivalent skip.
   }, [statusId]);
 
   return (

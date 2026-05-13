@@ -2,7 +2,7 @@ import './custom-emojis-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type Fuse from 'fuse.js';
-import type { JSX } from 'preact';
+import type { TargetedEvent } from 'preact';
 import { memo } from 'preact/compat';
 import {
   useCallback,
@@ -12,7 +12,7 @@ import {
   useState,
 } from 'preact/hooks';
 
-import getCustomEmojis from '../utils/custom-emojis';
+import { getCustomEmojis } from '../utils/custom-emojis';
 import store from '../utils/store';
 
 import Icon from './icon';
@@ -38,29 +38,29 @@ interface CustomEmojiButtonProps {
   showCode?: boolean;
 }
 
+const addEdges = (e: TargetedEvent<HTMLButtonElement>) => {
+  // Add edge-left or edge-right class based on self position relative to scrollable parent
+  // If near left edge, add edge-left, if near right edge, add edge-right
+  const buffer = 88;
+  const parent = e.currentTarget.closest('main');
+  if (parent) {
+    const rect = parent.getBoundingClientRect();
+    const selfRect = e.currentTarget.getBoundingClientRect();
+    const targetClassList = e.currentTarget.classList;
+    if (selfRect.left < rect.left + buffer) {
+      targetClassList.add('edge-left');
+      targetClassList.remove('edge-right');
+    } else if (selfRect.right > rect.right - buffer) {
+      targetClassList.add('edge-right');
+      targetClassList.remove('edge-left');
+    } else {
+      targetClassList.remove('edge-left', 'edge-right');
+    }
+  }
+};
+
 const CustomEmojiButton = memo(
   ({ emoji, onSelect, showCode }: CustomEmojiButtonProps) => {
-    const addEdges = (e: JSX.TargetedEvent<HTMLButtonElement>) => {
-      // Add edge-left or edge-right class based on self position relative to scrollable parent
-      // If near left edge, add edge-left, if near right edge, add edge-right
-      const buffer = 88;
-      const parent = e.currentTarget.closest('main');
-      if (parent) {
-        const rect = parent.getBoundingClientRect();
-        const selfRect = e.currentTarget.getBoundingClientRect();
-        const targetClassList = e.currentTarget.classList;
-        if (selfRect.left < rect.left + buffer) {
-          targetClassList.add('edge-left');
-          targetClassList.remove('edge-right');
-        } else if (selfRect.right > rect.right - buffer) {
-          targetClassList.add('edge-right');
-          targetClassList.remove('edge-left');
-        } else {
-          targetClassList.remove('edge-left', 'edge-right');
-        }
-      }
-    };
-
     const handleClick = useCallback(() => {
       onSelect(`:${emoji.shortcode}:`);
     }, [onSelect, emoji.shortcode]);
@@ -158,17 +158,13 @@ function CustomEmojisModal({
   // JS original passed no deps to useMemo (re-evaluated each render); preserve
   // exact semantics by passing `undefined`. Fix the deps as a follow-up.
   const recentlyUsedCustomEmojis = useMemo<CustomEmoji[]>(
-    () =>
-      (store.account.get('recentlyUsedCustomEmojis') as
-        | CustomEmoji[]
-        | null
-        | undefined) || [],
+    () => store.account.get<CustomEmoji[]>('recentlyUsedCustomEmojis') || [],
     undefined,
   );
   const searcherRef = useRef<Fuse<CustomEmoji> | null>(null);
   useEffect(() => {
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
         const [emojis, searcher] = await getCustomEmojis(instance as string);
         console.log('emojis', emojis);
@@ -209,7 +205,7 @@ function CustomEmojisModal({
       emojisCat[category] = list;
     }
     return emojisCat;
-  }, [customEmojis]);
+  }, [customEmojis, recentlyUsedCustomEmojis]);
 
   const scrollableRef = useRef<HTMLElement | null>(null);
   const [matches, setMatches] = useState<CustomEmoji[] | null>(null);
@@ -251,7 +247,7 @@ function CustomEmojisModal({
         setMatches(null);
       }
     },
-    [customEmojis],
+    [],
   );
   useEffect(() => {
     if (defaultSearchTerm && customEmojis?.length) {
@@ -270,36 +266,33 @@ function CustomEmojisModal({
       onClose?.();
 
       queueMicrotask(() => {
-        let recentlyUsedCustomEmojis =
-          (store.account.get('recentlyUsedCustomEmojis') as
-            | CustomEmoji[]
-            | null
-            | undefined) || [];
+        let recents =
+          store.account.get<CustomEmoji[]>('recentlyUsedCustomEmojis') || [];
         const emojiAsObj = emoji as unknown as CustomEmoji;
-        const recentlyUsedEmojiIndex = recentlyUsedCustomEmojis.findIndex(
+        const recentlyUsedEmojiIndex = recents.findIndex(
           (e) => e.shortcode === emojiAsObj.shortcode,
         );
         if (recentlyUsedEmojiIndex !== -1) {
           // Move emoji to index 0
-          recentlyUsedCustomEmojis.splice(recentlyUsedEmojiIndex, 1);
-          recentlyUsedCustomEmojis.unshift(emojiAsObj);
+          recents.splice(recentlyUsedEmojiIndex, 1);
+          recents.unshift(emojiAsObj);
         } else {
-          recentlyUsedCustomEmojis.unshift(emojiAsObj);
+          recents.unshift(emojiAsObj);
           // Remove unavailable ones
-          recentlyUsedCustomEmojis = recentlyUsedCustomEmojis.filter((e) =>
+          recents = recents.filter((e) =>
             customEmojisList.current?.find?.(
               (other) => other.shortcode === e.shortcode,
             ),
           );
           // Limit to 10
-          recentlyUsedCustomEmojis = recentlyUsedCustomEmojis.slice(0, 10);
+          recents = recents.slice(0, 10);
         }
 
         // Store back
-        store.account.set('recentlyUsedCustomEmojis', recentlyUsedCustomEmojis);
+        store.account.set('recentlyUsedCustomEmojis', recents);
       });
     },
-    [onSelect],
+    [onSelect, onClose],
   );
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -420,7 +413,7 @@ function CustomEmojisModal({
                   Object.entries(customEmojisCatList).map(
                     ([category, emojis]) =>
                       !!emojis?.length && (
-                        <div class="section-container">
+                        <div key={category} class="section-container">
                           <div class="section-header">
                             {{
                               '--recent--': t`Recently used`,

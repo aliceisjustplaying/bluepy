@@ -16,7 +16,6 @@ import { api } from '../utils/api';
 import { getLists, splitListsAndFeeds } from '../utils/lists';
 import safeBoundingBoxPadding from '../utils/safe-bounding-box-padding';
 import states from '../utils/states';
-import store from '../utils/store';
 import { getAccounts, getCurrentAccountID } from '../utils/store-utils';
 import supports from '../utils/supports';
 
@@ -137,9 +136,7 @@ function NavMenu(props: Record<string, unknown>) {
           <Avatar
             url={
               (currentAccount?.info?.avatar ||
-                (currentAccount?.info?.avatarStatic as string | undefined)) as
-                | string
-                | undefined
+                currentAccount?.info?.avatarStatic) as string | undefined
             }
             size="l"
             squircle={currentAccount?.info?.bot as boolean | undefined}
@@ -183,10 +180,10 @@ function NavMenu(props: Record<string, unknown>) {
                 onClick={() => {
                   const yes = confirm(t`Reload page now to update?`);
                   if (yes) {
-                    (async () => {
+                    void (async () => {
                       try {
                         location.reload();
-                      } catch (e) {}
+                      } catch {}
                     })();
                   }
                 }}
@@ -442,7 +439,14 @@ function ListMenu({ menuState }: { menuState: MenuStateValue }) {
   useEffect(() => {
     if (!supportsLists) return;
     if (menuState === 'open') {
-      getLists().then(setLists);
+      void getLists()
+        .then((value) => {
+          setLists(value);
+          return undefined;
+        })
+        .catch((err: unknown) => {
+          console.error(err);
+        });
     }
   }, [menuState, supportsLists]);
 

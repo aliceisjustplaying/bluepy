@@ -105,10 +105,9 @@ function handleContentLinks(
       const username = targetText.replace(/^[@＠]/, '');
       // Only fallback to acct/username check if url doesn't match
       const mention =
-        mentions.find((mention) => mention.url === href) ||
+        mentions.find((m) => m.url === href) ||
         mentions.find(
-          (mention) =>
-            mention.acct === username || mention.username === username,
+          (m) => m.acct === username || m.username === username,
         );
       console.warn('MENTION', mention, href);
       if (mention) {
@@ -181,7 +180,7 @@ function handleContentLinks(
           linkText,
         };
       }
-    } catch (e) {}
+    } catch {}
   };
 }
 
