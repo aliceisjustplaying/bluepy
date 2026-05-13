@@ -4,7 +4,9 @@ import { plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import debounce from 'just-debounce-it';
+import type { mastodon } from 'masto';
 import pRetry from 'p-retry';
+import type { ComponentChildren, ComponentType, JSX } from 'preact';
 import { memo } from 'preact/compat';
 import {
   useCallback,
@@ -16,21 +18,21 @@ import {
 } from 'preact/hooks';
 import punycode from 'punycode/';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { InView } from 'react-intersection-observer';
+import { InView as InViewUntyped } from 'react-intersection-observer';
 import { matchPath, useSearchParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
-import Avatar from '../components/avatar';
+import AvatarUntyped from '../components/avatar';
 import EditHistoryControls from '../components/edit-history-controls';
-import Icon from '../components/icon';
-import Link from '../components/link';
+import IconUntyped from '../components/icon';
+import LinkUntyped, { type LinkProps } from '../components/link';
 import Loader from '../components/loader';
 import { getSafeViewTransitionName } from '../components/media';
 import MediaModal from '../components/media-modal';
 import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
-import Status from '../components/status';
+import StatusUntyped from '../components/status';
 import { api } from '../utils/api';
 import {
   EditHistoryProvider,
@@ -50,24 +52,138 @@ import useTitle from '../utils/useTitle';
 
 import getInstanceStatusURL from './../utils/get-instance-status-url';
 
-const { PHANPY_DEFAULT_INSTANCE: DEFAULT_INSTANCE } = import.meta.env;
+import { ThreadCountContext } from '../utils/thread-count-context';
+
+// `status.jsx`, `icon.jsx`, `avatar.tsx`, and `link.tsx` ship JSX components
+// whose prop shapes don't fully line up with the call sites here. Wrap the
+// raw imports with the minimal prop surface this file actually uses; these
+// shims will go away as the peers narrow their public types.
+interface StatusComponentProps {
+  statusID?: string;
+  instance?: string;
+  withinContext?: boolean;
+  size?: 's' | 'm' | 'l';
+  enableTranslate?: boolean;
+  forceTranslate?: boolean;
+  onMediaClick?: (
+    e: Event,
+    i: number,
+    media: unknown,
+    status: { id: string },
+  ) => void;
+  onStatusLinkClick?: (e: Event, status: { id: string }) => void;
+  showActionsBar?: boolean;
+  skeleton?: boolean;
+  ghost?: GhostMeta;
+}
+const Status = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
+
+interface AvatarComponentProps {
+  url?: string;
+  staticUrl?: string;
+  size?: string;
+  alt?: string;
+  title?: string;
+  squircle?: boolean;
+}
+const Avatar = AvatarUntyped as unknown as ComponentType<AvatarComponentProps>;
+
+interface IconComponentProps {
+  icon: string;
+  size?: string;
+  alt?: string;
+  title?: string;
+  class?: string;
+}
+const Icon = IconUntyped as unknown as ComponentType<IconComponentProps>;
+
+const Link = LinkUntyped as unknown as ComponentType<LinkProps>;
+
+// `react-intersection-observer`'s `InView` ships without working JSX
+// component typings under our preact compat resolution. Re-type as a preact
+// component with the props this file actually uses.
+const InView = InViewUntyped as unknown as ComponentType<{
+  threshold?: number;
+  class?: string;
+  tabIndex?: number;
+  onChange?: (inView: boolean) => void;
+  children?: ComponentChildren;
+}>;
+
+const { PHANPY_DEFAULT_INSTANCE: DEFAULT_INSTANCE } = import.meta.env as {
+  PHANPY_DEFAULT_INSTANCE?: string;
+};
 
 const LIMIT = 40;
 const SUBCOMMENTS_OPEN_ALL_LIMIT = 10;
 const MAX_WEIGHT = 5;
 
-let cachedRepliesToggle = {};
-let cachedStatusesMap = {};
-let scrollPositions = {};
-function resetScrollPosition(id) {
+// The status records this page works with originate from Masto's API but
+// also pick up internal mutations from `states.ts` (e.g. `__replies`,
+// `_pinned`). Keep this type loose around those extensions.
+type RawStatus = mastodon.v1.Status & {
+  __replies?: RawStatus[];
+  _pinned?: unknown;
+};
+
+interface GhostMeta {
+  inReplyToAccountId?: string | null;
+}
+
+// Internal display shape produced by `restructureContext` and stored in
+// `statuses`. Hero/ancestor/descendant items share fields; some apply only to
+// specific kinds (e.g. `replies` for descendants, `ghost` for missing
+// ancestors).
+interface DisplayStatus {
+  id: string;
+  account?: RawStatus['account'];
+  accountID?: string;
+  ancestor?: boolean;
+  descendant?: boolean;
+  ghost?: GhostMeta;
+  isThread?: boolean;
+  thread?: boolean;
+  repliesCount?: number;
+  weight?: number;
+  level?: number;
+  replies?: NestedReply[] | null;
+  createdAt?: string;
+}
+
+interface NestedReply {
+  id: string;
+  account: RawStatus['account'];
+  repliesCount?: number;
+  content?: string;
+  weight: number;
+  level: number;
+  replies?: NestedReply[] | null;
+}
+
+interface FullContext {
+  ancestors: RawStatus[];
+  descendants: RawStatus[];
+  heroStatus: RawStatus;
+}
+
+interface RestructureResult {
+  allStatuses: DisplayStatus[];
+  ancestorsIsThread: boolean;
+  mappedNestedDescendants: DisplayStatus[];
+}
+
+let cachedRepliesToggle: Record<string, boolean> = {};
+let cachedStatusesMap: Record<string, DisplayStatus[]> = {};
+let scrollPositions: Record<string, number> = {};
+function resetScrollPosition(id: string): void {
   delete cachedStatusesMap[id];
   delete scrollPositions[id];
 }
 
-const scrollIntoViewOptions = {
+const scrollIntoViewOptions: ScrollIntoViewOptions = {
   block: 'nearest',
   inline: 'center',
-  behavior: 'instant',
+  behavior: 'instant' as ScrollBehavior,
 };
 
 // Select all statuses except those inside collapsed details/summary
@@ -78,16 +194,22 @@ const STATUSES_SELECTOR =
 
 const STATUS_URL_REGEX = /\/s\//i;
 
-import { ThreadCountContext } from '../utils/thread-count-context';
+interface StatusPageParams {
+  id: string;
+  instance?: string;
+}
 
-function StatusPage(params) {
+function StatusPage(params: StatusPageParams) {
   const { id } = params;
   const { masto, instance } = api({ instance: params.instance });
   const snapStates = useSnapshot(states);
   const [searchParams, setSearchParams] = useSearchParams();
   const mediaParam = searchParams.get('media');
   const mediaOnlyParam = searchParams.get('media-only');
-  const mediaIndex = parseInt(mediaParam || mediaOnlyParam, 10);
+  const mediaIndex = parseInt(
+    (mediaParam || mediaOnlyParam) as string,
+    10,
+  );
   let showMedia = mediaIndex > 0;
   const mediaStatusID = searchParams.get('mediaStatusID');
   const mediaStatus = getStatus(mediaStatusID, instance);
@@ -96,11 +218,17 @@ function StatusPage(params) {
   }
   const showMediaOnly = showMedia && !!mediaOnlyParam;
 
-  const sKey = statusKey(id, instance);
-  const [heroStatus, setHeroStatus] = useState(states.statuses[sKey]);
+  // `id` is always present on this route, so `statusKey` always returns a
+  // string here. Fall back to `id` defensively for the type system.
+  // `id` is always present on this route, so `statusKey` always returns a
+  // string here. Fall back to `id` defensively for the type system.
+  const sKey: string = statusKey(id, instance) ?? id;
+  const [heroStatus, setHeroStatus] = useState<RawStatus | undefined>(
+    states.statuses[sKey] as unknown as RawStatus | undefined,
+  );
   useEffect(() => {
     if (states.statuses[sKey]) {
-      setHeroStatus(states.statuses[sKey]);
+      setHeroStatus(states.statuses[sKey] as unknown as RawStatus);
     }
   }, [sKey]);
 
@@ -108,9 +236,11 @@ function StatusPage(params) {
   useEffect(() => {
     if (!heroStatus || !heroStatus.url) return;
 
-    const existingCanonical = document.querySelector('link[rel="canonical"]');
-    let originalHref = null;
-    let canonicalLink;
+    const existingCanonical = document.querySelector(
+      'link[rel="canonical"]',
+    ) as HTMLLinkElement | null;
+    let originalHref: string | null = null;
+    let canonicalLink: HTMLLinkElement | undefined;
 
     if (existingCanonical) {
       originalHref = existingCanonical.href;
@@ -147,8 +277,14 @@ function StatusPage(params) {
     if (!heroStatus && showMedia) {
       (async () => {
         try {
-          const status = await masto.v1.statuses.$select(id).fetch();
-          saveStatus(status, instance);
+          const statusesEndpoint = masto.v1.statuses as unknown as {
+            $select(id: string): { fetch(): Promise<RawStatus> };
+          };
+          const status = await statusesEndpoint.$select(id).fetch();
+          saveStatus(
+            status as unknown as Parameters<typeof saveStatus>[0],
+            instance,
+          );
           setHeroStatus(status);
         } catch (err) {
           console.error(err);
@@ -159,8 +295,13 @@ function StatusPage(params) {
     }
   }, [showMedia]);
 
+  const mediaStatusKey = statusKey(mediaStatusID, instance);
   const mediaAttachments = mediaStatusID
-    ? snapStates.statuses[statusKey(mediaStatusID, instance)]?.mediaAttachments
+    ? (mediaStatusKey
+        ? (snapStates.statuses[mediaStatusKey] as unknown as
+            | RawStatus
+            | undefined)?.mediaAttachments
+        : undefined)
     : heroStatus?.mediaAttachments;
 
   const postViewState = () =>
@@ -185,15 +326,31 @@ function StatusPage(params) {
     }
   }, [showMediaOnly, closeLink, snapStates.prevLocation]);
   const handleMediaClose = useCallback(
-    (e, currentIndex, mediaAttachments, carouselRef) => {
+    (
+      _e: unknown,
+      currentIndex: number | undefined,
+      currentMediaAttachments:
+        | readonly { id?: string; blurhash?: string; url?: string }[]
+        | undefined,
+      carouselRef:
+        | { current: HTMLElement | null | undefined }
+        | undefined,
+    ) => {
       if (postViewState() === 'large' && !showMediaOnly) {
         mediaClose();
         return;
       }
-      if (showMedia && document.startViewTransition) {
-        const media = mediaAttachments[currentIndex];
+      if (
+        showMedia &&
+        document.startViewTransition &&
+        currentMediaAttachments &&
+        typeof currentIndex === 'number'
+      ) {
+        const media = currentMediaAttachments[currentIndex];
         const { id, blurhash, url } = media;
-        const mediaVTN = getSafeViewTransitionName(id || blurhash || url);
+        const mediaVTN = getSafeViewTransitionName(
+          (id || blurhash || url) as string,
+        );
         const els = document.querySelectorAll(
           `.status .media [data-view-transition-name="${mediaVTN}"]`,
         );
@@ -205,12 +362,13 @@ function StatusPage(params) {
             elBounds.left < window.innerWidth &&
             elBounds.right > 0
           );
-        });
+        }) as Element[];
         // If more than one, get the one in status page
-        const el =
-          foundEls.length === 1
-            ? foundEls[0]
-            : foundEls.find((el) => !!el.closest('.status-deck'));
+        const el = (foundEls.length === 1
+          ? foundEls[0]
+          : foundEls.find((candidate) =>
+              !!candidate.closest('.status-deck'),
+            )) as HTMLElement | undefined;
 
         console.log('xxx', { media, id, els, el });
         if (el) {
@@ -219,8 +377,8 @@ function StatusPage(params) {
             if (carouselRef?.current) {
               carouselRef.current
                 .querySelectorAll('.media img, .media video')
-                ?.forEach((el) => {
-                  el.style.viewTransitionName = '';
+                ?.forEach((nested) => {
+                  (nested as HTMLElement).style.viewTransitionName = '';
                 });
             }
             mediaClose();
@@ -242,7 +400,9 @@ function StatusPage(params) {
   useEffect(() => {
     let timer = setTimeout(() => {
       // carouselRef.current?.focus?.();
-      const $carousel = document.querySelector('.carousel');
+      const $carousel = document.querySelector(
+        '.carousel',
+      ) as HTMLElement | null;
       if ($carousel) {
         $carousel.focus();
       }
@@ -267,10 +427,14 @@ function StatusPage(params) {
       {showMedia ? (
         mediaAttachments?.length ? (
           <MediaModal
-            mediaAttachments={mediaAttachments}
+            mediaAttachments={
+              mediaAttachments as unknown as Parameters<
+                typeof MediaModal
+              >[0]['mediaAttachments']
+            }
             statusID={mediaStatusID || id}
             instance={instance}
-            lang={heroStatus?.language}
+            lang={heroStatus?.language as string | undefined}
             index={mediaIndex - 1}
             onClose={handleMediaClose}
           />
@@ -295,7 +459,13 @@ function StatusPage(params) {
   );
 }
 
-function StatusParent(props) {
+interface StatusParentProps {
+  linkable: boolean;
+  to: string;
+  onClick?: (e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => void;
+  children?: ComponentChildren;
+}
+function StatusParent(props: StatusParentProps) {
   const { linkable, to, onClick, ...restProps } = props;
   return linkable ? (
     <Link class="status-link" to={to} onClick={onClick} {...restProps} />
@@ -305,29 +475,45 @@ function StatusParent(props) {
 }
 
 // oldest first
-function createdAtSort(a, b) {
-  return Date.parse(a.createdAt) - Date.parse(b.createdAt);
+function createdAtSort(
+  a: { createdAt?: string | null },
+  b: { createdAt?: string | null },
+): number {
+  return Date.parse(a.createdAt ?? '') - Date.parse(b.createdAt ?? '');
 }
 
 const MONTH_IN_MS = 1000 * 60 * 60 * 24 * 30;
 const segmenter =
   typeof Intl?.Segmenter === 'function' ? new Intl.Segmenter() : null;
 
-function StatusThread({ id, closeLink = '/', instance: propInstance }) {
+interface StatusThreadProps {
+  id: string;
+  closeLink?: string;
+  instance?: string;
+}
+
+function StatusThread({
+  id,
+  closeLink = '/',
+  instance: propInstance,
+}: StatusThreadProps) {
   const { t } = useLingui();
   const [searchParams, setSearchParams] = useSearchParams();
   const mediaParam = searchParams.get('media');
   const mediaStatusID = searchParams.get('mediaStatusID');
-  const showMedia = parseInt(mediaParam, 10) > 0;
+  const showMedia = parseInt(mediaParam as string, 10) > 0;
   const firstLoad = useRef(
     !states.prevLocation &&
       (history.length === 1 ||
-        ('navigation' in window && navigation?.entries?.()?.length === 1)),
+        ('navigation' in window &&
+          (navigation as unknown as {
+            entries?: () => { length: number };
+          })?.entries?.()?.length === 1)),
   );
-  const [viewMode, setViewMode] = useState(
+  const [viewMode, setViewMode] = useState<string | null>(
     searchParams.get('view') || firstLoad.current ? 'full' : null,
   );
-  const translate = !!parseInt(searchParams.get('translate'));
+  const translate = !!parseInt(searchParams.get('translate') as string);
   const { masto, instance } = api({ instance: propInstance });
   const {
     masto: currentMasto,
@@ -336,13 +522,15 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
   } = api();
   const sameInstance = instance === currentInstance;
   const snapStates = useSnapshot(states);
-  const [statuses, setStatuses] = useState([]);
-  const [uiState, setUIState] = useState('default');
-  const heroStatusRef = useRef();
-  const sKey = statusKey(id, instance);
+  const [statuses, setStatuses] = useState<DisplayStatus[]>([]);
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
+  const heroStatusRef = useRef<HTMLLIElement | null>(null);
+  const sKey: string = statusKey(id, instance) ?? id;
   const totalDescendants = useRef(0);
 
-  const scrollableRef = useRef();
+  const scrollableRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     scrollableRef.current?.focus();
   }, []);
@@ -368,11 +556,14 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
   const { editHistoryMode, initEditHistory, editedAtIndex, editHistoryRef } =
     useEditHistory();
 
-  const scrollOffsets = useRef();
-  const lastInitContextTS = useRef();
+  const scrollOffsets = useRef<{
+    offsetTop?: number;
+    scrollTop?: number;
+  } | null>(null);
+  const lastInitContextTS = useRef<number | undefined>(undefined);
   const [threadsCount, setThreadsCount] = useState(0);
-  const fullContext = useRef(null);
-  const restructureContext = () => {
+  const fullContext = useRef<FullContext | null>(null);
+  const restructureContext = (): RestructureResult | undefined => {
     console.log({ fullContext: fullContext.current });
     if (!fullContext.current) return;
     let { ancestors, descendants, heroStatus } = fullContext.current;
@@ -406,11 +597,15 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     totalDescendants.current = descendants?.length || 0;
 
     // Ghost posts - detect missing ancestors
-    const missingAncestorIds = new Set();
+    const missingAncestorIds = new Set<string>();
     ancestors.forEach((status) => {
-      saveStatus(status, instance, {
-        skipThreading: true,
-      });
+      saveStatus(
+        status as unknown as Parameters<typeof saveStatus>[0],
+        instance,
+        {
+          skipThreading: true,
+        },
+      );
       if (
         status.inReplyToId &&
         !ancestors.find((s) => s.id === status.inReplyToId)
@@ -427,7 +622,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
 
     // Insert ghost statuses
     missingAncestorIds.forEach((missingId) => {
-      const referencingStatus =
+      const referencingStatus: RawStatus | null =
         ancestors.find((s) => s.inReplyToId === missingId) ||
         (heroStatus.inReplyToId === missingId ? heroStatus : null);
       if (referencingStatus) {
@@ -436,7 +631,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
           ghost: {
             inReplyToAccountId: referencingStatus.inReplyToAccountId,
           },
-        };
+        } as unknown as RawStatus & { ghost?: GhostMeta };
         if (referencingStatus === heroStatus) {
           ancestors.push(ghostStatus);
         } else {
@@ -446,15 +641,21 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
       }
     });
 
-    const missingStatuses = new Set();
+    const missingStatuses = new Set<string>();
     const ancestorsIsThread = ancestors.every(
-      (s) => s.ghost || s.account.id === heroStatus.account.id,
+      (s) =>
+        (s as RawStatus & { ghost?: GhostMeta }).ghost ||
+        s.account?.id === heroStatus.account?.id,
     );
-    const nestedDescendants = [];
+    const nestedDescendants: RawStatus[] = [];
     descendants.forEach((status) => {
-      saveStatus(status, instance, {
-        // skipThreading: true,
-      });
+      saveStatus(
+        status as unknown as Parameters<typeof saveStatus>[0],
+        instance,
+        {
+          // skipThreading: true,
+        },
+      );
 
       if (
         status.inReplyToId &&
@@ -464,7 +665,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
         missingStatuses.add(status.inReplyToId);
       }
 
-      if (status.inReplyToAccountId === status.account.id) {
+      if (status.inReplyToAccountId === status.account?.id) {
         // If replying to self, it's part of the thread, level 1
         nestedDescendants.push(status);
       } else if (status.inReplyToId === heroStatus.id) {
@@ -475,9 +676,9 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
         nestedDescendants.find(
           (s) =>
             s.id === status.inReplyToId &&
-            s.account.id === heroStatus.account.id,
+            s.account?.id === heroStatus.account?.id,
         ) &&
-        status.account.id === heroStatus.account.id
+        status.account?.id === heroStatus.account?.id
       ) {
         // If replying to hero's own statuses, it's part of the thread, level 1
         nestedDescendants.push(status);
@@ -498,10 +699,10 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
 
     // sort hero author to top
     nestedDescendants.sort((a, b) => {
-      const heroAccountID = heroStatus.account.id;
-      if (a.account.id === heroAccountID && b.account.id !== heroAccountID)
+      const heroAccountID = heroStatus.account?.id;
+      if (a.account?.id === heroAccountID && b.account?.id !== heroAccountID)
         return -1;
-      if (b.account.id === heroAccountID && a.account.id !== heroAccountID)
+      if (b.account?.id === heroAccountID && a.account?.id !== heroAccountID)
         return 1;
       return 0;
     });
@@ -512,7 +713,10 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     }
 
     let descendantLevelsCount = 1;
-    function expandReplies(_replies, level) {
+    function expandReplies(
+      _replies: RawStatus[] | undefined,
+      level: number,
+    ): NestedReply[] | undefined {
       const nextLevel = level + 1;
       if (nextLevel > descendantLevelsCount) {
         descendantLevelsCount = level;
@@ -528,32 +732,37 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
       }));
     }
 
-    const mappedNestedDescendants = nestedDescendants.map((s) => ({
-      id: s.id,
-      account: s.account,
-      accountID: s.account.id,
-      descendant: true,
-      thread: s.account.id === heroStatus.account.id,
-      weight: calcStatusWeight(s),
-      level: 1,
-      replies: expandReplies(s.__replies, 1),
-      createdAt: s.createdAt,
-    }));
-    const allStatuses = [
-      ...ancestors.map((s) => ({
+    const mappedNestedDescendants: DisplayStatus[] = nestedDescendants.map(
+      (s) => ({
         id: s.id,
-        ancestor: true,
-        ghost: s.ghost,
-        isThread: ancestorsIsThread && !s.ghost,
-        accountID: s.account?.id,
         account: s.account,
-        repliesCount: s.repliesCount,
-        weight: s.ghost ? 0 : calcStatusWeight(s),
+        accountID: s.account?.id,
+        descendant: true,
+        thread: s.account?.id === heroStatus.account?.id,
+        weight: calcStatusWeight(s),
+        level: 1,
+        replies: expandReplies(s.__replies, 1),
         createdAt: s.createdAt,
-      })),
+      }),
+    );
+    const allStatuses: DisplayStatus[] = [
+      ...ancestors.map<DisplayStatus>((s) => {
+        const ghost = (s as RawStatus & { ghost?: GhostMeta }).ghost;
+        return {
+          id: s.id,
+          ancestor: true,
+          ghost,
+          isThread: ancestorsIsThread && !ghost,
+          accountID: s.account?.id,
+          account: s.account,
+          repliesCount: s.repliesCount,
+          weight: ghost ? 0 : calcStatusWeight(s),
+          createdAt: s.createdAt,
+        };
+      }),
       {
         id,
-        accountID: heroStatus.account.id,
+        accountID: heroStatus.account?.id,
         weight: calcStatusWeight(heroStatus),
         createdAt: heroStatus.createdAt,
       },
@@ -564,16 +773,25 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     return { allStatuses, ancestorsIsThread, mappedNestedDescendants };
   };
 
-  const initContext = ({ reloadHero } = {}) => {
+  interface StatusContextResource {
+    $select(id: string): {
+      fetch(): Promise<RawStatus>;
+      context: { fetch(): Promise<FullContext> };
+    };
+  }
+
+  const initContext = ({
+    reloadHero,
+  }: { reloadHero?: boolean } = {}): (() => void) => {
     console.debug('initContext', id);
     setUIState('loading');
-    let heroTimer;
+    let heroTimer: ReturnType<typeof setTimeout> | undefined;
 
     const cachedStatuses = cachedStatusesMap[id];
     if (cachedStatuses) {
       // Case 1: It's cached, let's restore them to make it snappy
       const reallyCachedStatuses = cachedStatuses.filter(
-        (s) => states.statuses[sKey],
+        (_s) => states.statuses[sKey],
         // Some are not cached in the global state, so we need to filter them out
       );
       setStatuses(reallyCachedStatuses);
@@ -590,27 +808,34 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     }
 
     (async () => {
+      const statusesEndpoint = masto.v1
+        .statuses as unknown as StatusContextResource;
       const heroFetch = () =>
-        pRetry(() => masto.v1.statuses.$select(id).fetch(), {
+        pRetry(() => statusesEndpoint.$select(id).fetch(), {
           retries: 4,
         });
       const contextFetch = pRetry(
-        () => masto.v1.statuses.$select(id).context.fetch(),
+        () => statusesEndpoint.$select(id).context.fetch(),
         {
           retries: 8,
         },
       );
 
       const hasStatus = !!snapStates.statuses[sKey];
-      let heroStatus = snapStates.statuses[sKey];
+      let heroStatus = snapStates.statuses[sKey] as unknown as
+        | RawStatus
+        | undefined;
       if (hasStatus && !reloadHero) {
         console.debug('Hero status is cached');
       } else {
         try {
           heroStatus = await heroFetch();
-          saveStatus(heroStatus, instance);
+          saveStatus(
+            heroStatus as unknown as Parameters<typeof saveStatus>[0],
+            instance,
+          );
           // Give time for context to appear
-          await new Promise((resolve) => {
+          await new Promise<void>((resolve) => {
             setTimeout(resolve, 100);
           });
         } catch (e) {
@@ -623,9 +848,15 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
       try {
         const context = await contextFetch;
         const { ancestors } = context;
+        if (!heroStatus) {
+          setUIState('error');
+          return;
+        }
         fullContext.current = { ...context, heroStatus };
+        const restructured = restructureContext();
+        if (!restructured) return;
         const { allStatuses, ancestorsIsThread, mappedNestedDescendants } =
-          restructureContext();
+          restructured;
 
         const descendantsThread =
           ancestors.length && !ancestorsIsThread
@@ -658,7 +889,10 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
         // Let's threadify this one
         // Note that all non-hero statuses will trigger saveStatus which will threadify them too
         // By right, at this point, all descendant statuses should be cached
-        threadifyStatus(heroStatus, instance);
+        threadifyStatus(
+          heroStatus as unknown as Parameters<typeof threadifyStatus>[0],
+          instance,
+        );
       } catch (e) {
         console.error(e);
         setUIState('error');
@@ -676,9 +910,9 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
 
   useEffect(() => {
     try {
-      const { allStatuses } = restructureContext();
-      setStatuses(allStatuses);
-    } catch (e) {}
+      const restructured = restructureContext();
+      if (restructured) setStatuses(restructured.allStatuses);
+    } catch (_e) {}
     // Only run this when editHistoryMode changes
     // If id changes, initContext will run instead, so don't worry
   }, [editHistoryMode, editedAtIndex]);
@@ -704,33 +938,36 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     console.debug('STATUSES', statuses);
     const scrollPosition = scrollPositions[id];
     console.debug('scrollPosition', scrollPosition);
+    // Use non-null assertions on `scrollableRef.current` to preserve the
+    // original JS behavior (which assumed the ref was always attached by
+    // the time this layout effect runs).
     if (!!scrollPosition) {
       console.debug('Case 1', {
         id,
         scrollPosition,
       });
-      scrollableRef.current.scrollTop = scrollPosition;
+      scrollableRef.current!.scrollTop = scrollPosition;
     } else if (scrollOffsets.current) {
       const newScrollOffsets = {
         offsetTop: heroStatusRef.current?.offsetTop,
         scrollTop: scrollableRef.current?.scrollTop,
       };
       const newScrollTop =
-        newScrollOffsets.offsetTop -
-        scrollOffsets.current.offsetTop +
-        newScrollOffsets.scrollTop;
+        (newScrollOffsets.offsetTop as number) -
+        (scrollOffsets.current.offsetTop as number) +
+        (newScrollOffsets.scrollTop as number);
       console.debug('Case 2', {
         scrollOffsets: scrollOffsets.current,
         newScrollOffsets,
         newScrollTop,
         statuses: [...statuses],
       });
-      scrollableRef.current.scrollTop = newScrollTop;
+      scrollableRef.current!.scrollTop = newScrollTop;
     } else if (statuses.length === 1) {
       console.debug('Case 3', {
         id,
       });
-      scrollableRef.current.scrollTop = 0;
+      scrollableRef.current!.scrollTop = 0;
     }
 
     // RESET
@@ -742,7 +979,10 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     // Delete the cache for the context
     (async () => {
       try {
-        const { instanceURL } = getCurrentAccount();
+        // Original JS destructured without null-checking, throwing if no
+        // current account; non-null assertion preserves that behavior under
+        // the try/catch.
+        const { instanceURL } = getCurrentAccount()!;
         const contextURL = `https://${instanceURL}/api/v1/statuses/${id}/context`;
         console.log('Clear cache', contextURL);
         const apiCache = await caches.open('api');
@@ -768,18 +1008,21 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     };
   }, []);
 
-  const heroStatus = snapStates.statuses[sKey] || snapStates.statuses[id];
+  const heroStatus = (snapStates.statuses[sKey] ||
+    snapStates.statuses[id]) as unknown as RawStatus | undefined;
   const heroDisplayName = useMemo(() => {
     // Remove shortcodes from display name
     if (!heroStatus) return '';
-    const { account } = heroStatus;
+    const account = heroStatus.account;
     const div = document.createElement('div');
-    div.innerHTML = account.displayName;
+    div.innerHTML = (account?.displayName as string | undefined) ?? '';
     return div.innerText.trim();
   }, [heroStatus]);
   const heroContentText = useMemo(() => {
     if (!heroStatus) return '';
-    let text = statusPeek(heroStatus);
+    let text = statusPeek(
+      heroStatus as unknown as Parameters<typeof statusPeek>[0],
+    );
     if (text.length > 64) {
       // "The title should ideally be less than 64 characters in length"
       // https://www.w3.org/Provider/Style/TITLE.html
@@ -803,7 +1046,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     '/:instance?/s/:id',
   );
 
-  const postInstance = useMemo(() => {
+  const postInstance = useMemo<string | undefined>(() => {
     if (!heroStatus) return;
     const { url } = heroStatus;
     if (!url) return;
@@ -840,7 +1083,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
       // If media is open, esc to close media first
       // Else close the status page
       enabled: !showMedia,
-      ignoreEventWhen: (e) => {
+      ignoreEventWhen: (e: KeyboardEvent): boolean => {
         const hasModal = !!document.querySelector('#modal-container > *');
         return hasModal || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
       },
@@ -855,24 +1098,25 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e: KeyboardEvent) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
   useHotkeys(
     'j',
     () => {
-      const activeStatus = document.activeElement.closest(
+      const activeStatus = document.activeElement?.closest(
         '.status-link, .status-focus',
-      );
+      ) as HTMLElement | null | undefined;
       const activeStatusRect = activeStatus?.getBoundingClientRect();
       const allStatusLinks = Array.from(
-        scrollableRef.current.querySelectorAll(STATUSES_SELECTOR),
-      );
+        scrollableRef.current!.querySelectorAll(STATUSES_SELECTOR),
+      ) as HTMLElement[];
       console.log({ allStatusLinks });
       if (
         activeStatus &&
-        activeStatusRect.top < scrollableRef.current.clientHeight &&
+        activeStatusRect &&
+        activeStatusRect.top < scrollableRef.current!.clientHeight &&
         activeStatusRect.bottom > 0
       ) {
         const activeStatusIndex = allStatusLinks.indexOf(activeStatus);
@@ -895,7 +1139,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) =>
+      ignoreEventWhen: (e: KeyboardEvent) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -907,16 +1151,17 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
   useHotkeys(
     'k',
     () => {
-      const activeStatus = document.activeElement.closest(
+      const activeStatus = document.activeElement?.closest(
         '.status-link, .status-focus',
-      );
+      ) as HTMLElement | null | undefined;
       const activeStatusRect = activeStatus?.getBoundingClientRect();
       const allStatusLinks = Array.from(
-        scrollableRef.current.querySelectorAll(STATUSES_SELECTOR),
-      );
+        scrollableRef.current!.querySelectorAll(STATUSES_SELECTOR),
+      ) as HTMLElement[];
       if (
         activeStatus &&
-        activeStatusRect.top < scrollableRef.current.clientHeight &&
+        activeStatusRect &&
+        activeStatusRect.top < scrollableRef.current!.clientHeight &&
         activeStatusRect.bottom > 0
       ) {
         const activeStatusIndex = allStatusLinks.indexOf(activeStatus);
@@ -939,7 +1184,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) =>
+      ignoreEventWhen: (e: KeyboardEvent) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -953,11 +1198,13 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
   useHotkeys(
     'x',
     () => {
-      const activeStatus = document.activeElement.closest(
+      const activeStatus = document.activeElement?.closest(
         '.status-link, .status-focus',
       );
       if (activeStatus) {
-        const details = activeStatus.nextElementSibling;
+        const details = activeStatus.nextElementSibling as
+          | HTMLDetailsElement
+          | null;
         if (details && details.tagName.toLowerCase() === 'details') {
           details.open = !details.open;
         }
@@ -965,7 +1212,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) =>
+      ignoreEventWhen: (e: KeyboardEvent) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -978,13 +1225,13 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     'o',
     () => {
       // open media of active status (not inside status-card)
-      const activeStatus = document.activeElement.closest(
+      const activeStatus = document.activeElement?.closest(
         '.status-link, .status-focus',
       );
       if (activeStatus) {
         const mediaLink = activeStatus.querySelector(
           'a.media:not(.status-card a.media)',
-        );
+        ) as HTMLAnchorElement | null;
         if (mediaLink) {
           mediaLink.click();
         }
@@ -992,7 +1239,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) =>
+      ignoreEventWhen: (e: KeyboardEvent) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -1007,31 +1254,36 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
   //   distanceFromStartPx: 16,
   // });
 
-  const initialPageState = useRef(showMedia ? 'media+status' : 'status');
+  const initialPageState = useRef<string | null>(
+    showMedia ? 'media+status' : 'status',
+  );
 
   const handleMediaClick = useCallback(
-    (e, i, media, status) => {
+    (e: Event, i: number, _media: unknown, status: { id: string }) => {
       e.preventDefault();
       e.stopPropagation();
       setSearchParams({
-        media: i + 1,
+        media: String(i + 1),
         mediaStatusID: status.id,
       });
     },
     [id],
   );
 
-  const handleStatusLinkClick = useCallback((e, status) => {
-    resetScrollPosition(status.id);
-  }, []);
+  const handleStatusLinkClick = useCallback(
+    (_e: Event, status: { id: string }) => {
+      resetScrollPosition(status.id);
+    },
+    [],
+  );
 
   useEffect(() => {
-    let timer;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     if (mediaStatusID && showMedia) {
       timer = setTimeout(() => {
         const status = scrollableRef.current?.querySelector(
           `.status-link[href*="/${mediaStatusID}"]`,
-        );
+        ) as HTMLElement | null | undefined;
         if (status) {
           status.scrollIntoView(scrollIntoViewOptions);
         }
@@ -1043,7 +1295,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
   }, [mediaStatusID, showMedia]);
 
   const renderStatus = useCallback(
-    (status, i) => {
+    (status: DisplayStatus, i: number) => {
       const {
         id: statusID,
         ancestor,
@@ -1057,7 +1309,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
         level,
       } = status;
       const isHero = statusID === id;
-      const isLinkable = !ghost && (isThread || ancestor);
+      const isLinkable = !!(!ghost && (isThread || ancestor));
 
       return (
         <li
@@ -1125,14 +1377,26 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
                         setUIState('loading');
                         (async () => {
                           try {
-                            const results = await currentMasto.v2.search.list({
-                              q: heroStatus.url,
+                            const results = await (
+                              currentMasto.v2.search as unknown as {
+                                list(params: {
+                                  q: string;
+                                  type: 'statuses';
+                                  resolve: boolean;
+                                  limit: number;
+                                }): Promise<{ statuses?: { id: string }[] }>;
+                              }
+                            ).list({
+                              q: heroStatus!.url as string,
                               type: 'statuses',
                               resolve: true,
                               limit: 1,
                             });
-                            if (results.statuses.length) {
-                              const status = results.statuses[0];
+                            const resultStatuses =
+                              (results as { statuses?: { id: string }[] } | null)
+                                ?.statuses ?? [];
+                            if (resultStatuses.length) {
+                              const status = resultStatuses[0];
                               location.hash = currentInstance
                                 ? `/${currentInstance}/s/${status.id}`
                                 : `/s/${status.id}`;
@@ -1210,10 +1474,10 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
                   showActionsBar={!!descendant}
                 />
               )}
-              {ancestor && repliesCount > 1 && (
+              {ancestor && repliesCount !== undefined && repliesCount > 1 && (
                 <div class="replies-link">
                   <Icon icon="comment2" alt={t`Replies`} />{' '}
-                  <span title={repliesCount}>
+                  <span title={String(repliesCount)}>
                     {shortenNumber(repliesCount)}
                   </span>
                 </div>
@@ -1229,13 +1493,13 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
             </StatusParent>
             // </Link>
           )}
-          {descendant && replies?.length > 0 && (
+          {descendant && !!replies?.length && (
             <SubComments
               instance={instance}
               replies={replies}
               hasParentThread={thread}
-              level={level}
-              accWeight={weight}
+              level={level ?? 1}
+              accWeight={weight ?? 0}
               openAll={totalDescendants.current < SUBCOMMENTS_OPEN_ALL_LIMIT}
               lazyRenderReplies={totalDescendants.current > LIMIT}
               parentLink={{
@@ -1289,18 +1553,26 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
   const prevLocationIsStatusPage = useMemo(() => {
     // Navigation API
     if ('navigation' in window && navigation?.entries) {
-      const prevEntry = navigation.entries()[navigation.currentEntry.index - 1];
+      const prevEntry = navigation.entries()[
+        (navigation.currentEntry?.index ?? 0) - 1
+      ];
       if (prevEntry?.url) {
         return STATUS_URL_REGEX.test(prevEntry.url);
       }
     }
-    return STATUS_URL_REGEX.test(states.prevLocation?.pathname);
+    return STATUS_URL_REGEX.test(states.prevLocation?.pathname ?? '');
   }, [sKey]);
 
+  interface StatusKeyish {
+    id?: string;
+    quote?: { quotedStatus?: { id?: string }; id?: string } | null;
+    replies?: StatusKeyish[] | null;
+  }
+
   const allStatusesKeys = useMemo(() => {
-    const ids = [];
-    function getIDs(status) {
-      ids.push(status.id);
+    const ids: string[] = [];
+    function getIDs(status: StatusKeyish): void {
+      if (status.id) ids.push(status.id);
       const quoteId = status.quote?.quotedStatus?.id || status.quote?.id;
       if (quoteId) {
         ids.push(quoteId);
@@ -1309,12 +1581,12 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
         status.replies.forEach(getIDs);
       }
     }
-    statuses.forEach(getIDs);
-    return ids.map((id) => statusKey(id, instance));
+    statuses.forEach((s) => getIDs(s as unknown as StatusKeyish));
+    return ids.map((sId) => statusKey(sId, instance));
   }, [statuses, instance]);
 
   // Helper function to format time differences between two dates
-  function formatTimeGap(months) {
+  function formatTimeGap(months: number): string {
     if (months < 12) {
       return plural(months, {
         one: '# month later',
@@ -1396,7 +1668,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
       if (!heroStatusRef.current) return;
       const spoilerButton = heroStatusRef.current.querySelector(
         '.spoiler-button:not(.spoiling), .spoiler-media-button:not(.spoiling)',
-      );
+      ) as HTMLElement | null;
       if (spoilerButton) spoilerButton.click();
     }, 1000);
     return () => clearTimeout(timer);
@@ -1405,7 +1677,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
   return (
     <ThreadCountContext.Provider value={threadsCount}>
       <div
-        tabIndex="-1"
+        tabIndex={-1}
         ref={scrollableRef}
         class={`status-deck deck contained ${
           statuses.length > 1 ? 'padded-bottom' : ''
@@ -1461,7 +1733,11 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
                 <>
                   <span class="hero-heading">
                     <NameText
-                      account={heroStatus.account}
+                      account={
+                        heroStatus.account as unknown as Parameters<
+                          typeof NameText
+                        >[0]['account']
+                      }
                       instance={instance}
                       showAvatar
                       short
@@ -1480,7 +1756,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      heroStatusRef.current.scrollIntoView({
+                      heroStatusRef.current!.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start',
                       });
@@ -1502,7 +1778,7 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
                       // Scroll to top
                       e.preventDefault();
                       e.stopPropagation();
-                      scrollableRef.current.scrollTo({
+                      scrollableRef.current!.scrollTo({
                         top: 0,
                         behavior: 'smooth',
                       });
@@ -1519,17 +1795,25 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
                           i,
                       )
                       .slice(0, 3)
-                      .map((ancestor) => (
-                        <Avatar
-                          key={ancestor.account.id}
-                          url={
-                            ancestor.account.avatarStatic ||
-                            ancestor.account.avatar
-                          }
-                          alt={ancestor.account.displayName}
-                          squircle={ancestor.account?.bot}
-                        />
-                      ))}
+                      .map((ancestor) => {
+                        const acct = ancestor.account as
+                          | (Record<string, unknown> & {
+                              id?: string;
+                              avatarStatic?: string;
+                              avatar?: string;
+                              displayName?: string;
+                              bot?: boolean;
+                            })
+                          | undefined;
+                        return (
+                          <Avatar
+                            key={acct?.id}
+                            url={acct?.avatarStatic || acct?.avatar}
+                            alt={acct?.displayName}
+                            squircle={acct?.bot}
+                          />
+                        );
+                      })}
                     {/* <Icon icon="comment" />{' '} */}
                     {ancestors.length > 3 && (
                       <>
@@ -1612,10 +1896,10 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
                 >
                   <Icon
                     icon={
-                      {
+                      ({
                         '': 'layout5',
                         full: 'layout4',
-                      }[viewMode || '']
+                      } as Record<string, string>)[viewMode || ''] as string
                     }
                   />
                   <span>
@@ -1628,10 +1912,10 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
                   onClick={() => {
                     // Click all buttons with class .spoiler but not .spoiling
                     const buttons = Array.from(
-                      scrollableRef.current.querySelectorAll(
+                      scrollableRef.current!.querySelectorAll(
                         '.spoiler-button:not(.spoiling), .spoiler-media-button:not(.spoiling)',
                       ),
-                    );
+                    ) as HTMLElement[];
                     buttons.forEach((button) => {
                       button.click();
                     });
@@ -1649,7 +1933,9 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
                 <MenuItem
                   disabled={!postInstance || postSameInstance}
                   onClick={() => {
-                    const statusURL = getInstanceStatusURL(heroStatus.url);
+                    const statusURL = getInstanceStatusURL(
+                      heroStatus?.url ?? '',
+                    );
                     if (statusURL) {
                       location.hash = statusURL;
                     } else {
@@ -1707,7 +1993,10 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
                     {statuses.slice(limit, limit + 5).map((status) => (
                       <Avatar
                         key={status.id}
-                        url={status.account.avatarStatic}
+                        url={
+                          (status.account as { avatarStatic?: string } | undefined)
+                            ?.avatarStatic
+                        }
                         // title={`${status.avatar.displayName} (@${status.avatar.acct})`}
                       />
                     ))}
@@ -1754,6 +2043,22 @@ function StatusThread({ id, closeLink = '/', instance: propInstance }) {
   );
 }
 
+interface SubCommentsParentLink {
+  to: string;
+  onClick?: () => void;
+}
+
+interface SubCommentsProps {
+  replies: NestedReply[];
+  instance?: string;
+  hasParentThread?: boolean;
+  level: number;
+  accWeight: number;
+  openAll?: boolean;
+  parentLink?: SubCommentsParentLink;
+  lazyRenderReplies?: boolean;
+}
+
 function SubComments({
   replies,
   instance,
@@ -1763,30 +2068,44 @@ function SubComments({
   openAll,
   parentLink,
   lazyRenderReplies,
-}) {
+}: SubCommentsProps) {
   const { t } = useLingui();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Total comments count, including sub-replies
-  const diveDeep = (replies) => {
-    return replies.reduce((acc, reply) => {
-      const { repliesCount, replies } = reply;
-      const count = replies?.length || repliesCount;
-      return acc + count + diveDeep(replies || []);
+  const diveDeep = (innerReplies: NestedReply[] | undefined | null): number => {
+    return (innerReplies ?? []).reduce<number>((acc, reply) => {
+      const { repliesCount, replies: nested } = reply;
+      const count = nested?.length || repliesCount || 0;
+      return acc + count + diveDeep(nested || []);
     }, 0);
   };
   const totalComments = replies.length + diveDeep(replies);
   const sameCount = replies.length === totalComments;
 
   // Get the first 3 accounts, unique by id
-  const accounts = replies
+  const accountsRaw = replies
     .map((r) => r.account)
-    .filter((a, i, arr) => arr.findIndex((b) => b.id === a.id) === i)
+    .filter(
+      (a, i, arr) =>
+        arr.findIndex(
+          (b) =>
+            (b as { id?: string } | undefined)?.id ===
+            (a as { id?: string } | undefined)?.id,
+        ) === i,
+    )
     .slice(0, 3);
+  const accounts = accountsRaw as unknown as Array<{
+    id?: string;
+    avatarStatic?: string;
+    displayName?: string;
+    username?: string;
+    bot?: boolean;
+  }>;
 
-  const totalWeight = useMemo(() => {
-    return replies?.reduce((acc, reply) => {
-      return acc + reply?.weight;
+  const totalWeight = useMemo<number>(() => {
+    return (replies ?? []).reduce<number>((acc, reply) => {
+      return acc + (reply?.weight ?? 0);
     }, accWeight);
   }, [accWeight, replies?.length]);
 
@@ -1796,26 +2115,35 @@ function SubComments({
   } else if (totalWeight <= MAX_WEIGHT) {
     open = true;
   } else if (!hasParentThread && totalComments === 1) {
-    const shortReply = calcStatusWeight(replies[0]) < 2;
+    const shortReply =
+      calcStatusWeight(replies[0] as unknown as RawStatus) < 2;
     if (shortReply) open = true;
   }
   const openBefore = cachedRepliesToggle[replies[0].id];
 
-  const handleMediaClick = useCallback((e, i, media, status) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setSearchParams({
-      media: i + 1,
-      mediaStatusID: status.id,
-    });
-  }, []);
+  const handleMediaClick = useCallback(
+    (e: Event, i: number, _media: unknown, status: { id: string }) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setSearchParams({
+        media: String(i + 1),
+        mediaStatusID: status.id,
+      });
+    },
+    [],
+  );
 
-  const detailsRef = useRef();
+  // The Container element is either `div` or `details` depending on `open`.
+  // Use a permissive ref type to satisfy both branches of the JSX union.
+  const detailsRef = useRef<HTMLElement | null>(null);
   useLayoutEffect(() => {
-    function handleScroll(e) {
+    function handleScroll(e: Event) {
       // NOTE: this scrollLeft works for RTL too
       // Browsers do the magic for us
-      e.target.dataset.scrollLeft = e.target.scrollLeft;
+      const target = e.target as HTMLElement | null;
+      if (target) {
+        target.dataset.scrollLeft = String(target.scrollLeft);
+      }
     }
     detailsRef.current?.addEventListener('scroll', handleScroll, {
       passive: true,
@@ -1834,27 +2162,41 @@ function SubComments({
     setRenderReplies(shouldRenderReplies);
   }, [shouldRenderReplies]);
 
-  const Container = open ? 'div' : 'details';
-  const isDetails = Container === 'details';
+  // Cast `Container` to a permissive component type so the shared `detailsRef`
+  // works for both branches without specialising the JSX intrinsic ref.
+  const Container = (open ? 'div' : 'details') as unknown as ComponentType<
+    JSX.HTMLAttributes<HTMLElement> & {
+      open?: boolean;
+      onToggle?: (e: Event) => void;
+      'data-comments-level'?: number;
+      'data-comments-level-overflow'?: boolean;
+    }
+  >;
+  const isDetails = !open;
 
   return (
     <Container
-      ref={detailsRef}
+      ref={
+        detailsRef as unknown as JSX.HTMLAttributes<HTMLElement>['ref']
+      }
       class="replies"
       open={isDetails ? openBefore || open : undefined}
       onToggle={
         isDetails
-          ? (e) => {
-              const { open } = e.target;
-              setIsOpen(open);
+          ? (e: Event) => {
+              const target = e.target as HTMLDetailsElement | null;
+              const newOpen = !!target?.open;
+              setIsOpen(newOpen);
               // use first reply as ID
-              cachedRepliesToggle[replies[0].id] = open;
+              cachedRepliesToggle[replies[0].id] = newOpen;
             }
           : undefined
       }
-      style={{
-        '--comments-level': level,
-      }}
+      style={
+        {
+          '--comments-level': level,
+        } as JSX.CSSProperties
+      }
       data-comments-level={level}
       data-comments-level-overflow={level > 4}
     >
@@ -1877,7 +2219,7 @@ function SubComments({
                 one="# reply"
                 other={
                   <Trans>
-                    <span title={replies.length}>
+                    <span title={String(replies.length)}>
                       {shortenNumber(replies.length)}
                     </span>{' '}
                     replies
@@ -1895,7 +2237,7 @@ function SubComments({
                     one="# comment"
                     other={
                       <Trans>
-                        <span title={totalComments}>
+                        <span title={String(totalComments)}>
                           {shortenNumber(totalComments)}
                         </span>{' '}
                         comments
@@ -1940,17 +2282,19 @@ function SubComments({
                   onMediaClick={handleMediaClick}
                   showActionsBar
                 />
-                {!r.replies?.length && r.repliesCount > 0 && (
-                  <div class="replies-link">
-                    <Icon icon="comment2" alt={t`Replies`} />{' '}
-                    <span title={r.repliesCount}>
-                      {shortenNumber(r.repliesCount)}
-                    </span>
-                  </div>
-                )}
+                {!r.replies?.length &&
+                  r.repliesCount !== undefined &&
+                  r.repliesCount > 0 && (
+                    <div class="replies-link">
+                      <Icon icon="comment2" alt={t`Replies`} />{' '}
+                      <span title={String(r.repliesCount)}>
+                        {shortenNumber(r.repliesCount)}
+                      </span>
+                    </div>
+                  )}
               </div>
               {/* </Link> */}
-              {r.replies?.length && (
+              {!!r.replies?.length && (
                 <SubComments
                   instance={instance}
                   replies={r.replies}
@@ -1978,21 +2322,45 @@ const MEDIA_VIRTUAL_LENGTH = 140;
 const POLL_VIRTUAL_LENGTH = 35;
 const CARD_VIRTUAL_LENGTH = 70;
 const WEIGHT_SEGMENT = 140;
-const statusWeightCache = new Map();
-function calcStatusWeight(status) {
-  const cachedWeight = statusWeightCache.get(status.id);
+const statusWeightCache = new Map<string, number>();
+
+// Loose shape: callers pass either a full `RawStatus` or a `NestedReply`
+// (which only carries `id`, `content`, and a few other reply-specific
+// fields). The original JS relied on `undefined + content` coercing to
+// `"undefined" + content` (9 extra characters); preserve that arithmetic
+// here so cached/computed weights match the prior behavior exactly.
+interface CalcStatusWeightInput {
+  id?: string;
+  spoilerText?: unknown;
+  content?: unknown;
+  mediaAttachments?: unknown;
+  poll?: unknown;
+  card?: unknown;
+}
+
+function calcStatusWeight(status: CalcStatusWeightInput | RawStatus): number {
+  const s = status as CalcStatusWeightInput;
+  const cachedWeight = statusWeightCache.get(s.id as string);
   if (cachedWeight) return cachedWeight;
-  const { spoilerText, content, mediaAttachments, poll, card } = status;
-  const length = htmlContentLength(spoilerText + content);
-  const mediaLength = mediaAttachments?.length ? MEDIA_VIRTUAL_LENGTH : 0;
-  const pollLength = (poll?.options?.length || 0) * POLL_VIRTUAL_LENGTH;
+  const { spoilerText, content, mediaAttachments, poll, card } = s;
+  // Preserve original JS string-concat semantics: `undefined + content`
+  // yields `"undefined" + content`. Cast via `String()` to keep that
+  // coercion under TypeScript's checker.
+  const length = htmlContentLength(
+    String(spoilerText as unknown) + String(content as unknown),
+  );
+  const ma = mediaAttachments as { length?: number } | null | undefined;
+  const mediaLength = ma?.length ? MEDIA_VIRTUAL_LENGTH : 0;
+  const pollOptions = (poll as { options?: { length?: number } } | null | undefined)
+    ?.options;
+  const pollLength = (pollOptions?.length || 0) * POLL_VIRTUAL_LENGTH;
   const cardLength =
-    card && (mediaAttachments?.length || poll?.options?.length)
+    card && (ma?.length || pollOptions?.length)
       ? 0
       : CARD_VIRTUAL_LENGTH;
   const totalLength = length + mediaLength + pollLength + cardLength;
   const weight = totalLength / WEIGHT_SEGMENT;
-  statusWeightCache.set(status.id, weight);
+  statusWeightCache.set(s.id as string, weight);
   return weight;
 }
 
