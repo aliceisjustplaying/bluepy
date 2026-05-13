@@ -6,7 +6,12 @@ import { ControlledMenu, MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { shallowEqual } from 'fast-equals';
 import type { mastodon } from 'masto';
 import PQueue from 'p-queue';
-import type { ComponentChildren, ComponentType, JSX, RefObject } from 'preact';
+import type {
+  ComponentChildren,
+  CSSProperties,
+  HTMLAttributes,
+  RefObject,
+} from 'preact';
 import { Fragment } from 'preact';
 import { memo } from 'preact/compat';
 import {
@@ -18,7 +23,7 @@ import {
   useRef,
   useState,
 } from 'preact/hooks';
-import punycode from 'punycode/';
+import { toUnicode } from 'punycode/';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
@@ -50,7 +55,7 @@ import showToast from '../utils/show-toast';
 import { speak, supportsTTS } from '../utils/speech';
 import states, { getStatus, saveStatus, statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
-import { getAPIVersions, getCurrentAccID } from '../utils/store-utils';
+import { getCurrentAccID } from '../utils/store-utils';
 import supports from '../utils/supports';
 import useTruncated from '../utils/useTruncated';
 import visibilityIconsMap from '../utils/visibility-icons-map';
@@ -229,7 +234,7 @@ function forgivingQSA(
   for (const selector of selectors) {
     try {
       return dom.querySelectorAll(selector);
-    } catch (e) {}
+    } catch {}
   }
   return [];
 }
@@ -467,11 +472,8 @@ function Status({
         {!mediaFirst && (
           <Avatar
             size="xxl"
-            url={
-              (ghostAccount?.avatarStatic as string | undefined) ||
-              (ghostAccount?.avatar as string | undefined)
-            }
-            squircle={ghostAccount?.bot as boolean | undefined}
+            url={ghostAccount?.avatarStatic || ghostAccount?.avatar}
+            squircle={ghostAccount?.bot}
           />
         )}
         <div class="container">
@@ -479,11 +481,8 @@ function Status({
             {(size === 's' || mediaFirst) && (
               <Avatar
                 size="m"
-                url={
-                  (ghostAccount?.avatarStatic as string | undefined) ||
-                  (ghostAccount?.avatar as string | undefined)
-                }
-                squircle={ghostAccount?.bot as boolean | undefined}
+                url={ghostAccount?.avatarStatic || ghostAccount?.avatar}
+                squircle={ghostAccount?.bot}
               />
             )}
             {ghostAccount && (
@@ -586,7 +585,7 @@ function Status({
       url: accountURL,
       displayName,
       username,
-      emojis: accountEmojis,
+      emojis: _accountEmojis,
       bot,
       group,
     } = {} as Partial<AnyAccount>,
@@ -615,7 +614,7 @@ function Status({
     mediaAttachments = [],
     reblog,
     quote,
-    uri,
+    uri: _uri,
     url,
     emojis,
     tags,
@@ -647,17 +646,21 @@ function Status({
     string | null
   >(null);
   useEffect(() => {
-    if (!content) return;
-    if (_language) return;
-    if (languageAutoDetected) return;
+    if (!content) return undefined;
+    if (_language) return undefined;
+    if (languageAutoDetected) return undefined;
     let timer: ReturnType<typeof setTimeout>;
-    timer = setTimeout(async () => {
-      let detected = await detectLang(
-        getHTMLTextForDetectLang(content, emojis),
-      );
-      setLanguageAutoDetected(detected);
+    timer = setTimeout(() => {
+      void (async () => {
+        let detected = await detectLang(
+          getHTMLTextForDetectLang(content, emojis),
+        );
+        setLanguageAutoDetected(detected);
+      })();
     }, 1000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [content, _language]);
   const language = _language || languageAutoDetected;
 
@@ -749,14 +752,14 @@ function Status({
   const [inReplyToAccount, setInReplyToAccount] =
     useState<ReplyToAccount>(inReplyToAccountRef);
   useEffect(() => {
-    if (instance === 'bsky.social') return;
+    if (instance === 'bsky.social') return undefined;
     if (!withinContext && !inReplyToAccount && inReplyToAccountId) {
-      const account = states.accounts[inReplyToAccountId] as
+      const cachedAccount = states.accounts[inReplyToAccountId] as
         | AnyAccount
         | undefined;
-      if (account) {
-        setInReplyToAccount(account);
-        return;
+      if (cachedAccount) {
+        setInReplyToAccount(cachedAccount);
+        return undefined;
       }
 
       const abortController = new AbortController();
@@ -765,20 +768,21 @@ function Status({
         masto as unknown as MastoClientFromApi,
         abortController.signal,
       )
-        .then((account: AnyAccount | unknown) => {
-          const acc = account as AnyAccount;
+        .then((fetchedAccount: unknown) => {
+          const acc = fetchedAccount as AnyAccount;
           setInReplyToAccount(acc);
-          states.accounts[acc.id as string] = acc as unknown as Record<
-            string,
-            unknown
-          >;
+          states.accounts[acc.id] = acc as unknown as Record<string, unknown>;
+          return undefined;
         })
-        .catch((_e: unknown) => {});
+        .catch((_e: unknown) => {
+          // best-effort fetch; ignore errors
+        });
 
       return () => {
         abortController.abort();
       };
     }
+    return undefined;
   }, [withinContext, inReplyToAccount, inReplyToAccountId]);
   const mentionSelf =
     (inReplyToAccountId && inReplyToAccountId === currentAccount) ||
@@ -893,7 +897,7 @@ function Status({
       >
         <div class="status-pre-meta">
           <Icon icon="hashtag" size="l" />{' '}
-          {(snapStates.statusFollowedTags[sKey as string] as
+          {(snapStates.statusFollowedTags[sKey] as
             | readonly string[]
             | undefined)!
             .slice(0, 3)
@@ -910,9 +914,9 @@ function Status({
         {children}
       </div>
     ),
-    [sKey, instance, snapStates.statusFollowedTags[sKey as string]],
+    [sKey, instance, snapStates.statusFollowedTags[sKey]],
   );
-  const followedTagsForKey = snapStates.statusFollowedTags[sKey as string] as
+  const followedTagsForKey = snapStates.statusFollowedTags[sKey] as
     | readonly string[]
     | undefined;
   const StatusParent =
@@ -1063,7 +1067,7 @@ function Status({
     showCompose({
       replyToStatus: status,
       replyMode,
-    } as unknown as Parameters<typeof showCompose>[0]);
+    } as Parameters<typeof showCompose>[0]);
   };
 
   // Check if media has no descriptions
@@ -1174,7 +1178,7 @@ function Status({
     }
   };
   const favouriteStatusNotify = async () => {
-    haptics.trigger('light');
+    void haptics.trigger('light');
     try {
       const done = await favouriteStatus();
       if (!isSizeLarge && done) {
@@ -1184,11 +1188,13 @@ function Status({
             : t`Liked @${username || acct}'s post`,
         );
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const bookmarkStatus = async () => {
-    if (!supports('@mastodon/post-bookmark')) return;
+  const bookmarkStatus = async (): Promise<boolean> => {
+    if (!supports('@mastodon/post-bookmark')) return false;
     if (!sameInstance || !authenticated) {
       alert(unauthInteractionErrorMessage);
       return false;
@@ -1215,7 +1221,7 @@ function Status({
     }
   };
   const bookmarkStatusNotify = async () => {
-    haptics.trigger('light');
+    void haptics.trigger('light');
     try {
       const done = await bookmarkStatus();
       if (!isSizeLarge && done) {
@@ -1225,7 +1231,9 @@ function Status({
             : t`Bookmarked @${username || acct}'s post`,
         );
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // const differentLanguage =
@@ -1239,13 +1247,13 @@ function Status({
     ...(snapStates.settings.contentTranslationHideLanguages || []),
   ];
   const [differentLanguage, setDifferentLanguage] = useState<boolean>(
-    !!DIFFERENT_LANG_CHECK[
+    DIFFERENT_LANG_CHECK[
       diffLangCheckCacheKey(language as string, contentTranslationHideLanguages)
     ],
   );
   useEffect(() => {
     if (!language || differentLanguage) {
-      return;
+      return undefined;
     }
     if (
       !differentLanguage &&
@@ -1254,7 +1262,7 @@ function Status({
       ]
     ) {
       setDifferentLanguage(true);
-      return;
+      return undefined;
     }
     let timeout = setTimeout(() => {
       const different = checkDifferentLanguage(
@@ -1263,7 +1271,9 @@ function Status({
       );
       if (different) setDifferentLanguage(different);
     }, 100);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [language, differentLanguage]);
 
   type ReactionIterator = AsyncIterableIterator<AnyAccount[]>;
@@ -1391,7 +1401,7 @@ function Status({
     <>
       <MenuItem
         onClick={(e: LooseClickEvent) => {
-          haptics.trigger('light');
+          void haptics.trigger('light');
           replyStatus(e, 'all');
         }}
       >
@@ -1405,7 +1415,7 @@ function Status({
       </MenuItem>
       <MenuItem
         onClick={(e: LooseClickEvent) => {
-          haptics.trigger('light');
+          void haptics.trigger('light');
           replyStatus(e, 'author-first');
         }}
       >
@@ -1427,7 +1437,7 @@ function Status({
       </MenuItem>
       <MenuItem
         onClick={(e: LooseClickEvent) => {
-          haptics.trigger('light');
+          void haptics.trigger('light');
           replyStatus(e, 'author-only');
         }}
       >
@@ -1463,7 +1473,7 @@ function Status({
             ) : (
               <MenuItem
                 onClick={(e: LooseClickEvent) => {
-                  haptics.trigger('light');
+                  void haptics.trigger('light');
                   replyStatus(e);
                 }}
               >
@@ -1525,18 +1535,22 @@ function Status({
               }
               menuFooter={menuFooter}
               disabled={!canBoost}
-              onClick={async () => {
-                haptics.trigger('light');
-                try {
-                  const done = await confirmBoostStatus();
-                  if (!isSizeLarge && done) {
-                    showToast(
-                      reblogged
-                        ? t`Unboosted @${username || acct}'s post`
-                        : t`Boosted @${username || acct}'s post`,
-                    );
+              onClick={() => {
+                void haptics.trigger('light');
+                void (async () => {
+                  try {
+                    const done = await confirmBoostStatus();
+                    if (!isSizeLarge && done) {
+                      showToast(
+                        reblogged
+                          ? t`Unboosted @${username || acct}'s post`
+                          : t`Boosted @${username || acct}'s post`,
+                      );
+                    }
+                  } catch (e) {
+                    console.error(e);
                   }
-                } catch (e) {}
+                })();
               }}
             >
               {canQuote ? (
@@ -1685,19 +1699,21 @@ function Status({
       {isSizeLarge && (
         <MenuItem
           onClick={() => {
-            try {
-              const postText = getPostText(status, {
-                hideInlineQuote: supportsNativeQuote(),
-                htmlTextOpts: {
-                  truncateLinks: false,
-                },
-              });
-              navigator.clipboard.writeText(postText);
-              showToast(t`Post text copied`);
-            } catch (e) {
-              console.error(e);
-              showToast(t`Unable to copy post text`);
-            }
+            void (async () => {
+              try {
+                const postText = getPostText(status, {
+                  hideInlineQuote: supportsNativeQuote(),
+                  htmlTextOpts: {
+                    truncateLinks: false,
+                  },
+                });
+                await navigator.clipboard.writeText(postText);
+                showToast(t`Post text copied`);
+              } catch (e) {
+                console.error(e);
+                showToast(t`Unable to copy post text`);
+              }
+            })();
           }}
         >
           <Icon icon="clipboard" />
@@ -1765,13 +1781,15 @@ function Status({
         <MenuItem
           onClick={() => {
             // Copy url to clipboard
-            try {
-              navigator.clipboard.writeText(url as string);
-              showToast(t`Link copied`);
-            } catch (e) {
-              console.error(e);
-              showToast(t`Unable to copy link`);
-            }
+            void (async () => {
+              try {
+                await navigator.clipboard.writeText(url as string);
+                showToast(t`Link copied`);
+              } catch (e) {
+                console.error(e);
+                showToast(t`Unable to copy link`);
+              }
+            })();
           }}
         >
           <Icon icon="link" />
@@ -1787,7 +1805,7 @@ function Status({
             <MenuItem
               onClick={() => {
                 try {
-                  navigator.share({
+                  void navigator.share({
                     url: url as string | undefined,
                   });
                 } catch (e) {
@@ -1821,11 +1839,11 @@ function Status({
           {(isSelf || mentionSelf) && (
             <MenuItem
               onClick={async () => {
-                haptics.trigger('light');
+                void haptics.trigger('light');
                 try {
-                  const newStatus = await masto.v1.statuses
-                    .$select(id)
-                    [muted ? 'unmute' : 'mute']();
+                  const newStatus = await masto.v1.statuses.$select(id)[
+                    muted ? 'unmute' : 'mute'
+                  ]();
                   saveStatus(
                     newStatus as unknown as Record<string, unknown>,
                     instance,
@@ -1863,11 +1881,11 @@ function Status({
           {isSelf && isPinnable && (
             <MenuItem
               onClick={async () => {
-                haptics.trigger('light');
+                void haptics.trigger('light');
                 try {
-                  const newStatus = await masto.v1.statuses
-                    .$select(id)
-                    [pinned ? 'unpin' : 'pin']();
+                  const newStatus = await masto.v1.statuses.$select(id)[
+                    pinned ? 'unpin' : 'pin'
+                  ]();
                   saveStatus(
                     newStatus as unknown as Record<string, unknown>,
                     instance,
@@ -1930,7 +1948,7 @@ function Status({
                         quoteStatus: (
                           status.quote as mastodon.v1.Quote | null | undefined
                         )?.quotedStatus,
-                      } as unknown as Parameters<typeof showCompose>[0]);
+                      } as Parameters<typeof showCompose>[0]);
                     }}
                   >
                     <Icon icon="pencil" />
@@ -1957,7 +1975,7 @@ function Status({
                     onClick={() => {
                       // const yes = confirm('Delete this post?');
                       // if (yes) {
-                      (async () => {
+                      void (async () => {
                         try {
                           await masto.v1.statuses.$select(id).remove();
                           const cachedStatus = getStatus(id, instance)!;
@@ -2003,8 +2021,8 @@ function Status({
                   }}
                   menuItemClassName="danger"
                   onClick={() => {
-                    haptics.trigger('light');
-                    (async () => {
+                    void haptics.trigger('light');
+                    void (async () => {
                       try {
                         // POST /api/v1/statuses/:id/quotes/:quoting_status_id/revoke
                         const quotedStatusID = (quote as mastodon.v1.Quote)
@@ -2127,33 +2145,45 @@ function Status({
         e.metaKey || e.ctrlKey || e.altKey || e.key.toLowerCase() !== 'r',
     },
   );
-  const fRef = useHotkeys('f, l', favouriteStatusNotify, {
-    enabled: hotkeysEnabled,
-    ignoreEventWhen: (e: KeyboardEvent) =>
-      e.metaKey ||
-      e.ctrlKey ||
-      e.altKey ||
-      e.shiftKey ||
-      !['f', 'l'].includes(e.key.toLowerCase()),
-    useKey: true,
-  });
-  const dRef = useHotkeys('d', bookmarkStatusNotify, {
-    enabled: hotkeysEnabled,
-    useKey: true,
-    ignoreEventWhen: (e: KeyboardEvent) =>
-      e.metaKey ||
-      e.ctrlKey ||
-      e.altKey ||
-      e.shiftKey ||
-      e.key.toLowerCase() !== 'd',
-  });
+  const fRef = useHotkeys(
+    'f, l',
+    () => {
+      void favouriteStatusNotify();
+    },
+    {
+      enabled: hotkeysEnabled,
+      ignoreEventWhen: (e: KeyboardEvent) =>
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        e.shiftKey ||
+        !['f', 'l'].includes(e.key.toLowerCase()),
+      useKey: true,
+    },
+  );
+  const dRef = useHotkeys(
+    'd',
+    () => {
+      void bookmarkStatusNotify();
+    },
+    {
+      enabled: hotkeysEnabled,
+      useKey: true,
+      ignoreEventWhen: (e: KeyboardEvent) =>
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        e.shiftKey ||
+        e.key.toLowerCase() !== 'd',
+    },
+  );
   const bRef = useHotkeys(
     'shift+b',
-    (e) => {
+    (evt) => {
       // Need shiftKey check due to useKey: true
-      if (!e.shiftKey) return;
+      if (!evt.shiftKey) return;
 
-      (async () => {
+      void (async () => {
         try {
           const done = await confirmBoostStatus();
           if (!isSizeLarge && done) {
@@ -2163,7 +2193,9 @@ function Status({
                 : t`Boosted @${username || acct}'s post`,
             );
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error(e);
+        }
       })();
     },
     {
@@ -2220,7 +2252,7 @@ function Status({
         } else {
           showCompose({
             quoteStatus: status,
-          } as unknown as Parameters<typeof showCompose>[0]);
+          } as Parameters<typeof showCompose>[0]);
         }
         // Don't fallback to non-native if quoteDisabled
       } else {
@@ -2228,7 +2260,7 @@ function Status({
           draftStatus: {
             status: `\n${url}`,
           },
-        } as unknown as Parameters<typeof showCompose>[0]);
+        } as Parameters<typeof showCompose>[0]);
       }
     },
     {
@@ -2365,6 +2397,7 @@ function Status({
     if (contentLength > 0 && contentLength <= SHOW_COMMENT_COUNT_LIMIT) {
       return true;
     }
+    return false;
   }, [
     forceShowCommentCount,
     card,
@@ -2512,7 +2545,7 @@ function Status({
                 // Menu doesn't work here
                 // Temporary solution: reply author-first if too many mentions
                 onClick={(e: LooseClickEvent) => {
-                  haptics.trigger('light');
+                  void haptics.trigger('light');
                   replyStatus(e, tooManyMentions ? 'author-first' : 'all');
                 }}
               />
@@ -2525,7 +2558,9 @@ function Status({
                 icon="heart"
                 iconSize="m"
                 count={favouritesCount}
-                onClick={favouriteStatusNotify}
+                onClick={() => {
+                  void favouriteStatusNotify();
+                }}
               />
               <button
                 type="button"
@@ -2587,12 +2622,9 @@ function Status({
             }}
           >
             <Avatar
-              url={
-                (avatarStatic as string | undefined) ||
-                (avatar as string | undefined)
-              }
+              url={avatarStatic || avatar}
               size="xxl"
-              squircle={bot as boolean | undefined}
+              squircle={bot}
             />
           </a>
         )}
@@ -2644,7 +2676,7 @@ function Status({
                         e.ctrlKey ||
                         e.shiftKey ||
                         e.altKey ||
-                        e.which === 2
+                        e.button === 1
                       ) {
                         return;
                       }
@@ -2807,13 +2839,13 @@ function Status({
               isSizeLarge || contentTextWeight
                 ? ({
                     '--content-text-weight': textWeight(),
-                  } as unknown as JSX.CSSProperties)
+                  } as unknown as CSSProperties)
                 : undefined
             }
           >
             {mediaFirst && hasMediaAttachments ? (
               <>
-                {(!!spoilerText || !!sensitive) && !readingExpandSpoilers && (
+                {(!!spoilerText || sensitive) && !readingExpandSpoilers && (
                   <>
                     {!!spoilerText && (
                       <span
@@ -2859,8 +2891,8 @@ function Status({
                     >[0]['mediaAttachments']
                   }
                   language={language ?? undefined}
-                  postID={id as string}
-                  instance={instance as string}
+                  postID={id}
+                  instance={instance}
                 />
                 {!!content && (
                   <div class="media-first-content content" ref={contentRef}>
@@ -2970,8 +3002,11 @@ function Status({
                             (
                               states.statuses[sKey] as Record<string, unknown>
                             ).poll = pollResponse;
+                            return undefined;
                           })
-                          .catch((_e: unknown) => {}); // Silently fail
+                          .catch((_e: unknown) => {
+                            // Silently fail
+                          });
                       },
                       votePoll: (choices: number[]) => {
                         return masto.v1.polls
@@ -2983,6 +3018,7 @@ function Status({
                             (
                               states.statuses[sKey] as Record<string, unknown>
                             ).poll = pollResponse;
+                            return undefined;
                           });
                       },
                     } as unknown as Parameters<typeof Poll>[0])}
@@ -3237,25 +3273,31 @@ function Status({
                 <div class="emoji-reactions">
                   {emojiReactions.map(
                     (emojiReaction: Record<string, unknown>) => {
-                      const { name, count, me, url, staticUrl } =
-                        emojiReaction as {
-                          name: string;
-                          count?: number;
-                          me?: boolean;
-                          url?: string;
-                          staticUrl?: string;
-                        };
-                      if (url) {
+                      const {
+                        name,
+                        count,
+                        me,
+                        url: reactionUrl,
+                        staticUrl,
+                      } = emojiReaction as {
+                        name: string;
+                        count?: number;
+                        me?: boolean;
+                        url?: string;
+                        staticUrl?: string;
+                      };
+                      if (reactionUrl) {
                         // Some servers return url and staticUrl
                         return (
                           <span
+                            key={name}
                             class={`emoji-reaction tag ${
                               me ? '' : 'insignificant'
                             }`}
                           >
                             <CustomEmoji
                               alt={name}
-                              url={url}
+                              url={reactionUrl}
                               staticUrl={staticUrl}
                             />{' '}
                             {count}
@@ -3272,6 +3314,7 @@ function Status({
                         if (emoji) {
                           return (
                             <span
+                              key={name}
                               class={`emoji-reaction tag ${
                                 me ? '' : 'insignificant'
                               }`}
@@ -3288,6 +3331,7 @@ function Status({
                       }
                       return (
                         <span
+                          key={name}
                           class={`emoji-reaction tag ${
                             me ? '' : 'insignificant'
                           }`}
@@ -3329,7 +3373,7 @@ function Status({
                       icon="comment"
                       count={repliesCount}
                       onClick={(e) => {
-                        haptics.trigger('light');
+                        void haptics.trigger('light');
                         replyStatus(e);
                       }}
                     />
@@ -3353,8 +3397,8 @@ function Status({
                   <MenuConfirm
                     disabled={!canBoost}
                     onClick={() => {
-                      haptics.trigger('light');
-                      return confirmBoostStatus();
+                      void haptics.trigger('light');
+                      void confirmBoostStatus();
                     }}
                     confirmLabel={
                       <>
@@ -3450,8 +3494,8 @@ function Status({
                     icon="heart"
                     count={favouritesCount}
                     onClick={(_e: LooseClickEvent) => {
-                      haptics.trigger('light');
-                      favouriteStatus();
+                      void haptics.trigger('light');
+                      void favouriteStatus();
                     }}
                   />
                 </div>
@@ -3464,8 +3508,8 @@ function Status({
                       class="bookmark-button"
                       icon="bookmark"
                       onClick={(_e: LooseClickEvent) => {
-                        haptics.trigger('light');
-                        bookmarkStatus();
+                        void haptics.trigger('light');
+                        void bookmarkStatus();
                       }}
                     />
                   </div>
@@ -3507,12 +3551,12 @@ function Status({
             }}
           >
             <EditedAtModal
-              statusID={showEdited as string}
+              statusID={showEdited}
               instance={instance}
               fetchStatusHistory={
                 (() => {
                   return masto.v1.statuses
-                    .$select(showEdited as string)
+                    .$select(showEdited)
                     .history.list();
                 }) as unknown as () => Promise<AnyStatus[] | undefined>
               }
@@ -3523,7 +3567,7 @@ function Status({
             />
           </Modal>
         )}
-        {!!showEmbed && (
+        {showEmbed && (
           <Modal
             onClose={() => {
               setShowEmbed(false);
@@ -3542,7 +3586,7 @@ function Status({
             />
           </Modal>
         )}
-        {!!showQuoteSettings && (
+        {showQuoteSettings && (
           <Modal
             onClose={() => {
               setShowQuoteSettings(false);
@@ -3563,7 +3607,7 @@ function Status({
             />
           </Modal>
         )}
-        {!!showQuotes && (
+        {showQuotes && (
           <Modal
             onClose={() => {
               setShowQuotes(false);
@@ -3578,7 +3622,7 @@ function Status({
             />
           </Modal>
         )}
-        {!!showQuoteChain && (
+        {showQuoteChain && (
           <Modal
             onClose={() => {
               setShowQuoteChain(false);
@@ -3599,16 +3643,16 @@ function Status({
 }
 
 function nicePostURL(url: string | null | undefined) {
-  if (!url) return;
+  if (!url) return null;
   const urlObj = URL.parse(url);
-  if (!urlObj) return;
+  if (!urlObj) return null;
   const { host, pathname } = urlObj;
   const path = pathname.replace(/\/$/, '');
   // split only first slash
-  const [_, username, restPath] = path.match(/\/(@[^\/]+)\/(.*)/) || [];
+  const [, username, restPath] = path.match(/\/(@[^/]+)\/(.*)/) || [];
   return (
     <>
-      {punycode.toUnicode(host)}
+      {toUnicode(host)}
       {username ? (
         <>
           /{username}
@@ -3768,8 +3812,8 @@ const QuoteStatus = memo(({ quote, level = 0 }: QuoteStatusProps) => {
   // Original JS code concats q.instance + q.id directly; undefined entries
   // would coerce to the string "undefined" at runtime. Cast through unknown
   // to keep that behavior intact.
-  const qKey = ((q.instance as unknown as string) +
-    (q.id as unknown as string)) as string;
+  const qKey =
+    (q.instance as unknown as string) + (q.id as unknown as string);
   return (
     <Parent id={qKey} key={qKey}>
       <Link
@@ -3829,7 +3873,7 @@ const QuoteStatuses = memo(
     collapsed = false,
     fallbackQuote,
   }: QuoteStatusesProps) => {
-    if (!id || !instance) return;
+    if (!id || !instance) return null;
     const { i18n } = useLingui();
     const _ = i18n._.bind(i18n);
     const snapStates = useSnapshot(states);
@@ -3870,7 +3914,7 @@ const QuoteStatuses = memo(
       );
     }
 
-    if (!uniqueQuotes?.length) return;
+    if (!uniqueQuotes?.length) return null;
     if (level > 2) {
       return <ShallowQuote quote={uniqueQuotes[0]} />;
     }
@@ -3905,7 +3949,7 @@ interface EditedAtModalProps {
 }
 
 function EditedAtModal({
-  statusID,
+  statusID: _statusID,
   instance,
   fetchStatusHistory = () => Promise.resolve([]),
   onClose,
@@ -3918,11 +3962,11 @@ function EditedAtModal({
 
   useEffect(() => {
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
-        const editHistory = await fetchStatusHistory();
-        console.log(editHistory);
-        setEditHistory((editHistory ?? []) as AnyStatus[]);
+        const fetchedHistory = await fetchStatusHistory();
+        console.log(fetchedHistory);
+        setEditHistory(fetchedHistory ?? []);
         setUIState('default');
       } catch (e) {
         console.error(e);
@@ -3997,7 +4041,7 @@ interface FilteredStatusProps {
     titlesStr?: string;
   };
   instance?: string;
-  containerProps?: JSX.HTMLAttributes<HTMLDivElement>;
+  containerProps?: HTMLAttributes<HTMLDivElement>;
   showFollowedTags?: boolean;
   quoted?: number | boolean;
 }
@@ -4045,11 +4089,11 @@ function FilteredStatus({
 
   const statusPeekRef =
     useTruncated() as unknown as RefObject<HTMLAnchorElement>;
-  const sKey = statusKey(status.id as string, instance);
+  const sKey = statusKey(status.id, instance);
   const ssKey =
-    statusKey(status.id as string, instance) +
+    statusKey(status.id, instance) +
     ' ' +
-    (statusKey(reblog?.id as string | undefined, instance) || '');
+    (statusKey(reblog?.id, instance) || '');
 
   const actualStatusID = reblog?.id || statusID;
   const url = instance
@@ -4103,11 +4147,8 @@ function FilteredStatus({
           <span>{filterTitleStr}</span>
         </b>{' '}
         <Avatar
-          url={
-            (avatarStatic as string | undefined) ||
-            (avatar as string | undefined)
-          }
-          squircle={bot as boolean | undefined}
+          url={avatarStatic || avatar}
+          squircle={bot}
         />
         <span class="status-filtered-info">
           <span class="status-filtered-info-1">
@@ -4148,7 +4189,7 @@ function FilteredStatus({
                   size="s"
                 />{' '}
                 <span>
-                  {(snapStates.statusFollowedTags[sKey as string] as
+                  {(snapStates.statusFollowedTags[sKey] as
                     | readonly string[]
                     | undefined)!
                     .slice(0, 3)
@@ -4185,14 +4226,10 @@ function FilteredStatus({
               <>
                 <Avatar
                   url={
-                    ((reblog.account as Partial<AnyAccount>).avatarStatic as
-                      | string
-                      | undefined) ||
-                    ((reblog.account as Partial<AnyAccount>).avatar as
-                      | string
-                      | undefined)
+                    (reblog.account as Partial<AnyAccount>).avatarStatic ||
+                    (reblog.account as Partial<AnyAccount>).avatar
                   }
-                  squircle={bot as boolean | undefined}
+                  squircle={bot}
                 />{' '}
               </>
             )}
@@ -4200,7 +4237,7 @@ function FilteredStatus({
           </span>
         </span>
       </article>
-      {!!showPeek && (
+      {showPeek && (
         <Modal
           onClick={(e: MouseEvent) => {
             if (e.target === e.currentTarget) {

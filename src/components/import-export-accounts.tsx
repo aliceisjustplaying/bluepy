@@ -31,9 +31,9 @@ export default function ImportExportAccounts({
   const handleExport = async () => {
     setUIState('exporting');
     try {
-      const accounts = getAccounts();
-      const accountsToExport = accounts.map((account) => {
-        const { accessToken, ...rest } = account;
+      const exportAccounts = getAccounts();
+      const accountsToExport = exportAccounts.map((account) => {
+        const { accessToken: _accessToken, ...rest } = account;
         return rest;
       });
 
@@ -73,10 +73,10 @@ export default function ImportExportAccounts({
       const text = await file.text();
       const json = JSON.parse(text);
 
-      const accounts = json?.accounts;
-      if (!Array.isArray(accounts)) throw new Error('Invalid backup file');
+      const importAccounts = json?.accounts;
+      if (!Array.isArray(importAccounts)) throw new Error('Invalid backup file');
 
-      setImportedAccounts(accounts as StoredAccount[]);
+      setImportedAccounts(importAccounts as StoredAccount[]);
       setUIState('default');
     } catch (e) {
       console.error(e);
@@ -88,7 +88,7 @@ export default function ImportExportAccounts({
   const handleImport = (e: Event) => {
     const target = e.target as HTMLInputElement;
     const file = (target.files as FileList)[0];
-    processFile(file);
+    void processFile(file);
   };
 
   const onDragOver = (e: DragEvent) => {
@@ -104,7 +104,7 @@ export default function ImportExportAccounts({
     e.preventDefault();
     setDragOver(false);
     const file = (e.dataTransfer as DataTransfer).files[0];
-    processFile(file);
+    void processFile(file);
   };
 
   return (
@@ -155,7 +155,9 @@ export default function ImportExportAccounts({
           <button
             type="button"
             class="section-button button-export plain4"
-            onClick={handleExport}
+            onClick={() => {
+              void handleExport();
+            }}
             disabled={uiState === 'exporting' || accounts.length === 0}
           >
             <Icon icon="arrow-up-circle" size="xxl" />

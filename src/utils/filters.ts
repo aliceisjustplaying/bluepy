@@ -28,7 +28,7 @@ interface FilterStateWarn {
 
 type FilterState = FilterStateHide | FilterStateBlur | FilterStateWarn | false;
 
-function _isFiltered(
+function computeFilterState(
   filtered: readonly FilterResult[] | null | undefined,
   filterContext: string,
 ): FilterState {
@@ -70,7 +70,7 @@ function _isFiltered(
   }
   return false;
 }
-export const isFiltered = mem(_isFiltered);
+export const isFiltered = mem(computeFilterState);
 
 export function filteredItem(
   item: FilterableItem,
