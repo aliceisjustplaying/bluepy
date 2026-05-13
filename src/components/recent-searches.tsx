@@ -1,5 +1,6 @@
 import { useAutoAnimate } from '@formkit/auto-animate/preact';
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { JSX } from 'preact';
 import { useReducer } from 'preact/hooks';
 
 import { api } from '../utils/api';
@@ -15,10 +16,14 @@ import Icon from './icon';
 import Link from './link';
 import { generateSearchItemData } from './search-form';
 
-export default function RecentSearches({ onItemClick }) {
+interface RecentSearchesProps {
+  onItemClick?: (e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => void;
+}
+
+export default function RecentSearches({ onItemClick }: RecentSearchesProps) {
   const { t } = useLingui();
   const { instance } = api();
-  const [, reload] = useReducer((c) => c + 1, 0);
+  const [, reload] = useReducer<number, void>((c: number) => c + 1, 0);
   const history = getSearchHistory();
 
   const handleClearAll = () => {
@@ -30,12 +35,12 @@ export default function RecentSearches({ onItemClick }) {
     reload();
   };
 
-  const handleRemoveItem = (query, queryType) => {
+  const handleRemoveItem = (query: string, queryType: string | null) => {
     removeFromSearchHistory(query, queryType);
     reload();
   };
 
-  const [listRef] = useAutoAnimate();
+  const [listRef] = useAutoAnimate<HTMLUListElement>();
 
   if (history.length === 0) {
     return null;
@@ -76,7 +81,7 @@ export default function RecentSearches({ onItemClick }) {
               <Link
                 to={to}
                 class="recent-searches-link"
-                onClick={(e) => {
+                onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
                   addToSearchHistory(historyItem.query, historyItem.queryType);
                   onItemClick?.(e);
                 }}
