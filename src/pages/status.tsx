@@ -245,30 +245,51 @@ function StatusPage(params: StatusPageParams) {
     return pathname;
   }, []);
 
+  // Latest-value refs so the media-only fetch effect can guard on the
+  // current hero status (without re-running on every status mutation) and
+  // redirect to the latest closeLink (computed on-demand from the live
+  // prevLocation snapshot via useMemo above) on error.
+  const closeLinkRef = useRef(closeLink);
+  closeLinkRef.current = closeLink;
+  const heroStatusLatestRef = useRef(heroStatus);
+  heroStatusLatestRef.current = heroStatus;
+
   useEffect(() => {
-    if (!heroStatus && showMedia) {
+    if (!heroStatusLatestRef.current && showMedia) {
+      // Snapshot mutable values BEFORE the await so we don't mix an `id`
+      // fetched at request-time with an `instance` read after navigation.
+      // `closeLink` is recreated each render but its value is stable for a
+      // given prevLocation snapshot, so we still read it through a ref to
+      // avoid retriggering this effect when unrelated state churns.
+      const snapshotId = id;
+      const snapshotInstance = instance;
+      const snapshotCloseLink = closeLinkRef.current;
+      const statusesEndpoint = masto.v1.statuses as {
+        $select(id: string): { fetch(): Promise<RawStatus> };
+      };
+      let stale = false;
       void (async () => {
         try {
-          const statusesEndpoint = masto.v1.statuses as {
-            $select(id: string): { fetch(): Promise<RawStatus> };
-          };
-          const status = await statusesEndpoint.$select(id).fetch();
+          const status = await statusesEndpoint.$select(snapshotId).fetch();
+          if (stale) return;
           saveStatus(
             status as unknown as Parameters<typeof saveStatus>[0],
-            instance,
+            snapshotInstance,
           );
           setHeroStatus(status);
         } catch (err) {
+          if (stale) return;
           console.error(err);
           alert('Unable to load post.');
-          location.hash = closeLink;
+          location.hash = snapshotCloseLink;
         }
       })();
+      return () => {
+        stale = true;
+      };
     }
-    // TODO(oxlint:react-hooks/exhaustive-deps): one-shot fetch when media-only
-    // view loads without a cached hero status. The other deps are stable for
-    // the page lifecycle; refetching on each would defeat the cache.
-  }, [showMedia]);
+    return undefined;
+  }, [showMedia, id, instance, masto]);
 
   const mediaStatusKey = statusKey(mediaStatusID, instance);
   const mediaAttachments = mediaStatusID
@@ -499,6 +520,11 @@ function StatusThread({
     instance: currentInstance,
     authenticated,
   } = api();
+  // Latest-value ref so the memoized renderStatus can call the current masto
+  // v2 search without having to depend on the masto proxy (whose `.v2.search`
+  // accessor returns a fresh identity per access and would churn the memo).
+  const currentMastoRef = useRef(currentMasto);
+  currentMastoRef.current = currentMasto;
   const sameInstance = instance === currentInstance;
   const snapStates = useSnapshot(states);
   const [statuses, setStatuses] = useState<DisplayStatus[]>([]);
@@ -883,20 +909,24 @@ function StatusThread({
     return () => {};
   };
 
-  // TODO(oxlint:react-hooks/exhaustive-deps): `initContext` closes over many
-  // page-level values; we trigger explicitly on `id`/`masto` only so the
-  // context only re-fetches when the URL changes or the API client is swapped.
-  useEffect(initContext, [id, masto]);
+  // Latest-value refs so the effects below can dispatch the current
+  // initContext / restructureContext without re-running on every render
+  // (both are recreated each render but their observable behavior depends
+  // only on the explicit deps below).
+  const initContextRef = useRef(initContext);
+  initContextRef.current = initContext;
+  const restructureContextRef = useRef(restructureContext);
+  restructureContextRef.current = restructureContext;
+
+  useEffect(() => {
+    return initContextRef.current();
+  }, [id, masto]);
 
   useEffect(() => {
     try {
-      const restructured = restructureContext();
+      const restructured = restructureContextRef.current();
       if (restructured) setStatuses(restructured.allStatuses);
     } catch {}
-    // TODO(oxlint:react-hooks/exhaustive-deps): only run when editHistoryMode
-    // toggles or edited index changes. If id changes, initContext effect above
-    // re-runs instead. `restructureContext` is recreated each render and would
-    // cause an infinite re-set if added.
   }, [editHistoryMode, editedAtIndex]);
 
   const [showRefresh, setShowRefresh] = useState(false);
@@ -970,16 +1000,13 @@ function StatusThread({
         const apiCache = await caches.open('api');
         await apiCache.delete(contextURL, { ignoreVary: true });
 
-        initContext({
+        initContextRef.current({
           reloadHero: true,
         });
       } catch (e) {
         console.error(e);
       }
     })();
-    // TODO(oxlint:react-hooks/exhaustive-deps): `initContext` is recreated
-    // each render and closes over many setters; adding it would loop. `id` is
-    // stable for the page lifecycle.
   }, [snapStates.reloadStatusPage, id]);
 
   useEffect(() => {
@@ -1365,7 +1392,7 @@ function StatusThread({
                         void (async () => {
                           try {
                             const results = await (
-                              currentMasto.v2.search as unknown as {
+                              currentMastoRef.current.v2.search as unknown as {
                                 list(params: {
                                   q: string;
                                   type: 'statuses';
@@ -1527,10 +1554,6 @@ function StatusThread({
         </li>
       );
     },
-    // TODO(oxlint:react-hooks/exhaustive-deps): `currentMasto.v2.search` is a
-    // masto proxy recreated per access; adding it would loop the render.
-    // `t` (lingui), `currentInstance`, and the heroStatus url/repliesCount are
-    // added below.
     [
       id,
       instance,
@@ -1548,8 +1571,11 @@ function StatusThread({
     ],
   );
 
-  const prevLocationIsStatusPage = useMemo(() => {
-    // Navigation API
+  // Computed inline: depends only on imperative globals (Navigation API
+  // entries + states.prevLocation), neither of which are React deps. The
+  // check is cheap (a regex test on at most two short strings) so memoization
+  // was not load-bearing.
+  const prevLocationIsStatusPage = ((): boolean => {
     if ('navigation' in window && navigation?.entries) {
       const prevEntry =
         navigation.entries()[(navigation.currentEntry?.index ?? 0) - 1];
@@ -1558,10 +1584,7 @@ function StatusThread({
       }
     }
     return STATUS_URL_REGEX.test(states.prevLocation?.pathname ?? '');
-    // TODO(oxlint:react-hooks/exhaustive-deps): trigger is `sKey` (route key)
-    // so the memo recomputes on status route changes; the *value* uses
-    // `states.prevLocation` directly. Keeping `sKey` as the explicit trigger.
-  }, [sKey]);
+  })();
 
   interface StatusKeyish {
     id?: string;

@@ -599,18 +599,19 @@ function Notifications({ columnMode }: NotificationsProps) {
     })();
   };
 
+  // Latest-value ref so the mount/reachStart effects below can dispatch the
+  // current loadNotifications without depending on its identity (it is
+  // recreated every render and would otherwise refetch on each render).
+  const loadNotificationsRef = useRef(loadNotifications);
+  loadNotificationsRef.current = loadNotifications;
+
   useEffect(() => {
-    loadNotifications(true);
-    // TODO(oxlint:react-hooks/exhaustive-deps): loadNotifications is
-    // recreated every render (closures over masto + setters); mount-only
-    // initial load is intentional.
+    loadNotificationsRef.current(true);
   }, []);
   useEffect(() => {
     if (reachStart) {
-      loadNotifications(true);
+      loadNotificationsRef.current(true);
     }
-    // TODO(oxlint:react-hooks/exhaustive-deps): loadNotifications is
-    // recreated every render; scroll-to-top reload triggers off reachStart.
   }, [reachStart]);
 
   // useEffect(() => {
@@ -641,12 +642,9 @@ function Notifications({ columnMode }: NotificationsProps) {
           (window as unknown as { __IDLE__?: boolean }).__IDLE__) &&
         !inBackground()
       ) {
-        loadNotifications(true);
+        loadNotificationsRef.current(true);
       }
     },
-    // TODO(oxlint:react-hooks/exhaustive-deps): loadNotifications is
-    // recreated every render (closures over masto + setters); adding it
-    // would invalidate this callback constantly.
     [snapStates.settings.autoRefresh, uiState],
   );
   // useEffect(loadUpdates, [snapStates.notificationsShowNew]);
@@ -666,17 +664,20 @@ function Notifications({ columnMode }: NotificationsProps) {
     }
   });
   const firstLoad = useRef(true);
-  // TODO(oxlint:react-hooks/exhaustive-deps): omits `uiState` and
-  // `loadUpdates` intentionally — adding them would resubscribe each render
-  // since `loadUpdates` is recreated every render and not memoized.
+  // Latest-value refs so the subscription below stays mount-only without
+  // capturing stale `uiState` / `loadUpdates`.
+  const uiStateRef = useRef(uiState);
+  uiStateRef.current = uiState;
+  const loadUpdatesRef = useRef(loadUpdates);
+  loadUpdatesRef.current = loadUpdates;
   useEffect(() => {
     let unsub = subscribeKey(states, 'notificationsShowNew', (v) => {
       if (firstLoad.current) {
         firstLoad.current = false;
         return;
       }
-      if (uiState === 'loading') return;
-      if (v) loadUpdates();
+      if (uiStateRef.current === 'loading') return;
+      if (v) loadUpdatesRef.current();
       setShowNew(v);
     });
     return () => unsub?.();

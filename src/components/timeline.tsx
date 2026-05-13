@@ -566,15 +566,25 @@ function Timeline({
   );
   const resetScrollDirection = scrollFn?.resetScrollDirection;
 
+  // Latest-value refs so the mount-only effect below can read fresh values
+  // without participating in its dep array.
+  const loadItemsRef = useRef(loadItems);
+  loadItemsRef.current = loadItems;
+  const itemsLengthRef = useRef(items.length);
+  itemsLengthRef.current = items.length;
+  const initialCachedDataRef = useRef(cachedData);
+
   useEffect(() => {
-    if (cachedData?.scrollTop && scrollableRef.current) {
-      scrollableRef.current.scrollTop = cachedData.scrollTop;
+    const initialCachedData = initialCachedDataRef.current;
+    const load = loadItemsRef.current;
+    if (initialCachedData?.scrollTop && scrollableRef.current) {
+      scrollableRef.current.scrollTop = initialCachedData.scrollTop;
     } else {
       scrollableRef.current?.scrollTo({ top: 0 });
     }
-    if (!cachedData?.items?.length) loadItems(true);
+    if (!initialCachedData?.items?.length) load(true);
     return () => {
-      loadItems.cancel?.();
+      loadItemsRef.current.cancel?.();
       if (!cachePayloadRef.current) return;
       const {
         cacheKey: cachedCacheKey,
@@ -590,9 +600,6 @@ function Timeline({
         });
       }
     };
-    // TODO(oxlint:react-hooks/exhaustive-deps): mount-only effect to restore
-    // cached scroll position and seed initial items. Adding `loadItems` or
-    // `cachedData.*` would loop.
   }, []);
   const firstLoad = useRef(true);
   useEffect(() => {
@@ -600,14 +607,12 @@ function Timeline({
       firstLoad.current = false;
       return;
     }
-    if (clearWhenRefresh && items?.length) {
-      loadItems.cancel?.();
+    const load = loadItemsRef.current;
+    if (clearWhenRefresh && itemsLengthRef.current) {
+      load.cancel?.();
       setItems([]);
     }
-    loadItems(true);
-    // TODO(oxlint:react-hooks/exhaustive-deps): only reacts to refresh-trigger
-    // changes; `loadItems` is recreated each render and `items.length` change
-    // would refetch on every append.
+    load(true);
   }, [clearWhenRefresh, refresh]);
 
   // useEffect(() => {
