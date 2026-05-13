@@ -18,7 +18,6 @@ const containPixelfed = /pixelfed/i;
 const notContainPixelfed = /^(?!.*pixelfed).*$/i;
 const containPleroma = /pleroma/i;
 const containAkkoma = /akkoma/i;
-const containGTS = /gotosocial/i;
 const platformFeatures: Record<string, RegExp> = {
   '@mastodon/lists': notContainPixelfed,
   '@mastodon/filters': notContainPixelfed,
@@ -112,12 +111,12 @@ function supports(feature: string): boolean {
             loose: false,
           },
         );
-      } catch (e) {
+      } catch {
         // Ignore
       }
     }
     return (supportsCache[key] = doesSoftwareMatch && satisfiesRange);
-  } catch (e) {
+  } catch {
     return false;
   }
 }

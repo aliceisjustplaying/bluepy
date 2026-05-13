@@ -23,7 +23,7 @@ const NavMenu = NavMenuUntyped as unknown as ComponentType<
 
 function FollowedHashtags() {
   const { t } = useLingui();
-  const { masto, instance } = api();
+  const { instance } = api();
   useTitle(t`Followed Hashtags`, `/fh`);
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
@@ -34,7 +34,7 @@ function FollowedHashtags() {
   );
   useEffect(() => {
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
         const tags = await fetchFollowedTags();
         setFollowedHashtags(tags);
@@ -68,7 +68,7 @@ function FollowedHashtags() {
             <>
               <ul class="link-list">
                 {followedHashtags.map((tag) => (
-                  <li>
+                  <li key={tag.name}>
                     <Link
                       to={
                         instance

@@ -3,7 +3,7 @@ import fs from 'fs';
 import { resolve } from 'path';
 
 import { lingui } from '@lingui/vite-plugin';
-import preact from '@preact/preset-vite';
+import preactPreset from '@preact/preset-vite';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import Sonda from 'sonda/vite';
 import { uid } from 'uid/single';
@@ -83,7 +83,7 @@ try {
   const [hash, time] = gitResult.split(' ');
   commitHash = hash;
   commitTime = new Date(time);
-} catch (error) {
+} catch {
   // If error, means git is not installed or not a git repo (could be downloaded instead of git cloned)
   // Fallback to random hash which should be different on every build run 🤞
   commitHash = uid();
@@ -100,7 +100,7 @@ const excludedPostCSSWarnings = [
   'display: box;', // Browsers are kinda late for the ellipsis support
 ];
 const logger = createLogger();
-const originalWarn = logger.warn;
+const originalWarn = logger.warn.bind(logger);
 logger.warn = (msg, options) => {
   if (
     msg.includes('vite:css') &&
@@ -160,7 +160,7 @@ export default defineConfig({
         );
       },
     },
-    preact({
+    preactPreset({
       // Force use Babel instead of ESBuild due to this change: https://github.com/preactjs/preset-vite/pull/114
       // Else, a bug will happen with importing variables from import.meta.env
       babel: {
@@ -220,7 +220,7 @@ export default defineConfig({
           : []),
       ],
       headScripts: ERROR_LOGGING ? [rollbarCode] : [],
-      links: !!WEBSITE
+      links: WEBSITE
         ? [
             {
               rel: 'canonical',
@@ -236,7 +236,7 @@ export default defineConfig({
             {
               rel: 'alternate',
               hreflang: 'x-default',
-              href: `${WEBSITE}`,
+              href: WEBSITE,
             },
           ]
         : [],
@@ -440,7 +440,7 @@ export default defineConfig({
           name: 'exclude-sandbox',
           generateBundle(_, bundle) {
             if (!PHANPY_DEV) {
-              Object.entries(bundle).forEach(([name, chunk]) => {
+              Object.keys(bundle).forEach((name) => {
                 if (name.includes('sandbox')) {
                   delete bundle[name];
                 }

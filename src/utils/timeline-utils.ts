@@ -113,8 +113,8 @@ export function dedupeBoosts<T extends TimelineStatus>(
     store.account.get<BoostedStatusIDsMap>('boostedStatusIDs') || {};
   const filteredItems = items.filter((item) => {
     if (!item.reblog) return true;
-    const statusKey = `${instance}-${item.reblog.id}`;
-    const boosterID = boostedStatusIDs[statusKey];
+    const boostStatusKey = `${instance}-${item.reblog.id}`;
+    const boosterID = boostedStatusIDs[boostStatusKey];
     if (boosterID && boosterID !== item.id) {
       console.warn(
         `🚫 Duplicate boost by ${item.account.displayName}`,
@@ -123,7 +123,7 @@ export function dedupeBoosts<T extends TimelineStatus>(
       );
       return false;
     } else {
-      boostedStatusIDs[statusKey] = item.id;
+      boostedStatusIDs[boostStatusKey] = item.id;
     }
     return true;
   });
@@ -230,22 +230,22 @@ export function groupContext(
       newItems.push(item);
       return;
     }
-    for (let i = 0; i < contexts.length; i++) {
-      if (contexts[i].find((t) => t.id === item.id)) {
-        if (appliedContextIndices.includes(i)) return;
-        const contextItems = contexts[i];
+    for (let ctxIndex = 0; ctxIndex < contexts.length; ctxIndex++) {
+      if (contexts[ctxIndex].find((t) => t.id === item.id)) {
+        if (appliedContextIndices.includes(ctxIndex)) return;
+        const contextItems = contexts[ctxIndex];
         contextItems.sort((a, b) => {
           return Date.parse(a.createdAt) - Date.parse(b.createdAt);
         });
         const firstItemAccountID = contextItems[0].account.id;
         newItems.push({
-          id: contextItems.map((i) => i.id),
+          id: contextItems.map((ci) => ci.id),
           items: contextItems,
           type: contextItems.every((it) => it.account.id === firstItemAccountID)
             ? 'thread'
             : 'conversation',
         });
-        appliedContextIndices.push(i);
+        appliedContextIndices.push(ctxIndex);
         return;
       }
     }
@@ -295,8 +295,7 @@ export function groupContext(
       const { masto } = api({ instance });
       console.log('REPLYHINT', inReplyToIds);
 
-      const statusesResource = masto.v1
-        .statuses as unknown as MastoStatusesList;
+      const statusesResource = masto.v1.statuses as MastoStatusesList;
 
       // Fallback if batch fetch fails or returns nothing or not supported
       async function fallbackFetch(): Promise<void> {
@@ -315,7 +314,9 @@ export function groupContext(
               instance,
             };
             // Pause 1s
-            await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+            await new Promise<void>((resolve) => {
+              setTimeout(resolve, 1000);
+            });
           } catch (e) {
             // Silently fail
             console.error(e);
@@ -327,7 +328,7 @@ export function groupContext(
         // This is batch fetching yooo, woot
         // Limit 20, returns 422 if exceeded https://github.com/mastodon/mastodon/pull/27871
         const ids = inReplyToIds.map(({ inReplyToId }) => inReplyToId);
-        (async () => {
+        void (async () => {
           try {
             const replyToStatuses = await statusesResource.list({ id: ids });
             if (replyToStatuses?.length) {
@@ -350,16 +351,16 @@ export function groupContext(
                 }
               }
             } else {
-              fallbackFetch();
+              void fallbackFetch();
             }
           } catch (e) {
             // Silently fail
             console.error(e);
-            fallbackFetch();
+            void fallbackFetch();
           }
         })();
       } else {
-        fallbackFetch();
+        void fallbackFetch();
       }
     }, 10);
   }
@@ -383,21 +384,22 @@ export async function assignFollowedTags(
   items: readonly TimelineStatus[],
   instance: string,
 ): Promise<void> {
-  const followedTags = await getFollowedTags(); // [{name: 'tag'}, {...}]
-  if (!followedTags.length) return;
+  const allFollowedTags = await getFollowedTags(); // [{name: 'tag'}, {...}]
+  if (!allFollowedTags.length) return;
   const { statusFollowedTags } = states;
   console.log('statusFollowedTags', statusFollowedTags);
   const statusWithFollowedTags: FollowedTagsCandidate[] = [];
   items.forEach((item) => {
     if (item.reblog) return;
-    const { id, content, tags = [] } = item;
+    const { id, content } = item;
+    const tags = item.tags ?? [];
     const sKey = statusKey(id, instance);
     if (!sKey) return;
     const existing = statusFollowedTags[sKey];
     if (Array.isArray(existing) && existing.length) return;
     const extractedTags = extractTagsFromStatus(content);
     if (!extractedTags.length && !tags.length) return;
-    const itemFollowedTags = followedTags.reduce<string[]>((acc, tag) => {
+    const itemFollowedTags = allFollowedTags.reduce<string[]>((acc, tag) => {
       if (
         extractedTags.some((t) => t.toLowerCase() === tag.name.toLowerCase()) ||
         tags.some((t) => t.name.toLowerCase() === tag.name.toLowerCase())
@@ -422,10 +424,10 @@ export async function assignFollowedTags(
     if (!relationships) return;
 
     statusWithFollowedTags.forEach((s) => {
-      const { item, sKey, followedTags } = s;
+      const { item, sKey, followedTags: itemTags } = s;
       const r = relationships[item.account.id];
       if (r && !r.following) {
-        statusFollowedTags[sKey] = followedTags;
+        statusFollowedTags[sKey] = itemTags;
       }
     });
   }

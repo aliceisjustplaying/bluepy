@@ -37,20 +37,18 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    let handleScroll = () => {
-      const { clientWidth, scrollLeft } = carouselRef.current!;
+    const carousel = carouselRef.current;
+    if (!carousel) return undefined;
+    const handleScroll = () => {
+      const { clientWidth, scrollLeft } = carousel;
       const index = Math.round(Math.abs(scrollLeft) / clientWidth);
       setCurrentIndex(index);
     };
-    if (carouselRef.current) {
-      carouselRef.current.addEventListener('scroll', handleScroll, {
-        passive: true,
-      });
-    }
+    carousel.addEventListener('scroll', handleScroll, {
+      passive: true,
+    });
     return () => {
-      if (carouselRef.current) {
-        carouselRef.current.removeEventListener('scroll', handleScroll);
-      }
+      carousel.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -73,7 +71,7 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
             <div class="carousel-indexer">
               {currentIndex + 1}/{mediaAttachments.length}
             </div>
-            <label class="media-carousel-button">
+            <div class="media-carousel-button">
               <button
                 type="button"
                 class="carousel-button"
@@ -81,10 +79,12 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  carouselRef.current!.focus();
-                  carouselRef.current!.scrollTo({
+                  const carousel = carouselRef.current;
+                  if (!carousel) return;
+                  carousel.focus();
+                  carousel.scrollTo({
                     left:
-                      carouselRef.current!.clientWidth *
+                      carousel.clientWidth *
                       (currentIndex - 1) *
                       (isRTL() ? -1 : 1),
                     behavior: 'smooth',
@@ -93,8 +93,8 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
               >
                 <Icon icon="arrow-left" />
               </button>
-            </label>
-            <label class="media-carousel-button">
+            </div>
+            <div class="media-carousel-button">
               <button
                 type="button"
                 class="carousel-button"
@@ -102,10 +102,12 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  carouselRef.current!.focus();
-                  carouselRef.current!.scrollTo({
+                  const carousel = carouselRef.current;
+                  if (!carousel) return;
+                  carousel.focus();
+                  carousel.scrollTo({
                     left:
-                      carouselRef.current!.clientWidth *
+                      carousel.clientWidth *
                       (currentIndex + 1) *
                       (isRTL() ? -1 : 1),
                     behavior: 'smooth',
@@ -114,7 +116,7 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
               >
                 <Icon icon="arrow-right" />
               </button>
-            </label>
+            </div>
           </div>
         )}
       </div>

@@ -4,8 +4,9 @@ import type { I18n } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType, JSX } from 'preact';
-import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
+import { Fragment } from 'preact';
+import type { ComponentType, TargetedEvent } from 'preact';
+import { useEffect, useRef, useState } from 'preact/hooks';
 
 import Icon from '../components/icon';
 import Link from '../components/link';
@@ -109,19 +110,21 @@ function Filters() {
   const [showFiltersAddEditModal, setShowFiltersAddEditModal] =
     useState<FiltersAddEditModalState>(false);
 
-  const [reloadCount, reload] = useReducer<number, void>((c) => c + 1, 0);
+  const [reloadCount, setReloadCount] = useState(0);
+  const reload = () => {
+    setReloadCount((c) => c + 1);
+  };
   const [filters, setFilters] = useState<FilterV2[]>([]);
   useEffect(() => {
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
-        const filtersResource = masto.v2
-          .filters as unknown as FiltersV2Resource;
+        const filtersResource = masto.v2.filters as FiltersV2Resource;
         // The JS treats the awaited value as an array; the typed surface is a
         // Paginator. The runtime returns the array directly here.
-        const filters = (await filtersResource.list()) as unknown as FilterV2[];
-        filters.sort((a, b) => a.title.localeCompare(b.title));
-        filters.forEach((filter) => {
+        const fetchedFilters = (await filtersResource.list()) as unknown as FilterV2[];
+        fetchedFilters.sort((a, b) => a.title.localeCompare(b.title));
+        fetchedFilters.forEach((filter) => {
           if (filter.keywords?.length) {
             filter.keywords.sort(
               (a, b) =>
@@ -129,8 +132,8 @@ function Filters() {
             );
           }
         });
-        console.log(filters);
-        setFilters(filters);
+        console.log(fetchedFilters);
+        setFilters(fetchedFilters);
         setUIState('default');
       } catch (e) {
         console.error(e);
@@ -179,11 +182,11 @@ function Filters() {
                         {keywords?.length > 0 && (
                           <div>
                             {keywords.map((k) => (
-                              <>
+                              <Fragment key={k.id ?? k.keyword}>
                                 <span class="tag collapsed insignificant">
                                   {k.wholeWord ? `“${k.keyword}”` : k.keyword}
                                 </span>{' '}
-                              </>
+                              </Fragment>
                             ))}
                           </div>
                         )}
@@ -279,7 +282,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
   const { context, expiresAt, id, keywords, title, filterAction } =
     filter || ({} as Partial<FilterV2>);
   const hasExpiry = !!expiresAt;
-  const expiresAtDate = hasExpiry && new Date(expiresAt as string);
+  const expiresAtDate = hasExpiry && new Date(expiresAt);
   const [editKeywords, setEditKeywords] = useState<EditKeyword[]>(
     (keywords || []) as unknown as EditKeyword[],
   );
@@ -307,10 +310,10 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
       </header>
       <main>
         <form
-          onSubmit={(e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
+          onSubmit={(e: TargetedEvent<HTMLFormElement>) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
-            const title = formData.get('title');
+            const titleValue = formData.get('title');
             const keywordIDs = formData.getAll('keyword_attributes[][id]');
             const keywordKeywords = formData.getAll(
               'keyword_attributes[][keyword]',
@@ -348,40 +351,39 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
             //   });
             // }
             if (editMode && removedKeywordIDs?.length) {
-              removedKeywordIDs.forEach((id) => {
+              removedKeywordIDs.forEach((removedID) => {
                 keywordsAttributes.push({
-                  id,
+                  id: removedID,
                   _destroy: true,
                 });
               });
             }
-            const context = formData.getAll('context');
+            const contextValue = formData.getAll('context');
             let expiresIn: string | number | null | FormDataEntryValue =
               formData.get('expires_in');
-            const filterAction = formData.get('filter_action');
+            const filterActionValue = formData.get('filter_action');
             console.log({
-              title,
+              title: titleValue,
               keywordIDs,
               keywords: keywordKeywords,
               wholeWords: keywordWholeWords,
               keywordsAttributes,
-              context,
+              context: contextValue,
               expiresIn,
-              filterAction,
+              filterAction: filterActionValue,
             });
 
             // Required fields
-            if (!title || !context?.length) {
+            if (!titleValue || !contextValue?.length) {
               return;
             }
 
             setUIState('loading');
 
-            (async () => {
+            void (async () => {
               try {
                 let filterResult: FilterV2;
-                const filtersResource = masto.v2
-                  .filters as unknown as FiltersV2Resource;
+                const filtersResource = masto.v2.filters as FiltersV2Resource;
 
                 if (editMode) {
                   if (expiresIn === '' || expiresIn === null) {
@@ -408,20 +410,20 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                   filterResult = await filtersResource
                     .$select(id as string)
                     .update({
-                      title,
-                      context,
+                      title: titleValue,
+                      context: contextValue,
                       expiresIn,
                       keywordsAttributes,
-                      filterAction,
+                      filterAction: filterActionValue,
                     } as unknown as mastodon.rest.v2.UpdateFilterParams);
                 } else {
                   expiresIn = +(expiresIn as string) || null;
                   filterResult = await filtersResource.create({
-                    title,
-                    context,
+                    title: titleValue,
+                    context: contextValue,
                     expiresIn,
                     keywordsAttributes,
-                    filterAction,
+                    filterAction: filterActionValue,
                   } as unknown as mastodon.rest.v2.CreateFilterParams);
                 }
                 console.log({ filterResult });
@@ -462,13 +464,13 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
             {filteredEditKeywords.length ? (
               <ul class="filter-keywords">
                 {filteredEditKeywords.map((k) => {
-                  const { id, keyword, wholeWord, _id } = k;
+                  const { id: keywordId, keyword, wholeWord, _id: localId } = k;
                   return (
-                    <li key={`${id}-${_id}`}>
+                    <li key={`${keywordId}-${localId}`}>
                       <input
                         type="hidden"
                         name="keyword_attributes[][id]"
-                        value={id}
+                        value={keywordId}
                       />
                       <input
                         name="keyword_attributes[][keyword]"
@@ -484,7 +486,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                           <input
                             name="keyword_attributes[][whole_word]"
                             type="checkbox"
-                            value={id} // Hacky way to map checkbox boolean to the keyword id
+                            value={keywordId} // Hacky way to map checkbox boolean to the keyword id
                             defaultChecked={wholeWord}
                             disabled={uiState === 'loading'}
                           />{' '}
@@ -495,11 +497,11 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                           class="light danger small"
                           disabled={uiState === 'loading'}
                           onClick={() => {
-                            if (id) {
-                              removedKeywordIDs.push(id);
+                            if (keywordId) {
+                              removedKeywordIDs.push(keywordId);
                               setRemovedKeywordIDs([...removedKeywordIDs]);
-                            } else if (_id) {
-                              removedKeyword_IDs.push(_id);
+                            } else if (localId) {
+                              removedKeyword_IDs.push(localId);
                               setRemovedKeyword_IDs([...removedKeyword_IDs]);
                             }
                           }}
@@ -562,7 +564,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                 </b>
               </div>
               {FILTER_CONTEXT.map((ctx) => (
-                <div>
+                <div key={ctx}>
                   <label
                     class={
                       FILTER_CONTEXT_UNIMPLEMENTED.includes(ctx)
@@ -574,7 +576,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                       type="checkbox"
                       name="context"
                       value={ctx}
-                      defaultChecked={!!context ? context.includes(ctx) : true}
+                      defaultChecked={context ? context.includes(ctx) : true}
                       disabled={uiState === 'loading'}
                     />{' '}
                     {_(FILTER_CONTEXT_LABELS[ctx])}
@@ -611,7 +613,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                   {EXPIRY_DURATIONS.map((v) => {
                     const label = EXPIRY_DURATIONS_LABELS[v];
                     return (
-                      <option value={v}>
+                      <option key={v} value={v}>
                         {typeof label === 'function' ? label() : _(label)}
                       </option>
                     );
@@ -674,9 +676,9 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                 confirmLabel={t`Delete this filter?`}
                 onClick={() => {
                   setUIState('loading');
-                  (async () => {
+                  void (async () => {
                     try {
-                      await (masto.v2.filters as unknown as FiltersV2Resource)
+                      await (masto.v2.filters as FiltersV2Resource)
                         .$select(id as string)
                         .remove();
                       setUIState('default');
@@ -716,11 +718,14 @@ interface ExpiryStatusProps {
 function ExpiryStatus({ expiresAt, showNeverExpires }: ExpiryStatusProps) {
   const { t } = useLingui();
   const hasExpiry = !!expiresAt;
-  const expiresAtDate = hasExpiry && new Date(expiresAt as string);
-  const expired = hasExpiry && Date.parse(expiresAt as string) <= Date.now();
+  const expiresAtDate = hasExpiry && new Date(expiresAt);
+  const expired = hasExpiry && Date.parse(expiresAt) <= Date.now();
 
   // If less than a minute left, re-render interval every second, else every minute
-  const [_, rerender] = useReducer<number, void>((c) => c + 1, 0);
+  const [, setTick] = useState(0);
+  const rerender = () => {
+    setTick((c) => c + 1);
+  };
   // JS passed `expired || 30_000` (boolean `true` or 30000ms); preserve.
   useInterval(rerender, (expired || 30_000) as unknown as number);
 

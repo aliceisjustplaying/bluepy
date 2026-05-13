@@ -32,10 +32,10 @@ declare module 'exifreader/dist/exif-reader.js' {
   interface ExifTag {
     description?: string;
   }
-  interface ExifReader {
+  interface ExifReaderInstance {
     load(file: File | Blob): Promise<Record<string, ExifTag | undefined>>;
   }
-  const ExifReader: ExifReader;
+  const ExifReader: ExifReaderInstance;
   export default ExifReader;
 }
 
