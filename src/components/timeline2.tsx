@@ -4,7 +4,6 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type {
   ComponentChildren,
-  ComponentType,
   RefObject,
   TargetedMouseEvent,
 } from 'preact';
@@ -41,43 +40,6 @@ import {
   useKHotkeys,
   useOHotkeys,
 } from './timeline';
-
-// `timeline.jsx` is still JS; cast to ComponentType so we can pass typed props.
-interface TimelineItemProps {
-  status: TimelineEntry;
-  instance?: string;
-  useItemID?: boolean;
-  filterContext?: string;
-  showFollowedTags?: boolean;
-  showReplyParent?: boolean;
-}
-const TimelineItemTyped =
-  TimelineItem as unknown as ComponentType<TimelineItemProps>;
-
-// `status.jsx` is still JS; we only use the skeleton variant here.
-const StatusTyped = Status as unknown as ComponentType<{ skeleton?: boolean }>;
-
-// `icon.jsx` is still JS; minimal prop shape covers all usages in this file.
-interface IconProps {
-  icon: string;
-  size?: string;
-  alt?: string;
-}
-const IconTyped = Icon as unknown as ComponentType<IconProps>;
-
-// `loader.jsx` is still JS.
-const LoaderTyped = Loader as unknown as ComponentType<{ abrupt?: boolean }>;
-
-// `link.jsx` is still JS; we only need `to`, `class`, and children.
-interface LinkProps {
-  to: string;
-  class?: string;
-  children?: ComponentChildren;
-}
-const LinkTyped = Link as unknown as ComponentType<LinkProps>;
-
-// `nav-menu.jsx` is still JS; takes no props in this usage.
-const NavMenuTyped = NavMenu as unknown as ComponentType<Record<string, never>>;
 
 // Batch size (Mastodon API limit is around 20-40)
 const BATCH_SIZE = 20;
@@ -531,8 +493,9 @@ function Timeline2({
     { leading: true },
   );
 
-  // `timeline.jsx` exports these hotkey hooks untyped; they return a ref-like
-  // mutable container compatible with Preact's `RefObject<HTMLDivElement>`.
+  // `timeline.tsx` exports these hotkey hooks without explicit return types;
+  // the inferred react-hotkeys-hook type doesn't surface cleanly through
+  // oxlint, so we re-narrow to a concrete ref shape at the boundary.
   interface HotkeyRef {
     current: HTMLDivElement | null;
   }
@@ -770,13 +733,13 @@ function Timeline2({
           >
             <div class="header-grid">
               <div class="header-side">
-                <NavMenuTyped />
+                <NavMenu />
                 {headerStart !== null && headerStart !== undefined ? (
                   headerStart
                 ) : (
-                  <LinkTyped to="/" class="button plain home-button">
-                    <IconTyped icon="home" size="l" alt={t`Home`} />
-                  </LinkTyped>
+                  <Link to="/" class="button plain home-button">
+                    <Icon icon="home" size="l" alt={t`Home`} />
+                  </Link>
                 )}
               </div>
               {title && (titleComponent ? titleComponent : <h1>{title}</h1>)}
@@ -808,9 +771,9 @@ function Timeline2({
                   >
                     {uiState === 'loading' &&
                     loadStateRef.current === 'start' ? (
-                      <LoaderTyped abrupt />
+                      <Loader abrupt />
                     ) : (
-                      <IconTyped icon="arrow-up-top" size="l" />
+                      <Icon icon="arrow-up-top" size="l" />
                     )}
                   </button>
                   <button
@@ -824,16 +787,16 @@ function Timeline2({
                   >
                     {uiState === 'loading' &&
                     loadStateRef.current === 'prev' ? (
-                      <LoaderTyped abrupt />
+                      <Loader abrupt />
                     ) : (
-                      <IconTyped icon="arrow-up" size="l" />
+                      <Icon icon="arrow-up" size="l" />
                     )}
                   </button>
                 </div>
               )}
               <ul class="timeline">
                 {items.map((status) => (
-                  <TimelineItemTyped
+                  <TimelineItem
                     status={status}
                     instance={instance}
                     useItemID={useItemID}
@@ -868,9 +831,9 @@ function Timeline2({
                     disabled={uiState === 'loading'}
                   >
                     {uiState === 'loading' ? (
-                      <LoaderTyped abrupt />
+                      <Loader abrupt />
                     ) : (
-                      <IconTyped icon="arrow-down" size="l" />
+                      <Icon icon="arrow-down" size="l" />
                     )}
                   </button>
                 </div>
@@ -884,7 +847,7 @@ function Timeline2({
             <ul class="timeline">
               {Array.from({ length: 5 }).map((_, i) => (
                 <li key={i}>
-                  <StatusTyped skeleton />
+                  <Status skeleton />
                 </li>
               ))}
             </ul>

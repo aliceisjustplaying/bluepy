@@ -30,7 +30,7 @@ import {
 } from '../utils/store-utils';
 import supports from '../utils/supports';
 
-import AccountBlockUntyped from './account-block';
+import AccountBlock from './account-block';
 import AccountHandleInfo from './account-handle-info';
 import Avatar from './avatar';
 import EditProfileSheetUntyped from './edit-profile-sheet';
@@ -106,20 +106,10 @@ function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
   return masto.v1.accounts as AccountsEndpoint;
 }
 
-// Shims for still-untyped peer components. Removed when each peer
-// converts to TypeScript in a later wave.
-interface AccountBlockProps {
-  account?: AccountInfoShape | mastodon.v1.Account | null;
-  instance?: string;
-  avatarSize?: string;
-  avatarDescription?: string;
-  skeleton?: boolean;
-  internal?: boolean;
-  onClick?: (e: Event) => void;
-}
-const AccountBlock =
-  AccountBlockUntyped as unknown as ComponentType<AccountBlockProps>;
-
+// Shim for EditProfileSheet: the peer declares its onClose result as
+// ProfileAccount (a deliberately loose local type), but the runtime value is
+// a real mastodon.v1.Account returned by masto.v1.accounts.updateCredentials.
+// This cast preserves that app-level knowledge.
 interface EditProfileSheetCloseArg {
   state?: string;
   account?: AccountInfoShape;
@@ -401,7 +391,7 @@ function AccountInfo({
     firstLoad?: boolean,
   ): Promise<AccountIterPage | IteratorResult<mastodon.v1.Account[]>> {
     if (!id) return { value: undefined, done: true };
-    const accountsEndpoint = getAccountsEndpoint(masto as unknown as MastoLike);
+    const accountsEndpoint = getAccountsEndpoint(masto);
     if (firstLoad || !followersIterator.current) {
       followersIterator.current = accountsEndpoint
         .$select(id)
@@ -459,7 +449,7 @@ function AccountInfo({
     firstLoad?: boolean,
   ): Promise<AccountIterPage | IteratorResult<mastodon.v1.Account[]>> {
     if (!id) return { value: undefined, done: true };
-    const accountsEndpoint = getAccountsEndpoint(masto as unknown as MastoLike);
+    const accountsEndpoint = getAccountsEndpoint(masto);
     if (firstLoad || !followingIterator.current) {
       followingIterator.current = accountsEndpoint
         .$select(id)
@@ -489,7 +479,7 @@ function AccountInfo({
     try {
       const followers = await memFetchFamiliarFollowers(
         currentID,
-        currentMasto as unknown as MastoLike,
+        currentMasto,
       );
       console.log('fetched familiar followers', followers);
       setFamiliarFollowers(
@@ -504,10 +494,7 @@ function AccountInfo({
     if (!id) return;
     setPostingStatsUIState('loading');
     try {
-      const stats = await memFetchPostingStats(
-        id,
-        masto as unknown as MastoLike,
-      );
+      const stats = await memFetchPostingStats(id, masto);
       setPostingStats(stats);
       setPostingStatsUIState('default');
     } catch (e) {
