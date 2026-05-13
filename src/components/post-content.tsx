@@ -46,10 +46,32 @@ const PostContent =
     const quotes = sKey ? snapStates.statusQuotes[sKey] : undefined;
 
     const divRef = useRef<HTMLDivElement | null>(null);
+
+    // Track the latest `emojis` and `quotes` arrays via refs so the effects
+    // below can read them without subscribing to every new array reference
+    // the parent may emit. The effects intentionally re-run only when
+    // length changes (a cheap proxy for content change) — without these
+    // refs, depending on the arrays themselves would re-run on every parent
+    // render, re-doing expensive DOM enhancement.
+    //
+    // The emojis ref is updated in a `useLayoutEffect` so it is current
+    // before the DOM-enhancement layout effect below runs in the same
+    // commit (passive effects fire later, which would leave the
+    // enhancement reading a stale reference).
+    const emojisRef = useRef(emojis);
+    useLayoutEffect(() => {
+      emojisRef.current = emojis;
+    }, [emojis]);
+    const quotesRef = useRef(quotes);
+    useEffect(() => {
+      quotesRef.current = quotes;
+    }, [quotes]);
+
+    const emojisLength = emojis?.length;
     useLayoutEffect(() => {
       if (!divRef.current) return;
       const dom = enhanceContentT(content, {
-        emojis,
+        emojis: emojisRef.current,
         returnDOM: true,
       });
       // Remove target="_blank" from links
@@ -61,18 +83,16 @@ const PostContent =
         }
       }
       divRef.current.replaceChildren(dom.cloneNode(true));
-      // TODO(oxlint:react-hooks/exhaustive-deps): intentional perf optimization
-      // — depend on `emojis?.length` instead of `emojis` to avoid re-running
-      // the DOM-enhancement work when the parent passes a new emoji array
-      // reference with the same contents.
-    }, [content, emojis?.length]);
+    }, [content, emojisLength]);
 
+    const quotesLength = quotes?.length;
     useEffect(() => {
       // Find all links that's in states.statusQuotes and add 'is-quote' class
-      if (quotes?.length) {
+      const currentQuotes = quotesRef.current;
+      if (currentQuotes?.length) {
         for (const a of divRef.current!.querySelectorAll('a')) {
           if (
-            quotes.some(
+            currentQuotes.some(
               (quote) =>
                 (quote as { originalURL?: string } | null)?.originalURL ===
                 a.href,
@@ -82,9 +102,7 @@ const PostContent =
           }
         }
       }
-      // TODO(oxlint:react-hooks/exhaustive-deps): intentional perf optimization
-      // — depend on `quotes?.length` instead of the full `quotes` array.
-    }, [quotes?.length]);
+    }, [quotesLength]);
 
     return (
       // TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):

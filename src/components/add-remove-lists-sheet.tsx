@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { ComponentChildren } from 'preact';
-import { useEffect, useReducer, useState } from 'preact/hooks';
+import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import { getUserLists } from '../utils/lists';
@@ -55,14 +55,22 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
     (init) => init,
   );
 
+  // `masto.v1.accounts` is a proxy that yields a fresh reference on every
+  // access; depending on the raw expression would re-fire this effect on
+  // every render. Snapshot the endpoint once (the underlying `masto` client
+  // is stable for the sheet's lifetime) so the dep list captures a stable
+  // reference. Re-runs follow `reloadCount`/`accountID` as before.
+  const accountsEndpoint = useMemo(
+    () => masto.v1.accounts as unknown as AccountListsEndpoint,
+    [masto],
+  );
+
   useEffect(() => {
     setUIState('loading');
     void (async () => {
       try {
         const fetchedLists = await getUserLists();
         setLists(fetchedLists as ListLike[]);
-        const accountsEndpoint = masto.v1
-          .accounts as unknown as AccountListsEndpoint;
         const fetchedListsContainingAccount = await accountsEndpoint
           .$select(accountID)
           .lists.list();
@@ -77,9 +85,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
         setUIState('error');
       }
     })();
-    // TODO(oxlint:react-hooks/exhaustive-deps): masto.v1.accounts is a masto
-    // proxy recreated per-access; adding it to deps would loop.
-  }, [reloadCount, accountID]);
+  }, [reloadCount, accountID, accountsEndpoint]);
 
   const [showListAddEditModal, setShowListAddEditModal] =
     useState<ListAddEditModalState>(false);

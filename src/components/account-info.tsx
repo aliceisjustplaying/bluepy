@@ -475,22 +475,25 @@ function AccountInfo({
     useState<UIState>('default');
   const hasPostingStats = !!postingStats?.total;
 
-  const renderFamiliarFollowers = async (currentID: string): Promise<void> => {
-    try {
-      const followers = await memFetchFamiliarFollowers(
-        currentID,
-        currentMasto,
-      );
-      console.log('fetched familiar followers', followers);
-      setFamiliarFollowers(
-        followers[0].accounts.slice(0, FAMILIAR_FOLLOWERS_LIMIT),
-      );
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const renderFamiliarFollowers = useCallback(
+    async (currentID: string): Promise<void> => {
+      try {
+        const followers = await memFetchFamiliarFollowers(
+          currentID,
+          currentMasto,
+        );
+        console.log('fetched familiar followers', followers);
+        setFamiliarFollowers(
+          followers[0].accounts.slice(0, FAMILIAR_FOLLOWERS_LIMIT),
+        );
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    [currentMasto],
+  );
 
-  const renderPostingStats = async () => {
+  const renderPostingStats = useCallback(async () => {
     if (!id) return;
     setPostingStatsUIState('loading');
     try {
@@ -501,7 +504,7 @@ function AccountInfo({
       console.error(e);
       setPostingStatsUIState('error');
     }
-  };
+  }, [id, masto]);
 
   const onRelationshipChange = useCallback(
     ({
@@ -519,11 +522,12 @@ function AccountInfo({
         }
       }
     },
-    // TODO(oxlint:react-hooks/exhaustive-deps): `renderFamiliarFollowers`
-    // and `renderPostingStats` recreate every render (closures over masto
-    // proxy); adding them would loop. `id` stays so account switches
-    // rebind the callback with the new account's posting-stats closure.
-    [standalone, id, statusesCount],
+    [
+      standalone,
+      statusesCount,
+      renderFamiliarFollowers,
+      renderPostingStats,
+    ],
   );
 
   const onProfileUpdate = useCallback(

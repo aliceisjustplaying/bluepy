@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
@@ -42,14 +42,29 @@ function Endorsements({
   const [relationshipsMap, setRelationshipsMap] = useState<
     Record<string, mastodon.v1.Relationship>
   >({});
+
+  // `masto.v1.accounts` is a proxy returning fresh references per access;
+  // memoize the typed endpoint so the effect's dep list captures a stable
+  // reference. The underlying client is stable for the component's lifetime.
+  const accountsEndpoint = useMemo(
+    () => masto.v1.accounts as unknown as AccountEndorsementsEndpoint,
+    [masto],
+  );
+
+  // Read the latest `relationshipsMap` inside the effect without subscribing
+  // to it — the map is used as a skip-list input to fetchRelationships, and
+  // re-running the effect each time we update it would loop indefinitely.
+  const relationshipsMapRef = useRef(relationshipsMap);
+  useEffect(() => {
+    relationshipsMapRef.current = relationshipsMap;
+  }, [relationshipsMap]);
+
   useEffect(() => {
     if (!supports('@mastodon/endorsements')) return;
     if (!open) return;
     void (async () => {
       setEndorsementsUIState('loading');
       try {
-        const accountsEndpoint = masto.v1
-          .accounts as unknown as AccountEndorsementsEndpoint;
         const accounts = await accountsEndpoint.$select(id).endorsements.list({
           limit: ENDORSEMENTS_LIMIT,
         });
@@ -69,7 +84,7 @@ function Endorsements({
 
         const relationships = await fetchRelationships(
           accounts,
-          relationshipsMap,
+          relationshipsMapRef.current,
         );
         if (relationships) {
           setRelationshipsMap(relationships);
@@ -79,10 +94,7 @@ function Endorsements({
         setEndorsementsUIState('error');
       }
     })();
-    // TODO(oxlint:react-hooks/exhaustive-deps): masto.v1.accounts is a masto
-    // proxy recreated per-access and would loop; relationshipsMap is used as a
-    // skip-list input and adding it would refetch after every fetch completes.
-  }, [open, id]);
+  }, [open, id, accountsEndpoint]);
 
   const reallyOpen = onlyOpenIfHasEndorsements
     ? open && endorsements.length > 0

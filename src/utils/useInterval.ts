@@ -14,11 +14,19 @@ function useInterval(
     savedCallback.current = fn;
   }, [fn, deps]);
 
+  // Track latest `delay` in a ref so the immediate-fire effect reads the
+  // current value without re-subscribing to it. This preserves the original
+  // semantic: immediate only fires on `immediate` toggle, never on delay
+  // changes.
+  const delayRef = useRef<IntervalDelay>(delay);
   useEffect(() => {
-    if (!immediate || delay === null || delay === false) return;
+    delayRef.current = delay;
+  }, [delay]);
+
+  useEffect(() => {
+    const currentDelay = delayRef.current;
+    if (!immediate || currentDelay === null || currentDelay === false) return;
     savedCallback.current();
-    // TODO(oxlint:react-hooks/exhaustive-deps) intentionally fires only on
-    // immediate toggle; including delay would refire on every interval change.
   }, [immediate]);
 
   useEffect(() => {
