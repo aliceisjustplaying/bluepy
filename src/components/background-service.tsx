@@ -13,6 +13,37 @@ import usePageVisibility from '../utils/usePageVisibility';
 const STREAMING_TIMEOUT = 1000 * 3; // 3 seconds
 const POLL_INTERVAL = 20_000; // 20 seconds
 
+interface MastoLike {
+  v1: {
+    notifications: {
+      list(options: { limit: number; sinceId: string }): {
+        values(): AsyncIterator<Array<{ id: string }>>;
+      };
+    };
+    markers: {
+      fetch(options: { timeline: 'notifications' }): Promise<
+        | {
+            notifications?: { lastReadId?: string };
+          }
+        | undefined
+      >;
+    };
+  };
+}
+
+type NotificationEntry = { event: string; payload: unknown };
+type NotificationSub = AsyncIterable<NotificationEntry> & {
+  unsubscribe?: () => void;
+};
+
+interface StreamingLike {
+  user: {
+    notification: {
+      subscribe(): NotificationSub;
+    };
+  };
+}
+
 export default memo(function BackgroundService() {
   const isLoggedIn = useAuth();
   const { t } = useLingui();
@@ -20,7 +51,9 @@ export default memo(function BackgroundService() {
   // Notifications service
   // - WebSocket to receive notifications when page is visible
   const [visible, setVisible] = useState(true);
-  const visibleTimeout = useRef();
+  const visibleTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   usePageVisibility((visible) => {
     clearTimeout(visibleTimeout.current);
     if (visible) {
@@ -32,12 +65,16 @@ export default memo(function BackgroundService() {
     }
   });
 
-  const checkLatestNotification = async (masto, instance, skipCheckMarkers) => {
+  const checkLatestNotification = async (
+    masto: MastoLike,
+    instance: string,
+    skipCheckMarkers?: boolean,
+  ) => {
     if (states.notificationsLast) {
       const notificationsIterator = masto.v1.notifications
         .list({
           limit: 1,
-          sinceId: states.notificationsLast.id,
+          sinceId: (states.notificationsLast as { id: string }).id,
         })
         .values();
       const { value: notifications } = await notificationsIterator.next();
@@ -63,14 +100,14 @@ export default memo(function BackgroundService() {
   };
 
   useEffect(() => {
-    let sub;
-    let streamTimeout;
-    let pollNotifications;
+    let sub: NotificationSub | null = null;
+    let streamTimeout: ReturnType<typeof setTimeout> | undefined;
+    let pollNotifications: ReturnType<typeof setInterval> | undefined;
     if (isLoggedIn && visible) {
       const { masto, streaming, instance } = api();
       (async () => {
         // 1. Get the latest notification
-        await checkLatestNotification(masto, instance);
+        await checkLatestNotification(masto as unknown as MastoLike, instance);
 
         let hasStreaming = false;
         // 2. Start streaming
@@ -79,7 +116,9 @@ export default memo(function BackgroundService() {
             (async () => {
               try {
                 hasStreaming = true;
-                sub = streaming.user.notification.subscribe();
+                sub = (
+                  streaming as unknown as StreamingLike
+                ).user.notification.subscribe();
                 console.log('🎏 Streaming notification', sub);
                 for await (const entry of sub) {
                   if (!sub) break;
@@ -87,9 +126,13 @@ export default memo(function BackgroundService() {
                   console.log('🔔🔔 Notification entry', entry);
                   if (entry.event === 'notification') {
                     console.log('🔔🔔 Notification', entry);
-                    saveStatus(entry.payload, instance, {
-                      skipThreading: true,
-                    });
+                    saveStatus(
+                      entry.payload as Parameters<typeof saveStatus>[0],
+                      instance,
+                      {
+                        skipThreading: true,
+                      },
+                    );
                   }
                   states.notificationsShowNew = true;
                 }
@@ -102,7 +145,11 @@ export default memo(function BackgroundService() {
               if (!hasStreaming) {
                 console.log('🎏 Streaming failed, fallback to polling');
                 pollNotifications = setInterval(() => {
-                  checkLatestNotification(masto, instance, true);
+                  checkLatestNotification(
+                    masto as unknown as MastoLike,
+                    instance,
+                    true,
+                  );
                 }, POLL_INTERVAL);
               }
             })();
@@ -119,7 +166,7 @@ export default memo(function BackgroundService() {
   }, [visible, isLoggedIn]);
 
   // Check for updates service
-  const lastCheckDate = useRef();
+  const lastCheckDate = useRef<number | undefined>(undefined);
   const checkForUpdates = () => {
     lastCheckDate.current = Date.now();
     console.log('✨ Check app update');
@@ -161,7 +208,7 @@ export default memo(function BackgroundService() {
       });
     },
     {
-      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey,
+      ignoreEventWhen: (e: KeyboardEvent) => e.metaKey || e.ctrlKey,
     },
   );
 
