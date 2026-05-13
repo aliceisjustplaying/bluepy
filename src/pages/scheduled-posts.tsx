@@ -452,7 +452,7 @@ function ScheduledPostEdit({
                 showToast(t`Scheduled post rescheduled`);
                 onClose();
                 setUIState('default');
-                (states.reloadScheduledPosts as number)++;
+                states.reloadScheduledPosts++;
               } catch (e) {
                 setUIState('error');
                 console.error(e);
@@ -501,7 +501,7 @@ function ScheduledPostEdit({
                       showToast(t`Scheduled post deleted`);
                       onClose();
                       setUIState('default');
-                      (states.reloadScheduledPosts as number)++;
+                      states.reloadScheduledPosts++;
                     } catch (e) {
                       setUIState('error');
                       console.error(e);
