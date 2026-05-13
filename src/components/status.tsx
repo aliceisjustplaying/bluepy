@@ -427,38 +427,11 @@ interface StatusComponentProps {
   ghost?: GhostInfo | null;
 }
 
-function Status({
-  statusID,
-  status,
-  instance: propInstance,
-  size = 'm',
-  contentTextWeight,
-  readOnly,
-  enableCommentHint,
-  withinContext,
-  skeleton,
-  enableTranslate,
-  forceTranslate: _forceTranslate,
-  previewMode,
-  allowFilters,
-  onMediaClick,
-  quoted,
-  quoteDomain,
-  onStatusLinkClick = () => {},
-  showFollowedTags,
-  allowContextMenu,
-  showActionsBar,
-  showReplyParent,
-  mediaFirst,
-  showCommentCount: forceShowCommentCount,
-  showQuoteCount: forceShowQuoteCount,
-  ghost,
-}: StatusComponentProps) {
-  const { t, i18n } = useLingui();
-  // Macro `useLingui` from @lingui/react/macro doesn't expose `_`; the
-  // underlying i18n object on the same context does.
-  const _ = i18n._.bind(i18n);
-  const rtf = RTF(i18n.locale);
+function Status(props: StatusComponentProps) {
+  // Render ghost/skeleton variants from this outer wrapper so the hook-using
+  // body (StatusInner) is only mounted when there's a real status to render.
+  // This keeps hook order stable across renders (react-hooks/rules-of-hooks).
+  const { ghost, skeleton, mediaFirst, size = 'm' } = props;
 
   if (ghost) {
     const { inReplyToAccountId } = ghost;
@@ -529,6 +502,40 @@ function Status({
       </div>
     );
   }
+
+  return <StatusInner {...props} />;
+}
+
+function StatusInner({
+  statusID,
+  status,
+  instance: propInstance,
+  size = 'm',
+  contentTextWeight,
+  readOnly,
+  enableCommentHint,
+  withinContext,
+  enableTranslate,
+  forceTranslate: _forceTranslate,
+  previewMode,
+  allowFilters,
+  onMediaClick,
+  quoted,
+  quoteDomain,
+  onStatusLinkClick = () => {},
+  showFollowedTags,
+  allowContextMenu,
+  showActionsBar,
+  showReplyParent,
+  mediaFirst,
+  showCommentCount: forceShowCommentCount,
+  showQuoteCount: forceShowQuoteCount,
+}: StatusComponentProps) {
+  const { t, i18n } = useLingui();
+  // Macro `useLingui` from @lingui/react/macro doesn't expose `_`; the
+  // underlying i18n object on the same context does.
+  const _ = i18n._.bind(i18n);
+  const rtf = RTF(i18n.locale);
   const apiResult = api({ instance: propInstance });
   const instance = apiResult.instance;
   const authenticated = apiResult.authenticated;
@@ -543,6 +550,9 @@ function Status({
     instance,
   );
   const snapStates = useSnapshot(states);
+  // Hoist remaining custom hooks above the `if (!status) return null` guard
+  // below so hook order stays stable across renders (react-hooks/rules-of-hooks).
+  const { editHistoryRef, editHistoryMode, editedAtIndex } = useEditHistory();
   if (!status) {
     status = ((sKeyMaybe ? snapStates.statuses[sKeyMaybe] : undefined) ||
       (statusID ? snapStates.statuses[statusID] : undefined)) as
@@ -551,6 +561,12 @@ function Status({
       | undefined;
     sKeyMaybe = statusKey(status?.id, instance);
   }
+  // TODO(oxlint:rules-of-hooks) Hooks below this guard run conditionally,
+  // since the `!status` path mounts with fewer hooks than the populated
+  // path. Fixing this properly requires extracting everything after this
+  // return into a status-present inner component (>3000-line restructure
+  // beyond the scope of a single oxlint batch). Pre-existing architectural
+  // shape; behavior unchanged by this batch.
   if (!status) {
     return null;
   }
@@ -561,7 +577,6 @@ function Status({
   const sKey: string = sKeyMaybe as string;
 
   // const originalStatus = useRef(status);
-  const { editHistoryRef, editHistoryMode, editedAtIndex } = useEditHistory();
   if (editHistoryMode && status?.editedAt && editHistoryRef.current.length) {
     const eStatus = editHistoryRef.current[editedAtIndex];
     if (eStatus) {
@@ -661,7 +676,7 @@ function Status({
     return () => {
       clearTimeout(timer);
     };
-  }, [content, _language]);
+  }, [content, _language, languageAutoDetected, emojis]);
   const language = _language || languageAutoDetected;
 
   // if (!mediaAttachments?.length) mediaFirst = false;
@@ -696,13 +711,16 @@ function Status({
 
   console.debug('RENDER Status', id, status?.account?.displayName, quoted);
 
-  const debugHover = (e: MouseEvent) => {
-    if (e.shiftKey) {
-      console.log({
-        ...status,
-      });
-    }
-  };
+  const debugHover = useCallback(
+    (e: MouseEvent) => {
+      if (e.shiftKey) {
+        console.log({
+          ...status,
+        });
+      }
+    },
+    [status],
+  );
 
   if (
     (allowFilters || size !== 'l') &&
@@ -887,6 +905,9 @@ function Status({
     );
   }
 
+  const followedTagsForKey = snapStates.statusFollowedTags[sKey] as
+    | readonly string[]
+    | undefined;
   // Check followedTags
   const FollowedTagsParent = useCallback(
     ({ children }: { children?: ComponentChildren }) => (
@@ -897,28 +918,21 @@ function Status({
       >
         <div class="status-pre-meta">
           <Icon icon="hashtag" size="l" />{' '}
-          {(snapStates.statusFollowedTags[sKey] as
-            | readonly string[]
-            | undefined)!
-            .slice(0, 3)
-            .map((tag: string) => (
-              <Link
-                key={tag}
-                to={instance ? `/${instance}/t/${tag}` : `/t/${tag}`}
-                class="status-followed-tag-item"
-              >
-                {tag}
-              </Link>
-            ))}
+          {followedTagsForKey!.slice(0, 3).map((tag: string) => (
+            <Link
+              key={tag}
+              to={instance ? `/${instance}/t/${tag}` : `/t/${tag}`}
+              class="status-followed-tag-item"
+            >
+              {tag}
+            </Link>
+          ))}
         </div>
         {children}
       </div>
     ),
-    [sKey, instance, snapStates.statusFollowedTags[sKey]],
+    [sKey, instance, followedTagsForKey, debugHover],
   );
-  const followedTagsForKey = snapStates.statusFollowedTags[sKey] as
-    | readonly string[]
-    | undefined;
   const StatusParent =
     showFollowedTags && !!followedTagsForKey?.length
       ? FollowedTagsParent
@@ -962,7 +976,6 @@ function Status({
     sensitive,
     poll,
     card,
-    mediaAttachments,
     contentLength,
   ]);
 
@@ -1080,9 +1093,10 @@ function Status({
 
   const statusMonthsAgo = useMemo(() => {
     return Math.floor(
-      (Date.now() - createdAtDate.getTime()) / (1000 * 60 * 60 * 24 * 30),
+      (Date.now() - new Date(createdAt).getTime()) /
+        (1000 * 60 * 60 * 24 * 30),
     );
-  }, [createdAtDate]);
+  }, [createdAt]);
 
   // const boostStatus = async () => {
   //   if (!sameInstance || !authenticated) {
@@ -1243,9 +1257,12 @@ function Status({
   //   !contentTranslationHideLanguages.find(
   //     (l) => language === l || localeMatch([language], [l]),
   //   );
-  const contentTranslationHideLanguages: string[] = [
-    ...(snapStates.settings.contentTranslationHideLanguages || []),
-  ];
+  const contentTranslationHideLanguagesSource =
+    snapStates.settings.contentTranslationHideLanguages;
+  const contentTranslationHideLanguages: string[] = useMemo(
+    () => [...(contentTranslationHideLanguagesSource || [])],
+    [contentTranslationHideLanguagesSource],
+  );
   const [differentLanguage, setDifferentLanguage] = useState<boolean>(
     DIFFERENT_LANG_CHECK[
       diffLangCheckCacheKey(language as string, contentTranslationHideLanguages)
@@ -1274,7 +1291,7 @@ function Status({
     return () => {
       clearTimeout(timeout);
     };
-  }, [language, differentLanguage]);
+  }, [language, differentLanguage, contentTranslationHideLanguages]);
 
   type ReactionIterator = AsyncIterableIterator<AnyAccount[]>;
   const reblogIterator = useRef<ReactionIterator | null>(null);
@@ -1383,7 +1400,7 @@ function Status({
       ...mentions.map((m: mastodon.v1.StatusMention) => m.id),
     ]);
     return [...allMentions].filter((m) => m !== currentAccount).length;
-  }, [accountId, mentions?.length, currentAccount]);
+  }, [accountId, mentions, currentAccount]);
   const tooManyMentions = mentionsCount > 3;
   const ReplyMenuContent = () => (
     <>
@@ -1841,9 +1858,10 @@ function Status({
               onClick={async () => {
                 void haptics.trigger('light');
                 try {
-                  const newStatus = await masto.v1.statuses
-                    .$select(id)
-                    [muted ? 'unmute' : 'mute']();
+                  const stmtAction = masto.v1.statuses.$select(id);
+                  const newStatus = await (muted
+                    ? stmtAction.unmute()
+                    : stmtAction.mute());
                   saveStatus(
                     newStatus as unknown as Record<string, unknown>,
                     instance,
@@ -1883,9 +1901,10 @@ function Status({
               onClick={async () => {
                 void haptics.trigger('light');
                 try {
-                  const newStatus = await masto.v1.statuses
-                    .$select(id)
-                    [pinned ? 'unpin' : 'pin']();
+                  const stmtAction = masto.v1.statuses.$select(id);
+                  const newStatus = await (pinned
+                    ? stmtAction.unpin()
+                    : stmtAction.pin());
                   saveStatus(
                     newStatus as unknown as Record<string, unknown>,
                     instance,
@@ -2307,24 +2326,41 @@ function Status({
         }
       },
     );
-    return attachments.map(({ media, indices }) => (
-      <div
-        key={media.id}
-        data-caption-index={indices.map((i: number) => i + 1).join(' ')}
-        onClick={(e: MouseEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-          states.showMediaAlt = {
-            alt: media.description as string,
-            lang: language as string | undefined,
-          } as unknown as Record<string, unknown>;
-        }}
-        title={media.description ?? undefined}
-      >
-        <sup>{indices.map((i: number) => i + 1).join(' ')}</sup>{' '}
-        {media.description}
-      </div>
-    ));
+    return attachments.map(({ media, indices }) => {
+      const handleAltClick = () => {
+        states.showMediaAlt = {
+          alt: media.description as string,
+          lang: language as string | undefined,
+        } as unknown as Record<string, unknown>;
+      };
+      return (
+        // TODO(oxlint:jsx-a11y) `<div data-caption-index>` is targeted by
+        // CSS selectors in status.css; converting to `<button>` would break
+        // visual layout. Keep as div + role + keyboard handlers.
+        <div
+          key={media.id}
+          role="button"
+          tabIndex={0}
+          data-caption-index={indices.map((i: number) => i + 1).join(' ')}
+          onClick={(e: MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAltClick();
+          }}
+          onKeyDown={(e: KeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAltClick();
+            }
+          }}
+          title={media.description ?? undefined}
+        >
+          <sup>{indices.map((i: number) => i + 1).join(' ')}</sup>{' '}
+          {media.description}
+        </div>
+      );
+    });
 
     // return displayedMediaAttachments.map(
     //   (media, i) =>
@@ -2348,16 +2384,18 @@ function Status({
     // );
   }, [showMultipleMediaCaptions, displayedMediaAttachments, language]);
 
+  const statusThreadNumberForKey = snapStates.statusThreadNumber[sKey];
+  const statusAccountId = status.account?.id;
   const isThread = useMemo(() => {
     return (
-      (!!inReplyToId && inReplyToAccountId === status.account?.id) ||
-      !!snapStates.statusThreadNumber[sKey]
+      (!!inReplyToId && inReplyToAccountId === statusAccountId) ||
+      !!statusThreadNumberForKey
     );
   }, [
     inReplyToId,
     inReplyToAccountId,
-    status.account?.id,
-    snapStates.statusThreadNumber[sKey],
+    statusAccountId,
+    statusThreadNumberForKey,
   ]);
 
   const showCommentHint = useMemo(() => {
@@ -2405,7 +2443,6 @@ function Status({
     sensitive,
     spoilerText,
     mediaAttachments,
-    reblog,
     isThread,
     withinContext,
     inReplyToId,
@@ -3250,16 +3287,17 @@ function Status({
                       <span class="edited-container">
                         {' '}
                         &bull; <Icon icon="pencil" alt={t`Edited`} />{' '}
-                        <time
-                          tabIndex={0}
-                          class="edited"
-                          datetime={editedAtDate.toISOString()}
+                        <button
+                          type="button"
+                          class="edited plain plain3"
                           onClick={() => {
                             setShowEdited(id);
                           }}
                         >
-                          {editedDateText}
-                        </time>
+                          <time datetime={editedAtDate.toISOString()}>
+                            {editedDateText}
+                          </time>
+                        </button>
                       </span>
                     )}
                   </>
@@ -3866,10 +3904,13 @@ const QuoteStatuses = memo(
     collapsed = false,
     fallbackQuote,
   }: QuoteStatusesProps) => {
-    if (!id || !instance) return null;
+    // Hooks must run unconditionally before any early return so call order
+    // stays stable across renders (react-hooks/rules-of-hooks).
     const { i18n } = useLingui();
     const _ = i18n._.bind(i18n);
     const snapStates = useSnapshot(states);
+    const containerRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
+    if (!id || !instance) return null;
     const sKey = statusKey(id, instance);
     const quotes = (sKey ? snapStates.statusQuotes[sKey] : undefined) as
       | readonly QuoteRef[]
@@ -3878,8 +3919,6 @@ const QuoteStatuses = memo(
       (q: QuoteRef, i: number, arr: readonly QuoteRef[]) =>
         q.native || arr.findIndex((q2) => q2.url === q.url) === i,
     );
-
-    const containerRef = useTruncated() as unknown as RefObject<HTMLDivElement>;
 
     if (!uniqueQuotes?.length && fallbackQuote?.quotedStatus) {
       // Just render it
@@ -3966,6 +4005,9 @@ function EditedAtModal({
         setUIState('error');
       }
     })();
+    // TODO(oxlint:exhaustive-deps) `fetchStatusHistory` comes in as a prop and
+    // is recreated on every parent render; adding it would re-fetch the
+    // history on each parent re-render. Intentionally a mount-only effect.
   }, []);
 
   return (
@@ -4126,7 +4168,8 @@ function FilteredStatus({
         class={`status filtered ${quoted ? 'status-card' : ''}`}
         tabindex={-1}
       >
-        <b
+        <button
+          type="button"
           class="status-filtered-badge clickable badge-meta"
           title={filterTitleStr}
           onClick={(e: MouseEvent) => {
@@ -4138,7 +4181,7 @@ function FilteredStatus({
             <Trans>Filtered</Trans>
           </span>
           <span>{filterTitleStr}</span>
-        </b>{' '}
+        </button>{' '}
         <Avatar url={avatarStatic || avatar} squircle={bot} />
         <span class="status-filtered-info">
           <span class="status-filtered-info-1">
