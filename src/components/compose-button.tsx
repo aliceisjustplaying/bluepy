@@ -2,7 +2,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu, MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { MenuInstance } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { JSX } from 'preact';
+import type { TargetedMouseEvent } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useLongPress } from 'use-long-press';
@@ -21,7 +21,6 @@ import statusPeek from '../utils/status-peek';
 import { getCurrentAccountID } from '../utils/store-utils';
 
 import Icon from './icon';
-import Loader from './loader';
 import MenuLink from './menu-link';
 import RelativeTime from './relative-time';
 import SubMenu2 from './submenu2';
@@ -84,7 +83,7 @@ export default function ComposeButton() {
 
   function handleButton(
     e:
-      | JSX.TargetedMouseEvent<HTMLButtonElement>
+      | TargetedMouseEvent<HTMLButtonElement>
       | KeyboardEvent
       | { key?: string; shiftKey?: boolean },
   ) {
@@ -150,6 +149,7 @@ export default function ComposeButton() {
       );
       setLatestPosts(posts);
     } catch (error) {
+      console.error('Failed to fetch latest posts', error);
     } finally {
       setLoadingPosts(false);
     }
@@ -165,7 +165,7 @@ export default function ComposeButton() {
 
   useEffect(() => {
     if (menuOpen) {
-      fetchLatestPosts();
+      void fetchLatestPosts();
     }
   }, [fetchLatestPosts, menuOpen]);
 
@@ -176,7 +176,7 @@ export default function ComposeButton() {
         type="button"
         id="compose-button"
         onClick={(e) => {
-          haptics.trigger('light');
+          void haptics.trigger('light');
           handleButton(e);
         }}
         onContextMenu={(e) => {

@@ -32,7 +32,7 @@ export async function getGifFirstFrame(gifUrl: string): Promise<string | null> {
 
     if (!blob) return null;
     return URL.createObjectURL(blob);
-  } catch (_e) {
+  } catch {
     return null;
   }
 }

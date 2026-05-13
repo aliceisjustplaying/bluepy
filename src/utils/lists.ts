@@ -23,6 +23,8 @@ interface MastoListsApi {
 }
 
 export function isFeedList(list: ListLike | null | undefined): boolean {
+  // TODO(oxlint:no-underscore-dangle) `_atproto` is the project-wide cache key
+  // used by the atproto adapter across many modules; renaming is out of scope.
   return list?._atproto?.type === 'feed';
 }
 
@@ -39,7 +41,7 @@ export function splitListsAndFeeds(lists: ListLike[] = []): {
 export const fetchLists = pmem(
   async () => {
     const { masto } = api();
-    const lists = await (masto.v1.lists as unknown as MastoListsApi).list();
+    const lists = await (masto.v1.lists as MastoListsApi).list();
     lists.sort((a, b) => a.title.localeCompare(b.title));
 
     if (lists.length) {
@@ -66,11 +68,11 @@ export async function getLists(): Promise<ListLike[]> {
     if (!lists?.length) return await fetchLists();
     if (Date.now() - (updatedAt as number) > MAX_AGE) {
       // Stale-while-revalidate
-      fetchLists();
+      void fetchLists();
       return lists;
     }
     return lists;
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -83,7 +85,7 @@ export async function getUserLists(): Promise<ListLike[]> {
 export const fetchList = pmem(
   (id: string) => {
     const { masto } = api();
-    return (masto.v1.lists as unknown as MastoListsApi).$select(id).fetch();
+    return (masto.v1.lists as MastoListsApi).$select(id).fetch();
   },
   {
     expires: FETCH_MAX_AGE,
@@ -100,7 +102,7 @@ export async function getList(id: string): Promise<ListLike | null> {
   }
   try {
     return fetchList(id);
-  } catch (e) {
+  } catch {
     return null;
   }
 }

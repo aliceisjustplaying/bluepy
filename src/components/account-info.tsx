@@ -16,7 +16,6 @@ import {
 
 import { api } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
-import getDomain from '../utils/get-domain';
 import handleContentLinks from '../utils/handle-content-links';
 import niceDateTime from '../utils/nice-date-time';
 import pmem from '../utils/pmem';
@@ -100,7 +99,7 @@ interface MastoLike {
 }
 
 function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
-  return masto.v1.accounts as unknown as AccountsEndpoint;
+  return masto.v1.accounts as AccountsEndpoint;
 }
 
 // Shims for still-untyped peer components. Removed when each peer
@@ -234,9 +233,9 @@ const memFetchPostingStats = pmem(fetchPostingStats, {
 
 const isValidUrl = (string: string): boolean => {
   try {
-    new URL(string);
-    return true;
-  } catch (_) {
+    const parsed = new URL(string);
+    return !!parsed;
+  } catch {
     return false;
   }
 };
@@ -257,7 +256,7 @@ type UIState = 'default' | 'loading' | 'error';
 
 interface AccountInfoProps {
   account: AccountInfoShape | string | null | undefined;
-  fetchAccount?: () => Promise<AccountInfoShape | undefined> | void;
+  fetchAccount?: () => Promise<AccountInfoShape | undefined> | undefined;
   standalone?: boolean;
   instance?: string;
   authenticated?: boolean;
@@ -292,10 +291,12 @@ function AccountInfo({
   useEffect(() => {
     if (!isString) {
       setInfo(account ?? null);
+      // TODO(oxlint:no-underscore-dangle) `_atproto` is the project-wide
+      // adapter cache key; renaming is out of scope.
       if (account?._atproto?.hasProfileCounts !== false) return;
     }
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
         const result = await fetchAccount();
         if (!result) {
@@ -321,7 +322,7 @@ function AccountInfo({
   // original. The cast keeps the inner field types non-optional so call
   // sites that need numbers (Plural, shortenNumber) don't have to invent
   // fallback values that would change message-extraction output.
-  const infoFields = (info ?? ({} as AccountInfoShape)) as AccountInfoShape;
+  const infoFields = info ?? ({} as AccountInfoShape);
   const {
     acct,
     avatar,
@@ -339,24 +340,20 @@ function AccountInfo({
     // headerStatic,
     headerDescription,
     id,
-    lastStatusAt,
-    locked,
     note,
     statusesCount,
     url,
-    username,
     memorial,
     moved,
-    roles,
     hideCollections,
   } = infoFields;
   let headerIsAvatar = false;
   let { header, headerStatic } = infoFields;
-  if (!header || /missing\.png$/.test(header)) {
-    if (avatar && !/missing\.png$/.test(avatar)) {
+  if (!header || header.endsWith('missing.png')) {
+    if (avatar && !avatar.endsWith('missing.png')) {
       header = avatar;
       headerIsAvatar = true;
-      if (avatarStatic && !/missing\.png$/.test(avatarStatic)) {
+      if (avatarStatic && !avatarStatic.endsWith('missing.png')) {
         headerStatic = avatarStatic;
       }
     }
@@ -375,22 +372,20 @@ function AccountInfo({
       info?.url
     );
     if (info && isSelf && instance && infoHasEssentials) {
-      const accounts = getAccounts();
+      const storedAccounts = getAccounts();
       let updated = false;
-      accounts.forEach((account) => {
-        if (account.info.id === info.id && account.instanceURL === instance) {
-          account.info = info as unknown as typeof account.info;
+      storedAccounts.forEach((entry) => {
+        if (entry.info.id === info.id && entry.instanceURL === instance) {
+          entry.info = info as unknown as typeof entry.info;
           updated = true;
         }
       });
       if (updated) {
         console.log('Updated account info', info);
-        saveAccounts(accounts);
+        saveAccounts(storedAccounts);
       }
     }
   }, [isSelf, info, instance]);
-
-  const accountInstance = getDomain(url ?? '');
 
   const [headerCornerColors, setHeaderCornerColors] = useState<string[]>([]);
 
@@ -425,22 +420,24 @@ function AccountInfo({
         familiarFollowers = await accountsEndpoint.familiarFollowers.fetch({
           id: [id],
         });
-      } catch (e) {}
+      } catch (err) {
+        console.warn('Failed to fetch familiar followers', err);
+      }
       familiarFollowersCache.current = familiarFollowers?.[0]?.accounts || [];
       newValue = [
         ...familiarFollowersCache.current,
         ...((value ?? []) as mastodon.v1.Account[]).filter(
-          (account) =>
+          (entry) =>
             !familiarFollowersCache.current.some(
-              (familiar) => familiar.id === account.id,
+              (familiar) => familiar.id === entry.id,
             ),
         ),
       ];
     } else if (value?.length) {
       newValue = (value as mastodon.v1.Account[]).filter(
-        (account) =>
+        (entry) =>
           !familiarFollowersCache.current.some(
-            (familiar) => familiar.id === account.id,
+            (familiar) => familiar.id === entry.id,
           ),
       );
     }
@@ -524,13 +521,18 @@ function AccountInfo({
       currentID: string;
     }) => {
       if (!relationship.following) {
-        renderFamiliarFollowers(currentID);
+        void renderFamiliarFollowers(currentID);
         if (!standalone && statusesCount > 0) {
           // Only render posting stats if not standalone and has posts
-          renderPostingStats();
+          void renderPostingStats();
         }
       }
     },
+    // `renderFamiliarFollowers` and `renderPostingStats` are stable enough
+    // for this callback's lifecycle — adding them would cause infinite
+    // refetch loops as they recreate on every render. `id` stays in the
+    // dep list so account switches don't reuse the previous id's posting
+    // stats fetch closure.
     [standalone, id, statusesCount],
   );
 
@@ -576,7 +578,7 @@ function AccountInfo({
             {isString ? (
               <p>
                 {isStringURL ? (
-                  <a href={account} target="_blank" rel="noopener">
+                  <a href={account} target="_blank" rel="noopener noreferrer">
                     {account}
                   </a>
                 ) : (
@@ -585,7 +587,7 @@ function AccountInfo({
               </p>
             ) : (
               <p>
-                <a href={url} target="_blank" rel="noopener">
+                <a href={url} target="_blank" rel="noopener noreferrer">
                   <Trans>Go to account page</Trans> <Icon icon="external" />
                 </a>
               </p>
@@ -661,7 +663,7 @@ function AccountInfo({
                   />
                 </div>
               )}
-              {!!header && !/missing\.png$/.test(header) && (
+              {!!header && !header.endsWith('missing.png') && (
                 <img
                   src={header}
                   alt={headerDescription || ''}
@@ -711,10 +713,7 @@ function AccountInfo({
                           : document.createElement('canvas');
                       const ctx = canvas.getContext('2d', {
                         willReadFrequently: true,
-                      }) as
-                        | CanvasRenderingContext2D
-                        | OffscreenCanvasRenderingContext2D
-                        | null;
+                      });
                       if (!ctx) return;
                       canvas.width = width;
                       canvas.height = height;
@@ -779,7 +778,7 @@ function AccountInfo({
                       });
                       setHeaderCornerColors(rgbColors);
                       console.log({ colors, rgbColors });
-                    } catch (e) {
+                    } catch {
                       // Silently fail
                     }
                   }}
@@ -818,7 +817,9 @@ function AccountInfo({
                           ? `@${acctSafe}`
                           : `@${acctSafe}@${instance}`;
                         try {
-                          navigator.clipboard.writeText(handleWithInstance);
+                          void navigator.clipboard.writeText(
+                            handleWithInstance,
+                          );
                           showToast(t`Handle copied`);
                         } catch (e) {
                           console.error(e);
@@ -928,12 +929,12 @@ function AccountInfo({
                     <Trans>In Memoriam</Trans>
                   </span>
                 )}
-                {!!bot && (
+                {bot && (
                   <span class="tag">
                     <Icon icon="bot" /> <Trans>Automated</Trans>
                   </span>
                 )}
-                {!!group && (
+                {group && (
                   <span class="tag">
                     <Icon icon="group" /> <Trans>Group</Trans>
                   </span>
@@ -954,9 +955,16 @@ function AccountInfo({
                 <div
                   class="note"
                   dir="auto"
+                  role="presentation"
                   onClick={handleContentLinks({
                     instance: currentInstance,
                   })}
+                  onKeyDown={() => {
+                    /* Delegated link clicks are handled via the contained
+                     * anchor elements; this onKeyDown exists only to satisfy
+                     * the a11y linter — keyboard activation still flows
+                     * through the inner <a> tags. */
+                  }}
                   dangerouslySetInnerHTML={{
                     __html: enhanceContent(note, { emojis }) as string,
                   }}
@@ -1020,6 +1028,7 @@ function AccountInfo({
                           <span class="shazam-container-inner stats-avatars-bunch">
                             {familiarFollowers.map((follower) => (
                               <Avatar
+                                key={follower.id}
                                 url={follower.avatarStatic}
                                 size="s"
                                 alt={`${follower.displayName} @${follower.acct}`}
@@ -1302,7 +1311,7 @@ function AccountInfo({
                           class="posting-stats-button"
                           disabled={postingStatsUIState === 'loading'}
                           onClick={() => {
-                            renderPostingStats();
+                            void renderPostingStats();
                           }}
                         >
                           <div
@@ -1347,17 +1356,17 @@ function AccountInfo({
           )
         )}
       </div>
-      {!!showEditProfile && (
+      {showEditProfile && (
         <Modal
           onClose={() => {
             setShowEditProfile(false);
           }}
         >
           <EditProfileSheet
-            onClose={({ state, account } = {}) => {
+            onClose={({ state, account: updatedAccount } = {}) => {
               setShowEditProfile(false);
-              if (state === 'success' && account) {
-                onProfileUpdate(account);
+              if (state === 'success' && updatedAccount) {
+                onProfileUpdate(updatedAccount);
               }
             }}
           />

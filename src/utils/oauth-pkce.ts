@@ -52,10 +52,12 @@ export async function supportsPKCE({
       return true;
     }
     return false;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
 
 // For debugging
+// TODO(oxlint:no-underscore-dangle) Intentional debug global; renaming would
+// break existing devtools workflows that rely on `__generateCodeChallenge`.
 window.__generateCodeChallenge = generateCodeChallenge;
