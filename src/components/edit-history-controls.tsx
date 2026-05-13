@@ -1,8 +1,20 @@
 import { useLingui } from '@lingui/react/macro';
+import type { FunctionComponent } from 'preact';
 
 import { useEditHistory } from '../utils/edit-history-context';
 
-import Icon from './icon';
+import IconRaw from './icon';
+
+interface IconProps {
+  icon: string;
+  size?: string;
+  alt?: string;
+  title?: string;
+  class?: string;
+  style?: Record<string, unknown>;
+}
+// Shim: icon.jsx is still untyped; alt/title are optional in JS runtime.
+const Icon = IconRaw as unknown as FunctionComponent<IconProps>;
 
 export default function EditHistoryControls() {
   const { t } = useLingui();
