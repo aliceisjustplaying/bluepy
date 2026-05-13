@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
+import type { ComponentType } from 'preact';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useSnapshot } from 'valtio';
 
@@ -18,10 +19,23 @@ import states from '../utils/states';
 import { getCurrentAccountID } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 
-const scrollIntoViewOptions = {
+type ShortcutParams = Record<string, unknown> & {
+  id?: string | null;
+  query?: string;
+};
+
+interface Shortcut extends ShortcutParams {
+  type: string;
+}
+
+type ColumnComponent = ComponentType<
+  ShortcutParams & { columnMode?: boolean }
+>;
+
+const scrollIntoViewOptions: ScrollIntoViewOptions = {
   block: 'nearest',
   inline: 'nearest',
-  behavior: 'instant',
+  behavior: 'instant' as ScrollBehavior,
 };
 
 function Columns() {
@@ -32,10 +46,10 @@ function Columns() {
 
   console.debug('RENDER Columns', shortcuts);
 
-  const components = shortcuts.map((shortcut) => {
+  const components = (shortcuts as readonly (Shortcut | null | undefined)[]).map((shortcut) => {
     if (!shortcut) return null;
     const { type, ...params } = shortcut;
-    const Component = {
+    const Component = ({
       following: Following,
       notifications: Notifications,
       list: List,
@@ -47,7 +61,7 @@ function Columns() {
       trending: Trending,
       search: Search,
       profile: AccountStatuses,
-    }[type];
+    } as unknown as Record<string, ColumnComponent | undefined>)[type];
     if (!Component) return null;
     // Don't show Search column with no query, for now
     if (type === 'search' && !params.query) return null;
@@ -67,18 +81,20 @@ function Columns() {
     (e) => {
       try {
         const index = parseInt(e.key, 10) - 1;
-        const $column = document.querySelectorAll('#columns > *')[index];
+        const $column = document.querySelectorAll<HTMLElement>(
+          '#columns > *',
+        )[index];
         if ($column) {
           $column.focus();
           $column.scrollIntoView(scrollIntoViewOptions);
         }
-      } catch (e) {
-        console.error(e);
+      } catch (err) {
+        console.error(err);
       }
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) => {
+      ignoreEventWhen: (e: KeyboardEvent) => {
         // Allow number even with Shift (e.g. French AZERTY requires Shift for numbers)
         if (/^[1-9]$/.test(e.key)) return false;
         return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
@@ -88,26 +104,27 @@ function Columns() {
 
   useHotkeys(
     ['[', ']'],
-    (e, handler) => {
-      const key = handler.keys[0];
-      const currentFocusedColumn =
-        document.activeElement.closest('#columns > *');
+    (_e, handler) => {
+      const key = handler.keys?.[0];
+      const currentFocusedColumn = (
+        document.activeElement as HTMLElement | null
+      )?.closest('#columns > *') as HTMLElement | null;
 
       const rtl = isRTL();
       const prevColKey = rtl ? ']' : '[';
       const nextColKey = rtl ? '[' : ']';
-      let $column;
+      let $column: HTMLElement | null = null;
 
       if (key === prevColKey) {
         // If [, focus on left of focused column, else first column
         $column = currentFocusedColumn
-          ? currentFocusedColumn.previousElementSibling
-          : document.querySelectorAll('#columns > *')[0];
+          ? (currentFocusedColumn.previousElementSibling as HTMLElement | null)
+          : (document.querySelectorAll<HTMLElement>('#columns > *')[0] ?? null);
       } else if (key === nextColKey) {
         // If ], focus on right of focused column, else 2nd column
         $column = currentFocusedColumn
-          ? currentFocusedColumn.nextElementSibling
-          : document.querySelectorAll('#columns > *')[1];
+          ? (currentFocusedColumn.nextElementSibling as HTMLElement | null)
+          : (document.querySelectorAll<HTMLElement>('#columns > *')[1] ?? null);
       }
       if ($column) {
         $column.focus();
@@ -116,7 +133,7 @@ function Columns() {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) => {
+      ignoreEventWhen: (e: KeyboardEvent) => {
         // Allow '[' or ']' even with Alt (e.g. German keyboards require Alt for these)
         if (['[', ']'].includes(e.key)) return false;
         return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
@@ -128,11 +145,12 @@ function Columns() {
     <div
       id="columns"
       onContextMenu={(e) => {
+        const target = e.target as Element | null;
         // If right-click on header, but not links or buttons
         if (
-          e.target.closest('.deck > header') &&
-          !e.target.closest('a') &&
-          !e.target.closest('button')
+          target?.closest('.deck > header') &&
+          !target.closest('a') &&
+          !target.closest('button')
         ) {
           e.preventDefault();
           states.showShortcutsSettings = true;
@@ -140,14 +158,20 @@ function Columns() {
       }}
       onFocus={() => {
         // Get current focused column
-        const currentFocusedColumn =
-          document.activeElement.closest('#columns > *');
+        const currentFocusedColumn = (
+          document.activeElement as HTMLElement | null
+        )?.closest('#columns > *');
         if (currentFocusedColumn) {
           // Remove focus classes from all columns
           // Add focus class to current focused column
-          document.querySelectorAll('#columns > *').forEach((column) => {
-            column.classList.toggle('focus', column === currentFocusedColumn);
-          });
+          document
+            .querySelectorAll<HTMLElement>('#columns > *')
+            .forEach((column) => {
+              column.classList.toggle(
+                'focus',
+                column === currentFocusedColumn,
+              );
+            });
         }
       }}
     >
