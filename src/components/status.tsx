@@ -1841,9 +1841,9 @@ function Status({
               onClick={async () => {
                 void haptics.trigger('light');
                 try {
-                  const newStatus = await masto.v1.statuses.$select(id)[
-                    muted ? 'unmute' : 'mute'
-                  ]();
+                  const newStatus = await masto.v1.statuses
+                    .$select(id)
+                    [muted ? 'unmute' : 'mute']();
                   saveStatus(
                     newStatus as unknown as Record<string, unknown>,
                     instance,
@@ -1883,9 +1883,9 @@ function Status({
               onClick={async () => {
                 void haptics.trigger('light');
                 try {
-                  const newStatus = await masto.v1.statuses.$select(id)[
-                    pinned ? 'unpin' : 'pin'
-                  ]();
+                  const newStatus = await masto.v1.statuses
+                    .$select(id)
+                    [pinned ? 'unpin' : 'pin']();
                   saveStatus(
                     newStatus as unknown as Record<string, unknown>,
                     instance,
@@ -2621,11 +2621,7 @@ function Status({
               } as unknown as Record<string, unknown>;
             }}
           >
-            <Avatar
-              url={avatarStatic || avatar}
-              size="xxl"
-              squircle={bot}
-            />
+            <Avatar url={avatarStatic || avatar} size="xxl" squircle={bot} />
           </a>
         )}
         <div class="container">
@@ -3555,9 +3551,7 @@ function Status({
               instance={instance}
               fetchStatusHistory={
                 (() => {
-                  return masto.v1.statuses
-                    .$select(showEdited)
-                    .history.list();
+                  return masto.v1.statuses.$select(showEdited).history.list();
                 }) as unknown as () => Promise<AnyStatus[] | undefined>
               }
               onClose={() => {
@@ -3812,8 +3806,7 @@ const QuoteStatus = memo(({ quote, level = 0 }: QuoteStatusProps) => {
   // Original JS code concats q.instance + q.id directly; undefined entries
   // would coerce to the string "undefined" at runtime. Cast through unknown
   // to keep that behavior intact.
-  const qKey =
-    (q.instance as unknown as string) + (q.id as unknown as string);
+  const qKey = (q.instance as unknown as string) + (q.id as unknown as string);
   return (
     <Parent id={qKey} key={qKey}>
       <Link
@@ -4146,10 +4139,7 @@ function FilteredStatus({
           </span>
           <span>{filterTitleStr}</span>
         </b>{' '}
-        <Avatar
-          url={avatarStatic || avatar}
-          squircle={bot}
-        />
+        <Avatar url={avatarStatic || avatar} squircle={bot} />
         <span class="status-filtered-info">
           <span class="status-filtered-info-1">
             {isReblog ? (

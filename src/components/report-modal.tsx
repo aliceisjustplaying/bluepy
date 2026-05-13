@@ -4,11 +4,7 @@ import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import {
-  Fragment,
-  type ComponentType,
-  type InputHTMLAttributes,
-} from 'preact';
+import { Fragment, type ComponentType, type InputHTMLAttributes } from 'preact';
 import { useMemo, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';

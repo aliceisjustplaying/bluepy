@@ -725,18 +725,15 @@ function ShortcutForm({
       const form = formRef.current;
       if (!form) return;
       TYPE_PARAMS[currentType]?.forEach(({ name, type }) => {
-          const input = form.querySelector<HTMLInputElement>(
-            `[name="${name}"]`,
-          );
-          if (input && shortcut && shortcut[name]) {
-            if (type === 'checkbox') {
-              input.checked = shortcut[name] === 'on';
-            } else {
-              input.value = shortcut[name];
-            }
+        const input = form.querySelector<HTMLInputElement>(`[name="${name}"]`);
+        if (input && shortcut && shortcut[name]) {
+          if (type === 'checkbox') {
+            input.checked = shortcut[name] === 'on';
+          } else {
+            input.value = shortcut[name];
           }
-        },
-      );
+        }
+      });
     }
   }, [editMode, currentType]);
 
@@ -1059,46 +1056,46 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 disabled={importUIState === 'cloud-downloading'}
                 onClick={() => {
                   void (async () => {
-                  setImportUIState('cloud-downloading');
-                  const currentAccount = getCurrentAccountID();
-                  showToast(t`Downloading saved shortcuts from server…`);
-                  try {
-                    const relationships = await (
-                      masto as unknown as ShortcutsMastoClient
-                    ).v1.accounts.relationships.fetch({
-                      id: [currentAccount as string],
-                    });
-                    const relationship = relationships[0];
-                    if (relationship) {
-                      const { note = '' } = relationship;
-                      if (
-                        /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/.test(
-                          note,
-                        )
-                      ) {
-                        const settings = (
-                          note.match(
-                            /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/,
-                          ) as RegExpMatchArray
-                        )[1];
-                        const { data } = JSON.parse(settings) as {
-                          v: string;
-                          dt: number;
-                          data: string;
-                        };
-                        const field = shortcutsImportFieldRef.current;
-                        if (field) {
-                          field.value = data;
-                          field.dispatchEvent(new Event('input'));
+                    setImportUIState('cloud-downloading');
+                    const currentAccount = getCurrentAccountID();
+                    showToast(t`Downloading saved shortcuts from server…`);
+                    try {
+                      const relationships = await (
+                        masto as unknown as ShortcutsMastoClient
+                      ).v1.accounts.relationships.fetch({
+                        id: [currentAccount as string],
+                      });
+                      const relationship = relationships[0];
+                      if (relationship) {
+                        const { note = '' } = relationship;
+                        if (
+                          /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/.test(
+                            note,
+                          )
+                        ) {
+                          const settings = (
+                            note.match(
+                              /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/,
+                            ) as RegExpMatchArray
+                          )[1];
+                          const { data } = JSON.parse(settings) as {
+                            v: string;
+                            dt: number;
+                            data: string;
+                          };
+                          const field = shortcutsImportFieldRef.current;
+                          if (field) {
+                            field.value = data;
+                            field.dispatchEvent(new Event('input'));
+                          }
                         }
                       }
+                      setImportUIState('default');
+                    } catch (e) {
+                      console.error(e);
+                      setImportUIState('error');
+                      showToast(t`Unable to download shortcuts`);
                     }
-                    setImportUIState('default');
-                  } catch (e) {
-                    console.error(e);
-                    setImportUIState('error');
-                    showToast(t`Unable to download shortcuts`);
-                  }
                   })();
                 }}
                 title={t`Download shortcuts from server`}
@@ -1333,50 +1330,51 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 disabled={importUIState === 'cloud-uploading'}
                 onClick={() => {
                   void (async () => {
-                  setImportUIState('cloud-uploading');
-                  const currentAccount = getCurrentAccountID();
-                  try {
-                    const mastoShim = masto as unknown as ShortcutsMastoClient;
-                    const relationships =
-                      await mastoShim.v1.accounts.relationships.fetch({
-                        id: [currentAccount as string],
-                      });
-                    const relationship = relationships[0];
-                    if (relationship) {
-                      const { note = '' } = relationship;
-                      // const newNote = `${note}\n\n\n$<phanpy-shortcuts-settings>{shortcutsStr}</phanpy-shortcuts-settings>`;
-                      let newNote = '';
-                      const settingsJSON = JSON.stringify({
-                        v: '1', // version
-                        dt: Date.now(), // datetime stamp
-                        data: shortcutsStr, // shortcuts settings string
-                      });
-                      if (
-                        /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/.test(
-                          note,
-                        )
-                      ) {
-                        newNote = note.replace(
-                          /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/,
-                          `<phanpy-shortcuts-settings>${settingsJSON}</phanpy-shortcuts-settings>`,
-                        );
-                      } else {
-                        newNote = `${note}\n\n\n<phanpy-shortcuts-settings>${settingsJSON}</phanpy-shortcuts-settings>`;
-                      }
-                      showToast(t`Saving shortcuts to server…`);
-                      await mastoShim.v1.accounts
-                        .$select(currentAccount as string)
-                        .note.create({
-                          comment: newNote,
+                    setImportUIState('cloud-uploading');
+                    const currentAccount = getCurrentAccountID();
+                    try {
+                      const mastoShim =
+                        masto as unknown as ShortcutsMastoClient;
+                      const relationships =
+                        await mastoShim.v1.accounts.relationships.fetch({
+                          id: [currentAccount as string],
                         });
-                      setImportUIState('default');
-                      showToast(t`Shortcuts saved`);
+                      const relationship = relationships[0];
+                      if (relationship) {
+                        const { note = '' } = relationship;
+                        // const newNote = `${note}\n\n\n$<phanpy-shortcuts-settings>{shortcutsStr}</phanpy-shortcuts-settings>`;
+                        let newNote = '';
+                        const settingsJSON = JSON.stringify({
+                          v: '1', // version
+                          dt: Date.now(), // datetime stamp
+                          data: shortcutsStr, // shortcuts settings string
+                        });
+                        if (
+                          /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/.test(
+                            note,
+                          )
+                        ) {
+                          newNote = note.replace(
+                            /<phanpy-shortcuts-settings>(.*)<\/phanpy-shortcuts-settings>/,
+                            `<phanpy-shortcuts-settings>${settingsJSON}</phanpy-shortcuts-settings>`,
+                          );
+                        } else {
+                          newNote = `${note}\n\n\n<phanpy-shortcuts-settings>${settingsJSON}</phanpy-shortcuts-settings>`;
+                        }
+                        showToast(t`Saving shortcuts to server…`);
+                        await mastoShim.v1.accounts
+                          .$select(currentAccount as string)
+                          .note.create({
+                            comment: newNote,
+                          });
+                        setImportUIState('default');
+                        showToast(t`Shortcuts saved`);
+                      }
+                    } catch (e) {
+                      console.error(e);
+                      setImportUIState('error');
+                      showToast(t`Unable to save shortcuts`);
                     }
-                  } catch (e) {
-                    console.error(e);
-                    setImportUIState('error');
-                    showToast(t`Unable to save shortcuts`);
-                  }
                   })();
                 }}
                 title={t`Sync to server`}

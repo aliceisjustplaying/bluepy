@@ -81,8 +81,9 @@ export default function GenericAccounts({
   const [uiState, setUIState] = useState('default');
   const [showMore, setShowMore] = useState(false);
 
-  const showGenericAccountsState =
-    snapStates.showGenericAccounts as ShowGenericAccountsState | false;
+  const showGenericAccountsState = snapStates.showGenericAccounts as
+    | ShowGenericAccountsState
+    | false;
   const staticAccounts = showGenericAccountsState
     ? showGenericAccountsState.accounts
     : undefined;

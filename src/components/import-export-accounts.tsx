@@ -74,7 +74,8 @@ export default function ImportExportAccounts({
       const json = JSON.parse(text);
 
       const importAccounts = json?.accounts;
-      if (!Array.isArray(importAccounts)) throw new Error('Invalid backup file');
+      if (!Array.isArray(importAccounts))
+        throw new Error('Invalid backup file');
 
       setImportedAccounts(importAccounts as StoredAccount[]);
       setUIState('default');

@@ -273,104 +273,107 @@ function Catchup() {
 
   const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
 
-  const fetchHome = useCallback(async ({
-    maxCreatedAt,
-  }: {
-    maxCreatedAt: number | null;
-  }): Promise<CatchupPost[]> => {
-    console.debug('fetchHome', maxCreatedAt);
-    const allResults: CatchupPost[] = [];
-    const mastoUntyped = masto as unknown as {
-      v1: {
-        timelines: {
-          home: {
-            list(options: { limit: number }): HomeIterable;
+  const fetchHome = useCallback(
+    async ({
+      maxCreatedAt,
+    }: {
+      maxCreatedAt: number | null;
+    }): Promise<CatchupPost[]> => {
+      console.debug('fetchHome', maxCreatedAt);
+      const allResults: CatchupPost[] = [];
+      const mastoUntyped = masto as unknown as {
+        v1: {
+          timelines: {
+            home: {
+              list(options: { limit: number }): HomeIterable;
+            };
           };
         };
       };
-    };
-    const homeIterable = mastoUntyped.v1.timelines.home.list({ limit: 40 });
-    const homeIterator = homeIterable.values();
-    mainloop: while (true) {
-      try {
-        if (supportsPixelfed && homeIterable.params) {
-          if (typeof homeIterable.params === 'string') {
-            homeIterable.params += '&include_reblogs=true';
-          } else {
-            homeIterable.params.include_reblogs = true;
-          }
-        }
-        const results = await homeIterator.next();
-        const { value } = results as { value: CatchupPost[] | undefined };
-        if (value?.length) {
-          // This ignores maxCreatedAt filter, but it's ok for now
-          await assignFollowedTags(value, instance);
-          let addedResults = false;
-          for (let i = 0; i < value.length; i++) {
-            const item = value[i];
-            const createdAtTime = Date.parse(item.createdAt);
-            if (!maxCreatedAt || createdAtTime >= maxCreatedAt) {
-              // Filtered
-              const selfPost = isSelf(
-                item.reblog?.account?.id || item.account.id,
-              );
-              const filterInfo =
-                !selfPost &&
-                isFiltered(
-                  item.reblog?.filtered || item.filtered,
-                  FILTER_CONTEXT,
-                );
-              if (filterInfo && filterInfo.action === 'hide') continue;
-              item._filtered = filterInfo as FilterInfo;
-
-              // Followed tags
-              const sKey = statusKey(item.id, instance);
-              const followed = sKey
-                ? (states.statusFollowedTags[sKey] as
-                    | Iterable<string>
-                    | undefined)
-                : undefined;
-              item._followedTags = followed ? [...followed] : [];
-
-              allResults.push(item);
-              addedResults = true;
+      const homeIterable = mastoUntyped.v1.timelines.home.list({ limit: 40 });
+      const homeIterator = homeIterable.values();
+      mainloop: while (true) {
+        try {
+          if (supportsPixelfed && homeIterable.params) {
+            if (typeof homeIterable.params === 'string') {
+              homeIterable.params += '&include_reblogs=true';
             } else {
-              // Don't immediately stop, still add the other items that might still be within range
-              // break mainloop;
-            }
-            // Only stop when ALL items are outside of range
-            if (!addedResults) {
-              break mainloop;
+              homeIterable.params.include_reblogs = true;
             }
           }
-        } else {
+          const results = await homeIterator.next();
+          const { value } = results as { value: CatchupPost[] | undefined };
+          if (value?.length) {
+            // This ignores maxCreatedAt filter, but it's ok for now
+            await assignFollowedTags(value, instance);
+            let addedResults = false;
+            for (let i = 0; i < value.length; i++) {
+              const item = value[i];
+              const createdAtTime = Date.parse(item.createdAt);
+              if (!maxCreatedAt || createdAtTime >= maxCreatedAt) {
+                // Filtered
+                const selfPost = isSelf(
+                  item.reblog?.account?.id || item.account.id,
+                );
+                const filterInfo =
+                  !selfPost &&
+                  isFiltered(
+                    item.reblog?.filtered || item.filtered,
+                    FILTER_CONTEXT,
+                  );
+                if (filterInfo && filterInfo.action === 'hide') continue;
+                item._filtered = filterInfo as FilterInfo;
+
+                // Followed tags
+                const sKey = statusKey(item.id, instance);
+                const followed = sKey
+                  ? (states.statusFollowedTags[sKey] as
+                      | Iterable<string>
+                      | undefined)
+                  : undefined;
+                item._followedTags = followed ? [...followed] : [];
+
+                allResults.push(item);
+                addedResults = true;
+              } else {
+                // Don't immediately stop, still add the other items that might still be within range
+                // break mainloop;
+              }
+              // Only stop when ALL items are outside of range
+              if (!addedResults) {
+                break mainloop;
+              }
+            }
+          } else {
+            break mainloop;
+          }
+          // Pause 1s
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+          });
+        } catch (e) {
+          console.error(e);
           break mainloop;
         }
-        // Pause 1s
-        await new Promise((resolve) => {
-          setTimeout(resolve, 1000);
-        });
-      } catch (e) {
-        console.error(e);
-        break mainloop;
       }
-    }
 
-    // Post-process all results
-    // 1. Threadify - tag 1st-post in a thread
-    allResults.forEach((status) => {
-      if (status?.inReplyToId) {
-        const replyToStatus = allResults.find(
-          (s) => s.id === status.inReplyToId,
-        );
-        if (replyToStatus && !replyToStatus.inReplyToId) {
-          replyToStatus._thread = true;
+      // Post-process all results
+      // 1. Threadify - tag 1st-post in a thread
+      allResults.forEach((status) => {
+        if (status?.inReplyToId) {
+          const replyToStatus = allResults.find(
+            (s) => s.id === status.inReplyToId,
+          );
+          if (replyToStatus && !replyToStatus.inReplyToId) {
+            replyToStatus._thread = true;
+          }
         }
-      }
-    });
+      });
 
-    return allResults;
-  }, [masto, supportsPixelfed, instance, isSelf]);
+      return allResults;
+    },
+    [masto, supportsPixelfed, instance, isSelf],
+  );
 
   const [posts, setPosts] = useState<CatchupPost[]>([]);
   const catchupRangeRef = useRef<HTMLInputElement | null>(null);
@@ -863,7 +866,8 @@ function Catchup() {
   const scrollableRef = useRef<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
-    if (!id || uiState !== 'results' || !scrollableRef.current) return undefined;
+    if (!id || uiState !== 'results' || !scrollableRef.current)
+      return undefined;
     if (!sortedFilteredPosts.length) return undefined;
 
     const savedState = store.session.getJSON<CatchupSessionState>(
@@ -885,7 +889,8 @@ function Catchup() {
   }, [id, uiState, sortedFilteredPosts.length]);
 
   useEffect(() => {
-    if (!id || uiState !== 'results' || !scrollableRef.current) return undefined;
+    if (!id || uiState !== 'results' || !scrollableRef.current)
+      return undefined;
 
     const handleScroll = () => {
       if (!scrollableRef.current) return;
@@ -988,9 +993,10 @@ function Catchup() {
     if (selectedAuthor) {
       if (authors[selectedAuthor]) {
         // Check if author is visible and within the scrollable area viewport
-        const authorElement = authorsListParent.current!.querySelector<HTMLElement>(
-          `[data-author="${selectedAuthor}"]`,
-        );
+        const authorElement =
+          authorsListParent.current!.querySelector<HTMLElement>(
+            `[data-author="${selectedAuthor}"]`,
+          );
         const scrollableRect =
           authorsListParent.current?.getBoundingClientRect();
         const authorRect = authorElement?.getBoundingClientRect();
@@ -1652,7 +1658,11 @@ function Catchup() {
                                 <Trans>
                                   Shared by{' '}
                                   {sharers.map((s) => {
-                                    const { id: sharerId, avatarStatic, displayName } = s;
+                                    const {
+                                      id: sharerId,
+                                      avatarStatic,
+                                      displayName,
+                                    } = s;
                                     return (
                                       <button
                                         key={sharerId}

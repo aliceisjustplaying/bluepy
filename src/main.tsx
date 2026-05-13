@@ -137,9 +137,12 @@ if (!redirectLegacyOrigin()) {
           } catch {} // Silent fail
         }
         // Once cleared, clear again at slower interval
-        setTimeout(() => {
-          void clearCaches();
-        }, clearRanOnce ? SLOW_INTERVAL : FAST_INTERVAL);
+        setTimeout(
+          () => {
+            void clearCaches();
+          },
+          clearRanOnce ? SLOW_INTERVAL : FAST_INTERVAL,
+        );
       }
       setTimeout(() => {
         void clearCaches();

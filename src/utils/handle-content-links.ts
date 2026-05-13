@@ -106,9 +106,7 @@ function handleContentLinks(
       // Only fallback to acct/username check if url doesn't match
       const mention =
         mentions.find((m) => m.url === href) ||
-        mentions.find(
-          (m) => m.acct === username || m.username === username,
-        );
+        mentions.find((m) => m.acct === username || m.username === username);
       console.warn('MENTION', mention, href);
       if (mention) {
         e.preventDefault();

@@ -245,9 +245,8 @@ export function initStates(): void {
     store.account.get<boolean>('settings-contentTranslationAutoInline') ??
     false;
   states.settings.shortcutSettingsCloudImportExport =
-    store.account.get<boolean>(
-      'settings-shortcutSettingsCloudImportExport',
-    ) ?? false;
+    store.account.get<boolean>('settings-shortcutSettingsCloudImportExport') ??
+    false;
   states.settings.mediaAltGenerator =
     store.account.get<boolean>('settings-mediaAltGenerator') ?? false;
   states.settings.composerGIFPicker =
@@ -515,10 +514,7 @@ function threadifyStatusInternal(
   const { masto, instance } = api({ instance: propInstance ?? undefined });
   // Return all statuses in the thread, via inReplyToId, if inReplyToAccountId === account.id
   let fetchIndex = 0;
-  async function traverse(
-    currentStatus: Status,
-    index = 0,
-  ): Promise<Status[]> {
+  async function traverse(currentStatus: Status, index = 0): Promise<Status[]> {
     if (!shouldFetchThreadParent({ status: currentStatus, instance })) {
       return [currentStatus];
     }

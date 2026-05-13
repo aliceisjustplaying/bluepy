@@ -65,9 +65,7 @@ const Notification =
     console.log('👂👂👂 Listen to message');
     navigator.serviceWorker.addEventListener('message', (event) => {
       console.log('💥💥💥 Message event', event);
-      const data = event?.data as
-        | ServiceWorkerNotificationMessage
-        | undefined;
+      const data = event?.data as ServiceWorkerNotificationMessage | undefined;
       const { type, id, accessToken } = data || {};
       if (type === 'notification') {
         states.routeNotification = {

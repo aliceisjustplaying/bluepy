@@ -114,9 +114,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     URLSearchParams,
     (next: SearchParamsUpdater) => void,
   ];
-  const { id, ...params } = columnMode
-    ? { id: props.id }
-    : routeParams;
+  const { id, ...params } = columnMode ? { id: props.id } : routeParams;
 
   // `URLSearchParams` accepts `Record<string, string>`; the JS `{ replies: 1 }`
   // is coerced to "1" at runtime — preserve via string init.
@@ -572,9 +570,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                       to={`/${instance}/a/${id}${buildParamStr({
                         tagged: tagged === tag.name ? null : tag.name,
                       })}`}
-                      onClick={(
-                        e: TargetedMouseEvent<HTMLAnchorElement>,
-                      ) => {
+                      onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
                         if (columnMode) {
                           e.preventDefault();
                           const next = new URLSearchParams(
@@ -614,9 +610,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                       value={month || ''}
                       min={MIN_YEAR_MONTH}
                       max={new Date().toISOString().slice(0, 7)}
-                      onInput={(
-                        e: TargetedEvent<HTMLInputElement>,
-                      ) => {
+                      onInput={(e: TargetedEvent<HTMLInputElement>) => {
                         const { value, validity } = e.currentTarget;
                         if (!validity.valid) return;
                         setSearchParams(
@@ -987,7 +981,8 @@ function fetchAccount(
   id: string,
   masto: { v1: { accounts: unknown } },
 ): Promise<Account> {
-  const accountsResource = masto.v1.accounts as mastodon.rest.v1.AccountsResource;
+  const accountsResource = masto.v1
+    .accounts as mastodon.rest.v1.AccountsResource;
   return accountsResource.$select(id).fetch();
 }
 const memFetchAccount = pmem(fetchAccount, {

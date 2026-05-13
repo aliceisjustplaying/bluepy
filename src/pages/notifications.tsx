@@ -3,11 +3,7 @@ import './notifications.css';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg, t } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type {
-  ComponentType,
-  TargetedEvent,
-  TargetedMouseEvent,
-} from 'preact';
+import type { ComponentType, TargetedEvent, TargetedMouseEvent } from 'preact';
 import { Fragment } from 'preact';
 import { memo } from 'preact/compat';
 import {
@@ -198,16 +194,14 @@ function mastoFetchNotificationsIterable(
 ): MastoV2NotificationsListIterable {
   const { masto } = api();
   if (memSupportsGroupedNotifications()) {
-    const v2Notifications = masto.v2
-      .notifications as MastoV2NotificationsApi;
+    const v2Notifications = masto.v2.notifications as MastoV2NotificationsApi;
     // https://github.com/mastodon/mastodon/pull/29889
     return v2Notifications.list({
       limit: NOTIFICATIONS_GROUPED_LIMIT,
       ...opts,
     });
   } else {
-    const v1Notifications = masto.v1
-      .notifications as MastoV1NotificationsApi;
+    const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
     return v1Notifications.list({
       limit: NOTIFICATIONS_LIMIT,
       ...opts,
@@ -279,12 +273,11 @@ function Notifications({ columnMode }: NotificationsProps) {
     boolean | number
   >(false);
   const scrollableRef = useRef<HTMLDivElement | null>(null);
-  const { scrollDirection, reachStart, nearReachStart } =
-    useScroll({
-      scrollableRef: scrollableRef as unknown as {
-        current: HTMLElement | null;
-      },
-    });
+  const { scrollDirection, reachStart, nearReachStart } = useScroll({
+    scrollableRef: scrollableRef as unknown as {
+      current: HTMLElement | null;
+    },
+  });
   const hiddenUI = scrollDirection === 'end' && !nearReachStart;
   const [followRequests, setFollowRequests] = useState<
     { id: string; [key: string]: unknown }[]
@@ -443,8 +436,7 @@ function Notifications({ columnMode }: NotificationsProps) {
   function fetchNotificationsPolicy(): Promise<
     NotificationsPolicy | undefined
   > {
-    const v2Notifications = masto.v2
-      .notifications as MastoV2NotificationsApi;
+    const v2Notifications = masto.v2.notifications as MastoV2NotificationsApi;
     return v2Notifications.policy.fetch().catch(() => undefined);
   }
   function loadNotificationsPolicy() {
@@ -462,8 +454,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     NotificationRequestLike[] | null
   >(null);
   function fetchNotificationsRequest(): Promise<NotificationRequestLike[]> {
-    const v1Notifications = masto.v1
-      .notifications as MastoV1NotificationsApi;
+    const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
     return v1Notifications.requests.list();
   }
 
@@ -720,9 +711,8 @@ function Notifications({ columnMode }: NotificationsProps) {
       // Skip if doesn't support annual report
       if (!supports('@mastodon/annual-report')) return;
 
-      let currentAnnualReport: NotificationLike | null = store.account.get<
-        NotificationLike
-      >('annualReportNotification');
+      let currentAnnualReport: NotificationLike | null =
+        store.account.get<NotificationLike>('annualReportNotification');
       if (currentAnnualReport) {
         const annualReportYear = currentAnnualReport?.annualReport?.year;
         if (annualReportYear == dateYear) {
@@ -742,16 +732,9 @@ function Notifications({ columnMode }: NotificationsProps) {
         const annualReportYear = currentAnnualReport?.annualReport?.year;
         // If same year, show the annual report
         if (annualReportYear == dateYear) {
-          console.log(
-            'ANNUAL REPORT',
-            annualReportYear,
-            currentAnnualReport,
-          );
+          console.log('ANNUAL REPORT', annualReportYear, currentAnnualReport);
           setAnnualReportNotification(currentAnnualReport);
-          store.account.set(
-            'annualReportNotification',
-            currentAnnualReport,
-          );
+          store.account.set('annualReportNotification', currentAnnualReport);
         }
       } catch (e) {
         console.warn(e);
@@ -1533,8 +1516,7 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
 
 function fetchNotficationsByAccount(accountID: string) {
   const { masto } = api();
-  const v1Notifications = masto.v1
-    .notifications as MastoV1NotificationsApi;
+  const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
   // NOTE: JS original passes `accountID` (capital-ID). masto's actual API
   // expects `accountId`. Preserving the original (broken) request shape
   // exactly — fixing it would be a behavior change outside this migration.

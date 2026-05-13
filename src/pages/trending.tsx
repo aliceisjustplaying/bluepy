@@ -215,9 +215,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
           );
           // 4 types available: link, photo, video, rich
           // Only want links for now
-          const filteredLinks = value?.filter?.(
-            (link) => link.type === 'link',
-          );
+          const filteredLinks = value?.filter?.((link) => link.type === 'link');
           console.log('links', filteredLinks);
           if (filteredLinks?.length) {
             setLinks(filteredLinks);

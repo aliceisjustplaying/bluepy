@@ -813,8 +813,7 @@ function StatusThread({
     }
 
     void (async () => {
-      const statusesEndpoint = masto.v1
-        .statuses as StatusContextResource;
+      const statusesEndpoint = masto.v1.statuses as StatusContextResource;
       const heroFetch = () =>
         pRetry(() => statusesEndpoint.$select(id).fetch(), {
           retries: 4,
@@ -1953,9 +1952,7 @@ function StatusThread({
                   <Icon icon="transfer" />
                   <small class="menu-double-lines">
                     {postInstance
-                      ? t`Switch to post's server (${toUnicode(
-                          postInstance,
-                        )})`
+                      ? t`Switch to post's server (${toUnicode(postInstance)})`
                       : t`Switch to post's server`}
                   </small>
                 </MenuItem>
@@ -2070,9 +2067,7 @@ interface SubCommentsProps {
 }
 
 // Total comments count, including sub-replies
-const diveDeep = (
-  innerReplies: NestedReply[] | undefined | null,
-): number => {
+const diveDeep = (innerReplies: NestedReply[] | undefined | null): number => {
   return (innerReplies ?? []).reduce<number>((acc, reply) => {
     const { repliesCount, replies: nested } = reply;
     const count = nested?.length || repliesCount || 0;

@@ -45,10 +45,7 @@ function Lists() {
   useTitle(t`Lists & Feeds`, `/l`);
   const [uiState, setUIState] = useState<UIState>('default');
 
-  const [reloadCount, reload] = useReducer<number, undefined>(
-    (c) => c + 1,
-    0,
-  );
+  const [reloadCount, reload] = useReducer<number, undefined>((c) => c + 1, 0);
   const [lists, setLists] = useState<ListItem[]>([]);
   useEffect(() => {
     setUIState('loading');

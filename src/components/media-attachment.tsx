@@ -468,9 +468,7 @@ function MediaAttachment({
               muted
               disablePictureInPicture
               preload="metadata"
-              onLoadedMetadata={(
-                e: TargetedEvent<HTMLVideoElement>,
-              ) => {
+              onLoadedMetadata={(e: TargetedEvent<HTMLVideoElement>) => {
                 if (!checkMaxError) return;
                 const { videoWidth, videoHeight } =
                   e.target as HTMLVideoElement;
@@ -605,13 +603,10 @@ function MediaAttachment({
                                 if (!IMG_ALT_API_URL) {
                                   return;
                                 }
-                                const response = await fetch(
-                                  IMG_ALT_API_URL,
-                                  {
-                                    method: 'POST',
-                                    body,
-                                  },
-                                ).then((r) => r.json());
+                                const response = await fetch(IMG_ALT_API_URL, {
+                                  method: 'POST',
+                                  body,
+                                }).then((r) => r.json());
                                 if (response.error) {
                                   throw new Error(response.error);
                                 }

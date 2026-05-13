@@ -464,8 +464,7 @@ function Media({
                 }}
                 onLoad={(e) => {
                   const el = e.target as HTMLImageElement;
-                  const mediaImage =
-                    el.closest<HTMLElement>('.media-image');
+                  const mediaImage = el.closest<HTMLElement>('.media-image');
                   if (mediaImage) {
                     mediaImage.style.backgroundImage = `url(${el.src})`;
                     mediaImage.style.removeProperty('--bg-image');

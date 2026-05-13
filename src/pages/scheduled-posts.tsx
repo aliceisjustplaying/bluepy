@@ -469,9 +469,7 @@ function ScheduledPostEdit({
             <div class="row">
               <button
                 disabled={
-                  !differentScheduledAt ||
-                  uiState === 'loading' ||
-                  pastSchedule
+                  !differentScheduledAt || uiState === 'loading' || pastSchedule
                 }
               >
                 <Trans>Reschedule</Trans>

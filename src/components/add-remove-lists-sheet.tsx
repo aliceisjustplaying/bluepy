@@ -121,8 +121,8 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
                       setUIState('loading');
                       void (async () => {
                         try {
-                          const listsEndpoint =
-                            masto.v1.lists as ListsAccountsEndpoint;
+                          const listsEndpoint = masto.v1
+                            .lists as ListsAccountsEndpoint;
                           if (inList) {
                             await listsEndpoint
                               .$select(list.id)
