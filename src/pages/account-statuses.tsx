@@ -2,6 +2,8 @@ import './account-statuses.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
+import type { mastodon } from 'masto';
+import type { ComponentType, JSX, VNode } from 'preact';
 import {
   useCallback,
   useEffect,
@@ -20,7 +22,7 @@ import EmojiText from '../components/emoji-text';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Menu2 from '../components/menu2';
-import Timeline from '../components/timeline';
+import TimelineUntyped from '../components/timeline';
 import { api } from '../utils/api';
 import isSearchEnabled from '../utils/is-search-enabled';
 import mem from '../utils/mem';
@@ -33,6 +35,54 @@ import {
 } from '../utils/store-utils';
 import supports from '../utils/supports';
 import useTitle from '../utils/useTitle';
+
+type Status = mastodon.v1.Status;
+type Account = mastodon.v1.Account;
+type FeaturedTag = mastodon.v1.FeaturedTag;
+
+interface PinnedGroup {
+  id: string[];
+  items: ReadonlyArray<Status & { _pinned?: boolean }>;
+  type: 'pinned';
+}
+
+type TimelineItem = (Status & { _pinned?: boolean }) | PinnedGroup;
+
+interface TimelineProps {
+  key?: string;
+  title?: string;
+  titleComponent?: VNode;
+  id?: string;
+  timelineKey?: string;
+  instance?: string;
+  emptyText?: string;
+  errorText?: string;
+  fetchItems?: (firstLoad?: boolean) => Promise<{
+    value: ReadonlyArray<TimelineItem>;
+    done?: boolean;
+  }>;
+  useItemID?: boolean;
+  view?: string;
+  boostsCarousel?: boolean;
+  timelineStart?: VNode;
+  refresh?: string;
+  headerEnd?: VNode;
+}
+
+const Timeline = TimelineUntyped as unknown as ComponentType<TimelineProps>;
+
+interface AccountStatusesProps {
+  columnMode?: boolean;
+  id?: string;
+  // Forwarded via `...props` in column mode.
+  [key: string]: unknown;
+}
+
+type SearchParamsObject = Record<string, string | number | boolean | null | undefined>;
+type SearchParamsUpdater =
+  | SearchParamsObject
+  | URLSearchParams
+  | ((params: URLSearchParams) => void);
 
 const LIMIT = 20;
 const MIN_YEAR = 1983;
@@ -48,48 +98,58 @@ const supportsInputMonth = mem(() => {
   }
 });
 
-function AccountStatuses({ columnMode, ...props }) {
+function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   const { i18n, t } = useLingui();
   const snapStates = useSnapshot(states);
-  const { id, ...params } = columnMode ? { id: props.id } : useParams();
+  const { id, ...params } = columnMode
+    ? { id: props.id as string | undefined }
+    : (useParams() as { id?: string; instance?: string });
 
-  const profileSearchParamsRef = useRef(new URLSearchParams({ replies: 1 }));
-  const [, forceUpdate] = useReducer((c) => c + 1, 0);
-  const profileSetSearchParams = useCallback((objOrFn) => {
-    const params = profileSearchParamsRef.current;
-    if (typeof objOrFn === 'function') {
-      objOrFn(params);
-    } else if (objOrFn instanceof URLSearchParams) {
-      [...params.keys()].forEach((key) => params.delete(key));
-      objOrFn.forEach((value, key) => params.set(key, value));
-    } else {
-      Object.entries(objOrFn).forEach(([key, value]) => {
-        if (value) {
-          params.set(key, value);
-        } else {
-          params.delete(key);
-        }
-      });
-    }
-    forceUpdate();
-  }, []);
+  // `URLSearchParams` accepts `Record<string, string>`; the JS `{ replies: 1 }`
+  // is coerced to "1" at runtime — preserve via string init.
+  const profileSearchParamsRef = useRef(new URLSearchParams({ replies: '1' }));
+  const [, forceUpdate] = useReducer<number, void>((c) => c + 1, 0);
+  const profileSetSearchParams = useCallback(
+    (objOrFn: SearchParamsUpdater) => {
+      const params = profileSearchParamsRef.current;
+      if (typeof objOrFn === 'function') {
+        objOrFn(params);
+      } else if (objOrFn instanceof URLSearchParams) {
+        [...params.keys()].forEach((key) => params.delete(key));
+        objOrFn.forEach((value, key) => params.set(key, value));
+      } else {
+        Object.entries(objOrFn).forEach(([key, value]) => {
+          if (value) {
+            params.set(key, String(value));
+          } else {
+            params.delete(key);
+          }
+        });
+      }
+      forceUpdate();
+    },
+    [],
+  );
   const [searchParams, setSearchParams] = columnMode
-    ? [profileSearchParamsRef.current, profileSetSearchParams]
-    : useSearchParams();
+    ? ([profileSearchParamsRef.current, profileSetSearchParams] as const)
+    : (useSearchParams() as unknown as readonly [
+        URLSearchParams,
+        (next: SearchParamsUpdater) => void,
+      ]);
   const clearAndSetParam = useCallback(
-    (paramName, paramValue) => {
+    (paramName?: string, paramValue?: string) => {
       const params = new URLSearchParams(
-        columnMode ? { replies: 1 } : undefined,
+        columnMode ? { replies: '1' } : undefined,
       );
       if (paramValue !== undefined) {
-        params.set(paramName, paramValue);
+        params.set(paramName as string, paramValue);
       }
       setSearchParams(params);
     },
     [setSearchParams],
   );
   const toggleParam = useCallback(
-    (paramName, paramValue) => {
+    (paramName: string, paramValue?: string) => {
       const params = new URLSearchParams(searchParams.toString());
       if (params.get(paramName)) {
         params.delete(paramName);
@@ -110,10 +170,12 @@ function AccountStatuses({ columnMode, ...props }) {
     instance: params?.instance,
   });
   const { masto: currentMasto, instance: currentInstance } = api();
-  const accountStatusesIterator = useRef();
+  const accountStatusesIterator = useRef<
+    AsyncIterator<Status[]> | undefined
+  >(undefined);
 
   const allSearchParams = [month, excludeReplies, excludeBoosts, tagged, media];
-  const [account, setAccount] = useState();
+  const [account, setAccount] = useState<Account | undefined>();
   const searchOffsetRef = useRef(0);
   useEffect(() => {
     searchOffsetRef.current = 0;
@@ -138,9 +200,15 @@ function AccountStatuses({ columnMode, ...props }) {
     })();
   }, [instance, sameCurrentInstance, account?.acct]);
 
-  async function fetchAccountStatuses(firstLoad) {
-    const isValidMonth = /^\d{4}-[01]\d$/.test(month);
-    const isValidYear = month?.split?.('-')?.[0] >= MIN_YEAR;
+  async function fetchAccountStatuses(firstLoad?: boolean): Promise<{
+    value: ReadonlyArray<TimelineItem>;
+    done?: boolean;
+  }> {
+    const isValidMonth = /^\d{4}-[01]\d$/.test(month as string);
+    // JS: `string >= number` coerces the string via ToNumber. Preserve via
+    // explicit Number(); falls back to NaN >= MIN_YEAR (false) when month is
+    // nullish, matching the original.
+    const isValidYear = Number(month?.split?.('-')?.[0]) >= MIN_YEAR;
     if (isValidMonth && isValidYear) {
       if (!account) {
         return {
@@ -148,7 +216,7 @@ function AccountStatuses({ columnMode, ...props }) {
           done: true,
         };
       }
-      const [_year, _month] = month.split('-');
+      const [_year, _month] = (month as string).split('-');
       const monthIndex = parseInt(_month, 10) - 1;
       // YYYY-MM (no day)
       // Search options:
@@ -157,12 +225,16 @@ function AccountStatuses({ columnMode, ...props }) {
       // - before:YYYY-MM-DD (non-inclusive)
 
       // Last day of previous month
-      const after = new Date(_year, monthIndex, 0);
+      const after = new Date(_year as unknown as number, monthIndex, 0);
       const afterStr = `${after.getFullYear()}-${(after.getMonth() + 1)
         .toString()
         .padStart(2, '0')}-${after.getDate().toString().padStart(2, '0')}`;
       // First day of next month
-      const before = new Date(_year, monthIndex + 1, 1);
+      const before = new Date(
+        _year as unknown as number,
+        monthIndex + 1,
+        1,
+      );
       const beforeStr = `${before.getFullYear()}-${(before.getMonth() + 1)
         .toString()
         .padStart(2, '0')}-${before.getDate().toString().padStart(2, '0')}`;
@@ -177,7 +249,7 @@ function AccountStatuses({ columnMode, ...props }) {
         beforeStr,
       });
 
-      let limit;
+      let limit: number;
       if (firstLoad) {
         limit = LIMIT + 1;
         searchOffsetRef.current = 0;
@@ -186,7 +258,9 @@ function AccountStatuses({ columnMode, ...props }) {
         searchOffsetRef.current += LIMIT;
       }
 
-      const searchResults = await masto.v2.search.list({
+      const searchResource =
+        masto.v2.search as unknown as mastodon.rest.v2.SearchResource;
+      const searchResults = await searchResource.list({
         q: `from:${account.acct} after:${afterStr} before:${beforeStr}`,
         type: 'statuses',
         limit,
@@ -195,7 +269,7 @@ function AccountStatuses({ columnMode, ...props }) {
       if (searchResults?.statuses?.length) {
         const value = searchResults.statuses.slice(0, LIMIT);
         value.forEach((item) => {
-          saveStatus(item, instance);
+          saveStatus(item as unknown as Record<string, unknown>, instance);
         });
         const done = searchResults.statuses.length <= LIMIT;
         return { value, done };
@@ -204,25 +278,29 @@ function AccountStatuses({ columnMode, ...props }) {
       }
     }
 
-    let results = [];
+    let results: TimelineItem[] = [];
+    const accountsResource =
+      masto.v1.accounts as unknown as mastodon.rest.v1.AccountsResource;
     if (firstLoad && !columnMode) {
-      const { value } = await masto.v1.accounts
-        .$select(id)
+      const { value } = await accountsResource
+        .$select(id as string)
         .statuses.list({
           pinned: true,
         })
         .values()
         .next();
       if (value?.length && !tagged && !media) {
-        const pinnedStatuses = value.map((status) => {
-          saveStatus(status, instance);
+        const pinnedStatuses = value.map((status: Status) => {
+          saveStatus(status as unknown as Record<string, unknown>, instance);
           return {
             ...status,
             _pinned: true,
           };
         });
         if (pinnedStatuses.length >= 3) {
-          const pinnedStatusesIds = pinnedStatuses.map((status) => status.id);
+          const pinnedStatusesIds = pinnedStatuses.map(
+            (status: Status) => status.id,
+          );
           results.push({
             id: pinnedStatusesIds,
             items: pinnedStatuses,
@@ -234,34 +312,41 @@ function AccountStatuses({ columnMode, ...props }) {
       }
     }
     if (firstLoad || !accountStatusesIterator.current) {
-      accountStatusesIterator.current = masto.v1.accounts
-        .$select(id)
+      accountStatusesIterator.current = accountsResource
+        .$select(id as string)
         .statuses.list({
           limit: LIMIT,
           exclude_replies: excludeReplies,
           exclude_reblogs: excludeBoosts,
           only_media: media || undefined,
           tagged,
-        })
+        } as unknown as mastodon.rest.v1.ListAccountStatusesParams)
         .values();
     }
-    const { value, done } = await accountStatusesIterator.current.next();
+    const { value, done } = await (
+      accountStatusesIterator.current as AsyncIterator<Status[]>
+    ).next();
     if (value?.length) {
       if (!supports('@mastodon/pinned-posts')) {
         // Check if value is same as pinned post (results)
         // If the index for every post is the same, means API might not support pinned posts
         // TODO: This is a really weird check, fix this at some point
         if (results.length) {
-          let pinnedStatusesIds = [];
-          if (results[0]?.type === 'pinned') {
-            pinnedStatusesIds = results[0].id;
+          let pinnedStatusesIds: string[] = [];
+          const first = results[0];
+          if (
+            first &&
+            typeof first === 'object' &&
+            (first as PinnedGroup).type === 'pinned'
+          ) {
+            pinnedStatusesIds = (first as PinnedGroup).id;
           } else {
-            pinnedStatusesIds = results
+            pinnedStatusesIds = (results as Array<Status & { _pinned?: boolean }>)
               .filter((status) => status._pinned)
               .map((status) => status.id);
           }
           const containsAllPinned = pinnedStatusesIds.every((postId) =>
-            value.some((status) => status.id === postId),
+            value.some((status: Status) => status.id === postId),
           );
           if (containsAllPinned) {
             // Remove pinned posts
@@ -272,8 +357,8 @@ function AccountStatuses({ columnMode, ...props }) {
 
       results.push(...value);
 
-      value.forEach((item) => {
-        saveStatus(item, instance);
+      value.forEach((item: Status) => {
+        saveStatus(item as unknown as Record<string, unknown>, instance);
       });
     }
     return {
@@ -282,7 +367,7 @@ function AccountStatuses({ columnMode, ...props }) {
     };
   }
 
-  const [featuredTags, setFeaturedTags] = useState([]);
+  const [featuredTags, setFeaturedTags] = useState<FeaturedTag[]>([]);
 
   let title = t`Account posts`;
   if (account?.acct) {
@@ -310,7 +395,7 @@ function AccountStatuses({ columnMode, ...props }) {
   useTitle(title, '/:instance?/a/:id');
 
   const fetchAccount = useCallback(() => {
-    return memFetchAccount(id, masto);
+    return memFetchAccount(id as string, masto);
   }, [id, masto]);
 
   useEffect(() => {
@@ -326,8 +411,10 @@ function AccountStatuses({ columnMode, ...props }) {
       // TODO: Revisit this
       if (!mediaFirst) {
         try {
-          const featuredTags = await masto.v1.accounts
-            .$select(id)
+          const featuredTags = await (
+            masto.v1.accounts as unknown as mastodon.rest.v1.AccountsResource
+          )
+            .$select(id as string)
             .featuredTags.list();
           console.log({ featuredTags });
           setFeaturedTags(featuredTags);
@@ -338,21 +425,23 @@ function AccountStatuses({ columnMode, ...props }) {
     })();
   }, [id, mediaFirst]);
 
-  const { displayName, acct, emojis } = account || {};
+  const { displayName, acct, emojis } = account || ({} as Partial<Account>);
 
   const isSelf = useMemo(
     () => account?.id === getCurrentAccountID(),
     [account?.id],
   );
 
-  const filterBarRef = useRef();
+  const filterBarRef = useRef<HTMLDivElement | null>(null);
   const TimelineStart = useMemo(() => {
     const repliesFiltered = columnMode ? excludeReplies : !excludeReplies;
     const filtered =
       repliesFiltered || excludeBoosts || tagged || media || !!month;
     const cachedAccount = snapStates.accounts[`${id}@${instance}`];
 
-    const buildParamStr = (updates) => {
+    const buildParamStr = (
+      updates: Record<string, string | null | undefined>,
+    ): string => {
       const params = new URLSearchParams(searchParams.toString());
       for (const [key, val] of Object.entries(updates)) {
         if (val == null) {
@@ -372,7 +461,7 @@ function AccountStatuses({ columnMode, ...props }) {
         ) : (
           <AccountInfo
             instance={instance}
-            account={cachedAccount || id}
+            account={(cachedAccount as unknown as Account) || (id as string)}
             fetchAccount={fetchAccount}
             authenticated={authenticated}
             standalone
@@ -393,7 +482,7 @@ function AccountStatuses({ columnMode, ...props }) {
                 class="insignificant filter-clear"
                 title={t`Reset filters`}
                 key="clear-filters"
-                onClick={(e) => {
+                onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
                   if (columnMode) {
                     e.preventDefault();
                     clearAndSetParam();
@@ -448,7 +537,7 @@ function AccountStatuses({ columnMode, ...props }) {
               to={`/${instance}/a/${id}${buildParamStr({
                 media: media ? null : '1',
               })}`}
-              onClick={(e) => {
+              onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
                 if (columnMode) {
                   e.preventDefault();
                   toggleParam('media', '1');
@@ -475,7 +564,7 @@ function AccountStatuses({ columnMode, ...props }) {
                       to={`/${instance}/a/${id}${buildParamStr({
                         tagged: tagged === tag.name ? null : tag.name,
                       })}`}
-                      onClick={(e) => {
+                      onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
                         if (columnMode) {
                           e.preventDefault();
                           const params = new URLSearchParams(
@@ -515,7 +604,9 @@ function AccountStatuses({ columnMode, ...props }) {
                       value={month || ''}
                       min={MIN_YEAR_MONTH}
                       max={new Date().toISOString().slice(0, 7)}
-                      onInput={(e) => {
+                      onInput={(
+                        e: JSX.TargetedEvent<HTMLInputElement, Event>,
+                      ) => {
                         const { value, validity } = e.currentTarget;
                         if (!validity.valid) return;
                         setSearchParams(
@@ -527,7 +618,10 @@ function AccountStatuses({ columnMode, ...props }) {
                         );
                         const [year, month] = value.split('-');
                         const monthIndex = parseInt(month, 10) - 1;
-                        const date = new Date(year, monthIndex);
+                        const date = new Date(
+                          year as unknown as number,
+                          monthIndex,
+                        );
                         showToast(
                           t`Showing posts in ${date.toLocaleString(
                             i18n.locale,
@@ -598,22 +692,23 @@ function AccountStatuses({ columnMode, ...props }) {
 
   useEffect(() => {
     const activeEls = [
-      ...(filterBarRef.current?.querySelectorAll('.is-active') ?? []),
+      ...(filterBarRef.current?.querySelectorAll<HTMLElement>('.is-active') ??
+        []),
     ];
     if (!activeEls.length) return;
-    const barWidth = filterBarRef.current.offsetWidth;
+    const barWidth = (filterBarRef.current as HTMLDivElement).offsetWidth;
     const left = Math.min(...activeEls.map((el) => el.offsetLeft));
     const right = Math.max(
       ...activeEls.map((el) => el.offsetLeft + el.offsetWidth),
     );
     const spanWidth = right - left;
-    filterBarRef.current.scrollTo({
+    (filterBarRef.current as HTMLDivElement).scrollTo({
       behavior: 'smooth',
       left: spanWidth >= barWidth ? left : left - (barWidth - spanWidth) / 2,
     });
   }, [featuredTags, searchEnabled, ...allSearchParams]);
 
-  const accountInstance = useMemo(() => {
+  const accountInstance = useMemo<string | null | undefined>(() => {
     if (!account?.url) return null;
     const domain = URL.parse(account.url)?.hostname;
     return domain;
@@ -654,7 +749,9 @@ function AccountStatuses({ columnMode, ...props }) {
           excludeBoosts,
           tagged,
           media,
-          month + account?.acct,
+          // JS semantics: when both are nullish, `null + undefined` yields NaN.
+          // Preserve that behavior — the result is later stringified by Array.toString().
+          (month as unknown as number) + (account?.acct as unknown as number),
         ].toString()}`}
         instance={instance}
         emptyText={t`Nothing to see here yet.`}
@@ -669,7 +766,9 @@ function AccountStatuses({ columnMode, ...props }) {
           excludeBoosts,
           tagged,
           media,
-          month + account?.acct,
+          // JS semantics: when both are nullish, `null + undefined` yields NaN.
+          // Preserve that behavior — the result is later stringified by Array.toString().
+          (month as unknown as number) + (account?.acct as unknown as number),
         ].toString()}
         headerEnd={
           <Menu2
@@ -690,10 +789,13 @@ function AccountStatuses({ columnMode, ...props }) {
                 (async () => {
                   try {
                     const { masto } = api({
-                      instance: accountInstance,
+                      instance: accountInstance as string | undefined,
                     });
-                    const acc = await masto.v1.accounts.lookup({
-                      acct: account.acct,
+                    const accountsResource =
+                      masto.v1
+                        .accounts as unknown as mastodon.rest.v1.AccountsResource;
+                    const acc = await accountsResource.lookup({
+                      acct: (account as Account).acct,
                     });
                     const { id } = acc;
                     location.hash = `/${accountInstance}/a/${id}`;
@@ -722,8 +824,11 @@ function AccountStatuses({ columnMode, ...props }) {
                 onClick={() => {
                   (async () => {
                     try {
-                      const acc = await currentMasto.v1.accounts.lookup({
-                        acct: account.acct + '@' + instance,
+                      const accountsResource =
+                        currentMasto.v1
+                          .accounts as unknown as mastodon.rest.v1.AccountsResource;
+                      const acc = await accountsResource.lookup({
+                        acct: (account as Account).acct + '@' + instance,
                       });
                       const { id } = acc;
                       location.hash = `/${currentInstance}/a/${id}`;
@@ -759,7 +864,21 @@ function AccountStatuses({ columnMode, ...props }) {
   );
 }
 
-function MonthPicker(props) {
+interface MonthPickerChangePayload {
+  value: string;
+  validity: { valid: boolean };
+}
+
+interface MonthPickerProps {
+  class?: string;
+  disabled?: boolean;
+  value?: string;
+  min?: string;
+  max?: string;
+  onInput?: (payload: MonthPickerChangePayload) => void;
+}
+
+function MonthPicker(props: MonthPickerProps) {
   const { i18n } = useLingui();
   const {
     class: className,
@@ -770,10 +889,10 @@ function MonthPicker(props) {
     onInput = () => {},
   } = props;
   const [_year, _month] = value?.split('-') || [];
-  const monthFieldRef = useRef();
-  const yearFieldRef = useRef();
+  const monthFieldRef = useRef<HTMLSelectElement | null>(null);
+  const yearFieldRef = useRef<HTMLInputElement | null>(null);
 
-  const checkValidity = (month, year) => {
+  const checkValidity = (month: string, year: string): boolean => {
     const [minYear, minMonth] = min?.split('-') || [];
     const [maxYear, maxMonth] = max?.split('-') || [];
     if (year < minYear) return false;
@@ -790,9 +909,9 @@ function MonthPicker(props) {
         ref={monthFieldRef}
         disabled={disabled}
         value={_month || ''}
-        onInput={(e) => {
+        onInput={(e: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
           const { value: month } = e.currentTarget;
-          const year = yearFieldRef.current.value;
+          const year = (yearFieldRef.current as HTMLInputElement).value;
           if (!checkValidity(month, year))
             return {
               value: '',
@@ -833,9 +952,9 @@ function MonthPicker(props) {
         value={_year || new Date().getFullYear()}
         min={min?.slice(0, 4) || MIN_YEAR}
         max={max?.slice(0, 4) || new Date().getFullYear()}
-        onInput={(e) => {
+        onInput={(e: JSX.TargetedEvent<HTMLInputElement, Event>) => {
           const { value: year, validity } = e.currentTarget;
-          const month = monthFieldRef.current.value;
+          const month = (monthFieldRef.current as HTMLSelectElement).value;
           if (!validity.valid || !checkValidity(month, year))
             return {
               value: '',
@@ -858,8 +977,13 @@ function MonthPicker(props) {
   );
 }
 
-function fetchAccount(id, masto) {
-  return masto.v1.accounts.$select(id).fetch();
+function fetchAccount(
+  id: string,
+  masto: { v1: { accounts: unknown } },
+): Promise<Account> {
+  const accountsResource =
+    masto.v1.accounts as unknown as mastodon.rest.v1.AccountsResource;
+  return accountsResource.$select(id).fetch();
 }
 const memFetchAccount = pmem(fetchAccount, {
   expires: 30 * 60 * 1000, // 30 minutes
