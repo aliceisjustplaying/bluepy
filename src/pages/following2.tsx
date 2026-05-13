@@ -55,7 +55,7 @@ interface Timeline2Props {
 const Timeline2 = Timeline2Untyped as unknown as ComponentType<Timeline2Props>;
 
 interface StreamingEntry {
-  event: 'status.update' | 'delete' | string;
+  event: 'status.update' | 'delete' | (string & {});
   payload: unknown;
 }
 
@@ -143,7 +143,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
       });
       // value = dedupeBoosts(value, instance);
       setTimeout(() => {
-        assignFollowedTags(value, instance);
+        void assignFollowedTags(value, instance);
       }, 100);
 
       // ENFORCE sort by datetime (Latest first)
@@ -181,7 +181,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
         value: mastodon.v1.Status[] | undefined;
       };
       if (value?.length) {
-        const deduped = dedupeBoosts(value, instance) as mastodon.v1.Status[];
+        const deduped = dedupeBoosts(value, instance);
         const filtered = filteredItems(deduped, 'home');
         return filtered.length > 0;
       }

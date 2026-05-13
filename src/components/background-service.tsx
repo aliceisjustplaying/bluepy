@@ -54,9 +54,9 @@ export default memo(function BackgroundService() {
   const visibleTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
-  usePageVisibility((visible) => {
+  usePageVisibility((isVisible) => {
     clearTimeout(visibleTimeout.current);
-    if (visible) {
+    if (isVisible) {
       setVisible(true);
     } else {
       visibleTimeout.current = setTimeout(() => {
@@ -88,7 +88,7 @@ export default memo(function BackgroundService() {
               timeline: 'notifications',
             });
             lastReadId = markers?.notifications?.lastReadId;
-          } catch (e) {}
+          } catch {}
           if (lastReadId) {
             states.notificationsShowNew = notifications[0].id !== lastReadId;
           } else {
@@ -105,7 +105,7 @@ export default memo(function BackgroundService() {
     let pollNotifications: ReturnType<typeof setInterval> | undefined;
     if (isLoggedIn && visible) {
       const { masto, streaming, instance } = api();
-      (async () => {
+      void (async () => {
         // 1. Get the latest notification
         await checkLatestNotification(masto as unknown as MastoLike, instance);
 
@@ -113,7 +113,7 @@ export default memo(function BackgroundService() {
         // 2. Start streaming
         if (streaming) {
           streamTimeout = setTimeout(() => {
-            (async () => {
+            void (async () => {
               try {
                 hasStreaming = true;
                 sub = (
@@ -145,7 +145,7 @@ export default memo(function BackgroundService() {
               if (!hasStreaming) {
                 console.log('🎏 Streaming failed, fallback to polling');
                 pollNotifications = setInterval(() => {
-                  checkLatestNotification(
+                  void checkLatestNotification(
                     masto as unknown as MastoLike,
                     instance,
                     true,
@@ -170,18 +170,19 @@ export default memo(function BackgroundService() {
   const checkForUpdates = () => {
     lastCheckDate.current = Date.now();
     console.log('✨ Check app update');
-    fetch('./version.json')
-      .then((r) => r.json())
-      .then((info) => {
+    void (async () => {
+      try {
+        const r = await fetch('./version.json');
+        const info = await r.json();
         if (info) states.appVersion = info;
-      })
-      .catch((e) => {
+      } catch (e) {
         console.error(e);
-      });
+      }
+    })();
   };
   useInterval(checkForUpdates, visible && 1000 * 60 * 30); // 30 minutes
-  usePageVisibility((visible) => {
-    if (visible) {
+  usePageVisibility((isVisible) => {
+    if (isVisible) {
       if (!lastCheckDate.current) {
         checkForUpdates();
       } else {

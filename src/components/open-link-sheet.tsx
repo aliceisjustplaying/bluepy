@@ -29,15 +29,17 @@ export default function OpenLinkSheet({
     const rest = url.slice(urlObj.origin.length);
     displayUrl = (
       <>
-        {protocol}//<strong>{hostname}</strong>
+        {protocol}
+        {'//'}
+        <strong>{hostname}</strong>
         {rest}
       </>
     );
-  } catch (e) {}
+  } catch {}
 
   const handleCopy = () => {
     try {
-      navigator.clipboard.writeText(url);
+      void navigator.clipboard.writeText(url);
       showToast(t`Link copied`);
     } catch (e) {
       console.error(e);
@@ -48,7 +50,7 @@ export default function OpenLinkSheet({
   const handleShare = () => {
     if (navigator.share && navigator.canShare({ url })) {
       try {
-        navigator.share({ url });
+        void navigator.share({ url });
       } catch (e) {
         console.error(e);
       }
