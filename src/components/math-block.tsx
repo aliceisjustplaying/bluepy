@@ -1,11 +1,19 @@
 import 'temml/dist/Temml-Local.css';
 
 import { useLingui } from '@lingui/react/macro';
+import type { JSX, RefObject } from 'preact';
 import { useCallback, useState } from 'preact/hooks';
+import type Temml from 'temml';
 
 import showToast from '../utils/show-toast';
 
 import Icon from './icon';
+
+declare global {
+  interface Window {
+    temml?: typeof Temml;
+  }
+}
 
 // Follow https://mathstodon.xyz/about
 // > You can use LaTeX in toots here! Use \( and \) for inline, and \[ and \] for display mode.
@@ -18,21 +26,21 @@ const DELIMITERS_PATTERNS = [
 ];
 const DELIMITERS_REGEX = new RegExp(DELIMITERS_PATTERNS.join('|'), 'g');
 
-function cleanDOMForTemml(dom) {
+function cleanDOMForTemml(dom: HTMLElement) {
   // Define start and end delimiter patterns
   const START_DELIMITERS = ['\\\\\\[', '\\\\\\(']; // \[ and \(
   const startRegex = new RegExp(`(${START_DELIMITERS.join('|')})`);
 
   // Walk through all text nodes
   const walker = document.createTreeWalker(dom, NodeFilter.SHOW_TEXT);
-  const textNodes = [];
-  let node;
+  const textNodes: ChildNode[] = [];
+  let node: Node | null;
   while ((node = walker.nextNode())) {
-    textNodes.push(node);
+    textNodes.push(node as ChildNode);
   }
 
   for (const textNode of textNodes) {
-    const text = textNode.textContent;
+    const text = textNode.textContent!;
     const startMatch = text.match(startRegex);
 
     if (!startMatch) continue; // No start delimiter in this text node
@@ -58,13 +66,10 @@ function cleanDOMForTemml(dom) {
         if (nextSibling.nodeType === Node.TEXT_NODE) {
           nodesToCombine.push(nextSibling);
           combinedText += nextSibling.textContent;
-          if (nextSibling.textContent.includes(endDelimiter)) {
+          if (nextSibling.textContent!.includes(endDelimiter)) {
             foundEnd = true;
           }
-        } else if (
-          nextSibling.nodeType === Node.ELEMENT_NODE &&
-          nextSibling.tagName === 'BR'
-        ) {
+        } else if (nextSibling instanceof HTMLBRElement) {
           nodesToCombine.push(nextSibling);
           combinedText += '\n';
         } else {
@@ -89,7 +94,13 @@ function cleanDOMForTemml(dom) {
   }
 }
 
-const MathBlock = ({ content, contentRef, onRevert }) => {
+interface MathBlockProps {
+  content: string;
+  contentRef: RefObject<HTMLElement>;
+  onRevert: () => void;
+}
+
+const MathBlock = ({ content, contentRef, onRevert }: MathBlockProps) => {
   DELIMITERS_REGEX.lastIndex = 0; // Reset index to prevent g trap
   const hasLatexContent = DELIMITERS_REGEX.test(content);
 
@@ -98,7 +109,7 @@ const MathBlock = ({ content, contentRef, onRevert }) => {
   const { t } = useLingui();
   const [mathRendered, setMathRendered] = useState(false);
   const toggleMathRendering = useCallback(
-    async (e) => {
+    async (e: JSX.TargetedMouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
       e.stopPropagation();
       if (mathRendered) {
@@ -112,20 +123,20 @@ const MathBlock = ({ content, contentRef, onRevert }) => {
           const temml =
             window.temml || (window.temml = (await import('temml'))?.default);
 
-          cleanDOMForTemml(contentRef.current);
-          const originalContentRefHTML = contentRef.current.innerHTML;
-          temml.renderMathInElement(contentRef.current, {
+          const contentEl = contentRef.current!;
+          cleanDOMForTemml(contentEl);
+          const originalContentRefHTML = contentEl.innerHTML;
+          temml.renderMathInElement(contentEl, {
             fences: '(', // This should sync with DELIMITERS_REGEX
             annotate: true,
             throwOnError: true,
-            errorCallback: (err) => {
+            errorCallback: (err: unknown) => {
               console.warn('Failed to render LaTeX:', err);
             },
-          });
+          } as Parameters<typeof temml.renderMathInElement>[1]);
 
-          const hasMath = contentRef.current.querySelector('math');
-          const htmlChanged =
-            contentRef.current.innerHTML !== originalContentRefHTML;
+          const hasMath = contentEl.querySelector('math');
+          const htmlChanged = contentEl.innerHTML !== originalContentRefHTML;
           if (hasMath && htmlChanged) {
             setMathRendered(true);
           } else {
