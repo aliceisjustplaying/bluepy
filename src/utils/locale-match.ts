@@ -19,9 +19,8 @@ export function baseLocaleMatch(...args: MatchArgs): string | false {
 if (typeof window !== 'undefined') {
   // TODO(oxlint:no-underscore-dangle) Intentional debug global; renaming would
   // break existing devtools workflows that rely on `_localeMatch`.
-  (
-    window as unknown as { _localeMatch: typeof baseLocaleMatch }
-  )._localeMatch = baseLocaleMatch;
+  (window as unknown as { _localeMatch: typeof baseLocaleMatch })._localeMatch =
+    baseLocaleMatch;
 }
 
 function cacheMem<Args extends readonly unknown[], Result>(

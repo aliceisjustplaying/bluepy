@@ -1,10 +1,6 @@
 import './sandbox.css';
 
-import type {
-  ComponentType,
-  TargetedEvent,
-  TargetedMouseEvent,
-} from 'preact';
+import type { ComponentType, TargetedEvent, TargetedMouseEvent } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { uid } from 'uid/single';
 
@@ -1609,9 +1605,7 @@ export default function Sandbox() {
                           max="2"
                           value={toggleState.quoteNestingLevel}
                           step="1"
-                          onChange={(
-                            e: TargetedEvent<HTMLInputElement>,
-                          ) => {
+                          onChange={(e: TargetedEvent<HTMLInputElement>) => {
                             // Make sure to convert to a number first to avoid string concatenation
                             const level =
                               parseInt(e.currentTarget.value, 10) || 0;

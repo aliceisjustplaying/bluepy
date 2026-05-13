@@ -261,7 +261,11 @@ function Welcome() {
             Anuj Ahooja (@quillmatiq.com)
           </a>
           .{' '}
-          <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer">
+          <a
+            href={PRIVACY_POLICY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Trans>Privacy Policy</Trans>
           </a>
           .

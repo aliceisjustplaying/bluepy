@@ -122,7 +122,8 @@ function Filters() {
         const filtersResource = masto.v2.filters as FiltersV2Resource;
         // The JS treats the awaited value as an array; the typed surface is a
         // Paginator. The runtime returns the array directly here.
-        const fetchedFilters = (await filtersResource.list()) as unknown as FilterV2[];
+        const fetchedFilters =
+          (await filtersResource.list()) as unknown as FilterV2[];
         fetchedFilters.sort((a, b) => a.title.localeCompare(b.title));
         fetchedFilters.forEach((filter) => {
           if (filter.keywords?.length) {

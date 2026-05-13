@@ -35,9 +35,7 @@ interface LocaleCode2TextOptions {
 
 type LocaleCode2TextInput = string | LocaleCode2TextOptions;
 
-function localeCode2TextImpl(
-  input: LocaleCode2TextInput,
-): string | undefined {
+function localeCode2TextImpl(input: LocaleCode2TextInput): string | undefined {
   let code: string;
   let locale: string | undefined;
   let fallback: string | undefined;

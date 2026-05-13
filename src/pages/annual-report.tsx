@@ -162,7 +162,9 @@ export default function AnnualReport() {
                                   /^(mostRebloggedAccounts|commonlyInteractedWithAccounts)$/i.test(
                                     key,
                                   ) ? (
-                                    accounts?.find((a) => a.id === cellValue) ? (
+                                    accounts?.find(
+                                      (a) => a.id === cellValue,
+                                    ) ? (
                                       <NameText
                                         account={accounts?.find(
                                           (a) => a.id === cellValue,

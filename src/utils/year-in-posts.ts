@@ -69,7 +69,8 @@ interface SearchV2Endpoint {
 
 export function loadAvailableYears(): AvailableYear[] {
   try {
-    const list = store.account.get<YearInPostsList>(YEAR_IN_POSTS_LIST_KEY) || {};
+    const list =
+      store.account.get<YearInPostsList>(YEAR_IN_POSTS_LIST_KEY) || {};
     const sortedYears = Object.entries(list)
       .map(([year, data]) => ({ year: parseInt(year, 10), ...data }))
       .toSorted((a, b) => b.year - a.year);
@@ -86,7 +87,8 @@ export async function removeYear(yearToRemove: number): Promise<boolean> {
     const dataId = `${NS}-${yearToRemove}`;
     await db.yearInPosts.del(dataId);
 
-    const list = store.account.get<YearInPostsList>(YEAR_IN_POSTS_LIST_KEY) || {};
+    const list =
+      store.account.get<YearInPostsList>(YEAR_IN_POSTS_LIST_KEY) || {};
     delete list[yearToRemove];
     store.account.set(YEAR_IN_POSTS_LIST_KEY, list);
 
@@ -257,8 +259,8 @@ export async function fetchYearPosts(
           if (!foundInYear) break gapFillLoop;
 
           await new Promise((resolve) => {
-        setTimeout(resolve, 500);
-      });
+            setTimeout(resolve, 500);
+          });
         } catch (e) {
           console.error(e);
           break gapFillLoop;

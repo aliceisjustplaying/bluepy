@@ -1,8 +1,4 @@
-import type {
-  HTMLAttributes,
-  Ref,
-  TargetedMouseEvent,
-} from 'preact';
+import type { HTMLAttributes, Ref, TargetedMouseEvent } from 'preact';
 import { forwardRef } from 'preact/compat';
 import { useLocation } from 'react-router-dom';
 
@@ -62,8 +58,7 @@ const Link = forwardRef<HTMLAnchorElement, LinkProps>(
 
     const isActive = hash === to || decodeURIComponent(hash) === to;
     const classProp = props.class;
-    const classStr =
-      typeof classProp === 'string' ? classProp : '';
+    const classStr = typeof classProp === 'string' ? classProp : '';
     return (
       <a
         ref={ref}

@@ -17,9 +17,7 @@ async function getCustomEmojisRaw(
   instance: string,
 ): Promise<[CustomEmoji[], Fuse<CustomEmoji>]> {
   const { masto } = api({ instance });
-  const emojis = await (
-    masto.v1.customEmojis as MastoCustomEmojisApi
-  ).list();
+  const emojis = await (masto.v1.customEmojis as MastoCustomEmojisApi).list();
   const visibleEmojis = emojis.filter((e) => e.visibleInPicker);
   const searcher = new Fuse(visibleEmojis, {
     keys: ['shortcode'],

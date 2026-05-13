@@ -939,7 +939,11 @@ function Settings({ onClose }: SettingsProps): VNode {
               <Trans>What's new</Trans>
             </a>{' '}
             &middot;{' '}
-            <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer">
+            <a
+              href={PRIVACY_POLICY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Trans>Privacy Policy</Trans>
             </a>
           </p>
@@ -1390,8 +1394,7 @@ function PushNotificationsSection({
                   if (checked) {
                     // Request permission
                     void (async () => {
-                      const permission =
-                        await Notification.requestPermission();
+                      const permission = await Notification.requestPermission();
                       if (permission === 'granted') {
                         setAllowNotifications(true);
                       } else {

@@ -131,15 +131,16 @@ function ImportAccountsSelection({
       </header>
       <main>
         <div class="import-selection">
-          {accountsToImport.filter((a) => a.importStatus !== 'duplicate').length >
-            3 && (
+          {accountsToImport.filter((a) => a.importStatus !== 'duplicate')
+            .length > 3 && (
             <div class="accounts-list-header">
               <label class="account-item" aria-label={t`Select all`}>
                 <input
                   type="checkbox"
                   checked={
-                    accountsToImport.filter((a) => a.importStatus !== 'duplicate')
-                      .length > 0 &&
+                    accountsToImport.filter(
+                      (a) => a.importStatus !== 'duplicate',
+                    ).length > 0 &&
                     accountsToImport
                       .filter((a) => a.importStatus !== 'duplicate')
                       .every((a) => selectedAccounts[a.info.id + a.instanceURL])

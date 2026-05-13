@@ -600,10 +600,7 @@ function Compose({
       maxCharacters,
       maxMediaAttachments, // Beware: it can be undefined!
     } = {},
-    mediaAttachments: {
-      supportedMimeTypes,
-      descriptionLimit,
-    } = {},
+    mediaAttachments: { supportedMimeTypes, descriptionLimit } = {},
     polls: {
       maxOptions,
       maxCharactersPerOption,
@@ -699,11 +696,7 @@ function Compose({
   const checkQuoteEligibility = (status: StatusLike): boolean => {
     if (!supportsNativeQuote()) return false;
 
-    const {
-      visibility: statusVisibility,
-      quoteApproval,
-      account,
-    } = status;
+    const { visibility: statusVisibility, quoteApproval, account } = status;
     const isSelf =
       !!currentAccountInfo && currentAccountInfo.id === account?.id;
     const isPublic = ['public', 'unlisted'].includes(statusVisibility ?? '');
@@ -996,8 +989,7 @@ function Compose({
               (o) => (typeof o === 'string' ? o : o?.title || o) as string,
             ),
             expiresIn:
-              editPoll?.expiresIn ||
-              expiresInFromExpiresAt(editPoll.expiresAt),
+              editPoll?.expiresIn || expiresInFromExpiresAt(editPoll.expiresAt),
             multiple: !!editPoll.multiple,
           }
         : null;
@@ -1398,9 +1390,9 @@ function Compose({
     // If unmounted, means user discarded the draft
     // Also means pop-out 🙈, but it's okay because the pop-out will persist the ID and re-create the draft
     return () => {
-      void (
-        db.drafts as unknown as { del(key: string): Promise<unknown> }
-      ).del(draftKey());
+      void (db.drafts as unknown as { del(key: string): Promise<unknown> }).del(
+        draftKey(),
+      );
     };
   }, []);
 
@@ -1828,7 +1820,9 @@ function Compose({
           onSubmit={(submitEvent: TargetedEvent<HTMLFormElement>) => {
             submitEvent.preventDefault();
 
-            const formData = new FormData(submitEvent.target as HTMLFormElement);
+            const formData = new FormData(
+              submitEvent.target as HTMLFormElement,
+            );
             const entries = Object.fromEntries(formData.entries()) as Record<
               string,
               FormDataEntryValue
@@ -1963,10 +1957,7 @@ function Compose({
                         // "Attachment #undefined failed" at runtime. Follow-up
                         // bug, not changed in this TS migration.
                         const i: number | undefined = undefined;
-                        alert(
-                          result.reason ||
-                            t`Attachment #${i} failed`,
-                        );
+                        alert(result.reason || t`Attachment #${i} failed`);
                       }
                     });
                     return;
@@ -2118,9 +2109,7 @@ function Compose({
                   onInput={() => {
                     updateCharCount();
                   }}
-                  onKeyDown={(
-                    e: TargetedKeyboardEvent<HTMLInputElement>,
-                  ) => {
+                  onKeyDown={(e: TargetedKeyboardEvent<HTMLInputElement>) => {
                     if (
                       e.key === 'Enter' &&
                       !e.ctrlKey &&
@@ -2627,9 +2616,7 @@ function Compose({
                 <select
                   name="quoteApprovalPolicy"
                   value={quoteApprovalPolicy}
-                  onChange={(
-                    e: TargetedEvent<HTMLSelectElement>,
-                  ) => {
+                  onChange={(e: TargetedEvent<HTMLSelectElement>) => {
                     setQuoteApprovalPolicy(
                       (e.target as HTMLSelectElement).value,
                     );

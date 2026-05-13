@@ -130,7 +130,10 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   };
   let { hashtag: rawHashtag, ...params } = columnMode ? {} : routerParams;
   if (props.hashtag) rawHashtag = props.hashtag;
-  const hashtags = (rawHashtag as string).trim().split(/[\s+]+/).toSorted();
+  const hashtags = (rawHashtag as string)
+    .trim()
+    .split(/[\s+]+/)
+    .toSorted();
   const hashtag: string = hashtags[0];
   const [searchParams, setSearchParams] = useSearchParams();
   const media = mediaView || !!searchParams.get('media');
@@ -139,10 +142,8 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const { masto, instance, authenticated } = api({
     instance: props?.instance || params.instance,
   });
-  const {
-    instance: currentInstance,
-    authenticated: currentAuthenticated,
-  } = api();
+  const { instance: currentInstance, authenticated: currentAuthenticated } =
+    api();
   const hashtagTitle = hashtags.map((tag) => `#${tag}`).join(' ');
   const title = instance
     ? media

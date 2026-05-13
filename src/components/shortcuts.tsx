@@ -337,9 +337,7 @@ function Shortcuts() {
                       <Link
                         class={subtitle ? 'has-subtitle' : ''}
                         to={path ?? ''}
-                        onClick={(
-                          e: TargetedMouseEvent<HTMLAnchorElement>,
-                        ) => {
+                        onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
                           const target = e.target as HTMLElement;
                           if (target.classList.contains('is-active')) {
                             e.preventDefault();
