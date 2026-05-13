@@ -1,8 +1,10 @@
 import './report-modal.css';
 
+import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Fragment } from 'preact';
+import type { mastodon } from 'masto';
+import { Fragment, type ComponentType, type JSX } from 'preact';
 import { useMemo, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
@@ -13,15 +15,37 @@ import { getCurrentInstance } from '../utils/store-utils';
 import AccountBlock from './account-block';
 import Icon from './icon';
 import Loader from './loader';
-import Status from './status';
+import StatusUntyped from './status';
+
+const Status = StatusUntyped as unknown as ComponentType<{
+  status?: unknown;
+  size?: string;
+  previewMode?: boolean;
+  readOnly?: boolean;
+  [key: string]: unknown;
+}>;
 
 // NOTE: `dislike` hidden for now, it's actually not used for reporting
 // Mastodon shows another screen for unfollowing, muting or blocking instead of reporting
 
-const CATEGORIES = [/*'dislike' ,*/ 'spam', 'legal', 'violation', 'other'];
+type ReportCategory = 'spam' | 'legal' | 'violation' | 'other';
+
+const CATEGORIES: readonly ReportCategory[] = [
+  /*'dislike' ,*/ 'spam',
+  'legal',
+  'violation',
+  'other',
+];
 // `violation` will be set if there are `rule_ids[]`
 
-const CATEGORIES_INFO = {
+interface CategoryInfo {
+  label: MessageDescriptor;
+  description: MessageDescriptor;
+  stampLabel?: MessageDescriptor;
+  excludeStamp?: boolean;
+}
+
+const CATEGORIES_INFO: Record<ReportCategory, CategoryInfo> = {
   // dislike: {
   //   label: 'Dislike',
   //   description: 'Not something you want to see',
@@ -46,12 +70,29 @@ const CATEGORIES_INFO = {
   },
 };
 
-function findMatchingLanguage(rule, currentLang) {
+interface InstanceRule {
+  id: string;
+  text: string;
+  translations?: Record<string, { text?: string } | undefined>;
+}
+
+interface TranslatedInstanceRule extends InstanceRule {
+  _translatedText: string | null;
+}
+
+function findMatchingLanguage(
+  rule: InstanceRule,
+  currentLang: string | null | undefined,
+): string | null {
   if (!rule.translations || !currentLang) return null;
   const availableLanguages = Object.keys(rule.translations);
   if (!availableLanguages?.length) return null;
 
-  let matchedLang = localeMatch([currentLang], availableLanguages, null);
+  let matchedLang: string | false = localeMatch(
+    [currentLang],
+    availableLanguages,
+    '',
+  );
   if (!matchedLang) {
     // localeMatch fails if there are keys like zhCn, zhTw
     // Convert them something like zh-CN first, try again
@@ -62,7 +103,7 @@ function findMatchingLanguage(rule, currentLang) {
         .map((part, i) => (i === 0 ? part : part.toLowerCase()))
         .join('-');
     });
-    matchedLang = localeMatch([currentLang], normalizedLanguages, null);
+    matchedLang = localeMatch([currentLang], normalizedLanguages, '');
   }
 
   // If matchedLang has dash, convert back to original format
@@ -72,37 +113,78 @@ function findMatchingLanguage(rule, currentLang) {
     matchedLang = lang + region.charAt(0).toUpperCase() + region.slice(1);
   }
 
-  return matchedLang;
+  return matchedLang ? matchedLang : null;
 }
 
-function translateRules(rules, currentLang) {
+function translateRules(
+  rules: readonly InstanceRule[] | null | undefined,
+  currentLang: string | null | undefined,
+): TranslatedInstanceRule[] {
   if (!rules?.length) return [];
-  if (!currentLang) return rules;
+  if (!currentLang)
+    return rules.map((rule) => ({ ...rule, _translatedText: null }));
   return rules.map((rule) => {
     const matchedLang = findMatchingLanguage(rule, currentLang);
     return {
       ...rule,
-      _translatedText: rule.translations?.[matchedLang]?.text || null,
+      _translatedText:
+        (matchedLang && rule.translations?.[matchedLang]?.text) || null,
     };
   });
 }
 
-function ReportModal({ account, post, onClose }) {
-  const { _, t, i18n } = useLingui();
-  const { masto } = api();
-  const [uiState, setUIState] = useState('default');
+interface ReportModalProps {
+  account: mastodon.v1.Account;
+  post?: { id?: string; [key: string]: unknown };
+  onClose: () => void;
+}
+
+interface MastoReportsClient {
+  v1: {
+    reports: {
+      create(params: {
+        accountId: string;
+        statusIds?: string[];
+        category: string;
+        comment?: string;
+        ruleIds?: string[];
+        forward?: boolean;
+      }): Promise<unknown>;
+    };
+    accounts: {
+      $select(id: string): {
+        mute(): Promise<unknown>;
+        block(): Promise<unknown>;
+      };
+    };
+  };
+}
+
+function ReportModal({ account, post, onClose }: ReportModalProps) {
+  const lingui = useLingui();
+  const { t, i18n } = lingui;
+  const _ = (lingui as unknown as { _: (msg: MessageDescriptor) => string })._;
+  const { masto: mastoBase } = api();
+  const masto = mastoBase as unknown as MastoReportsClient;
+  const [uiState, setUIState] = useState<
+    'default' | 'loading' | 'success' | 'error'
+  >('default');
   const [username, domain] = account.acct.split('@');
 
   const [translatedRules, currentDomain] = useMemo(() => {
-    const { rules, domain } = getCurrentInstance();
-    const rawRules = rules || [];
-    return [translateRules(rawRules, i18n.locale), domain];
+    const instance = getCurrentInstance() as {
+      rules?: readonly InstanceRule[] | null;
+      domain?: string;
+    };
+    const rawRules = instance.rules || [];
+    return [translateRules(rawRules, i18n.locale), instance.domain] as const;
   }, [i18n.locale]);
 
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<ReportCategory | null>(null);
   const [showRules, setShowRules] = useState(false);
 
-  const rulesRef = useRef(null);
+  const rulesRef = useRef<HTMLDivElement | null>(null);
   const [hasRules, setHasRules] = useState(false);
 
   return (
@@ -141,7 +223,7 @@ function ReportModal({ account, post, onClose }) {
             >
               {_(
                 CATEGORIES_INFO[selectedCategory].stampLabel ||
-                  _(CATEGORIES_INFO[selectedCategory].label),
+                  CATEGORIES_INFO[selectedCategory].label,
               )}
               <small>
                 <Trans>Pending review</Trans>
@@ -152,18 +234,23 @@ function ReportModal({ account, post, onClose }) {
           onSubmit={(e) => {
             e.preventDefault();
 
-            const formData = new FormData(e.target);
-            const entries = Object.fromEntries(formData.entries());
+            const formEl = e.currentTarget as HTMLFormElement;
+            const formData = new FormData(formEl);
+            const entries = Object.fromEntries(formData.entries()) as Record<
+              string,
+              FormDataEntryValue
+            >;
             console.log('ENTRIES', entries);
 
-            let { category, comment, forward } = entries;
+            const category = entries.category as string;
+            let comment: string | undefined = entries.comment as string;
             if (!comment) comment = undefined;
-            if (forward === 'on') forward = true;
+            const forward = entries.forward === 'on' ? true : undefined;
             const ruleIds =
               category === 'violation'
                 ? Object.entries(entries)
                     .filter(([key]) => key.startsWith('rule_ids'))
-                    .map(([key, value]) => value)
+                    .map(([, value]) => value as string)
                 : undefined;
 
             const params = {
@@ -191,12 +278,12 @@ function ReportModal({ account, post, onClose }) {
               } catch (error) {
                 console.error(error);
                 setUIState('error');
-                showToast(
-                  error?.message ||
-                    (post
-                      ? t`Unable to report post`
-                      : t`Unable to report profile`),
-                );
+                const message =
+                  (error as { message?: string } | null)?.message ||
+                  (post
+                    ? t`Unable to report post`
+                    : t`Unable to report profile`);
+                showToast(message);
               }
             })();
           }}
@@ -218,8 +305,9 @@ function ReportModal({ account, post, onClose }) {
                       required
                       disabled={uiState === 'loading'}
                       onChange={(e) => {
-                        setSelectedCategory(e.target.value);
-                        setShowRules(e.target.value === 'violation');
+                        const target = e.currentTarget as HTMLInputElement;
+                        setSelectedCategory(target.value as ReportCategory);
+                        setShowRules(target.value === 'violation');
                       }}
                     />
                     <span>
@@ -236,32 +324,38 @@ function ReportModal({ account, post, onClose }) {
                     >
                       <div class="shazam-container-inner">
                         <div class="report-rules" ref={rulesRef}>
-                          {translatedRules.map((rule, i) => (
-                            <label class="report-rule" key={rule.id}>
-                              <input
-                                type="checkbox"
-                                name={`rule_ids[${i}]`}
-                                value={rule.id}
-                                required={showRules && !hasRules}
-                                disabled={uiState === 'loading'}
-                                onChange={(e) => {
-                                  const { checked } = e.target;
-                                  if (checked) {
-                                    setHasRules(true);
-                                  } else {
-                                    const checkedInputs =
-                                      rulesRef.current.querySelectorAll(
-                                        'input:checked',
-                                      );
-                                    if (!checkedInputs.length) {
-                                      setHasRules(false);
+                          {translatedRules.map(
+                            (rule: TranslatedInstanceRule, i: number) => (
+                              <label class="report-rule" key={rule.id}>
+                                <input
+                                  type="checkbox"
+                                  name={`rule_ids[${i}]`}
+                                  value={rule.id}
+                                  required={showRules && !hasRules}
+                                  disabled={uiState === 'loading'}
+                                  onChange={(e) => {
+                                    const target =
+                                      e.currentTarget as HTMLInputElement;
+                                    const { checked } = target;
+                                    if (checked) {
+                                      setHasRules(true);
+                                    } else {
+                                      const checkedInputs =
+                                        rulesRef.current?.querySelectorAll(
+                                          'input:checked',
+                                        );
+                                      if (!checkedInputs?.length) {
+                                        setHasRules(false);
+                                      }
                                     }
-                                  }
-                                }}
-                              />
-                              <span>{rule._translatedText || rule.text}</span>
-                            </label>
-                          ))}
+                                  }}
+                                />
+                                <span>
+                                  {rule._translatedText || rule.text}
+                                </span>
+                              </label>
+                            ),
+                          )}
                         </div>
                       </div>
                     </div>
@@ -277,8 +371,8 @@ function ReportModal({ account, post, onClose }) {
               </label>
             </p>
             <textarea
-              maxlength="1000"
-              rows="1"
+              maxLength={1000}
+              rows={1}
               name="comment"
               id="report-comment"
               disabled={uiState === 'loading'}
@@ -290,10 +384,12 @@ function ReportModal({ account, post, onClose }) {
               <p>
                 <label>
                   <input
-                    type="checkbox"
-                    switch
-                    name="forward"
-                    disabled={uiState === 'loading'}
+                    {...({
+                      type: 'checkbox',
+                      switch: true,
+                      name: 'forward',
+                      disabled: uiState === 'loading',
+                    } as JSX.InputHTMLAttributes<HTMLInputElement>)}
                   />{' '}
                   <span>
                     <Trans>
