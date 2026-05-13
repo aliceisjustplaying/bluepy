@@ -15,12 +15,13 @@ const IntersectionView = ({
   const ref = useRef<HTMLDivElement | null>(null);
   const [show, setShow] = useState(false);
   useLayoutEffect(() => {
+    const node = ref.current;
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
         if (entry.isIntersecting) {
           setShow(true);
-          observer.unobserve(ref.current!);
+          if (node) observer.unobserve(node);
         }
       },
       {
@@ -28,11 +29,11 @@ const IntersectionView = ({
         rootMargin: `${screen.height}px`,
       },
     );
-    if (ref.current) observer.observe(ref.current);
+    if (node) observer.observe(node);
     return () => {
-      if (ref.current) observer.unobserve(ref.current);
+      if (node) observer.unobserve(node);
     };
-  }, []);
+  }, [root]);
 
   return show ? children : <div ref={ref}>{fallback}</div>;
 };

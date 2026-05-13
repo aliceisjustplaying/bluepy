@@ -78,7 +78,7 @@ function App() {
       try {
         // Focus parent window
         (window as Window & { opener?: Window | null }).opener?.focus();
-      } catch (e) {}
+      } catch {}
       window.close();
     }
   }, [uiState]);
@@ -144,7 +144,7 @@ function App() {
             }
             fn();
             setUIState('closed');
-          } catch (e) {}
+          } catch {}
         }}
       />
     );

@@ -12,8 +12,9 @@ export default async function extractImageDescription(
   try {
     const tags = await ExifReader.load(file);
     for (const name of TAG_NAMES) {
-      if (tags[name]?.description) {
-        return tags[name]!.description!.trim();
+      const description = tags[name]?.description;
+      if (description) {
+        return description.trim();
       }
     }
     return null;

@@ -45,15 +45,18 @@ function Lists() {
   useTitle(t`Lists & Feeds`, `/l`);
   const [uiState, setUIState] = useState<UIState>('default');
 
-  const [reloadCount, reload] = useReducer<number, void>((c) => c + 1, 0);
+  const [reloadCount, reload] = useReducer<number, undefined>(
+    (c) => c + 1,
+    0,
+  );
   const [lists, setLists] = useState<ListItem[]>([]);
   useEffect(() => {
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
-        const lists = (await fetchLists()) as ListItem[];
-        console.log(lists);
-        setLists(lists);
+        const fetched = (await fetchLists()) as ListItem[];
+        console.log(fetched);
+        setLists(fetched);
         setUIState('default');
       } catch (e) {
         console.error(e);
@@ -105,7 +108,7 @@ function Lists() {
                   </h2>
                   <ul class="link-list">
                     {userLists.map((list) => (
-                      <li>
+                      <li key={list.id}>
                         <Link to={`/l/${list.id}`}>
                           <Icon icon="list" />{' '}
                           <span>
@@ -143,7 +146,7 @@ function Lists() {
                   </h2>
                   <ul class="link-list">
                     {feeds.map((feed) => (
-                      <li>
+                      <li key={feed.id}>
                         <Link to={`/l/${feed.id}`}>
                           <Icon icon="sparkles" /> <span>{feed.title}</span>
                         </Link>
@@ -217,7 +220,7 @@ function Lists() {
             }
             onClose={(result) => {
               if (result.state === 'success') {
-                reload();
+                reload(undefined);
               }
               setShowListAddEditModal(false);
             }}
