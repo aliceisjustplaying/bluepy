@@ -1,5 +1,6 @@
 import './modal.css';
 
+import type { ComponentChildren, JSX } from 'preact';
 import { createPortal } from 'preact/compat';
 import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -15,13 +16,30 @@ function getBackdropThemeColor() {
   );
 }
 
-function Modal({ children, onClose, onClick, class: className, minimized }) {
+interface ModalProps {
+  children?: ComponentChildren;
+  onClose?: ((event?: Event) => void) | null;
+  onClick?: ((event: JSX.TargetedMouseEvent<HTMLDivElement>) => void) | null;
+  class?: string;
+  minimized?: boolean;
+  [key: string]: unknown;
+}
+
+function Modal({
+  children,
+  onClose,
+  onClick,
+  class: className,
+  minimized,
+}: ModalProps) {
   if (!children) return null;
 
-  const modalRef = useRef();
+  const modalRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     let timer = setTimeout(() => {
-      const focusElement = modalRef.current?.querySelector('[tabindex="-1"]');
+      const focusElement = modalRef.current?.querySelector(
+        '[tabindex="-1"]',
+      ) as HTMLElement | null;
       if (focusElement) {
         focusElement.focus();
       }
@@ -29,8 +47,9 @@ function Modal({ children, onClose, onClick, class: className, minimized }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const supportsCloseWatcher = window.CloseWatcher;
-  const escRef = useHotkeys(
+  const supportsCloseWatcher = (window as unknown as { CloseWatcher?: unknown })
+    .CloseWatcher;
+  const escRef = useHotkeys<HTMLElement>(
     'esc',
     () => {
       setTimeout(() => {
@@ -44,7 +63,8 @@ function Modal({ children, onClose, onClick, class: className, minimized }) {
       keydown: false,
       keyup: true,
       useKey: true,
-      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e: KeyboardEvent) =>
+        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
     [onClose],
   );
@@ -55,7 +75,9 @@ function Modal({ children, onClose, onClick, class: className, minimized }) {
     if (minimized) {
       // Similar to focusDeck in focus-deck.jsx
       // Focus last deck
-      const page = $deckContainers[$deckContainers.length - 1]; // last one
+      const page = $deckContainers[$deckContainers.length - 1] as
+        | HTMLElement
+        | undefined; // last one
       if (page && page.tabIndex === -1) {
         page.focus();
       }
@@ -77,8 +99,8 @@ function Modal({ children, onClose, onClick, class: className, minimized }) {
     };
   }, [children, minimized]);
 
-  const $meta = useRef();
-  const metaColor = useRef();
+  const $meta = useRef<HTMLMetaElement | null>(null);
+  const metaColor = useRef<string | undefined>(undefined);
   useLayoutEffect(() => {
     if (children && !minimized) {
       const theme = store.local.get('theme');
@@ -133,24 +155,28 @@ function Modal({ children, onClose, onClick, class: className, minimized }) {
 
   const Modal = (
     <div
-      ref={(node) => {
+      ref={(node: HTMLDivElement | null) => {
         modalRef.current = node;
-        escRef.current = node?.querySelector?.('[tabindex="-1"]') || node;
+        const inner = node?.querySelector?.(
+          '[tabindex="-1"]',
+        ) as HTMLElement | null;
+        (escRef as { current: HTMLElement | null }).current = inner || node;
       }}
       className={className}
-      onClick={(e) => {
+      onClick={(e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
         onClick?.(e);
         if (e.target === e.currentTarget) {
           onClose?.(e);
         }
       }}
-      tabIndex={minimized ? 0 : '-1'}
+      tabIndex={(minimized ? 0 : '-1') as unknown as number}
       inert={minimized}
-      onFocus={(e) => {
+      onFocus={(e: JSX.TargetedFocusEvent<HTMLDivElement>) => {
         try {
           if (e.target === e.currentTarget) {
-            const focusElement =
-              modalRef.current?.querySelector('[tabindex="-1"]');
+            const focusElement = modalRef.current?.querySelector(
+              '[tabindex="-1"]',
+            ) as HTMLElement | null;
             const isFocusable =
               !!focusElement &&
               getComputedStyle(focusElement)?.pointerEvents !== 'none';
@@ -167,7 +193,7 @@ function Modal({ children, onClose, onClick, class: className, minimized }) {
     </div>
   );
 
-  return createPortal(Modal, $modalContainer);
+  return createPortal(Modal, $modalContainer!);
 
   // return createPortal(children, $modalContainer);
 }
