@@ -179,12 +179,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     undefined,
   );
 
-  const allSearchParams = [month, excludeReplies, excludeBoosts, tagged, media];
   const [account, setAccount] = useState<Account | undefined>();
   const searchOffsetRef = useRef(0);
   useEffect(() => {
     searchOffsetRef.current = 0;
-  }, allSearchParams);
+  }, [month, excludeReplies, excludeBoosts, tagged, media]);
 
   const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
 
@@ -427,8 +426,9 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         }
       }
     })();
-    // `refetchAccount` and `masto.v1.accounts` are stable identity within an
-    // `id`/`mediaFirst` cohort — adding them would cause refetch loops here.
+    // TODO(oxlint:react-hooks/exhaustive-deps): `refetchAccount` and
+    // `masto.v1.accounts` are stable identity within an `id`/`mediaFirst`
+    // cohort. Adding them would cause refetch loops here.
   }, [id, mediaFirst]);
 
   const { displayName, acct, emojis } = account || ({} as Partial<Account>);
@@ -684,6 +684,10 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         )}
       </>
     );
+    // TODO(oxlint:react-hooks/exhaustive-deps): `TimelineStart` is a JSX
+    // expression closing over many props/state. Listing every dep here is
+    // intentional minimal coverage; a refetch on every input would defeat
+    // the memoization. Treated as render-only state.
   }, [
     id,
     instance,
@@ -691,7 +695,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     featuredTags,
     refetchAccount,
     searchEnabled,
-    ...allSearchParams,
+    month,
+    excludeReplies,
+    excludeBoosts,
+    tagged,
+    media,
   ]);
 
   useEffect(() => {
@@ -710,7 +718,15 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       behavior: 'smooth',
       left: spanWidth >= barWidth ? left : left - (barWidth - spanWidth) / 2,
     });
-  }, [featuredTags, searchEnabled, ...allSearchParams]);
+  }, [
+    featuredTags,
+    searchEnabled,
+    month,
+    excludeReplies,
+    excludeBoosts,
+    tagged,
+    media,
+  ]);
 
   const accountInstance = useMemo<string | null | undefined>(() => {
     if (!account?.url) return null;

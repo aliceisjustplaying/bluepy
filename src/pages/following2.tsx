@@ -105,7 +105,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
         setStreamingClient(newStreamingClient as StreamingUserClient);
       });
     }
-  }, [client]);
+  }, [client, streaming]);
   __BENCHMARK.end('time-to-following');
 
   console.debug('RENDER Following2', title, id);
@@ -223,7 +223,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
       sub?.unsubscribe?.();
       sub = null;
     };
-  }, [streamingClient]);
+  }, [streamingClient, instance]);
 
   return (
     <Timeline2

@@ -406,6 +406,10 @@ self.addEventListener('message', (event) => {
   console.log('💪 SW received event', event, pendingShareData);
   const source = event.data?.type === 'client-ready' && event.source;
   if (source && pendingShareData) {
+    // TODO(oxlint:unicorn/require-post-message-target-origin): `source` is a
+    // service-worker `Client`, whose `postMessage` takes transferables (not a
+    // targetOrigin). The linter is matching the `Window.postMessage` signature
+    // here. Adding `self.origin` would be wrong.
     source.postMessage({
       type: 'share-target',
       data: pendingShareData,

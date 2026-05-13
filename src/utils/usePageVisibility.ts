@@ -9,7 +9,7 @@ export default function usePageVisibility(
   const savedCallback = useRef<VisibilityCallback>(fn);
   useEffect(() => {
     savedCallback.current = fn;
-  }, [deps]);
+  }, [fn, deps]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
