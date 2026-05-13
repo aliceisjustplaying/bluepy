@@ -5,23 +5,69 @@ import { useSnapshot } from 'valtio';
 
 import { api } from '../utils/api';
 import states from '../utils/states';
+import type { StoredAccount } from '../utils/store-utils';
 import {
   getAccountByAccessToken,
   getCurrentAccount,
 } from '../utils/store-utils';
 import usePageVisibility from '../utils/usePageVisibility';
 
+import type { ComponentType } from 'preact';
+
 import Icon from './icon';
 import Link from './link';
 import Modal from './modal';
-import Notification from './notification';
+import NotificationUntyped from './notification';
+
+interface ServiceWorkerNotificationMessage {
+  type?: string;
+  id?: string;
+  accessToken?: string;
+}
+
+interface RouteNotification {
+  id?: string;
+  accessToken?: string;
+}
+
+interface NotificationFetchedAccount {
+  id?: string;
+  [key: string]: unknown;
+}
+
+interface NotificationFetchedStatus {
+  id?: string;
+  [key: string]: unknown;
+}
+
+interface NotificationFetched {
+  type?: string;
+  status?: NotificationFetchedStatus | null;
+  account?: NotificationFetchedAccount;
+  [key: string]: unknown;
+}
+
+interface NotificationsApi {
+  $select(id: string): { fetch(): Promise<NotificationFetched | null | undefined> };
+}
+
+interface NotificationComponentProps {
+  instance?: string;
+  notification: NotificationFetched;
+  isStatic?: boolean;
+}
+const Notification =
+  NotificationUntyped as unknown as ComponentType<NotificationComponentProps>;
 
 {
   if ('serviceWorker' in navigator) {
     console.log('👂👂👂 Listen to message');
     navigator.serviceWorker.addEventListener('message', (event) => {
       console.log('💥💥💥 Message event', event);
-      const { type, id, accessToken } = event?.data || {};
+      const data = (event as MessageEvent)?.data as
+        | ServiceWorkerNotificationMessage
+        | undefined;
+      const { type, id, accessToken } = data || {};
       if (type === 'notification') {
         states.routeNotification = {
           id,
@@ -30,6 +76,13 @@ import Notification from './notification';
       }
     });
   }
+}
+
+interface NotificationSheetData {
+  id: string;
+  account: StoredAccount;
+  notification: NotificationFetched;
+  sameInstance: boolean;
 }
 
 export default memo(function NotificationService() {
@@ -41,8 +94,11 @@ export default memo(function NotificationService() {
 
   console.log('🛎️ Notification service', routeNotification);
 
-  const { id, accessToken } = routeNotification || {};
-  const [showNotificationSheet, setShowNotificationSheet] = useState(false);
+  const { id, accessToken } =
+    (routeNotification as RouteNotification | null | undefined) || {};
+  const [showNotificationSheet, setShowNotificationSheet] = useState<
+    false | NotificationSheetData
+  >(false);
 
   useLayoutEffect(() => {
     if (!id || !accessToken) return;
@@ -56,7 +112,8 @@ export default memo(function NotificationService() {
       ? getAccountByAccessToken(accessToken)
       : getCurrentAccount();
     (async () => {
-      const notification = await masto.v1.notifications.$select(id).fetch();
+      const notifications = masto.v1.notifications as NotificationsApi;
+      const notification = await notifications.$select(id).fetch();
       if (notification && account) {
         console.log('🛎️ Notification', { id, notification, account });
         const accountInstance = account.instanceURL;
@@ -85,10 +142,10 @@ export default memo(function NotificationService() {
         } else {
           if (hasStatus) {
             // Go to status page
-            location.hash = `/${currentInstance}/s/${status.id}`;
+            location.hash = `/${currentInstance}/s/${status?.id}`;
           } else if (isFollow) {
             // Go to profile page
-            location.hash = `/${currentInstance}/a/${notificationAccount.id}`;
+            location.hash = `/${currentInstance}/a/${notificationAccount?.id}`;
           } else {
             // Go to notifications page
             location.hash = '/notifications';
@@ -121,12 +178,12 @@ export default memo(function NotificationService() {
   // }, []);
 
   useLayoutEffect(() => {
-    if (navigator?.clearAppBadge) {
+    if (navigator.clearAppBadge) {
       navigator.clearAppBadge();
     }
   }, []);
-  usePageVisibility((visible) => {
-    if (visible && navigator?.clearAppBadge) {
+  usePageVisibility((visible: boolean) => {
+    if (visible && navigator.clearAppBadge) {
       console.log('🔰 Clear app badge');
       navigator.clearAppBadge();
     }
@@ -143,7 +200,7 @@ export default memo(function NotificationService() {
   };
 
   if (showNotificationSheet) {
-    const { id, account, notification, sameInstance } = showNotificationSheet;
+    const { account, notification, sameInstance } = showNotificationSheet;
     return (
       <Modal
         onClick={(e) => {
@@ -152,7 +209,7 @@ export default memo(function NotificationService() {
           }
         }}
       >
-        <div class="sheet" tabIndex="-1">
+        <div class="sheet" tabIndex={-1}>
           <button type="button" class="sheet-close" onClick={onClose}>
             <Icon icon="x" alt={t`Close`} />
           </button>
@@ -173,9 +230,9 @@ export default memo(function NotificationService() {
               //   pointerEvents: sameInstance ? '' : 'none',
               // }}
               onClick={(e) => {
-                const { target } = e;
+                const target = e.target as HTMLElement | null;
                 // If button or links
-                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+                if (target?.tagName === 'BUTTON' || target?.tagName === 'A') {
                   onClose();
                 }
               }}

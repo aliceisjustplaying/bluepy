@@ -22,7 +22,10 @@ const {
   PHANPY_WEBSITE: WEBSITE,
   PHANPY_PRIVACY_POLICY_URL: PRIVACY_POLICY_URL,
   PHANPY_DEFAULT_INSTANCE_REGISTRATION_URL: DEFAULT_INSTANCE_REGISTRATION_URL,
-} = import.meta.env;
+} = import.meta.env as ImportMetaEnv & {
+  readonly PHANPY_DEFAULT_INSTANCE?: string;
+  readonly PHANPY_DEFAULT_INSTANCE_REGISTRATION_URL?: string;
+};
 const appSite = WEBSITE
   ? WEBSITE.replace(/https?:\/\//g, '').replace(/\/$/, '')
   : null;
