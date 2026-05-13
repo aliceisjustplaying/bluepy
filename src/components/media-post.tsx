@@ -1,6 +1,8 @@
 import './media-post.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentChild, ComponentType, JSX } from 'preact';
 import { memo } from 'preact/compat';
 import { useContext, useMemo } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
@@ -12,7 +14,60 @@ import states, { statusKey } from '../utils/states';
 import store from '../utils/store';
 import { getCurrentAccountID } from '../utils/store-utils';
 
-import Media from './media';
+import MediaRaw from './media';
+
+type FilterResult = mastodon.v1.FilterResult;
+
+interface MediaAttachmentLike {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface StatusLike {
+  id: string;
+  account: {
+    acct?: string;
+    avatar?: string;
+    avatarStatic?: string;
+    id?: string;
+    url?: string;
+    displayName?: string;
+    username?: string;
+    emojis?: unknown;
+    bot?: boolean;
+    group?: boolean;
+  };
+  mediaAttachments?: MediaAttachmentLike[];
+  sensitive?: boolean;
+  spoilerText?: string;
+  language?: string;
+  filtered?: readonly FilterResult[] | null;
+  [key: string]: unknown;
+}
+
+const Media = MediaRaw as unknown as ComponentType<{
+  class?: string;
+  media: MediaAttachmentLike;
+  lang?: string;
+  to?: string;
+  onClick?: (e: MouseEvent) => void;
+}>;
+
+type ParentTag = keyof JSX.IntrinsicElements;
+
+interface MediaPostProps {
+  class?: string;
+  statusID?: string;
+  status?: StatusLike;
+  instance?: string;
+  parent?: ParentTag | ComponentType<Record<string, unknown>>;
+  onMediaClick?: (
+    e: MouseEvent,
+    i: number,
+    media: MediaAttachmentLike,
+    status: StatusLike,
+  ) => void;
+}
 
 function MediaPost({
   class: className,
@@ -22,12 +77,18 @@ function MediaPost({
   parent,
   // allowFilters,
   onMediaClick,
-}) {
+}: MediaPostProps): ComponentChild | ComponentChild[] {
   const { t } = useLingui();
   let sKey = statusKey(statusID, instance);
   const snapStates = useSnapshot(states);
   if (!status) {
-    status = snapStates.statuses[sKey] || snapStates.statuses[statusID];
+    const fromSKey = sKey ? snapStates.statuses[sKey] : undefined;
+    const fromID = statusID ? snapStates.statuses[statusID] : undefined;
+    // Snapshot returns a readonly view of the proxy. Mirror the JS behavior
+    // by allowing the resolved status to be reassigned into our local
+    // mutable view via the unknown-to-mutable shim used elsewhere in this
+    // file. Narrower `Status` typing lives with the `states.ts` work.
+    status = (fromSKey || fromID) as unknown as StatusLike | undefined;
     sKey = statusKey(status?.id, instance);
   }
   if (!status) {
@@ -83,7 +144,7 @@ function MediaPost({
     return null;
   }
 
-  const debugHover = (e) => {
+  const debugHover = (e: MouseEvent) => {
     if (e.shiftKey) {
       console.log({
         ...status,
@@ -99,9 +160,15 @@ function MediaPost({
   }, [accountId, currentAccount]);
 
   const filterContext = useContext(FilterContext);
-  const filterInfo = !isSelf && isFiltered(filtered, filterContext);
+  // `isFiltered`'s typed signature requires a string context, but the JS
+  // original calls it with `undefined` when no FilterContext is provided and
+  // `_isFiltered` short-circuits to `false`. The `as string` shim mirrors
+  // existing call sites in `src/utils/filters.ts` and preserves that
+  // behavior; tightening the type lives with the `filters` typing work.
+  const filterInfo =
+    !isSelf && isFiltered(filtered, filterContext as string);
 
-  if (filterInfo?.action === 'hide') {
+  if (filterInfo && filterInfo.action === 'hide') {
     return null;
   }
 
@@ -109,15 +176,20 @@ function MediaPost({
 
   const hasSpoiler = sensitive;
   const prefs = getPreferences();
+  const readingExpandMediaRaw = prefs['reading:expand:media'];
   const readingExpandMedia =
-    prefs['reading:expand:media']?.toLowerCase() || 'default';
+    (typeof readingExpandMediaRaw === 'string'
+      ? readingExpandMediaRaw.toLowerCase()
+      : '') || 'default';
   const showSpoilerMedia = readingExpandMedia === 'show_all';
 
   const Parent = parent || 'div';
 
   return mediaAttachments.map((media, i) => {
     const mediaKey = `${sKey}-${media.id}`;
-    const filterTitleStr = filterInfo?.titlesStr;
+    // After the `filterInfo.action === 'hide'` early return, only `blur` /
+    // `warn` shapes (which carry `titlesStr`) or `false` remain.
+    const filterTitleStr = filterInfo ? filterInfo.titlesStr : undefined;
     return (
       <Parent
         data-state-post-id={sKey}
