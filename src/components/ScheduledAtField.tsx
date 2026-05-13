@@ -1,17 +1,34 @@
+import type { JSX } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 
 export const MIN_SCHEDULED_AT = 6 * 60 * 1000; // 6 mins
 const MAX_SCHEDULED_AT = 90 * 24 * 60 * 60 * 1000; // 90 days
 
-export default function ScheduledAtField({ scheduledAt, setScheduledAt }) {
-  if (!scheduledAt || !scheduledAt?.getTime) {
+// Runtime intentionally duck-types and validates anything; cross-realm Date
+// loses identity, so we don't use `instanceof Date`.
+interface DateLike {
+  getTime(): number;
+  getTimezoneOffset(): number;
+}
+
+interface ScheduledAtFieldProps {
+  scheduledAt: unknown;
+  setScheduledAt: (date: Date) => void;
+}
+
+export default function ScheduledAtField({
+  scheduledAt,
+  setScheduledAt,
+}: ScheduledAtFieldProps) {
+  if (!scheduledAt || !(scheduledAt as Partial<DateLike>)?.getTime) {
     // Not using "instanceof Date" check due to "cross-realm" issues
     console.warn('scheduledAt is invalid', scheduledAt);
     return;
   }
-  const [minStr, setMinStr] = useState();
-  const [maxStr, setMaxStr] = useState();
-  const timezoneOffset = scheduledAt.getTimezoneOffset();
+  const validScheduledAt = scheduledAt as DateLike;
+  const [minStr, setMinStr] = useState<string | undefined>();
+  const [maxStr, setMaxStr] = useState<string | undefined>();
+  const timezoneOffset = validScheduledAt.getTimezoneOffset();
 
   useEffect(() => {
     function updateMinStr() {
@@ -40,11 +57,11 @@ export default function ScheduledAtField({ scheduledAt, setScheduledAt }) {
     return () => clearInterval(intervalId);
   }, []);
 
-  const defaultValue = scheduledAt
-    ? new Date(scheduledAt.getTime() - scheduledAt.getTimezoneOffset() * 60000)
-        .toISOString()
-        .slice(0, 16)
-    : null;
+  const defaultValue = new Date(
+    validScheduledAt.getTime() - validScheduledAt.getTimezoneOffset() * 60000,
+  )
+    .toISOString()
+    .slice(0, 16);
 
   return (
     <input
@@ -54,8 +71,8 @@ export default function ScheduledAtField({ scheduledAt, setScheduledAt }) {
       min={minStr}
       max={maxStr}
       required
-      onChange={(e) => {
-        setScheduledAt(new Date(e.target.value));
+      onChange={(e: JSX.TargetedEvent<HTMLInputElement, Event>) => {
+        setScheduledAt(new Date((e.target as HTMLInputElement).value));
       }}
     />
   );
