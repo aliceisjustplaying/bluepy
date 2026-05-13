@@ -1,10 +1,12 @@
 import './lists.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Menu, MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
+import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
+import type { mastodon } from 'masto';
+import type { ComponentType, JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { InView } from 'react-intersection-observer';
-import { useNavigate, useParams } from 'react-router-dom';
+import { InView as InViewUntyped } from 'react-intersection-observer';
+import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
 import AccountBlock from '../components/account-block';
@@ -16,7 +18,7 @@ import MenuConfirm from '../components/menu-confirm';
 import MenuLink from '../components/menu-link';
 import Menu2 from '../components/menu2';
 import Modal from '../components/modal';
-import Timeline from '../components/timeline';
+import TimelineUntyped from '../components/timeline';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import {
@@ -30,7 +32,76 @@ import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
 
-function List(props) {
+interface ListLike {
+  id: string;
+  title: string;
+  exclusive?: boolean;
+  [key: string]: unknown;
+}
+
+type StatusLike = mastodon.v1.Status;
+
+interface FetchItemsResult {
+  done?: boolean;
+  value: (StatusLike | null | undefined)[] | undefined;
+}
+
+interface ListTimelineEndpoint {
+  $select(id: string): {
+    list(options: {
+      limit: number;
+      since_id?: string;
+    }): {
+      values(): AsyncIterator<StatusLike[]>;
+    } & Promise<{ value?: StatusLike[] } | StatusLike[]>;
+  };
+}
+
+interface ListMembersEndpoint {
+  $select(id: string): {
+    accounts: {
+      list(options: { limit: number }): {
+        values(): AsyncIterator<mastodon.v1.Account[]>;
+      };
+      create(params: { accountIds: string[] }): Promise<unknown>;
+      remove(params: { accountIds: string[] }): Promise<unknown>;
+    };
+  };
+}
+
+interface TimelineProps {
+  title?: string;
+  id?: string;
+  timelineKey?: string;
+  emptyText?: string;
+  errorText?: string;
+  instance?: string;
+  fetchItems?: (firstLoad?: boolean) => Promise<FetchItemsResult>;
+  checkForUpdates?: () => Promise<boolean>;
+  useItemID?: boolean;
+  boostsCarousel?: boolean;
+  filterContext?: string;
+  showReplyParent?: boolean;
+  headerStart?: preact.ComponentChildren;
+  headerEnd?: preact.ComponentChildren;
+}
+
+const Timeline = TimelineUntyped as unknown as ComponentType<TimelineProps>;
+
+// react-intersection-observer's InView ships without working JSX
+// component typings under preact compat resolution. Re-type for our usage.
+const InView = InViewUntyped as unknown as ComponentType<{
+  as?: string;
+  onChange?: (inView: boolean) => void;
+  children?: unknown;
+}>;
+
+interface ListProps {
+  id?: string;
+  timelineId?: string;
+}
+
+function List(props: ListProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const { masto, instance } = api();
@@ -38,21 +109,27 @@ function List(props) {
   const id = props?.id || params?.id;
   const timelineId = props?.timelineId || 'list';
   // const navigate = useNavigate();
-  const latestItem = useRef();
+  const latestItem = useRef<string | undefined>(undefined);
   // const [reloadCount, reload] = useReducer((c) => c + 1, 0);
 
-  const listIterator = useRef();
-  async function fetchList(firstLoad) {
+  const timelinesApi = masto.v1.timelines as unknown as {
+    list: ListTimelineEndpoint;
+  };
+
+  const listIterator = useRef<AsyncIterator<StatusLike[]> | undefined>(
+    undefined,
+  );
+  async function fetchList(firstLoad?: boolean): Promise<FetchItemsResult> {
     if (firstLoad || !listIterator.current) {
-      listIterator.current = masto.v1.timelines.list
-        .$select(id)
+      listIterator.current = timelinesApi.list
+        .$select(id ?? '')
         .list({
           limit: LIMIT,
         })
         .values();
     }
     const results = await listIterator.current.next();
-    let { value } = results;
+    const value = results.value as StatusLike[] | undefined;
     if (value?.length) {
       if (firstLoad) {
         latestItem.current = value[0].id;
@@ -60,25 +137,29 @@ function List(props) {
 
       // value = filteredItems(value, 'home');
       value.forEach((item) => {
-        saveStatus(item, instance);
+        saveStatus(item as unknown as Parameters<typeof saveStatus>[0], instance);
       });
     }
     return {
-      ...results,
+      done: results.done,
       value,
     };
   }
 
-  async function checkForUpdates() {
+  async function checkForUpdates(): Promise<boolean> {
     try {
-      const results = await masto.v1.timelines.list.$select(id).list({
-        limit: 1,
-        since_id: latestItem.current,
-      });
-      let { value } = results;
-      const valueContainsLatestItem = value[0]?.id === latestItem.current; // since_id might not be supported
+      const results = (await (
+        timelinesApi.list.$select(id ?? '').list({
+          limit: 1,
+          since_id: latestItem.current,
+        }) as unknown as Promise<StatusLike[] | { value?: StatusLike[] }>
+      )) as StatusLike[] | { value?: StatusLike[] };
+      let value: StatusLike[] | undefined = Array.isArray(results)
+        ? results
+        : results?.value;
+      const valueContainsLatestItem = value?.[0]?.id === latestItem.current; // since_id might not be supported
       if (value?.length && !valueContainsLatestItem) {
-        value = filteredItems(value, 'home');
+        value = filteredItems(value, 'home') as StatusLike[];
         return true;
       }
       return false;
@@ -87,9 +168,9 @@ function List(props) {
     }
   }
 
-  const [lists, setLists] = useState([]);
+  const [lists, setLists] = useState<ListLike[]>([]);
 
-  const [list, setList] = useState({ title: 'List' });
+  const [list, setList] = useState<ListLike>({ id: '', title: 'List' });
   const isFeed = isFeedList(list);
   const { lists: menuLists, feeds: menuFeeds } = splitListsAndFeeds(lists);
   // const [title, setTitle] = useState(`List`);
@@ -97,8 +178,10 @@ function List(props) {
   useEffect(() => {
     (async () => {
       try {
-        const list = await getList(id);
-        setList(list);
+        const fetchedList = await getList(id ?? '');
+        if (fetchedList) {
+          setList(fetchedList as ListLike);
+        }
         // setTitle(list.title);
       } catch (e) {
         console.error(e);
@@ -106,7 +189,9 @@ function List(props) {
     })();
   }, [id]);
 
-  const [showListAddEditModal, setShowListAddEditModal] = useState(false);
+  const [showListAddEditModal, setShowListAddEditModal] = useState<
+    boolean | { list: ListLike }
+  >(false);
   const [showManageMembersModal, setShowManageMembersModal] = useState(false);
 
   return (
@@ -242,19 +327,35 @@ function List(props) {
       />
       {showListAddEditModal && (
         <Modal
-          onClick={(e) => {
+          onClick={(e: JSX.TargetedMouseEvent<HTMLElement>) => {
             if (e.target === e.currentTarget) {
               setShowListAddEditModal(false);
             }
           }}
         >
           <ListAddEdit
-            list={showListAddEditModal?.list}
+            list={
+              typeof showListAddEditModal === 'object'
+                ? showListAddEditModal.list
+                : null
+            }
             onClose={(result) => {
-              if (result.state === 'success' && result.list) {
+              if (
+                result &&
+                typeof result === 'object' &&
+                'state' in result &&
+                result.state === 'success' &&
+                'list' in result &&
+                result.list
+              ) {
                 setList(result.list);
                 // reload();
-              } else if (result.state === 'deleted') {
+              } else if (
+                result &&
+                typeof result === 'object' &&
+                'state' in result &&
+                result.state === 'deleted'
+              ) {
                 // navigate('/l');
                 location.hash = '/l';
               }
@@ -265,14 +366,14 @@ function List(props) {
       )}
       {showManageMembersModal && (
         <Modal
-          onClick={(e) => {
+          onClick={(e: JSX.TargetedMouseEvent<HTMLElement>) => {
             if (e.target === e.currentTarget) {
               setShowManageMembersModal(false);
             }
           }}
         >
           <ListManageMembers
-            listID={id}
+            listID={id ?? ''}
             onClose={() => setShowManageMembersModal(false)}
           />
         </Modal>
@@ -283,25 +384,36 @@ function List(props) {
 
 const MEMBERS_LIMIT = 40;
 
-function ListManageMembers({ listID, onClose }) {
+interface ListManageMembersProps {
+  listID: string;
+  onClose?: () => void;
+}
+
+function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
   const { t } = useLingui();
   // Show list of members with [Remove] button
   // API only returns 40 members at a time, so this need to be paginated with infinite scroll
   // Show [Add] button after removing a member
   const { masto, instance } = api();
-  const [members, setMembers] = useState([]);
-  const [uiState, setUIState] = useState('default');
+  const [members, setMembers] = useState<mastodon.v1.Account[]>([]);
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
   const [showMore, setShowMore] = useState(false);
 
-  const membersIterator = useRef();
+  const listsApi = masto.v1.lists as unknown as ListMembersEndpoint;
 
-  async function fetchMembers(firstLoad) {
+  const membersIterator = useRef<
+    AsyncIterator<mastodon.v1.Account[]> | undefined
+  >(undefined);
+
+  async function fetchMembers(firstLoad?: boolean) {
     setShowMore(false);
     setUIState('loading');
     (async () => {
       try {
         if (firstLoad || !membersIterator.current) {
-          membersIterator.current = masto.v1.lists
+          membersIterator.current = listsApi
             .$select(listID)
             .accounts.list({
               limit: MEMBERS_LIMIT,
@@ -309,7 +421,10 @@ function ListManageMembers({ listID, onClose }) {
             .values();
         }
         const results = await membersIterator.current.next();
-        let { done, value } = results;
+        const { done, value } = results as {
+          done?: boolean;
+          value?: mastodon.v1.Account[];
+        };
         if (value?.length) {
           if (firstLoad) {
             setMembers(value);
@@ -353,7 +468,11 @@ function ListManageMembers({ listID, onClose }) {
           ))}
           {showMore && uiState === 'default' && (
             <InView as="li" onChange={(inView) => inView && fetchMembers()}>
-              <button type="button" class="light block" onClick={fetchMembers}>
+              <button
+                type="button"
+                class="light block"
+                onClick={() => fetchMembers()}
+              >
                 <Trans>Show more…</Trans>
               </button>
             </InView>
@@ -364,11 +483,19 @@ function ListManageMembers({ listID, onClose }) {
   );
 }
 
-function RemoveAddButton({ account, listID }) {
+interface RemoveAddButtonProps {
+  account: mastodon.v1.Account;
+  listID: string;
+}
+
+function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
   const { t } = useLingui();
   const { masto } = api();
-  const [uiState, setUIState] = useState('default');
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
   const [removed, setRemoved] = useState(false);
+  const listsApi = masto.v1.lists as unknown as ListMembersEndpoint;
 
   return (
     <MenuConfirm
@@ -388,7 +515,7 @@ function RemoveAddButton({ account, listID }) {
           setUIState('loading');
           (async () => {
             try {
-              await masto.v1.lists.$select(listID).accounts.create({
+              await listsApi.$select(listID).accounts.create({
                 accountIds: [account.id],
               });
               setUIState('default');
@@ -404,7 +531,7 @@ function RemoveAddButton({ account, listID }) {
 
           (async () => {
             try {
-              await masto.v1.lists.$select(listID).accounts.remove({
+              await listsApi.$select(listID).accounts.remove({
                 accountIds: [account.id],
               });
               setUIState('default');

@@ -1,6 +1,8 @@
 import { i18n } from '@lingui/core';
 import { plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import type { Ref } from 'preact';
+import type { mastodon } from 'masto';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 import haptics from '../utils/haptics';
@@ -14,19 +16,29 @@ import RelativeTime from './relative-time';
 
 const POLL_OPTIONS_BATCH_SIZE = 40;
 
+interface PollProps {
+  poll: mastodon.v1.Poll & {
+    emojis?: mastodon.v1.CustomEmoji[];
+  };
+  lang?: string;
+  readOnly?: boolean;
+  refresh?: () => void | Promise<void>;
+  votePoll?: (choices: number[]) => void | Promise<void>;
+}
+
 export default function Poll({
   poll,
   lang,
   readOnly,
   refresh = () => {},
   votePoll = () => {},
-}) {
+}: PollProps) {
   const { t } = useLingui();
-  const [uiState, setUIState] = useState('default');
+  const [uiState, setUIState] = useState<'default' | 'loading'>('default');
   const [visibleOptionsCount, setVisibleOptionsCount] = useState(
     POLL_OPTIONS_BATCH_SIZE,
   );
-  const loadMoreRef = useRef(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const {
     expired,
     expiresAt,
@@ -77,7 +89,9 @@ export default function Poll({
 
   const resultsView =
     (showResults && optionsHaveVoteCounts) || voted || expired;
-  const [selectedOptions, setSelectedOptions] = useState(multiple ? [] : null);
+  const [selectedOptions, setSelectedOptions] = useState<number[] | number | null>(
+    multiple ? [] : null,
+  );
 
   useEffect(() => {
     if (!loadMoreRef.current) return;
@@ -103,7 +117,7 @@ export default function Poll({
     setVisibleOptionsCount(POLL_OPTIONS_BATCH_SIZE);
   }, [resultsView, options.length]);
 
-  const voteOptionsSelectionCount = multiple
+  const voteOptionsSelectionCount = Array.isArray(selectedOptions)
     ? selectedOptions.length
     : selectedOptions !== null
       ? 1
@@ -123,9 +137,10 @@ export default function Poll({
     >
       {resultsView ? (
         <>
-          <div class="poll-options" ref={ref}>
+          <div class="poll-options" ref={ref as unknown as Ref<HTMLDivElement>}>
             {options.slice(0, visibleOptionsCount).map((option, i) => {
-              const { title, votesCount: optionVotesCount } = option;
+              const { title, votesCount: optionVotesCountRaw } = option;
+              const optionVotesCount = optionVotesCountRaw ?? 0;
               const ratio = pollVotesCount
                 ? optionVotesCount / pollVotesCount
                 : 0;
@@ -139,7 +154,7 @@ export default function Poll({
               const isLeading =
                 optionVotesCount > 0 &&
                 optionVotesCount ===
-                  Math.max(...options.map((o) => o.votesCount));
+                  Math.max(...options.map((o) => o.votesCount ?? 0));
               return (
                 <div
                   key={`${i}-${title}`}
@@ -162,7 +177,7 @@ export default function Poll({
                       other: `# votes`,
                     })}
                   >
-                    {voted && ownVotes.includes(i) && (
+                    {voted && ownVotes?.includes(i) && (
                       <>
                         <Icon icon="check-circle" alt={t`Voted`} />{' '}
                       </>
@@ -208,7 +223,7 @@ export default function Poll({
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            const choices = multiple
+            const choices: number[] = Array.isArray(selectedOptions)
               ? selectedOptions
               : selectedOptions !== null
                 ? [selectedOptions]
@@ -225,10 +240,10 @@ export default function Poll({
             }
           }}
         >
-          <div class="poll-options" ref={ref}>
+          <div class="poll-options" ref={ref as unknown as Ref<HTMLDivElement>}>
             {options.slice(0, visibleOptionsCount).map((option, i) => {
               const { title } = option;
-              const isSelected = multiple
+              const isSelected = Array.isArray(selectedOptions)
                 ? selectedOptions.includes(i)
                 : selectedOptions === i;
               return (
@@ -243,12 +258,14 @@ export default function Poll({
                       checked={isSelected}
                       onChange={(e) => {
                         const value = i;
+                        const target = e.target as HTMLInputElement;
                         if (multiple) {
-                          setSelectedOptions((prev) =>
-                            e.target.checked
-                              ? [...prev, value]
-                              : prev.filter((v) => v !== value),
-                          );
+                          setSelectedOptions((prev) => {
+                            const prevArr = Array.isArray(prev) ? prev : [];
+                            return target.checked
+                              ? [...prevArr, value]
+                              : prevArr.filter((v) => v !== value);
+                          });
                         } else {
                           setSelectedOptions(value);
                         }
@@ -317,13 +334,13 @@ export default function Poll({
               value={votesCount}
               one={
                 <Trans>
-                  <span title={votesCount}>{shortenNumber(votesCount)}</span>{' '}
+                  <span title={String(votesCount)}>{shortenNumber(votesCount)}</span>{' '}
                   vote
                 </Trans>
               }
               other={
                 <Trans>
-                  <span title={votesCount}>{shortenNumber(votesCount)}</span>{' '}
+                  <span title={String(votesCount)}>{shortenNumber(votesCount)}</span>{' '}
                   votes
                 </Trans>
               }
@@ -338,7 +355,7 @@ export default function Poll({
                   value={votersCount}
                   one={
                     <Trans>
-                      <span title={votersCount}>
+                      <span title={String(votersCount)}>
                         {shortenNumber(votersCount)}
                       </span>{' '}
                       voter
@@ -346,7 +363,7 @@ export default function Poll({
                   }
                   other={
                     <Trans>
-                      <span title={votersCount}>
+                      <span title={String(votersCount)}>
                         {shortenNumber(votersCount)}
                       </span>{' '}
                       voters
