@@ -1,35 +1,71 @@
+import type { Agent } from '@atproto/api';
+
 export const BSKY_LINK_META_PROXY = 'https://cardyb.bsky.app/v1/extract?url=';
 
 const HTTP_URL_RE = /https?:\/\/[^\s<>"']+/i;
 
-export function getFirstPostURL(text = '') {
+type Fetcher = (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) => Promise<Response>;
+
+interface AtprotoLinkMetadata {
+  url?: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  associatedRecord?: unknown;
+  associated_record?: unknown;
+  error?: unknown;
+  [key: string]: unknown;
+}
+
+interface AtprotoExternalEmbed {
+  uri: string;
+  title: string;
+  description: string;
+  associatedRecord?: Record<string, unknown>;
+  thumb?: unknown;
+}
+
+export function getFirstPostURL(text: string = ''): string | null {
   const match = HTTP_URL_RE.exec(text);
   return match?.[0]?.replace(/[),.;!?]+$/, '') || null;
 }
 
-function getAssociatedRecord(value) {
+function getAssociatedRecord(
+  value: unknown,
+): Record<string, unknown> | undefined {
   if (!value || typeof value !== 'object') return undefined;
-  return value;
+  return value as Record<string, unknown>;
 }
 
-export async function fetchAtprotoLinkMetadata(uri, { fetcher = fetch } = {}) {
+export async function fetchAtprotoLinkMetadata(
+  uri: string,
+  { fetcher = fetch as Fetcher }: { fetcher?: Fetcher } = {},
+): Promise<AtprotoLinkMetadata | null> {
   if (!uri) return null;
   const res = await fetcher(
     `${BSKY_LINK_META_PROXY}${encodeURIComponent(uri)}`,
   );
   if (!res.ok) return null;
-  const metadata = await res.json();
-  if (metadata?.error) return null;
+  const parsed: unknown = await res.json();
+  if (parsed === null || typeof parsed !== 'object') return null;
+  const metadata = parsed as AtprotoLinkMetadata;
+  if (metadata.error) return null;
   return metadata;
 }
 
 export async function createAtprotoExternalEmbed(
-  agent,
-  uri,
-  { fetcher = fetch } = {},
-) {
+  agent: Agent,
+  uri: string,
+  { fetcher = fetch as Fetcher }: { fetcher?: Fetcher } = {},
+): Promise<{
+  $type: 'app.bsky.embed.external';
+  external: AtprotoExternalEmbed;
+} | null> {
   if (!uri) return null;
-  let metadata;
+  let metadata: AtprotoLinkMetadata | null;
   try {
     metadata = await fetchAtprotoLinkMetadata(uri, { fetcher });
   } catch (e) {
@@ -38,7 +74,7 @@ export async function createAtprotoExternalEmbed(
   }
   if (!metadata) return null;
 
-  const external = {
+  const external: AtprotoExternalEmbed = {
     uri: metadata.url || uri,
     title: metadata.title || '',
     description: metadata.description || '',
