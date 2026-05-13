@@ -6,7 +6,13 @@ import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import debounce from 'just-debounce-it';
 import type { mastodon } from 'masto';
 import pRetry from 'p-retry';
-import type { ComponentChildren, ComponentType, JSX } from 'preact';
+import type {
+  ComponentChildren,
+  ComponentType,
+  CSSProperties,
+  HTMLAttributes,
+  TargetedMouseEvent,
+} from 'preact';
 import { memo } from 'preact/compat';
 import {
   useCallback,
@@ -16,7 +22,7 @@ import {
   useRef,
   useState,
 } from 'preact/hooks';
-import punycode from 'punycode/';
+import { toUnicode } from 'punycode/';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { matchPath, useSearchParams } from 'react-router-dom';
@@ -193,6 +199,11 @@ const STATUSES_SELECTOR =
 
 const STATUS_URL_REGEX = /\/s\//i;
 
+const postViewState = (): 'large' | 'small' =>
+  window.matchMedia('(min-width: calc(40em + 350px))').matches
+    ? 'large'
+    : 'small';
+
 interface StatusPageParams {
   id: string;
   instance?: string;
@@ -230,7 +241,7 @@ function StatusPage(params: StatusPageParams) {
 
   // Set canonical link, not for SEO, but for sharing
   useEffect(() => {
-    if (!heroStatus || !heroStatus.url) return;
+    if (!heroStatus || !heroStatus.url) return undefined;
 
     const existingCanonical = document.querySelector(
       'link[rel="canonical"]',
@@ -259,8 +270,9 @@ function StatusPage(params: StatusPageParams) {
 
   const closeLink = useMemo(() => {
     const { prevLocation } = states;
-    const pathname =
-      (prevLocation?.pathname || '') + (prevLocation?.search || '');
+    const prevSearch = prevLocation?.search;
+    const prevSearchStr = typeof prevSearch === 'string' ? prevSearch : '';
+    const pathname = (prevLocation?.pathname || '') + prevSearchStr;
     const matchStatusPath =
       matchPath('/:instance/s/:id', pathname) || matchPath('/s/:id', pathname);
     if (!pathname || matchStatusPath) {
@@ -271,9 +283,9 @@ function StatusPage(params: StatusPageParams) {
 
   useEffect(() => {
     if (!heroStatus && showMedia) {
-      (async () => {
+      void (async () => {
         try {
-          const statusesEndpoint = masto.v1.statuses as unknown as {
+          const statusesEndpoint = masto.v1.statuses as {
             $select(id: string): { fetch(): Promise<RawStatus> };
           };
           const status = await statusesEndpoint.$select(id).fetch();
@@ -302,10 +314,6 @@ function StatusPage(params: StatusPageParams) {
       : undefined
     : heroStatus?.mediaAttachments;
 
-  const postViewState = () =>
-    window.matchMedia('(min-width: calc(40em + 350px))').matches
-      ? 'large'
-      : 'small';
   const mediaClose = useCallback(() => {
     console.log('xxx', {
       postViewState: postViewState(),
@@ -343,9 +351,9 @@ function StatusPage(params: StatusPageParams) {
         typeof currentIndex === 'number'
       ) {
         const media = currentMediaAttachments[currentIndex];
-        const { id, blurhash, url } = media;
+        const { id: mediaId, blurhash, url } = media;
         const mediaVTN = getSafeViewTransitionName(
-          (id || blurhash || url) as string,
+          (mediaId || blurhash || url) as string,
         );
         const els = document.querySelectorAll(
           `.status .media [data-view-transition-name="${mediaVTN}"]`,
@@ -358,7 +366,7 @@ function StatusPage(params: StatusPageParams) {
             elBounds.left < window.innerWidth &&
             elBounds.right > 0
           );
-        }) as Element[];
+        });
         // If more than one, get the one in status page
         const el = (
           foundEls.length === 1
@@ -379,7 +387,7 @@ function StatusPage(params: StatusPageParams) {
             }
             mediaClose();
           });
-          transition.ready.finally(() => {
+          void transition.ready.finally(() => {
             el.style.viewTransitionName = '';
             el.dataset.viewTransitioned = mediaVTN;
           });
@@ -458,7 +466,7 @@ function StatusPage(params: StatusPageParams) {
 interface StatusParentProps {
   linkable: boolean;
   to: string;
-  onClick?: (e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => void;
+  onClick?: (e: TargetedMouseEvent<HTMLAnchorElement>) => void;
   children?: ComponentChildren;
 }
 function StatusParent(props: StatusParentProps) {
@@ -563,7 +571,7 @@ function StatusThread({
   const fullContext = useRef<FullContext | null>(null);
   const restructureContext = (): RestructureResult | undefined => {
     console.log({ fullContext: fullContext.current });
-    if (!fullContext.current) return;
+    if (!fullContext.current) return undefined;
     let { ancestors, descendants, heroStatus } = fullContext.current;
 
     if (editHistoryMode && descendants?.length) {
@@ -783,7 +791,6 @@ function StatusThread({
   }: { reloadHero?: boolean } = {}): (() => void) => {
     console.debug('initContext', id);
     setUIState('loading');
-    let heroTimer: ReturnType<typeof setTimeout> | undefined;
 
     const cachedStatuses = cachedStatusesMap[id];
     if (cachedStatuses) {
@@ -805,9 +812,9 @@ function StatusThread({
       // }
     }
 
-    (async () => {
+    void (async () => {
       const statusesEndpoint = masto.v1
-        .statuses as unknown as StatusContextResource;
+        .statuses as StatusContextResource;
       const heroFetch = () =>
         pRetry(() => statusesEndpoint.$select(id).fetch(), {
           retries: 4,
@@ -860,12 +867,12 @@ function StatusThread({
           ancestors.length && !ancestorsIsThread
             ? []
             : mappedNestedDescendants.filter((s) => s.thread);
-        const threadsCount =
+        const computedThreadsCount =
           (ancestorsIsThread ? ancestors.length : 0) + descendantsThread.length;
-        if (threadsCount > 0 && threadsCount < 100) {
+        if (computedThreadsCount > 0 && computedThreadsCount < 100) {
           // Cap at 100 because there's no point showing 100+
           // Include hero as part of thread count
-          setThreadsCount(threadsCount + 1);
+          setThreadsCount(computedThreadsCount + 1);
         }
 
         setUIState('default');
@@ -899,9 +906,7 @@ function StatusThread({
 
     lastInitContextTS.current = Date.now();
 
-    return () => {
-      clearTimeout(heroTimer);
-    };
+    return () => {};
   };
 
   useEffect(initContext, [id, masto]);
@@ -910,7 +915,7 @@ function StatusThread({
     try {
       const restructured = restructureContext();
       if (restructured) setStatuses(restructured.allStatuses);
-    } catch (_e) {}
+    } catch {}
     // Only run this when editHistoryMode changes
     // If id changes, initContext will run instead, so don't worry
   }, [editHistoryMode, editedAtIndex]);
@@ -939,7 +944,7 @@ function StatusThread({
     // Use non-null assertions on `scrollableRef.current` to preserve the
     // original JS behavior (which assumed the ref was always attached by
     // the time this layout effect runs).
-    if (!!scrollPosition) {
+    if (scrollPosition) {
       console.debug('Case 1', {
         id,
         scrollPosition,
@@ -975,7 +980,7 @@ function StatusThread({
   useEffect(() => {
     if (snapStates.reloadStatusPage <= 0) return;
     // Delete the cache for the context
-    (async () => {
+    void (async () => {
       try {
         // Original JS destructured without null-checking, throwing if no
         // current account; non-null assertion preserves that behavior under
@@ -986,7 +991,7 @@ function StatusThread({
         const apiCache = await caches.open('api');
         await apiCache.delete(contextURL, { ignoreVary: true });
 
-        return initContext({
+        initContext({
           reloadHero: true,
         });
       } catch (e) {
@@ -1027,7 +1032,7 @@ function StatusThread({
       text =
         (segmenter
           ? [...segmenter.segment(text)].map((s) => s.segment)
-          : [...text]
+          : Array.from(text)
         )
           .slice(0, 64)
           .join('') + '…';
@@ -1045,13 +1050,13 @@ function StatusThread({
   );
 
   const postInstance = useMemo<string | undefined>(() => {
-    if (!heroStatus) return;
+    if (!heroStatus) return undefined;
     const { url } = heroStatus;
-    if (!url) return;
+    if (!url) return undefined;
     return URL.parse(url)?.hostname;
   }, [heroStatus]);
-  const postSameInstance = useMemo(() => {
-    if (!postInstance) return;
+  const postSameInstance = useMemo<boolean | undefined>(() => {
+    if (!postInstance) return undefined;
     return postInstance === instance;
   }, [postInstance, instance]);
 
@@ -1373,7 +1378,7 @@ function StatusThread({
                       disabled={uiState === 'loading'}
                       onClick={() => {
                         setUIState('loading');
-                        (async () => {
+                        void (async () => {
                           try {
                             const results = await (
                               currentMasto.v2.search as unknown as {
@@ -1397,10 +1402,10 @@ function StatusThread({
                                 } | null
                               )?.statuses ?? [];
                             if (resultStatuses.length) {
-                              const status = resultStatuses[0];
+                              const resolvedStatus = resultStatuses[0];
                               location.hash = currentInstance
-                                ? `/${currentInstance}/s/${status.id}`
-                                : `/s/${status.id}`;
+                                ? `/${currentInstance}/s/${resolvedStatus.id}`
+                                : `/s/${resolvedStatus.id}`;
                             } else {
                               throw new Error('No results');
                             }
@@ -1612,7 +1617,7 @@ function StatusThread({
       if (i > 0) {
         const prevStatus = slicedStatuses[i - 1];
 
-        const { createdAt, descendant, thread, id } = status;
+        const { createdAt, descendant, thread, id: statusItemId } = status;
 
         if (prevStatus?.createdAt && createdAt) {
           const currentDate = Date.parse(createdAt);
@@ -1627,7 +1632,7 @@ function StatusThread({
               if (monthsDiff > 0) {
                 result.push(
                   <li
-                    key={`time-gap-${id}-${prevID}`}
+                    key={`time-gap-${statusItemId}-${prevID}`}
                     style={{
                       '--time-gap-range': Math.min(12, monthsDiff),
                     }}
@@ -1695,7 +1700,7 @@ function StatusThread({
               }
             : undefined
         }
-        onAnimationEnd={(e) => {
+        onAnimationEnd={() => {
           // Fix the bounce effect when switching viewMode
           // `slide-in` animation kicks in when switching viewMode
           if (initialPageState.current === 'status') {
@@ -1705,8 +1710,8 @@ function StatusThread({
         }}
       >
         <header
-          class={`${uiState === 'loading' ? 'loading' : ''}`}
-          onDblClick={(e) => {
+          class={uiState === 'loading' ? 'loading' : ''}
+          onDblClick={() => {
             // reload statuses
             states.reloadStatusPage++;
           }}
@@ -1901,7 +1906,7 @@ function StatusThread({
                           '': 'layout5',
                           full: 'layout4',
                         } as Record<string, string>
-                      )[viewMode || ''] as string
+                      )[viewMode || '']
                     }
                   />
                   <span>
@@ -1948,7 +1953,7 @@ function StatusThread({
                   <Icon icon="transfer" />
                   <small class="menu-double-lines">
                     {postInstance
-                      ? t`Switch to post's server (${punycode.toUnicode(
+                      ? t`Switch to post's server (${toUnicode(
                           postInstance,
                         )})`
                       : t`Switch to post's server`}
@@ -2064,6 +2069,17 @@ interface SubCommentsProps {
   lazyRenderReplies?: boolean;
 }
 
+// Total comments count, including sub-replies
+const diveDeep = (
+  innerReplies: NestedReply[] | undefined | null,
+): number => {
+  return (innerReplies ?? []).reduce<number>((acc, reply) => {
+    const { repliesCount, replies: nested } = reply;
+    const count = nested?.length || repliesCount || 0;
+    return acc + count + diveDeep(nested || []);
+  }, 0);
+};
+
 function SubComments({
   replies,
   instance,
@@ -2075,16 +2091,8 @@ function SubComments({
   lazyRenderReplies,
 }: SubCommentsProps) {
   const { t } = useLingui();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
 
-  // Total comments count, including sub-replies
-  const diveDeep = (innerReplies: NestedReply[] | undefined | null): number => {
-    return (innerReplies ?? []).reduce<number>((acc, reply) => {
-      const { repliesCount, replies: nested } = reply;
-      const count = nested?.length || repliesCount || 0;
-      return acc + count + diveDeep(nested || []);
-    }, 0);
-  };
   const totalComments = replies.length + diveDeep(replies);
   const sameCount = replies.length === totalComments;
 
@@ -2112,7 +2120,7 @@ function SubComments({
     return (replies ?? []).reduce<number>((acc, reply) => {
       return acc + (reply?.weight ?? 0);
     }, accWeight);
-  }, [accWeight, replies?.length]);
+  }, [accWeight, replies]);
 
   let open = false;
   if (openAll) {
@@ -2169,7 +2177,7 @@ function SubComments({
   // Cast `Container` to a permissive component type so the shared `detailsRef`
   // works for both branches without specialising the JSX intrinsic ref.
   const Container = (open ? 'div' : 'details') as unknown as ComponentType<
-    JSX.HTMLAttributes<HTMLElement> & {
+    HTMLAttributes<HTMLElement> & {
       open?: boolean;
       onToggle?: (e: Event) => void;
       'data-comments-level'?: number;
@@ -2180,7 +2188,7 @@ function SubComments({
 
   return (
     <Container
-      ref={detailsRef as unknown as JSX.HTMLAttributes<HTMLElement>['ref']}
+      ref={detailsRef as unknown as HTMLAttributes<HTMLElement>['ref']}
       class="replies"
       open={isDetails ? openBefore || open : undefined}
       onToggle={
@@ -2197,7 +2205,7 @@ function SubComments({
       style={
         {
           '--comments-level': level,
-        } as JSX.CSSProperties
+        } as CSSProperties
       }
       data-comments-level={level}
       data-comments-level-overflow={level > 4}
@@ -2348,9 +2356,7 @@ function calcStatusWeight(status: CalcStatusWeightInput | RawStatus): number {
   // Preserve original JS string-concat semantics: `undefined + content`
   // yields `"undefined" + content`. Cast via `String()` to keep that
   // coercion under TypeScript's checker.
-  const length = htmlContentLength(
-    String(spoilerText as unknown) + String(content as unknown),
-  );
+  const length = htmlContentLength(String(spoilerText) + String(content));
   const ma = mediaAttachments as { length?: number } | null | undefined;
   const mediaLength = ma?.length ? MEDIA_VIRTUAL_LENGTH : 0;
   const pollOptions = (

@@ -7,8 +7,7 @@ import { getBlurHashAverageColor } from 'fast-blurhash';
 import type { mastodon } from 'masto';
 import type { ComponentType } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import punycode from 'punycode/';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
 import Icon from '../components/icon';
@@ -169,11 +168,12 @@ interface TrendingProps {
 function Trending({ columnMode, ...props }: TrendingProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const params = (columnMode ? {} : useParams()) as Record<string, string>;
-  const { masto, instance, authenticated } = api({
-    instance: (props?.instance as string | undefined) || params.instance,
+  const routeParams = useParams() as Record<string, string>;
+  const params = columnMode ? ({} as Record<string, string>) : routeParams;
+  const { masto, instance } = api({
+    instance: props?.instance || params.instance,
   });
-  const { masto: currentMasto, instance: currentInstance } = api();
+  const { instance: currentInstance } = api();
   const title = t`Trending (${instance})`;
   useTitle(title, `/:instance?/trending`);
   // const navigate = useNavigate();
@@ -215,10 +215,12 @@ function Trending({ columnMode, ...props }: TrendingProps) {
           );
           // 4 types available: link, photo, video, rich
           // Only want links for now
-          const links = value?.filter?.((link) => link.type === 'link');
-          console.log('links', links);
-          if (links?.length) {
-            setLinks(links);
+          const filteredLinks = value?.filter?.(
+            (link) => link.type === 'link',
+          );
+          console.log('links', filteredLinks);
+          if (filteredLinks?.length) {
+            setLinks(filteredLinks);
           }
         } catch (e) {
           console.error(e);
@@ -316,7 +318,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
         return true;
       }
       return false;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -327,7 +329,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
         {!!hashtags.length && (
           <div class="filter-bar expandable">
             <Icon icon="chart" class="insignificant" size="l" />
-            {hashtags.map((tag: HashtagItem, i: number) => {
+            {hashtags.map((tag: HashtagItem) => {
               const { name, history } = tag;
               const total = history.reduce(
                 (acc: number, cur: HashtagHistoryEntry) => acc + +cur.uses,
@@ -363,17 +365,15 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                 image,
                 imageDescription,
                 language,
-                providerName,
-                providerUrl,
                 publishedAt,
-                title,
+                title: linkTitle,
                 url,
                 width,
               } = link;
               const author = authors?.[0]?.account?.id
                 ? authors[0].account
                 : null;
-              const isShortTitle = title.length < 30;
+              const isShortTitle = linkTitle.length < 30;
               const hasAuthor = !!(authorName || author);
               const domain = getDomain(url);
               let accentColor: readonly number[] | undefined;
@@ -395,7 +395,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                     ref={currentLink === url ? currentLinkRef : null}
                     href={url}
                     target="_blank"
-                    rel="noopener"
+                    rel="noopener noreferrer"
                     class={`link-block ${
                       hasCurrentLink
                         ? currentLink === url
@@ -438,14 +438,14 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                               </>
                             )}
                           </div>
-                          {!!title && (
+                          {!!linkTitle && (
                             <h1
                               class="title"
                               lang={language}
                               dir="auto"
-                              title={title}
+                              title={linkTitle}
                             >
-                              {title}
+                              {linkTitle}
                             </h1>
                           )}
                         </header>
@@ -474,7 +474,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                                     <a
                                       href={authorUrl}
                                       target="_blank"
-                                      rel="noopener"
+                                      rel="noopener noreferrer"
                                     >
                                       {authorName}
                                     </a>
@@ -535,7 +535,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                   <Trans>
                     Showing posts mentioning{' '}
                     <span class="link-text">
-                      {currentLink!
+                      {(currentLink ?? '')
                         .replace(/^https?:\/\/(www\.)?/i, '')
                         .replace(/\/$/, '')}
                     </span>
@@ -551,7 +551,16 @@ function Trending({ columnMode, ...props }: TrendingProps) {
         )}
       </>
     );
-  }, [hashtags, links, currentLink, currentLinkMentionsLoading]);
+  }, [
+    hashtags,
+    links,
+    currentLink,
+    currentLinkMentionsLoading,
+    supportsTrendingLinkPosts,
+    instance,
+    t,
+    hasCurrentLink,
+  ]);
 
   return (
     <Timeline

@@ -113,7 +113,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
             });
             setUIState('loading');
 
-            (async () => {
+            void (async () => {
               try {
                 let listResult: ListLike;
 
@@ -145,8 +145,8 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
                     addListStore(listResult);
                   }
                 }, 1);
-              } catch (e) {
-                console.error(e);
+              } catch (err) {
+                console.error(err);
                 setUIState('error');
                 alert(
                   editMode
@@ -219,7 +219,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
                   if (!list) return;
                   setUIState('loading');
 
-                  (async () => {
+                  void (async () => {
                     try {
                       await listsApi.$select(list.id).remove();
                       setUIState('default');

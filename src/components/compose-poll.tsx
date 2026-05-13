@@ -3,7 +3,6 @@ import type { ComponentChildren, ComponentType } from 'preact';
 
 import i18nDuration from '../utils/i18n-duration';
 
-import Icon from './icon';
 import TextExpanderRaw from './text-expander';
 
 const TextExpander = TextExpanderRaw as unknown as ComponentType<{
