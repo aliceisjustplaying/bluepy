@@ -9,7 +9,7 @@ const locales = [
 ];
 export const LOCALES = locales;
 
-let devLocales = [];
+let devLocales: string[] = [];
 if (import.meta.env?.DEV || import.meta.env?.PHANPY_SHOW_DEV_LOCALES) {
   devLocales = catalogs.filter(({ listed }) => !listed).map(({ code }) => code);
   devLocales.push('pseudo-LOCALE');
