@@ -1,8 +1,24 @@
+import type { ComponentChildren, ComponentType } from 'preact';
 import { useMemo } from 'preact/hooks';
 
 import { api } from '../utils/api';
 
-import Link from './link';
+import LinkRaw from './link';
+
+interface LinkProps {
+  to: string;
+  children?: ComponentChildren;
+}
+const Link = LinkRaw as unknown as ComponentType<LinkProps>;
+
+interface StatusTag {
+  name: string;
+}
+
+interface StatusTagsProps {
+  tags?: StatusTag[];
+  content?: string;
+}
 
 const fauxDiv = document.createElement('div');
 const HASHTAG_REGEX = /^[#＃][^#＃]+$/;
@@ -12,17 +28,17 @@ const collator = new Intl.Collator(undefined, {
   sensitivity: 'base',
   usage: 'search',
 });
-const isSameTag = (a, b) => collator.compare(a, b) === 0;
+const isSameTag = (a: string, b: string) => collator.compare(a, b) === 0;
 
-const extractTagsFromStatus = (content) => {
+const extractTagsFromStatus = (content: string | undefined): string[] => {
   if (!content) return [];
   if (content.indexOf('#') === -1) return [];
   fauxDiv.innerHTML = content;
-  const tags = [];
+  const tags: string[] = [];
 
   const allLinks = fauxDiv.querySelectorAll('a[href]');
   for (const link of allLinks) {
-    const text = link.textContent.trim();
+    const text = link.textContent!.trim();
     const isHashtagLink =
       link.classList.contains('hashtag') || HASHTAG_REGEX.test(text);
 
@@ -34,7 +50,7 @@ const extractTagsFromStatus = (content) => {
   return tags;
 };
 
-export default function StatusTags({ tags, content }) {
+export default function StatusTags({ tags, content }: StatusTagsProps) {
   if (!tags?.length) return null;
 
   const { instance } = api();

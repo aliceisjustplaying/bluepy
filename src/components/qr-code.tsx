@@ -3,12 +3,22 @@ import './qr-code.css';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import encodeQR from 'qr';
 
-const canvas = window.OffscreenCanvas
+interface QrCodeProps {
+  text?: string;
+  arena?: string;
+  backgroundMask?: string;
+  arenaCircle?: boolean;
+  caption?: string;
+}
+
+// Canvas getContext may return null (no 2D support); preserve original behavior
+// which assumed non-null and would TypeError on missing support.
+const canvas: OffscreenCanvas | HTMLCanvasElement = window.OffscreenCanvas
   ? new OffscreenCanvas(1, 1)
   : document.createElement('canvas');
 const ctx = canvas.getContext('2d', {
   willReadFrequently: true,
-});
+}) as OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 ctx.imageSmoothingEnabled = false;
 
 export default function QrCode({
@@ -17,8 +27,8 @@ export default function QrCode({
   backgroundMask,
   arenaCircle = true,
   caption,
-}) {
-  const captionRef = useRef(null);
+}: QrCodeProps) {
+  const captionRef = useRef<HTMLDivElement | null>(null);
   const [captionHeight, setCaptionHeight] = useState(0);
   const [arenaLoaded, setArenaLoaded] = useState(false);
   const [arenaHasAlpha, setArenaHasAlpha] = useState(false);
@@ -87,7 +97,7 @@ export default function QrCode({
   const centerStart = Math.floor((gridSize - centerExcludeSize) / 2);
   const centerEnd = centerStart + centerExcludeSize;
 
-  const isFilled = (x, y) => {
+  const isFilled = (x: number, y: number) => {
     if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) return false;
 
     if (
@@ -113,12 +123,12 @@ export default function QrCode({
     return qrData[y][x];
   };
 
-  const isFilledInGrid = (x, y) => {
+  const isFilledInGrid = (x: number, y: number) => {
     if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) return false;
     return isFilled(x, y);
   };
 
-  const isInPositionMarker = (x, y) => {
+  const isInPositionMarker = (x: number, y: number) => {
     if (x < 7 && y < 7) return true;
     if (x >= gridSize - 7 && y < 7) return true;
     if (x < 7 && y >= gridSize - 7) return true;
@@ -349,7 +359,7 @@ export default function QrCode({
         >
           <div
             ref={captionRef}
-            xmlns="http://www.w3.org/1999/xhtml"
+            {...{ xmlns: 'http://www.w3.org/1999/xhtml' }}
             class="qr-code-caption"
             dangerouslySetInnerHTML={{ __html: caption }}
           />
