@@ -1,20 +1,44 @@
+import type { ComponentType } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 import isRTL from '../utils/is-rtl';
 
-import Icon from './icon';
-import Media from './media';
+import IconRaw from './icon';
+import MediaRaw from './media';
 
-function MediaFirstContainer(props) {
+interface MediaAttachment {
+  id: string;
+  [key: string]: unknown;
+}
+
+const Icon = IconRaw as unknown as ComponentType<{
+  icon?: string;
+  size?: string;
+}>;
+
+const Media = MediaRaw as unknown as ComponentType<{
+  media: MediaAttachment;
+  lang?: string;
+  to?: string;
+}>;
+
+interface MediaFirstContainerProps {
+  mediaAttachments: MediaAttachment[];
+  language?: string;
+  postID: string;
+  instance: string;
+}
+
+function MediaFirstContainer(props: MediaFirstContainerProps) {
   const { mediaAttachments, language, postID, instance } = props;
   const moreThanOne = mediaAttachments.length > 1;
 
-  const carouselRef = useRef();
+  const carouselRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     let handleScroll = () => {
-      const { clientWidth, scrollLeft } = carouselRef.current;
+      const { clientWidth, scrollLeft } = carouselRef.current!;
       const index = Math.round(Math.abs(scrollLeft) / clientWidth);
       setCurrentIndex(index);
     };
@@ -57,10 +81,10 @@ function MediaFirstContainer(props) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  carouselRef.current.focus();
-                  carouselRef.current.scrollTo({
+                  carouselRef.current!.focus();
+                  carouselRef.current!.scrollTo({
                     left:
-                      carouselRef.current.clientWidth *
+                      carouselRef.current!.clientWidth *
                       (currentIndex - 1) *
                       (isRTL() ? -1 : 1),
                     behavior: 'smooth',
@@ -78,10 +102,10 @@ function MediaFirstContainer(props) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  carouselRef.current.focus();
-                  carouselRef.current.scrollTo({
+                  carouselRef.current!.focus();
+                  carouselRef.current!.scrollTo({
                     left:
-                      carouselRef.current.clientWidth *
+                      carouselRef.current!.clientWidth *
                       (currentIndex + 1) *
                       (isRTL() ? -1 : 1),
                     behavior: 'smooth',

@@ -1,11 +1,24 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { ComponentChildren, ComponentType } from 'preact';
 
 import i18nDuration from '../utils/i18n-duration';
 
 import Icon from './icon';
-import TextExpander from './text-expander';
+import TextExpanderRaw from './text-expander';
 
-export const expiryOptions = {
+const TextExpander = TextExpanderRaw as unknown as ComponentType<{
+  keys?: string;
+  class?: string;
+  children?: ComponentChildren;
+}>;
+
+export interface PollState {
+  options: string[];
+  expiresIn: number | string;
+  multiple: boolean;
+}
+
+export const expiryOptions: Record<number, () => string> = {
   300: i18nDuration(5, 'minute'),
   1_800: i18nDuration(30, 'minute'),
   3_600: i18nDuration(1, 'hour'),
@@ -14,6 +27,17 @@ export const expiryOptions = {
   259_200: i18nDuration(3, 'day'),
   604_800: i18nDuration(1, 'week'),
 };
+
+interface ComposePollProps {
+  lang?: string;
+  poll: PollState;
+  disabled?: boolean;
+  onInput?: (poll: PollState | null) => void;
+  maxOptions: number;
+  maxExpiration: number;
+  minExpiration: number;
+  maxCharactersPerOption?: number;
+}
 
 function ComposePoll({
   lang,
@@ -24,7 +48,7 @@ function ComposePoll({
   maxExpiration,
   minExpiration,
   maxCharactersPerOption,
-}) {
+}: ComposePollProps) {
   const { t } = useLingui();
   const { options, expiresIn, multiple } = poll;
 
@@ -42,12 +66,12 @@ function ComposePoll({
                 maxlength={maxCharactersPerOption}
                 placeholder={t`Choice ${i + 1}`}
                 lang={lang}
-                spellCheck="true"
+                spellcheck={true}
                 autocomplete="off"
                 dir="auto"
                 data-allow-custom-emoji="true"
                 onInput={(e) => {
-                  const { value } = e.target;
+                  const { value } = e.target as HTMLInputElement;
                   options[i] = value;
                   onInput(poll);
                 }}
@@ -88,7 +112,7 @@ function ComposePoll({
               checked={multiple}
               disabled={disabled}
               onChange={(e) => {
-                const { checked } = e.target;
+                const { checked } = e.target as HTMLInputElement;
                 poll.multiple = checked;
                 onInput(poll);
               }}
@@ -101,14 +125,15 @@ function ComposePoll({
               value={expiresIn}
               disabled={disabled}
               onChange={(e) => {
-                const { value } = e.target;
+                const { value } = e.target as HTMLSelectElement;
                 poll.expiresIn = value;
                 onInput(poll);
               }}
             >
               {Object.entries(expiryOptions)
                 .filter(([value]) => {
-                  return value >= minExpiration && value <= maxExpiration;
+                  const v = Number(value);
+                  return v >= minExpiration && v <= maxExpiration;
                 })
                 .map(([value, label]) => (
                   <option value={value} key={value}>
