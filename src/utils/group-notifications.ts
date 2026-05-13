@@ -159,8 +159,11 @@ export function groupNotifications2(
   // contract — a missing `sampleAccounts` here is a malformed-input crash.
   const newGroupNotifications: NotificationGroupLike[] = groupNotifications.map(
     (gn) => {
-      const { latestPageNotificationAt, mostRecentNotificationId, sampleAccounts } =
-        gn;
+      const {
+        latestPageNotificationAt,
+        mostRecentNotificationId,
+        sampleAccounts,
+      } = gn;
 
       return {
         id: '' + mostRecentNotificationId,

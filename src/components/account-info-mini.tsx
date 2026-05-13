@@ -40,8 +40,8 @@ export default function AccountInfoMini({
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
 
   const { masto } = api({ instance });
-  const accountsResource =
-    masto.v1.accounts as unknown as mastodon.rest.v1.AccountsResource;
+  const accountsResource = masto.v1
+    .accounts as unknown as mastodon.rest.v1.AccountsResource;
 
   const followersIterator = useRef<
     AsyncIterator<mastodon.v1.Account[]> | undefined

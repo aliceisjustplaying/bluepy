@@ -78,7 +78,10 @@ interface AccountStatusesProps {
   [key: string]: unknown;
 }
 
-type SearchParamsObject = Record<string, string | number | boolean | null | undefined>;
+type SearchParamsObject = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
 type SearchParamsUpdater =
   | SearchParamsObject
   | URLSearchParams
@@ -109,27 +112,24 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   // is coerced to "1" at runtime — preserve via string init.
   const profileSearchParamsRef = useRef(new URLSearchParams({ replies: '1' }));
   const [, forceUpdate] = useReducer<number, void>((c) => c + 1, 0);
-  const profileSetSearchParams = useCallback(
-    (objOrFn: SearchParamsUpdater) => {
-      const params = profileSearchParamsRef.current;
-      if (typeof objOrFn === 'function') {
-        objOrFn(params);
-      } else if (objOrFn instanceof URLSearchParams) {
-        [...params.keys()].forEach((key) => params.delete(key));
-        objOrFn.forEach((value, key) => params.set(key, value));
-      } else {
-        Object.entries(objOrFn).forEach(([key, value]) => {
-          if (value) {
-            params.set(key, String(value));
-          } else {
-            params.delete(key);
-          }
-        });
-      }
-      forceUpdate();
-    },
-    [],
-  );
+  const profileSetSearchParams = useCallback((objOrFn: SearchParamsUpdater) => {
+    const params = profileSearchParamsRef.current;
+    if (typeof objOrFn === 'function') {
+      objOrFn(params);
+    } else if (objOrFn instanceof URLSearchParams) {
+      [...params.keys()].forEach((key) => params.delete(key));
+      objOrFn.forEach((value, key) => params.set(key, value));
+    } else {
+      Object.entries(objOrFn).forEach(([key, value]) => {
+        if (value) {
+          params.set(key, String(value));
+        } else {
+          params.delete(key);
+        }
+      });
+    }
+    forceUpdate();
+  }, []);
   const [searchParams, setSearchParams] = columnMode
     ? ([profileSearchParamsRef.current, profileSetSearchParams] as const)
     : (useSearchParams() as unknown as readonly [
@@ -170,9 +170,9 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     instance: params?.instance,
   });
   const { masto: currentMasto, instance: currentInstance } = api();
-  const accountStatusesIterator = useRef<
-    AsyncIterator<Status[]> | undefined
-  >(undefined);
+  const accountStatusesIterator = useRef<AsyncIterator<Status[]> | undefined>(
+    undefined,
+  );
 
   const allSearchParams = [month, excludeReplies, excludeBoosts, tagged, media];
   const [account, setAccount] = useState<Account | undefined>();
@@ -230,11 +230,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         .toString()
         .padStart(2, '0')}-${after.getDate().toString().padStart(2, '0')}`;
       // First day of next month
-      const before = new Date(
-        _year as unknown as number,
-        monthIndex + 1,
-        1,
-      );
+      const before = new Date(_year as unknown as number, monthIndex + 1, 1);
       const beforeStr = `${before.getFullYear()}-${(before.getMonth() + 1)
         .toString()
         .padStart(2, '0')}-${before.getDate().toString().padStart(2, '0')}`;
@@ -258,8 +254,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         searchOffsetRef.current += LIMIT;
       }
 
-      const searchResource =
-        masto.v2.search as unknown as mastodon.rest.v2.SearchResource;
+      const searchResource = masto.v2
+        .search as unknown as mastodon.rest.v2.SearchResource;
       const searchResults = await searchResource.list({
         q: `from:${account.acct} after:${afterStr} before:${beforeStr}`,
         type: 'statuses',
@@ -279,8 +275,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     }
 
     let results: TimelineItem[] = [];
-    const accountsResource =
-      masto.v1.accounts as unknown as mastodon.rest.v1.AccountsResource;
+    const accountsResource = masto.v1
+      .accounts as unknown as mastodon.rest.v1.AccountsResource;
     if (firstLoad && !columnMode) {
       const { value } = await accountsResource
         .$select(id as string)
@@ -341,7 +337,9 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
           ) {
             pinnedStatusesIds = (first as PinnedGroup).id;
           } else {
-            pinnedStatusesIds = (results as Array<Status & { _pinned?: boolean }>)
+            pinnedStatusesIds = (
+              results as Array<Status & { _pinned?: boolean }>
+            )
               .filter((status) => status._pinned)
               .map((status) => status.id);
           }
@@ -564,7 +562,9 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                       to={`/${instance}/a/${id}${buildParamStr({
                         tagged: tagged === tag.name ? null : tag.name,
                       })}`}
-                      onClick={(e: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
+                      onClick={(
+                        e: JSX.TargetedMouseEvent<HTMLAnchorElement>,
+                      ) => {
                         if (columnMode) {
                           e.preventDefault();
                           const params = new URLSearchParams(
@@ -791,9 +791,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                     const { masto } = api({
                       instance: accountInstance as string | undefined,
                     });
-                    const accountsResource =
-                      masto.v1
-                        .accounts as unknown as mastodon.rest.v1.AccountsResource;
+                    const accountsResource = masto.v1
+                      .accounts as unknown as mastodon.rest.v1.AccountsResource;
                     const acc = await accountsResource.lookup({
                       acct: (account as Account).acct,
                     });
@@ -824,9 +823,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                 onClick={() => {
                   (async () => {
                     try {
-                      const accountsResource =
-                        currentMasto.v1
-                          .accounts as unknown as mastodon.rest.v1.AccountsResource;
+                      const accountsResource = currentMasto.v1
+                        .accounts as unknown as mastodon.rest.v1.AccountsResource;
                       const acc = await accountsResource.lookup({
                         acct: (account as Account).acct + '@' + instance,
                       });
@@ -981,8 +979,8 @@ function fetchAccount(
   id: string,
   masto: { v1: { accounts: unknown } },
 ): Promise<Account> {
-  const accountsResource =
-    masto.v1.accounts as unknown as mastodon.rest.v1.AccountsResource;
+  const accountsResource = masto.v1
+    .accounts as unknown as mastodon.rest.v1.AccountsResource;
   return accountsResource.$select(id).fetch();
 }
 const memFetchAccount = pmem(fetchAccount, {

@@ -33,12 +33,7 @@ const Status = StatusUntyped as unknown as ComponentType<{
   size?: string;
   previewMode?: boolean;
   readOnly?: boolean;
-  onMediaClick?: (
-    e: Event,
-    i: number,
-    media: unknown,
-    status: unknown,
-  ) => void;
+  onMediaClick?: (e: Event, i: number, media: unknown, status: unknown) => void;
   [key: string]: unknown;
 }>;
 
@@ -219,9 +214,7 @@ export default function ScheduledPosts() {
                   poll: poll
                     ? {
                         ...poll,
-                        expiresAt: new Date(
-                          Date.now() + poll.expiresIn * 1000,
-                        ),
+                        expiresAt: new Date(Date.now() + poll.expiresIn * 1000),
                         options: poll.options.map((option) => ({
                           title: option,
                           votesCount: 0,

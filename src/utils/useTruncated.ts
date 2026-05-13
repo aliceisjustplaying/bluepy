@@ -13,7 +13,12 @@ export default function useTruncated({
 }: UseTruncatedOpts = {}) {
   const ref = useRef<HTMLElement>(null);
   const prevTruncatedRef = useRef<boolean | undefined>(undefined);
-  const onResize = ({ height }: { width: number | undefined; height: number | undefined }) => {
+  const onResize = ({
+    height,
+  }: {
+    width: number | undefined;
+    height: number | undefined;
+  }) => {
     if (ref.current) {
       const { scrollHeight } = ref.current;
       let truncated = height !== undefined && scrollHeight > height;

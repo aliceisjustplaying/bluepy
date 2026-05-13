@@ -243,7 +243,9 @@ export default function ComposeButton() {
                 <MenuItem key={post.id} onClick={() => handleReplyToPost(post)}>
                   <small>
                     <div class="menu-post-text">
-                      {statusPeek(post as unknown as Parameters<typeof statusPeek>[0])}
+                      {statusPeek(
+                        post as unknown as Parameters<typeof statusPeek>[0],
+                      )}
                     </div>
                     <span className="more-insignificant">
                       {/* Show relative time if within a day */}

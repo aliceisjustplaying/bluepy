@@ -154,10 +154,7 @@ function handleContentLinks(
         };
         location.hash = `#${
           (
-            states.unfurledLinks as Record<
-              string,
-              { url?: string } | undefined
-            >
+            states.unfurledLinks as Record<string, { url?: string } | undefined>
           )[href]!.url
         }`;
         return;

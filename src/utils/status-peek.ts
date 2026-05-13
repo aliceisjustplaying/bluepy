@@ -53,13 +53,13 @@ function statusPeek(status: StatusLike): string {
         .map(
           (m) =>
             (
-              {
+              ({
                 image: '🖼️',
                 gifv: '🎞️',
                 video: '📹',
                 audio: '🎵',
                 unknown: '',
-              } as Record<string, string>
+              }) as Record<string, string>
             )[m.type] || '',
         )
         .join('');

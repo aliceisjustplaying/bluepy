@@ -85,7 +85,11 @@ const _DateTimeFormat = (
       : null;
 
   const matchedLocale = localeMatch(
-    [userRegionLocale, locale, locale?.replace(/-[a-z]+$/i, '')] as unknown as readonly string[],
+    [
+      userRegionLocale,
+      locale,
+      locale?.replace(/-[a-z]+$/i, ''),
+    ] as unknown as readonly string[],
     locales,
     locale,
   );

@@ -136,7 +136,10 @@ function Following2({ title, path, id, ...props }: Following2Props) {
     if (value?.length) {
       // value = filteredItems(value, 'home');
       value.forEach((item) => {
-        saveStatus(item as unknown as Parameters<typeof saveStatus>[0], instance);
+        saveStatus(
+          item as unknown as Parameters<typeof saveStatus>[0],
+          instance,
+        );
       });
       // value = dedupeBoosts(value, instance);
       setTimeout(() => {

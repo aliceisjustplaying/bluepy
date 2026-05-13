@@ -79,9 +79,9 @@ function Public({ local, columnMode, ...props }: PublicProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const isLocal = !!local;
-  const params = (columnMode
-    ? {}
-    : (useParams() as { instance?: string })) as { instance?: string };
+  const params = (columnMode ? {} : (useParams() as { instance?: string })) as {
+    instance?: string;
+  };
   const { masto, authenticated, instance } = api({
     instance: props?.instance || params.instance,
   });
@@ -99,8 +99,9 @@ function Public({ local, columnMode, ...props }: PublicProps) {
   const requiresAuth = timelineAccess === 'authenticated';
   const isPrivate = requiresAuth && !authenticated;
 
-  const timelinesApi = (masto.v1 as unknown as { timelines: PublicTimelinesApi })
-    .timelines;
+  const timelinesApi = (
+    masto.v1 as unknown as { timelines: PublicTimelinesApi }
+  ).timelines;
 
   const publicIterator = useRef<
     AsyncIterator<PublicTimelineItem[]> | undefined

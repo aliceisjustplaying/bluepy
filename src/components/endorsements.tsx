@@ -24,7 +24,8 @@ interface AccountBlockProps {
   avatarSize?: string;
   relationship?: mastodon.v1.Relationship;
 }
-const AccountBlock = AccountBlockUntyped as unknown as ComponentType<AccountBlockProps>;
+const AccountBlock =
+  AccountBlockUntyped as unknown as ComponentType<AccountBlockProps>;
 
 const ENDORSEMENTS_LIMIT = 80;
 
@@ -57,8 +58,8 @@ function Endorsements({
     (async () => {
       setEndorsementsUIState('loading');
       try {
-        const accountsEndpoint =
-          masto.v1.accounts as unknown as AccountEndorsementsEndpoint;
+        const accountsEndpoint = masto.v1
+          .accounts as unknown as AccountEndorsementsEndpoint;
         const accounts = await accountsEndpoint.$select(id).endorsements.list({
           limit: ENDORSEMENTS_LIMIT,
         });

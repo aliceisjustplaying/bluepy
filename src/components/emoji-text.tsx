@@ -39,9 +39,7 @@ const shortcodesRegexp = mem((shortcodes: readonly string[]) => {
 const resolvedEmojisCache = new Map<string, ResolvedEmoji[]>();
 const MAX_CACHE_SIZE = 30;
 
-const resolveEmojis = async (
-  resolverURL: string,
-): Promise<ResolvedEmoji[]> => {
+const resolveEmojis = async (resolverURL: string): Promise<ResolvedEmoji[]> => {
   const cached = resolvedEmojisCache.get(resolverURL);
   if (cached) {
     return cached;
@@ -91,7 +89,11 @@ const resolveEmojis = async (
 };
 
 const renderEmojiText = mem(
-  (text: string, allEmojis: readonly ResolvedEmoji[], staticEmoji?: boolean) => {
+  (
+    text: string,
+    allEmojis: readonly ResolvedEmoji[],
+    staticEmoji?: boolean,
+  ) => {
     if (!text) return '';
     if (!text.includes(':')) return text;
     if (!allEmojis.length) return text;

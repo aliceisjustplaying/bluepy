@@ -151,9 +151,7 @@ function Media({
   if (previewUrl && /no\-preview\./i.test(previewUrl)) {
     previewUrl = null;
   }
-  const mediaVTN = getSafeViewTransitionName(
-    (id || blurhash || url) as string,
-  );
+  const mediaVTN = getSafeViewTransitionName((id || blurhash || url) as string);
   const { original = {}, small, focus } = meta || {};
 
   const width = showOriginal
@@ -485,9 +483,7 @@ function Media({
             <>
               <img
                 src={mediaURL}
-                alt={
-                  showInlineDesc ? '' : (description as string | undefined)
-                }
+                alt={showInlineDesc ? '' : (description as string | undefined)}
                 width={width}
                 height={height}
                 data-orientation={orientation}
@@ -502,7 +498,10 @@ function Media({
                   // 100px per second (rough estimate)
                   // Clamp between 5s and 120s
                   '--anim-duration': `${Math.min(
-                    Math.max(Math.max(width as number, height as number) / 100, 5),
+                    Math.max(
+                      Math.max(width as number, height as number) / 100,
+                      5,
+                    ),
                     120,
                   )}s`,
                 }}
@@ -540,8 +539,9 @@ function Media({
                           naturalWidth < minDimension ||
                           naturalHeight < minDimension
                         ) {
-                          ($media.dataset as Record<string, string>).hasSmallDimension =
-                            'true';
+                          (
+                            $media.dataset as Record<string, string>
+                          ).hasSmallDimension = 'true';
                         } else {
                           const displayNaturalHeight =
                             (naturalHeight * clientWidth) / naturalWidth;
@@ -553,8 +553,9 @@ function Media({
                               '.media',
                             ) as HTMLElement | null;
                             if ($mediaParent) {
-                              ($mediaParent.dataset as Record<string, string>).hasNaturalAspectRatio =
-                                'true';
+                              (
+                                $mediaParent.dataset as Record<string, string>
+                              ).hasNaturalAspectRatio = 'true';
                             }
                           }
                         }
@@ -891,9 +892,7 @@ function Media({
           ) : previewUrl ? (
             <img
               src={previewUrl}
-              alt={
-                showInlineDesc ? '' : (description as string | undefined)
-              }
+              alt={showInlineDesc ? '' : (description as string | undefined)}
               width={width}
               height={height}
               data-orientation={orientation}

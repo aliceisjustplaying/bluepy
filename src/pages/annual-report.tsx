@@ -189,29 +189,29 @@ export default function AnnualReport() {
                     ) : typeof value === 'object' ? (
                       /^(topStatuses)$/i.test(key) ? (
                         <dl>
-                          {Object.entries(
-                            value as Record<string, unknown>,
-                          ).map(([k, value]) => (
-                            <>
-                              <dt>{k}</dt>
-                              <dd>
-                                {
-                                  (value && (
-                                    <Link to={`/${instance}/s/${value}`}>
-                                      <Status
-                                        status={statuses?.find(
-                                          (s) => s.id === value,
-                                        )}
-                                        size="s"
-                                        readOnly
-                                        showCommentCount
-                                      />
-                                    </Link>
-                                  )) as ComponentChildren
-                                }
-                              </dd>
-                            </>
-                          ))}
+                          {Object.entries(value as Record<string, unknown>).map(
+                            ([k, value]) => (
+                              <>
+                                <dt>{k}</dt>
+                                <dd>
+                                  {
+                                    (value && (
+                                      <Link to={`/${instance}/s/${value}`}>
+                                        <Status
+                                          status={statuses?.find(
+                                            (s) => s.id === value,
+                                          )}
+                                          size="s"
+                                          readOnly
+                                          showCommentCount
+                                        />
+                                      </Link>
+                                    )) as ComponentChildren
+                                  }
+                                </dd>
+                              </>
+                            ),
+                          )}
                         </dl>
                       ) : (
                         <table>

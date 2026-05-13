@@ -210,9 +210,7 @@ function _unfurlMastodonLink(
     // If mastoSearchFetch is fulfilled within 3s, return it, else return remoteInstanceFetch
     const finalPromise: Promise<UnfurlResult> = Promise.race([
       mastoSearchFetch,
-      new Promise<UnfurlResult>((_resolve, reject) =>
-        setTimeout(reject, 3000),
-      ),
+      new Promise<UnfurlResult>((_resolve, reject) => setTimeout(reject, 3000)),
     ]).catch(() => {
       // If remoteInstanceFetch is fullfilled, return it, else return mastoSearchFetch
       return remoteInstanceFetch!.catch(() => mastoSearchFetch);

@@ -121,16 +121,12 @@ interface HashtagShortcut {
   media?: 'on' | undefined;
 }
 
-function Hashtags({
-  media: mediaView,
-  columnMode,
-  ...props
-}: HashtagsProps) {
+function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const { t } = useLingui();
   // const navigate = useNavigate();
-  let { hashtag: rawHashtag, ...params } = (columnMode
-    ? {}
-    : (useParams() as { hashtag?: string; instance?: string })) as {
+  let { hashtag: rawHashtag, ...params } = (
+    columnMode ? {} : (useParams() as { hashtag?: string; instance?: string })
+  ) as {
     hashtag?: string;
     instance?: string;
   };
@@ -169,14 +165,17 @@ function Hashtags({
   const requiresAuth = timelineAccess === 'authenticated';
   const isPrivate = requiresAuth && !authenticated;
 
-  const tagTimelines = (masto.v1 as unknown as { timelines: { tag: HashtagTimelineEndpoint } })
-    .timelines.tag;
+  const tagTimelines = (
+    masto.v1 as unknown as { timelines: { tag: HashtagTimelineEndpoint } }
+  ).timelines.tag;
   const tagsApi = masto.v1.tags as unknown as TagsApi;
   const featuredTagsApi = masto.v1.featuredTags as unknown as FeaturedTagsApi;
 
   // const hashtagsIterator = useRef();
   const maxID = useRef<string | undefined>(undefined);
-  async function fetchHashtags(firstLoad?: boolean): Promise<FetchHashtagsResult> {
+  async function fetchHashtags(
+    firstLoad?: boolean,
+  ): Promise<FetchHashtagsResult> {
     // if (firstLoad || !hashtagsIterator.current) {
     //   hashtagsIterator.current = masto.v1.timelines.tag.$select(hashtag).list({
     //     limit: LIMIT,
@@ -220,9 +219,13 @@ function Hashtags({
 
       // value = filteredItems(value, 'public');
       value.forEach((item) => {
-        saveStatus(item as unknown as Parameters<typeof saveStatus>[0], instance, {
-          skipThreading: media || mediaFirst, // If media view, no need to form threads
-        });
+        saveStatus(
+          item as unknown as Parameters<typeof saveStatus>[0],
+          instance,
+          {
+            skipThreading: media || mediaFirst, // If media view, no need to form threads
+          },
+        );
       });
 
       maxID.current = value[value.length - 1].id;

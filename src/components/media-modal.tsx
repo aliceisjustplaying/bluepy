@@ -446,8 +446,7 @@ function MediaModal({
                   <MenuItem
                     disabled={uiState === 'loading'}
                     onClick={() => {
-                      const currentUrl =
-                        mediaAttachments[currentIndex]?.url;
+                      const currentUrl = mediaAttachments[currentIndex]?.url;
                       setUIState('loading');
                       toastRef.current = showToast({
                         text: t`Attempting to describe image. Please wait…`,

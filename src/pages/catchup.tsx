@@ -57,11 +57,15 @@ import useTitle from '../utils/useTitle';
 // Mastodon's status type is augmented at runtime with bookkeeping flags the
 // catch-up pipeline attaches. Keep the surface open via index signatures so
 // downstream callers can still access the original Status fields.
-type FilterInfo = {
-  action?: string;
-  titles?: string[];
-  titlesStr?: string;
-} | null | false | undefined;
+type FilterInfo =
+  | {
+      action?: string;
+      titles?: string[];
+      titlesStr?: string;
+    }
+  | null
+  | false
+  | undefined;
 
 interface CatchupBooster {
   id: string;
@@ -557,9 +561,7 @@ function Catchup() {
             boosts: reblogsCount,
           };
         } else {
-          if (
-            links[url].sharers.find((a) => a?.id === post.account.id)
-          ) {
+          if (links[url].sharers.find((a) => a?.id === post.account.id)) {
             continue;
           }
           links[url].shared++;
@@ -2150,9 +2152,7 @@ const PostLine = memo(
                   that mastodon.v1.Account lacks; structurally identical at
                   runtime, so shim across the type boundary. */}
               <NameText
-                account={
-                  reblog.account as unknown as NameTextAccount
-                }
+                account={reblog.account as unknown as NameTextAccount}
                 showAvatar
               />
             </span>
@@ -2183,7 +2183,9 @@ const PostLine = memo(
           filterInfo={filterInfo}
         />
         <span class="post-meta">
-          <PostStats post={(reblog as CatchupPost | null | undefined) || post} />{' '}
+          <PostStats
+            post={(reblog as CatchupPost | null | undefined) || post}
+          />{' '}
           <RelativeTime
             datetime={new Date(reblog?.createdAt || post.createdAt)}
             format="micro"
@@ -2289,11 +2291,10 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
     (inReplyToId && inReplyToAccountId === account.id) || !!_thread;
   let theQuote: QuoteLike | null =
     supportsNativeQuote() && hasQuote(quote)
-      ? (quote!.quotedStatus as QuoteLike | null | undefined) ?? quote ?? null
+      ? ((quote!.quotedStatus as QuoteLike | null | undefined) ?? quote ?? null)
       : null;
   if (theQuote?.spoilerText || theQuote?.sensitive) theQuote = null;
-  if (theQuote?.emojis)
-    emojis.push(...(theQuote.emojis as typeof emojis));
+  if (theQuote?.emojis) emojis.push(...(theQuote.emojis as typeof emojis));
   if (!mediaAttachments?.length && theQuote?.mediaAttachments?.length) {
     mediaAttachments = theQuote.mediaAttachments as typeof mediaAttachments;
   }

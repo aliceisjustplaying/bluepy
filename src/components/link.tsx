@@ -16,8 +16,10 @@ import states from '../utils/states';
 // narrowing here would block converted callers. `to` is required; everything
 // else mirrors anchor attributes via JSX.HTMLAttributes plus an index
 // signature for ad-hoc props (e.g. `data-*`, valtio snapshot fields).
-export interface LinkProps
-  extends Omit<JSX.HTMLAttributes<HTMLAnchorElement>, 'href'> {
+export interface LinkProps extends Omit<
+  JSX.HTMLAttributes<HTMLAnchorElement>,
+  'href'
+> {
   to: string;
   [key: string]: unknown;
 }
@@ -62,9 +64,7 @@ const Link = forwardRef<HTMLAnchorElement, LinkProps>(
             >;
           (
             props.onClick as
-              | ((
-                  ev: JSX.TargetedMouseEvent<HTMLAnchorElement>,
-                ) => void)
+              | ((ev: JSX.TargetedMouseEvent<HTMLAnchorElement>) => void)
               | undefined
           )?.(e);
         }}

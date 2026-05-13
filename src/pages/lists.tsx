@@ -30,7 +30,8 @@ interface ListAddEditProps {
   list?: ListItem;
   onClose: (result: ListAddEditCloseResult) => void;
 }
-const ListAddEdit = ListAddEditUntyped as unknown as ComponentType<ListAddEditProps>;
+const ListAddEdit =
+  ListAddEditUntyped as unknown as ComponentType<ListAddEditProps>;
 
 const NavMenu = NavMenuUntyped as unknown as ComponentType<
   Record<string, never>

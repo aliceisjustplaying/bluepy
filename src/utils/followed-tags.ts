@@ -19,8 +19,7 @@ const MAX_FETCH = 10;
 
 export async function fetchFollowedTags(): Promise<mastodon.v1.Tag[]> {
   const { masto } = api();
-  const followedTags = masto.v1
-    .followedTags as unknown as FollowedTagsResource;
+  const followedTags = masto.v1.followedTags as unknown as FollowedTagsResource;
   const iterator = followedTags
     .list({
       limit: LIMIT,

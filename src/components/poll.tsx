@@ -1,8 +1,8 @@
 import { i18n } from '@lingui/core';
 import { plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { Ref } from 'preact';
 import type { mastodon } from 'masto';
+import type { Ref } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 import haptics from '../utils/haptics';
@@ -89,9 +89,9 @@ export default function Poll({
 
   const resultsView =
     (showResults && optionsHaveVoteCounts) || voted || expired;
-  const [selectedOptions, setSelectedOptions] = useState<number[] | number | null>(
-    multiple ? [] : null,
-  );
+  const [selectedOptions, setSelectedOptions] = useState<
+    number[] | number | null
+  >(multiple ? [] : null);
 
   useEffect(() => {
     if (!loadMoreRef.current) return;
@@ -334,13 +334,17 @@ export default function Poll({
               value={votesCount}
               one={
                 <Trans>
-                  <span title={String(votesCount)}>{shortenNumber(votesCount)}</span>{' '}
+                  <span title={String(votesCount)}>
+                    {shortenNumber(votesCount)}
+                  </span>{' '}
                   vote
                 </Trans>
               }
               other={
                 <Trans>
-                  <span title={String(votesCount)}>{shortenNumber(votesCount)}</span>{' '}
+                  <span title={String(votesCount)}>
+                    {shortenNumber(votesCount)}
+                  </span>{' '}
                   votes
                 </Trans>
               }

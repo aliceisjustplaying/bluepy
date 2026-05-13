@@ -349,9 +349,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                                     }
                                   }}
                                 />
-                                <span>
-                                  {rule._translatedText || rule.text}
-                                </span>
+                                <span>{rule._translatedText || rule.text}</span>
                               </label>
                             ),
                           )}

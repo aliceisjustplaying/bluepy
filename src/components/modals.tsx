@@ -274,8 +274,9 @@ export default function Modals() {
               p(snapStates.showGenericAccounts).instance as string | undefined
             }
             excludeRelationshipAttrs={
-              p(snapStates.showGenericAccounts)
-                .excludeRelationshipAttrs as readonly string[] | undefined
+              p(snapStates.showGenericAccounts).excludeRelationshipAttrs as
+                | readonly string[]
+                | undefined
             }
             postID={
               p(snapStates.showGenericAccounts).postID as string | undefined

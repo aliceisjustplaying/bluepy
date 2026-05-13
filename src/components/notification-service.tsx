@@ -1,4 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { ComponentType } from 'preact';
 import { memo } from 'preact/compat';
 import { useLayoutEffect, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
@@ -11,8 +12,6 @@ import {
   getCurrentAccount,
 } from '../utils/store-utils';
 import usePageVisibility from '../utils/usePageVisibility';
-
-import type { ComponentType } from 'preact';
 
 import Icon from './icon';
 import Link from './link';
@@ -48,7 +47,9 @@ interface NotificationFetched {
 }
 
 interface NotificationsApi {
-  $select(id: string): { fetch(): Promise<NotificationFetched | null | undefined> };
+  $select(id: string): {
+    fetch(): Promise<NotificationFetched | null | undefined>;
+  };
 }
 
 interface NotificationComponentProps {

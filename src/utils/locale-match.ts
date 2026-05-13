@@ -31,8 +31,7 @@ function cacheMem<Args extends readonly unknown[], Result>(
 
     let cache: Record<string, Result>;
     try {
-      cache =
-        store.session.getJSON<Record<string, Result>>(CACHE_STORE) || {};
+      cache = store.session.getJSON<Record<string, Result>>(CACHE_STORE) || {};
     } catch (e) {
       // If fails, just call the function
       return fn(...args);

@@ -23,7 +23,8 @@ interface SearchFormProps {
   ref?: Ref<SearchFormHandle>;
 }
 
-const SearchForm = SearchFormUntyped as unknown as ComponentType<SearchFormProps>;
+const SearchForm =
+  SearchFormUntyped as unknown as ComponentType<SearchFormProps>;
 
 interface SearchCommandProps {
   onClose?: () => void;

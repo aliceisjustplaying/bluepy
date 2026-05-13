@@ -1,7 +1,11 @@
 // Minimal shims for the experimental Chrome AI APIs used here.
 // https://developer.chrome.com/docs/ai/language-detection
 // https://developer.chrome.com/docs/ai/translator-api
-type AIAvailability = 'unavailable' | 'downloadable' | 'downloading' | 'available';
+type AIAvailability =
+  | 'unavailable'
+  | 'downloadable'
+  | 'downloading'
+  | 'available';
 
 interface AIMonitorEvent {
   loaded: number;

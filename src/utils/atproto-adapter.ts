@@ -592,8 +592,8 @@ async function uploadVideoBlob(
       { headers: { authorization: `Bearer ${statusToken}` } },
     );
     jobStatus =
-      ((statusRes.data as { jobStatus?: JobStatus }).jobStatus ||
-        (statusRes.data as unknown as JobStatus));
+      (statusRes.data as { jobStatus?: JobStatus }).jobStatus ||
+      (statusRes.data as unknown as JobStatus);
   }
   throw new Error('Timed out waiting for Bluesky video processing');
 }
@@ -700,8 +700,7 @@ function embedToParts(
     return { mediaAttachments, card, quote };
   }
 
-  const images: AtprotoEmbedImage[] =
-    embed.images || embed.media?.images || [];
+  const images: AtprotoEmbedImage[] = embed.images || embed.media?.images || [];
   images.forEach((image, index) => {
     const fullsize = image.fullsize || image.thumb;
     mediaAttachments.push({
@@ -1016,9 +1015,7 @@ function isAuthorReplyChain(
   const replyParent = feedItem.reply?.parent;
   if (isPostView(replyParent)) {
     if (!isActorProfile(replyParent.author, actor)) return false;
-    const parentPost = feed.find(
-      (item) => item.post?.uri === replyParent.uri,
-    );
+    const parentPost = feed.find((item) => item.post?.uri === replyParent.uri);
     if (!parentPost) return true;
     return isAuthorReplyChain(actor, parentPost, feed);
   }
@@ -1124,7 +1121,11 @@ export function postProcessFollowingFeed(
 }
 
 export function postToStatus(
-  feedItemOrPost: AtprotoFeedItem | AtprotoPost | AtprotoReplyRefLike | undefined,
+  feedItemOrPost:
+    | AtprotoFeedItem
+    | AtprotoPost
+    | AtprotoReplyRefLike
+    | undefined,
   agent: AtprotoAgent,
 ): AdaptedStatus {
   const post: AtprotoPost =
@@ -1133,16 +1134,17 @@ export function postToStatus(
   const record: AtprotoPostRecord = post?.record || post?.value || {};
   const feedReply = (feedItemOrPost as AtprotoFeedItem)?.reply;
   const replyParent: AtprotoReplyRefLike | undefined =
-    feedReply?.parent || (post.reply?.parent as AtprotoReplyRefLike | undefined);
+    feedReply?.parent ||
+    (post.reply?.parent as AtprotoReplyRefLike | undefined);
   const replyParentRef = strongRef(
-    (record.reply?.parent ||
-      post.reply?.parent ||
-      feedReply?.parent) as AtprotoReplyRefLike | undefined,
+    (record.reply?.parent || post.reply?.parent || feedReply?.parent) as
+      | AtprotoReplyRefLike
+      | undefined,
   ) as AtprotoStrongRef | undefined;
   const replyRootRef = strongRef(
-    (record.reply?.root ||
-      post.reply?.root ||
-      feedReply?.root) as AtprotoReplyRefLike | undefined,
+    (record.reply?.root || post.reply?.root || feedReply?.root) as
+      | AtprotoReplyRefLike
+      | undefined,
   ) as AtprotoStrongRef | undefined;
   const replyParentURI = replyParentRef?.uri;
   const replyParentAuthorDid =
@@ -1344,10 +1346,7 @@ export function notificationStatusURI(
   if (notification.reason === 'repost-via-repost') {
     return notification.record?.subject?.uri || notification.reasonSubject;
   }
-  if (
-    notification.reason === 'like' ||
-    notification.reason === 'repost'
-  ) {
+  if (notification.reason === 'like' || notification.reason === 'repost') {
     return notification.reasonSubject || notification.record?.subject?.uri;
   }
   if (
@@ -1373,7 +1372,9 @@ interface GroupedNotificationsItems {
 function toGroupedNotificationsPage({
   cursor,
   items,
-}: CollectionPage<AdaptedNotification[]>): CollectionPage<GroupedNotificationsItems> {
+}: CollectionPage<
+  AdaptedNotification[]
+>): CollectionPage<GroupedNotificationsItems> {
   const accounts: AdaptedAccount[] = [];
   const statuses: AdaptedStatus[] = [];
   const accountIds = new Set<string>();
@@ -1509,9 +1510,9 @@ export function createAtprotoClient({
   if (!agentOrNull) throw new Error('Missing Bluesky OAuth session');
   const agent: AtprotoAgent = agentOrNull;
   if (!isBskyAppViewService(service)) {
-    (agent as unknown as { configureProxy: (p: string) => void }).configureProxy(
-      BSKY_APPVIEW_PROXY,
-    );
+    (
+      agent as unknown as { configureProxy: (p: string) => void }
+    ).configureProxy(BSKY_APPVIEW_PROXY);
   }
   const agentLoose = agent as unknown as {
     did?: string;
@@ -1781,9 +1782,7 @@ export function createAtprotoClient({
     };
   };
 
-  async function fetchRelationship(
-    id: string,
-  ): Promise<AdaptedRelationship> {
+  async function fetchRelationship(id: string): Promise<AdaptedRelationship> {
     const actor = normalizeActor(id);
     const profileRes = await agent.getProfile({ actor: actor ?? '' });
     const relationshipsRes = await agent.app.bsky.graph.getRelationships({
@@ -1791,7 +1790,8 @@ export function createAtprotoClient({
       others: [profileRes.data.did],
     });
     return relationshipFromAtproto(
-      relationshipsRes.data.relationships?.[0] as unknown as AtprotoRelationship,
+      relationshipsRes.data
+        .relationships?.[0] as unknown as AtprotoRelationship,
       profileRes.data as unknown as AtprotoActor,
     );
   }
@@ -2071,9 +2071,7 @@ export function createAtprotoClient({
             };
           });
         },
-        async create({
-          accountIds = [],
-        }: { accountIds?: string[] } = {}) {
+        async create({ accountIds = [] }: { accountIds?: string[] } = {}) {
           if (uri.includes('/app.bsky.feed.generator/')) {
             throw new Error('Feed generators do not have editable members');
           }
@@ -2091,9 +2089,7 @@ export function createAtprotoClient({
           );
           return {};
         },
-        async remove({
-          accountIds = [],
-        }: { accountIds?: string[] } = {}) {
+        async remove({ accountIds = [] }: { accountIds?: string[] } = {}) {
           if (uri.includes('/app.bsky.feed.generator/')) {
             throw new Error('Feed generators do not have editable members');
           }
@@ -2206,7 +2202,9 @@ export function createAtprotoClient({
     v1: {
       accounts: {
         async verifyCredentials(): Promise<AdaptedAccount> {
-          const profile = await agent.getProfile({ actor: agentLoose.did ?? '' });
+          const profile = await agent.getProfile({
+            actor: agentLoose.did ?? '',
+          });
           return actorToAccount(profile.data as unknown as AtprotoActor);
         },
         async updateCredentials({
@@ -2262,13 +2260,17 @@ export function createAtprotoClient({
         },
         $select: accountAPI,
         relationships: {
-          async fetch({
-            id,
-          }: { id?: string | string[] } = {}): Promise<AdaptedRelationship[]> {
-            const ids = Array.isArray(id) ? id : [id].filter(Boolean) as string[];
+          async fetch({ id }: { id?: string | string[] } = {}): Promise<
+            AdaptedRelationship[]
+          > {
+            const ids = Array.isArray(id)
+              ? id
+              : ([id].filter(Boolean) as string[]);
             if (!ids.length) return [];
             const profilesRes = await agent.getProfiles({
-              actors: ids.map((value) => normalizeActor(value) ?? '') as string[],
+              actors: ids.map(
+                (value) => normalizeActor(value) ?? '',
+              ) as string[],
             });
             const relationshipsRes =
               await agent.app.bsky.graph.getRelationships({
@@ -2283,7 +2285,8 @@ export function createAtprotoClient({
               ),
             );
             return (
-              relationshipsRes.data.relationships as unknown as AtprotoRelationship[]
+              relationshipsRes.data
+                .relationships as unknown as AtprotoRelationship[]
             ).map((relationship) =>
               relationshipFromAtproto(
                 relationship,
@@ -2293,12 +2296,12 @@ export function createAtprotoClient({
           },
         },
         familiarFollowers: {
-          async fetch({
-            id,
-          }: { id?: string | string[] } = {}): Promise<
+          async fetch({ id }: { id?: string | string[] } = {}): Promise<
             Array<{ id: string; accounts: never[] }>
           > {
-            const ids = Array.isArray(id) ? id : [id].filter(Boolean) as string[];
+            const ids = Array.isArray(id)
+              ? id
+              : ([id].filter(Boolean) as string[]);
             return ids.map((accountID) => ({ id: accountID, accounts: [] }));
           },
         },
@@ -2397,10 +2400,7 @@ export function createAtprotoClient({
           },
         },
         link: {
-          list({
-            url,
-            limit = 20,
-          }: { url?: string; limit?: number } = {}) {
+          list({ url, limit = 20 }: { url?: string; limit?: number } = {}) {
             if (!url) return emptyCollection<AdaptedStatus[]>();
             return makeCollection<AdaptedStatus[]>(async (cursor) => {
               const res = await agent.app.bsky.feed.searchPosts({
@@ -2473,8 +2473,11 @@ export function createAtprotoClient({
           } while (cursor);
           const preferences = await agent.getPreferences().catch(() => null);
           const savedFeeds =
-            ((preferences as unknown as { savedFeeds?: Array<{ type?: string; value: string }> } | null)
-              ?.savedFeeds) || [];
+            (
+              preferences as unknown as {
+                savedFeeds?: Array<{ type?: string; value: string }>;
+              } | null
+            )?.savedFeeds || [];
           const savedFeedURIs = [
             BSKY_DISCOVER_FEED,
             ...savedFeeds
@@ -2496,9 +2499,7 @@ export function createAtprotoClient({
               actor: agentLoose.did ?? '',
               limit: 100,
             })
-            .then(
-              (res) => res.data.feeds as unknown as AtprotoFeedGenerator[],
-            )
+            .then((res) => res.data.feeds as unknown as AtprotoFeedGenerator[])
             .catch(() => [] as AtprotoFeedGenerator[]);
           const savedLists = await Promise.all(
             savedFeeds
@@ -2518,14 +2519,10 @@ export function createAtprotoClient({
             ...actorFeeds.map(feedGeneratorToPhanpyList),
             ...savedLists.filter((list): list is AdaptedList => Boolean(list)),
           ];
-          return [
-            ...new Map(allLists.map((list) => [list.id, list])).values(),
-          ];
+          return [...new Map(allLists.map((list) => [list.id, list])).values()];
         },
         $select: listAPI,
-        async create({
-          title,
-        }: { title?: string } = {}): Promise<AdaptedList> {
+        async create({ title }: { title?: string } = {}): Promise<AdaptedList> {
           const res = await agent.app.bsky.graph.list.create(
             { repo: agentLoose.did ?? '' },
             {
@@ -2825,10 +2822,12 @@ export function createAtprotoClient({
       },
       statuses: {
         $select: statusAPI,
-        async list({
-          id,
-        }: { id?: string | string[] } = {}): Promise<AdaptedStatus[]> {
-          const ids = Array.isArray(id) ? id : [id].filter(Boolean) as string[];
+        async list({ id }: { id?: string | string[] } = {}): Promise<
+          AdaptedStatus[]
+        > {
+          const ids = Array.isArray(id)
+            ? id
+            : ([id].filter(Boolean) as string[]);
           if (!ids.length) return [];
           const uris = ids.map((value) => decodeURIComponent(value));
           const res = await agent.getPosts({ uris });
@@ -2978,7 +2977,9 @@ export function createAtprotoClient({
               await wait(500);
             }
           }
-          const profile = await agent.getProfile({ actor: agentLoose.did ?? '' });
+          const profile = await agent.getProfile({
+            actor: agentLoose.did ?? '',
+          });
           return postToStatus(
             {
               uri: res.uri,
@@ -3082,9 +3083,7 @@ export function createAtprotoClient({
     },
     v2: {
       media: {
-        async create(
-          params: { file?: File; description?: string } = {},
-        ) {
+        async create(params: { file?: File; description?: string } = {}) {
           return this._create(params);
         },
         async _create({

@@ -37,14 +37,8 @@ interface EnhanceOpts {
 }
 
 function createDOM(html: string, isDocumentFragment: true): DocumentFragment;
-function createDOM(
-  html: string,
-  isDocumentFragment?: false,
-): HTMLDivElement;
-function createDOM(
-  html: string,
-  isDocumentFragment?: boolean,
-): EnhanceDOM;
+function createDOM(html: string, isDocumentFragment?: false): HTMLDivElement;
+function createDOM(html: string, isDocumentFragment?: boolean): EnhanceDOM;
 function createDOM(html: string, isDocumentFragment?: boolean): EnhanceDOM {
   if (isDocumentFragment) {
     const tpl = document.createElement('template');
@@ -163,9 +157,9 @@ function _enhanceContent(
   // ===========
   // Convert ```code``` to <pre><code>code</code></pre>
   if (hasCodeBlock) {
-    const blocks = [
-      ...dom.querySelectorAll<HTMLParagraphElement>('p'),
-    ].filter((p) => CODE_BLOCK_REGEX.test(p.innerText.trim()));
+    const blocks = [...dom.querySelectorAll<HTMLParagraphElement>('p')].filter(
+      (p) => CODE_BLOCK_REGEX.test(p.innerText.trim()),
+    );
     for (const block of blocks) {
       const pre = document.createElement('pre');
       // Replace <br /> with newlines
@@ -335,10 +329,7 @@ function _enhanceContent(
   // Workaround for Safari so that `text-decoration-thickness` works
   // Wrap child text nodes in spans
   for (const node of dom.childNodes) {
-    if (
-      node.nodeType === Node.TEXT_NODE &&
-      (node.textContent ?? '').trim()
-    ) {
+    if (node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim()) {
       const span = document.createElement('span');
       span.textContent = node.textContent;
       dom.replaceChild(span, node);
@@ -422,10 +413,7 @@ interface ExtractTextNodesOpts {
   rejectFilter?: readonly string[];
 }
 
-function extractTextNodes(
-  dom: Node,
-  opts: ExtractTextNodesOpts = {},
-): Text[] {
+function extractTextNodes(dom: Node, opts: ExtractTextNodesOpts = {}): Text[] {
   const textNodes: Text[] = [];
   const rejectFilterMap: Record<string, true> = Object.assign(
     {},

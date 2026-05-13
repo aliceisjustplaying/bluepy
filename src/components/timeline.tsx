@@ -1134,7 +1134,9 @@ export const TimelineItem = memo(
           class="timeline-item"
           parent="li"
           key={itemKey}
-          status={status as unknown as Parameters<typeof MediaPost>[0]['status']}
+          status={
+            status as unknown as Parameters<typeof MediaPost>[0]['status']
+          }
           instance={instance}
           // allowFilters={allowFilters}
         />

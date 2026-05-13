@@ -66,155 +66,155 @@ export default memo(function KeyboardShortcutsHelp() {
               <tbody>
                 {(
                   [
-                  {
-                    action: t`Keyboard shortcuts help`,
-                    keys: <kbd>?</kbd>,
-                  },
-                  {
-                    action: t`Next post`,
-                    keys: <kbd>j</kbd>,
-                  },
-                  {
-                    action: t`Previous post`,
-                    keys: <kbd>k</kbd>,
-                  },
-                  {
-                    action: t`Skip carousel to next post`,
-                    keys: (
-                      <Trans>
-                        <kbd>Shift</kbd> + <kbd>j</kbd>
-                      </Trans>
-                    ),
-                  },
-                  {
-                    action: t`Skip carousel to previous post`,
-                    keys: (
-                      <Trans>
-                        <kbd>Shift</kbd> + <kbd>k</kbd>
-                      </Trans>
-                    ),
-                  },
-                  {
-                    action: t`Load new posts`,
-                    keys: <kbd>.</kbd>,
-                  },
-                  {
-                    action: t`Open post details`,
-                    keys: <kbd>Enter</kbd>,
-                  },
-                  {
-                    action: t`Open media or post details`,
-                    keys: <kbd>o</kbd>,
-                  },
-                  {
-                    action: (
-                      <Trans>
-                        Expand content warning or
-                        <br />
-                        toggle expanded/collapsed thread
-                      </Trans>
-                    ),
-                    keys: <kbd>x</kbd>,
-                  },
-                  {
-                    action: t`Close post or dialogs`,
-                    keys: (
-                      <Trans>
-                        <kbd>Esc</kbd> or <kbd>Backspace</kbd>
-                      </Trans>
-                    ),
-                  },
-                  {
-                    action: t`Compose new post`,
-                    keys: <kbd>c</kbd>,
-                  },
-                  {
-                    action: t`Compose new post (new window)`,
-                    className: 'insignificant',
-                    keys: (
-                      <Trans>
-                        <kbd>Shift</kbd> + <kbd>c</kbd>
-                      </Trans>
-                    ),
-                  },
-                  {
-                    action: t`Send post`,
-                    keys: (
-                      <Trans>
-                        <kbd>Ctrl</kbd> + <kbd>Enter</kbd> or <kbd>⌘</kbd> +{' '}
-                        <kbd>Enter</kbd>
-                      </Trans>
-                    ),
-                  },
-                  {
-                    action: t`Search`,
-                    keys: <kbd>/</kbd>,
-                  },
-                  {
-                    action: t`Reply`,
-                    keys: <kbd>r</kbd>,
-                  },
-                  {
-                    action: t`Reply (new window)`,
-                    className: 'insignificant',
-                    keys: (
-                      <Trans>
-                        <kbd>Shift</kbd> + <kbd>r</kbd>
-                      </Trans>
-                    ),
-                  },
-                  {
-                    action: t`Like (favourite)`,
-                    keys: (
-                      <Trans>
-                        <kbd>l</kbd> or <kbd>f</kbd>
-                      </Trans>
-                    ),
-                  },
-                  {
-                    action: t`Boost`,
-                    keys: (
-                      <Trans>
-                        <kbd>Shift</kbd> + <kbd>b</kbd>
-                      </Trans>
-                    ),
-                  },
-                  {
-                    action: t`Quote`,
-                    keys: <kbd>q</kbd>,
-                  },
-                  {
-                    action: t`Bookmark`,
-                    keys: <kbd>d</kbd>,
-                  },
-                  {
-                    action: t`Toggle Cloak mode`,
-                    keys: (
-                      <Trans>
-                        <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>k</kbd>
-                      </Trans>
-                    ),
-                  },
-                  {
-                    action: t`Go to Home`,
-                    keys: <SequentialKeys key1="g" key2="h" />,
-                  },
-                  {
-                    action: t`Go to Notifications`,
-                    keys: <SequentialKeys key1="g" key2="n" />,
-                  },
-                  {
-                    action: t`Go to Settings`,
-                    keys: <SequentialKeys key1="g" key2="s" />,
-                  },
-                  {
-                    action: t`Go to Profile`,
-                    keys: <SequentialKeys key1="g" key2="p" />,
-                  },
-                  {
-                    action: t`Go to Bookmarks`,
-                    keys: <SequentialKeys key1="g" key2="b" />,
-                  },
+                    {
+                      action: t`Keyboard shortcuts help`,
+                      keys: <kbd>?</kbd>,
+                    },
+                    {
+                      action: t`Next post`,
+                      keys: <kbd>j</kbd>,
+                    },
+                    {
+                      action: t`Previous post`,
+                      keys: <kbd>k</kbd>,
+                    },
+                    {
+                      action: t`Skip carousel to next post`,
+                      keys: (
+                        <Trans>
+                          <kbd>Shift</kbd> + <kbd>j</kbd>
+                        </Trans>
+                      ),
+                    },
+                    {
+                      action: t`Skip carousel to previous post`,
+                      keys: (
+                        <Trans>
+                          <kbd>Shift</kbd> + <kbd>k</kbd>
+                        </Trans>
+                      ),
+                    },
+                    {
+                      action: t`Load new posts`,
+                      keys: <kbd>.</kbd>,
+                    },
+                    {
+                      action: t`Open post details`,
+                      keys: <kbd>Enter</kbd>,
+                    },
+                    {
+                      action: t`Open media or post details`,
+                      keys: <kbd>o</kbd>,
+                    },
+                    {
+                      action: (
+                        <Trans>
+                          Expand content warning or
+                          <br />
+                          toggle expanded/collapsed thread
+                        </Trans>
+                      ),
+                      keys: <kbd>x</kbd>,
+                    },
+                    {
+                      action: t`Close post or dialogs`,
+                      keys: (
+                        <Trans>
+                          <kbd>Esc</kbd> or <kbd>Backspace</kbd>
+                        </Trans>
+                      ),
+                    },
+                    {
+                      action: t`Compose new post`,
+                      keys: <kbd>c</kbd>,
+                    },
+                    {
+                      action: t`Compose new post (new window)`,
+                      className: 'insignificant',
+                      keys: (
+                        <Trans>
+                          <kbd>Shift</kbd> + <kbd>c</kbd>
+                        </Trans>
+                      ),
+                    },
+                    {
+                      action: t`Send post`,
+                      keys: (
+                        <Trans>
+                          <kbd>Ctrl</kbd> + <kbd>Enter</kbd> or <kbd>⌘</kbd> +{' '}
+                          <kbd>Enter</kbd>
+                        </Trans>
+                      ),
+                    },
+                    {
+                      action: t`Search`,
+                      keys: <kbd>/</kbd>,
+                    },
+                    {
+                      action: t`Reply`,
+                      keys: <kbd>r</kbd>,
+                    },
+                    {
+                      action: t`Reply (new window)`,
+                      className: 'insignificant',
+                      keys: (
+                        <Trans>
+                          <kbd>Shift</kbd> + <kbd>r</kbd>
+                        </Trans>
+                      ),
+                    },
+                    {
+                      action: t`Like (favourite)`,
+                      keys: (
+                        <Trans>
+                          <kbd>l</kbd> or <kbd>f</kbd>
+                        </Trans>
+                      ),
+                    },
+                    {
+                      action: t`Boost`,
+                      keys: (
+                        <Trans>
+                          <kbd>Shift</kbd> + <kbd>b</kbd>
+                        </Trans>
+                      ),
+                    },
+                    {
+                      action: t`Quote`,
+                      keys: <kbd>q</kbd>,
+                    },
+                    {
+                      action: t`Bookmark`,
+                      keys: <kbd>d</kbd>,
+                    },
+                    {
+                      action: t`Toggle Cloak mode`,
+                      keys: (
+                        <Trans>
+                          <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>k</kbd>
+                        </Trans>
+                      ),
+                    },
+                    {
+                      action: t`Go to Home`,
+                      keys: <SequentialKeys key1="g" key2="h" />,
+                    },
+                    {
+                      action: t`Go to Notifications`,
+                      keys: <SequentialKeys key1="g" key2="n" />,
+                    },
+                    {
+                      action: t`Go to Settings`,
+                      keys: <SequentialKeys key1="g" key2="s" />,
+                    },
+                    {
+                      action: t`Go to Profile`,
+                      keys: <SequentialKeys key1="g" key2="p" />,
+                    },
+                    {
+                      action: t`Go to Bookmarks`,
+                      keys: <SequentialKeys key1="g" key2="b" />,
+                    },
                   ] as ReadonlyArray<{
                     action: import('preact').ComponentChildren;
                     className?: string;

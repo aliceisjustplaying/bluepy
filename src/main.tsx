@@ -150,8 +150,9 @@ if (!redirectLegacyOrigin()) {
           console.log('💪 Received shared data from SW', data);
           const sharedData = processShareData(data);
           if (sharedData) {
-            (window as Window & { __SHARED_DATA__?: SharedDataPayload }).__SHARED_DATA__ =
-              sharedData;
+            (
+              window as Window & { __SHARED_DATA__?: SharedDataPayload }
+            ).__SHARED_DATA__ = sharedData;
             states.showCompose = true; // It'll use __SHARED_DATA__
           }
         }

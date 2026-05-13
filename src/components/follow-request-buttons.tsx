@@ -47,9 +47,7 @@ function FollowRequestButtons({
           setRequestState('accept');
           (async () => {
             try {
-              const rel = await followRequests
-                .$select(accountID)
-                .authorize();
+              const rel = await followRequests.$select(accountID).authorize();
               if (!rel?.followedBy) {
                 throw new Error('Follow request not accepted');
               }
@@ -74,9 +72,7 @@ function FollowRequestButtons({
           setRequestState('reject');
           (async () => {
             try {
-              const rel = await followRequests
-                .$select(accountID)
-                .reject();
+              const rel = await followRequests.$select(accountID).reject();
               if (rel?.followedBy) {
                 throw new Error('Follow request not rejected');
               }

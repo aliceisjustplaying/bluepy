@@ -128,7 +128,9 @@ function Accounts({ onClose }: AccountsProps) {
                               .fetch();
                             console.log('fetched account info', info);
                             (account as { info: unknown }).info = info;
-                            saveAccounts(accounts as unknown as StoredAccount[]);
+                            saveAccounts(
+                              accounts as unknown as StoredAccount[],
+                            );
                             reload();
                           } catch (e) {}
                         }
@@ -228,7 +230,9 @@ function Accounts({ onClose }: AccountsProps) {
                               // Move account to the top of the list
                               accounts.splice(i, 1);
                               accounts.unshift(account);
-                              saveAccounts(accounts as unknown as StoredAccount[]);
+                              saveAccounts(
+                                accounts as unknown as StoredAccount[],
+                              );
                               reload();
                             }}
                           >
@@ -243,7 +247,9 @@ function Accounts({ onClose }: AccountsProps) {
                               // Move account one position up
                               accounts.splice(i, 1);
                               accounts.splice(i - 1, 0, account);
-                              saveAccounts(accounts as unknown as StoredAccount[]);
+                              saveAccounts(
+                                accounts as unknown as StoredAccount[],
+                              );
                               reload();
                             }}
                           >
@@ -258,7 +264,9 @@ function Accounts({ onClose }: AccountsProps) {
                               // Move account one position down
                               accounts.splice(i, 1);
                               accounts.splice(i + 1, 0, account);
-                              saveAccounts(accounts as unknown as StoredAccount[]);
+                              saveAccounts(
+                                accounts as unknown as StoredAccount[],
+                              );
                               reload();
                             }}
                           >
@@ -289,7 +297,9 @@ function Accounts({ onClose }: AccountsProps) {
                             await logOutAccount();
                             delete (account as { accessToken?: string })
                               .accessToken;
-                            saveAccounts(accounts as unknown as StoredAccount[]);
+                            saveAccounts(
+                              accounts as unknown as StoredAccount[],
+                            );
                             reload();
                           }}
                           menuExtras={

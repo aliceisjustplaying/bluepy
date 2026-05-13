@@ -78,7 +78,10 @@ interface AccountListsEndpoint {
 
 interface AccountSelectEndpoint {
   lists: AccountListsEndpoint;
-  follow(params?: { notify?: boolean; reblogs?: boolean }): Promise<Relationship>;
+  follow(params?: {
+    notify?: boolean;
+    reblogs?: boolean;
+  }): Promise<Relationship>;
   unfollow(): Promise<Relationship>;
   pin(): Promise<Relationship>;
   unpin(): Promise<Relationship>;
@@ -526,24 +529,22 @@ function RelatedActions({
                       (async () => {
                         try {
                           if (endorsed) {
-                            const newRelationship =
-                              await getAccountsEndpoint(
-                                currentMasto as unknown as MastoLike,
-                              )
-                                .$select(currentInfo?.id || id)
-                                .unpin();
+                            const newRelationship = await getAccountsEndpoint(
+                              currentMasto as unknown as MastoLike,
+                            )
+                              .$select(currentInfo?.id || id)
+                              .unpin();
                             setRelationship(newRelationship);
                             setRelationshipUIState('default');
                             showToast(
                               t`@${username} is no longer featured on your profile.`,
                             );
                           } else {
-                            const newRelationship =
-                              await getAccountsEndpoint(
-                                currentMasto as unknown as MastoLike,
-                              )
-                                .$select(currentInfo?.id || id)
-                                .pin();
+                            const newRelationship = await getAccountsEndpoint(
+                              currentMasto as unknown as MastoLike,
+                            )
+                              .$select(currentInfo?.id || id)
+                              .pin();
                             setRelationship(newRelationship);
                             setRelationshipUIState('default');
                             showToast(
@@ -826,9 +827,7 @@ function RelatedActions({
                         >
                           {typeof MUTE_DURATIONS_LABELS[duration] === 'function'
                             ? (
-                                MUTE_DURATIONS_LABELS[
-                                  duration
-                                ] as () => string
+                                MUTE_DURATIONS_LABELS[duration] as () => string
                               )()
                             : i18n._(
                                 MUTE_DURATIONS_LABELS[
@@ -1173,7 +1172,9 @@ function RelatedActions({
   );
 }
 
-function niceAccountURL(url: string | null | undefined): VNode<JSX.HTMLAttributes> | undefined {
+function niceAccountURL(
+  url: string | null | undefined,
+): VNode<JSX.HTMLAttributes> | undefined {
   if (!url) return;
   const urlObj = URL.parse(url);
   if (!urlObj) return;

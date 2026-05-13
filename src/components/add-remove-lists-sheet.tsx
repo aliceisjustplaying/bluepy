@@ -38,7 +38,8 @@ interface ListAddEditProps {
   list?: ListLike | null;
   onClose?: (result: ListAddEditResult) => void;
 }
-const ListAddEdit = ListAddEditUntyped as unknown as ComponentType<ListAddEditProps>;
+const ListAddEdit =
+  ListAddEditUntyped as unknown as ComponentType<ListAddEditProps>;
 
 type ListAddEditModalState = boolean | { list?: ListLike };
 
@@ -50,10 +51,7 @@ interface AddRemoveListsSheetProps {
   children?: ComponentChildren;
 }
 
-function AddRemoveListsSheet({
-  accountID,
-  onClose,
-}: AddRemoveListsSheetProps) {
+function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
   const { t } = useLingui();
   const { masto } = api();
   const [uiState, setUIState] = useState<UIState>('default');
@@ -73,8 +71,8 @@ function AddRemoveListsSheet({
       try {
         const lists = await getUserLists();
         setLists(lists as ListLike[]);
-        const accountsEndpoint =
-          masto.v1.accounts as unknown as AccountListsEndpoint;
+        const accountsEndpoint = masto.v1
+          .accounts as unknown as AccountListsEndpoint;
         const listsContainingAccount = await accountsEndpoint
           .$select(accountID)
           .lists.list();
@@ -120,8 +118,8 @@ function AddRemoveListsSheet({
                       setUIState('loading');
                       (async () => {
                         try {
-                          const listsEndpoint =
-                            masto.v1.lists as unknown as ListsAccountsEndpoint;
+                          const listsEndpoint = masto.v1
+                            .lists as unknown as ListsAccountsEndpoint;
                           if (inList) {
                             await listsEndpoint
                               .$select(list.id)

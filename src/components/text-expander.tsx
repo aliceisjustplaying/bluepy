@@ -57,8 +57,10 @@ export interface TextExpanderHandle {
   activated(): boolean;
 }
 
-interface TextExpanderProps
-  extends Omit<JSX.HTMLAttributes<HTMLElement>, 'onTrigger' | 'keys'> {
+interface TextExpanderProps extends Omit<
+  JSX.HTMLAttributes<HTMLElement>,
+  'onTrigger' | 'keys'
+> {
   onTrigger?: ((payload: Record<string, unknown>) => void) | null;
   keys?: string;
 }
@@ -115,9 +117,7 @@ function TextExpander(
   useEffect(() => {
     if (searcherRef.current) return; // Already set up
 
-    (
-      getCustomEmojis(instance) as unknown as Promise<[unknown, EmojiSearcher]>
-    )
+    (getCustomEmojis(instance) as unknown as Promise<[unknown, EmojiSearcher]>)
       .then(([, searcher]) => {
         searcherRef.current = searcher;
       })

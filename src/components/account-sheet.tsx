@@ -35,7 +35,8 @@ interface AccountInfoProps {
   account: mastodon.v1.Account | string;
   fetchAccount?: () => Promise<mastodon.v1.Account | undefined>;
 }
-const AccountInfo = AccountInfoUntyped as unknown as ComponentType<AccountInfoProps>;
+const AccountInfo =
+  AccountInfoUntyped as unknown as ComponentType<AccountInfoProps>;
 
 type AccountSheetCloseArg = { destination?: string } | Event | undefined;
 type AccountSheetCloseHandler = (arg?: AccountSheetCloseArg) => void;
@@ -57,10 +58,8 @@ function AccountSheet({
 
   useEffect(() => {
     if (!isString) {
-      states.accounts[`${account.id}@${instance}`] = account as unknown as Record<
-        string,
-        unknown
-      >;
+      states.accounts[`${account.id}@${instance}`] =
+        account as unknown as Record<string, unknown>;
     }
   }, [account]);
 
@@ -93,10 +92,10 @@ function AccountSheet({
         account={account}
         fetchAccount={async () => {
           if (isString) {
-            const accountsEndpoint =
-              masto.v1.accounts as unknown as AccountsLookupV1;
-            const searchEndpoint =
-              masto.v2.search as unknown as SearchV2Endpoint;
+            const accountsEndpoint = masto.v1
+              .accounts as unknown as AccountsLookupV1;
+            const searchEndpoint = masto.v2
+              .search as unknown as SearchV2Endpoint;
             try {
               const info = await accountsEndpoint.lookup({
                 acct: account,
@@ -140,8 +139,8 @@ function AccountSheet({
               return undefined;
             }
           } else {
-            const accountsEndpoint =
-              masto.v1.accounts as unknown as AccountsLookupV1;
+            const accountsEndpoint = masto.v1
+              .accounts as unknown as AccountsLookupV1;
             return accountsEndpoint.$select(account.id).fetch();
           }
         }}

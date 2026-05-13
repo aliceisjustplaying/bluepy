@@ -11,7 +11,8 @@ function getRelativeTimeLocale(locale: unknown): string | undefined {
 }
 
 const relativeTimeFormat = mem(
-  (locale: unknown) => new Intl.RelativeTimeFormat(getRelativeTimeLocale(locale)),
+  (locale: unknown) =>
+    new Intl.RelativeTimeFormat(getRelativeTimeLocale(locale)),
 );
 
 export default relativeTimeFormat;
