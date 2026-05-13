@@ -1,16 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType } from 'preact';
 import { useContext } from 'preact/hooks';
 
 import { ThreadCountContext } from '../utils/thread-count-context';
 
-import IconRaw from './icon';
-
-const Icon = IconRaw as unknown as ComponentType<{
-  icon: string;
-  size?: string;
-  alt?: string;
-}>;
+import Icon from './icon';
 
 interface ThreadIconProps {
   alt?: string;

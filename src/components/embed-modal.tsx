@@ -1,14 +1,9 @@
 import './embed-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType, CSSProperties } from 'preact';
+import type { CSSProperties } from 'preact';
 
-import IconRaw from './icon';
-
-const Icon = IconRaw as unknown as ComponentType<{
-  icon: string;
-  alt?: string;
-}>;
+import Icon from './icon';
 
 interface EmbedModalProps {
   html?: string;

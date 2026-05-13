@@ -51,7 +51,7 @@ export default memo(function KeyboardShortcutsHelp() {
         <div
           id="keyboard-shortcuts-help-container"
           class="sheet"
-          tabIndex={'-1' as unknown as number}
+          tabIndex={-1}
         >
           <button type="button" class="sheet-close" onClick={onClose}>
             <Icon icon="x" alt={t`Close`} />

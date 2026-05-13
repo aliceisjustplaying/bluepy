@@ -1,13 +1,12 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import { useEffect } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import states from '../utils/states';
 import useLocationChange from '../utils/useLocationChange';
 
-import AccountInfoUntyped from './account-info';
+import AccountInfo from './account-info';
 import Icon from './icon';
 
 interface AccountsLookupV1 {
@@ -28,15 +27,6 @@ interface SearchV2Endpoint {
     resolve: boolean;
   }): Promise<{ accounts: mastodon.v1.Account[] }>;
 }
-
-interface AccountInfoProps {
-  instance?: string;
-  authenticated?: boolean;
-  account: mastodon.v1.Account | string;
-  fetchAccount?: () => Promise<mastodon.v1.Account | undefined>;
-}
-const AccountInfo =
-  AccountInfoUntyped as unknown as ComponentType<AccountInfoProps>;
 
 type AccountSheetCloseArg = { destination?: string } | Event | undefined;
 type AccountSheetCloseHandler = (arg?: AccountSheetCloseArg) => void;

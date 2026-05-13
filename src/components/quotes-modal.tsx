@@ -7,24 +7,13 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 
-import IconUntyped from './icon';
+import Icon from './icon';
 import Link from './link';
-import LoaderUntyped from './loader';
+import Loader from './loader';
 // TODO(oxlint:import/no-cycle): status imports quotes-modal lazily for the
 // "show quotes" sheet; breaking this cycle requires extracting a shared types
 // module. Out of scope for the oxlint cleanup batch.
 import StatusUntyped from './status';
-
-type IconProps = {
-  icon: string;
-  alt?: string;
-  [key: string]: unknown;
-};
-
-type LoaderProps = {
-  abrupt?: boolean;
-  [key: string]: unknown;
-};
 
 type StatusProps = {
   status: mastodon.v1.Status;
@@ -36,14 +25,6 @@ type StatusProps = {
   [key: string]: unknown;
 };
 
-function Icon(props: IconProps) {
-  const Inner = IconUntyped as unknown as ComponentType<IconProps>;
-  return <Inner {...props} />;
-}
-function Loader(props: LoaderProps) {
-  const Inner = LoaderUntyped as unknown as ComponentType<LoaderProps>;
-  return <Inner {...props} />;
-}
 function Status(props: StatusProps) {
   const Inner = StatusUntyped as unknown as ComponentType<StatusProps>;
   return <Inner {...props} />;

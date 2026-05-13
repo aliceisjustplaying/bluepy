@@ -1,13 +1,9 @@
 import { Trans } from '@lingui/react/macro';
 import type { ComponentChildren, ComponentType } from 'preact';
 
-import IconRaw from './icon';
+import Icon from './icon';
 import NameTextRaw from './name-text';
 
-const Icon = IconRaw as unknown as ComponentType<{
-  icon: string;
-  size?: string;
-}>;
 const NameText = NameTextRaw as unknown as ComponentType<{
   account: unknown;
   showAvatar?: boolean;

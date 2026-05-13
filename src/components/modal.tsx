@@ -51,7 +51,7 @@ function Modal({
     return () => clearTimeout(timer);
   }, [hasChildren]);
 
-  const supportsCloseWatcher = (window as unknown as { CloseWatcher?: unknown })
+  const supportsCloseWatcher = (window as Window & { CloseWatcher?: unknown })
     .CloseWatcher;
   const escRef = useHotkeys<HTMLElement>(
     'esc',
@@ -180,7 +180,7 @@ function Modal({
           onClose?.(e);
         }
       }}
-      tabIndex={(minimized ? 0 : '-1') as unknown as number}
+      tabIndex={minimized ? 0 : -1}
       inert={minimized}
       onFocus={(e: TargetedFocusEvent<HTMLDivElement>) => {
         try {

@@ -1,18 +1,19 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentChildren, ComponentType } from 'preact';
+import type { ComponentChildren } from 'preact';
 import { useEffect, useReducer, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import { getUserLists } from '../utils/lists';
 
 import Icon from './icon';
-import ListAddEditUntyped from './list-add-edit';
+import ListAddEdit from './list-add-edit';
 import Loader from './loader';
 import Modal from './modal';
 
 interface ListLike {
   id: string;
   title: string;
+  [key: string]: unknown;
 }
 
 interface AccountListsEndpoint {
@@ -29,17 +30,6 @@ interface ListsAccountsEndpoint {
     };
   };
 }
-
-interface ListAddEditResult {
-  state?: string;
-}
-
-interface ListAddEditProps {
-  list?: ListLike | null;
-  onClose?: (result: ListAddEditResult) => void;
-}
-const ListAddEdit =
-  ListAddEditUntyped as unknown as ComponentType<ListAddEditProps>;
 
 type ListAddEditModalState = boolean | { list?: ListLike };
 
@@ -199,7 +189,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
                 : undefined
             }
             onClose={(result) => {
-              if (result.state === 'success') {
+              if (result && 'state' in result && result.state === 'success') {
                 reload(undefined);
               }
               setShowListAddEditModal(false);
