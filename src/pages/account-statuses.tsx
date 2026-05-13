@@ -4,10 +4,8 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
 import type {
-  ComponentType,
   TargetedEvent,
   TargetedMouseEvent,
-  VNode,
 } from 'preact';
 import {
   useCallback,
@@ -27,7 +25,7 @@ import EmojiText from '../components/emoji-text';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Menu2 from '../components/menu2';
-import TimelineUntyped from '../components/timeline';
+import Timeline from '../components/timeline';
 import { api } from '../utils/api';
 import isSearchEnabled from '../utils/is-search-enabled';
 import mem from '../utils/mem';
@@ -52,32 +50,6 @@ interface PinnedGroup {
 }
 
 type TimelineItem = (Status & { _pinned?: boolean }) | PinnedGroup;
-
-interface TimelineProps {
-  key?: string;
-  title?: string;
-  titleComponent?: VNode;
-  id?: string;
-  timelineKey?: string;
-  instance?: string;
-  emptyText?: string;
-  errorText?: string;
-  fetchItems?: (firstLoad?: boolean) => Promise<{
-    value: ReadonlyArray<TimelineItem>;
-    done?: boolean;
-  }>;
-  useItemID?: boolean;
-  view?: string;
-  boostsCarousel?: boolean;
-  timelineStart?: VNode;
-  refresh?: string;
-  headerEnd?: VNode;
-}
-
-function Timeline(props: TimelineProps) {
-  const Inner = TimelineUntyped as unknown as ComponentType<TimelineProps>;
-  return <Inner {...props} />;
-}
 
 interface AccountStatusesProps {
   columnMode?: boolean;
@@ -224,6 +196,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         };
       }
       const [_year, _month] = (month as string).split('-');
+      const yearNum = parseInt(_year, 10);
       const monthIndex = parseInt(_month, 10) - 1;
       // YYYY-MM (no day)
       // Search options:
@@ -232,12 +205,12 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       // - before:YYYY-MM-DD (non-inclusive)
 
       // Last day of previous month
-      const after = new Date(_year as unknown as number, monthIndex, 0);
+      const after = new Date(yearNum, monthIndex, 0);
       const afterStr = `${after.getFullYear()}-${(after.getMonth() + 1)
         .toString()
         .padStart(2, '0')}-${after.getDate().toString().padStart(2, '0')}`;
       // First day of next month
-      const before = new Date(_year as unknown as number, monthIndex + 1, 1);
+      const before = new Date(yearNum, monthIndex + 1, 1);
       const beforeStr = `${before.getFullYear()}-${(before.getMonth() + 1)
         .toString()
         .padStart(2, '0')}-${before.getDate().toString().padStart(2, '0')}`;
@@ -625,10 +598,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                         );
                         const [year, monthStr] = value.split('-');
                         const monthIndex = parseInt(monthStr, 10) - 1;
-                        const date = new Date(
-                          year as unknown as number,
-                          monthIndex,
-                        );
+                        const date = new Date(parseInt(year, 10), monthIndex);
                         showToast(
                           t`Showing posts in ${date.toLocaleString(
                             i18n.locale,

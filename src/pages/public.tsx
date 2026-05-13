@@ -1,14 +1,13 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import { useRef, useState } from 'preact/hooks';
 import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
 import Icon from '../components/icon';
 import Menu2 from '../components/menu2';
-import TimelineUntyped from '../components/timeline';
+import Timeline from '../components/timeline';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { saveStatus } from '../utils/states';
@@ -43,29 +42,6 @@ interface PublicTimelinesApi {
 interface FetchItemsResult {
   done?: boolean;
   value: PublicTimelineItem[];
-}
-
-interface TimelineProps {
-  key?: string;
-  title?: string;
-  titleComponent?: preact.ComponentChildren;
-  id?: string;
-  timelineKey?: string;
-  instance?: string;
-  emptyText?: string;
-  errorText?: string;
-  fetchItems?: (firstLoad?: boolean) => Promise<FetchItemsResult>;
-  checkForUpdates?: () => Promise<boolean>;
-  useItemID?: boolean;
-  headerStart?: preact.ComponentChildren;
-  headerEnd?: preact.ComponentChildren;
-  boostsCarousel?: boolean;
-  filterContext?: string;
-}
-
-function Timeline(props: TimelineProps) {
-  const Inner = TimelineUntyped as unknown as ComponentType<TimelineProps>;
-  return <Inner {...props} />;
 }
 
 type TimelineAccess = string | null;

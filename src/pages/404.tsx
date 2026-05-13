@@ -1,17 +1,6 @@
 // NOTE: UNUSED
 
-import type { ComponentChildren, ComponentType } from 'preact';
-
-import LinkUntyped from '../components/link';
-
-interface LinkProps {
-  to: string;
-  children?: ComponentChildren;
-}
-function Link(props: LinkProps) {
-  const Inner = LinkUntyped as unknown as ComponentType<LinkProps>;
-  return <Inner {...props} />;
-}
+import Link from '../components/link';
 
 export default function NotFound() {
   return (
