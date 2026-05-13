@@ -1,5 +1,14 @@
 import { msg, t } from '@lingui/core/macro';
+import type { MessageDescriptor } from '@lingui/core';
 import { Plural, Select, Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type {
+  ComponentChildren,
+  ComponentType,
+  JSX,
+  Ref,
+  VNode,
+} from 'preact';
 import { Fragment } from 'preact';
 import { memo } from 'preact/compat';
 
@@ -12,13 +21,165 @@ import useTruncated from '../utils/useTruncated';
 
 import Avatar from './avatar';
 import CustomEmoji from './custom-emoji';
-import FollowRequestButtons from './follow-request-buttons';
+import FollowRequestButtonsRaw from './follow-request-buttons';
 import Icon from './icon';
-import Link from './link';
-import NameText from './name-text';
-import Status from './status';
+import Link, { type LinkProps } from './link';
+import NameTextUntyped from './name-text';
+import StatusUntyped from './status';
 
-const NOTIFICATION_ICONS = {
+// Shim untyped JSX peers used by this component. These are removed when the
+// peer modules are converted to TypeScript in later waves.
+interface AccountWithBot {
+  id?: string;
+  url?: string;
+  avatarStatic?: string;
+  displayName?: string;
+  acct?: string;
+  bot?: boolean;
+  _types?: string[];
+  [key: string]: unknown;
+}
+
+interface NameTextProps {
+  account?: AccountWithBot;
+  instance?: string;
+  showAvatar?: boolean;
+  showAcct?: boolean;
+  short?: boolean;
+  external?: boolean;
+  onClick?: (e: MouseEvent) => void;
+}
+const NameText = NameTextUntyped as unknown as ComponentType<NameTextProps>;
+
+interface StatusComponentProps {
+  status?: mastodon.v1.Status | null;
+  statusID?: string;
+  instance?: string;
+  size?: 's' | 'm' | 'l';
+  previewMode?: boolean;
+  readOnly?: boolean;
+  allowContextMenu?: boolean;
+  allowFilters?: boolean;
+}
+const Status = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
+
+// The typed FollowRequestButtons requires `onChange`, but the JS original
+// (and the `notification` use site) historically omits it; preserve that
+// behavior with a shim that marks `onChange` as optional.
+interface FollowRequestButtonsShimProps {
+  accountID: string;
+  onChange?: () => void;
+}
+const FollowRequestButtons =
+  FollowRequestButtonsRaw as unknown as ComponentType<FollowRequestButtonsShimProps>;
+
+// `masto.v2.notifications` is typed as `unknown` in our local MastoClient
+// shim. Describe just the surface this component uses.
+interface MastoV2NotificationAccountsList {
+  values(): AsyncIterator<AccountWithBot[]>;
+}
+interface MastoV2NotificationSelector {
+  accounts: {
+    list(): MastoV2NotificationAccountsList;
+  };
+}
+interface MastoV2Notifications {
+  $select(groupKey: string): MastoV2NotificationSelector;
+}
+
+// Input shape for this component. Mirrors `mastodon.v1.Notification` /
+// `mastodon.v2.NotificationGroup` plus client-side grouping fields injected
+// by `group-notifications.ts`. The masto entity unions are too strict to
+// describe the full superset, so we keep a wide local interface.
+interface EmojiUrlObject {
+  url?: string;
+  staticUrl?: string;
+}
+
+interface AnnualReportData {
+  year?: string | number;
+  [key: string]: unknown;
+}
+
+interface ModerationWarningPayload {
+  id?: string;
+  action?: keyof typeof MODERATION_WARNING_TEXT;
+  [key: string]: unknown;
+}
+
+interface SeveredRelationshipEvent {
+  type?: keyof typeof SEVERED_RELATIONSHIPS_TEXT;
+  targetName?: string;
+  followersCount?: number;
+  followingCount?: number;
+  [key: string]: unknown;
+}
+
+interface NotificationReport {
+  targetAccount?: AccountWithBot;
+  [key: string]: unknown;
+}
+
+interface NotificationInput {
+  id?: string;
+  type?: string;
+  createdAt?: string;
+  account?: AccountWithBot;
+  status?: mastodon.v1.Status | null;
+  report?: NotificationReport;
+  event?: SeveredRelationshipEvent;
+  moderation_warning?: ModerationWarningPayload;
+  annualReport?: AnnualReportData;
+  emoji?: string;
+  emoji_url?: string | EmojiUrlObject;
+  // Client-side grouped notification
+  _ids?: string;
+  _accounts?: AccountWithBot[];
+  _statuses?: (mastodon.v1.Status | null | undefined)[];
+  _groupKeys?: string[];
+  _notificationsCount?: number[];
+  _sampleAccountsCount?: number[];
+  // Server-side grouped notification. Entries may be `undefined` because
+  // `massageNotifications2` resolves each id via `accounts.find(...)`, which
+  // yields `undefined` for ids not present in the payload. The JS original
+  // passed undefineds straight through, so mirror the loose entry type.
+  sampleAccounts?: (AccountWithBot | undefined)[];
+  notificationsCount?: number;
+  groupKey?: string;
+  [key: string]: unknown;
+}
+
+interface NotificationProps {
+  notification: NotificationInput;
+  instance?: string;
+  isStatic?: boolean;
+  disableContextMenu?: boolean;
+}
+
+interface SubjectProps {
+  clickable?: boolean;
+  children?: ComponentChildren;
+  [key: string]: unknown;
+}
+type SubjectComponent = ComponentType<SubjectProps>;
+
+interface ContentTextArgs {
+  account?: VNode | null;
+  targetAccount?: VNode | null;
+  count?: number;
+  postsCount?: number;
+  postType?: 'reply' | 'post';
+  components?: { Subject: SubjectComponent };
+  name?: string;
+  emoji?: string;
+  emojiURL?: string | EmojiUrlObject;
+  year?: string | number;
+  [key: string]: unknown;
+}
+
+type ContentTextRenderer = (args: ContentTextArgs) => JSX.Element | string;
+
+const NOTIFICATION_ICONS: Record<string, string> = {
   mention: 'comment',
   status: 'notification',
   reblog: 'rocket',
@@ -58,9 +219,13 @@ quote = Someone quoted one of your statuses
 quoted_update = A status you have quoted has been edited
 */
 
-function emojiText({ account, emoji, emojiURL }) {
-  let url;
-  let staticUrl;
+function emojiText({
+  account,
+  emoji,
+  emojiURL,
+}: ContentTextArgs): JSX.Element {
+  let url: string | undefined;
+  let staticUrl: string | undefined;
   if (typeof emojiURL === 'string') {
     url = emojiURL;
   } else {
@@ -79,123 +244,134 @@ function emojiText({ account, emoji, emojiURL }) {
   );
 }
 
-const contentText = {
+const contentText: Record<string, ContentTextRenderer> = {
   status: ({ account }) => <Trans>{account} published a post.</Trans>,
-  reblog: ({
-    count,
-    account,
-    postsCount,
-    postType,
-    components: { Subject },
-  }) => (
-    <Plural
-      value={count}
-      _1={
-        <Plural
-          value={postsCount}
-          _1={
-            <Select
-              value={postType}
-              _reply={<Trans>{account} boosted your reply.</Trans>}
-              other={<Trans>{account} boosted your post.</Trans>}
-            />
-          }
-          other={
-            <Trans>
-              {account} boosted {postsCount} of your posts.
-            </Trans>
-          }
-        />
-      }
-      other={
-        <Select
-          value={postType}
-          _reply={
-            <Trans>
-              <Subject clickable={count > 1}>
-                <span title={count}>{shortenNumber(count)}</span> people
-              </Subject>{' '}
-              boosted your reply.
-            </Trans>
-          }
-          other={
-            <Trans>
-              <Subject clickable={count > 1}>
-                <span title={count}>{shortenNumber(count)}</span> people
-              </Subject>{' '}
-              boosted your post.
-            </Trans>
-          }
-        />
-      }
-    />
-  ),
-  follow: ({ account, count, components: { Subject } }) => (
-    <Plural
-      value={count}
-      _1={<Trans>{account} followed you.</Trans>}
-      other={
-        <Trans>
-          <Subject clickable={count > 1}>
-            <span title={count}>{shortenNumber(count)}</span> people
-          </Subject>{' '}
-          followed you.
-        </Trans>
-      }
-    />
-  ),
+  reblog: (args) => {
+    // Unwrap with locals so the Lingui macro sees plain identifiers and
+    // keeps named placeholders (`{count}`) instead of switching to positional
+    // (`{0}`). The JS original used implicit `any`; runtime semantics are
+    // identical.
+    const { account, components } = args;
+    const count = args.count as number;
+    const postsCount = args.postsCount as number;
+    const postType = args.postType as 'reply' | 'post';
+    const Subject = components!.Subject;
+    return (
+      <Plural
+        value={count}
+        _1={
+          <Plural
+            value={postsCount}
+            _1={
+              <Select
+                value={postType}
+                _reply={<Trans>{account} boosted your reply.</Trans>}
+                other={<Trans>{account} boosted your post.</Trans>}
+              />
+            }
+            other={
+              <Trans>
+                {account} boosted {postsCount} of your posts.
+              </Trans>
+            }
+          />
+        }
+        other={
+          <Select
+            value={postType}
+            _reply={
+              <Trans>
+                <Subject clickable={count > 1}>
+                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                </Subject>{' '}
+                boosted your reply.
+              </Trans>
+            }
+            other={
+              <Trans>
+                <Subject clickable={count > 1}>
+                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                </Subject>{' '}
+                boosted your post.
+              </Trans>
+            }
+          />
+        }
+      />
+    );
+  },
+  follow: (args) => {
+    const { account, components } = args;
+    const count = args.count as number;
+    const Subject = components!.Subject;
+    return (
+      <Plural
+        value={count}
+        _1={<Trans>{account} followed you.</Trans>}
+        other={
+          <Trans>
+            <Subject clickable={count > 1}>
+              <span title={String(count)}>{shortenNumber(count)}</span> people
+            </Subject>{' '}
+            followed you.
+          </Trans>
+        }
+      />
+    );
+  },
   follow_request: ({ account }) => (
     <Trans>{account} requested to follow you.</Trans>
   ),
-  favourite: ({
-    account,
-    count,
-    postsCount,
-    postType,
-    components: { Subject },
-  }) => (
-    <Plural
-      value={count}
-      _1={
-        <Plural
-          value={postsCount}
-          _1={
-            <Select
-              value={postType}
-              _reply={<Trans>{account} liked your reply.</Trans>}
-              other={<Trans>{account} liked your post.</Trans>}
-            />
-          }
-          other={
-            <Trans>
-              {account} liked {postsCount} of your posts.
-            </Trans>
-          }
-        />
-      }
-      other={
-        <Select
-          value={postType}
-          _reply={
-            <Trans>
-              <Subject clickable={count > 1}>
-                <span title={count}>{shortenNumber(count)}</span> people
-              </Subject>{' '}
-              liked your reply.
-            </Trans>
-          }
-          other={
-            <Trans>
-              <Subject clickable={count > 1}>
-                <span title={count}>{shortenNumber(count)}</span> people
-              </Subject>{' '}
-              liked your post.
-            </Trans>
-          }
-        />
-      }
-    />
-  ),
+  favourite: (args) => {
+    const { account, components } = args;
+    const count = args.count as number;
+    const postsCount = args.postsCount as number;
+    const postType = args.postType as 'reply' | 'post';
+    const Subject = components!.Subject;
+    return (
+      <Plural
+        value={count}
+        _1={
+          <Plural
+            value={postsCount}
+            _1={
+              <Select
+                value={postType}
+                _reply={<Trans>{account} liked your reply.</Trans>}
+                other={<Trans>{account} liked your post.</Trans>}
+              />
+            }
+            other={
+              <Trans>
+                {account} liked {postsCount} of your posts.
+              </Trans>
+            }
+          />
+        }
+        other={
+          <Select
+            value={postType}
+            _reply={
+              <Trans>
+                <Subject clickable={count > 1}>
+                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                </Subject>{' '}
+                liked your reply.
+              </Trans>
+            }
+            other={
+              <Trans>
+                <Subject clickable={count > 1}>
+                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                </Subject>{' '}
+                liked your post.
+              </Trans>
+            }
+          />
+        }
+      />
+    );
+  },
   poll: () => t`A poll you have voted in or created has ended.`,
   'poll-self': () => t`A poll you have created has ended.`,
   'poll-voted': () => t`A poll you have voted in has ended.`,
@@ -205,72 +381,78 @@ const contentText = {
     ) : (
       t`A post you interacted with has been edited.`
     ),
-  'favourite+reblog': ({
-    count,
-    account,
-    postsCount,
-    postType,
-    components: { Subject },
-  }) => (
-    <Plural
-      value={count}
-      _1={
-        <Plural
-          value={postsCount}
-          _1={
-            <Select
-              value={postType}
-              _reply={<Trans>{account} boosted & liked your reply.</Trans>}
-              other={<Trans>{account} boosted & liked your post.</Trans>}
-            />
-          }
-          other={
-            <Trans>
-              {account} boosted & liked {postsCount} of your posts.
-            </Trans>
-          }
-        />
-      }
-      other={
-        <Select
-          value={postType}
-          _reply={
-            <Trans>
-              <Subject clickable={count > 1}>
-                <span title={count}>{shortenNumber(count)}</span> people
-              </Subject>{' '}
-              boosted & liked your reply.
-            </Trans>
-          }
-          other={
-            <Trans>
-              <Subject clickable={count > 1}>
-                <span title={count}>{shortenNumber(count)}</span> people
-              </Subject>{' '}
-              boosted & liked your post.
-            </Trans>
-          }
-        />
-      }
-    />
-  ),
+  'favourite+reblog': (args) => {
+    const { account, components } = args;
+    const count = args.count as number;
+    const postsCount = args.postsCount as number;
+    const postType = args.postType as 'reply' | 'post';
+    const Subject = components!.Subject;
+    return (
+      <Plural
+        value={count}
+        _1={
+          <Plural
+            value={postsCount}
+            _1={
+              <Select
+                value={postType}
+                _reply={<Trans>{account} boosted & liked your reply.</Trans>}
+                other={<Trans>{account} boosted & liked your post.</Trans>}
+              />
+            }
+            other={
+              <Trans>
+                {account} boosted & liked {postsCount} of your posts.
+              </Trans>
+            }
+          />
+        }
+        other={
+          <Select
+            value={postType}
+            _reply={
+              <Trans>
+                <Subject clickable={count > 1}>
+                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                </Subject>{' '}
+                boosted & liked your reply.
+              </Trans>
+            }
+            other={
+              <Trans>
+                <Subject clickable={count > 1}>
+                  <span title={String(count)}>{shortenNumber(count)}</span> people
+                </Subject>{' '}
+                boosted & liked your post.
+              </Trans>
+            }
+          />
+        }
+      />
+    );
+  },
   quoted_update: ({ account }) => (
     <Trans>{account} edited a post you have quoted.</Trans>
   ),
-  'admin.sign_up': ({ account, count, components: { Subject } }) => (
-    <Plural
-      value={count}
-      _1={<Trans>{account} signed up.</Trans>}
-      other={
-        <Trans>
-          <Subject clickable={count > 1}>
-            <span title={count}>{shortenNumber(count)}</span> people
-          </Subject>{' '}
-          signed up.
-        </Trans>
-      }
-    />
-  ),
+  'admin.sign_up': (args) => {
+    const { account, components } = args;
+    const count = args.count as number;
+    const Subject = components!.Subject;
+    return (
+      <Plural
+        value={count}
+        _1={<Trans>{account} signed up.</Trans>}
+        other={
+          <Trans>
+            <Subject clickable={count > 1}>
+              <span title={String(count)}>{shortenNumber(count)}</span> people
+            </Subject>{' '}
+            signed up.
+          </Trans>
+        }
+      />
+    );
+  },
   'admin.report': ({ account, targetAccount }) => (
     <Trans>
       {account} reported {targetAccount}
@@ -292,8 +474,20 @@ const contentText = {
   annual_report: ({ year }) => <Trans>Your {year} #Wrapstodon is here!</Trans>,
 };
 
+interface SeveredRelationshipArgs {
+  from?: string;
+  targetName?: string;
+  followersCount?: number;
+  followingCount?: number;
+  type?: string;
+  [key: string]: unknown;
+}
+
 // account_suspension, domain_block, user_domain_block
-const SEVERED_RELATIONSHIPS_TEXT = {
+const SEVERED_RELATIONSHIPS_TEXT: Record<
+  string,
+  (args: SeveredRelationshipArgs) => JSX.Element
+> = {
   account_suspension: ({ from, targetName }) => (
     <Trans>
       An admin from <i>{from}</i> has suspended <i>{targetName}</i>, which means
@@ -314,7 +508,7 @@ const SEVERED_RELATIONSHIPS_TEXT = {
   ),
 };
 
-const MODERATION_WARNING_TEXT = {
+const MODERATION_WARNING_TEXT: Record<string, MessageDescriptor> = {
   none: msg`Your account has received a moderation warning.`,
   disable: msg`Your account has been disabled.`,
   mark_statuses_as_sensitive: msg`Some of your posts have been marked as sensitive.`,
@@ -331,8 +525,8 @@ function Notification({
   instance,
   isStatic,
   disableContextMenu,
-}) {
-  const { _ } = useLingui();
+}: NotificationProps) {
+  const { i18n } = useLingui();
   const { masto } = api();
   const {
     id,
@@ -351,8 +545,6 @@ function Notification({
     sampleAccounts,
     notificationsCount,
     groupKey,
-    _notificationsCount,
-    _sampleAccountsCount,
   } = notification;
   let { type } = notification;
 
@@ -390,29 +582,40 @@ function Notification({
     if (!favsCount && reblogsCount) type = 'reblog';
   }
 
-  let text;
+  let text: ContentTextRenderer | JSX.Element | string | undefined;
   if (type === 'poll') {
     text = contentText[isSelf ? 'poll-self' : isVoted ? 'poll-voted' : 'poll'];
-  } else if (contentText[type]) {
+  } else if (type && contentText[type]) {
     text = contentText[type];
   } else {
     // Anticipate unhandled notification types, possibly from Mastodon forks or non-Mastodon instances
     // This surfaces the error to the user, hoping that users will report it
-    text = t`[Unknown notification type: ${type}]`;
+    // Preserve JS behavior: undefined `type` interpolates as the string
+    // "undefined". The `t` macro placeholder type rejects `undefined`, so
+    // coerce explicitly.
+    text = t`[Unknown notification type: ${String(type)}]`;
   }
 
-  const Subject = ({ clickable, ...props }) =>
+  const Subject: SubjectComponent = ({ clickable, ...props }) =>
     clickable ? (
-      <b tabIndex="0" onClick={handleOpenGenericAccounts} {...props} />
+      <b tabIndex={0} onClick={handleOpenGenericAccounts} {...props} />
     ) : (
       <b {...props} />
     );
 
+  // JS original: `notificationsCount > 0 && notificationsCount > sampleAccounts?.length`.
+  // When `sampleAccounts` is undefined the second comparison resolves to
+  // `n > undefined` → NaN → false. Preserve that by casting the operands so
+  // TS lets undefined flow through (instead of defaulting to 0, which would
+  // change behavior).
   const diffCount =
-    notificationsCount > 0 && notificationsCount > sampleAccounts?.length;
-  const expandAccounts = diffCount ? 'remote' : 'local';
+    (notificationsCount as number) > 0 &&
+    (notificationsCount as number) >
+      (sampleAccounts?.length as number);
+  const expandAccounts: 'remote' | 'local' = diffCount ? 'remote' : 'local';
 
   if (typeof text === 'function') {
+    const renderer = text;
     const count =
       (type === 'favourite' || type === 'reblog' || type === 'admin.sign_up') &&
       notificationsCount
@@ -424,7 +627,7 @@ function Notification({
     if (type === 'admin.report') {
       const targetAccount = report?.targetAccount;
       if (targetAccount) {
-        text = text({
+        text = renderer({
           account: <NameText account={account} showAvatar />,
           targetAccount: <NameText account={targetAccount} showAvatar />,
         });
@@ -432,38 +635,37 @@ function Notification({
     } else if (type === 'severed_relationships') {
       const targetName = event?.targetName;
       if (targetName) {
-        text = text({ name: targetName });
+        text = renderer({ name: targetName });
       }
     } else if (
       (type === 'emoji_reaction' || type === 'pleroma:emoji_reaction') &&
       notification.emoji
     ) {
-      const emojiURL =
+      const emojiShortcode = notification.emoji.replace(/^:/, '').replace(/:$/, '');
+      const emojiURL: string | EmojiUrlObject | undefined =
         notification.emoji_url || // This is string
         status?.emojis?.find?.(
-          (emoji) =>
-            emoji?.shortcode ===
-            notification.emoji.replace(/^:/, '').replace(/:$/, ''),
+          (emoji) => emoji?.shortcode === emojiShortcode,
         ); // Emoji object instead of string
-      text = text({
+      text = renderer({
         account: <NameText account={account} showAvatar />,
         emoji: notification.emoji,
         emojiURL,
       });
     } else if (type === 'annual_report') {
-      text = text({
+      text = renderer({
         ...notification.annualReport,
       });
     } else {
-      text = text({
+      text = renderer({
         account: account ? (
           <NameText account={account} showAvatar />
         ) : (
-          sampleAccounts?.[0] && (
+          sampleAccounts?.[0] ? (
             <NameText account={sampleAccounts[0]} showAvatar />
-          )
+          ) : null
         ),
-        count,
+        count: count as number | undefined,
         postsCount,
         postType: isReplyToOthers ? 'reply' : 'post',
         components: { Subject },
@@ -475,12 +677,14 @@ function Notification({
     notification.createdAt && new Date(notification.createdAt).toLocaleString();
 
   const genericAccountsHeading =
-    {
-      'favourite+reblog': t`Boosted/Liked by…`,
-      favourite: t`Liked by…`,
-      reblog: t`Boosted by…`,
-      follow: t`Followed by…`,
-    }[type] || t`Accounts`;
+    (type !== undefined &&
+      ({
+        'favourite+reblog': t`Boosted/Liked by…`,
+        favourite: t`Liked by…`,
+        reblog: t`Boosted by…`,
+        follow: t`Followed by…`,
+      } as Record<string, string>)[type]) ||
+    t`Accounts`;
   const showRemoteAccounts =
     (type === 'favourite+reblog' ||
       type === 'favourite' ||
@@ -493,28 +697,49 @@ function Notification({
         heading: genericAccountsHeading,
         accounts: _accounts,
         fetchAccounts: async () => {
+          const mastoV2Notifications = (
+            masto.v2 as unknown as { notifications: MastoV2Notifications }
+          ).notifications;
+          // JS original called `.map` on `_groupKeys` directly. Preserve
+          // that crash-on-missing behavior with a non-null cast.
           const keyAccounts = await Promise.allSettled(
-            _groupKeys.map(async (gKey) => {
-              const iterator = masto.v2.notifications
+            (_groupKeys as string[]).map(async (gKey: string) => {
+              const iterator = mastoV2Notifications
                 .$select(gKey)
                 .accounts.list()
                 .values();
-              return [gKey, (await iterator.next()).value];
+              const next = await iterator.next();
+              // `next.value` may be `undefined` when the async iterator is
+              // exhausted. JS original passed it through and would crash on
+              // the `for...of` below; preserve that with an honest type.
+              return [gKey, next.value] as [
+                string,
+                AccountWithBot[] | undefined,
+              ];
             }),
           );
-          const accounts = [];
+          const accounts: AccountWithBot[] = [];
           for (const keyAccount of keyAccounts) {
-            const [key, _accounts] = keyAccount.value;
+            // The JS original accessed `.value` without checking `.status`;
+            // rejected entries crashed at the destructure below. Preserve
+            // that behavior via an unchecked cast.
+            const [key, _accounts] = (
+              keyAccount as PromiseFulfilledResult<
+                [string, AccountWithBot[] | undefined]
+              >
+            ).value;
             const type = /^favourite/.test(key)
               ? 'favourite'
               : /^reblog/.test(key)
                 ? 'reblog'
                 : null;
             // if (!type) continue;
-            for (const account of _accounts) {
+            // JS original iterated `_accounts` directly; an exhausted iterator
+            // (undefined) would crash here. Cast preserves that contract.
+            for (const account of _accounts as AccountWithBot[]) {
               const theAccount = accounts.find((a) => a.id === account.id);
               if (theAccount && type) {
-                theAccount._types.push(type);
+                theAccount._types!.push(type);
               } else {
                 if (type) account._types = [type];
                 accounts.push(account);
@@ -546,12 +771,17 @@ function Notification({
   if (!!status?.filtered) {
     const isOwnPost = status?.account?.id === currentAccount;
     const filterInfo = isFiltered(status.filtered, 'notifications');
-    if (!isSelf && !isOwnPost && filterInfo?.action === 'hide') {
+    if (
+      !isSelf &&
+      !isOwnPost &&
+      filterInfo &&
+      filterInfo.action === 'hide'
+    ) {
       return null;
     }
   }
 
-  const debugHover = (e) => {
+  const debugHover = (e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
     if (e.shiftKey) {
       console.log({
         ...notification,
@@ -564,12 +794,12 @@ function Notification({
       class={`notification notification-${type}`}
       data-notification-id={_ids || id}
       data-group-key={_groupKeys?.join(' ') || groupKey}
-      tabIndex="0"
+      tabIndex={0}
       onMouseEnter={debugHover}
     >
       <div
         class={`notification-type notification-${type}`}
-        title={formattedCreatedAt}
+        title={formattedCreatedAt || undefined}
       >
         {type === 'favourite+reblog' ? (
           <>
@@ -583,7 +813,7 @@ function Notification({
           </>
         ) : (
           <Icon
-            icon={NOTIFICATION_ICONS[type] || 'notification'}
+            icon={(type && NOTIFICATION_ICONS[type]) || 'notification'}
             size="xl"
             alt={type}
           />
@@ -607,15 +837,21 @@ function Notification({
         )} */}
         {type !== 'mention' && type !== 'quote' && type !== 'mention+quote' && (
           <>
-            <p>{text}</p>
+            <p>{text as ComponentChildren}</p>
             {type === 'follow_request' && (
-              <FollowRequestButtons accountID={account.id} />
+              // JS original passed `account.id` unconditionally; missing
+              // account would crash here. Preserve that contract.
+              <FollowRequestButtons accountID={(account as AccountWithBot).id!} />
             )}
             {type === 'severed_relationships' && (
               <div>
-                {SEVERED_RELATIONSHIPS_TEXT[event.type]({
+                {/* JS original accessed `event.type` directly without a
+                    guard; missing `event` crashed here. Preserve that. */}
+                {SEVERED_RELATIONSHIPS_TEXT[
+                  (event as SeveredRelationshipEvent).type as string
+                ]({
                   from: instance,
-                  ...event,
+                  ...(event as SeveredRelationshipEvent),
                 })}
                 <br />
                 <a
@@ -632,7 +868,20 @@ function Notification({
             )}
             {type === 'moderation_warning' && !!moderation_warning && (
               <div>
-                {_(MODERATION_WARNING_TEXT[moderation_warning.action]())}
+                {i18n._(
+                  // The JS original calls `()` on the table entry. Some
+                  // historical Lingui versions returned a thunk from `msg`,
+                  // others return a `MessageDescriptor` directly. Preserve
+                  // the JS-original call shape verbatim — if the value is
+                  // already a `MessageDescriptor` it crashes at runtime
+                  // exactly as the JS original did; if it is a thunk, it
+                  // resolves to the descriptor.
+                  (
+                    MODERATION_WARNING_TEXT[
+                      moderation_warning.action as string
+                    ] as unknown as () => MessageDescriptor
+                  )(),
+                )}
                 <br />
                 <a
                   href={`/disputes/strikes/${moderation_warning.id}`}
@@ -654,7 +903,7 @@ function Notification({
             )}
           </>
         )}
-        {_accounts?.length > 1 && (
+        {_accounts && _accounts.length > 1 && (
           <p class="avatars-stack">
             {_accounts.slice(0, AVATARS_LIMIT).map((account) => (
               <Fragment key={account.id}>
@@ -683,7 +932,9 @@ function Notification({
                   />
                   {type === 'favourite+reblog' && (
                     <div class="account-sub-icons">
-                      {account._types.map((type) => (
+                      {/* JS original accessed `_types` directly without a
+                          guard. Preserve crash-on-missing behavior. */}
+                      {(account._types as string[]).map((type) => (
                         <Icon
                           icon={NOTIFICATION_ICONS[type]}
                           size="s"
@@ -706,7 +957,7 @@ function Notification({
                 {(type === 'favourite' ||
                   type === 'reblog' ||
                   type === 'admin.sign_up') &&
-                  notificationsCount - _accounts.length}
+                  (notificationsCount as number) - _accounts.length}
                 <Icon icon="chevron-down" />
               </button>
             ) : (
@@ -722,9 +973,14 @@ function Notification({
             )}
           </p>
         )}
-        {!_accounts?.length && sampleAccounts?.length > 1 && (
+        {!_accounts?.length && sampleAccounts && sampleAccounts.length > 1 && (
           <p class="avatars-stack">
-            {sampleAccounts.map((account) => (
+            {/* JS original iterated sampleAccounts directly, accessing
+                `account.id`, `account.url`, etc. without guards. `undefined`
+                entries (from `accounts.find(...) => undefined` in
+                `massageNotifications2`) would crash here in both JS and TS;
+                preserve that contract with a non-null cast on the entries. */}
+            {(sampleAccounts as AccountWithBot[]).map((account) => (
               <Fragment key={account.id}>
                 <a
                   key={account.id}
@@ -757,22 +1013,22 @@ function Notification({
                 </a>{' '}
               </Fragment>
             ))}
-            {notificationsCount > sampleAccounts.length && status?.id && (
+            {(notificationsCount ?? 0) > sampleAccounts.length && status?.id && (
               <Link
                 to={
                   instance ? `/${instance}/s/${status.id}` : `/s/${status.id}`
                 }
                 class="button small plain centered"
               >
-                +{notificationsCount - sampleAccounts.length}
+                +{(notificationsCount as number) - sampleAccounts.length}
                 <Icon icon="chevron-right" />
               </Link>
             )}
           </p>
         )}
-        {_statuses?.length > 1 && (
+        {_statuses && _statuses.length > 1 && (
           <ul class="notification-group-statuses">
-            {_statuses.map((status) => (
+            {(_statuses as mastodon.v1.Status[]).map((status) => (
               <li key={status.id}>
                 <TruncatedLink
                   class={`status-link status-type-${type}`}
@@ -802,8 +1058,9 @@ function Notification({
             }
             onContextMenu={
               !disableContextMenu
-                ? (e) => {
-                    const post = e.target.querySelector('.status');
+                ? (e: JSX.TargetedMouseEvent<HTMLElement>) => {
+                    const target = e.target as HTMLElement | null;
+                    const post = target?.querySelector('.status');
                     if (post) {
                       // Fire a custom event to open the context menu
                       if (e.metaKey) return;
@@ -843,10 +1100,21 @@ function Notification({
   );
 }
 
-function TruncatedLink(props) {
+type TruncatedLinkProps = LinkProps & {
+  children?: ComponentChildren;
+  [key: string]: unknown;
+};
+
+function TruncatedLink(props: TruncatedLinkProps) {
   const { t } = useLingui();
   const ref = useTruncated();
-  return <Link {...props} data-read-more={t`Read more →`} ref={ref} />;
+  return (
+    <Link
+      {...(props as LinkProps)}
+      data-read-more={t`Read more →`}
+      ref={ref as Ref<HTMLAnchorElement>}
+    />
+  );
 }
 
 export default memo(Notification, (oldProps, newProps) => {
