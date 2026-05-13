@@ -1,7 +1,10 @@
 import './filters.css';
 
+import type { I18n } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
+import type { ComponentType, JSX } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 
 import Icon from '../components/icon';
@@ -9,7 +12,7 @@ import Link from '../components/link';
 import Loader from '../components/loader';
 import MenuConfirm from '../components/menu-confirm';
 import Modal from '../components/modal';
-import NavMenu from '../components/nav-menu';
+import NavMenuUntyped from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
 import { api } from '../utils/api';
 import i18nDuration from '../utils/i18n-duration';
@@ -17,9 +20,52 @@ import { getAPIVersions } from '../utils/store-utils';
 import useInterval from '../utils/useInterval';
 import useTitle from '../utils/useTitle';
 
-const FILTER_CONTEXT = ['home', 'public', 'notifications', 'thread', 'account'];
-const FILTER_CONTEXT_UNIMPLEMENTED = ['thread', 'account'];
-const FILTER_CONTEXT_LABELS = {
+const NavMenu = NavMenuUntyped as unknown as ComponentType<
+  Record<string, never>
+>;
+
+// The filters endpoint isn't surfaced on the loose MastoClient shape.
+// Use the real masto v2 resource type via a cast.
+type FiltersV2Resource = mastodon.rest.v2.FiltersResource;
+type FilterV2 = mastodon.v2.Filter;
+
+// Local working-copy of a keyword inside the editor. Existing keywords have
+// `id` (server-assigned string); new keywords have only `_id` (client-local).
+interface EditKeyword {
+  id?: string;
+  _id?: number;
+  keyword: string;
+  wholeWord: boolean;
+}
+
+type UIState = 'default' | 'loading' | 'error';
+
+// Modal state mirrors the JS contract: `false` (closed), `true` (new), or an
+// object containing the filter being edited.
+type FiltersAddEditModalState = false | true | { filter: FilterV2 };
+
+interface FiltersAddEditCloseResult {
+  state: 'success' | 'error';
+  filter?: FilterV2;
+}
+
+// The close button passes the raw click event through `onClose`; the consumer
+// branches on `result?.state`, so a non-result payload is a valid cancel.
+type FiltersAddEditCloseArg = FiltersAddEditCloseResult | Event;
+
+const FILTER_CONTEXT = [
+  'home',
+  'public',
+  'notifications',
+  'thread',
+  'account',
+] as const;
+type FilterContextName = (typeof FILTER_CONTEXT)[number];
+const FILTER_CONTEXT_UNIMPLEMENTED: readonly FilterContextName[] = [
+  'thread',
+  'account',
+];
+const FILTER_CONTEXT_LABELS: Record<FilterContextName, ReturnType<typeof msg>> = {
   home: msg`Home and lists`,
   notifications: msg`Notifications`,
   public: msg`Public timelines`,
@@ -38,7 +84,7 @@ const EXPIRY_DURATIONS = [
   60 * 60 * 24 * 30, // 30 days
 ];
 
-const EXPIRY_DURATIONS_LABELS = {
+const EXPIRY_DURATIONS_LABELS: Record<number, ReturnType<typeof msg> | (() => string)> = {
   0: msg`Never`,
   1800: i18nDuration(30, 'minute'),
   3600: i18nDuration(1, 'hour'),
@@ -53,20 +99,27 @@ function Filters() {
   const { t } = useLingui();
   const { masto } = api();
   useTitle(t`Filters`, `/ft`);
-  const [uiState, setUIState] = useState('default');
-  const [showFiltersAddEditModal, setShowFiltersAddEditModal] = useState(false);
+  const [uiState, setUIState] = useState<UIState>('default');
+  const [showFiltersAddEditModal, setShowFiltersAddEditModal] =
+    useState<FiltersAddEditModalState>(false);
 
-  const [reloadCount, reload] = useReducer((c) => c + 1, 0);
-  const [filters, setFilters] = useState([]);
+  const [reloadCount, reload] = useReducer<number, void>((c) => c + 1, 0);
+  const [filters, setFilters] = useState<FilterV2[]>([]);
   useEffect(() => {
     setUIState('loading');
     (async () => {
       try {
-        const filters = await masto.v2.filters.list();
+        const filtersResource =
+          masto.v2.filters as unknown as FiltersV2Resource;
+        // The JS treats the awaited value as an array; the typed surface is a
+        // Paginator. The runtime returns the array directly here.
+        const filters = (await filtersResource.list()) as unknown as FilterV2[];
         filters.sort((a, b) => a.title.localeCompare(b.title));
         filters.forEach((filter) => {
           if (filter.keywords?.length) {
-            filter.keywords.sort((a, b) => a.id - b.id);
+            filter.keywords.sort(
+              (a, b) => (a.id as unknown as number) - (b.id as unknown as number),
+            );
           }
         });
         console.log(filters);
@@ -80,7 +133,7 @@ function Filters() {
   }, [reloadCount]);
 
   return (
-    <div id="filters-page" class="deck-container" tabIndex="-1">
+    <div id="filters-page" class="deck-container" tabIndex={-1}>
       <div class="timeline-deck deck">
         <header>
           <div class="header-grid">
@@ -181,9 +234,17 @@ function Filters() {
           }}
         >
           <FiltersAddEdit
-            filter={showFiltersAddEditModal?.filter}
+            filter={
+              typeof showFiltersAddEditModal === 'object'
+                ? showFiltersAddEditModal.filter
+                : undefined
+            }
             onClose={(result) => {
-              if (result.state === 'success') {
+              if (
+                result &&
+                'state' in result &&
+                result.state === 'success'
+              ) {
                 reload();
               }
               setShowFiltersAddEditModal(false);
@@ -196,26 +257,39 @@ function Filters() {
 }
 
 let _id = 1;
-const incID = () => _id++;
-function FiltersAddEdit({ filter, onClose }) {
-  const { _, t } = useLingui();
+const incID = (): number => _id++;
+
+interface FiltersAddEditProps {
+  filter?: FilterV2;
+  onClose?: (result: FiltersAddEditCloseArg) => void;
+}
+
+function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
+  // The macro-typed `useLingui` strips `_`, but the runtime forwards it from
+  // I18nContext. We need `_(MessageDescriptor)` for the dynamic `msg`-built
+  // label maps below. Bind through `i18n` so the method keeps its receiver.
+  const { i18n, t } = useLingui();
+  const _: I18n['_'] = i18n._.bind(i18n);
   const { masto } = api();
-  const [uiState, setUIState] = useState('default');
+  const [uiState, setUIState] = useState<UIState>('default');
   const editMode = !!filter;
   const { context, expiresAt, id, keywords, title, filterAction } =
-    filter || {};
+    filter || ({} as Partial<FilterV2>);
   const hasExpiry = !!expiresAt;
-  const expiresAtDate = hasExpiry && new Date(expiresAt);
-  const [editKeywords, setEditKeywords] = useState(keywords || []);
-  const keywordsRef = useRef();
+  const expiresAtDate = hasExpiry && new Date(expiresAt as string);
+  const [editKeywords, setEditKeywords] = useState<EditKeyword[]>(
+    (keywords || []) as unknown as EditKeyword[],
+  );
+  const keywordsRef = useRef<HTMLDivElement | null>(null);
 
   // Hacky way of handling removed keywords for both existing and new ones
-  const [removedKeywordIDs, setRemovedKeywordIDs] = useState([]);
-  const [removedKeyword_IDs, setRemovedKeyword_IDs] = useState([]);
+  const [removedKeywordIDs, setRemovedKeywordIDs] = useState<string[]>([]);
+  const [removedKeyword_IDs, setRemovedKeyword_IDs] = useState<number[]>([]);
 
   const filteredEditKeywords = editKeywords.filter(
     (k) =>
-      !removedKeywordIDs.includes(k.id) && !removedKeyword_IDs.includes(k._id),
+      !(k.id !== undefined && removedKeywordIDs.includes(k.id)) &&
+      !(k._id !== undefined && removedKeyword_IDs.includes(k._id)),
   );
 
   return (
@@ -230,9 +304,9 @@ function FiltersAddEdit({ filter, onClose }) {
       </header>
       <main>
         <form
-          onSubmit={(e) => {
+          onSubmit={(e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
+            const formData = new FormData(e.currentTarget);
             const title = formData.get('title');
             const keywordIDs = formData.getAll('keyword_attributes[][id]');
             const keywordKeywords = formData.getAll(
@@ -243,12 +317,17 @@ function FiltersAddEdit({ filter, onClose }) {
             // );
             // Not using getAll because it skips the empty checkboxes
             const keywordWholeWords = [
-              ...keywordsRef.current.querySelectorAll(
+              ...(keywordsRef.current as HTMLDivElement).querySelectorAll<HTMLInputElement>(
                 'input[name="keyword_attributes[][whole_word]"]',
               ),
             ].map((i) => i.checked);
-            const keywordsAttributes = keywordKeywords.map((k, i) => ({
-              id: keywordIDs[i] || undefined,
+            const keywordsAttributes: Array<{
+              id?: string;
+              keyword?: FormDataEntryValue;
+              wholeWord?: boolean;
+              _destroy?: boolean;
+            }> = keywordKeywords.map((k, i) => ({
+              id: (keywordIDs[i] as string) || undefined,
               keyword: k,
               wholeWord: keywordWholeWords[i],
             }));
@@ -272,7 +351,8 @@ function FiltersAddEdit({ filter, onClose }) {
               });
             }
             const context = formData.getAll('context');
-            let expiresIn = formData.get('expires_in');
+            let expiresIn: string | number | null | FormDataEntryValue =
+              formData.get('expires_in');
             const filterAction = formData.get('filter_action');
             console.log({
               title,
@@ -294,7 +374,9 @@ function FiltersAddEdit({ filter, onClose }) {
 
             (async () => {
               try {
-                let filterResult;
+                let filterResult: FilterV2;
+                const filtersResource =
+                  masto.v2.filters as unknown as FiltersV2Resource;
 
                 if (editMode) {
                   if (expiresIn === '' || expiresIn === null) {
@@ -304,33 +386,38 @@ function FiltersAddEdit({ filter, onClose }) {
                     // Other clients don't do this
                     if (hasExpiry) {
                       expiresIn = Math.floor(
-                        (expiresAtDate - Date.now()) / 1000,
+                        ((expiresAtDate as Date).getTime() - Date.now()) / 1000,
                       );
                     } else {
                       expiresIn = null;
                     }
-                  } else if (expiresIn === '0' || expiresIn === 0) {
+                  } else if (
+                    expiresIn === '0' ||
+                    (expiresIn as unknown as number) === 0
+                  ) {
                     // 0 = Never
                     expiresIn = null;
                   } else {
-                    expiresIn = +expiresIn;
+                    expiresIn = +(expiresIn as string);
                   }
-                  filterResult = await masto.v2.filters.$select(id).update({
-                    title,
-                    context,
-                    expiresIn,
-                    keywordsAttributes,
-                    filterAction,
-                  });
+                  filterResult = await filtersResource
+                    .$select(id as string)
+                    .update({
+                      title,
+                      context,
+                      expiresIn,
+                      keywordsAttributes,
+                      filterAction,
+                    } as unknown as mastodon.rest.v2.UpdateFilterParams);
                 } else {
-                  expiresIn = +expiresIn || null;
-                  filterResult = await masto.v2.filters.create({
+                  expiresIn = +(expiresIn as string) || null;
+                  filterResult = await filtersResource.create({
                     title,
                     context,
                     expiresIn,
                     keywordsAttributes,
                     filterAction,
-                  });
+                  } as unknown as mastodon.rest.v2.CreateFilterParams);
                 }
                 console.log({ filterResult });
                 setUIState('default');
@@ -442,7 +529,7 @@ function FiltersAddEdit({ filter, onClose }) {
                   setTimeout(() => {
                     // Focus last input
                     const fields =
-                      keywordsRef.current.querySelectorAll(
+                      keywordsRef.current!.querySelectorAll<HTMLInputElement>(
                         'input[type="text"]',
                       );
                     fields[fields.length - 1]?.focus?.();
@@ -516,19 +603,20 @@ function FiltersAddEdit({ filter, onClose }) {
                   defaultValue={editMode ? undefined : 0}
                 >
                   {editMode && <option></option>}
-                  {EXPIRY_DURATIONS.map((v) => (
-                    <option value={v}>
-                      {typeof EXPIRY_DURATIONS_LABELS[v] === 'function'
-                        ? EXPIRY_DURATIONS_LABELS[v]()
-                        : _(EXPIRY_DURATIONS_LABELS[v])}
-                    </option>
-                  ))}
+                  {EXPIRY_DURATIONS.map((v) => {
+                    const label = EXPIRY_DURATIONS_LABELS[v];
+                    return (
+                      <option value={v}>
+                        {typeof label === 'function' ? label() : _(label)}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
               <p>
                 <Trans>Filtered post will be…</Trans>
                 <br />
-                {getAPIVersions()?.mastodon >= 5 && (
+                {(getAPIVersions()?.mastodon as number) >= 5 && (
                   <label class="ib">
                     <input
                       type="radio"
@@ -583,7 +671,11 @@ function FiltersAddEdit({ filter, onClose }) {
                   setUIState('loading');
                   (async () => {
                     try {
-                      await masto.v2.filters.$select(id).remove();
+                      await (
+                        masto.v2.filters as unknown as FiltersV2Resource
+                      )
+                        .$select(id as string)
+                        .remove();
                       setUIState('default');
                       onClose?.({
                         state: 'success',
@@ -613,21 +705,27 @@ function FiltersAddEdit({ filter, onClose }) {
   );
 }
 
-function ExpiryStatus({ expiresAt, showNeverExpires }) {
+interface ExpiryStatusProps {
+  expiresAt?: string | null;
+  showNeverExpires?: boolean;
+}
+
+function ExpiryStatus({ expiresAt, showNeverExpires }: ExpiryStatusProps) {
   const { t } = useLingui();
   const hasExpiry = !!expiresAt;
-  const expiresAtDate = hasExpiry && new Date(expiresAt);
-  const expired = hasExpiry && Date.parse(expiresAt) <= Date.now();
+  const expiresAtDate = hasExpiry && new Date(expiresAt as string);
+  const expired = hasExpiry && Date.parse(expiresAt as string) <= Date.now();
 
   // If less than a minute left, re-render interval every second, else every minute
-  const [_, rerender] = useReducer((c) => c + 1, 0);
-  useInterval(rerender, expired || 30_000);
+  const [_, rerender] = useReducer<number, void>((c) => c + 1, 0);
+  // JS passed `expired || 30_000` (boolean `true` or 30000ms); preserve.
+  useInterval(rerender, (expired || 30_000) as unknown as number);
 
   return expired ? (
     t`Expired`
   ) : hasExpiry ? (
     <Trans>
-      Expiring <RelativeTime datetime={expiresAtDate} />
+      Expiring <RelativeTime datetime={expiresAtDate as Date} />
     </Trans>
   ) : (
     showNeverExpires && t`Never expires`
