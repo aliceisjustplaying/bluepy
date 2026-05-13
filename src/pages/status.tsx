@@ -86,6 +86,7 @@ const { PHANPY_DEFAULT_INSTANCE: DEFAULT_INSTANCE } = import.meta.env as {
 const LIMIT = 40;
 const SUBCOMMENTS_OPEN_ALL_LIMIT = 10;
 const MAX_WEIGHT = 5;
+const COMMENTS_AUTO_EXPAND_LIMIT = 20;
 
 // The status records this page works with originate from Masto's API but
 // also pick up internal mutations from `states.ts` (e.g. `__replies`,
@@ -2143,6 +2144,8 @@ function SubComments({
 
   let open = false;
   if (openAll) {
+    open = true;
+  } else if (totalComments <= COMMENTS_AUTO_EXPAND_LIMIT) {
     open = true;
   } else if (totalWeight <= MAX_WEIGHT) {
     open = true;
