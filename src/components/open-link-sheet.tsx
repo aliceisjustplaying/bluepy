@@ -1,18 +1,29 @@
 import './open-link-sheet.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { ComponentChild } from 'preact';
 
 import showToast from '../utils/show-toast';
 
 import Icon from './icon';
 
-export default function OpenLinkSheet({ url, linkText, onClose }) {
+interface OpenLinkSheetProps {
+  url?: string;
+  linkText?: string;
+  onClose?: () => void;
+}
+
+export default function OpenLinkSheet({
+  url,
+  linkText,
+  onClose,
+}: OpenLinkSheetProps) {
   const { t } = useLingui();
   if (!url) return null;
 
-  let displayUrl = url;
+  let displayUrl: ComponentChild = url;
   try {
-    const urlObj = URL.parse(url);
+    const urlObj = URL.parse(url) as URL;
     const protocol = urlObj.protocol;
     const hostname = urlObj.hostname;
     const rest = url.slice(urlObj.origin.length);
@@ -45,7 +56,7 @@ export default function OpenLinkSheet({ url, linkText, onClose }) {
   };
 
   return (
-    <div class="sheet sheet-modal" id="open-link-sheet" tabindex="-1">
+    <div class="sheet sheet-modal" id="open-link-sheet" tabindex={-1}>
       {!!onClose && (
         <button type="button" class="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
