@@ -1,5 +1,10 @@
 import Cookies from 'js-cookie';
 
+// TODO(oxlint:import/no-cycle): store <-> store-utils cycle is structural;
+// the account namespace needs getCurrentAccountNS() at runtime, and
+// store-utils needs the store to read accounts/instances. Breaking this
+// requires extracting the per-account key namespace into a third leaf
+// module shared by both. Out of scope for the oxlint cleanup batch.
 import { getCurrentAccountNS } from './store-utils';
 
 // TODO(oxlint:typescript/no-unnecessary-type-parameters) `Result` is used only

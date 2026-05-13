@@ -161,6 +161,10 @@ function Modal({
   if (!children) return null;
 
   const modalContent = (
+    // TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
+    // modal backdrop element; clicking outside content closes the modal. Escape
+    // is wired separately via the focused inner element and CloseWatcher. Real
+    // interactive content lives in the children.
     <div
       ref={(node: HTMLDivElement | null) => {
         modalRef.current = node;

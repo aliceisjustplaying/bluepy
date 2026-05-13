@@ -10,6 +10,10 @@ import showToast from '../utils/show-toast';
 import { saveStatus } from '../utils/states';
 
 import Icon from './icon';
+// TODO(oxlint:import/no-cycle): status imports quote-settings-sheet lazily
+// for the quote-policy editor; quote-settings-sheet renders a Status preview.
+// Breaking this requires extracting the shared status-preview helper into a
+// separate leaf module. Out of scope for the oxlint cleanup batch.
 import StatusUntyped from './status';
 
 interface StatusComponentProps {

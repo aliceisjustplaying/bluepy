@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'preact/hooks';
+import { useCallback, useLayoutEffect } from 'preact/hooks';
 import { matchPath } from 'react-router-dom';
 import { subscribeKey } from 'valtio/utils';
 
@@ -12,7 +12,7 @@ export default function useTitle(
   title: string | null | undefined,
   path: string | string[],
 ): void {
-  function setTitle() {
+  const setTitle = useCallback(() => {
     const { currentLocation } = states;
     const hasPaths = Array.isArray(path);
     let paths: string[] = hasPaths ? path : [];
@@ -32,11 +32,11 @@ export default function useTitle(
     if (matched) {
       document.title = title ? `${title} / ${CLIENT_NAME}` : CLIENT_NAME;
     }
-  }
+  }, [title, path]);
 
   useLayoutEffect(() => {
     const unsub = subscribeKey(states, 'currentLocation', setTitle);
     setTitle();
     return unsub;
-  }, [title, path]);
+  }, [setTitle]);
 }

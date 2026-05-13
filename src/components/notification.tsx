@@ -601,7 +601,22 @@ function Notification({
 
   const Subject: SubjectComponent = ({ clickable, ...props }) =>
     clickable ? (
-      <b tabIndex={0} onClick={handleOpenGenericAccounts} {...props} />
+      // TODO(oxlint:jsx-a11y/prefer-tag-over-role): <b> is interpolated inline
+      // into notification text and must remain a phrasing-content element.
+      // Switching to <button> would break inline-text layout for affected
+      // notification templates.
+      <b
+        role="button"
+        tabIndex={0}
+        onClick={handleOpenGenericAccounts}
+        onKeyDown={(e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleOpenGenericAccounts();
+          }
+        }}
+        {...props}
+      />
     ) : (
       <b {...props} />
     );
@@ -787,10 +802,15 @@ function Notification({
   };
 
   return (
+    // TODO(oxlint:jsx-a11y/no-noninteractive-tabindex): notification card
+    // is keyboard-focusable for j/k navigation and Shift+hover debug. There
+    // is no interactive ARIA role that fits "selectable feed item"; using
+    // `article` keeps the screen-reader landmark intact.
     <div
       class={`notification notification-${type}`}
       data-notification-id={_ids || id}
       data-group-key={_groupKeys?.join(' ') || groupKey}
+      role="article"
       tabIndex={0}
       onMouseEnter={debugHover}
     >
@@ -1109,12 +1129,12 @@ type TruncatedLinkProps = LinkProps & {
 };
 
 function TruncatedLink(props: TruncatedLinkProps) {
-  const { t } = useLingui();
+  const { t: tt } = useLingui();
   const ref = useTruncated();
   return (
     <Link
       {...(props as LinkProps)}
-      data-read-more={t`Read more →`}
+      data-read-more={tt`Read more →`}
       ref={ref as Ref<HTMLAnchorElement>}
     />
   );

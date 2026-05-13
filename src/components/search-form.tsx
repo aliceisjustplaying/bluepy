@@ -137,6 +137,10 @@ const SearchForm = forwardRef(
       },
     }));
 
+    // TODO(oxlint:react-hooks/exhaustive-deps): `props?.hidden` is used as a
+    // refresh trigger — when the search form transitions from hidden to
+    // visible, recompute the history. The dep is intentional even though
+    // the memo body doesn't read it.
     const searchHistory = useMemo(
       () => getSearchHistory({ limit: 5 }),
       [props?.hidden],
