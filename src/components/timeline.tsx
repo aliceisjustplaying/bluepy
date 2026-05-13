@@ -72,12 +72,12 @@ function InView(props: {
   children?: ComponentChildren;
 }) {
   const Inner = InViewUntyped as unknown as ComponentType<{
-  root?: Element | null;
-  rootMargin?: string;
-  class?: string;
-  onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
-}>;
+    root?: Element | null;
+    rootMargin?: string;
+    class?: string;
+    onChange?: (inView: boolean) => void;
+    children?: ComponentChildren;
+  }>;
   return <Inner {...props} />;
 }
 

@@ -12,7 +12,7 @@ import Loader from '../components/loader';
 import MenuConfirm from '../components/menu-confirm';
 import Menu2 from '../components/menu2';
 import Modal from '../components/modal';
-import NavMenu from '../components/nav-menu';
+import NavMenuUntyped from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
 import ScheduledAtField, {
   getLocalTimezoneName,
@@ -24,6 +24,13 @@ import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import useTitle from '../utils/useTitle';
 
+function NavMenu(props: Record<string, never>) {
+  const Inner = NavMenuUntyped as unknown as ComponentType<
+    Record<string, never>
+  >;
+  return <Inner {...props} />;
+}
+
 function Status(props: {
   status?: unknown;
   size?: string;
@@ -33,13 +40,18 @@ function Status(props: {
   [key: string]: unknown;
 }) {
   const Inner = StatusUntyped as unknown as ComponentType<{
-  status?: unknown;
-  size?: string;
-  previewMode?: boolean;
-  readOnly?: boolean;
-  onMediaClick?: (e: Event, i: number, media: unknown, status: unknown) => void;
-  [key: string]: unknown;
-}>;
+    status?: unknown;
+    size?: string;
+    previewMode?: boolean;
+    readOnly?: boolean;
+    onMediaClick?: (
+      e: Event,
+      i: number,
+      media: unknown,
+      status: unknown,
+    ) => void;
+    [key: string]: unknown;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -115,10 +127,7 @@ export default function ScheduledPosts() {
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
   );
-  const [reloadCount, reload] = useReducer<number, undefined>(
-    (c) => c + 1,
-    0,
-  );
+  const [reloadCount, reload] = useReducer<number, undefined>((c) => c + 1, 0);
   const [showScheduledPostModal, setShowScheduledPostModal] = useState<
     ScheduledPostModalState | false
   >(false);

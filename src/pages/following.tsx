@@ -1,9 +1,10 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
-import Timeline from '../components/timeline';
+import TimelineUntyped from '../components/timeline';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
@@ -15,6 +16,43 @@ import {
   dedupeBoosts,
 } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
+
+function Timeline(props: {
+  title?: string;
+  id?: string;
+  emptyText?: string;
+  errorText?: string;
+  instance?: string;
+  fetchItems?: (
+    firstLoad?: boolean,
+  ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
+  checkForUpdates?: () => Promise<boolean>;
+  useItemID?: boolean;
+  boostsCarousel?: boolean;
+  filterContext?: string;
+  showFollowedTags?: boolean;
+  showReplyParent?: boolean;
+  [key: string]: unknown;
+}) {
+  const Inner = TimelineUntyped as unknown as ComponentType<{
+    title?: string;
+    id?: string;
+    emptyText?: string;
+    errorText?: string;
+    instance?: string;
+    fetchItems?: (
+      firstLoad?: boolean,
+    ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
+    checkForUpdates?: () => Promise<boolean>;
+    useItemID?: boolean;
+    boostsCarousel?: boolean;
+    filterContext?: string;
+    showFollowedTags?: boolean;
+    showReplyParent?: boolean;
+    [key: string]: unknown;
+  }>;
+  return <Inner {...props} />;
+}
 
 type StreamingEntry = {
   event: string;

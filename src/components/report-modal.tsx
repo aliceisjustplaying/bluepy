@@ -25,12 +25,12 @@ function Status(props: {
   [key: string]: unknown;
 }) {
   const Inner = StatusUntyped as unknown as ComponentType<{
-  status?: unknown;
-  size?: string;
-  previewMode?: boolean;
-  readOnly?: boolean;
-  [key: string]: unknown;
-}>;
+    status?: unknown;
+    size?: string;
+    previewMode?: boolean;
+    readOnly?: boolean;
+    [key: string]: unknown;
+  }>;
   return <Inner {...props} />;
 }
 

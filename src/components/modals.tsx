@@ -36,13 +36,13 @@ function MediaModal(props: {
   onClose?: () => void;
 }) {
   const Inner = MediaModalUntyped as unknown as ComponentType<{
-  mediaAttachments?: unknown;
-  statusID?: string;
-  instance?: string;
-  lang?: string;
-  index?: number;
-  onClose?: () => void;
-}>;
+    mediaAttachments?: unknown;
+    statusID?: string;
+    instance?: string;
+    lang?: string;
+    index?: number;
+    onClose?: () => void;
+  }>;
   return <Inner {...props} />;
 }
 

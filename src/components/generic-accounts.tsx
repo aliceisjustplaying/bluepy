@@ -26,11 +26,11 @@ function Status(props: {
   [key: string]: unknown;
 }) {
   const Inner = StatusUntyped as unknown as ComponentType<{
-  status?: unknown;
-  size?: string;
-  readOnly?: boolean;
-  [key: string]: unknown;
-}>;
+    status?: unknown;
+    size?: string;
+    readOnly?: boolean;
+    [key: string]: unknown;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -42,9 +42,9 @@ function InViewTyped(props: {
   children?: ComponentChildren;
 }) {
   const Inner = InViewUntyped as unknown as ComponentType<{
-  onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
-}>;
+    onChange?: (inView: boolean) => void;
+    children?: ComponentChildren;
+  }>;
   return <Inner {...props} />;
 }
 

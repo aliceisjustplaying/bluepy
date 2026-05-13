@@ -106,13 +106,13 @@ function Status(props: {
   [key: string]: unknown;
 }) {
   const Inner = StatusUntyped as unknown as ComponentType<{
-  status?: unknown;
-  instance?: string;
-  size?: string;
-  showCommentCount?: boolean;
-  showQuoteCount?: boolean;
-  [key: string]: unknown;
-}>;
+    status?: unknown;
+    instance?: string;
+    size?: string;
+    showCommentCount?: boolean;
+    showQuoteCount?: boolean;
+    [key: string]: unknown;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -576,22 +576,24 @@ function YearInPosts() {
         monthTypes[m].original++;
       }
     });
-    return Object.entries(monthCounts)
-      .map(([mKey, count]) => {
-        const types = monthTypes[Number(mKey)];
-        return {
-          month: parseInt(mKey),
-          count,
-          heatmap: monthHeatmaps[mKey] || [],
-          mediaGrid: monthMediaGrids[mKey] || [],
-          original: types.original,
-          reply: types.reply,
-          quote: types.quote,
-          boost: types.boost,
-        };
-      })
-      // TODO(oxlint:unicorn/no-array-sort): toSorted() is ES2023; project target is ES2022.
-      .sort((a, b) => a.month - b.month);
+    return (
+      Object.entries(monthCounts)
+        .map(([mKey, count]) => {
+          const types = monthTypes[Number(mKey)];
+          return {
+            month: parseInt(mKey),
+            count,
+            heatmap: monthHeatmaps[mKey] || [],
+            mediaGrid: monthMediaGrids[mKey] || [],
+            original: types.original,
+            reply: types.reply,
+            quote: types.quote,
+            boost: types.boost,
+          };
+        })
+        // TODO(oxlint:unicorn/no-array-sort): toSorted() is ES2023; project target is ES2022.
+        .sort((a, b) => a.month - b.month)
+    );
   }, [posts, monthHeatmaps, monthMediaGrids]);
 
   interface FlexSearchDocument {

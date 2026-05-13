@@ -26,10 +26,11 @@
  *     so orphans don't survive even if a test cleanup selector misses.
  */
 
-import { expect, test as base } from '@playwright/test';
 import fs from 'node:fs';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
+
+import { expect, test as base } from '@playwright/test';
 
 const IDENTIFIER = process.env.ATPROTO_TEST_IDENTIFIER;
 const PASSWORD = process.env.ATPROTO_TEST_PASSWORD;
@@ -38,7 +39,10 @@ const HAS_CREDS = Boolean(IDENTIFIER && PASSWORD);
 base.skip(!HAS_CREDS, 'ATPROTO_TEST_IDENTIFIER/PASSWORD not set');
 
 const RUN_TAG = `[bluepy-smoke-${Date.now()}]`;
-const STORAGE_FILE = path.join(os.tmpdir(), `bluepy-smoke-storage-${process.pid}.json`);
+const STORAGE_FILE = path.join(
+  os.tmpdir(),
+  `bluepy-smoke-storage-${process.pid}.json`,
+);
 
 /**
  * Walk the bluepy login UI end-to-end via app-password and assert
@@ -104,7 +108,9 @@ test('login: app-password flow lands on the home deck', async ({ browser }) => {
 test.describe('read flows', () => {
   test('home renders deck', async ({ page }) => {
     await page.goto('/#/');
-    await expect(page.locator('#home-page, .deck-container').first()).toBeVisible({
+    await expect(
+      page.locator('#home-page, .deck-container').first(),
+    ).toBeVisible({
       timeout: 30_000,
     });
   });
@@ -112,7 +118,9 @@ test.describe('read flows', () => {
   test('home timeline shows at least one status', async ({ page }) => {
     await page.goto('/#/');
     await expect(
-      page.locator('[data-state-post-id], article.status, .status-link').first(),
+      page
+        .locator('[data-state-post-id], article.status, .status-link')
+        .first(),
     ).toBeVisible({ timeout: 30_000 });
   });
 
@@ -128,7 +136,9 @@ test.describe('read flows', () => {
 
   test('notifications page renders', async ({ page }) => {
     await goto(page, '/notifications');
-    await expect(page.locator('#notifications-page')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('#notifications-page')).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('mentions page renders', async ({ page }) => {
@@ -171,12 +181,16 @@ test.describe('read flows', () => {
 
   test('filters page renders', async ({ page }) => {
     await goto(page, '/ft');
-    await expect(page.locator('#filters-page')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('#filters-page')).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('catchup page renders', async ({ page }) => {
     await goto(page, '/catchup');
-    await expect(page.locator('#catchup-page')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('#catchup-page')).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('year-in-posts page renders', async ({ page }) => {
@@ -235,7 +249,9 @@ test.describe('modals', () => {
 
   test('compose modal opens with textarea', async ({ page }) => {
     await openModal(page, 'showCompose');
-    await expect(page.locator('textarea').first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('textarea').first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('shortcuts modal opens', async ({ page }) => {
@@ -287,7 +303,9 @@ test.describe('write flows', () => {
   // proves the publish path works end-to-end; cleanup is then handled
   // by the afterAll sweep on the profile page (which uses the same
   // selectors and is best-effort).
-  test.skip('compose + publish + delete a post (asserts deletion)', async ({ page }) => {
+  test.skip('compose + publish + delete a post (asserts deletion)', async ({
+    page,
+  }) => {
     const body = `${RUN_TAG} compose ${Date.now()}`;
     await composeAndPublish(page, body);
 
@@ -301,7 +319,9 @@ test.describe('write flows', () => {
     // Open the post's More menu and pick Delete. If the menu structure
     // changes upstream this test must fail loudly so we notice.
     const menu = article
-      .locator('button[aria-label*="ore" i], button[aria-haspopup], button[title="More"]')
+      .locator(
+        'button[aria-label*="ore" i], button[aria-haspopup], button[title="More"]',
+      )
       .first();
     await menu.click({ force: true });
 
@@ -323,17 +343,23 @@ test.describe('write flows', () => {
     ).toHaveCount(0, { timeout: 15_000 });
   });
 
-  test('compose: a published post survives a reload (then leaves for sweep)', async ({ page }) => {
+  test('compose: a published post survives a reload (then leaves for sweep)', async ({
+    page,
+  }) => {
     const body = `${RUN_TAG} persist ${Date.now()}`;
     await composeAndPublish(page, body);
     CREATED.push({ page, body });
     await goto(page, `/a/${IDENTIFIER}`);
     await expect(
-      page.locator('[data-state-post-id]', { hasText: body.slice(0, 28) }).first(),
+      page
+        .locator('[data-state-post-id]', { hasText: body.slice(0, 28) })
+        .first(),
     ).toBeVisible({ timeout: 30_000 });
   });
 
-  test('reply UI opens compose modal from a status detail', async ({ page }) => {
+  test('reply UI opens compose modal from a status detail', async ({
+    page,
+  }) => {
     await page.goto('/#/');
     const firstStatus = page
       .locator('[data-state-post-id], article.status, .status-link')
@@ -346,7 +372,9 @@ test.describe('write flows', () => {
     await replyBtn.waitFor({ timeout: 15_000 });
     await replyBtn.click();
 
-    await expect(page.locator('textarea').first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('textarea').first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('like + unlike persists across reload', async ({ page }) => {
@@ -398,12 +426,17 @@ test.describe('write flows', () => {
       .locator('button[title="Bookmark"], button[title="Unbookmark"]')
       .first();
     if ((await bmBtn.count()) === 0) {
-      test.skip(true, 'Bookmark UI not present (PDS may not support app.bsky.bookmark)');
+      test.skip(
+        true,
+        'Bookmark UI not present (PDS may not support app.bsky.bookmark)',
+      );
     }
     await bmBtn.waitFor({ timeout: 15_000 });
     const initial = await bmBtn.getAttribute('title');
     await bmBtn.click();
-    await expect(bmBtn).not.toHaveAttribute('title', initial, { timeout: 15_000 });
+    await expect(bmBtn).not.toHaveAttribute('title', initial, {
+      timeout: 15_000,
+    });
     await page.goto(url);
     const reloaded = page
       .locator('button[title="Bookmark"], button[title="Unbookmark"]')
@@ -413,7 +446,9 @@ test.describe('write flows', () => {
       timeout: 15_000,
     });
     await reloaded.click();
-    await expect(reloaded).toHaveAttribute('title', initial, { timeout: 15_000 });
+    await expect(reloaded).toHaveAttribute('title', initial, {
+      timeout: 15_000,
+    });
   });
 
   // TODO(smoke): boost is rendered via a MenuConfirm component, not a
@@ -421,7 +456,9 @@ test.describe('write flows', () => {
   // home timeline and the status detail. Re-enable once boost gains
   // a stable data-testid or once we add a helper that drives the
   // confirmation menu reliably.
-  test.skip('boost + unboost (self-boost is supported on Bluesky)', async ({ page }) => {
+  test.skip('boost + unboost (self-boost is supported on Bluesky)', async ({
+    page,
+  }) => {
     await page.goto('/#/');
     const firstStatus = page
       .locator('[data-state-post-id], article.status, .status-link')
@@ -462,18 +499,25 @@ test.describe('write flows', () => {
       .or(page.getByRole('menuitem', { name: /^(unboost|un-?repost)$/i }))
       .first();
     if ((await unconfirm.count()) > 0) await unconfirm.click();
-    await expect(reloaded).toHaveAttribute('title', initial, { timeout: 15_000 });
+    await expect(reloaded).toHaveAttribute('title', initial, {
+      timeout: 15_000,
+    });
   });
 
   test('search: type a query, results show', async ({ page }) => {
     await goto(page, '/search');
-    const searchInput = page.locator('input[type="search"], input[placeholder*="earch" i]').first();
+    const searchInput = page
+      .locator('input[type="search"], input[placeholder*="earch" i]')
+      .first();
     await searchInput.waitFor({ timeout: 15_000 });
     await searchInput.fill('bluesky');
     await page.waitForTimeout(2000); // debounce
     // Results area shows accounts or statuses; assert _something_ rendered.
-    await expect(page.locator('article, .account-block, .status, [data-state-post-id]').first())
-      .toBeVisible({ timeout: 15_000 });
+    await expect(
+      page
+        .locator('article, .account-block, .status, [data-state-post-id]')
+        .first(),
+    ).toBeVisible({ timeout: 15_000 });
   });
 });
 
@@ -499,7 +543,9 @@ base.afterAll(async ({ browser }) => {
         .first();
       if ((await orphan.count()) === 0) break;
       const menu = orphan
-        .locator('button[aria-label*="ore" i], button[aria-haspopup], button[title="More"]')
+        .locator(
+          'button[aria-label*="ore" i], button[aria-haspopup], button[title="More"]',
+        )
         .first();
       if ((await menu.count()) === 0) break;
       await menu.click({ force: true }).catch(() => {});

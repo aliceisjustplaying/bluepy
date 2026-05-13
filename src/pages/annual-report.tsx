@@ -22,15 +22,15 @@ function NameText(props: {
   [key: string]: unknown;
 }) {
   const Inner = NameTextUntyped as unknown as ComponentType<{
-  account?: unknown;
-  instance?: string;
-  showAvatar?: boolean;
-  showAcct?: boolean;
-  short?: boolean;
-  external?: boolean;
-  onClick?: (event: Event) => void;
-  [key: string]: unknown;
-}>;
+    account?: unknown;
+    instance?: string;
+    showAvatar?: boolean;
+    showAcct?: boolean;
+    short?: boolean;
+    external?: boolean;
+    onClick?: (event: Event) => void;
+    [key: string]: unknown;
+  }>;
   return <Inner {...props} />;
 }
 
@@ -42,12 +42,12 @@ function Status(props: {
   [key: string]: unknown;
 }) {
   const Inner = StatusUntyped as unknown as ComponentType<{
-  status?: unknown;
-  size?: string;
-  readOnly?: boolean;
-  showCommentCount?: boolean;
-  [key: string]: unknown;
-}>;
+    status?: unknown;
+    size?: string;
+    readOnly?: boolean;
+    showCommentCount?: boolean;
+    [key: string]: unknown;
+  }>;
   return <Inner {...props} />;
 }
 

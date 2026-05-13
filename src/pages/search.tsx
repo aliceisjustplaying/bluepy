@@ -13,7 +13,7 @@ import AccountBlock from '../components/account-block';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
-import NavMenu from '../components/nav-menu';
+import NavMenuUntyped from '../components/nav-menu';
 import RecentSearches from '../components/recent-searches';
 import SearchForm from '../components/search-form';
 import StatusUntyped from '../components/status';
@@ -33,12 +33,16 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   behavior: 'instant' as ScrollBehavior,
 };
 
-function Status(props: {
-  status: mastodon.v1.Status;
-}) {
+function NavMenu(props: Record<string, never>) {
+  const Inner = NavMenuUntyped as unknown as ComponentType<
+    Record<string, never>
+  >;
+  return <Inner {...props} />;
+}
+function Status(props: { status: mastodon.v1.Status }) {
   const Inner = StatusUntyped as unknown as ComponentType<{
-  status: mastodon.v1.Status;
-}>;
+    status: mastodon.v1.Status;
+  }>;
   return <Inner {...props} />;
 }
 function InView(props: {
@@ -46,9 +50,9 @@ function InView(props: {
   children?: ComponentChildren;
 }) {
   const Inner = InViewUntyped as unknown as ComponentType<{
-  onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
-}>;
+    onChange?: (inView: boolean) => void;
+    children?: ComponentChildren;
+  }>;
   return <Inner {...props} />;
 }
 

@@ -11,12 +11,31 @@ import {
   type StoredAccount,
 } from '../utils/store-utils';
 
-import Avatar from './avatar';
+import AvatarUntyped from './avatar';
 import Icon from './icon';
 import Loader from './loader';
 import NameTextUntyped from './name-text';
 
-interface NameTextProps {
+function Avatar(props: {
+  url?: string;
+  staticUrl?: string;
+  size?: string | number;
+  alt?: string;
+  squircle?: boolean;
+  [key: string]: unknown;
+}) {
+  const Inner = AvatarUntyped as unknown as ComponentType<{
+    url?: string;
+    staticUrl?: string;
+    size?: string | number;
+    alt?: string;
+    squircle?: boolean;
+    [key: string]: unknown;
+  }>;
+  return <Inner {...props} />;
+}
+
+function NameText(props: {
   account?: unknown;
   instance?: string;
   showAvatar?: boolean;
@@ -25,8 +44,19 @@ interface NameTextProps {
   external?: boolean;
   onClick?: (event: Event) => void;
   [key: string]: unknown;
+}) {
+  const Inner = NameTextUntyped as unknown as ComponentType<{
+    account?: unknown;
+    instance?: string;
+    showAvatar?: boolean;
+    showAcct?: boolean;
+    short?: boolean;
+    external?: boolean;
+    onClick?: (event: Event) => void;
+    [key: string]: unknown;
+  }>;
+  return <Inner {...props} />;
 }
-const NameText = NameTextUntyped as unknown as ComponentType<NameTextProps>;
 
 type ImportStatus = 'duplicate' | 'new';
 
