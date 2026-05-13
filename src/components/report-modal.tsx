@@ -4,7 +4,11 @@ import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { Fragment, type ComponentType, type JSX } from 'preact';
+import {
+  Fragment,
+  type ComponentType,
+  type InputHTMLAttributes,
+} from 'preact';
 import { useMemo, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
@@ -162,7 +166,7 @@ interface MastoReportsClient {
 
 function ReportModal({ account, post, onClose }: ReportModalProps) {
   const { t, i18n } = useLingui();
-  const _ = (msg: MessageDescriptor) => i18n._(msg);
+  const _ = (descriptor: MessageDescriptor) => i18n._(descriptor);
   const { masto: mastoBase } = api();
   const masto = mastoBase as unknown as MastoReportsClient;
   const [uiState, setUIState] = useState<
@@ -233,7 +237,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
           onSubmit={(e) => {
             e.preventDefault();
 
-            const formEl = e.currentTarget as HTMLFormElement;
+            const formEl = e.currentTarget;
             const formData = new FormData(formEl);
             const entries = Object.fromEntries(formData.entries()) as Record<
               string,
@@ -261,7 +265,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
             console.log('PARAMS', params);
 
             setUIState('loading');
-            (async () => {
+            void (async () => {
               try {
                 await masto.v1.reports.create({
                   accountId: account.id,
@@ -304,7 +308,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                       required
                       disabled={uiState === 'loading'}
                       onChange={(e) => {
-                        const target = e.currentTarget as HTMLInputElement;
+                        const target = e.currentTarget;
                         setSelectedCategory(target.value as ReportCategory);
                         setShowRules(target.value === 'violation');
                       }}
@@ -333,8 +337,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                                   required={showRules && !hasRules}
                                   disabled={uiState === 'loading'}
                                   onChange={(e) => {
-                                    const target =
-                                      e.currentTarget as HTMLInputElement;
+                                    const target = e.currentTarget;
                                     const { checked } = target;
                                     if (checked) {
                                       setHasRules(true);
@@ -386,7 +389,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                       switch: true,
                       name: 'forward',
                       disabled: uiState === 'loading',
-                    } as JSX.InputHTMLAttributes<HTMLInputElement>)}
+                    } as InputHTMLAttributes)}
                   />{' '}
                   <span>
                     <Trans>
@@ -405,15 +408,17 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               type="submit"
               class="plain2"
               disabled={uiState === 'loading'}
-              onClick={async () => {
-                try {
-                  await masto.v1.accounts.$select(account.id).mute(); // Infinite duration
-                  showToast(t`Muted ${username}`);
-                } catch (e) {
-                  console.error(e);
-                  showToast(t`Unable to mute ${username}`);
-                }
-                // onSubmit will still run
+              onClick={() => {
+                void (async () => {
+                  try {
+                    await masto.v1.accounts.$select(account.id).mute(); // Infinite duration
+                    showToast(t`Muted ${username}`);
+                  } catch (e) {
+                    console.error(e);
+                    showToast(t`Unable to mute ${username}`);
+                  }
+                  // onSubmit will still run
+                })();
               }}
             >
               <Trans>
@@ -424,15 +429,17 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               type="submit"
               class="plain2"
               disabled={uiState === 'loading'}
-              onClick={async () => {
-                try {
-                  await masto.v1.accounts.$select(account.id).block();
-                  showToast(t`Blocked ${username}`);
-                } catch (e) {
-                  console.error(e);
-                  showToast(t`Unable to block ${username}`);
-                }
-                // onSubmit will still run
+              onClick={() => {
+                void (async () => {
+                  try {
+                    await masto.v1.accounts.$select(account.id).block();
+                    showToast(t`Blocked ${username}`);
+                  } catch (e) {
+                    console.error(e);
+                    showToast(t`Unable to block ${username}`);
+                  }
+                  // onSubmit will still run
+                })();
               }}
             >
               <Trans>

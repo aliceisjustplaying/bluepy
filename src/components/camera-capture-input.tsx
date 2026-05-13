@@ -1,4 +1,4 @@
-import type { JSX } from 'preact';
+import type { TargetedEvent } from 'preact';
 
 const isMobileSafari =
   /iPad|iPhone|iPod/.test(navigator.userAgent) &&
@@ -43,32 +43,34 @@ function CameraCaptureInput({
       accept={filteredSupportedMimeTypes?.join(',')}
       capture="environment"
       disabled={disabled}
-      onChange={async (e: JSX.TargetedEvent<HTMLInputElement, Event>) => {
+      onChange={(e: TargetedEvent<HTMLInputElement>) => {
         const target = e.currentTarget;
         const files = target.files;
         if (!files) return;
         const mediaFile = Array.from(files)[0];
         if (!mediaFile) return;
-        let fileData;
-        try {
-          fileData = await mediaFile.arrayBuffer();
-        } catch (err) {
-          console.error('Failed to read file:', err);
-          return;
-        }
-        setMediaAttachments((attachments) => [
-          ...attachments,
-          {
-            fileData,
-            fileName: mediaFile.name,
-            type: mediaFile.type,
-            size: mediaFile.size,
-            url: URL.createObjectURL(mediaFile),
-            id: null, // indicate uploaded state
-            description: null,
-          },
-        ]);
-        target.value = '';
+        void (async () => {
+          let fileData;
+          try {
+            fileData = await mediaFile.arrayBuffer();
+          } catch (err) {
+            console.error('Failed to read file:', err);
+            return;
+          }
+          setMediaAttachments((attachments) => [
+            ...attachments,
+            {
+              fileData,
+              fileName: mediaFile.name,
+              type: mediaFile.type,
+              size: mediaFile.size,
+              url: URL.createObjectURL(mediaFile),
+              id: null, // indicate uploaded state
+              description: null,
+            },
+          ]);
+          target.value = '';
+        })();
       }}
     />
   );

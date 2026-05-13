@@ -3,7 +3,7 @@ import './settings.css';
 import '../components/button-install';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { JSX, VNode } from 'preact';
+import type { VNode } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useDebounce } from 'use-debounce';
 import { useSnapshot } from 'valtio';
@@ -23,7 +23,7 @@ import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import store from '../utils/store';
-import { getAPIVersions, getVapidKey } from '../utils/store-utils';
+import { getVapidKey } from '../utils/store-utils';
 import {
   initSubscription,
   isPushSupported,
@@ -37,7 +37,7 @@ import {
 declare module 'preact' {
   namespace JSX {
     interface IntrinsicElements {
-      'button-install': JSX.HTMLAttributes<HTMLElement>;
+      'button-install': preact.HTMLAttributes<HTMLElement>;
     }
   }
 }
@@ -286,7 +286,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                   <a
                     href="https://crowdin.com/project/phanpy"
                     target="_blank"
-                    rel="noopener"
+                    rel="noopener noreferrer"
                   >
                     <Trans>Volunteer translations</Trans>
                   </a>
@@ -317,7 +317,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                     }
                     onChange={(e) => {
                       const { value } = e.currentTarget;
-                      (async () => {
+                      void (async () => {
                         try {
                           await (
                             masto.v1
@@ -373,7 +373,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                       disabled={disableQuotePolicy}
                       onChange={(e) => {
                         const { value } = e.currentTarget;
-                        (async () => {
+                        void (async () => {
                           try {
                             await (
                               masto.v1
@@ -419,7 +419,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                   <a
                     href={`https://${instance}/`}
                     target="_blank"
-                    rel="noopener"
+                    rel="noopener noreferrer"
                   >
                     Go to your server ({instance}) for more settings.
                   </a>
@@ -509,7 +509,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                           });
                           const showCommon = native && common !== native;
                           return (
-                            <option value={lang.code}>
+                            <option key={lang.code} value={lang.code}>
                               {showCommon ? `${native} - ${common}` : common}
                             </option>
                           );
@@ -539,7 +539,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                         });
                         const showCommon = native && common !== native;
                         return (
-                          <label>
+                          <label key={lang.code}>
                             <input
                               type="checkbox"
                               checked={snapStates.settings.contentTranslationHideLanguages.includes(
@@ -580,7 +580,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                         <a
                           href="https://github.com/cheeaun/translang-api"
                           target="_blank"
-                          rel="noopener"
+                          rel="noopener noreferrer"
                         >
                           {TRANSLATION_API_NAME}
                         </a>
@@ -668,7 +668,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                       <a
                         href="https://developers.giphy.com/"
                         target="_blank"
-                        rel="noopener"
+                        rel="noopener noreferrer"
                       >
                         GIPHY
                       </a>
@@ -709,7 +709,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                       <a
                         href="https://github.com/cheeaun/img-alt-api"
                         target="_blank"
-                        rel="noopener"
+                        rel="noopener noreferrer"
                       >
                         img-alt-api
                       </a>
@@ -860,7 +860,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               <a
                 href="https://hachyderm.io/@phanpy"
                 // target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
                 onClick={(e) => {
                   e.preventDefault();
                   states.showAccount = 'phanpy@hachyderm.io';
@@ -872,7 +872,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               <a
                 href="https://github.com/cheeaun/phanpy"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
               >
                 Built
               </a>{' '}
@@ -880,7 +880,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               <a
                 href="https://mastodon.social/@cheeaun"
                 // target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
                 onClick={(e) => {
                   e.preventDefault();
                   states.showAccount = 'cheeaun@mastodon.social';
@@ -892,7 +892,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               <a
                 href="https://bsky.app/profile/alice.mosphere.at"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
               >
                 @alice.mosphere.at
               </a>{' '}
@@ -900,7 +900,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               <a
                 href="https://bsky.app/profile/quillmatiq.com"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
               >
                 Anuj Ahooja (@quillmatiq.com)
               </a>
@@ -910,7 +910,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             <a
               href="https://github.com/sponsors/cheeaun"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <Trans>Sponsor</Trans>
             </a>{' '}
@@ -918,7 +918,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             <a
               href="https://www.buymeacoffee.com/cheeaun"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <Trans>Donate</Trans>
             </a>{' '}
@@ -926,7 +926,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             <a
               href="https://patreon.com/cheeaun"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               Patreon
             </a>{' '}
@@ -934,12 +934,12 @@ function Settings({ onClose }: SettingsProps): VNode {
             <a
               href="https://github.com/cheeaun/phanpy/blob/main/CHANGELOG.md"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
             >
               <Trans>What's new</Trans>
             </a>{' '}
             &middot;{' '}
-            <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener">
+            <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer">
               <Trans>Privacy Policy</Trans>
             </a>
           </p>
@@ -969,7 +969,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                     target.select();
                     // Copy to clipboard
                     try {
-                      navigator.clipboard.writeText(target.value);
+                      void navigator.clipboard.writeText(target.value);
                       showToast(t`Version string copied`);
                     } catch (err) {
                       console.warn(err);
@@ -983,7 +983,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                     <a
                       href={`https://github.com/cheeaun/phanpy/commit/${__COMMIT_HASH__}`}
                       target="_blank"
-                      rel="noopener"
+                      rel="noopener noreferrer"
                     >
                       <RelativeTime datetime={new Date(__BUILD_TIME__)} />
                     </a>
@@ -1011,34 +1011,37 @@ function Settings({ onClose }: SettingsProps): VNode {
               <b>Vapid key</b>:{' '}
               {getVapidKey() as string | number | null | undefined}
             </p>
-            {(window.__BENCH_RESULTS as Map<string, unknown> | undefined)
-              ?.size! > 0 && (
+            {(window.__BENCH_RESULTS?.size ?? 0) > 0 && (
               <ul>
-                {Array.from(
-                  (window.__BENCH_RESULTS as Map<string, unknown>).entries(),
-                ).map(([name, duration]) => (
-                  <li>
-                    <b>{name}</b>: {duration as number}ms
-                  </li>
-                ))}
+                {Array.from(window.__BENCH_RESULTS!.entries()).map(
+                  ([name, duration]) => (
+                    <li key={name}>
+                      <b>{name}</b>: {duration as number}ms
+                    </li>
+                  ),
+                )}
               </ul>
             )}
             <p>Service Worker Cache</p>
             <button
               type="button"
               class="plain2 small"
-              onClick={async () =>
-                alert((await getCachesKeys()) as unknown as string)
-              }
+              onClick={() => {
+                void (async () => {
+                  alert((await getCachesKeys()) as unknown as string);
+                })();
+              }}
             >
               Show keys count
             </button>{' '}
             <button
               type="button"
               class="plain2 small"
-              onClick={async () =>
-                alert((await getCachesSize()) as unknown as string)
-              }
+              onClick={() => {
+                void (async () => {
+                  alert((await getCachesSize()) as unknown as string);
+                })();
+              }}
             >
               Show cache size
             </button>{' '}
@@ -1049,9 +1052,9 @@ function Settings({ onClose }: SettingsProps): VNode {
                 const key = prompt('Enter cache key');
                 if (!key) return;
                 try {
-                  clearCacheKey(key);
+                  void clearCacheKey(key);
                 } catch (err) {
-                  alert(err as unknown as string);
+                  alert(err);
                 }
               }}
             >
@@ -1062,9 +1065,9 @@ function Settings({ onClose }: SettingsProps): VNode {
               class="plain2 small"
               onClick={() => {
                 try {
-                  clearCaches();
+                  void clearCaches();
                 } catch (err) {
-                  alert(err as unknown as string);
+                  alert(err);
                 }
               }}
             >
@@ -1155,7 +1158,7 @@ function TextSizeControl({ currentTextSize }: TextSizeControlProps): VNode {
       </button>
       <datalist id="sizes">
         {TEXT_SIZES.map((s) => (
-          <option value={s} />
+          <option key={s} value={s} />
         ))}
       </datalist>
     </div>
@@ -1188,7 +1191,7 @@ async function getCachesSize(): Promise<Record<string, string>> {
         TOTAL += blob.size;
       } catch (e) {
         alert('Failed to get cache size for ' + (item as unknown as string));
-        alert(e as unknown as string);
+        alert(e);
       }
     }
   }
@@ -1225,8 +1228,7 @@ function PushNotificationsSection({
   onClose,
 }: PushNotificationsSectionProps): VNode | null {
   const { t } = useLingui();
-  if (!isPushSupported()) return null;
-
+  const pushSupported = isPushSupported();
   const { instance } = api();
   const [uiState, setUIState] = useState<string>('default');
   const pushFormRef = useRef<HTMLFormElement | null>(null);
@@ -1234,7 +1236,8 @@ function PushNotificationsSection({
   const [needRelogin, setNeedRelogin] = useState<boolean>(false);
   const previousPolicyRef = useRef<string | undefined>(undefined);
   useEffect(() => {
-    (async () => {
+    if (!pushSupported) return;
+    void (async () => {
       setUIState('loading');
       try {
         const result = await initSubscription();
@@ -1277,9 +1280,11 @@ function PushNotificationsSection({
         setUIState('error');
       }
     })();
-  }, []);
+  }, [pushSupported]);
 
   const isLoading = uiState === 'loading';
+
+  if (!pushSupported) return null;
 
   return (
     <form
@@ -1292,7 +1297,7 @@ function PushNotificationsSection({
             string,
             FormDataEntryValue
           >;
-          const allowNotifications = !!values['policy-allow'];
+          const allowNext = !!values['policy-allow'];
           // NOTE: original JS nested `policy` under `data` and did not pass a
           // top-level `policy` argument to `updateSubscription`. The util
           // destructures `policy` only at the top level, so the original code
@@ -1337,16 +1342,17 @@ function PushNotificationsSection({
 
           console.log('PN Form', {
             values,
-            allowNotifications: allowNotifications,
+            allowNotifications: allowNext,
             params,
           });
 
-          if (allowNotifications && alertsCount > 0) {
+          if (allowNext && alertsCount > 0) {
             if (policyChanged) {
               console.debug('Policy changed.');
               removeSubscription()
                 .then(() => {
-                  updateSubscription(params);
+                  void updateSubscription(params);
+                  return undefined;
                 })
                 .catch((err) => {
                   console.warn(err);
@@ -1379,21 +1385,24 @@ function PushNotificationsSection({
                 disabled={isLoading || needRelogin}
                 name="policy-allow"
                 checked={allowNotifications}
-                onChange={async (e) => {
+                onChange={(e) => {
                   const { checked } = e.currentTarget;
                   if (checked) {
                     // Request permission
-                    const permission = await Notification.requestPermission();
-                    if (permission === 'granted') {
-                      setAllowNotifications(true);
-                    } else {
-                      setAllowNotifications(false);
-                      if (permission === 'denied') {
-                        alert(
-                          t`Push notifications are blocked. Please enable them in your browser settings.`,
-                        );
+                    void (async () => {
+                      const permission =
+                        await Notification.requestPermission();
+                      if (permission === 'granted') {
+                        setAllowNotifications(true);
+                      } else {
+                        setAllowNotifications(false);
+                        if (permission === 'denied') {
+                          alert(
+                            t`Push notifications are blocked. Please enable them in your browser settings.`,
+                          );
+                        }
                       }
-                    }
+                    })();
                   } else {
                     setAllowNotifications(false);
                   }
@@ -1419,7 +1428,9 @@ function PushNotificationsSection({
                       label: t`followers`,
                     },
                   ].map((type) => (
-                    <option value={type.value}>{type.label}</option>
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
                   ))}
                 </select>
               </Trans>
@@ -1468,7 +1479,7 @@ function PushNotificationsSection({
                         label: t`New posts`,
                       },
                     ].map((alert) => (
-                      <li>
+                      <li key={alert.value}>
                         <label>
                           <input type="checkbox" name={alert.value} />{' '}
                           {alert.label}

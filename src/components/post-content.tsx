@@ -61,7 +61,7 @@ const PostContent =
         }
       }
       divRef.current.replaceChildren(dom.cloneNode(true));
-    }, [content, (emojis as unknown[] | undefined)?.length]);
+    }, [content, emojis?.length]);
 
     useEffect(() => {
       // Find all links that's in states.statusQuotes and add 'is-quote' class

@@ -1,7 +1,7 @@
 import './annual-report.css';
 
 import { Trans } from '@lingui/react/macro';
-import type { ComponentChildren, ComponentType } from 'preact';
+import { Fragment, type ComponentChildren, type ComponentType } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { useParams } from 'react-router-dom';
 
@@ -64,7 +64,7 @@ export default function AnnualReport() {
 
   useEffect(() => {
     if (year) {
-      (async () => {
+      void (async () => {
         setUIState('loading');
         const mastoUntyped = masto as unknown as {
           v1: {
@@ -86,7 +86,7 @@ export default function AnnualReport() {
   }, [year]);
 
   const { accounts, annualReports, statuses } = results || {};
-  const report = annualReports?.find((report) => report.year == year)?.data;
+  const report = annualReports?.find((entry) => entry.year == year)?.data;
 
   const datePlaceholder = new Date();
 
@@ -112,7 +112,7 @@ export default function AnnualReport() {
               }
 
               return (
-                <>
+                <Fragment key={key}>
                   <dt>{key}</dt>
                   <dd class={`report-${key}`}>
                     {Array.isArray(value) ? (
@@ -121,47 +121,51 @@ export default function AnnualReport() {
                           <tr>
                             {Object.entries(
                               value[0] as Record<string, unknown>,
-                            ).map(([key, value]) => (
+                            ).map(([colKey, colValue]) => (
                               <th
+                                key={colKey}
                                 class={
-                                  key !== 'month' && typeof value === 'number'
+                                  colKey !== 'month' &&
+                                  typeof colValue === 'number'
                                     ? 'number'
                                     : ''
                                 }
                               >
-                                {key}
+                                {colKey}
                               </th>
                             ))}
                           </tr>
                         </thead>
                         <tbody>
-                          {value.map((item) => (
-                            <tr>
+                          {value.map((item, rowIndex) => (
+                            <tr key={rowIndex}>
                               {Object.entries(
                                 item as Record<string, unknown>,
-                              ).map(([k, value]) => (
+                              ).map(([k, cellValue]) => (
                                 <td
+                                  key={k}
                                   class={
-                                    k !== 'month' && typeof value === 'number'
+                                    k !== 'month' &&
+                                    typeof cellValue === 'number'
                                       ? 'number'
                                       : ''
                                   }
                                   style={{
                                     '--percentage':
-                                      typeof value === 'number'
-                                        ? `${(value / totals[k]) * 100}%`
+                                      typeof cellValue === 'number'
+                                        ? `${(cellValue / totals[k]) * 100}%`
                                         : 0,
                                   }}
                                 >
-                                  {value &&
+                                  {cellValue &&
                                   /(accountId)/i.test(k) &&
                                   /^(mostRebloggedAccounts|commonlyInteractedWithAccounts)$/i.test(
                                     key,
                                   ) ? (
-                                    accounts?.find((a) => a.id === value) ? (
+                                    accounts?.find((a) => a.id === cellValue) ? (
                                       <NameText
                                         account={accounts?.find(
-                                          (a) => a.id === value,
+                                          (a) => a.id === cellValue,
                                         )}
                                         showAvatar
                                       />
@@ -170,15 +174,15 @@ export default function AnnualReport() {
                                     )
                                   ) : k === 'month' ? (
                                     datePlaceholder.setMonth(
-                                      (value as number) - 1,
+                                      (cellValue as number) - 1,
                                     ) &&
                                     datePlaceholder.toLocaleString(undefined, {
                                       month: 'long',
                                     })
-                                  ) : typeof value === 'number' ? (
-                                    value.toLocaleString()
+                                  ) : typeof cellValue === 'number' ? (
+                                    cellValue.toLocaleString()
                                   ) : (
-                                    (value as ComponentChildren)
+                                    (cellValue as ComponentChildren)
                                   )}
                                 </td>
                               ))}
@@ -190,26 +194,27 @@ export default function AnnualReport() {
                       /^(topStatuses)$/i.test(key) ? (
                         <dl>
                           {Object.entries(value as Record<string, unknown>).map(
-                            ([k, value]) => (
-                              <>
+                            ([k, statusId]) => (
+                              <Fragment key={k}>
                                 <dt>{k}</dt>
                                 <dd>
                                   {
-                                    (value && (
-                                      <Link to={`/${instance}/s/${value}`}>
-                                        <Status
-                                          status={statuses?.find(
-                                            (s) => s.id === value,
-                                          )}
-                                          size="s"
-                                          readOnly
-                                          showCommentCount
-                                        />
-                                      </Link>
-                                    )) as ComponentChildren
+                                    (statusId &&
+                                      typeof statusId === 'string' && (
+                                        <Link to={`/${instance}/s/${statusId}`}>
+                                          <Status
+                                            status={statuses?.find(
+                                              (s) => s.id === statusId,
+                                            )}
+                                            size="s"
+                                            readOnly
+                                            showCommentCount
+                                          />
+                                        </Link>
+                                      )) as ComponentChildren
                                   }
                                 </dd>
-                              </>
+                              </Fragment>
                             ),
                           )}
                         </dl>
@@ -218,15 +223,17 @@ export default function AnnualReport() {
                           <tbody>
                             {Object.entries(
                               value as Record<string, unknown>,
-                            ).map(([k, value]) => (
-                              <tr>
+                            ).map(([k, sectionValue]) => (
+                              <tr key={k}>
                                 <th>{k}</th>
                                 <td
                                   class={
-                                    typeof value === 'number' ? 'number' : ''
+                                    typeof sectionValue === 'number'
+                                      ? 'number'
+                                      : ''
                                   }
                                 >
-                                  {value as ComponentChildren}
+                                  {sectionValue as ComponentChildren}
                                 </td>
                               </tr>
                             ))}
@@ -240,7 +247,7 @@ export default function AnnualReport() {
                       JSON.stringify(value, null, 2)
                     )}
                   </dd>
-                </>
+                </Fragment>
               );
             })}
           </dl>

@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import prettify from 'html-prettify';
-import type { JSX } from 'preact';
+import type { TargetedMouseEvent } from 'preact';
 
 import emojifyText from '../utils/emojify-text';
 import showToast from '../utils/show-toast';
@@ -68,20 +68,11 @@ function generateHTMLCode(
   level = 0,
 ): string {
   const {
-    account: {
-      url: accountURL,
-      displayName,
-      acct,
-      username,
-      emojis: accountEmojis,
-      bot,
-      group,
-    },
+    account: { displayName, acct, emojis: accountEmojis },
     id,
     poll,
     spoilerText,
     language,
-    editedAt,
     createdAt,
     content,
     mediaAttachments,
@@ -99,9 +90,9 @@ function generateHTMLCode(
     uniqueQuotes.length && level <= 2
       ? uniqueQuotes
           .map((quote: QuoteRef) => {
-            const { id, instance } = quote;
-            const sKey = statusKey(id, instance);
-            const s = sKey ? states.statuses[sKey] : undefined;
+            const { id: quoteId, instance: quoteInstance } = quote;
+            const quoteKey = statusKey(quoteId, quoteInstance);
+            const s = quoteKey ? states.statuses[quoteKey] : undefined;
             if (s) {
               // states.statuses values are typed as Record<string, unknown> in
               // states.ts; PostLike is the structural shape this component
@@ -109,10 +100,11 @@ function generateHTMLCode(
               // export shared with this component.
               return generateHTMLCode(
                 s as unknown as PostLike,
-                instance,
+                quoteInstance,
                 ++level,
               );
             }
+            return '';
           })
           .join('')
       : '';
@@ -151,7 +143,7 @@ function generateHTMLCode(
               previewRemoteUrl,
               previewUrl,
               remoteUrl,
-              url,
+              url: mediaUrl,
               type,
             } = media;
             const { original = {}, small } = meta || {};
@@ -159,7 +151,7 @@ function generateHTMLCode(
             const height = small?.height || original?.height;
 
             // Prefer remote over original
-            const sourceMediaURL = remoteUrl || url;
+            const sourceMediaURL = remoteUrl || mediaUrl;
             const previewMediaURL = previewRemoteUrl || previewUrl;
             const mediaURL = previewMediaURL || sourceMediaURL;
 
@@ -225,7 +217,7 @@ function generateHTMLCode(
         — ${emojifyText(
           displayName as string,
           accountEmojis,
-        )} (@${acct}) ${!!createdAt ? `<a href="${url}"><time datetime="${createdAtDate.toISOString()}">${createdAtDate.toLocaleString()}</time></a>` : ''}
+        )} (@${acct}) ${createdAt ? `<a href="${url}"><time datetime="${createdAtDate.toISOString()}">${createdAtDate.toLocaleString()}</time></a>` : ''}
       </footer>
     </blockquote>
   `;
@@ -236,23 +228,8 @@ function generateHTMLCode(
 function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
   const { t } = useLingui();
   const {
-    account: {
-      url: accountURL,
-      displayName,
-      username,
-      emojis: accountEmojis,
-      bot,
-      group,
-    },
-    id,
-    poll,
-    spoilerText,
-    language,
-    editedAt,
-    createdAt,
-    content,
+    account: { emojis: accountEmojis },
     mediaAttachments,
-    url,
     emojis,
   } = post;
 
@@ -276,7 +253,7 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
         <textarea
           class="embed-code"
           readOnly
-          onClick={(e: JSX.TargetedMouseEvent<HTMLTextAreaElement>) => {
+          onClick={(e: TargetedMouseEvent<HTMLTextAreaElement>) => {
             e.currentTarget.select();
           }}
           dir="auto"
@@ -287,7 +264,7 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
           type="button"
           onClick={() => {
             try {
-              navigator.clipboard.writeText(htmlCode);
+              void navigator.clipboard.writeText(htmlCode);
               showToast(t`HTML code copied`);
             } catch (e) {
               console.error(e);

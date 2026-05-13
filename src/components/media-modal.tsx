@@ -117,12 +117,13 @@ function MediaModal({
     const handleSwipe = (e: Event) => {
       onClose(e, currentIndex, mediaAttachments, carouselRef);
     };
-    if (carouselRef.current) {
-      carouselRef.current.addEventListener('swiped-down', handleSwipe);
+    const carousel = carouselRef.current;
+    if (carousel) {
+      carousel.addEventListener('swiped-down', handleSwipe);
     }
     return () => {
-      if (carouselRef.current) {
-        carouselRef.current.removeEventListener('swiped-down', handleSwipe);
+      if (carousel) {
+        carousel.removeEventListener('swiped-down', handleSwipe);
       }
     };
   }, [currentIndex, mediaAttachments]);
@@ -145,17 +146,18 @@ function MediaModal({
   useEffect(() => {
     const handleScroll = () => {
       const { clientWidth, scrollLeft } = carouselRef.current!;
-      const index = Math.round(Math.abs(scrollLeft) / clientWidth);
-      setCurrentIndex(index);
+      const nextIndex = Math.round(Math.abs(scrollLeft) / clientWidth);
+      setCurrentIndex(nextIndex);
     };
-    if (carouselRef.current) {
-      carouselRef.current.addEventListener('scroll', handleScroll, {
+    const carousel = carouselRef.current;
+    if (carousel) {
+      carousel.addEventListener('scroll', handleScroll, {
         passive: true,
       });
     }
     return () => {
-      if (carouselRef.current) {
-        carouselRef.current.removeEventListener('scroll', handleScroll);
+      if (carousel) {
+        carousel.removeEventListener('scroll', handleScroll);
       }
     };
   }, []);
@@ -191,8 +193,8 @@ function MediaModal({
   }, undefined);
   const mediaAccentGradients = useMemo(() => {
     const gap = 5;
-    const range = 100 / mediaAccentColors!.length;
-    const colors = mediaAccentColors!.map((color, i) => {
+    const range = 100 / mediaAccentColors.length;
+    const colors = mediaAccentColors.map((color, i) => {
       const start = i * range + gap;
       const end = (i + 1) * range - gap;
       if (color?.light && color?.dark) {
@@ -235,7 +237,7 @@ function MediaModal({
   }, []);
 
   useLayoutEffect(() => {
-    const currentColor = mediaAccentColors![currentIndex];
+    const currentColor = mediaAccentColors[currentIndex];
     let $meta: HTMLMetaElement | null | undefined;
     let metaColor: string | undefined;
     if (currentColor) {
@@ -316,7 +318,7 @@ function MediaModal({
       >
         {mediaAttachments?.map((media: MediaAttachment, i: number) => {
           const accentColor =
-            mediaAttachments.length === 1 ? mediaAccentColors![i] : null;
+            mediaAttachments.length === 1 ? mediaAccentColors[i] : null;
           return (
             <div
               class="carousel-item"
@@ -436,7 +438,7 @@ function MediaModal({
               </span>
             </MenuLink>
             {import.meta.env.DEV && // Only dev for now
-              !!states.settings.mediaAltGenerator &&
+              states.settings.mediaAltGenerator &&
               !!IMG_ALT_API_URL &&
               !!mediaAttachments[currentIndex]?.url &&
               !mediaAttachments[currentIndex]?.description &&
@@ -452,7 +454,7 @@ function MediaModal({
                         text: t`Attempting to describe image. Please wait…`,
                         duration: -1,
                       });
-                      (async function () {
+                      void (async function () {
                         try {
                           const response = await fetch(
                             `${IMG_ALT_API_URL}?image=${encodeURIComponent(

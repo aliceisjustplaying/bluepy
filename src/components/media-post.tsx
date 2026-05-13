@@ -1,6 +1,6 @@
 import './media-post.css';
 
-import { Trans, useLingui } from '@lingui/react/macro';
+import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { ComponentChild, ComponentType, JSX } from 'preact';
 import { memo } from 'preact/compat';
@@ -11,7 +11,6 @@ import { getPreferences } from '../utils/api';
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
 import states, { statusKey } from '../utils/states';
-import store from '../utils/store';
 import { getCurrentAccountID } from '../utils/store-utils';
 
 import MediaRaw from './media';
@@ -79,8 +78,13 @@ function MediaPost({
   onMediaClick,
 }: MediaPostProps): ComponentChild | ComponentChild[] {
   const { t } = useLingui();
-  let sKey = statusKey(statusID, instance);
   const snapStates = useSnapshot(states);
+  const currentAccount = useMemo(() => {
+    return getCurrentAccountID();
+  }, []);
+  const filterContext = useContext(FilterContext);
+
+  let sKey = statusKey(statusID, instance);
   if (!status) {
     const fromSKey = sKey ? snapStates.statuses[sKey] : undefined;
     const fromID = statusID ? snapStates.statuses[statusID] : undefined;
@@ -96,49 +100,16 @@ function MediaPost({
   }
 
   const {
-    account: {
-      acct,
-      avatar,
-      avatarStatic,
-      id: accountId,
-      url: accountURL,
-      displayName,
-      username,
-      emojis: accountEmojis,
-      bot,
-      group,
-    },
+    account: { id: accountId },
     id,
-    repliesCount,
-    reblogged,
-    reblogsCount,
-    favourited,
-    favouritesCount,
-    bookmarked,
-    poll,
-    muted,
     sensitive,
     spoilerText,
-    visibility, // public, unlisted, private, direct
     language,
-    editedAt,
     filtered,
-    card,
-    createdAt,
-    inReplyToId,
-    inReplyToAccountId,
-    content,
-    mentions,
     mediaAttachments,
-    reblog,
-    uri,
-    url,
-    emojis,
-    // Non-API props
-    _deleted,
-    _pinned,
-    // _filtered,
   } = status;
+
+  const isSelf = currentAccount && currentAccount === accountId;
 
   if (!mediaAttachments?.length) {
     return null;
@@ -152,14 +123,6 @@ function MediaPost({
     }
   };
 
-  const currentAccount = useMemo(() => {
-    return getCurrentAccountID();
-  }, []);
-  const isSelf = useMemo(() => {
-    return currentAccount && currentAccount === accountId;
-  }, [accountId, currentAccount]);
-
-  const filterContext = useContext(FilterContext);
   // `isFiltered`'s typed signature requires a string context, but the JS
   // original calls it with `undefined` when no FilterContext is provided and
   // `_isFiltered` short-circuits to `false`. The `as string` shim mirrors
