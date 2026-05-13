@@ -136,7 +136,9 @@ export default function QuoteChainModal({
         !signal.aborted &&
         fetchCount < BATCH_LIMIT
       ) {
-        await new Promise((resolve) => setTimeout(resolve, FETCH_DELAY));
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, FETCH_DELAY);
+        });
       }
     }
 

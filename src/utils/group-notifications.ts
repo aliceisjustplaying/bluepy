@@ -6,6 +6,13 @@ import type { mastodon } from 'masto';
 // `_types`, `_accounts`, `_statuses`, etc.) and accept partial / malformed
 // payloads. The masto entity unions are too strict for that pattern, so we
 // describe a wider local shape that mirrors what the JS original allowed.
+//
+// TODO(oxlint:no-underscore-dangle) The `_types`, `_accounts`, `_statuses`,
+// `_ids`, `_groupKeys`, `_notificationsCount`, `_sampleAccountsCount` fields
+// throughout this file form the project-wide cross-module notification
+// augmentation namespace, used by `status.tsx` / `notification.tsx` /
+// `generic-accounts.tsx`. Renaming requires a cross-cutting refactor and is
+// out of scope.
 
 interface AccountWithTypes extends mastodon.v1.Account {
   _types?: string[];
@@ -151,13 +158,13 @@ export function massageNotifications2(
 }
 
 export function groupNotifications2(
-  groupNotifications: NotificationGroupLike[],
+  notificationGroups: NotificationGroupLike[],
 ): NotificationGroupLike[] {
   // Make grouped notifications to look like faux grouped notifications. The
   // JS original assumed `sampleAccounts` was an array (built upstream by
   // `massageNotifications2`) and indexed into it directly; preserve that
   // contract — a missing `sampleAccounts` here is a malformed-input crash.
-  const newGroupNotifications: NotificationGroupLike[] = groupNotifications.map(
+  const newGroupNotifications: NotificationGroupLike[] = notificationGroups.map(
     (gn) => {
       const {
         latestPageNotificationAt,
@@ -245,7 +252,11 @@ export function groupNotifications2(
           });
         } else {
           mappedAccount._types!.push(type as string);
-          mappedAccount._types!.sort().reverse();
+          // Equivalent to the JS original `_types.sort().reverse()`: default
+          // string compare then reverse, expressed as a single toSorted call.
+          mappedAccount._types = mappedAccount._types!.toSorted((t1, t2) =>
+            t1 < t2 ? 1 : t1 > t2 ? -1 : 0,
+          );
         }
       });
       // mappedNotification.notificationsCount =
@@ -258,9 +269,7 @@ export function groupNotifications2(
         notificationsCount as number,
       );
       mappedNotification._notificationsCount.push(notificationsCount as number);
-      mappedNotification._sampleAccountsCount.push(
-        sampleAccounts!.length as number,
-      );
+      mappedNotification._sampleAccountsCount.push(sampleAccounts!.length);
       mappedNotification._accounts = mappedNotification.sampleAccounts;
       if (groupKey) mappedNotification._groupKeys.push(groupKey);
     } else {
@@ -281,7 +290,7 @@ export function groupNotifications2(
         _accounts: accounts,
         _groupKeys: groupKey ? [groupKey] : [],
         _notificationsCount: [notificationsCount as number],
-        _sampleAccountsCount: [sampleAccounts!.length as number],
+        _sampleAccountsCount: [sampleAccounts!.length],
       };
       notificationsMap[key] = newEntry;
       newGroupNotifications1.push(newEntry);
@@ -366,7 +375,11 @@ export default function groupNotifications(
       );
       if (mappedAccount) {
         mappedAccount._types!.push(type as string);
-        mappedAccount._types!.sort().reverse();
+        // Equivalent to the JS original `_types.sort().reverse()`: default
+        // string compare then reverse, expressed as a single toSorted call.
+        mappedAccount._types = mappedAccount._types!.toSorted((a, b) =>
+          a < b ? 1 : a > b ? -1 : 0,
+        );
         mappedNotification._ids = `${mappedNotification._ids}-${id}`;
       } else {
         account!._types = [type as string];

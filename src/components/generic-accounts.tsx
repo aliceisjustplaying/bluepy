@@ -34,6 +34,9 @@ const InViewTyped = InViewUntyped as unknown as ComponentType<{
   children?: unknown;
 }>;
 
+// TODO(oxlint:no-underscore-dangle) `_types` is a shared internal cache key
+// on account records used by status.tsx and notification.tsx. Renaming requires
+// a cross-cutting refactor and is out of scope.
 interface AccountWithTypes extends mastodon.v1.Account {
   _types: string[];
 }
@@ -71,39 +74,49 @@ export default function GenericAccounts({
   blankCopy,
 }: GenericAccountsProps) {
   const { t } = useLingui();
-  const { masto, instance: currentInstance } = api();
+  const { instance: currentInstance } = api();
   const isCurrentInstance = instance ? instance === currentInstance : true;
   const snapStates = useSnapshot(states);
-  ``;
+
   const [uiState, setUIState] = useState('default');
   const [showMore, setShowMore] = useState(false);
 
-  useLocationChange(onClose);
-
-  if (!snapStates.showGenericAccounts) {
-    return null;
-  }
-
-  const {
-    id,
-    heading,
-    fetchAccounts,
-    accounts: staticAccounts,
-    showReactions,
-  } = snapStates.showGenericAccounts as ShowGenericAccountsState;
-
-  const [accounts, setAccounts] = useState<AccountWithTypes[]>(
-    staticAccounts?.length ? staticAccounts : [],
+  const showGenericAccountsState =
+    snapStates.showGenericAccounts as ShowGenericAccountsState | false;
+  const staticAccounts = showGenericAccountsState
+    ? showGenericAccountsState.accounts
+    : undefined;
+  // The modal is only mounted when `showGenericAccounts` is truthy (see
+  // modals.tsx), so the lazy initializer captures the snapshotted
+  // `staticAccounts` synchronously at mount — matching the JS original
+  // where this `useState` was reached only after a truthy guard.
+  const [accounts, setAccounts] = useState<AccountWithTypes[]>(() =>
+    staticAccounts?.length ? [...staticAccounts] : [],
   );
 
   const [relationshipsMap, setRelationshipsMap] = useState<
     Record<string, mastodon.v1.Relationship>
   >({});
 
-  const loadRelationships = async (accounts: AccountWithTypes[]) => {
-    if (!accounts?.length) return;
+  const firstLoad = useRef(true);
+
+  useLocationChange(onClose);
+
+  const id = showGenericAccountsState ? showGenericAccountsState.id : undefined;
+  const heading = showGenericAccountsState
+    ? showGenericAccountsState.heading
+    : undefined;
+  const fetchAccounts = showGenericAccountsState
+    ? showGenericAccountsState.fetchAccounts
+    : undefined;
+  const showReactions = showGenericAccountsState
+    ? showGenericAccountsState.showReactions
+    : undefined;
+
+  const loadRelationships = async (loadFor: AccountWithTypes[]) => {
+    if (!loadFor?.length) return;
     if (!isCurrentInstance) return;
-    const relationships = await fetchRelationships(accounts, relationshipsMap);
+    const relationships = await fetchRelationships(loadFor, relationshipsMap);
     if (relationships) {
       setRelationshipsMap({
         ...relationshipsMap,
@@ -112,23 +125,23 @@ export default function GenericAccounts({
     }
   };
 
-  const loadAccounts = (firstLoad?: boolean) => {
+  const loadAccounts = (firstLoadFlag?: boolean) => {
     if (!fetchAccounts) return;
-    if (firstLoad && !accounts?.length) setAccounts([]);
+    if (firstLoadFlag && !accounts?.length) setAccounts([]);
     setUIState('loading');
-    (async () => {
+    void (async () => {
       try {
-        const { done, value } = await fetchAccounts(firstLoad);
+        const { done, value } = await fetchAccounts(firstLoadFlag);
         if (Array.isArray(value)) {
-          if (firstLoad) {
-            const accounts: AccountWithTypes[] = [];
+          if (firstLoadFlag) {
+            const merged: AccountWithTypes[] = [];
             for (let i = 0; i < value.length; i++) {
               const account = value[i];
-              const theAccount = accounts.find(
+              const theAccount = merged.find(
                 (a, j) => a.id === account.id && i !== j,
               );
               if (!theAccount) {
-                accounts.push({
+                merged.push({
                   ...account,
                   _types: account._types ?? [],
                 });
@@ -136,7 +149,7 @@ export default function GenericAccounts({
                 theAccount._types.push(...(account._types as string[]));
               }
             }
-            setAccounts(accounts);
+            setAccounts(merged);
           } else {
             // setAccounts((prev) => [...prev, ...value]);
             // Merge accounts by id and _types
@@ -155,7 +168,7 @@ export default function GenericAccounts({
           }
           setShowMore(!done);
 
-          loadRelationships(value as AccountWithTypes[]);
+          void loadRelationships(value as AccountWithTypes[]);
         } else {
           setShowMore(false);
         }
@@ -167,20 +180,22 @@ export default function GenericAccounts({
     })();
   };
 
-  const firstLoad = useRef(true);
   useEffect(() => {
+    if (!showGenericAccountsState) return;
     if (accounts?.length > 0) {
       // setAccounts(staticAccounts);
       if (fetchAccounts) {
         loadAccounts(true);
         firstLoad.current = false;
       } else {
-        loadRelationships(accounts);
+        void loadRelationships(accounts);
       }
     } else {
       loadAccounts(true);
       firstLoad.current = false;
     }
+    // Intentionally only reacts to `fetchAccounts` identity changes — adding
+    // `accounts`/`loadAccounts`/`loadRelationships` would cause refetch loops.
   }, [fetchAccounts]);
 
   useEffect(() => {
@@ -190,7 +205,12 @@ export default function GenericAccounts({
     if (snapStates.reloadGenericAccounts?.id === id) {
       loadAccounts(true);
     }
+    // Intentionally only triggers on counter change.
   }, [snapStates.reloadGenericAccounts.counter]);
+
+  if (!showGenericAccountsState) {
+    return null;
+  }
 
   const post = postID ? states.statuses[postID] : undefined;
 
@@ -223,6 +243,7 @@ export default function GenericAccounts({
                       <div class="reactions-block">
                         {account._types.map((type) => (
                           <Icon
+                            key={type}
                             icon={
                               {
                                 reblog: 'rocket',

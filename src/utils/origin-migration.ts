@@ -48,7 +48,7 @@ function importWindowNameMigration(): boolean {
   let payload: unknown;
   try {
     payload = JSON.parse(window.name);
-  } catch (error) {
+  } catch {
     return false;
   }
   const referrerOrigin = document.referrer
@@ -119,10 +119,14 @@ export function importLegacyOriginStorage() {
       CANONICAL_ORIGIN,
     )}`;
     document.body.append(iframe);
+    // TODO(oxlint:promise/no-multiple-resolved) False positive: cleanup() is
+    // idempotent via `settled`; the linter can't trace that through the helper.
     setTimeout(() => {
       try {
         localStorage.setItem(MIGRATION_KEY, 'timeout');
-      } catch (error) {}
+      } catch {
+        /* ignore */
+      }
       cleanup(false);
     }, MIGRATION_TIMEOUT);
   });

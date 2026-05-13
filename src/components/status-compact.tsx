@@ -22,6 +22,7 @@ interface StatusReplyEntry {
 
 function StatusCompact({ sKey }: StatusCompactProps) {
   const snapStates = useSnapshot(states);
+  const filterContext = useContext(FilterContext);
   const statusReply = snapStates.statusReply[sKey] as
     | StatusReplyEntry
     | undefined;
@@ -32,7 +33,7 @@ function StatusCompact({ sKey }: StatusCompactProps) {
   if (!status) return null;
 
   const {
-    account: { id: accountId },
+    account: { id: accountId } = {},
     sensitive,
     spoilerText,
     account: { avatar, avatarStatic, bot } = {},
@@ -41,7 +42,7 @@ function StatusCompact({ sKey }: StatusCompactProps) {
     language,
     filtered,
   } = status as {
-    account: {
+    account?: {
       id?: string;
       avatar?: string;
       avatarStatic?: string;
@@ -63,7 +64,6 @@ function StatusCompact({ sKey }: StatusCompactProps) {
   const currentAccount = getCurrentAccID();
   const isSelf = currentAccount && currentAccount === accountId;
 
-  const filterContext = useContext(FilterContext);
   let filterInfo = isSelf
     ? (false as const)
     : isFiltered(filtered, filterContext as string);

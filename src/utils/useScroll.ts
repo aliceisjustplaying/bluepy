@@ -34,7 +34,7 @@ export default function useScroll({
 
   useLayoutEffect(() => {
     const scrollableElement = scrollableRef.current;
-    if (!scrollableElement) return;
+    if (!scrollableElement) return undefined;
     const el: HTMLElement = scrollableElement;
     let previousScrollStart = isVertical ? el.scrollTop : el.scrollLeft;
 
@@ -86,12 +86,18 @@ export default function useScroll({
 
     el.addEventListener('scroll', onScroll, { passive: true });
 
-    return () => el.removeEventListener('scroll', onScroll);
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+    };
   }, [
     distanceFromStart,
     distanceFromEnd,
     scrollThresholdStart,
     scrollThresholdEnd,
+    isVertical,
+    _distanceFromStartPx,
+    _distanceFromEndPx,
+    scrollableRef,
   ]);
 
   return {
