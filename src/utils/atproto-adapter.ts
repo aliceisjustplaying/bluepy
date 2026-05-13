@@ -2536,42 +2536,16 @@ export function createAtprotoClient({
       bookmarks: {
         list({ limit = 20 }: { limit?: number } = {}) {
           return makeCollection<AdaptedStatus[]>(async (cursor) => {
-            const res = await (
-              agent.app.bsky as unknown as {
-                bookmark: {
-                  getBookmarks: (args: {
-                    limit?: number;
-                    cursor?: string;
-                  }) => Promise<{
-                    data: { bookmarks: unknown[]; cursor?: string };
-                  }>;
-                };
-              }
-            ).bookmark.getBookmarks({
+            const res = await agent.app.bsky.bookmark.getBookmarks({
               limit,
               cursor,
             });
-            // FIXME (pre-existing bug, preserved by this type migration):
-            // `getBookmarks()` returns `BookmarkView[]` wrappers where the
-            // actual post is under `.item` and may be a PostView, a
-            // NotFoundPost, or a BlockedPost. The original JS adapter passed
-            // each wrapper straight to `postToStatus`, which then sees
-            // `post.author === undefined` / `post.record === undefined` and
-            // emits a malformed status. This batch keeps that behavior
-            // verbatim — fixing the unwrap is a runtime change that belongs
-            // in its own commit, not a TypeScript migration. The wrapper is
-            // typed as `unknown` so no incorrect shape claim is introduced.
             return {
               cursor: res.data.cursor,
-              items: res.data.bookmarks.map((bookmark) =>
-                postToStatus(
-                  bookmark as
-                    | AtprotoFeedItem
-                    | AtprotoPost
-                    | AtprotoReplyRefLike
-                    | undefined,
-                  agent,
-                ),
+              items: res.data.bookmarks.flatMap((bookmark) =>
+                isPostView(bookmark.item)
+                  ? [postToStatus(bookmark.item, agent)]
+                  : [],
               ),
             };
           });
