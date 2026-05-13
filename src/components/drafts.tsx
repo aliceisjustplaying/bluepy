@@ -1,7 +1,8 @@
 import './drafts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import type { JSX } from 'preact';
+import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import db from '../utils/db';
@@ -13,23 +14,63 @@ import Icon from './icon';
 import Loader from './loader';
 import MenuConfirm from './menu-confirm';
 
-function Drafts({ onClose }) {
+interface MediaAttachment {
+  type: string;
+  fileData?: BufferSource;
+  file?: Blob;
+  url?: string | null;
+}
+
+interface DraftStatus {
+  status?: string;
+  spoilerText?: string;
+  poll?: { options?: unknown[] };
+  mediaAttachments?: MediaAttachment[];
+}
+
+interface DraftReplyTo {
+  id?: string;
+  account?: { acct?: string };
+}
+
+interface DraftQuote {
+  id?: string;
+}
+
+interface Draft {
+  key: string;
+  updatedAt: string;
+  draftStatus: DraftStatus;
+  replyTo?: DraftReplyTo;
+  quote?: DraftQuote;
+}
+
+interface DraftsProps {
+  onClose?: () => void;
+}
+
+function Drafts({ onClose }: DraftsProps) {
   const { t } = useLingui();
   const { masto } = api();
-  const [uiState, setUIState] = useState('default');
-  const [drafts, setDrafts] = useState([]);
-  const [reloadCount, reload] = useReducer((c) => c + 1, 0);
+  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
+    'default',
+  );
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [reloadCount, reload] = useReducer(
+    (c: number, _action?: void) => c + 1,
+    0,
+  );
 
   useEffect(() => {
     setUIState('loading');
     (async () => {
       try {
-        const keys = await db.drafts.keys();
+        const keys = (await db.drafts.keys()) as string[];
         if (keys.length) {
           const ns = getCurrentAccountNS();
           const ownKeys = keys.filter((key) => key.startsWith(ns));
           if (ownKeys.length) {
-            const drafts = await db.drafts.getMany(ownKeys);
+            const drafts = (await db.drafts.getMany(ownKeys)) as Draft[];
             drafts.sort(
               (a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
             );
@@ -87,7 +128,7 @@ function Drafts({ onClose }) {
                           {!!replyTo && (
                             <>
                               <span class="bidi-isolate">
-                                @{replyTo.account.acct}
+                                @{replyTo.account?.acct}
                               </span>
                               <br />
                             </>
@@ -133,13 +174,19 @@ function Drafts({ onClose }) {
                       class="draft-item"
                       onClick={async () => {
                         // console.log({ draftStatus });
-                        let replyToStatus;
-                        let quoteStatus;
+                        let replyToStatus: unknown;
+                        let quoteStatus: unknown;
                         if (replyTo?.id || quote?.id) {
                           setUIState('loading');
                           if (replyTo) {
                             try {
-                              replyToStatus = await masto.v1.statuses
+                              replyToStatus = await (
+                                masto.v1.statuses as unknown as {
+                                  $select(id: string | undefined): {
+                                    fetch(): Promise<unknown>;
+                                  };
+                                }
+                              )
                                 .$select(replyTo.id)
                                 .fetch();
                             } catch (e) {
@@ -151,7 +198,13 @@ function Drafts({ onClose }) {
                           }
                           if (quote) {
                             try {
-                              quoteStatus = await masto.v1.statuses
+                              quoteStatus = await (
+                                masto.v1.statuses as unknown as {
+                                  $select(id: string | undefined): {
+                                    fetch(): Promise<unknown>;
+                                  };
+                                }
+                              )
                                 .$select(quote.id)
                                 .fetch();
                             } catch (e) {
@@ -230,16 +283,20 @@ function Drafts({ onClose }) {
   );
 }
 
-function MiniDraft({ draft }) {
+interface MiniDraftProps {
+  draft: Draft;
+}
+
+function MiniDraft({ draft }: MiniDraftProps) {
   const { t } = useLingui();
   const { draftStatus, replyTo, quote } = draft;
   const { status, spoilerText, poll, mediaAttachments } = draftStatus;
-  const hasPoll = poll?.options?.length > 0;
-  const hasMedia = mediaAttachments?.length > 0;
+  const hasPoll = (poll?.options?.length ?? 0) > 0;
+  const hasMedia = (mediaAttachments?.length ?? 0) > 0;
   const hasQuote = !!quote?.id;
   const hasPollOrMedia = hasPoll || hasMedia || hasQuote;
-  const firstImageMedia = useMemo(() => {
-    if (!hasMedia) return;
+  const firstImageMedia = useMemo<string | null | undefined>(() => {
+    if (!hasMedia || !mediaAttachments) return;
     const image = mediaAttachments.find((media) => /image/.test(media.type));
     if (!image) return;
     const { fileData, type, file, url } = image;
@@ -267,9 +324,9 @@ function MiniDraft({ draft }) {
             class={`mini-draft-aside ${firstImageMedia ? 'has-image' : ''}`}
             style={
               firstImageMedia
-                ? {
+                ? ({
                     '--bg-image': `url(${firstImageMedia})`,
-                  }
+                  } as unknown as JSX.CSSProperties)
                 : {}
             }
           >
