@@ -3,6 +3,8 @@ import './account-info.css';
 import { msg, plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
+import type { mastodon } from 'masto';
+import type { ComponentType } from 'preact';
 import {
   useCallback,
   useEffect,
@@ -29,24 +31,145 @@ import {
 } from '../utils/store-utils';
 import supports from '../utils/supports';
 
-import AccountBlock from './account-block';
+import AccountBlockUntyped from './account-block';
 import AccountHandleInfo from './account-handle-info';
 import Avatar from './avatar';
-import EditProfileSheet from './edit-profile-sheet';
+import EditProfileSheetUntyped from './edit-profile-sheet';
 import EmojiText from './emoji-text';
 import Endorsements from './endorsements';
 import Icon from './icon';
 import Link from './link';
 import Menu2 from './menu2';
 import Modal from './modal';
-import RelatedActions from './related-actions';
+import RelatedActionsUntyped from './related-actions';
+
+// Augmented Account shape used internally. Adds optional fields the app
+// reads but the masto.v1.Account base does not declare: `_atproto` cache
+// flag, `hideCollections` (Mastodon API extension surfaced by some forks),
+// `roles` (server-specific), and `avatarDescription` /
+// `headerDescription` (Mastodon 4.x media alt-text extensions).
+type AccountInfoShape = mastodon.v1.Account & {
+  _atproto?: { hasProfileCounts?: boolean } & Record<string, unknown>;
+  hideCollections?: boolean | null;
+  roles?: ReadonlyArray<{ name?: string } & Record<string, unknown>>;
+  avatarDescription?: string;
+  headerDescription?: string;
+};
+
+// Endpoint shims for masto APIs reached through the loose ApiClient.masto
+// shape. The runtime client supports `accounts.$select(id).{statuses,
+// followers, following}` and `accounts.familiarFollowers.fetch(...)`; the
+// declared MastoClient in utils/api.ts intentionally leaves these as
+// `unknown`. We narrow locally rather than widening the shared interface.
+interface FamiliarFollowersEndpoint {
+  fetch(params: { id: readonly string[] }): Promise<mastodon.v1.FamiliarFollowers[]>;
+}
+interface AccountStatusesListParams {
+  limit?: number;
+  [key: string]: unknown;
+}
+interface AccountStatusesEndpoint {
+  list(params: AccountStatusesListParams): {
+    values(): AsyncIterator<mastodon.v1.Status[]>;
+  };
+}
+interface AccountFollowersListParams {
+  limit?: number;
+  [key: string]: unknown;
+}
+interface AccountFollowersEndpoint {
+  list(params: AccountFollowersListParams): {
+    values(): AsyncIterator<mastodon.v1.Account[]>;
+  };
+}
+interface AccountSelectEndpoint {
+  statuses: AccountStatusesEndpoint;
+  followers: AccountFollowersEndpoint;
+  following: AccountFollowersEndpoint;
+}
+interface AccountsEndpoint {
+  $select(id: string): AccountSelectEndpoint;
+  familiarFollowers: FamiliarFollowersEndpoint;
+}
+
+interface MastoLike {
+  v1: { accounts: unknown } & Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
+  return masto.v1.accounts as unknown as AccountsEndpoint;
+}
+
+// Shims for still-untyped peer components. Removed when each peer
+// converts to TypeScript in a later wave.
+interface AccountBlockProps {
+  account?: AccountInfoShape | mastodon.v1.Account | null;
+  instance?: string;
+  avatarSize?: string;
+  avatarDescription?: string;
+  skeleton?: boolean;
+  internal?: boolean;
+  onClick?: (e: Event) => void;
+}
+const AccountBlock =
+  AccountBlockUntyped as unknown as ComponentType<AccountBlockProps>;
+
+interface EditProfileSheetCloseArg {
+  state?: string;
+  account?: AccountInfoShape;
+}
+interface EditProfileSheetProps {
+  onClose?: (arg?: EditProfileSheetCloseArg) => void;
+}
+const EditProfileSheet =
+  EditProfileSheetUntyped as unknown as ComponentType<EditProfileSheetProps>;
+
+interface RelatedActionsProps {
+  info: AccountInfoShape;
+  instance?: string;
+  standalone?: boolean;
+  authenticated?: boolean;
+  onRelationshipChange?: (args: {
+    relationship: mastodon.v1.Relationship;
+    currentID: string;
+  }) => void;
+  onProfileUpdate?: (account: AccountInfoShape) => void;
+  setShowEditProfile?: (show: boolean) => void;
+  showEndorsements?: boolean;
+  renderEndorsements?: boolean | string;
+  setRenderEndorsements?: (value: boolean | string) => void;
+}
+const RelatedActions =
+  RelatedActionsUntyped as unknown as ComponentType<RelatedActionsProps>;
+
+// Posting stats are derived locally. `daysSinceLastPost` is conditionally
+// set inside fetchPostingStats — keep it optional in the type.
+interface PostingStats {
+  total: number;
+  originals: number;
+  replies: number;
+  boosts: number;
+  quotes: number;
+  daysSinceLastPost?: number;
+}
+
+// `info` updates may carry payload state for the app's flows. The QR/avatar
+// modal entries assign `unknown`-typed valtio state, mirrored locally.
+interface AccountIterPage {
+  value: mastodon.v1.Account[] | undefined;
+  done?: boolean;
+}
 
 const LIMIT = 80;
 
 const ACCOUNT_INFO_MAX_AGE = 1000 * 60 * 10; // 10 mins
 
-function fetchFamiliarFollowers(currentID, masto) {
-  return masto.v1.accounts.familiarFollowers.fetch({
+function fetchFamiliarFollowers(
+  currentID: string,
+  masto: MastoLike,
+): Promise<mastodon.v1.FamiliarFollowers[]> {
+  return getAccountsEndpoint(masto).familiarFollowers.fetch({
     id: [currentID],
   });
 }
@@ -54,8 +177,11 @@ const memFetchFamiliarFollowers = pmem(fetchFamiliarFollowers, {
   expires: ACCOUNT_INFO_MAX_AGE,
 });
 
-async function fetchPostingStats(accountID, masto) {
-  const fetchStatuses = masto.v1.accounts
+async function fetchPostingStats(
+  accountID: string,
+  masto: MastoLike,
+): Promise<PostingStats> {
+  const fetchStatuses = getAccountsEndpoint(masto)
     .$select(accountID)
     .statuses.list({
       limit: 20,
@@ -63,9 +189,11 @@ async function fetchPostingStats(accountID, masto) {
     .values()
     .next();
 
-  const { value: statuses } = await fetchStatuses;
+  const { value: statuses } = (await fetchStatuses) as {
+    value: mastodon.v1.Status[];
+  };
   console.log('fetched statuses', statuses);
-  const stats = {
+  const stats: PostingStats = {
     total: statuses.length,
     originals: 0,
     replies: 0,
@@ -78,7 +206,16 @@ async function fetchPostingStats(accountID, masto) {
   // - Boosts (reblogs)
   // - Replies (not-self replies)
   // - Quotes
-  statuses.forEach((status) => {
+  // Some Mastodon forks (and Bluepy's quote-utils helper) attach a
+  // non-standard `quote` field on Status. Narrow with a local shape rather
+  // than widening the masto type.
+  type StatusWithQuote = mastodon.v1.Status & {
+    quote?: {
+      id?: string;
+      quotedStatus?: { id?: string } | null;
+    } | null;
+  };
+  statuses.forEach((status: StatusWithQuote) => {
     if (status.reblog) {
       stats.boosts++;
     } else if (
@@ -111,7 +248,7 @@ const memFetchPostingStats = pmem(fetchPostingStats, {
   expires: ACCOUNT_INFO_MAX_AGE,
 });
 
-const isValidUrl = (string) => {
+const isValidUrl = (string: string): boolean => {
   try {
     new URL(string);
     return true;
@@ -119,11 +256,11 @@ const isValidUrl = (string) => {
     return false;
   }
 };
-export const handleScannerClick = () => {
+export const handleScannerClick = (): void => {
   states.showQrScannerModal = {
     checkValidity: isValidUrl,
     actionableText: msg`View profile`,
-    onClose: ({ text } = {}) => {
+    onClose: ({ text }: { text?: string } = {}) => {
       if (text) {
         hideAllModals();
         location.hash = `/${text}`;
@@ -132,6 +269,17 @@ export const handleScannerClick = () => {
   };
 };
 
+type UIState = 'default' | 'loading' | 'error';
+
+interface AccountInfoProps {
+  account: AccountInfoShape | string | null | undefined;
+  fetchAccount?: () => Promise<AccountInfoShape | undefined> | void;
+  standalone?: boolean;
+  instance?: string;
+  authenticated?: boolean;
+  showEndorsements?: boolean;
+}
+
 function AccountInfo({
   account,
   fetchAccount = () => {},
@@ -139,16 +287,18 @@ function AccountInfo({
   instance,
   authenticated,
   showEndorsements = false,
-}) {
+}: AccountInfoProps) {
   const { i18n, t } = useLingui();
   const { masto, authenticated: currentAuthenticated } = api({
     instance,
   });
   const { masto: currentMasto, instance: currentInstance } = api();
-  const [uiState, setUIState] = useState('default');
+  const [uiState, setUIState] = useState<UIState>('default');
   const isString = typeof account === 'string';
-  const [info, setInfo] = useState(isString ? null : account);
-  const [reloadCount, reload] = useReducer((c) => c + 1, 0);
+  const [info, setInfo] = useState<AccountInfoShape | null>(
+    isString ? null : (account ?? null),
+  );
+  const [reloadCount, reload] = useReducer((c: number) => c + 1, 0);
 
   const sameCurrentInstance = useMemo(
     () => instance === currentInstance,
@@ -157,15 +307,21 @@ function AccountInfo({
 
   useEffect(() => {
     if (!isString) {
-      setInfo(account);
+      setInfo(account ?? null);
       if (account?._atproto?.hasProfileCounts !== false) return;
     }
     setUIState('loading');
     (async () => {
       try {
-        const info = await fetchAccount();
-        states.accounts[`${info.id}@${instance}`] = info;
-        setInfo(info);
+        const result = await fetchAccount();
+        if (!result) {
+          if (isString) setInfo(null);
+          setUIState('error');
+          return;
+        }
+        states.accounts[`${result.id}@${instance}`] =
+          result as unknown as Record<string, unknown>;
+        setInfo(result);
         setUIState('default');
       } catch (e) {
         console.error(e);
@@ -175,6 +331,13 @@ function AccountInfo({
     })();
   }, [isString, account, fetchAccount, reloadCount]);
 
+  // `info` may be null while loading; fall back to an empty placeholder so
+  // the destructure stays terse. All consumers below already guard with
+  // `!!` or optional chaining before using the values, mirroring the JS
+  // original. The cast keeps the inner field types non-optional so call
+  // sites that need numbers (Plural, shortenNumber) don't have to invent
+  // fallback values that would change message-extraction output.
+  const infoFields = (info ?? ({} as AccountInfoShape)) as AccountInfoShape;
   const {
     acct,
     avatar,
@@ -202,9 +365,9 @@ function AccountInfo({
     moved,
     roles,
     hideCollections,
-  } = info || {};
+  } = infoFields;
   let headerIsAvatar = false;
-  let { header, headerStatic } = info || {};
+  let { header, headerStatic } = infoFields;
   if (!header || /missing\.png$/.test(header)) {
     if (avatar && !/missing\.png$/.test(avatar)) {
       header = avatar;
@@ -227,12 +390,12 @@ function AccountInfo({
       info?.displayName &&
       info?.url
     );
-    if (isSelf && instance && infoHasEssentials) {
+    if (info && isSelf && instance && infoHasEssentials) {
       const accounts = getAccounts();
       let updated = false;
       accounts.forEach((account) => {
         if (account.info.id === info.id && account.instanceURL === instance) {
-          account.info = info;
+          account.info = info as unknown as typeof account.info;
           updated = true;
         }
       });
@@ -243,15 +406,21 @@ function AccountInfo({
     }
   }, [isSelf, info, instance]);
 
-  const accountInstance = getDomain(url);
+  const accountInstance = getDomain(url ?? '');
 
-  const [headerCornerColors, setHeaderCornerColors] = useState([]);
+  const [headerCornerColors, setHeaderCornerColors] = useState<string[]>([]);
 
-  const followersIterator = useRef();
-  const familiarFollowersCache = useRef([]);
-  async function fetchFollowers(firstLoad) {
+  const followersIterator = useRef<
+    AsyncIterator<mastodon.v1.Account[]> | undefined
+  >(undefined);
+  const familiarFollowersCache = useRef<mastodon.v1.Account[]>([]);
+  async function fetchFollowers(
+    firstLoad?: boolean,
+  ): Promise<AccountIterPage | IteratorResult<mastodon.v1.Account[]>> {
+    if (!id) return { value: undefined, done: true };
+    const accountsEndpoint = getAccountsEndpoint(masto as unknown as MastoLike);
     if (firstLoad || !followersIterator.current) {
-      followersIterator.current = masto.v1.accounts
+      followersIterator.current = accountsEndpoint
         .$select(id)
         .followers.list({
           limit: LIMIT,
@@ -263,20 +432,20 @@ function AccountInfo({
     if (!sameCurrentInstance) return results;
 
     const { value } = results;
-    let newValue = [];
+    let newValue: mastodon.v1.Account[] = [];
     // On first load, fetch familiar followers, merge to top of results' `value`
     // Remove dups on every fetch
     if (firstLoad) {
-      let familiarFollowers = [];
+      let familiarFollowers: mastodon.v1.FamiliarFollowers[] = [];
       try {
-        familiarFollowers = await masto.v1.accounts.familiarFollowers.fetch({
+        familiarFollowers = await accountsEndpoint.familiarFollowers.fetch({
           id: [id],
         });
       } catch (e) {}
       familiarFollowersCache.current = familiarFollowers?.[0]?.accounts || [];
       newValue = [
         ...familiarFollowersCache.current,
-        ...value.filter(
+        ...((value ?? []) as mastodon.v1.Account[]).filter(
           (account) =>
             !familiarFollowersCache.current.some(
               (familiar) => familiar.id === account.id,
@@ -284,7 +453,7 @@ function AccountInfo({
         ),
       ];
     } else if (value?.length) {
-      newValue = value.filter(
+      newValue = (value as mastodon.v1.Account[]).filter(
         (account) =>
           !familiarFollowersCache.current.some(
             (familiar) => familiar.id === account.id,
@@ -298,10 +467,16 @@ function AccountInfo({
     };
   }
 
-  const followingIterator = useRef();
-  async function fetchFollowing(firstLoad) {
+  const followingIterator = useRef<
+    AsyncIterator<mastodon.v1.Account[]> | undefined
+  >(undefined);
+  async function fetchFollowing(
+    firstLoad?: boolean,
+  ): Promise<AccountIterPage | IteratorResult<mastodon.v1.Account[]>> {
+    if (!id) return { value: undefined, done: true };
+    const accountsEndpoint = getAccountsEndpoint(masto as unknown as MastoLike);
     if (firstLoad || !followingIterator.current) {
-      followingIterator.current = masto.v1.accounts
+      followingIterator.current = accountsEndpoint
         .$select(id)
         .following.list({
           limit: LIMIT,
@@ -312,19 +487,24 @@ function AccountInfo({
     return results;
   }
 
-  const LinkOrDiv = standalone ? 'div' : Link;
+  const LinkOrDiv: ComponentType<Record<string, unknown>> | 'div' = standalone
+    ? 'div'
+    : (Link as unknown as ComponentType<Record<string, unknown>>);
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
 
-  const [familiarFollowers, setFamiliarFollowers] = useState([]);
-  const [postingStats, setPostingStats] = useState();
-  const [postingStatsUIState, setPostingStatsUIState] = useState('default');
+  const [familiarFollowers, setFamiliarFollowers] = useState<
+    mastodon.v1.Account[]
+  >([]);
+  const [postingStats, setPostingStats] = useState<PostingStats | undefined>();
+  const [postingStatsUIState, setPostingStatsUIState] =
+    useState<UIState>('default');
   const hasPostingStats = !!postingStats?.total;
 
-  const renderFamiliarFollowers = async (currentID) => {
+  const renderFamiliarFollowers = async (currentID: string): Promise<void> => {
     try {
       const followers = await memFetchFamiliarFollowers(
         currentID,
-        currentMasto,
+        currentMasto as unknown as MastoLike,
       );
       console.log('fetched familiar followers', followers);
       setFamiliarFollowers(
@@ -339,7 +519,10 @@ function AccountInfo({
     if (!id) return;
     setPostingStatsUIState('loading');
     try {
-      const stats = await memFetchPostingStats(id, masto);
+      const stats = await memFetchPostingStats(
+        id,
+        masto as unknown as MastoLike,
+      );
       setPostingStats(stats);
       setPostingStatsUIState('default');
     } catch (e) {
@@ -349,7 +532,13 @@ function AccountInfo({
   };
 
   const onRelationshipChange = useCallback(
-    ({ relationship, currentID }) => {
+    ({
+      relationship,
+      currentID,
+    }: {
+      relationship: mastodon.v1.Relationship;
+      currentID: string;
+    }) => {
       if (!relationship.following) {
         renderFamiliarFollowers(currentID);
         if (!standalone && statusesCount > 0) {
@@ -362,11 +551,12 @@ function AccountInfo({
   );
 
   const onProfileUpdate = useCallback(
-    (newAccount) => {
+    (newAccount: AccountInfoShape) => {
       if (newAccount.id === id) {
         console.log('Updated account info', newAccount);
         setInfo(newAccount);
-        states.accounts[`${newAccount.id}@${instance}`] = newAccount;
+        states.accounts[`${newAccount.id}@${instance}`] =
+          newAccount as unknown as Record<string, unknown>;
       }
     },
     [id, instance],
@@ -376,19 +566,23 @@ function AccountInfo({
 
   const [showEditProfile, setShowEditProfile] = useState(false);
 
-  const [renderEndorsements, setRenderEndorsements] = useState(false);
+  const [renderEndorsements, setRenderEndorsements] = useState<
+    boolean | string
+  >(false);
 
   return (
     <>
       <div
-        tabIndex="-1"
+        tabIndex={-1}
         class={`account-container ${uiState === 'loading' ? 'skeleton' : ''}`}
-        style={{
-          '--header-color-1': headerCornerColors[0],
-          '--header-color-2': headerCornerColors[1],
-          '--header-color-3': headerCornerColors[2],
-          '--header-color-4': headerCornerColors[3],
-        }}
+        style={
+          {
+            '--header-color-1': headerCornerColors[0],
+            '--header-color-2': headerCornerColors[1],
+            '--header-color-3': headerCornerColors[2],
+            '--header-color-4': headerCornerColors[3],
+          } as Record<string, string | undefined>
+        }
       >
         {uiState === 'error' && (
           <div class="ui-state">
@@ -491,17 +685,19 @@ function AccountInfo({
                     headerIsAvatar ? 'header-is-avatar' : ''
                   }`}
                   onError={(e) => {
-                    if (e.target.crossOrigin) {
-                      if (e.target.src !== headerStatic) {
-                        e.target.src = headerStatic;
+                    const img = e.target as HTMLImageElement | null;
+                    if (!img) return;
+                    if (img.crossOrigin) {
+                      if (img.src !== headerStatic) {
+                        if (headerStatic) img.src = headerStatic;
                       } else {
-                        e.target.removeAttribute('crossorigin');
-                        e.target.src = header;
+                        img.removeAttribute('crossorigin');
+                        if (header) img.src = header;
                       }
-                    } else if (e.target.src !== headerStatic) {
-                      e.target.src = headerStatic;
+                    } else if (img.src !== headerStatic) {
+                      if (headerStatic) img.src = headerStatic;
                     } else {
-                      e.target.remove();
+                      img.remove();
                     }
                   }}
                   crossOrigin={
@@ -510,11 +706,13 @@ function AccountInfo({
                       : 'anonymous'
                   }
                   onLoad={(e) => {
-                    e.target.classList.add('loaded');
-                    const { width, height } = e.target;
+                    const img = e.target as HTMLImageElement | null;
+                    if (!img) return;
+                    img.classList.add('loaded');
+                    const { width, height } = img;
                     // 25px per second (rough estimate)
                     // Clamp between 10s and 120s
-                    e.target.style.setProperty(
+                    img.style.setProperty(
                       '--anim-duration',
                       `${Math.min(
                         Math.max(Math.max(width, height) / 25, 10),
@@ -523,16 +721,21 @@ function AccountInfo({
                     );
                     try {
                       // Get color from four corners of image
-                      const canvas = window.OffscreenCanvas
+                      const canvas: OffscreenCanvas | HTMLCanvasElement = window
+                        .OffscreenCanvas
                         ? new OffscreenCanvas(1, 1)
                         : document.createElement('canvas');
                       const ctx = canvas.getContext('2d', {
                         willReadFrequently: true,
-                      });
+                      }) as
+                        | CanvasRenderingContext2D
+                        | OffscreenCanvasRenderingContext2D
+                        | null;
+                      if (!ctx) return;
                       canvas.width = width;
                       canvas.height = height;
                       ctx.imageSmoothingEnabled = false;
-                      ctx.drawImage(e.target, 0, 0);
+                      ctx.drawImage(img, 0, 0);
                       // const colors = [
                       //   ctx.getImageData(0, 0, 1, 1).data,
                       //   ctx.getImageData(e.target.width - 1, 0, 1, 1).data,
@@ -546,24 +749,24 @@ function AccountInfo({
                       // ];
                       // Get 10x10 pixels from corners, get average color from each
                       const pixelDimension = 10;
-                      const colors = [
+                      const colors: number[][] = [
                         ctx.getImageData(0, 0, pixelDimension, pixelDimension)
                           .data,
                         ctx.getImageData(
-                          e.target.width - pixelDimension,
+                          img.width - pixelDimension,
                           0,
                           pixelDimension,
                           pixelDimension,
                         ).data,
                         ctx.getImageData(
                           0,
-                          e.target.height - pixelDimension,
+                          img.height - pixelDimension,
                           pixelDimension,
                           pixelDimension,
                         ).data,
                         ctx.getImageData(
-                          e.target.width - pixelDimension,
-                          e.target.height - pixelDimension,
+                          img.width - pixelDimension,
+                          img.height - pixelDimension,
                           pixelDimension,
                           pixelDimension,
                         ).data,
@@ -619,13 +822,14 @@ function AccountInfo({
                     }
                   >
                     <div class="szh-menu__header">
-                      <AccountHandleInfo acct={acct} instance={instance} />
+                      <AccountHandleInfo acct={acct ?? ''} instance={instance} />
                     </div>
                     <MenuItem
                       onClick={() => {
-                        const handleWithInstance = acct.includes('@')
-                          ? `@${acct}`
-                          : `@${acct}@${instance}`;
+                        const acctSafe = acct ?? '';
+                        const handleWithInstance = acctSafe.includes('@')
+                          ? `@${acctSafe}`
+                          : `@${acctSafe}@${instance}`;
                         try {
                           navigator.clipboard.writeText(handleWithInstance);
                           showToast(t`Handle copied`);
@@ -646,9 +850,9 @@ function AccountInfo({
                           text: url,
                           arena: avatarStatic,
                           backgroundMask: headerStatic,
-                          caption: acct.includes('@')
+                          caption: (acct ?? '').includes('@')
                             ? acct
-                            : `${acct}@${instance}`,
+                            : `${acct ?? ''}@${instance}`,
                           onScannerClick: handleScannerClick,
                         };
                       }}
@@ -767,11 +971,11 @@ function AccountInfo({
                     instance: currentInstance,
                   })}
                   dangerouslySetInnerHTML={{
-                    __html: enhanceContent(note, { emojis }),
+                    __html: enhanceContent(note, { emojis }) as string,
                   }}
                 />
                 <div class="account-metadata-box">
-                  {fields?.length > 0 && (
+                  {!!fields?.length && (
                     <div class="profile-metadata">
                       {fields.map(({ name, value, verifiedAt }, i) => (
                         <div
@@ -793,7 +997,7 @@ function AccountInfo({
                           </b>
                           <p
                             dangerouslySetInnerHTML={{
-                              __html: enhanceContent(value, { emojis }),
+                              __html: enhanceContent(value, { emojis }) as string,
                             }}
                           />
                         </div>
@@ -840,7 +1044,7 @@ function AccountInfo({
                         value={followersCount}
                         one={
                           <Trans>
-                            <span title={followersCount}>
+                            <span title={String(followersCount)}>
                               {shortenNumber(followersCount)}
                             </span>{' '}
                             Follower
@@ -848,7 +1052,7 @@ function AccountInfo({
                         }
                         other={
                           <Trans>
-                            <span title={followersCount}>
+                            <span title={String(followersCount)}>
                               {shortenNumber(followersCount)}
                             </span>{' '}
                             Followers
@@ -884,7 +1088,7 @@ function AccountInfo({
                         value={followingCount}
                         other={
                           <Trans>
-                            <span title={followingCount}>
+                            <span title={String(followingCount)}>
                               {shortenNumber(followingCount)}
                             </span>{' '}
                             Following
@@ -908,7 +1112,7 @@ function AccountInfo({
                         value={statusesCount}
                         one={
                           <Trans>
-                            <span title={statusesCount}>
+                            <span title={String(statusesCount)}>
                               {shortenNumber(statusesCount)}
                             </span>{' '}
                             Post
@@ -916,7 +1120,7 @@ function AccountInfo({
                         }
                         other={
                           <Trans>
-                            <span title={statusesCount}>
+                            <span title={String(statusesCount)}>
                               {shortenNumber(statusesCount)}
                             </span>{' '}
                             Posts
@@ -949,7 +1153,7 @@ function AccountInfo({
                       import.meta.env.DEV && standalone
                         ? () => {
                             // Debug: undo back
-                            setPostingStats(null);
+                            setPostingStats(undefined);
                           }
                         : undefined
                     }
@@ -994,7 +1198,8 @@ function AccountInfo({
                             }
                           >
                             <div>
-                              {postingStats.daysSinceLastPost < 365
+                              {postingStats.daysSinceLastPost !== undefined &&
+                              postingStats.daysSinceLastPost < 365
                                 ? plural(postingStats.total, {
                                     one: plural(
                                       postingStats.daysSinceLastPost,
@@ -1142,7 +1347,7 @@ function AccountInfo({
                 />
               </footer>
               <Endorsements
-                accountID={id}
+                accountID={id ?? ''}
                 info={info}
                 open={renderEndorsements}
                 onlyOpenIfHasEndorsements={
@@ -1175,10 +1380,10 @@ function AccountInfo({
 
 const FAMILIAR_FOLLOWERS_LIMIT = 3;
 
-function lightenRGB([r, g, b]) {
+function lightenRGB([r, g, b]: readonly number[]): [number, number, number, number] {
   const luminence = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   console.log('luminence', luminence);
-  let alpha;
+  let alpha: number;
   if (luminence >= 220) {
     alpha = 1;
   } else if (luminence <= 50) {
