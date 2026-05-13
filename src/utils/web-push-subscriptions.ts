@@ -1,5 +1,5 @@
 // Utils for web push subscriptions
-import { api } from './api';
+import { api, getMastoV1Resource } from './api';
 import { getVapidKey } from './store-utils';
 
 // Subscription is an object with the following structure:
@@ -29,42 +29,72 @@ import { getVapidKey } from './store-utils';
 //   },
 // }
 
+// Minimal masto.v1.push surface used here. `masto.v1` carries an open index
+// signature in api.ts, so each nested member arrives as `unknown` and must be
+// narrowed locally. This shim disappears when the masto client gets fully
+// typed in a later wave.
+interface PushSubscriptionEndpoint {
+  create(subscription: unknown): Promise<BackendPushSubscription>;
+  fetch(): Promise<BackendPushSubscription>;
+  update(subscription: unknown): Promise<BackendPushSubscription>;
+  remove(): Promise<unknown>;
+}
+
+interface BackendPushSubscription {
+  endpoint?: string;
+  serverKey?: string;
+  [key: string]: unknown;
+}
+
+function pushSubscriptionEndpoint(): PushSubscriptionEndpoint {
+  const { masto } = api();
+  return getMastoV1Resource<{ subscription: PushSubscriptionEndpoint }>(
+    masto,
+    'push',
+  ).subscription;
+}
+
 // Back-end CRUD
 // =============
 
-function createBackendPushSubscription(subscription) {
-  const { masto } = api();
-  return masto.v1.push.subscription.create(subscription);
+function createBackendPushSubscription(
+  subscription: unknown,
+): Promise<BackendPushSubscription> {
+  return pushSubscriptionEndpoint().create(subscription);
 }
 
-function fetchBackendPushSubscription() {
-  const { masto } = api();
-  return masto.v1.push.subscription.fetch();
+function fetchBackendPushSubscription(): Promise<BackendPushSubscription> {
+  return pushSubscriptionEndpoint().fetch();
 }
 
-function updateBackendPushSubscription(subscription) {
-  const { masto } = api();
-  return masto.v1.push.subscription.update(subscription);
+function updateBackendPushSubscription(
+  subscription: unknown,
+): Promise<BackendPushSubscription> {
+  return pushSubscriptionEndpoint().update(subscription);
 }
 
-function removeBackendPushSubscription() {
-  const { masto } = api();
-  return masto.v1.push.subscription.remove();
+function removeBackendPushSubscription(): Promise<unknown> {
+  return pushSubscriptionEndpoint().remove();
 }
 
 // Front-end
 // =========
 
-export function isPushSupported() {
+export function isPushSupported(): boolean {
   return 'serviceWorker' in navigator && 'PushManager' in window;
 }
 
-export function getRegistration() {
+export function getRegistration(): Promise<
+  ServiceWorkerRegistration | undefined
+> {
   // return navigator.serviceWorker.ready;
   return navigator.serviceWorker.getRegistration();
 }
 
-async function getSubscription() {
+async function getSubscription(): Promise<{
+  registration: ServiceWorkerRegistration | undefined;
+  subscription: PushSubscription | null | undefined;
+}> {
   const registration = await getRegistration();
   const subscription = registration
     ? await registration.pushManager.getSubscription()
@@ -72,7 +102,7 @@ async function getSubscription() {
   return { registration, subscription };
 }
 
-function urlBase64ToUint8Array(base64String) {
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = `${base64String}${padding}`
     .replace(/-/g, '+')
@@ -91,14 +121,22 @@ function urlBase64ToUint8Array(base64String) {
 // Front-end <-> back-end
 // ======================
 
-export async function initSubscription() {
-  if (!isPushSupported()) return;
+interface InitSubscriptionResult {
+  subscription: PushSubscription | null | undefined;
+  backendSubscription: BackendPushSubscription | null;
+}
+
+export async function initSubscription(): Promise<
+  InitSubscriptionResult | undefined
+> {
+  if (!isPushSupported()) return undefined;
   const { subscription } = await getSubscription();
-  let backendSubscription = null;
+  let backendSubscription: BackendPushSubscription | null = null;
   try {
     backendSubscription = await fetchBackendPushSubscription();
   } catch (err) {
-    if (/(not found|unknown)/i.test(err.message)) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (/(not found|unknown)/i.test(message)) {
       // No subscription found
     } else {
       // Other error
@@ -149,9 +187,9 @@ export async function initSubscription() {
     const vapidKey = getVapidKey();
     if (vapidKey) {
       const { applicationServerKey } = subscription.options;
-      const vapidKeyStr = urlBase64ToUint8Array(vapidKey).toString();
+      const vapidKeyStr = urlBase64ToUint8Array(vapidKey as string).toString();
       const applicationServerKeyStr = new Uint8Array(
-        applicationServerKey,
+        applicationServerKey as ArrayBuffer,
       ).toString();
       const sameKey = vapidKeyStr === applicationServerKeyStr;
       if (sameKey) {
@@ -185,11 +223,25 @@ export async function initSubscription() {
   return { subscription, backendSubscription };
 }
 
-export async function updateSubscription({ data, policy }) {
+interface UpdateSubscriptionArgs {
+  data: unknown;
+  policy: unknown;
+}
+
+export async function updateSubscription({
+  data,
+  policy,
+}: UpdateSubscriptionArgs): Promise<
+  | {
+      subscription: PushSubscription | null | undefined;
+      backendSubscription: BackendPushSubscription | null;
+    }
+  | undefined
+> {
   console.log('🔔 Updating subscription', { data, policy });
-  if (!isPushSupported()) return;
+  if (!isPushSupported()) return undefined;
   let { registration, subscription } = await getSubscription();
-  let backendSubscription = null;
+  let backendSubscription: BackendPushSubscription | null = null;
 
   if (subscription) {
     try {
@@ -198,7 +250,7 @@ export async function updateSubscription({ data, policy }) {
         policy,
       });
       // TODO: save subscription in user settings
-    } catch (error) {
+    } catch {
       // Backend doesn't have a subscription for this user
       // Create a new one
       backendSubscription = await createBackendPushSubscription({
@@ -212,9 +264,13 @@ export async function updateSubscription({ data, policy }) {
     // User is not subscribed
     const vapidKey = getVapidKey();
     if (!vapidKey) throw new Error('No server key found');
-    subscription = await registration.pushManager.subscribe({
+    subscription = await (
+      registration as ServiceWorkerRegistration
+    ).pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      applicationServerKey: urlBase64ToUint8Array(
+        vapidKey as string,
+      ) as BufferSource,
     });
     backendSubscription = await createBackendPushSubscription({
       subscription,
@@ -227,7 +283,7 @@ export async function updateSubscription({ data, policy }) {
   return { subscription, backendSubscription };
 }
 
-export async function removeSubscription() {
+export async function removeSubscription(): Promise<void> {
   if (!isPushSupported()) return;
   const { subscription } = await getSubscription();
   if (subscription) {
