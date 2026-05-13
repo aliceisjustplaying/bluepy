@@ -7,12 +7,32 @@ import haptics from '../utils/haptics';
 import Icon from './icon';
 import Loader from './loader';
 
-function FollowRequestButtons({ accountID, onChange }) {
+interface FollowRequestButtonsProps {
+  accountID: string;
+  onChange: () => void;
+}
+
+type RequestState = 'accept' | 'reject' | null;
+type Relationship = { followedBy?: boolean } | null;
+
+interface FollowRequestsResource {
+  $select(id: string): {
+    authorize(): Promise<Relationship>;
+    reject(): Promise<Relationship>;
+  };
+}
+
+function FollowRequestButtons({
+  accountID,
+  onChange,
+}: FollowRequestButtonsProps) {
   const { t } = useLingui();
   const { masto } = api();
+  const followRequests = masto.v1
+    .followRequests as unknown as FollowRequestsResource;
   const [uiState, setUIState] = useState('default');
-  const [requestState, setRequestState] = useState(null); // accept, reject
-  const [relationship, setRelationship] = useState(null);
+  const [requestState, setRequestState] = useState<RequestState>(null); // accept, reject
+  const [relationship, setRelationship] = useState<Relationship>(null);
 
   const hasRelationship = relationship !== null;
 
@@ -27,7 +47,7 @@ function FollowRequestButtons({ accountID, onChange }) {
           setRequestState('accept');
           (async () => {
             try {
-              const rel = await masto.v1.followRequests
+              const rel = await followRequests
                 .$select(accountID)
                 .authorize();
               if (!rel?.followedBy) {
@@ -54,7 +74,7 @@ function FollowRequestButtons({ accountID, onChange }) {
           setRequestState('reject');
           (async () => {
             try {
-              const rel = await masto.v1.followRequests
+              const rel = await followRequests
                 .$select(accountID)
                 .reject();
               if (rel?.followedBy) {

@@ -6,22 +6,37 @@ import { api } from '../utils/api';
 import Icon from './icon';
 import Loader from './loader';
 
+interface PrivateNoteSheetProps {
+  account?: { id?: string } | null;
+  note?: string;
+  onRelationshipChange?: (relationship: unknown) => void;
+  onClose?: () => void;
+}
+
+interface AccountsResource {
+  $select(id: string | undefined): {
+    note: {
+      create(params: { comment: string | null }): Promise<unknown>;
+    };
+  };
+}
+
 function PrivateNoteSheet({
   account,
   note: initialNote,
   onRelationshipChange = () => {},
   onClose = () => {},
-}) {
+}: PrivateNoteSheetProps) {
   const { t } = useLingui();
   const { masto } = api();
   const [uiState, setUIState] = useState('default');
-  const textareaRef = useRef(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    let timer;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     if (textareaRef.current && !initialNote) {
       timer = setTimeout(() => {
-        textareaRef.current.focus?.();
+        textareaRef.current?.focus?.();
       }, 100);
     }
     return () => {
@@ -48,13 +63,15 @@ function PrivateNoteSheet({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const note = formData.get('note');
+            const formData = new FormData(e.target as HTMLFormElement);
+            const note = formData.get('note') as string | null;
             if (note?.trim() !== initialNote?.trim()) {
               setUIState('loading');
               (async () => {
                 try {
-                  const newRelationship = await masto.v1.accounts
+                  const accounts = masto.v1
+                    .accounts as unknown as AccountsResource;
+                  const newRelationship = await accounts
                     .$select(account?.id)
                     .note.create({
                       comment: note,
@@ -66,7 +83,10 @@ function PrivateNoteSheet({
                 } catch (e) {
                   console.error(e);
                   setUIState('error');
-                  alert(e?.message || t`Unable to update private note.`);
+                  alert(
+                    (e as { message?: string })?.message ||
+                      t`Unable to update private note.`,
+                  );
                 }
               })();
             }
