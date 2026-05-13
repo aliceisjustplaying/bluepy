@@ -64,13 +64,22 @@ const Status = StatusRaw as unknown as ComponentType<StatusComponentProps>;
 // `react-intersection-observer`'s `InView` ships without working JSX
 // component typings under our preact compat resolution. Re-type as a
 // preact component with the props this file actually uses.
-const InView = InViewUntyped as unknown as ComponentType<{
+function InView(props: {
+  root?: Element | null;
+  rootMargin?: string;
+  class?: string;
+  onChange?: (inView: boolean) => void;
+  children?: ComponentChildren;
+}) {
+  const Inner = InViewUntyped as unknown as ComponentType<{
   root?: Element | null;
   rootMargin?: string;
   class?: string;
   onChange?: (inView: boolean) => void;
   children?: ComponentChildren;
 }>;
+  return <Inner {...props} />;
+}
 
 // Mirrors the timeline entry union: either a flat status (augmented with the
 // timeline-pipeline mutation flags) or a group wrapper with nested items.

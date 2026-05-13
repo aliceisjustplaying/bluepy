@@ -7,7 +7,17 @@ import TimelineUntyped from '../components/timeline';
 import { api } from '../utils/api';
 import useTitle from '../utils/useTitle';
 
-const Timeline = TimelineUntyped as unknown as ComponentType<{
+function Timeline(props: {
+  title?: string;
+  id?: string;
+  emptyText?: string;
+  errorText?: string;
+  instance?: string;
+  fetchItems?: (
+    firstLoad?: boolean,
+  ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
+}) {
+  const Inner = TimelineUntyped as unknown as ComponentType<{
   title?: string;
   id?: string;
   emptyText?: string;
@@ -17,6 +27,8 @@ const Timeline = TimelineUntyped as unknown as ComponentType<{
     firstLoad?: boolean,
   ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
 }>;
+  return <Inner {...props} />;
+}
 
 const LIMIT = 20;
 

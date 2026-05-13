@@ -11,7 +11,17 @@ import StatusUntyped from '../components/status';
 import { api } from '../utils/api';
 import useTitle from '../utils/useTitle';
 
-const NameText = NameTextUntyped as unknown as ComponentType<{
+function NameText(props: {
+  account?: unknown;
+  instance?: string;
+  showAvatar?: boolean;
+  showAcct?: boolean;
+  short?: boolean;
+  external?: boolean;
+  onClick?: (event: Event) => void;
+  [key: string]: unknown;
+}) {
+  const Inner = NameTextUntyped as unknown as ComponentType<{
   account?: unknown;
   instance?: string;
   showAvatar?: boolean;
@@ -21,14 +31,25 @@ const NameText = NameTextUntyped as unknown as ComponentType<{
   onClick?: (event: Event) => void;
   [key: string]: unknown;
 }>;
+  return <Inner {...props} />;
+}
 
-const Status = StatusUntyped as unknown as ComponentType<{
+function Status(props: {
+  status?: unknown;
+  size?: string;
+  readOnly?: boolean;
+  showCommentCount?: boolean;
+  [key: string]: unknown;
+}) {
+  const Inner = StatusUntyped as unknown as ComponentType<{
   status?: unknown;
   size?: string;
   readOnly?: boolean;
   showCommentCount?: boolean;
   [key: string]: unknown;
 }>;
+  return <Inner {...props} />;
+}
 
 interface AnnualReportAccount {
   id: string;

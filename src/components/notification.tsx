@@ -50,7 +50,10 @@ interface NameTextProps {
   external?: boolean;
   onClick?: (e: MouseEvent) => void;
 }
-const NameText = NameTextUntyped as unknown as ComponentType<NameTextProps>;
+function NameText(props: NameTextProps) {
+  const Inner = NameTextUntyped as unknown as ComponentType<NameTextProps>;
+  return <Inner {...props} />;
+}
 
 interface StatusComponentProps {
   status?: mastodon.v1.Status | null;
@@ -62,7 +65,10 @@ interface StatusComponentProps {
   allowContextMenu?: boolean;
   allowFilters?: boolean;
 }
-const Status = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
+function Status(props: StatusComponentProps) {
+  const Inner = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
+  return <Inner {...props} />;
+}
 
 // The typed FollowRequestButtons requires `onChange`, but the JS original
 // (and the `notification` use site) historically omits it; preserve that

@@ -14,7 +14,10 @@ interface LinkProps {
   class?: string;
   children?: ComponentChildren;
 }
-const Link = LinkUntyped as unknown as ComponentType<LinkProps>;
+function Link(props: LinkProps) {
+  const Inner = LinkUntyped as unknown as ComponentType<LinkProps>;
+  return <Inner {...props} />;
+}
 
 const LIMIT = 80;
 

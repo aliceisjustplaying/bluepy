@@ -16,10 +16,18 @@ interface LinkProps {
   class?: string;
   children?: ComponentChildren;
 }
-const Link = LinkUntyped as unknown as ComponentType<LinkProps>;
-const NavMenu = NavMenuUntyped as unknown as ComponentType<
+function Link(props: LinkProps) {
+  const Inner = LinkUntyped as unknown as ComponentType<LinkProps>;
+  return <Inner {...props} />;
+}
+function NavMenu(props:
+  Record<string, never>
+) {
+  const Inner = NavMenuUntyped as unknown as ComponentType<
   Record<string, never>
 >;
+  return <Inner {...props} />;
+}
 
 function FollowedHashtags() {
   const { t } = useLingui();
