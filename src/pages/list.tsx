@@ -45,6 +45,21 @@ interface ListLike {
 
 type StatusLike = mastodon.v1.Status;
 
+interface SaveStatusPayload extends Record<string, unknown> {
+  id?: string;
+  account?: Record<string, unknown> & { id?: string };
+  reblog?: SaveStatusPayload | null;
+  quote?: SaveStatusPayload | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusPayload | null;
+}
+
+function toSaveStatus(
+  status: StatusLike | null | undefined,
+): SaveStatusPayload | null | undefined {
+  return status as SaveStatusPayload | null | undefined;
+}
+
 interface FetchItemsResult {
   done?: boolean;
   value: (StatusLike | null | undefined)[] | undefined;
@@ -126,10 +141,7 @@ function List(props: ListProps) {
 
       // value = filteredItems(value, 'home');
       value.forEach((item) => {
-        saveStatus(
-          item as unknown as Parameters<typeof saveStatus>[0],
-          instance,
-        );
+        saveStatus(toSaveStatus(item), instance);
       });
     }
     return {

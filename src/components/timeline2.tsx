@@ -54,6 +54,36 @@ type TimelineStatusEntry = mastodon.v1.Status & {
   _differentAuthor?: boolean;
 };
 
+interface SaveStatusInput {
+  id?: string;
+  account?: { id?: string } | null;
+  reblog?: SaveStatusInput | null;
+  quote?: SaveStatusInput | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusInput | null;
+  inReplyToId?: string | null;
+  inReplyToAccountId?: string | null;
+  _pinned?: unknown;
+}
+
+interface SaveStatusPayload extends Record<string, unknown> {
+  id?: string;
+  account?: Record<string, unknown> & { id?: string };
+  reblog?: SaveStatusPayload | null;
+  quote?: SaveStatusPayload | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusPayload | null;
+  inReplyToId?: string | null;
+  inReplyToAccountId?: string | null;
+  _pinned?: unknown;
+}
+
+function toSaveStatus(
+  status: SaveStatusInput | null | undefined,
+): SaveStatusPayload | null | undefined {
+  return status as SaveStatusPayload | null | undefined;
+}
+
 interface TimelineGroupEntry {
   id: string | string[];
   items: TimelineStatusEntry[];
@@ -232,14 +262,14 @@ function Timeline2({
       if (isGroupEntry(item)) {
         item.items.forEach((subItem) => {
           saveStatus(
-            subItem as unknown as Parameters<typeof saveStatus>[0],
+            toSaveStatus(subItem),
             instance,
             { sync: true },
           );
         });
       } else {
         saveStatus(
-          item as unknown as Parameters<typeof saveStatus>[0],
+          toSaveStatus(item),
           instance,
           { sync: true },
         );
@@ -299,7 +329,7 @@ function Timeline2({
             if (hydratedStatuses?.length) {
               hydratedStatuses.forEach((status) => {
                 saveStatus(
-                  status as unknown as Parameters<typeof saveStatus>[0],
+                  toSaveStatus(status),
                   instance,
                   { sync: true },
                 );

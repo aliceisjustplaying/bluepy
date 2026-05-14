@@ -55,6 +55,36 @@ interface Following2Props {
   [key: string]: unknown;
 }
 
+interface SaveStatusInput {
+  id?: string;
+  account?: { id?: string } | null;
+  reblog?: SaveStatusInput | null;
+  quote?: SaveStatusInput | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusInput | null;
+  inReplyToId?: string | null;
+  inReplyToAccountId?: string | null;
+  _pinned?: unknown;
+}
+
+interface SaveStatusPayload extends Record<string, unknown> {
+  id?: string;
+  account?: Record<string, unknown> & { id?: string };
+  reblog?: SaveStatusPayload | null;
+  quote?: SaveStatusPayload | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusPayload | null;
+  inReplyToId?: string | null;
+  inReplyToAccountId?: string | null;
+  _pinned?: unknown;
+}
+
+function toSaveStatus(
+  status: SaveStatusInput | null | undefined,
+): SaveStatusPayload | null | undefined {
+  return status as SaveStatusPayload | null | undefined;
+}
+
 function Following2({ title, path, id, ...props }: Following2Props) {
   const { t } = useLingui();
   useTitle(
@@ -116,10 +146,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
     if (value?.length) {
       // value = filteredItems(value, 'home');
       value.forEach((item) => {
-        saveStatus(
-          item as unknown as Parameters<typeof saveStatus>[0],
-          instance,
-        );
+        saveStatus(toSaveStatus(item), instance);
       });
       // value = dedupeBoosts(value, instance);
       setTimeout(() => {
@@ -184,10 +211,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
           if (entry.event === 'status.update') {
             const status = entry.payload as mastodon.v1.Status;
             console.log(`🔄 Status ${status.id} updated`);
-            saveStatus(
-              status as unknown as Parameters<typeof saveStatus>[0],
-              instance,
-            );
+            saveStatus(toSaveStatus(status), instance);
           } else if (entry.event === 'delete') {
             const statusID = entry.payload as string;
             console.log(`❌ Status ${statusID} deleted`);

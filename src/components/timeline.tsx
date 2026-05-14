@@ -89,6 +89,19 @@ type TimelineStatusEntry = mastodon.v1.Status & {
   _differentAuthor?: boolean;
 };
 
+interface StatusPeekPayload {
+  spoilerText?: string;
+  content?: string;
+  poll?: {
+    options?: { title: string }[];
+    multiple?: boolean;
+  } | null;
+  mediaAttachments?: { type: string }[] | null;
+  quote?: {
+    quotedStatus?: StatusPeekPayload & { id?: string };
+  } | null;
+}
+
 type TimelineGroupType = 'boosts' | 'thread' | 'conversation' | 'pinned';
 
 interface TimelineGroupEntry {
@@ -1326,9 +1339,7 @@ export function TimelineStatusCompact({
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const { id, visibility, language } = status;
-  const statusPeekText = statusPeek(
-    status as unknown as Parameters<typeof statusPeek>[0],
-  );
+  const statusPeekText = statusPeek(status as StatusPeekPayload);
   const sKey = statusKey(id, instance);
   const filterInfo = isFiltered(status.filtered, filterContext as string);
   return (

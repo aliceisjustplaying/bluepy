@@ -42,6 +42,19 @@ interface AccountStatusesEndpoint {
   };
 }
 
+interface StatusPeekPayload {
+  spoilerText?: string;
+  content?: string;
+  poll?: {
+    options?: { title: string }[];
+    multiple?: boolean;
+  } | null;
+  mediaAttachments?: { type: string }[] | null;
+  quote?: {
+    quotedStatus?: StatusPeekPayload & { id?: string };
+  } | null;
+}
+
 // Function to fetch the latest posts from the current user
 // Use pmem to memoize fetch results for 1 minute
 const fetchLatestPostsMemoized = pmem(
@@ -239,9 +252,7 @@ export default function ComposeButton() {
                 <MenuItem key={post.id} onClick={() => handleReplyToPost(post)}>
                   <small>
                     <div class="menu-post-text">
-                      {statusPeek(
-                        post as unknown as Parameters<typeof statusPeek>[0],
-                      )}
+                      {statusPeek(post as StatusPeekPayload)}
                     </div>
                     <span className="more-insignificant">
                       {/* Show relative time if within a day */}
