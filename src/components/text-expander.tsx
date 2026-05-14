@@ -12,12 +12,7 @@ import getDomain from '../utils/get-domain';
 import isRTL from '../utils/is-rtl';
 import shortenNumber from '../utils/shorten-number';
 
-interface EmojiSearcher {
-  search(
-    term: string,
-    options?: { limit?: number },
-  ): { item: { shortcode: string; url: string } }[];
-}
+type EmojiSearcher = Awaited<ReturnType<typeof getCustomEmojis>>[1];
 
 interface AccountResult {
   name?: string;
@@ -41,12 +36,17 @@ interface AccountSearchResource {
   };
 }
 
+interface TextExpanderSearchResponse extends Array<AccountResult> {
+  accounts?: AccountResult[];
+  hashtags?: AccountResult[];
+}
+
 interface TextExpanderSearchResource {
   list(options: {
     type: string;
     q: string;
     limit: number;
-  }): Promise<Record<string, AccountResult[] | undefined>>;
+  }): Promise<TextExpanderSearchResponse>;
 }
 
 interface TextExpanderChangeDetail {
@@ -145,10 +145,7 @@ function TextExpander(
 
     void (async () => {
       try {
-        const [, searcher] = (await getCustomEmojis(instance)) as unknown as [
-          unknown,
-          EmojiSearcher,
-        ];
+        const [, searcher] = await getCustomEmojis(instance);
         searcherRef.current = searcher;
       } catch (e: unknown) {
         console.error(e);
@@ -182,7 +179,8 @@ function TextExpander(
 
         let html = '';
         results?.forEach(({ item: emoji }) => {
-          const { shortcode, url } = emoji;
+          const { shortcode } = emoji;
+          const url = typeof emoji.url === 'string' ? emoji.url : undefined;
           html += `
             <li role="option" data-value="${encodeHTML(shortcode)}">
               <img src="${encodeHTML(
@@ -240,8 +238,7 @@ function TextExpander(
                     q: text,
                     limit: 5,
                   });
-                searchResults =
-                  response[type] || (response as unknown as AccountResult[]);
+                searchResults = response[type] || response;
               }
 
               if (text !== textExpanderTextRef.current) {
