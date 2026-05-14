@@ -24,12 +24,10 @@ interface ToastProps {
 // underscore-prefixed name for back-compat with existing dev tooling and also
 // expose the unprefixed name to satisfy the no-underscore-dangle linter
 // without breaking callers of `_showToast(...)`.
-const debugWindow = window as unknown as {
-  _showToast: typeof showToast;
-  showToast: typeof showToast;
-};
-debugWindow._showToast = showToast;
-debugWindow.showToast = showToast;
+Object.assign(window, {
+  _showToast: showToast,
+  showToast,
+});
 
 function showToast(props: string | ToastProps): ToastInstance {
   if (typeof props === 'string') {
