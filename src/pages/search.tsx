@@ -47,16 +47,12 @@ function Status(props: {
 }) {
   return <StatusComponent {...(props as StatusComponentProps)} />;
 }
-function InView(props: {
+type InViewProps = {
   onChange?: (inView: boolean) => void;
   children?: ComponentChildren;
-}) {
-  const Inner = InViewUntyped as unknown as ComponentType<{
-    onChange?: (inView: boolean) => void;
-    children?: ComponentChildren;
-  }>;
-  return <Inner {...props} />;
-}
+};
+const InView: ComponentType<InViewProps> =
+  InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
 interface SearchFormHandle {
   setValue: (value: string) => void;
@@ -94,6 +90,18 @@ interface SearchApi {
 }
 
 type ResultsTypeKey = 'statuses' | 'accounts' | 'hashtags';
+type SearchResultsByType = {
+  statuses: mastodon.v1.Status[];
+  accounts: mastodon.v1.Account[];
+  hashtags: mastodon.v1.Tag[];
+};
+type ResultsSetterMap = {
+  [K in ResultsTypeKey]: (
+    value:
+      | SearchResultsByType[K]
+      | ((prev: SearchResultsByType[K]) => SearchResultsByType[K]),
+  ) => void;
+};
 
 function Search({ columnMode, ...props }: SearchProps) {
   const { t } = useLingui();
@@ -153,37 +161,42 @@ function Search({ columnMode, ...props }: SearchProps) {
     setAccountResults([]);
     setHashtagResults([]);
   }, [q]);
-  type ResultsSetter = (
-    value: readonly unknown[] | ((prev: readonly unknown[]) => unknown[]),
-  ) => void;
   // Setters from useState are stable, so this map only needs to be created
   // once; that lets `loadResults` depend on it without churning.
-  const setTypeResultsFunc = useMemo<Record<ResultsTypeKey, ResultsSetter>>(
+  const setTypeResultsFunc = useMemo<ResultsSetterMap>(
     () => ({
-      statuses: setStatusResults as unknown as ResultsSetter,
-      accounts: setAccountResults as unknown as ResultsSetter,
-      hashtags: setHashtagResults as unknown as ResultsSetter,
+      statuses: setStatusResults,
+      accounts: setAccountResults,
+      hashtags: setHashtagResults,
     }),
     [],
   );
+  const setResultsForType = useCallback(
+    <K extends ResultsTypeKey>(
+      typeKey: K,
+      value:
+        | SearchResultsByType[K]
+        | ((prev: SearchResultsByType[K]) => SearchResultsByType[K]),
+    ) => {
+      setTypeResultsFunc[typeKey](value);
+    },
+    [setTypeResultsFunc],
+  );
 
   const [relationshipsMap, setRelationshipsMap] = useState<
-    Record<string, unknown>
+    Record<string, mastodon.v1.Relationship>
   >({});
   // Stable callback: uses the functional setter and reads the previous map
   // via a transient peek so it never needs `relationshipsMap` as a dep.
   const loadRelationships = useCallback(
     async (accounts: mastodon.v1.Account[] | undefined) => {
       if (!accounts?.length) return;
-      let snapshot: Record<string, unknown> = {};
+      let snapshot: Record<string, mastodon.v1.Relationship> = {};
       setRelationshipsMap((prev) => {
         snapshot = prev;
         return prev;
       });
-      const relationships = await fetchRelationships(
-        accounts as unknown as Parameters<typeof fetchRelationships>[0],
-        snapshot as unknown as Parameters<typeof fetchRelationships>[1],
-      );
+      const relationships = await fetchRelationships(accounts, snapshot);
       if (relationships) {
         setRelationshipsMap((prev) => ({
           ...prev,
@@ -256,28 +269,30 @@ function Search({ columnMode, ...props }: SearchProps) {
             const typedResults = results;
             const typeKey = type as ResultsTypeKey;
             const nextCursor = typedResults._pagination?.[type];
+            const nextResults = typedResults[
+              typeKey
+            ] as SearchResultsByType[typeof typeKey];
             if (firstLoad) {
-              setTypeResultsFunc[typeKey](
-                typedResults[type] as unknown[],
-              );
-              const length = (typedResults[type] as unknown[] | undefined)
-                ?.length;
+              setResultsForType(typeKey, nextResults);
+              const length = nextResults?.length;
               offsetRef.current = LIMIT;
               cursorRef.current[type] = nextCursor;
               setShowMore(atproto ? !!nextCursor : !!length);
             } else if (atproto) {
-              setTypeResultsFunc[typeKey](
-                (prev: readonly unknown[]) => [
-                  ...prev,
-                  ...(typedResults[type] as unknown[]),
-                ],
+              setResultsForType(
+                typeKey,
+                (prev) =>
+                  [
+                    ...prev,
+                    ...nextResults,
+                  ] as SearchResultsByType[typeof typeKey],
               );
               cursorRef.current[type] = nextCursor;
               setShowMore(!!nextCursor);
             } else {
               // If first item is the same, it means API doesn't support offset
               // I know this is a very basic check, but it works for now
-              const currentList = typedResults[type] as
+              const currentList = nextResults as
                 | Array<{ id?: string }>
                 | undefined;
               const existingList = typeResultsRef.current[typeKey] as
@@ -286,14 +301,15 @@ function Search({ columnMode, ...props }: SearchProps) {
               if (currentList?.[0]?.id === existingList?.[0]?.id) {
                 setShowMore(false);
               } else {
-                setTypeResultsFunc[typeKey](
-                  (prev: readonly unknown[]) => [
-                    ...prev,
-                    ...(typedResults[type] as unknown[]),
-                  ],
+                setResultsForType(
+                  typeKey,
+                  (prev) =>
+                    [
+                      ...prev,
+                      ...nextResults,
+                    ] as SearchResultsByType[typeof typeKey],
                 );
-                const length = (typedResults[type] as unknown[] | undefined)
-                  ?.length;
+                const length = nextResults?.length;
                 offsetRef.current = offsetRef.current + LIMIT;
                 setShowMore(!!length);
               }
@@ -322,7 +338,7 @@ function Search({ columnMode, ...props }: SearchProps) {
       authenticated,
       masto,
       loadRelationships,
-      setTypeResultsFunc,
+      setResultsForType,
     ],
   );
 

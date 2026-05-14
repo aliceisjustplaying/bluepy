@@ -62,16 +62,12 @@ import useTitle from '../utils/useTitle';
 
 // `InView` is still untyped for our preact/react interop; shim with just the
 // surface this page uses.
-function InView(props: {
+type InViewProps = {
   onChange?: (inView: boolean) => void;
   children?: ComponentChildren;
-}) {
-  const Inner = InViewUntyped as unknown as ComponentType<{
-    onChange?: (inView: boolean) => void;
-    children?: ComponentChildren;
-  }>;
-  return <Inner {...props} />;
-}
+};
+const InView: ComponentType<InViewProps> =
+  InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
 function Status(props: {
   status?: unknown;
@@ -114,12 +110,13 @@ interface NotificationRequestLike {
 // `masto.v2.notifications` / `masto.v1.notifications` are typed as `unknown`
 // in the local masto shim. Describe just the surface used in this file.
 // NOTE: The JS original also reads `.nextParams` off the iterator returned
-// from `values()` for a Pixelfed pagination guard. masto's runtime
-// `AsyncIterableIterator` does NOT expose that field — the read is
-// `undefined` at runtime and the guard never fires. We preserve that
-// existing behavior by casting at the read site, not by lying in the type.
+// from `values()` for a Pixelfed pagination guard. Keep it optional so the
+// normal `undefined` read preserves the JS behavior.
+interface NotificationsIterator extends AsyncIterableIterator<unknown> {
+  nextParams?: unknown;
+}
 interface MastoV2NotificationsListIterable {
-  values(): AsyncIterableIterator<unknown>;
+  values(): NotificationsIterator;
 }
 interface MastoV1NotificationsListResult
   extends MastoV2NotificationsListIterable,
@@ -330,11 +327,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     if (
       /max_id=($|&)/i.test(
         String(
-          (
-            notificationsIterator.current as unknown as {
-              nextParams?: unknown;
-            } | null
-          )?.nextParams,
+          notificationsIterator.current?.nextParams,
         ),
       )
     ) {
