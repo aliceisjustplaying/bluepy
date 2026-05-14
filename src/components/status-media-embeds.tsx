@@ -1,5 +1,4 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { ComponentChildren, RefObject } from 'preact';
 
 import states from '../utils/states';
@@ -7,7 +6,7 @@ import states from '../utils/states';
 import Icon from './icon';
 import Media from './media';
 import MultipleMediaFigure from './multiple-media-figure';
-import type { AnyStatus } from './status-types';
+import type { AnyMediaAttachment, AnyStatus } from './status-types';
 
 type FilterInfoMaybe = {
   action: 'hide' | 'blur' | 'warn';
@@ -21,7 +20,7 @@ interface StatusMediaEmbedsProps {
   readingExpandMedia?: string;
   readingExpandSpoilers: boolean;
   spoilerText?: string | null;
-  mediaAttachments: mastodon.v1.MediaAttachment[];
+  mediaAttachments: AnyMediaAttachment[];
   showSpoilerMedia: boolean;
   isSizeLarge: boolean;
   withinContext?: boolean;
@@ -32,14 +31,14 @@ interface StatusMediaEmbedsProps {
   onMediaClick?: (
     e: MouseEvent,
     index: number,
-    media: mastodon.v1.MediaAttachment,
+    media: AnyMediaAttachment,
     status: AnyStatus,
   ) => void;
   status: AnyStatus;
   showMultipleMediaCaptions: boolean;
   captionChildren: ComponentChildren;
   mediaContainerRef: RefObject<HTMLDivElement>;
-  displayedMediaAttachments: mastodon.v1.MediaAttachment[];
+  displayedMediaAttachments: AnyMediaAttachment[];
   content?: string | null;
 }
 
@@ -110,10 +109,10 @@ export default function StatusMediaEmbeds({
         (isSizeLarge || (withinContext && size === 'm')) ? (
           <div class="media-large-container">
             {mediaAttachments.map(
-              (media: mastodon.v1.MediaAttachment, i: number) => (
+              (media: AnyMediaAttachment, i: number) => (
                 <div key={media.id} class={`media-container media-eq1`}>
                   <Media
-                    media={media as unknown as Parameters<typeof Media>[0]['media']}
+                    media={media}
                     autoAnimate
                     showCaption
                     allowLongerCaption={!content || isSizeLarge}
@@ -146,10 +145,10 @@ export default function StatusMediaEmbeds({
               } ${mediaAttachments.length > 4 ? 'media-gt4' : ''}`}
             >
               {displayedMediaAttachments.map(
-                (media: mastodon.v1.MediaAttachment, i: number) => (
+                (media: AnyMediaAttachment, i: number) => (
                   <Media
                     key={media.id}
-                    media={media as unknown as Parameters<typeof Media>[0]['media']}
+                    media={media}
                     autoAnimate={isSizeLarge}
                     showCaption={mediaAttachments.length === 1}
                     allowLongerCaption={!content && mediaAttachments.length === 1}

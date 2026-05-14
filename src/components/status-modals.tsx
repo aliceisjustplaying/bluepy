@@ -10,6 +10,8 @@ import QuotesModal from './quotes-modal';
 import EditedAtModal from './status-edit-history-modal';
 import type { AnyStatus, RenderStatus } from './status-types';
 
+type QuoteSettingsPost = Parameters<typeof QuoteSettingsSheet>[0]['post'];
+
 interface StatusModalsProps {
   showEdited: string | false;
   setShowEdited: (value: string | false) => void;
@@ -83,9 +85,7 @@ export default function StatusModals({
           }}
         >
           <PostEmbedModal
-            post={
-              status as unknown as Parameters<typeof PostEmbedModal>[0]['post']
-            }
+            post={status}
             instance={instance}
             onClose={() => {
               setShowEmbed(false);
@@ -105,11 +105,7 @@ export default function StatusModals({
               setShowQuoteSettings(false);
               states.reloadStatusPage++;
             }}
-            post={
-              status as unknown as Parameters<
-                typeof QuoteSettingsSheet
-              >[0]['post']
-            }
+            post={status as unknown as QuoteSettingsPost}
             currentPolicy={postQuoteApprovalPolicy}
             renderStatus={renderStatus}
           />

@@ -36,16 +36,16 @@ import StatusPostBody from './status-post-body';
 import useStatusQuotePolicy from './status-quote-policy';
 import useStatusReplyParent from './status-reply-parent';
 import type {
-  AnyAccount,
+  AnyMediaAttachment,
   AnyStatus,
   FullMasto,
+  StatusAtprotoMeta,
 } from './status-types';
 import type { StatusComponentProps, StatusRouterProps } from './status-view';
 import StatusCompact from './status-compact';
 
-const EMPTY_MEDIA_ATTACHMENTS = Object.freeze(
-  [],
-) as unknown as mastodon.v1.MediaAttachment[];
+const EMPTY_MEDIA_ATTACHMENTS: AnyMediaAttachment[] = [];
+Object.freeze(EMPTY_MEDIA_ATTACHMENTS);
 
 interface StatusContentProps extends StatusRouterProps {
   renderStatus: (props: StatusComponentProps) => ComponentChildren;
@@ -90,7 +90,6 @@ export default function StatusContent({
   const snapStates = useSnapshot(states);
   const sKey = resolvedSKey;
 
-  const statusAny = status as unknown as AnyStatus;
   const {
     account,
     id,
@@ -129,21 +128,7 @@ export default function StatusContent({
     // _filtered,
     // Non-Mastodon
     emojiReactions,
-  } = statusAny as AnyStatus & {
-    account?: Partial<AnyAccount>;
-    quoteApproval?: {
-      currentUser?: string;
-      automatic?: readonly string[];
-      manual?: readonly string[];
-    };
-    emojiReactions?: readonly Record<string, unknown>[];
-    _deleted?: boolean;
-    _pinned?: boolean;
-    _atproto?: {
-      replyParentAccount?: AnyAccount | null;
-      replyParentUnavailable?: boolean;
-    };
-  };
+  } = status;
   const {
     acct,
     avatar,
@@ -189,14 +174,9 @@ export default function StatusContent({
   );
 
   const createdAtDate = new Date(createdAt);
-  const editedAtDate = new Date(editedAt as string);
+  const editedAtDate = new Date(editedAt);
 
-  const atproto = statusAny._atproto as
-    | {
-        replyParentAccount?: AnyAccount | null;
-        replyParentUnavailable?: boolean;
-      }
-    | undefined;
+  const atproto: StatusAtprotoMeta | undefined = status._atproto;
   const { inReplyToAccount, mentionSelf, showReplyBadge } =
     useStatusReplyParent({
       instance,
@@ -335,7 +315,7 @@ export default function StatusContent({
     favourited,
     favouritesCount,
     bookmarked,
-    mediaAttachments,
+    mediaAttachments: mediaAttachments as unknown as mastodon.v1.MediaAttachment[],
     createdAt,
   });
 
@@ -449,7 +429,7 @@ export default function StatusContent({
     showMultipleMediaCaptions,
     captionChildren,
   } = useStatusMediaCaptions({
-    mediaAttachments,
+    mediaAttachments: mediaAttachments as unknown as mastodon.v1.MediaAttachment[],
     isSizeLarge,
     language,
   });
@@ -645,7 +625,7 @@ export default function StatusContent({
             visibility={visibility}
             editedAt={editedAt}
             createdAtDate={createdAtDate}
-            inReplyToAccount={inReplyToAccount as unknown as AnyAccount | null}
+            inReplyToAccount={inReplyToAccount as unknown as AnyStatus['account'] | null}
             showReplyBadge={showReplyBadge}
           />
           <StatusPostBody
@@ -685,7 +665,9 @@ export default function StatusContent({
             forceTranslate={forceTranslate}
             withinContext={withinContext}
             languageAutoDetected={!!languageAutoDetected}
-            displayedMediaAttachments={displayedMediaAttachments}
+            displayedMediaAttachments={
+              displayedMediaAttachments as unknown as AnyMediaAttachment[]
+            }
             showMultipleMediaCaptions={showMultipleMediaCaptions}
             captionChildren={captionChildren}
             mediaContainerRef={mediaContainerRef}
@@ -778,7 +760,7 @@ export default function StatusContent({
           statusRef={statusRef}
           postQuoteApprovalPolicy={postQuoteApprovalPolicy}
           renderStatus={(statusProps) =>
-            renderStatus(statusProps as StatusComponentProps)
+            renderStatus(statusProps)
           }
         />
       </article>
