@@ -17,7 +17,7 @@ import floatingButtonUrl from '../assets/floating-button.svg';
 import multiColumnUrl from '../assets/multi-column.svg';
 import tabMenuBarUrl from '../assets/tab-menu-bar.svg';
 
-import { api } from '../utils/api';
+import { api, type MastoClient } from '../utils/api';
 import { fetchFollowedTags } from '../utils/followed-tags';
 import { getLists, getListTitle, splitListsAndFeeds } from '../utils/lists';
 import pmem from '../utils/pmem';
@@ -35,24 +35,14 @@ import { mediaDevicesSupported } from './qr-code-modal';
 // timeline; remaining string keys are per-type params (id, instance, query,
 // hashtag, local, media, ...). Form submissions only ever produce string
 // values (FormData), so non-`type` fields are typed loosely as string.
-interface ShortcutEntry {
-  type: string;
+export interface ShortcutMetaInput {
+  type?: string;
   [key: string]: string | undefined;
 }
 
-// `states.shortcuts` is typed as `unknown[]` in the central proxy. Locally we
-// narrow it to ShortcutEntry[] at the read boundary.
-const statesShortcuts = states as unknown as {
-  shortcuts: ShortcutEntry[];
-  settings: {
-    shortcutsViewMode: string | null;
-    shortcutSettingsCloudImportExport: boolean;
-    [key: string]: unknown;
-  };
-  showQrScannerModal: unknown;
-  showQrCodeModal: unknown;
-  [key: string]: unknown;
-};
+export interface ShortcutEntry extends ShortcutMetaInput {
+  type: string;
+}
 
 // `api().masto` is loosely typed at the hub (open index signature). Shim a
 // narrower view for the v1 endpoints touched here.
@@ -73,14 +63,18 @@ interface MastoV1AccountsForShortcuts {
   $select(id: string): AccountSelectClient;
   relationships: RelationshipsClient;
 }
-interface ShortcutsMastoClient {
+interface ShortcutsMastoClient extends MastoClient {
   v1: {
-    accounts: MastoV1AccountsForShortcuts;
-  };
+    accounts: MastoClient['v1']['accounts'] & MastoV1AccountsForShortcuts;
+  } & MastoClient['v1'];
+}
+
+function asShortcutsMasto(masto: MastoClient): ShortcutsMastoClient {
+  return masto as ShortcutsMastoClient;
 }
 
 function shortcutsMasto(): ShortcutsMastoClient {
-  return api().masto as unknown as ShortcutsMastoClient;
+  return asShortcutsMasto(api().masto);
 }
 
 // Lingui macro returns `Omit<I18nContext, "_"> & { t }`. Other tsx call sites
@@ -206,18 +200,16 @@ const fetchAccountTitle = pmem(
 
 // SHORTCUTS_META describes per-shortcut-type metadata. Some fields are static
 // strings/MessageDescriptors and some are functions of the shortcut entry.
-// Consumers (this file + shortcuts.tsx) already widen via
-// `as unknown as Record<string, ...>`, so loose entry shapes are fine.
-type ShortcutMetaValue<T> =
+export type ShortcutMetaValue<T> =
   | T
-  | ((shortcut: ShortcutEntry, index?: number) => T);
-interface ShortcutMetaEntry {
+  | ((shortcut: ShortcutMetaInput, index?: number) => T);
+export interface ShortcutMetaEntry {
   id: ShortcutMetaValue<string>;
   title: ShortcutMetaValue<string | MessageDescriptor | Promise<string>>;
   subtitle?: ShortcutMetaValue<string | undefined>;
   path: ShortcutMetaValue<string>;
   icon: ShortcutMetaValue<string>;
-  altIcon?: () => { url?: string; type: string };
+  altIcon?: ShortcutMetaValue<{ url?: string; type: string }>;
   excludeViewMode?: ShortcutMetaValue<string[]>;
 }
 
@@ -291,9 +283,7 @@ export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
   },
   'account-statuses': {
     id: 'account-statuses',
-    title: fetchAccountTitle as unknown as ShortcutMetaValue<
-      string | Promise<string>
-    >,
+    title: (shortcut) => fetchAccountTitle(shortcut as { id: string }),
     path: ({ id }) => `/a/${id}`,
     icon: 'user',
   },
@@ -333,11 +323,8 @@ type ShortcutFormState =
 function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
   const { i18n } = useLingui();
   const _: Translator = (descriptor) => i18n._(descriptor);
-  const snapStates = useSnapshot(states) as unknown as {
-    shortcuts: ShortcutEntry[];
-    settings: { shortcutsViewMode: string | null };
-  };
-  const { shortcuts } = snapStates;
+  const snapStates = useSnapshot(states);
+  const shortcuts = snapStates.shortcuts as readonly ShortcutEntry[];
   const [showForm, setShowForm] = useState<ShortcutFormState>(false);
   const [showImportExport, setShowImportExport] = useState(false);
 
@@ -1049,7 +1036,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 <Icon icon="scan" alt={t`Scan QR code`} />
               </button>
             )}
-            {statesShortcuts.settings.shortcutSettingsCloudImportExport && (
+            {states.settings.shortcutSettingsCloudImportExport && (
               <button
                 type="button"
                 class="plain2 small"
@@ -1061,7 +1048,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                     showToast(t`Downloading saved shortcuts from server…`);
                     try {
                       const relationships = await (
-                        masto as unknown as ShortcutsMastoClient
+                        asShortcutsMasto(masto)
                       ).v1.accounts.relationships.fetch({
                         id: [currentAccount as string],
                       });
@@ -1215,9 +1202,11 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                     // is null, so the assertion below matches the JS original
                     // — which would throw on `.filter` if null reached here.
                     const parsed = parsedImportShortcutStr as unknown[];
+                    const currentShortcuts =
+                      states.shortcuts as ShortcutEntry[];
                     const nonUniqueShortcuts = parsed.filter((rawShortcut) => {
                       const shortcut = rawShortcut as Record<string, unknown>;
-                      return !statesShortcuts.shortcuts.some((s) =>
+                      return !currentShortcuts.some((s) =>
                         // Compare all properties
                         Object.keys(s).every((key) => s[key] === shortcut[key]),
                       );
@@ -1323,7 +1312,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
             >
               <Icon icon="qrcode" alt={t`QR code`} />
             </button>
-            {statesShortcuts.settings.shortcutSettingsCloudImportExport && (
+            {states.settings.shortcutSettingsCloudImportExport && (
               <button
                 type="button"
                 class="plain2 small"
@@ -1333,8 +1322,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                     setImportUIState('cloud-uploading');
                     const currentAccount = getCurrentAccountID();
                     try {
-                      const mastoShim =
-                        masto as unknown as ShortcutsMastoClient;
+                      const mastoShim = asShortcutsMasto(masto);
                       const relationships =
                         await mastoShim.v1.accounts.relationships.fetch({
                           id: [currentAccount as string],
@@ -1456,7 +1444,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
             </details>
           )}
         </section>
-        {statesShortcuts.settings.shortcutSettingsCloudImportExport && (
+        {states.settings.shortcutSettingsCloudImportExport && (
           <footer>
             <p>
               <Icon icon="cloud" />{' '}

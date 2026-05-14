@@ -18,7 +18,11 @@ import { useNavigate } from 'react-router-dom';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
-import { SHORTCUTS_META } from '../components/shortcuts-settings';
+import {
+  SHORTCUTS_META,
+  type ShortcutMetaInput,
+  type ShortcutMetaValue,
+} from '../components/shortcuts-settings';
 import { api } from '../utils/api';
 import { getLists, splitListsAndFeeds } from '../utils/lists';
 import safeBoundingBoxPadding from '../utils/safe-bounding-box-padding';
@@ -54,10 +58,26 @@ interface FormattedShortcut {
   altIcon?: AltIconValue;
 }
 
-interface ShortcutPin {
-  type?: string;
-  instance?: string;
-  [key: string]: unknown;
+type ShortcutPin = ShortcutMetaInput;
+type ShortcutMetaResolver<T> = (
+  shortcut: ShortcutMetaInput,
+  index?: number,
+) => T;
+
+function resolveMetaValue<T>(
+  value: ShortcutMetaValue<T> | undefined,
+  shortcut: ShortcutMetaInput,
+  index: number,
+): T | undefined {
+  if (typeof value === 'function') {
+    const resolver = value as ShortcutMetaResolver<T>;
+    return resolver(shortcut, index);
+  }
+  return value;
+}
+
+function isMessageDescriptor(value: unknown): value is MessageDescriptor {
+  return !!value && typeof value === 'object' && 'id' in value;
 }
 
 function ListsMenuContent({ lists }: { lists: ListLike[] }) {
@@ -138,60 +158,28 @@ function Shortcuts() {
   const tabBarRef = useRef<HTMLElement | null>(null);
 
   const hasLists = useRef(false);
-  const shortcutsMeta = SHORTCUTS_META as unknown as Record<
-    string,
-    {
-      id?: unknown;
-      path?: unknown;
-      title?: unknown;
-      subtitle?: unknown;
-      icon?: unknown;
-      altIcon?: unknown;
-    }
-  >;
   const formattedShortcuts: FormattedShortcut[] = (shortcuts as ShortcutPin[])
     .map((pin, i): FormattedShortcut | null => {
       const { type, ...data } = pin;
-      if (!type || !shortcutsMeta[type]) return null;
-      let { id, path, title, subtitle, icon, altIcon } = shortcutsMeta[type];
+      const meta = type ? SHORTCUTS_META[type] : undefined;
+      if (!type || !meta) return null;
+      const shortcutData: ShortcutMetaInput = data;
+      const pathData: ShortcutMetaInput = {
+        ...data,
+        instance: data.instance || instance,
+      };
+      const id = resolveMetaValue(meta.id, shortcutData, i);
+      const path = resolveMetaValue(meta.path, pathData, i);
+      let title = resolveMetaValue(meta.title, shortcutData, i);
+      let subtitle = resolveMetaValue(meta.subtitle, shortcutData, i);
+      const icon = resolveMetaValue(meta.icon, shortcutData, i);
+      const altIcon = resolveMetaValue(meta.altIcon, shortcutData, i);
 
-      if (typeof id === 'function') {
-        id = (id as (d: unknown, i: number) => unknown)(data, i);
+      if (isMessageDescriptor(title)) {
+        title = i18n._(title);
       }
-      if (typeof path === 'function') {
-        path = (path as (d: unknown, i: number) => unknown)(
-          {
-            ...data,
-            instance: data.instance || instance,
-          },
-          i,
-        );
-      }
-      if (typeof title === 'function') {
-        title = (title as (d: unknown, i: number) => unknown)(data, i);
-      } else if (
-        title &&
-        typeof title === 'object' &&
-        'id' in (title as Record<string, unknown>)
-      ) {
-        // Check if it's MessageDescriptor
-        title = i18n._(title as MessageDescriptor);
-      }
-      if (typeof subtitle === 'function') {
-        subtitle = (subtitle as (d: unknown, i: number) => unknown)(data, i);
-      } else if (
-        subtitle &&
-        typeof subtitle === 'object' &&
-        'id' in (subtitle as Record<string, unknown>)
-      ) {
-        // Check if it's MessageDescriptor
-        subtitle = i18n._(subtitle as MessageDescriptor);
-      }
-      if (typeof icon === 'function') {
-        icon = (icon as (d: unknown, i: number) => unknown)(data, i);
-      }
-      if (typeof altIcon === 'function') {
-        altIcon = (altIcon as (d: unknown, i: number) => unknown)(data, i);
+      if (isMessageDescriptor(subtitle)) {
+        subtitle = i18n._(subtitle);
       }
 
       if (id === 'lists') {
@@ -199,12 +187,12 @@ function Shortcuts() {
       }
 
       return {
-        id: id as string | undefined,
-        path: path as string | undefined,
-        title: title as string | Promise<string> | undefined,
-        subtitle: subtitle as string | Promise<string> | undefined,
-        icon: icon as string | undefined,
-        altIcon: altIcon as AltIconValue | undefined,
+        id,
+        path,
+        title,
+        subtitle,
+        icon,
+        altIcon,
       };
     })
     .filter((item): item is FormattedShortcut => item !== null);
