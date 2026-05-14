@@ -452,10 +452,7 @@ const expiresInFromExpiresAt = (
   expiresAt: string | number | Date | null | undefined,
 ): number | string => {
   if (!expiresAt) return oneDay;
-  // Preserve JS behavior: Date.parse accepts strings, Date objects coerce via
-  // toString, numbers also coerce.
-  const delta =
-    (Date.parse(expiresAt as unknown as string) - Date.now()) / 1000;
+  const delta = (Date.parse(String(expiresAt)) - Date.now()) / 1000;
   // Original JS compared string seconds to numeric delta; find on string keys
   // returned a string. Coerce-compare to keep equivalent runtime semantics.
   return expirySeconds.find((s) => Number(s) >= delta) || oneDay;
@@ -1645,11 +1642,9 @@ function Compose({
     onResize: ({ width }) => {
       // If scrollable, it's truncated
       const { scrollWidth } = addSubToolbarRef.current!;
-      // width is undefined on the first synthetic call; let JS NaN semantics
-      // mirror the original (both comparisons evaluate to false).
-      const w = width as unknown as number;
-      const truncated = scrollWidth > w;
-      const overTruncated = w < BUTTON_WIDTH * 4;
+      const truncated = width !== undefined && scrollWidth > width;
+      const overTruncated =
+        width !== undefined && width < BUTTON_WIDTH * 4;
       setShowAddButton(overTruncated || truncated);
       addSubToolbarRef.current!.hidden = overTruncated;
     },
@@ -2311,14 +2306,8 @@ function Compose({
             <div class="media-attachments">
               {mediaAttachments.map((attachment, i) => {
                 const { id, file } = attachment;
-                // Preserve original JS arithmetic exactly. The original was
-                // `file?.size + file?.type + file?.name`, which yields NaN
-                // (falsy → fallback to `i`) when `file` is undefined, and a
-                // stable string ("5image/pngimg.png") when fully populated.
                 const fileID: string | number =
-                  (file?.size as unknown as number) +
-                  (file?.type as unknown as string) +
-                  (file?.name as unknown as string);
+                  file ? file.size + file.type + file.name : Number.NaN;
                 return (
                   <MediaAttachment
                     key={id || fileID || i}

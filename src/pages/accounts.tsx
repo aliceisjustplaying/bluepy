@@ -88,14 +88,11 @@ function Accounts({ onClose }: AccountsProps) {
               };
 
               const logOutAccount = async () => {
-                // JS original forwarded `clientId`/`clientSecret`/token as-is
-                // (which may be `undefined` on older/logged-out accounts).
-                // Preserve that by casting; do not coerce to ''.
                 await revokeAccessToken({
                   instanceURL: account.instanceURL,
-                  client_id: account.clientId as unknown as string,
-                  client_secret: account.clientSecret as unknown as string,
-                  token: account.accessToken as unknown as string,
+                  client_id: String(account.clientId),
+                  client_secret: String(account.clientSecret),
+                  token: String(account.accessToken),
                 });
               };
 
