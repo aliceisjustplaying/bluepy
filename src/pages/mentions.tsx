@@ -132,9 +132,7 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
       value: NotificationLike[] | undefined;
     };
     if (value?.length) {
-      value = fixNotifications(
-        value as unknown as Parameters<typeof fixNotifications>[0],
-      ) as unknown as NotificationLike[];
+      value = fixNotifications(value);
 
       if (firstLoad) {
         latestItem.current = value[0]?.id;

@@ -8,6 +8,7 @@ import {
   MenuItem,
 } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
+import type { TargetedEvent } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useParams, useSearchParams } from 'react-router-dom';
 
@@ -509,12 +510,12 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
             <FocusableItem className="menu-field" disabled={reachLimit}>
               {({ ref }: { ref: preact.Ref<HTMLInputElement> }) => (
                 <form
-                  onSubmit={(e: Event) => {
+                  onSubmit={(e: TargetedEvent<HTMLFormElement>) => {
                     e.preventDefault();
-                    const target = e.target as unknown as Array<{
-                      value?: { trim?: () => string };
-                    }>;
-                    const newHashtag = target[0].value?.trim?.();
+                    const input = e.currentTarget.elements.item(
+                      0,
+                    ) as HTMLInputElement | null;
+                    const newHashtag = input?.value.trim();
                     // Use includes but need to be case insensitive
                     if (
                       newHashtag &&
