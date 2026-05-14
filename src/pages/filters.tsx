@@ -63,7 +63,7 @@ const FILTER_CONTEXT = [
   'notifications',
   'thread',
   'account',
-] as const;
+] as const satisfies readonly mastodon.v2.FilterContext[];
 type FilterContextName = (typeof FILTER_CONTEXT)[number];
 const FILTER_CONTEXT_UNIMPLEMENTED: readonly FilterContextName[] = [
   'thread',
@@ -79,6 +79,12 @@ const FILTER_CONTEXT_LABELS: Record<
   thread: msg`Conversations`,
   account: msg`Profiles`,
 };
+const FILTER_ACTION = [
+  'warn',
+  'hide',
+  'blur',
+] as const satisfies readonly mastodon.v2.FilterAction[];
+type FilterActionName = (typeof FILTER_ACTION)[number];
 
 const EXPIRY_DURATIONS = [
   0, // forever
@@ -123,10 +129,7 @@ function Filters() {
     const filtersResource = masto.v2.filters as FiltersV2Resource;
     void (async () => {
       try {
-        // The JS treats the awaited value as an array; the typed surface is a
-        // Paginator. The runtime returns the array directly here.
-        const fetchedFilters =
-          (await filtersResource.list()) as unknown as FilterV2[];
+        const fetchedFilters = await filtersResource.list();
         fetchedFilters.sort((a, b) => a.title.localeCompare(b.title));
         fetchedFilters.forEach((filter) => {
           if (filter.keywords?.length) {
@@ -266,6 +269,22 @@ function Filters() {
 let _id = 1;
 const incID = (): number => _id++;
 
+const isFilterContextName = (
+  value: FormDataEntryValue,
+): value is FilterContextName =>
+  typeof value === 'string' &&
+  FILTER_CONTEXT.some((context) => context === value);
+
+const isFilterActionName = (
+  value: FormDataEntryValue | null,
+): value is FilterActionName =>
+  typeof value === 'string' &&
+  FILTER_ACTION.some((filterAction) => filterAction === value);
+
+type FilterKeywordAttribute = NonNullable<
+  mastodon.rest.v2.UpdateFilterParams['keywordsAttributes']
+>[number];
+
 interface FiltersAddEditProps {
   filter?: FilterV2;
   onClose?: (result: FiltersAddEditCloseArg) => void;
@@ -285,7 +304,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
   const hasExpiry = !!expiresAt;
   const expiresAtDate = hasExpiry && new Date(expiresAt);
   const [editKeywords, setEditKeywords] = useState<EditKeyword[]>(
-    (keywords || []) as unknown as EditKeyword[],
+    keywords ?? [],
   );
   const keywordsRef = useRef<HTMLDivElement | null>(null);
 
@@ -330,16 +349,18 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                 'input[name="keyword_attributes[][whole_word]"]',
               ),
             ].map((i) => i.checked);
-            const keywordsAttributes: Array<{
-              id?: string;
-              keyword?: FormDataEntryValue;
-              wholeWord?: boolean;
-              _destroy?: boolean;
-            }> = keywordKeywords.map((k, i) => ({
-              id: (keywordIDs[i] as string) || undefined,
-              keyword: k,
-              wholeWord: keywordWholeWords[i],
-            }));
+            const keywordsAttributes: FilterKeywordAttribute[] =
+              keywordKeywords.map((keyword, i) => {
+                const keywordID = keywordIDs[i];
+                return {
+                  id:
+                    typeof keywordID === 'string' && keywordID
+                      ? keywordID
+                      : undefined,
+                  keyword: typeof keyword === 'string' ? keyword : '',
+                  wholeWord: keywordWholeWords[i],
+                };
+              });
             // if (editMode && keywords?.length) {
             //   // Find which one got deleted and add to keywordsAttributes
             //   keywords.forEach((k) => {
@@ -360,22 +381,31 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
               });
             }
             const contextValue = formData.getAll('context');
-            let expiresIn: string | number | null | FormDataEntryValue =
-              formData.get('expires_in');
+            const filterContext = contextValue.filter(isFilterContextName);
+            const expiresInValue = formData.get('expires_in');
+            let expiresIn: string | number | null =
+              typeof expiresInValue === 'string' ? expiresInValue : null;
             const filterActionValue = formData.get('filter_action');
+            const selectedFilterAction = isFilterActionName(filterActionValue)
+              ? filterActionValue
+              : null;
             console.log({
               title: titleValue,
               keywordIDs,
               keywords: keywordKeywords,
               wholeWords: keywordWholeWords,
               keywordsAttributes,
-              context: contextValue,
+              context: filterContext,
               expiresIn,
-              filterAction: filterActionValue,
+              filterAction: selectedFilterAction,
             });
 
             // Required fields
-            if (!titleValue || !contextValue?.length) {
+            if (
+              typeof titleValue !== 'string' ||
+              !titleValue ||
+              !filterContext.length
+            ) {
               return;
             }
 
@@ -403,26 +433,27 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                     // 0 = Never
                     expiresIn = null;
                   } else {
-                    expiresIn = +(expiresIn as string);
+                    expiresIn = +expiresIn;
                   }
                   filterResult = await filtersResource
                     .$select(id as string)
                     .update({
                       title: titleValue,
-                      context: contextValue,
+                      context: filterContext,
                       expiresIn,
                       keywordsAttributes,
-                      filterAction: filterActionValue,
-                    } as unknown as mastodon.rest.v2.UpdateFilterParams);
+                      filterAction: selectedFilterAction,
+                    });
                 } else {
-                  expiresIn = +(expiresIn as string) || null;
+                  expiresIn =
+                    typeof expiresIn === 'string' ? +expiresIn || null : null;
                   filterResult = await filtersResource.create({
                     title: titleValue,
-                    context: contextValue,
+                    context: filterContext,
                     expiresIn,
                     keywordsAttributes,
-                    filterAction: filterActionValue,
-                  } as unknown as mastodon.rest.v2.CreateFilterParams);
+                    filterAction: selectedFilterAction,
+                  });
                 }
                 console.log({ filterResult });
                 setUIState('default');
