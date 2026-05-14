@@ -65,6 +65,14 @@ interface TextExpanderProps extends Omit<
   keys?: string;
 }
 
+declare module 'preact' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'text-expander': HTMLAttributes<HTMLElement>;
+    }
+  }
+}
+
 const menu = document.createElement('ul');
 menu.role = 'listbox';
 menu.className = 'text-expander-menu';
@@ -420,13 +428,7 @@ function TextExpander(
     };
   }, [onTrigger, t, masto]);
 
-  const TextExpanderTag = 'text-expander' as unknown as 'div';
-  return (
-    <TextExpanderTag
-      ref={textExpanderRef as unknown as Ref<HTMLDivElement>}
-      {...(props as HTMLAttributes<HTMLDivElement>)}
-    />
-  );
+  return <text-expander ref={textExpanderRef} {...props} />;
 }
 
 export default forwardRef(TextExpander);

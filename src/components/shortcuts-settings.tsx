@@ -882,7 +882,7 @@ function ShortcutForm({
                             spellCheck: false,
                             pattern,
                             dir: 'auto',
-                          } as unknown as HTMLAttributes<HTMLInputElement>;
+                          } as HTMLAttributes<HTMLInputElement>;
                           return <input {...inputProps} />;
                         })()}
                         {currentType === 'hashtag' &&

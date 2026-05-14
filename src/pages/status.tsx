@@ -10,7 +10,7 @@ import type {
   ComponentChildren,
   ComponentType,
   CSSProperties,
-  HTMLAttributes,
+  Ref,
   TargetedMouseEvent,
 } from 'preact';
 import { memo } from 'preact/compat';
@@ -511,7 +511,7 @@ function StatusThread({
       (history.length === 1 ||
         ('navigation' in window &&
           (
-            navigation as unknown as {
+            navigation as {
               entries?: () => { length: number };
             }
           )?.entries?.()?.length === 1)),
@@ -2197,21 +2197,12 @@ function SubComments({
     setRenderReplies(shouldRenderReplies);
   }, [shouldRenderReplies]);
 
-  // Cast `Container` to a permissive component type so the shared `detailsRef`
-  // works for both branches without specialising the JSX intrinsic ref.
-  const Container = (open ? 'div' : 'details') as unknown as ComponentType<
-    HTMLAttributes<HTMLElement> & {
-      open?: boolean;
-      onToggle?: (e: Event) => void;
-      'data-comments-level'?: number;
-      'data-comments-level-overflow'?: boolean;
-    }
-  >;
+  const Container = open ? 'div' : 'details';
   const isDetails = !open;
 
   return (
     <Container
-      ref={detailsRef as unknown as HTMLAttributes<HTMLElement>['ref']}
+      ref={detailsRef as Ref<HTMLDetailsElement> & Ref<HTMLDivElement>}
       class="replies"
       open={isDetails ? openBefore || open : undefined}
       onToggle={

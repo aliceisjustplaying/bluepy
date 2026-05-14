@@ -102,8 +102,7 @@ export const _localeMatch = baseLocaleMatch;
 if (typeof window !== 'undefined') {
   // TODO(oxlint:no-underscore-dangle) Intentional debug global; renaming would
   // break existing devtools workflows that rely on `_localeMatch`.
-  (window as unknown as { _localeMatch: typeof _localeMatch })._localeMatch =
-    _localeMatch;
+  Object.assign(window, { _localeMatch });
 }
 
 function cacheMem<Args extends readonly unknown[], Result>(
