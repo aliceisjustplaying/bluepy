@@ -13,7 +13,7 @@ import { REACTIONS_LIMIT } from './status-helpers';
 import type { AnyAccount, AnyStatus, FullMasto } from './status-types';
 
 type CachedStatus = (typeof states.statuses)[string];
-function toCachedStatus(status: mastodon.v1.Status): CachedStatus {
+function toCachedStatus(status: mastodon.v1.Status | AnyStatus): CachedStatus {
   const { account, quote, reblog, url, ...statusFields } = status;
   const cachedStatus: CachedStatus = {
     ...statusFields,
