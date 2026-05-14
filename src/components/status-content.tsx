@@ -174,7 +174,7 @@ export default function StatusContent({
   );
 
   const createdAtDate = new Date(createdAt);
-  const editedAtDate = new Date(editedAt);
+  const editedAtDate = editedAt ? new Date(editedAt) : createdAtDate;
 
   const atproto: StatusAtprotoMeta | undefined = status._atproto;
   const { inReplyToAccount, mentionSelf, showReplyBadge } =

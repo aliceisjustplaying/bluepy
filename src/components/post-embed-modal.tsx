@@ -17,15 +17,15 @@ interface EmojiLike {
 interface MediaAttachment {
   id: string;
   type: string;
-  description?: string;
+  description?: string | null;
   meta?: {
     original?: { width?: number; height?: number };
     small?: { width?: number; height?: number };
   };
-  previewRemoteUrl?: string;
-  previewUrl?: string;
-  remoteUrl?: string;
-  url: string;
+  previewRemoteUrl?: string | null;
+  previewUrl?: string | null;
+  remoteUrl?: string | null;
+  url?: string | null;
 }
 
 interface PostLike {
@@ -42,7 +42,7 @@ interface PostLike {
   poll?: { options?: { title: string; votesCount?: number }[] };
   spoilerText?: string;
   language?: string;
-  editedAt?: string;
+  editedAt?: string | null;
   createdAt?: string;
   content?: string;
   mediaAttachments?: MediaAttachment[];
@@ -287,7 +287,7 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
                 return (
                   <li key={media.id}>
                     <a
-                      href={media.remoteUrl || media.url}
+                      href={media.remoteUrl || media.url || undefined}
                       target="_blank"
                       download
                     >
