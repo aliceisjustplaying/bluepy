@@ -47,6 +47,9 @@ import StatusCompact from './status-compact';
 const EMPTY_MEDIA_ATTACHMENTS: AnyMediaAttachment[] = [];
 Object.freeze(EMPTY_MEDIA_ATTACHMENTS);
 
+type StatusContentMediaAttachment = AnyMediaAttachment &
+  mastodon.v1.MediaAttachment;
+
 interface StatusContentProps extends StatusRouterProps {
   renderStatus: (props: StatusComponentProps) => ComponentChildren;
 }
@@ -140,7 +143,8 @@ export default function StatusContent({
     emojis: _accountEmojis,
     bot,
   } = account || {};
-  const mediaAttachments = statusMediaAttachments || EMPTY_MEDIA_ATTACHMENTS;
+  const mediaAttachments = (statusMediaAttachments ||
+    EMPTY_MEDIA_ATTACHMENTS) as StatusContentMediaAttachment[];
 
   // if (!mediaAttachments?.length) mediaFirst = false;
   const hasMediaAttachments = !!mediaAttachments?.length;
@@ -315,7 +319,7 @@ export default function StatusContent({
     favourited,
     favouritesCount,
     bookmarked,
-    mediaAttachments: mediaAttachments as unknown as mastodon.v1.MediaAttachment[],
+    mediaAttachments,
     createdAt,
   });
 
@@ -429,7 +433,7 @@ export default function StatusContent({
     showMultipleMediaCaptions,
     captionChildren,
   } = useStatusMediaCaptions({
-    mediaAttachments: mediaAttachments as unknown as mastodon.v1.MediaAttachment[],
+    mediaAttachments,
     isSizeLarge,
     language,
   });
@@ -586,7 +590,7 @@ export default function StatusContent({
               states.showAccount = {
                 account: status.account,
                 instance,
-              } as unknown as Record<string, unknown>;
+              };
             }}
           >
             <Avatar
@@ -666,7 +670,7 @@ export default function StatusContent({
             withinContext={withinContext}
             languageAutoDetected={!!languageAutoDetected}
             displayedMediaAttachments={
-              displayedMediaAttachments as unknown as AnyMediaAttachment[]
+              displayedMediaAttachments as StatusContentMediaAttachment[]
             }
             showMultipleMediaCaptions={showMultipleMediaCaptions}
             captionChildren={captionChildren}
