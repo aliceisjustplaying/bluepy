@@ -12,7 +12,12 @@ import { uid } from 'uid/single';
 import { useSnapshot } from 'valtio';
 
 import supportedLanguages from '../data/status-supported-languages.json';
-import { api, getPreferences } from '../utils/api';
+import {
+  api,
+  getMastoV1Resource,
+  getMastoV2Resource,
+  getPreferences,
+} from '../utils/api';
 import {
   fetchAtprotoLinkMetadata,
   getFirstPostURL,
@@ -287,20 +292,16 @@ interface MastoStatusesEditableSelector {
   ): Promise<unknown>;
 }
 
-interface MastoClientShim {
-  v1: { statuses: MastoStatusesEditableSelector };
-  v2: {
-    media: {
-      create(params: Record<string, unknown>): Promise<{ id?: string }>;
-    };
-  };
+interface MastoMediaResource {
+  create(params: Record<string, unknown>): Promise<{ id?: string }>;
 }
 
 type SupportedLanguageEntry = readonly [string, string, string];
 type PreferencesShape = Record<string, unknown>;
 
-const supportedLanguagesList =
-  supportedLanguages as unknown as SupportedLanguageEntry[];
+const supportedLanguagesList: SupportedLanguageEntry[] = supportedLanguages.map(
+  ([code, common, native]) => [code, common, native],
+);
 
 const supportedLanguagesMap = supportedLanguagesList.reduce<
   Record<string, { common: string; native: string }>
@@ -474,7 +475,12 @@ function Compose({
 
   console.warn('RENDER COMPOSER');
   const apiResult = api();
-  const masto = apiResult.masto as unknown as MastoClientShim;
+  const { masto } = apiResult;
+  const statusesEndpoint = getMastoV1Resource<MastoStatusesEditableSelector>(
+    masto,
+    'statuses',
+  );
+  const mediaEndpoint = getMastoV2Resource<MastoMediaResource>(masto, 'media');
   const { instance } = apiResult;
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
@@ -484,12 +490,8 @@ function Compose({
 
   // Original JS treats currentAccount as non-null when reading `.info`;
   // the `?.atproto` / `?.instanceURL` reads are defensive. Mirror that.
-  const currentAccount = useMemo(getCurrentAccount, []) as unknown as {
-    info: AccountInfoLike;
-    instanceURL?: string;
-    atproto?: boolean;
-  };
-  const currentAccountInfo = currentAccount.info;
+  const currentAccount = useMemo(getCurrentAccount, []);
+  const currentAccountInfo = currentAccount!.info;
 
   interface ConfigurationShape {
     statuses?: {
@@ -828,22 +830,21 @@ function Compose({
     };
   }, []);
 
-  // Latest-value refs so the load effect below can read fresh values
-  // (prefs, masto proxy, current account acct) without depending on their
-  // identity (they would otherwise re-run the effect on every render).
+  // Latest-value refs so the load effect below can read fresh values without
+  // depending on identities that would re-run the effect on every render.
   const prefStringRef = useRef(prefString);
   prefStringRef.current = prefString;
   const prefsRef = useRef(prefs);
   prefsRef.current = prefs;
-  const mastoRef = useRef(masto);
-  mastoRef.current = masto;
+  const statusesEndpointRef = useRef(statusesEndpoint);
+  statusesEndpointRef.current = statusesEndpoint;
   const currentAccountAcctRef = useRef(currentAccountInfo.acct);
   currentAccountAcctRef.current = currentAccountInfo.acct;
 
   useEffect(() => {
     const prefStringFn = prefStringRef.current;
     const prefsLocal = prefsRef.current;
-    const mastoLocal = mastoRef.current;
+    const statusesEndpointLocal = statusesEndpointRef.current;
     const currentAcct = currentAccountAcctRef.current;
     if (replyToStatus) {
       // sensitive read here only for parity with the original JS destructure
@@ -936,7 +937,7 @@ function Compose({
       setUIState('loading');
       void (async () => {
         try {
-          const statusSource = await mastoLocal.v1.statuses
+          const statusSource = await statusesEndpointLocal
             .$select(editStatus.id)
             .source.fetch();
           console.log({ statusSource });
@@ -1092,9 +1093,7 @@ function Compose({
   }, [sharedData]);
 
   // focus textarea when state.composerState.minimized turns false
-  const snapStates = useSnapshot(states) as unknown as {
-    composerState: ComposerStateShape;
-  };
+  const snapStates = useSnapshot(states);
   useEffect(() => {
     if (!snapStates.composerState.minimized) {
       focusTextarea();
@@ -1206,9 +1205,7 @@ function Compose({
   };
   const updateCharCount = (): void => {
     const count = getCharCount();
-    (
-      states as unknown as { composerCharacterCount: number }
-    ).composerCharacterCount = count;
+    states.composerCharacterCount = count;
   };
   useEffect(updateCharCount, []);
 
@@ -1268,9 +1265,7 @@ function Compose({
     const ns = getCurrentAccountNS();
     return `${ns}#${UID.current}`;
   };
-  const composerState = (
-    states as unknown as { composerState: ComposerStateShape }
-  ).composerState;
+  const composerState = states.composerState;
   const saveUnsavedDraft = (): void => {
     // Not enabling this for editing status
     // I don't think this warrant a draft mode for a status that's already posted
@@ -1320,12 +1315,7 @@ function Compose({
       !canClose()
     ) {
       console.debug('not equal', backgroundDraft, prevBackgroundDraft.current);
-      (
-        db.drafts as unknown as {
-          set(key: string, value: Record<string, unknown>): Promise<unknown>;
-          del(key: string): Promise<unknown>;
-        }
-      )
+      db.drafts
         .set(key, {
           ...backgroundDraft,
           state: 'unsaved',
@@ -1351,9 +1341,7 @@ function Compose({
     // If unmounted, means user discarded the draft
     // Also means pop-out 🙈, but it's okay because the pop-out will persist the ID and re-create the draft
     return () => {
-      void (db.drafts as unknown as { del(key: string): Promise<unknown> }).del(
-        draftKey(),
-      );
+      void db.drafts.del(draftKey());
     };
   }, []);
 
@@ -1426,11 +1414,8 @@ function Compose({
   >(() => {
     const topLanguages: SupportedLanguageEntry[] = [];
     const restLanguages: SupportedLanguageEntry[] = [];
-    const settings = states.settings as unknown as {
-      contentTranslationHideLanguages?: string[];
-    };
     const contentTranslationHideLanguages =
-      settings.contentTranslationHideLanguages ?? [];
+      states.settings.contentTranslationHideLanguages ?? [];
     supportedLanguagesList.forEach((l) => {
       const [code] = l;
       if (
@@ -1558,7 +1543,7 @@ function Compose({
             // />
             <AccountBlock
               account={currentAccountInfo}
-              accountInstance={currentAccount.instanceURL}
+              accountInstance={currentAccount!.instanceURL}
               hideDisplayName
               useAvatarStatic
             />
@@ -1889,7 +1874,7 @@ function Compose({
                         file: fileObj,
                         description,
                       });
-                      return masto.v2.media.create(params).then((res) => {
+                      return mediaEndpoint.create(params).then((res) => {
                         if (res.id) {
                           attachment.id = res.id;
                         }
@@ -1988,7 +1973,7 @@ function Compose({
 
                 let newStatus: unknown;
                 if (editStatus) {
-                  newStatus = await masto.v1.statuses
+                  newStatus = await statusesEndpoint
                     .$select(editStatus.id)
                     .update(params);
                   saveStatus(
@@ -2000,7 +1985,7 @@ function Compose({
                   );
                 } else {
                   try {
-                    newStatus = await masto.v1.statuses.create(params, {
+                    newStatus = await statusesEndpoint.create(params, {
                       requestInit: {
                         headers: {
                           'Idempotency-Key': UID.current,
@@ -2009,7 +1994,7 @@ function Compose({
                     });
                   } catch {
                     // If idempotency key fails, try again without it
-                    newStatus = await masto.v1.statuses.create(params);
+                    newStatus = await statusesEndpoint.create(params);
                   }
                 }
                 composerState.minimized = false;
