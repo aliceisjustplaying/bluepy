@@ -51,9 +51,9 @@ export default function useStatusMediaCaptions({
     return attachments.map(({ media, indices }) => {
       const handleAltClick = () => {
         states.showMediaAlt = {
-          alt: media.description as string,
-          lang: language as string | undefined,
-        } as unknown as Record<string, unknown>;
+          alt: media.description,
+          lang: language ?? undefined,
+        };
       };
       return (
         <button

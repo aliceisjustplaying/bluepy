@@ -13,6 +13,21 @@ import Icon from './icon';
 import MenuConfirm from './menu-confirm';
 import type { StatusMenuPartsArgs } from './status-menu-types';
 
+type SaveableStatus = Parameters<typeof saveStatus>[0];
+function toSaveableStatus(status: mastodon.v1.Status): SaveableStatus {
+  const { account, quote, reblog, url, ...statusFields } = status;
+  const saveableStatus: SaveableStatus = {
+    ...statusFields,
+    account: account ? { ...account } : account,
+    reblog: reblog ? toSaveableStatus(reblog) : reblog,
+  };
+  return Object.assign(
+    saveableStatus,
+    quote === undefined ? {} : { quote },
+    url === undefined ? {} : { url },
+  );
+}
+
 type StatusAccountMenuProps = Pick<
   StatusMenuPartsArgs,
   | 'isSelf'
@@ -70,7 +85,7 @@ export default function StatusAccountMenu({
               const newStatus = await (muted
                 ? stmtAction.unmute()
                 : stmtAction.mute());
-              saveStatus(newStatus as unknown as Record<string, unknown>, instance);
+              saveStatus(toSaveableStatus(newStatus), instance);
               showToast(muted ? t`Conversation unmuted` : t`Conversation muted`);
             } catch (e) {
               console.error(e);
@@ -106,7 +121,7 @@ export default function StatusAccountMenu({
             try {
               const stmtAction = masto.v1.statuses.$select(id);
               const newStatus = await (pinned ? stmtAction.unpin() : stmtAction.pin());
-              saveStatus(newStatus as unknown as Record<string, unknown>, instance);
+              saveStatus(toSaveableStatus(newStatus), instance);
               showToast(
                 pinned ? t`Post unpinned from profile` : t`Post pinned to profile`,
               );

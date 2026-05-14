@@ -296,8 +296,7 @@ function AccountInfo({
           setUIState('error');
           return;
         }
-        states.accounts[`${result.id}@${instance}`] =
-          result as unknown as Record<string, unknown>;
+        states.accounts[`${result.id}@${instance}`] = { ...result };
         setInfo(result);
         setUIState('default');
       } catch (e) {
@@ -533,8 +532,7 @@ function AccountInfo({
       if (newAccount.id === id) {
         console.log('Updated account info', newAccount);
         setInfo(newAccount);
-        states.accounts[`${newAccount.id}@${instance}`] =
-          newAccount as unknown as Record<string, unknown>;
+        states.accounts[`${newAccount.id}@${instance}`] = { ...newAccount };
       }
     },
     [id, instance],

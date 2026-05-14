@@ -12,6 +12,21 @@ import supports from '../utils/supports';
 import { REACTIONS_LIMIT } from './status-helpers';
 import type { AnyAccount, AnyStatus, FullMasto } from './status-types';
 
+type CachedStatus = (typeof states.statuses)[string];
+function toCachedStatus(status: mastodon.v1.Status): CachedStatus {
+  const { account, quote, reblog, url, ...statusFields } = status;
+  const cachedStatus: CachedStatus = {
+    ...statusFields,
+    account: account ? { ...account } : account,
+    reblog: reblog ? toCachedStatus(reblog) : reblog,
+  };
+  return Object.assign(
+    cachedStatus,
+    quote === undefined ? {} : { quote },
+    url === undefined ? {} : { url },
+  );
+}
+
 type ReplyEvent =
   | (MouseEvent & { syntheticEvent?: { shiftKey?: boolean } })
   | (KeyboardEvent & { syntheticEvent?: { shiftKey?: boolean } })
@@ -98,22 +113,22 @@ export default function useStatusInteractions({
       return false;
     }
     try {
-      states.statuses[sKey] = {
+      states.statuses[sKey] = toCachedStatus({
         ...status,
         reblogged: !reblogged,
         reblogsCount: reblogsCount + (reblogged ? -1 : 1),
-      } as unknown as Record<string, unknown>;
+      });
       if (reblogged) {
         const newStatus = await masto.v1.statuses.$select(id).unreblog();
-        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
+        saveStatus(toCachedStatus(newStatus), instance);
       } else {
         const newStatus = await masto.v1.statuses.$select(id).reblog();
-        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
+        saveStatus(toCachedStatus(newStatus), instance);
       }
       return true;
     } catch (e) {
       console.error(e);
-      states.statuses[sKey] = status as unknown as Record<string, unknown>;
+      states.statuses[sKey] = toCachedStatus(status);
       return false;
     }
   };
@@ -124,22 +139,22 @@ export default function useStatusInteractions({
       return false;
     }
     try {
-      states.statuses[sKey] = {
+      states.statuses[sKey] = toCachedStatus({
         ...status,
         favourited: !favourited,
         favouritesCount: favouritesCount + (favourited ? -1 : 1),
-      } as unknown as Record<string, unknown>;
+      });
       if (favourited) {
         const newStatus = await masto.v1.statuses.$select(id).unfavourite();
-        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
+        saveStatus(toCachedStatus(newStatus), instance);
       } else {
         const newStatus = await masto.v1.statuses.$select(id).favourite();
-        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
+        saveStatus(toCachedStatus(newStatus), instance);
       }
       return true;
     } catch (e) {
       console.error(e);
-      states.statuses[sKey] = status as unknown as Record<string, unknown>;
+      states.statuses[sKey] = toCachedStatus(status);
       return false;
     }
   };
@@ -167,21 +182,21 @@ export default function useStatusInteractions({
       return false;
     }
     try {
-      states.statuses[sKey] = {
+      states.statuses[sKey] = toCachedStatus({
         ...status,
         bookmarked: !bookmarked,
-      } as unknown as Record<string, unknown>;
+      });
       if (bookmarked) {
         const newStatus = await masto.v1.statuses.$select(id).unbookmark();
-        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
+        saveStatus(toCachedStatus(newStatus), instance);
       } else {
         const newStatus = await masto.v1.statuses.$select(id).bookmark();
-        saveStatus(newStatus as unknown as Record<string, unknown>, instance);
+        saveStatus(toCachedStatus(newStatus), instance);
       }
       return true;
     } catch (e) {
       console.error(e);
-      states.statuses[sKey] = status as unknown as Record<string, unknown>;
+      states.statuses[sKey] = toCachedStatus(status);
       return false;
     }
   };
