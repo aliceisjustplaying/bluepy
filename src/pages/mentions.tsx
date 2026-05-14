@@ -34,6 +34,21 @@ interface ConversationLike {
 
 type StatusLike = mastodon.v1.Status;
 
+interface SaveStatusPayload extends Record<string, unknown> {
+  id?: string;
+  account?: Record<string, unknown> & { id?: string };
+  reblog?: SaveStatusPayload | null;
+  quote?: SaveStatusPayload | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusPayload | null;
+}
+
+function toSaveStatus(
+  status: StatusLike | null | undefined,
+): SaveStatusPayload | null | undefined {
+  return status as SaveStatusPayload | null | undefined;
+}
+
 interface MastoNotificationsApi {
   list(options: { limit: number; types?: string[]; since_id?: string }): {
     values(): AsyncIterator<NotificationLike[]>;
@@ -127,10 +142,7 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
       }
 
       value.forEach(({ status: item }) => {
-        saveStatus(
-          item as unknown as Parameters<typeof saveStatus>[0],
-          instance,
-        );
+        saveStatus(toSaveStatus(item), instance);
       });
 
       let statuses: (mastodon.v1.Status | null | undefined)[] = value.map(
@@ -191,10 +203,7 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
       }
 
       value.forEach(({ lastStatus: item }) => {
-        saveStatus(
-          item as unknown as Parameters<typeof saveStatus>[0],
-          instance,
-        );
+        saveStatus(toSaveStatus(item), instance);
       });
 
       let statuses: (mastodon.v1.Status | null | undefined)[] = value.map(

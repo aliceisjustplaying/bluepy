@@ -52,6 +52,36 @@ interface HomeTimelineResource {
   list(options: { limit: number }): HomeIterable;
 }
 
+interface SaveStatusInput {
+  id?: string;
+  account?: { id?: string } | null;
+  reblog?: SaveStatusInput | null;
+  quote?: SaveStatusInput | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusInput | null;
+  inReplyToId?: string | null;
+  inReplyToAccountId?: string | null;
+  _pinned?: unknown;
+}
+
+interface SaveStatusPayload extends Record<string, unknown> {
+  id?: string;
+  account?: Record<string, unknown> & { id?: string };
+  reblog?: SaveStatusPayload | null;
+  quote?: SaveStatusPayload | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusPayload | null;
+  inReplyToId?: string | null;
+  inReplyToAccountId?: string | null;
+  _pinned?: unknown;
+}
+
+function toSaveStatus(
+  status: SaveStatusInput | null | undefined,
+): SaveStatusPayload | null | undefined {
+  return status as SaveStatusPayload | null | undefined;
+}
+
 const LIMIT = 20;
 
 function Following({ title, path, id, ...props }: FollowingProps) {
@@ -129,10 +159,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
 
       // value = filteredItems(value, 'home');
       value.forEach((item: mastodon.v1.Status) => {
-        saveStatus(
-          item as unknown as Parameters<typeof saveStatus>[0],
-          instance,
-        );
+        saveStatus(toSaveStatus(item), instance);
       });
       value = dedupeBoosts(value, instance);
       if (firstLoad && latestItemChanged) clearFollowedTagsState();
@@ -203,11 +230,9 @@ function Following({ title, path, id, ...props }: FollowingProps) {
         for await (const entry of sub) {
           if (!sub) break;
           if (entry.event === 'status.update') {
-            const status = entry.payload as NonNullable<
-              Parameters<typeof saveStatus>[0]
-            >;
+            const status = entry.payload as SaveStatusInput;
             console.log(`🔄 Status ${status.id} updated`);
-            saveStatus(status, instance);
+            saveStatus(toSaveStatus(status), instance);
           } else if (entry.event === 'delete') {
             const statusID = entry.payload as string;
             console.log(`❌ Status ${statusID} deleted`);
