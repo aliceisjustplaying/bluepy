@@ -1,7 +1,7 @@
 import type { RefObject } from 'preact';
 import { useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { useLongPress } from 'use-long-press';
+import { LongPressEventType, useLongPress } from 'use-long-press';
 
 import { supportsNativeQuote } from '../utils/quote-utils';
 import showCompose from '../utils/show-compose';
@@ -107,9 +107,9 @@ export default function useStatusContextMenu({
     {
       threshold: 600,
       captureEvent: true,
-      detect: 'touch',
+      detect: LongPressEventType.Touch,
       cancelOnMovement: 2,
-    } as unknown as Parameters<typeof useLongPress>[1],
+    },
   );
 
   const hotkeysEnabled = !readOnly && !previewMode && !quoted;

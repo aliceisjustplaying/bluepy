@@ -105,7 +105,7 @@ export default function StatusModals({
               setShowQuoteSettings(false);
               states.reloadStatusPage++;
             }}
-            post={status as unknown as QuoteSettingsPost}
+            post={status as QuoteSettingsPost}
             currentPolicy={postQuoteApprovalPolicy}
             renderStatus={renderStatus}
           />

@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { ComponentChildren, HTMLAttributes, RefObject } from 'preact';
 import { useState } from 'preact/hooks';
-import { useLongPress } from 'use-long-press';
+import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
 import states, { statusKey } from '../utils/states';
@@ -63,9 +63,9 @@ export default function FilteredStatus({
     {
       threshold: 600,
       captureEvent: true,
-      detect: 'touch',
+      detect: LongPressEventType.Touch,
       cancelOnMovement: 2, // true allows movement of up to 25 pixels
-    } as unknown as Parameters<typeof useLongPress>[1],
+    },
   );
 
   const statusPeekRef = useTruncated() as RefObject<HTMLAnchorElement>;
