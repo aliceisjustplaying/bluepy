@@ -69,7 +69,7 @@ export default function useStatusQuotePolicy({
     quoteMetaText,
     canQuote: supportsNativeQuote() && !quoteDisabled,
     postQuoteApprovalPolicy: getPostQuoteApprovalPolicy(
-      quoteApproval as unknown as Record<string, unknown> | null | undefined,
+      quoteApproval ? { ...quoteApproval } : quoteApproval,
     ),
     quoteApprovalPolicyMessages,
   };

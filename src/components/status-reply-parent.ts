@@ -82,7 +82,7 @@ export default function useStatusReplyParent({
         .then((fetchedAccount: unknown) => {
           const acc = fetchedAccount as AnyAccount;
           setInReplyToAccount(acc);
-          states.accounts[acc.id] = acc as unknown as Record<string, unknown>;
+          states.accounts[acc.id] = { ...acc };
           return undefined;
         })
         .catch((_e: unknown) => {
