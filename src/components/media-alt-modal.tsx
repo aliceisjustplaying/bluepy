@@ -19,11 +19,13 @@ import TranslationBlock from './translation-block';
 // try/catch handles that. Cast to a permissive signature reflecting both
 // realities so we can keep matching the existing call shape without churning
 // the rest of the codebase in this batch.
-const localeMatch = localeMatchDefault as unknown as (
+type OptionalDefaultLocaleMatch = (
   requestedLocales: readonly string[],
   availableLocales: readonly (string | false)[],
   defaultLocale?: string,
 ) => string | false;
+
+const localeMatch = localeMatchDefault as OptionalDefaultLocaleMatch;
 
 const FORCE_TRANSLATE_LIMIT = 140;
 

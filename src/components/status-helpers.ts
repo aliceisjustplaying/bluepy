@@ -12,7 +12,6 @@ import pmem from '../utils/pmem';
 import type {
   AnyPoll,
   AnyStatus,
-  FullMasto,
   MastoClientFromApi,
 } from './status-types';
 
@@ -26,11 +25,23 @@ export const { DEV } = import.meta.env;
 // `defaultLocale`). The wrapper catches the resulting throw and returns
 // `false`. Cast to a permissive signature reflecting that reality so we can
 // keep matching the existing call shape without churning the wrapper.
-const localeMatch = localeMatchDefault as unknown as (
+type OptionalDefaultLocaleMatch = (
   requestedLocales: readonly string[],
   availableLocales: readonly (string | false)[],
   defaultLocale?: string,
 ) => string | false;
+
+const localeMatch = localeMatchDefault as OptionalDefaultLocaleMatch;
+
+type AccountFetchClient = MastoClientFromApi & {
+  readonly v1: MastoClientFromApi['v1'] & {
+    readonly accounts: MastoClientFromApi['v1']['accounts'] & {
+      readonly $select: (id: string) => {
+        readonly fetch: () => Promise<mastodon.v1.Account>;
+      };
+    };
+  };
+};
 
 const accountQueue = new PQueue({
   concurrency: 1,
@@ -44,7 +55,7 @@ function fetchAccount(
   signal?: AbortSignal,
 ) {
   return accountQueue.add(
-    () => (masto as unknown as FullMasto).v1.accounts.$select(id).fetch(),
+    () => (masto as AccountFetchClient).v1.accounts.$select(id).fetch(),
     { signal },
   );
 }
