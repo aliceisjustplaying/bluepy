@@ -24,14 +24,18 @@ import { useSearchParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 import { subscribeKey } from 'valtio/utils';
 
-import AccountBlock from '../components/account-block';
+import AccountBlock, {
+  type AccountBlockProps,
+} from '../components/account-block';
 import FollowRequestButtons from '../components/follow-request-buttons';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
 import Modal from '../components/modal';
 import NavMenu from '../components/nav-menu';
-import Notification from '../components/notification';
+import Notification, {
+  type NotificationProps,
+} from '../components/notification';
 import StatusComponent, {
   type StatusComponentProps,
 } from '../components/status';
@@ -81,7 +85,9 @@ function Status(props: {
 // from `getGroupedNotifications` which returns the union of the v1/v2 group
 // outputs from `group-notifications.ts`. The page reads many fields off
 // these without narrowing; mirror that with an open index signature.
-interface NotificationLike {
+type AccountBlockAccount = NonNullable<AccountBlockProps['account']>;
+
+type NotificationLike = NotificationProps['notification'] & {
   id?: string;
   type?: string;
   createdAt?: string;
@@ -90,13 +96,13 @@ interface NotificationLike {
   _ids?: string;
   annualReport?: { year?: string | number };
   [key: string]: unknown;
-}
+};
 
 // Shape of a notification request entry from the v1 endpoint. Loose because
 // `masto.v1.notifications` is typed as `unknown` in our local masto shim.
 interface NotificationRequestLike {
   id: string;
-  account: {
+  account: AccountBlockAccount & {
     id: string;
     username?: string;
     [key: string]: unknown;
@@ -115,6 +121,9 @@ interface NotificationRequestLike {
 interface MastoV2NotificationsListIterable {
   values(): AsyncIterableIterator<unknown>;
 }
+interface MastoV1NotificationsListResult
+  extends MastoV2NotificationsListIterable,
+    PromiseLike<NotificationLike[] | undefined> {}
 interface MastoV2NotificationsApi {
   list(opts: {
     limit: number;
@@ -139,7 +148,7 @@ interface MastoV1NotificationsApi {
   list(opts?: {
     limit?: number;
     [key: string]: unknown;
-  }): MastoV2NotificationsListIterable;
+  }): MastoV1NotificationsListResult;
   requests: MastoV1NotificationsRequestsApi;
 }
 
@@ -231,11 +240,11 @@ export function getGroupedNotifications(
   if (memSupportsGroupedNotifications()) {
     return groupNotifications2(
       notifications as Parameters<typeof groupNotifications2>[0],
-    ) as unknown as NotificationLike[];
+    ) as NotificationLike[];
   } else {
     return groupNotifications(
       notifications as Parameters<typeof groupNotifications>[0],
-    ) as unknown as NotificationLike[];
+    ) as NotificationLike[];
   }
 }
 
@@ -291,7 +300,7 @@ function Notifications({ columnMode }: NotificationsProps) {
   });
   const hiddenUI = scrollDirection === 'end' && !nearReachStart;
   const [followRequests, setFollowRequests] = useState<
-    { id: string; [key: string]: unknown }[]
+    NotificationRequestLike['account'][]
   >([]);
   const [announcements, setAnnouncements] = useState<AnnouncementLike[]>([]);
 
@@ -414,7 +423,7 @@ function Notifications({ columnMode }: NotificationsProps) {
       const followRequestsApi = masto.v1.followRequests as {
         list(opts: {
           limit: number;
-        }): Promise<{ id: string; [key: string]: unknown }[]>;
+        }): Promise<NotificationRequestLike['account'][]>;
       };
       return await followRequestsApi.list({
         limit: 80,
@@ -831,9 +840,7 @@ function Notifications({ columnMode }: NotificationsProps) {
         let prevItem = allItems[activeItemIndex - 1];
         if (prevItem) {
           prevItem.focus();
-          prevItem.scrollIntoView(
-            scrollIntoViewOptions as unknown as ScrollIntoViewOptions,
-          );
+          prevItem.scrollIntoView(scrollIntoViewOptions);
         }
       } else {
         const topmostItem = allItems.find((item) => {
@@ -1065,13 +1072,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                 <ul>
                   {followRequests.map((account) => (
                     <li key={account.id}>
-                      <AccountBlock
-                        account={
-                          account as unknown as Parameters<
-                            typeof AccountBlock
-                          >[0]['account']
-                        }
-                      />
+                      <AccountBlock account={account} />
                       <FollowRequestButtons
                         accountID={account.id}
                         onChange={() => {
@@ -1087,13 +1088,7 @@ function Notifications({ columnMode }: NotificationsProps) {
               <ul>
                 {followRequests.map((account) => (
                   <li key={account.id}>
-                    <AccountBlock
-                      account={
-                        account as unknown as Parameters<
-                          typeof AccountBlock
-                        >[0]['account']
-                      }
-                    />
+                    <AccountBlock account={account} />
                     <FollowRequestButtons
                       accountID={account.id}
                       onChange={() => {
@@ -1147,11 +1142,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                                   <AccountBlock
                                     useAvatarStatic
                                     showStats
-                                    account={
-                                      request.account as unknown as Parameters<
-                                        typeof AccountBlock
-                                      >[0]['account']
-                                    }
+                                    account={request.account}
                                   />
                                 )}
                                 {request.lastStatus?.id && (
@@ -1191,13 +1182,7 @@ function Notifications({ columnMode }: NotificationsProps) {
         {annualReportNotification && (
           <div class="shazam-container">
             <div class="shazam-container-inner">
-              <Notification
-                notification={
-                  annualReportNotification as unknown as Parameters<
-                    typeof Notification
-                  >[0]['notification']
-                }
-              />
+              <Notification notification={annualReportNotification} />
             </div>
           </div>
         )}
@@ -1277,11 +1262,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                     )}
                     <Notification
                       instance={instance}
-                      notification={
-                        notification as unknown as Parameters<
-                          typeof Notification
-                        >[0]['notification']
-                      }
+                      notification={notification}
                       key={notification._ids || notification.id}
                     />
                   </Fragment>
@@ -1564,10 +1545,7 @@ function NotificationRequestModalButton({
       // `masto.v1.notifications.list(...)` directly without `.values()`.
       // The masto paginator returns a thenable-ish object; awaiting it
       // resolves to the first-page array. Mirror that runtime contract.
-      const notifs =
-        (await (fetchNotficationsByAccount(
-          request.account.id,
-        ) as unknown as Promise<NotificationLike[] | undefined>)) || [];
+      const notifs = (await fetchNotficationsByAccount(request.account.id)) || [];
       setNotifications(notifs);
       setUIState('default');
     })();
@@ -1639,11 +1617,7 @@ function NotificationRequestModalButton({
                   >
                     <Notification
                       instance={instance}
-                      notification={
-                        notification as unknown as Parameters<
-                          typeof Notification
-                        >[0]['notification']
-                      }
+                      notification={notification}
                       isStatic
                     />
                   </div>
