@@ -82,9 +82,8 @@ function MediaPost({
     const fromID = statusID ? snapStates.statuses[statusID] : undefined;
     // Snapshot returns a readonly view of the proxy. Mirror the JS behavior
     // by allowing the resolved status to be reassigned into our local
-    // mutable view via the unknown-to-mutable shim used elsewhere in this
-    // file. Narrower `Status` typing lives with the `states.ts` work.
-    status = (fromSKey || fromID) as unknown as StatusLike | undefined;
+    // mutable view. Narrower `Status` typing lives with the `states.ts` work.
+    status = (fromSKey || fromID) as StatusLike | undefined;
     sKey = statusKey(status?.id, instance);
   }
   if (!status) {

@@ -35,6 +35,13 @@ const revealableUnfulfilledStates = new Set([
   'blocked_domain',
   'muted_account',
 ]);
+type StaticUnfulfilledState =
+  | 'filterHidden'
+  | 'pending'
+  | 'deleted'
+  | 'unauthorized'
+  | 'rejected'
+  | 'revoked';
 const unfulfilledText = {
   filterHidden: msg`Post hidden by your filters`,
   pending: msg`Post pending`,
@@ -96,12 +103,10 @@ const QuoteStatus = memo(
 
     const isStaticQuote = !!q.quoteStatus;
     const quoteStatusKey = statusKey(q.id, q.instance);
-    const quoteStatus = ((quoteStatusKey
-      ? snapStates.statuses[quoteStatusKey]
-      : undefined) || q.quoteStatus) as unknown as
-      | AnyStatus
-      | null
-      | undefined;
+    const quoteStatus =
+      ((quoteStatusKey
+        ? snapStates.statuses[quoteStatusKey]
+        : undefined) as AnyStatus | undefined) || q.quoteStatus;
     if (quoteStatus) {
       const isSelf =
         currentAccount && currentAccount === quoteStatus.account?.id;
@@ -153,9 +158,7 @@ const QuoteStatus = memo(
         }
       } else {
         message = _(
-          unfulfilledText[
-            unfulfilledState as keyof typeof unfulfilledText
-          ] as unknown as Parameters<typeof _>[0],
+          unfulfilledText[unfulfilledState as StaticUnfulfilledState],
         );
       }
 
