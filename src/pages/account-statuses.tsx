@@ -19,7 +19,7 @@ import { toUnicode as punycodeToUnicode } from 'punycode/';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
-import AccountInfo from '../components/account-info';
+import AccountInfo, { type AccountInfoShape } from '../components/account-info';
 import AccountInfoMini from '../components/account-info-mini';
 import EmojiText from '../components/emoji-text';
 import Icon from '../components/icon';
@@ -47,6 +47,7 @@ import useTitle from '../utils/useTitle';
 type Status = mastodon.v1.Status;
 type Account = mastodon.v1.Account;
 type FeaturedTag = mastodon.v1.FeaturedTag;
+type SaveStatusInput = NonNullable<Parameters<typeof saveStatus>[0]>;
 
 interface PinnedGroup {
   id: string[];
@@ -75,6 +76,23 @@ type SearchParamsUpdater =
 const LIMIT = 20;
 const MIN_YEAR = 1983;
 const MIN_YEAR_MONTH = `${MIN_YEAR}-01`; // Birth of the Internet
+
+function stateStatus<T extends mastodon.v1.Status>(
+  status: T,
+): T & SaveStatusInput {
+  return status as T & SaveStatusInput;
+}
+
+function isAccountInfoShape(account: unknown): account is AccountInfoShape {
+  return (
+    !!account &&
+    typeof account === 'object' &&
+    typeof (account as { id?: unknown }).id === 'string' &&
+    typeof (account as { username?: unknown }).username === 'string' &&
+    typeof (account as { acct?: unknown }).acct === 'string' &&
+    typeof (account as { url?: unknown }).url === 'string'
+  );
+}
 
 const supportsInputMonth = mem(() => {
   try {
@@ -250,7 +268,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       if (searchResults?.statuses?.length) {
         const value = searchResults.statuses.slice(0, LIMIT);
         value.forEach((item) => {
-          saveStatus(item as unknown as Record<string, unknown>, instance);
+          saveStatus(stateStatus(item), instance);
         });
         const done = searchResults.statuses.length <= LIMIT;
         return { value, done };
@@ -275,7 +293,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         .next();
       if (value?.length && !tagged && !media) {
         const pinnedStatuses = value.map((status: Status) => {
-          saveStatus(status as unknown as Record<string, unknown>, instance);
+          saveStatus(stateStatus(status), instance);
           return {
             ...status,
             _pinned: true,
@@ -345,7 +363,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       results.push(...value);
 
       value.forEach((item: Status) => {
-        saveStatus(item as unknown as Record<string, unknown>, instance);
+        saveStatus(stateStatus(item), instance);
       });
     }
     return {
@@ -451,7 +469,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         ) : (
           <AccountInfo
             instance={instance}
-            account={(cachedAccount as unknown as Account) || (id as string)}
+            account={isAccountInfoShape(cachedAccount) ? cachedAccount : id}
             fetchAccount={refetchAccount}
             authenticated={authenticated}
             standalone
