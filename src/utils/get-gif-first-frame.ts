@@ -1,5 +1,18 @@
 import { decompressFrames, parseGIF } from 'gifuct-js';
 
+function imageDataBytes(
+  patch: Uint8ClampedArray,
+): Uint8ClampedArray<ArrayBuffer> {
+  if (patch.buffer instanceof ArrayBuffer) {
+    return new Uint8ClampedArray(
+      patch.buffer,
+      patch.byteOffset,
+      patch.byteLength,
+    );
+  }
+  return new Uint8ClampedArray(patch);
+}
+
 export async function getGifFirstFrame(gifUrl: string): Promise<string | null> {
   try {
     const response = await fetch(gifUrl);
@@ -19,11 +32,7 @@ export async function getGifFirstFrame(gifUrl: string): Promise<string | null> {
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
-    const imageData = new ImageData(
-      patch as unknown as Uint8ClampedArray<ArrayBuffer>,
-      width,
-      height,
-    );
+    const imageData = new ImageData(imageDataBytes(patch), width, height);
     ctx.putImageData(imageData, 0, 0);
 
     const blob = await new Promise<Blob | null>((resolve) => {

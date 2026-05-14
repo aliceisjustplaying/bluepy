@@ -7,12 +7,24 @@ import states, { statusKey } from '../utils/states';
 
 const HTTP_REGEX = /^http/i;
 
+interface EmojiEntry {
+  shortcode?: string;
+  url?: string;
+  staticUrl?: string;
+}
+
+interface MentionLike {
+  url?: string;
+  acct?: string;
+  username?: string;
+}
+
 interface PostContentPost {
   id?: string;
   content?: string;
-  emojis?: unknown[];
+  emojis?: EmojiEntry[];
   language?: string;
-  mentions?: unknown[];
+  mentions?: MentionLike[];
   url?: string;
   [key: string]: unknown;
 }
@@ -23,19 +35,18 @@ interface PostContentProps {
   previewMode?: boolean;
 }
 
-// `enhanceContent` and `handleContentLinks` are still untyped JS. Shim their
-// signatures locally; the next batch that types those modules removes these
-// casts.
-const enhanceContentT = enhanceContent as unknown as (
+type EnhanceContentDOM = HTMLDivElement | DocumentFragment;
+
+function enhanceContentDOM(
   content: string | undefined,
-  opts: { emojis?: unknown[]; returnDOM?: boolean },
-) => (Element | DocumentFragment) & {
-  querySelectorAll: Element['querySelectorAll'];
-  cloneNode: Node['cloneNode'];
-};
-const handleContentLinksT = handleContentLinks as unknown as (
-  opts: Record<string, unknown>,
-) => (e: MouseEvent) => void;
+  opts: { emojis?: readonly EmojiEntry[]; returnDOM: true },
+): EnhanceContentDOM {
+  const dom = enhanceContent(content, opts);
+  if (typeof dom === 'string') {
+    throw new TypeError('Expected enhanceContent to return DOM');
+  }
+  return dom;
+}
 
 const PostContent =
   /*memo(*/
@@ -70,7 +81,7 @@ const PostContent =
     const emojisLength = emojis?.length;
     useLayoutEffect(() => {
       if (!divRef.current) return;
-      const dom = enhanceContentT(content, {
+      const dom = enhanceContentDOM(content, {
         emojis: emojisRef.current,
         returnDOM: true,
       });
@@ -114,7 +125,7 @@ const PostContent =
         lang={language}
         dir="auto"
         class="inner-content"
-        onClick={handleContentLinksT({
+        onClick={handleContentLinks({
           mentions,
           instance,
           previewMode,
