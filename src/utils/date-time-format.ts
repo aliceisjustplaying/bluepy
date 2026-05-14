@@ -2,6 +2,15 @@ import { clearDtfLocaleCache, getDtfLocale } from './dtf-locale';
 import localeMatch from './locale-match';
 import mem from './mem';
 
+type NullableRequestedLocaleMatch = (
+  requestedLocales: readonly (string | null | undefined)[],
+  availableLocales: readonly string[],
+  defaultLocale: string,
+) => string | false;
+
+const localeMatchWithNullableRequested =
+  localeMatch as NullableRequestedLocaleMatch;
+
 interface LocaleLike {
   language: string;
   region: string | null;
@@ -84,12 +93,12 @@ const createDateTimeFormat = (
         } as Intl.LocaleOptions)?.toString()
       : null;
 
-  const matchedLocale = localeMatch(
+  const matchedLocale = localeMatchWithNullableRequested(
     [
       userRegionLocale,
       locale,
       locale?.replace(/-[a-z]+$/i, ''),
-    ] as unknown as readonly string[],
+    ],
     locales,
     locale,
   );

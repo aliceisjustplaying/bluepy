@@ -4,16 +4,15 @@ import { getDtfLocale } from './dtf-locale';
 import localeMatch from './locale-match';
 import states from './states';
 
-// Preserve the original JS shape: values in `languages.tl` are strings, but the
-// existing code destructures `{ name }` from each one (yielding `undefined`).
-// `name` is unused downstream — only `code` is — so we keep the bug as-is and
-// type the entry value as `{ name: string }` to match the runtime destructure.
-const translationTargetLanguages = Object.entries(
-  languages.tl as unknown as Record<string, { name: string }>,
-).map(([code, { name }]) => ({
-  code,
-  name,
-}));
+// Original JS destructured `{ name }` from string values, so `name` stayed
+// undefined. Only `code` is used for locale matching.
+const translationLanguageNames = languages.tl as Record<string, string>;
+const translationTargetLanguages = Object.keys(translationLanguageNames).map(
+  (code) => ({
+    code,
+    name: undefined,
+  }),
+);
 
 const locales = [...navigator.languages];
 const dtfLocale = getDtfLocale();

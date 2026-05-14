@@ -24,9 +24,11 @@ const langFileMaps: Record<string, string> = {
 interface LocaleTextInfo {
   direction: 'ltr' | 'rtl';
 }
-interface LocaleCompat {
-  getTextInfo?: () => LocaleTextInfo;
-  textInfo: LocaleTextInfo;
+
+function hasTextInfo(
+  locale: object,
+): locale is { readonly textInfo: LocaleTextInfo } {
+  return 'textInfo' in locale;
 }
 
 i18n.load(DEFAULT_LANG, messages);
@@ -37,8 +39,11 @@ i18n.on('change', () => {
     document.documentElement.lang = lang;
     // LTR or RTL
     try {
-      const loc = new Locale(lang) as unknown as LocaleCompat;
-      const { direction } = loc.getTextInfo?.() || loc.textInfo;
+      const loc = new Locale(lang);
+      const textInfo =
+        loc.getTextInfo?.() || (hasTextInfo(loc) ? loc.textInfo : undefined);
+      if (!textInfo) throw new TypeError('Locale textInfo unavailable');
+      const { direction } = textInfo;
       document.documentElement.dir = direction;
     } catch (e) {
       console.error(e);
@@ -78,10 +83,12 @@ export function initActivateLang() {
   // resulting TypeError (defaultLocale required) and returns `false`, which
   // activateLang then treats as falsy and falls back to DEFAULT_LANG.
   // Preserve that exact two-arg call shape via a narrowed type assertion.
-  const localeMatchTwoArg = localeMatch as unknown as (
+  type OptionalDefaultLocaleMatch = (
     requested: readonly string[],
     available: readonly string[],
+    defaultLocale?: string,
   ) => string | false;
+  const localeMatchTwoArg = localeMatch as OptionalDefaultLocaleMatch;
   const matchedLang =
     languages.find((l) => ALL_LOCALES.includes(l)) ||
     localeMatchTwoArg(languages, ALL_LOCALES);
