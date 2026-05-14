@@ -11,7 +11,7 @@ import Link from '../components/link';
 import MenuConfirm from '../components/menu-confirm';
 import MenuLink from '../components/menu-link';
 import Menu2 from '../components/menu2';
-import NameText from '../components/name-text';
+import NameText, { type NameTextProps } from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import { api, getMastoV1Resource } from '../utils/api';
 import { revokeAccessToken } from '../utils/auth';
@@ -27,10 +27,13 @@ import {
   type StoredAccount,
 } from '../utils/store-utils';
 
-type OAuthAccount = Omit<StoredAccount, 'accessToken'> & {
+type AccountsNameTextAccount = NonNullable<NameTextProps['account']>;
+
+type OAuthAccount = Omit<StoredAccount, 'accessToken' | 'info'> & {
   accessToken?: string;
   clientId?: string;
   clientSecret?: string;
+  info: StoredAccount['info'] & AccountsNameTextAccount;
 };
 
 interface MastoAccountsSelect {
@@ -56,6 +59,9 @@ function Accounts({ onClose }: AccountsProps) {
   const [, setReloadTick] = useState(0);
   const reload = () => setReloadTick((x) => x + 1);
   const [accountsListParent] = useAutoAnimate<HTMLUListElement>();
+  const saveOAuthAccounts = () => {
+    saveAccounts(accounts as readonly StoredAccount[]);
+  };
 
   return (
     <div id="accounts-container" class="sheet" tabIndex={-1}>
@@ -79,7 +85,7 @@ function Accounts({ onClose }: AccountsProps) {
 
               const removeAccount = () => {
                 accounts.splice(i, 1);
-                saveAccounts(accounts as unknown as StoredAccount[]);
+                saveOAuthAccounts();
                 try {
                   if (store.session.get('currentAccount') === account.info.id) {
                     store.session.del('currentAccount');
@@ -96,14 +102,7 @@ function Accounts({ onClose }: AccountsProps) {
                 });
               };
 
-              // JS treats these as untyped strings; cast preserves runtime
-              // behavior (NameText interpolates them as-is). `avatarStatic` is
-              // typed `unknown` on AccountInfo, so cast at the read site.
-              const acct = account.info.acct as string;
-              const avatarStatic = account.info.avatarStatic as
-                | string
-                | undefined;
-              const username = account.info.username as string;
+              const { acct, avatarStatic, username } = account.info;
 
               return (
                 <li key={account.info.id}>
@@ -129,9 +128,7 @@ function Accounts({ onClose }: AccountsProps) {
                               .fetch();
                             console.log('fetched account info', info);
                             (account as { info: unknown }).info = info;
-                            saveAccounts(
-                              accounts as unknown as StoredAccount[],
-                            );
+                            saveOAuthAccounts();
                             reload();
                           } catch {}
                         }
@@ -139,16 +136,14 @@ function Accounts({ onClose }: AccountsProps) {
                     />
                     <NameText
                       account={
-                        (moreThanOneAccount
+                        moreThanOneAccount
                           ? {
                               ...account.info,
                               acct: /@/.test(acct)
                                 ? acct
                                 : `${acct}@${account.instanceURL}`,
                             }
-                          : account.info) as unknown as Parameters<
-                          typeof NameText
-                        >[0]['account']
+                          : account.info
                       }
                       showAcct
                       onClick={() => {
@@ -231,9 +226,7 @@ function Accounts({ onClose }: AccountsProps) {
                               // Move account to the top of the list
                               accounts.splice(i, 1);
                               accounts.unshift(account);
-                              saveAccounts(
-                                accounts as unknown as StoredAccount[],
-                              );
+                              saveOAuthAccounts();
                               reload();
                             }}
                           >
@@ -248,9 +241,7 @@ function Accounts({ onClose }: AccountsProps) {
                               // Move account one position up
                               accounts.splice(i, 1);
                               accounts.splice(i - 1, 0, account);
-                              saveAccounts(
-                                accounts as unknown as StoredAccount[],
-                              );
+                              saveOAuthAccounts();
                               reload();
                             }}
                           >
@@ -265,9 +256,7 @@ function Accounts({ onClose }: AccountsProps) {
                               // Move account one position down
                               accounts.splice(i, 1);
                               accounts.splice(i + 1, 0, account);
-                              saveAccounts(
-                                accounts as unknown as StoredAccount[],
-                              );
+                              saveOAuthAccounts();
                               reload();
                             }}
                           >
@@ -299,9 +288,7 @@ function Accounts({ onClose }: AccountsProps) {
                               await logOutAccount();
                               delete (account as { accessToken?: string })
                                 .accessToken;
-                              saveAccounts(
-                                accounts as unknown as StoredAccount[],
-                              );
+                              saveOAuthAccounts();
                               reload();
                             })();
                           }}

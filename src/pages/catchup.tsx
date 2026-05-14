@@ -7,7 +7,7 @@ import { msg, select } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { getBlurHashAverageColor } from 'fast-blurhash';
 import type { mastodon } from 'masto';
-import { Fragment, type ComponentProps, type JSX } from 'preact';
+import { Fragment, type JSX } from 'preact';
 import { memo } from 'preact/compat';
 import {
   useCallback,
@@ -28,7 +28,7 @@ import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
 import Modal from '../components/modal';
-import NameText from '../components/name-text';
+import NameText, { type NameTextAccount } from '../components/name-text';
 import NavMenu from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
 import { api, getPreferences } from '../utils/api';
@@ -74,19 +74,25 @@ interface CatchupBooster {
   [key: string]: unknown;
 }
 
+type CatchupAccount = mastodon.v1.Account & NameTextAccount & CatchupBooster;
+type QuoteAccount = CatchupAccount | mastodon.v1.Status['account'];
+type QuoteStatusLike =
+  | mastodon.v1.Status
+  | {
+      id?: string | null;
+      account?: QuoteAccount;
+      spoilerText?: string;
+      sensitive?: boolean;
+      emojis?: mastodon.v1.Status['emojis'];
+      mediaAttachments?: mastodon.v1.Status['mediaAttachments'];
+      content?: string;
+      [key: string]: unknown;
+    };
+
 interface QuoteLike {
   id?: string | null;
-  quotedStatus?: {
-    id?: string | null;
-    account?: mastodon.v1.Status['account'];
-    spoilerText?: string;
-    sensitive?: boolean;
-    emojis?: mastodon.v1.Status['emojis'];
-    mediaAttachments?: mastodon.v1.Status['mediaAttachments'];
-    content?: string;
-    [key: string]: unknown;
-  } | null;
-  account?: mastodon.v1.Status['account'];
+  quotedStatus?: QuoteStatusLike | null;
+  account?: QuoteAccount;
   spoilerText?: string;
   sensitive?: boolean;
   emojis?: mastodon.v1.Status['emojis'];
@@ -96,6 +102,8 @@ interface QuoteLike {
 }
 
 type CatchupPost = mastodon.v1.Status & {
+  account: CatchupAccount;
+  reblog?: CatchupPost | null;
   _filtered?: FilterInfo;
   _followedTags?: string[];
   _thread?: boolean;
@@ -103,8 +111,8 @@ type CatchupPost = mastodon.v1.Status & {
   __HIDDEN?: boolean;
   __BOOSTERS?: Set<CatchupBooster>;
   group?: unknown;
-  quote?: QuoteLike | null;
   quotesCount?: number;
+  [key: string]: unknown;
 };
 
 interface CatchupRecord {
@@ -182,10 +190,6 @@ interface HomeIterable {
 
 type UIState = 'start' | 'loading' | 'results';
 
-// NameText's account prop type is not exported; derive it from the component
-// for use in the shim casts below.
-type NameTextAccount = NonNullable<ComponentProps<typeof NameText>['account']>;
-
 const FILTER_CONTEXT = 'home';
 const CATCHUP_NS = 'catchup';
 
@@ -244,8 +248,40 @@ const DTF = mem(
     }),
 );
 
-function hasQuote(quote: QuoteLike | null | undefined): boolean {
-  return !!(quote?.id || quote?.quotedStatus?.id);
+function hasQuote(
+  quote: QuoteLike | mastodon.v1.Status['quote'] | null | undefined,
+): boolean {
+  if (!quote) return false;
+  const quotedStatusId =
+    'quotedStatus' in quote ? quote.quotedStatus?.id : undefined;
+  const quoteId = 'id' in quote ? quote.id : undefined;
+  return !!(quoteId || quotedStatusId);
+}
+
+function quoteLike(
+  quote: QuoteLike | mastodon.v1.Status['quote'] | null | undefined,
+): QuoteLike | null {
+  if (!quote) return null;
+  if ('quotedStatus' in quote && quote.quotedStatus) {
+    return quote.quotedStatus as QuoteLike;
+  }
+  return quote as QuoteLike;
+}
+
+function nameTextAccount(
+  account: QuoteAccount | null | undefined,
+): NameTextAccount | undefined {
+  return account as (QuoteAccount & NameTextAccount) | undefined;
+}
+
+function quoteNameTextAccount(
+  quote: QuoteLike | mastodon.v1.Status['quote'] | null | undefined,
+): NameTextAccount | undefined {
+  if (!quote) return undefined;
+  const quotedStatusAccount =
+    'quotedStatus' in quote ? quote.quotedStatus?.account : undefined;
+  const quoteAccount = 'account' in quote ? quote.account : undefined;
+  return nameTextAccount(quotedStatusAccount || quoteAccount);
 }
 
 function Catchup() {
@@ -716,11 +752,9 @@ function Catchup() {
         if (boostedPosts[post.reblog.id]) {
           const existing = boostedPosts[post.reblog.id];
           if (existing.__BOOSTERS) {
-            existing.__BOOSTERS.add(post.account as unknown as CatchupBooster);
+            existing.__BOOSTERS.add(post.account);
           } else {
-            existing.__BOOSTERS = new Set([
-              post.account as unknown as CatchupBooster,
-            ]);
+            existing.__BOOSTERS = new Set([post.account]);
           }
           post.__HIDDEN = true;
         } else {
@@ -782,8 +816,7 @@ function Catchup() {
             b = (b.reblog as CatchupPost | null | undefined) || b;
             if (
               sortBy !== 'density' &&
-              (a as unknown as Record<string, unknown>)[sortBy] ===
-                (b as unknown as Record<string, unknown>)[sortBy]
+              a[sortBy] === b[sortBy]
             ) {
               return a.createdAt > b.createdAt ? 1 : -1;
             }
@@ -797,16 +830,14 @@ function Catchup() {
               return bDensity > aDensity ? 1 : -1;
             }
           }
-          const aRec = a as unknown as Record<string, unknown>;
-          const bRec = b as unknown as Record<string, unknown>;
           if (sortOrder === 'asc') {
-            return (aRec[sortBy] as number | string) >
-              (bRec[sortBy] as number | string)
+            return (a[sortBy] as number | string) >
+              (b[sortBy] as number | string)
               ? 1
               : -1;
           } else {
-            return (bRec[sortBy] as number | string) >
-              (aRec[sortBy] as number | string)
+            return (b[sortBy] as number | string) >
+              (a[sortBy] as number | string)
               ? 1
               : -1;
           }
@@ -2177,11 +2208,8 @@ const PostLine = memo(
               url={reblog.account.avatarStatic || reblog.account.avatar}
               squircle={reblog.account.bot}
             /> */}
-              {/* NameText's `NameTextAccount` requires an index signature
-                  that mastodon.v1.Account lacks; structurally identical at
-                  runtime, so shim across the type boundary. */}
               <NameText
-                account={reblog.account as unknown as NameTextAccount}
+                account={reblog.account}
                 showAvatar
               />
             </span>
@@ -2193,18 +2221,12 @@ const PostLine = memo(
               />{' '}
               <Icon icon="quote" />{' '}
               <NameText
-                account={
-                  (quote!.quotedStatus?.account ||
-                    quote!.account) as unknown as NameTextAccount
-                }
+                account={quoteNameTextAccount(quote)}
                 showAvatar
               />
             </span>
           ) : (
-            <NameText
-              account={account as unknown as NameTextAccount}
-              showAvatar
-            />
+            <NameText account={account} showAvatar />
           )}
         </span>
         <PostPeek
@@ -2320,9 +2342,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
   const isThread =
     (inReplyToId && inReplyToAccountId === account.id) || !!_thread;
   let theQuote: QuoteLike | null =
-    supportsNativeQuote() && hasQuote(quote)
-      ? ((quote!.quotedStatus as QuoteLike | null | undefined) ?? quote ?? null)
-      : null;
+    supportsNativeQuote() && hasQuote(quote) ? quoteLike(quote) : null;
   if (theQuote?.spoilerText || theQuote?.sensitive) theQuote = null;
   if (theQuote?.emojis) emojis.push(...theQuote.emojis);
   if (!mediaAttachments?.length && theQuote?.mediaAttachments?.length) {
