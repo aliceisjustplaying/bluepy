@@ -3,15 +3,128 @@ import type { ComponentChildren } from 'preact';
 
 import type { api } from '../utils/api';
 
-// Loose status type: some non-API extension fields (e.g. `_atproto`, `_deleted`,
-// `_pinned`, `emojiReactions`, `quoteApproval`) are added at runtime. We keep
-// the mastodon shape as a base and treat the runtime additions as untyped.
-export type AnyStatus = mastodon.v1.Status & Record<string, unknown>;
-
 export type AnyAccount = mastodon.v1.Account & Record<string, unknown>;
 
 export type AnyPoll = mastodon.v1.Poll & {
   emojis?: mastodon.v1.CustomEmoji[];
+} & Record<string, unknown>;
+
+export type AnyPreviewCard = Omit<
+  mastodon.v1.PreviewCard,
+  | 'authorName'
+  | 'authorUrl'
+  | 'authors'
+  | 'blurhash'
+  | 'description'
+  | 'embedUrl'
+  | 'html'
+  | 'image'
+  | 'imageDescription'
+  | 'language'
+  | 'providerName'
+  | 'providerUrl'
+  | 'publishedAt'
+  | 'title'
+  | 'type'
+  | 'url'
+  | 'width'
+  | 'height'
+> & {
+  authors?: Array<
+    {
+      account?: { id?: string } & Record<string, unknown>;
+    } & Record<string, unknown>
+  >;
+  authorName?: string;
+  authorUrl?: string;
+  blurhash?: string;
+  description?: string;
+  embedUrl?: string;
+  html?: string;
+  image?: string;
+  imageDescription?: string;
+  language?: string;
+  providerName?: string;
+  providerUrl?: string;
+  publishedAt?: string;
+  title?: string;
+  type?: string;
+  url?: string;
+  width?: number;
+  height?: number;
+} & Record<string, unknown>;
+
+export type AnyMediaAttachment = Omit<
+  mastodon.v1.MediaAttachment,
+  | 'blurhash'
+  | 'description'
+  | 'meta'
+  | 'previewRemoteUrl'
+  | 'previewUrl'
+  | 'remoteUrl'
+  | 'type'
+  | 'url'
+> & {
+  blurhash?: string;
+  description?: string;
+  meta?: {
+    original?: { width?: number; height?: number; duration?: number };
+    small?: { width?: number; height?: number };
+    focus?: { x: number; y: number };
+  };
+  previewRemoteUrl?: string;
+  previewUrl: string;
+  remoteUrl?: string;
+  type: mastodon.v1.MediaAttachment['type'];
+  url: string;
+} & Record<string, unknown>;
+
+interface AnyQuote {
+  quotedStatus?: AnyStatus;
+  state?: string;
+}
+
+export interface StatusAtprotoMeta {
+  replyParentAccount?: AnyAccount | null;
+  replyParentUnavailable?: boolean;
+}
+
+export interface StatusQuoteApproval {
+  currentUser?: string;
+  automatic?: readonly string[];
+  manual?: readonly string[];
+}
+
+// Loose status type: some non-API extension fields (e.g. `_atproto`, `_deleted`,
+// `_pinned`, `emojiReactions`, `quoteApproval`) are added at runtime. Keep the
+// Mastodon base shape but override status-rendering fields that the app mutates.
+export type AnyStatus = Omit<
+  mastodon.v1.Status,
+  | 'account'
+  | 'card'
+  | 'editedAt'
+  | 'language'
+  | 'mediaAttachments'
+  | 'poll'
+  | 'quote'
+  | 'reblog'
+  | 'url'
+> & {
+  account: AnyAccount;
+  card?: AnyPreviewCard | null;
+  editedAt: string;
+  language?: string;
+  mediaAttachments: AnyMediaAttachment[];
+  poll?: AnyPoll;
+  quote?: AnyQuote | null;
+  reblog?: AnyStatus | null;
+  url?: string;
+  __replies?: AnyStatus[];
+  _atproto?: StatusAtprotoMeta;
+  _deleted?: boolean;
+  _pinned?: boolean;
+  emojiReactions?: readonly Record<string, unknown>[];
+  quoteApproval?: StatusQuoteApproval;
 } & Record<string, unknown>;
 
 export type StatusSize = 's' | 'm' | 'l';

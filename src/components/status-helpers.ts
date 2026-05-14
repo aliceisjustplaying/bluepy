@@ -114,7 +114,7 @@ export function getPostText(
             }
           : undefined,
     }),
-    getPollText(poll as AnyPoll | null | undefined),
+    getPollText(poll),
   ]
     .join('\n\n')
     .trim();

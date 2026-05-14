@@ -59,11 +59,7 @@ export default function StatusReblog({
         <div class="status-pre-meta">
           <Icon icon="group" size="l" alt={t`Group`} />{' '}
           <NameText
-            account={
-              wrapperStatus.account as unknown as Parameters<
-                typeof NameText
-              >[0]['account']
-            }
+            account={wrapperStatus.account}
             instance={instance}
             showAvatar
           />
@@ -91,11 +87,7 @@ export default function StatusReblog({
         <Icon icon="rocket" size="l" />{' '}
         <Trans>
           <NameText
-            account={
-              wrapperStatus.account as unknown as Parameters<
-                typeof NameText
-              >[0]['account']
-            }
+            account={wrapperStatus.account}
             instance={instance}
             showAvatar
           />{' '}

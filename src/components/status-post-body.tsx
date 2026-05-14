@@ -14,7 +14,13 @@ import QuoteStatuses, { type FallbackQuote } from './status-quotes';
 import StatusCard from './status-card';
 import StatusMediaEmbeds from './status-media-embeds';
 import { getPostText, isTranslateble, readMoreText } from './status-helpers';
-import type { AnyStatus, FullMasto } from './status-types';
+import type {
+  AnyMediaAttachment,
+  AnyPoll,
+  AnyPreviewCard,
+  AnyStatus,
+  FullMasto,
+} from './status-types';
 import StatusTags from './status-tags';
 import TranslationBlock from './translation-block';
 import type { StatusComponentProps } from './status-view';
@@ -41,7 +47,7 @@ interface StatusPostBodyProps {
   spoilerContentRef: RefObject<HTMLDivElement>;
   emojis?: mastodon.v1.CustomEmoji[];
   id: string;
-  mediaAttachments: mastodon.v1.MediaAttachment[];
+  mediaAttachments: AnyMediaAttachment[];
   instance: string;
   content?: string | null;
   contentRef: RefObject<HTMLDivElement>;
@@ -49,7 +55,7 @@ interface StatusPostBodyProps {
   previewMode?: boolean;
   reloadPostContentCount: number;
   reloadPostContent: () => void;
-  poll?: mastodon.v1.Poll | null;
+  poll?: AnyPoll | null;
   readOnly?: boolean;
   sameInstance: boolean;
   authenticated?: boolean;
@@ -61,20 +67,20 @@ interface StatusPostBodyProps {
   forceTranslate?: boolean;
   withinContext?: boolean;
   languageAutoDetected?: boolean;
-  displayedMediaAttachments: mastodon.v1.MediaAttachment[];
+  displayedMediaAttachments: AnyMediaAttachment[];
   showMultipleMediaCaptions: boolean;
   captionChildren: ComponentChildren;
   mediaContainerRef: RefObject<HTMLDivElement>;
   onMediaClick?: (
     e: MouseEvent,
     index: number,
-    media: mastodon.v1.MediaAttachment,
+    media: AnyMediaAttachment,
     status: AnyStatus,
   ) => void;
   quoted?: boolean | number;
-  quote?: unknown;
+  quote?: FallbackQuote | null;
   renderStatus: (props: StatusComponentProps) => ComponentChildren;
-  card?: mastodon.v1.PreviewCard | null;
+  card?: AnyPreviewCard | null;
   statusQuoteState?: unknown;
   currentInstance: string;
   accountURL?: string | null;
@@ -191,11 +197,7 @@ export default function StatusPostBody({
               </>
             )}
             <MediaFirstContainer
-              mediaAttachments={
-                mediaAttachments as unknown as Parameters<
-                  typeof MediaFirstContainer
-                >[0]['mediaAttachments']
-              }
+              mediaAttachments={mediaAttachments}
               language={language ?? undefined}
               postID={id}
               instance={instance}
@@ -203,7 +205,7 @@ export default function StatusPostBody({
             {!!content && (
               <div class="media-first-content content" ref={contentRef}>
                 <PostContent
-                  post={status as unknown as Parameters<typeof PostContent>[0]['post']}
+                  post={status}
                   instance={instance}
                   previewMode={previewMode}
                 />
@@ -247,7 +249,7 @@ export default function StatusPostBody({
               >
                 <PostContent
                   key={reloadPostContentCount}
-                  post={status as unknown as Parameters<typeof PostContent>[0]['post']}
+                  post={status}
                   instance={instance}
                   previewMode={previewMode}
                 />
@@ -262,38 +264,32 @@ export default function StatusPostBody({
             )}
             {!!poll && (
               <Poll
-                {...({
-                  lang: language ?? undefined,
-                  poll,
-                  readOnly: readOnly || !sameInstance || !authenticated,
-                  onUpdate: (newPoll: unknown) => {
-                    (states.statuses[sKey] as Record<string, unknown>).poll =
-                      newPoll;
-                  },
-                  refresh: () => {
-                    return masto.v1.polls
-                      .$select(poll.id)
-                      .fetch()
-                      .then((pollResponse) => {
-                        (states.statuses[sKey] as Record<string, unknown>).poll =
-                          pollResponse;
-                        return undefined;
-                      })
-                      .catch((_e: unknown) => {});
-                  },
-                  votePoll: (choices: number[]) => {
-                    return masto.v1.polls
-                      .$select(poll.id)
-                      .votes.create({
-                        choices,
-                      })
-                      .then((pollResponse) => {
-                        (states.statuses[sKey] as Record<string, unknown>).poll =
-                          pollResponse;
-                        return undefined;
-                      });
-                  },
-                } as unknown as Parameters<typeof Poll>[0])}
+                lang={language ?? undefined}
+                poll={poll}
+                readOnly={readOnly || !sameInstance || !authenticated}
+                refresh={() => {
+                  return masto.v1.polls
+                    .$select(poll.id)
+                    .fetch()
+                    .then((pollResponse) => {
+                      (states.statuses[sKey] as Record<string, unknown>).poll =
+                        pollResponse;
+                      return undefined;
+                    })
+                    .catch((_e: unknown) => {});
+                }}
+                votePoll={(choices: number[]) => {
+                  return masto.v1.polls
+                    .$select(poll.id)
+                    .votes.create({
+                      choices,
+                    })
+                    .then((pollResponse) => {
+                      (states.statuses[sKey] as Record<string, unknown>).poll =
+                        pollResponse;
+                      return undefined;
+                    });
+                }}
               />
             )}
             {(((!!content &&
@@ -341,7 +337,7 @@ export default function StatusPostBody({
               instance={instance}
               level={typeof quoted === 'number' ? quoted : undefined}
               collapsed={!isSizeLarge && !withinContext}
-              fallbackQuote={quote as FallbackQuote | null | undefined}
+              fallbackQuote={quote}
               renderStatus={(quoteStatusProps) =>
                 renderStatus({
                   ...quoteStatusProps,
@@ -351,18 +347,18 @@ export default function StatusPostBody({
                 })
               }
             />
-            {!!card &&
-              /^https/i.test(card?.url) &&
+            {!!card?.url &&
+              /^https/i.test(card.url) &&
               !sensitive &&
               !spoilerText &&
               !poll &&
               !mediaAttachments.length &&
               !statusQuoteState && (
                 <StatusCard
-                  card={card as unknown as Parameters<typeof StatusCard>[0]['card']}
+                  card={card}
                   selfReferential={card?.url === status.url || card?.url === status.uri}
                   selfAuthor={card?.authors?.some(
-                    (a: mastodon.v1.PreviewCardAuthor) => a.account?.url === accountURL,
+                    (a) => a.account?.url === accountURL,
                   )}
                   instance={currentInstance}
                 />

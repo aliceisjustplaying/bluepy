@@ -4,7 +4,6 @@ import { plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import debounce from 'just-debounce-it';
-import type { mastodon } from 'masto';
 import pRetry from 'p-retry';
 import type {
   ComponentChildren,
@@ -39,6 +38,7 @@ import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import Status from '../components/status';
+import type { AnyStatus } from '../components/status-types';
 import { api, getMastoV2Resource } from '../utils/api';
 import {
   EditHistoryProvider,
@@ -91,7 +91,7 @@ const COMMENTS_AUTO_EXPAND_LIMIT = 20;
 // The status records this page works with originate from Masto's API but
 // also pick up internal mutations from `states.ts` (e.g. `__replies`,
 // `_pinned`). Keep this type loose around those extensions.
-type RawStatus = mastodon.v1.Status & {
+type RawStatus = AnyStatus & {
   __replies?: RawStatus[];
   _pinned?: unknown;
 };
@@ -128,6 +128,19 @@ interface NestedReply {
   weight: number;
   level: number;
   replies?: NestedReply[] | null;
+}
+
+interface GhostStatus {
+  id: string;
+  ghost: GhostMeta;
+  account?: undefined;
+  createdAt?: undefined;
+}
+
+type StatusThreadItem = RawStatus | GhostStatus;
+
+function isGhostStatus(status: StatusThreadItem): status is GhostStatus {
+  return 'ghost' in status;
 }
 
 interface FullContext {
@@ -169,6 +182,26 @@ const postViewState = (): 'large' | 'small' =>
     ? 'large'
     : 'small';
 
+function rawStatusFromState(status: unknown): RawStatus | undefined {
+  if (!status || typeof status !== 'object') return undefined;
+  return status as RawStatus;
+}
+
+type SaveStatusInput = Parameters<typeof saveStatus>[0];
+type ThreadifyStatusInput = Parameters<typeof threadifyStatus>[0];
+
+function saveRawStatus(
+  status: RawStatus,
+  instance?: string | Parameters<typeof saveStatus>[1],
+  opts?: Parameters<typeof saveStatus>[2],
+): void {
+  saveStatus(status as SaveStatusInput, instance, opts);
+}
+
+function threadifyRawStatus(status: RawStatus, instance?: string | null): void {
+  threadifyStatus(status as ThreadifyStatusInput, instance);
+}
+
 interface StatusPageParams {
   id: string;
   instance?: string;
@@ -196,11 +229,12 @@ function StatusPage(params: StatusPageParams) {
   // string here. Fall back to `id` defensively for the type system.
   const sKey: string = statusKey(id, instance) ?? id;
   const [heroStatus, setHeroStatus] = useState<RawStatus | undefined>(
-    states.statuses[sKey] as unknown as RawStatus | undefined,
+    rawStatusFromState(states.statuses[sKey]),
   );
   useEffect(() => {
-    if (states.statuses[sKey]) {
-      setHeroStatus(states.statuses[sKey] as unknown as RawStatus);
+    const cachedStatus = rawStatusFromState(states.statuses[sKey]);
+    if (cachedStatus) {
+      setHeroStatus(cachedStatus);
     }
   }, [sKey]);
 
@@ -273,10 +307,7 @@ function StatusPage(params: StatusPageParams) {
         try {
           const status = await statusesEndpoint.$select(snapshotId).fetch();
           if (stale) return;
-          saveStatus(
-            status as unknown as Parameters<typeof saveStatus>[0],
-            snapshotInstance,
-          );
+          saveRawStatus(status, snapshotInstance);
           setHeroStatus(status);
         } catch (err) {
           if (stale) return;
@@ -295,11 +326,7 @@ function StatusPage(params: StatusPageParams) {
   const mediaStatusKey = statusKey(mediaStatusID, instance);
   const mediaAttachments = mediaStatusID
     ? mediaStatusKey
-      ? (
-          snapStates.statuses[mediaStatusKey] as unknown as
-            | RawStatus
-            | undefined
-        )?.mediaAttachments
+      ? rawStatusFromState(snapStates.statuses[mediaStatusKey])?.mediaAttachments
       : undefined
     : heroStatus?.mediaAttachments;
 
@@ -426,14 +453,10 @@ function StatusPage(params: StatusPageParams) {
       {showMedia ? (
         mediaAttachments?.length ? (
           <MediaModal
-            mediaAttachments={
-              mediaAttachments as unknown as Parameters<
-                typeof MediaModal
-              >[0]['mediaAttachments']
-            }
+            mediaAttachments={mediaAttachments}
             statusID={mediaStatusID || id}
             instance={instance}
-            lang={heroStatus?.language as string | undefined}
+            lang={heroStatus?.language ?? undefined}
             index={mediaIndex - 1}
             onClose={handleMediaClose}
           />
@@ -579,7 +602,8 @@ function StatusThread({
   const restructureContext = (): RestructureResult | undefined => {
     console.log({ fullContext: fullContext.current });
     if (!fullContext.current) return undefined;
-    let { ancestors, descendants, heroStatus } = fullContext.current;
+    let ancestors: StatusThreadItem[] = fullContext.current.ancestors;
+    let { descendants, heroStatus } = fullContext.current;
 
     if (editHistoryMode && descendants?.length) {
       // Filter descendants based on createdAt/editedAt dates
@@ -611,14 +635,10 @@ function StatusThread({
 
     // Ghost posts - detect missing ancestors
     const missingAncestorIds = new Set<string>();
-    ancestors.forEach((status) => {
-      saveStatus(
-        status as unknown as Parameters<typeof saveStatus>[0],
-        instance,
-        {
-          skipThreading: true,
-        },
-      );
+    fullContext.current.ancestors.forEach((status) => {
+      saveRawStatus(status, instance, {
+        skipThreading: true,
+      });
       if (
         status.inReplyToId &&
         !ancestors.find((s) => s.id === status.inReplyToId)
@@ -636,15 +656,17 @@ function StatusThread({
     // Insert ghost statuses
     missingAncestorIds.forEach((missingId) => {
       const referencingStatus: RawStatus | null =
-        ancestors.find((s) => s.inReplyToId === missingId) ||
+        ancestors.find(
+          (s): s is RawStatus => !isGhostStatus(s) && s.inReplyToId === missingId,
+        ) ||
         (heroStatus.inReplyToId === missingId ? heroStatus : null);
       if (referencingStatus) {
-        const ghostStatus = {
+        const ghostStatus: GhostStatus = {
           id: missingId,
           ghost: {
             inReplyToAccountId: referencingStatus.inReplyToAccountId,
           },
-        } as unknown as RawStatus & { ghost?: GhostMeta };
+        };
         if (referencingStatus === heroStatus) {
           ancestors.push(ghostStatus);
         } else {
@@ -656,19 +678,13 @@ function StatusThread({
 
     const missingStatuses = new Set<string>();
     const ancestorsIsThread = ancestors.every(
-      (s) =>
-        (s as RawStatus & { ghost?: GhostMeta }).ghost ||
-        s.account?.id === heroStatus.account?.id,
+      (s) => isGhostStatus(s) || s.account?.id === heroStatus.account?.id,
     );
     const nestedDescendants: RawStatus[] = [];
     descendants.forEach((status) => {
-      saveStatus(
-        status as unknown as Parameters<typeof saveStatus>[0],
-        instance,
-        {
-          // skipThreading: true,
-        },
-      );
+      saveRawStatus(status, instance, {
+        // skipThreading: true,
+      });
 
       if (
         status.inReplyToId &&
@@ -760,7 +776,9 @@ function StatusThread({
     );
     const allStatuses: DisplayStatus[] = [
       ...ancestors.map<DisplayStatus>((s) => {
-        const ghost = (s as RawStatus & { ghost?: GhostMeta }).ghost;
+        const isGhost = isGhostStatus(s);
+        const ghost = isGhost ? s.ghost : undefined;
+        const repliesCount = isGhost ? undefined : s.repliesCount;
         return {
           id: s.id,
           ancestor: true,
@@ -768,8 +786,8 @@ function StatusThread({
           isThread: ancestorsIsThread && !ghost,
           accountID: s.account?.id,
           account: s.account,
-          repliesCount: s.repliesCount,
-          weight: ghost ? 0 : calcStatusWeight(s),
+          repliesCount,
+          weight: isGhost ? 0 : calcStatusWeight(s),
           createdAt: s.createdAt,
         };
       }),
@@ -833,18 +851,13 @@ function StatusThread({
       );
 
       const hasStatus = !!snapStates.statuses[sKey];
-      let heroStatus = snapStates.statuses[sKey] as unknown as
-        | RawStatus
-        | undefined;
+      let heroStatus = rawStatusFromState(snapStates.statuses[sKey]);
       if (hasStatus && !reloadHero) {
         console.debug('Hero status is cached');
       } else {
         try {
           heroStatus = await heroFetch();
-          saveStatus(
-            heroStatus as unknown as Parameters<typeof saveStatus>[0],
-            instance,
-          );
+          saveRawStatus(heroStatus, instance);
           // Give time for context to appear
           await new Promise<void>((resolve) => {
             setTimeout(resolve, 100);
@@ -900,10 +913,7 @@ function StatusThread({
         // Let's threadify this one
         // Note that all non-hero statuses will trigger saveStatus which will threadify them too
         // By right, at this point, all descendant statuses should be cached
-        threadifyStatus(
-          heroStatus as unknown as Parameters<typeof threadifyStatus>[0],
-          instance,
-        );
+        threadifyRawStatus(heroStatus, instance);
       } catch (e) {
         console.error(e);
         setUIState('error');
@@ -1028,8 +1038,9 @@ function StatusThread({
     // module-level caches. Empty deps array is intentional.
   }, []);
 
-  const heroStatus = (snapStates.statuses[sKey] ||
-    snapStates.statuses[id]) as unknown as RawStatus | undefined;
+  const heroStatus =
+    rawStatusFromState(snapStates.statuses[sKey]) ||
+    rawStatusFromState(snapStates.statuses[id]);
   const heroDisplayName = useMemo(() => {
     // Remove shortcodes from display name
     if (!heroStatus) return '';
@@ -1040,9 +1051,7 @@ function StatusThread({
   }, [heroStatus]);
   const heroContentText = useMemo(() => {
     if (!heroStatus) return '';
-    let text = statusPeek(
-      heroStatus as unknown as Parameters<typeof statusPeek>[0],
-    );
+    let text = statusPeek(heroStatus);
     if (text.length > 64) {
       // "The title should ideally be less than 64 characters in length"
       // https://www.w3.org/Provider/Style/TITLE.html
@@ -1608,7 +1617,7 @@ function StatusThread({
         status.replies.forEach(getIDs);
       }
     }
-    statuses.forEach((s) => getIDs(s as unknown as StatusKeyish));
+    statuses.forEach(getIDs);
     return ids.map((sId) => statusKey(sId, instance));
   }, [statuses, instance]);
 
@@ -1760,11 +1769,7 @@ function StatusThread({
                 <>
                   <span class="hero-heading">
                     <NameText
-                      account={
-                        heroStatus.account as unknown as Parameters<
-                          typeof NameText
-                        >[0]['account']
-                      }
+                      account={heroStatus.account}
                       instance={instance}
                       showAvatar
                       short
@@ -2115,24 +2120,13 @@ function SubComments({
   const sameCount = replies.length === totalComments;
 
   // Get the first 3 accounts, unique by id
-  const accountsRaw = replies
+  const accounts = replies
     .map((r) => r.account)
     .filter(
       (a, i, arr) =>
-        arr.findIndex(
-          (b) =>
-            (b as { id?: string } | undefined)?.id ===
-            (a as { id?: string } | undefined)?.id,
-        ) === i,
+        arr.findIndex((b) => b?.id === a?.id) === i,
     )
     .slice(0, 3);
-  const accounts = accountsRaw as unknown as Array<{
-    id?: string;
-    avatarStatic?: string;
-    displayName?: string;
-    username?: string;
-    bot?: boolean;
-  }>;
 
   const totalWeight = useMemo<number>(() => {
     return (replies ?? []).reduce<number>((acc, reply) => {
@@ -2148,7 +2142,7 @@ function SubComments({
   } else if (totalWeight <= MAX_WEIGHT) {
     open = true;
   } else if (!hasParentThread && totalComments === 1) {
-    const shortReply = calcStatusWeight(replies[0] as unknown as RawStatus) < 2;
+    const shortReply = calcStatusWeight(replies[0]) < 2;
     if (shortReply) open = true;
   }
   const openBefore = cachedRepliesToggle[replies[0].id];
@@ -2356,34 +2350,32 @@ const statusWeightCache = new Map<string, number>();
 // `"undefined" + content` (9 extra characters); preserve that arithmetic
 // here so cached/computed weights match the prior behavior exactly.
 interface CalcStatusWeightInput {
-  id?: string;
+  id: string;
   spoilerText?: unknown;
   content?: unknown;
-  mediaAttachments?: unknown;
-  poll?: unknown;
+  mediaAttachments?: { length?: number } | null;
+  poll?: { options?: { length?: number } } | null;
   card?: unknown;
 }
 
 function calcStatusWeight(status: CalcStatusWeightInput | RawStatus): number {
-  const s = status as CalcStatusWeightInput;
-  const cachedWeight = statusWeightCache.get(s.id as string);
+  const cachedWeight = statusWeightCache.get(status.id);
   if (cachedWeight) return cachedWeight;
-  const { spoilerText, content, mediaAttachments, poll, card } = s;
+  const { spoilerText, content, mediaAttachments, poll, card } = status;
   // Preserve original JS string-concat semantics: `undefined + content`
   // yields `"undefined" + content`. Cast via `String()` to keep that
   // coercion under TypeScript's checker.
   const length = htmlContentLength(String(spoilerText) + String(content));
-  const ma = mediaAttachments as { length?: number } | null | undefined;
-  const mediaLength = ma?.length ? MEDIA_VIRTUAL_LENGTH : 0;
-  const pollOptions = (
-    poll as { options?: { length?: number } } | null | undefined
-  )?.options;
+  const mediaLength = mediaAttachments?.length ? MEDIA_VIRTUAL_LENGTH : 0;
+  const pollOptions = poll?.options;
   const pollLength = (pollOptions?.length || 0) * POLL_VIRTUAL_LENGTH;
   const cardLength =
-    card && (ma?.length || pollOptions?.length) ? 0 : CARD_VIRTUAL_LENGTH;
+    card && (mediaAttachments?.length || pollOptions?.length)
+      ? 0
+      : CARD_VIRTUAL_LENGTH;
   const totalLength = length + mediaLength + pollLength + cardLength;
   const weight = totalLength / WEIGHT_SEGMENT;
-  statusWeightCache.set(s.id as string, weight);
+  statusWeightCache.set(status.id, weight);
   return weight;
 }
 

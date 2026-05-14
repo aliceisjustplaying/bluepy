@@ -17,9 +17,7 @@ import Modal from './modal';
 import NameText from './name-text';
 import RelativeTime from './relative-time';
 import { readMoreText } from './status-helpers';
-import type { AnyAccount, AnyStatus } from './status-types';
-
-type NameTextAccountShim = Parameters<typeof NameText>[0]['account'];
+import type { AnyStatus } from './status-types';
 
 interface FilteredStatusProps {
   status: AnyStatus;
@@ -50,18 +48,12 @@ export default function FilteredStatus({
   const { t, i18n } = useLingui();
   const _ = i18n._.bind(i18n);
   const snapStates = useSnapshot(states);
-  const { id: statusID, account, createdAt, visibility, reblog } =
-    status as AnyStatus & {
-    account?: Partial<AnyAccount>;
-    reblog?: AnyStatus | null;
-  };
+  const { id: statusID, account, createdAt, visibility, reblog } = status;
   const { avatar, avatarStatic, bot, group } = account || {};
   const isReblog = !!reblog;
   const filterTitleStr = filterInfo?.titlesStr || '';
   const createdAtDate = new Date(createdAt);
-  const statusPeekText = statusPeek(
-    (reblog || status) as unknown as Parameters<typeof statusPeek>[0],
-  );
+  const statusPeekText = statusPeek(reblog || status);
 
   const [showPeek, setShowPeek] = useState(false);
   const bindLongPressPeek = useLongPress(
@@ -141,17 +133,15 @@ export default function FilteredStatus({
             {isReblog ? (
               <Trans comment="[Name] [Visibility icon] boosted">
                 <NameText
-                  account={status.account as unknown as NameTextAccountShim}
+                  account={status.account}
                   instance={instance}
                 />{' '}
                 <Icon
                   icon={
-                    visibilityIconsMap[
-                      visibility as keyof typeof visibilityIconsMap
-                    ]
+                    visibilityIconsMap[visibility]
                   }
                   alt={_(
-                    visibilityText[visibility as keyof typeof visibilityText],
+                    visibilityText[visibility],
                   )}
                   size="s"
                 />{' '}
@@ -160,17 +150,15 @@ export default function FilteredStatus({
             ) : isFollowedTags ? (
               <>
                 <NameText
-                  account={status.account as unknown as NameTextAccountShim}
+                  account={status.account}
                   instance={instance}
                 />{' '}
                 <Icon
                   icon={
-                    visibilityIconsMap[
-                      visibility as keyof typeof visibilityIconsMap
-                    ]
+                    visibilityIconsMap[visibility]
                   }
                   alt={_(
-                    visibilityText[visibility as keyof typeof visibilityText],
+                    visibilityText[visibility],
                   )}
                   size="s"
                 />{' '}
@@ -189,17 +177,15 @@ export default function FilteredStatus({
             ) : (
               <>
                 <NameText
-                  account={status.account as unknown as NameTextAccountShim}
+                  account={status.account}
                   instance={instance}
                 />{' '}
                 <Icon
                   icon={
-                    visibilityIconsMap[
-                      visibility as keyof typeof visibilityIconsMap
-                    ]
+                    visibilityIconsMap[visibility]
                   }
                   alt={_(
-                    visibilityText[visibility as keyof typeof visibilityText],
+                    visibilityText[visibility],
                   )}
                   size="s"
                 />{' '}
@@ -212,8 +198,7 @@ export default function FilteredStatus({
               <>
                 <Avatar
                   url={
-                    (reblog.account as Partial<AnyAccount>).avatarStatic ||
-                    (reblog.account as Partial<AnyAccount>).avatar
+                    reblog.account.avatarStatic || reblog.account.avatar
                   }
                   squircle={bot}
                 />{' '}
