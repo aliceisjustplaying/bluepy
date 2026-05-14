@@ -29,7 +29,7 @@ interface QrCanvasLike {
 // Minimal shape of qr/dom.js as consumed here.
 interface QrDomModule {
   QRCanvas: new (
-    targets: { overlay: HTMLCanvasElement | null },
+    targets: { overlay?: HTMLCanvasElement },
     options: {
       cropToSquare: boolean;
       overlayMainColor: string;
@@ -208,11 +208,10 @@ function QrScannerModal({
           const BarcodeDetectorCtor = window.BarcodeDetector as BarcodeDetectorCtor;
           detector = new BarcodeDetectorCtor({ formats: ['qr_code'] });
         } else {
-          qrDom = (await import('qr/dom.js')) as unknown as QrDomModule;
-          qrCanvas = new qrDom.QRCanvas(
-            {
-              overlay: overlayRef.current,
-            },
+          const qrDomModule: QrDomModule = await import('qr/dom.js');
+          qrDom = qrDomModule;
+          qrCanvas = new qrDomModule.QRCanvas(
+            { overlay: overlayRef.current } as { overlay?: HTMLCanvasElement },
             {
               cropToSquare: false,
               overlayMainColor: 'transparent',

@@ -15,9 +15,10 @@ const SIZES: Record<string, number> = {
 };
 
 type IconModule = () => Promise<unknown>;
+type IconTupleEntry = (IconModule | string | undefined)[];
 type IconBlockEntry =
   | IconModule
-  | [IconModule, string?, string?]
+  | IconTupleEntry
   | {
       module: IconModule;
       rotate?: string;
@@ -26,6 +27,7 @@ type IconBlockEntry =
     };
 
 const INVALID_ID_CHARS_REGEX = /[^a-zA-Z0-9]/g;
+const ICONS_BY_NAME: Partial<Record<string, IconBlockEntry>> = ICONS;
 
 interface IconProps {
   icon?: string;
@@ -69,9 +71,7 @@ function Icon({
   if (!icon) return null;
 
   const iconSize = SIZES[size];
-  let iconBlock = (ICONS as unknown as Partial<Record<string, IconBlockEntry>>)[
-    icon
-  ];
+  const iconBlock = ICONS_BY_NAME[icon];
   if (!iconBlock) {
     console.warn(`Icon ${icon} not found`);
     return null;
@@ -81,10 +81,9 @@ function Icon({
     flip: string | undefined,
     rtl: boolean | undefined = false;
   if (Array.isArray(iconBlock)) {
-    [iconBlock, rotate, flip] = iconBlock;
+    [, rotate, flip] = iconBlock as [IconModule, string?, string?];
   } else if (typeof iconBlock === 'object') {
     ({ rotate, flip, rtl } = iconBlock);
-    iconBlock = iconBlock.module;
   }
 
   const sanitizedTitle = title?.replace(INVALID_ID_CHARS_REGEX, '-');

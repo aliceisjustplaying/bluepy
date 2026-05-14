@@ -31,6 +31,7 @@ interface CustomEmoji {
   visibleInPicker?: boolean;
   [key: string]: unknown;
 }
+type StoredCustomEmoji = CustomEmoji | string;
 
 interface CustomEmojiButtonProps {
   emoji: CustomEmoji;
@@ -135,6 +136,10 @@ const CustomEmojisList = memo(({ emojis, onSelect }: CustomEmojisListProps) => {
 
 const CUSTOM_EMOJI_SIZE = 'composer-customEmojiSize';
 
+function storedEmojiShortcode(emoji: StoredCustomEmoji) {
+  return typeof emoji === 'string' ? undefined : emoji.shortcode;
+}
+
 export interface CustomEmojisModalProps {
   instance?: string;
   onClose?: () => void;
@@ -157,8 +162,9 @@ function CustomEmojisModal({
 
   // JS original passed no deps to useMemo (re-evaluated each render); preserve
   // exact semantics by passing `undefined`. Fix the deps as a follow-up.
-  const recentlyUsedCustomEmojis = useMemo<CustomEmoji[]>(
-    () => store.account.get<CustomEmoji[]>('recentlyUsedCustomEmojis') || [],
+  const recentlyUsedCustomEmojis = useMemo<StoredCustomEmoji[]>(
+    () =>
+      store.account.get<StoredCustomEmoji[]>('recentlyUsedCustomEmojis') || [],
     undefined,
   );
   const searcherRef = useRef<Fuse<CustomEmoji> | null>(null);
@@ -194,8 +200,9 @@ function CustomEmojisModal({
       categoryMap.get(emoji.category)?.push(emoji);
     });
     const emojisCat: Record<string, CustomEmoji[]> = {
-      '--recent--': recentlyUsedCustomEmojis.filter((emoji) =>
-        shortcodeSet.has(emoji.shortcode),
+      '--recent--': recentlyUsedCustomEmojis.filter(
+        (emoji): emoji is CustomEmoji =>
+          typeof emoji !== 'string' && shortcodeSet.has(emoji.shortcode),
       ),
     };
     if (othersCat.length) {
@@ -257,9 +264,8 @@ function CustomEmojisModal({
 
   // Note: in the JS original this is called with the formatted shortcode
   // string `:foo:` (from CustomEmojiButton) and the recent-used path reads
-  // `emoji.shortcode` — which is undefined on a string. Keeping the same
-  // semantics here; the cast preserves the original (buggy) behavior rather
-  // than fixing it as a drive-by.
+  // `emoji.shortcode` — which is undefined on a string. Keep that original
+  // buggy behavior rather than fixing it as a drive-by.
   const onSelectEmoji = useCallback(
     (emoji: string) => {
       onSelect?.(emoji);
@@ -267,21 +273,21 @@ function CustomEmojisModal({
 
       queueMicrotask(() => {
         let recents =
-          store.account.get<CustomEmoji[]>('recentlyUsedCustomEmojis') || [];
-        const emojiAsObj = emoji as unknown as CustomEmoji;
+          store.account.get<StoredCustomEmoji[]>('recentlyUsedCustomEmojis') ||
+          [];
         const recentlyUsedEmojiIndex = recents.findIndex(
-          (e) => e.shortcode === emojiAsObj.shortcode,
+          (e) => storedEmojiShortcode(e) === storedEmojiShortcode(emoji),
         );
         if (recentlyUsedEmojiIndex !== -1) {
           // Move emoji to index 0
           recents.splice(recentlyUsedEmojiIndex, 1);
-          recents.unshift(emojiAsObj);
+          recents.unshift(emoji);
         } else {
-          recents.unshift(emojiAsObj);
+          recents.unshift(emoji);
           // Remove unavailable ones
           recents = recents.filter((e) =>
             customEmojisList.current?.find?.(
-              (other) => other.shortcode === e.shortcode,
+              (other) => other.shortcode === storedEmojiShortcode(e),
             ),
           );
           // Limit to 10
@@ -363,7 +369,7 @@ function CustomEmojisModal({
               e.preventDefault();
               // Original used `matches[0]` unchecked, which throws when
               // `matches` is null; preserve that exact behavior here.
-              const emoji = (matches as unknown as CustomEmoji[])[0];
+              const emoji = matches![0];
               if (emoji) {
                 onSelectEmoji(`:${emoji.shortcode}:`);
               }
