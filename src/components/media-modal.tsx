@@ -26,11 +26,11 @@ const { PHANPY_IMG_ALT_API_URL: IMG_ALT_API_URL } = import.meta.env;
 
 interface MediaAttachment {
   id: string;
-  blurhash?: string;
-  description?: string;
+  blurhash?: string | null;
+  description?: string | null;
   type?: string;
-  url?: string;
-  remoteUrl?: string;
+  url?: string | null;
+  remoteUrl?: string | null;
   [key: string]: unknown;
 }
 

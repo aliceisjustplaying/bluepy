@@ -76,7 +76,7 @@ export type AnyMediaAttachment = Omit<
   previewUrl: string;
   remoteUrl?: string;
   type: mastodon.v1.MediaAttachment['type'];
-  url: string;
+  url?: string | null;
 } & Record<string, unknown>;
 
 interface AnyQuote {
@@ -112,7 +112,7 @@ export type AnyStatus = Omit<
 > & {
   account: AnyAccount;
   card?: AnyPreviewCard | null;
-  editedAt: string;
+  editedAt: string | null;
   language?: string;
   mediaAttachments: AnyMediaAttachment[];
   poll?: AnyPoll;

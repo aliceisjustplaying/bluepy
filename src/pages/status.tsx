@@ -358,7 +358,7 @@ function StatusPage(params: StatusPageParams) {
       _e: unknown,
       currentIndex: number | undefined,
       currentMediaAttachments:
-        | readonly { id?: string; blurhash?: string; url?: string }[]
+        | readonly { id?: string; blurhash?: string | null; url?: string | null }[]
         | undefined,
       carouselRef: { current: HTMLElement | null | undefined } | undefined,
     ) => {

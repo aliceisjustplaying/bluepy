@@ -84,14 +84,7 @@ function stateStatus<T extends mastodon.v1.Status>(
 }
 
 function isAccountInfoShape(account: unknown): account is AccountInfoShape {
-  return (
-    !!account &&
-    typeof account === 'object' &&
-    typeof (account as { id?: unknown }).id === 'string' &&
-    typeof (account as { username?: unknown }).username === 'string' &&
-    typeof (account as { acct?: unknown }).acct === 'string' &&
-    typeof (account as { url?: unknown }).url === 'string'
-  );
+  return !!account && typeof account === 'object';
 }
 
 const supportsInputMonth = mem(() => {

@@ -122,7 +122,7 @@ export interface MediaAttachment {
   previewRemoteUrl?: string | null;
   previewUrl?: string | null;
   remoteUrl?: string | null;
-  url?: string;
+  url?: string | null;
   type?: string;
 }
 
@@ -176,10 +176,10 @@ function Media({
   const height = showOriginal
     ? original?.height
     : small?.height || original?.height;
-  const mediaURL = showOriginal ? url : previewUrl || url;
+  const mediaURL = (showOriginal ? url : previewUrl || url) || undefined;
   const remoteMediaURL = showOriginal
-    ? remoteUrl
-    : previewRemoteUrl || remoteUrl;
+    ? remoteUrl || undefined
+    : previewRemoteUrl || remoteUrl || undefined;
 
   const hasPreviewDimensions = small?.width && small?.height;
   const hasDimensions = width && height;
@@ -763,7 +763,7 @@ function Media({
           ) : isGIF ? (
             <video
               ref={videoRef}
-              src={url}
+              src={url ?? undefined}
               poster={previewUrl as string | undefined}
               width={width}
               height={height}
@@ -889,7 +889,7 @@ function Media({
               // separately via the figcaption above. Inserting an empty
               // <track src=""> would advertise a non-existent captions file.
               <video
-                src={(remoteUrl || url) + '#t=0.1'}
+                src={remoteUrl || url ? `${remoteUrl || url}#t=0.1` : undefined}
                 width={width}
                 height={height}
                 data-orientation={orientation}
@@ -907,7 +907,12 @@ function Media({
             ) : (
               // TODO(oxlint:jsx-a11y/media-has-caption): see note on <video>
               // above; alt-text is surfaced via the figcaption.
-              <audio src={remoteUrl || url} preload="none" controls autoPlay />
+              <audio
+                src={remoteUrl || url || undefined}
+                preload="none"
+                controls
+                autoPlay
+              />
             )
           ) : previewUrl ? (
             <img
