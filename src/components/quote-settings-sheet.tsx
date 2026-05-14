@@ -39,6 +39,21 @@ interface StatusesSelector {
   $select(id: string): { interactionPolicy: InteractionPolicyClient };
 }
 
+interface SaveStatusPayload extends Record<string, unknown> {
+  id?: string;
+  account?: Record<string, unknown> & { id?: string };
+  reblog?: SaveStatusPayload | null;
+  quote?: SaveStatusPayload | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusPayload | null;
+}
+
+function toSaveStatus(
+  status: mastodon.v1.Status | null | undefined,
+): SaveStatusPayload | null | undefined {
+  return status as SaveStatusPayload | null | undefined;
+}
+
 function QuoteSettingsSheet({
   onClose,
   post,
@@ -78,7 +93,7 @@ function QuoteSettingsSheet({
 
       // Update the status with new quote policy
       saveStatus(
-        newStatus as unknown as Parameters<typeof saveStatus>[0],
+        toSaveStatus(newStatus),
         post.instance,
         {
           skipThreading: true,

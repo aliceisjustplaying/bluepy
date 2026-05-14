@@ -34,6 +34,21 @@ const TOTAL_TAGS_LIMIT = TAGS_LIMIT_PER_MODE + 1;
 
 type HashtagStatus = mastodon.v1.Status;
 
+interface SaveStatusPayload extends Record<string, unknown> {
+  id?: string;
+  account?: Record<string, unknown> & { id?: string };
+  reblog?: SaveStatusPayload | null;
+  quote?: SaveStatusPayload | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusPayload | null;
+}
+
+function toSaveStatus(
+  status: HashtagStatus | null | undefined,
+): SaveStatusPayload | null | undefined {
+  return status as SaveStatusPayload | null | undefined;
+}
+
 interface FetchHashtagsResult {
   done?: boolean;
   value: HashtagStatus[] | undefined;
@@ -198,7 +213,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
       // value = filteredItems(value, 'public');
       value.forEach((item) => {
         saveStatus(
-          item as unknown as Parameters<typeof saveStatus>[0],
+          toSaveStatus(item),
           instance,
           {
             skipThreading: media || mediaFirst, // If media view, no need to form threads

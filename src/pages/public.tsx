@@ -24,6 +24,21 @@ interface PublicTimelineItem {
   [key: string]: unknown;
 }
 
+interface SaveStatusPayload extends Record<string, unknown> {
+  id?: string;
+  account?: Record<string, unknown> & { id?: string };
+  reblog?: SaveStatusPayload | null;
+  quote?: SaveStatusPayload | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusPayload | null;
+}
+
+function toSaveStatus(
+  status: PublicTimelineItem | null | undefined,
+): SaveStatusPayload | null | undefined {
+  return status as SaveStatusPayload | null | undefined;
+}
+
 interface PublicTimelineListOptions {
   limit: number;
   local?: boolean;
@@ -125,10 +140,7 @@ function Public({ local, columnMode, ...props }: PublicProps) {
 
       // value = filteredItems(value, 'public');
       value.forEach((item) => {
-        saveStatus(
-          item as unknown as Parameters<typeof saveStatus>[0],
-          instance,
-        );
+        saveStatus(toSaveStatus(item), instance);
       });
     }
     return {
