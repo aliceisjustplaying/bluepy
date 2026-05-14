@@ -46,10 +46,11 @@ function highlightText(
   { maxCharacters = Infinity }: { maxCharacters?: number },
 ): string {
   // Exceeded characters limit
-  const { composerCharacterCount } = states as unknown as {
-    composerCharacterCount?: number;
-  };
-  if ((composerCharacterCount ?? 0) > maxCharacters) {
+  const composerCharacterCount =
+    typeof states.composerCharacterCount === 'number'
+      ? states.composerCharacterCount
+      : 0;
+  if (composerCharacterCount > maxCharacters) {
     // Highlight exceeded characters
     let withinLimitHTML = '',
       exceedLimitHTML = '';
