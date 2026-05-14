@@ -21,7 +21,7 @@ interface NameTextRole {
   name?: string;
 }
 
-interface NameTextAccount {
+export interface NameTextAccount {
   acct: string;
   avatar?: string;
   avatarStatic?: string;
@@ -35,7 +35,7 @@ interface NameTextAccount {
   [key: string]: unknown;
 }
 
-interface NameTextProps {
+export interface NameTextProps {
   account: NameTextAccount | null | undefined;
   instance?: string;
   showAvatar?: boolean;

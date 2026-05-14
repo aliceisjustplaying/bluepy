@@ -45,13 +45,13 @@ interface GiphyResponse {
   pagination?: GiphyPagination;
 }
 
-interface GIFSelectPayload {
+export interface GIFSelectPayload {
   url: string;
   type: 'video/mp4' | 'image/gif';
   alt_text: string | undefined;
 }
 
-interface GIFPickerModalProps {
+export interface GIFPickerModalProps {
   onClose?: (e?: unknown) => void;
   onSelect?: (payload: GIFSelectPayload) => void;
 }

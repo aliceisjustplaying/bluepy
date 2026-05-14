@@ -5,21 +5,19 @@ import { msg, plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { deepEqual } from 'fast-equals';
-import type {
-  ComponentChildren,
-  ComponentType,
-  RefObject,
-  TargetedEvent,
-  TargetedKeyboardEvent,
-  TextareaHTMLAttributes,
-} from 'preact';
+import type { RefObject, TargetedEvent, TargetedKeyboardEvent } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { uid } from 'uid/single';
 import { useSnapshot } from 'valtio';
 
 import supportedLanguages from '../data/status-supported-languages.json';
-import { api, getPreferences } from '../utils/api';
+import {
+  api,
+  getMastoV1Resource,
+  getMastoV2Resource,
+  getPreferences,
+} from '../utils/api';
 import {
   fetchAtprotoLinkMetadata,
   getFirstPostURL,
@@ -58,69 +56,32 @@ type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => unknown;
 };
 
-import AccountBlockUntyped from './account-block';
+import AccountBlockComponent, { type AccountBlockProps } from './account-block';
 // import Avatar from './avatar';
-import CameraCaptureInputRaw, {
+import CameraCaptureInput, {
   supportsCameraCapture,
 } from './camera-capture-input';
-import CharCountMeterUntyped from './char-count-meter';
+import CharCountMeter from './char-count-meter';
 import ComposePoll, { expiryOptions, type PollState } from './compose-poll';
-import TextareaRaw from './compose-textarea';
-
-// Widen TextareaRaw's props to include textarea-specific attrs (placeholder,
-// required) that preact JSX puts on `TextareaHTMLAttributes` rather than the
-// generic `HTMLAttributes`. The underlying component already forwards all
-// extra attrs to the DOM textarea, so this is a typing-only shim.
-const Textarea = TextareaRaw as unknown as ComponentType<
-  TextareaHTMLAttributes & {
-    maxCharacters?: number;
-    onTrigger?: ((payload: ToolbarAction) => void) | null;
-    ref?: RefObject<HTMLTextAreaElement | null> | null;
-  }
->;
-
-type MediaAttachmentsSetter = (
-  updater:
-    | MediaAttachmentLike[]
-    | ((prev: MediaAttachmentLike[]) => MediaAttachmentLike[]),
-) => void;
-
-// CameraCaptureInput and FilePickerInput hardcode a narrow MediaAttachment
-// shape that requires fileData; compose uses the wider MediaAttachmentLike
-// shape with optional fileData (legacy drafts may carry `file` instead).
-// Cast the setters at the boundary so both worlds line up.
-const CameraCaptureInput = CameraCaptureInputRaw as unknown as ComponentType<{
-  hidden?: boolean;
-  disabled?: boolean;
-  supportedMimeTypes?: string[];
-  mediaAttachments?: MediaAttachmentLike[];
-  setMediaAttachments: MediaAttachmentsSetter;
-}>;
-
-const FilePickerInput = FilePickerInputRaw as unknown as ComponentType<{
-  hidden?: boolean;
-  supportedMimeTypes?: string[];
-  maxMediaAttachments?: number;
-  mediaAttachments: MediaAttachmentLike[];
-  disabled?: boolean;
-  setMediaAttachments: MediaAttachmentsSetter;
-}>;
-import CustomEmojisModalUntyped from './custom-emojis-modal';
-import FilePickerInputRaw from './file-picker-input';
-import GIFPickerModalUntyped from './gif-picker-modal';
+import Textarea from './compose-textarea';
+import CustomEmojisModal from './custom-emojis-modal';
+import FilePickerInput from './file-picker-input';
+import GIFPickerModal from './gif-picker-modal';
 import Icon from './icon';
-import LoaderUntyped from './loader';
-import MediaAttachmentUntyped from './media-attachment';
-import MentionModalUntyped from './mention-modal';
+import Loader from './loader';
+import MediaAttachmentComponent, {
+  type MediaAttachmentProps,
+} from './media-attachment';
+import MentionModal from './mention-modal';
 import Menu2 from './menu2';
 import Modal from './modal';
-import QuoteSuggestion from './quote-suggestion';
+import QuoteSuggestionComponent from './quote-suggestion';
 import ScheduledAtField, {
   getLocalTimezoneName,
   MIN_SCHEDULED_AT,
 } from './ScheduledAtField';
-import StatusUntyped from './status';
-import TextExpanderRaw from './text-expander';
+import StatusComponent, { type StatusComponentProps } from './status';
+import TextExpander from './text-expander';
 
 // ---------------------------------------------------------------------------
 // Local type shims for still-untyped peers — narrow to what compose uses.
@@ -291,29 +252,7 @@ function AccountBlock(props: {
   hideDisplayName?: boolean;
   useAvatarStatic?: boolean;
 }) {
-  const Inner = AccountBlockUntyped as unknown as ComponentType<{
-    account?: AccountInfoLike | null;
-    accountInstance?: string;
-    hideDisplayName?: boolean;
-    useAvatarStatic?: boolean;
-  }>;
-  return <Inner {...props} />;
-}
-
-function CharCountMeter(props: { maxCharacters?: number; hidden?: boolean }) {
-  const Inner = CharCountMeterUntyped as unknown as ComponentType<{
-    maxCharacters?: number;
-    hidden?: boolean;
-  }>;
-  return <Inner {...props} />;
-}
-
-function Loader(props: { abrupt?: boolean; hidden?: boolean }) {
-  const Inner = LoaderUntyped as unknown as ComponentType<{
-    abrupt?: boolean;
-    hidden?: boolean;
-  }>;
-  return <Inner {...props} />;
+  return <AccountBlockComponent {...(props as AccountBlockProps)} />;
 }
 
 function MediaAttachment(props: {
@@ -325,16 +264,20 @@ function MediaAttachment(props: {
   onDescriptionChange?: (value: string) => void;
   onRemove?: () => void;
 }) {
-  const Inner = MediaAttachmentUntyped as unknown as ComponentType<{
-    attachment: MediaAttachmentLike;
-    disabled?: boolean;
-    lang?: string;
-    supportedMimeTypes?: string[];
-    descriptionLimit?: number;
-    onDescriptionChange?: (value: string) => void;
-    onRemove?: () => void;
-  }>;
-  return <Inner {...props} />;
+  return <MediaAttachmentComponent {...(props as MediaAttachmentProps)} />;
+}
+
+function QuoteSuggestion(props: Omit<
+  Parameters<typeof QuoteSuggestionComponent>[0],
+  'quoteSuggestion'
+> & {
+  quoteSuggestion?: QuoteSuggestionState | null;
+}) {
+  return (
+    <QuoteSuggestionComponent
+      {...(props as Parameters<typeof QuoteSuggestionComponent>[0])}
+    />
+  );
 }
 
 function Status(props: {
@@ -344,69 +287,8 @@ function Status(props: {
   previewMode?: boolean;
   readOnly?: boolean;
 }) {
-  const Inner = StatusUntyped as unknown as ComponentType<{
-    status?: StatusLike | null;
-    instance?: string;
-    size?: 's' | 'm' | 'l';
-    previewMode?: boolean;
-    readOnly?: boolean;
-  }>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
-
-function CustomEmojisModal(props: {
-  instance?: string;
-  onClose: () => void;
-  defaultSearchTerm?: string | null;
-  onSelect: (emojiShortcode: string) => void;
-}) {
-  const Inner = CustomEmojisModalUntyped as unknown as ComponentType<{
-    instance?: string;
-    onClose: () => void;
-    defaultSearchTerm?: string | null;
-    onSelect: (emojiShortcode: string) => void;
-  }>;
-  return <Inner {...props} />;
-}
-
-function MentionModal(props: {
-  masto: unknown;
-  instance?: string;
-  onClose: () => void;
-  defaultSearchTerm?: string | null;
-  onSelect: (socialAddress: string) => void;
-}) {
-  const Inner = MentionModalUntyped as unknown as ComponentType<{
-    masto: unknown;
-    instance?: string;
-    onClose: () => void;
-    defaultSearchTerm?: string | null;
-    onSelect: (socialAddress: string) => void;
-  }>;
-  return <Inner {...props} />;
-}
-
-function GIFPickerModal(props: {
-  onClose: () => void;
-  onSelect: (payload: { url: string; type: string; alt_text?: string }) => void;
-}) {
-  const Inner = GIFPickerModalUntyped as unknown as ComponentType<{
-    onClose: () => void;
-    onSelect: (payload: {
-      url: string;
-      type: string;
-      alt_text?: string;
-    }) => void;
-  }>;
-  return <Inner {...props} />;
-}
-
-const TextExpander = TextExpanderRaw as unknown as ComponentType<{
-  keys?: string;
-  class?: string;
-  onTrigger?: ((payload: ToolbarAction) => void) | null;
-  children?: ComponentChildren;
-}>;
 
 // Narrow shape for masto v1/v2 used here. Mirrors what drafts.tsx shims.
 interface MastoStatusesEditableSelector {
@@ -423,20 +305,16 @@ interface MastoStatusesEditableSelector {
   ): Promise<unknown>;
 }
 
-interface MastoClientShim {
-  v1: { statuses: MastoStatusesEditableSelector };
-  v2: {
-    media: {
-      create(params: Record<string, unknown>): Promise<{ id?: string }>;
-    };
-  };
+interface MastoMediaResource {
+  create(params: Record<string, unknown>): Promise<{ id?: string }>;
 }
 
 type SupportedLanguageEntry = readonly [string, string, string];
 type PreferencesShape = Record<string, unknown>;
 
-const supportedLanguagesList =
-  supportedLanguages as unknown as SupportedLanguageEntry[];
+const supportedLanguagesList: SupportedLanguageEntry[] = supportedLanguages.map(
+  ([code, common, native]) => [code, common, native],
+);
 
 const supportedLanguagesMap = supportedLanguagesList.reduce<
   Record<string, { common: string; native: string }>
@@ -558,8 +436,8 @@ function insertTextAtCursor({
 
   // Original JS reads selectionStart/selectionEnd directly; for text-y
   // inputs these are numbers in practice. Narrow with non-null assertion.
-  const selectionStart = targetElement.selectionStart as unknown as number;
-  const selectionEnd = targetElement.selectionEnd as unknown as number;
+  const selectionStart = targetElement.selectionStart as number;
+  const selectionEnd = targetElement.selectionEnd as number;
   const { value } = targetElement;
   let textBeforeInsert = value.slice(0, selectionStart);
 
@@ -584,8 +462,7 @@ function insertTextAtCursor({
 
   targetElement.value = newText;
   const newPos = selectionEnd + text.length + spaceAfterInsert.length;
-  targetElement.selectionStart = newPos;
-  targetElement.selectionEnd = newPos;
+  targetElement.selectionStart = targetElement.selectionEnd = newPos;
   targetElement.focus();
   targetElement.dispatchEvent(new Event('input'));
 }
@@ -604,14 +481,18 @@ function Compose({
   const { i18n, t } = useLingui();
   // Lingui macro hides `_` on the returned object; the runtime still exposes
   // it on i18n. Mirror the JS destructure for compatibility with `_(msg)`.
-  const _ = (descriptor: MessageDescriptor): string =>
-    i18n._(descriptor as unknown as Parameters<typeof i18n._>[0]);
+  const _ = (descriptor: MessageDescriptor): string => i18n._(descriptor);
   const rtf = RTF(i18n.locale);
   const lf = LF(i18n.locale);
 
   console.warn('RENDER COMPOSER');
   const apiResult = api();
-  const masto = apiResult.masto as unknown as MastoClientShim;
+  const { masto } = apiResult;
+  const statusesEndpoint = getMastoV1Resource<MastoStatusesEditableSelector>(
+    masto,
+    'statuses',
+  );
+  const mediaEndpoint = getMastoV2Resource<MastoMediaResource>(masto, 'media');
   const { instance } = apiResult;
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
@@ -621,12 +502,8 @@ function Compose({
 
   // Original JS treats currentAccount as non-null when reading `.info`;
   // the `?.atproto` / `?.instanceURL` reads are defensive. Mirror that.
-  const currentAccount = useMemo(getCurrentAccount, []) as unknown as {
-    info: AccountInfoLike;
-    instanceURL?: string;
-    atproto?: boolean;
-  };
-  const currentAccountInfo = currentAccount.info;
+  const currentAccount = useMemo(getCurrentAccount, []);
+  const currentAccountInfo = currentAccount!.info;
 
   interface ConfigurationShape {
     statuses?: {
@@ -965,22 +842,21 @@ function Compose({
     };
   }, []);
 
-  // Latest-value refs so the load effect below can read fresh values
-  // (prefs, masto proxy, current account acct) without depending on their
-  // identity (they would otherwise re-run the effect on every render).
+  // Latest-value refs so the load effect below can read fresh values without
+  // depending on identities that would re-run the effect on every render.
   const prefStringRef = useRef(prefString);
   prefStringRef.current = prefString;
   const prefsRef = useRef(prefs);
   prefsRef.current = prefs;
-  const mastoRef = useRef(masto);
-  mastoRef.current = masto;
+  const statusesEndpointRef = useRef(statusesEndpoint);
+  statusesEndpointRef.current = statusesEndpoint;
   const currentAccountAcctRef = useRef(currentAccountInfo.acct);
   currentAccountAcctRef.current = currentAccountInfo.acct;
 
   useEffect(() => {
     const prefStringFn = prefStringRef.current;
     const prefsLocal = prefsRef.current;
-    const mastoLocal = mastoRef.current;
+    const statusesEndpointLocal = statusesEndpointRef.current;
     const currentAcct = currentAccountAcctRef.current;
     if (replyToStatus) {
       // sensitive read here only for parity with the original JS destructure
@@ -1073,7 +949,7 @@ function Compose({
       setUIState('loading');
       void (async () => {
         try {
-          const statusSource = await mastoLocal.v1.statuses
+          const statusSource = await statusesEndpointLocal
             .$select(editStatus.id)
             .source.fetch();
           console.log({ statusSource });
@@ -1099,7 +975,7 @@ function Compose({
             setQuoteApprovalPolicy(postQuoteApprovalPolicy);
           }
           setSensitive(!!editSensitive);
-          if (composablePoll) setPoll(composablePoll as unknown as PollState);
+          if (composablePoll) setPoll(composablePoll);
           setMediaAttachments(editMediaAttachments ?? []);
           setUIState('default');
         } catch (e) {
@@ -1179,7 +1055,7 @@ function Compose({
       if (draftSensitiveMedia !== null)
         setSensitiveMedia(!!draftSensitiveMedia);
       if (draftSensitive !== null) setSensitive(!!draftSensitive);
-      if (composablePoll) setPoll(composablePoll as unknown as PollState);
+      if (composablePoll) setPoll(composablePoll);
       if (draftMediaAttachments) setMediaAttachments(draftMediaAttachments);
       if (draftScheduledAt) {
         const d =
@@ -1229,9 +1105,7 @@ function Compose({
   }, [sharedData]);
 
   // focus textarea when state.composerState.minimized turns false
-  const snapStates = useSnapshot(states) as unknown as {
-    composerState: ComposerStateShape;
-  };
+  const snapStates = useSnapshot(states);
   useEffect(() => {
     if (!snapStates.composerState.minimized) {
       focusTextarea();
@@ -1343,9 +1217,7 @@ function Compose({
   };
   const updateCharCount = (): void => {
     const count = getCharCount();
-    (
-      states as unknown as { composerCharacterCount: number }
-    ).composerCharacterCount = count;
+    states.composerCharacterCount = count;
   };
   useEffect(updateCharCount, []);
 
@@ -1405,9 +1277,7 @@ function Compose({
     const ns = getCurrentAccountNS();
     return `${ns}#${UID.current}`;
   };
-  const composerState = (
-    states as unknown as { composerState: ComposerStateShape }
-  ).composerState;
+  const composerState = states.composerState;
   const saveUnsavedDraft = (): void => {
     // Not enabling this for editing status
     // I don't think this warrant a draft mode for a status that's already posted
@@ -1457,12 +1327,7 @@ function Compose({
       !canClose()
     ) {
       console.debug('not equal', backgroundDraft, prevBackgroundDraft.current);
-      (
-        db.drafts as unknown as {
-          set(key: string, value: Record<string, unknown>): Promise<unknown>;
-          del(key: string): Promise<unknown>;
-        }
-      )
+      db.drafts
         .set(key, {
           ...backgroundDraft,
           state: 'unsaved',
@@ -1488,9 +1353,7 @@ function Compose({
     // If unmounted, means user discarded the draft
     // Also means pop-out 🙈, but it's okay because the pop-out will persist the ID and re-create the draft
     return () => {
-      void (db.drafts as unknown as { del(key: string): Promise<unknown> }).del(
-        draftKey(),
-      );
+      void db.drafts.del(draftKey());
     };
   }, []);
 
@@ -1563,11 +1426,8 @@ function Compose({
   >(() => {
     const topLanguages: SupportedLanguageEntry[] = [];
     const restLanguages: SupportedLanguageEntry[] = [];
-    const settings = states.settings as unknown as {
-      contentTranslationHideLanguages?: string[];
-    };
     const contentTranslationHideLanguages =
-      settings.contentTranslationHideLanguages ?? [];
+      states.settings.contentTranslationHideLanguages ?? [];
     supportedLanguagesList.forEach((l) => {
       const [code] = l;
       if (
@@ -1695,7 +1555,7 @@ function Compose({
             // />
             <AccountBlock
               account={currentAccountInfo}
-              accountInstance={currentAccount.instanceURL}
+              accountInstance={currentAccount!.instanceURL}
               hideDisplayName
               useAvatarStatic
             />
@@ -2026,7 +1886,7 @@ function Compose({
                         file: fileObj,
                         description,
                       });
-                      return masto.v2.media.create(params).then((res) => {
+                      return mediaEndpoint.create(params).then((res) => {
                         if (res.id) {
                           attachment.id = res.id;
                         }
@@ -2125,7 +1985,7 @@ function Compose({
 
                 let newStatus: unknown;
                 if (editStatus) {
-                  newStatus = await masto.v1.statuses
+                  newStatus = await statusesEndpoint
                     .$select(editStatus.id)
                     .update(params);
                   saveStatus(
@@ -2137,7 +1997,7 @@ function Compose({
                   );
                 } else {
                   try {
-                    newStatus = await masto.v1.statuses.create(params, {
+                    newStatus = await statusesEndpoint.create(params, {
                       requestInit: {
                         headers: {
                           'Idempotency-Key': UID.current,
@@ -2146,7 +2006,7 @@ function Compose({
                     });
                   } catch {
                     // If idempotency key fails, try again without it
-                    newStatus = await masto.v1.statuses.create(params);
+                    newStatus = await statusesEndpoint.create(params);
                   }
                 }
                 composerState.minimized = false;
@@ -2188,8 +2048,11 @@ function Compose({
                   if (action?.name === 'custom-emojis') {
                     setShowEmoji2Picker({
                       targetElement:
-                        spoilerTextRef as unknown as RefObject<HTMLElement | null>,
-                      defaultSearchTerm: action?.defaultSearchTerm || null,
+                        spoilerTextRef as RefObject<HTMLElement | null>,
+                      defaultSearchTerm:
+                        typeof action?.defaultSearchTerm === 'string'
+                          ? action.defaultSearchTerm || null
+                          : null,
                     });
                   }
                 }}
@@ -2432,11 +2295,7 @@ function Compose({
             </div>
           )}
           <QuoteSuggestion
-            quoteSuggestion={
-              quoteSuggestion as unknown as Parameters<
-                typeof QuoteSuggestion
-              >[0]['quoteSuggestion']
-            }
+            quoteSuggestion={quoteSuggestion}
             hasCurrentQuoteStatus={!!currentQuoteStatus?.id}
             onAccept={() => {
               if (!quoteSuggestion) return;
@@ -2902,8 +2761,6 @@ function Compose({
           }}
         >
           <MentionModal
-            masto={masto}
-            instance={instance}
             onClose={() => {
               setShowMentionPicker(false);
             }}

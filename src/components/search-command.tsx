@@ -1,11 +1,6 @@
 import './search-command.css';
 
-import type {
-  ComponentType,
-  Ref,
-  TargetedEvent,
-  TargetedMouseEvent,
-} from 'preact';
+import type { Ref, TargetedMouseEvent } from 'preact';
 import { memo } from 'preact/compat';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -13,23 +8,7 @@ import { useSnapshot } from 'valtio';
 
 import states from '../utils/states';
 
-import SearchFormUntyped from './search-form';
-
-interface SearchFormHandle {
-  setValue?: (value: string) => void;
-  focus?: () => void;
-  select?: () => void;
-  blur?: () => void;
-}
-
-interface SearchFormProps {
-  hidden?: boolean;
-  onSubmit?: (e: TargetedEvent<HTMLFormElement>) => void;
-  ref?: Ref<SearchFormHandle>;
-}
-
-const SearchForm =
-  SearchFormUntyped as unknown as ComponentType<SearchFormProps>;
+import SearchForm, { type SearchFormHandle } from './search-form';
 
 interface SearchCommandProps {
   onClose?: () => void;

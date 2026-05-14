@@ -135,11 +135,11 @@ const CustomEmojisList = memo(({ emojis, onSelect }: CustomEmojisListProps) => {
 
 const CUSTOM_EMOJI_SIZE = 'composer-customEmojiSize';
 
-interface CustomEmojisModalProps {
+export interface CustomEmojisModalProps {
   instance?: string;
   onClose?: () => void;
   onSelect?: (shortcode: string) => void;
-  defaultSearchTerm?: string;
+  defaultSearchTerm?: string | null;
 }
 
 function CustomEmojisModal({

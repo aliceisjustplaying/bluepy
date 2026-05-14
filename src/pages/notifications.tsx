@@ -32,7 +32,9 @@ import Loader from '../components/loader';
 import Modal from '../components/modal';
 import NavMenu from '../components/nav-menu';
 import Notification from '../components/notification';
-import StatusUntyped from '../components/status';
+import StatusComponent, {
+  type StatusComponentProps,
+} from '../components/status';
 import { api } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
 import FilterContext from '../utils/filter-context';
@@ -67,19 +69,12 @@ function InView(props: {
   return <Inner {...props} />;
 }
 
-// `status.jsx` is still untyped (later wave). Mirror just the prop surface
-// used on this page.
 function Status(props: {
   status?: unknown;
   size?: 's' | 'm' | 'l';
   readOnly?: boolean;
 }) {
-  const Inner = StatusUntyped as unknown as ComponentType<{
-    status?: unknown;
-    size?: 's' | 'm' | 'l';
-    readOnly?: boolean;
-  }>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
 // Loose shape for the notification objects this page renders. These come

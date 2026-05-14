@@ -1,7 +1,6 @@
 import './import-accounts-selection.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 
 import states from '../utils/states';
@@ -10,53 +9,12 @@ import {
   saveAccounts,
   type StoredAccount,
 } from '../utils/store-utils';
+import { sorted } from '../utils/sorted';
 
-import AvatarUntyped from './avatar';
+import Avatar from './avatar';
 import Icon from './icon';
 import Loader from './loader';
-import NameTextUntyped from './name-text';
-
-function Avatar(props: {
-  url?: string;
-  staticUrl?: string;
-  size?: string | number;
-  alt?: string;
-  squircle?: boolean;
-  [key: string]: unknown;
-}) {
-  const Inner = AvatarUntyped as unknown as ComponentType<{
-    url?: string;
-    staticUrl?: string;
-    size?: string | number;
-    alt?: string;
-    squircle?: boolean;
-    [key: string]: unknown;
-  }>;
-  return <Inner {...props} />;
-}
-
-function NameText(props: {
-  account?: unknown;
-  instance?: string;
-  showAvatar?: boolean;
-  showAcct?: boolean;
-  short?: boolean;
-  external?: boolean;
-  onClick?: (event: Event) => void;
-  [key: string]: unknown;
-}) {
-  const Inner = NameTextUntyped as unknown as ComponentType<{
-    account?: unknown;
-    instance?: string;
-    showAvatar?: boolean;
-    showAcct?: boolean;
-    short?: boolean;
-    external?: boolean;
-    onClick?: (event: Event) => void;
-    [key: string]: unknown;
-  }>;
-  return <Inner {...props} />;
-}
+import NameText, { type NameTextProps } from './name-text';
 
 type ImportStatus = 'duplicate' | 'new';
 
@@ -95,11 +53,11 @@ function ImportAccountsSelection({
         importStatus: status,
       };
     });
-    const sorted = mapped.toSorted((a, b) => {
+    const sortedAccounts = sorted(mapped, (a, b) => {
       return statusOrder[a.importStatus] - statusOrder[b.importStatus];
     });
 
-    return { accountsToImport: sorted };
+    return { accountsToImport: sortedAccounts };
   }, [importedAccounts, existingAccounts]);
 
   const [selectedAccounts, setSelectedAccounts] = useState<
@@ -217,7 +175,7 @@ function ImportAccountsSelection({
                           acct: /@/.test(account.info.acct as string)
                             ? (account.info.acct as string)
                             : `${account.info.acct as string}@${account.instanceURL}`,
-                        }}
+                        } as NameTextProps['account']}
                         showAcct
                       />
                     </div>
