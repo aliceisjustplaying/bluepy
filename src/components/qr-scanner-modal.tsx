@@ -50,6 +50,12 @@ interface BarcodeDetectorCtor {
   new (options: { formats: string[] }): BarcodeDetectorLike;
 }
 
+declare global {
+  interface Window {
+    BarcodeDetector?: BarcodeDetectorCtor;
+  }
+}
+
 // Placeholder for the demo-style getSize helper from qr/dom.js. Retained to
 // preserve original behavior: readFrame in non-fullSize mode calls it, which
 // would have ReferenceError'd in JS too. Marked unused-safe via cast.
@@ -199,9 +205,7 @@ function QrScannerModal({
         cam = await createQRCamera(videoRef.current as HTMLVideoElement);
 
         if (hasBarcodeDetector) {
-          const BarcodeDetectorCtor = (
-            window as unknown as { BarcodeDetector: BarcodeDetectorCtor }
-          ).BarcodeDetector;
+          const BarcodeDetectorCtor = window.BarcodeDetector as BarcodeDetectorCtor;
           detector = new BarcodeDetectorCtor({ formats: ['qr_code'] });
         } else {
           qrDom = (await import('qr/dom.js')) as unknown as QrDomModule;

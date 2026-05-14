@@ -40,6 +40,10 @@ const postViewState = () =>
     ? 'large'
     : 'small';
 
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => void;
+};
+
 /*
 Media type
 ===
@@ -376,11 +380,12 @@ function Media({
     (e: TargetedMouseEvent<HTMLElement>) => {
       const target = e.target as Element;
       const isOnPostPage = target.closest('.status-deck');
+      const startViewTransition = (document as ViewTransitionDocument)
+        .startViewTransition;
       if (
         showOriginal ||
         (postViewState() === 'large' && isOnPostPage) ||
-        !(document as unknown as { startViewTransition?: unknown })
-          .startViewTransition
+        !startViewTransition
       ) {
         onClick?.(e);
         return;
@@ -399,11 +404,7 @@ function Media({
           if (el.dataset.viewTransitioned) {
             el.style.viewTransitionName = mediaVTN;
             try {
-              (
-                document as unknown as {
-                  startViewTransition: (cb: () => void) => void;
-                }
-              ).startViewTransition(() => {
+              startViewTransition(() => {
                 el.style.viewTransitionName = '';
                 location.hash = `#${to}`;
               });
@@ -697,9 +698,7 @@ function Media({
           //     rgbAverageColor && `rgb(${rgbAverageColor.join(',')})`,
           // }}
           style={
-            (!showOriginal && mediaStyles) as unknown as
-              | CSSProperties
-              | undefined
+            (!showOriginal && mediaStyles) as CSSProperties | false | undefined
           }
           onClick={(e: TargetedMouseEvent<HTMLElement>) => {
             if (hoverAnimate) {
@@ -880,9 +879,7 @@ function Media({
           data-has-alt={!showInlineDesc || undefined}
           onClick={onClick}
           style={
-            (!showOriginal && mediaStyles) as unknown as
-              | CSSProperties
-              | undefined
+            (!showOriginal && mediaStyles) as CSSProperties | false | undefined
           }
         >
           {showOriginal ? (

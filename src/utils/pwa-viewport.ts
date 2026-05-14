@@ -1,3 +1,9 @@
+declare global {
+  interface Navigator {
+    standalone?: boolean;
+  }
+}
+
 function updateViewportForPWA(): void {
   const viewportMeta = document.querySelector('meta[name="viewport"]');
   if (!viewportMeta) return;
@@ -5,8 +11,7 @@ function updateViewportForPWA(): void {
   // Check if running as PWA (standalone mode)
   const isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as unknown as { standalone?: boolean }).standalone ===
-      true || // iOS Safari
+    window.navigator.standalone === true || // iOS Safari
     window.matchMedia('(display-mode: window-controls-overlay)').matches;
 
   if (isStandalone) {

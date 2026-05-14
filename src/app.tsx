@@ -120,7 +120,7 @@ interface AppWindow extends Window {
     end: (name: string) => void;
   };
 }
-const appWindow = window as unknown as AppWindow;
+const appWindow = window as AppWindow;
 
 appWindow.__STATES__ = states;
 appWindow.__STATES_STATS__ = () => {

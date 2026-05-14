@@ -54,6 +54,10 @@ import useThrottledResizeObserver from '../utils/useThrottledResizeObserver';
 import visibilityIconsMap from '../utils/visibility-icons-map';
 import visibilityText from '../utils/visibility-text';
 
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => unknown;
+};
+
 import AccountBlockUntyped from './account-block';
 // import Avatar from './avatar';
 import CameraCaptureInputRaw, {
@@ -1345,8 +1349,7 @@ function Compose({
   };
   useEffect(updateCharCount, []);
 
-  const supportsCloseWatcher = (window as unknown as { CloseWatcher?: unknown })
-    .CloseWatcher;
+  const supportsCloseWatcher = window.CloseWatcher;
   const escDownRef = useRef<boolean>(false);
   useHotkeys(
     'esc',
@@ -2462,11 +2465,8 @@ function Compose({
                 setLocalQuoteStatus(status);
               } else {
                 // Transition the unfurled quote to the quote preview
-                const startVT = (
-                  document as unknown as {
-                    startViewTransition?: (cb: () => void) => unknown;
-                  }
-                ).startViewTransition;
+                const startVT = (document as ViewTransitionDocument)
+                  .startViewTransition;
                 if (startVT) {
                   startVT(() => {
                     setQuoteSuggestion(null);

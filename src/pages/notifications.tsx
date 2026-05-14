@@ -292,9 +292,7 @@ function Notifications({ columnMode }: NotificationsProps) {
   >(false);
   const scrollableRef = useRef<HTMLDivElement | null>(null);
   const { scrollDirection, reachStart, nearReachStart } = useScroll({
-    scrollableRef: scrollableRef as unknown as {
-      current: HTMLElement | null;
-    },
+    scrollableRef,
   });
   const hiddenUI = scrollDirection === 'end' && !nearReachStart;
   const [followRequests, setFollowRequests] = useState<
@@ -638,8 +636,7 @@ function Notifications({ columnMode }: NotificationsProps) {
       if (
         snapStates.settings.autoRefresh &&
         (scrollableRef.current?.scrollTop as number) < 16 &&
-        (disableIdleCheck ||
-          (window as unknown as { __IDLE__?: boolean }).__IDLE__) &&
+        (disableIdleCheck || window.__IDLE__) &&
         !inBackground()
       ) {
         loadNotificationsRef.current(true);
@@ -1375,10 +1372,9 @@ function Notifications({ columnMode }: NotificationsProps) {
               <form
                 onSubmit={(ev: TargetedEvent<HTMLFormElement>) => {
                   ev.preventDefault();
-                  const form = ev.target as unknown as Record<
-                    NotificationsPolicyKey,
-                    { value: string }
-                  >;
+                  const form = ev.currentTarget
+                    .elements as HTMLFormControlsCollection &
+                    Record<NotificationsPolicyKey, HTMLInputElement>;
                   const {
                     forNotFollowing,
                     forNotFollowers,

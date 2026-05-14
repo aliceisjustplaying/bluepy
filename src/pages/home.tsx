@@ -153,6 +153,8 @@ interface ControlledMenuHandle {
   scrollTop?: number;
 }
 
+type ControlledMenuRef = ControlledMenuHandle & HTMLElement;
+
 const NOTIFICATIONS_DISPLAY_LIMIT = 5;
 function NotificationsMenu({
   anchorRef,
@@ -235,7 +237,7 @@ function NotificationsMenu({
     [masto, instance],
   );
 
-  const menuRef = useRef<ControlledMenuHandle | null>(null);
+  const menuRef = useRef<ControlledMenuRef | null>(null);
   const headerHeight = 52;
   useEffect(() => {
     if (state !== 'open') return;
@@ -253,10 +255,10 @@ function NotificationsMenu({
 
   return (
     <ControlledMenu
-      ref={menuRef as unknown as RefObject<HTMLElement>}
+      ref={menuRef}
       menuClassName="notifications-menu"
       state={state}
-      anchorRef={anchorRef as unknown as RefObject<Element>}
+      anchorRef={anchorRef}
       onClose={onClose}
       portal={{
         target: document.body,

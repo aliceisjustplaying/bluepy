@@ -472,8 +472,8 @@ function Search({ columnMode, ...props }: SearchProps) {
       tabIndex={-1}
       ref={(node: HTMLDivElement | null) => {
         scrollableRef.current = node;
-        (jRef as unknown as { current: HTMLDivElement | null }).current = node;
-        (kRef as unknown as { current: HTMLDivElement | null }).current = node;
+        jRef.current = node;
+        kRef.current = node;
       }}
     >
       <div class="timeline-deck deck">

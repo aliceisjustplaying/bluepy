@@ -163,7 +163,7 @@ export default function StatusPostBody({
           isSizeLarge || contentTextWeight
             ? ({
                 '--content-text-weight': textWeight(),
-              } as unknown as CSSProperties)
+              } as CSSProperties)
             : undefined
         }
       >
