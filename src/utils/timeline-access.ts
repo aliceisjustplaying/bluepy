@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, type MastoClient } from './api';
 import store from './store';
 
 type AccessLevel = string;
@@ -8,16 +8,6 @@ type TimelinesAccess = Record<string, Record<string, AccessLevel | undefined>>;
 interface InstanceInfoLike {
   readonly configuration?: {
     readonly timelinesAccess?: TimelinesAccess;
-  };
-}
-
-interface InstanceV2Resource {
-  readonly fetch: () => Promise<InstanceInfoLike | null | undefined>;
-}
-
-interface MastoLike {
-  readonly v2: {
-    readonly instance: InstanceV2Resource;
   };
 }
 
@@ -40,7 +30,7 @@ const MOCK_INSTANCES: Record<string, AccessLevel> = {
 };
 
 async function getInstanceInfo(
-  masto: MastoLike,
+  masto: MastoClient,
   instance: string | undefined,
 ): Promise<InstanceInfoLike | undefined> {
   const instances =
@@ -76,7 +66,6 @@ export async function checkTimelineAccess({
 > {
   const { masto, instance: currentInstance } = api({ instance });
   const instanceName = instance || currentInstance;
-  const mastoTyped = masto as unknown as MastoLike;
 
   try {
     const mockInstance = MOCK_INSTANCES[instanceName?.toLowerCase() ?? ''];
@@ -91,7 +80,7 @@ export async function checkTimelineAccess({
         return result;
       }
 
-      const instanceInfo = await getInstanceInfo(mastoTyped, instanceName);
+      const instanceInfo = await getInstanceInfo(masto, instanceName);
       const result: Record<string, AccessLevel> = {};
       feeds.forEach(({ feed: f, feedType: ft }) => {
         result[`${f}_${ft}`] =
@@ -103,7 +92,7 @@ export async function checkTimelineAccess({
     // Single check
     if (mockInstance) return mockInstance;
 
-    const instanceInfo = await getInstanceInfo(mastoTyped, instanceName);
+    const instanceInfo = await getInstanceInfo(masto, instanceName);
     const timelinesAccess = instanceInfo?.configuration?.timelinesAccess;
     const accessLevel = timelinesAccess?.[feed as string]?.[feedType as string];
     return accessLevel || 'public';

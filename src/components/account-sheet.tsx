@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import { useEffect } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
 import states from '../utils/states';
 import useLocationChange from '../utils/useLocationChange';
 
@@ -82,10 +82,14 @@ function AccountSheet({
         account={account}
         fetchAccount={async () => {
           if (isString) {
-            const accountsEndpoint = masto.v1
-              .accounts as unknown as AccountsLookupV1;
-            const searchEndpoint = masto.v2
-              .search as unknown as SearchV2Endpoint;
+            const accountsEndpoint = getMastoV1Resource<AccountsLookupV1>(
+              masto,
+              'accounts',
+            );
+            const searchEndpoint = getMastoV2Resource<SearchV2Endpoint>(
+              masto,
+              'search',
+            );
             try {
               const info = await accountsEndpoint.lookup({
                 acct: account,
@@ -129,8 +133,10 @@ function AccountSheet({
               return undefined;
             }
           } else {
-            const accountsEndpoint = masto.v1
-              .accounts as unknown as AccountsLookupV1;
+            const accountsEndpoint = getMastoV1Resource<AccountsLookupV1>(
+              masto,
+              'accounts',
+            );
             return accountsEndpoint.$select(account.id).fetch();
           }
         }}

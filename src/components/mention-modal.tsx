@@ -5,24 +5,20 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useDebouncedCallback } from 'use-debounce';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 
 import AccountBlock from './account-block';
 import Icon from './icon';
 import Loader from './loader';
 
-interface AccountSearchEndpoint {
-  readonly v1: {
-    readonly accounts: {
-      readonly search: {
-        list(params: {
-          q: string;
-          limit: number;
-          resolve: boolean;
-        }): Promise<mastodon.v1.Account[]>;
-      };
-    };
+interface AccountSearchResource {
+  readonly search: {
+    list(params: {
+      q: string;
+      limit: number;
+      resolve: boolean;
+    }): Promise<mastodon.v1.Account[]>;
   };
 }
 
@@ -73,9 +69,11 @@ function MentionModal({
       setUIState('loading');
       void (async () => {
         try {
-          const fetchedAccounts = await (
-            masto as unknown as AccountSearchEndpoint
-          ).v1.accounts.search.list({
+          const fetchedAccounts =
+            await getMastoV1Resource<AccountSearchResource>(
+              masto,
+              'accounts',
+            ).search.list({
             q: term,
             limit: 40,
             resolve: false,

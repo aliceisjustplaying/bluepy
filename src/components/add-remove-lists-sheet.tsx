@@ -2,7 +2,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { getUserLists } from '../utils/lists';
 
 import Icon from './icon';
@@ -61,7 +61,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
   // is stable for the sheet's lifetime) so the dep list captures a stable
   // reference. Re-runs follow `reloadCount`/`accountID` as before.
   const accountsEndpoint = useMemo(
-    () => masto.v1.accounts as unknown as AccountListsEndpoint,
+    () => getMastoV1Resource<AccountListsEndpoint>(masto, 'accounts'),
     [masto],
   );
 

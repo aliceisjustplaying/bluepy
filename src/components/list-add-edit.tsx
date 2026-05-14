@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { addListStore, deleteListStore, updateListStore } from '../utils/lists';
 import supports from '../utils/supports';
 
@@ -63,7 +63,7 @@ type UIState = 'default' | 'loading' | 'error';
 function ListAddEdit({ list, onClose }: ListAddEditProps) {
   const { t } = useLingui();
   const { masto } = api();
-  const listsApi = (masto.v1 as unknown as { lists: MastoListsApi }).lists;
+  const listsApi = getMastoV1Resource<MastoListsApi>(masto, 'lists');
   const [uiState, setUIState] = useState<UIState>('default');
   const editMode = !!list;
   const nameFieldRef = useRef<HTMLInputElement | null>(null);

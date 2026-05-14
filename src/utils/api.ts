@@ -26,6 +26,7 @@ import {
 } from './store-utils';
 
 type JsonRecord = Record<string, unknown>;
+type TimelinesAccess = Record<string, Record<string, string | undefined>>;
 
 interface AtprotoSession {
   readonly service?: string;
@@ -45,9 +46,11 @@ interface SearchResult {
 
 type InstanceInfo = JsonRecord & {
   readonly configuration?: {
+    readonly timelinesAccess?: TimelinesAccess;
     readonly urls?: {
       readonly streaming?: string;
     };
+    readonly [key: string]: unknown;
   };
   readonly domain?: string;
   readonly uri?: string;
@@ -56,7 +59,7 @@ type InstanceInfo = JsonRecord & {
   };
 };
 
-interface MastoClient {
+export interface MastoClient {
   readonly v1: {
     readonly accounts: {
       verifyCredentials(): Promise<AccountInfo>;
@@ -252,12 +255,13 @@ export function initClient({
 
   const url = `https://${normalizedInstance}`;
 
-  const masto = createRestAPIClient({
+  const restMastoClient: unknown = createRestAPIClient({
     accessToken: accessToken ?? undefined,
     mediaTimeout: 10 * 60_000,
     timeout: 2 * 60_000,
     url,
-  }) as unknown as MastoClient;
+  });
+  const masto = restMastoClient as MastoClient;
 
   const client: ApiClient = {
     accessToken,
@@ -307,6 +311,20 @@ export function hasInstance(instance: string): boolean {
   const instances =
     store.local.getJSON<Record<string, unknown>>('instances') ?? {};
   return Boolean(instances[instance]);
+}
+
+export function getMastoV1Resource<T>(
+  masto: MastoClient,
+  resourceName: string,
+): T {
+  return masto.v1[resourceName] as T;
+}
+
+export function getMastoV2Resource<T>(
+  masto: MastoClient,
+  resourceName: string,
+): T {
+  return masto.v2[resourceName] as T;
 }
 
 // Get the instance information

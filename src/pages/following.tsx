@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
 import Timeline from '../components/timeline';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
@@ -46,6 +46,10 @@ interface HomeTimelineParams {
 interface HomeIterable {
   values(): AsyncIterator<mastodon.v1.Status[]>;
   params?: HomeTimelineParams | string;
+}
+
+interface HomeTimelineResource {
+  list(options: { limit: number }): HomeIterable;
 }
 
 const LIMIT = 20;
@@ -95,16 +99,11 @@ function Following({ title, path, id, ...props }: FollowingProps) {
   ): Promise<IteratorResult<mastodon.v1.Status[]>> {
     if (firstLoad || !homeIterator.current) {
       __BENCHMARK.start('fetch-home-first');
-      const mastoUntyped = masto as unknown as {
-        v1: {
-          timelines: {
-            home: {
-              list(options: { limit: number }): HomeIterable;
-            };
-          };
-        };
-      };
-      homeIterable.current = mastoUntyped.v1.timelines.home.list({
+      const homeTimeline = getMastoV1Resource<{ home: HomeTimelineResource }>(
+        masto,
+        'timelines',
+      ).home;
+      homeIterable.current = homeTimeline.list({
         limit: LIMIT,
       });
       homeIterator.current = homeIterable.current.values();
@@ -166,18 +165,14 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       if (supportsPixelfed) {
         opts.include_reblogs = true;
       }
-      const mastoUntyped = masto as unknown as {
-        v1: {
-          timelines: {
-            home: {
-              list(o: typeof opts): {
-                values(): AsyncIterator<mastodon.v1.Status[]>;
-              };
-            };
+      const homeTimeline = getMastoV1Resource<{
+        home: {
+          list(o: typeof opts): {
+            values(): AsyncIterator<mastodon.v1.Status[]>;
           };
         };
-      };
-      const results = await mastoUntyped.v1.timelines.home
+      }>(masto, 'timelines').home;
+      const results = await homeTimeline
         .list(opts)
         .values()
         .next();

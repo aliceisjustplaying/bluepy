@@ -13,7 +13,7 @@ import type {
 import { Fragment } from 'preact';
 import { memo } from 'preact/compat';
 
-import { api } from '../utils/api';
+import { api, getMastoV2Resource } from '../utils/api';
 import { isFiltered } from '../utils/filters';
 import shortenNumber from '../utils/shorten-number';
 import states, { statusKey } from '../utils/states';
@@ -720,9 +720,11 @@ function Notification({
         heading: genericAccountsHeading,
         accounts: _accounts,
         fetchAccounts: async () => {
-          const mastoV2Notifications = (
-            masto.v2 as unknown as { notifications: MastoV2Notifications }
-          ).notifications;
+          const mastoV2Notifications =
+            getMastoV2Resource<MastoV2Notifications>(
+              masto,
+              'notifications',
+            );
           // JS original called `.map` on `_groupKeys` directly. Preserve
           // that crash-on-missing behavior with a non-null cast.
           const keyAccounts = await Promise.allSettled(

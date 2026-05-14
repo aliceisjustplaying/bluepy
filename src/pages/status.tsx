@@ -39,7 +39,7 @@ import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import Status from '../components/status';
-import { api } from '../utils/api';
+import { api, getMastoV2Resource } from '../utils/api';
 import {
   EditHistoryProvider,
   useEditHistory,
@@ -1397,16 +1397,14 @@ function StatusThread({
                         setUIState('loading');
                         void (async () => {
                           try {
-                            const results = await (
-                              currentMastoRef.current.v2.search as unknown as {
-                                list(params: {
-                                  q: string;
-                                  type: 'statuses';
-                                  resolve: boolean;
-                                  limit: number;
-                                }): Promise<{ statuses?: { id: string }[] }>;
-                              }
-                            ).list({
+                            const results = await getMastoV2Resource<{
+                              list(params: {
+                                q: string;
+                                type: 'statuses';
+                                resolve: boolean;
+                                limit: number;
+                              }): Promise<{ statuses?: { id: string }[] }>;
+                            }>(currentMastoRef.current, 'search').list({
                               q: heroStatus!.url as string,
                               type: 'statuses',
                               resolve: true,

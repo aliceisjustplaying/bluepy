@@ -16,7 +16,7 @@ import MenuConfirm from '../components/menu-confirm';
 import Menu2 from '../components/menu2';
 import { SHORTCUTS_LIMIT } from '../components/shortcuts-settings';
 import Timeline from '../components/timeline';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
@@ -142,9 +142,10 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const requiresAuth = timelineAccess === 'authenticated';
   const isPrivate = requiresAuth && !authenticated;
 
-  const tagTimelines = (
-    masto.v1 as unknown as { timelines: { tag: HashtagTimelineEndpoint } }
-  ).timelines.tag;
+  const tagTimelines = getMastoV1Resource<{ tag: HashtagTimelineEndpoint }>(
+    masto,
+    'timelines',
+  ).tag;
   const tagsApi = masto.v1.tags as TagsApi;
   const featuredTagsApi = masto.v1.featuredTags as FeaturedTagsApi;
 

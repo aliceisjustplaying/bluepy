@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 
 import Link from '../components/link';
 import Loader from '../components/loader';
-import { api } from '../utils/api';
+import { api, getMastoV2Resource } from '../utils/api';
 import { getInstanceStatusObject } from '../utils/get-instance-status-url';
 
 export default function HttpRoute() {
@@ -43,8 +43,11 @@ export default function HttpRoute() {
       // Fallback to search
       {
         const { masto: currentMasto, instance: currentInstance } = api();
-        const searchResource = currentMasto.v2
-          .search as unknown as mastodon.rest.v2.SearchResource;
+        const searchResource =
+          getMastoV2Resource<mastodon.rest.v2.SearchResource>(
+            currentMasto,
+            'search',
+          );
         const result = await searchResource.list({
           q: url,
           limit: 1,

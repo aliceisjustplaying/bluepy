@@ -73,9 +73,10 @@ export default function useStatusReplyParent({
       }
 
       const abortController = new AbortController();
+      const mastoClient: unknown = masto;
       memFetchAccount(
         inReplyToAccountId,
-        masto as unknown as MastoClientFromApi,
+        mastoClient as MastoClientFromApi,
         abortController.signal,
       )
         .then((fetchedAccount: unknown) => {
