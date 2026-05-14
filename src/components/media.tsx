@@ -381,7 +381,7 @@ function Media({
       const target = e.target as Element;
       const isOnPostPage = target.closest('.status-deck');
       const startViewTransition = (document as ViewTransitionDocument)
-        .startViewTransition;
+        .startViewTransition?.bind(document);
       if (
         showOriginal ||
         (postViewState() === 'large' && isOnPostPage) ||
