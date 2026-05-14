@@ -1,7 +1,6 @@
 import './import-accounts-selection.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 
 import states from '../utils/states';
@@ -14,19 +13,7 @@ import {
 import Avatar from './avatar';
 import Icon from './icon';
 import Loader from './loader';
-import NameTextUntyped from './name-text';
-
-interface NameTextProps {
-  account?: unknown;
-  instance?: string;
-  showAvatar?: boolean;
-  showAcct?: boolean;
-  short?: boolean;
-  external?: boolean;
-  onClick?: (event: Event) => void;
-  [key: string]: unknown;
-}
-const NameText = NameTextUntyped as unknown as ComponentType<NameTextProps>;
+import NameText, { type NameTextProps } from './name-text';
 
 type ImportStatus = 'duplicate' | 'new';
 
@@ -187,7 +174,7 @@ function ImportAccountsSelection({
                           acct: /@/.test(account.info.acct as string)
                             ? (account.info.acct as string)
                             : `${account.info.acct as string}@${account.instanceURL}`,
-                        }}
+                        } as NameTextProps['account']}
                         showAcct
                       />
                     </div>

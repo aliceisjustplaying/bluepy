@@ -33,7 +33,9 @@ import supports from '../utils/supports';
 import AccountBlock from './account-block';
 import AccountHandleInfo from './account-handle-info';
 import Avatar from './avatar';
-import EditProfileSheetUntyped from './edit-profile-sheet';
+import EditProfileSheetComponent, {
+  type EditProfileSheetProps,
+} from './edit-profile-sheet';
 import EmojiText from './emoji-text';
 import Endorsements from './endorsements';
 import Icon from './icon';
@@ -110,15 +112,11 @@ function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
 // ProfileAccount (a deliberately loose local type), but the runtime value is
 // a real mastodon.v1.Account returned by masto.v1.accounts.updateCredentials.
 // This cast preserves that app-level knowledge.
-interface EditProfileSheetCloseArg {
-  state?: string;
-  account?: AccountInfoShape;
+function EditProfileSheet(props: {
+  onClose?: (arg?: { state?: string; account?: AccountInfoShape }) => void;
+}) {
+  return <EditProfileSheetComponent {...(props as EditProfileSheetProps)} />;
 }
-interface EditProfileSheetProps {
-  onClose?: (arg?: EditProfileSheetCloseArg) => void;
-}
-const EditProfileSheet =
-  EditProfileSheetUntyped as unknown as ComponentType<EditProfileSheetProps>;
 
 // Posting stats are derived locally. `daysSinceLastPost` is conditionally
 // set inside fetchPostingStats — keep it optional in the type.

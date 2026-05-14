@@ -4,7 +4,7 @@ const isMobileSafari =
   /iPad|iPhone|iPod/.test(navigator.userAgent) &&
   /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-interface MediaAttachment {
+export interface CameraCaptureMediaAttachment {
   fileData: ArrayBuffer;
   fileName: string;
   type: string;
@@ -14,12 +14,21 @@ interface MediaAttachment {
   description: string | null;
 }
 
-interface CameraCaptureInputProps {
+export interface CameraCaptureInputAttachment
+  extends Partial<CameraCaptureMediaAttachment> {
+  file?: File;
+  [key: string]: unknown;
+}
+
+export interface CameraCaptureInputProps {
   hidden?: boolean;
   disabled?: boolean;
   supportedMimeTypes?: string[];
+  mediaAttachments?: CameraCaptureInputAttachment[];
   setMediaAttachments: (
-    updater: (attachments: MediaAttachment[]) => MediaAttachment[],
+    updater: (
+      attachments: CameraCaptureInputAttachment[],
+    ) => CameraCaptureInputAttachment[],
   ) => void;
 }
 
@@ -57,17 +66,18 @@ function CameraCaptureInput({
             console.error('Failed to read file:', err);
             return;
           }
+          const attachment: CameraCaptureMediaAttachment = {
+            fileData,
+            fileName: mediaFile.name,
+            type: mediaFile.type,
+            size: mediaFile.size,
+            url: URL.createObjectURL(mediaFile),
+            id: null, // indicate uploaded state
+            description: null,
+          };
           setMediaAttachments((attachments) => [
             ...attachments,
-            {
-              fileData,
-              fileName: mediaFile.name,
-              type: mediaFile.type,
-              size: mediaFile.size,
-              url: URL.createObjectURL(mediaFile),
-              id: null, // indicate uploaded state
-              description: null,
-            },
+            attachment as CameraCaptureInputAttachment,
           ]);
           target.value = '';
         })();

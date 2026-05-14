@@ -7,9 +7,9 @@ import haptics from '../utils/haptics';
 import Icon from './icon';
 import Loader from './loader';
 
-interface FollowRequestButtonsProps {
+export interface FollowRequestButtonsProps {
   accountID: string;
-  onChange: () => void;
+  onChange?: () => void;
 }
 
 type RequestState = 'accept' | 'reject' | null;
@@ -51,7 +51,7 @@ function FollowRequestButtons({
                 throw new Error('Follow request not accepted');
               }
               setRelationship(rel);
-              onChange();
+              onChange?.();
             } catch (e) {
               console.error(e);
             }
@@ -76,7 +76,7 @@ function FollowRequestButtons({
                 throw new Error('Follow request not rejected');
               }
               setRelationship(rel);
-              onChange();
+              onChange?.();
             } catch (e) {
               console.error(e);
               setUIState('default');

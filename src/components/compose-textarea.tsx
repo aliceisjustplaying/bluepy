@@ -1,5 +1,5 @@
 import type {
-  HTMLAttributes,
+  TextareaHTMLAttributes,
   Ref,
   RefObject,
   TargetedClipboardEvent,
@@ -123,8 +123,8 @@ const detectLangs = async (input: string): Promise<string[] | null> => {
   return null;
 };
 
-interface TextareaProps extends Omit<
-  HTMLAttributes<HTMLTextAreaElement>,
+export interface TextareaProps extends Omit<
+  TextareaHTMLAttributes,
   'onTrigger'
 > {
   maxCharacters?: number;

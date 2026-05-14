@@ -5,14 +5,7 @@ import { msg, plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { deepEqual } from 'fast-equals';
-import type {
-  ComponentChildren,
-  ComponentType,
-  RefObject,
-  TargetedEvent,
-  TargetedKeyboardEvent,
-  TextareaHTMLAttributes,
-} from 'preact';
+import type { RefObject, TargetedEvent, TargetedKeyboardEvent } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { uid } from 'uid/single';
@@ -58,60 +51,23 @@ type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => unknown;
 };
 
-import AccountBlockUntyped from './account-block';
+import AccountBlockComponent, { type AccountBlockProps } from './account-block';
 // import Avatar from './avatar';
-import CameraCaptureInputRaw, {
+import CameraCaptureInput, {
   supportsCameraCapture,
 } from './camera-capture-input';
 import CharCountMeter from './char-count-meter';
 import ComposePoll, { expiryOptions, type PollState } from './compose-poll';
-import TextareaRaw from './compose-textarea';
-
-// Widen TextareaRaw's props to include textarea-specific attrs (placeholder,
-// required) that preact JSX puts on `TextareaHTMLAttributes` rather than the
-// generic `HTMLAttributes`. The underlying component already forwards all
-// extra attrs to the DOM textarea, so this is a typing-only shim.
-const Textarea = TextareaRaw as unknown as ComponentType<
-  TextareaHTMLAttributes & {
-    maxCharacters?: number;
-    onTrigger?: ((payload: ToolbarAction) => void) | null;
-    ref?: RefObject<HTMLTextAreaElement | null> | null;
-  }
->;
-
-type MediaAttachmentsSetter = (
-  updater:
-    | MediaAttachmentLike[]
-    | ((prev: MediaAttachmentLike[]) => MediaAttachmentLike[]),
-) => void;
-
-// CameraCaptureInput and FilePickerInput hardcode a narrow MediaAttachment
-// shape that requires fileData; compose uses the wider MediaAttachmentLike
-// shape with optional fileData (legacy drafts may carry `file` instead).
-// Cast the setters at the boundary so both worlds line up.
-const CameraCaptureInput = CameraCaptureInputRaw as unknown as ComponentType<{
-  hidden?: boolean;
-  disabled?: boolean;
-  supportedMimeTypes?: string[];
-  mediaAttachments?: MediaAttachmentLike[];
-  setMediaAttachments: MediaAttachmentsSetter;
-}>;
-
-const FilePickerInput = FilePickerInputRaw as unknown as ComponentType<{
-  hidden?: boolean;
-  supportedMimeTypes?: string[];
-  maxMediaAttachments?: number;
-  mediaAttachments: MediaAttachmentLike[];
-  disabled?: boolean;
-  setMediaAttachments: MediaAttachmentsSetter;
-}>;
-import CustomEmojisModalUntyped from './custom-emojis-modal';
-import FilePickerInputRaw from './file-picker-input';
-import GIFPickerModalUntyped from './gif-picker-modal';
+import Textarea from './compose-textarea';
+import CustomEmojisModal from './custom-emojis-modal';
+import FilePickerInput from './file-picker-input';
+import GIFPickerModal from './gif-picker-modal';
 import Icon from './icon';
 import Loader from './loader';
-import MediaAttachmentUntyped from './media-attachment';
-import MentionModalUntyped from './mention-modal';
+import MediaAttachmentComponent, {
+  type MediaAttachmentProps,
+} from './media-attachment';
+import MentionModal from './mention-modal';
 import Menu2 from './menu2';
 import Modal from './modal';
 import QuoteSuggestion from './quote-suggestion';
@@ -119,8 +75,8 @@ import ScheduledAtField, {
   getLocalTimezoneName,
   MIN_SCHEDULED_AT,
 } from './ScheduledAtField';
-import StatusUntyped from './status';
-import TextExpanderRaw from './text-expander';
+import StatusComponent, { type StatusComponentProps } from './status';
+import TextExpander from './text-expander';
 
 // ---------------------------------------------------------------------------
 // Local type shims for still-untyped peers — narrow to what compose uses.
@@ -291,13 +247,7 @@ function AccountBlock(props: {
   hideDisplayName?: boolean;
   useAvatarStatic?: boolean;
 }) {
-  const Inner = AccountBlockUntyped as unknown as ComponentType<{
-    account?: AccountInfoLike | null;
-    accountInstance?: string;
-    hideDisplayName?: boolean;
-    useAvatarStatic?: boolean;
-  }>;
-  return <Inner {...props} />;
+  return <AccountBlockComponent {...(props as AccountBlockProps)} />;
 }
 
 function MediaAttachment(props: {
@@ -309,16 +259,7 @@ function MediaAttachment(props: {
   onDescriptionChange?: (value: string) => void;
   onRemove?: () => void;
 }) {
-  const Inner = MediaAttachmentUntyped as unknown as ComponentType<{
-    attachment: MediaAttachmentLike;
-    disabled?: boolean;
-    lang?: string;
-    supportedMimeTypes?: string[];
-    descriptionLimit?: number;
-    onDescriptionChange?: (value: string) => void;
-    onRemove?: () => void;
-  }>;
-  return <Inner {...props} />;
+  return <MediaAttachmentComponent {...(props as MediaAttachmentProps)} />;
 }
 
 function Status(props: {
@@ -328,69 +269,8 @@ function Status(props: {
   previewMode?: boolean;
   readOnly?: boolean;
 }) {
-  const Inner = StatusUntyped as unknown as ComponentType<{
-    status?: StatusLike | null;
-    instance?: string;
-    size?: 's' | 'm' | 'l';
-    previewMode?: boolean;
-    readOnly?: boolean;
-  }>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
-
-function CustomEmojisModal(props: {
-  instance?: string;
-  onClose: () => void;
-  defaultSearchTerm?: string | null;
-  onSelect: (emojiShortcode: string) => void;
-}) {
-  const Inner = CustomEmojisModalUntyped as unknown as ComponentType<{
-    instance?: string;
-    onClose: () => void;
-    defaultSearchTerm?: string | null;
-    onSelect: (emojiShortcode: string) => void;
-  }>;
-  return <Inner {...props} />;
-}
-
-function MentionModal(props: {
-  masto: unknown;
-  instance?: string;
-  onClose: () => void;
-  defaultSearchTerm?: string | null;
-  onSelect: (socialAddress: string) => void;
-}) {
-  const Inner = MentionModalUntyped as unknown as ComponentType<{
-    masto: unknown;
-    instance?: string;
-    onClose: () => void;
-    defaultSearchTerm?: string | null;
-    onSelect: (socialAddress: string) => void;
-  }>;
-  return <Inner {...props} />;
-}
-
-function GIFPickerModal(props: {
-  onClose: () => void;
-  onSelect: (payload: { url: string; type: string; alt_text?: string }) => void;
-}) {
-  const Inner = GIFPickerModalUntyped as unknown as ComponentType<{
-    onClose: () => void;
-    onSelect: (payload: {
-      url: string;
-      type: string;
-      alt_text?: string;
-    }) => void;
-  }>;
-  return <Inner {...props} />;
-}
-
-const TextExpander = TextExpanderRaw as unknown as ComponentType<{
-  keys?: string;
-  class?: string;
-  onTrigger?: ((payload: ToolbarAction) => void) | null;
-  children?: ComponentChildren;
-}>;
 
 // Narrow shape for masto v1/v2 used here. Mirrors what drafts.tsx shims.
 interface MastoStatusesEditableSelector {
@@ -2172,7 +2052,10 @@ function Compose({
                     setShowEmoji2Picker({
                       targetElement:
                         spoilerTextRef as RefObject<HTMLElement | null>,
-                      defaultSearchTerm: action?.defaultSearchTerm || null,
+                      defaultSearchTerm:
+                        typeof action?.defaultSearchTerm === 'string'
+                          ? action.defaultSearchTerm || null
+                          : null,
                     });
                   }
                 }}
@@ -2885,8 +2768,6 @@ function Compose({
           }}
         >
           <MentionModal
-            masto={masto}
-            instance={instance}
             onClose={() => {
               setShowMentionPicker(false);
             }}

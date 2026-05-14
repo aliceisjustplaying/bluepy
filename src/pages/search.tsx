@@ -23,7 +23,9 @@ import Loader from '../components/loader';
 import NavMenu from '../components/nav-menu';
 import RecentSearches from '../components/recent-searches';
 import SearchForm from '../components/search-form';
-import StatusUntyped from '../components/status';
+import StatusComponent, {
+  type StatusComponentProps,
+} from '../components/status';
 import { api, getMastoV2Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import shortenNumber from '../utils/shorten-number';
@@ -43,10 +45,7 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
 function Status(props: {
   status: mastodon.v1.Status;
 }) {
-  const Inner = StatusUntyped as unknown as ComponentType<{
-    status: mastodon.v1.Status;
-  }>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 function InView(props: {
   onChange?: (inView: boolean) => void;

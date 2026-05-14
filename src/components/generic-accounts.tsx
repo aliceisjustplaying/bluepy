@@ -16,22 +16,15 @@ import AccountBlock from './account-block';
 import Icon from './icon';
 import Link from './link';
 import Loader from './loader';
-import StatusUntyped from './status';
+import StatusComponent, { type StatusComponentProps } from './status';
 
-// `status.jsx` has not been migrated yet; type it permissively here.
 function Status(props: {
   status?: unknown;
   size?: string;
   readOnly?: boolean;
   [key: string]: unknown;
 }) {
-  const Inner = StatusUntyped as unknown as ComponentType<{
-    status?: unknown;
-    size?: string;
-    readOnly?: boolean;
-    [key: string]: unknown;
-  }>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
 // `react-intersection-observer`'s `InView` ships without working JSX

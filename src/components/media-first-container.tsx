@@ -1,21 +1,14 @@
-import type { ComponentType } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 import isRTL from '../utils/is-rtl';
 
 import Icon from './icon';
-import MediaRaw from './media';
+import Media from './media';
 
 interface MediaAttachment {
   id: string;
   [key: string]: unknown;
 }
-
-const Media = MediaRaw as unknown as ComponentType<{
-  media: MediaAttachment;
-  lang?: string;
-  to?: string;
-}>;
 
 interface MediaFirstContainerProps {
   mediaAttachments: MediaAttachment[];

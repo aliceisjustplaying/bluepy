@@ -51,14 +51,14 @@ interface SearchSuggestionFresh extends SearchSuggestionBase {
 
 type SearchSuggestionItem = SearchSuggestionRecent | SearchSuggestionFresh;
 
-interface SearchFormHandle {
+export interface SearchFormHandle {
   setValue: (value: string) => void;
   focus: () => void;
   select: () => void;
   blur: () => void;
 }
 
-interface SearchFormProps {
+export interface SearchFormProps {
   hidden?: boolean;
   onSubmit?: (e: Event) => void;
 }

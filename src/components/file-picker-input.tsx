@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro';
 import type { TargetedEvent } from 'preact';
 
-interface MediaAttachment {
+export interface FilePickerMediaAttachment {
   fileData: ArrayBuffer;
   fileName: string;
   type: string;
@@ -11,14 +11,22 @@ interface MediaAttachment {
   description: string | null;
 }
 
-interface FilePickerInputProps {
+export interface FilePickerInputAttachment
+  extends Partial<FilePickerMediaAttachment> {
+  file?: File;
+  [key: string]: unknown;
+}
+
+export interface FilePickerInputProps {
   hidden?: boolean;
   supportedMimeTypes?: string[];
   maxMediaAttachments?: number;
-  mediaAttachments: MediaAttachment[];
+  mediaAttachments: FilePickerInputAttachment[];
   disabled?: boolean;
   setMediaAttachments: (
-    updater: (attachments: MediaAttachment[]) => MediaAttachment[],
+    updater: (
+      attachments: FilePickerInputAttachment[],
+    ) => FilePickerInputAttachment[],
   ) => void;
 }
 
@@ -49,7 +57,7 @@ function FilePickerInput({
         if (!files) return;
 
         void (async () => {
-          let mediaFiles: MediaAttachment[];
+          let mediaFiles: FilePickerMediaAttachment[];
           try {
             mediaFiles = await Promise.all(
               Array.from(files).map(async (file) => ({
@@ -81,7 +89,9 @@ function FilePickerInput({
             );
           } else {
             setMediaAttachments((attachments) => {
-              return attachments.concat(mediaFiles);
+              return attachments.concat(
+                mediaFiles as FilePickerInputAttachment[],
+              );
             });
           }
           // Reset

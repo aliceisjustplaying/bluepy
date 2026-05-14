@@ -1,7 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { getBlurHashAverageColor } from 'fast-blurhash';
-import type { ComponentType } from 'preact';
 import {
   useEffect,
   useLayoutEffect,
@@ -19,7 +18,7 @@ import store from '../utils/store';
 
 import Icon from './icon';
 import Link from './link';
-import MediaRaw from './media';
+import Media from './media';
 import MenuLink from './menu-link';
 import Menu2 from './menu2';
 
@@ -55,7 +54,7 @@ type CarouselCloseHandler = (
   carouselRef?: { current: HTMLDivElement | null },
 ) => void;
 
-interface MediaModalProps {
+export interface MediaModalProps {
   mediaAttachments: MediaAttachment[];
   statusID?: string;
   instance?: string;
@@ -63,12 +62,6 @@ interface MediaModalProps {
   index?: number;
   onClose?: CarouselCloseHandler;
 }
-
-const Media = MediaRaw as unknown as ComponentType<{
-  media: MediaAttachment;
-  showOriginal?: boolean;
-  lang?: string;
-}>;
 
 function MediaModal({
   mediaAttachments,
