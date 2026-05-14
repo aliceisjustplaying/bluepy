@@ -2,7 +2,7 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import { useRef } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import shortenNumber from '../utils/shorten-number';
 import states from '../utils/states';
 
@@ -39,8 +39,8 @@ export default function AccountInfoMini({
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
 
   const { masto } = api({ instance });
-  const accountsResource = masto.v1
-    .accounts as unknown as mastodon.rest.v1.AccountsResource;
+  const accountsResource =
+    getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
 
   async function fetchFollowers(firstLoad?: boolean) {
     if (!id) return { value: [], done: true };

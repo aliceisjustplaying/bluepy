@@ -1,6 +1,6 @@
 import type { mastodon } from 'masto';
 
-import { api } from './api';
+import { api, getMastoV1Resource, getMastoV2Resource } from './api';
 import db from './db';
 import isSearchEnabled from './is-search-enabled';
 import store from './store';
@@ -125,7 +125,10 @@ export async function fetchYearPosts(
 
   const searchEnabled = await isSearchEnabled(instance);
 
-  const accountsEndpoint = masto.v1.accounts as unknown as AccountsEndpoint;
+  const accountsEndpoint = getMastoV1Resource<AccountsEndpoint>(
+    masto,
+    'accounts',
+  );
 
   // Use search strategies if available
   let maxId: string | null = null;
@@ -147,8 +150,10 @@ export async function fetchYearPosts(
           // Use "before" search to find last post before year ends
           const beforeStr = `${year + 1}-01-02`;
           try {
-            const searchEndpoint = masto.v2
-              .search as unknown as SearchV2Endpoint;
+            const searchEndpoint = getMastoV2Resource<SearchV2Endpoint>(
+              masto,
+              'search',
+            );
             const beforeResults = await searchEndpoint.list({
               q: `from:${accountAcct} before:${beforeStr}`,
               type: 'statuses',

@@ -5,7 +5,7 @@ import type { HTMLAttributes, Ref } from 'preact';
 import { forwardRef, useImperativeHandle } from 'preact/compat';
 import { useEffect, useRef } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
 import { getCustomEmojis } from '../utils/custom-emojis';
 import emojifyText from '../utils/emojify-text';
 import getDomain from '../utils/get-domain';
@@ -29,6 +29,24 @@ interface AccountResult {
   history?: { uses?: number | string }[];
   roles?: { name?: string }[];
   url?: string;
+}
+
+interface AccountSearchResource {
+  search: {
+    list(options: {
+      q: string;
+      limit: number;
+      resolve: boolean;
+    }): Promise<AccountResult[]>;
+  };
+}
+
+interface TextExpanderSearchResource {
+  list(options: {
+    type: string;
+    q: string;
+    limit: number;
+  }): Promise<Record<string, AccountResult[] | undefined>>;
 }
 
 interface TextExpanderChangeDetail {
@@ -195,35 +213,25 @@ function TextExpander(
             try {
               let searchResults: AccountResult[];
               if (type === 'accounts') {
-                searchResults = await (
-                  masto.v1.accounts as unknown as {
-                    search: {
-                      list(options: {
-                        q: string;
-                        limit: number;
-                        resolve: boolean;
-                      }): Promise<AccountResult[]>;
-                    };
-                  }
-                ).search.list({
-                  q: text,
-                  limit: 5,
-                  resolve: false,
-                });
+                searchResults =
+                  await getMastoV1Resource<AccountSearchResource>(
+                    masto,
+                    'accounts',
+                  ).search.list({
+                    q: text,
+                    limit: 5,
+                    resolve: false,
+                  });
               } else {
-                const response = await (
-                  masto.v2.search as unknown as {
-                    list(options: {
-                      type: string;
-                      q: string;
-                      limit: number;
-                    }): Promise<Record<string, AccountResult[] | undefined>>;
-                  }
-                ).list({
-                  type,
-                  q: text,
-                  limit: 5,
-                });
+                const response =
+                  await getMastoV2Resource<TextExpanderSearchResource>(
+                    masto,
+                    'search',
+                  ).list({
+                    type,
+                    q: text,
+                    limit: 5,
+                  });
                 searchResults =
                   response[type] || (response as unknown as AccountResult[]);
               }

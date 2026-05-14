@@ -26,7 +26,12 @@ import Icon from '../components/icon';
 import Link from '../components/link';
 import Menu2 from '../components/menu2';
 import Timeline from '../components/timeline';
-import { api } from '../utils/api';
+import {
+  api,
+  getMastoV1Resource,
+  getMastoV2Resource,
+  type MastoClient,
+} from '../utils/api';
 import isSearchEnabled from '../utils/is-search-enabled';
 import mem from '../utils/mem';
 import pmem from '../utils/pmem';
@@ -234,8 +239,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         searchOffsetRef.current += LIMIT;
       }
 
-      const searchResource = masto.v2
-        .search as unknown as mastodon.rest.v2.SearchResource;
+      const searchResource =
+        getMastoV2Resource<mastodon.rest.v2.SearchResource>(masto, 'search');
       const searchResults = await searchResource.list({
         q: `from:${account.acct} after:${afterStr} before:${beforeStr}`,
         type: 'statuses',
@@ -255,8 +260,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     }
 
     let results: TimelineItem[] = [];
-    const accountsResource = masto.v1
-      .accounts as unknown as mastodon.rest.v1.AccountsResource;
+    const accountsResource =
+      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(
+        masto,
+        'accounts',
+      );
     if (firstLoad && !columnMode) {
       const { value } = await accountsResource
         .$select(id as string)
@@ -378,8 +386,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   }, [id, masto]);
 
   useEffect(() => {
-    const accountsResource = masto.v1
-      .accounts as unknown as mastodon.rest.v1.AccountsResource;
+    const accountsResource =
+      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(
+        masto,
+        'accounts',
+      );
     void (async () => {
       try {
         const acc = await refetchAccount();
@@ -793,8 +804,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                     const { masto: instanceMasto } = api({
                       instance: accountInstance as string | undefined,
                     });
-                    const accountsResource = instanceMasto.v1
-                      .accounts as unknown as mastodon.rest.v1.AccountsResource;
+                    const accountsResource =
+                      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(
+                        instanceMasto,
+                        'accounts',
+                      );
                     const acc = await accountsResource.lookup({
                       acct: (account as Account).acct,
                     });
@@ -825,8 +839,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                 onClick={() => {
                   void (async () => {
                     try {
-                      const accountsResource = currentMasto.v1
-                        .accounts as unknown as mastodon.rest.v1.AccountsResource;
+                      const accountsResource =
+                        getMastoV1Resource<mastodon.rest.v1.AccountsResource>(
+                          currentMasto,
+                          'accounts',
+                        );
                       const acc = await accountsResource.lookup({
                         acct: (account as Account).acct + '@' + instance,
                       });
@@ -975,12 +992,9 @@ function MonthPicker(props: MonthPickerProps) {
   );
 }
 
-function fetchAccount(
-  id: string,
-  masto: { v1: { accounts: unknown } },
-): Promise<Account> {
-  const accountsResource = masto.v1
-    .accounts as mastodon.rest.v1.AccountsResource;
+function fetchAccount(id: string, masto: MastoClient): Promise<Account> {
+  const accountsResource =
+    getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
   return accountsResource.$select(id).fetch();
 }
 const memFetchAccount = pmem(fetchAccount, {

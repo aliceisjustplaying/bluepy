@@ -15,7 +15,12 @@ import LangSelector from '../components/lang-selector';
 import Link from '../components/link';
 import RelativeTime from '../components/relative-time';
 import languages from '../data/translang-languages.json';
-import { api, getPreferences, setPreferences } from '../utils/api';
+import {
+  api,
+  getMastoV1Resource,
+  getPreferences,
+  setPreferences,
+} from '../utils/api';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import localeCode2Text from '../utils/localeCode2Text';
 import prettyBytes from '../utils/pretty-bytes';
@@ -325,9 +330,9 @@ function Settings({ onClose }: SettingsProps): VNode {
                       const { value } = e.currentTarget;
                       void (async () => {
                         try {
-                          await (
-                            masto.v1
-                              .accounts as unknown as AccountsUpdateCredentialsClient
+                          await getMastoV1Resource<AccountsUpdateCredentialsClient>(
+                            masto,
+                            'accounts',
                           ).updateCredentials({
                             source: {
                               privacy: value,
@@ -381,9 +386,9 @@ function Settings({ onClose }: SettingsProps): VNode {
                         const { value } = e.currentTarget;
                         void (async () => {
                           try {
-                            await (
-                              masto.v1
-                                .accounts as unknown as AccountsUpdateCredentialsClient
+                            await getMastoV1Resource<AccountsUpdateCredentialsClient>(
+                              masto,
+                              'accounts',
                             ).updateCredentials({
                               source: {
                                 quote_policy: value,

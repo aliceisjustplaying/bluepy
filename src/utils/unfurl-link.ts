@@ -1,7 +1,7 @@
 import PQueue from 'p-queue';
 import { snapshot } from 'valtio/vanilla';
 
-import { api } from './api';
+import { api, getMastoV2Resource } from './api';
 import getDomain from './get-domain';
 // TODO(oxlint:import/no-cycle): states <-> unfurl-link cycle is structural;
 // breaking it requires extracting unfurled-link types into a separate module
@@ -152,7 +152,10 @@ function unfurlMastodonLinkImpl(
   }
 
   const { masto } = api({ instance });
-  const searchEndpoint = masto.v2.search as unknown as SearchV2Endpoint;
+  const searchEndpoint = getMastoV2Resource<SearchV2Endpoint>(
+    masto,
+    'search',
+  );
   const mastoSearchFetch: Promise<UnfurlResult> = searchEndpoint
     .fetch({
       q: theURL,

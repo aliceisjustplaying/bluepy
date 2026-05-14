@@ -3,7 +3,7 @@ import type { mastodon } from 'masto';
 import { useEffect, useState } from 'preact/hooks';
 
 import Timeline2 from '../components/timeline2';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
@@ -105,9 +105,10 @@ function Following2({ title, path, id, ...props }: Following2Props) {
       opts.include_reblogs = true;
     }
 
-    const homeResource = (
-      masto.v1 as unknown as { timelines: { home: HomeTimelineResource } }
-    ).timelines.home;
+    const homeResource = getMastoV1Resource<{ home: HomeTimelineResource }>(
+      masto,
+      'timelines',
+    ).home;
     const results = await homeResource.list(opts).values().next();
     let { value } = results as { value: mastodon.v1.Status[] | undefined };
 
@@ -152,9 +153,10 @@ function Following2({ title, path, id, ...props }: Following2Props) {
       if (supportsPixelfed) {
         opts.include_reblogs = true;
       }
-      const homeResource = (
-        masto.v1 as unknown as { timelines: { home: HomeTimelineResource } }
-      ).timelines.home;
+      const homeResource = getMastoV1Resource<{ home: HomeTimelineResource }>(
+        masto,
+        'timelines',
+      ).home;
       const results = await homeResource.list(opts).values().next();
       const { value } = results as {
         value: mastodon.v1.Status[] | undefined;

@@ -1,5 +1,5 @@
 // Utils for web push subscriptions
-import { api } from './api';
+import { api, getMastoV1Resource } from './api';
 import { getVapidKey } from './store-utils';
 
 // Subscription is an object with the following structure:
@@ -48,9 +48,10 @@ interface BackendPushSubscription {
 
 function pushSubscriptionEndpoint(): PushSubscriptionEndpoint {
   const { masto } = api();
-  return (
-    masto.v1 as unknown as { push: { subscription: PushSubscriptionEndpoint } }
-  ).push.subscription;
+  return getMastoV1Resource<{ subscription: PushSubscriptionEndpoint }>(
+    masto,
+    'push',
+  ).subscription;
 }
 
 // Back-end CRUD

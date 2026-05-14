@@ -2,7 +2,7 @@ import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import supports from '../utils/supports';
 
@@ -47,7 +47,7 @@ function Endorsements({
   // memoize the typed endpoint so the effect's dep list captures a stable
   // reference. The underlying client is stable for the component's lifetime.
   const accountsEndpoint = useMemo(
-    () => masto.v1.accounts as unknown as AccountEndorsementsEndpoint,
+    () => getMastoV1Resource<AccountEndorsementsEndpoint>(masto, 'accounts'),
     [masto],
   );
 

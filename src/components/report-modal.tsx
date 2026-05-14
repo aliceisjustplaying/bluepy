@@ -7,7 +7,7 @@ import type { mastodon } from 'masto';
 import { Fragment, type ComponentType, type InputHTMLAttributes } from 'preact';
 import { useMemo, useRef, useState } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import localeMatch from '../utils/locale-match';
 import showToast from '../utils/show-toast';
 import { getCurrentInstance } from '../utils/store-utils';
@@ -148,32 +148,36 @@ interface ReportModalProps {
   onClose: () => void;
 }
 
-interface MastoReportsClient {
-  v1: {
-    reports: {
-      create(params: {
-        accountId: string;
-        statusIds?: string[];
-        category: string;
-        comment?: string;
-        ruleIds?: string[];
-        forward?: boolean;
-      }): Promise<unknown>;
-    };
-    accounts: {
-      $select(id: string): {
-        mute(): Promise<unknown>;
-        block(): Promise<unknown>;
-      };
-    };
+interface ReportsResource {
+  create(params: {
+    accountId: string;
+    statusIds?: string[];
+    category: string;
+    comment?: string;
+    ruleIds?: string[];
+    forward?: boolean;
+  }): Promise<unknown>;
+}
+
+interface ReportAccountsResource {
+  $select(id: string): {
+    mute(): Promise<unknown>;
+    block(): Promise<unknown>;
   };
 }
 
 function ReportModal({ account, post, onClose }: ReportModalProps) {
   const { t, i18n } = useLingui();
   const _ = (descriptor: MessageDescriptor) => i18n._(descriptor);
-  const { masto: mastoBase } = api();
-  const masto = mastoBase as unknown as MastoReportsClient;
+  const { masto } = api();
+  const reportsResource = getMastoV1Resource<ReportsResource>(
+    masto,
+    'reports',
+  );
+  const accountsResource = getMastoV1Resource<ReportAccountsResource>(
+    masto,
+    'accounts',
+  );
   const [uiState, setUIState] = useState<
     'default' | 'loading' | 'success' | 'error'
   >('default');
@@ -272,7 +276,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
             setUIState('loading');
             void (async () => {
               try {
-                await masto.v1.reports.create({
+                await reportsResource.create({
                   accountId: account.id,
                   statusIds: post?.id ? [post.id] : undefined,
                   category,
@@ -416,7 +420,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               onClick={() => {
                 void (async () => {
                   try {
-                    await masto.v1.accounts.$select(account.id).mute(); // Infinite duration
+                    await accountsResource.$select(account.id).mute(); // Infinite duration
                     showToast(t`Muted ${username}`);
                   } catch (e) {
                     console.error(e);
@@ -437,7 +441,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               onClick={() => {
                 void (async () => {
                   try {
-                    await masto.v1.accounts.$select(account.id).block();
+                    await accountsResource.$select(account.id).block();
                     showToast(t`Blocked ${username}`);
                   } catch (e) {
                     console.error(e);

@@ -7,7 +7,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import Link from '../components/link';
 import Timeline from '../components/timeline';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { fixNotifications } from '../utils/group-notifications';
 import { fetchRelationships } from '../utils/relationships';
 import { saveStatus } from '../utils/states';
@@ -60,16 +60,14 @@ interface MentionsProps {
 function Mentions({ columnMode, ...props }: MentionsProps) {
   const { t } = useLingui();
   const { masto, instance } = api();
-  const notificationsApi = (
-    masto.v1 as unknown as {
-      notifications: MastoNotificationsApi;
-    }
-  ).notifications;
-  const conversationsApi = (
-    masto.v1 as unknown as {
-      conversations: MastoConversationsApi;
-    }
-  ).conversations;
+  const notificationsApi = getMastoV1Resource<MastoNotificationsApi>(
+    masto,
+    'notifications',
+  );
+  const conversationsApi = getMastoV1Resource<MastoConversationsApi>(
+    masto,
+    'conversations',
+  );
   const [routerSearchParams] = useSearchParams();
   const searchParams = columnMode ? emptySearchParams : routerSearchParams;
   const [stateType, setStateType] = useState<string | null>(null);

@@ -4,7 +4,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 
 import Icon from './icon';
 import Link from './link';
@@ -55,8 +55,10 @@ export default function QuotesModal({
   // identity tied to the (stable) `masto` client.
   const statusesSelect = useMemo(
     () =>
-      (masto.v1 as unknown as { statuses: { $select: StatusesSelectFn } })
-        .statuses.$select,
+      getMastoV1Resource<{ $select: StatusesSelectFn }>(
+        masto,
+        'statuses',
+      ).$select,
     [masto],
   );
 
