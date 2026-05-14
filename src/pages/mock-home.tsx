@@ -15,12 +15,11 @@ import useTitle from '../utils/useTitle';
 // Shape of the mocked status passed into `<Status>` from this page. Mirrors
 // what `toCamelCase(mockPostsData[n])` produces plus the two locally
 // assigned fields (`_instance`, `createdAt`).
-interface MockStatus {
-  id: string;
+type MockStatus = NonNullable<StatusComponentProps['status']> & {
   _instance: string;
   createdAt: string;
   [key: string]: unknown;
-}
+};
 
 type JsonLike =
   | string
@@ -118,9 +117,7 @@ function MockHome() {
                 return (
                   <li key={status.id} class="timeline-item">
                     <StatusComponent
-                      status={
-                        status as unknown as StatusComponentProps['status']
-                      }
+                      status={status}
                       instance={instance}
                       allowFilters={false}
                     />
