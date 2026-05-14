@@ -13,8 +13,6 @@ import type { ContextMenuPropsShape } from './status-context-menu';
 import type { AnyAccount, AnyStatus } from './status-types';
 import ThreadBadge from './thread-badge';
 
-type NameTextAccountShim = Parameters<typeof NameText>[0]['account'];
-
 interface StatusHeaderProps {
   size: string;
   status: AnyStatus;
@@ -134,7 +132,7 @@ export default function StatusHeader({
         <div class="meta">
           <span class="meta-name">
             <NameText
-              account={status.account as unknown as NameTextAccountShim}
+              account={status.account}
               instance={instance}
               showAvatar={size === 's'}
               showAcct={isSizeLarge}
@@ -223,7 +221,7 @@ export default function StatusHeader({
                 <Icon icon="reply" />{' '}
                 {inReplyToAccount ? (
                   <NameText
-                    account={inReplyToAccount as unknown as NameTextAccountShim}
+                    account={inReplyToAccount}
                     instance={instance}
                     short
                   />

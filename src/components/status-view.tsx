@@ -1,7 +1,6 @@
 import './status.css';
 
 import { shallowEqual } from 'fast-equals';
-import type { mastodon } from 'masto';
 import { memo } from 'preact/compat';
 import { useCallback, useContext } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
@@ -18,15 +17,14 @@ import { StatusGhost, StatusSkeleton } from './status-placeholders';
 import StatusContent from './status-content';
 import StatusReblog from './status-reblog';
 import type {
-  AnyAccount,
+  AnyMediaAttachment,
   AnyStatus,
   GhostInfo,
   StatusSize,
 } from './status-types';
 
-const EMPTY_MEDIA_ATTACHMENTS = Object.freeze(
-  [],
-) as unknown as mastodon.v1.MediaAttachment[];
+const EMPTY_MEDIA_ATTACHMENTS: AnyStatus['mediaAttachments'] = [];
+Object.freeze(EMPTY_MEDIA_ATTACHMENTS);
 
 export interface StatusComponentProps {
   statusID?: string | null;
@@ -45,7 +43,7 @@ export interface StatusComponentProps {
   onMediaClick?: (
     e: MouseEvent,
     i: number,
-    media: mastodon.v1.MediaAttachment,
+    media: AnyMediaAttachment,
     status: AnyStatus,
   ) => void;
   quoted?: number | boolean;
@@ -153,24 +151,21 @@ function StatusRouter({
     if (eStatus) {
       status = {
         ...status,
-        ...(eStatus as object),
-      } as unknown as AnyStatus;
+        ...eStatus,
+      };
     }
   } else {
     // Revert back to original status
     // Don't need to do anything, re-render will use the original status above
   }
 
-  const statusAny = status as unknown as AnyStatus;
   const {
     account,
     id,
     filtered,
     mediaAttachments: statusMediaAttachments,
     reblog,
-  } = statusAny as AnyStatus & {
-    account?: Partial<AnyAccount>;
-  };
+  } = status;
   const accountId = account?.id;
   const group = account?.group;
   const mediaAttachments = statusMediaAttachments || EMPTY_MEDIA_ATTACHMENTS;
@@ -244,7 +239,7 @@ function StatusRouter({
     return (
       <StatusReblog
         wrapperStatus={status}
-        reblog={reblog as unknown as AnyStatus}
+        reblog={reblog}
         statusID={statusID}
         stateKey={sKey}
         instance={instance}
