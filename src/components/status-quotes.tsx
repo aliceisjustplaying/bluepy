@@ -186,7 +186,7 @@ const QuoteStatus = memo(
     }
 
     const Parent = q.native ? Fragment : LazyShazam;
-    const qKey = (q.instance as unknown as string) + (q.id as unknown as string);
+    const qKey = `${q.instance ?? ''}${q.id ?? ''}`;
     return (
       <Parent id={qKey} key={qKey}>
         <Link
