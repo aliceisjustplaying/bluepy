@@ -1,5 +1,4 @@
 import { useLingui } from '@lingui/react/macro';
-import type { ComponentType } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { subscribe, useSnapshot } from 'valtio';
@@ -18,7 +17,7 @@ import EmbedModal from './embed-modal';
 import GenericAccounts from './generic-accounts';
 import ImportExportAccounts from './import-export-accounts';
 import MediaAltModal from './media-alt-modal';
-import MediaModalUntyped from './media-modal';
+import MediaModalComponent, { type MediaModalProps } from './media-modal';
 import Modal from './modal';
 import OpenLinkSheet from './open-link-sheet';
 import QrCodeModal from './qr-code-modal';
@@ -26,7 +25,6 @@ import QrScannerModal from './qr-scanner-modal';
 import ReportModal from './report-modal';
 import ShortcutsSettings from './shortcuts-settings';
 
-// `media-modal.jsx` is still untyped; permissive shim for the props we use.
 function MediaModal(props: {
   mediaAttachments?: unknown;
   statusID?: string;
@@ -35,15 +33,7 @@ function MediaModal(props: {
   index?: number;
   onClose?: () => void;
 }) {
-  const Inner = MediaModalUntyped as unknown as ComponentType<{
-    mediaAttachments?: unknown;
-    statusID?: string;
-    instance?: string;
-    lang?: string;
-    index?: number;
-    onClose?: () => void;
-  }>;
-  return <Inner {...props} />;
+  return <MediaModalComponent {...(props as MediaModalProps)} />;
 }
 
 // `show*` payloads in `states` are typed as `unknown` because the same key

@@ -1,13 +1,15 @@
 import { Trans } from '@lingui/react/macro';
-import type { ComponentChildren, ComponentType } from 'preact';
+import type { ComponentChildren } from 'preact';
 
 import Icon from './icon';
-import NameTextRaw from './name-text';
+import NameText, { type NameTextProps } from './name-text';
 
-const NameText = NameTextRaw as unknown as ComponentType<{
+function BylineNameText(props: {
   account: unknown;
   showAvatar?: boolean;
-}>;
+}) {
+  return <NameText {...(props as NameTextProps)} />;
+}
 
 interface Author {
   account?: {
@@ -33,7 +35,7 @@ function Byline({ authors, hidden, children }: BylineProps) {
         <Icon icon="link" size="s" />{' '}
         <small>
           <Trans comment="More from [Author]">
-            More from <NameText account={author} showAvatar />
+            More from <BylineNameText account={author} showAvatar />
           </Trans>
         </small>
       </div>

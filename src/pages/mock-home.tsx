@@ -1,4 +1,3 @@
-import type { ComponentType } from 'preact';
 import { useEffect, useMemo } from 'preact/hooks';
 
 import ComposeButton from '../components/compose-button';
@@ -6,7 +5,9 @@ import Icon from '../components/icon';
 import Link from '../components/link';
 import NavMenu from '../components/nav-menu';
 import Shortcuts from '../components/shortcuts';
-import StatusComponent from '../components/status';
+import StatusComponent, {
+  type StatusComponentProps,
+} from '../components/status';
 import mockPostsData from '../data/mock-posts.json';
 import states from '../utils/states';
 import useTitle from '../utils/useTitle';
@@ -20,17 +21,6 @@ interface MockStatus {
   createdAt: string;
   [key: string]: unknown;
 }
-
-interface MockStatusProps {
-  status: MockStatus;
-  instance: string;
-  allowFilters: boolean;
-}
-
-// `Status` (still .jsx) declares all destructured props as required from
-// TS's perspective. Shim with the local prop shape this page actually
-// passes; a later batch that converts `status.jsx` removes this cast.
-const Status = StatusComponent as unknown as ComponentType<MockStatusProps>;
 
 type JsonLike =
   | string
@@ -127,8 +117,10 @@ function MockHome() {
                 const instance = status._instance;
                 return (
                   <li key={status.id} class="timeline-item">
-                    <Status
-                      status={status}
+                    <StatusComponent
+                      status={
+                        status as unknown as StatusComponentProps['status']
+                      }
                       instance={instance}
                       allowFilters={false}
                     />

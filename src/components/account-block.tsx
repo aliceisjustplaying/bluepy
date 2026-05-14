@@ -15,7 +15,7 @@ import EmojiText from './emoji-text';
 import Icon from './icon';
 import RolesTags from './roles-tags';
 
-interface AccountBlockProps {
+export interface AccountBlockProps {
   skeleton?: boolean;
   account?: mastodon.v1.Account | null;
   avatarSize?: string;

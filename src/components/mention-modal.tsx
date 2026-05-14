@@ -26,10 +26,10 @@ interface AccountSearchEndpoint {
   };
 }
 
-interface MentionModalProps {
+export interface MentionModalProps {
   onClose?: () => void;
   onSelect?: (socialAddress: string) => void;
-  defaultSearchTerm?: string;
+  defaultSearchTerm?: string | null;
 }
 
 function MentionModal({

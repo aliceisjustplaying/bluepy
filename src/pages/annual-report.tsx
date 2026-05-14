@@ -1,13 +1,15 @@
 import './annual-report.css';
 
 import { Trans } from '@lingui/react/macro';
-import { Fragment, type ComponentChildren, type ComponentType } from 'preact';
+import { Fragment, type ComponentChildren, type ComponentProps } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { useParams } from 'react-router-dom';
 
 import Link from '../components/link';
-import NameTextUntyped from '../components/name-text';
-import StatusUntyped from '../components/status';
+import NameTextComponent from '../components/name-text';
+import StatusComponent, {
+  type StatusComponentProps,
+} from '../components/status';
 import { api } from '../utils/api';
 import useTitle from '../utils/useTitle';
 
@@ -21,17 +23,11 @@ function NameText(props: {
   onClick?: (event: Event) => void;
   [key: string]: unknown;
 }) {
-  const Inner = NameTextUntyped as unknown as ComponentType<{
-    account?: unknown;
-    instance?: string;
-    showAvatar?: boolean;
-    showAcct?: boolean;
-    short?: boolean;
-    external?: boolean;
-    onClick?: (event: Event) => void;
-    [key: string]: unknown;
-  }>;
-  return <Inner {...props} />;
+  return (
+    <NameTextComponent
+      {...(props as ComponentProps<typeof NameTextComponent>)}
+    />
+  );
 }
 
 function Status(props: {
@@ -41,14 +37,7 @@ function Status(props: {
   showCommentCount?: boolean;
   [key: string]: unknown;
 }) {
-  const Inner = StatusUntyped as unknown as ComponentType<{
-    status?: unknown;
-    size?: string;
-    readOnly?: boolean;
-    showCommentCount?: boolean;
-    [key: string]: unknown;
-  }>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
 interface AnnualReportAccount {

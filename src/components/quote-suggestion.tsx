@@ -2,9 +2,7 @@ import './quote-suggestion.css';
 
 import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
-
-import StatusUntyped from './status';
+import StatusComponent, { type StatusComponentProps } from './status';
 
 interface StatusProps {
   status?: mastodon.v1.Status;
@@ -13,8 +11,7 @@ interface StatusProps {
   readOnly?: boolean;
 }
 function Status(props: StatusProps) {
-  const Inner = StatusUntyped as unknown as ComponentType<StatusProps>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
 interface QuoteSuggestionData {

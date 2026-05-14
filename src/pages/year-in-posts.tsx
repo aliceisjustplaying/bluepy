@@ -4,7 +4,6 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import { Document as FlexSearchIndexDocument } from 'flexsearch';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import { forwardRef } from 'preact/compat';
 import {
   useEffect,
@@ -25,7 +24,9 @@ import Loader from '../components/loader';
 import MenuConfirm from '../components/menu-confirm';
 import Menu2 from '../components/menu2';
 import NavMenu from '../components/nav-menu';
-import StatusUntyped from '../components/status';
+import StatusComponent, {
+  type StatusComponentProps,
+} from '../components/status';
 import { api } from '../utils/api';
 import DateTimeFormat from '../utils/date-time-format';
 import db from '../utils/db';
@@ -105,15 +106,7 @@ function Status(props: {
   showQuoteCount?: boolean;
   [key: string]: unknown;
 }) {
-  const Inner = StatusUntyped as unknown as ComponentType<{
-    status?: unknown;
-    instance?: string;
-    size?: string;
-    showCommentCount?: boolean;
-    showQuoteCount?: boolean;
-    [key: string]: unknown;
-  }>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
 const MIN_YEAR = 2005; // https://en.wikipedia.org/wiki/Microblogging#Origin

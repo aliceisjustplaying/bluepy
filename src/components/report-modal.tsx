@@ -4,7 +4,7 @@ import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { Fragment, type ComponentType, type InputHTMLAttributes } from 'preact';
+import { Fragment, type InputHTMLAttributes } from 'preact';
 import { useMemo, useRef, useState } from 'preact/hooks';
 
 import { api } from '../utils/api';
@@ -15,7 +15,7 @@ import { getCurrentInstance } from '../utils/store-utils';
 import AccountBlock from './account-block';
 import Icon from './icon';
 import Loader from './loader';
-import StatusUntyped from './status';
+import StatusComponent, { type StatusComponentProps } from './status';
 
 function Status(props: {
   status?: unknown;
@@ -24,14 +24,7 @@ function Status(props: {
   readOnly?: boolean;
   [key: string]: unknown;
 }) {
-  const Inner = StatusUntyped as unknown as ComponentType<{
-    status?: unknown;
-    size?: string;
-    previewMode?: boolean;
-    readOnly?: boolean;
-    [key: string]: unknown;
-  }>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
 // NOTE: `dislike` hidden for now, it's actually not used for reporting

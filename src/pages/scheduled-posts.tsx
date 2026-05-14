@@ -2,7 +2,6 @@ import './scheduled-posts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
-import type { ComponentType } from 'preact';
 import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
@@ -17,7 +16,9 @@ import RelativeTime from '../components/relative-time';
 import ScheduledAtField, {
   getLocalTimezoneName,
 } from '../components/ScheduledAtField';
-import StatusUntyped from '../components/status';
+import StatusComponent, {
+  type StatusComponentProps,
+} from '../components/status';
 import { api } from '../utils/api';
 import niceDateTime from '../utils/nice-date-time';
 import showToast from '../utils/show-toast';
@@ -32,20 +33,7 @@ function Status(props: {
   onMediaClick?: (e: Event, i: number, media: unknown, status: unknown) => void;
   [key: string]: unknown;
 }) {
-  const Inner = StatusUntyped as unknown as ComponentType<{
-    status?: unknown;
-    size?: string;
-    previewMode?: boolean;
-    readOnly?: boolean;
-    onMediaClick?: (
-      e: Event,
-      i: number,
-      media: unknown,
-      status: unknown,
-    ) => void;
-    [key: string]: unknown;
-  }>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
 const LIMIT = 40;

@@ -1,5 +1,4 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType } from 'preact';
 import { memo } from 'preact/compat';
 import { useLayoutEffect, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
@@ -16,7 +15,7 @@ import usePageVisibility from '../utils/usePageVisibility';
 import Icon from './icon';
 import Link from './link';
 import Modal from './modal';
-import NotificationUntyped from './notification';
+import Notification, { type NotificationProps } from './notification';
 
 interface ServiceWorkerNotificationMessage {
   type?: string;
@@ -51,14 +50,6 @@ interface NotificationsApi {
     fetch(): Promise<NotificationFetched | null | undefined>;
   };
 }
-
-interface NotificationComponentProps {
-  instance?: string;
-  notification: NotificationFetched;
-  isStatic?: boolean;
-}
-const Notification =
-  NotificationUntyped as unknown as ComponentType<NotificationComponentProps>;
 
 {
   if ('serviceWorker' in navigator) {
@@ -248,7 +239,7 @@ export default memo(function NotificationService() {
             >
               <Notification
                 instance={account.instanceURL}
-                notification={notification}
+                notification={notification as NotificationProps['notification']}
                 isStatic
               />
             </div>

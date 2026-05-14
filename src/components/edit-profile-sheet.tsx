@@ -50,12 +50,12 @@ interface FieldsAttributesRowProps {
   index: number;
 }
 
-interface EditProfileSheetCloseResult {
+export interface EditProfileSheetCloseResult {
   state: 'success';
   account: ProfileAccount;
 }
 
-interface EditProfileSheetProps {
+export interface EditProfileSheetProps {
   onClose?: (result?: EditProfileSheetCloseResult) => void;
 }
 

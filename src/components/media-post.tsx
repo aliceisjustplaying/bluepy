@@ -13,7 +13,7 @@ import { isFiltered } from '../utils/filters';
 import states, { statusKey } from '../utils/states';
 import { getCurrentAccountID } from '../utils/store-utils';
 
-import MediaRaw from './media';
+import Media from './media';
 
 type FilterResult = mastodon.v1.FilterResult;
 
@@ -43,14 +43,6 @@ interface StatusLike {
   filtered?: readonly FilterResult[] | null;
   [key: string]: unknown;
 }
-
-const Media = MediaRaw as unknown as ComponentType<{
-  class?: string;
-  media: MediaAttachmentLike;
-  lang?: string;
-  to?: string;
-  onClick?: (e: MouseEvent) => void;
-}>;
 
 type ParentTag = keyof JSX.IntrinsicElements;
 

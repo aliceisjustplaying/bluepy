@@ -25,11 +25,15 @@ import CustomEmoji from './custom-emoji';
 import FollowRequestButtonsRaw from './follow-request-buttons';
 import Icon from './icon';
 import Link, { type LinkProps } from './link';
-import NameTextUntyped from './name-text';
-import StatusUntyped from './status';
+import NameTextComponent, {
+  type NameTextProps as NameTextViewProps,
+} from './name-text';
+import StatusComponent, {
+  type StatusComponentProps as StatusViewProps,
+} from './status';
 
-// Shim untyped JSX peers used by this component. These are removed when the
-// peer modules are converted to TypeScript in later waves.
+// Local wrappers keep this component's wider notification payload shapes
+// while forwarding through typed peers.
 interface AccountWithBot {
   id?: string;
   url?: string;
@@ -51,8 +55,7 @@ interface NameTextProps {
   onClick?: (e: MouseEvent) => void;
 }
 function NameText(props: NameTextProps) {
-  const Inner = NameTextUntyped as unknown as ComponentType<NameTextProps>;
-  return <Inner {...props} />;
+  return <NameTextComponent {...(props as NameTextViewProps)} />;
 }
 
 interface StatusComponentProps {
@@ -66,8 +69,7 @@ interface StatusComponentProps {
   allowFilters?: boolean;
 }
 function Status(props: StatusComponentProps) {
-  const Inner = StatusUntyped as unknown as ComponentType<StatusComponentProps>;
-  return <Inner {...props} />;
+  return <StatusComponent {...(props as StatusViewProps)} />;
 }
 
 // The typed FollowRequestButtons requires `onChange`, but the JS original
@@ -77,8 +79,9 @@ interface FollowRequestButtonsShimProps {
   accountID: string;
   onChange?: () => void;
 }
-const FollowRequestButtons =
-  FollowRequestButtonsRaw as unknown as ComponentType<FollowRequestButtonsShimProps>;
+function FollowRequestButtons(props: FollowRequestButtonsShimProps) {
+  return <FollowRequestButtonsRaw {...props} />;
+}
 
 // `masto.v2.notifications` is typed as `unknown` in our local MastoClient
 // shim. Describe just the surface this component uses.
@@ -156,7 +159,7 @@ interface NotificationInput {
   [key: string]: unknown;
 }
 
-interface NotificationProps {
+export interface NotificationProps {
   notification: NotificationInput;
   instance?: string;
   isStatic?: boolean;

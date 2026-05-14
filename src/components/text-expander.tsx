@@ -57,7 +57,7 @@ export interface TextExpanderHandle {
   activated(): boolean;
 }
 
-interface TextExpanderProps extends Omit<
+export interface TextExpanderProps extends Omit<
   HTMLAttributes<HTMLElement>,
   'onTrigger' | 'keys'
 > {

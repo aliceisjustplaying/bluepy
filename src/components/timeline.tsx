@@ -41,12 +41,11 @@ import Icon from './icon';
 import Link from './link';
 import MediaPost from './media-post';
 import NavMenu from './nav-menu';
-import StatusRaw from './status';
+import StatusComponent, {
+  type StatusComponentProps as StatusViewProps,
+} from './status';
 import ThreadBadge from './thread-badge';
 
-// `status.jsx` is still JS; shim the prop surface used in this file. The
-// runtime component accepts many more props than this; we only declare the
-// ones the timeline reaches for.
 interface StatusComponentProps {
   status?: TimelineEntry | null;
   statusID?: string | null;
@@ -59,7 +58,9 @@ interface StatusComponentProps {
   showFollowedTags?: boolean;
   showReplyParent?: boolean;
 }
-const Status = StatusRaw as unknown as ComponentType<StatusComponentProps>;
+function Status(props: StatusComponentProps) {
+  return <StatusComponent {...(props as StatusViewProps)} />;
+}
 
 // `react-intersection-observer`'s `InView` ships without working JSX
 // component typings under our preact compat resolution. Re-type as a
