@@ -9,18 +9,27 @@ import testPreviewURL from '../assets/sandbox/big-buck-bunny-preview.png';
 import testAudioURL from '../assets/sandbox/big-buck-bunny.mp3';
 import testVideoURL from '../assets/sandbox/big-buck-bunny.webm';
 
-import UntypedStatus from '../components/status';
+import UntypedStatus, { type StatusComponentProps } from '../components/status';
 import { api, getPreferences } from '../utils/api';
 import FilterContext from '../utils/filter-context';
 import states, { statusKey } from '../utils/states';
 import store from '../utils/store';
 import useTitle from '../utils/useTitle';
 
-// The Status component is still untyped JSX. Shim its prop surface here so the
-// sandbox can pass through the loose mock-status object without `any`.
-// This shim is removed in the Status .tsx conversion batch.
-type StatusComponentProps = Record<string, unknown>;
-const Status = UntypedStatus as unknown as ComponentType<StatusComponentProps>;
+type SandboxStatusComponentProps = Omit<
+  StatusComponentProps,
+  'status' | 'onMediaClick'
+> & {
+  status?: MockStatus;
+  onMediaClick?: (
+    e: Event,
+    i: number,
+    media: unknown,
+    status: { mediaAttachments?: unknown[] },
+  ) => void;
+};
+
+const Status = UntypedStatus as ComponentType<SandboxStatusComponentProps>;
 
 type UnknownRecord = Record<string, unknown>;
 
