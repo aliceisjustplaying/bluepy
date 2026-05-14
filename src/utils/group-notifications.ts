@@ -14,7 +14,7 @@ import type { mastodon } from 'masto';
 // `generic-accounts.tsx`. Renaming requires a cross-cutting refactor and is
 // out of scope.
 
-interface AccountWithTypes extends mastodon.v1.Account {
+interface AccountWithTypes extends Partial<mastodon.v1.Account> {
   _types?: string[];
 }
 
@@ -280,7 +280,7 @@ export function groupNotifications2(
       const accounts = sampleAccounts!.map((a) => ({
         ...a,
         _types: [type as string],
-      })) as unknown as (AccountWithTypes | undefined)[];
+      }));
       // Preserve JS-original behavior: pushes `undefined` if the upstream
       // payload omitted the field, rather than normalizing to 0.
       const newEntry: AugmentedNotificationGroup = {

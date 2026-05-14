@@ -10,7 +10,8 @@ interface IconData {
 }
 
 type IconModule = () => Promise<{ default: IconData }>;
-type IconBlock = IconModule | IconModule[] | { module: IconModule };
+type IconTupleEntry = (IconModule | string | undefined)[];
+type IconBlock = IconModule | IconTupleEntry | { module: IconModule };
 
 interface IconSpriteContextValue {
   loadIcon: (iconName: string) => Promise<void>;
@@ -40,10 +41,9 @@ export function IconSpriteProvider({ children }: IconSpriteProviderProps) {
       }
 
       try {
-        const { ICONS } = (await import('./ICONS')) as unknown as {
-          ICONS: Partial<Record<string, IconBlock>>;
-        };
-        const iconBlock = ICONS[iconName];
+        const { ICONS } = await import('./ICONS');
+        const iconsByName: Partial<Record<string, IconBlock>> = ICONS;
+        const iconBlock = iconsByName[iconName];
 
         if (!iconBlock) {
           console.warn(`Icon ${iconName} not found`);
@@ -52,7 +52,7 @@ export function IconSpriteProvider({ children }: IconSpriteProviderProps) {
 
         let iconModule: IconModule;
         if (Array.isArray(iconBlock)) {
-          iconModule = iconBlock[0];
+          [iconModule] = iconBlock as [IconModule, string?, string?];
         } else if (typeof iconBlock === 'object') {
           iconModule = iconBlock.module;
         } else {
