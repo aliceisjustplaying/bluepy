@@ -10,7 +10,19 @@ type SatisfiesWithOptions = (
   options?: { includePrerelease?: boolean; loose?: boolean },
 ) => boolean;
 
-const satisfiesVersion = satisfies as unknown as SatisfiesWithOptions;
+type SatisfiesCompat = (
+  version: string,
+  range: string,
+  options?: { includePrerelease?: boolean; loose?: boolean },
+) => boolean;
+
+const satisfiesCompat: SatisfiesCompat = satisfies;
+const satisfiesVersion: SatisfiesWithOptions = (version, range, options) => {
+  if (version === undefined) {
+    throw new TypeError('Expected version for semver comparison');
+  }
+  return satisfiesCompat(version, range, options);
+};
 const featuresMap = features as Record<string, string | undefined>;
 
 // Non-semver(?) UA string detection
