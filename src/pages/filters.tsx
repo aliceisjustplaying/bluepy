@@ -130,10 +130,7 @@ function Filters() {
         fetchedFilters.sort((a, b) => a.title.localeCompare(b.title));
         fetchedFilters.forEach((filter) => {
           if (filter.keywords?.length) {
-            filter.keywords.sort(
-              (a, b) =>
-                (a.id as unknown as number) - (b.id as unknown as number),
-            );
+            filter.keywords.sort((a, b) => Number(a.id) - Number(b.id));
           }
         });
         console.log(fetchedFilters);
@@ -402,10 +399,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                     } else {
                       expiresIn = null;
                     }
-                  } else if (
-                    expiresIn === '0' ||
-                    (expiresIn as unknown as number) === 0
-                  ) {
+                  } else if (expiresIn === '0') {
                     // 0 = Never
                     expiresIn = null;
                   } else {
@@ -732,8 +726,7 @@ function ExpiryStatus({ expiresAt, showNeverExpires }: ExpiryStatusProps) {
   const rerender = () => {
     setTick((c) => c + 1);
   };
-  // JS passed `expired || 30_000` (boolean `true` or 30000ms); preserve.
-  useInterval(rerender, (expired || 30_000) as unknown as number);
+  useInterval(rerender, Number(expired || 30_000));
 
   return expired ? (
     t`Expired`

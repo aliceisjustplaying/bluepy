@@ -683,6 +683,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     setSearchParams,
     clearAndSetParam,
   ]);
+  const accountMonthKey = `${month ?? ''}${account?.acct ?? ''}`;
 
   useEffect(() => {
     const activeEls = [
@@ -751,9 +752,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
           excludeBoosts,
           tagged,
           media,
-          // JS semantics: when both are nullish, `null + undefined` yields NaN.
-          // Preserve that behavior — the result is later stringified by Array.toString().
-          (month as unknown as number) + (account?.acct as unknown as number),
+          accountMonthKey,
         ].toString()}`}
         instance={instance}
         emptyText={t`Nothing to see here yet.`}
@@ -768,9 +767,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
           excludeBoosts,
           tagged,
           media,
-          // JS semantics: when both are nullish, `null + undefined` yields NaN.
-          // Preserve that behavior — the result is later stringified by Array.toString().
-          (month as unknown as number) + (account?.acct as unknown as number),
+          accountMonthKey,
         ].toString()}
         headerEnd={
           <Menu2

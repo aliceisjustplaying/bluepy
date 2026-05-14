@@ -2600,13 +2600,13 @@ function PostStats({ post }: PostStatsProps) {
   );
 }
 
-function binByTime<T>(
+function binByTime<K extends string, T extends Record<K, string>>(
   data: T[],
-  key: keyof T & string,
+  key: K,
   numBins: number,
 ): T[][] {
   // Extract dates from data objects
-  const dates = data.map((item) => new Date(item[key] as unknown as string));
+  const dates = data.map((item) => new Date(item[key]));
 
   // Find minimum and maximum dates directly (avoiding Math.min/max)
   const minDate = dates.reduce(
@@ -2624,7 +2624,7 @@ function binByTime<T>(
   // Create empty bins and loop through data
   const bins: T[][] = Array.from({ length: numBins }, () => [] as T[]);
   data.forEach((item) => {
-    const dateTime = Date.parse(item[key] as unknown as string);
+    const dateTime = Date.parse(item[key]);
     if (dateTime > Date.now()) {
       // Future dates go into the last bin
       bins[bins.length - 1].push(item);
