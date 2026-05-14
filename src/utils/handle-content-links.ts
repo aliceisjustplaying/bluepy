@@ -7,7 +7,6 @@ interface MentionLike {
   url?: string;
   acct?: string;
   username?: string;
-  [key: string]: unknown;
 }
 
 interface HandleContentLinksOpts {
@@ -35,7 +34,7 @@ function handleContentLinks(
       e.ctrlKey ||
       e.shiftKey ||
       e.altKey ||
-      (e as unknown as { which?: number }).which === 2
+      e.which === 2
     ) {
       return;
     }
