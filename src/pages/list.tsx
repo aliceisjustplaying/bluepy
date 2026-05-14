@@ -87,18 +87,13 @@ interface ListMembersEndpoint {
 
 // react-intersection-observer's InView ships without working JSX
 // component typings under preact compat resolution. Re-type for our usage.
-function InView(props: {
+type InViewProps = {
   as?: string;
   onChange?: (inView: boolean) => void;
   children?: ComponentChildren;
-}) {
-  const Inner = InViewUntyped as unknown as ComponentType<{
-    as?: string;
-    onChange?: (inView: boolean) => void;
-    children?: ComponentChildren;
-  }>;
-  return <Inner {...props} />;
-}
+};
+const InView: ComponentType<InViewProps> =
+  InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
 interface ListProps {
   id?: string;
@@ -152,12 +147,10 @@ function List(props: ListProps) {
 
   async function checkForUpdates(): Promise<boolean> {
     try {
-      const results = (await (timelinesApi.list.$select(id ?? '').list({
+      const results = await timelinesApi.list.$select(id ?? '').list({
         limit: 1,
         since_id: latestItem.current,
-      }) as unknown as Promise<StatusLike[] | { value?: StatusLike[] }>)) as
-        | StatusLike[]
-        | { value?: StatusLike[] };
+      });
       let value: StatusLike[] | undefined = Array.isArray(results)
         ? results
         : results?.value;

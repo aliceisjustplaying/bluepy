@@ -62,22 +62,15 @@ import getInstanceStatusURL from './../utils/get-instance-status-url';
 // `react-intersection-observer`'s `InView` ships without working JSX
 // component typings under our preact compat resolution. Re-type as a preact
 // component with the props this file actually uses.
-function InView(props: {
+type InViewProps = {
   threshold?: number;
   class?: string;
   tabIndex?: number;
   onChange?: (inView: boolean) => void;
   children?: ComponentChildren;
-}) {
-  const Inner = InViewUntyped as unknown as ComponentType<{
-    threshold?: number;
-    class?: string;
-    tabIndex?: number;
-    onChange?: (inView: boolean) => void;
-    children?: ComponentChildren;
-  }>;
-  return <Inner {...props} />;
-}
+};
+const InView: ComponentType<InViewProps> =
+  InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
 const { PHANPY_DEFAULT_INSTANCE: DEFAULT_INSTANCE } = import.meta.env as {
   PHANPY_DEFAULT_INSTANCE?: string;

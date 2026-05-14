@@ -30,16 +30,12 @@ function Status(props: {
 // `react-intersection-observer`'s `InView` ships without working JSX
 // component typings under our preact compat resolution. Re-type as a
 // preact component with the props this batch actually uses.
-function InViewTyped(props: {
+type InViewTypedProps = {
   onChange?: (inView: boolean) => void;
   children?: ComponentChildren;
-}) {
-  const Inner = InViewUntyped as unknown as ComponentType<{
-    onChange?: (inView: boolean) => void;
-    children?: ComponentChildren;
-  }>;
-  return <Inner {...props} />;
-}
+};
+const InViewTyped: ComponentType<InViewTypedProps> =
+  InViewUntyped as typeof InViewUntyped & ComponentType<InViewTypedProps>;
 
 // TODO(oxlint:no-underscore-dangle) `_types` is a shared internal cache key
 // on account records used by status.tsx and notification.tsx. Renaming requires
