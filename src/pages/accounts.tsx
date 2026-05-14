@@ -13,7 +13,7 @@ import MenuLink from '../components/menu-link';
 import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { revokeAccessToken } from '../utils/auth';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
@@ -119,8 +119,11 @@ function Accounts({ onClose }: AccountsProps) {
                       onDblClick={async () => {
                         if (isCurrent) {
                           try {
-                            const accountsApi = masto.v1
-                              .accounts as unknown as MastoAccountsSelect;
+                            const accountsApi =
+                              getMastoV1Resource<MastoAccountsSelect>(
+                                masto,
+                                'accounts',
+                              );
                             const info = await accountsApi
                               .$select(account.info.id)
                               .fetch();

@@ -1,11 +1,10 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
-import TimelineUntyped from '../components/timeline';
-import { api } from '../utils/api';
+import Timeline from '../components/timeline';
+import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
@@ -16,43 +15,6 @@ import {
   dedupeBoosts,
 } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
-
-function Timeline(props: {
-  title?: string;
-  id?: string;
-  emptyText?: string;
-  errorText?: string;
-  instance?: string;
-  fetchItems?: (
-    firstLoad?: boolean,
-  ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
-  checkForUpdates?: () => Promise<boolean>;
-  useItemID?: boolean;
-  boostsCarousel?: boolean;
-  filterContext?: string;
-  showFollowedTags?: boolean;
-  showReplyParent?: boolean;
-  [key: string]: unknown;
-}) {
-  const Inner = TimelineUntyped as unknown as ComponentType<{
-    title?: string;
-    id?: string;
-    emptyText?: string;
-    errorText?: string;
-    instance?: string;
-    fetchItems?: (
-      firstLoad?: boolean,
-    ) => Promise<IteratorResult<mastodon.v1.Status[]>>;
-    checkForUpdates?: () => Promise<boolean>;
-    useItemID?: boolean;
-    boostsCarousel?: boolean;
-    filterContext?: string;
-    showFollowedTags?: boolean;
-    showReplyParent?: boolean;
-    [key: string]: unknown;
-  }>;
-  return <Inner {...props} />;
-}
 
 type StreamingEntry = {
   event: string;
@@ -84,6 +46,40 @@ interface HomeTimelineParams {
 interface HomeIterable {
   values(): AsyncIterator<mastodon.v1.Status[]>;
   params?: HomeTimelineParams | string;
+}
+
+interface HomeTimelineResource {
+  list(options: { limit: number }): HomeIterable;
+}
+
+interface SaveStatusInput {
+  id?: string;
+  account?: { id?: string } | null;
+  reblog?: SaveStatusInput | null;
+  quote?: SaveStatusInput | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusInput | null;
+  inReplyToId?: string | null;
+  inReplyToAccountId?: string | null;
+  _pinned?: unknown;
+}
+
+interface SaveStatusPayload extends Record<string, unknown> {
+  id?: string;
+  account?: Record<string, unknown> & { id?: string };
+  reblog?: SaveStatusPayload | null;
+  quote?: SaveStatusPayload | null;
+  state?: unknown;
+  quotedStatus?: SaveStatusPayload | null;
+  inReplyToId?: string | null;
+  inReplyToAccountId?: string | null;
+  _pinned?: unknown;
+}
+
+function toSaveStatus(
+  status: SaveStatusInput | null | undefined,
+): SaveStatusPayload | null | undefined {
+  return status as SaveStatusPayload | null | undefined;
 }
 
 const LIMIT = 20;
@@ -133,16 +129,11 @@ function Following({ title, path, id, ...props }: FollowingProps) {
   ): Promise<IteratorResult<mastodon.v1.Status[]>> {
     if (firstLoad || !homeIterator.current) {
       __BENCHMARK.start('fetch-home-first');
-      const mastoUntyped = masto as unknown as {
-        v1: {
-          timelines: {
-            home: {
-              list(options: { limit: number }): HomeIterable;
-            };
-          };
-        };
-      };
-      homeIterable.current = mastoUntyped.v1.timelines.home.list({
+      const homeTimeline = getMastoV1Resource<{ home: HomeTimelineResource }>(
+        masto,
+        'timelines',
+      ).home;
+      homeIterable.current = homeTimeline.list({
         limit: LIMIT,
       });
       homeIterator.current = homeIterable.current.values();
@@ -168,10 +159,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
 
       // value = filteredItems(value, 'home');
       value.forEach((item: mastodon.v1.Status) => {
-        saveStatus(
-          item as unknown as Parameters<typeof saveStatus>[0],
-          instance,
-        );
+        saveStatus(toSaveStatus(item), instance);
       });
       value = dedupeBoosts(value, instance);
       if (firstLoad && latestItemChanged) clearFollowedTagsState();
@@ -204,18 +192,14 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       if (supportsPixelfed) {
         opts.include_reblogs = true;
       }
-      const mastoUntyped = masto as unknown as {
-        v1: {
-          timelines: {
-            home: {
-              list(o: typeof opts): {
-                values(): AsyncIterator<mastodon.v1.Status[]>;
-              };
-            };
+      const homeTimeline = getMastoV1Resource<{
+        home: {
+          list(o: typeof opts): {
+            values(): AsyncIterator<mastodon.v1.Status[]>;
           };
         };
-      };
-      const results = await mastoUntyped.v1.timelines.home
+      }>(masto, 'timelines').home;
+      const results = await homeTimeline
         .list(opts)
         .values()
         .next();
@@ -246,11 +230,9 @@ function Following({ title, path, id, ...props }: FollowingProps) {
         for await (const entry of sub) {
           if (!sub) break;
           if (entry.event === 'status.update') {
-            const status = entry.payload as NonNullable<
-              Parameters<typeof saveStatus>[0]
-            >;
+            const status = entry.payload as SaveStatusInput;
             console.log(`🔄 Status ${status.id} updated`);
-            saveStatus(status, instance);
+            saveStatus(toSaveStatus(status), instance);
           } else if (entry.event === 'delete') {
             const statusID = entry.payload as string;
             console.log(`❌ Status ${statusID} deleted`);

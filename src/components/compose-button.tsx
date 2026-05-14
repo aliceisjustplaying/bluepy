@@ -8,7 +8,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
 import openCompose from '../utils/open-compose';
@@ -29,18 +29,14 @@ import SubMenu2 from './submenu2';
 // MastoClient interface in utils/api intentionally keeps v1 endpoints loose
 // (`[key: string]: unknown`), so we narrow locally for type-safe calls.
 interface AccountStatusesEndpoint {
-  readonly v1: {
-    readonly accounts: {
-      $select(id: string): {
-        readonly statuses: {
-          list(params: {
-            limit: number;
-            exclude_replies: boolean;
-            exclude_reblogs: boolean;
-          }): {
-            values(): AsyncIterator<mastodon.v1.Status[]>;
-          };
-        };
+  $select(id: string): {
+    readonly statuses: {
+      list(params: {
+        limit: number;
+        exclude_replies: boolean;
+        exclude_reblogs: boolean;
+      }): {
+        values(): AsyncIterator<mastodon.v1.Status[]>;
       };
     };
   };
@@ -50,10 +46,10 @@ interface AccountStatusesEndpoint {
 // Use pmem to memoize fetch results for 1 minute
 const fetchLatestPostsMemoized = pmem(
   async (
-    masto: AccountStatusesEndpoint,
+    accountsEndpoint: AccountStatusesEndpoint,
     currentAccountID: string,
   ): Promise<mastodon.v1.Status[]> => {
-    const statusesIterator = masto.v1.accounts
+    const statusesIterator = accountsEndpoint
       .$select(currentAccountID)
       .statuses.list({
         limit: 3,
@@ -144,7 +140,7 @@ export default function ComposeButton() {
         return;
       }
       const posts = await fetchLatestPostsMemoized(
-        masto as unknown as AccountStatusesEndpoint,
+        getMastoV1Resource<AccountStatusesEndpoint>(masto, 'accounts'),
         currentAccountID,
       );
       setLatestPosts(posts);

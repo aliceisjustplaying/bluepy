@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 
 import Icon from './icon';
 import Loader from './loader';
@@ -69,8 +69,10 @@ function PrivateNoteSheet({
               setUIState('loading');
               void (async () => {
                 try {
-                  const accounts = masto.v1
-                    .accounts as unknown as AccountsResource;
+                  const accounts = getMastoV1Resource<AccountsResource>(
+                    masto,
+                    'accounts',
+                  );
                   const newRelationship = await accounts
                     .$select(account?.id)
                     .note.create({

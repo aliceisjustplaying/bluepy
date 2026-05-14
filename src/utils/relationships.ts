@@ -1,6 +1,6 @@
 import type { mastodon } from 'masto';
 
-import { api } from './api';
+import { api, getMastoV1Resource } from './api';
 import { getCurrentAccountID } from './store-utils';
 
 interface AccountLike {
@@ -39,8 +39,10 @@ export async function fetchRelationships(
   if (!uniqueAccountIds.length) return null;
 
   try {
-    const accountsResource = masto.v1
-      .accounts as unknown as RelationshipsResource;
+    const accountsResource = getMastoV1Resource<RelationshipsResource>(
+      masto,
+      'accounts',
+    );
     const relationships = await accountsResource.relationships.fetch({
       id: uniqueAccountIds,
     });

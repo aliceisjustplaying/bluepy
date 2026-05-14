@@ -8,7 +8,7 @@ import { useSnapshot } from 'valtio';
 import Icon from '../components/icon';
 import Menu2 from '../components/menu2';
 import Timeline from '../components/timeline';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { saveStatus } from '../utils/states';
 import supports from '../utils/supports';
@@ -76,9 +76,10 @@ function Public({ local, columnMode, ...props }: PublicProps) {
   const requiresAuth = timelineAccess === 'authenticated';
   const isPrivate = requiresAuth && !authenticated;
 
-  const timelinesApi = (
-    masto.v1 as unknown as { timelines: PublicTimelinesApi }
-  ).timelines;
+  const timelinesApi = getMastoV1Resource<PublicTimelinesApi>(
+    masto,
+    'timelines',
+  );
 
   const publicIterator = useRef<
     AsyncIterator<PublicTimelineItem[]> | undefined

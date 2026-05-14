@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import states from '../utils/states';
 
 import Icon from './icon';
@@ -109,7 +109,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   // effect every render. Snapshot it once — the underlying client is stable
   // for the sheet's lifetime — and use the memoized reference as the dep.
   const accountsApi = useMemo(
-    () => masto.v1.accounts as unknown as MastoAccountsUpdate,
+    () => getMastoV1Resource<MastoAccountsUpdate>(masto, 'accounts'),
     [masto],
   );
 

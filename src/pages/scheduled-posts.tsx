@@ -18,7 +18,7 @@ import ScheduledAtField, {
   getLocalTimezoneName,
 } from '../components/ScheduledAtField';
 import StatusUntyped from '../components/status';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import niceDateTime from '../utils/nice-date-time';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
@@ -98,17 +98,13 @@ interface ScheduledStatusPreview {
   quoteApprovalPolicy?: unknown;
 }
 
-interface MastoScheduledStatusesClient {
-  v1: {
-    scheduledStatuses: {
-      list(options: { limit: number }): {
-        values(): AsyncIterator<ScheduledPost[]>;
-      };
-      $select(id: string): {
-        update(params: { scheduledAt: string }): Promise<unknown>;
-        remove(): Promise<unknown>;
-      };
-    };
+interface ScheduledStatusesResource {
+  list(options: { limit: number }): {
+    values(): AsyncIterator<ScheduledPost[]>;
+  };
+  $select(id: string): {
+    update(params: { scheduledAt: string }): Promise<unknown>;
+    remove(): Promise<unknown>;
   };
 }
 
@@ -121,8 +117,7 @@ export default function ScheduledPosts() {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   useTitle(t`Scheduled Posts`, '/sp');
-  const { masto: mastoBase } = api();
-  const masto = mastoBase as unknown as MastoScheduledStatusesClient;
+  const { masto } = api();
   const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([]);
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
@@ -138,7 +133,11 @@ export default function ScheduledPosts() {
 
   useEffect(() => {
     setUIState('loading');
-    const scheduledStatusesResource = masto.v1.scheduledStatuses;
+    const scheduledStatusesResource =
+      getMastoV1Resource<ScheduledStatusesResource>(
+        masto,
+        'scheduledStatuses',
+      );
     void (async () => {
       try {
         const postsIterator = scheduledStatusesResource
@@ -351,8 +350,12 @@ function ScheduledPostEdit({
   scheduledAt,
   onClose,
 }: ScheduledPostEditProps) {
-  const { masto: mastoBase } = api();
-  const masto = mastoBase as unknown as MastoScheduledStatusesClient;
+  const { masto } = api();
+  const scheduledStatusesResource =
+    getMastoV1Resource<ScheduledStatusesResource>(
+      masto,
+      'scheduledStatuses',
+    );
   const { t } = useLingui();
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
@@ -458,7 +461,7 @@ function ScheduledPostEdit({
             const targetScheduledAt = newScheduledAt;
             void (async () => {
               try {
-                await masto.v1.scheduledStatuses.$select(post.id).update({
+                await scheduledStatusesResource.$select(post.id).update({
                   scheduledAt: targetScheduledAt.toISOString(),
                 });
                 showToast(t`Scheduled post rescheduled`);
@@ -502,10 +505,11 @@ function ScheduledPostEdit({
                   setUIState('loading');
                   void (async () => {
                     try {
-                      const apiResult = api();
-                      const innerMasto =
-                        apiResult.masto as unknown as MastoScheduledStatusesClient;
-                      await innerMasto.v1.scheduledStatuses
+                      const { masto: innerMasto } = api();
+                      await getMastoV1Resource<ScheduledStatusesResource>(
+                        innerMasto,
+                        'scheduledStatuses',
+                      )
                         .$select(post.id)
                         .remove();
                       showToast(t`Scheduled post deleted`);

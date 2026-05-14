@@ -24,7 +24,7 @@ import NavMenuUntyped from '../components/nav-menu';
 import RecentSearches from '../components/recent-searches';
 import SearchForm from '../components/search-form';
 import StatusUntyped from '../components/status';
-import { api } from '../utils/api';
+import { api, getMastoV2Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import shortenNumber from '../utils/shorten-number';
 import usePageVisibility from '../utils/usePageVisibility';
@@ -254,7 +254,7 @@ function Search({ columnMode, ...props }: SearchProps) {
         }
 
         try {
-          const searchApi = masto.v2.search as unknown as SearchApi;
+          const searchApi = getMastoV2Resource<SearchApi>(masto, 'search');
           const results = await searchApi.list(searchListParams);
           console.log(results);
           if (type) {
