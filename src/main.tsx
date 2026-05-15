@@ -25,17 +25,18 @@ import {
 import { initPWAViewport } from './utils/pwa-viewport';
 import states from './utils/states';
 
+function preactComponent<P>(component: unknown): ComponentType<P> {
+  return component as ComponentType<P>;
+}
+
 // Vite aliases `react` to `preact/compat` at bundle time, so Sentry's
 // `ErrorBoundary` works at runtime with preact children. The shipped Sentry
 // types extend `React.Component`, and preact's JSX type system does not
-// accept React class components directly. Per the CLAUDE.md migration rules,
-// an `as unknown as <preact type>` shim around an untyped/non-preact peer is
-// acceptable; a later batch (or a real react→preact/compat ambient module)
-// can replace this with a structurally typed boundary.
-const SentryErrorBoundary = Sentry.ErrorBoundary as unknown as ComponentType<{
+// accept React class components directly.
+const SentryErrorBoundary = preactComponent<{
   fallback?: VNode;
   children?: unknown;
-}>;
+}>(Sentry.ErrorBoundary);
 
 interface ShareData {
   title?: string;

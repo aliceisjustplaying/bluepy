@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import { useEffect } from 'preact/hooks';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, type Location } from 'react-router-dom';
 import { subscribe, useSnapshot } from 'valtio';
 
 import Accounts from '../pages/accounts';
@@ -47,6 +47,18 @@ type WindowWithCompose = Window & {
   __COMPOSE__?: Payload | null;
   __SHARED_DATA__?: unknown;
 };
+
+function toPrevLocation(
+  location: Location,
+): NonNullable<typeof states.prevLocation> {
+  return {
+    pathname: location.pathname,
+    search: location.search,
+    hash: location.hash,
+    state: location.state,
+    key: location.key,
+  };
+}
 
 subscribe(states, (changes) => {
   for (const [, path, value] of changes) {
@@ -136,9 +148,7 @@ export default function Modals() {
                   duration: 10_000, // 10 seconds
                   onClick: (toast: { hideToast: () => void }) => {
                     toast.hideToast();
-                    states.prevLocation = location as unknown as NonNullable<
-                      typeof states.prevLocation
-                    >;
+                    states.prevLocation = toPrevLocation(location);
                     if (scheduledAt) {
                       navigate('/sp');
                     } else {

@@ -36,6 +36,26 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   behavior: 'instant' as ScrollBehavior,
 };
 
+function columnComponentMap(
+  components: unknown,
+): Record<string, ColumnComponent | undefined> {
+  return components as Record<string, ColumnComponent | undefined>;
+}
+
+const columnComponents = columnComponentMap({
+  following: Following,
+  notifications: Notifications,
+  list: List,
+  public: Public,
+  bookmarks: Bookmarks,
+  favourites: Favourites,
+  hashtag: Hashtag,
+  mentions: Mentions,
+  trending: Trending,
+  search: Search,
+  profile: AccountStatuses,
+});
+
 function Columns() {
   const { t } = useLingui();
   useTitle(t`Home`, '/');
@@ -49,21 +69,7 @@ function Columns() {
   ).map((shortcut) => {
     if (!shortcut) return null;
     const { type, ...params } = shortcut;
-    const Component = (
-      {
-        following: Following,
-        notifications: Notifications,
-        list: List,
-        public: Public,
-        bookmarks: Bookmarks,
-        favourites: Favourites,
-        hashtag: Hashtag,
-        mentions: Mentions,
-        trending: Trending,
-        search: Search,
-        profile: AccountStatuses,
-      } as unknown as Record<string, ColumnComponent | undefined>
-    )[type];
+    const Component = columnComponents[type];
     if (!Component) return null;
     // Don't show Search column with no query, for now
     if (type === 'search' && !params.query) return null;
