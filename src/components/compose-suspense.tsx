@@ -16,7 +16,16 @@ function importIntlSegmenter(): Promise<unknown> {
 }
 
 function importCompose(): Promise<ComposeModule> {
-  return import('./compose') as unknown as Promise<ComposeModule>;
+  return import('./compose').then((mod) => {
+    const Compose = mod.default;
+    const LoadedCompose: ComponentType<Record<string, unknown>> = (props) => (
+      <Compose
+        {...(props as { onClose: Parameters<typeof Compose>[0]['onClose'] } &
+          Record<string, unknown>)}
+      />
+    );
+    return { default: LoadedCompose };
+  });
 }
 
 export async function preload() {

@@ -332,7 +332,7 @@ export default function StatusLargeFooter({
                 count: reblogsCount,
                 extraCount: quotesCount,
                 disabled: !canBoost,
-              } as unknown as Parameters<typeof StatusButton>[0])}
+              } as Parameters<typeof StatusButton>[0] & { disabled?: boolean })}
             />
           </MenuConfirm>
         </div>

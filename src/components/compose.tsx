@@ -75,7 +75,7 @@ import MediaAttachmentComponent, {
 import MentionModal from './mention-modal';
 import Menu2 from './menu2';
 import Modal from './modal';
-import QuoteSuggestion from './quote-suggestion';
+import QuoteSuggestionComponent from './quote-suggestion';
 import ScheduledAtField, {
   getLocalTimezoneName,
   MIN_SCHEDULED_AT,
@@ -265,6 +265,19 @@ function MediaAttachment(props: {
   onRemove?: () => void;
 }) {
   return <MediaAttachmentComponent {...(props as MediaAttachmentProps)} />;
+}
+
+function QuoteSuggestion(props: Omit<
+  Parameters<typeof QuoteSuggestionComponent>[0],
+  'quoteSuggestion'
+> & {
+  quoteSuggestion?: QuoteSuggestionState | null;
+}) {
+  return (
+    <QuoteSuggestionComponent
+      {...(props as Parameters<typeof QuoteSuggestionComponent>[0])}
+    />
+  );
 }
 
 function Status(props: {
@@ -2283,11 +2296,7 @@ function Compose({
             </div>
           )}
           <QuoteSuggestion
-            quoteSuggestion={
-              quoteSuggestion as unknown as Parameters<
-                typeof QuoteSuggestion
-              >[0]['quoteSuggestion']
-            }
+            quoteSuggestion={quoteSuggestion}
             hasCurrentQuoteStatus={!!currentQuoteStatus?.id}
             onAccept={() => {
               if (!quoteSuggestion) return;
