@@ -1048,6 +1048,9 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-inline-start: calc(
+    var(--line-end) + var(--line-margin-end, 16px)
+  ) !important;
   color: var(--text-insignificant-color);
 }
 .timeline .timeline-incomplete-thread-dots {
@@ -1065,6 +1068,9 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   border-width: var(--line-width);
   border-color: transparent transparent var(--comment-line-color) transparent;
   transform: rotate(var(--line-curve));
+}
+.timeline .timeline-incomplete-thread-link:before {
+  display: none;
 }
 
 .status-loading {

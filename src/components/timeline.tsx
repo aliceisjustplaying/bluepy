@@ -1129,7 +1129,7 @@ export const TimelineItem = memo(
         const itemURL = instance
           ? `/${instance}/s/${itemStatusID}`
           : `/s/${itemStatusID}`;
-        const threadStatusID = arr[arr.length - 1]?.id;
+        const threadStatusID = arr[0]?.id;
         const threadURL = instance
           ? `/${instance}/s/${threadStatusID}`
           : `/s/${threadStatusID}`;
