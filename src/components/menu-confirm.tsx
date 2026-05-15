@@ -18,11 +18,13 @@ type MenuClickHandler = (
 // Typed as the union of those prop surfaces (Partial because all are optional
 // from this component's view) plus the explicit local props.
 type PassThroughProps = Partial<MenuProps> & Partial<MenuItemProps>;
+type ConfirmItemProps = Omit<MenuItemProps, 'className' | 'onClick'>;
 
 interface MenuConfirmProps extends PassThroughProps {
   subMenu?: boolean;
   confirm?: boolean;
   confirmLabel?: ComponentChildren;
+  confirmItemProps?: ConfirmItemProps;
   menuItemClassName?: string;
   menuFooter?: ComponentChildren;
   menuExtras?: ComponentChildren;
@@ -34,6 +36,7 @@ function MenuConfirm({
   subMenu = false,
   confirm = true,
   confirmLabel,
+  confirmItemProps,
   menuItemClassName,
   menuFooter,
   menuExtras,
@@ -69,7 +72,11 @@ function MenuConfirm({
       menuButton={subMenu ? undefined : children}
       label={subMenu ? children : undefined}
     >
-      <MenuItem className={menuItemClassName} onClick={onClick}>
+      <MenuItem
+        {...confirmItemProps}
+        className={menuItemClassName}
+        onClick={onClick}
+      >
         {confirmLabel}
       </MenuItem>
       {menuExtras}

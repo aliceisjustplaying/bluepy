@@ -254,6 +254,7 @@ export default function StatusLargeFooter({
         >
           <MenuConfirm
             disabled={!canBoost}
+            confirmItemProps={{ 'data-testid': 'status-boost-confirm' }}
             onClick={() => {
               void haptics.trigger('light');
               void confirmBoostStatus();
@@ -332,6 +333,7 @@ export default function StatusLargeFooter({
                 count: reblogsCount,
                 extraCount: quotesCount,
                 disabled: !canBoost,
+                'data-testid': 'status-boost-button',
               } as Parameters<typeof StatusButton>[0] & { disabled?: boolean })}
             />
           </MenuConfirm>
@@ -375,7 +377,12 @@ export default function StatusLargeFooter({
           viewScroll="close"
           menuButton={
             <div class="action">
-              <button type="button" title={t`More`} class="plain more-button">
+              <button
+                type="button"
+                title={t`More`}
+                class="plain more-button"
+                data-testid="status-more-button"
+              >
                 <Icon icon="more2" size="l" alt={t`More`} />
               </button>
             </div>

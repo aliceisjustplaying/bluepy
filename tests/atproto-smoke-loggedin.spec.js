@@ -22,9 +22,8 @@
  *   - One shared logged-in storage state, captured once in beforeAll
  *     and restored per test. Avoids ~25 logins.
  *   - Per-test page is fresh, so DOM state never leaks.
- *   - Every write tags content with RUN_TAG. Created post URIs are
- *     captured on the page and deleted in afterAll via direct API
- *     so orphans don't survive even if a test cleanup selector misses.
+ *   - Every write tags content with RUN_TAG. Cleanup revisits the
+ *     profile and deletes matching posts through stable status controls.
  */
 
 import fs from 'node:fs';
@@ -44,7 +43,8 @@ const HAS_CREDS = Boolean(IDENTIFIER && PASSWORD);
 
 base.skip(!HAS_CREDS, 'ATPROTO_TEST_IDENTIFIER/PASSWORD not set');
 
-const RUN_TAG = `[bluepy-smoke-${Date.now()}]`;
+const SMOKE_TAG_PREFIX = '[bluepy-smoke-';
+const RUN_TAG = `${SMOKE_TAG_PREFIX}${Date.now()}]`;
 const STORAGE_FILE = path.join(
   os.tmpdir(),
   `bluepy-smoke-storage-${process.pid}.json`,
@@ -57,27 +57,52 @@ const STORAGE_FILE = path.join(
  * @param {Page} page
  */
 async function loginViaUI(page) {
-  await page.goto('/#/login');
-  await page.getByPlaceholder('alice.bsky.social').fill(IDENTIFIER);
-  await page.getByText('Use app password').click();
-  await page.locator('input[type="password"]').fill(PASSWORD);
-  await page
-    .getByRole('button', { name: 'Continue with app password' })
-    .click();
-  await expect(page).not.toHaveURL(/\/#\/login$/, { timeout: 30_000 });
-  await page.locator('.deck-container').first().waitFor({ timeout: 30_000 });
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await page.goto('/#/login');
+      if (
+        await page
+          .locator('.deck-container')
+          .first()
+          .isVisible({ timeout: 1000 })
+          .catch(() => false)
+      ) {
+        return;
+      }
+      await page.getByPlaceholder('alice.bsky.social').fill(IDENTIFIER);
+      await page.getByText('Use app password').click();
+      await page.locator('input[type="password"]').fill(PASSWORD);
+      await page
+        .getByRole('button', { name: 'Continue with app password' })
+        .click();
+      await expect(page).not.toHaveURL(/\/#\/login$/, { timeout: 30_000 });
+      await page.locator('.deck-container').first().waitFor({
+        timeout: 30_000,
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+      await page.waitForTimeout(1000 * (attempt + 1));
+    }
+  }
+  throw lastError;
 }
 
 /**
  * Per-spec setup: log in once, persist storage state, reuse across tests.
  */
-base.beforeAll(async ({ browser }) => {
+base.beforeAll(async ({ browser }, testInfo) => {
+  testInfo.setTimeout(120_000);
   if (!HAS_CREDS) return;
   const ctx = await browser.newContext();
-  const page = await ctx.newPage();
-  await loginViaUI(page);
-  await ctx.storageState({ path: STORAGE_FILE });
-  await ctx.close();
+  try {
+    const page = await ctx.newPage();
+    await loginViaUI(page);
+    await ctx.storageState({ path: STORAGE_FILE });
+  } finally {
+    await ctx.close();
+  }
 });
 
 /**
@@ -112,6 +137,22 @@ async function openFirstStatusDetail(page) {
   const statusLink = page.locator('.status-link[href*="/s/"]').first();
   await statusLink.waitFor({ timeout: 30_000 });
   await statusLink.click();
+  await expect(page).toHaveURL(/\/s\//, { timeout: 15_000 });
+}
+
+/**
+ * @param {Page} page
+ * @param {Locator} article
+ */
+async function openStatusDetailFromArticle(page, article) {
+  const href = await article.evaluate((element) => {
+    const link =
+      element.closest('a.status-link[href*="/s/"]') ||
+      element.querySelector('a.status-link[href*="/s/"]');
+    return link?.getAttribute('href');
+  });
+  if (!href) throw new Error('created status is missing a detail link');
+  await page.goto(href.startsWith('#') ? `/${href}` : href);
   await expect(page).toHaveURL(/\/s\//, { timeout: 15_000 });
 }
 
@@ -333,51 +374,34 @@ test.describe('write flows', () => {
     await expect(textarea).toHaveCount(0, { timeout: 30_000 });
   }
 
-  // TODO(smoke): the post-actions More menu doesn't expose a stable
-  // selector across the profile timeline and status detail. Re-enable
-  // once the relevant buttons gain data-testid or a deterministic aria
-  // label. The `compose: a published post survives a reload` test below
-  // proves the publish path works end-to-end; cleanup is then handled
-  // by the afterAll sweep on the profile page (which uses the same
-  // selectors and is best-effort).
-  test.skip('compose + publish + delete a post (asserts deletion)', async ({
-    page,
-  }) => {
-    const body = `${RUN_TAG} compose ${Date.now()}`;
-    await composeAndPublish(page, body);
-
-    // Visit own profile and verify the post appears, then delete.
-    await goto(page, `/a/${IDENTIFIER}`);
+  async function openCreatedStatusDetail(page, body) {
     const article = page
       .locator('[data-state-post-id]', { hasText: body.slice(0, 28) })
       .first();
-    await article.waitFor({ timeout: 30_000 });
+    if ((await article.count()) === 0) {
+      await goto(page, `/a/${IDENTIFIER}`);
+    }
+    await article.waitFor({ timeout: 45_000 });
+    await openStatusDetailFromArticle(page, article);
+  }
 
-    // Open the post's More menu and pick Delete. If the menu structure
-    // changes upstream this test must fail loudly so we notice.
-    const menu = article
-      .locator(
-        'button[aria-label*="ore" i], button[aria-haspopup], button[title="More"]',
-      )
-      .first();
-    await menu.click({ force: true });
+  test('compose + publish + delete a post (asserts deletion)', async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    const body = `${RUN_TAG} compose ${Date.now()}`;
+    await composeAndPublish(page, body);
 
-    const deleteItem = page
-      .getByRole('menuitem', { name: /delete/i })
-      .or(page.getByRole('button', { name: /^delete/i }))
-      .first();
-    await deleteItem.click();
-
-    const confirm = page
-      .getByRole('button', { name: /confirm|yes|delete/i })
-      .last();
-    if ((await confirm.count()) > 0) await confirm.click();
+    await openCreatedStatusDetail(page, body);
+    await page.getByTestId('status-more-button').click();
+    await page.getByTestId('status-delete-trigger').click();
+    await page.getByTestId('status-delete-confirm').click();
 
     // Hard assertion: the post is gone from the profile after a reload.
-    await page.reload();
+    await goto(page, `/a/${IDENTIFIER}`);
     await expect(
       page.locator('[data-state-post-id]', { hasText: body.slice(0, 28) }),
-    ).toHaveCount(0, { timeout: 15_000 });
+    ).toHaveCount(0, { timeout: 30_000 });
   });
 
   test('compose: a published post survives a reload (then leaves for sweep)', async ({
@@ -476,48 +500,31 @@ test.describe('write flows', () => {
     });
   });
 
-  // TODO(smoke): boost is rendered via a MenuConfirm component, not a
-  // plain button[title="Boost"]. The DOM structure varies between the
-  // home timeline and the status detail. Re-enable once boost gains
-  // a stable data-testid or once we add a helper that drives the
-  // confirmation menu reliably.
-  test.skip('boost + unboost (self-boost is supported on Bluesky)', async ({
+  test('boost + unboost (self-boost is supported on Bluesky)', async ({
     page,
   }) => {
     await openFirstStatusDetail(page);
     const url = page.url();
 
-    const boostBtn = page
-      .locator('button[title="Boost"], button[title="Unboost"]')
-      .first();
+    const boostBtn = page.getByTestId('status-boost-button').first();
     await boostBtn.waitFor({ timeout: 15_000 });
     const initial = await getRequiredTitle(boostBtn, 'boost button');
     await boostBtn.click();
     // Bluepy shows a confirmation menu for boost/unboost.
-    const confirm = page
-      .getByRole('button', { name: /^(boost|repost)$/i })
-      .or(page.getByRole('menuitem', { name: /^(boost|repost)$/i }))
-      .first();
-    if ((await confirm.count()) > 0) await confirm.click();
+    await page.getByTestId('status-boost-confirm').click();
     await expect(boostBtn).not.toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
 
     // Reload + revert.
     await page.goto(url);
-    const reloaded = page
-      .locator('button[title="Boost"], button[title="Unboost"]')
-      .first();
+    const reloaded = page.getByTestId('status-boost-button').first();
     await reloaded.waitFor({ timeout: 15_000 });
     await expect(reloaded).not.toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
     await reloaded.click();
-    const unconfirm = page
-      .getByRole('button', { name: /^(unboost|un-?repost)$/i })
-      .or(page.getByRole('menuitem', { name: /^(unboost|un-?repost)$/i }))
-      .first();
-    if ((await unconfirm.count()) > 0) await unconfirm.click();
+    await page.getByTestId('status-boost-confirm').click();
     await expect(reloaded).toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
@@ -558,27 +565,32 @@ base.afterAll(async ({ browser }) => {
     await page.goto(`/#/a/${IDENTIFIER}`).catch(() => {});
     for (let pass = 0; pass < 5; pass++) {
       const orphan = page
-        .locator('[data-state-post-id]', { hasText: RUN_TAG })
+        .locator('[data-state-post-id]', { hasText: SMOKE_TAG_PREFIX })
         .first();
       if ((await orphan.count()) === 0) break;
-      const menu = orphan
-        .locator(
-          'button[aria-label*="ore" i], button[aria-haspopup], button[title="More"]',
-        )
-        .first();
-      if ((await menu.count()) === 0) break;
-      await menu.click({ force: true }).catch(() => {});
-      const del = page
-        .getByRole('menuitem', { name: /delete/i })
-        .or(page.getByRole('button', { name: /^delete/i }))
-        .first();
-      if ((await del.count()) > 0) await del.click().catch(() => {});
-      const confirm = page
-        .getByRole('button', { name: /confirm|yes|delete/i })
-        .last();
-      if ((await confirm.count()) > 0) await confirm.click().catch(() => {});
+      try {
+        await openStatusDetailFromArticle(page, orphan);
+      } catch {
+        await page.goto(`/#/a/${IDENTIFIER}`).catch(() => {});
+        continue;
+      }
+      await page
+        .getByTestId('status-more-button')
+        .first()
+        .click()
+        .catch(() => {});
+      await page
+        .getByTestId('status-delete-trigger')
+        .first()
+        .click()
+        .catch(() => {});
+      await page
+        .getByTestId('status-delete-confirm')
+        .first()
+        .click()
+        .catch(() => {});
       await page.waitForTimeout(1000);
-      await page.reload().catch(() => {});
+      await page.goto(`/#/a/${IDENTIFIER}`).catch(() => {});
     }
   } catch {
     /* swallow */
