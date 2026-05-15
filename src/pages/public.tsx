@@ -214,7 +214,11 @@ function Public({ local, columnMode, ...props }: PublicProps) {
             </button>
           }
         >
-          <MenuItem href={isLocal ? `/${instance}/p` : `/${instance}/p/l`}>
+          <MenuItem
+            onClick={() =>
+              navigatePath(isLocal ? `/${instance}/p` : `/${instance}/p/l`)
+            }
+          >
             {isLocal ? (
               <>
                 <Icon icon="transfer" />{' '}

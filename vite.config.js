@@ -187,14 +187,19 @@ export default defineConfig({
             next();
             return;
           }
-          const pathname = URL.parse(url, 'http://localhost')?.pathname || url;
+          let pathname = url;
+          try {
+            pathname = new URL(url, 'http://localhost').pathname;
+          } catch {}
           const assetExtensionRE =
             /\.(?:avif|css|gif|html|ico|jpe?g|js|json|map|mjs|mp4|png|svg|txt|wasm|webmanifest|webp|woff2?)$/i;
+          const isComposePath =
+            pathname === '/compose' || pathname.startsWith('/compose/');
           if (
             url.startsWith('/@') ||
             url.startsWith('/__') ||
             url.startsWith('/assets/') ||
-            url.startsWith('/compose') ||
+            isComposePath ||
             url.startsWith('/oauth-client-metadata.json') ||
             assetExtensionRE.test(pathname)
           ) {

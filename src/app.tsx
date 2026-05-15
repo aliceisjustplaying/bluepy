@@ -878,7 +878,7 @@ function SecondaryRoutes() {
       matchPath('/:instance/s/:id', location.pathname) ||
       matchPath('/s/:id', location.pathname) ||
       matchPath('/:scheme://*', location.pathname) ||
-      atUriParam?.toLowerCase().startsWith('at%3a')
+      atUriParam?.toLowerCase().startsWith('at:')
     );
   }, [location.pathname]);
 

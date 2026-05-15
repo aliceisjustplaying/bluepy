@@ -1068,7 +1068,7 @@ function StatusThread({
           id: 'post.title',
           message: 'Post',
         }),
-    ['/:instance?/s/:id', '/:scheme://*', '/:atUri'],
+    ['/:instance?/s/:id', '/s/:id', '/:scheme://*', '/:atUri'],
   );
 
   const postInstance = useMemo<string | undefined>(() => {
