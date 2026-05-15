@@ -35,6 +35,7 @@ const productionOrigin = (WEBSITE || 'https://bluepy.social').replace(
   /\/$/,
   '',
 );
+const plausibleDomain = new URL(productionOrigin).hostname;
 const { PHANPY_WEBSITE: DEV_WEBSITE } = loadEnv(
   'development',
   process.cwd(),
@@ -146,6 +147,15 @@ export default defineConfig({
     preprocessorMaxWorkers: 1,
   },
   plugins: [
+    {
+      name: 'plausible-domain',
+      transformIndexHtml(html) {
+        return html.replace(
+          '</head>',
+          `    <script defer data-domain="${plausibleDomain}" src="https://p.mosphere.at/js/script.js"></script>\n  </head>`,
+        );
+      },
+    },
     {
       name: 'dynamic-oauth-metadata',
       configureServer(server) {
