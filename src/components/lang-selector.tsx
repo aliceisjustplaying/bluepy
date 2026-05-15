@@ -4,6 +4,7 @@ import { useMemo } from 'preact/hooks';
 import { CATALOGS, DEFAULT_LANG, DEV_LOCALES, LOCALES } from '../locales';
 import { activateLang } from '../utils/lang';
 import localeCode2Text from '../utils/localeCode2Text';
+import { sorted } from '../utils/sorted';
 import store from '../utils/store';
 
 const regionMaps: Record<string, string | undefined> = {
@@ -17,43 +18,47 @@ export default function LangSelector() {
 
   // Sorted on render, so the order won't suddenly change based on current locale
   const populatedLocales = useMemo(() => {
-    return LOCALES.map((lang) => {
-      // Don't need regions for now, it makes text too noisy
-      // Wait till there's too many languages and there are regional clashes
-      const regionlessCode = regionMaps[lang] || lang.replace(/-[a-z]+$/i, '');
+    return sorted(
+      LOCALES.map((lang) => {
+        // Don't need regions for now, it makes text too noisy
+        // Wait till there's too many languages and there are regional clashes
+        const regionlessCode =
+          regionMaps[lang] || lang.replace(/-[a-z]+$/i, '');
 
-      const native = localeCode2Text({
-        code: regionlessCode,
-        locale: lang,
-        fallback: CATALOGS.find((c) => c.code === lang)?.nativeName,
-      });
+        const native = localeCode2Text({
+          code: regionlessCode,
+          locale: lang,
+          fallback: CATALOGS.find((c) => c.code === lang)?.nativeName,
+        });
 
-      // Not used when rendering because it'll change based on current locale
-      // Only used for sorting on render
-      const commonName = localeCode2Text({
-        code: regionlessCode,
-        locale: i18n.locale,
-        fallback: CATALOGS.find((c) => c.code === lang)?.name,
-      });
+        // Not used when rendering because it'll change based on current locale
+        // Only used for sorting on render
+        const commonName = localeCode2Text({
+          code: regionlessCode,
+          locale: i18n.locale,
+          fallback: CATALOGS.find((c) => c.code === lang)?.name,
+        });
 
-      return {
-        code: lang,
-        regionlessCode,
-        commonName,
-        native,
-      };
-    }).toSorted((a, b) => {
-      // Sort by common name. The JS original assumes `commonName` is always a
-      // string (catalogs supply a `name` fallback); keep the same assumption
-      // so an undefined value still surfaces as a runtime error instead of
-      // silently sorting as empty.
-      const order = a.commonName!.localeCompare(b.commonName!, i18n.locale);
-      if (order !== 0) return order;
-      // Sort by code (fallback)
-      if (a.code < b.code) return -1;
-      if (a.code > b.code) return 1;
-      return 0;
-    });
+        return {
+          code: lang,
+          regionlessCode,
+          commonName,
+          native,
+        };
+      }),
+      (a, b) => {
+        // Sort by common name. The JS original assumes `commonName` is always a
+        // string (catalogs supply a `name` fallback); keep the same assumption
+        // so an undefined value still surfaces as a runtime error instead of
+        // silently sorting as empty.
+        const order = a.commonName!.localeCompare(b.commonName!, i18n.locale);
+        if (order !== 0) return order;
+        // Sort by code (fallback)
+        if (a.code < b.code) return -1;
+        if (a.code > b.code) return 1;
+        return 0;
+      },
+    );
   }, [i18n.locale]);
 
   return (

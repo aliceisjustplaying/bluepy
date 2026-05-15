@@ -462,8 +462,7 @@ function insertTextAtCursor({
 
   targetElement.value = newText;
   const newPos = selectionEnd + text.length + spaceAfterInsert.length;
-  targetElement.selectionStart = newPos;
-  targetElement.selectionEnd = newPos;
+  targetElement.selectionStart = targetElement.selectionEnd = newPos;
   targetElement.focus();
   targetElement.dispatchEvent(new Event('input'));
 }

@@ -36,6 +36,7 @@ import isSearchEnabled from '../utils/is-search-enabled';
 import mem from '../utils/mem';
 import pmem from '../utils/pmem';
 import showToast from '../utils/show-toast';
+import { sorted } from '../utils/sorted';
 import states, { saveStatus } from '../utils/states';
 import {
   getCurrentAccountID,
@@ -586,8 +587,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             </Link>
             {featuredTags.length > 0 && (
               <div class="filter-bar-group">
-                {featuredTags
-                  .toSorted((a, b) => {
+                {sorted(featuredTags, (a, b) => {
                     if (a.name === tagged) return -1;
                     if (b.name === tagged) return 1;
                     return 0;

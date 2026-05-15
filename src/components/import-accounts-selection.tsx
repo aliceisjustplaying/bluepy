@@ -9,6 +9,7 @@ import {
   saveAccounts,
   type StoredAccount,
 } from '../utils/store-utils';
+import { sorted } from '../utils/sorted';
 
 import Avatar from './avatar';
 import Icon from './icon';
@@ -52,11 +53,11 @@ function ImportAccountsSelection({
         importStatus: status,
       };
     });
-    const sorted = mapped.toSorted((a, b) => {
+    const sortedAccounts = sorted(mapped, (a, b) => {
       return statusOrder[a.importStatus] - statusOrder[b.importStatus];
     });
 
-    return { accountsToImport: sorted };
+    return { accountsToImport: sortedAccounts };
   }, [importedAccounts, existingAccounts]);
 
   const [selectedAccounts, setSelectedAccounts] = useState<

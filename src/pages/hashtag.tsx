@@ -20,6 +20,7 @@ import Timeline from '../components/timeline';
 import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import showToast from '../utils/show-toast';
+import { sorted } from '../utils/sorted';
 import states, { saveStatus } from '../utils/states';
 import { isMediaFirstInstance } from '../utils/store-utils';
 import { checkTimelineAccess } from '../utils/timeline-access';
@@ -125,10 +126,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   };
   let { hashtag: rawHashtag, ...params } = columnMode ? {} : routerParams;
   if (props.hashtag) rawHashtag = props.hashtag;
-  const hashtags = (rawHashtag as string)
-    .trim()
-    .split(/[\s+]+/)
-    .toSorted();
+  const hashtags = sorted((rawHashtag as string).trim().split(/[\s+]+/));
   const hashtag: string = hashtags[0];
   const [searchParams, setSearchParams] = useSearchParams();
   const media = mediaView || !!searchParams.get('media');
@@ -609,14 +607,8 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                 const exists = (states.shortcuts as HashtagShortcut[]).some(
                   (s) =>
                     s.type === shortcut.type &&
-                    s.hashtag
-                      .split(/[\s+]+/)
-                      .toSorted()
-                      .join(' ') ===
-                      shortcut.hashtag
-                        .split(/[\s+]+/)
-                        .toSorted()
-                        .join(' ') &&
+                    sorted(s.hashtag.split(/[\s+]+/)).join(' ') ===
+                      sorted(shortcut.hashtag.split(/[\s+]+/)).join(' ') &&
                     (s.instance ? s.instance === shortcut.instance : true) &&
                     (s.media ? !!s.media === !!shortcut.media : true),
                 );

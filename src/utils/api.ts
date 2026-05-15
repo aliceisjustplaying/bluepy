@@ -13,6 +13,7 @@ import {
   restoreAtprotoOAuthSession,
 } from './atproto-oauth';
 import mem, { type MemoizedFunction } from './mem';
+import { sorted } from './sorted';
 import store from './store';
 import {
   getAccount,
@@ -404,22 +405,23 @@ export async function initInstance(
       ).json()) as { readonly links?: readonly NodeInfoLink[] };
       if (Array.isArray(wellKnown?.links)) {
         const schema = 'http://nodeinfo.diaspora.software/ns/schema/';
-        const nodeInfoUrl = wellKnown.links
-          .filter(
-            (link) =>
-              typeof link.rel === 'string' &&
-              link.rel.startsWith(schema) &&
-              validate(link.rel.slice(schema.length)),
-          )
-          .map((link): NodeInfoCandidate => {
-            const version = link.rel.slice(schema.length);
-            return {
-              href: link.href,
-              version,
-            };
-          })
-          .toSorted((a, b) => -compareVersions(a.version, b.version))
-          .find((candidate) => satisfies(candidate.version, '<=2'))?.href;
+        const nodeInfoUrl = sorted(
+          wellKnown.links
+            .filter(
+              (link) =>
+                typeof link.rel === 'string' &&
+                link.rel.startsWith(schema) &&
+                validate(link.rel.slice(schema.length)),
+            )
+            .map((link): NodeInfoCandidate => {
+              const version = link.rel.slice(schema.length);
+              return {
+                href: link.href,
+                version,
+              };
+            }),
+          (a, b) => -compareVersions(a.version, b.version),
+        ).find((candidate) => satisfies(candidate.version, '<=2'))?.href;
         if (nodeInfoUrl) {
           nodeInfo = await (await fetch(nodeInfoUrl)).json();
         }

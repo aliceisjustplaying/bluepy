@@ -3,6 +3,7 @@ import type { mastodon } from 'masto';
 import { api, getMastoV1Resource, getMastoV2Resource } from './api';
 import db from './db';
 import isSearchEnabled from './is-search-enabled';
+import { sorted } from './sorted';
 import store from './store';
 import { getCurrentAccount, getCurrentAccountNS } from './store-utils';
 
@@ -71,9 +72,13 @@ export function loadAvailableYears(): AvailableYear[] {
   try {
     const list =
       store.account.get<YearInPostsList>(YEAR_IN_POSTS_LIST_KEY) || {};
-    const sortedYears = Object.entries(list)
-      .map(([year, data]) => ({ year: parseInt(year, 10), ...data }))
-      .toSorted((a, b) => b.year - a.year);
+    const sortedYears = sorted(
+      Object.entries(list).map(([year, data]) => ({
+        year: parseInt(year, 10),
+        ...data,
+      })),
+      (a, b) => b.year - a.year,
+    );
     return sortedYears;
   } catch (e) {
     console.error(e);

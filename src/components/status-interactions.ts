@@ -13,19 +13,6 @@ import { REACTIONS_LIMIT } from './status-helpers';
 import type { AnyAccount, AnyStatus, StatusContentMasto } from './status-types';
 
 type CachedStatus = (typeof states.statuses)[string];
-function toCachedStatus(status: mastodon.v1.Status | AnyStatus): CachedStatus {
-  const { account, quote, reblog, url, ...statusFields } = status;
-  const cachedStatus: CachedStatus = {
-    ...statusFields,
-    account: account ? { ...account } : account,
-    reblog: reblog ? toCachedStatus(reblog) : reblog,
-  };
-  return Object.assign(
-    cachedStatus,
-    quote === undefined ? {} : { quote },
-    url === undefined ? {} : { url },
-  );
-}
 
 type ReplyEvent =
   | (MouseEvent & { syntheticEvent?: { shiftKey?: boolean } })
@@ -117,22 +104,22 @@ export default function useStatusInteractions({
       return false;
     }
     try {
-      states.statuses[sKey] = toCachedStatus({
+      states.statuses[sKey] = {
         ...status,
         reblogged: !reblogged,
         reblogsCount: reblogsCount + (reblogged ? -1 : 1),
-      });
+      } as CachedStatus;
       if (reblogged) {
         const newStatus = await masto.v1.statuses.$select(id).unreblog();
-        saveStatus(toCachedStatus(newStatus), instance);
+        saveStatus(newStatus, instance);
       } else {
         const newStatus = await masto.v1.statuses.$select(id).reblog();
-        saveStatus(toCachedStatus(newStatus), instance);
+        saveStatus(newStatus, instance);
       }
       return true;
     } catch (e) {
       console.error(e);
-      states.statuses[sKey] = toCachedStatus(status);
+      states.statuses[sKey] = status as CachedStatus;
       return false;
     }
   };
@@ -143,22 +130,22 @@ export default function useStatusInteractions({
       return false;
     }
     try {
-      states.statuses[sKey] = toCachedStatus({
+      states.statuses[sKey] = {
         ...status,
         favourited: !favourited,
         favouritesCount: favouritesCount + (favourited ? -1 : 1),
-      });
+      } as CachedStatus;
       if (favourited) {
         const newStatus = await masto.v1.statuses.$select(id).unfavourite();
-        saveStatus(toCachedStatus(newStatus), instance);
+        saveStatus(newStatus, instance);
       } else {
         const newStatus = await masto.v1.statuses.$select(id).favourite();
-        saveStatus(toCachedStatus(newStatus), instance);
+        saveStatus(newStatus, instance);
       }
       return true;
     } catch (e) {
       console.error(e);
-      states.statuses[sKey] = toCachedStatus(status);
+      states.statuses[sKey] = status as CachedStatus;
       return false;
     }
   };
@@ -186,21 +173,21 @@ export default function useStatusInteractions({
       return false;
     }
     try {
-      states.statuses[sKey] = toCachedStatus({
+      states.statuses[sKey] = {
         ...status,
         bookmarked: !bookmarked,
-      });
+      } as CachedStatus;
       if (bookmarked) {
         const newStatus = await masto.v1.statuses.$select(id).unbookmark();
-        saveStatus(toCachedStatus(newStatus), instance);
+        saveStatus(newStatus, instance);
       } else {
         const newStatus = await masto.v1.statuses.$select(id).bookmark();
-        saveStatus(toCachedStatus(newStatus), instance);
+        saveStatus(newStatus, instance);
       }
       return true;
     } catch (e) {
       console.error(e);
-      states.statuses[sKey] = toCachedStatus(status);
+      states.statuses[sKey] = status as CachedStatus;
       return false;
     }
   };
@@ -228,12 +215,16 @@ export default function useStatusInteractions({
       const stmtSel: StatusSelector = masto.v1.statuses.$select(
         statusID as string,
       );
-      reblogIterator.current = stmtSel.rebloggedBy.list({
-        limit: REACTIONS_LIMIT,
-      }).values();
-      favouriteIterator.current = stmtSel.favouritedBy.list({
-        limit: REACTIONS_LIMIT,
-      }).values();
+      reblogIterator.current = stmtSel.rebloggedBy
+        .list({
+          limit: REACTIONS_LIMIT,
+        })
+        .values();
+      favouriteIterator.current = stmtSel.favouritedBy
+        .list({
+          limit: REACTIONS_LIMIT,
+        })
+        .values();
     }
     const [reblogResult, favouriteResult] = await Promise.allSettled([
       reblogIterator.current!.next(),

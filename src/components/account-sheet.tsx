@@ -48,7 +48,7 @@ function AccountSheet({
 
   useEffect(() => {
     if (!isString) {
-      states.accounts[`${account.id}@${instance}`] = { ...account };
+      states.accounts[`${account.id}@${instance}`] = account;
     }
   }, [account, isString, instance]);
 

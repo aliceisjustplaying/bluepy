@@ -35,7 +35,7 @@ type Status = Record<string, unknown> & {
 };
 type SaveStatusStatus = Status | mastodon.v1.Status;
 
-type Account = Record<string, unknown>;
+type Account = Record<string, unknown> | mastodon.v1.Account;
 
 interface PrevLocation {
   pathname?: string;

@@ -160,12 +160,12 @@ function CustomEmojisModal({
   const [customInstance, setCustomInstance] = useState<string | null>(null);
   const instance = customInstance || propInstance;
 
-  // JS original passed no deps to useMemo (re-evaluated each render); preserve
-  // exact semantics by passing `undefined`. Fix the deps as a follow-up.
+  // Selection closes the modal before writing recents, so this refreshes on the
+  // next open without making the category memo churn on every render.
   const recentlyUsedCustomEmojis = useMemo<StoredCustomEmoji[]>(
     () =>
       store.account.get<StoredCustomEmoji[]>('recentlyUsedCustomEmojis') || [],
-    undefined,
+    [],
   );
   const searcherRef = useRef<Fuse<CustomEmoji> | null>(null);
   useEffect(() => {

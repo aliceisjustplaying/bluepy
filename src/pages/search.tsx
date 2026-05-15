@@ -29,6 +29,7 @@ import StatusComponent, {
 import { api, getMastoV2Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import shortenNumber from '../utils/shorten-number';
+import { sorted } from '../utils/sorted';
 import usePageVisibility from '../utils/usePageVisibility';
 import useTitle from '../utils/useTitle';
 
@@ -42,9 +43,7 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   behavior: 'instant' as ScrollBehavior,
 };
 
-function Status(props: {
-  status: mastodon.v1.Status;
-}) {
+function Status(props: { status: mastodon.v1.Status }) {
   return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 type InViewProps = {
@@ -519,33 +518,34 @@ function Search({ columnMode, ...props }: SearchProps) {
                   <Icon icon="chevron-left" /> <Trans>All</Trans>
                 </Link>
               )}
-              {[
-                {
-                  label: t`Accounts`,
-                  type: 'accounts',
-                  to: `/search?q=${encodeURIComponent(q)}&type=accounts`,
-                },
-                {
-                  label: t`Hashtags`,
-                  type: 'hashtags',
-                  to: `/search?q=${encodeURIComponent(q)}&type=hashtags`,
-                },
-                {
-                  label: t`Posts`,
-                  type: 'statuses',
-                  to: `/search?q=${encodeURIComponent(q)}&type=statuses`,
-                },
-              ]
-                .toSorted((a, b) => {
+              {sorted(
+                [
+                  {
+                    label: t`Accounts`,
+                    type: 'accounts',
+                    to: `/search?q=${encodeURIComponent(q)}&type=accounts`,
+                  },
+                  {
+                    label: t`Hashtags`,
+                    type: 'hashtags',
+                    to: `/search?q=${encodeURIComponent(q)}&type=hashtags`,
+                  },
+                  {
+                    label: t`Posts`,
+                    type: 'statuses',
+                    to: `/search?q=${encodeURIComponent(q)}&type=statuses`,
+                  },
+                ],
+                (a, b) => {
                   if (a.type === type) return -1;
                   if (b.type === type) return 1;
                   return 0;
-                })
-                .map((link) => (
-                  <Link to={link.to} key={link.type}>
-                    {link.label}
-                  </Link>
-                ))}
+                },
+              ).map((link) => (
+                <Link to={link.to} key={link.type}>
+                  {link.label}
+                </Link>
+              ))}
             </div>
           )}
           {q ? (

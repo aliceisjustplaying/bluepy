@@ -6,16 +6,12 @@ import type {
   TargetedKeyboardEvent,
 } from 'preact';
 import { forwardRef } from 'preact/compat';
-import {
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/hooks';
+import { useImperativeHandle, useMemo, useRef, useState } from 'preact/hooks';
 import { useSearchParams } from 'react-router-dom';
 
 import { api } from '../utils/api';
 import { addToSearchHistory, getSearchHistory } from '../utils/search-history';
+import { sorted } from '../utils/sorted';
 
 import Icon from './icon';
 import Link from './link';
@@ -227,17 +223,15 @@ const SearchForm = forwardRef(
         },
       ];
 
-      return allItems
-        .toSorted((a, b) => {
-          if (type) {
-            if (a.queryType === type) return -1;
-            if (b.queryType === type) return 1;
-          }
-          if (a.top && !b.top) return -1;
-          if (!a.top && b.top) return 1;
-          return 0;
-        })
-        .filter(({ hidden }) => !hidden);
+      return sorted(allItems, (a, b) => {
+        if (type) {
+          if (a.queryType === type) return -1;
+          if (b.queryType === type) return 1;
+        }
+        if (a.top && !b.top) return -1;
+        if (!a.top && b.top) return 1;
+        return 0;
+      }).filter(({ hidden }) => !hidden);
     }, [query, type, instance, searchHistory]);
 
     return (
