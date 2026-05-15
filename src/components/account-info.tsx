@@ -4,7 +4,7 @@ import { msg, plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ComponentType } from 'preact';
+import type { HTMLAttributes } from 'preact';
 import {
   useCallback,
   useEffect,
@@ -24,6 +24,7 @@ import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { hideAllModals } from '../utils/states';
 import {
+  type AccountInfo as StoredAccountInfo,
   getAccounts,
   getCurrentAccountID,
   saveAccounts,
@@ -39,7 +40,7 @@ import EditProfileSheetComponent, {
 import EmojiText from './emoji-text';
 import Endorsements from './endorsements';
 import Icon from './icon';
-import Link from './link';
+import Link, { type LinkProps } from './link';
 import Menu2 from './menu2';
 import Modal from './modal';
 // TODO(oxlint:import/no-cycle): account-info <-> related-actions cycle is
@@ -60,6 +61,10 @@ export type AccountInfoShape = mastodon.v1.Account & {
   avatarDescription?: string;
   headerDescription?: string;
 };
+
+export function toStoredAccountInfo(info: AccountInfoShape): StoredAccountInfo {
+  return { ...info };
+}
 
 // Endpoint shims for masto APIs reached through the loose ApiClient.masto
 // shape. The runtime client supports `accounts.$select(id).{statuses,
@@ -367,7 +372,7 @@ function AccountInfo({
       let updated = false;
       storedAccounts.forEach((entry) => {
         if (entry.info.id === info.id && entry.instanceURL === instance) {
-          entry.info = info as unknown as typeof entry.info;
+          entry.info = toStoredAccountInfo(info);
           updated = true;
         }
       });
@@ -459,9 +464,13 @@ function AccountInfo({
     return results;
   }
 
-  const LinkOrDiv: ComponentType<Record<string, unknown>> | 'div' = standalone
-    ? 'div'
-    : (Link as unknown as ComponentType<Record<string, unknown>>);
+  const LinkOrDiv = useCallback(({ to, ...props }: LinkProps) => {
+    return standalone ? (
+      <div {...(props as HTMLAttributes<HTMLDivElement>)} />
+    ) : (
+      <Link to={to} {...props} />
+    );
+  }, [standalone]);
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
 
   const [familiarFollowers, setFamiliarFollowers] = useState<

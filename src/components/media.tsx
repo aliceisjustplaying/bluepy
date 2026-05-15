@@ -1,7 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { getBlurHashAverageColor } from 'fast-blurhash';
 import type {
-  CSSProperties,
   ComponentChildren,
   ComponentType,
   HTMLAttributes,
@@ -9,7 +8,7 @@ import type {
   TargetedMouseEvent,
 } from 'preact';
 import { Fragment } from 'preact';
-import { memo } from 'preact/compat';
+import { forwardRef, memo } from 'preact/compat';
 import {
   useCallback,
   useLayoutEffect,
@@ -140,6 +139,10 @@ export interface MediaProps {
   onClick?: (e: TargetedMouseEvent<HTMLElement>) => void;
 }
 
+interface MediaParentProps extends Record<string, unknown> {
+  children?: ComponentChildren;
+}
+
 function Media({
   class: className = '',
   media,
@@ -249,13 +252,24 @@ function Media({
 
   const [mediaLoadError, setMediaLoadError] = useState(false);
 
-  const Parent = useMemo(
-    () =>
-      (to && !mediaLoadError
-        ? (props: Record<string, unknown>) => (
-            <Link to={to} {...(props as unknown as Omit<LinkProps, 'to'>)} />
-          )
-        : 'div') as unknown as ComponentType<Record<string, unknown>>,
+  const Parent = useMemo<ComponentType<MediaParentProps>>(
+    () => {
+      if (to && !mediaLoadError) {
+        return forwardRef<HTMLElement, MediaParentProps>((props, ref) => (
+          <Link
+            to={to}
+            {...(props as Omit<LinkProps, 'to'>)}
+            ref={ref as Ref<HTMLAnchorElement>}
+          />
+        ));
+      }
+      return forwardRef<HTMLElement, MediaParentProps>((props, ref) => (
+        <div
+          {...(props as HTMLAttributes<HTMLDivElement>)}
+          ref={ref as Ref<HTMLDivElement>}
+        />
+      ));
+    },
     [to, mediaLoadError],
   );
 
@@ -697,9 +711,7 @@ function Media({
           //   backgroundColor:
           //     rgbAverageColor && `rgb(${rgbAverageColor.join(',')})`,
           // }}
-          style={
-            (!showOriginal && mediaStyles) as CSSProperties | false | undefined
-          }
+          style={!showOriginal ? mediaStyles : undefined}
           onClick={(e: TargetedMouseEvent<HTMLElement>) => {
             if (hoverAnimate) {
               try {
@@ -878,9 +890,7 @@ function Media({
           }
           data-has-alt={!showInlineDesc || undefined}
           onClick={onClick}
-          style={
-            (!showOriginal && mediaStyles) as CSSProperties | false | undefined
-          }
+          style={!showOriginal ? mediaStyles : undefined}
         >
           {showOriginal ? (
             previewUrl ? (
