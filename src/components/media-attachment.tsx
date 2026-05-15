@@ -161,7 +161,7 @@ function MediaAttachment({
 
   const checkMaxError = !!fileSize;
   const configuration: ConfigurationWithMedia = checkMaxError
-    ? (getCurrentInstanceConfiguration() as unknown as ConfigurationWithMedia)
+    ? (getCurrentInstanceConfiguration() as ConfigurationWithMedia)
     : {};
   const {
     mediaAttachments: {

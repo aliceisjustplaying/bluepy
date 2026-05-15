@@ -17,7 +17,11 @@ import states from '../utils/states';
 import { getCurrentAccountID, updateAccount } from '../utils/store-utils';
 import supports from '../utils/supports';
 
-import { type AccountInfoShape, handleScannerClick } from './account-info';
+import {
+  type AccountInfoShape,
+  handleScannerClick,
+  toStoredAccountInfo,
+} from './account-info';
 import AddRemoveListsSheet from './add-remove-lists-sheet';
 import Icon from './icon';
 import Loader from './loader';
@@ -319,9 +323,7 @@ function RelatedActions({
 
   useEffect(() => {
     if (info && isSelf) {
-      // `updateAccount` accepts the loose `AccountInfo` shape from
-      // store-utils; bridge from the stricter masto `Account` view.
-      updateAccount(info as unknown as Parameters<typeof updateAccount>[0]);
+      updateAccount(toStoredAccountInfo(info));
     }
   }, [info, isSelf]);
 
