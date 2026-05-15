@@ -33,6 +33,7 @@ const QuickPinchZoom =
 
 import formatDuration from '../utils/format-duration';
 import mem from '../utils/mem';
+import { navigatePath } from '../utils/router';
 import states from '../utils/states';
 
 import Icon from './icon';
@@ -259,26 +260,23 @@ function Media({
 
   const [mediaLoadError, setMediaLoadError] = useState(false);
 
-  const Parent = useMemo<ComponentType<MediaParentProps>>(
-    () => {
-      if (to && !mediaLoadError) {
-        return forwardRef<HTMLElement, MediaParentProps>((props, ref) => (
-          <Link
-            to={to}
-            {...(props as Omit<LinkProps, 'to'>)}
-            ref={ref as Ref<HTMLAnchorElement>}
-          />
-        ));
-      }
+  const Parent = useMemo<ComponentType<MediaParentProps>>(() => {
+    if (to && !mediaLoadError) {
       return forwardRef<HTMLElement, MediaParentProps>((props, ref) => (
-        <div
-          {...(props as HTMLAttributes<HTMLDivElement>)}
-          ref={ref as Ref<HTMLDivElement>}
+        <Link
+          to={to}
+          {...(props as Omit<LinkProps, 'to'>)}
+          ref={ref as Ref<HTMLAnchorElement>}
         />
       ));
-    },
-    [to, mediaLoadError],
-  );
+    }
+    return forwardRef<HTMLElement, MediaParentProps>((props, ref) => (
+      <div
+        {...(props as HTMLAttributes<HTMLDivElement>)}
+        ref={ref as Ref<HTMLDivElement>}
+      />
+    ));
+  }, [to, mediaLoadError]);
 
   const remoteMediaURLObj = remoteMediaURL ? getURLObj(remoteMediaURL) : null;
   const isVideoMaybe =
@@ -401,8 +399,9 @@ function Media({
     (e: TargetedMouseEvent<HTMLElement>) => {
       const target = e.target as Element;
       const isOnPostPage = target.closest('.status-deck');
-      const startViewTransition = (document as ViewTransitionDocument)
-        .startViewTransition?.bind(document);
+      const startViewTransition = (
+        document as ViewTransitionDocument
+      ).startViewTransition?.bind(document);
       if (
         showOriginal ||
         (postViewState() === 'large' && isOnPostPage) ||
@@ -421,21 +420,22 @@ function Media({
         if (onClick) {
           onClick(e);
         } else {
+          if (!to) return;
           e.preventDefault();
           if (el.dataset.viewTransitioned) {
             el.style.viewTransitionName = mediaVTN;
             try {
               startViewTransition(() => {
                 el.style.viewTransitionName = '';
-                location.hash = `#${to}`;
+                navigatePath(to);
               });
             } catch (err) {
               console.error(err);
               el.style.viewTransitionName = '';
-              location.hash = `#${to}`;
+              navigatePath(to);
             }
           } else {
-            location.hash = `#${to}`;
+            navigatePath(to);
           }
         }
       } else {

@@ -35,6 +35,7 @@ import SearchCommand from './components/search-command';
 import Shortcuts from './components/shortcuts';
 import AccountStatuses from './pages/account-statuses';
 import AnnualReport from './pages/annual-report';
+import AtprotoRoute from './pages/atproto-route';
 import Bookmarks from './pages/bookmarks';
 import Catchup from './pages/catchup';
 import Favourites from './pages/favourites';
@@ -73,6 +74,7 @@ import {
 import { getAccessToken } from './utils/auth';
 import { AuthProvider, useAuth } from './utils/auth-context';
 import focusDeck from './utils/focus-deck';
+import { navigatePath } from './utils/router';
 import states, { hideAllModals, initStates, statusKey } from './utils/states';
 import store from './utils/store';
 import {
@@ -101,7 +103,7 @@ function QrScanTest() {
     states.showQrScannerModal = {
       onClose: ({ text }: { text?: string } = {}) => {
         hideAllModals();
-        location.hash = text ? `/${text}` : '/';
+        navigatePath(text ? `/${text}` : '/');
       },
     };
   }, []);
@@ -528,7 +530,9 @@ function App() {
             const redirectPath = store.session.get('loginRedirect');
             if (redirectPath) {
               store.session.del('loginRedirect');
-              window.location.hash = redirectPath;
+              navigatePath(redirectPath);
+            } else if (isRootPath(window.location.pathname)) {
+              navigatePath('/', { replace: true });
             }
             __BENCHMARK.end('app-init');
             return;
@@ -617,7 +621,9 @@ function App() {
           const redirectPath = store.session.get('loginRedirect');
           if (redirectPath) {
             store.session.del('loginRedirect');
-            window.location.hash = redirectPath;
+            navigatePath(redirectPath);
+          } else if (isRootPath(window.location.pathname)) {
+            navigatePath('/', { replace: true });
           }
         } else {
           setUIState('error');
@@ -730,7 +736,7 @@ function App() {
             const timeSinceLastAccess =
               Date.now() - (lastPath.lastAccessed || 0);
             if (timeSinceLastAccess < PATH_RESTORE_TIME_LIMIT) {
-              window.location.hash = lastPath.path;
+              navigatePath(lastPath.path);
             }
           }
           store.local.del(lastPathKey);
@@ -778,6 +784,8 @@ function App() {
       <PrimaryRoutes />
       <SecondaryRoutes />
       <Routes>
+        <Route path="/:scheme://*" element={<AtprotoRoute />} />
+        <Route path="/:atUri" element={<AtprotoRoute />} />
         <Route path="/:instance?/s/:id" element={<StatusRoute />} />
       </Routes>
       {isLoggedIn && <ComposeButton />}
@@ -865,9 +873,12 @@ function SecondaryRoutes() {
   const backgroundLocation = useRef(getPrevLocation());
 
   const isModalPage = useMemo(() => {
+    const atUriParam = matchPath('/:atUri', location.pathname)?.params.atUri;
     return (
       matchPath('/:instance/s/:id', location.pathname) ||
-      matchPath('/s/:id', location.pathname)
+      matchPath('/s/:id', location.pathname) ||
+      matchPath('/:scheme://*', location.pathname) ||
+      atUriParam?.toLowerCase().startsWith('at%3a')
     );
   }, [location.pathname]);
 

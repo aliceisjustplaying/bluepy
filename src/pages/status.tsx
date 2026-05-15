@@ -45,6 +45,7 @@ import {
   useEditHistory,
 } from '../utils/edit-history-context';
 import htmlContentLength from '../utils/html-content-length';
+import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import states, {
   getStatus,
@@ -265,8 +266,12 @@ function StatusPage(params: StatusPageParams) {
     const prevSearch = prevLocation?.search;
     const prevSearchStr = typeof prevSearch === 'string' ? prevSearch : '';
     const pathname = (prevLocation?.pathname || '') + prevSearchStr;
+    const atUriParam = matchPath('/:atUri', pathname)?.params.atUri;
     const matchStatusPath =
-      matchPath('/:instance/s/:id', pathname) || matchPath('/s/:id', pathname);
+      matchPath('/:instance/s/:id', pathname) ||
+      matchPath('/s/:id', pathname) ||
+      matchPath('/:scheme://*', pathname) ||
+      atUriParam?.toLowerCase().startsWith('at%3a');
     if (!pathname || matchStatusPath) {
       return '/';
     }
@@ -306,7 +311,7 @@ function StatusPage(params: StatusPageParams) {
           if (stale) return;
           console.error(err);
           alert('Unable to load post.');
-          location.hash = snapshotCloseLink;
+          navigatePath(snapshotCloseLink);
         }
       })();
       return () => {
@@ -319,7 +324,8 @@ function StatusPage(params: StatusPageParams) {
   const mediaStatusKey = statusKey(mediaStatusID, instance);
   const mediaAttachments = mediaStatusID
     ? mediaStatusKey
-      ? rawStatusFromState(snapStates.statuses[mediaStatusKey])?.mediaAttachments
+      ? rawStatusFromState(snapStates.statuses[mediaStatusKey])
+          ?.mediaAttachments
       : undefined
     : heroStatus?.mediaAttachments;
 
@@ -332,7 +338,7 @@ function StatusPage(params: StatusPageParams) {
       history.back();
     } else {
       if (showMediaOnly) {
-        location.hash = closeLink;
+        navigatePath(closeLink);
       } else {
         searchParams.delete('media');
         searchParams.delete('mediaStatusID');
@@ -351,7 +357,11 @@ function StatusPage(params: StatusPageParams) {
       _e: unknown,
       currentIndex: number | undefined,
       currentMediaAttachments:
-        | readonly { id?: string; blurhash?: string | null; url?: string | null }[]
+        | readonly {
+            id?: string;
+            blurhash?: string | null;
+            url?: string | null;
+          }[]
         | undefined,
       carouselRef: { current: HTMLElement | null | undefined } | undefined,
     ) => {
@@ -419,9 +429,7 @@ function StatusPage(params: StatusPageParams) {
   useEffect(() => {
     let timer = setTimeout(() => {
       // carouselRef.current?.focus?.();
-      const $carousel = document.querySelector<HTMLElement>(
-        '.carousel',
-      );
+      const $carousel = document.querySelector<HTMLElement>('.carousel');
       if ($carousel) {
         $carousel.focus();
       }
@@ -485,12 +493,7 @@ function StatusParent(props: StatusParentProps) {
   return linkable ? (
     <Link class="status-link" to={to} onClick={onClick} {...restProps} />
   ) : (
-    <div
-      class="status-focus"
-      tabIndex={-1}
-      role="article"
-      {...restProps}
-    />
+    <div class="status-focus" tabIndex={-1} role="article" {...restProps} />
   );
 }
 
@@ -650,9 +653,9 @@ function StatusThread({
     missingAncestorIds.forEach((missingId) => {
       const referencingStatus: RawStatus | null =
         ancestors.find(
-          (s): s is RawStatus => !isGhostStatus(s) && s.inReplyToId === missingId,
-        ) ||
-        (heroStatus.inReplyToId === missingId ? heroStatus : null);
+          (s): s is RawStatus =>
+            !isGhostStatus(s) && s.inReplyToId === missingId,
+        ) || (heroStatus.inReplyToId === missingId ? heroStatus : null);
       if (referencingStatus) {
         const ghostStatus: GhostStatus = {
           id: missingId,
@@ -1065,7 +1068,7 @@ function StatusThread({
           id: 'post.title',
           message: 'Post',
         }),
-    '/:instance?/s/:id',
+    ['/:instance?/s/:id', '/:scheme://*', '/:atUri'],
   );
 
   const postInstance = useMemo<string | undefined>(() => {
@@ -1099,7 +1102,7 @@ function StatusThread({
   useHotkeys(
     'esc',
     () => {
-      location.hash = closeLink;
+      navigatePath(closeLink);
     },
     {
       // If media is open, esc to close media first
@@ -1116,7 +1119,7 @@ function StatusThread({
   useHotkeys(
     'backspace',
     () => {
-      location.hash = closeLink;
+      navigatePath(closeLink);
     },
     {
       useKey: true,
@@ -1420,9 +1423,11 @@ function StatusThread({
                               )?.statuses ?? [];
                             if (resultStatuses.length) {
                               const resolvedStatus = resultStatuses[0];
-                              location.hash = currentInstance
-                                ? `/${currentInstance}/s/${resolvedStatus.id}`
-                                : `/s/${resolvedStatus.id}`;
+                              navigatePath(
+                                currentInstance
+                                  ? `/${currentInstance}/s/${resolvedStatus.id}`
+                                  : `/s/${resolvedStatus.id}`,
+                              );
                             } else {
                               throw new Error('No results');
                             }
@@ -1964,7 +1969,7 @@ function StatusThread({
                       heroStatus?.url ?? '',
                     );
                     if (statusURL) {
-                      location.hash = statusURL;
+                      navigatePath(statusURL);
                     } else {
                       alert(t`Unable to switch`);
                     }
@@ -2115,10 +2120,7 @@ function SubComments({
   // Get the first 3 accounts, unique by id
   const accounts = replies
     .map((r) => r.account)
-    .filter(
-      (a, i, arr) =>
-        arr.findIndex((b) => b?.id === a?.id) === i,
-    )
+    .filter((a, i, arr) => arr.findIndex((b) => b?.id === a?.id) === i)
     .slice(0, 3);
 
   const totalWeight = useMemo<number>(() => {
@@ -2281,11 +2283,7 @@ function SubComments({
                 resetScrollPosition(r.id);
               }}
             > */}
-              <div
-                class="status-focus"
-                tabIndex={-1}
-                role="article"
-              >
+              <div class="status-focus" tabIndex={-1} role="article">
                 <Status
                   statusID={r.id}
                   instance={instance}

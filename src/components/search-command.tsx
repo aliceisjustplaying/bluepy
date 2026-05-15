@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useSnapshot } from 'valtio';
 
+import { currentAppPath } from '../utils/router';
 import states from '../utils/states';
 
 import SearchForm, { type SearchFormHandle } from './search-form';
@@ -53,8 +54,9 @@ export default memo(function SearchCommand({
       useKey: true,
       preventDefault: true,
       ignoreEventWhen: (e: KeyboardEvent) => {
-        const isSearchPage = /\/search/.test(location.hash);
-        const isYearInPostsPage = /\/yip/.test(location.hash);
+        const path = currentAppPath();
+        const isSearchPage = /\/search/.test(path);
+        const isYearInPostsPage = /\/yip/.test(path);
         const hasModal = !!document.querySelector('#modal-container > *');
         // Allow '/' even with Shift (e.g. German keyboards)
         if (e.key === '/') return false;

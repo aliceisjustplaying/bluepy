@@ -22,6 +22,7 @@ import {
 } from '../utils/auth';
 import { openAuthPopup, watchAuthPopup } from '../utils/auth-popup';
 import { supportsPKCE } from '../utils/oauth-pkce';
+import { navigatePath } from '../utils/router';
 import store from '../utils/store';
 import {
   getCredentialApplication,
@@ -239,7 +240,9 @@ function Login() {
           initPreferences(client),
           initInstance(client, BSKY_INSTANCE),
         ]);
-        location.href = location.pathname || '/';
+        const redirectPath = store.session.get('loginRedirect') || '/';
+        store.session.del('loginRedirect');
+        navigatePath(redirectPath, { replace: true });
       } catch (err) {
         console.error(err);
         setUIState('error');

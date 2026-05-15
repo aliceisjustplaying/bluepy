@@ -31,6 +31,7 @@ import {
   isFeedList,
   splitListsAndFeeds,
 } from '../utils/lists';
+import { navigatePath } from '../utils/router';
 import states, { saveStatus } from '../utils/states';
 import useTitle from '../utils/useTitle';
 
@@ -360,7 +361,7 @@ function List(props: ListProps) {
                 result.state === 'deleted'
               ) {
                 // navigate('/l');
-                location.hash = '/l';
+                navigatePath('/l');
               }
               setShowListAddEditModal(false);
             }}

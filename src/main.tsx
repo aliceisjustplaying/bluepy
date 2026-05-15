@@ -13,7 +13,7 @@ import * as Sentry from '@sentry/react';
 // import '@formatjs/intl-segmenter/polyfill';
 import { render } from 'preact';
 import type { ComponentType, VNode } from 'preact';
-import { HashRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './app';
 import { IconSpriteProvider } from './components/icon-sprite-manager';
@@ -23,6 +23,7 @@ import {
   redirectLegacyOrigin,
 } from './utils/origin-migration';
 import { initPWAViewport } from './utils/pwa-viewport';
+import { migrateLegacyHashRoute } from './utils/router';
 import states from './utils/states';
 
 function preactComponent<P>(component: unknown): ComponentType<P> {
@@ -86,16 +87,17 @@ if (!redirectLegacyOrigin()) {
     }
 
     document.getElementById('boot-status')?.remove();
+    migrateLegacyHashRoute();
 
     render(
       <I18nProvider i18n={i18n}>
-        <HashRouter>
+        <BrowserRouter>
           <IconSpriteProvider>
             <SentryErrorBoundary fallback={<p>Something went wrong.</p>}>
               <App />
             </SentryErrorBoundary>
           </IconSpriteProvider>
-        </HashRouter>
+        </BrowserRouter>
       </I18nProvider>,
       // The HTML template guarantees this element. Preserve the original JS
       // behavior of failing loudly through `render(...)` if it is ever missing

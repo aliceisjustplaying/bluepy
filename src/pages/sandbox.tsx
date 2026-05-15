@@ -993,7 +993,7 @@ export default function Sandbox() {
   return (
     <main id="sandbox">
       <header>
-        <a href="#/" class="button plain4">
+        <a href="/" class="button plain4">
           ×
         </a>
         <h1>Sandbox</h1>

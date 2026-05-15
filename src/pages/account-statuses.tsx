@@ -3,10 +3,7 @@ import './account-statuses.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type {
-  TargetedEvent,
-  TargetedMouseEvent,
-} from 'preact';
+import type { TargetedEvent, TargetedMouseEvent } from 'preact';
 import {
   useCallback,
   useEffect,
@@ -35,6 +32,7 @@ import {
 import isSearchEnabled from '../utils/is-search-enabled';
 import mem from '../utils/mem';
 import pmem from '../utils/pmem';
+import { navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import { sorted } from '../utils/sorted';
 import states, { saveStatus } from '../utils/states';
@@ -305,10 +303,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
 
     let results: TimelineItem[] = [];
     const accountsResource =
-      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(
-        masto,
-        'accounts',
-      );
+      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
     if (firstLoad && !columnMode) {
       const { value } = await accountsResource
         .$select(id as string)
@@ -432,10 +427,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
 
   useEffect(() => {
     const accountsResource =
-      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(
-        masto,
-        'accounts',
-      );
+      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
     void (async () => {
       try {
         const acc = await refetchAccount();
@@ -588,42 +580,41 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             {featuredTags.length > 0 && (
               <div class="filter-bar-group">
                 {sorted(featuredTags, (a, b) => {
-                    if (a.name === tagged) return -1;
-                    if (b.name === tagged) return 1;
-                    return 0;
-                  })
-                  .map((tag) => (
-                    <Link
-                      key={tag.id}
-                      to={`/${instance}/a/${id}${buildParamStr({
-                        tagged: tagged === tag.name ? null : tag.name,
-                      })}`}
-                      onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
-                        if (columnMode) {
-                          e.preventDefault();
-                          const next = new URLSearchParams(
-                            searchParams.toString(),
-                          );
-                          if (next.get('tagged') === tag.name) {
-                            next.delete('tagged');
-                          } else {
-                            next.set('tagged', tag.name);
-                          }
-                          setSearchParams(next);
+                  if (a.name === tagged) return -1;
+                  if (b.name === tagged) return 1;
+                  return 0;
+                }).map((tag) => (
+                  <Link
+                    key={tag.id}
+                    to={`/${instance}/a/${id}${buildParamStr({
+                      tagged: tagged === tag.name ? null : tag.name,
+                    })}`}
+                    onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
+                      if (columnMode) {
+                        e.preventDefault();
+                        const next = new URLSearchParams(
+                          searchParams.toString(),
+                        );
+                        if (next.get('tagged') === tag.name) {
+                          next.delete('tagged');
+                        } else {
+                          next.set('tagged', tag.name);
                         }
-                        if (tagged !== tag.name) {
-                          showToast(t`Showing posts tagged with #${tag.name}`);
-                        }
-                      }}
-                      class={tagged === tag.name ? 'is-active' : ''}
-                    >
-                      <span>
-                        <span class="more-insignificant">#</span>
-                        {tag.name}
-                      </span>
-                      {/* <span class="filter-count">{tag.statusesCount}</span> */}
-                    </Link>
-                  ))}
+                        setSearchParams(next);
+                      }
+                      if (tagged !== tag.name) {
+                        showToast(t`Showing posts tagged with #${tag.name}`);
+                      }
+                    }}
+                    class={tagged === tag.name ? 'is-active' : ''}
+                  >
+                    <span>
+                      <span class="more-insignificant">#</span>
+                      {tag.name}
+                    </span>
+                    {/* <span class="filter-count">{tag.statusesCount}</span> */}
+                  </Link>
+                ))}
               </div>
             )}
             {searchEnabled && !columnMode && (
@@ -854,7 +845,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                       acct: (account as Account).acct,
                     });
                     const { id: lookupId } = acc;
-                    location.hash = `/${accountInstance}/a/${lookupId}`;
+                    navigatePath(`/${accountInstance}/a/${lookupId}`);
                   } catch (e) {
                     console.error(e);
                     alert(t`Unable to fetch account info`);
@@ -889,7 +880,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                         acct: (account as Account).acct + '@' + instance,
                       });
                       const { id: lookupId } = acc;
-                      location.hash = `/${currentInstance}/a/${lookupId}`;
+                      navigatePath(`/${currentInstance}/a/${lookupId}`);
                     } catch (e) {
                       console.error(e);
                       alert(t`Unable to fetch account info`);

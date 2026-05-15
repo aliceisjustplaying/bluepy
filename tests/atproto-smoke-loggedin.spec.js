@@ -60,7 +60,7 @@ async function loginViaUI(page) {
   let lastError;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      await page.goto('/#/login');
+      await page.goto('/login');
       if (
         await page
           .locator('.deck-container')
@@ -76,7 +76,7 @@ async function loginViaUI(page) {
       await page
         .getByRole('button', { name: 'Continue with app password' })
         .click();
-      await expect(page).not.toHaveURL(/\/#\/login$/, { timeout: 30_000 });
+      await expect(page).not.toHaveURL(/\/login$/, { timeout: 30_000 });
       await page.locator('.deck-container').first().waitFor({
         timeout: 30_000,
       });
@@ -116,9 +116,8 @@ const test = base.extend({
   },
 });
 
-/** HashRouter convenience. */
 /** @param {Page} page @param {string} route */
-const goto = (page, route) => page.goto(`/#${route}`);
+const goto = (page, route) => page.goto(route);
 
 /**
  * @param {Page} page
@@ -182,11 +181,11 @@ async function getRequiredTitle(locator, label) {
 
 /** @param {Page} page */
 async function openFirstStatusDetail(page) {
-  await page.goto('/#/');
-  const statusLink = page.locator('.status-link[href*="/s/"]').first();
+  await page.goto('/');
+  const statusLink = page.locator('a.status-link[href]').first();
   await statusLink.waitFor({ timeout: 30_000 });
   await statusLink.click();
-  await expect(page).toHaveURL(/\/s\//, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/(?:s\/|at:\/\/|at%3A)/i, { timeout: 15_000 });
 }
 
 /**
@@ -196,20 +195,23 @@ async function openFirstStatusDetail(page) {
 async function openStatusDetailFromArticle(page, article) {
   const href = await article.evaluate((element) => {
     const link =
-      element.closest('a.status-link[href*="/s/"]') ||
-      element.querySelector('a.status-link[href*="/s/"]');
+      element.closest('a.status-link[href]') ||
+      element.querySelector('a.status-link[href]');
     return link?.getAttribute('href');
   });
   if (!href) throw new Error('created status is missing a detail link');
   await page.goto(href.startsWith('#') ? `/${href}` : href);
-  await expect(page).toHaveURL(/\/s\//, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/(?:s\/|at:\/\/|at%3A)/i, { timeout: 15_000 });
 }
 
 // ---------------------------------------------------------------------------
 // LOGIN
 // ---------------------------------------------------------------------------
 
-test('login: app-password flow lands on the home deck', async ({ browser }) => {
+test('login: app-password flow lands on the home deck', async ({
+  browser,
+}, testInfo) => {
+  testInfo.setTimeout(120_000);
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
   try {
@@ -226,7 +228,7 @@ test('login: app-password flow lands on the home deck', async ({ browser }) => {
 
 test.describe('read flows', () => {
   test('home renders deck', async ({ page }) => {
-    await page.goto('/#/');
+    await page.goto('/');
     await expect(
       page.locator('#home-page, .deck-container').first(),
     ).toBeVisible({
@@ -235,7 +237,7 @@ test.describe('read flows', () => {
   });
 
   test('home timeline shows at least one status', async ({ page }) => {
-    await page.goto('/#/');
+    await page.goto('/');
     await expect(
       page
         .locator('[data-state-post-id], article.status, .status-link')
@@ -338,16 +340,13 @@ test.describe('modals', () => {
    * @param {string} stateKey
    */
   async function openModal(page, stateKey) {
-    await page.goto('/#/');
+    await page.goto('/');
     await expect(page.locator('.deck-container').first()).toBeVisible({
       timeout: 30_000,
     });
     await page.evaluate((k) => {
       const appWindow = /** @type {TestWindow} */ (window);
-      if (
-        typeof appWindow.__STATES__ === 'object' &&
-        appWindow.__STATES__
-      ) {
+      if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
         appWindow.__STATES__[k] = true;
       }
     }, stateKey);
@@ -401,16 +400,13 @@ test.describe('write flows', () => {
    * @param {string} body
    */
   async function composeAndPublish(page, body) {
-    await page.goto('/#/');
+    await page.goto('/');
     await expect(page.locator('.deck-container').first()).toBeVisible({
       timeout: 30_000,
     });
     await page.evaluate(() => {
       const appWindow = /** @type {TestWindow} */ (window);
-      if (
-        typeof appWindow.__STATES__ === 'object' &&
-        appWindow.__STATES__
-      ) {
+      if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
         appWindow.__STATES__.showCompose = true;
       }
     });
@@ -463,9 +459,7 @@ test.describe('write flows', () => {
     CREATED.push({ page, body });
     await goto(page, `/a/${IDENTIFIER}`);
     await expect(
-      page
-        .locator('[data-state-post-id]', { hasText: body })
-        .first(),
+      page.locator('[data-state-post-id]', { hasText: body }).first(),
     ).toBeVisible({ timeout: 30_000 });
   });
 
@@ -484,7 +478,10 @@ test.describe('write flows', () => {
     try {
       await expect(textarea).toBeVisible({ timeout: 3_000 });
     } catch {
-      await page.getByRole('menuitem', { name: /^Reply/ }).first().click();
+      await page
+        .getByRole('menuitem', { name: /^Reply/ })
+        .first()
+        .click();
       await expect(textarea).toBeVisible({ timeout: 15_000 });
     }
   });
@@ -631,7 +628,7 @@ base.afterAll(async ({ browser }) => {
   const page = await ctx.newPage();
   try {
     // Multi-pass sweep: scroll, find RUN_TAG, delete, repeat. Bounded.
-    await page.goto(`/#/a/${IDENTIFIER}`).catch(() => {});
+    await page.goto(`/a/${IDENTIFIER}`).catch(() => {});
     for (let pass = 0; pass < 5; pass++) {
       const orphan = page
         .locator('[data-state-post-id]', { hasText: SMOKE_TAG_PREFIX })
@@ -640,7 +637,7 @@ base.afterAll(async ({ browser }) => {
       try {
         await openStatusDetailFromArticle(page, orphan);
       } catch {
-        await page.goto(`/#/a/${IDENTIFIER}`).catch(() => {});
+        await page.goto(`/a/${IDENTIFIER}`).catch(() => {});
         continue;
       }
       await page
@@ -659,7 +656,7 @@ base.afterAll(async ({ browser }) => {
         .click()
         .catch(() => {});
       await page.waitForTimeout(1000);
-      await page.goto(`/#/a/${IDENTIFIER}`).catch(() => {});
+      await page.goto(`/a/${IDENTIFIER}`).catch(() => {});
     }
   } catch {
     /* swallow */

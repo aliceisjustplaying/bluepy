@@ -21,6 +21,7 @@ import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import { filteredItems } from '../utils/filters';
 import getDomain from '../utils/get-domain';
 import pmem from '../utils/pmem';
+import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import states, { saveStatus } from '../utils/states';
 import supports from '../utils/supports';
@@ -294,8 +295,8 @@ function Trending({ columnMode, ...props }: TrendingProps) {
     try {
       const results = await getMastoV1Resource<{
         statuses: TrendingApiList;
-      }>(masto, 'trends').statuses
-        .list({
+      }>(masto, 'trends')
+        .statuses.list({
           limit: 1,
           // NOT SUPPORTED
           // since_id: latestItem.current,
@@ -607,7 +608,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
               if (newInstance) {
                 newInstance = newInstance.toLowerCase().trim();
                 // navigate(`/${newInstance}/trending`);
-                location.hash = `/${newInstance}/trending`;
+                navigatePath(`/${newInstance}/trending`);
               }
             }}
           >
@@ -619,7 +620,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
           {currentInstance !== instance && (
             <MenuItem
               onClick={() => {
-                location.hash = `/${currentInstance}/trending`;
+                navigatePath(`/${currentInstance}/trending`);
               }}
             >
               <Icon icon="bus" />{' '}

@@ -7,6 +7,7 @@ import Accounts from '../pages/accounts';
 import Settings from '../pages/settings';
 import { useAuth } from '../utils/auth-context';
 import focusDeck from '../utils/focus-deck';
+import { canonicalizeAppPath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 
@@ -153,9 +154,11 @@ export default function Modals() {
                       navigate('/sp');
                     } else {
                       navigate(
-                        instance
-                          ? `/${instance}/s/${newStatus.id}`
-                          : `/s/${newStatus.id}`,
+                        canonicalizeAppPath(
+                          instance
+                            ? `/${instance}/s/${newStatus.id}`
+                            : `/s/${newStatus.id}`,
+                        ),
                       );
                     }
                   },

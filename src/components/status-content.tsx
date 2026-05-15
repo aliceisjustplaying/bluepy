@@ -13,6 +13,10 @@ import {
 import { useSnapshot } from 'valtio';
 
 import { api, getMastoV1Resource } from '../utils/api';
+import {
+  buildAtprotoPostPermalink,
+  isAtprotoPostURI,
+} from '../utils/atproto-route';
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
 import niceDateTime from '../utils/nice-date-time';
@@ -22,13 +26,14 @@ import { getCurrentAccID } from '../utils/store-utils';
 import useTruncated from '../utils/useTruncated';
 
 import Avatar from './avatar';
-import { SIZE_CLASS } from './status-helpers';
+import useStatusCommentIndicators from './status-comment-indicators';
+import StatusCompact from './status-compact';
 import useStatusContextMenu from './status-context-menu';
 import useStatusDisplayState from './status-display-state';
 import StatusHeader from './status-header';
-import useStatusInteractions from './status-interactions';
+import { SIZE_CLASS } from './status-helpers';
 import StatusInlineControls from './status-inline-controls';
-import useStatusCommentIndicators from './status-comment-indicators';
+import useStatusInteractions from './status-interactions';
 import StatusLargeFooter from './status-large-footer';
 import useStatusMediaCaptions from './status-media-captions';
 import useStatusMenuState from './status-menu-state';
@@ -43,7 +48,6 @@ import type {
   StatusAtprotoMeta,
 } from './status-types';
 import type { StatusComponentProps, StatusRouterProps } from './status-view';
-import StatusCompact from './status-compact';
 
 const EMPTY_MEDIA_ATTACHMENTS: AnyMediaAttachment[] = [];
 Object.freeze(EMPTY_MEDIA_ATTACHMENTS);
@@ -199,6 +203,9 @@ export default function StatusContent({
   const editedAtDate = editedAt ? new Date(editedAt) : createdAtDate;
 
   const atproto: StatusAtprotoMeta | undefined = status._atproto;
+  const permalink = isAtprotoPostURI(atproto?.uri)
+    ? buildAtprotoPostPermalink(atproto.uri)
+    : url;
   const { inReplyToAccount, mentionSelf, showReplyBadge } =
     useStatusReplyParent({
       instance,
@@ -342,71 +349,67 @@ export default function StatusContent({
   });
 
   const actionsRef = useRef<HTMLDivElement | null>(null);
-  const {
-    menuFooter,
-    replyModeMenuItems,
-    StatusMenuItems,
-    tooManyMentions,
-  } = useStatusMenuState({
-    mediaNoDesc,
-    statusMonthsAgo,
-    accountId,
-    mentions,
-    currentAccount,
-    repliesCount,
-    username,
-    acct,
-    replyStatus,
-    isSizeLarge,
-    sameInstance,
-    showActionsBar,
-    reblogged,
-    quoteDisabled,
-    status,
-    quoteMetaText,
-    quoteText,
-    url,
-    canBoost,
-    confirmBoostStatus,
-    canQuote,
-    reblogsCount,
-    quotesCount,
-    favouriteStatusNotify,
-    favourited,
-    favouritesCount,
-    bookmarked,
-    bookmarkStatusNotify,
-    setShowQuotes,
-    quote,
-    setShowQuoteChain,
-    setShowEmbed,
-    setShowQuoteSettings,
-    mediaFirst,
-    enableTranslate,
-    language,
-    differentLanguage,
-    forceTranslate,
-    setForceTranslate,
-    instance,
-    id,
-    onStatusLinkClick,
-    createdDateText,
-    editedAt,
-    setShowEdited,
-    editedDateText,
-    isPublic,
-    authenticated,
-    isSelf,
-    mentionSelf,
-    masto,
-    muted,
-    pinned,
-    quoteApprovalPolicyMessages,
-    postQuoteApprovalPolicy,
-    visibility,
-    sKey,
-    fetchBoostedLikedByAccounts,
-  });
+  const { menuFooter, replyModeMenuItems, StatusMenuItems, tooManyMentions } =
+    useStatusMenuState({
+      mediaNoDesc,
+      statusMonthsAgo,
+      accountId,
+      mentions,
+      currentAccount,
+      repliesCount,
+      username,
+      acct,
+      replyStatus,
+      isSizeLarge,
+      sameInstance,
+      showActionsBar,
+      reblogged,
+      quoteDisabled,
+      status,
+      quoteMetaText,
+      quoteText,
+      url: permalink,
+      canBoost,
+      confirmBoostStatus,
+      canQuote,
+      reblogsCount,
+      quotesCount,
+      favouriteStatusNotify,
+      favourited,
+      favouritesCount,
+      bookmarked,
+      bookmarkStatusNotify,
+      setShowQuotes,
+      quote,
+      setShowQuoteChain,
+      setShowEmbed,
+      setShowQuoteSettings,
+      mediaFirst,
+      enableTranslate,
+      language,
+      differentLanguage,
+      forceTranslate,
+      setForceTranslate,
+      instance,
+      id,
+      onStatusLinkClick,
+      createdDateText,
+      editedAt,
+      setShowEdited,
+      editedDateText,
+      isPublic,
+      authenticated,
+      isSelf,
+      mentionSelf,
+      masto,
+      muted,
+      pinned,
+      quoteApprovalPolicyMessages,
+      postQuoteApprovalPolicy,
+      visibility,
+      sKey,
+      fetchBoostedLikedByAccounts,
+    });
 
   const {
     contextMenuRef,
@@ -439,7 +442,7 @@ export default function StatusContent({
     quoteDisabled,
     quoteMetaText,
     status,
-    url,
+    url: permalink,
     boostToast: (rebloggedValue, usernameValue, acctValue) =>
       rebloggedValue
         ? t`Unboosted @${usernameValue || acctValue}'s post`
@@ -457,34 +460,30 @@ export default function StatusContent({
   });
 
   const statusAccountId = status.account?.id;
-  const {
-    isThread,
-    showCommentHint,
-    showCommentCount,
-    showQuoteCount,
-  } = useStatusCommentIndicators({
-    enableCommentHint,
-    withinContext,
-    inReplyToId,
-    inReplyToAccountId,
-    statusAccountId,
-    statusThreadNumber: snapStates.statusThreadNumber[sKey],
-    visibility,
-    repliesCount,
-    forceShowCommentCount,
-    forceShowQuoteCount,
-    quotesCount,
-    card,
-    poll,
-    sensitive,
-    spoilerText,
-    mediaCount: mediaAttachments.length,
-    content,
-    contentLength,
-  });
+  const { isThread, showCommentHint, showCommentCount, showQuoteCount } =
+    useStatusCommentIndicators({
+      enableCommentHint,
+      withinContext,
+      inReplyToId,
+      inReplyToAccountId,
+      statusAccountId,
+      statusThreadNumber: snapStates.statusThreadNumber[sKey],
+      visibility,
+      repliesCount,
+      forceShowCommentCount,
+      forceShowQuoteCount,
+      quotesCount,
+      card,
+      poll,
+      sensitive,
+      spoilerText,
+      mediaCount: mediaAttachments.length,
+      content,
+      contentLength,
+    });
 
-    return (
-      <StatusParent>
+  return (
+    <StatusParent>
       {showReplyParent && !!(inReplyToId && inReplyToAccountId) && (
         <StatusCompact sKey={sKey} />
       )}
@@ -628,10 +627,12 @@ export default function StatusContent({
             isSizeLarge={isSizeLarge}
             withinContext={withinContext}
             isThread={isThread}
-            threadNumber={snapStates.statusThreadNumber[sKey] as number | undefined}
+            threadNumber={
+              snapStates.statusThreadNumber[sKey] as number | undefined
+            }
             sKey={sKey}
             deleted={_deleted}
-            url={url}
+            url={permalink}
             previewMode={previewMode}
             readOnly={readOnly}
             quoted={quoted}
@@ -712,7 +713,7 @@ export default function StatusContent({
             <StatusLargeFooter
               deleted={_deleted}
               visibility={visibility}
-              url={url}
+              url={permalink}
               createdAt={createdAt}
               createdAtDate={createdAtDate}
               createdDateText={createdDateText}
@@ -776,11 +777,9 @@ export default function StatusContent({
           }
           statusRef={statusRef}
           postQuoteApprovalPolicy={postQuoteApprovalPolicy}
-          renderStatus={(statusProps) =>
-            renderStatus(statusProps)
-          }
+          renderStatus={(statusProps) => renderStatus(statusProps)}
         />
       </article>
-      </StatusParent>
-    );
+    </StatusParent>
+  );
 }

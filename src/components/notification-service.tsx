@@ -4,6 +4,7 @@ import { useLayoutEffect, useState } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
 import { api } from '../utils/api';
+import { currentAppPath, navigatePath } from '../utils/router';
 import states from '../utils/states';
 import type { StoredAccount } from '../utils/store-utils';
 import {
@@ -133,13 +134,13 @@ export default memo(function NotificationService() {
         } else {
           if (hasStatus) {
             // Go to status page
-            location.hash = `/${currentInstance}/s/${status?.id}`;
+            navigatePath(`/${currentInstance}/s/${status?.id}`);
           } else if (isFollow) {
             // Go to profile page
-            location.hash = `/${currentInstance}/a/${notificationAccount?.id}`;
+            navigatePath(`/${currentInstance}/a/${notificationAccount?.id}`);
           } else {
             // Go to notifications page
-            location.hash = '/notifications';
+            navigatePath('/notifications');
           }
         }
       } else {
@@ -186,9 +187,8 @@ export default memo(function NotificationService() {
     setShowNotificationSheet(false);
     states.routeNotification = null;
 
-    // If url is #/notifications?id=123, go to #/notifications
-    if (/\/notifications\?id=/i.test(location.hash)) {
-      location.hash = '/notifications';
+    if (/\/notifications\?id=/i.test(currentAppPath())) {
+      navigatePath('/notifications');
     }
   };
 

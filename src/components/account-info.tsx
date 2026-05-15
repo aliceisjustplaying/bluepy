@@ -20,6 +20,7 @@ import handleContentLinks from '../utils/handle-content-links';
 import niceDateTime from '../utils/nice-date-time';
 import pmem from '../utils/pmem';
 import { supportsNativeQuote } from '../utils/quote-utils';
+import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { hideAllModals } from '../utils/states';
@@ -243,7 +244,7 @@ export const handleScannerClick = (): void => {
     onClose: ({ text }: { text?: string } = {}) => {
       if (text) {
         hideAllModals();
-        location.hash = `/${text}`;
+        navigatePath(`/${text}`);
       }
     },
   };
@@ -464,13 +465,16 @@ function AccountInfo({
     return results;
   }
 
-  const LinkOrDiv = useCallback(({ to, ...props }: LinkProps) => {
-    return standalone ? (
-      <div {...(props as HTMLAttributes<HTMLDivElement>)} />
-    ) : (
-      <Link to={to} {...props} />
-    );
-  }, [standalone]);
+  const LinkOrDiv = useCallback(
+    ({ to, ...props }: LinkProps) => {
+      return standalone ? (
+        <div {...(props as HTMLAttributes<HTMLDivElement>)} />
+      ) : (
+        <Link to={to} {...props} />
+      );
+    },
+    [standalone],
+  );
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
 
   const [familiarFollowers, setFamiliarFollowers] = useState<
@@ -528,12 +532,7 @@ function AccountInfo({
         }
       }
     },
-    [
-      standalone,
-      statusesCount,
-      renderFamiliarFollowers,
-      renderPostingStats,
-    ],
+    [standalone, statusesCount, renderFamiliarFollowers, renderPostingStats],
   );
 
   const onProfileUpdate = useCallback(

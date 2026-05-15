@@ -40,7 +40,7 @@ test.describe('ATProto OAuth', () => {
       };
     });
 
-    await page.goto('/#/login', { waitUntil: 'domcontentloaded' });
+    await page.goto('/login', { waitUntil: 'domcontentloaded' });
     await page.getByLabel('Handle or PDS URL').fill('alice.mosphere.at');
     await page.getByRole('button', { name: 'Continue with OAuth' }).click();
 
@@ -60,7 +60,7 @@ test.describe('ATProto OAuth', () => {
         signIn: async () => {},
       };
     });
-    await page.goto('/#/login', { waitUntil: 'domcontentloaded' });
+    await page.goto('/login', { waitUntil: 'domcontentloaded' });
 
     await expect(
       page.getByRole('button', { name: 'Continue with OAuth' }),

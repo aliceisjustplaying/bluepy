@@ -7,6 +7,7 @@ import Link from '../components/link';
 import Loader from '../components/loader';
 import { api, getMastoV2Resource } from '../utils/api';
 import { getInstanceStatusObject } from '../utils/get-instance-status-url';
+import { navigatePath } from '../utils/router';
 
 export default function HttpRoute() {
   const location = useLocation();
@@ -32,7 +33,7 @@ export default function HttpRoute() {
             .statuses as mastodon.rest.v1.StatusesResource;
           const status = await statusesResource.$select(id).fetch();
           if (status) {
-            window.location.hash = statusURL + '?view=full';
+            navigatePath(statusURL + '?view=full');
             return;
           }
         }
@@ -55,13 +56,13 @@ export default function HttpRoute() {
         });
         if (result.statuses.length) {
           const status = result.statuses[0];
-          window.location.hash = `/${currentInstance}/s/${status.id}?view=full`;
+          navigatePath(`/${currentInstance}/s/${status.id}?view=full`);
         } else if (result.accounts.length) {
           const account = result.accounts[0];
-          window.location.hash = `/${currentInstance}/a/${account.id}`;
+          navigatePath(`/${currentInstance}/a/${account.id}`);
         } else if (statusURL) {
           // Fallback to original URL, which will probably show error
-          window.location.hash = statusURL + '?view=full';
+          navigatePath(statusURL + '?view=full');
         } else {
           setUIState('error');
         }

@@ -130,7 +130,7 @@ function NameText({
           return;
         }
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) {
-          const internalURL = `#/${instance}/a/${id}`;
+          const internalURL = `/${instance}/a/${id}`;
           window.open(internalURL, '_blank');
           return;
         }
