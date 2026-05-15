@@ -39,7 +39,7 @@ import useScrollFn from '../utils/useScrollFn';
 
 import Icon from './icon';
 import Link from './link';
-import MediaPost from './media-post';
+import MediaPostComponent from './media-post';
 import NavMenu from './nav-menu';
 import StatusComponent, {
   type StatusComponentProps as StatusViewProps,
@@ -81,6 +81,22 @@ type TimelineStatusEntry = mastodon.v1.Status & {
   _pinned?: unknown;
   _differentAuthor?: boolean;
 };
+
+type MediaPostProps = Omit<Parameters<typeof MediaPostComponent>[0], 'status'> & {
+  status?: TimelineStatusEntry;
+};
+
+function MediaPost(props: MediaPostProps) {
+  return (
+    <MediaPostComponent
+      {...props}
+      status={
+        props.status as TimelineStatusEntry &
+          NonNullable<Parameters<typeof MediaPostComponent>[0]['status']>
+      }
+    />
+  );
+}
 
 interface StatusPeekPayload {
   spoilerText?: string;
@@ -1179,9 +1195,7 @@ export const TimelineItem = memo(
           class="timeline-item"
           parent="li"
           key={itemKey}
-          status={
-            status as unknown as Parameters<typeof MediaPost>[0]['status']
-          }
+          status={status}
           instance={instance}
           // allowFilters={allowFilters}
         />
