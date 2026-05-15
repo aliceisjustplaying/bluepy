@@ -103,6 +103,10 @@ if (!redirectLegacyOrigin()) {
       document.getElementById('app') as HTMLElement,
     );
 
+    try {
+      sessionStorage.removeItem('bluepy:boot-reload-attempted');
+    } catch {}
+
     // Storage cleanup
     setTimeout(() => {
       try {

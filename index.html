@@ -66,25 +66,56 @@
     </div>
     <div id="modal-container"></div>
     <script>
+      const BOOT_TIMEOUT_MS = 5000;
+      const bootReloadKey = 'bluepy:boot-reload-attempted';
+      const bootStartedAt = Date.now();
+      window.__BLUEPY_BOOT_FAILED__ = false;
+      const getBootStatus = () => document.getElementById('boot-status');
+      const recoverStalledBoot = () => {
+        const bootStatus = getBootStatus();
+        if (!bootStatus || window.__BLUEPY_BOOT_FAILED__) return;
+        if (Date.now() - bootStartedAt < BOOT_TIMEOUT_MS) return;
+        try {
+          if (sessionStorage.getItem(bootReloadKey)) return;
+          sessionStorage.setItem(bootReloadKey, '1');
+        } catch {
+          return;
+        }
+        bootStatus.textContent = 'Bluepy is still loading. Reloading...';
+        location.reload();
+      };
       window.addEventListener('error', (event) => {
-        const bootStatus = document.getElementById('boot-status');
+        window.__BLUEPY_BOOT_FAILED__ = true;
+        const bootStatus = getBootStatus();
         if (bootStatus) {
           bootStatus.textContent = `Bluepy failed to start: ${event.message || 'unknown error'}`;
         }
       });
       window.addEventListener('unhandledrejection', (event) => {
-        const bootStatus = document.getElementById('boot-status');
+        window.__BLUEPY_BOOT_FAILED__ = true;
+        const bootStatus = getBootStatus();
         if (bootStatus) {
           bootStatus.textContent = `Bluepy failed to start: ${event.reason?.message || event.reason || 'unknown error'}`;
         }
       });
+      window.addEventListener('pageshow', () => {
+        setTimeout(recoverStalledBoot, 0);
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          recoverStalledBoot();
+        }
+      });
       window.setTimeout(() => {
-        const bootStatus = document.getElementById('boot-status');
-        if (bootStatus) {
+        const bootStatus = getBootStatus();
+        if (bootStatus && !window.__BLUEPY_BOOT_FAILED__) {
           bootStatus.textContent =
             'Bluepy is still loading. If this stays here, Safari did not run the app script.';
+          if (document.visibilityState === 'visible') {
+            recoverStalledBoot();
+          }
         }
-      }, 5000);
+      }, BOOT_TIMEOUT_MS);
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
