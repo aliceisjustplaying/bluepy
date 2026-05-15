@@ -64,7 +64,7 @@
     "react/react-in-jsx-scope": "off",
     "unicorn/prefer-ternary": "off",
 
-    "typescript/no-deprecated": "error",
+    "typescript/no-deprecated": "warn",
     "typescript/no-misused-promises": "error",
     "typescript/switch-exhaustiveness-check": "error",
     "typescript/restrict-plus-operands": "error",
@@ -86,7 +86,6 @@
     "import/no-cycle": "warn",
     "promise/no-multiple-resolved": "warn",
     "react/iframe-missing-sandbox": "warn",
-    "typescript/no-deprecated": "warn",
     "typescript/no-unnecessary-type-parameters": "warn",
     "unicorn/require-post-message-target-origin": "warn",
 

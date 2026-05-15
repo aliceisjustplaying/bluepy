@@ -90,15 +90,20 @@ type AtprotoOAuthAgentSession = NonNullable<
   Parameters<typeof createAtprotoOAuthAgent>[0]
 >;
 
-function isAtpSessionData(value: unknown): value is AtpSessionData {
-  return (
-    isRecord(value) &&
-    typeof value.refreshJwt === 'string' &&
-    typeof value.accessJwt === 'string' &&
-    typeof value.handle === 'string' &&
-    typeof value.did === 'string' &&
-    typeof value.active === 'boolean'
-  );
+function toAtpSessionData(value: unknown): AtpSessionData | null {
+  if (
+    !isRecord(value) ||
+    typeof value.refreshJwt !== 'string' ||
+    typeof value.accessJwt !== 'string' ||
+    typeof value.handle !== 'string' ||
+    typeof value.did !== 'string'
+  ) {
+    return null;
+  }
+  return {
+    ...value,
+    active: typeof value.active === 'boolean' ? value.active : true,
+  } as AtpSessionData;
 }
 
 function isAgentSessionManager(
@@ -109,7 +114,7 @@ function isAgentSessionManager(
     (value.pdsUrl === undefined || value.pdsUrl instanceof URL) &&
     (value.getTokenInfo === undefined ||
       typeof value.getTokenInfo === 'function') &&
-    (value.session === undefined || isAtpSessionData(value.session))
+    (value.session === undefined || toAtpSessionData(value.session) !== null)
   );
 }
 
@@ -1840,8 +1845,9 @@ export function createAtprotoClient({
   const agentLoose: AtprotoAgentInternals = isAtprotoAgentInternals(agent)
     ? agent
     : {};
-  if (isAtpSessionData(session) && agentLoose.sessionManager) {
-    agentLoose.sessionManager.session = session;
+  const sessionData = toAtpSessionData(session);
+  if (sessionData && agentLoose.sessionManager) {
+    agentLoose.sessionManager.session = sessionData;
   }
   const uploadedMedia = new Map<string, AdaptedUploadedMedia>();
 
@@ -3109,10 +3115,16 @@ export function createAtprotoClient({
           if (inReplyToId) {
             const parent = await statusAPI(inReplyToId).fetch();
             const storedRoot = parent._atproto?.root;
-            const root: ComAtprotoRepoStrongRef.Main = {
-              uri: storedRoot?.uri || parent.uri || '',
-              cid: storedRoot?.cid || parent._atproto.cid || '',
-            };
+            const root: ComAtprotoRepoStrongRef.Main =
+              !!storedRoot?.uri && !!storedRoot.cid
+                ? {
+                    uri: storedRoot.uri,
+                    cid: storedRoot.cid,
+                  }
+                : {
+                    uri: parent.uri ?? '',
+                    cid: parent._atproto.cid ?? '',
+                  };
             record.reply = {
               root,
               parent: {

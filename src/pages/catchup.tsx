@@ -43,6 +43,7 @@ import niceDateTime from '../utils/nice-date-time';
 import { supportsNativeQuote } from '../utils/quote-utils';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
+import { sorted } from '../utils/sorted';
 import states, { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
 import store from '../utils/store';
@@ -835,53 +836,47 @@ function Catchup() {
     authorCountsList.forEach((authorID, index) => {
       authorIndices[authorID] = index;
     });
-    return (
-      filteredPosts
-        .filter((post) => !post.__HIDDEN)
-        .toSorted((aIn, bIn) => {
-          let a: CatchupPost = aIn;
-          let b: CatchupPost = bIn;
-          if (groupBy === 'account') {
-            const aAccountID = a.account.id;
-            const bAccountID = b.account.id;
-            const aIndex = authorIndices[aAccountID];
-            const bIndex = authorIndices[bAccountID];
-            const order = aIndex - bIndex;
-            if (order !== 0) {
-              return order;
-            }
+    return sorted(
+      filteredPosts.filter((post) => !post.__HIDDEN),
+      (aIn, bIn) => {
+        let a: CatchupPost = aIn;
+        let b: CatchupPost = bIn;
+        if (groupBy === 'account') {
+          const aAccountID = a.account.id;
+          const bAccountID = b.account.id;
+          const aIndex = authorIndices[aAccountID];
+          const bIndex = authorIndices[bAccountID];
+          const order = aIndex - bIndex;
+          if (order !== 0) {
+            return order;
           }
-          if (sortBy !== 'createdAt') {
-            a = (a.reblog as CatchupPost | null | undefined) || a;
-            b = (b.reblog as CatchupPost | null | undefined) || b;
-            if (
-              sortBy !== 'density' &&
-              a[sortBy] === b[sortBy]
-            ) {
-              return a.createdAt > b.createdAt ? 1 : -1;
-            }
+        }
+        if (sortBy !== 'createdAt') {
+          a = (a.reblog as CatchupPost | null | undefined) || a;
+          b = (b.reblog as CatchupPost | null | undefined) || b;
+          if (sortBy !== 'density' && a[sortBy] === b[sortBy]) {
+            return a.createdAt > b.createdAt ? 1 : -1;
           }
-          if (sortBy === 'density') {
-            const aDensity = postDensity(a);
-            const bDensity = postDensity(b);
-            if (sortOrder === 'asc') {
-              return aDensity > bDensity ? 1 : -1;
-            } else {
-              return bDensity > aDensity ? 1 : -1;
-            }
-          }
+        }
+        if (sortBy === 'density') {
+          const aDensity = postDensity(a);
+          const bDensity = postDensity(b);
           if (sortOrder === 'asc') {
-            return (a[sortBy] as number | string) >
-              (b[sortBy] as number | string)
-              ? 1
-              : -1;
+            return aDensity > bDensity ? 1 : -1;
           } else {
-            return (b[sortBy] as number | string) >
-              (a[sortBy] as number | string)
-              ? 1
-              : -1;
+            return bDensity > aDensity ? 1 : -1;
           }
-        })
+        }
+        if (sortOrder === 'asc') {
+          return (a[sortBy] as number | string) > (b[sortBy] as number | string)
+            ? 1
+            : -1;
+        } else {
+          return (b[sortBy] as number | string) > (a[sortBy] as number | string)
+            ? 1
+            : -1;
+        }
+      },
     );
   }, [filteredPosts, sortBy, sortOrder, groupBy, authorCountsList]);
 
@@ -2248,10 +2243,7 @@ const PostLine = memo(
               url={reblog.account.avatarStatic || reblog.account.avatar}
               squircle={reblog.account.bot}
             /> */}
-              <NameText
-                account={reblog.account}
-                showAvatar
-              />
+              <NameText account={reblog.account} showAvatar />
             </span>
           ) : hasQuote(quote) ? (
             <span class="post-quote-avatar">
@@ -2260,10 +2252,7 @@ const PostLine = memo(
                 squircle={account.bot}
               />{' '}
               <Icon icon="quote" />{' '}
-              <NameText
-                account={quoteNameTextAccount(quote)}
-                showAvatar
-              />
+              <NameText account={quoteNameTextAccount(quote)} showAvatar />
             </span>
           ) : (
             <NameText account={account} showAvatar />

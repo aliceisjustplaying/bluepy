@@ -35,6 +35,7 @@ import niceDateTime from '../utils/nice-date-time';
 import prettyBytes from '../utils/pretty-bytes';
 import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
+import { sorted as sortArray } from '../utils/sorted';
 import { getCurrentAccountNS } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 import {
@@ -566,22 +567,21 @@ function YearInPosts() {
         monthTypes[m].original++;
       }
     });
-    return (
-      Object.entries(monthCounts)
-        .map(([mKey, count]) => {
-          const types = monthTypes[Number(mKey)];
-          return {
-            month: parseInt(mKey),
-            count,
-            heatmap: monthHeatmaps[mKey] || [],
-            mediaGrid: monthMediaGrids[mKey] || [],
-            original: types.original,
-            reply: types.reply,
-            quote: types.quote,
-            boost: types.boost,
-          };
-        })
-        .toSorted((a, b) => a.month - b.month)
+    return sortArray(
+      Object.entries(monthCounts).map(([mKey, count]) => {
+        const types = monthTypes[Number(mKey)];
+        return {
+          month: parseInt(mKey),
+          count,
+          heatmap: monthHeatmaps[mKey] || [],
+          mediaGrid: monthMediaGrids[mKey] || [],
+          original: types.original,
+          reply: types.reply,
+          quote: types.quote,
+          boost: types.boost,
+        };
+      }),
+      (a, b) => a.month - b.month,
     );
   }, [posts, monthHeatmaps, monthMediaGrids]);
 
@@ -731,7 +731,7 @@ function YearInPosts() {
     // Sort the filtered posts
     let sorted = filtered;
     if (sortBy !== 'relevance') {
-      sorted = filtered.toSorted((a, b) => {
+      sorted = sortArray(filtered, (a, b) => {
         const postA = a.reblog || a;
         const postB = b.reblog || b;
         let valueA: number | Date;

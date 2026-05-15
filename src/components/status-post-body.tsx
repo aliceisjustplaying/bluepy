@@ -10,10 +10,11 @@ import MathBlock from './math-block';
 import MediaFirstContainer from './media-first-container';
 import Poll from './poll';
 import PostContent from './post-content';
-import QuoteStatuses, { type FallbackQuote } from './status-quotes';
 import StatusCard from './status-card';
-import StatusMediaEmbeds from './status-media-embeds';
 import { getPostText, isTranslateble, readMoreText } from './status-helpers';
+import StatusMediaEmbeds from './status-media-embeds';
+import QuoteStatuses, { type FallbackQuote } from './status-quotes';
+import StatusTags from './status-tags';
 import type {
   AnyMediaAttachment,
   AnyPoll,
@@ -21,9 +22,8 @@ import type {
   AnyStatus,
   StatusContentMasto,
 } from './status-types';
-import StatusTags from './status-tags';
-import TranslationBlock from './translation-block';
 import type { StatusComponentProps } from './status-view';
+import TranslationBlock from './translation-block';
 
 type FilterInfoMaybe = {
   action: 'hide' | 'blur' | 'warn';
@@ -292,7 +292,7 @@ export default function StatusPostBody({
                 }}
               />
             )}
-            {(((!!content &&
+            {((!!content &&
               (enableTranslate || inlineTranslate) &&
               isTranslateble(content, emojis) &&
               differentLanguage) ||
@@ -308,7 +308,7 @@ export default function StatusPostBody({
                   hideInlineQuote: true,
                 })}
               />
-              ))}
+            )}
             <StatusMediaEmbeds
               previewMode={previewMode}
               sensitive={sensitive}
@@ -335,7 +335,13 @@ export default function StatusPostBody({
             <QuoteStatuses
               id={id}
               instance={instance}
-              level={typeof quoted === 'number' ? quoted : undefined}
+              level={
+                quoted === true
+                  ? 1
+                  : typeof quoted === 'number'
+                    ? quoted
+                    : undefined
+              }
               collapsed={!isSizeLarge && !withinContext}
               fallbackQuote={quote}
               renderStatus={(quoteStatusProps) =>
@@ -356,14 +362,18 @@ export default function StatusPostBody({
               !statusQuoteState && (
                 <StatusCard
                   card={card}
-                  selfReferential={card?.url === status.url || card?.url === status.uri}
+                  selfReferential={
+                    card?.url === status.url || card?.url === status.uri
+                  }
                   selfAuthor={card?.authors?.some(
                     (a) => a.account?.url === accountURL,
                   )}
                   instance={currentInstance}
                 />
               )}
-            {size !== 's' && <StatusTags tags={tags} content={content ?? undefined} />}
+            {size !== 's' && (
+              <StatusTags tags={tags} content={content ?? undefined} />
+            )}
           </>
         )}
       </div>

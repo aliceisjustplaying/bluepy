@@ -56,8 +56,7 @@ export default function useStatusMediaCaptions({
         };
       };
       return (
-        <button
-          type="button"
+        <div
           key={media.id}
           data-caption-index={indices.map((i: number) => i + 1).join(' ')}
           onClick={(e: MouseEvent) => {
@@ -69,7 +68,7 @@ export default function useStatusMediaCaptions({
         >
           <sup>{indices.map((i: number) => i + 1).join(' ')}</sup>{' '}
           {media.description}
-        </button>
+        </div>
       );
     });
   }, [showMultipleMediaCaptions, displayedMediaAttachments, language]);

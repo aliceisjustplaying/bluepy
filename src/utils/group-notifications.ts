@@ -1,5 +1,7 @@
 import type { mastodon } from 'masto';
 
+import { sorted } from './sorted';
+
 // Loose shapes for the inputs and outputs of these helpers. The runtime data
 // is `mastodon.v1.Notification` / `mastodon.v2.NotificationGroup` payloads,
 // but these helpers also mutate notifications and accounts in-place (adding
@@ -253,8 +255,8 @@ export function groupNotifications2(
         } else {
           mappedAccount._types!.push(type as string);
           // Equivalent to the JS original `_types.sort().reverse()`: default
-          // string compare then reverse, expressed as a single toSorted call.
-          mappedAccount._types = mappedAccount._types!.toSorted((t1, t2) =>
+          // string compare then reverse, without requiring ES2023 toSorted.
+          mappedAccount._types = sorted(mappedAccount._types!, (t1, t2) =>
             t1 < t2 ? 1 : t1 > t2 ? -1 : 0,
           );
         }
@@ -376,8 +378,8 @@ export default function groupNotifications(
       if (mappedAccount) {
         mappedAccount._types!.push(type as string);
         // Equivalent to the JS original `_types.sort().reverse()`: default
-        // string compare then reverse, expressed as a single toSorted call.
-        mappedAccount._types = mappedAccount._types!.toSorted((a, b) =>
+        // string compare then reverse, without requiring ES2023 toSorted.
+        mappedAccount._types = sorted(mappedAccount._types!, (a, b) =>
           a < b ? 1 : a > b ? -1 : 0,
         );
         mappedNotification._ids = `${mappedNotification._ids}-${id}`;
