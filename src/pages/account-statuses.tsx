@@ -56,6 +56,11 @@ interface PinnedGroup {
 }
 
 type TimelineItem = (Status & { _pinned?: boolean }) | PinnedGroup;
+type AccountStatusesListParams = mastodon.rest.v1.ListAccountStatusesParams & {
+  exclude_replies?: boolean;
+  exclude_reblogs?: boolean;
+  only_media?: boolean;
+};
 
 interface AccountStatusesProps {
   columnMode?: boolean;
@@ -72,6 +77,7 @@ type SearchParamsUpdater =
   | SearchParamsObject
   | URLSearchParams
   | ((params: URLSearchParams) => void);
+type SearchParamsSetter = (next: SearchParamsUpdater) => void;
 
 const LIMIT = 20;
 const MIN_YEAR = 1983;
@@ -85,6 +91,25 @@ function stateStatus<T extends mastodon.v1.Status>(
 
 function isAccountInfoShape(account: unknown): account is AccountInfoShape {
   return !!account && typeof account === 'object';
+}
+
+function applySearchParamsObject(
+  params: URLSearchParams,
+  obj: SearchParamsObject,
+): void {
+  Object.entries(obj).forEach(([key, value]) => {
+    if (value) {
+      params.set(key, String(value));
+    } else {
+      params.delete(key);
+    }
+  });
+}
+
+function searchParamsFromObject(obj: SearchParamsObject): URLSearchParams {
+  const params = new URLSearchParams();
+  applySearchParamsObject(params, obj);
+  return params;
 }
 
 const supportsInputMonth = mem(() => {
@@ -101,17 +126,14 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   const { i18n, t } = useLingui();
   const snapStates = useSnapshot(states);
   const routeParams = useParams() as { id?: string; instance?: string };
-  const routeSearchParams = useSearchParams() as unknown as readonly [
-    URLSearchParams,
-    (next: SearchParamsUpdater) => void,
-  ];
+  const [routeSearchParams, setRouteSearchParamsBase] = useSearchParams();
   const { id, ...params } = columnMode ? { id: props.id } : routeParams;
 
   // `URLSearchParams` accepts `Record<string, string>`; the JS `{ replies: 1 }`
   // is coerced to "1" at runtime — preserve via string init.
   const profileSearchParamsRef = useRef(new URLSearchParams({ replies: '1' }));
   const [, forceUpdate] = useReducer<number, undefined>((c) => c + 1, 0);
-  const profileSetSearchParams = useCallback((objOrFn: SearchParamsUpdater) => {
+  const profileSetSearchParams = useCallback<SearchParamsSetter>((objOrFn) => {
     const localParams = profileSearchParamsRef.current;
     if (typeof objOrFn === 'function') {
       objOrFn(localParams);
@@ -119,19 +141,29 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       [...localParams.keys()].forEach((key) => localParams.delete(key));
       objOrFn.forEach((value, key) => localParams.set(key, value));
     } else {
-      Object.entries(objOrFn).forEach(([key, value]) => {
-        if (value) {
-          localParams.set(key, String(value));
-        } else {
-          localParams.delete(key);
-        }
-      });
+      applySearchParamsObject(localParams, objOrFn);
     }
     forceUpdate(undefined);
   }, []);
+  const setRouteSearchParams = useCallback<SearchParamsSetter>(
+    (objOrFn) => {
+      if (typeof objOrFn === 'function') {
+        setRouteSearchParamsBase((prev) => {
+          const next = new URLSearchParams(prev);
+          objOrFn(next);
+          return next;
+        });
+      } else if (objOrFn instanceof URLSearchParams) {
+        setRouteSearchParamsBase(objOrFn);
+      } else {
+        setRouteSearchParamsBase(searchParamsFromObject(objOrFn));
+      }
+    },
+    [setRouteSearchParamsBase],
+  );
   const [searchParams, setSearchParams] = columnMode
     ? ([profileSearchParamsRef.current, profileSetSearchParams] as const)
-    : routeSearchParams;
+    : ([routeSearchParams, setRouteSearchParams] as const);
   const clearAndSetParam = useCallback(
     (paramName?: string, paramValue?: string) => {
       const localParams = new URLSearchParams(
@@ -307,15 +339,16 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       }
     }
     if (firstLoad || !accountStatusesIterator.current) {
+      const listParams: AccountStatusesListParams = {
+        limit: LIMIT,
+        exclude_replies: excludeReplies,
+        exclude_reblogs: excludeBoosts,
+        only_media: media || undefined,
+        tagged,
+      };
       accountStatusesIterator.current = accountsResource
         .$select(id as string)
-        .statuses.list({
-          limit: LIMIT,
-          exclude_replies: excludeReplies,
-          exclude_reblogs: excludeBoosts,
-          only_media: media || undefined,
-          tagged,
-        } as unknown as mastodon.rest.v1.ListAccountStatusesParams)
+        .statuses.list(listParams)
         .values();
     }
     const { value, done } = await accountStatusesIterator.current.next();
