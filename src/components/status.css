@@ -709,6 +709,7 @@
 .status-filtered-badge {
   flex-shrink: 0;
   color: var(--text-insignificant-color);
+  background-color: transparent;
   /* background: var(--bg-faded-color); */
   /* border: var(--hairline-width) solid var(--bg-color); */
   border: var(--hairline-width) dashed var(--text-insignificant-color);
@@ -1921,6 +1922,18 @@ body:has(#modal-container .carousel) .status .media img:hover {
       }
     }
 
+    & > button[data-caption-index] {
+      appearance: none;
+      border: 0;
+      padding: 0;
+      background: none;
+      color: inherit;
+      display: block;
+      font: inherit;
+      text-align: start;
+      width: 100%;
+    }
+
     sup {
       opacity: 0.75;
       font-variant-numeric: tabular-nums;
@@ -1931,16 +1944,16 @@ body:has(#modal-container .carousel) .status .media img:hover {
   /* Only 4, for now. Would be better if this is a for loop */
   &:has(.media[data-has-alt]:nth-child(1):is(:hover, :focus))
     figcaption
-    > div[data-caption-index~='1'],
+    > [data-caption-index~='1'],
   &:has(.media[data-has-alt]:nth-child(2):is(:hover, :focus))
     figcaption
-    > div[data-caption-index~='2'],
+    > [data-caption-index~='2'],
   &:has(.media[data-has-alt]:nth-child(3):is(:hover, :focus))
     figcaption
-    > div[data-caption-index~='3'],
+    > [data-caption-index~='3'],
   &:has(.media[data-has-alt]:nth-child(4):is(:hover, :focus))
     figcaption
-    > div[data-caption-index~='4'] {
+    > [data-caption-index~='4'] {
     color: var(--text-color);
   }
 }
@@ -2154,7 +2167,8 @@ a.card {
     }
   }
 }
-a.card:is(:hover, :focus) {
+a.card:is(:hover, :focus),
+.card.video:is(:hover, :focus) {
   border: 1px solid var(--link-color);
   box-shadow: 0 0 0 2px var(--link-faded-color);
 }

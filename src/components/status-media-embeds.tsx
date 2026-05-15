@@ -1,0 +1,180 @@
+import { Trans, useLingui } from '@lingui/react/macro';
+import type { ComponentChildren, RefObject } from 'preact';
+
+import states from '../utils/states';
+
+import Icon from './icon';
+import Media from './media';
+import MultipleMediaFigure from './multiple-media-figure';
+import type { AnyMediaAttachment, AnyStatus } from './status-types';
+
+type FilterInfoMaybe = {
+  action: 'hide' | 'blur' | 'warn';
+  titlesStr?: string;
+};
+
+interface StatusMediaEmbedsProps {
+  previewMode?: boolean;
+  sensitive?: boolean | null;
+  filterInfoMaybe?: FilterInfoMaybe;
+  readingExpandMedia?: string;
+  readingExpandSpoilers: boolean;
+  spoilerText?: string | null;
+  mediaAttachments: AnyMediaAttachment[];
+  showSpoilerMedia: boolean;
+  isSizeLarge: boolean;
+  withinContext?: boolean;
+  size: string;
+  language?: string | null;
+  instance: string;
+  id: string;
+  onMediaClick?: (
+    e: MouseEvent,
+    index: number,
+    media: AnyMediaAttachment,
+    status: AnyStatus,
+  ) => void;
+  status: AnyStatus;
+  showMultipleMediaCaptions: boolean;
+  captionChildren: ComponentChildren;
+  mediaContainerRef: RefObject<HTMLDivElement>;
+  displayedMediaAttachments: AnyMediaAttachment[];
+  content?: string | null;
+}
+
+export default function StatusMediaEmbeds({
+  previewMode,
+  sensitive,
+  filterInfoMaybe,
+  readingExpandMedia,
+  readingExpandSpoilers,
+  spoilerText,
+  mediaAttachments,
+  showSpoilerMedia,
+  isSizeLarge,
+  withinContext,
+  size,
+  language,
+  instance,
+  id,
+  onMediaClick,
+  status,
+  showMultipleMediaCaptions,
+  captionChildren,
+  mediaContainerRef,
+  displayedMediaAttachments,
+  content,
+}: StatusMediaEmbedsProps) {
+  const { t } = useLingui();
+
+  return (
+    <>
+      {!previewMode &&
+        (sensitive ||
+          filterInfoMaybe?.action === 'blur' ||
+          readingExpandMedia === 'hide_all') &&
+        !!mediaAttachments.length &&
+        (readingExpandMedia !== 'show_all' ||
+          filterInfoMaybe?.action === 'blur') && (
+          <button
+            class={`plain spoiler-media-button ${
+              showSpoilerMedia ? 'spoiling' : ''
+            }`}
+            type="button"
+            hidden={!readingExpandSpoilers && !!spoilerText}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (showSpoilerMedia) {
+                delete states.spoilersMedia[id];
+              } else {
+                states.spoilersMedia[id] = true;
+              }
+            }}
+          >
+            <Icon icon={showSpoilerMedia ? 'eye-open' : 'eye-close'} />{' '}
+            <span>
+              {filterInfoMaybe?.action === 'blur' && (
+                <small>
+                  <Trans>Filtered: {filterInfoMaybe?.titlesStr}</Trans>
+                  <br />
+                </small>
+              )}
+              {showSpoilerMedia ? t`Show less` : t`Show media`}
+            </span>
+          </button>
+        )}
+      {!!mediaAttachments.length &&
+        (mediaAttachments.length > 1 &&
+        (isSizeLarge || (withinContext && size === 'm')) ? (
+          <div class="media-large-container">
+            {mediaAttachments.map(
+              (media: AnyMediaAttachment, i: number) => (
+                <div key={media.id} class={`media-container media-eq1`}>
+                  <Media
+                    media={media}
+                    autoAnimate
+                    showCaption
+                    allowLongerCaption={!content || isSizeLarge}
+                    lang={language ?? undefined}
+                    to={`/${instance}/s/${id}?${
+                      withinContext ? 'media' : 'media-only'
+                    }=${i + 1}`}
+                    onClick={
+                      onMediaClick
+                        ? (e: MouseEvent) => {
+                            onMediaClick(e, i, media, status);
+                          }
+                        : undefined
+                    }
+                  />
+                </div>
+              ),
+            )}
+          </div>
+        ) : (
+          <MultipleMediaFigure
+            lang={language ?? undefined}
+            enabled={showMultipleMediaCaptions}
+            captionChildren={captionChildren}
+          >
+            <div
+              ref={mediaContainerRef}
+              class={`media-container media-eq${mediaAttachments.length} ${
+                mediaAttachments.length > 2 ? 'media-gt2' : ''
+              } ${mediaAttachments.length > 4 ? 'media-gt4' : ''}`}
+            >
+              {displayedMediaAttachments.map(
+                (media: AnyMediaAttachment, i: number) => (
+                  <Media
+                    key={media.id}
+                    media={media}
+                    autoAnimate={isSizeLarge}
+                    showCaption={mediaAttachments.length === 1}
+                    allowLongerCaption={!content && mediaAttachments.length === 1}
+                    lang={language ?? undefined}
+                    altIndex={
+                      showMultipleMediaCaptions && !!media.description
+                        ? i + 1
+                        : undefined
+                    }
+                    to={`/${instance}/s/${id}?${
+                      withinContext ? 'media' : 'media-only'
+                    }=${i + 1}`}
+                    onClick={
+                      onMediaClick
+                        ? (e: MouseEvent) => {
+                            onMediaClick(e, i, media, status);
+                          }
+                        : undefined
+                    }
+                    checkAspectRatio={mediaAttachments.length === 1}
+                  />
+                ),
+              )}
+            </div>
+          </MultipleMediaFigure>
+        ))}
+    </>
+  );
+}

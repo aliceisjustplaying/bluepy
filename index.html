@@ -59,38 +59,125 @@
     />
     <meta name="google" content="notranslate" />
     <link rel="me" href="https://hachyderm.io/@phanpy" />
-    <script
-      defer
-      data-domain="bluepy.social"
-      src="https://p.mosphere.at/js/script.js"
-    ></script>
-  </head>
-  <body>
-    <div id="app">
-      <div id="boot-status">Loading Bluepy...</div>
-    </div>
-    <div id="modal-container"></div>
     <script>
-      window.addEventListener('error', (event) => {
-        const bootStatus = document.getElementById('boot-status');
-        if (bootStatus) {
-          bootStatus.textContent = `Bluepy failed to start: ${event.message || 'unknown error'}`;
+      const BOOT_TIMEOUT_MS = 5000;
+      const BOOT_MAX_RELOAD_ATTEMPTS = 3;
+      const BOOT_RELOAD_PARAM = '__bluepy_boot_retry';
+      const bootReloadKey = 'bluepy:boot-reload-state';
+      const bootStartedAt = Date.now();
+      let bootRecoveryScheduled = false;
+      window.__BLUEPY_BOOT_FAILED__ = false;
+      window.__BLUEPY_APP_MOUNTED__ = false;
+      const getBootStatus = () => document.getElementById('boot-status');
+      const getBootReloadState = () => {
+        const rawState = sessionStorage.getItem(bootReloadKey);
+        if (rawState) {
+          try {
+            const state = JSON.parse(rawState);
+            return {
+              attempts: Number(state.attempts || 0),
+              lastAt: Number(state.lastAt || 0),
+            };
+          } catch {}
         }
-      });
+        return { attempts: 0, lastAt: 0 };
+      };
+      const isBootResourceError = (event) => {
+        const target = event.target;
+        if (target instanceof HTMLScriptElement) {
+          return target.type === 'module';
+        }
+        if (target instanceof HTMLLinkElement) {
+          return target.rel === 'modulepreload';
+        }
+        return false;
+      };
+      const recoverStalledBoot = (reason = 'timeout') => {
+        const bootStatus = getBootStatus();
+        if (!bootStatus && reason === 'timeout') {
+          return;
+        }
+        if (window.__BLUEPY_APP_MOUNTED__ || bootRecoveryScheduled) {
+          return;
+        }
+        if (window.__BLUEPY_BOOT_FAILED__) {
+          return;
+        }
+        const now = Date.now();
+        if (reason === 'timeout' && now - bootStartedAt < BOOT_TIMEOUT_MS) {
+          return;
+        }
+        try {
+          const state = getBootReloadState();
+          const attempts = state.attempts;
+          if (attempts >= BOOT_MAX_RELOAD_ATTEMPTS) {
+            return;
+          }
+          sessionStorage.setItem(
+            bootReloadKey,
+            JSON.stringify({ attempts: attempts + 1, lastAt: now }),
+          );
+        } catch {
+          return;
+        }
+        bootRecoveryScheduled = true;
+        if (bootStatus) {
+          bootStatus.textContent = 'Bluepy is still loading. Reloading...';
+        }
+        const nextURL = new URL(location.href);
+        nextURL.searchParams.set(BOOT_RELOAD_PARAM, String(now));
+        location.replace(nextURL.href);
+      };
+      window.addEventListener(
+        'error',
+        (event) => {
+          if (isBootResourceError(event)) {
+            recoverStalledBoot('resource-error');
+            return;
+          }
+          if (event.target && event.target !== window) return;
+          window.__BLUEPY_BOOT_FAILED__ = true;
+          const bootStatus = getBootStatus();
+          if (bootStatus) {
+            bootStatus.textContent = `Bluepy failed to start: ${event.message || 'unknown error'}`;
+          }
+        },
+        true,
+      );
       window.addEventListener('unhandledrejection', (event) => {
-        const bootStatus = document.getElementById('boot-status');
+        window.__BLUEPY_BOOT_FAILED__ = true;
+        const bootStatus = getBootStatus();
         if (bootStatus) {
           bootStatus.textContent = `Bluepy failed to start: ${event.reason?.message || event.reason || 'unknown error'}`;
         }
       });
+      window.addEventListener('pageshow', () => {
+        setTimeout(recoverStalledBoot, 0);
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          recoverStalledBoot();
+        }
+      });
       window.setTimeout(() => {
-        const bootStatus = document.getElementById('boot-status');
-        if (bootStatus) {
+        const bootStatus = getBootStatus();
+        if (bootStatus && !window.__BLUEPY_BOOT_FAILED__) {
           bootStatus.textContent =
             'Bluepy is still loading. If this stays here, Safari did not run the app script.';
+          if (document.visibilityState === 'visible') {
+            recoverStalledBoot();
+          }
         }
-      }, 5000);
+      }, BOOT_TIMEOUT_MS);
     </script>
-    <script type="module" src="/src/main.jsx"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div id="boot-status">
+        Loading Bluepy...
+      </div>
+    </div>
+    <div id="modal-container"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

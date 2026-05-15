@@ -46,7 +46,9 @@ let finished = false;
     if (maxPolls < 0) break;
 
     // Wait for 1 second
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000);
+    });
 
     const status = await fetch(
       `https://api.crowdin.com/api/v2/projects/${PROJECT_ID}/reports/${REPORT_ID}`,

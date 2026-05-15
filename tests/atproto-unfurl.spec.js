@@ -6,6 +6,28 @@ import {
   getFirstPostURL,
 } from '../src/utils/atproto-unfurl.js';
 
+const fetchCardybMetadata = async (url) => {
+  const urlString =
+    typeof url === 'string' ? url : url instanceof URL ? url.href : url.url;
+  if (urlString.startsWith('https://cardyb.bsky.app/v1/extract?url=')) {
+    return Response.json({
+      error: '',
+      url: 'https://docs.bsky.app/',
+      title: 'Bluesky Documentation',
+      description: 'Explore guides and tutorials.',
+      image: 'https://image.test/card.png',
+      associated_record: {
+        uri: 'at://did:plc:test/app.bsky.feed.post/abc',
+        cid: 'bafyreitest',
+      },
+    });
+  }
+  if (urlString === 'https://image.test/card.png') {
+    return new Response(new Blob(['png'], { type: 'image/png' }));
+  }
+  return new Response('', { status: 404 });
+};
+
 test.describe('ATProto compose helpers', () => {
   test('builds external embeds from cardyb metadata', async () => {
     const uploads = [];
@@ -24,31 +46,10 @@ test.describe('ATProto compose helpers', () => {
         };
       },
     };
-    const fetcher = async (url) => {
-      const urlString = String(url);
-      if (urlString.startsWith('https://cardyb.bsky.app/v1/extract?url=')) {
-        return Response.json({
-          error: '',
-          url: 'https://docs.bsky.app/',
-          title: 'Bluesky Documentation',
-          description: 'Explore guides and tutorials.',
-          image: 'https://image.test/card.png',
-          associated_record: {
-            uri: 'at://did:plc:test/app.bsky.feed.post/abc',
-            cid: 'bafyreitest',
-          },
-        });
-      }
-      if (urlString === 'https://image.test/card.png') {
-        return new Response(new Blob(['png'], { type: 'image/png' }));
-      }
-      return new Response('', { status: 404 });
-    };
-
     const embed = await createAtprotoExternalEmbed(
       agent,
       'https://docs.bsky.app',
-      { fetcher },
+      { fetcher: fetchCardybMetadata },
     );
 
     expect(getFirstPostURL('read https://docs.bsky.app please')).toBe(
@@ -83,7 +84,13 @@ test.describe('ATProto compose helpers', () => {
       'https://example.com/post',
       {
         fetcher: async (url) => {
-          expect(String(url)).toBe(
+          const urlString =
+            typeof url === 'string'
+              ? url
+              : url instanceof URL
+                ? url.href
+                : url.url;
+          expect(urlString).toBe(
             'https://cardyb.bsky.app/v1/extract?url=https%3A%2F%2Fexample.com%2Fpost',
           );
           return Response.json({

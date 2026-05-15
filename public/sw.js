@@ -1,7 +1,6 @@
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 import * as navigationPreload from 'workbox-navigation-preload';
-import { pageCache } from 'workbox-recipes';
 import { RegExpRoute, registerRoute, Route } from 'workbox-routing';
 import {
   CacheFirst,
@@ -13,9 +12,8 @@ navigationPreload.enable();
 
 self.__WB_DISABLE_DEV_LOGS = true;
 
-// Cache HTML pages
-pageCache({
-  warmCache: ['./compose/'],
+self.addEventListener('activate', (event) => {
+  event.waitUntil(caches.delete('pages'));
 });
 
 // Custom plugin to manage hashed assets
@@ -28,7 +26,7 @@ class AssetHashPlugin {
 
   // Extract base filename from a hashed URL
   // e.g., "main-abc123.js" -> "main"
-  _getBaseName(url) {
+  getBaseName(url) {
     const urlObj = new URL(url);
     const pathname = urlObj.pathname;
     const filename = pathname.split('/').pop();
@@ -40,12 +38,16 @@ class AssetHashPlugin {
   }
 
   // Get timestamps for multiple URLs from Workbox's ExpirationPlugin IndexedDB
-  async _getTimestampsFromDB(cacheName, urls) {
+  async getTimestampsFromDB(cacheName, urls) {
     try {
       const db = await new Promise((resolve, reject) => {
         const request = indexedDB.open(this.dbName);
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
+        request.addEventListener('success', () => {
+          resolve(request.result);
+        });
+        request.addEventListener('error', () => {
+          reject(new Error(request.error?.message ?? 'IDBRequest error'));
+        });
       });
 
       const tx = db.transaction(this.storeName, 'readonly');
@@ -59,9 +61,12 @@ class AssetHashPlugin {
 
           return new Promise((resolve) => {
             const request = store.get(key);
-            request.onsuccess = () =>
+            request.addEventListener('success', () => {
               resolve(request.result?.timestamp || Date.now());
-            request.onerror = () => resolve(Date.now());
+            });
+            request.addEventListener('error', () => {
+              resolve(Date.now());
+            });
           });
         }),
       );
@@ -81,12 +86,12 @@ class AssetHashPlugin {
 
   cacheDidUpdate({ cacheName, request }) {
     // Run cleanup asynchronously without blocking the cache operation
-    this._cleanupOldHashes(cacheName, request.url);
+    void this.cleanupOldHashes(cacheName, request.url);
   }
 
-  async _cleanupOldHashes(cacheName, requestUrl) {
+  async cleanupOldHashes(cacheName, requestUrl) {
     try {
-      const baseName = this._getBaseName(requestUrl);
+      const baseName = this.getBaseName(requestUrl);
       if (!baseName) return;
 
       const cache = await caches.open(cacheName);
@@ -96,7 +101,7 @@ class AssetHashPlugin {
       const matchingRequests = [];
 
       for (const cachedRequest of cachedRequests) {
-        const cachedBaseName = this._getBaseName(cachedRequest.url);
+        const cachedBaseName = this.getBaseName(cachedRequest.url);
         if (cachedBaseName === baseName) {
           const response = await cache.match(cachedRequest);
           if (response) {
@@ -109,7 +114,7 @@ class AssetHashPlugin {
 
       // Batch read all timestamps in a single database transaction
       const urls = matchingRequests.map((req) => req.url);
-      const timestamps = await this._getTimestampsFromDB(cacheName, urls);
+      const timestamps = await this.getTimestampsFromDB(cacheName, urls);
 
       // Build matching entries with timestamps
       const matchingEntries = matchingRequests.map((req, index) => ({
@@ -225,7 +230,7 @@ registerRoute(imageRoute);
 // - /api/v1/lists/:id
 // - /api/v1/announcements
 const apiExtendedRoute = new RegExpRoute(
-  /^https?:\/\/[^\/]+\/api\/v\d+\/(custom_emojis|lists\/\d+|announcements)$/,
+  /^https?:\/\/[^/]+\/api\/v\d+\/(custom_emojis|lists\/\d+|announcements)$/,
   new StaleWhileRevalidate({
     cacheName: 'api-extended',
     plugins: [
@@ -288,7 +293,7 @@ registerRoute(activityPubRoute);
 const apiRoute = new RegExpRoute(
   // Matches:
   // - statuses/:id/context - some contexts are really huge
-  /^https?:\/\/[^\/]+\/api\/v\d+\/(statuses\/\d+\/context)/,
+  /^https?:\/\/[^/]+\/api\/v\d+\/(statuses\/\d+\/context)/,
   new NetworkFirst({
     cacheName: 'api',
     networkTimeoutSeconds: 5,
@@ -324,9 +329,9 @@ self.addEventListener('push', (event) => {
       preferred_locale,
     } = payload;
 
-    if (!!navigator.setAppBadge) {
+    if (navigator.setAppBadge) {
       if (notification_type === 'mention') {
-        navigator.setAppBadge(1);
+        void navigator.setAppBadge(1);
       }
     }
 
@@ -351,8 +356,8 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   const payload = event.notification;
   console.log('NOTIFICATION CLICK payload', payload);
-  const { badge, body, data, dir, icon, lang, tag, timestamp, title } = payload;
-  const { access_token, notification_type } = data;
+  const { data, tag } = payload;
+  const { access_token } = data;
   const url = `/#/notifications?id=${tag}&access_token=${btoa(access_token)}`;
 
   event.waitUntil(
@@ -399,6 +404,10 @@ self.addEventListener('message', (event) => {
   console.log('💪 SW received event', event, pendingShareData);
   const source = event.data?.type === 'client-ready' && event.source;
   if (source && pendingShareData) {
+    // TODO(oxlint:unicorn/require-post-message-target-origin): `source` is a
+    // service-worker `Client`, whose `postMessage` takes transferables (not a
+    // targetOrigin). The linter is matching the `Window.postMessage` signature
+    // here. Adding `self.origin` would be wrong.
     source.postMessage({
       type: 'share-target',
       data: pendingShareData,

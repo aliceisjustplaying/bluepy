@@ -26,7 +26,7 @@
     ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier,
     monospace;
 
-  --blue-color: #0085ff; /* Bluesky brand blue (blue3) */
+  --blue-color: #1085fe;
   --purple-color: blueviolet;
   --purple-fg-color: color-mix(
     in srgb-linear,
@@ -57,16 +57,23 @@
   --red-bg-color: color-mix(in lch, var(--red-color) 40%, transparent);
   --violet-red-color: MediumVioletRed;
   --bg-color: #fff;
-  --bg-faded-color: #f0f2f5;
+  --bg-faded-color: #dce2ea;
   --bg-blur-color: #fff9;
-  --bg-faded-blur-color: #f0f2f599;
-  --text-color: #1c1e21;
-  --text-insignificant-color: #1c1e2199;
+  --bg-faded-blur-color: #dce2ea99;
+  --header-bg-blur-color: #ffffffd9;
+  --status-bg-color: #fff;
+  --status-bg-hover-color: color-mix(
+    in srgb,
+    var(--text-color) 2.5%,
+    var(--status-bg-color)
+  );
+  --text-color: #0f1419;
+  --text-insignificant-color: #536471;
   --link-color: var(--blue-color);
-  --link-bg-color: #0085ff22;
-  --link-light-color: #0085ff99;
-  --link-faded-color: #0085ff55;
-  --link-bg-hover-color: #f0f2f599;
+  --link-bg-color: #1085fe22;
+  --link-light-color: #1085fe99;
+  --link-faded-color: #1085fe55;
+  --link-bg-hover-color: var(--status-bg-hover-color);
   --link-visited-color: mediumslateblue;
   --link-text-color: color-mix(
     in lch,
@@ -75,11 +82,11 @@
   );
   --focus-ring-color: var(--link-color);
   --button-bg-color: var(--blue-color);
-  --button-bg-blur-color: #0085ffaa;
+  --button-bg-blur-color: #1085feaa;
   --button-text-color: white;
   --button-plain-bg-hover-color: rgba(128, 128, 128, 0.1);
-  --reblog-color: var(--purple-color);
-  --reblog-faded-color: #892be220;
+  --reblog-color: var(--blue-color);
+  --reblog-faded-color: color-mix(in srgb, var(--blue-color) 14%, transparent);
   --quote-color: var(--violet-red-color);
   --quote-faded-color: #c7158520;
   --group-color: var(--green-color);
@@ -99,17 +106,17 @@
     var(--hashtag-color) 40%,
     var(--text-color) 60%
   );
-  --outline-color: rgba(128, 128, 128, 0.2);
-  --outline-stronger-color: rgba(128, 128, 128, 0.4);
-  --outline-hover-color: rgba(128, 128, 128, 0.7);
-  --divider-color: rgba(0, 0, 0, 0.1);
+  --outline-color: rgba(15, 20, 25, 0.14);
+  --outline-stronger-color: rgba(15, 20, 25, 0.28);
+  --outline-hover-color: rgba(15, 20, 25, 0.45);
+  --divider-color: rgba(15, 20, 25, 0.12);
   --backdrop-color: rgba(0, 0, 0, 0.1);
   --backdrop-solid-color: var(--bg-faded-color);
-  --backdrop-theme-color: #e5e5e5;
+  --backdrop-theme-color: #dce2ea;
   --backdrop-darker-color: rgba(0, 0, 0, 0.25);
   --img-bg-color: rgba(128, 128, 128, 0.2);
-  --loader-color: #1c1e2199;
-  --comment-line-color: #e5e5e5;
+  --loader-color: #536471;
+  --comment-line-color: #c9d3df;
   --drop-shadow-color: rgba(0, 0, 0, 0.15);
   --close-button-bg-color: rgba(0, 0, 0, 0.1);
   --close-button-bg-active-color: rgba(0, 0, 0, 0.2);
@@ -257,20 +264,27 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --blue-color: #52acfe; /* Bluesky brand blue, lighter for dark mode (blue2) */
+    --blue-color: #59b9ff;
     --purple-color: #b190f1;
     --green-color: lightgreen;
     --orange-color: orange;
     --violet-red-color: PaleVioletRed;
-    --bg-color: #242526;
-    --bg-faded-color: #18191a;
+    --bg-color: #000;
+    --bg-faded-color: #232e3e;
     --bg-blur-color: #0009;
-    --bg-faded-blur-color: #18191a99;
-    --text-color: #f0f2f5;
-    --text-insignificant-color: #f0f2f599;
-    --link-light-color: #52acfe99;
-    --link-faded-color: #52acfe88;
-    --link-bg-hover-color: #34353799;
+    --bg-faded-blur-color: #232e3e99;
+    --header-bg-blur-color: #000000d9;
+    --status-bg-color: #000;
+    --status-bg-hover-color: color-mix(
+      in srgb,
+      var(--text-color) 6%,
+      var(--status-bg-color)
+    );
+    --text-color: #f7fbff;
+    --text-insignificant-color: #aebbc9;
+    --link-light-color: #59b9ff99;
+    --link-faded-color: #59b9ff88;
+    --link-bg-hover-color: var(--status-bg-hover-color);
     --link-visited-color: color-mix(
       in lch,
       mediumslateblue 70%,
@@ -281,16 +295,20 @@
       var(--blue-color) 80%,
       var(--bg-color) 20%
     );
-    --reblog-faded-color: #b190f141;
+    --reblog-faded-color: color-mix(
+      in srgb,
+      var(--blue-color) 22%,
+      transparent
+    );
     --reply-to-text-color: var(--reply-to-color);
     --reply-to-faded-color: #ffa60017;
-    --divider-color: rgba(255, 255, 255, 0.1);
-    --bg-blur-color: #24252699;
+    --divider-color: rgba(255, 255, 255, 0.16);
+    --bg-blur-color: #0009;
     --backdrop-color: rgba(0, 0, 0, 0.5);
     --backdrop-solid-color: color-mix(in srgb, var(--bg-color) 50%, #000 50%);
-    --backdrop-theme-color: #121213; /* same as backdrop-solid-color but without color-mix, to be used for meta[theme-color] */
-    --loader-color: #f0f2f599;
-    --comment-line-color: #565656;
+    --backdrop-theme-color: #232e3e;
+    --loader-color: #aebbc9;
+    --comment-line-color: #34475e;
     --drop-shadow-color: rgba(0, 0, 0, 0.5);
     --close-button-bg-color: rgba(255, 255, 255, 0.2);
     --close-button-bg-active-color: rgba(255, 255, 255, 0.15);

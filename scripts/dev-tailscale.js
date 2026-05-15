@@ -35,10 +35,18 @@ async function shutdown(signal) {
 }
 
 process.on('SIGINT', () => {
-  shutdown('SIGINT').then(() => process.exit(130));
+  void shutdown('SIGINT')
+    .catch((err) => {
+      console.error(err);
+    })
+    .finally(() => process.exit(130));
 });
 process.on('SIGTERM', () => {
-  shutdown('SIGTERM').then(() => process.exit(143));
+  void shutdown('SIGTERM')
+    .catch((err) => {
+      console.error(err);
+    })
+    .finally(() => process.exit(143));
 });
 
 try {
@@ -49,13 +57,17 @@ try {
 }
 
 vite = run('vite', ['--host', '127.0.0.1']);
-vite.on('error', async (err) => {
-  console.error(err.message);
-  await shutdown();
-  process.exit(1);
+vite.on('error', (err) => {
+  void (async () => {
+    console.error(err.message);
+    await shutdown();
+    process.exit(1);
+  })();
 });
-vite.on('exit', async (code, signal) => {
-  await shutdown();
-  if (signal) process.kill(process.pid, signal);
-  else process.exit(code || 0);
+vite.on('exit', (code, signal) => {
+  void (async () => {
+    await shutdown();
+    if (signal) process.kill(process.pid, signal);
+    else process.exit(code || 0);
+  })();
 });

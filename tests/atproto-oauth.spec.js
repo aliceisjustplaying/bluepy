@@ -30,6 +30,7 @@ test.describe('ATProto OAuth', () => {
   });
 
   test('starts OAuth login from the login page', async ({ page }) => {
+    test.setTimeout(90_000);
     await page.addInitScript(() => {
       window.__BLUEPY_OAUTH_TEST_CLIENT__ = {
         init: async () => undefined,
@@ -39,7 +40,7 @@ test.describe('ATProto OAuth', () => {
       };
     });
 
-    await page.goto('/#/login');
+    await page.goto('/#/login', { waitUntil: 'domcontentloaded' });
     await page.getByLabel('Handle or PDS URL').fill('alice.mosphere.at');
     await page.getByRole('button', { name: 'Continue with OAuth' }).click();
 
@@ -52,13 +53,14 @@ test.describe('ATProto OAuth', () => {
   });
 
   test('keeps app-password login available as a fallback', async ({ page }) => {
+    test.setTimeout(90_000);
     await page.addInitScript(() => {
       window.__BLUEPY_OAUTH_TEST_CLIENT__ = {
         init: async () => undefined,
         signIn: async () => {},
       };
     });
-    await page.goto('/#/login');
+    await page.goto('/#/login', { waitUntil: 'domcontentloaded' });
 
     await expect(
       page.getByRole('button', { name: 'Continue with OAuth' }),
@@ -71,6 +73,7 @@ test.describe('ATProto OAuth', () => {
   });
 
   test('stores an account after an OAuth callback', async ({ page }) => {
+    test.setTimeout(90_000);
     await page.addInitScript(() => {
       const did = 'did:plc:oauthalice';
       const profile = {

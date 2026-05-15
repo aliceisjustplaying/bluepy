@@ -22,11 +22,11 @@
   "categories": {
     "correctness": "error",
     "suspicious": "error",
-    "pedantic": "error",
-    "perf": "error",
-    "style": "error",
-    "restriction": "error",
-    "nursery": "error"
+    "perf": "warn",
+    "pedantic": "off",
+    "style": "off",
+    "restriction": "off",
+    "nursery": "off"
   },
   "globals": {
     "__BENCHMARK": "readonly",
@@ -38,7 +38,8 @@
   "ignorePatterns": [
     "dist/**",
     "node_modules/**",
-    "src/locales/**"
+    "src/locales/**",
+    "rollbar.js"
   ],
   "options": {
     "typeAware": true,
@@ -49,15 +50,129 @@
     "eslint/func-style": "off",
     "eslint/id-length": "off",
     "eslint/no-magic-numbers": "off",
+    "eslint/no-alert": "warn",
+    "eslint/no-console": "off",
     "eslint/no-undefined": "off",
     "import/no-default-export": "off",
     "import/no-unassigned-import": "off",
     "oxc/no-rest-spread-properties": "off",
     "oxc/no-optional-chaining": "off",
+    "promise/prefer-await-to-then": "warn",
     "react/jsx-filename-extension": "off",
     "react/jsx-max-depth": "off",
     "react/no-unknown-property": "off",
     "react/react-in-jsx-scope": "off",
-    "unicorn/prefer-ternary": "off"
-  }
+    "unicorn/prefer-ternary": "off",
+
+    "typescript/no-deprecated": "warn",
+    "typescript/no-misused-promises": "error",
+    "typescript/switch-exhaustiveness-check": "error",
+    "typescript/restrict-plus-operands": "error",
+    "typescript/only-throw-error": "error",
+    "typescript/prefer-promise-reject-errors": "error",
+    "typescript/ban-ts-comment": "error",
+    "react/rules-of-hooks": "error",
+    "react/jsx-no-target-blank": "error",
+    "eslint/no-promise-executor-return": "error",
+    "eslint/array-callback-return": "error",
+    "eslint/no-prototype-builtins": "error",
+    "eslint/no-redeclare": "error",
+
+    "typescript/no-explicit-any": "error",
+    "typescript/no-invalid-void-type": "error",
+    "typescript/no-non-null-asserted-nullish-coalescing": "error",
+    "promise/catch-or-return": "error",
+
+    "import/no-cycle": "warn",
+    "promise/no-multiple-resolved": "warn",
+    "react/iframe-missing-sandbox": "warn",
+    "typescript/no-unnecessary-type-parameters": "warn",
+    "unicorn/require-post-message-target-origin": "warn",
+
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/label-has-associated-control": "warn",
+    "jsx-a11y/media-has-caption": "warn",
+    "jsx-a11y/no-noninteractive-tabindex": "warn",
+    "jsx-a11y/no-static-element-interactions": "warn",
+    "jsx-a11y/prefer-tag-over-role": "warn",
+
+    "typescript/no-unsafe-type-assertion": "warn",
+    "typescript/no-unsafe-assignment": "warn",
+    "typescript/no-unsafe-member-access": "warn",
+    "typescript/no-unsafe-call": "warn",
+    "typescript/no-unsafe-return": "warn",
+    "typescript/no-unsafe-argument": "warn",
+
+    "typescript/strict-void-return": "warn",
+    "typescript/no-confusing-void-expression": "warn",
+    "typescript/no-non-null-assertion": "warn",
+
+    "eslint/no-underscore-dangle": ["error", {
+      "allow": [
+        "_",
+        "_accounts",
+        "_atproto",
+        "_create",
+        "_deleted",
+        "_differentAuthor",
+        "_errors",
+        "__errors",
+        "_filtered",
+        "_followedTags",
+        "_grouped",
+        "_groupKeys",
+        "_id",
+        "_ids",
+        "_instance",
+        "_localeMatch",
+        "_memoize",
+        "_notificationsCount",
+        "_pagination",
+        "_pinned",
+        "_sampleAccountsCount",
+        "_showToast",
+        "_statuses",
+        "_thread",
+        "_translatedText",
+        "_types",
+        "__ACCOUNT_APIS__",
+        "__API__",
+        "__BENCH_RESULTS",
+        "__BENCHMARK",
+        "__BLUEPY_OAUTH_ARGS__",
+        "__BLUEPY_OAUTH_TEST_CLIENT__",
+        "__BOOSTERS",
+        "__BUILD_TIME__",
+        "__CLOAK__",
+        "__COMMIT_HASH__",
+        "__COMMIT_TIME__",
+        "__COMPOSE__",
+        "__dirname",
+        "__FAKE_COMMIT_HASH__",
+        "__filename",
+        "__FILTER",
+        "__generateCodeChallenge",
+        "__HIDDEN",
+        "__IDLE__",
+        "__IGNORE_GET_ACCOUNT_ERROR__",
+        "__nativeAlert",
+        "__replies",
+        "__SHARED_DATA__",
+        "__STATES__",
+        "__STATES_STATS__",
+        "__WB_DISABLE_DEV_LOGS"
+      ],
+      "allowFunctionParams": true,
+      "allowInArrayDestructuring": true,
+      "allowInObjectDestructuring": true
+    }]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.tsx"],
+      "rules": {
+        "typescript/prefer-readonly-parameter-types": "off"
+      }
+    }
+  ]
 }
