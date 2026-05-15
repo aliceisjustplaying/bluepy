@@ -976,21 +976,36 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
     .timeline-item-container-end
   ):not(.timeline-item-container-incomplete-thread-start) {
   position: relative;
+  background-image: none;
 }
+/* Match social-app: middle thread rails split around the avatar. */
 .timeline:not(.flat)
-  > li:is(
-    .timeline-item-container-start,
-    .timeline-item-container-middle,
-    .timeline-item-container-end
-  ):not(.timeline-item-container-incomplete-thread-start)::after {
+  > li:is(.timeline-item-container-middle, .timeline-item-container-end):not(
+    .timeline-item-container-incomplete-thread-start
+  )::before,
+.timeline:not(.flat)
+  > li:is(.timeline-item-container-start, .timeline-item-container-middle):not(
+    .timeline-item-container-incomplete-thread-start
+  )::after {
   content: '';
   position: absolute;
   inset-inline-start: var(--line-start);
-  top: 0;
-  bottom: 0;
   width: var(--line-width);
   background-color: var(--comment-line-color);
   pointer-events: none;
+}
+.timeline:not(.flat)
+  > li:is(.timeline-item-container-middle, .timeline-item-container-end):not(
+    .timeline-item-container-incomplete-thread-start
+  )::before {
+  top: 0;
+  height: 16px;
+}
+.timeline:not(.flat)
+  > li:is(.timeline-item-container-middle, .timeline-item-container-end):not(
+    .timeline-item-container-incomplete-thread-start
+  ):has(.status-pre-meta)::before {
+  height: calc(16px + 20px);
 }
 .timeline:not(.flat) > li.timeline-item-container-start {
   margin-bottom: 0;
@@ -1004,6 +1019,20 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
     .timeline-item-container-incomplete-thread-start
   )::after {
   top: calc(16px + var(--avatar-size));
+  bottom: 0;
+}
+.timeline:not(.flat)
+  > li.timeline-item-container-middle:not(
+    .timeline-item-container-incomplete-thread-start
+  )::after {
+  top: calc(16px + var(--avatar-size));
+  bottom: 0;
+}
+.timeline:not(.flat)
+  > li:is(.timeline-item-container-start, .timeline-item-container-middle):not(
+    .timeline-item-container-incomplete-thread-start
+  ):has(.status-pre-meta)::after {
+  top: calc(16px + 20px + var(--avatar-size));
 }
 .timeline:not(.flat) > li.timeline-item-container-middle {
   margin-top: 0;
@@ -1023,19 +1052,6 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
     /* 20px = icon of the pre-meta */
     background-size: 100% calc(16px + 20px);
   }
-}
-.timeline:not(.flat)
-  > li.timeline-item-container-end:not(
-    .timeline-item-container-incomplete-thread-start
-  )::after {
-  bottom: auto;
-  height: 16px;
-}
-.timeline:not(.flat)
-  > li.timeline-item-container-end:not(
-    .timeline-item-container-incomplete-thread-start
-  ):has(.status-pre-meta)::after {
-  height: calc(16px + 20px);
 }
 .timeline:not(.flat)
   > li.timeline-item-container-incomplete-thread-start {
