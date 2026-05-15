@@ -17,6 +17,18 @@ interface LazyRenderProps {
   [key: string]: unknown;
 }
 
+interface LazyRenderRootProps {
+  id?: string;
+  class?: string;
+  children?: ComponentChildren;
+  ref?: (node: HTMLElement | null) => void;
+  [key: string]: unknown;
+}
+
+function lazyRenderRoot(root: unknown): ComponentType<LazyRenderRootProps> {
+  return root as ComponentType<LazyRenderRootProps>;
+}
+
 export default function LazyRender({
   as: Root = 'div',
   id,
@@ -60,7 +72,7 @@ export default function LazyRender({
     },
   );
 
-  const RootEl = Root as unknown as 'div';
+  const RootEl = lazyRenderRoot(Root);
   return (
     <RootEl
       {...props}

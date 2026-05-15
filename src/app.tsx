@@ -122,6 +122,52 @@ interface AppWindow extends Window {
 }
 const appWindow = window as AppWindow;
 
+interface NotificationWithStatus {
+  status?: {
+    id?: string | null;
+  } | null;
+}
+
+type IconModuleLoader = () => Promise<unknown>;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function getNotificationStatus(
+  notification: unknown,
+): NotificationWithStatus['status'] {
+  if (!isRecord(notification)) return undefined;
+  const { status } = notification;
+  if (!isRecord(status)) return undefined;
+  const { id } = status;
+  return {
+    id: typeof id === 'string' ? id : undefined,
+  };
+}
+
+function isIconModuleLoader(value: unknown): value is IconModuleLoader {
+  return typeof value === 'function';
+}
+
+function preloadIconEntry(entry: unknown) {
+  if (Array.isArray(entry)) {
+    const [load] = entry;
+    if (isIconModuleLoader(load)) void load();
+    return;
+  }
+  if (isRecord(entry)) {
+    const { module } = entry;
+    if (isIconModuleLoader(module)) void module();
+    return;
+  }
+  if (isIconModuleLoader(entry)) void entry();
+}
+
+function getStoredVapidKey(instanceURL: string | null | undefined) {
+  return getVapidKey(instanceURL ? { uri: instanceURL } : undefined);
+}
+
 appWindow.__STATES__ = states;
 appWindow.__STATES_STATS__ = () => {
   const keys = [
@@ -133,9 +179,7 @@ appWindow.__STATES_STATS__ = () => {
   ];
   const counts: Record<string, number> = {};
   keys.forEach((key) => {
-    counts[key] = Object.keys(
-      states[key] as Record<string, unknown>,
-    ).length;
+    counts[key] = Object.keys(states[key] as Record<string, unknown>).length;
   });
   console.warn('STATE stats', counts);
 
@@ -179,11 +223,11 @@ setInterval(
     for (const key in statuses) {
       if (!appWindow.__IDLE__) break;
       try {
-        const postInNotifications = (
-          notifications as unknown as Array<{
-            status?: { id?: string };
-          }>
-        ).some((n) => key === statusKey(n.status?.id, instance));
+        const postInNotifications = notifications.some(
+          (notification) =>
+            key ===
+            statusKey(getNotificationStatus(notification)?.id, instance),
+        );
         if (!mountedKeys.has(key) && !postInNotifications) {
           delete states.statuses[key];
           delete states.statusQuotes[key];
@@ -213,24 +257,11 @@ setInterval(
 // There's probably a better way to do this
 // Related: https://github.com/vitejs/vite/issues/10600
 setTimeout(() => {
-  const iconsMap = ICONS as unknown as Record<
-    string,
-    | (() => Promise<unknown>)
-    | [() => Promise<unknown>, ...unknown[]]
-    | { module?: () => Promise<unknown> }
-  >;
-  for (const icon in iconsMap) {
+  Object.values(ICONS).forEach((entry) => {
     setTimeout(() => {
-      const entry = iconsMap[icon];
-      if (Array.isArray(entry)) {
-        void entry[0]?.();
-      } else if (typeof entry === 'object') {
-        void entry.module?.();
-      } else {
-        void (entry as (() => Promise<unknown>) | undefined)?.();
-      }
+      preloadIconEntry(entry);
     }, 1);
-  }
+  });
 }, 5000);
 
 (() => {
@@ -381,11 +412,10 @@ if (isIOS) {
 }
 
 subscribe(states, (changes) => {
-  for (const [, path, value] of changes as unknown as Array<
-    [unknown, string[], unknown, unknown]
-  >) {
+  for (const [, path, value] of changes) {
+    const pathString = Array.isArray(path) ? path.join('.') : String(path);
     // Change #app dataset based on settings.shortcutsViewMode
-    if (path.join('.') === 'settings.shortcutsViewMode') {
+    if (pathString === 'settings.shortcutsViewMode') {
       const $app = document.getElementById('app');
       if ($app) {
         $app.dataset.shortcutsViewMode = states.shortcuts?.length
@@ -395,13 +425,13 @@ subscribe(states, (changes) => {
     }
 
     // Add/Remove cloak class to body
-    if (path.join('.') === 'settings.cloakMode') {
+    if (pathString === 'settings.cloakMode') {
       const $body = document.body;
       $body.classList.toggle('cloak', value as boolean);
     }
 
     // Add/Remove no-animations class to body
-    if (path.join('.') === 'settings.noAnimations') {
+    if (pathString === 'settings.noAnimations') {
       const $body = document.body;
       $body.classList.toggle('no-animations', value as boolean);
     }
@@ -553,10 +583,7 @@ function App() {
           client_secret?: string;
           vapid_key?: string;
         };
-        const vapidKey =
-          (getVapidKey as unknown as (instance?: string | null) => unknown)(
-            instanceURL,
-          ) || vapid_key;
+        const vapidKey = getStoredVapidKey(instanceURL) || vapid_key;
         const verifier = store.sessionCookie.get('codeVerifier');
 
         setUIState('loading');
