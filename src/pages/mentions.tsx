@@ -17,11 +17,11 @@ import useTitle from '../utils/useTitle';
 const LIMIT = 20;
 const emptySearchParams = new URLSearchParams();
 
-interface NotificationLike {
+interface MentionNotificationLike {
   id?: string;
   type?: string;
   createdAt?: string;
-  account?: mastodon.v1.Account;
+  account?: Partial<mastodon.v1.Account>;
   status?: mastodon.v1.Status | null;
   [key: string]: unknown;
 }
@@ -51,7 +51,7 @@ function toSaveStatus(
 
 interface MastoNotificationsApi {
   list(options: { limit: number; types?: string[]; since_id?: string }): {
-    values(): AsyncIterator<NotificationLike[]>;
+    values(): AsyncIterator<MentionNotificationLike[]>;
   };
 }
 
@@ -93,7 +93,7 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
   const relationshipsMap = useRef<Record<string, mastodon.v1.Relationship>>({});
 
   const mentionsIterator = useRef<
-    AsyncIterator<NotificationLike[]> | undefined
+    AsyncIterator<MentionNotificationLike[]> | undefined
   >(undefined);
   const latestItem = useRef<string | undefined>(undefined);
 
@@ -129,23 +129,22 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
     const results = await mentionsIterator.current.next();
     let { value } = results as {
       done?: boolean;
-      value: NotificationLike[] | undefined;
+      value: MentionNotificationLike[] | undefined;
     };
     if (value?.length) {
-      value = fixNotifications(value);
+      const fixedNotifications = fixNotifications(value);
 
       if (firstLoad) {
-        latestItem.current = value[0]?.id;
+        latestItem.current = fixedNotifications[0]?.id;
         console.log('First load', latestItem.current);
       }
 
-      value.forEach(({ status: item }) => {
+      fixedNotifications.forEach(({ status: item }) => {
         saveStatus(toSaveStatus(item), instance);
       });
 
-      let statuses: (mastodon.v1.Status | null | undefined)[] = value.map(
-        (item) => item.status,
-      );
+      let statuses: (mastodon.v1.Status | null | undefined)[] =
+        fixedNotifications.map((item) => item.status);
       if (onlyFollowings && statuses?.length) {
         const accounts = statuses
           .map((status) => status?.account)
@@ -287,7 +286,9 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
           })
           .values()
           .next();
-        let { value } = results as { value: NotificationLike[] | undefined };
+        let { value } = results as {
+          value: MentionNotificationLike[] | undefined;
+        };
         console.log('checkForUpdates ALL', latestItem.current, value);
         if (value?.length) {
           latestItem.current = value[0].id;
