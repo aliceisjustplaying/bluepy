@@ -1,16 +1,15 @@
 import './lists.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType } from 'preact';
 import { useEffect, useReducer, useState } from 'preact/hooks';
 
 import Icon from '../components/icon';
 import Link from '../components/link';
-import ListAddEditUntyped from '../components/list-add-edit';
+import ListAddEdit from '../components/list-add-edit';
 import ListExclusiveBadge from '../components/list-exclusive-badge';
 import Loader from '../components/loader';
 import Modal from '../components/modal';
-import NavMenuUntyped from '../components/nav-menu';
+import NavMenu from '../components/nav-menu';
 import { fetchLists, splitListsAndFeeds } from '../utils/lists';
 import useTitle from '../utils/useTitle';
 
@@ -19,25 +18,6 @@ interface ListItem {
   title: string;
   exclusive?: boolean;
   [key: string]: unknown;
-}
-
-interface ListAddEditCloseResult {
-  state?: string;
-  [key: string]: unknown;
-}
-
-interface ListAddEditProps {
-  list?: ListItem;
-  onClose: (result: ListAddEditCloseResult) => void;
-}
-const ListAddEdit =
-  ListAddEditUntyped as unknown as ComponentType<ListAddEditProps>;
-
-function NavMenu(props: Record<string, never>) {
-  const Inner = NavMenuUntyped as unknown as ComponentType<
-    Record<string, never>
-  >;
-  return <Inner {...props} />;
 }
 
 type ListAddEditModalState = boolean | { list?: ListItem };
@@ -219,7 +199,11 @@ function Lists() {
                 : undefined
             }
             onClose={(result) => {
-              if (result.state === 'success') {
+              if (
+                result &&
+                !(result instanceof Event) &&
+                result.state === 'success'
+              ) {
                 reload(undefined);
               }
               setShowListAddEditModal(false);

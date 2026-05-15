@@ -1,31 +1,14 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentChildren, ComponentType } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 
 import Icon from '../components/icon';
-import LinkUntyped from '../components/link';
+import Link from '../components/link';
 import Loader from '../components/loader';
-import NavMenuUntyped from '../components/nav-menu';
+import NavMenu from '../components/nav-menu';
 import { api } from '../utils/api';
 import { fetchFollowedTags } from '../utils/followed-tags';
 import useTitle from '../utils/useTitle';
-
-interface LinkProps {
-  to: string;
-  class?: string;
-  children?: ComponentChildren;
-}
-function Link(props: LinkProps) {
-  const Inner = LinkUntyped as unknown as ComponentType<LinkProps>;
-  return <Inner {...props} />;
-}
-function NavMenu(props: Record<string, never>) {
-  const Inner = NavMenuUntyped as unknown as ComponentType<
-    Record<string, never>
-  >;
-  return <Inner {...props} />;
-}
 
 function FollowedHashtags() {
   const { t } = useLingui();
