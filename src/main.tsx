@@ -64,10 +64,23 @@ function processShareData(
   };
 }
 
+const markBoot = (label: string, detail?: string): void => {
+  const bootMark = (window as Window & {
+    __BLUEPY_BOOT_MARK__?: (label: string, detail?: string) => void;
+  })['__BLUEPY_BOOT_MARK__'];
+  bootMark?.(label, detail);
+};
+
+markBoot('main-module-evaluated');
+
 if (!redirectLegacyOrigin()) {
+  markBoot('legacy-origin-ok');
   void importLegacyOriginStorage().finally(() => {
+    markBoot('legacy-storage-done');
     initActivateLang();
+    markBoot('lang-ready');
     initPWAViewport();
+    markBoot('viewport-ready');
 
     if (import.meta.env.DEV) {
       void import('preact/debug');
@@ -86,6 +99,7 @@ if (!redirectLegacyOrigin()) {
     }
 
     document.getElementById('boot-status')?.remove();
+    markBoot('boot-status-removed');
 
     render(
       <I18nProvider i18n={i18n}>
@@ -108,6 +122,7 @@ if (!redirectLegacyOrigin()) {
         __BLUEPY_APP_MOUNTED__?: boolean;
       }
     )['__BLUEPY_APP_MOUNTED__'] = true;
+    markBoot('app-mounted');
 
     try {
       const bootReloadParam = '__bluepy_boot_retry';
