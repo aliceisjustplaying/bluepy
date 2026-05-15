@@ -629,7 +629,7 @@ export default function StatusContent({
             visibility={visibility}
             editedAt={editedAt}
             createdAtDate={createdAtDate}
-            inReplyToAccount={inReplyToAccount as unknown as AnyStatus['account'] | null}
+            inReplyToAccount={inReplyToAccount as AnyStatus['account'] | null}
             showReplyBadge={showReplyBadge}
           />
           <StatusPostBody
@@ -743,13 +743,10 @@ export default function StatusContent({
           status={status}
           id={id}
           instance={instance}
-          fetchStatusHistory={
-            ((historyStatusID: string) =>
-              masto.v1.statuses
-                .$select(historyStatusID)
-                .history.list()) as unknown as (
-              historyStatusID: string,
-            ) => Promise<AnyStatus[] | undefined>
+          fetchStatusHistory={async (historyStatusID) =>
+            (await masto.v1.statuses
+              .$select(historyStatusID)
+              .history.list()) as AnyStatus[] | undefined
           }
           renderHistoryStatus={(historyStatus, historyInstance) =>
             renderStatus({

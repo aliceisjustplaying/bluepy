@@ -906,11 +906,13 @@ function Notification({
                   // already a `MessageDescriptor` it crashes at runtime
                   // exactly as the JS original did; if it is a thunk, it
                   // resolves to the descriptor.
-                  (
+                  Reflect.apply(
                     MODERATION_WARNING_TEXT[
                       moderation_warning.action as string
-                    ] as unknown as () => MessageDescriptor
-                  )(),
+                    ] as never,
+                    undefined,
+                    [],
+                  ),
                 )}
                 <br />
                 <a
