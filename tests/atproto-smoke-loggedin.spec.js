@@ -376,7 +376,7 @@ test.describe('write flows', () => {
 
   async function openCreatedStatusDetail(page, body) {
     const article = page
-      .locator('[data-state-post-id]', { hasText: body.slice(0, 28) })
+      .locator('[data-state-post-id]', { hasText: body })
       .first();
     if ((await article.count()) === 0) {
       await goto(page, `/a/${IDENTIFIER}`);
@@ -413,7 +413,7 @@ test.describe('write flows', () => {
     await goto(page, `/a/${IDENTIFIER}`);
     await expect(
       page
-        .locator('[data-state-post-id]', { hasText: body.slice(0, 28) })
+        .locator('[data-state-post-id]', { hasText: body })
         .first(),
     ).toBeVisible({ timeout: 30_000 });
   });
@@ -439,7 +439,11 @@ test.describe('write flows', () => {
   });
 
   test('like + unlike persists across reload', async ({ page }) => {
-    await openFirstStatusDetail(page);
+    test.setTimeout(120_000);
+    const body = `${RUN_TAG} like ${Date.now()}`;
+    await composeAndPublish(page, body);
+    CREATED.push({ page, body });
+    await openCreatedStatusDetail(page, body);
     const url = page.url();
 
     const likeBtn = page
@@ -468,18 +472,16 @@ test.describe('write flows', () => {
   });
 
   test('bookmark + unbookmark persists across reload', async ({ page }) => {
-    await openFirstStatusDetail(page);
+    test.setTimeout(120_000);
+    const body = `${RUN_TAG} bookmark ${Date.now()}`;
+    await composeAndPublish(page, body);
+    CREATED.push({ page, body });
+    await openCreatedStatusDetail(page, body);
     const url = page.url();
 
     const bmBtn = page
       .locator('button[title="Bookmark"], button[title="Unbookmark"]')
       .first();
-    if ((await bmBtn.count()) === 0) {
-      test.skip(
-        true,
-        'Bookmark UI not present (PDS may not support app.bsky.bookmark)',
-      );
-    }
     await bmBtn.waitFor({ timeout: 15_000 });
     const initial = await getRequiredTitle(bmBtn, 'bookmark button');
     await bmBtn.click();
@@ -503,7 +505,11 @@ test.describe('write flows', () => {
   test('boost + unboost (self-boost is supported on Bluesky)', async ({
     page,
   }) => {
-    await openFirstStatusDetail(page);
+    test.setTimeout(120_000);
+    const body = `${RUN_TAG} boost ${Date.now()}`;
+    await composeAndPublish(page, body);
+    CREATED.push({ page, body });
+    await openCreatedStatusDetail(page, body);
     const url = page.url();
 
     const boostBtn = page.getByTestId('status-boost-button').first();
