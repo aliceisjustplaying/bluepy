@@ -139,7 +139,7 @@ msgid "Go to account page"
 msgstr "Go to account page"
 
 #: src/components/account-info.tsx:596
-#: src/components/timeline.tsx:917
+#: src/components/timeline.tsx:918
 #: src/components/timeline2.tsx:892
 #: src/pages/home.tsx:313
 #: src/pages/notifications.tsx:1289
@@ -363,7 +363,7 @@ msgstr "More from <0/>"
 #: src/components/columns.tsx:61
 #: src/components/nav-menu.tsx:203
 #: src/components/shortcuts-settings.tsx:221
-#: src/components/timeline.tsx:797
+#: src/components/timeline.tsx:798
 #: src/components/timeline2.tsx:769
 #: src/pages/catchup.tsx:1339
 #: src/pages/filters.tsx:150
@@ -526,7 +526,7 @@ msgstr "Attachment #{i} failed"
 
 #: src/components/compose.tsx:2064
 #: src/components/status-post-body.tsx:232
-#: src/components/timeline.tsx:1428
+#: src/components/timeline.tsx:1433
 msgid "Content warning"
 msgstr ""
 
@@ -756,14 +756,14 @@ msgstr "Edit History Snapshots"
 #: src/components/edit-history-controls.tsx:35
 #: src/components/gif-picker-modal.tsx:263
 #: src/components/media-modal.tsx:551
-#: src/components/timeline.tsx:1327
+#: src/components/timeline.tsx:1332
 msgid "Previous"
 msgstr ""
 
 #: src/components/edit-history-controls.tsx:47
 #: src/components/gif-picker-modal.tsx:282
 #: src/components/media-modal.tsx:571
-#: src/components/timeline.tsx:1344
+#: src/components/timeline.tsx:1349
 msgid "Next"
 msgstr ""
 
@@ -830,7 +830,7 @@ msgstr "No featured profiles."
 #: src/components/filtered-status.tsx:230
 #: src/components/media-post.tsx:158
 #: src/components/status-compact.tsx:100
-#: src/components/timeline.tsx:1417
+#: src/components/timeline.tsx:1422
 #: src/pages/catchup.tsx:227
 #: src/pages/catchup.tsx:2407
 msgid "Filtered"
@@ -869,7 +869,7 @@ msgstr ""
 
 #: src/components/generic-accounts.tsx:327
 #: src/components/quotes-modal.tsx:173
-#: src/components/timeline.tsx:881
+#: src/components/timeline.tsx:882
 #: src/pages/list.tsx:493
 #: src/pages/notifications.tsx:1313
 #: src/pages/search.tsx:755
@@ -880,7 +880,7 @@ msgstr ""
 #: src/components/generic-accounts.tsx:332
 #: src/components/quote-chain-modal.tsx:225
 #: src/components/quotes-modal.tsx:177
-#: src/components/timeline.tsx:886
+#: src/components/timeline.tsx:887
 #: src/components/timeline2.tsx:870
 #: src/pages/search.tsx:760
 msgid "The end."
@@ -2984,26 +2984,26 @@ msgstr "{index}/{total}"
 msgid "{index}/X"
 msgstr "{index}/X"
 
-#: src/components/timeline.tsx:813
+#: src/components/timeline.tsx:814
 #: src/pages/settings.tsx:1493
 msgid "New posts"
 msgstr ""
 
 #. placeholder {0}: fItems.length
-#: src/components/timeline.tsx:974
+#: src/components/timeline.tsx:975
 msgid "{0, plural, one {# Boost} other {# Boosts}}"
 msgstr "{0, plural, one {# Boost} other {# Boosts}}"
 
-#: src/components/timeline.tsx:979
+#: src/components/timeline.tsx:980
 msgid "Pinned posts"
 msgstr "Pinned posts"
 
-#: src/components/timeline.tsx:1204
+#: src/components/timeline.tsx:1209
 msgid "View Full Thread"
 msgstr "View Full Thread"
 
 #. placeholder {0}: filterInfo.titlesStr
-#: src/components/timeline.tsx:1412
+#: src/components/timeline.tsx:1417
 msgid "<0>Filtered</0>: <1>{0}</1>"
 msgstr ""
 
