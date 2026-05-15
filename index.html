@@ -26,16 +26,6 @@
           sans-serif;
         color: CanvasText;
       }
-
-      #boot-debug {
-        margin-top: 16px;
-        max-width: 100%;
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
-        font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas,
-          monospace;
-        opacity: 0.78;
-      }
     </style>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -79,28 +69,6 @@
       window.__BLUEPY_BOOT_FAILED__ = false;
       window.__BLUEPY_APP_MOUNTED__ = false;
       const getBootStatus = () => document.getElementById('boot-status');
-      const bootDebugEvents = [];
-      const renderBootDebug = () => {
-        const bootStatus = getBootStatus();
-        if (!bootStatus) return;
-        let bootDebug = document.getElementById('boot-debug');
-        if (!bootDebug) {
-          bootDebug = document.createElement('pre');
-          bootDebug.id = 'boot-debug';
-          bootStatus.append(bootDebug);
-        }
-        bootDebug.textContent = bootDebugEvents.join('\n');
-      };
-      const markBoot = (label, detail = '') => {
-        const elapsed = String(Date.now() - bootStartedAt).padStart(5, ' ');
-        const state = document.visibilityState || 'unknown';
-        const line = `${elapsed}ms ${label}${detail ? ` ${detail}` : ''} [${state}]`;
-        bootDebugEvents.push(line);
-        if (bootDebugEvents.length > 24) bootDebugEvents.shift();
-        renderBootDebug();
-      };
-      window.__BLUEPY_BOOT_MARK__ = markBoot;
-      markBoot('head-script');
       const getBootReloadState = () => {
         const rawState = sessionStorage.getItem(bootReloadKey);
         if (rawState) {
@@ -125,39 +93,31 @@
         return false;
       };
       const recoverStalledBoot = (reason = 'timeout') => {
-        markBoot('recover-check', reason);
         const bootStatus = getBootStatus();
         if (!bootStatus && reason === 'timeout') {
-          markBoot('recover-skip', 'no-boot-status');
           return;
         }
         if (window.__BLUEPY_APP_MOUNTED__ || bootRecoveryScheduled) {
-          markBoot('recover-skip', 'mounted-or-scheduled');
           return;
         }
         if (window.__BLUEPY_BOOT_FAILED__) {
-          markBoot('recover-skip', 'boot-failed');
           return;
         }
         const now = Date.now();
         if (reason === 'timeout' && now - bootStartedAt < BOOT_TIMEOUT_MS) {
-          markBoot('recover-skip', 'too-early');
           return;
         }
         try {
           const state = getBootReloadState();
           const attempts = state.attempts;
           if (attempts >= BOOT_MAX_RELOAD_ATTEMPTS) {
-            markBoot('recover-skip', `max-attempts=${attempts}`);
             return;
           }
           sessionStorage.setItem(
             bootReloadKey,
             JSON.stringify({ attempts: attempts + 1, lastAt: now }),
           );
-          markBoot('recover-reload', `attempt=${attempts + 1}`);
         } catch {
-          markBoot('recover-skip', 'session-storage-error');
           return;
         }
         bootRecoveryScheduled = true;
@@ -172,60 +132,38 @@
         'error',
         (event) => {
           if (isBootResourceError(event)) {
-            const target = event.target;
-            markBoot(
-              'resource-error',
-              target?.src || target?.href || target?.tagName || '',
-            );
             recoverStalledBoot('resource-error');
             return;
           }
           if (event.target && event.target !== window) return;
-          markBoot('runtime-error', event.message || 'unknown');
           window.__BLUEPY_BOOT_FAILED__ = true;
           const bootStatus = getBootStatus();
           if (bootStatus) {
             bootStatus.textContent = `Bluepy failed to start: ${event.message || 'unknown error'}`;
-            renderBootDebug();
           }
         },
         true,
       );
       window.addEventListener('unhandledrejection', (event) => {
-        markBoot(
-          'unhandled-rejection',
-          event.reason?.message || event.reason || 'unknown',
-        );
         window.__BLUEPY_BOOT_FAILED__ = true;
         const bootStatus = getBootStatus();
         if (bootStatus) {
           bootStatus.textContent = `Bluepy failed to start: ${event.reason?.message || event.reason || 'unknown error'}`;
-          renderBootDebug();
         }
       });
       window.addEventListener('pageshow', () => {
-        markBoot('pageshow');
         setTimeout(recoverStalledBoot, 0);
       });
-      window.addEventListener('load', () => {
-        markBoot('window-load');
-      });
-      document.addEventListener('DOMContentLoaded', () => {
-        markBoot('dom-content-loaded');
-      });
       document.addEventListener('visibilitychange', () => {
-        markBoot('visibilitychange');
         if (document.visibilityState === 'visible') {
           recoverStalledBoot();
         }
       });
       window.setTimeout(() => {
-        markBoot('timeout');
         const bootStatus = getBootStatus();
         if (bootStatus && !window.__BLUEPY_BOOT_FAILED__) {
           bootStatus.textContent =
             'Bluepy is still loading. If this stays here, Safari did not run the app script.';
-          renderBootDebug();
           if (document.visibilityState === 'visible') {
             recoverStalledBoot();
           }
@@ -237,7 +175,6 @@
     <div id="app">
       <div id="boot-status">
         Loading Bluepy...
-        <pre id="boot-debug">static-html boot-debug 2026-05-15</pre>
       </div>
     </div>
     <div id="modal-container"></div>
