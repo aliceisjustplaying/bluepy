@@ -32,7 +32,16 @@ type ReplyEvent =
   | (KeyboardEvent & { syntheticEvent?: { shiftKey?: boolean } })
   | { shiftKey?: boolean; syntheticEvent?: { shiftKey?: boolean } }
   | undefined;
-type ReactionIterator = AsyncIterableIterator<AnyAccount[]>;
+type ReactionIterator = AsyncIterator<AnyAccount[], undefined>;
+type ReactionList = (opts?: { limit: number }) => {
+  values(): ReactionIterator;
+};
+type StatusSelector = ReturnType<FullMasto['v1']['statuses']['$select']>;
+type StatusReactionSelector = StatusSelector & {
+  rebloggedBy: { list: ReactionList };
+  favouritedBy: { list: ReactionList };
+};
+type IteratorResult = { value?: AnyAccount[]; done?: boolean };
 
 interface StatusInteractionsArgs {
   statusID?: string | null;
@@ -221,28 +230,26 @@ export default function useStatusInteractions({
   const favouriteIterator = useRef<ReactionIterator | null>(null);
   async function fetchBoostedLikedByAccounts(firstLoad?: boolean) {
     if (firstLoad) {
-      const stmtSel = masto.v1.statuses.$select(statusID as string);
-      reblogIterator.current = (
-        stmtSel.rebloggedBy.list as unknown as (
-          opts?: Record<string, unknown>,
-        ) => { values: () => ReactionIterator }
-      )({
+      const stmtSel = masto.v1.statuses.$select(
+        statusID as string,
+      ) as StatusReactionSelector;
+      reblogIterator.current = stmtSel.rebloggedBy.list({
         limit: REACTIONS_LIMIT,
       }).values();
-      favouriteIterator.current = (
-        stmtSel.favouritedBy.list as unknown as (
-          opts?: Record<string, unknown>,
-        ) => { values: () => ReactionIterator }
-      )({
+      favouriteIterator.current = stmtSel.favouritedBy.list({
         limit: REACTIONS_LIMIT,
       }).values();
     }
-    type IteratorResult = { value?: AnyAccount[]; done?: boolean };
-    const [{ value: reblogResults }, { value: favouriteResults }] =
-      (await Promise.allSettled([
-        reblogIterator.current!.next(),
-        favouriteIterator.current!.next(),
-      ])) as unknown as [{ value: IteratorResult }, { value: IteratorResult }];
+    const [reblogResult, favouriteResult] = await Promise.allSettled([
+      reblogIterator.current!.next(),
+      favouriteIterator.current!.next(),
+    ]);
+    const reblogResults = (
+      reblogResult as PromiseFulfilledResult<IteratorResult>
+    ).value;
+    const favouriteResults = (
+      favouriteResult as PromiseFulfilledResult<IteratorResult>
+    ).value;
     if (reblogResults.value?.length || favouriteResults.value?.length) {
       const accounts: AnyAccount[] = [];
       if (reblogResults.value?.length) {

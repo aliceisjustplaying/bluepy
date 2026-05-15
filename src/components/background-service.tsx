@@ -17,7 +17,7 @@ interface MastoLike {
   v1: {
     notifications: {
       list(options: { limit: number; sinceId: string }): {
-        values(): AsyncIterator<Array<{ id: string }>>;
+        values(): AsyncIterator<Array<{ id: string }>, undefined>;
       };
     };
     markers: {
@@ -31,7 +31,8 @@ interface MastoLike {
   };
 }
 
-type NotificationEntry = { event: string; payload: unknown };
+type NotificationPayload = Parameters<typeof saveStatus>[0];
+type NotificationEntry = { event: string; payload: NotificationPayload };
 type NotificationSub = AsyncIterable<NotificationEntry> & {
   unsubscribe?: () => void;
 };
@@ -43,6 +44,11 @@ interface StreamingLike {
     };
   };
 }
+
+type BackgroundApi = ReturnType<typeof api> & {
+  masto: MastoLike;
+  streaming?: StreamingLike;
+};
 
 export default memo(function BackgroundService() {
   const isLoggedIn = useAuth();
@@ -104,10 +110,10 @@ export default memo(function BackgroundService() {
     let streamTimeout: ReturnType<typeof setTimeout> | undefined;
     let pollNotifications: ReturnType<typeof setInterval> | undefined;
     if (isLoggedIn && visible) {
-      const { masto, streaming, instance } = api();
+      const { masto, streaming, instance } = api() as BackgroundApi;
       void (async () => {
         // 1. Get the latest notification
-        await checkLatestNotification(masto as unknown as MastoLike, instance);
+        await checkLatestNotification(masto, instance);
 
         let hasStreaming = false;
         // 2. Start streaming
@@ -116,9 +122,7 @@ export default memo(function BackgroundService() {
             void (async () => {
               try {
                 hasStreaming = true;
-                sub = (
-                  streaming as unknown as StreamingLike
-                ).user.notification.subscribe();
+                sub = streaming.user.notification.subscribe();
                 console.log('🎏 Streaming notification', sub);
                 for await (const entry of sub) {
                   if (!sub) break;
@@ -126,13 +130,9 @@ export default memo(function BackgroundService() {
                   console.log('🔔🔔 Notification entry', entry);
                   if (entry.event === 'notification') {
                     console.log('🔔🔔 Notification', entry);
-                    saveStatus(
-                      entry.payload as Parameters<typeof saveStatus>[0],
-                      instance,
-                      {
-                        skipThreading: true,
-                      },
-                    );
+                    saveStatus(entry.payload, instance, {
+                      skipThreading: true,
+                    });
                   }
                   states.notificationsShowNew = true;
                 }
@@ -145,11 +145,7 @@ export default memo(function BackgroundService() {
               if (!hasStreaming) {
                 console.log('🎏 Streaming failed, fallback to polling');
                 pollNotifications = setInterval(() => {
-                  void checkLatestNotification(
-                    masto as unknown as MastoLike,
-                    instance,
-                    true,
-                  );
+                  void checkLatestNotification(masto, instance, true);
                 }, POLL_INTERVAL);
               }
             })();
