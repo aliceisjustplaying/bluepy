@@ -1153,6 +1153,7 @@ export const TimelineItem = memo(
           !!item.inReplyToId &&
           item.inReplyToId !==
             (arr[i - 1] ? canonicalTimelineContextId(arr[i - 1]) : undefined);
+        const incompleteThreadGapPosition = i === 0 ? 'start' : 'middle';
         const isSpoiler = item.sensitive && !!item.spoilerText;
         const showCompact =
           (!_differentAuthor && isSpoiler && i > 0) ||
@@ -1203,7 +1204,7 @@ export const TimelineItem = memo(
           return [
             <li
               key={`timeline-incomplete-thread-${itemStatusID}`}
-              class={`timeline-item-container timeline-item-container-type-${type} timeline-item-container-middle timeline-item-container-incomplete-thread`}
+              class={`timeline-item-container timeline-item-container-type-${type} timeline-item-container-${incompleteThreadGapPosition} timeline-item-container-incomplete-thread timeline-item-container-incomplete-thread-${incompleteThreadGapPosition}`}
             >
               <Link
                 class="show-more timeline-incomplete-thread-link"

@@ -996,6 +996,22 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   }
 }
 .timeline:not(.flat)
+  > li.timeline-item-container-incomplete-thread-start {
+  background-image: none;
+  border-bottom: 0;
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+  margin-bottom: 0;
+}
+.timeline:not(.flat)
+  > li.timeline-item-container-incomplete-thread-start
+  + li.timeline-item-container-start {
+  border-top: 0;
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+  margin-top: 0;
+}
+.timeline:not(.flat)
   > li:is(.timeline-item-container-middle, .timeline-item-container-end)
   .status-reply-to:not(.visibility-direct):not(.status-card) {
   background-image: none;
