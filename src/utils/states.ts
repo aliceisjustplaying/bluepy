@@ -1,4 +1,5 @@
 import { deepEqual } from 'fast-equals';
+import type { mastodon } from 'masto';
 import { proxy, subscribe } from 'valtio';
 import { subscribeKey } from 'valtio/utils';
 
@@ -32,6 +33,7 @@ type Status = Record<string, unknown> & {
   quotedStatus?: Status | null;
   _pinned?: unknown;
 };
+type SaveStatusStatus = Status | mastodon.v1.Status;
 
 type Account = Record<string, unknown>;
 
@@ -458,7 +460,7 @@ interface SaveStatusOpts {
 }
 
 export function saveStatus(
-  status: Status | null | undefined,
+  status: SaveStatusStatus | null | undefined,
   instance?: string | SaveStatusOpts | null,
   opts?: SaveStatusOpts,
 ): void {
@@ -477,27 +479,31 @@ export function saveStatus(
     sync = false,
   } = resolvedOpts || {};
   if (!status) return;
-  const oldStatus = getStatus(status.id, resolvedInstance);
+  const statusForStorage = status as Status;
+  const oldStatus = getStatus(statusForStorage.id, resolvedInstance);
   if (!override && oldStatus) return;
-  if (deepEqual(status, oldStatus)) return;
+  if (deepEqual(statusForStorage, oldStatus)) return;
 
   if (sync) {
-    saveStatusInternal(status, resolvedInstance, oldStatus);
+    saveStatusInternal(statusForStorage, resolvedInstance, oldStatus);
   } else {
-    queueSaveStatus(status, resolvedInstance, oldStatus);
+    queueSaveStatus(statusForStorage, resolvedInstance, oldStatus);
   }
 
   // THREAD TRAVERSER
   if (!skipThreading) {
     setTimeout(() => {
-      threadifyStatus(status.reblog || status, resolvedInstance);
+      threadifyStatus(
+        statusForStorage.reblog || statusForStorage,
+        resolvedInstance,
+      );
     }, 100);
   }
 
   // UNFURLER
   if (!skipUnfurling) {
     setTimeout(() => {
-      unfurlStatus(status.reblog || status, resolvedInstance);
+      unfurlStatus(statusForStorage.reblog || statusForStorage, resolvedInstance);
     }, 100);
   }
 }

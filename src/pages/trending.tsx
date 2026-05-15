@@ -16,7 +16,7 @@ import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import Timeline from '../components/timeline';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import { filteredItems } from '../utils/filters';
 import getDomain from '../utils/get-domain';
@@ -292,11 +292,9 @@ function Trending({ columnMode, ...props }: TrendingProps) {
 
   async function checkForUpdates() {
     try {
-      const results = await (
-        masto as unknown as {
-          v1: { trends: { statuses: TrendingApiList } };
-        }
-      ).v1.trends.statuses
+      const results = await getMastoV1Resource<{
+        statuses: TrendingApiList;
+      }>(masto, 'trends').statuses
         .list({
           limit: 1,
           // NOT SUPPORTED

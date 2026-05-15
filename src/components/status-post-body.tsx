@@ -19,7 +19,7 @@ import type {
   AnyPoll,
   AnyPreviewCard,
   AnyStatus,
-  FullMasto,
+  StatusContentMasto,
 } from './status-types';
 import StatusTags from './status-tags';
 import TranslationBlock from './translation-block';
@@ -59,7 +59,7 @@ interface StatusPostBodyProps {
   readOnly?: boolean;
   sameInstance: boolean;
   authenticated?: boolean;
-  masto: FullMasto;
+  masto: StatusContentMasto;
   sKey: string;
   enableTranslate?: boolean;
   inlineTranslate?: boolean;

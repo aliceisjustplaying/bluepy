@@ -10,7 +10,7 @@ import NameTextComponent from '../components/name-text';
 import StatusComponent, {
   type StatusComponentProps,
 } from '../components/status';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import useTitle from '../utils/useTitle';
 
 function NameText(props: {
@@ -61,6 +61,12 @@ interface AnnualReportResponse {
   statuses?: AnnualReportStatus[];
 }
 
+interface AnnualReportsResource {
+  $select(year: string): {
+    fetch(): Promise<AnnualReportResponse>;
+  };
+}
+
 export default function AnnualReport() {
   const params = useParams<{ year?: string }>();
   const { year } = params;
@@ -74,20 +80,13 @@ export default function AnnualReport() {
 
   useEffect(() => {
     if (!year) return;
-    const mastoUntyped = masto as unknown as {
-      v1: {
-        annualReports: {
-          $select(year: string): {
-            fetch(): Promise<AnnualReportResponse>;
-          };
-        };
-      };
-    };
+    const annualReports = getMastoV1Resource<AnnualReportsResource>(
+      masto,
+      'annualReports',
+    );
     void (async () => {
       setUIState('loading');
-      const fetched = await mastoUntyped.v1.annualReports
-        .$select(year)
-        .fetch();
+      const fetched = await annualReports.$select(year).fetch();
       console.log('REPORT', fetched);
       setResults(fetched);
       setUIState('default');

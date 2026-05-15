@@ -48,11 +48,6 @@ interface MastoStatusesList {
   $select(id: string): { fetch(): Promise<mastodon.v1.Status> };
 }
 
-// `saveStatus` accepts the loose record-shaped `Status` declared inside
-// `states.ts`. Masto's `mastodon.v1.Status` lacks an index signature, so a
-// cast bridges the two shapes without introducing `any`.
-type SaveStatusInput = Parameters<typeof saveStatus>[0];
-
 export function groupBoosts(
   values: readonly TimelineStatus[],
 ): TimelineItem[] | readonly TimelineStatus[] {
@@ -306,7 +301,7 @@ export function groupContext(
               inReplyToId,
               statusesResource,
             );
-            saveStatus(replyToStatus as unknown as SaveStatusInput, instance, {
+            saveStatus(replyToStatus, instance, {
               skipThreading: true,
             });
             states.statusReply[sKey] = {
@@ -334,7 +329,7 @@ export function groupContext(
             if (replyToStatuses?.length) {
               for (const replyToStatus of replyToStatuses) {
                 saveStatus(
-                  replyToStatus as unknown as SaveStatusInput,
+                  replyToStatus,
                   instance,
                   {
                     skipThreading: true,

@@ -6,7 +6,7 @@ import RTF from '../utils/relative-time-format';
 
 import Icon from './icon';
 import useStatusMenuParts from './status-menu';
-import type { AnyStatus, FullMasto } from './status-types';
+import type { AnyStatus, StatusContentMasto } from './status-types';
 
 interface StatusMenuStateArgs {
   mediaNoDesc: boolean;
@@ -59,7 +59,7 @@ interface StatusMenuStateArgs {
   authenticated?: boolean;
   isSelf?: boolean | string | null;
   mentionSelf?: unknown;
-  masto: FullMasto;
+  masto: StatusContentMasto;
   muted?: boolean | null;
   pinned?: boolean | null;
   quoteApprovalPolicyMessages: Parameters<typeof useStatusMenuParts>[0]['quoteApprovalPolicyMessages'];

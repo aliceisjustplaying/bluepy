@@ -31,7 +31,7 @@ import Modal from '../components/modal';
 import NameText, { type NameTextAccount } from '../components/name-text';
 import NavMenu from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
-import { api, getPreferences } from '../utils/api';
+import { api, getMastoV1Resource, getPreferences } from '../utils/api';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import db from '../utils/db';
 import emojifyText from '../utils/emojify-text';
@@ -361,16 +361,12 @@ function Catchup() {
     }): Promise<CatchupPost[]> => {
       console.debug('fetchHome', maxCreatedAt);
       const allResults: CatchupPost[] = [];
-      const mastoUntyped = masto as unknown as {
-        v1: {
-          timelines: {
-            home: {
-              list(options: { limit: number }): HomeIterable;
-            };
-          };
+      const timelines = getMastoV1Resource<{
+        home: {
+          list(options: { limit: number }): HomeIterable;
         };
-      };
-      const homeIterable = mastoUntyped.v1.timelines.home.list({ limit: 40 });
+      }>(masto, 'timelines');
+      const homeIterable = timelines.home.list({ limit: 40 });
       const homeIterator = homeIterable.values();
       mainloop: while (true) {
         try {

@@ -10,7 +10,7 @@ import states, { saveStatus } from '../utils/states';
 import supports from '../utils/supports';
 
 import { REACTIONS_LIMIT } from './status-helpers';
-import type { AnyAccount, AnyStatus, FullMasto } from './status-types';
+import type { AnyAccount, AnyStatus, StatusContentMasto } from './status-types';
 
 type CachedStatus = (typeof states.statuses)[string];
 function toCachedStatus(status: mastodon.v1.Status | AnyStatus): CachedStatus {
@@ -33,14 +33,9 @@ type ReplyEvent =
   | { shiftKey?: boolean; syntheticEvent?: { shiftKey?: boolean } }
   | undefined;
 type ReactionIterator = AsyncIterator<AnyAccount[], undefined>;
-type ReactionList = (opts?: { limit: number }) => {
-  values(): ReactionIterator;
-};
-type StatusSelector = ReturnType<FullMasto['v1']['statuses']['$select']>;
-type StatusReactionSelector = StatusSelector & {
-  rebloggedBy: { list: ReactionList };
-  favouritedBy: { list: ReactionList };
-};
+type StatusSelector = ReturnType<
+  StatusContentMasto['v1']['statuses']['$select']
+>;
 type IteratorResult = { value?: AnyAccount[]; done?: boolean };
 
 interface StatusInteractionsArgs {
@@ -49,7 +44,7 @@ interface StatusInteractionsArgs {
   sKey: string;
   id: string;
   instance: string;
-  masto: FullMasto;
+  masto: StatusContentMasto;
   sameInstance: boolean;
   authenticated?: boolean;
   isSizeLarge: boolean;
@@ -230,9 +225,9 @@ export default function useStatusInteractions({
   const favouriteIterator = useRef<ReactionIterator | null>(null);
   async function fetchBoostedLikedByAccounts(firstLoad?: boolean) {
     if (firstLoad) {
-      const stmtSel = masto.v1.statuses.$select(
+      const stmtSel: StatusSelector = masto.v1.statuses.$select(
         statusID as string,
-      ) as StatusReactionSelector;
+      );
       reblogIterator.current = stmtSel.rebloggedBy.list({
         limit: REACTIONS_LIMIT,
       }).values();
