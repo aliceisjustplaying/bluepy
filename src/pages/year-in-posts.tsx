@@ -307,11 +307,8 @@ function YearInPosts() {
   const handleGenerate = async (e: Event) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
-    const yearInput = (
-      form.elements as unknown as {
-        year: HTMLInputElement;
-      }
-    ).year;
+    const yearInput = form.elements.namedItem('year');
+    if (!(yearInput instanceof HTMLInputElement)) return;
     const generateYear = getYear(yearInput.value);
     if (generateYear) {
       try {
@@ -605,7 +602,7 @@ function YearInPosts() {
           id: 'id',
           index: ['content', 'spoilerText', 'poll', 'media', 'card'],
         },
-      }) as unknown as FlexSearchDocument;
+      }) as FlexSearchDocument;
       posts.forEach((p) => {
         const status = p.reblog || p;
         const pollText = status.poll?.options?.map((o) => o.title).join(' ');

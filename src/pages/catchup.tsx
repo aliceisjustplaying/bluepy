@@ -84,6 +84,7 @@ type QuoteStatusLike =
       spoilerText?: string;
       sensitive?: boolean;
       emojis?: mastodon.v1.Status['emojis'];
+      poll?: mastodon.v1.Status['poll'];
       mediaAttachments?: mastodon.v1.Status['mediaAttachments'];
       content?: string;
       [key: string]: unknown;
@@ -266,6 +267,49 @@ function quoteLike(
     return quote.quotedStatus as QuoteLike;
   }
   return quote as QuoteLike;
+}
+
+type StatusPeekInput = Parameters<typeof statusPeek>[0];
+
+function isQuoteStatusLike(status: unknown): status is QuoteStatusLike {
+  return !!status && typeof status === 'object';
+}
+
+function toStatusPeekInput(
+  status: QuoteStatusLike | CatchupPost,
+): StatusPeekInput {
+  const quote = 'quote' in status ? status.quote : undefined;
+  const quotedStatus =
+    quote &&
+    typeof quote === 'object' &&
+    'quotedStatus' in quote &&
+    isQuoteStatusLike(quote.quotedStatus)
+      ? quote.quotedStatus
+      : undefined;
+
+  return {
+    spoilerText: status.spoilerText,
+    content: status.content,
+    poll: status.poll
+      ? {
+          options: status.poll.options?.map((option) => ({
+            title: option.title,
+          })),
+          multiple: status.poll.multiple,
+        }
+      : status.poll,
+    mediaAttachments: status.mediaAttachments?.map((attachment) => ({
+      type: attachment.type,
+    })),
+    quote: quotedStatus
+      ? {
+          quotedStatus: {
+            ...toStatusPeekInput(quotedStatus),
+            id: quotedStatus.id ?? undefined,
+          },
+        }
+      : null,
+  };
 }
 
 function nameTextAccount(
@@ -1176,7 +1220,7 @@ function Catchup() {
     'h, l',
     (_e, handler) => {
       // Go next/prev selectedAuthor in authorCountsList list
-      const key = (handler as unknown as { keys: string[] }).keys[0];
+      const key = handler.keys?.[0];
       if (selectedAuthor) {
         const index = authorCountsList.indexOf(selectedAuthor);
         if (key === 'h') {
@@ -2358,12 +2402,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
     (!spoilerText &&
       !sensitive &&
       (filterInfo ? filterInfo.action !== 'blur' : true));
-  // `statusPeek`'s internal StatusLike type isn't exported; its `quote` shape
-  // diverges structurally from CatchupPost (which mirrors mastodon.v1.Status).
-  // Shim across the boundary — same fields at runtime.
-  const postText = content
-    ? statusPeek(post as unknown as Parameters<typeof statusPeek>[0])
-    : '';
+  const postText = content ? statusPeek(toStatusPeekInput(post)) : '';
 
   const showPostContent = !spoilerText || readingExpandSpoilers;
 
