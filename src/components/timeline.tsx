@@ -33,7 +33,10 @@ import {
   groupBoosts,
   groupContext,
 } from '../utils/timeline-utils';
-import { canonicalTimelineContextId } from '../utils/timeline-context';
+import {
+  canonicalTimelineContextId,
+  dedupeTimelineContextItems,
+} from '../utils/timeline-context';
 import useInterval from '../utils/useInterval';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScrollFn from '../utils/useScrollFn';
@@ -136,6 +139,7 @@ type TimelineItemEntry =
   | TimelineStatusEntry
   | TimelineGroupEntry
   | TimelineFilteredGroup;
+type TimelineDedupeInput = Parameters<typeof dedupeTimelineContextItems>[0];
 
 function hasItems(entry: TimelineEntry): entry is TimelineGroupEntry {
   return Array.isArray((entry as TimelineGroupEntry).items);
@@ -145,6 +149,12 @@ function isFilteredGroup(
   entry: TimelineItemEntry,
 ): entry is TimelineFilteredGroup {
   return (entry as TimelineFilteredGroup)._grouped ?? false;
+}
+
+function dedupeTimelineEntries(items: readonly TimelineEntry[]) {
+  return dedupeTimelineContextItems(
+    items as unknown as TimelineDedupeInput,
+  ) as TimelineEntry[];
 }
 
 const scrollIntoViewOptions: ScrollIntoViewOptions = {
@@ -494,9 +504,9 @@ function Timeline({
             }
             console.log(processed);
             if (firstLoad) {
-              setItems(processed);
+              setItems(dedupeTimelineEntries(processed));
             } else {
-              setItems((prev) => [...prev, ...processed]);
+              setItems((prev) => dedupeTimelineEntries([...prev, ...processed]));
             }
             if (!processed.length) done = true;
             setShowMore(!done);

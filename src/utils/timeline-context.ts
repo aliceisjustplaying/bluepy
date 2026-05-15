@@ -14,6 +14,7 @@ export interface TimelineContextStatus {
   inReplyToId?: string | null;
   account: TimelineContextAccount;
   reblog?: TimelineContextStatus | null;
+  _pinned?: unknown;
   _differentAuthor?: boolean;
   _atproto?: {
     root?: TimelineContextRef;
@@ -26,6 +27,17 @@ export interface TimelineContextGroup<T extends TimelineContextStatus> {
   type: 'thread' | 'conversation';
   incompleteThread?: boolean;
 }
+
+interface TimelineContextDedupeGroup<T extends TimelineContextStatus> {
+  id: string | string[];
+  items: T[];
+  type: string;
+  incompleteThread?: boolean;
+}
+
+export type TimelineContextDedupeEntry<T extends TimelineContextStatus> =
+  | T
+  | TimelineContextDedupeGroup<T>;
 
 function atprotoRootId(item: TimelineContextStatus): string | undefined {
   const uri = item._atproto?.root?.uri;
@@ -40,6 +52,73 @@ export function canonicalTimelineContextId(
 
 function canonicalTimelineContextAccountId(item: TimelineContextStatus): string {
   return item.reblog?.account.id || item.account.id;
+}
+
+function isThreadContextEntry<T extends TimelineContextStatus>(
+  item: TimelineContextDedupeEntry<T>,
+): item is TimelineContextDedupeGroup<T> {
+  const group = item as Partial<TimelineContextDedupeGroup<T>>;
+  return (
+    Array.isArray(group.items) &&
+    (group.type === 'thread' || group.type === 'conversation')
+  );
+}
+
+export function dedupeTimelineContextItems<T extends TimelineContextStatus>(
+  items: readonly TimelineContextDedupeEntry<T>[],
+): TimelineContextDedupeEntry<T>[] {
+  // Timeline pages are grouped before pagination appends them. Match
+  // social-app's stream-level post dedupe across the accumulated page list so
+  // later pages cannot re-render an already visible thread context.
+  const seenIDs = new Set<string>();
+  const deduped: TimelineContextDedupeEntry<T>[] = [];
+
+  items.forEach((item) => {
+    if (!isThreadContextEntry(item)) {
+      if (!Array.isArray((item as { items?: unknown }).items)) {
+        if (item._pinned) {
+          deduped.push(item);
+          return;
+        }
+        const itemID = canonicalTimelineContextId(item);
+        if (seenIDs.has(itemID)) return;
+        seenIDs.add(itemID);
+      }
+      deduped.push(item);
+      return;
+    }
+
+    const groupItems = [...item.items];
+    let skipGroup = false;
+    for (let i = 0; i < groupItems.length; i++) {
+      const itemID = canonicalTimelineContextId(groupItems[i]);
+      if (seenIDs.has(itemID)) {
+        if (i === 0) {
+          groupItems.splice(0, 1);
+          i--;
+        }
+        if (i === groupItems.length - 1) {
+          skipGroup = true;
+          break;
+        }
+      } else {
+        seenIDs.add(itemID);
+      }
+    }
+
+    if (skipGroup || !groupItems.length) return;
+    if (groupItems.length === 1) {
+      deduped.push(groupItems[0]);
+      return;
+    }
+    deduped.push({
+      ...item,
+      id: groupItems.map((groupItem) => groupItem.id),
+      items: groupItems,
+    });
+  });
+
+  return deduped;
 }
 
 function addUnique<T extends TimelineContextStatus>(context: T[], item: T) {

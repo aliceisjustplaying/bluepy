@@ -25,6 +25,7 @@ import {
   filterHiddenStatuses,
   groupContext,
 } from '../utils/timeline-utils';
+import { dedupeTimelineContextItems } from '../utils/timeline-context';
 import useInterval from '../utils/useInterval';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScrollFn from '../utils/useScrollFn';
@@ -92,12 +93,19 @@ interface TimelineGroupEntry {
 }
 
 type TimelineEntry = TimelineStatusEntry | TimelineGroupEntry;
+type TimelineDedupeInput = Parameters<typeof dedupeTimelineContextItems>[0];
 
 function isGroupEntry(entry: TimelineEntry): entry is TimelineGroupEntry {
   return (
     Array.isArray((entry as TimelineGroupEntry).items) &&
     (entry as TimelineGroupEntry).items !== undefined
   );
+}
+
+function dedupeTimelineEntries(items: readonly TimelineEntry[]) {
+  return dedupeTimelineContextItems(
+    items as unknown as TimelineDedupeInput,
+  ) as TimelineEntry[];
 }
 
 function getLastItem(items: readonly TimelineEntry[]): TimelineStatusEntry {
@@ -472,7 +480,7 @@ function Timeline2({
             if (loadState === 'start') {
               minID.current = minIDValue;
               maxID.current = maxIDValue;
-              setItems(grouped);
+              setItems(dedupeTimelineEntries(grouped));
               setShowOlder(hasOlder);
               setShowNewer(false);
             } else if (loadState === 'next') {
@@ -480,9 +488,10 @@ function Timeline2({
               scrollableRef.current?.classList.add('scrolling-next');
               setItems((prevItems) => {
                 saveScrollAnchor({ items: prevItems, direction: 'next' });
-                const newItems = [...prevItems, ...grouped].slice(
-                  -TIMELINE_LIMIT,
-                );
+                const newItems = dedupeTimelineEntries([
+                  ...prevItems,
+                  ...grouped,
+                ]).slice(-TIMELINE_LIMIT);
                 minID.current = [newItems[0].id].flat()[0];
                 return newItems;
               });
@@ -493,10 +502,10 @@ function Timeline2({
               scrollableRef.current?.classList.add('scrolling-prev');
               setItems((prevItems) => {
                 saveScrollAnchor({ items: prevItems, direction: 'prev' });
-                const newItems = [...grouped, ...prevItems].slice(
-                  0,
-                  TIMELINE_LIMIT,
-                );
+                const newItems = dedupeTimelineEntries([
+                  ...grouped,
+                  ...prevItems,
+                ]).slice(0, TIMELINE_LIMIT);
                 maxID.current = [newItems.at(-1)?.id].flat().at(-1);
                 return newItems;
               });

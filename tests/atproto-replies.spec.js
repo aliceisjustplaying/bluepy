@@ -11,7 +11,10 @@ import {
   shouldFetchReplyContextForInstance,
   shouldFetchThreadParent,
 } from '../src/utils/reply-context.js';
-import { groupContextItems } from '../src/utils/timeline-context.js';
+import {
+  dedupeTimelineContextItems,
+  groupContextItems,
+} from '../src/utils/timeline-context.js';
 
 const parentUri = 'at://did:plc:parent/app.bsky.feed.post/root';
 const childUri = 'at://did:plc:child/app.bsky.feed.post/reply';
@@ -908,5 +911,91 @@ test.describe('ATProto reply mapping', () => {
     expect(grouped).toHaveLength(1);
     expect(grouped[0]).toMatchObject({ type: 'thread' });
     expect(grouped[0].items[1]._differentAuthor).toBeFalsy();
+  });
+
+  test('dedupes thread contexts loaded across timeline pages', () => {
+    const middleUri =
+      'at://did:plc:parent/app.bsky.feed.post/middle-reply';
+    const latestUri =
+      'at://did:plc:parent/app.bsky.feed.post/latest-reply';
+    const rootPost = {
+      ...feedReply().reply.parent,
+      uri: parentUri,
+      author: {
+        did: 'did:plc:parent',
+        handle: 'parent.test',
+        displayName: 'Parent',
+      },
+      record: {
+        $type: 'app.bsky.feed.post',
+        text: 'root text',
+        createdAt: '2026-05-08T00:00:00.000Z',
+      },
+    };
+    const middlePost = {
+      uri: middleUri,
+      cid: 'middle-cid',
+      author: rootPost.author,
+      record: {
+        $type: 'app.bsky.feed.post',
+        text: 'middle reply',
+        createdAt: '2026-05-08T00:01:00.000Z',
+        reply: {
+          root: { uri: parentUri, cid: 'parent-cid' },
+          parent: { uri: parentUri, cid: 'parent-cid' },
+        },
+      },
+      indexedAt: '2026-05-08T00:01:00.000Z',
+    };
+    const latestPost = {
+      uri: latestUri,
+      cid: 'latest-cid',
+      author: rootPost.author,
+      record: {
+        $type: 'app.bsky.feed.post',
+        text: 'latest reply',
+        createdAt: '2026-05-08T00:02:00.000Z',
+        reply: {
+          root: { uri: parentUri, cid: 'parent-cid' },
+          parent: { uri: middleUri, cid: 'middle-cid' },
+        },
+      },
+      indexedAt: '2026-05-08T00:02:00.000Z',
+    };
+    const latestPage = groupContextItems(
+      feedToStatuses([
+        {
+          post: latestPost,
+          reply: {
+            root: rootPost,
+            parent: middlePost,
+          },
+        },
+      ]),
+    );
+    const middlePage = groupContextItems(
+      feedToStatuses([
+        {
+          post: middlePost,
+          reply: {
+            root: rootPost,
+            parent: rootPost,
+          },
+        },
+      ]),
+    );
+    const rootPage = feedToStatuses([{ post: rootPost }]);
+
+    const deduped = dedupeTimelineContextItems([
+      ...latestPage,
+      ...middlePage,
+      ...rootPage,
+    ]);
+
+    expect(
+      Array.from(deduped, (item) =>
+        Array.isArray(item.items) ? item.items.map((inner) => inner.uri) : item.uri,
+      ),
+    ).toEqual([[parentUri, middleUri, latestUri]]);
   });
 });
