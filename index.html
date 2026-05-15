@@ -59,38 +59,82 @@
     />
     <meta name="google" content="notranslate" />
     <link rel="me" href="https://hachyderm.io/@phanpy" />
-  </head>
-  <body>
-    <div id="app">
-      <div id="boot-status">Loading Bluepy...</div>
-    </div>
-    <div id="modal-container"></div>
     <script>
       const BOOT_TIMEOUT_MS = 5000;
-      const bootReloadKey = 'bluepy:boot-reload-attempted';
+      const BOOT_MAX_RELOAD_ATTEMPTS = 3;
+      const BOOT_RELOAD_PARAM = '__bluepy_boot_retry';
+      const bootReloadKey = 'bluepy:boot-reload-state';
       const bootStartedAt = Date.now();
+      let bootRecoveryScheduled = false;
       window.__BLUEPY_BOOT_FAILED__ = false;
+      window.__BLUEPY_APP_MOUNTED__ = false;
       const getBootStatus = () => document.getElementById('boot-status');
-      const recoverStalledBoot = () => {
+      const getBootReloadState = () => {
+        const rawState = sessionStorage.getItem(bootReloadKey);
+        if (rawState) {
+          try {
+            const state = JSON.parse(rawState);
+            return {
+              attempts: Number(state.attempts || 0),
+              lastAt: Number(state.lastAt || 0),
+            };
+          } catch {}
+        }
+        return { attempts: 0, lastAt: 0 };
+      };
+      const isBootResourceError = (event) => {
+        const target = event.target;
+        if (target instanceof HTMLScriptElement) {
+          return target.type === 'module';
+        }
+        if (target instanceof HTMLLinkElement) {
+          return target.rel === 'modulepreload';
+        }
+        return false;
+      };
+      const recoverStalledBoot = (reason = 'timeout') => {
         const bootStatus = getBootStatus();
-        if (!bootStatus || window.__BLUEPY_BOOT_FAILED__) return;
-        if (Date.now() - bootStartedAt < BOOT_TIMEOUT_MS) return;
+        if (!bootStatus && reason === 'timeout') return;
+        if (window.__BLUEPY_APP_MOUNTED__ || bootRecoveryScheduled) return;
+        if (window.__BLUEPY_BOOT_FAILED__) return;
+        const now = Date.now();
+        if (reason === 'timeout' && now - bootStartedAt < BOOT_TIMEOUT_MS)
+          return;
         try {
-          if (sessionStorage.getItem(bootReloadKey)) return;
-          sessionStorage.setItem(bootReloadKey, '1');
+          const state = getBootReloadState();
+          const attempts = state.attempts;
+          if (attempts >= BOOT_MAX_RELOAD_ATTEMPTS) return;
+          sessionStorage.setItem(
+            bootReloadKey,
+            JSON.stringify({ attempts: attempts + 1, lastAt: now }),
+          );
         } catch {
           return;
         }
-        bootStatus.textContent = 'Bluepy is still loading. Reloading...';
-        location.reload();
-      };
-      window.addEventListener('error', (event) => {
-        window.__BLUEPY_BOOT_FAILED__ = true;
-        const bootStatus = getBootStatus();
+        bootRecoveryScheduled = true;
         if (bootStatus) {
-          bootStatus.textContent = `Bluepy failed to start: ${event.message || 'unknown error'}`;
+          bootStatus.textContent = 'Bluepy is still loading. Reloading...';
         }
-      });
+        const nextURL = new URL(location.href);
+        nextURL.searchParams.set(BOOT_RELOAD_PARAM, String(now));
+        location.replace(nextURL.href);
+      };
+      window.addEventListener(
+        'error',
+        (event) => {
+          if (isBootResourceError(event)) {
+            recoverStalledBoot('resource-error');
+            return;
+          }
+          if (event.target && event.target !== window) return;
+          window.__BLUEPY_BOOT_FAILED__ = true;
+          const bootStatus = getBootStatus();
+          if (bootStatus) {
+            bootStatus.textContent = `Bluepy failed to start: ${event.message || 'unknown error'}`;
+          }
+        },
+        true,
+      );
       window.addEventListener('unhandledrejection', (event) => {
         window.__BLUEPY_BOOT_FAILED__ = true;
         const bootStatus = getBootStatus();
@@ -117,6 +161,12 @@
         }
       }, BOOT_TIMEOUT_MS);
     </script>
+  </head>
+  <body>
+    <div id="app">
+      <div id="boot-status">Loading Bluepy...</div>
+    </div>
+    <div id="modal-container"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

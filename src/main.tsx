@@ -103,8 +103,25 @@ if (!redirectLegacyOrigin()) {
       document.getElementById('app') as HTMLElement,
     );
 
+    (
+      window as Window & {
+        __BLUEPY_APP_MOUNTED__?: boolean;
+      }
+    )['__BLUEPY_APP_MOUNTED__'] = true;
+
     try {
+      const bootReloadParam = '__bluepy_boot_retry';
+      const currentURL = new URL(window.location.href);
+      sessionStorage.removeItem('bluepy:boot-reload-state');
       sessionStorage.removeItem('bluepy:boot-reload-attempted');
+      if (currentURL.searchParams.has(bootReloadParam)) {
+        currentURL.searchParams.delete(bootReloadParam);
+        window.history.replaceState(
+          window.history.state,
+          document.title,
+          `${currentURL.pathname}${currentURL.search}${currentURL.hash}`,
+        );
+      }
     } catch {}
 
     // Storage cleanup
