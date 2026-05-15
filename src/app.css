@@ -969,12 +969,41 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   );
   background-repeat: no-repeat;
 }
+.timeline:not(.flat)
+  > li:is(
+    .timeline-item-container-start,
+    .timeline-item-container-middle,
+    .timeline-item-container-end
+  ):not(.timeline-item-container-incomplete-thread-start) {
+  position: relative;
+}
+.timeline:not(.flat)
+  > li:is(
+    .timeline-item-container-start,
+    .timeline-item-container-middle,
+    .timeline-item-container-end
+  ):not(.timeline-item-container-incomplete-thread-start)::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: var(--line-start);
+  top: 0;
+  bottom: 0;
+  width: var(--line-width);
+  background-color: var(--comment-line-color);
+  pointer-events: none;
+}
 .timeline:not(.flat) > li.timeline-item-container-start {
   margin-bottom: 0;
   border-end-start-radius: 0;
   border-end-end-radius: 0;
   border-bottom: 0;
   background-position: 0 calc(16px + var(--avatar-size));
+}
+.timeline:not(.flat)
+  > li.timeline-item-container-start:not(
+    .timeline-item-container-incomplete-thread-start
+  )::after {
+  top: calc(16px + var(--avatar-size));
 }
 .timeline:not(.flat) > li.timeline-item-container-middle {
   margin-top: 0;
@@ -994,6 +1023,19 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
     /* 20px = icon of the pre-meta */
     background-size: 100% calc(16px + 20px);
   }
+}
+.timeline:not(.flat)
+  > li.timeline-item-container-end:not(
+    .timeline-item-container-incomplete-thread-start
+  )::after {
+  bottom: auto;
+  height: 16px;
+}
+.timeline:not(.flat)
+  > li.timeline-item-container-end:not(
+    .timeline-item-container-incomplete-thread-start
+  ):has(.status-pre-meta)::after {
+  height: calc(16px + 20px);
 }
 .timeline:not(.flat)
   > li.timeline-item-container-incomplete-thread-start {
