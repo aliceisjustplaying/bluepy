@@ -88,6 +88,7 @@ interface TimelineGroupEntry {
   id: string | string[];
   items: TimelineStatusEntry[];
   type: 'boosts' | 'thread' | 'conversation' | 'pinned';
+  incompleteThread?: boolean;
 }
 
 type TimelineEntry = TimelineStatusEntry | TimelineGroupEntry;

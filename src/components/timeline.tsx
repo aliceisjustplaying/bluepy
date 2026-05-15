@@ -118,6 +118,7 @@ interface TimelineGroupEntry {
   items: TimelineItemEntry[];
   type: TimelineGroupType;
   _pinned?: unknown;
+  incompleteThread?: boolean;
 }
 
 // `filteredItems` post-processing may decorate an entry with a `_grouped`
@@ -1122,13 +1123,21 @@ export const TimelineItem = memo(
         );
       }
       const manyItems = fItems.length > 3;
-      return (fItems as TimelineStatusEntry[]).map((item, i, arr) => {
+      return (fItems as TimelineStatusEntry[]).flatMap((item, i, arr) => {
         const itemStatusID = item.id;
         const _differentAuthor = item._differentAuthor;
         const itemURL = instance
           ? `/${instance}/s/${itemStatusID}`
           : `/s/${itemStatusID}`;
+        const threadStatusID = arr[arr.length - 1]?.id;
+        const threadURL = instance
+          ? `/${instance}/s/${threadStatusID}`
+          : `/s/${threadStatusID}`;
         const isMiddle = i > 0 && i < arr.length - 1;
+        const isIncompleteThreadGap =
+          groupEntry.incompleteThread &&
+          !!item.inReplyToId &&
+          item.inReplyToId !== arr[i - 1]?.id;
         const isSpoiler = item.sensitive && !!item.spoilerText;
         const showCompact =
           (!_differentAuthor && isSpoiler && i > 0) ||
@@ -1141,7 +1150,7 @@ export const TimelineItem = memo(
                 !arr[i + 1]._differentAuthor)));
         const isStart = i === 0;
         const isEnd = i === arr.length - 1;
-        return (
+        const statusItem = (
           <li
             key={`timeline-${itemStatusID}`}
             class={`timeline-item-container timeline-item-container-type-${type} timeline-item-container-${
@@ -1175,6 +1184,31 @@ export const TimelineItem = memo(
             </Link>
           </li>
         );
+        if (isIncompleteThreadGap) {
+          return [
+            <li
+              key={`timeline-incomplete-thread-${itemStatusID}`}
+              class={`timeline-item-container timeline-item-container-type-${type} timeline-item-container-middle timeline-item-container-incomplete-thread`}
+            >
+              <Link
+                class="show-more timeline-incomplete-thread-link"
+                to={threadURL}
+              >
+                <span
+                  class="timeline-incomplete-thread-dots"
+                  aria-hidden="true"
+                >
+                  •••
+                </span>{' '}
+                <span>
+                  <Trans>View Full Thread</Trans>
+                </span>
+              </Link>
+            </li>,
+            statusItem,
+          ];
+        }
+        return [statusItem];
       });
     }
 

@@ -11,6 +11,7 @@ import {
   shouldFetchReplyContextForInstance,
   shouldFetchThreadParent,
 } from '../src/utils/reply-context.js';
+import { groupContextItems } from '../src/utils/timeline-context.js';
 
 const parentUri = 'at://did:plc:parent/app.bsky.feed.post/root';
 const childUri = 'at://did:plc:child/app.bsky.feed.post/reply';
@@ -514,6 +515,136 @@ test.describe('ATProto reply mapping', () => {
       parentUri,
       childUri,
     ]);
+  });
+
+  test('groups incomplete Following reply chains with the root post', async () => {
+    const intermediateUri =
+      'at://did:plc:intermediate/app.bsky.feed.post/intermediate';
+    const rootPost = {
+      uri: rootUri,
+      cid: 'root-cid',
+      author: {
+        did: 'did:plc:root',
+        handle: 'root.test',
+        displayName: 'Root',
+      },
+      record: {
+        $type: 'app.bsky.feed.post',
+        text: 'root text',
+        createdAt: '2026-05-08T00:00:00.000Z',
+      },
+      indexedAt: '2026-05-08T00:00:00.000Z',
+    };
+    const item = feedReply({
+      post: {
+        record: {
+          $type: 'app.bsky.feed.post',
+          text: 'reply text',
+          createdAt: '2026-05-08T00:02:00.000Z',
+          reply: {
+            root: { uri: rootUri, cid: 'root-cid' },
+            parent: { uri: parentUri, cid: 'parent-cid' },
+          },
+        },
+      },
+      reply: {
+        root: rootPost,
+        parent: {
+          uri: parentUri,
+          cid: 'parent-cid',
+          author: {
+            did: 'did:plc:parent',
+            handle: 'parent.test',
+            displayName: 'Parent',
+          },
+          record: {
+            $type: 'app.bsky.feed.post',
+            text: 'parent text',
+            createdAt: '2026-05-08T00:01:00.000Z',
+            reply: {
+              root: { uri: rootUri, cid: 'root-cid' },
+              parent: { uri: intermediateUri, cid: 'intermediate-cid' },
+            },
+          },
+        },
+      },
+    });
+
+    const statuses = feedToStatuses([item]);
+    const grouped = groupContextItems(statuses);
+
+    expect(grouped).toHaveLength(1);
+    expect(grouped[0]).toMatchObject({
+      type: 'conversation',
+      incompleteThread: true,
+    });
+    expect(
+      Array.from(grouped[0].items, (status) => String(status.uri)),
+    ).toEqual([rootUri, parentUri, childUri]);
+  });
+
+  test('groups direct Following replies without duplicating the root post', () => {
+    const statuses = feedToStatuses([feedReply()]);
+    const grouped = groupContextItems(statuses);
+
+    expect(grouped).toHaveLength(1);
+    expect(grouped[0]).toMatchObject({
+      type: 'conversation',
+      incompleteThread: false,
+    });
+    expect(
+      Array.from(grouped[0].items, (status) => String(status.uri)),
+    ).toEqual([parentUri, childUri]);
+  });
+
+  test('marks first visible mid-chain Following replies as incomplete', () => {
+    const intermediateUri =
+      'at://did:plc:intermediate/app.bsky.feed.post/intermediate';
+    const statuses = feedToStatuses([
+      feedReply({
+        post: {
+          record: {
+            $type: 'app.bsky.feed.post',
+            text: 'reply text',
+            createdAt: '2026-05-08T00:02:00.000Z',
+            reply: {
+              root: { uri: rootUri, cid: 'root-cid' },
+              parent: { uri: parentUri, cid: 'parent-cid' },
+            },
+          },
+        },
+        reply: {
+          root: { uri: rootUri, cid: 'root-cid' },
+          parent: {
+            uri: parentUri,
+            cid: 'parent-cid',
+            author: {
+              did: 'did:plc:parent',
+              handle: 'parent.test',
+              displayName: 'Parent',
+            },
+            record: {
+              $type: 'app.bsky.feed.post',
+              text: 'parent text',
+              createdAt: '2026-05-08T00:01:00.000Z',
+              reply: {
+                root: { uri: rootUri, cid: 'root-cid' },
+                parent: { uri: intermediateUri, cid: 'intermediate-cid' },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+    const grouped = groupContextItems(statuses);
+
+    expect(grouped).toHaveLength(1);
+    expect(grouped[0]).toMatchObject({
+      incompleteThread: true,
+    });
+    expect(
+      Array.from(grouped[0].items, (status) => String(status.uri)),
+    ).toEqual([parentUri, childUri]);
   });
 
   test('hides Following replies to people the current user does not follow', () => {

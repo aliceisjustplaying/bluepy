@@ -1044,6 +1044,15 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   color: var(--text-color) !important;
   background-color: var(--bg-faded-blur-color) !important;
 }
+.timeline .timeline-incomplete-thread-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-insignificant-color);
+}
+.timeline .timeline-incomplete-thread-dots {
+  font-weight: bold;
+}
 .timeline .show-more:before {
   content: '';
   position: absolute;

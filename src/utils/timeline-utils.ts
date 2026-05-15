@@ -10,6 +10,7 @@ import states, { saveStatus, statusKey } from './states';
 import store from './store';
 import { getCurrentAccountID } from './store-utils';
 import supports from './supports';
+import { groupContextItems } from './timeline-context';
 
 // Status payloads carry a handful of mutation flags the timeline pipeline
 // attaches (`_pinned`, `_differentAuthor`). Keep the type loose so callers
@@ -18,6 +19,9 @@ type TimelineStatus = mastodon.v1.Status & {
   _pinned?: unknown;
   _differentAuthor?: boolean;
   account?: mastodon.v1.Status['account'] & { group?: boolean };
+  _atproto?: {
+    root?: { uri?: string };
+  };
 };
 
 interface BoostsGroup {
@@ -30,6 +34,7 @@ interface ThreadGroup {
   id: string[];
   items: TimelineStatus[];
   type: 'thread' | 'conversation';
+  incompleteThread?: boolean;
 }
 
 type TimelineItem = TimelineStatus | BoostsGroup | ThreadGroup;
@@ -154,66 +159,7 @@ export function groupContext(
   items: readonly TimelineStatus[],
   instance: string,
 ): TimelineItem[] {
-  const contexts: TimelineStatus[][] = [];
-  let contextIndex = 0;
-  items.forEach((item) => {
-    for (let i = 0; i < contexts.length; i++) {
-      if (contexts[i].find((t) => t.id === item.id)) return;
-      if (
-        contexts[i].find((t) => t.id === item.inReplyToId) ||
-        contexts[i].find((t) => t.inReplyToId === item.id)
-      ) {
-        contexts[i].push(item);
-        return;
-      }
-    }
-    const repliedItem = items.find((i) => i.id === item.inReplyToId);
-    if (repliedItem) {
-      contexts[contextIndex++] = [item, repliedItem];
-    }
-  });
-
-  // Check for cross-item contexts
-  // Merge contexts into one if they have a common item (same id)
-  for (let i = 0; i < contexts.length; i++) {
-    for (let j = i + 1; j < contexts.length; j++) {
-      const commonItem = contexts[i].find((t) => contexts[j].includes(t));
-      if (commonItem) {
-        contexts[i] = [...contexts[i], ...contexts[j]];
-        // Remove duplicate items
-        contexts[i] = contexts[i].filter(
-          (item, index, self) =>
-            self.findIndex((t) => t.id === item.id) === index,
-        );
-        contexts.splice(j, 1);
-        j--;
-      }
-    }
-  }
-
-  // Sort items by checking inReplyToId
-  contexts.forEach((context) => {
-    context.sort((a, b) => {
-      if (!a.inReplyToId && !b.inReplyToId) {
-        return Date.parse(a.createdAt) - Date.parse(b.createdAt);
-      }
-      if (a.inReplyToId === b.id) return 1;
-      if (b.inReplyToId === a.id) return -1;
-      if (!a.inReplyToId) return -1;
-      if (!b.inReplyToId) return 1;
-      return Date.parse(a.createdAt) - Date.parse(b.createdAt);
-    });
-  });
-
-  // Tag items that has different author than first post's author
-  contexts.forEach((context) => {
-    const firstItemAccountID = context[0].account.id;
-    context.forEach((item) => {
-      if (item.account.id !== firstItemAccountID) {
-        item._differentAuthor = true;
-      }
-    });
-  });
+  const contexts = groupContextItems(items);
 
   if (contexts.length) console.log('🧵 Contexts', contexts);
 
@@ -226,19 +172,14 @@ export function groupContext(
       return;
     }
     for (let ctxIndex = 0; ctxIndex < contexts.length; ctxIndex++) {
-      if (contexts[ctxIndex].find((t) => t.id === item.id)) {
+      if (contexts[ctxIndex].items.find((t) => t.id === item.id)) {
         if (appliedContextIndices.includes(ctxIndex)) return;
-        const contextItems = contexts[ctxIndex];
-        contextItems.sort((a, b) => {
-          return Date.parse(a.createdAt) - Date.parse(b.createdAt);
-        });
-        const firstItemAccountID = contextItems[0].account.id;
+        const contextItems = contexts[ctxIndex].items;
         newItems.push({
           id: contextItems.map((ci) => ci.id),
           items: contextItems,
-          type: contextItems.every((it) => it.account.id === firstItemAccountID)
-            ? 'thread'
-            : 'conversation',
+          type: contexts[ctxIndex].type,
+          incompleteThread: contexts[ctxIndex].incompleteThread,
         });
         appliedContextIndices.push(ctxIndex);
         return;
