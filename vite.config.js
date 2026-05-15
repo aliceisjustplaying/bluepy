@@ -282,12 +282,49 @@ export default defineConfig({
         const cssFiles = Object.keys(bundle).filter((file) =>
           file.endsWith('.css'),
         );
+        const lines = [
+          '/*',
+          '  Cache-Control: no-store',
+        ];
         if (cssFiles.length > 0) {
-          const links = cssFiles
-            .map((file) => `  Link: <${file}>; rel=preload; as=style`)
-            .join('\n');
-          fs.writeFileSync(resolve(__dirname, 'dist/_headers'), `/\n${links}`);
+          lines.push(
+            '/',
+            ...cssFiles.map(
+              (file) => `  Link: <${file}>; rel=preload; as=style`,
+            ),
+          );
         }
+        [
+          '/apple-touch-icon.png',
+          '/favicon.ico',
+          '/logo-192.png',
+          '/logo-512.png',
+          '/logo-badge-72.png',
+          '/logo-maskable-512.png',
+          '/logo-monochrome-512.png',
+          '/logo-monochrome-maskable-512.png',
+          '/manifest.webmanifest',
+          '/oauth-client-metadata.json',
+          '/og-image.png',
+          '/og-image-2.jpg',
+          '/robots.txt',
+          '/version.json',
+        ].forEach((path) => {
+          lines.push(
+            path,
+            '  ! Cache-Control',
+            '  Cache-Control: public, max-age=0, must-revalidate',
+          );
+        });
+        lines.push(
+          '/assets/*',
+          '  ! Cache-Control',
+          '  Cache-Control: public, max-age=31536000, immutable',
+        );
+        fs.writeFileSync(
+          resolve(__dirname, 'dist/_headers'),
+          `${lines.join('\n')}\n`,
+        );
       },
     },
     SENTRY_AUTH_TOKEN &&

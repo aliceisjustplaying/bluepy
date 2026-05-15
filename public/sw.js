@@ -1,7 +1,6 @@
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 import * as navigationPreload from 'workbox-navigation-preload';
-import { pageCache } from 'workbox-recipes';
 import { RegExpRoute, registerRoute, Route } from 'workbox-routing';
 import {
   CacheFirst,
@@ -13,9 +12,8 @@ navigationPreload.enable();
 
 self.__WB_DISABLE_DEV_LOGS = true;
 
-// Cache HTML pages
-pageCache({
-  warmCache: ['./compose/'],
+self.addEventListener('activate', (event) => {
+  event.waitUntil(caches.delete('pages'));
 });
 
 // Custom plugin to manage hashed assets
