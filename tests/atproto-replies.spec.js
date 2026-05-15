@@ -349,6 +349,173 @@ test.describe('ATProto reply mapping', () => {
     });
   });
 
+  test('uses same-page root posts before Following thread dedupe', async () => {
+    const rootPost = {
+      uri: rootUri,
+      cid: 'root-cid',
+      author: {
+        did: 'did:plc:root',
+        handle: 'root.test',
+        displayName: 'Root',
+      },
+      record: {
+        $type: 'app.bsky.feed.post',
+        text: 'root text',
+        createdAt: '2026-05-08T00:00:00.000Z',
+      },
+      indexedAt: '2026-05-08T00:00:00.000Z',
+    };
+    const reply = feedReply({
+      post: {
+        author: {
+          did: 'did:plc:child',
+          handle: 'child.test',
+          displayName: 'Child',
+          viewer: { following: 'at://did:plc:user/app.bsky.graph.follow/1' },
+        },
+        record: {
+          $type: 'app.bsky.feed.post',
+          text: 'reply text',
+          createdAt: '2026-05-08T00:02:00.000Z',
+          reply: {
+            root: { uri: rootUri, cid: 'root-cid' },
+            parent: { uri: parentUri, cid: 'parent-cid' },
+          },
+        },
+      },
+      reply: {
+        root: { uri: rootUri, cid: 'root-cid' },
+        parent: {
+          uri: parentUri,
+          cid: 'parent-cid',
+          author: {
+            did: 'did:plc:parent',
+            handle: 'parent.test',
+            displayName: 'Parent',
+            viewer: {
+              following: 'at://did:plc:user/app.bsky.graph.follow/2',
+            },
+          },
+          record: {
+            $type: 'app.bsky.feed.post',
+            text: 'parent text',
+            createdAt: '2026-05-08T00:01:00.000Z',
+            reply: {
+              root: { uri: rootUri, cid: 'root-cid' },
+              parent: { uri: rootUri, cid: 'root-cid' },
+            },
+          },
+        },
+        grandparentAuthor: rootPost.author,
+      },
+    });
+    const root = { post: rootPost };
+
+    const feed = await hydrateFeedReplyContext([reply, root], {
+      getPosts: async () => {
+        throw new Error('same-page root should not be fetched');
+      },
+    });
+    const statuses = feedToStatuses(
+      postProcessFollowingFeed(feed, 'did:plc:user'),
+    );
+
+    expect(statuses.map((status) => status.uri)).toEqual([
+      rootUri,
+      parentUri,
+      childUri,
+    ]);
+  });
+
+  test('fetches missing parents while reusing same-page roots', async () => {
+    const rootPost = {
+      uri: rootUri,
+      cid: 'root-cid',
+      author: {
+        did: 'did:plc:root',
+        handle: 'root.test',
+        displayName: 'Root',
+      },
+      record: {
+        $type: 'app.bsky.feed.post',
+        text: 'root text',
+        createdAt: '2026-05-08T00:00:00.000Z',
+      },
+      indexedAt: '2026-05-08T00:00:00.000Z',
+    };
+    const reply = feedReply({
+      post: {
+        author: {
+          did: 'did:plc:child',
+          handle: 'child.test',
+          displayName: 'Child',
+          viewer: { following: 'at://did:plc:user/app.bsky.graph.follow/1' },
+        },
+        record: {
+          $type: 'app.bsky.feed.post',
+          text: 'reply text',
+          createdAt: '2026-05-08T00:02:00.000Z',
+          reply: {
+            root: { uri: rootUri, cid: 'root-cid' },
+            parent: { uri: parentUri, cid: 'parent-cid' },
+          },
+        },
+      },
+      reply: {
+        root: { uri: rootUri, cid: 'root-cid' },
+        parent: { uri: parentUri, cid: 'parent-cid' },
+      },
+    });
+    const root = { post: rootPost };
+    /** @type {string[] | undefined} */
+    let requestedURIs;
+
+    const feed = await hydrateFeedReplyContext([reply, root], {
+      /** @param {{ uris: string[] }} params */
+      getPosts: async ({ uris }) => {
+        requestedURIs = uris;
+        return {
+          data: {
+            posts: [
+              {
+                uri: parentUri,
+                cid: 'parent-cid',
+                author: {
+                  did: 'did:plc:parent',
+                  handle: 'parent.test',
+                  displayName: 'Parent',
+                  viewer: {
+                    following: 'at://did:plc:user/app.bsky.graph.follow/2',
+                  },
+                },
+                record: {
+                  $type: 'app.bsky.feed.post',
+                  text: 'parent text',
+                  createdAt: '2026-05-08T00:01:00.000Z',
+                  reply: {
+                    root: { uri: rootUri, cid: 'root-cid' },
+                    parent: { uri: rootUri, cid: 'root-cid' },
+                  },
+                },
+                indexedAt: '2026-05-08T00:01:00.000Z',
+              },
+            ],
+          },
+        };
+      },
+    });
+    const statuses = feedToStatuses(
+      postProcessFollowingFeed(feed, 'did:plc:user'),
+    );
+
+    expect(requestedURIs).toEqual([parentUri]);
+    expect(statuses.map((status) => status.uri)).toEqual([
+      rootUri,
+      parentUri,
+      childUri,
+    ]);
+  });
+
   test('hides Following replies to people the current user does not follow', () => {
     const item = feedReply({
       post: {

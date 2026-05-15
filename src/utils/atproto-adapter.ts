@@ -1210,11 +1210,15 @@ export async function hydrateFeedReplyContext(
   feed: AtprotoFeedItem[],
   agent: AtprotoAgent,
 ): Promise<AtprotoFeedItem[]> {
-  const feedPostURIs = new Set(
-    feed.map((item) => item.post?.uri).filter(Boolean),
+  const feedPostsByURI: Record<string, AtprotoPost> = Object.fromEntries(
+    feed.flatMap((item) => {
+      const post = item.post;
+      return post?.uri ? [[post.uri, post]] : [];
+    }),
   );
   const missingURIs: string[] = [];
-  const seen = new Set<string | undefined>(feedPostURIs);
+  const seen = new Set<string>();
+  let hasSamePageContext = false;
   feed.forEach((item) => {
     if (item?.reason?.$type === 'app.bsky.feed.defs#reasonRepost') return;
     const refs: Array<AtprotoReplyRefLike | undefined> = [
@@ -1224,10 +1228,14 @@ export async function hydrateFeedReplyContext(
     refs.forEach((ref) => {
       if (!ref?.uri || isPostView(ref) || seen.has(ref.uri)) return;
       seen.add(ref.uri);
+      if (feedPostsByURI[ref.uri]) {
+        hasSamePageContext = true;
+        return;
+      }
       missingURIs.push(ref.uri);
     });
   });
-  if (!missingURIs.length) return feed;
+  if (!hasSamePageContext && !missingURIs.length) return feed;
 
   const hydratedPosts: AtprotoPost[] = [];
   for (let i = 0; i < missingURIs.length; i += BSKY_GET_POSTS_LIMIT) {
@@ -1235,11 +1243,11 @@ export async function hydrateFeedReplyContext(
     const res = await agent.getPosts({ uris });
     hydratedPosts.push(...(res.data.posts || []));
   }
-  if (!hydratedPosts.length) return feed;
-
-  const postsByURI: Record<string, AtprotoPost> = Object.fromEntries(
-    hydratedPosts.flatMap((post) => (post.uri ? [[post.uri, post]] : [])),
-  );
+  const postsByURI: Record<string, AtprotoPost> = { ...feedPostsByURI };
+  hydratedPosts.forEach((post) => {
+    if (post.uri) postsByURI[post.uri] = post;
+  });
+  if (!Object.keys(postsByURI).length) return feed;
   const hydrateRef = (ref: AtprotoReplyRefLike | undefined) =>
     (ref?.uri && postsByURI[ref.uri]) || ref;
   return feed.map((item) => {
