@@ -6,10 +6,16 @@ import DateTimeFormat, {
 } from '../src/utils/date-time-format.js';
 
 // Store original navigator properties for cleanup
+/** @type {string | undefined} */
 let originalLanguage;
+/** @type {readonly string[] | undefined} */
 let originalLanguages;
 
 // Mock navigator for browser environment
+/**
+ * @param {string} language
+ * @param {readonly string[]=} languages
+ */
 const mockNavigator = (language, languages) => {
   // Store originals on first call
   if (originalLanguage === undefined) {

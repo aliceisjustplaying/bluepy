@@ -8,7 +8,7 @@ try {
   listedLocales = JSON.parse(
     fs.readFileSync('src/data/listed-locales.json', 'utf8'),
   );
-} catch (e) {}
+} catch {}
 
 const DEFAULT_LANG = 'en';
 const IGNORE_LANGS = [DEFAULT_LANG, 'pseudo-LOCALE'];
@@ -66,14 +66,14 @@ function IDN(inputCode, outputCode) {
       ? [regionlessOutputCode, outputCode]
       : [outputCode];
 
-  for (const inputCode of inputCodes) {
-    for (const outputCode of outputCodes) {
+  for (const candidateInputCode of inputCodes) {
+    for (const candidateOutputCode of outputCodes) {
       try {
-        result = new Intl.DisplayNames([inputCode], {
+        result = new Intl.DisplayNames([candidateInputCode], {
           type: 'language',
-        }).of(outputCode);
+        }).of(candidateOutputCode);
         break;
-      } catch (e) {}
+      } catch {}
     }
     if (result) break;
   }
@@ -82,7 +82,7 @@ function IDN(inputCode, outputCode) {
 
 const fullCatalogs = Object.entries(catalogs)
   // sort by key
-  .sort((a, b) => a[0].localeCompare(b[0]))
+  .toSorted((a, b) => a[0].localeCompare(b[0]))
   .map(([code, completion]) => {
     const nativeName = IDN(code, code);
     const name = IDN('en', code);
@@ -102,7 +102,7 @@ const listedCatalogs = fullCatalogs.map((catalog) => ({
 }));
 
 // Sort by completion
-const sortedCatalogs = [...listedCatalogs].sort(
+const sortedCatalogs = listedCatalogs.toSorted(
   (a, b) => b.completion - a.completion,
 );
 

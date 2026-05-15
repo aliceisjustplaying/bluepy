@@ -1,6 +1,7 @@
 #catchup-page {
   transform: none;
   padding-bottom: 0 !important;
+  background-color: var(--bg-faded-color);
 
   .deck {
     background-color: var(--bg-faded-color);
@@ -16,6 +17,10 @@
   header {
     /* --margin-top: 8px !important; */
     position: static;
+
+    .header-grid {
+      background-color: var(--bg-faded-blur-color);
+    }
   }
 
   h1 sup {

@@ -969,12 +969,70 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   );
   background-repeat: no-repeat;
 }
+.timeline:not(.flat)
+  > li:is(
+    .timeline-item-container-start,
+    .timeline-item-container-middle,
+    .timeline-item-container-end
+  ):not(.timeline-item-container-incomplete-thread-start) {
+  position: relative;
+  background-image: none;
+}
+/* Match social-app: middle thread rails split around the avatar. */
+.timeline:not(.flat)
+  > li:is(.timeline-item-container-middle, .timeline-item-container-end):not(
+    .timeline-item-container-incomplete-thread-start
+  )::before,
+.timeline:not(.flat)
+  > li:is(.timeline-item-container-start, .timeline-item-container-middle):not(
+    .timeline-item-container-incomplete-thread-start
+  )::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: var(--line-start);
+  width: var(--line-width);
+  background-color: var(--comment-line-color);
+  pointer-events: none;
+}
+.timeline:not(.flat)
+  > li:is(.timeline-item-container-middle, .timeline-item-container-end):not(
+    .timeline-item-container-incomplete-thread-start
+  )::before {
+  top: 0;
+  height: 16px;
+}
+.timeline:not(.flat)
+  > li:is(.timeline-item-container-middle, .timeline-item-container-end):not(
+    .timeline-item-container-incomplete-thread-start
+  ):has(.status-pre-meta)::before {
+  height: calc(16px + 20px);
+}
 .timeline:not(.flat) > li.timeline-item-container-start {
   margin-bottom: 0;
   border-end-start-radius: 0;
   border-end-end-radius: 0;
   border-bottom: 0;
   background-position: 0 calc(16px + var(--avatar-size));
+}
+.timeline:not(.flat)
+  > li.timeline-item-container-start:not(
+    .timeline-item-container-incomplete-thread-start
+  )::after {
+  top: calc(16px + var(--avatar-size));
+  bottom: 0;
+}
+.timeline:not(.flat)
+  > li.timeline-item-container-middle:not(
+    .timeline-item-container-incomplete-thread-start
+  )::after {
+  top: calc(16px + var(--avatar-size));
+  bottom: 0;
+}
+.timeline:not(.flat)
+  > li:is(.timeline-item-container-start, .timeline-item-container-middle):not(
+    .timeline-item-container-incomplete-thread-start
+  ):has(.status-pre-meta)::after {
+  top: calc(16px + 20px + var(--avatar-size));
 }
 .timeline:not(.flat) > li.timeline-item-container-middle {
   margin-top: 0;
@@ -994,6 +1052,22 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
     /* 20px = icon of the pre-meta */
     background-size: 100% calc(16px + 20px);
   }
+}
+.timeline:not(.flat)
+  > li.timeline-item-container-incomplete-thread-start {
+  background-image: none;
+  border-bottom: 0;
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+  margin-bottom: 0;
+}
+.timeline:not(.flat)
+  > li.timeline-item-container-incomplete-thread-start
+  + li.timeline-item-container-start {
+  border-top: 0;
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+  margin-top: 0;
 }
 .timeline:not(.flat)
   > li:is(.timeline-item-container-middle, .timeline-item-container-end)
@@ -1044,6 +1118,18 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   color: var(--text-color) !important;
   background-color: var(--bg-faded-blur-color) !important;
 }
+.timeline .timeline-incomplete-thread-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline-start: calc(
+    var(--line-end) + var(--line-margin-end, 16px)
+  ) !important;
+  color: var(--text-insignificant-color);
+}
+.timeline .timeline-incomplete-thread-dots {
+  font-weight: bold;
+}
 .timeline .show-more:before {
   content: '';
   position: absolute;
@@ -1057,6 +1143,9 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   border-color: transparent transparent var(--comment-line-color) transparent;
   transform: rotate(var(--line-curve));
 }
+.timeline .timeline-incomplete-thread-link:before {
+  display: none;
+}
 
 .status-loading {
   text-align: center;
@@ -1069,6 +1158,12 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   max-width: var(--main-width);
 }
 
+:is(.status-link, .status-focus) {
+  background-color: var(--status-bg-color);
+}
+.timeline.contextual :is(.status-link, .status-focus) {
+  background-color: transparent;
+}
 .status-link {
   display: block;
   text-decoration-line: none;
@@ -1089,13 +1184,13 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
 }
 @media not (pointer: coarse) {
   :is(.status-link, .status-focus):is(:focus, .is-active) {
-    background-color: var(--link-bg-hover-color);
+    background-color: var(--status-bg-hover-color);
     outline-offset: -2px;
   }
 }
 @media (hover: hover) {
   .status-link:hover {
-    background-color: var(--link-bg-hover-color);
+    background-color: var(--status-bg-hover-color);
     outline-offset: -2px;
   }
 }
@@ -1323,6 +1418,8 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   }
 }
 .deck-backdrop .deck {
+  position: relative;
+  z-index: 1;
   width: var(--main-width);
   max-width: 100vw;
   background-color: var(--bg-color);
@@ -3161,10 +3258,10 @@ ul.link-list li a .icon {
 @media (min-width: 40em) {
   html,
   body {
-    background-color: var(--meta-theme-color, var(--bg-faded-color));
+    background-color: var(--meta-theme-color, var(--bg-color));
   }
   .deck-container {
-    background-color: var(--bg-faded-color);
+    background-color: var(--bg-color);
   }
   #app {
     display: flex;
@@ -3196,7 +3293,7 @@ ul.link-list li a .icon {
   .timeline-deck > header .header-grid {
     border-bottom: 0;
     border-radius: 16px;
-    background-color: var(--bg-faded-blur-color);
+    background-color: var(--header-bg-blur-color);
     backdrop-filter: blur(16px);
     background-image: none;
     border-radius: 16px;
@@ -3223,7 +3320,7 @@ ul.link-list li a .icon {
     --item-radius: 16px;
     border: 1px solid var(--divider-color);
     margin: 16px 0;
-    background-color: var(--bg-color);
+    background-color: var(--status-bg-color);
     border-radius: var(--item-radius);
     overflow: hidden;
     box-shadow: 0px 1px var(--bg-blur-color);
