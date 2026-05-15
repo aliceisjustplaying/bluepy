@@ -184,7 +184,9 @@ interface Timeline2Props {
   emptyText?: ComponentChildren;
   errorText?: ComponentChildren;
   useItemID?: boolean;
-  fetchItems?: (params?: FetchItemsParams) => Promise<FetchItemsResult>;
+  fetchItems?: (
+    params?: FetchItemsParams,
+  ) => Promise<FetchItemsResult | undefined>;
   checkForUpdates?: (params: CheckForUpdatesParams) => Promise<boolean>;
   checkForUpdatesInterval?: number;
   headerStart?: ComponentChildren;
@@ -206,10 +208,8 @@ function Timeline2({
   emptyText,
   errorText,
   useItemID,
-  // Match JS default: returns undefined, which then throws in destructuring
-  // and falls into the error UI state. Preserving that behavior is the safest
-  // surface change for this conversion.
-  fetchItems = async () => undefined as unknown as FetchItemsResult,
+  // Match JS default: undefined still falls into the error UI state.
+  fetchItems = async () => undefined,
   checkForUpdates = async () => false,
   checkForUpdatesInterval = 15_000,
   headerStart,
@@ -438,6 +438,9 @@ function Timeline2({
       void (async () => {
         try {
           const result = await fetchItems(params);
+          if (!result) {
+            throw new TypeError('fetchItems returned undefined');
+          }
 
           let { value } = result;
           const { originalValue, done } = result;
@@ -523,15 +526,9 @@ function Timeline2({
     { leading: true },
   );
 
-  // `timeline.tsx` exports these hotkey hooks without explicit return types;
-  // the inferred react-hotkeys-hook type doesn't surface cleanly through
-  // oxlint, so we re-narrow to a concrete ref shape at the boundary.
-  interface HotkeyRef {
-    current: HTMLDivElement | null;
-  }
-  const jRef = useJHotkeys(scrollableRef) as unknown as HotkeyRef;
-  const kRef = useKHotkeys(scrollableRef) as unknown as HotkeyRef;
-  const oRef = useOHotkeys() as unknown as HotkeyRef;
+  const jRef = useJHotkeys(scrollableRef);
+  const kRef = useKHotkeys(scrollableRef);
+  const oRef = useOHotkeys();
 
   const headerRef = useRef<HTMLElement | null>(null);
 
