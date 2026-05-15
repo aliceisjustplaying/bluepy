@@ -709,6 +709,7 @@
 .status-filtered-badge {
   flex-shrink: 0;
   color: var(--text-insignificant-color);
+  background-color: transparent;
   /* background: var(--bg-faded-color); */
   /* border: var(--hairline-width) solid var(--bg-color); */
   border: var(--hairline-width) dashed var(--text-insignificant-color);
