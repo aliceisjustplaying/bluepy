@@ -14,6 +14,18 @@ import MenuConfirm from './menu-confirm';
 import type { StatusMenuPartsArgs } from './status-menu-types';
 
 type SaveableStatus = Parameters<typeof saveStatus>[0];
+interface StatusQuotesRevokeResource {
+  $select(id: string): {
+    revoke: { create(): Promise<unknown> };
+  };
+}
+
+function hasQuoteRevokeResource(
+  resource: object,
+): resource is StatusQuotesRevokeResource {
+  return '$select' in resource;
+}
+
 function toSaveableStatus(status: mastodon.v1.Status): SaveableStatus {
   const { account, quote, reblog, url, ...statusFields } = status;
   const saveableStatus: SaveableStatus = {
@@ -250,11 +262,10 @@ export default function StatusAccountMenu({
                       .id;
                     const quotesResource = masto.v1.statuses.$select(
                       quotedStatusID,
-                    ).quotes as unknown as {
-                      $select: (id: string) => {
-                        revoke: { create: () => Promise<unknown> };
-                      };
-                    };
+                    ).quotes;
+                    if (!hasQuoteRevokeResource(quotesResource)) {
+                      throw new Error('Quote revoke endpoint unavailable');
+                    }
                     await quotesResource.$select(id).revoke.create();
                     showToast(t`Quote removed`);
                     states.reloadStatusPage++;

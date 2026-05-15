@@ -5,7 +5,7 @@ import type { mastodon } from 'masto';
 import type { Ref } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { getStatus } from '../utils/states';
 import useTruncated from '../utils/useTruncated';
 
@@ -62,11 +62,10 @@ export default function QuoteChainModal({
   // is tied to the stable `masto` client, not to per-render proxy access.
   const statusesSelect = useMemo(
     () =>
-      (
-        masto.v1 as unknown as {
-          statuses: { $select: StatusesSelectFn };
-        }
-      ).statuses.$select,
+      getMastoV1Resource<{ $select: StatusesSelectFn }>(
+        masto,
+        'statuses',
+      ).$select,
     [masto],
   );
 

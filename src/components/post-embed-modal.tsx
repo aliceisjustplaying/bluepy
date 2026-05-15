@@ -94,15 +94,7 @@ function generateHTMLCode(
             const quoteKey = statusKey(quoteId, quoteInstance);
             const s = quoteKey ? states.statuses[quoteKey] : undefined;
             if (s) {
-              // states.statuses values are typed as Record<string, unknown> in
-              // states.ts; PostLike is the structural shape this component
-              // expects. Cast is debt until states.ts grows a tighter Status
-              // export shared with this component.
-              return generateHTMLCode(
-                s as unknown as PostLike,
-                quoteInstance,
-                ++level,
-              );
+              return generateHTMLCode(s as PostLike, quoteInstance, ++level);
             }
             return '';
           })
