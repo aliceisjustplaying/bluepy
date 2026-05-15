@@ -4,4 +4,14 @@
   "assets": {
     "directory": "./dist",
   },
+  "env": {
+    "dev": {
+      "routes": [
+        {
+          "pattern": "dev.bluepy.social",
+          "custom_domain": true,
+        },
+      ],
+    },
+  },
 }
