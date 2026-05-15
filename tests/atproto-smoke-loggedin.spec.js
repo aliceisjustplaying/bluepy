@@ -121,6 +121,55 @@ const test = base.extend({
 const goto = (page, route) => page.goto(`/#${route}`);
 
 /**
+ * @param {Page} page
+ * @param {(response: import('@playwright/test').Response) => boolean} matcher
+ */
+const waitForOkXrpc = (page, matcher) =>
+  page.waitForResponse(
+    (response) =>
+      response.url().includes('/xrpc/') &&
+      response.status() < 400 &&
+      matcher(response),
+    { timeout: 30_000 },
+  );
+
+/**
+ * @param {Page} page
+ * @param {string} collection
+ */
+const waitForCreateRecord = (page, collection) =>
+  waitForOkXrpc(
+    page,
+    (response) =>
+      response.url().includes('/xrpc/com.atproto.repo.createRecord') &&
+      (response.request().postData() || '').includes(collection),
+  );
+
+/**
+ * @param {Page} page
+ * @param {string} collection
+ */
+const waitForDeleteRecord = (page, collection) =>
+  waitForOkXrpc(
+    page,
+    (response) =>
+      response.url().includes('/xrpc/com.atproto.repo.deleteRecord') &&
+      (response.request().postData() || '').includes(collection),
+  );
+
+/** @param {Page} page */
+const waitForCreateBookmark = (page) =>
+  waitForOkXrpc(page, (response) =>
+    response.url().includes('/xrpc/app.bsky.bookmark.createBookmark'),
+  );
+
+/** @param {Page} page */
+const waitForDeleteBookmark = (page) =>
+  waitForOkXrpc(page, (response) =>
+    response.url().includes('/xrpc/app.bsky.bookmark.deleteBookmark'),
+  );
+
+/**
  * @param {Locator} locator
  * @param {string} label
  */
@@ -345,6 +394,8 @@ test.describe('modals', () => {
 const CREATED = [];
 
 test.describe('write flows', () => {
+  test.describe.configure({ mode: 'serial' });
+
   /**
    * @param {Page} page
    * @param {string} body
@@ -451,7 +502,9 @@ test.describe('write flows', () => {
       .first();
     await likeBtn.waitFor({ timeout: 15_000 });
     const initialTitle = await getRequiredTitle(likeBtn, 'like button');
+    const likeMutation = waitForCreateRecord(page, 'app.bsky.feed.like');
     await likeBtn.click();
+    await likeMutation;
     await expect(likeBtn).not.toHaveAttribute('title', initialTitle, {
       timeout: 15_000,
     });
@@ -465,7 +518,9 @@ test.describe('write flows', () => {
       timeout: 15_000,
     });
     // Revert.
+    const unlikeMutation = waitForDeleteRecord(page, 'app.bsky.feed.like');
     await reloadedLike.click();
+    await unlikeMutation;
     await expect(reloadedLike).toHaveAttribute('title', initialTitle, {
       timeout: 15_000,
     });
@@ -484,7 +539,9 @@ test.describe('write flows', () => {
       .first();
     await bmBtn.waitFor({ timeout: 15_000 });
     const initial = await getRequiredTitle(bmBtn, 'bookmark button');
+    const bookmarkMutation = waitForCreateBookmark(page);
     await bmBtn.click();
+    await bookmarkMutation;
     await expect(bmBtn).not.toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
@@ -496,7 +553,9 @@ test.describe('write flows', () => {
     await expect(reloaded).not.toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
+    const unbookmarkMutation = waitForDeleteBookmark(page);
     await reloaded.click();
+    await unbookmarkMutation;
     await expect(reloaded).toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
@@ -517,7 +576,9 @@ test.describe('write flows', () => {
     const initial = await getRequiredTitle(boostBtn, 'boost button');
     await boostBtn.click();
     // Bluepy shows a confirmation menu for boost/unboost.
+    const boostMutation = waitForCreateRecord(page, 'app.bsky.feed.repost');
     await page.getByTestId('status-boost-confirm').click();
+    await boostMutation;
     await expect(boostBtn).not.toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
@@ -530,7 +591,9 @@ test.describe('write flows', () => {
       timeout: 15_000,
     });
     await reloaded.click();
+    const unboostMutation = waitForDeleteRecord(page, 'app.bsky.feed.repost');
     await page.getByTestId('status-boost-confirm').click();
+    await unboostMutation;
     await expect(reloaded).toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
