@@ -2,7 +2,11 @@ import type { MessageDescriptor } from '@lingui/core';
 import type { mastodon } from 'masto';
 import type { ComponentChildren } from 'preact';
 
-import type { AnyStatus, FullMasto, LooseClickEvent } from './status-types';
+import type {
+  AnyStatus,
+  LooseClickEvent,
+  StatusContentMasto,
+} from './status-types';
 import visibilityIconsMap from '../utils/visibility-icons-map';
 
 export interface StatusMenuPartsArgs {
@@ -55,7 +59,7 @@ export interface StatusMenuPartsArgs {
   authenticated?: boolean;
   isSelf?: boolean | string | null;
   mentionSelf?: unknown;
-  masto: FullMasto;
+  masto: StatusContentMasto;
   muted?: boolean | null;
   pinned?: boolean | null;
   isPinnable: boolean;

@@ -13,7 +13,6 @@ import Icon from './icon';
 import MenuConfirm from './menu-confirm';
 import type { StatusMenuPartsArgs } from './status-menu-types';
 
-type SaveableStatus = Parameters<typeof saveStatus>[0];
 interface StatusQuotesRevokeResource {
   $select(id: string): {
     revoke: { create(): Promise<unknown> };
@@ -24,20 +23,6 @@ function hasQuoteRevokeResource(
   resource: object,
 ): resource is StatusQuotesRevokeResource {
   return '$select' in resource;
-}
-
-function toSaveableStatus(status: mastodon.v1.Status): SaveableStatus {
-  const { account, quote, reblog, url, ...statusFields } = status;
-  const saveableStatus: SaveableStatus = {
-    ...statusFields,
-    account: account ? { ...account } : account,
-    reblog: reblog ? toSaveableStatus(reblog) : reblog,
-  };
-  return Object.assign(
-    saveableStatus,
-    quote === undefined ? {} : { quote },
-    url === undefined ? {} : { url },
-  );
 }
 
 type StatusAccountMenuProps = Pick<
@@ -97,7 +82,7 @@ export default function StatusAccountMenu({
               const newStatus = await (muted
                 ? stmtAction.unmute()
                 : stmtAction.mute());
-              saveStatus(toSaveableStatus(newStatus), instance);
+              saveStatus(newStatus, instance);
               showToast(muted ? t`Conversation unmuted` : t`Conversation muted`);
             } catch (e) {
               console.error(e);
@@ -133,7 +118,7 @@ export default function StatusAccountMenu({
             try {
               const stmtAction = masto.v1.statuses.$select(id);
               const newStatus = await (pinned ? stmtAction.unpin() : stmtAction.pin());
-              saveStatus(toSaveableStatus(newStatus), instance);
+              saveStatus(newStatus, instance);
               showToast(
                 pinned ? t`Post unpinned from profile` : t`Post pinned to profile`,
               );

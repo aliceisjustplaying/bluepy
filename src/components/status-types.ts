@@ -151,11 +151,50 @@ export interface GhostInfo {
   inReplyToAccountId?: string | null;
 }
 
-// The project-local MastoClient interface is intentionally narrow. The runtime
-// instance is the full mastodon REST client, so cast back through the masto
-// types for richer call signatures.
 export type FullMasto = mastodon.rest.Client;
 export type MastoClientFromApi = ReturnType<typeof api>['masto'];
+
+type StatusReactionList = (opts?: { limit: number }) => {
+  values(): AsyncIterator<AnyAccount[], undefined>;
+};
+
+export interface StatusContentMasto {
+  v1: {
+    statuses: {
+      $select(id: string): {
+        unreblog(): Promise<mastodon.v1.Status>;
+        reblog(): Promise<mastodon.v1.Status>;
+        unfavourite(): Promise<mastodon.v1.Status>;
+        favourite(): Promise<mastodon.v1.Status>;
+        unbookmark(): Promise<mastodon.v1.Status>;
+        bookmark(): Promise<mastodon.v1.Status>;
+        unmute(): Promise<mastodon.v1.Status>;
+        mute(): Promise<mastodon.v1.Status>;
+        unpin(): Promise<mastodon.v1.Status>;
+        pin(): Promise<mastodon.v1.Status>;
+        remove(): Promise<unknown>;
+        history: {
+          list(): Promise<AnyStatus[] | undefined>;
+        };
+        quotes: {
+          $select(id: string): {
+            revoke: { create(): Promise<unknown> };
+          };
+        };
+        rebloggedBy: { list: StatusReactionList };
+        favouritedBy: { list: StatusReactionList };
+      };
+    };
+    polls: {
+      $select(id: string): {
+        fetch(): Promise<AnyPoll>;
+        votes: {
+          create(options: { choices: number[] }): Promise<AnyPoll>;
+        };
+      };
+    };
+  };
+}
 
 // Permissive event shim for menu-item / button onClick handlers. The runtime
 // always provides at least the modifier-key flags and an optional

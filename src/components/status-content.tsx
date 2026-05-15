@@ -5,13 +5,14 @@ import type { ComponentChildren, RefObject } from 'preact';
 import {
   useCallback,
   useContext,
+  useMemo,
   useReducer,
   useRef,
   useState,
 } from 'preact/hooks';
 import { useSnapshot } from 'valtio';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
 import niceDateTime from '../utils/nice-date-time';
@@ -38,7 +39,7 @@ import useStatusReplyParent from './status-reply-parent';
 import type {
   AnyMediaAttachment,
   AnyStatus,
-  FullMasto,
+  StatusContentMasto,
   StatusAtprotoMeta,
 } from './status-types';
 import type { StatusComponentProps, StatusRouterProps } from './status-view';
@@ -85,9 +86,26 @@ export default function StatusContent({
   const apiResult = api({ instance: propInstance });
   const instance = apiResult.instance;
   const authenticated = apiResult.authenticated;
-  // The project-local MastoClient is intentionally narrow; cast the runtime
-  // client to the full mastodon REST client for the rich endpoints below.
-  const masto = apiResult.masto as unknown as FullMasto;
+  const statusesResource = useMemo(
+    () =>
+      getMastoV1Resource<StatusContentMasto['v1']['statuses']>(
+        apiResult.masto,
+        'statuses',
+      ),
+    [apiResult.masto],
+  );
+  const masto: StatusContentMasto = useMemo(
+    () => ({
+      v1: {
+        statuses: statusesResource,
+        polls: getMastoV1Resource<StatusContentMasto['v1']['polls']>(
+          apiResult.masto,
+          'polls',
+        ),
+      },
+    }),
+    [apiResult.masto, statusesResource],
+  );
   const { instance: currentInstance } = api();
   const sameInstance = instance === currentInstance;
   const snapStates = useSnapshot(states);
@@ -194,7 +212,7 @@ export default function StatusContent({
       statusID: id,
       spoilerText,
       mentions,
-      masto,
+      masto: apiResult.masto,
       atproto,
     });
 
@@ -744,9 +762,7 @@ export default function StatusContent({
           id={id}
           instance={instance}
           fetchStatusHistory={async (historyStatusID) =>
-            (await masto.v1.statuses
-              .$select(historyStatusID)
-              .history.list()) as AnyStatus[] | undefined
+            statusesResource.$select(historyStatusID).history.list()
           }
           renderHistoryStatus={(historyStatus, historyInstance) =>
             renderStatus({

@@ -18,11 +18,18 @@ import {
 } from 'preact/hooks';
 import QuickPinchZoomImport, {
   make3dTransformValue,
+  type PinchZoomProps as ReactQuickPinchZoomProps,
 } from 'react-quick-pinch-zoom';
 
-const QuickPinchZoom = QuickPinchZoomImport as unknown as ComponentType<
-  Record<string, unknown>
->;
+type QuickPinchZoomProps = Omit<
+  ReactQuickPinchZoomProps,
+  'children' | 'containerProps'
+> & {
+  children: ComponentChildren;
+  containerProps?: HTMLAttributes<HTMLDivElement>;
+};
+const QuickPinchZoom =
+  QuickPinchZoomImport as never as ComponentType<QuickPinchZoomProps>;
 
 import formatDuration from '../utils/format-duration';
 import mem from '../utils/mem';

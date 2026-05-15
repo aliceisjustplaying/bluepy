@@ -5,7 +5,7 @@ import { shouldShowReplyBadge } from '../utils/reply-badge';
 import states from '../utils/states';
 
 import { memFetchAccount } from './status-helpers';
-import type { AnyAccount, FullMasto, MastoClientFromApi } from './status-types';
+import type { AnyAccount, MastoClientFromApi } from './status-types';
 
 type ReplyToAccount =
   | AnyAccount
@@ -25,7 +25,7 @@ interface StatusReplyParentArgs {
   statusID: string;
   spoilerText?: string | null;
   mentions?: mastodon.v1.StatusMention[];
-  masto: FullMasto;
+  masto: MastoClientFromApi;
   atproto?: {
     replyParentAccount?: AnyAccount | null;
     replyParentUnavailable?: boolean;
@@ -73,10 +73,9 @@ export default function useStatusReplyParent({
       }
 
       const abortController = new AbortController();
-      const mastoClient: unknown = masto;
       memFetchAccount(
         inReplyToAccountId,
-        mastoClient as MastoClientFromApi,
+        masto,
         abortController.signal,
       )
         .then((fetchedAccount: unknown) => {
