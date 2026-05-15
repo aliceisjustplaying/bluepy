@@ -3,6 +3,7 @@ import '@justinribeiro/lite-youtube';
 import { decodeBlurHash, getBlurHashAverageColor } from 'fast-blurhash';
 import type {
   HTMLAttributes as PreactHTMLAttributes,
+  TargetedKeyboardEvent,
   TargetedMouseEvent,
 } from 'preact';
 import { useCallback, useEffect, useState } from 'preact/hooks';
@@ -174,7 +175,11 @@ function StatusCard({
   const hasIframeHTML = !!html && /<iframe/i.test(html);
   const canReadInline = canReadCardInline(card);
   const handleClick = useCallback(
-    (e: TargetedMouseEvent<HTMLAnchorElement>) => {
+    (
+      e:
+        | TargetedMouseEvent<HTMLElement>
+        | TargetedKeyboardEvent<HTMLElement>,
+    ) => {
       if (hasIframeHTML) {
         e.preventDefault();
         states.showEmbedModal = {
@@ -330,15 +335,17 @@ function StatusCard({
         const videoID = url ? url.match(/watch\?v=([^&]+)/)?.[1] : undefined;
         if (videoID) {
           return (
-            <a
-              href={url}
-              target="_blank"
-              rel="nofollow noopener noreferrer"
+            <div
               class="card video"
+              role="button"
+              tabIndex={0}
               onClick={handleClick}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') handleClick(e);
+              }}
             >
               <lite-youtube videoid={videoID} nocookie autoPause></lite-youtube>
-            </a>
+            </div>
           );
         }
       }
