@@ -33,6 +33,7 @@ import {
   groupBoosts,
   groupContext,
 } from '../utils/timeline-utils';
+import { canonicalTimelineContextId } from '../utils/timeline-context';
 import useInterval from '../utils/useInterval';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScrollFn from '../utils/useScrollFn';
@@ -1125,11 +1126,14 @@ export const TimelineItem = memo(
       const manyItems = fItems.length > 3;
       return (fItems as TimelineStatusEntry[]).flatMap((item, i, arr) => {
         const itemStatusID = item.id;
+        const itemActualStatusID = canonicalTimelineContextId(item);
         const _differentAuthor = item._differentAuthor;
         const itemURL = instance
-          ? `/${instance}/s/${itemStatusID}`
-          : `/s/${itemStatusID}`;
-        const threadStatusID = arr[0]?.id;
+          ? `/${instance}/s/${itemActualStatusID}`
+          : `/s/${itemActualStatusID}`;
+        const threadStatusID = arr[0]
+          ? canonicalTimelineContextId(arr[0])
+          : undefined;
         const threadURL = instance
           ? `/${instance}/s/${threadStatusID}`
           : `/s/${threadStatusID}`;
@@ -1137,7 +1141,8 @@ export const TimelineItem = memo(
         const isIncompleteThreadGap =
           groupEntry.incompleteThread &&
           !!item.inReplyToId &&
-          item.inReplyToId !== arr[i - 1]?.id;
+          item.inReplyToId !==
+            (arr[i - 1] ? canonicalTimelineContextId(arr[i - 1]) : undefined);
         const isSpoiler = item.sensitive && !!item.spoilerText;
         const showCompact =
           (!_differentAuthor && isSpoiler && i > 0) ||

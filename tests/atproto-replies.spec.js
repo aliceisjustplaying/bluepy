@@ -748,4 +748,165 @@ test.describe('ATProto reply mapping', () => {
       postProcessFollowingFeed([root, reply, repostedReply], 'did:plc:user'),
     ).toEqual([root, repostedReply]);
   });
+
+  test('groups reposted replies by canonical post while keeping boost metadata', () => {
+    const root = {
+      post: {
+        ...feedReply().reply.parent,
+        uri: parentUri,
+      },
+    };
+    const reply = feedReply();
+    const repostedReply = feedReply();
+    repostedReply.reason = {
+      $type: 'app.bsky.feed.defs#reasonRepost',
+      by: {
+        did: 'did:plc:reposter',
+        handle: 'reposter.test',
+        displayName: 'Reposter',
+      },
+      indexedAt: '2026-05-08T00:03:00.000Z',
+    };
+
+    const processed = postProcessFollowingFeed(
+      [root, reply, repostedReply],
+      'did:plc:user',
+    );
+    const grouped = groupContextItems(feedToStatuses(processed));
+
+    expect(processed).toEqual([root, repostedReply]);
+    expect(grouped).toHaveLength(1);
+    expect(grouped[0]).toMatchObject({
+      type: 'conversation',
+      incompleteThread: false,
+    });
+    expect(grouped[0].items).toHaveLength(2);
+    expect(grouped[0].items[1].reblog).toBeTruthy();
+    expect(grouped[0].items[1].account).toMatchObject({
+      id: 'did:plc:reposter',
+    });
+  });
+
+  test('prefers repost wrapper when canonical reply also reaches context grouping', () => {
+    const root = {
+      post: {
+        ...feedReply().reply.parent,
+        uri: parentUri,
+      },
+    };
+    const reply = feedReply();
+    const repostedReply = feedReply();
+    repostedReply.reason = {
+      $type: 'app.bsky.feed.defs#reasonRepost',
+      by: {
+        did: 'did:plc:reposter',
+        handle: 'reposter.test',
+        displayName: 'Reposter',
+      },
+      indexedAt: '2026-05-08T00:03:00.000Z',
+    };
+
+    const grouped = groupContextItems(
+      feedToStatuses([root, reply, repostedReply]),
+    );
+
+    expect(grouped).toHaveLength(1);
+    expect(
+      Array.from(grouped[0].items, (status) => String(status.uri)),
+    ).toEqual([parentUri, childUri]);
+    expect(grouped[0].items[1].id).toContain('-repost-');
+    expect(grouped[0].items[1].reblog).toBeTruthy();
+    expect(grouped[0].items[1]._atproto?.root?.uri).toBe(parentUri);
+  });
+
+  test('matches reposted ancestors to canonical child reply ids', () => {
+    const repostedParent = {
+      id: 'parent-repost',
+      createdAt: '2026-05-08T00:01:00.000Z',
+      inReplyToId: null,
+      account: { id: 'did:plc:reposter' },
+      reblog: {
+        id: 'parent',
+        createdAt: '2026-05-08T00:00:00.000Z',
+        inReplyToId: null,
+        account: { id: 'did:plc:parent' },
+      },
+    };
+    const child = {
+      id: 'child',
+      createdAt: '2026-05-08T00:02:00.000Z',
+      inReplyToId: 'parent',
+      account: { id: 'did:plc:child' },
+    };
+
+    const grouped = groupContextItems([repostedParent, child]);
+
+    expect(grouped).toHaveLength(1);
+    expect(grouped[0].items).toEqual([repostedParent, child]);
+  });
+
+  test('keeps repost wrapper when canonical post arrives later with context annotations', () => {
+    const root = {
+      id: 'parent',
+      createdAt: '2026-05-08T00:00:00.000Z',
+      inReplyToId: null,
+      account: { id: 'did:plc:parent' },
+    };
+    const repostedChild = {
+      id: 'child-repost',
+      createdAt: '2026-05-08T00:03:00.000Z',
+      inReplyToId: 'parent',
+      account: { id: 'did:plc:reposter' },
+      reblog: {
+        id: 'child',
+        createdAt: '2026-05-08T00:02:00.000Z',
+        inReplyToId: 'parent',
+        account: { id: 'did:plc:child' },
+      },
+    };
+    const canonicalChild = {
+      id: 'child',
+      createdAt: '2026-05-08T00:02:00.000Z',
+      inReplyToId: 'parent',
+      account: { id: 'did:plc:child' },
+      _atproto: {
+        root: { uri: parentUri },
+      },
+    };
+
+    const grouped = groupContextItems([root, repostedChild, canonicalChild]);
+
+    expect(grouped).toHaveLength(1);
+    expect(grouped[0].items).toHaveLength(2);
+    expect(grouped[0].items[1].id).toBe('child-repost');
+    expect(grouped[0].items[1].reblog).toBeTruthy();
+    expect(grouped[0].items[1]._atproto?.root?.uri).toBe(parentUri);
+  });
+
+  test('classifies reposted same-author reply chains by original author', () => {
+    const root = {
+      id: 'parent',
+      createdAt: '2026-05-08T00:00:00.000Z',
+      inReplyToId: null,
+      account: { id: 'did:plc:author' },
+    };
+    const repostedChild = {
+      id: 'child-repost',
+      createdAt: '2026-05-08T00:03:00.000Z',
+      inReplyToId: 'parent',
+      account: { id: 'did:plc:reposter' },
+      reblog: {
+        id: 'child',
+        createdAt: '2026-05-08T00:02:00.000Z',
+        inReplyToId: 'parent',
+        account: { id: 'did:plc:author' },
+      },
+    };
+
+    const grouped = groupContextItems([root, repostedChild]);
+
+    expect(grouped).toHaveLength(1);
+    expect(grouped[0]).toMatchObject({ type: 'thread' });
+    expect(grouped[0].items[1]._differentAuthor).toBeFalsy();
+  });
 });

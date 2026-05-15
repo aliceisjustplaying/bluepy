@@ -10,7 +10,10 @@ import states, { saveStatus, statusKey } from './states';
 import store from './store';
 import { getCurrentAccountID } from './store-utils';
 import supports from './supports';
-import { groupContextItems } from './timeline-context';
+import {
+  canonicalTimelineContextId,
+  groupContextItems,
+} from './timeline-context';
 
 // Status payloads carry a handful of mutation flags the timeline pipeline
 // attaches (`_pinned`, `_differentAuthor`). Keep the type loose so callers
@@ -167,12 +170,13 @@ export function groupContext(
   const appliedContextIndices: number[] = [];
   const inReplyToIds: ReplyHint[] = [];
   items.forEach((item) => {
-    if (item.reblog) {
-      newItems.push(item);
-      return;
-    }
     for (let ctxIndex = 0; ctxIndex < contexts.length; ctxIndex++) {
-      if (contexts[ctxIndex].items.find((t) => t.id === item.id)) {
+      if (
+        contexts[ctxIndex].items.find(
+          (t) =>
+            canonicalTimelineContextId(t) === canonicalTimelineContextId(item),
+        )
+      ) {
         if (appliedContextIndices.includes(ctxIndex)) return;
         const contextItems = contexts[ctxIndex].items;
         newItems.push({
@@ -184,6 +188,10 @@ export function groupContext(
         appliedContextIndices.push(ctxIndex);
         return;
       }
+    }
+    if (item.reblog) {
+      newItems.push(item);
+      return;
     }
 
     // PREPARE FOR REPLY HINTS
