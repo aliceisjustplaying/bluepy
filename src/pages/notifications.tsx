@@ -6,7 +6,14 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { ComponentType, SyntheticEvent, ReactNode } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useSearchParams } from 'react-router-dom';
@@ -589,10 +596,13 @@ function Notifications({ columnMode }: NotificationsProps) {
   useEffect(() => {
     loadNotificationsRef.current(true);
   }, []);
-  useEffect(() => {
+  const loadReachStartNotifications = useEffectEvent(() => {
     if (reachStart) {
       loadNotificationsRef.current(true);
     }
+  });
+  useEffect(() => {
+    loadReachStartNotifications();
   }, [reachStart]);
 
   // useEffect(() => {
@@ -677,13 +687,16 @@ function Notifications({ columnMode }: NotificationsProps) {
 
   const announcementsListRef = useRef<HTMLUListElement | null>(null);
 
-  useEffect(() => {
+  const syncRouteNotification = useEffectEvent(() => {
     if (notificationID) {
       states.routeNotification = {
         id: notificationID,
         accessToken: atob(notificationAccessToken as string),
       };
     }
+  });
+  useEffect(() => {
+    syncRouteNotification();
   }, [notificationID, notificationAccessToken]);
 
   // useEffect(() => {

@@ -6,7 +6,7 @@ import { useLingui } from '@lingui/react';
 import debounce from 'just-debounce-it';
 import type { ReactElement } from 'react';
 import { lazy, memo, Suspense } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   matchPath,
   Navigate,
@@ -932,7 +932,7 @@ function SecondaryRoutes() {
 
   // Persist prevLocation to sessionStorage while on a status/post page so it
   // survives a page reload. Clear it when navigating away.
-  useEffect(() => {
+  const syncPrevLocation = useEffectEvent(() => {
     if (isModalPage) {
       if (states.prevLocation) {
         store.session.setJSON('prevLocation', {
@@ -946,6 +946,9 @@ function SecondaryRoutes() {
       }
       store.session.del('prevLocation');
     }
+  });
+  useEffect(() => {
+    syncPrevLocation();
   }, [isModalPage]);
 
   if (isModalPage) {

@@ -5,7 +5,7 @@ import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
 import { toUnicode as punycodeToUnicode } from 'punycode/';
 import type { HTMLAttributes, ReactElement } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { api } from '../utils/api';
 import i18nDuration from '../utils/i18n-duration';
@@ -244,7 +244,7 @@ function RelatedActions({
     };
   }, [currentMasto, currentAuthenticated, sameInstance, id, instance]);
 
-  useEffect(() => {
+  const loadRelationshipForInfo = useEffectEvent(() => {
     if (info) {
       const {
         currentMasto: ctxMasto,
@@ -319,6 +319,9 @@ function RelatedActions({
         }
       })();
     }
+  });
+  useEffect(() => {
+    loadRelationshipForInfo();
   }, [info, authenticated]);
 
   useEffect(() => {

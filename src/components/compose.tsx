@@ -6,7 +6,14 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { deepEqual } from 'fast-equals';
 import type { RefObject, SyntheticEvent } from 'react';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { uid } from 'uid/single';
 import { useSnapshot } from 'valtio';
@@ -1080,13 +1087,10 @@ function Compose({
     // every render.
   }, [draftStatus, editStatus, replyToStatus, replyMode]);
 
-  // Latest-value ref so the sharedData effect can dispatch the current
-  // processFiles without re-running on every render (the function is
-  // recreated each render but its observable behavior is stable).
   const processFilesRef = useRef(processFiles);
   processFilesRef.current = processFiles;
 
-  useEffect(() => {
+  const applySharedData = useEffectEvent(() => {
     if (sharedData) {
       const { initialText, files } = sharedData;
 
@@ -1098,7 +1102,7 @@ function Compose({
       if (files && files.length > 0) {
         void (async () => {
           try {
-            const mediaFiles = await processFilesRef.current(files);
+            const mediaFiles = await processFiles(files);
             if (mediaFiles) {
               setMediaAttachments(mediaFiles);
             }
@@ -1108,6 +1112,9 @@ function Compose({
         })();
       }
     }
+  });
+  useEffect(() => {
+    applySharedData();
   }, [sharedData]);
 
   // focus textarea when state.composerState.minimized turns false

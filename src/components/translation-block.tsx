@@ -4,7 +4,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import PQueue from 'p-queue';
 import pRetry from 'p-retry';
 import type { ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import languages from '../data/translang-languages.json';
 import {
@@ -275,12 +275,13 @@ function TranslationBlock({
     }
   };
 
-  const translateRef = useRef(translate);
-  translateRef.current = translate;
-  useEffect(() => {
+  const runForcedTranslate = useEffectEvent(() => {
     if (forceTranslate) {
-      void translateRef.current();
+      void translate();
     }
+  });
+  useEffect(() => {
+    runForcedTranslate();
   }, [forceTranslate]);
 
   useEffect(() => {

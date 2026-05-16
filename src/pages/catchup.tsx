@@ -12,6 +12,7 @@ import { memo } from 'react';
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -489,7 +490,7 @@ function Catchup() {
     [dtf, fetchHome, NS, setSearchParams],
   );
 
-  useEffect(() => {
+  const syncRouteCatchup = useEffectEvent(() => {
     if (id) {
       void (async () => {
         const catchup = (await db.catchup.get(id)) as CatchupRecord | undefined;
@@ -503,6 +504,9 @@ function Catchup() {
       setPosts([]);
       setUIState('start');
     }
+  });
+  useEffect(() => {
+    syncRouteCatchup();
   }, [id, uiState]);
 
   const [reloadCatchupsCount, setReloadCatchupsCount] = useState(0);
@@ -1059,7 +1063,7 @@ function Catchup() {
     t,
   ]);
 
-  useEffect(() => {
+  const scrollSelectedAuthorIntoView = useEffectEvent(() => {
     if (selectedAuthor) {
       if (authors[selectedAuthor]) {
         // Check if author is visible and within the scrollable area viewport
@@ -1095,6 +1099,9 @@ function Catchup() {
         }
       }
     }
+  });
+  useEffect(() => {
+    scrollSelectedAuthorIntoView();
   }, [selectedAuthor, authors]);
 
   const [showHelp, setShowHelp] = useState(false);
