@@ -569,11 +569,9 @@ export function api({
 
   if (accessToken) {
     // If only accessToken is provided, get the masto instance for that accessToken
-    console.log('X 1', accountApis);
     for (const cachedInstance in accountApis) {
       const clientForAccessToken = getAccountApi(cachedInstance, accessToken);
       if (clientForAccessToken) {
-        console.log('X 2', accountApis, cachedInstance, accessToken);
         const { masto, streaming } = clientForAccessToken;
         return {
           authenticated: true,
@@ -583,26 +581,25 @@ export function api({
           streaming,
         };
       }
-      console.log('X 3', accountApis, cachedInstance, accessToken);
-      const storedAccount = getAccountByAccessToken(accessToken);
-      if (storedAccount) {
-        const storedAccessToken = storedAccount.accessToken;
-        const storedInstance = storedAccount.instanceURL.toLowerCase().trim();
-        const client = initClient({
-          accessToken: storedAccessToken,
-          instance: storedInstance,
-        });
-        const { masto, streaming } = client;
-        return {
-          authenticated: true,
-          client,
-          instance: storedInstance,
-          masto,
-          streaming,
-        };
-      }
-      throw new Error('Access token not found');
     }
+    const storedAccount = getAccountByAccessToken(accessToken);
+    if (storedAccount) {
+      const storedAccessToken = storedAccount.accessToken;
+      const storedInstance = storedAccount.instanceURL.toLowerCase().trim();
+      const client = initClient({
+        accessToken: storedAccessToken,
+        instance: storedInstance,
+      });
+      const { masto, streaming } = client;
+      return {
+        authenticated: true,
+        client,
+        instance: storedInstance,
+        masto,
+        streaming,
+      };
+    }
+    throw new Error('Access token not found');
   }
 
   // If account is provided, get the masto instance for that account

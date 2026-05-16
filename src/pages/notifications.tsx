@@ -136,9 +136,6 @@ interface MastoV1NotificationsRequestsApi {
   };
 }
 interface MastoV1NotificationsApi {
-  // The JS original passes `accountID` (capital-ID) as the param key. masto's
-  // actual API expects `accountId`, but we preserve the JS bug intentionally —
-  // accept both via the index signature so the runtime call shape is unchanged.
   list(opts?: {
     limit?: number;
     [key: string]: unknown;
@@ -1525,11 +1522,8 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
 function fetchNotficationsByAccount(accountID: string) {
   const { masto } = api();
   const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
-  // NOTE: JS original passes `accountID` (capital-ID). masto's actual API
-  // expects `accountId`. Preserving the original (broken) request shape
-  // exactly — fixing it would be a behavior change outside this migration.
   return v1Notifications.list({
-    accountID,
+    accountId: accountID,
   });
 }
 interface NotificationRequestModalButtonProps {

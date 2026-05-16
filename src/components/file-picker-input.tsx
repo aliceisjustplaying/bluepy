@@ -50,10 +50,7 @@ function FilePickerInput({
       accept={supportedMimeTypes?.join(',')}
       multiple={
         maxMediaAttachments === undefined ||
-        // Preserves JS runtime: original code subtracted the whole array,
-        // which coerces via Number() to NaN (or 0 if empty). Pre-existing
-        // bug; follow-up, not changed in this TS migration.
-        maxMediaAttachments - Number(mediaAttachments) >= 2
+        maxMediaAttachments - mediaAttachments.length >= 2
       }
       disabled={disabled}
       onChange={(e: SyntheticEvent<HTMLInputElement>) => {

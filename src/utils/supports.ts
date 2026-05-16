@@ -84,7 +84,7 @@ function supports(feature: string): boolean {
     }
 
     const key = `${domain}-${feature}`;
-    if (supportsCache[key]) return supportsCache[key];
+    if (key in supportsCache) return supportsCache[key];
 
     if (platformFeatures[feature]) {
       return (supportsCache[key] = platformFeatures[feature].test(
