@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { createContext } from 'react';
 import { memo } from 'react';
-import { useCallback, useContext, useMemo, useState } from 'react';
+import { use, useCallback, useMemo, useState } from 'react';
 
 interface IconData {
   width: number;
@@ -150,7 +150,7 @@ const Symbol = memo(
 );
 
 export function useIconSprite(): IconSpriteContextValue {
-  const context = useContext(IconSpriteContext);
+  const context = use(IconSpriteContext);
   if (!context) {
     throw new Error('useIconSprite must be used within IconSpriteProvider');
   }

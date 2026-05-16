@@ -1,13 +1,15 @@
 import type { ButtonHTMLAttributes, Ref } from 'react';
-import { forwardRef } from 'react';
 import { useEffect, useState } from 'react';
 
 import shortenNumber from '../utils/shorten-number';
 
 import Icon from './icon';
 
-interface StatusButtonProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'title'> {
+interface StatusButtonProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'title'
+> {
+  ref?: Ref<HTMLButtonElement>;
   checked?: boolean;
   count?: number;
   extraCount?: number;
@@ -19,83 +21,82 @@ interface StatusButtonProps
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const StatusButton = forwardRef<HTMLButtonElement, StatusButtonProps>(
-  (props: StatusButtonProps, ref: Ref<HTMLButtonElement>) => {
-    let {
-      checked,
-      count,
-      extraCount,
-      className,
-      title,
-      alt,
-      size,
-      icon,
-      iconSize = 'l',
-      onClick,
-      type = 'button',
-      ...otherProps
-    } = props;
-    if (typeof title === 'string') {
-      title = [title, title];
+function StatusButton(props: StatusButtonProps) {
+  let {
+    ref,
+    checked,
+    count,
+    extraCount,
+    className,
+    title,
+    alt,
+    size,
+    icon,
+    iconSize = 'l',
+    onClick,
+    type = 'button',
+    ...otherProps
+  } = props;
+  if (typeof title === 'string') {
+    title = [title, title];
+  }
+  if (typeof alt === 'string') {
+    alt = [alt, alt];
+  }
+
+  const [buttonTitle, setButtonTitle] = useState(title[0] || '');
+  const [iconAlt, setIconAlt] = useState(alt[0] || '');
+
+  useEffect(() => {
+    if (checked) {
+      setButtonTitle(title[1] || '');
+      setIconAlt(alt[1] || '');
+    } else {
+      setButtonTitle(title[0] || '');
+      setIconAlt(alt[0] || '');
     }
-    if (typeof alt === 'string') {
-      alt = [alt, alt];
-    }
+  }, [checked, title, alt]);
 
-    const [buttonTitle, setButtonTitle] = useState(title[0] || '');
-    const [iconAlt, setIconAlt] = useState(alt[0] || '');
+  const buttonClassName = [
+    'plain',
+    size ? 'small' : '',
+    className,
+    checked ? 'checked' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
-    useEffect(() => {
-      if (checked) {
-        setButtonTitle(title[1] || '');
-        setIconAlt(alt[1] || '');
-      } else {
-        setButtonTitle(title[0] || '');
-        setIconAlt(alt[0] || '');
-      }
-    }, [checked, title, alt]);
-
-    const buttonClassName = [
-      'plain',
-      size ? 'small' : '',
-      className,
-      checked ? 'checked' : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-    return (
-      <button
-        ref={ref}
-        {...otherProps}
-        type={type}
-        title={buttonTitle}
-        className={buttonClassName}
-        onClick={(e) => {
-          if (!onClick) return;
-          e.preventDefault();
-          e.stopPropagation();
-          onClick(e);
-        }}
-      >
-        <Icon icon={icon} size={iconSize} alt={iconAlt} />
-        {(!!count || !!extraCount) && (
-          <>
-            {' '}
-            {!!count && (
-              <small title={String(count)}>{shortenNumber(count)}</small>
-            )}
-            {!!count && !!extraCount && <small>+</small>}
-            {!!extraCount && (
-              <small title={String(extraCount)}>
-                {shortenNumber(extraCount)}
-              </small>
-            )}
-          </>
-        )}
-      </button>
-    );
-  },
-);
+  return (
+    <button
+      ref={ref}
+      {...otherProps}
+      type={type}
+      title={buttonTitle}
+      className={buttonClassName}
+      onClick={(e) => {
+        if (!onClick) return;
+        e.preventDefault();
+        e.stopPropagation();
+        onClick(e);
+      }}
+    >
+      <Icon icon={icon} size={iconSize} alt={iconAlt} />
+      {(!!count || !!extraCount) && (
+        <>
+          {' '}
+          {!!count && (
+            <small title={String(count)}>{shortenNumber(count)}</small>
+          )}
+          {!!count && !!extraCount && <small>+</small>}
+          {!!extraCount && (
+            <small title={String(extraCount)}>
+              {shortenNumber(extraCount)}
+            </small>
+          )}
+        </>
+      )}
+    </button>
+  );
+}
 
 export default StatusButton;

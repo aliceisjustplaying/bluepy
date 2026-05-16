@@ -40,7 +40,6 @@ const BSKY_GET_POSTS_LIMIT = 25;
 const BSKY_THREAD_CONTEXT_DEPTH = 1000;
 const BSKY_VIDEO_SERVICE = 'https://video.bsky.app';
 const BSKY_VIDEO_SERVICE_DID = 'did:web:video.bsky.app';
-export { BSKY_PDS, resolveAtprotoLoginService };
 
 /**
  * The adapter accepts both regular and OAuth-authenticated AtpAgent / Agent

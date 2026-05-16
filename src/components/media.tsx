@@ -105,7 +105,7 @@ const isStreamingVideoSupported = (() => {
   }
 })();
 
-export interface MediaAttachment {
+interface MediaAttachment {
   id?: string;
   blurhash?: string | null;
   description?: string | null;
@@ -121,7 +121,7 @@ export interface MediaAttachment {
   type?: string;
 }
 
-export interface MediaProps {
+interface MediaProps {
   class?: string;
   className?: string;
   media: MediaAttachment;

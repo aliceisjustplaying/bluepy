@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 
 type CloseWatcherCtor = new () => {
   addEventListener(type: 'close', listener: (event: Event) => void): void;
+  removeEventListener(type: 'close', listener: (event: Event) => void): void;
   destroy(): void;
 };
 
@@ -44,10 +45,12 @@ function useCloseWatcher(
     if (!active || !CloseWatcher) return undefined;
     console.log('useCloseWatcher');
     const watcher = new CloseWatcher();
-    watcher.addEventListener('close', (event) => {
+    const handleClose = (event: Event) => {
       fnRef.current?.(event);
-    });
+    };
+    watcher.addEventListener('close', handleClose);
     return () => {
+      watcher.removeEventListener('close', handleClose);
       watcher.destroy();
     };
   }, [active]);

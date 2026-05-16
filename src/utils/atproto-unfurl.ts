@@ -1,6 +1,6 @@
 import type { Agent } from '@atproto/api';
 
-export const BSKY_LINK_META_PROXY = 'https://cardyb.bsky.app/v1/extract?url=';
+const BSKY_LINK_META_PROXY = 'https://cardyb.bsky.app/v1/extract?url=';
 
 const HTTP_URL_RE = /https?:\/\/[^\s<>"']+/i;
 

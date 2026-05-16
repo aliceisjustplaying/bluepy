@@ -4,7 +4,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import { Document as FlexSearchIndexDocument } from 'flexsearch';
 import type { mastodon } from 'masto';
-import { forwardRef } from 'react';
+import type { Ref } from 'react';
 import {
   useEffect,
   useImperativeHandle,
@@ -1621,70 +1621,75 @@ function CalendarLegend() {
 }
 
 interface SearchFieldProps {
+  ref?: Ref<SearchFieldHandle>;
   searchQuery: string;
   onSearch: (val: string) => void;
   placeholder?: string;
   onEscape?: () => void;
 }
 
-const SearchField = forwardRef<SearchFieldHandle, SearchFieldProps>(
-  ({ searchQuery, onSearch, placeholder, onEscape }, ref) => {
-    const searchInputRef = useRef<HTMLInputElement | null>(null);
+function SearchField({
+  ref,
+  searchQuery,
+  onSearch,
+  placeholder,
+  onEscape,
+}: SearchFieldProps) {
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-    useImperativeHandle(ref, () => ({
-      focus: () => {
-        searchInputRef.current?.focus();
-      },
-      setValue: (val: string) => {
-        // Original JS dereferenced without null-check; preserve.
-        (searchInputRef.current as HTMLInputElement).value = val;
-      },
-      isFocused: () => {
-        return document.activeElement === searchInputRef.current;
-      },
-    }));
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      searchInputRef.current?.focus();
+    },
+    setValue: (val: string) => {
+      // Original JS dereferenced without null-check; preserve.
+      (searchInputRef.current as HTMLInputElement).value = val;
+    },
+    isFocused: () => {
+      return document.activeElement === searchInputRef.current;
+    },
+  }));
 
-    const throttledSearch = useThrottledCallback(onSearch, 150);
+  const throttledSearch = useThrottledCallback(onSearch, 150);
 
-    return (
-      <form
-        className="search-field"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const q = (searchInputRef.current as HTMLInputElement).value.trim();
-          throttledSearch?.cancel();
-          throttledSearch(q);
+  return (
+    <form
+      className="search-field"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const q = (searchInputRef.current as HTMLInputElement).value.trim();
+        throttledSearch?.cancel();
+        throttledSearch(q);
+      }}
+    >
+      <input
+        ref={searchInputRef}
+        type="search"
+        name="q"
+        className="block"
+        placeholder={placeholder || 'Search posts…'}
+        defaultValue={searchQuery}
+        dir="auto"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        enterKeyHint="search"
+        onInput={(e) => {
+          const val = (e.target as HTMLInputElement).value;
+          throttledSearch(val);
         }}
-      >
-        <input
-          ref={searchInputRef}
-          type="search"
-          name="q"
-          className="block"
-          placeholder={placeholder || 'Search posts…'}
-          defaultValue={searchQuery}
-          dir="auto"
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-          enterKeyHint="search"
-          onInput={(e) => {
-            const val = (e.target as HTMLInputElement).value;
-            throttledSearch(val);
-          }}
-          onKeyDown={(e) => {
-            if (
-              e.key === 'Escape' &&
-              !(e.target as HTMLInputElement).value.trim()
-            ) {
-              onEscape?.();
-            }
-          }}
-        />
-      </form>
-    );
-  },
-);
+        onKeyDown={(e) => {
+          if (
+            e.key === 'Escape' &&
+            !(e.target as HTMLInputElement).value.trim()
+          ) {
+            onEscape?.();
+          }
+        }}
+      />
+    </form>
+  );
+}
 
 export default YearInPosts;

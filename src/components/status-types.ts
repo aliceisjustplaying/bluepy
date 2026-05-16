@@ -91,7 +91,7 @@ export interface StatusAtprotoMeta {
   replyParentUnavailable?: boolean;
 }
 
-export interface StatusQuoteApproval {
+interface StatusQuoteApproval {
   currentUser?: string;
   automatic?: readonly string[];
   manual?: readonly string[];
@@ -131,7 +131,7 @@ export type AnyStatus = Omit<
 
 export type StatusSize = 's' | 'm' | 'l';
 
-export interface StatusRenderProps extends Record<string, unknown> {
+interface StatusRenderProps extends Record<string, unknown> {
   statusID?: string | null;
   status?: AnyStatus | null;
   instance?: string;
@@ -153,7 +153,6 @@ export interface GhostInfo {
   inReplyToAccountId?: string | null;
 }
 
-export type FullMasto = mastodon.rest.Client;
 export type MastoClientFromApi = ReturnType<typeof api>['masto'];
 
 type StatusReactionList = (opts?: { limit: number }) => {

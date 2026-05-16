@@ -1366,9 +1366,12 @@ function StatusCarousel({
 
   const [render, setRender] = useState(false);
   useEffect(() => {
-    setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       setRender(true);
     }, 1);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   // `children` is the `.map(...)` array produced by TimelineItem above; the
@@ -1443,7 +1446,7 @@ interface TimelineStatusCompactProps {
   filterContext?: string;
 }
 
-export function TimelineStatusCompact({
+function TimelineStatusCompact({
   status,
   instance,
   filterContext,

@@ -4,7 +4,7 @@ import type { mastodon } from 'masto';
 import type { KeyboardEvent, MouseEvent, ReactNode, RefObject } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
-import { useContext } from 'react';
+import { use } from 'react';
 import { useSnapshot } from 'valtio';
 
 import FilterContext from '../utils/filter-context';
@@ -147,7 +147,7 @@ const QuoteStatus = memo(
     const { i18n } = useLingui();
     const _ = i18n._.bind(i18n);
     const snapStates = useSnapshot(states);
-    const filterContext = useContext(FilterContext);
+    const filterContext = use(FilterContext);
     const currentAccount = getCurrentAccID();
 
     const q = quote;
@@ -156,9 +156,9 @@ const QuoteStatus = memo(
     const isStaticQuote = !!q.quoteStatus;
     const quoteStatusKey = statusKey(q.id, q.instance);
     const quoteStatus =
-      ((quoteStatusKey
-        ? snapStates.statuses[quoteStatusKey]
-        : undefined) as AnyStatus | undefined) || q.quoteStatus;
+      ((quoteStatusKey ? snapStates.statuses[quoteStatusKey] : undefined) as
+        | AnyStatus
+        | undefined) || q.quoteStatus;
     if (quoteStatus) {
       const isSelf =
         currentAccount && currentAccount === quoteStatus.account?.id;
@@ -245,7 +245,7 @@ const QuoteStatus = memo(
       <StatusCardLink
         key={qKey}
         to={`${q.instance ? `/${q.instance}` : ''}/s/${q.id}`}
-          className={`status-card-link ${q.native ? 'quote-post-native' : ''}`}
+        className={`status-card-link ${q.native ? 'quote-post-native' : ''}`}
         readMore={_(readMoreText)}
       >
         {renderStatus({

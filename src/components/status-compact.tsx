@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/react/macro';
-import { useContext } from 'react';
+import { use } from 'react';
 import { useSnapshot } from 'valtio';
 
 import FilterContext from '../utils/filter-context';
@@ -22,7 +22,7 @@ interface StatusReplyEntry {
 
 function StatusCompact({ sKey }: StatusCompactProps) {
   const snapStates = useSnapshot(states);
-  const filterContext = useContext(FilterContext);
+  const filterContext = use(FilterContext);
   const statusReply = snapStates.statusReply[sKey] as
     | StatusReplyEntry
     | undefined;
@@ -95,7 +95,10 @@ function StatusCompact({ sKey }: StatusCompactProps) {
         dir="auto"
       >
         {filterInfo ? (
-          <b className="status-filtered-badge badge-meta" title={filterTitleStr}>
+          <b
+            className="status-filtered-badge badge-meta"
+            title={filterTitleStr}
+          >
             <span>
               <Trans>Filtered</Trans>
             </span>

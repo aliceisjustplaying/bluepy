@@ -136,7 +136,7 @@ function storedEmojiShortcode(emoji: StoredCustomEmoji) {
   return typeof emoji === 'string' ? undefined : emoji.shortcode;
 }
 
-export interface CustomEmojisModalProps {
+interface CustomEmojisModalProps {
   instance?: string;
   onClose?: () => void;
   onSelect?: (shortcode: string) => void;

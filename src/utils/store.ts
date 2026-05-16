@@ -39,7 +39,7 @@ interface AccountNamespace {
   set(key: string, value: unknown): undefined | null;
 }
 
-export interface Store {
+interface Store {
   readonly account: AccountNamespace;
   readonly cookie: CookieNamespace;
   readonly local: StorageNamespace;

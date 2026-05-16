@@ -641,12 +641,12 @@ function Timeline2({
   );
 
   useLayoutEffect(() => {
-    if (uiState !== 'default') return;
+    if (uiState !== 'default') return undefined;
     console.log('🔍 Scroll', {
       scrollableRef: scrollableRef.current,
       scrollAnchorRef: scrollAnchorRef.current,
     });
-    if (!scrollableRef.current || !scrollAnchorRef.current) return;
+    if (!scrollableRef.current || !scrollAnchorRef.current) return undefined;
 
     // Clear the anchor immediately to prevent re-entrant executions
     const anchor = scrollAnchorRef.current;
@@ -675,11 +675,14 @@ function Timeline2({
       if (Math.abs(delta) > 1) {
         scrollableRef.current.scrollTop += delta;
       }
-      setTimeout(() => {
+      const timeoutId = window.setTimeout(() => {
         if (direction) {
           scrollableRef.current?.classList.remove(`scrolling-${direction}`);
         }
       }, 300);
+      return () => {
+        window.clearTimeout(timeoutId);
+      };
     } else {
       console.warn('Target element not found', {
         itemId,
@@ -687,6 +690,7 @@ function Timeline2({
         targetElement,
       });
     }
+    return undefined;
   }, [items, uiState]);
 
   return (

@@ -78,9 +78,12 @@ export default function Modals() {
   const isLoggedIn = useAuth();
 
   useEffect(() => {
-    setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       void preload();
     }, 1000);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   const composerState = snapStates.composerState as Payload;

@@ -2,14 +2,7 @@ import { useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
 import type { ReactNode, RefObject } from 'react';
-import {
-  useCallback,
-  useContext,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, use, useMemo, useReducer, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { api, getMastoV1Resource } from '../utils/api';
@@ -174,7 +167,7 @@ export default function StatusContent({
 
   const currentAccount = getCurrentAccID();
   const isSelf = currentAccount && currentAccount == accountId;
-  const filterContext = useContext(FilterContext);
+  const filterContext = use(FilterContext);
   type FilterInfoShape = {
     action: 'hide' | 'blur' | 'warn';
     titles?: string[];

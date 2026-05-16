@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { createContext } from 'react';
-import { useContext } from 'react';
+import { use } from 'react';
 
 const AuthContext = createContext<boolean>(false);
 export const AUTH_CHANGED_EVENT = 'bluepy:auth-changed';
@@ -20,5 +20,5 @@ export function AuthProvider({
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  return use(AuthContext);
 }

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { createContext } from 'react';
 import type { RefObject } from 'react';
-import { useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { use, useCallback, useMemo, useRef, useState } from 'react';
 
 import { api } from '../utils/api';
 
@@ -129,5 +129,5 @@ export function EditHistoryProvider({
 }
 
 export function useEditHistory() {
-  return useContext(EditHistoryContext);
+  return use(EditHistoryContext);
 }

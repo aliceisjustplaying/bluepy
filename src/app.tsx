@@ -531,6 +531,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     void (async () => {
       const instanceURL = store.local.get('instanceURL');
       const isAtprotoOAuthCallback =
@@ -551,6 +552,7 @@ function App() {
             ]);
             initStates();
             window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+            if (cancelled) return;
             setIsLoggedIn(true);
             setUIState('default');
             const redirectPath = store.session.get('loginRedirect');
@@ -587,7 +589,7 @@ function App() {
               },
               window.location.origin,
             );
-            setTimeout(() => {
+            window.setTimeout(() => {
               window.close();
             }, 100);
           } catch (e) {
@@ -616,6 +618,7 @@ function App() {
         const vapidKey = getStoredVapidKey(instanceURL) || vapid_key;
         const verifier = store.sessionCookie.get('codeVerifier');
 
+        if (cancelled) return;
         setUIState('loading');
         const { access_token: accessToken } = (await getAccessToken({
           instanceURL: instanceURL as string,
@@ -640,6 +643,7 @@ function App() {
           initStates();
           window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
 
+          if (cancelled) return;
           setIsLoggedIn(true);
           setUIState('default');
 
@@ -652,6 +656,7 @@ function App() {
             navigatePath('/', { replace: true });
           }
         } else {
+          if (cancelled) return;
           setUIState('error');
         }
         __BENCHMARK.end('app-init');
@@ -688,6 +693,7 @@ function App() {
           const { instance } = client;
           // console.log('masto', masto);
           initStates();
+          if (cancelled) return;
           setUIState('loading');
           try {
             if (hasPreferences() && hasInstance(instance)) {
@@ -703,11 +709,14 @@ function App() {
           } catch {
             // ignore — fall through to mark logged in below
           } finally {
-            setIsLoggedIn(true);
-            setUIState('default');
-            __BENCHMARK.end('app-init');
+            if (!cancelled) {
+              setIsLoggedIn(true);
+              setUIState('default');
+              __BENCHMARK.end('app-init');
+            }
           }
         } else {
+          if (cancelled) return;
           setUIState('default');
           __BENCHMARK.end('app-init');
         }
@@ -718,6 +727,9 @@ function App() {
       store.sessionCookie.del('clientSecret');
       store.sessionCookie.del('codeVerifier');
     })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   let currentLocation = useLocation();
@@ -748,17 +760,18 @@ function App() {
 
   // Restore last page on PWA reopen
   useEffect(() => {
-    if (restoredRef.current) return;
+    if (restoredRef.current) return undefined;
     const atRootPath =
       !currentLocation.pathname || currentLocation.pathname === '/';
-    if (!atRootPath) return;
+    if (!atRootPath) return undefined;
     if (isPWA && isLoggedIn && uiState === 'default') {
       const lastPath = store.local.getJSON<{
         path?: string;
         lastAccessed?: number;
       }>(lastPathKey);
+      restoredRef.current = true;
       if (lastPath) {
-        setTimeout(() => {
+        const timeoutId = window.setTimeout(() => {
           if (lastPath?.path) {
             const timeSinceLastAccess =
               Date.now() - (lastPath.lastAccessed || 0);
@@ -768,9 +781,12 @@ function App() {
           }
           store.local.del(lastPathKey);
         }, 300);
+        return () => {
+          window.clearTimeout(timeoutId);
+        };
       }
-      restoredRef.current = true;
     }
+    return undefined;
   }, [uiState, isLoggedIn, currentLocation.pathname]);
 
   // Signal to service worker that this client is ready to receive share data

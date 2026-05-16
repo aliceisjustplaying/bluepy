@@ -56,5 +56,4 @@ export {
   isModifiedClick,
   migrateLegacyHashRoute,
   navigatePath,
-  normalizeAppPath,
 };

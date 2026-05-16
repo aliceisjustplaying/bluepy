@@ -22,7 +22,7 @@ interface AccountSearchResource {
   };
 }
 
-export interface MentionModalProps {
+interface MentionModalProps {
   onClose?: () => void;
   onSelect?: (socialAddress: string) => void;
   defaultSearchTerm?: string | null;
@@ -74,10 +74,10 @@ function MentionModal({
               masto,
               'accounts',
             ).search.list({
-            q: term,
-            limit: 40,
-            resolve: false,
-          });
+              q: term,
+              limit: 40,
+              resolve: false,
+            });
           setAccounts(fetchedAccounts);
           void loadRelationships(fetchedAccounts);
           setUIState('default');
@@ -132,8 +132,7 @@ function MentionModal({
       preventDefault: true,
       enableOnFormTags: ['input'],
       useKey: true,
-      ignoreEventWhen: (e) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
@@ -161,8 +160,7 @@ function MentionModal({
       preventDefault: true,
       enableOnFormTags: ['input'],
       useKey: true,
-      ignoreEventWhen: (e) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
@@ -189,8 +187,7 @@ function MentionModal({
       preventDefault: true,
       enableOnFormTags: ['input'],
       useKey: true,
-      ignoreEventWhen: (e) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 

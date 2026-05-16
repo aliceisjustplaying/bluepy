@@ -60,8 +60,10 @@ function Endorsements({
   }, [relationshipsMap]);
 
   useEffect(() => {
-    if (!supports('@mastodon/endorsements')) return;
-    if (!open) return;
+    if (!supports('@mastodon/endorsements')) return undefined;
+    if (!open) return undefined;
+    let cancelled = false;
+    let scrollTimeoutId: number | undefined;
     void (async () => {
       setEndorsementsUIState('loading');
       try {
@@ -69,13 +71,14 @@ function Endorsements({
           limit: ENDORSEMENTS_LIMIT,
         });
         console.log({ endorsements: accounts });
+        if (cancelled) return;
         if (!accounts.length) {
           setEndorsementsUIState('default');
           return;
         }
         setEndorsements(accounts);
         setEndorsementsUIState('default');
-        setTimeout(() => {
+        scrollTimeoutId = window.setTimeout(() => {
           endorsementsContainer.current?.scrollIntoView({
             behavior: 'smooth',
             block: 'nearest',
@@ -86,14 +89,21 @@ function Endorsements({
           accounts,
           relationshipsMapRef.current,
         );
-        if (relationships) {
+        if (!cancelled && relationships) {
           setRelationshipsMap(relationships);
         }
       } catch (e) {
+        if (cancelled) return;
         console.error(e);
         setEndorsementsUIState('error');
       }
     })();
+    return () => {
+      cancelled = true;
+      if (scrollTimeoutId !== undefined) {
+        window.clearTimeout(scrollTimeoutId);
+      }
+    };
   }, [open, id, accountsEndpoint]);
 
   const reallyOpen = onlyOpenIfHasEndorsements

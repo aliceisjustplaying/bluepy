@@ -85,7 +85,7 @@ export async function getUserLists(): Promise<ListLike[]> {
   return splitListsAndFeeds(lists).lists;
 }
 
-export const fetchList = pmem(
+const fetchList = pmem(
   (id: string) => {
     const { masto } = api();
     return (masto.v1.lists as MastoListsApi).$select(id).fetch();

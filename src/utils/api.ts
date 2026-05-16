@@ -277,7 +277,7 @@ export function initClient({
   return client;
 }
 
-export function isAtprotoInstance(instance?: string | null): boolean {
+function isAtprotoInstance(instance?: string | null): boolean {
   return (
     instance === BSKY_INSTANCE || instance === 'atproto' || instance === 'bsky'
   );

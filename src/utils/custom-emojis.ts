@@ -31,5 +31,4 @@ const getCustomEmojis = pmem(getCustomEmojisRaw, {
   expires: 30 * 60 * 1000, // 30 minutes
 });
 
-export { getCustomEmojis, getCustomEmojisRaw };
-export default getCustomEmojis;
+export { getCustomEmojis };

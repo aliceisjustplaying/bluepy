@@ -2,10 +2,6 @@ function encodeAtprotoID(id: string): string {
   return encodeURIComponent(id);
 }
 
-function decodeAtprotoID(id: string): string {
-  return decodeURIComponent(id);
-}
-
 function isAtprotoPostURI(uri: string | null | undefined): uri is string {
   return /^at:\/\/[^/]+\/app\.bsky\.feed\.post\/[^/?#]+$/i.test(uri || '');
 }
@@ -42,9 +38,7 @@ function getAtprotoPostPathFromStatusRoute(path: string): string | null {
 }
 
 export {
-  buildAtprotoPostPath,
   buildAtprotoPostPermalink,
-  decodeAtprotoID,
   encodeAtprotoID,
   getAtprotoPostPathFromStatusRoute,
   isAtprotoPostURI,

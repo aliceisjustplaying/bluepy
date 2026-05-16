@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro';
 import type { SyntheticEvent } from 'react';
 
-export interface FilePickerMediaAttachment {
+interface FilePickerMediaAttachment {
   fileData: ArrayBuffer;
   fileName: string;
   type: string;
@@ -11,12 +11,12 @@ export interface FilePickerMediaAttachment {
   description: string | null;
 }
 
-export interface FilePickerInputAttachment extends Partial<FilePickerMediaAttachment> {
+interface FilePickerInputAttachment extends Partial<FilePickerMediaAttachment> {
   file?: File;
   [key: string]: unknown;
 }
 
-export interface FilePickerInputProps {
+interface FilePickerInputProps {
   id?: string;
   hidden?: boolean;
   supportedMimeTypes?: string[];

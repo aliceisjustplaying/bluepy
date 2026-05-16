@@ -4,7 +4,7 @@ import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { ReactNode, ComponentType, JSX } from 'react';
 import { memo } from 'react';
-import { useContext, useMemo } from 'react';
+import { use, useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { getPreferences } from '../utils/api';
@@ -76,7 +76,7 @@ function MediaPost({
   const currentAccount = useMemo(() => {
     return getCurrentAccountID();
   }, []);
-  const filterContext = useContext(FilterContext);
+  const filterContext = use(FilterContext);
 
   let sKey = statusKey(statusID, instance);
   if (!status) {

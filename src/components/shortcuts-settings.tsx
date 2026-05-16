@@ -40,7 +40,7 @@ export interface ShortcutMetaInput {
   [key: string]: string | undefined;
 }
 
-export interface ShortcutEntry extends ShortcutMetaInput {
+interface ShortcutEntry extends ShortcutMetaInput {
   type: string;
 }
 

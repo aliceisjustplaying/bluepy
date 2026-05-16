@@ -20,7 +20,7 @@ const { PHANPY_IMG_ALT_API_URL: IMG_ALT_API_URL } = import.meta.env as {
   PHANPY_IMG_ALT_API_URL?: string;
 };
 
-export interface AttachmentLike {
+interface AttachmentLike {
   id?: string;
   type: string;
   url?: string;

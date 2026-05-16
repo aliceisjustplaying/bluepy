@@ -8,7 +8,7 @@ import getDomain from './get-domain';
 // shared by states.ts. Out of scope for the oxlint cleanup batch.
 import states, { saveStatus } from './states';
 
-export const unfurlQueue = new PQueue({
+const unfurlQueue = new PQueue({
   concurrency: 1,
   interval: 1000,
   intervalCap: 1,
@@ -152,10 +152,7 @@ function unfurlMastodonLinkImpl(
   }
 
   const { masto } = api({ instance });
-  const searchEndpoint = getMastoV2Resource<SearchV2Endpoint>(
-    masto,
-    'search',
-  );
+  const searchEndpoint = getMastoV2Resource<SearchV2Endpoint>(masto, 'search');
   const mastoSearchFetch: Promise<UnfurlResult> = searchEndpoint
     .fetch({
       q: theURL,

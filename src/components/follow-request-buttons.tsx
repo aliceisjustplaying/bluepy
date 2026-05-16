@@ -7,7 +7,7 @@ import haptics from '../utils/haptics';
 import Icon from './icon';
 import Loader from './loader';
 
-export interface FollowRequestButtonsProps {
+interface FollowRequestButtonsProps {
   accountID: string;
   onChange?: () => void;
 }
@@ -95,7 +95,11 @@ function FollowRequestButtons({
               className="follow-accepted"
             />
           ) : (
-            <Icon icon="x-circle" alt={t`Rejected`} className="follow-rejected" />
+            <Icon
+              icon="x-circle"
+              alt={t`Rejected`}
+              className="follow-rejected"
+            />
           )
         ) : (
           <Loader hidden={uiState !== 'loading'} />

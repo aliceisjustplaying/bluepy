@@ -96,7 +96,7 @@ export function parseAtprotoOAuthAccessToken(
   }
 }
 
-export async function getAtprotoOAuthClient(): Promise<BrowserOAuthClient> {
+async function getAtprotoOAuthClient(): Promise<BrowserOAuthClient> {
   if (window.__BLUEPY_OAUTH_TEST_CLIENT__) {
     return window.__BLUEPY_OAUTH_TEST_CLIENT__ as BrowserOAuthClient;
   }
