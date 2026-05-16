@@ -82,10 +82,12 @@ import { navigatePath } from './utils/router';
 import states, { hideAllModals, initStates, statusKey } from './utils/states';
 import store from './utils/store';
 import {
+  getAccounts,
   getAccount,
   getCredentialApplication,
   getCurrentAccount,
   getVapidKey,
+  removeAccount,
   setCurrentAccountID,
 } from './utils/store-utils';
 
@@ -684,11 +686,20 @@ function App() {
         if (!account) {
           account = getCurrentAccount();
         }
-        if (account) {
+        while (account) {
           setCurrentAccountID(account.info.id);
-          account.accessToken = await hydrateAtprotoOAuthAccessToken(
-            account.accessToken,
-          );
+          try {
+            account.accessToken = await hydrateAtprotoOAuthAccessToken(
+              account.accessToken,
+            );
+            break;
+          } catch (error) {
+            console.error(error);
+            removeAccount(account.info.id);
+            account = getAccounts()[0] ?? null;
+          }
+        }
+        if (account) {
           const { client } = api({ account });
           const { instance } = client;
           // console.log('masto', masto);
@@ -717,6 +728,7 @@ function App() {
           }
         } else {
           if (cancelled) return;
+          setIsLoggedIn(false);
           setUIState('default');
           __BENCHMARK.end('app-init');
         }

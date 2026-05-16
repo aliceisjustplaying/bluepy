@@ -43,7 +43,7 @@ function FilePickerInput({
     <input
       id={id}
       type="file"
-      hidden={hidden}
+      className={hidden ? 'file-input-hidden' : undefined}
       accept={supportedMimeTypes?.join(',')}
       multiple={
         maxMediaAttachments === undefined ||

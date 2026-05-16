@@ -816,17 +816,15 @@ function Compose({
   };
   const composeContainerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
+    const composeContainer = composeContainerRef.current;
+    if (!composeContainer) return undefined;
+
     const handleFocus = (e: FocusEvent): void => {
       // Toggle focused if in or out if any fields are focused
-      // The container is non-null at handler time (the listener is only
-      // attached when composeContainer was defined). Mirror the original JS
-      // direct access.
-      (composeContainerRef.current as HTMLDivElement).classList.toggle(
-        'focused',
-        e.type === 'focusin',
-      );
+      composeContainer.classList.toggle('focused', e.type === 'focusin');
 
-      const target = e.target as HTMLElement;
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
       if (target.hasAttribute('data-allow-custom-emoji')) {
         lastFocusedEmojiFieldRef.current = target;
       }
@@ -838,17 +836,12 @@ function Compose({
       }
     };
 
-    const composeContainer = composeContainerRef.current;
-    if (composeContainer) {
-      composeContainer.addEventListener('focusin', handleFocus);
-      composeContainer.addEventListener('focusout', handleFocus);
-    }
+    composeContainer.addEventListener('focusin', handleFocus);
+    composeContainer.addEventListener('focusout', handleFocus);
 
     return () => {
-      if (composeContainer) {
-        composeContainer.removeEventListener('focusin', handleFocus);
-        composeContainer.removeEventListener('focusout', handleFocus);
-      }
+      composeContainer.removeEventListener('focusin', handleFocus);
+      composeContainer.removeEventListener('focusout', handleFocus);
     };
   }, []);
 

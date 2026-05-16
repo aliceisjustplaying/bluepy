@@ -416,6 +416,12 @@ button,
 button[hidden] {
   display: none;
 }
+.file-input-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+}
 :is(button, .button) > * {
   vertical-align: middle;
   pointer-events: none;

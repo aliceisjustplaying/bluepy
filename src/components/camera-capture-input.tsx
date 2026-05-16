@@ -50,7 +50,7 @@ function CameraCaptureInput({
     <input
       id={id}
       type="file"
-      hidden={hidden}
+      className={hidden ? 'file-input-hidden' : undefined}
       accept={filteredSupportedMimeTypes?.join(',')}
       capture="environment"
       disabled={disabled}
