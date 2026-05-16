@@ -1781,9 +1781,8 @@ function Compose({
               keyEvent.key === 'Enter' &&
               (keyEvent.ctrlKey || keyEvent.metaKey)
             ) {
-              formRef.current?.dispatchEvent(
-                new Event('submit', { cancelable: true }),
-              );
+              keyEvent.preventDefault();
+              keyEvent.currentTarget.requestSubmit();
             }
           }}
           onSubmit={(submitEvent: SyntheticEvent<HTMLFormElement>) => {

@@ -21,6 +21,7 @@ interface ModalProps {
   onClose?: ((event?: React.SyntheticEvent) => void) | null;
   onClick?: ((event: React.MouseEvent<HTMLDivElement>) => void) | null;
   class?: string;
+  className?: string;
   minimized?: boolean;
   [key: string]: unknown;
 }
@@ -30,8 +31,10 @@ function Modal({
   onClose,
   onClick,
   class: className,
+  className: reactClassName,
   minimized,
 }: ModalProps) {
+  const modalClassName = reactClassName || className;
   const modalRef = useRef<HTMLDivElement | null>(null);
   const hasChildren = !!children;
   useEffect(() => {
@@ -177,7 +180,7 @@ function Modal({
         ) as HTMLElement | null;
         (escRef as { current: HTMLElement | null }).current = inner || node;
       }}
-      className={className}
+      className={modalClassName}
       role="presentation"
       onClick={(e: React.MouseEvent<HTMLDivElement>) => {
         onClick?.(e);
