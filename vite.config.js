@@ -224,11 +224,11 @@ export default defineConfig({
         });
       },
     },
-    react(),
     babel({
       plugins: ['@lingui/babel-plugin-lingui-macro'],
       include: /\.[jt]sx?$/,
     }),
+    react(),
     lingui(),
     run({
       silent: false,

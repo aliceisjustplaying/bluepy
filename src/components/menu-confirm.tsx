@@ -81,7 +81,7 @@ function MenuConfirm({
         : { menuButton: children, openTrigger: 'clickOnly' })}
     >
       <MenuItem
-        {...(confirmItemProps || props.itemProps)}
+        {...confirmItemProps}
         className={menuItemClassName}
         onClick={onClick}
       >

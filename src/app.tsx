@@ -715,36 +715,37 @@ function App() {
     })();
   }, []);
 
-  let location = useLocation();
-  states.currentLocation = location.pathname;
+  let currentLocation = useLocation();
+  states.currentLocation = currentLocation.pathname;
   // useLayoutEffect(() => {
   //   states.currentLocation = location.pathname;
   // }, [location.pathname]);
 
-  useEffect(focusDeck, [location, isLoggedIn]);
+  useEffect(focusDeck, [currentLocation, isLoggedIn]);
 
   // Save last page for PWA restoration
   const restoredRef = useRef(false);
   const lastPathKey = 'pwaLastPath';
   useEffect(() => {
     if (!restoredRef.current) return;
-    // console.log('location.pathname', location.pathname);
+    // console.log('currentLocation.pathname', currentLocation.pathname);
     if (isPWA && isLoggedIn) {
-      if (isRootPath(location.pathname)) {
+      if (isRootPath(currentLocation.pathname)) {
         store.local.del(lastPathKey);
       } else {
         store.local.setJSON(lastPathKey, {
-          path: location.pathname + location.search,
+          path: currentLocation.pathname + currentLocation.search,
           lastAccessed: Date.now(),
         });
       }
     }
-  }, [location.pathname, location.search, isLoggedIn]);
+  }, [currentLocation.pathname, currentLocation.search, isLoggedIn]);
 
   // Restore last page on PWA reopen
   useEffect(() => {
     if (restoredRef.current) return;
-    const atRootPath = !location.pathname || location.pathname === '/';
+    const atRootPath =
+      !currentLocation.pathname || currentLocation.pathname === '/';
     if (!atRootPath) return;
     if (isPWA && isLoggedIn && uiState === 'default') {
       const lastPath = store.local.getJSON<{
@@ -765,7 +766,7 @@ function App() {
       }
       restoredRef.current = true;
     }
-  }, [uiState, isLoggedIn, location.pathname]);
+  }, [uiState, isLoggedIn, currentLocation.pathname]);
 
   // Signal to service worker that this client is ready to receive share data
   useEffect(() => {
@@ -889,19 +890,20 @@ function getPrevLocation() {
 }
 function SecondaryRoutes() {
   // const snapStates = useSnapshot(states);
-  const location = useLocation();
+  const currentLocation = useLocation();
   // const prevLocation = snapStates.prevLocation;
   const backgroundLocation = useRef(getPrevLocation());
 
   const isModalPage = useMemo(() => {
-    const atUriParam = matchPath('/:atUri', location.pathname)?.params.atUri;
+    const atUriParam = matchPath('/:atUri', currentLocation.pathname)?.params
+      .atUri;
     return (
-      matchPath('/:instance/s/:id', location.pathname) ||
-      matchPath('/s/:id', location.pathname) ||
-      matchPath('/:scheme://*', location.pathname) ||
+      matchPath('/:instance/s/:id', currentLocation.pathname) ||
+      matchPath('/s/:id', currentLocation.pathname) ||
+      matchPath('/:scheme://*', currentLocation.pathname) ||
       atUriParam?.toLowerCase().startsWith('at:')
     );
-  }, [location.pathname]);
+  }, [currentLocation.pathname]);
 
   // Persist prevLocation to sessionStorage while on a status/post page so it
   // survives a page reload. Clear it when navigating away.

@@ -11,7 +11,6 @@ type LazyRenderAs = keyof JSX.IntrinsicElements | ComponentType;
 interface LazyRenderProps {
   as?: LazyRenderAs;
   id?: string;
-  class?: string;
   className?: string;
   children?: ReactNode;
   renderIfHasChildren?: boolean;
@@ -20,7 +19,6 @@ interface LazyRenderProps {
 
 interface LazyRenderRootProps {
   id?: string;
-  class?: string;
   className?: string;
   children?: ReactNode;
   ref?: (node: HTMLElement | null) => void;
@@ -34,8 +32,7 @@ function lazyRenderRoot(root: unknown): ComponentType<LazyRenderRootProps> {
 export default function LazyRender({
   as: Root = 'div',
   id,
-  class: classProp,
-  className = classProp,
+  className,
   children,
   renderIfHasChildren = true,
   ...props

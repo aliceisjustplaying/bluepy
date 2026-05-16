@@ -45,6 +45,53 @@ interface StatusHeaderProps {
   showReplyBadge: boolean;
 }
 
+interface StatusTimeIconProps {
+  showCommentHint: boolean;
+  showCommentCount: boolean;
+  repliesCount: number;
+  visibility: keyof typeof visibilityIconsMap;
+  editedAt?: string | null;
+  size: string;
+}
+
+function StatusTimeIcon({
+  showCommentHint,
+  showCommentCount,
+  repliesCount,
+  visibility,
+  editedAt,
+  size,
+}: StatusTimeIconProps) {
+  const { t, i18n } = useLingui();
+  const _ = i18n._.bind(i18n);
+
+  if (showCommentHint && !showCommentCount) {
+    return (
+      <Icon
+        icon="comment2"
+        size="s"
+        alt={plural(repliesCount, {
+          one: '# reply',
+          other: '# replies',
+        })}
+      />
+    );
+  }
+  if (visibility !== 'public' && visibility !== 'direct') {
+    return (
+      <Icon
+        icon={visibilityIconsMap[visibility]}
+        alt={_(visibilityText[visibility])}
+        size="s"
+      />
+    );
+  }
+  if (editedAt && size === 's') {
+    return <Icon icon="pencil" size="s" alt={t`Edited`} />;
+  }
+  return null;
+}
+
 export default function StatusHeader({
   size,
   status,
@@ -76,50 +123,7 @@ export default function StatusHeader({
   inReplyToAccount,
   showReplyBadge,
 }: StatusHeaderProps) {
-  const { t, i18n } = useLingui();
-  const _ = i18n._.bind(i18n);
-
-  function StatusTimeIcon({
-    showCommentHint: timeShowCommentHint,
-    showCommentCount: timeShowCommentCount,
-    repliesCount: timeRepliesCount,
-    visibility: timeVisibility,
-    editedAt: timeEditedAt,
-    size: timeSize,
-  }: {
-    showCommentHint: boolean;
-    showCommentCount: boolean;
-    repliesCount: number;
-    visibility: keyof typeof visibilityIconsMap;
-    editedAt?: string | null;
-    size: string;
-  }) {
-    if (timeShowCommentHint && !timeShowCommentCount) {
-      return (
-        <Icon
-          icon="comment2"
-          size="s"
-          alt={plural(timeRepliesCount, {
-            one: '# reply',
-            other: '# replies',
-          })}
-        />
-      );
-    }
-    if (timeVisibility !== 'public' && timeVisibility !== 'direct') {
-      return (
-        <Icon
-          icon={visibilityIconsMap[timeVisibility]}
-          alt={_(visibilityText[timeVisibility])}
-          size="s"
-        />
-      );
-    }
-    if (timeEditedAt && timeSize === 's') {
-      return <Icon icon="pencil" size="s" alt={t`Edited`} />;
-    }
-    return null;
-  }
+  const { t } = useLingui();
 
   return (
     <>
