@@ -123,7 +123,7 @@ const LinkBody = forwardRef<HTMLAnchorElement, LinkBodyProps>(
           if (e.defaultPrevented || isModifiedClick(e)) {
             return;
           }
-          const target = (props.target as string | undefined) || '';
+          const target = props.target || '';
           if (target && target !== '_self') return;
           e.preventDefault();
           navigatePath(href);

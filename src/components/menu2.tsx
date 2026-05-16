@@ -1,5 +1,5 @@
 import { Menu, type MenuInstance, type MenuProps } from '@szhsin/react-menu';
-import type { RefObject, MouseEvent } from 'react';
+import type { RefObject } from 'react';
 import { useRef } from 'react';
 
 import isRTL from '../utils/is-rtl';

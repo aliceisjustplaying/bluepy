@@ -6,7 +6,6 @@ import type { mastodon } from 'masto';
 import type {
   ReactNode,
   ComponentType,
-  MouseEvent,
 } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { InView as InViewUntyped } from 'react-intersection-observer';
@@ -249,7 +248,7 @@ function List(props: ListProps) {
                 {menuLists.map((menuList) => (
                   <MenuLink key={menuList.id} to={`/l/${menuList.id}`}>
                     <span>
-                      {String(menuList.title)}
+                      {menuList.title}
                       {Boolean(menuList.exclusive) && (
                         <>
                           {' '}

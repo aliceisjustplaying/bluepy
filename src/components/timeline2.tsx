@@ -5,7 +5,6 @@ import type { mastodon } from 'masto';
 import type {
   ReactNode,
   RefObject,
-  MouseEvent,
 } from 'react';
 import {
   useCallback,

@@ -1,7 +1,7 @@
 import 'temml/dist/Temml-Local.css';
 
 import { useLingui } from '@lingui/react/macro';
-import type { RefObject, MouseEvent } from 'react';
+import type { RefObject } from 'react';
 import { useCallback, useState } from 'react';
 import type Temml from 'temml';
 
@@ -118,7 +118,8 @@ const MathBlock = ({ content, contentRef, onRevert }: MathBlockProps) => {
           const temml =
             window.temml || (window.temml = (await import('temml'))?.default);
 
-          const contentEl = contentRef.current!;
+          const contentEl = contentRef.current;
+          if (!contentEl) return;
           cleanDOMForTemml(contentEl);
           const originalContentRefHTML = contentEl.innerHTML;
           temml.renderMathInElement(contentEl, {

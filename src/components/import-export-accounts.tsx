@@ -104,7 +104,7 @@ export default function ImportExportAccounts({
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const file = (e.dataTransfer as DataTransfer).files[0];
+    const file = e.dataTransfer.files[0];
     void processFile(file);
   };
 

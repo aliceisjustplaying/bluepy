@@ -1,6 +1,5 @@
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { MouseEvent } from 'react';
 import { useState } from 'react';
 
 import { api } from '../utils/api';

@@ -1,5 +1,5 @@
 import { FocusableItem } from '@szhsin/react-menu';
-import type { Ref, MouseEvent } from 'react';
+import type { Ref } from 'react';
 
 import Link, { type LinkProps } from './link';
 
@@ -34,7 +34,9 @@ function MenuLink(props: MenuLinkProps) {
             {...(restProps as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
             ref={ref as Ref<HTMLAnchorElement>}
             onClick={({ detail }) => closeMenu(detail === 0 ? 'Enter' : undefined)}
-          />
+          >
+            {restProps.children}
+          </a>
         )}
         </>
       )}

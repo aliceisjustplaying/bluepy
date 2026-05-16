@@ -3,7 +3,6 @@ import './modal.css';
 import type {
   ReactNode,
   FocusEvent,
-  MouseEvent,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useEffect, useLayoutEffect, useRef } from 'react';

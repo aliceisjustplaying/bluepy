@@ -3,7 +3,7 @@ import './account-statuses.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { SyntheticEvent, MouseEvent } from 'react';
+import type { SyntheticEvent } from 'react';
 import {
   useCallback,
   useEffect,

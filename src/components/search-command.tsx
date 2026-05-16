@@ -1,6 +1,6 @@
 import './search-command.css';
 
-import type { Ref, MouseEvent } from 'react';
+import type { Ref } from 'react';
 import { memo } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';

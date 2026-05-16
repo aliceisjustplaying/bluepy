@@ -1,7 +1,6 @@
 import './name-text.css';
 
 import { useLingui } from '@lingui/react';
-import type { MouseEvent } from 'react';
 
 import { api } from '../utils/api';
 import mem from '../utils/mem';

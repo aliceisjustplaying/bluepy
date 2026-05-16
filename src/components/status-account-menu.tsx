@@ -75,23 +75,25 @@ export default function StatusAccountMenu({
       {(isSelf || mentionSelf) && <MenuDivider />}
       {(isSelf || mentionSelf) && (
         <MenuItem
-          onClick={async () => {
+          onClick={() => {
             void haptics.trigger('light');
-            try {
-              const stmtAction = masto.v1.statuses.$select(id);
-              const newStatus = await (muted
-                ? stmtAction.unmute()
-                : stmtAction.mute());
-              saveStatus(newStatus, instance);
-              showToast(muted ? t`Conversation unmuted` : t`Conversation muted`);
-            } catch (e) {
-              console.error(e);
-              showToast(
-                muted
-                  ? t`Unable to unmute conversation`
-                  : t`Unable to mute conversation`,
-              );
-            }
+            void (async () => {
+              try {
+                const stmtAction = masto.v1.statuses.$select(id);
+                const newStatus = await (muted
+                  ? stmtAction.unmute()
+                  : stmtAction.mute());
+                saveStatus(newStatus, instance);
+                showToast(muted ? t`Conversation unmuted` : t`Conversation muted`);
+              } catch (e) {
+                console.error(e);
+                showToast(
+                  muted
+                    ? t`Unable to unmute conversation`
+                    : t`Unable to mute conversation`,
+                );
+              }
+            })();
           }}
         >
           {muted ? (
@@ -113,19 +115,23 @@ export default function StatusAccountMenu({
       )}
       {isSelf && isPinnable && (
         <MenuItem
-          onClick={async () => {
+          onClick={() => {
             void haptics.trigger('light');
-            try {
-              const stmtAction = masto.v1.statuses.$select(id);
-              const newStatus = await (pinned ? stmtAction.unpin() : stmtAction.pin());
-              saveStatus(newStatus, instance);
-              showToast(
-                pinned ? t`Post unpinned from profile` : t`Post pinned to profile`,
-              );
-            } catch (e) {
-              console.error(e);
-              showToast(pinned ? t`Unable to unpin post` : t`Unable to pin post`);
-            }
+            void (async () => {
+              try {
+                const stmtAction = masto.v1.statuses.$select(id);
+                const newStatus = await (pinned
+                  ? stmtAction.unpin()
+                  : stmtAction.pin());
+                saveStatus(newStatus, instance);
+                showToast(
+                  pinned ? t`Post unpinned from profile` : t`Post pinned to profile`,
+                );
+              } catch (e) {
+                console.error(e);
+                showToast(pinned ? t`Unable to unpin post` : t`Unable to pin post`);
+              }
+            })();
           }}
         >
           {pinned ? (

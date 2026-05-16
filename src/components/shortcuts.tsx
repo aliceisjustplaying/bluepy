@@ -10,7 +10,6 @@ import {
   MenuDivider,
   MenuHeader,
 } from '@szhsin/react-menu';
-import type { MouseEvent } from 'react';
 import { memo } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -227,7 +226,7 @@ function Shortcuts() {
       if (index < formattedShortcuts.length) {
         const { path } = formattedShortcuts[index];
         if (path) {
-          navigate(path);
+          void navigate(path);
           menuRef.current?.closeMenu?.();
         }
       }

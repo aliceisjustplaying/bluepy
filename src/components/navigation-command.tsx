@@ -23,8 +23,12 @@ const useGoHotkeys = (key: string, callback: (e: globalThis.KeyboardEvent) => vo
 export default memo(function NavigationCommand() {
   const navigate = useNavigate();
 
-  useGoHotkeys('h', () => navigate('/'));
-  useGoHotkeys('n', () => navigate('/notifications'));
+  useGoHotkeys('h', () => {
+    void navigate('/');
+  });
+  useGoHotkeys('n', () => {
+    void navigate('/notifications');
+  });
   useGoHotkeys('s', () => {
     states.showSettings = true;
   });
@@ -33,10 +37,12 @@ export default memo(function NavigationCommand() {
     if (account) {
       const { instanceURL } = account;
       const { id } = account.info;
-      navigate(`/${instanceURL}/a/${id}`);
+      void navigate(`/${instanceURL}/a/${id}`);
     }
   });
-  useGoHotkeys('b', () => navigate('/b'));
+  useGoHotkeys('b', () => {
+    void navigate('/b');
+  });
 
   return null;
 });

@@ -53,7 +53,8 @@ export default function useScrollFn(
       let nearReachStart = false;
       let nearReachEnd = false;
 
-      const scrollableElement = scrollableRef.current!;
+      const scrollableElement = scrollableRef.current;
+      if (!scrollableElement) return;
       const {
         scrollTop,
         scrollLeft,
@@ -135,7 +136,7 @@ export default function useScrollFn(
     if (!hasCallback) return;
     if (init && scrollableRef.current) {
       queueMicrotask(() => {
-        scrollableRef.current!.dispatchEvent(new Event('scroll'));
+        scrollableRef.current?.dispatchEvent(new Event('scroll'));
       });
     }
   }, [init, hasCallback, scrollableRef]);

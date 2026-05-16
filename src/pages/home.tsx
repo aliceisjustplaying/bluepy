@@ -3,7 +3,7 @@ import './notifications-menu.css';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
-import type { RefObject, MouseEvent } from 'react';
+import type { RefObject } from 'react';
 import { memo } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';

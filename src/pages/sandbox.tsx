@@ -1,6 +1,6 @@
 import './sandbox.css';
 
-import type { ComponentType, SyntheticEvent, MouseEvent } from 'react';
+import type { ComponentType, SyntheticEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { uid } from 'uid/single';
 

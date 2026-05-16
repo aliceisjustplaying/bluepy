@@ -3,7 +3,6 @@ import type {
   ReactNode,
   Ref,
   SyntheticEvent,
-  KeyboardEvent,
 } from 'react';
 import { forwardRef } from 'react';
 import { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
@@ -126,7 +125,7 @@ const SearchForm = forwardRef(
     const searchFieldRef = useRef<HTMLInputElement | null>(null);
     useEffect(() => {
       const searchField = searchFieldRef.current;
-      if (!searchField) return;
+      if (!searchField) return undefined;
       const handleSearch = () => {
         if (!searchField.value) {
           setSearchParams({});

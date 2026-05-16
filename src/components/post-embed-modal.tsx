@@ -1,6 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import prettify from 'html-prettify';
-import type { MouseEvent } from 'react';
 
 import emojifyText from '../utils/emojify-text';
 import showToast from '../utils/show-toast';

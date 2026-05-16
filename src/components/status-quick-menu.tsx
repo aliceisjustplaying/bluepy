@@ -191,7 +191,9 @@ export default function StatusQuickMenu({
         </span>
       </MenuConfirm>
       <MenuItem
-        onClick={favouriteStatusNotify}
+        onClick={() => {
+          void favouriteStatusNotify();
+        }}
         className={`menu-favourite ${favourited ? 'checked' : ''}`}
       >
         <Icon icon="heart" />
@@ -205,7 +207,9 @@ export default function StatusQuickMenu({
       </MenuItem>
       {supports('@mastodon/post-bookmark') && (
         <MenuItem
-          onClick={bookmarkStatusNotify}
+          onClick={() => {
+            void bookmarkStatusNotify();
+          }}
           className={`menu-bookmark ${bookmarked ? 'checked' : ''}`}
         >
           <Icon icon="bookmark" />

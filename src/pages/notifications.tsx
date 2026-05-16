@@ -6,7 +6,6 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type {
   ComponentType,
   SyntheticEvent,
-  MouseEvent,
   ReactNode,
 } from 'react';
 import { Fragment } from 'react';

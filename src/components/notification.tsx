@@ -7,7 +7,6 @@ import type {
   ComponentType,
   JSX,
   Ref,
-  MouseEvent,
   ReactElement,
 } from 'react';
 import { Fragment } from 'react';

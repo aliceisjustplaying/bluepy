@@ -1990,7 +1990,9 @@ function StatusThread({
                     !heroStatus?.editedAt ||
                     !totalDescendants.current
                   }
-                  onClick={initEditHistory}
+                  onClick={() => {
+                    void initEditHistory();
+                  }}
                 >
                   <Icon icon="edit" />
                   <span>{t`View Edit History Snapshots`}</span>

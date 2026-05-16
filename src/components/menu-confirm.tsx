@@ -17,8 +17,6 @@ type MenuClickHandler = (
 // MenuItem (when `!confirm && subMenu`) or Menu2/SubMenu2 (the confirm path).
 // Typed as the union of those prop surfaces (Partial because all are optional
 // from this component's view) plus the explicit local props.
-type PassThroughProps = Partial<MenuProps> &
-  Partial<Omit<MenuItemProps, 'onClick'>>;
 type ConfirmItemProps = Omit<MenuItemProps, 'onClick'> & {
   [key: `data-${string}`]: unknown;
 };

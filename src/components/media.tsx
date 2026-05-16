@@ -5,7 +5,6 @@ import type {
   ComponentType,
   HTMLAttributes,
   Ref,
-  MouseEvent,
 } from 'react';
 import { Fragment } from 'react';
 import { forwardRef, memo } from 'react';

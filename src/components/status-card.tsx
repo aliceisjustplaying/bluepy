@@ -3,7 +3,6 @@ import '@justinribeiro/lite-youtube';
 import { decodeBlurHash, getBlurHashAverageColor } from 'fast-blurhash';
 import type {
   HTMLAttributes,
-  KeyboardEvent,
   MouseEvent,
 } from 'react';
 import { useCallback, useEffect, useState } from 'react';
