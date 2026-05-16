@@ -17,6 +17,7 @@ import { api, getMastoV1Resource } from '../utils/api';
 import { revokeAccessToken } from '../utils/auth';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
+import { navigatePath } from '../utils/router';
 import states from '../utils/states';
 import store from '../utils/store';
 import {
@@ -149,7 +150,9 @@ function Accounts({ onClose }: AccountsProps) {
                       onClick={() => {
                         void haptics.trigger('medium');
                         if (isLoggedOut) {
-                          location.href = `/#/login?instance=${account.instanceURL}`;
+                          navigatePath(
+                            `/login?instance=${account.instanceURL}`,
+                          );
                           onClose?.();
                         } else if (isCurrent) {
                           states.showAccount = `${username}@${account.instanceURL}`;

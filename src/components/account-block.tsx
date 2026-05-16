@@ -7,6 +7,7 @@ import type { TargetedMouseEvent } from 'preact';
 // import { useNavigate } from 'react-router-dom';
 import enhanceContent from '../utils/enhance-content';
 import niceDateTime from '../utils/nice-date-time';
+import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import states from '../utils/states';
 
@@ -124,7 +125,7 @@ function AccountBlock({
         }
         if (internal) {
           // navigate(`/${instance}/a/${id}`);
-          location.hash = `/${instance}/a/${id}`;
+          navigatePath(`/${instance}/a/${id}`);
         } else {
           states.showAccount = {
             account,

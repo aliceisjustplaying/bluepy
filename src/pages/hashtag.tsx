@@ -19,6 +19,7 @@ import { SHORTCUTS_LIMIT } from '../components/shortcuts-settings';
 import Timeline from '../components/timeline';
 import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
+import { navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import { sorted } from '../utils/sorted';
 import states, { saveStatus } from '../utils/states';
@@ -211,13 +212,9 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
 
       // value = filteredItems(value, 'public');
       value.forEach((item) => {
-        saveStatus(
-          toSaveStatus(item),
-          instance,
-          {
-            skipThreading: media || mediaFirst, // If media view, no need to form threads
-          },
-        );
+        saveStatus(toSaveStatus(item), instance, {
+          skipThreading: media || mediaFirst, // If media view, no need to form threads
+        });
       });
 
       maxID.current = value[value.length - 1].id;
@@ -528,9 +525,11 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                       //     ? `/${instance}/t/${hashtags.join('+')}`
                       //     : `/t/${hashtags.join('+')}`,
                       // );
-                      location.hash = instance
-                        ? `/${instance}/t/${hashtags.join('+')}${linkParams}`
-                        : `/t/${hashtags.join('+')}${linkParams}`;
+                      navigatePath(
+                        instance
+                          ? `/${instance}/t/${hashtags.join('+')}${linkParams}`
+                          : `/t/${hashtags.join('+')}${linkParams}`,
+                      );
                     }
                   }}
                 >
@@ -571,9 +570,11 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                     //     ? `/${instance}/t/${hashtags.join('+')}`
                     //     : `/t/${hashtags.join('+')}`,
                     // );
-                    location.hash = instance
-                      ? `/${instance}/t/${hashtags.join('+')}${linkParams}`
-                      : `/t/${hashtags.join('+')}${linkParams}`;
+                    navigatePath(
+                      instance
+                        ? `/${instance}/t/${hashtags.join('+')}${linkParams}`
+                        : `/t/${hashtags.join('+')}${linkParams}`,
+                    );
                   }}
                 >
                   <Icon icon="x" alt={t`Remove hashtag`} class="danger-icon" />
@@ -637,9 +638,9 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                 if (newInstance) {
                   newInstance = newInstance.toLowerCase().trim();
                   // navigate(`/${newInstance}/t/${hashtags.join('+')}`);
-                  location.hash = `/${newInstance}/t/${hashtags.join(
-                    '+',
-                  )}${linkParams}`;
+                  navigatePath(
+                    `/${newInstance}/t/${hashtags.join('+')}${linkParams}`,
+                  );
                 }
               }}
             >
@@ -651,9 +652,9 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
             {currentInstance !== instance && (
               <MenuItem
                 onClick={() => {
-                  location.hash = `/${currentInstance}/t/${hashtags.join(
-                    '+',
-                  )}${linkParams}`;
+                  navigatePath(
+                    `/${currentInstance}/t/${hashtags.join('+')}${linkParams}`,
+                  );
                 }}
               >
                 <Icon icon="bus" />{' '}

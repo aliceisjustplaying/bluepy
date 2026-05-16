@@ -10,6 +10,7 @@ import { useImperativeHandle, useMemo, useRef, useState } from 'preact/hooks';
 import { useSearchParams } from 'react-router-dom';
 
 import { api } from '../utils/api';
+import { currentAppPath, navigatePath } from '../utils/router';
 import { addToSearchHistory, getSearchHistory } from '../utils/search-history';
 import { sorted } from '../utils/sorted';
 
@@ -241,7 +242,7 @@ const SearchForm = forwardRef(
         onSubmit={(e: TargetedEvent<HTMLFormElement>) => {
           e.preventDefault();
 
-          const isSearchPage = /\/search/.test(location.hash);
+          const isSearchPage = /\/search/.test(currentAppPath());
           if (isSearchPage) {
             if (query) {
               const params: { q: string; type?: string } = {
@@ -254,11 +255,13 @@ const SearchForm = forwardRef(
             }
           } else {
             if (query) {
-              location.hash = `/search?q=${encodeURIComponent(query)}${
-                type ? `&type=${type}` : ''
-              }`;
+              navigatePath(
+                `/search?q=${encodeURIComponent(query)}${
+                  type ? `&type=${type}` : ''
+                }`,
+              );
             } else {
-              location.hash = `/search`;
+              navigatePath('/search');
             }
           }
 

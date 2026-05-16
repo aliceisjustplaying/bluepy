@@ -10,6 +10,7 @@ import Menu2 from '../components/menu2';
 import Timeline from '../components/timeline';
 import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
+import { navigatePath } from '../utils/router';
 import states, { saveStatus } from '../utils/states';
 import supports from '../utils/supports';
 import { checkTimelineAccess } from '../utils/timeline-access';
@@ -213,7 +214,11 @@ function Public({ local, columnMode, ...props }: PublicProps) {
             </button>
           }
         >
-          <MenuItem href={isLocal ? `/#/${instance}/p` : `/#/${instance}/p/l`}>
+          <MenuItem
+            onClick={() =>
+              navigatePath(isLocal ? `/${instance}/p` : `/${instance}/p/l`)
+            }
+          >
             {isLocal ? (
               <>
                 <Icon icon="transfer" />{' '}
@@ -243,9 +248,9 @@ function Public({ local, columnMode, ...props }: PublicProps) {
               if (newInstance) {
                 newInstance = newInstance.toLowerCase().trim();
                 // navigate(isLocal ? `/${newInstance}/p/l` : `/${newInstance}/p`);
-                location.hash = isLocal
-                  ? `/${newInstance}/p/l`
-                  : `/${newInstance}/p`;
+                navigatePath(
+                  isLocal ? `/${newInstance}/p/l` : `/${newInstance}/p`,
+                );
               }
             }}
           >
@@ -257,9 +262,9 @@ function Public({ local, columnMode, ...props }: PublicProps) {
           {currentInstance !== instance && (
             <MenuItem
               onClick={() => {
-                location.hash = isLocal
-                  ? `/${currentInstance}/p/l`
-                  : `/${currentInstance}/p`;
+                navigatePath(
+                  isLocal ? `/${currentInstance}/p/l` : `/${currentInstance}/p`,
+                );
               }}
             >
               <Icon icon="bus" />{' '}

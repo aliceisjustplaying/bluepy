@@ -24,19 +24,20 @@ import { useSnapshot } from 'valtio';
 import FilterContext from '../utils/filter-context';
 import { filteredItems, isFiltered } from '../utils/filters';
 import isRTL from '../utils/is-rtl';
+import { navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import states, { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
 import { isMediaFirstInstance } from '../utils/store-utils';
 import {
+  canonicalTimelineContextId,
+  dedupeTimelineContextItems,
+} from '../utils/timeline-context';
+import {
   filterHiddenStatuses,
   groupBoosts,
   groupContext,
 } from '../utils/timeline-utils';
-import {
-  canonicalTimelineContextId,
-  dedupeTimelineContextItems,
-} from '../utils/timeline-context';
 import useInterval from '../utils/useInterval';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScrollFn from '../utils/useScrollFn';
@@ -86,7 +87,10 @@ type TimelineStatusEntry = mastodon.v1.Status & {
   _differentAuthor?: boolean;
 };
 
-type MediaPostProps = Omit<Parameters<typeof MediaPostComponent>[0], 'status'> & {
+type MediaPostProps = Omit<
+  Parameters<typeof MediaPostComponent>[0],
+  'status'
+> & {
   status?: TimelineStatusEntry;
 };
 
@@ -332,7 +336,7 @@ export function useOHotkeys() {
               const newURL = url.replace(/media-only=/i, 'media=');
               setTimeout(() => {
                 // Need timeout to prevent propagate to the o key handler in pages/status.jsx
-                location.hash = newURL;
+                navigatePath(newURL);
               }, 100);
             } else {
               mediaLink.click();
@@ -506,7 +510,9 @@ function Timeline({
             if (firstLoad) {
               setItems(dedupeTimelineEntries(processed));
             } else {
-              setItems((prev) => dedupeTimelineEntries([...prev, ...processed]));
+              setItems((prev) =>
+                dedupeTimelineEntries([...prev, ...processed]),
+              );
             }
             if (!processed.length) done = true;
             setShowMore(!done);

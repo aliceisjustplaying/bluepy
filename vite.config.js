@@ -115,7 +115,7 @@ logger.warn = (msg, options) => {
 // https://vitejs.dev/config/
 export default defineConfig({
   customLogger: logger,
-  base: './',
+  base: '/',
   envPrefix: allowedEnvPrefixes,
   appType: 'mpa',
   mode: NODE_ENV,
@@ -163,11 +163,64 @@ export default defineConfig({
           '/oauth-client-metadata.json',
           (req, res, next) => {
             const origin = devOrigin || devRequestOrigin(req);
-            if (!origin) return next();
+            if (!origin) {
+              next();
+              return;
+            }
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify(oauthMetadata(origin)));
           },
         );
+      },
+    },
+    {
+      name: 'browser-router-fallback',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const method = req.method || 'GET';
+          const url = req.url || '/';
+          if (method !== 'GET' && method !== 'HEAD') {
+            next();
+            return;
+          }
+          if (!(req.headers.accept || '').includes('text/html')) {
+            next();
+            return;
+          }
+          let pathname = url;
+          try {
+            pathname = new URL(url, 'http://localhost').pathname;
+          } catch {}
+          const assetExtensionRE =
+            /\.(?:avif|css|gif|html|ico|jpe?g|js|json|map|mjs|mp4|png|svg|txt|wasm|webmanifest|webp|woff2?)$/i;
+          const isComposePath =
+            pathname === '/compose' || pathname.startsWith('/compose/');
+          if (
+            url.startsWith('/@') ||
+            url.startsWith('/__') ||
+            url.startsWith('/assets/') ||
+            isComposePath ||
+            url.startsWith('/oauth-client-metadata.json') ||
+            assetExtensionRE.test(pathname)
+          ) {
+            next();
+            return;
+          }
+          void (async () => {
+            try {
+              const html = fs.readFileSync(
+                resolve(__dirname, 'index.html'),
+                'utf-8',
+              );
+              const transformed = await server.transformIndexHtml(url, html);
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'text/html');
+              res.end(transformed);
+            } catch (error) {
+              next(error);
+            }
+          })();
+        });
       },
     },
     preactPreset({

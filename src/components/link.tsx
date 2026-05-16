@@ -2,6 +2,12 @@ import type { HTMLAttributes, Ref, TargetedMouseEvent } from 'preact';
 import { forwardRef } from 'preact/compat';
 import { useInRouterContext, useLocation } from 'react-router-dom';
 
+import {
+  canonicalizeAppPath,
+  currentAppPath,
+  isModifiedClick,
+  navigatePath,
+} from '../utils/router';
 import states from '../utils/states';
 
 /* NOTES
@@ -59,28 +65,29 @@ const Link = forwardRef<HTMLAnchorElement, LinkProps>(
 
 const LinkBody = forwardRef<HTMLAnchorElement, LinkBodyProps>(
   (props: LinkBodyProps, ref: Ref<HTMLAnchorElement>) => {
-    let hash = (location.hash || '').replace(/^#/, '').trim();
-    if (hash === '') hash = '/';
     const { to, children, routerLocation, ...restProps } = props;
+    let currentPath = currentAppPath();
+    const href = canonicalizeAppPath(to);
 
     // Handle encodeURIComponent of searchParams values
-    if (!!hash && hash !== '/' && hash.includes('?')) {
-      const parsedHash = URL.parse(hash, location.origin); // Fake base URL
-      if (parsedHash?.searchParams?.size) {
-        const searchParamsStr = Array.from(parsedHash.searchParams.entries())
+    if (currentPath !== '/' && currentPath.includes('?')) {
+      const parsedPath = URL.parse(currentPath, location.origin);
+      if (parsedPath?.searchParams?.size) {
+        const searchParamsStr = Array.from(parsedPath.searchParams.entries())
           .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
           .join('&');
-        hash = parsedHash.pathname + '?' + searchParamsStr;
+        currentPath = parsedPath.pathname + '?' + searchParamsStr;
       }
     }
 
-    const isActive = hash === to || decodeURIComponent(hash) === to;
+    const isActive =
+      currentPath === href || decodeURIComponent(currentPath) === href;
     const classProp = props.class;
     const classStr = typeof classProp === 'string' ? classProp : '';
     return (
       <a
         ref={ref}
-        href={`#${to}`}
+        href={href}
         {...(restProps as HTMLAttributes<HTMLAnchorElement>)}
         class={`${classStr} ${isActive ? 'is-active' : ''}`}
         onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
@@ -100,6 +107,16 @@ const LinkBody = forwardRef<HTMLAnchorElement, LinkBodyProps>(
               | ((ev: TargetedMouseEvent<HTMLAnchorElement>) => void)
               | undefined
           )?.(e);
+          if (
+            e.defaultPrevented ||
+            isModifiedClick(e as unknown as MouseEvent)
+          ) {
+            return;
+          }
+          const target = (props.target as string | undefined) || '';
+          if (target && target !== '_self') return;
+          e.preventDefault();
+          navigatePath(href);
         }}
       >
         {children}

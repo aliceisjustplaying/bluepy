@@ -32,7 +32,7 @@ test('loads post page and works', async ({ page }) => {
     });
   });
 
-  await page.goto('/#/test.social/s/123');
+  await page.goto('/test.social/s/123');
   await expect(page.locator('text=This is a test post')).toBeVisible();
 });
 
@@ -51,19 +51,17 @@ test('uses cache-busting reloads when the app script never mounts', async ({
 
   await page.goto('/');
 
-  await expect
-    .poll(() => appScriptRequests, { timeout: 25_000 })
-    .toBe(4);
+  await expect.poll(() => appScriptRequests, { timeout: 25_000 }).toBe(4);
   await expect(page.locator('#boot-status')).toContainText(
     'Safari did not run the app script',
     { timeout: 7_000 },
   );
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        JSON.parse(
-          sessionStorage.getItem('bluepy:boot-reload-state') || '{}',
-        ).attempts,
+      page.evaluate(
+        () =>
+          JSON.parse(sessionStorage.getItem('bluepy:boot-reload-state') || '{}')
+            .attempts,
       ),
     )
     .toBe(3);
@@ -86,15 +84,13 @@ test('uses cache-busting reloads when the app script fails to load', async ({
 
   await page.goto('/');
 
-  await expect
-    .poll(() => appScriptRequests, { timeout: 10_000 })
-    .toBe(4);
+  await expect.poll(() => appScriptRequests, { timeout: 10_000 }).toBe(4);
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        JSON.parse(
-          sessionStorage.getItem('bluepy:boot-reload-state') || '{}',
-        ).attempts,
+      page.evaluate(
+        () =>
+          JSON.parse(sessionStorage.getItem('bluepy:boot-reload-state') || '{}')
+            .attempts,
       ),
     )
     .toBe(3);
@@ -124,9 +120,7 @@ test('shows boot failure without recovery on app runtime errors', async ({
   expect(appScriptRequests).toBe(1);
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        sessionStorage.getItem('bluepy:boot-reload-state'),
-      ),
+      page.evaluate(() => sessionStorage.getItem('bluepy:boot-reload-state')),
     )
     .toBeNull();
 });
@@ -176,9 +170,86 @@ test('does not treat post-mount module failures as boot failures', async ({
   expect(page.url()).toBe(mountedURL);
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        sessionStorage.getItem('bluepy:boot-reload-state'),
-      ),
+      page.evaluate(() => sessionStorage.getItem('bluepy:boot-reload-state')),
     )
     .toBeNull();
+});
+
+test('redirects old hash post URLs to path routes', async ({ page }) => {
+  await page.route('**/api/v1/statuses/123', async (route) => {
+    await route.fulfill({
+      json: {
+        id: '123',
+        created_at: '2024-01-01T12:00:00.000Z',
+        account: {
+          id: '1',
+          username: 'testuser',
+          display_name: 'Test User',
+          acct: 'testuser@test.social',
+        },
+        content: '<p>Legacy hash post</p>',
+      },
+    });
+  });
+
+  await page.route('**/api/v1/statuses/123/context', async (route) => {
+    await route.fulfill({ json: { ancestors: [], descendants: [] } });
+  });
+
+  await page.goto('/#/test.social/s/123');
+  await expect(page).toHaveURL(/\/test\.social\/s\/123$/);
+  await expect(page.locator('text=Legacy hash post')).toBeVisible();
+});
+
+test('loads native AT URI post URLs', async ({ page }) => {
+  const atUri =
+    'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/3mlvekixsll23';
+  const post = {
+    uri: atUri,
+    cid: 'bafyreihltdmuzgj3iaoj5woin7jn3yfhftewnsijzf4b5gqsuxorrhw4qi',
+    author: {
+      did: 'did:plc:by3jhwdqgbtrcc7q4tkkv3cf',
+      handle: 'alice.mosphere.at',
+      displayName: 'Alice',
+    },
+    record: {
+      $type: 'app.bsky.feed.post',
+      text: 'Native AT URI post',
+      createdAt: '2024-01-01T12:00:00.000Z',
+    },
+    indexedAt: '2024-01-01T12:00:00.000Z',
+    replyCount: 0,
+    repostCount: 0,
+    likeCount: 0,
+    quoteCount: 0,
+    labels: [],
+    viewer: {},
+  };
+
+  await page.route('**/xrpc/app.bsky.feed.getPosts*', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: { posts: [post] },
+    });
+  });
+  await page.route('**/xrpc/app.bsky.feed.getPostThread*', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: {
+        thread: {
+          $type: 'app.bsky.feed.defs#threadViewPost',
+          post,
+          replies: [],
+        },
+      },
+    });
+  });
+
+  await page.goto(`/${atUri}`);
+  await expect(page.locator('text=Native AT URI post')).toBeVisible();
+  await expect(page).toHaveURL(
+    new RegExp(
+      `/at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app\\.bsky\\.feed\\.post/3mlvekixsll23$`,
+    ),
+  );
 });

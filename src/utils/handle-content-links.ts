@@ -1,3 +1,4 @@
+import { navigatePath } from './router';
 import { isLeafletUrl } from './standard-site';
 import states from './states';
 
@@ -29,13 +30,7 @@ function handleContentLinks(
   const { mentions = [], instance, previewMode, statusURL } = opts || {};
   return (e: MouseEvent) => {
     // If cmd/ctrl/shift/alt key is pressed or middle-click, let the browser handle it
-    if (
-      e.metaKey ||
-      e.ctrlKey ||
-      e.shiftKey ||
-      e.altKey ||
-      e.which === 2
-    ) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.which === 2) {
       return;
     }
 
@@ -132,9 +127,9 @@ function handleContentLinks(
         e.preventDefault();
         e.stopPropagation();
         const tag = targetInnerText.replace(/^[#＃]/, '').trim();
-        const hashURL = instance ? `#/${instance}/t/${tag}` : `#/t/${tag}`;
-        console.log({ hashURL });
-        location.hash = hashURL;
+        const tagURL = instance ? `/${instance}/t/${tag}` : `/t/${tag}`;
+        console.log({ tagURL });
+        navigatePath(tagURL);
         return;
       } else if (
         (states.unfurledLinks as Record<string, { url?: string } | undefined>)[
@@ -146,13 +141,14 @@ function handleContentLinks(
         e.preventDefault();
         e.stopPropagation();
         states.prevLocation = {
-          pathname: location.hash.replace(/^#/, ''),
+          pathname: location.pathname,
+          search: location.search,
         };
-        location.hash = `#${
+        navigatePath(
           (
             states.unfurledLinks as Record<string, { url?: string } | undefined>
-          )[href]!.url
-        }`;
+          )[href]!.url as string,
+        );
         return;
       }
     }

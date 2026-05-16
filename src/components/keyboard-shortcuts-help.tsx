@@ -5,6 +5,7 @@ import { memo } from 'preact/compat';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useSnapshot } from 'valtio';
 
+import { currentAppPath } from '../utils/router';
 import states from '../utils/states';
 
 import Icon from './icon';
@@ -37,7 +38,7 @@ export default memo(function KeyboardShortcutsHelp() {
       useKey: true,
       ignoreModifiers: true,
       ignoreEventWhen: (e: KeyboardEvent) => {
-        const isCatchUpPage = /\/catchup/i.test(location.hash);
+        const isCatchUpPage = /\/catchup/i.test(currentAppPath());
         return isCatchUpPage || e.metaKey || e.ctrlKey || e.altKey;
         // const hasModal = !!document.querySelector('#modal-container > *');
         // return hasModal;
@@ -48,11 +49,7 @@ export default memo(function KeyboardShortcutsHelp() {
   return (
     !!snapStates.showKeyboardShortcutsHelp && (
       <Modal onClose={onClose}>
-        <div
-          id="keyboard-shortcuts-help-container"
-          class="sheet"
-          tabIndex={-1}
-        >
+        <div id="keyboard-shortcuts-help-container" class="sheet" tabIndex={-1}>
           <button type="button" class="sheet-close" onClick={onClose}>
             <Icon icon="x" alt={t`Close`} />
           </button>
