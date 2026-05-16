@@ -5,7 +5,11 @@
     "directory": "./dist",
   },
   "env": {
+    "bluepy": {
+      "name": "bluepy",
+    },
     "dev": {
+      "name": "bluepy-dev",
       "routes": [
         {
           "pattern": "dev.bluepy.social",
