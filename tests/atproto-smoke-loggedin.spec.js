@@ -42,6 +42,7 @@ const PASSWORD = process.env.ATPROTO_TEST_PASSWORD;
 const HAS_CREDS = Boolean(IDENTIFIER && PASSWORD);
 
 base.skip(!HAS_CREDS, 'ATPROTO_TEST_IDENTIFIER/PASSWORD not set');
+base.describe.configure({ mode: 'serial' });
 
 const SMOKE_TAG_PREFIX = '[bluepy-smoke-';
 const RUN_TAG = `${SMOKE_TAG_PREFIX}${Date.now()}]`;
@@ -182,10 +183,9 @@ async function getRequiredTitle(locator, label) {
 /** @param {Page} page */
 async function openFirstStatusDetail(page) {
   await page.goto('/');
-  const statusLink = page.locator('.status-link[data-href]').first();
-  await statusLink.waitFor({ timeout: 30_000 });
-  await statusLink.click();
-  await expect(page).toHaveURL(/\/(?:s\/|at:\/\/|at%3A)/i, { timeout: 15_000 });
+  const article = page.locator('[data-state-post-id]').first();
+  await article.waitFor({ timeout: 30_000 });
+  await openStatusDetailFromArticle(page, article);
 }
 
 /**
@@ -210,7 +210,7 @@ async function openStatusDetailFromArticle(page, article) {
  */
 function statusDetailButton(page, titleSelector) {
   return page
-    .locator(`.deck-backdrop .status-deck :is(${titleSelector})`)
+    .locator(`.status-deck :is(${titleSelector}), .status.large :is(${titleSelector})`)
     .first();
 }
 
@@ -444,8 +444,6 @@ test.describe('modals', () => {
 const CREATED = [];
 
 test.describe('write flows', () => {
-  test.describe.configure({ mode: 'serial' });
-
   /**
    * @param {Page} page
    * @param {string} body
@@ -551,11 +549,12 @@ test.describe('write flows', () => {
   test('reply UI opens compose modal from a status detail', async ({
     page,
   }) => {
-    await openFirstStatusDetail(page);
+    const body = `${RUN_TAG} reply-target ${Date.now()}`;
+    await composeAndPublish(page, body);
+    CREATED.push({ page, body });
+    await openCreatedStatusDetail(page, body);
 
-    const replyBtn = page
-      .locator('.deck-backdrop .status-deck button[title="Reply"]')
-      .first();
+    const replyBtn = statusDetailButton(page, 'button[title="Reply"]');
     await replyBtn.waitFor({ timeout: 15_000 });
     await replyBtn.click();
 

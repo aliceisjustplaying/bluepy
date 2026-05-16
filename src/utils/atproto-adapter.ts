@@ -578,6 +578,58 @@ interface CreateAtprotoClientOptions {
   persistSession?: AtpPersistSessionHandler;
 }
 
+export interface AtprotoPostParams {
+  status?: string;
+  scheduled_at?: string;
+  scheduledAt?: string;
+  poll?: unknown;
+  in_reply_to_id?: string;
+  inReplyToId?: string;
+  quoted_status_id?: string;
+  quote_id?: string;
+  quoteId?: string;
+  media_ids?: string[];
+  mediaIds?: string[];
+  disable_card?: boolean;
+  disableCard?: boolean;
+  card_url?: string;
+  cardUrl?: string;
+  external_url?: string;
+  externalUrl?: string;
+  visibility?: string;
+  sensitive?: boolean;
+  spoiler_text?: string;
+  spoilerText?: string;
+  quote_approval_policy?: string;
+  quoteApprovalPolicy?: string;
+  language?: string | null;
+}
+
+export function assertAtprotoPostParamsSupported(
+  params: AtprotoPostParams,
+): void {
+  if (params.scheduled_at || params.scheduledAt) {
+    throw new Error('Bluesky scheduled posts are not supported');
+  }
+  if (params.poll) {
+    throw new Error('Bluesky polls are not supported');
+  }
+  if (params.visibility && params.visibility !== 'public') {
+    throw new Error('Bluesky posts only support public visibility');
+  }
+  if (params.sensitive) {
+    throw new Error('Bluesky content warnings are not supported');
+  }
+  if ((params.spoiler_text || params.spoilerText || '').trim()) {
+    throw new Error('Bluesky content warnings are not supported');
+  }
+  const quoteApprovalPolicy =
+    params.quote_approval_policy || params.quoteApprovalPolicy;
+  if (quoteApprovalPolicy && quoteApprovalPolicy !== 'public') {
+    throw new Error('Bluesky quote approval settings are not supported');
+  }
+}
+
 function getServiceAuthAudFromUrl(url: string | URL): string {
   const { hostname } = typeof url === 'string' ? new URL(url) : url;
   return `did:web:${hostname}`;
@@ -3082,33 +3134,8 @@ export function createAtprotoClient({
           const res = await agent.getPosts({ uris });
           return res.data.posts.map((post) => postToStatus(post, agent));
         },
-        async create(
-          params: {
-            status?: string;
-            scheduled_at?: string;
-            scheduledAt?: string;
-            poll?: unknown;
-            in_reply_to_id?: string;
-            inReplyToId?: string;
-            quoted_status_id?: string;
-            quote_id?: string;
-            quoteId?: string;
-            media_ids?: string[];
-            mediaIds?: string[];
-            disable_card?: boolean;
-            disableCard?: boolean;
-            card_url?: string;
-            cardUrl?: string;
-            external_url?: string;
-            externalUrl?: string;
-          } = {},
-        ): Promise<AdaptedStatus> {
-          if (params.scheduled_at || params.scheduledAt) {
-            throw new Error('Bluesky scheduled posts are not supported');
-          }
-          if (params.poll) {
-            throw new Error('Bluesky polls are not supported');
-          }
+        async create(params: AtprotoPostParams = {}): Promise<AdaptedStatus> {
+          assertAtprotoPostParamsSupported(params);
           const inReplyToId = params.in_reply_to_id || params.inReplyToId;
           const quoteId =
             params.quoted_status_id || params.quote_id || params.quoteId;
@@ -3121,6 +3148,9 @@ export function createAtprotoClient({
             facets,
             createdAt: new Date().toISOString(),
           };
+          if (params.language) {
+            record.langs = [params.language];
+          }
           let quoteEmbed: TypedRecordEmbed | undefined;
           if (inReplyToId) {
             const parent = await statusAPI(inReplyToId).fetch();

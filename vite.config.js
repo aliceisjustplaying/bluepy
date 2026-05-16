@@ -235,7 +235,7 @@ export default defineConfig({
       input: [
         {
           name: 'messages:extract:clean',
-          run: ['npm', 'run', 'messages:extract:clean'],
+          run: ['bun', 'run', 'messages:extract:clean'],
           pattern: 'src/**/*.{js,jsx,ts,tsx}',
         },
         // {

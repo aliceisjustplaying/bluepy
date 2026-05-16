@@ -975,7 +975,7 @@ function SecondaryRoutes() {
   });
 
   return (
-    <Routes location={backgroundLocation.current || location}>
+    <Routes location={backgroundLocation.current || currentLocation}>
       <Route
         path="/notifications"
         element={

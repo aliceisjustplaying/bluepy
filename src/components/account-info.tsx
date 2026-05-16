@@ -494,7 +494,7 @@ function AccountInfo({
         );
         console.log('fetched familiar followers', followers);
         setFamiliarFollowers(
-          followers[0].accounts.slice(0, FAMILIAR_FOLLOWERS_LIMIT),
+          (followers[0]?.accounts ?? []).slice(0, FAMILIAR_FOLLOWERS_LIMIT),
         );
       } catch (e) {
         console.error(e);

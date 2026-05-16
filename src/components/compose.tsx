@@ -605,6 +605,10 @@ function Compose({
   const currentQuoteStatus = quoteCleared
     ? null
     : localQuoteStatus || quoteStatus;
+  const isAtprotoCompose =
+    !!currentAccount?.atproto || currentAccount?.instanceURL === 'bsky.social';
+  const supportsQuoteApprovalPolicy =
+    supportsNativeQuote() && !isAtprotoCompose;
   const canShowLinkPreview =
     currentAccount?.atproto &&
     !editStatus &&
@@ -646,6 +650,18 @@ function Compose({
       })();
     }, 300);
   };
+
+  useEffect(() => {
+    if (!isAtprotoCompose) return;
+    setVisibility('public');
+    setQuoteApprovalPolicy('public');
+    setSensitive(false);
+    setSensitiveMedia(false);
+    if (spoilerTextRef.current?.value) {
+      spoilerTextRef.current.value = '';
+      updateCharCount();
+    }
+  }, [isAtprotoCompose]);
 
   // Quote eligibility logic duplicated from status.jsx
   const checkQuoteEligibility = (status: StatusLike): boolean => {
@@ -1268,7 +1284,7 @@ function Compose({
       keyup: true,
       ignoreEventWhen: (e) => {
         const modals = document.querySelectorAll('#modal-container > *');
-        const hasModal = !!modals;
+        const hasModal = modals.length > 0;
         const hasOnlyComposer =
           modals.length === 1 && modals[0].querySelector('#compose-container');
         return (
@@ -1923,15 +1939,13 @@ function Compose({
                     composerState.publishingError = true;
                     setUIState('error');
                     // Alert all the reasons
-                    results.forEach((result) => {
+                    results.forEach((result, index) => {
                       if (result.status === 'rejected') {
                         console.error(result);
-                        // Note: original referenced `i` which wasn't in scope;
-                        // preserve that pre-existing behavior — message reads
-                        // "Attachment #undefined failed" at runtime. Follow-up
-                        // bug, not changed in this TS migration.
-                        const i: number | undefined = undefined;
-                        alert(result.reason || t`Attachment #${i} failed`);
+                        alert(
+                          result.reason ||
+                            t`Attachment #${mediaAttachments[index]?.fileName || index + 1} failed`,
+                        );
                       }
                     });
                     return;
@@ -1959,7 +1973,7 @@ function Compose({
                   ),
                 };
                 if (editStatus) {
-                  if (supportsNativeQuote()) {
+                  if (supportsQuoteApprovalPolicy) {
                     params.quote_approval_policy = quoteApprovalPolicy;
                   }
                   if (
@@ -1978,8 +1992,10 @@ function Compose({
                     );
                   }
                 } else {
-                  if (supportsNativeQuote()) {
+                  if (supportsQuoteApprovalPolicy) {
                     params.quote_approval_policy = submitQuoteApprovalPolicy;
+                  }
+                  if (supportsNativeQuote()) {
                     if (currentQuoteStatus?.id) {
                       params.quoted_status_id = currentQuoteStatus.id;
                     }
@@ -2234,23 +2250,25 @@ function Compose({
                   />
                 );
               })}
-              <label className="media-sensitive">
-                <input
-                  name="sensitiveMedia"
-                  type="checkbox"
-                  checked={sensitiveMedia}
-                  disabled={uiState === 'loading'}
-                  onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-                    const nextSensitiveMedia = (e.target as HTMLInputElement)
-                      .checked;
-                    setSensitiveMedia(nextSensitiveMedia);
-                  }}
-                />{' '}
-                <span>
-                  <Trans>Mark media as sensitive</Trans>
-                </span>{' '}
-                <Icon icon={`eye-${sensitiveMedia ? 'close' : 'open'}`} />
-              </label>
+              {!isAtprotoCompose && (
+                <label className="media-sensitive">
+                  <input
+                    name="sensitiveMedia"
+                    type="checkbox"
+                    checked={sensitiveMedia}
+                    disabled={uiState === 'loading'}
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
+                      const nextSensitiveMedia = (e.target as HTMLInputElement)
+                        .checked;
+                      setSensitiveMedia(nextSensitiveMedia);
+                    }}
+                  />{' '}
+                  <span>
+                    <Trans>Mark media as sensitive</Trans>
+                  </span>{' '}
+                  <Icon icon={`eye-${sensitiveMedia ? 'close' : 'open'}`} />
+                </label>
+              )}
             </div>
           )}
           {!!poll && (
@@ -2424,13 +2442,15 @@ function Compose({
                     >
                       <Icon icon="media" /> <span>{_(ADD_LABELS.media)}</span>
                     </MenuItem>
-                    <MenuItem
-                      disabled={cwButtonDisabled}
-                      onClick={onCWButtonClick}
-                    >
-                      <Icon icon="alert" />{' '}
-                      <span>{_(ADD_LABELS.sensitive)}</span>
-                    </MenuItem>
+                    {!isAtprotoCompose && (
+                      <MenuItem
+                        disabled={cwButtonDisabled}
+                        onClick={onCWButtonClick}
+                      >
+                        <Icon icon="alert" />{' '}
+                        <span>{_(ADD_LABELS.sensitive)}</span>
+                      </MenuItem>
+                    )}
                     {showPollButton && (
                       <MenuItem
                         disabled={pollButtonDisabled}
@@ -2515,14 +2535,16 @@ function Compose({
                   />
                   <Icon icon="media" alt={_(ADD_LABELS.media)} />
                 </label>
-                <button
-                  type="button"
-                  className="toolbar-button"
-                  disabled={cwButtonDisabled}
-                  onClick={onCWButtonClick}
-                >
-                  <Icon icon="alert" alt={_(ADD_LABELS.sensitive)} />
-                </button>
+                {!isAtprotoCompose && (
+                  <button
+                    type="button"
+                    className="toolbar-button"
+                    disabled={cwButtonDisabled}
+                    onClick={onCWButtonClick}
+                  >
+                    <Icon icon="alert" alt={_(ADD_LABELS.sensitive)} />
+                  </button>
+                )}
                 {showPollButton && (
                   <button
                     type="button"
@@ -2596,7 +2618,7 @@ function Compose({
                 hidden={(uiState as string) === 'loading'}
               />
             )}
-            {supportsNativeQuote() && (
+            {supportsQuoteApprovalPolicy && (
               <label
                 className={`toolbar-button ${highlightQuoteApprovalPolicyField ? 'highlight' : ''}`}
               >
@@ -2694,27 +2716,33 @@ function Compose({
                     setQuoteCleared(false);
                   }
                 }}
-                disabled={uiState === 'loading' || !!editStatus}
+                disabled={
+                  uiState === 'loading' || !!editStatus || isAtprotoCompose
+                }
                 dir="auto"
               >
                 <option value="public">
                   <Trans>Public</Trans>
                 </option>
-                {(supports('@pleroma/local-visibility-post') ||
-                  supports('@akkoma/local-visibility-post')) && (
-                  <option value="local">
-                    <Trans>Local</Trans>
-                  </option>
+                {!isAtprotoCompose && (
+                  <>
+                    {(supports('@pleroma/local-visibility-post') ||
+                      supports('@akkoma/local-visibility-post')) && (
+                      <option value="local">
+                        <Trans>Local</Trans>
+                      </option>
+                    )}
+                    <option value="unlisted">
+                      <Trans>Quiet public</Trans>
+                    </option>
+                    <option value="private">
+                      <Trans>Followers</Trans>
+                    </option>
+                    <option value="direct">
+                      <Trans>Private mention</Trans>
+                    </option>
+                  </>
                 )}
-                <option value="unlisted">
-                  <Trans>Quiet public</Trans>
-                </option>
-                <option value="private">
-                  <Trans>Followers</Trans>
-                </option>
-                <option value="direct">
-                  <Trans>Private mention</Trans>
-                </option>
               </select>
             </label>{' '}
             <label

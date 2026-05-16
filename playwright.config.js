@@ -60,7 +60,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: `npm run dev -- --port ${DEV_PORT}`,
+    command: `bun run dev -- --port ${DEV_PORT}`,
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
   },
