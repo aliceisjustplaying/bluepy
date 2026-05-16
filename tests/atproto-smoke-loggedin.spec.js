@@ -439,7 +439,10 @@ test.describe('write flows', () => {
     const body = `${RUN_TAG} compose ${Date.now()}`;
     await composeAndPublish(page, body);
 
-    await openCreatedStatusDetail(page, body);
+    await page
+      .getByText('Post published. Check it out.')
+      .click({ timeout: 15_000 });
+    await expect(page).toHaveURL(/\/at:\/\/[^/]+\/app\.bsky\.feed\.post\//);
     await page.getByTestId('status-more-button').click();
     await page.getByTestId('status-delete-trigger').click();
     await page.getByTestId('status-delete-confirm').click();

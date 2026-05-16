@@ -1,13 +1,13 @@
 import { useLingui } from '@lingui/react/macro';
 import { useEffect } from 'preact/hooks';
-import { useLocation, useNavigate, type Location } from 'react-router-dom';
+import { useLocation, type Location } from 'react-router-dom';
 import { subscribe, useSnapshot } from 'valtio';
 
 import Accounts from '../pages/accounts';
 import Settings from '../pages/settings';
 import { useAuth } from '../utils/auth-context';
 import focusDeck from '../utils/focus-deck';
-import { canonicalizeAppPath } from '../utils/router';
+import { canonicalizeAppPath, navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 
@@ -74,7 +74,6 @@ subscribe(states, (changes) => {
 export default function Modals() {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const navigate = useNavigate();
   const location = useLocation();
   const isLoggedIn = useAuth();
 
@@ -151,9 +150,9 @@ export default function Modals() {
                     toast.hideToast();
                     states.prevLocation = toPrevLocation(location);
                     if (scheduledAt) {
-                      navigate('/sp');
+                      navigatePath('/sp');
                     } else {
-                      navigate(
+                      navigatePath(
                         canonicalizeAppPath(
                           instance
                             ? `/${instance}/s/${newStatus.id}`
