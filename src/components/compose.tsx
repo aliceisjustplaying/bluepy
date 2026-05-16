@@ -2352,123 +2352,119 @@ function Compose({
           <div className="toolbar compose-footer">
             <span className="add-toolbar-button-group spacer">
               {showAddButton && (
-                <Menu2
-                  portal={{
-                    target: document.body,
-                  }}
-                  containerProps={{
-                    style: {
-                      zIndex: 1001,
-                    },
-                  }}
-                  menuButton={({ open }: { open: boolean }) => (
-                    <button
-                      type="button"
-                      className={`toolbar-button add-button ${
-                        open ? 'active' : ''
-                      }`}
-                    >
-                      <Icon icon="plus" title={t`Add`} />
-                    </button>
-                  )}
-                >
+                <>
                   {supportsCameraCapture && (
+                    <CameraCaptureInput
+                      id={menuCameraInputId}
+                      hidden
+                      supportedMimeTypes={supportedImagesVideosTypes}
+                      disabled={mediaButtonDisabled}
+                      setMediaAttachments={setMediaAttachments}
+                    />
+                  )}
+                  <FilePickerInput
+                    id={menuMediaInputId}
+                    hidden
+                    supportedMimeTypes={supportedMimeTypes}
+                    maxMediaAttachments={maxMediaAttachments}
+                    mediaAttachments={mediaAttachments}
+                    disabled={mediaButtonDisabled}
+                    setMediaAttachments={setMediaAttachments}
+                  />
+                  <Menu2
+                    portal={{
+                      target: document.body,
+                    }}
+                    containerProps={{
+                      style: {
+                        zIndex: 1001,
+                      },
+                    }}
+                    menuButton={({ open }: { open: boolean }) => (
+                      <button
+                        type="button"
+                        className={`toolbar-button add-button ${
+                          open ? 'active' : ''
+                        }`}
+                      >
+                        <Icon icon="plus" title={t`Add`} />
+                      </button>
+                    )}
+                  >
+                    {supportsCameraCapture && (
+                      <MenuItem
+                        disabled={mediaButtonDisabled}
+                        className="compose-menu-add-media"
+                      >
+                        <label
+                          className="compose-menu-add-media-field"
+                          htmlFor={menuCameraInputId}
+                        />
+                        <Icon icon="camera" />{' '}
+                        <span>{_(ADD_LABELS.camera)}</span>
+                      </MenuItem>
+                    )}
                     <MenuItem
                       disabled={mediaButtonDisabled}
                       className="compose-menu-add-media"
                     >
-                      {/* TODO(oxlint:jsx-a11y/label-has-associated-control):
-                          the wrapped CameraCaptureInput renders the actual
-                          <input type="file"> — the rule cannot see through
-                          the component boundary. */}
                       <label
                         className="compose-menu-add-media-field"
-                        htmlFor={menuCameraInputId}
-                      >
-                        <CameraCaptureInput
-                          id={menuCameraInputId}
-                          hidden
-                          supportedMimeTypes={supportedImagesVideosTypes}
-                          disabled={mediaButtonDisabled}
-                          setMediaAttachments={setMediaAttachments}
-                        />
-                      </label>
-                      <Icon icon="camera" /> <span>{_(ADD_LABELS.camera)}</span>
-                    </MenuItem>
-                  )}
-                  <MenuItem
-                    disabled={mediaButtonDisabled}
-                    className="compose-menu-add-media"
-                  >
-                    {/* TODO(oxlint:jsx-a11y/label-has-associated-control):
-                        the wrapped FilePickerInput renders the actual
-                        <input type="file"> — the rule cannot see through
-                        the component boundary. */}
-                    <label
-                      className="compose-menu-add-media-field"
-                      htmlFor={menuMediaInputId}
-                    >
-                      <FilePickerInput
-                        id={menuMediaInputId}
-                        hidden
-                        supportedMimeTypes={supportedMimeTypes}
-                        maxMediaAttachments={maxMediaAttachments}
-                        mediaAttachments={mediaAttachments}
-                        disabled={mediaButtonDisabled}
-                        setMediaAttachments={setMediaAttachments}
+                        htmlFor={menuMediaInputId}
                       />
-                    </label>
-                    <Icon icon="media" /> <span>{_(ADD_LABELS.media)}</span>
-                  </MenuItem>
-                  <MenuItem
-                    disabled={cwButtonDisabled}
-                    onClick={onCWButtonClick}
-                  >
-                    <Icon icon="alert" /> <span>{_(ADD_LABELS.sensitive)}</span>
-                  </MenuItem>
-                  {showPollButton && (
-                    <MenuItem
-                      disabled={pollButtonDisabled}
-                      onClick={onPollButtonClick}
-                    >
-                      <Icon icon="poll" /> <span>{_(ADD_LABELS.poll)}</span>
+                      <Icon icon="media" /> <span>{_(ADD_LABELS.media)}</span>
                     </MenuItem>
-                  )}
-                  <MenuDivider />
-                  <MenuItem
-                    onClick={() => {
-                      setShowEmoji2Picker({
-                        targetElement: lastFocusedEmojiFieldRef,
-                      });
-                    }}
-                  >
-                    <Icon icon="emoji2" />{' '}
-                    <span>{_(ADD_LABELS.customEmoji)}</span>
-                  </MenuItem>
-                  {states.settings.composerGIFPicker && (
                     <MenuItem
-                      disabled={mediaButtonDisabled}
+                      disabled={cwButtonDisabled}
+                      onClick={onCWButtonClick}
+                    >
+                      <Icon icon="alert" />{' '}
+                      <span>{_(ADD_LABELS.sensitive)}</span>
+                    </MenuItem>
+                    {showPollButton && (
+                      <MenuItem
+                        disabled={pollButtonDisabled}
+                        onClick={onPollButtonClick}
+                      >
+                        <Icon icon="poll" /> <span>{_(ADD_LABELS.poll)}</span>
+                      </MenuItem>
+                    )}
+                    <MenuDivider />
+                    <MenuItem
                       onClick={() => {
-                        setShowGIFPicker(true);
+                        setShowEmoji2Picker({
+                          targetElement: lastFocusedEmojiFieldRef,
+                        });
                       }}
                     >
-                      <span className="icon icon-gif" role="img" />
-                      <span>{_(ADD_LABELS.gif)}</span>
+                      <Icon icon="emoji2" />{' '}
+                      <span>{_(ADD_LABELS.customEmoji)}</span>
                     </MenuItem>
-                  )}
-                  {showScheduledAt && (
-                    <>
-                      <MenuDivider />
+                    {states.settings.composerGIFPicker && (
                       <MenuItem
-                        disabled={scheduledAtButtonDisabled}
-                        onClick={onScheduledAtClick}
+                        disabled={mediaButtonDisabled}
+                        onClick={() => {
+                          setShowGIFPicker(true);
+                        }}
                       >
-                        <Icon icon="schedule" />{' '}
-                        <span>{_(ADD_LABELS.scheduledPost)}</span>
+                        <span className="icon icon-gif" role="img" />
+                        <span>{_(ADD_LABELS.gif)}</span>
                       </MenuItem>
-                    </>
-                  )}
-                </Menu2>
+                    )}
+                    {showScheduledAt && (
+                      <>
+                        <MenuDivider />
+                        <MenuItem
+                          disabled={scheduledAtButtonDisabled}
+                          onClick={onScheduledAtClick}
+                        >
+                          <Icon icon="schedule" />{' '}
+                          <span>{_(ADD_LABELS.scheduledPost)}</span>
+                        </MenuItem>
+                      </>
+                    )}
+                  </Menu2>
+                </>
               )}
               <span
                 className="add-sub-toolbar-button-group"

@@ -420,7 +420,12 @@ button[hidden] {
   position: absolute;
   inline-size: 1px;
   block-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   opacity: 0;
+  border: 0;
 }
 :is(button, .button) > * {
   vertical-align: middle;
