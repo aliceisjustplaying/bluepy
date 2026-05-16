@@ -602,27 +602,20 @@ function Notification({
     text = t`[Unknown notification type: ${String(type)}]`;
   }
 
-  const Subject: SubjectComponent = ({ clickable, ...props }) =>
-    clickable ? (
-      // TODO(oxlint:jsx-a11y/prefer-tag-over-role): <b> is interpolated inline
-      // into notification text and must remain a phrasing-content element.
-      // Switching to <button> would break inline-text layout for affected
-      // notification templates.
-      <b
-        role="button"
-        tabIndex={0}
+  const Subject: SubjectComponent = ({ clickable, ...props }) => {
+    if (!clickable) return <b {...props} />;
+    const { className, ...buttonProps } = props as SubjectProps & {
+      className?: string;
+    };
+    return (
+      <button
+        type="button"
+        className={`notification-subject-button${className ? ` ${className}` : ''}`}
         onClick={handleOpenGenericAccounts}
-        onKeyDown={(e: React.KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleOpenGenericAccounts();
-          }
-        }}
-        {...props}
+        {...buttonProps}
       />
-    ) : (
-      <b {...props} />
     );
+  };
 
   // JS original: `notificationsCount > 0 && notificationsCount > sampleAccounts?.length`.
   // When `sampleAccounts` is undefined the second comparison resolves to

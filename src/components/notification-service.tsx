@@ -226,6 +226,7 @@ export default memo(function NotificationService() {
                 children themselves own their keyboard semantics. */}
             <div
               className="notification-peek"
+              role="presentation"
               // style={{
               //   pointerEvents: sameInstance ? '' : 'none',
               // }}
@@ -248,7 +249,11 @@ export default memo(function NotificationService() {
                 textAlign: 'end',
               }}
             >
-              <Link to="/notifications" className="button light" onClick={onClose}>
+              <Link
+                to="/notifications"
+                className="button light"
+                onClick={onClose}
+              >
                 <span>
                   <Trans>View all notifications</Trans>
                 </span>{' '}

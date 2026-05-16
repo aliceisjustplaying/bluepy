@@ -113,7 +113,8 @@ export default function FilteredStatus({
         className={`status filtered ${quoted ? 'status-card' : ''}`}
         tabIndex={-1}
       >
-        <b
+        <button
+          type="button"
           className="status-filtered-badge clickable badge-meta"
           title={filterTitleStr}
           onClick={(e: React.MouseEvent) => {
@@ -125,7 +126,7 @@ export default function FilteredStatus({
             <Trans>Filtered</Trans>
           </span>
           <span>{filterTitleStr}</span>
-        </b>{' '}
+        </button>{' '}
         <Avatar url={avatarStatic || avatar} squircle={bot} />
         <span className="status-filtered-info">
           <span className="status-filtered-info-1">

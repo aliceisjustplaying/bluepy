@@ -1,20 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { getBlurHashAverageColor } from 'fast-blurhash';
-import type {
-  ReactNode,
-  ComponentType,
-  HTMLAttributes,
-  Ref,
-} from 'react';
+import type { ReactNode, ComponentType, HTMLAttributes, Ref } from 'react';
 import { Fragment } from 'react';
 import { forwardRef, memo } from 'react';
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import QuickPinchZoomImport, {
   make3dTransformValue,
   type PinchZoomProps as ReactQuickPinchZoomProps,
@@ -350,51 +339,50 @@ function Media({
   ) {
     showInlineDesc = true;
   }
-  const Figure: ComponentType<{ children?: ReactNode }> =
-    !showInlineDesc
-      ? (Fragment as ComponentType<{
-          children?: ReactNode;
-        }>)
-      : (props: { children?: ReactNode }) => {
-          const { children, ...restProps } = props;
-          return (
-            <figure {...(restProps as HTMLAttributes<HTMLElement>)}>
-              {children}
-              {/* TODO(oxlint:jsx-a11y/no-noninteractive-tabindex,click-events-have-key-events):
+  const Figure: ComponentType<{ children?: ReactNode }> = !showInlineDesc
+    ? (Fragment as ComponentType<{
+        children?: ReactNode;
+      }>)
+    : (props: { children?: ReactNode }) => {
+        const { children, ...restProps } = props;
+        return (
+          <figure {...(restProps as HTMLAttributes<HTMLElement>)}>
+            {children}
+            {/* TODO(oxlint:jsx-a11y/no-noninteractive-tabindex,click-events-have-key-events):
                   figcaption serves the dual role of semantic caption and an
                   interactive "expand alt text" surface. We keep the figcaption
                   for its figure-semantics and add keyboard support. Converting
                   to <button> would lose the figure semantics and require CSS
                   rework around .media-caption. */}
-              <figcaption
-                className="media-caption"
-                lang={lang}
-                dir="auto"
-                tabIndex={0}
-                onClick={(e) => {
+            <figcaption
+              className="media-caption"
+              lang={lang}
+              dir="auto"
+              tabIndex={0}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                states.showMediaAlt = {
+                  alt: description,
+                  lang,
+                };
+              }}
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   e.stopPropagation();
                   states.showMediaAlt = {
                     alt: description,
                     lang,
                   };
-                }}
-                onKeyDown={(e: React.KeyboardEvent) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    states.showMediaAlt = {
-                      alt: description,
-                      lang,
-                    };
-                  }
-                }}
-              >
-                {description}
-              </figcaption>
-            </figure>
-          );
-        };
+                }
+              }}
+            >
+              {description}
+            </figcaption>
+          </figure>
+        );
+      };
 
   const interceptOnClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
@@ -499,7 +487,7 @@ function Media({
                 loading="eager"
                 decoding="sync"
                 style={{
-                  'viewTransitionName': mediaVTN,
+                  viewTransitionName: mediaVTN,
                 }}
                 onLoad={(e) => {
                   const el = e.target as HTMLImageElement;

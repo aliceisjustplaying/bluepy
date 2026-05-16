@@ -178,6 +178,7 @@ function Modal({
         (escRef as { current: HTMLElement | null }).current = inner || node;
       }}
       className={className}
+      role="presentation"
       onClick={(e: React.MouseEvent<HTMLDivElement>) => {
         onClick?.(e);
         if (e.target === e.currentTarget) {

@@ -11,13 +11,13 @@ export interface FilePickerMediaAttachment {
   description: string | null;
 }
 
-export interface FilePickerInputAttachment
-  extends Partial<FilePickerMediaAttachment> {
+export interface FilePickerInputAttachment extends Partial<FilePickerMediaAttachment> {
   file?: File;
   [key: string]: unknown;
 }
 
 export interface FilePickerInputProps {
+  id?: string;
   hidden?: boolean;
   supportedMimeTypes?: string[];
   maxMediaAttachments?: number;
@@ -31,6 +31,7 @@ export interface FilePickerInputProps {
 }
 
 function FilePickerInput({
+  id,
   hidden,
   supportedMimeTypes,
   maxMediaAttachments,
@@ -40,6 +41,7 @@ function FilePickerInput({
 }: FilePickerInputProps) {
   return (
     <input
+      id={id}
       type="file"
       hidden={hidden}
       accept={supportedMimeTypes?.join(',')}

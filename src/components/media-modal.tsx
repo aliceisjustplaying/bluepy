@@ -45,7 +45,7 @@ type CarouselCloseHandler = (
   e?: unknown,
   currentIndex?: number,
   mediaAttachments?: MediaAttachment[],
-  carouselRef?: { current: HTMLDivElement | null },
+  carouselRef?: { current: HTMLElement | null },
 ) => void;
 
 export interface MediaModalProps {
@@ -67,7 +67,7 @@ function MediaModal({
 }: MediaModalProps) {
   const { t } = useLingui();
   const [uiState, setUIState] = useState<'default' | 'loading'>('default');
-  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const carouselRef = useRef<HTMLElement | null>(null);
 
   const [currentIndex, setCurrentIndex] = useState(index);
   const carouselFocusItem = useRef<HTMLDivElement | null>(null);
@@ -282,15 +282,11 @@ function MediaModal({
     <div
       className={`media-modal-container media-modal-count-${mediaAttachments?.length}`}
     >
-      {/* TODO(oxlint:jsx-a11y/prefer-tag-over-role,
-              jsx-a11y/no-noninteractive-tabindex): the carousel is a
-          horizontal scroll surface that needs focus for keyboard scroll
-          and backdrop dismissal. Switching to <section> breaks
-          carouselRef's HTMLDivElement type; the tabIndex is legitimate
-          for keyboard scrolling. */}
-      <div
+      {/* TODO(oxlint:jsx-a11y/no-noninteractive-tabindex): the carousel is a
+          horizontal scroll surface that needs focus for keyboard scrolling and
+          backdrop dismissal. */}
+      <section
         ref={carouselRef}
-        role="region"
         aria-label="Media carousel"
         tabIndex={0}
         data-swipe-threshold="44"
@@ -394,7 +390,7 @@ function MediaModal({
             </div>
           );
         })}
-      </div>
+      </section>
       <div className="carousel-top-controls" hidden={!showControls}>
         <span>
           <button

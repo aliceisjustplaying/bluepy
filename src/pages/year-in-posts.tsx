@@ -210,7 +210,7 @@ interface SearchFieldHandle {
 }
 
 function YearInPosts() {
-  const { i18n } = useLingui();
+  const { i18n, t } = useLingui();
   const [searchParams, setSearchParams] = useSearchParams();
   const yearParam = searchParams.get('year');
   const monthParam = searchParams.get('month');
@@ -842,6 +842,7 @@ function YearInPosts() {
             users press Home. Adding a stub keyboard handler would be no-op. */}
         <header
           className={uiState === 'loading' ? 'loading' : ''}
+          role="presentation"
           onClick={(e) => {
             if (!(e.target as HTMLElement).closest('a, button')) {
               scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1009,6 +1010,7 @@ function YearInPosts() {
                     <label>
                       <input
                         type="number"
+                        aria-label={t`Year`}
                         min={MIN_YEAR}
                         max={new Date().getFullYear()}
                         name="year"

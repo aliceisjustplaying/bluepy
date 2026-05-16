@@ -14,13 +14,13 @@ export interface CameraCaptureMediaAttachment {
   description: string | null;
 }
 
-export interface CameraCaptureInputAttachment
-  extends Partial<CameraCaptureMediaAttachment> {
+export interface CameraCaptureInputAttachment extends Partial<CameraCaptureMediaAttachment> {
   file?: File;
   [key: string]: unknown;
 }
 
 export interface CameraCaptureInputProps {
+  id?: string;
   hidden?: boolean;
   disabled?: boolean;
   supportedMimeTypes?: string[];
@@ -33,6 +33,7 @@ export interface CameraCaptureInputProps {
 }
 
 function CameraCaptureInput({
+  id,
   hidden,
   disabled = false,
   supportedMimeTypes,
@@ -47,6 +48,7 @@ function CameraCaptureInput({
 
   return (
     <input
+      id={id}
       type="file"
       hidden={hidden}
       accept={filteredSupportedMimeTypes?.join(',')}

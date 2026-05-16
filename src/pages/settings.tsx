@@ -160,9 +160,9 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                     section heading; not a form control label. The form below
                     has no single primary input for htmlFor. Keeping <label>
                     for the styling hook in settings.css. */}
-                <label>
+                <span className="settings-section-label">
                   <Trans>Appearance</Trans>
-                </label>
+                </span>
               </div>
               <div>
                 <form
@@ -245,6 +245,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                         type="radio"
                         name="theme"
                         value="light"
+                        aria-label={t`Light`}
                         defaultChecked={currentTheme === 'light'}
                       />
                       <span>
@@ -256,6 +257,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                         type="radio"
                         name="theme"
                         value="dark"
+                        aria-label={t`Dark`}
                         defaultChecked={currentTheme === 'dark'}
                       />
                       <span>
@@ -267,6 +269,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                         type="radio"
                         name="theme"
                         value="auto"
+                        aria-label={t`Auto`}
                         defaultChecked={
                           currentTheme !== 'light' && currentTheme !== 'dark'
                         }
@@ -283,9 +286,9 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <div>
                 {/* TODO(oxlint:jsx-a11y/label-has-associated-control): visual
                     section heading for a multi-button control. */}
-                <label>
+                <span className="settings-section-label">
                   <Trans>Text size</Trans>
-                </label>
+                </span>
               </div>
               <TextSizeControl currentTextSize={currentTextSize} />
             </li>
@@ -294,9 +297,9 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                 {/* TODO(oxlint:jsx-a11y/label-has-associated-control): visual
                     label sibling to <LangSelector />'s internal <select>; no
                     stable id to point htmlFor at. */}
-                <label>
+                <span className="settings-section-label">
                   <Trans>Display language</Trans>
-                </label>{' '}
+                </span>{' '}
                 <small>
                   <a
                     href="https://crowdin.com/project/phanpy"
@@ -1200,35 +1203,42 @@ function TextSizeControl({
 
 async function getCachesKeys(): Promise<Record<string, number>> {
   const keys = await caches.keys();
-  const total: Record<string, number> = {};
-  for (const key of keys) {
-    const cache = await caches.open(key);
-    const k = await cache.keys();
-    total[key] = k.length;
-  }
-  return total;
+  const entries = await Promise.all(
+    keys.map(async (key) => {
+      const cache = await caches.open(key);
+      const k = await cache.keys();
+      return [key, k.length] as const;
+    }),
+  );
+  return Object.fromEntries(entries);
 }
 
 async function getCachesSize(): Promise<Record<string, string>> {
   const keys = await caches.keys();
   const total: Record<string, number> = {};
   let TOTAL = 0;
-  for (const key of keys) {
-    const cache = await caches.open(key);
-    const k = await cache.keys();
-    for (const item of k) {
-      try {
-        const response = await cache.match(item);
-        const blob = await response?.blob();
-        if (!blob) continue;
-        total[key] = (total[key] || 0) + blob.size;
-        TOTAL += blob.size;
-      } catch (e) {
-        alert(`Failed to get cache size for ${item.url}`);
-        alert(e instanceof Error ? e.message : String(e));
-      }
-    }
-  }
+  await Promise.all(
+    keys.map(async (key) => {
+      const cache = await caches.open(key);
+      const k = await cache.keys();
+      const sizes = await Promise.all(
+        k.map(async (item) => {
+          try {
+            const response = await cache.match(item);
+            const blob = await response?.blob();
+            return blob?.size ?? 0;
+          } catch (e) {
+            alert(`Failed to get cache size for ${item.url}`);
+            alert(e instanceof Error ? e.message : String(e));
+            return 0;
+          }
+        }),
+      );
+      const keyTotal = sizes.reduce((sum, size) => sum + size, 0);
+      total[key] = keyTotal;
+      TOTAL += keyTotal;
+    }),
+  );
   return {
     ...Object.fromEntries(
       Object.entries(total).map(([k, v]) => [k, prettyBytes(v)]),
@@ -1243,9 +1253,7 @@ function clearCacheKey(key: string): Promise<boolean> {
 
 async function clearCaches(): Promise<void> {
   const keys = await caches.keys();
-  for (const key of keys) {
-    await caches.delete(key);
-  }
+  await Promise.all(keys.map((key) => caches.delete(key)));
 }
 
 interface PushNotificationsSectionProps {
@@ -1383,26 +1391,34 @@ function PushNotificationsSection({
           if (allowNext && alertsCount > 0) {
             if (policyChanged) {
               console.debug('Policy changed.');
-              removeSubscription()
-                .then(() => {
-                  void updateSubscription(params);
-                  return undefined;
-                })
-                .catch((err) => {
+              void (async () => {
+                try {
+                  await removeSubscription();
+                  await updateSubscription(params);
+                } catch (err) {
                   console.warn(err);
                   alert(t`Failed to update subscription. Please try again.`);
-                });
+                }
+              })();
             } else {
-              updateSubscription(params).catch((err) => {
-                console.warn(err);
-                alert(t`Failed to update subscription. Please try again.`);
-              });
+              void (async () => {
+                try {
+                  await updateSubscription(params);
+                } catch (err) {
+                  console.warn(err);
+                  alert(t`Failed to update subscription. Please try again.`);
+                }
+              })();
             }
           } else {
-            removeSubscription().catch((err) => {
-              console.warn(err);
-              alert(t`Failed to remove subscription. Please try again.`);
-            });
+            void (async () => {
+              try {
+                await removeSubscription();
+              } catch (err) {
+                console.warn(err);
+                alert(t`Failed to remove subscription. Please try again.`);
+              }
+            })();
           }
         }, 100);
       }}

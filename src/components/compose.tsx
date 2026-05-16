@@ -6,7 +6,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { deepEqual } from 'fast-equals';
 import type { RefObject, SyntheticEvent } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { uid } from 'uid/single';
 import { useSnapshot } from 'valtio';
@@ -486,6 +486,10 @@ function Compose({
   const _ = (descriptor: MessageDescriptor): string => i18n._(descriptor);
   const rtf = RTF(i18n.locale);
   const lf = LF(i18n.locale);
+  const menuCameraInputId = useId();
+  const menuMediaInputId = useId();
+  const toolbarCameraInputId = useId();
+  const toolbarMediaInputId = useId();
 
   const apiResult = api();
   const { masto } = apiResult;
@@ -1092,17 +1096,16 @@ function Compose({
       }
 
       if (files && files.length > 0) {
-        processFilesRef
-          .current(files)
-          .then((mediaFiles) => {
+        void (async () => {
+          try {
+            const mediaFiles = await processFilesRef.current(files);
             if (mediaFiles) {
               setMediaAttachments(mediaFiles);
             }
-            return undefined;
-          })
-          .catch((err) => {
+          } catch (err) {
             console.error('Failed to process file(s):', err);
-          });
+          }
+        })();
       }
     }
   }, [sharedData]);
@@ -1329,19 +1332,18 @@ function Compose({
       !canClose()
     ) {
       console.debug('not equal', backgroundDraft, prevBackgroundDraft.current);
-      db.drafts
-        .set(key, {
-          ...backgroundDraft,
-          state: 'unsaved',
-          updatedAt: Date.now(),
-        })
-        .then(() => {
+      void (async () => {
+        try {
+          await db.drafts.set(key, {
+            ...backgroundDraft,
+            state: 'unsaved',
+            updatedAt: Date.now(),
+          });
           console.debug('DRAFT saved', key, backgroundDraft);
-          return undefined;
-        })
-        .catch((e: unknown) => {
+        } catch (e) {
           console.error('DRAFT failed', key, e);
-        });
+        }
+      })();
       prevBackgroundDraft.current = structuredClone(backgroundDraft);
     }
   };
@@ -1379,17 +1381,16 @@ function Compose({
       if (files.length > 0) {
         e.preventDefault();
         e.stopPropagation();
-        processFilesRef
-          .current(files)
-          .then((mediaFiles) => {
+        void (async () => {
+          try {
+            const mediaFiles = await processFilesRef.current(files);
             if (mediaFiles) {
               setMediaAttachments((prev) => [...prev, ...mediaFiles]);
             }
-            return undefined;
-          })
-          .catch((err: unknown) => {
+          } catch (err) {
             console.error('Failed to process file(s):', err);
-          });
+          }
+        })();
       }
     };
     window.addEventListener('paste', handleItems);
@@ -2380,8 +2381,12 @@ function Compose({
                           the wrapped CameraCaptureInput renders the actual
                           <input type="file"> — the rule cannot see through
                           the component boundary. */}
-                      <label className="compose-menu-add-media-field">
+                      <label
+                        className="compose-menu-add-media-field"
+                        htmlFor={menuCameraInputId}
+                      >
                         <CameraCaptureInput
+                          id={menuCameraInputId}
                           hidden
                           supportedMimeTypes={supportedImagesVideosTypes}
                           disabled={mediaButtonDisabled}
@@ -2399,8 +2404,12 @@ function Compose({
                         the wrapped FilePickerInput renders the actual
                         <input type="file"> — the rule cannot see through
                         the component boundary. */}
-                    <label className="compose-menu-add-media-field">
+                    <label
+                      className="compose-menu-add-media-field"
+                      htmlFor={menuMediaInputId}
+                    >
                       <FilePickerInput
+                        id={menuMediaInputId}
                         hidden
                         supportedMimeTypes={supportedMimeTypes}
                         maxMediaAttachments={maxMediaAttachments}
@@ -2471,8 +2480,12 @@ function Compose({
                   // wrapped CameraCaptureInput renders the actual <input
                   // type="file"> — the rule cannot see through the component
                   // boundary.
-                  <label className="toolbar-button">
+                  <label
+                    className="toolbar-button"
+                    htmlFor={toolbarCameraInputId}
+                  >
                     <CameraCaptureInput
+                      id={toolbarCameraInputId}
                       supportedMimeTypes={supportedImagesVideosTypes}
                       mediaAttachments={mediaAttachments}
                       disabled={mediaButtonDisabled}
@@ -2485,8 +2498,9 @@ function Compose({
                     wrapped FilePickerInput renders the actual <input
                     type="file"> — the rule cannot see through the
                     component boundary. */}
-                <label className="toolbar-button">
+                <label className="toolbar-button" htmlFor={toolbarMediaInputId}>
                   <FilePickerInput
+                    id={toolbarMediaInputId}
                     supportedMimeTypes={supportedMimeTypes}
                     maxMediaAttachments={maxMediaAttachments}
                     mediaAttachments={mediaAttachments}

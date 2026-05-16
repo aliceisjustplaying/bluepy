@@ -1319,6 +1319,7 @@ function Catchup() {
             standard browser Home key on the focusable container. */}
         <header
           className={uiState === 'loading' ? 'loading' : ''}
+          role="presentation"
           onClick={(e) => {
             if (!(e.target as HTMLElement | null)?.closest('a, button')) {
               scrollableRef.current?.scrollTo({

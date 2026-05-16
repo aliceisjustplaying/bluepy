@@ -802,6 +802,7 @@ function Timeline({
         className={`deck-container ${
           mediaFirst ? 'deck-container-media-first' : ''
         }`}
+        role="presentation"
         ref={(node) => {
           scrollableRef.current = node;
           jRef.current = node;
@@ -831,6 +832,7 @@ function Timeline({
               standard Home key on the focusable timeline container. */}
           <header
             ref={headerRef}
+            role="presentation"
             // hidden={hiddenUI}
             onClick={(e: React.MouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;

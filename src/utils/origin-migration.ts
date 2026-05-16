@@ -76,58 +76,55 @@ export function redirectLegacyOrigin() {
   return true;
 }
 
-export function importLegacyOriginStorage() {
-  if (window.location.origin !== CANONICAL_ORIGIN)
-    return Promise.resolve(false);
+export async function importLegacyOriginStorage(): Promise<boolean> {
+  if (window.location.origin !== CANONICAL_ORIGIN) return false;
   try {
-    if (importWindowNameMigration()) return Promise.resolve(true);
+    if (importWindowNameMigration()) return true;
   } catch (error) {
     console.warn('Failed to import legacy Bluepy storage', error);
   }
-  if (localStorage.getItem(MIGRATION_KEY)) return Promise.resolve(false);
+  if (localStorage.getItem(MIGRATION_KEY)) return false;
   if (localStorage.getItem('accounts')) {
     localStorage.setItem(MIGRATION_KEY, 'skipped-existing-accounts');
-    return Promise.resolve(false);
+    return false;
   }
 
-  return new Promise<boolean>((resolve) => {
-    const iframe = document.createElement('iframe');
-    let settled = false;
+  const iframe = document.createElement('iframe');
+  let onMessage: ((event: MessageEvent) => void) | undefined;
+  try {
+    const messagePromise = new Promise<boolean>((resolve) => {
+      onMessage = (event: MessageEvent): void => {
+        if (event.origin !== LEGACY_ORIGIN) return;
+        try {
+          if (importMigrationPayload(event.data)) resolve(true);
+        } catch (error) {
+          console.warn('Failed to import legacy Bluepy storage', error);
+          localStorage.setItem(MIGRATION_KEY, 'failed');
+          resolve(false);
+        }
+      };
+      window.addEventListener('message', onMessage);
+    });
 
-    function cleanup(result: boolean): void {
-      if (settled) return;
-      settled = true;
-      window.removeEventListener('message', onMessage);
-      iframe.remove();
-      resolve(result);
-    }
+    const timeoutPromise = new Promise<boolean>((resolve) => {
+      setTimeout(() => {
+        try {
+          localStorage.setItem(MIGRATION_KEY, 'timeout');
+        } catch {
+          /* ignore */
+        }
+        resolve(false);
+      }, MIGRATION_TIMEOUT);
+    });
 
-    function onMessage(event: MessageEvent): void {
-      if (event.origin !== LEGACY_ORIGIN) return;
-      try {
-        if (importMigrationPayload(event.data)) cleanup(true);
-      } catch (error) {
-        console.warn('Failed to import legacy Bluepy storage', error);
-        localStorage.setItem(MIGRATION_KEY, 'failed');
-        cleanup(false);
-      }
-    }
-
-    window.addEventListener('message', onMessage);
     iframe.hidden = true;
     iframe.src = `${LEGACY_ORIGIN}/migrate-storage.html?target=${encodeURIComponent(
       CANONICAL_ORIGIN,
     )}`;
     document.body.append(iframe);
-    // TODO(oxlint:promise/no-multiple-resolved) False positive: cleanup() is
-    // idempotent via `settled`; the linter can't trace that through the helper.
-    setTimeout(() => {
-      try {
-        localStorage.setItem(MIGRATION_KEY, 'timeout');
-      } catch {
-        /* ignore */
-      }
-      cleanup(false);
-    }, MIGRATION_TIMEOUT);
-  });
+    return await Promise.race([messagePromise, timeoutPromise]);
+  } finally {
+    if (onMessage) window.removeEventListener('message', onMessage);
+    iframe.remove();
+  }
 }

@@ -89,8 +89,7 @@ export default memo(function SearchCommand({
       enableOnFormTags: true,
       preventDefault: true,
       useKey: true,
-      ignoreEventWhen: (e) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
@@ -104,6 +103,7 @@ export default memo(function SearchCommand({
     <div
       id="search-command-container"
       hidden={hidden}
+      role="presentation"
       onClick={(e: React.MouseEvent<HTMLDivElement>) => {
         console.log(e);
         if (e.target === e.currentTarget) {

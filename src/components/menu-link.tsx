@@ -10,7 +10,7 @@ interface MenuLinkProps extends Partial<LinkProps> {
 }
 
 function MenuLink(props: MenuLinkProps) {
-  const { className, disabled, ...restProps } = props;
+  const { className, disabled, href, ...restProps } = props;
   return (
     <FocusableItem className={className} disabled={disabled}>
       {({
@@ -31,6 +31,7 @@ function MenuLink(props: MenuLinkProps) {
             />
           ) : (
             <a
+              href={href}
               {...(restProps as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
               ref={ref as Ref<HTMLAnchorElement>}
               onClick={({ detail }) => {

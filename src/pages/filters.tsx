@@ -478,6 +478,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
               </b>
               <input
                 type="text"
+                aria-label={t`Title`}
                 name="title"
                 defaultValue={title}
                 disabled={uiState === 'loading'}

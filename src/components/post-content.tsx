@@ -126,6 +126,7 @@ const PostContent =
         lang={language}
         dir="auto"
         className="inner-content"
+        role="presentation"
         onClick={handleContentLinks({
           mentions,
           instance,

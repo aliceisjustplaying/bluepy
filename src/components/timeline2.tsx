@@ -699,6 +699,7 @@ function Timeline2({
       <div
         id={`${id}-page`}
         className="deck-container timeline-2-container"
+        role="presentation"
         ref={(node) => {
           scrollableRef.current = node;
           jRef.current = node;
@@ -726,6 +727,7 @@ function Timeline2({
               children (links, buttons) own keyboard navigation. */}
           <header
             ref={headerRef}
+            role="presentation"
             onClick={(e: React.MouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {

@@ -1,10 +1,7 @@
 import '@justinribeiro/lite-youtube';
 
 import { decodeBlurHash, getBlurHashAverageColor } from 'fast-blurhash';
-import type {
-  HTMLAttributes,
-  MouseEvent,
-} from 'react';
+import type { HTMLAttributes, MouseEvent } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
@@ -142,23 +139,25 @@ function StatusCard({
     }
 
     const abortController = new AbortController();
-    void unfurlMastodonLink(instance, url, abortController.signal).then(
-      (result) => {
-        if (!result) return undefined;
-        const { url: resultUrl } = result;
-        if (!resultUrl) return undefined;
-        setCardStatusURL('#' + resultUrl);
+    void (async () => {
+      const result = await unfurlMastodonLink(
+        instance,
+        url,
+        abortController.signal,
+      );
+      if (!result) return;
+      const { url: resultUrl } = result;
+      if (!resultUrl) return;
+      setCardStatusURL('#' + resultUrl);
 
-        // NOTE: This is for quote post
-        // (async () => {
-        //   const { masto } = api({ instance });
-        //   const status = await masto.v1.statuses.$select(id).fetch();
-        //   saveStatus(status, instance);
-        //   setCardStatusID(id);
-        // })();
-        return undefined;
-      },
-    );
+      // NOTE: This is for quote post
+      // (async () => {
+      //   const { masto } = api({ instance });
+      //   const status = await masto.v1.statuses.$select(id).fetch();
+      //   saveStatus(status, instance);
+      //   setCardStatusID(id);
+      // })();
+    })();
 
     return () => {
       abortController.abort();
@@ -174,11 +173,7 @@ function StatusCard({
   const hasIframeHTML = !!html && /<iframe/i.test(html);
   const canReadInline = canReadCardInline(card);
   const handleClick = useCallback(
-    (
-      e:
-        | MouseEvent<HTMLElement>
-        | React.KeyboardEvent<HTMLElement>,
-    ) => {
+    (e: MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
       if (hasIframeHTML) {
         e.preventDefault();
         states.showEmbedModal = {
@@ -226,10 +221,10 @@ function StatusCard({
       }
       try {
         if (window.OffscreenCanvas) {
-          void (canvas as OffscreenCanvas).convertToBlob().then((blob) => {
+          void (async () => {
+            const blob = await (canvas as OffscreenCanvas).convertToBlob();
             setBlurhashImage(URL.createObjectURL(blob));
-            return undefined;
-          });
+          })();
         } else {
           setBlurhashImage((canvas as HTMLCanvasElement).toDataURL());
         }
@@ -251,8 +246,9 @@ function StatusCard({
             blurhashImage ? '' : size
           } ${hasIframeHTML || canReadInline ? 'can-show-embed' : ''}`}
           style={{
-            '--average-color':
-              rgbAverageColor ? `rgb(${rgbAverageColor.join(',')})` : undefined,
+            '--average-color': rgbAverageColor
+              ? `rgb(${rgbAverageColor.join(',')})`
+              : undefined,
           }}
           onClick={handleClick}
         >
@@ -388,7 +384,10 @@ function StatusCard({
             <p className="title" title={title}>
               {title}
             </p>
-            <p className="meta" title={description || providerName || authorName}>
+            <p
+              className="meta"
+              title={description || providerName || authorName}
+            >
               {description || providerName || authorName}
             </p>
           </div>
