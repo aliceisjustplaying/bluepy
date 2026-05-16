@@ -26,6 +26,7 @@ import {
 import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
 
 import { BSKY_PDS, resolveAtprotoLoginService } from './atproto-login-service';
+import { compressAtprotoImageIfNeeded } from './atproto-image-compression';
 import { createAtprotoOAuthAgent } from './atproto-oauth';
 import { encodeAtprotoID } from './atproto-route';
 import { createAtprotoExternalEmbed, getFirstPostURL } from './atproto-unfurl';
@@ -1762,16 +1763,18 @@ async function createMediaUpload({
   const url = URL.createObjectURL(file);
 
   if (file.type?.startsWith('image/')) {
-    const res = await agent.uploadBlob(file, {
-      encoding: file.type,
+    const uploadFile = await compressAtprotoImageIfNeeded(file);
+    const res = await agent.uploadBlob(uploadFile, {
+      encoding: uploadFile.type,
     });
     const blob = res.data.blob;
     const id = blobRefID(blob);
+    const mediaUrl = URL.createObjectURL(uploadFile);
     const media: AdaptedUploadedMedia = {
       id,
       type: 'image',
-      url,
-      previewUrl: url,
+      url: mediaUrl,
+      previewUrl: mediaUrl,
       description,
       blob,
     };
@@ -3488,7 +3491,7 @@ export function atprotoInstanceInfo() {
           'image/gif',
           'video/mp4',
         ],
-        imageSizeLimit: 1_000_000,
+        imageSizeLimit: 2_000_000,
         videoSizeLimit: 100_000_000,
         descriptionLimit: 1_000,
       },
