@@ -123,20 +123,6 @@ function toJpegFilename(name: string): string {
 }
 
 async function loadImage(file: File): Promise<LoadedImage> {
-  if ('createImageBitmap' in window) {
-    const bitmap = await createImageBitmap(file, {
-      imageOrientation: 'from-image',
-    });
-    return {
-      source: bitmap,
-      width: bitmap.width,
-      height: bitmap.height,
-      close: () => {
-        bitmap.close();
-      },
-    };
-  }
-
   const url = URL.createObjectURL(file);
   const image = new Image();
   image.decoding = 'async';

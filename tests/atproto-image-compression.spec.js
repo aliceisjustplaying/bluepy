@@ -124,4 +124,65 @@ test.describe('ATProto image compression helpers', () => {
       ATPROTO_IMAGE_MAX_LONG_EDGE,
     );
   });
+
+  test('does not require createImageBitmap for compression', async ({ page }) => {
+    await page.goto('/');
+
+    const result = parseCompressionResult(await page.evaluate(`(async () => {
+      const { compressAtprotoImageIfNeeded } = await import(
+        '/src/utils/atproto-image-compression.ts'
+      );
+      window.createImageBitmap = async () => {
+        throw new DOMException('The source image could not be decoded.', 'InvalidStateError');
+      };
+
+      const sourceCanvas = document.createElement('canvas');
+      sourceCanvas.width = 5000;
+      sourceCanvas.height = 2500;
+      const ctx = sourceCanvas.getContext('2d');
+      if (!ctx) throw new Error('missing canvas context');
+      ctx.fillStyle = '#d33';
+      ctx.fillRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+
+      const blob = await new Promise((resolve, reject) => {
+        sourceCanvas.toBlob((value) => {
+          if (!value) {
+            reject(new Error('missing png blob'));
+            return;
+          }
+          resolve(value);
+        }, 'image/png');
+      });
+
+      const sourceFile = new File([blob], 'large.png', {
+        type: 'image/png',
+      });
+      const compressed = await compressAtprotoImageIfNeeded(sourceFile);
+      const imageUrl = URL.createObjectURL(compressed);
+      const image = new Image();
+      const loaded = new Promise((resolve, reject) => {
+        image.addEventListener('load', resolve);
+        image.addEventListener('error', reject);
+      });
+      image.src = imageUrl;
+      await loaded;
+      const compressedResult = {
+        sourceSize: sourceFile.size,
+        size: compressed.size,
+        type: compressed.type,
+        name: compressed.name,
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+      };
+      URL.revokeObjectURL(imageUrl);
+      return compressedResult;
+    })()`));
+
+    expect(result.size).toBeLessThanOrEqual(ATPROTO_IMAGE_MAX_BYTES);
+    expect(result.type).toBe('image/jpeg');
+    expect(result.name).toBe('large.jpg');
+    expect(Math.max(result.width, result.height)).toBeLessThanOrEqual(
+      ATPROTO_IMAGE_MAX_LONG_EDGE,
+    );
+  });
 });
