@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useSnapshot } from 'valtio';
 
 import enhanceContent from '../utils/enhance-content';
@@ -100,8 +100,9 @@ const PostContent =
     useEffect(() => {
       // Find all links that's in states.statusQuotes and add 'is-quote' class
       const currentQuotes = quotesRef.current;
+      const currentDiv = divRef.current;
       if (currentQuotes?.length) {
-        for (const a of divRef.current!.querySelectorAll('a')) {
+        for (const a of currentDiv?.querySelectorAll('a') ?? []) {
           if (
             currentQuotes.some(
               (quote) =>
@@ -124,7 +125,8 @@ const PostContent =
         ref={divRef}
         lang={language}
         dir="auto"
-        class="inner-content"
+        className="inner-content"
+        role="presentation"
         onClick={handleContentLinks({
           mentions,
           instance,

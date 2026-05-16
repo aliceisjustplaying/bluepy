@@ -10,17 +10,19 @@ class ButtonInstall extends HTMLElement {
 
   connectedCallback() {
     this.button = this.querySelector<HTMLButtonElement>('button');
+    if (!this.button) return;
     if (window.matchMedia('(display-mode: standalone)').matches) {
-      this.button!.remove();
+      this.button.remove();
       return;
     }
     const nav = navigator as NavigatorWithInstall;
-    if (!nav.install) {
-      this.button!.remove();
+    const install = nav.install;
+    if (!install) {
+      this.button.remove();
       return;
     }
-    this.button!.addEventListener('click', () => {
-      nav.install!().catch((err: unknown) => {
+    this.button.addEventListener('click', () => {
+      install.call(nav).catch((err: unknown) => {
         console.error(err);
       });
     });

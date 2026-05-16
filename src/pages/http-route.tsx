@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useLayoutEffect, useMemo, useState } from 'preact/hooks';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import Link from '../components/link';
@@ -71,7 +71,7 @@ export default function HttpRoute() {
   }, [statusURL, url, statusObject]);
 
   return (
-    <div class="ui-state" tabIndex={-1}>
+    <div className="ui-state" tabIndex={-1}>
       {uiState === 'loading' ? (
         <>
           <Loader abrupt />

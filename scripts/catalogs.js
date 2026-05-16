@@ -11,7 +11,7 @@ try {
 } catch {}
 
 const DEFAULT_LANG = 'en';
-const IGNORE_LANGS = [DEFAULT_LANG, 'pseudo-LOCALE'];
+const IGNORE_LANGS = new Set([DEFAULT_LANG, 'pseudo-LOCALE']);
 
 const files = fs.readdirSync('src/locales');
 const catalogs = {};
@@ -29,7 +29,7 @@ const codeMaps = {
 files.forEach((file) => {
   if (file.endsWith('.po')) {
     const code = file.replace(/\.po$/, '');
-    if (IGNORE_LANGS.includes(code)) return;
+    if (IGNORE_LANGS.has(code)) return;
     const content = fs.readFileSync(`src/locales/${file}`, 'utf8');
     const po = PO.parse(content);
     const { items } = po;
@@ -91,15 +91,16 @@ const fullCatalogs = Object.entries(catalogs)
 
 // Set listed: true if completion > PERCENTAGE_THRESHOLD
 const PERCENTAGE_THRESHOLD = 50;
-const listedCatalogs = fullCatalogs.map((catalog) => ({
-  ...catalog,
-  // Once listed, always listed
-  // A locale may exceed percentage threshold today, but not tomorrow
-  // So it should't suddenly become unlisted
-  listed:
-    listedLocales.includes(catalog.code) ||
-    catalog.completion >= PERCENTAGE_THRESHOLD,
-}));
+const listedCatalogs = fullCatalogs.map((catalog) =>
+  Object.assign({}, catalog, {
+    // Once listed, always listed
+    // A locale may exceed percentage threshold today, but not tomorrow
+    // So it should't suddenly become unlisted
+    listed:
+      listedLocales.includes(catalog.code) ||
+      catalog.completion >= PERCENTAGE_THRESHOLD,
+  }),
+);
 
 // Sort by completion
 const sortedCatalogs = listedCatalogs.toSorted(

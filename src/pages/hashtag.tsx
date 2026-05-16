@@ -8,8 +8,8 @@ import {
   MenuItem,
 } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { TargetedEvent } from 'preact';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { SyntheticEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import Icon from '../components/icon';
@@ -147,7 +147,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
       ? t`${hashtagTitle} (Media only)`
       : t`${hashtagTitle}`;
   useTitle(title, `/:instance?/t/:hashtag`);
-  const latestItem = useRef<string | undefined>();
+  const latestItem = useRef<string | undefined>(undefined);
 
   const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
 
@@ -298,7 +298,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
         title={title}
         titleComponent={
           !!instance && (
-            <h1 class="header-double-lines">
+            <h1 className="header-double-lines">
               <b dir="auto">{hashtagTitle}</b>
               <div>{instance}</div>
             </h1>
@@ -332,7 +332,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
             // viewScroll="close"
             position="anchor"
             menuButton={
-              <button type="button" class="plain">
+              <button type="button" className="plain">
                 <Icon icon="more" size="l" alt={t`More`} />
               </button>
             }
@@ -495,7 +495,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                   }}
                 >
                   <Icon icon="check-circle" alt="☑️" />{' '}
-                  <span class="menu-grow">
+                  <span className="menu-grow">
                     <Trans>Media only</Trans>
                   </span>
                 </MenuItem>
@@ -503,9 +503,9 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
               </>
             )}
             <FocusableItem className="menu-field" disabled={reachLimit}>
-              {({ ref }: { ref: preact.Ref<HTMLInputElement> }) => (
+              {({ ref }: { ref: React.Ref<HTMLInputElement> }) => (
                 <form
-                  onSubmit={(e: TargetedEvent<HTMLFormElement>) => {
+                  onSubmit={(e: SyntheticEvent<HTMLFormElement>) => {
                     e.preventDefault();
                     const input = e.currentTarget.elements.item(
                       0,
@@ -545,9 +545,9 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                         : t`Add hashtag`
                     }
                     required
-                    autocorrect="off"
-                    autocapitalize="off"
-                    spellcheck={false}
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
                     // no spaces, no hashtags
                     pattern="[^#＃][^\s#＃]+[^#＃]"
                     disabled={reachLimit}
@@ -577,9 +577,9 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                     );
                   }}
                 >
-                  <Icon icon="x" alt={t`Remove hashtag`} class="danger-icon" />
-                  <span class="bidi-isolate">
-                    <span class="more-insignificant">#</span>
+                  <Icon icon="x" alt={t`Remove hashtag`} className="danger-icon" />
+                  <span className="bidi-isolate">
+                    <span className="more-insignificant">#</span>
                     {tag}
                   </span>
                 </MenuItem>
@@ -658,7 +658,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                 }}
               >
                 <Icon icon="bus" />{' '}
-                <small class="menu-double-lines">
+                <small className="menu-double-lines">
                   <Trans>
                     Go to my server (<b>{currentInstance}</b>)
                   </Trans>
@@ -670,7 +670,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
       />
       {!columnMode && !!hashtags?.length && (
         <data
-          class="compose-data"
+          className="compose-data"
           value={JSON.stringify({
             draftStatus: {
               status: `${hashtags.length > 1 ? '\n\n' : ' '}${hashtagTitle}`,

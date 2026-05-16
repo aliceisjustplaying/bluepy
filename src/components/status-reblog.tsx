@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 import Icon from './icon';
 import NameText from './name-text';
@@ -27,8 +27,8 @@ interface StatusReblogProps {
   readOnly?: boolean;
   mediaFirst?: boolean;
   group?: boolean;
-  onMouseEnter?: (e: MouseEvent) => void;
-  renderStatus: (args: RenderReblogStatusArgs) => ComponentChildren;
+  onMouseEnter?: (e: React.MouseEvent) => void;
+  renderStatus: (args: RenderReblogStatusArgs) => ReactNode;
 }
 
 export default function StatusReblog({
@@ -53,10 +53,10 @@ export default function StatusReblog({
     return (
       <div
         data-state-post-id={stateKey}
-        class="status-group"
+        className="status-group"
         onMouseEnter={onMouseEnter}
       >
-        <div class="status-pre-meta">
+        <div className="status-pre-meta">
           <Icon icon="group" size="l" alt={t`Group`} />{' '}
           <NameText
             account={wrapperStatus.account}
@@ -80,10 +80,10 @@ export default function StatusReblog({
   return (
     <div
       data-state-post-id={stateKey}
-      class="status-reblog"
+      className="status-reblog"
       onMouseEnter={onMouseEnter}
     >
-      <div class="status-pre-meta">
+      <div className="status-pre-meta">
         <Icon icon="rocket" size="l" />{' '}
         <Trans>
           <NameText

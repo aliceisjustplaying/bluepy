@@ -1,8 +1,8 @@
 import './status.css';
 
 import { shallowEqual } from 'fast-equals';
-import { memo } from 'preact/compat';
-import { useCallback, useContext } from 'preact/hooks';
+import { memo } from 'react';
+import { use, useCallback } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { api } from '../utils/api';
@@ -13,8 +13,8 @@ import states, { statusKey } from '../utils/states';
 import { getCurrentAccID } from '../utils/store-utils';
 
 import FilteredStatus from './filtered-status';
-import { StatusGhost, StatusSkeleton } from './status-placeholders';
 import StatusContent from './status-content';
+import { StatusGhost, StatusSkeleton } from './status-placeholders';
 import StatusReblog from './status-reblog';
 import type {
   AnyMediaAttachment,
@@ -41,7 +41,7 @@ export interface StatusComponentProps {
   previewMode?: boolean;
   allowFilters?: boolean;
   onMediaClick?: (
-    e: MouseEvent,
+    e: React.MouseEvent,
     i: number,
     media: AnyMediaAttachment,
     status: AnyStatus,
@@ -49,7 +49,7 @@ export interface StatusComponentProps {
   quoted?: number | boolean;
   quoteDomain?: string;
   onStatusLinkClick?: (
-    e: MouseEvent | KeyboardEvent,
+    e: React.MouseEvent | KeyboardEvent,
     status: AnyStatus,
   ) => void;
   showFollowedTags?: boolean;
@@ -100,13 +100,7 @@ function StatusShell(props: StatusComponentProps) {
     return null;
   }
 
-  return (
-    <StatusRouter
-      {...props}
-      status={status}
-      resolvedSKey={sKeyMaybe}
-    />
-  );
+  return <StatusRouter {...props} status={status} resolvedSKey={sKeyMaybe} />;
 }
 
 export interface StatusRouterProps extends StatusComponentProps {
@@ -177,7 +171,7 @@ function StatusRouter({
   const currentAccount = getCurrentAccID();
   const isSelf = currentAccount && currentAccount == accountId;
 
-  const filterContext = useContext(FilterContext);
+  const filterContext = use(FilterContext);
   // The short-circuited `&&` chain narrows to `false | FilterState`; in
   // practice JS treated the boolean fall-through as a falsy value. The cast
   // surfaces the FilterState shape for the optional property accesses below.
@@ -197,7 +191,7 @@ function StatusRouter({
   const filterInfoMaybe = filterInfo || undefined;
 
   const debugHover = useCallback(
-    (e: MouseEvent) => {
+    (e: React.MouseEvent) => {
       if (e.shiftKey) {
         console.log({
           ...status,
@@ -229,7 +223,12 @@ function StatusRouter({
         showFollowedTags
         quoted={quoted}
         renderPeekStatus={(peekStatus, peekInstance) => (
-          <Status status={peekStatus} instance={peekInstance} size="s" readOnly />
+          <Status
+            status={peekStatus}
+            instance={peekInstance}
+            size="s"
+            readOnly
+          />
         )}
       />
     );
@@ -284,8 +283,6 @@ function StatusRouter({
     />
   );
 }
-
-
 
 export default memo(Status, (oldProps, newProps) => {
   // Shallow equal all props except 'status'

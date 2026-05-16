@@ -1,9 +1,9 @@
 import './search.css';
 
-import { useAutoAnimate } from '@formkit/auto-animate/preact';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType, ComponentChildren } from 'preact';
+import type { ComponentType, ReactNode } from 'react';
 import {
   useCallback,
   useEffect,
@@ -11,7 +11,7 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'preact/hooks';
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -48,7 +48,7 @@ function Status(props: { status: mastodon.v1.Status }) {
 }
 type InViewProps = {
   onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
+  children?: ReactNode;
 };
 const InView: ComponentType<InViewProps> =
   InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
@@ -365,7 +365,9 @@ function Search({ columnMode, ...props }: SearchProps) {
         searchFormRef.current?.focus?.();
       }, 150); // Right after focusDeck runs
     }
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [q, type, instance, loadResults]);
 
   useHotkeys(
@@ -377,7 +379,7 @@ function Search({ columnMode, ...props }: SearchProps) {
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         // Allow '/' even with Shift (e.g. German keyboards)
         if (e.key === '/') return false;
         return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
@@ -420,7 +422,7 @@ function Search({ columnMode, ...props }: SearchProps) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -464,7 +466,7 @@ function Search({ columnMode, ...props }: SearchProps) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -478,7 +480,7 @@ function Search({ columnMode, ...props }: SearchProps) {
   return (
     <div
       id="search-page"
-      class="deck-container"
+      className="deck-container"
       tabIndex={-1}
       ref={(node: HTMLDivElement | null) => {
         scrollableRef.current = node;
@@ -486,17 +488,17 @@ function Search({ columnMode, ...props }: SearchProps) {
         kRef.current = node;
       }}
     >
-      <div class="timeline-deck deck">
-        <header class={uiState === 'loading' ? 'loading' : ''}>
-          <div class="header-grid">
-            <div class="header-side">
+      <div className="timeline-deck deck">
+        <header className={uiState === 'loading' ? 'loading' : ''}>
+          <div className="header-grid">
+            <div className="header-side">
               <NavMenu />
             </div>
             <SearchForm ref={searchFormRef} />
-            <div class="header-side">
+            <div className="header-side">
               <button
                 type="button"
-                class="plain"
+                className="plain"
                 onClick={() => {
                   loadResults(true);
                 }}
@@ -511,7 +513,7 @@ function Search({ columnMode, ...props }: SearchProps) {
           {!!q && !columnMode && (
             <div
               ref={filterBarParent}
-              class={`filter-bar ${uiState === 'loading' ? 'loading' : ''}`}
+              className={`filter-bar ${uiState === 'loading' ? 'loading' : ''}`}
             >
               {!!type && (
                 <Link to={`/search${q ? `?q=${encodeURIComponent(q)}` : ''}`}>
@@ -553,7 +555,7 @@ function Search({ columnMode, ...props }: SearchProps) {
               {(!type || type === 'accounts') && (
                 <>
                   {type !== 'accounts' && (
-                    <h2 class="timeline-header">
+                    <h2 className="timeline-header">
                       <Trans>Accounts</Trans>{' '}
                       <Link
                         to={`/search?q=${encodeURIComponent(q)}&type=accounts`}
@@ -564,7 +566,7 @@ function Search({ columnMode, ...props }: SearchProps) {
                   )}
                   {accountResults.length > 0 ? (
                     <>
-                      <ul class="timeline flat accounts-list">
+                      <ul className="timeline flat accounts-list">
                         {accountResults.map((account) => (
                           <li key={account.id}>
                             <AccountBlock
@@ -581,9 +583,9 @@ function Search({ columnMode, ...props }: SearchProps) {
                         ))}
                       </ul>
                       {type !== 'accounts' && (
-                        <div class="ui-state">
+                        <div className="ui-state">
                           <Link
-                            class="plain button"
+                            className="plain button"
                             to={`/search?q=${encodeURIComponent(
                               q,
                             )}&type=accounts`}
@@ -597,11 +599,11 @@ function Search({ columnMode, ...props }: SearchProps) {
                   ) : (
                     !type &&
                     (uiState === 'loading' ? (
-                      <p class="ui-state">
+                      <p className="ui-state">
                         <Loader abrupt />
                       </p>
                     ) : (
-                      <p class="ui-state">
+                      <p className="ui-state">
                         <Trans>No accounts found.</Trans>
                       </p>
                     ))
@@ -611,7 +613,7 @@ function Search({ columnMode, ...props }: SearchProps) {
               {(!type || type === 'hashtags') && (
                 <>
                   {type !== 'hashtags' && (
-                    <h2 class="timeline-header">
+                    <h2 className="timeline-header">
                       <Trans>Hashtags</Trans>{' '}
                       <Link
                         to={`/search?q=${encodeURIComponent(q)}&type=hashtags`}
@@ -622,7 +624,7 @@ function Search({ columnMode, ...props }: SearchProps) {
                   )}
                   {hashtagResults.length > 0 ? (
                     <>
-                      <ul class="link-list hashtag-list">
+                      <ul className="link-list hashtag-list">
                         {hashtagResults.map((hashtag) => {
                           const { name, history } = hashtag;
                           const total = history?.reduce?.(
@@ -641,7 +643,7 @@ function Search({ columnMode, ...props }: SearchProps) {
                                 <Icon icon="hashtag" alt="#" />
                                 <span>{name}</span>
                                 {!!total && (
-                                  <span class="count">
+                                  <span className="count">
                                     {shortenNumber(total)}
                                   </span>
                                 )}
@@ -651,9 +653,9 @@ function Search({ columnMode, ...props }: SearchProps) {
                         })}
                       </ul>
                       {type !== 'hashtags' && (
-                        <div class="ui-state">
+                        <div className="ui-state">
                           <Link
-                            class="plain button"
+                            className="plain button"
                             to={`/search?q=${encodeURIComponent(
                               q,
                             )}&type=hashtags`}
@@ -667,11 +669,11 @@ function Search({ columnMode, ...props }: SearchProps) {
                   ) : (
                     !type &&
                     (uiState === 'loading' ? (
-                      <p class="ui-state">
+                      <p className="ui-state">
                         <Loader abrupt />
                       </p>
                     ) : (
-                      <p class="ui-state">
+                      <p className="ui-state">
                         <Trans>No hashtags found.</Trans>
                       </p>
                     ))
@@ -681,7 +683,7 @@ function Search({ columnMode, ...props }: SearchProps) {
               {(!type || type === 'statuses') && (
                 <>
                   {type !== 'statuses' && (
-                    <h2 class="timeline-header">
+                    <h2 className="timeline-header">
                       <Trans>Posts</Trans>{' '}
                       <Link
                         to={`/search?q=${encodeURIComponent(q)}&type=statuses`}
@@ -692,11 +694,11 @@ function Search({ columnMode, ...props }: SearchProps) {
                   )}
                   {statusResults.length > 0 ? (
                     <>
-                      <ul class="timeline">
+                      <ul className="timeline">
                         {statusResults.map((status) => (
                           <li key={status.id}>
                             <Link
-                              class="status-link"
+                              className="status-link"
                               to={
                                 instance
                                   ? `/${instance}/s/${status.id}`
@@ -709,9 +711,9 @@ function Search({ columnMode, ...props }: SearchProps) {
                         ))}
                       </ul>
                       {type !== 'statuses' && (
-                        <div class="ui-state">
+                        <div className="ui-state">
                           <Link
-                            class="plain button"
+                            className="plain button"
                             to={`/search?q=${encodeURIComponent(
                               q,
                             )}&type=statuses`}
@@ -725,11 +727,11 @@ function Search({ columnMode, ...props }: SearchProps) {
                   ) : (
                     !type &&
                     (uiState === 'loading' ? (
-                      <p class="ui-state">
+                      <p className="ui-state">
                         <Loader abrupt />
                       </p>
                     ) : (
-                      <p class="ui-state">
+                      <p className="ui-state">
                         <Trans>No posts found.</Trans>
                       </p>
                     ))
@@ -748,33 +750,35 @@ function Search({ columnMode, ...props }: SearchProps) {
                     >
                       <button
                         type="button"
-                        class="plain block"
-                        onClick={() => loadResults()}
+                        className="plain block"
+                        onClick={() => {
+                          loadResults();
+                        }}
                         style={{ marginBlockEnd: '6em' }}
                       >
                         <Trans>Show more…</Trans>
                       </button>
                     </InView>
                   ) : (
-                    <p class="ui-state insignificant">
+                    <p className="ui-state insignificant">
                       <Trans>The end.</Trans>
                     </p>
                   )
                 ) : (
                   uiState === 'loading' && (
-                    <p class="ui-state">
+                    <p className="ui-state">
                       <Loader abrupt />
                     </p>
                   )
                 ))}
             </>
           ) : uiState === 'loading' ? (
-            <p class="ui-state">
+            <p className="ui-state">
               <Loader abrupt />
             </p>
           ) : (
             <>
-              <p class="ui-state insignificant">
+              <p className="ui-state insignificant">
                 <Trans>
                   Enter your search term or paste a URL above to get started.
                 </Trans>

@@ -1,7 +1,7 @@
 import './open-link-sheet.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentChild } from 'preact';
+import type { ReactNode } from 'react';
 
 import showToast from '../utils/show-toast';
 
@@ -21,7 +21,7 @@ export default function OpenLinkSheet({
   const { t } = useLingui();
   if (!url) return null;
 
-  let displayUrl: ComponentChild = url;
+  let displayUrl: ReactNode = url;
   try {
     const urlObj = URL.parse(url) as URL;
     const protocol = urlObj.protocol;
@@ -58,13 +58,13 @@ export default function OpenLinkSheet({
   };
 
   return (
-    <div class="sheet sheet-modal" id="open-link-sheet" tabindex={-1}>
+    <div className="sheet sheet-modal" id="open-link-sheet" tabIndex={-1}>
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
-      <header class="header-grid">
+      <header className="header-grid">
         <h2>
           <Trans>Open link?</Trans>
         </h2>
@@ -72,31 +72,31 @@ export default function OpenLinkSheet({
       <main>
         {!!linkText && (
           <>
-            <p class="link-text">
+            <p className="link-text">
               <Icon icon="cursor-hand" size="xl" /> {linkText}
             </p>
-            <div class="arrow">
+            <div className="arrow">
               <Icon icon="arrow-down" />
             </div>
           </>
         )}
-        <p class="full-url">{displayUrl}</p>
+        <p className="full-url">{displayUrl}</p>
       </main>
       <footer>
-        <button type="button" class="light" onClick={onClose}>
+        <button type="button" className="light" onClick={onClose}>
           <Trans>Cancel</Trans>
         </button>
-        <span class="spacer" />
-        <button type="button" class="plain6" onClick={handleCopy}>
+        <span className="spacer" />
+        <button type="button" className="plain6" onClick={handleCopy}>
           <Icon icon="copy" alt={t`Copy`} />
         </button>
         {navigator.canShare && navigator.canShare({ url }) && (
-          <button type="button" class="plain6" onClick={handleShare}>
+          <button type="button" className="plain6" onClick={handleShare}>
             <Icon icon="share" alt={t`Share…`} />
           </button>
         )}
         <a
-          class="button"
+          className="button"
           href={url}
           target="_blank"
           rel="noopener noreferrer"

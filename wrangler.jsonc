@@ -11,6 +11,16 @@
     },
     "dev": {
       "name": "bluepy-dev",
+      "main": "./workers/dev-assets.js",
+      "assets": {
+        "directory": "./dist",
+        "binding": "ASSETS",
+        "not_found_handling": "single-page-application",
+        "run_worker_first": [
+          "/oauth-client-metadata.json",
+          "/version.json",
+        ],
+      },
       "routes": [
         {
           "pattern": "dev.bluepy.social",

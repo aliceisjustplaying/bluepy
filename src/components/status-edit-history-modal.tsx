@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentChildren } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import niceDateTime from '../utils/nice-date-time';
 
@@ -13,7 +13,7 @@ interface EditedAtModalProps {
   instance?: string;
   fetchStatusHistory?: () => Promise<AnyStatus[] | undefined>;
   onClose?: () => void;
-  renderStatus: (status: AnyStatus, instance?: string) => ComponentChildren;
+  renderStatus: (status: AnyStatus, instance?: string) => ReactNode;
 }
 
 export default function EditedAtModal({
@@ -47,9 +47,9 @@ export default function EditedAtModal({
   }, []);
 
   return (
-    <div id="edit-history" class="sheet">
+    <div id="edit-history" className="sheet">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -75,7 +75,7 @@ export default function EditedAtModal({
               const { createdAt } = status;
               const createdAtDate = new Date(createdAt);
               return (
-                <li key={createdAt} class="history-item">
+                <li key={createdAt} className="history-item">
                   <h3>
                     <time>
                       {niceDateTime(createdAtDate, {

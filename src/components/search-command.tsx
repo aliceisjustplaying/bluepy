@@ -1,8 +1,8 @@
 import './search-command.css';
 
-import type { Ref, TargetedMouseEvent } from 'preact';
-import { memo } from 'preact/compat';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { Ref } from 'react';
+import { memo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useSnapshot } from 'valtio';
 
@@ -24,22 +24,35 @@ export default memo(function SearchCommand({
 }: SearchCommandProps) {
   const snapStates = useSnapshot(states);
   const [showSearch, setShowSearch] = useState(false);
+  const [focusRequest, setFocusRequest] = useState(0);
   const searchFormRef = useRef<SearchFormHandle | null>(null);
+  const pendingQueryRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (snapStates.showSearchCommand) {
       const { query } =
         (snapStates.showSearchCommand as ShowSearchCommandPayload) || {};
+      pendingQueryRef.current = query;
       setShowSearch(true);
-      setTimeout(() => {
-        if (query) {
-          searchFormRef.current?.setValue?.(query);
-        }
-        searchFormRef.current?.focus?.();
-      }, 150);
+      setFocusRequest((request) => request + 1);
       states.showSearchCommand = false;
     }
   }, [snapStates.showSearchCommand]);
+
+  useEffect(() => {
+    if (!focusRequest) return undefined;
+    const timeoutId = window.setTimeout(() => {
+      const query = pendingQueryRef.current;
+      if (query) {
+        searchFormRef.current?.setValue?.(query);
+      }
+      searchFormRef.current?.focus?.();
+      pendingQueryRef.current = undefined;
+    }, 150);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [focusRequest]);
 
   useHotkeys(
     ['Slash', '/'],
@@ -53,7 +66,7 @@ export default memo(function SearchCommand({
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         const path = currentAppPath();
         const isSearchPage = /\/search/.test(path);
         const isYearInPostsPage = /\/yip/.test(path);
@@ -89,8 +102,7 @@ export default memo(function SearchCommand({
       enableOnFormTags: true,
       preventDefault: true,
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
@@ -104,7 +116,8 @@ export default memo(function SearchCommand({
     <div
       id="search-command-container"
       hidden={hidden}
-      onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
+      role="presentation"
+      onClick={(e: React.MouseEvent<HTMLDivElement>) => {
         console.log(e);
         if (e.target === e.currentTarget) {
           closeSearch();

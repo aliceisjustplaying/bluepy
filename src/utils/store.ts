@@ -7,14 +7,13 @@ import Cookies from 'js-cookie';
 // module shared by both. Out of scope for the oxlint cleanup batch.
 import { getCurrentAccountNS } from './store-utils';
 
-// TODO(oxlint:typescript/no-unnecessary-type-parameters) `Result` is used only
-// in the return type. Keeping the generic preserves the existing call-site API
-// `store.local.getJSON<Foo>('key')` used by ~34 sites; changing it is out of
-// scope for this batch.
 interface StorageNamespace {
   del(key: string): undefined | null;
   get(key: string): string | null;
-  getJSON<Result = unknown>(key: string): Result | null;
+  getJSON<Result = unknown>(
+    key: string,
+    revive?: (value: unknown) => Result,
+  ): Result | null;
   set(key: string, value: string): undefined | null;
   setJSON(key: string, value: unknown): undefined | null;
 }
@@ -33,11 +32,14 @@ interface SessionCookieNamespace {
 
 interface AccountNamespace {
   del(key: string): undefined | null;
-  get<Result = unknown>(key: string): Result | null;
+  get<Result = unknown>(
+    key: string,
+    revive?: (value: unknown) => Result,
+  ): Result | null;
   set(key: string, value: unknown): undefined | null;
 }
 
-export interface Store {
+interface Store {
   readonly account: AccountNamespace;
   readonly cookie: CookieNamespace;
   readonly local: StorageNamespace;
@@ -80,10 +82,14 @@ const local: StorageNamespace = {
       return null;
     }
   },
-  getJSON<Result = unknown>(key: string) {
+  getJSON<Result = unknown>(key: string, revive?: (value: unknown) => Result) {
     try {
       const value = local.get(key);
-      return value === null ? null : (JSON.parse(value) as Result);
+      if (value === null) {
+        return null;
+      }
+      const parsed: unknown = JSON.parse(value);
+      return revive ? revive(parsed) : (parsed as Result);
     } catch (error) {
       console.warn(error);
       return null;
@@ -126,10 +132,14 @@ const session: StorageNamespace = {
       return null;
     }
   },
-  getJSON<Result = unknown>(key: string) {
+  getJSON<Result = unknown>(key: string, revive?: (value: unknown) => Result) {
     try {
       const value = session.get(key);
-      return value === null ? null : (JSON.parse(value) as Result);
+      if (value === null) {
+        return null;
+      }
+      const parsed: unknown = JSON.parse(value);
+      return revive ? revive(parsed) : (parsed as Result);
     } catch (error) {
       console.warn(error);
       return null;
@@ -156,7 +166,9 @@ const session: StorageNamespace = {
 
 // Session secure cookie
 const cookie: CookieNamespace = {
-  del: (key) => cookies.remove(key),
+  del: (key) => {
+    cookies.remove(key);
+  },
   get: (key) => cookies.get(key),
   set: (key, value) => cookies.set(key, value),
 };
@@ -165,7 +177,8 @@ const cookie: CookieNamespace = {
 const sessionCookie: SessionCookieNamespace = {
   del: (key) => {
     if (canSetSecureCookie) {
-      return cookie.del(key);
+      cookie.del(key);
+      return undefined;
     }
     return session.del(key);
   },
@@ -195,11 +208,12 @@ const account: AccountNamespace = {
       return null;
     }
   },
-  get<Result = unknown>(key: string) {
+  get<Result = unknown>(key: string, revive?: (value: unknown) => Result) {
     try {
-      return (local.getJSON<Record<string, unknown>>(key)?.[
-        getCurrentAccountNS()
-      ] ?? null) as Result;
+      const value =
+        local.getJSON<Record<string, unknown>>(key)?.[getCurrentAccountNS()] ??
+        null;
+      return value === null ? null : revive ? revive(value) : (value as Result);
     } catch (error) {
       console.warn(error);
       return null;

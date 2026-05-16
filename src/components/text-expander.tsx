@@ -1,9 +1,9 @@
 import '@github/text-expander-element';
 
 import { useLingui } from '@lingui/react/macro';
-import type { HTMLAttributes, Ref } from 'preact';
-import { forwardRef, useImperativeHandle } from 'preact/compat';
-import { useEffect, useRef } from 'preact/hooks';
+import type { HTMLAttributes, Ref } from 'react';
+import { useImperativeHandle } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
 import { getCustomEmojis } from '../utils/custom-emojis';
@@ -75,18 +75,21 @@ export interface TextExpanderHandle {
   activated(): boolean;
 }
 
-export interface TextExpanderProps extends Omit<
+interface TextExpanderProps extends Omit<
   HTMLAttributes<HTMLElement>,
   'onTrigger' | 'keys'
 > {
+  ref?: Ref<TextExpanderHandle>;
   onTrigger?: ((payload: Record<string, unknown>) => void) | null;
   keys?: string;
 }
 
-declare module 'preact' {
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      'text-expander': HTMLAttributes<HTMLElement>;
+      'text-expander': HTMLAttributes<HTMLElement> & {
+        ref?: Ref<HTMLElement>;
+      };
     }
   }
 }
@@ -118,10 +121,7 @@ function encodeHTML(str: string | number | null | undefined = '') {
   });
 }
 
-function TextExpander(
-  { onTrigger = null, ...props }: TextExpanderProps,
-  ref: Ref<TextExpanderHandle>,
-) {
+function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
   const { t } = useLingui();
   const textExpanderRef = useRef<HTMLElement | null>(null);
   const { masto, instance } = api();
@@ -219,15 +219,14 @@ function TextExpander(
             try {
               let searchResults: AccountResult[];
               if (type === 'accounts') {
-                searchResults =
-                  await getMastoV1Resource<AccountSearchResource>(
-                    masto,
-                    'accounts',
-                  ).search.list({
-                    q: text,
-                    limit: 5,
-                    resolve: false,
-                  });
+                searchResults = await getMastoV1Resource<AccountSearchResource>(
+                  masto,
+                  'accounts',
+                ).search.list({
+                  q: text,
+                  limit: 5,
+                  resolve: false,
+                });
               } else {
                 const response =
                   await getMastoV2Resource<TextExpanderSearchResource>(
@@ -436,4 +435,4 @@ function TextExpander(
   return <text-expander ref={textExpanderRef} {...props} />;
 }
 
-export default forwardRef(TextExpander);
+export default TextExpander;

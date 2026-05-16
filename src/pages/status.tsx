@@ -5,14 +5,15 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import debounce from 'just-debounce-it';
 import pRetry from 'p-retry';
+import { toUnicode } from 'punycode/';
 import type {
-  ComponentChildren,
+  ReactNode,
   ComponentType,
   CSSProperties,
   Ref,
-  TargetedMouseEvent,
-} from 'preact';
-import { memo } from 'preact/compat';
+  MouseEvent,
+} from 'react';
+import { memo } from 'react';
 import {
   useCallback,
   useEffect,
@@ -20,8 +21,7 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'preact/hooks';
-import { toUnicode } from 'punycode/';
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { matchPath, useSearchParams } from 'react-router-dom';
@@ -61,14 +61,15 @@ import useTitle from '../utils/useTitle';
 import getInstanceStatusURL from './../utils/get-instance-status-url';
 
 // `react-intersection-observer`'s `InView` ships without working JSX
-// component typings under our preact compat resolution. Re-type as a preact
+// component typings under our React component types. Re-type as a React
 // component with the props this file actually uses.
 type InViewProps = {
   threshold?: number;
   class?: string;
+  className?: string;
   tabIndex?: number;
   onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
+  children?: ReactNode;
 };
 const InView: ComponentType<InViewProps> =
   InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
@@ -434,7 +435,9 @@ function StatusPage(params: StatusPageParams) {
         $carousel.focus();
       }
     }, 100);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [showMediaOnly]);
 
   useEffect(() => {
@@ -450,7 +453,7 @@ function StatusPage(params: StatusPageParams) {
   }, []);
 
   return (
-    <div class="deck-backdrop">
+    <div className="deck-backdrop">
       {showMedia ? (
         mediaAttachments?.length ? (
           <MediaModal
@@ -462,7 +465,7 @@ function StatusPage(params: StatusPageParams) {
             onClose={handleMediaClose}
           />
         ) : (
-          <div class="media-modal-container loading">
+          <div className="media-modal-container loading">
             <Loader abrupt />
           </div>
         )
@@ -485,15 +488,15 @@ function StatusPage(params: StatusPageParams) {
 interface StatusParentProps {
   linkable: boolean;
   to: string;
-  onClick?: (e: TargetedMouseEvent<HTMLAnchorElement>) => void;
-  children?: ComponentChildren;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  children?: ReactNode;
 }
 function StatusParent(props: StatusParentProps) {
   const { linkable, to, onClick, ...restProps } = props;
   return linkable ? (
-    <Link class="status-link" to={to} onClick={onClick} {...restProps} />
+    <Link className="status-link" to={to} onClick={onClick} {...restProps} />
   ) : (
-    <div class="status-focus" tabIndex={-1} role="article" {...restProps} />
+    <div className="status-focus" tabIndex={-1} role="article" {...restProps} />
   );
 }
 
@@ -962,15 +965,14 @@ function StatusThread({
     console.debug('STATUSES', statuses);
     const scrollPosition = scrollPositions[id];
     console.debug('scrollPosition', scrollPosition);
-    // Use non-null assertions on `scrollableRef.current` to preserve the
-    // original JS behavior (which assumed the ref was always attached by
-    // the time this layout effect runs).
+    const scrollable = scrollableRef.current;
+    if (!scrollable) return;
     if (scrollPosition) {
       console.debug('Case 1', {
         id,
         scrollPosition,
       });
-      scrollableRef.current!.scrollTop = scrollPosition;
+      scrollable.scrollTop = scrollPosition;
     } else if (scrollOffsets.current) {
       const newScrollOffsets = {
         offsetTop: heroStatusRef.current?.offsetTop,
@@ -986,12 +988,12 @@ function StatusThread({
         newScrollTop,
         statuses: [...statuses],
       });
-      scrollableRef.current!.scrollTop = newScrollTop;
+      scrollable.scrollTop = newScrollTop;
     } else if (statuses.length === 1) {
       console.debug('Case 3', {
         id,
       });
-      scrollableRef.current!.scrollTop = 0;
+      scrollable.scrollTop = 0;
     }
 
     // RESET
@@ -1003,10 +1005,9 @@ function StatusThread({
     // Delete the cache for the context
     void (async () => {
       try {
-        // Original JS destructured without null-checking, throwing if no
-        // current account; non-null assertion preserves that behavior under
-        // the try/catch.
-        const { instanceURL } = getCurrentAccount()!;
+        const currentAccount = getCurrentAccount();
+        if (!currentAccount) return;
+        const { instanceURL } = currentAccount;
         const contextURL = `https://${instanceURL}/api/v1/statuses/${id}/context`;
         console.log('Clear cache', contextURL);
         const apiCache = await caches.open('api');
@@ -1108,7 +1109,7 @@ function StatusThread({
       // If media is open, esc to close media first
       // Else close the status page
       enabled: !showMedia,
-      ignoreEventWhen: (e: KeyboardEvent): boolean => {
+      ignoreEventWhen: (e): boolean => {
         const hasModal = !!document.querySelector('#modal-container > *');
         return hasModal || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
       },
@@ -1123,8 +1124,7 @@ function StatusThread({
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
@@ -1135,14 +1135,16 @@ function StatusThread({
         '.status-link, .status-focus',
       );
       const activeStatusRect = activeStatus?.getBoundingClientRect();
+      const scrollable = scrollableRef.current;
+      if (!scrollable) return;
       const allStatusLinks = Array.from(
-        scrollableRef.current!.querySelectorAll<HTMLElement>(STATUSES_SELECTOR),
+        scrollable.querySelectorAll<HTMLElement>(STATUSES_SELECTOR),
       );
       console.log({ allStatusLinks });
       if (
         activeStatus &&
         activeStatusRect &&
-        activeStatusRect.top < scrollableRef.current!.clientHeight &&
+        activeStatusRect.top < scrollable.clientHeight &&
         activeStatusRect.bottom > 0
       ) {
         const activeStatusIndex = allStatusLinks.indexOf(activeStatus);
@@ -1165,7 +1167,7 @@ function StatusThread({
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -1181,13 +1183,15 @@ function StatusThread({
         '.status-link, .status-focus',
       );
       const activeStatusRect = activeStatus?.getBoundingClientRect();
+      const scrollable = scrollableRef.current;
+      if (!scrollable) return;
       const allStatusLinks = Array.from(
-        scrollableRef.current!.querySelectorAll<HTMLElement>(STATUSES_SELECTOR),
+        scrollable.querySelectorAll<HTMLElement>(STATUSES_SELECTOR),
       );
       if (
         activeStatus &&
         activeStatusRect &&
-        activeStatusRect.top < scrollableRef.current!.clientHeight &&
+        activeStatusRect.top < scrollable.clientHeight &&
         activeStatusRect.bottom > 0
       ) {
         const activeStatusIndex = allStatusLinks.indexOf(activeStatus);
@@ -1210,7 +1214,7 @@ function StatusThread({
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -1237,7 +1241,7 @@ function StatusThread({
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -1264,7 +1268,7 @@ function StatusThread({
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -1284,7 +1288,12 @@ function StatusThread({
   );
 
   const handleMediaClick = useCallback(
-    (e: Event, i: number, _media: unknown, status: { id: string }) => {
+    (
+      e: React.MouseEvent,
+      i: number,
+      _media: unknown,
+      status: { id: string },
+    ) => {
       e.preventDefault();
       e.stopPropagation();
       setSearchParams({
@@ -1296,7 +1305,7 @@ function StatusThread({
   );
 
   const handleStatusLinkClick = useCallback(
-    (_e: Event, status: { id: string }) => {
+    (_e: MouseEvent | globalThis.KeyboardEvent, status: AnyStatus) => {
       resetScrollPosition(status.id);
     },
     [],
@@ -1340,7 +1349,7 @@ function StatusThread({
         <li
           key={statusID}
           ref={isHero ? heroStatusRef : null}
-          class={`${ancestor ? 'ancestor' : ''} ${
+          className={`${ancestor ? 'ancestor' : ''} ${
             descendant ? 'descendant' : ''
           } ${thread ? 'thread' : ''} ${isHero ? 'hero' : ''}`}
         >
@@ -1355,7 +1364,7 @@ function StatusThread({
                     });
                   });
                 }}
-                class="status-focus"
+                className="status-focus"
                 tabIndex={0}
               >
                 <Status
@@ -1368,7 +1377,7 @@ function StatusThread({
                 />
               </InView>
               {uiState !== 'loading' && !authenticated ? (
-                <div class="post-status-banner">
+                <div className="post-status-banner">
                   <p>
                     <Trans>
                       You're not logged in. Interactions (reply, boost, etc) are
@@ -1381,14 +1390,14 @@ function StatusThread({
                         ? `/login?instance=${DEFAULT_INSTANCE}&submit=1`
                         : '/login'
                     }
-                    class="button"
+                    className="button"
                   >
                     <Trans>Log in</Trans>
                   </Link>
                 </div>
               ) : (
                 !sameInstance && (
-                  <div class="post-status-banner">
+                  <div className="post-status-banner">
                     <p>
                       <Trans>
                         This post is from another server (<b>{instance}</b>).
@@ -1402,6 +1411,9 @@ function StatusThread({
                         setUIState('loading');
                         void (async () => {
                           try {
+                            if (!heroStatus?.url) {
+                              throw new Error('No status URL');
+                            }
                             const results = await getMastoV2Resource<{
                               list(params: {
                                 q: string;
@@ -1410,7 +1422,7 @@ function StatusThread({
                                 limit: number;
                               }): Promise<{ statuses?: { id: string }[] }>;
                             }>(currentMastoRef.current, 'search').list({
-                              q: heroStatus!.url as string,
+                              q: heroStatus.url,
                               type: 'statuses',
                               resolve: true,
                               limit: 1,
@@ -1455,7 +1467,7 @@ function StatusThread({
               }}
             >
               {/* <Link
-              class="status-link"
+              className="status-link"
               to={instance ? `/${instance}/s/${statusID}` : `/s/${statusID}`}
               onClick={() => {
                 resetScrollPosition(statusID);
@@ -1503,7 +1515,7 @@ function StatusThread({
                 />
               )}
               {ancestor && repliesCount !== undefined && repliesCount > 1 && (
-                <div class="replies-link">
+                <div className="replies-link">
                   <Icon icon="comment2" alt={t`Replies`} />{' '}
                   <span title={String(repliesCount)}>
                     {shortenNumber(repliesCount)}
@@ -1511,7 +1523,7 @@ function StatusThread({
                 </div>
               )}{' '}
               {/* {replies?.length > LIMIT && (
-                        <div class="replies-link">
+                        <div className="replies-link">
                           <Icon icon="comment" />{' '}
                           <span title={replies.length}>
                             {shortenNumber(replies.length)}
@@ -1532,7 +1544,9 @@ function StatusThread({
               lazyRenderReplies={totalDescendants.current > LIMIT}
               parentLink={{
                 to: instance ? `/${instance}/s/${statusID}` : `/s/${statusID}`,
-                onClick: () => resetScrollPosition(statusID),
+                onClick: () => {
+                  resetScrollPosition(statusID);
+                },
               }}
             />
           )}
@@ -1540,7 +1554,7 @@ function StatusThread({
             isHero &&
             !!heroStatus?.repliesCount &&
             !hasDescendants && (
-              <div class="status-loading">
+              <div className="status-loading">
                 <Loader abrupt={heroStatus.repliesCount >= 3} />
               </div>
             )}
@@ -1548,12 +1562,12 @@ function StatusThread({
             isHero &&
             !!heroStatus?.repliesCount &&
             !hasDescendants && (
-              <div class="status-error">
+              <div className="status-error">
                 <Trans>Unable to load replies.</Trans>
                 <br />
                 <button
                   type="button"
-                  class="plain"
+                  className="plain"
                   onClick={() => {
                     states.reloadStatusPage++;
                   }}
@@ -1665,7 +1679,7 @@ function StatusThread({
                     style={{
                       '--time-gap-range': Math.min(12, monthsDiff),
                     }}
-                    class={`time-gap ${ancestor ? 'ancestor' : ''} ${descendant ? 'descendant' : ''} ${
+                    className={`time-gap ${ancestor ? 'ancestor' : ''} ${descendant ? 'descendant' : ''} ${
                       thread ? 'thread' : ''
                     }`}
                   >
@@ -1677,7 +1691,7 @@ function StatusThread({
                 // result.push(
                 //   <li
                 //     key={`time-gap-${id}`}
-                //     class={`time-gap ${ancestor ? 'ancestor' : ''} ${descendant ? 'descendant' : ''} ${
+                //     className={`time-gap ${ancestor ? 'ancestor' : ''} ${descendant ? 'descendant' : ''} ${
                 //       thread ? 'thread' : ''
                 //     }`}
                 //   >
@@ -1705,7 +1719,9 @@ function StatusThread({
       );
       if (spoilerButton) spoilerButton.click();
     }, 1000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [id]);
 
   return (
@@ -1713,7 +1729,7 @@ function StatusThread({
       <div
         tabIndex={-1}
         ref={scrollableRef}
-        class={`status-deck deck contained ${
+        className={`status-deck deck contained ${
           statuses.length > 1 ? 'padded-bottom' : ''
         } ${
           initialPageState.current === 'status' && !firstLoad.current
@@ -1739,23 +1755,23 @@ function StatusThread({
         }}
       >
         <header
-          class={uiState === 'loading' ? 'loading' : ''}
-          onDblClick={() => {
+          className={uiState === 'loading' ? 'loading' : ''}
+          onDoubleClick={() => {
             // reload statuses
             states.reloadStatusPage++;
           }}
         >
           {/* <div>
-            <Link class="button plain deck-close" href={closeLink}>
+            <Link className="button plain deck-close" href={closeLink}>
               <Icon icon="chevron-left" size="xl" />
             </Link>
           </div> */}
-          <div class="header-grid header-grid-2">
+          <div className="header-grid header-grid-2">
             <h1>
               {prevLocationIsStatusPage && (
                 <button
                   type="button"
-                  class="plain deck-back"
+                  className="plain deck-back"
                   onClick={() => {
                     history.back();
                   }}
@@ -1765,28 +1781,28 @@ function StatusThread({
               )}
               {!heroInView && heroStatus && uiState !== 'loading' ? (
                 <>
-                  <span class="hero-heading">
+                  <span className="hero-heading">
                     <NameText
                       account={heroStatus.account}
                       instance={instance}
                       showAvatar
                       short
                     />{' '}
-                    <span class="insignificant">
+                    <span className="insignificant">
                       &bull;{' '}
                       <RelativeTime
-                        datetime={heroStatus.createdAt}
+                        dateTime={heroStatus.createdAt}
                         format="micro"
                       />
                     </span>
                   </span>{' '}
                   <button
                     type="button"
-                    class="ancestors-indicator light small"
+                    className="ancestors-indicator light small"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      heroStatusRef.current!.scrollIntoView({
+                      heroStatusRef.current?.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start',
                       });
@@ -1803,12 +1819,12 @@ function StatusThread({
                   <Trans id="post.title">Post</Trans>{' '}
                   <button
                     type="button"
-                    class="ancestors-indicator light small"
+                    className="ancestors-indicator light small"
                     onClick={(e) => {
                       // Scroll to top
                       e.preventDefault();
                       e.stopPropagation();
-                      scrollableRef.current!.scrollTo({
+                      scrollableRef.current?.scrollTo({
                         top: 0,
                         behavior: 'smooth',
                       });
@@ -1848,7 +1864,7 @@ function StatusThread({
                     {ancestors.length > 3 && (
                       <>
                         {' '}
-                        <span class="insignificant">
+                        <span className="insignificant">
                           {shortenNumber(ancestors.length)}
                         </span>
                       </>
@@ -1857,10 +1873,10 @@ function StatusThread({
                 </>
               )}
             </h1>
-            <div class="header-side">
+            <div className="header-side">
               <button
                 type="button"
-                class="plain4 button-switch-view"
+                className="plain4 button-switch-view"
                 style={{
                   display: viewMode === 'full' ? '' : 'none',
                 }}
@@ -1878,7 +1894,7 @@ function StatusThread({
               {showRefresh && (
                 <button
                   type="button"
-                  class="plain button-refresh"
+                  className="plain button-refresh"
                   onClick={() => {
                     states.reloadStatusPage++;
                     setShowRefresh(false);
@@ -1894,7 +1910,7 @@ function StatusThread({
                   target: scrollableRef.current,
                 }}
                 menuButton={
-                  <button type="button" class="button plain4">
+                  <button type="button" className="button plain4">
                     <Icon icon="more" alt={t`More`} size="xl" />
                   </button>
                 }
@@ -1944,9 +1960,9 @@ function StatusThread({
                   onClick={() => {
                     // Click all buttons with class .spoiler but not .spoiling
                     const buttons = Array.from(
-                      scrollableRef.current!.querySelectorAll<HTMLElement>(
+                      scrollableRef.current?.querySelectorAll<HTMLElement>(
                         '.spoiler-button:not(.spoiling), .spoiler-media-button:not(.spoiling)',
-                      ),
+                      ) ?? [],
                     );
                     buttons.forEach((button) => {
                       button.click();
@@ -1976,7 +1992,7 @@ function StatusThread({
                   }}
                 >
                   <Icon icon="transfer" />
-                  <small class="menu-double-lines">
+                  <small className="menu-double-lines">
                     {postInstance
                       ? t`Switch to post's server (${toUnicode(postInstance)})`
                       : t`Switch to post's server`}
@@ -1989,13 +2005,15 @@ function StatusThread({
                     !heroStatus?.editedAt ||
                     !totalDescendants.current
                   }
-                  onClick={initEditHistory}
+                  onClick={() => {
+                    void initEditHistory();
+                  }}
                 >
                   <Icon icon="edit" />
                   <span>{t`View Edit History Snapshots`}</span>
                 </MenuItem>
               </Menu2>
-              <Link class="button plain deck-close" to={closeLink}>
+              <Link className="button plain deck-close" to={closeLink}>
                 <Icon icon="x" size="xl" alt={t`Close`} />
               </Link>
             </div>
@@ -2004,21 +2022,23 @@ function StatusThread({
         <EditHistoryControls />
         {!!statuses.length && heroStatus ? (
           <ul
-            class={`timeline flat contextual grow ${
+            className={`timeline flat contextual grow ${
               uiState === 'loading' ? 'loading' : ''
             }`}
           >
             {statusesList}
             {showMore > 0 && (
-              <li class="descendant descendant-more">
+              <li className="descendant descendant-more">
                 <button
                   type="button"
-                  class="plain block show-more"
+                  className="plain block show-more"
                   disabled={uiState === 'loading'}
-                  onClick={() => setLimit((l) => l + LIMIT)}
+                  onClick={() => {
+                    setLimit((l) => l + LIMIT);
+                  }}
                   style={{ marginBlockEnd: '6em' }}
                 >
-                  <div class="ib avatars-bunch">
+                  <div className="ib avatars-bunch">
                     {/* show avatars for first 5 statuses */}
                     {statuses.slice(limit, limit + 5).map((status) => (
                       <Avatar
@@ -2034,9 +2054,9 @@ function StatusThread({
                       />
                     ))}
                   </div>{' '}
-                  <div class="ib">
+                  <div className="ib">
                     <Trans>Show more…</Trans>{' '}
-                    <span class="tag">
+                    <span className="tag">
                       {showMore > LIMIT ? `${LIMIT}+` : showMore}
                     </span>
                   </div>
@@ -2047,14 +2067,14 @@ function StatusThread({
         ) : (
           <>
             {uiState === 'loading' && (
-              <ul class="timeline flat contextual grow loading">
+              <ul className="timeline flat contextual grow loading">
                 <li>
                   <Status skeleton size="l" />
                 </li>
               </ul>
             )}
             {uiState === 'error' && (
-              <p class="ui-state">
+              <p className="ui-state">
                 <Trans>Unable to load post</Trans>
                 <br />
                 <br />
@@ -2143,7 +2163,12 @@ function SubComments({
   const openBefore = cachedRepliesToggle[replies[0].id];
 
   const handleMediaClick = useCallback(
-    (e: Event, i: number, _media: unknown, status: { id: string }) => {
+    (
+      e: React.MouseEvent,
+      i: number,
+      _media: unknown,
+      status: { id: string },
+    ) => {
       e.preventDefault();
       e.stopPropagation();
       setSearchParams({
@@ -2190,11 +2215,11 @@ function SubComments({
   return (
     <Container
       ref={detailsRef as Ref<HTMLDetailsElement> & Ref<HTMLDivElement>}
-      class="replies"
+      className="replies"
       open={isDetails ? openBefore || open : undefined}
       onToggle={
         isDetails
-          ? (e: Event) => {
+          ? (e: React.SyntheticEvent) => {
               const target = e.target as HTMLDetailsElement | null;
               const newOpen = !!target?.open;
               setIsOpen(newOpen);
@@ -2212,8 +2237,8 @@ function SubComments({
       data-comments-level-overflow={level > 4}
     >
       {!open && (
-        <summary class="replies-summary" hidden={open}>
-          <span class="avatars">
+        <summary className="replies-summary" hidden={open}>
+          <span className="avatars">
             {accounts.map((a) => (
               <Avatar
                 key={a.id}
@@ -2223,7 +2248,7 @@ function SubComments({
               />
             ))}
           </span>
-          <span class="replies-counts">
+          <span className="replies-counts">
             <b>
               <Plural
                 value={replies.length}
@@ -2259,10 +2284,10 @@ function SubComments({
               </>
             )}
           </span>
-          <Icon icon="chevron-down" class="replies-summary-chevron" />
+          <Icon icon="chevron-down" className="replies-summary-chevron" />
           {!!parentLink && (
             <Link
-              class="replies-parent-link"
+              className="replies-parent-link"
               to={parentLink.to}
               onClick={parentLink.onClick}
               title={t`View post with its replies`}
@@ -2277,13 +2302,13 @@ function SubComments({
           {replies.map((r) => (
             <li key={r.id}>
               {/* <Link
-              class="status-link"
+              className="status-link"
               to={instance ? `/${instance}/s/${r.id}` : `/s/${r.id}`}
               onClick={() => {
                 resetScrollPosition(r.id);
               }}
             > */}
-              <div class="status-focus" tabIndex={-1} role="article">
+              <div className="status-focus" tabIndex={-1} role="article">
                 <Status
                   statusID={r.id}
                   instance={instance}
@@ -2296,7 +2321,7 @@ function SubComments({
                 {!r.replies?.length &&
                   r.repliesCount !== undefined &&
                   r.repliesCount > 0 && (
-                    <div class="replies-link">
+                    <div className="replies-link">
                       <Icon icon="comment2" alt={t`Replies`} />{' '}
                       <span title={String(r.repliesCount)}>
                         {shortenNumber(r.repliesCount)}

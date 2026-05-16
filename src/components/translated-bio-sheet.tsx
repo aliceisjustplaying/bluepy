@@ -27,9 +27,9 @@ function TranslatedBioSheet({
     getHTMLText(note ?? '') + (fieldsText ? `\n\n${fieldsText}` : '');
 
   return (
-    <div class="sheet">
+    <div className="sheet">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}

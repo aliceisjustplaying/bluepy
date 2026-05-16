@@ -2,8 +2,8 @@ import './generic-accounts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType, ComponentChildren } from 'preact';
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import type { ComponentType, ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useSnapshot } from 'valtio';
 
@@ -28,11 +28,11 @@ function Status(props: {
 }
 
 // `react-intersection-observer`'s `InView` ships without working JSX
-// component typings under our preact compat resolution. Re-type as a
-// preact component with the props this batch actually uses.
+// component typings under our React component types. Re-type as a
+// React component with the props this batch actually uses.
 type InViewTypedProps = {
   onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
+  children?: ReactNode;
 };
 const InViewTyped: ComponentType<InViewTypedProps> =
   InViewUntyped as typeof InViewUntyped & ComponentType<InViewTypedProps>;
@@ -258,8 +258,8 @@ export default function GenericAccounts({
   const post = postID ? states.statuses[postID] : undefined;
 
   return (
-    <div id="generic-accounts-container" class="sheet" tabindex={-1}>
-      <button type="button" class="sheet-close" onClick={onClose}>
+    <div id="generic-accounts-container" className="sheet" tabIndex={-1}>
+      <button type="button" className="sheet-close" onClick={onClose}>
         <Icon icon="x" alt={t`Close`} />
       </button>
       <header>
@@ -269,21 +269,21 @@ export default function GenericAccounts({
         {post && (
           <Link
             to={`/${instance || currentInstance}/s/${post.id}`}
-            class="post-preview"
+            className="post-preview"
           >
             <Status status={post} size="s" readOnly />
           </Link>
         )}
         {accounts.length > 0 ? (
           <>
-            <ul class="accounts-list">
+            <ul className="accounts-list">
               {accounts.map((account) => {
                 const relationship = relationshipsMap[account.id];
                 const key = `${account.id}-${account._types?.length || ''}`;
                 return (
                   <li key={key}>
                     {showReactions && account._types?.length > 0 && (
-                      <div class="reactions-block">
+                      <div className="reactions-block">
                         {account._types.map((type) => (
                           <Icon
                             key={type}
@@ -293,12 +293,12 @@ export default function GenericAccounts({
                                 favourite: 'heart',
                               }[type]
                             }
-                            class={`${type}-icon`}
+                            className={`${type}-icon`}
                           />
                         ))}
                       </div>
                     )}
-                    <div class="account-relationships">
+                    <div className="account-relationships">
                       <AccountBlock
                         account={account}
                         showStats
@@ -321,35 +321,37 @@ export default function GenericAccounts({
                 >
                   <button
                     type="button"
-                    class="plain block"
-                    onClick={() => loadAccounts()}
+                    className="plain block"
+                    onClick={() => {
+                      loadAccounts();
+                    }}
                   >
                     <Trans>Show more…</Trans>
                   </button>
                 </InViewTyped>
               ) : (
-                <p class="ui-state insignificant">
+                <p className="ui-state insignificant">
                   <Trans>The end.</Trans>
                 </p>
               )
             ) : (
               uiState === 'loading' && (
-                <p class="ui-state">
+                <p className="ui-state">
                   <Loader abrupt />
                 </p>
               )
             )}
           </>
         ) : uiState === 'loading' ? (
-          <p class="ui-state">
+          <p className="ui-state">
             <Loader abrupt />
           </p>
         ) : uiState === 'error' ? (
-          <p class="ui-state">
+          <p className="ui-state">
             <Trans>Error loading accounts</Trans>
           </p>
         ) : (
-          <p class="ui-state insignificant">
+          <p className="ui-state insignificant">
             {blankCopy || t`Nothing to show`}
           </p>
         )}

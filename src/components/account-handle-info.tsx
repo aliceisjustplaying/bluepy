@@ -12,18 +12,18 @@ function AccountHandleInfo({ acct, instance }: AccountHandleInfoProps) {
   if (!server) server = instance;
   const encodedAcct = toASCII(acct);
   return (
-    <div class="handle-info">
-      <span class="handle-handle" title={encodedAcct}>
-        <b class="handle-username">{username}</b>
-        <span class="handle-at">@</span>
-        <b class="handle-server">{server}</b>
+    <div className="handle-info">
+      <span className="handle-handle" title={encodedAcct}>
+        <b className="handle-username">{username}</b>
+        <span className="handle-at">@</span>
+        <b className="handle-server">{server}</b>
       </span>
-      <div class="handle-legend">
-        <span class="ib">
-          <span class="handle-legend-icon username" /> <Trans>username</Trans>
+      <div className="handle-legend">
+        <span className="ib">
+          <span className="handle-legend-icon username" /> <Trans>username</Trans>
         </span>{' '}
-        <span class="ib">
-          <span class="handle-legend-icon server" />{' '}
+        <span className="ib">
+          <span className="handle-legend-icon server" />{' '}
           <Trans>server domain name</Trans>
         </span>
       </div>

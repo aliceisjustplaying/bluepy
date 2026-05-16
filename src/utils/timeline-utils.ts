@@ -110,7 +110,7 @@ export function groupBoosts(
 const BOOSTS_LIMIT = 100;
 export function dedupeBoosts<T extends TimelineStatus>(
   items: readonly T[],
-  instance: string,
+  instance: string | undefined,
 ): T[] {
   const boostedStatusIDs =
     store.account.get<BoostedStatusIDsMap>('boostedStatusIDs') || {};
@@ -160,7 +160,7 @@ export function filterHiddenStatuses<T extends TimelineStatus>(
 
 export function groupContext(
   items: readonly TimelineStatus[],
-  instance: string,
+  instance: string | undefined,
 ): TimelineItem[] {
   const contexts = groupContextItems(items);
 
@@ -277,13 +277,9 @@ export function groupContext(
             const replyToStatuses = await statusesResource.list({ id: ids });
             if (replyToStatuses?.length) {
               for (const replyToStatus of replyToStatuses) {
-                saveStatus(
-                  replyToStatus,
-                  instance,
-                  {
-                    skipThreading: true,
-                  },
-                );
+                saveStatus(replyToStatus, instance, {
+                  skipThreading: true,
+                });
                 const sKey = inReplyToIds.find(
                   ({ inReplyToId }) => inReplyToId === replyToStatus.id,
                 )?.sKey;

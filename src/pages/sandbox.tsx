@@ -1,7 +1,7 @@
 import './sandbox.css';
 
-import type { ComponentType, TargetedEvent, TargetedMouseEvent } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import type { ComponentType, SyntheticEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { uid } from 'uid/single';
 
 import testGIFURL from '../assets/sandbox/big-buck-bunny-muted.webm';
@@ -22,7 +22,7 @@ type SandboxStatusComponentProps = Omit<
 > & {
   status?: MockStatus;
   onMediaClick?: (
-    e: Event,
+    e: React.SyntheticEvent,
     i: number,
     media: unknown,
     status: { mediaAttachments?: unknown[] },
@@ -157,7 +157,7 @@ const MOCK_STATUS = ({
 <p>ᠬᠦᠮᠦᠨ ᠪᠦᠷ ᠲᠥᠷᠥᠵᠦ ᠮᠡᠨᠳᠡᠯᠡᠬᠦ ᠡᠷᠬᠡ ᠴᠢᠯᠥᠭᠡ ᠲᠡᠢ᠂ ᠠᠳᠠᠯᠢᠬᠠᠨ ᠨᠡᠷ᠎ᠡ ᠲᠥᠷᠥ ᠲᠡᠢ᠂ ᠢᠵᠢᠯ ᠡᠷᠬᠡ ᠲᠡᠢ ᠪᠠᠢᠠᠭ᠃</p>
 <p>ᠬᠦᠮᠦᠨ ᠪᠦᠷ ᠲᠥᠷᠥᠵᠦ ᠮᠡᠨᠳᠡᠯᠡᠬᠦ ᠡᠷᠬᠡ ᠴᠢᠯᠥᠭᠡ ᠲᠡᠢ᠂ ᠠᠳᠠᠯᠢᠬᠠᠨ ᠨᠡᠷ᠎ᠡ ᠲᠥᠷᠥ ᠲᠡᠢ᠂ ᠢᠵᠢᠯ ᠡᠷᠬᠡ ᠲᠡᠢ ᠪᠠᠢᠠᠭ᠃</p>`;
   const linksContent = `<p>This is a test status with links. Check out <a href="https://example.com">this website</a> and <a href="https://google.com">Google</a>. Links should be clickable and properly styled.</p>`;
-  const hashtagsContent = `<p>This is a test status with hashtags. <a href="https://example.social/tags/coding" class="hashtag" rel="tag">#coding</a> <a href="https://example.social/tags/webdev" class="hashtag" rel="tag">#webdev</a> <a href="https://example.social/tags/javascript" class="hashtag" rel="tag">#javascript</a> <a href="https://example.social/tags/reactjs" class="hashtag" rel="tag">#reactjs</a> <a href="https://example.social/tags/preact" class="hashtag" rel="tag">#preact</a></p><p>Hashtags should be formatted and clickable.</p>`;
+  const hashtagsContent = `<p>This is a test status with hashtags. <a href="https://example.social/tags/coding" class="hashtag" rel="tag">#coding</a> <a href="https://example.social/tags/webdev" class="hashtag" rel="tag">#webdev</a> <a href="https://example.social/tags/javascript" class="hashtag" rel="tag">#javascript</a> <a href="https://example.social/tags/reactjs" class="hashtag" rel="tag">#reactjs</a> <a href="https://example.social/tags/react" class="hashtag" rel="tag">#react</a></p><p>Hashtags should be formatted and clickable.</p>`;
   const mentionsContent = `<p>This is a test status with mentions. Hello <a href="https://example.social/@cheeaun" class="u-url mention">@cheeaun</a> and <a href="https://example.social/@test" class="u-url mention">@test</a>! What do you think about this <a href="https://example.social/@another_user" class="u-url mention">@another_user</a>?</p><p>Mentions should be highlighted and clickable.</p>`;
   const mathContent = `<p>This is a test status with mathematical expressions. Here's an inline formula \\( E = mc^2 \\) and a display formula:</p><p>\\[ \\frac{\\left(n!\\right)^2}{2}\\sum _{k=0}^m\\frac{1}{n-k}{n-k \\choose k}^2 \\]</p><p>The MathBlock component should detect and offer to render these LaTeX expressions.</p>`;
 
@@ -360,7 +360,7 @@ const MOCK_STATUS = ({
       'webdev',
       'javascript',
       'reactjs',
-      'preact',
+      'react',
       'programming',
       'development',
       'frontend',
@@ -993,14 +993,14 @@ export default function Sandbox() {
   return (
     <main id="sandbox">
       <header>
-        <a href="/" class="button plain4">
+        <a href="/" className="button plain4">
           ×
         </a>
         <h1>Sandbox</h1>
       </header>
       <div
-        class={`sandbox-preview ${toggleState.displayStyle}`}
-        onClickCapture={(e: TargetedMouseEvent<HTMLDivElement>) => {
+        className={`sandbox-preview ${toggleState.displayStyle}`}
+        onClickCapture={(e: React.MouseEvent<HTMLDivElement>) => {
           const target = e.target as Element | null;
           const isAllowed = target?.closest(
             '.media, .media-caption, .spoiler-button, .spoiler-media-button, .math-block button, .status-card-unfulfilled button, .poll .poll-results-button, .poll .poll-hide-results-button, .poll-options .poll-option',
@@ -1034,7 +1034,7 @@ export default function Sandbox() {
               key={`status-${toggleState.mediaPreference}-${toggleState.expandWarnings}-${Date.now()}`}
               // Prevent opening as URL
               onMediaClick={(
-                e: Event,
+                e: React.SyntheticEvent,
                 i: number,
                 _media: unknown,
                 status: { mediaAttachments?: unknown[] },
@@ -1049,13 +1049,18 @@ export default function Sandbox() {
           )}
         </FilterContext.Provider>
       </div>
-      <form class="sandbox-toggles" onSubmit={(e) => e.preventDefault()}>
+      <form
+        className="sandbox-toggles"
+        onSubmit={(e) => {
+          e.preventDefault();
+        }}
+      >
         <header>
           <h2>Post Controls</h2>
           <button
             type="button"
             onClick={resetToInitialState}
-            class="reset-button small plain6"
+            className="reset-button small plain6"
             hidden={!hasChanges()}
           >
             Reset
@@ -1070,9 +1075,9 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.loading}
-                    onChange={() =>
-                      updateToggles({ loading: !toggleState.loading })
-                    }
+                    onChange={() => {
+                      updateToggles({ loading: !toggleState.loading });
+                    }}
                   />
                   <span>Loading</span>
                 </label>
@@ -1082,9 +1087,9 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.mediaFirst}
-                    onChange={() =>
-                      updateToggles({ mediaFirst: !toggleState.mediaFirst })
-                    }
+                    onChange={() => {
+                      updateToggles({ mediaFirst: !toggleState.mediaFirst });
+                    }}
                   />
                   <span>Media first</span>
                 </label>
@@ -1094,9 +1099,9 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.deleted}
-                    onChange={() =>
-                      updateToggles({ deleted: !toggleState.deleted })
-                    }
+                    onChange={() => {
+                      updateToggles({ deleted: !toggleState.deleted });
+                    }}
                   />
                   <span>Deleted</span>
                 </label>
@@ -1112,7 +1117,9 @@ export default function Sandbox() {
                     type="radio"
                     name="visibility"
                     checked={toggleState.visibility === 'public'}
-                    onChange={() => updateToggles({ visibility: 'public' })}
+                    onChange={() => {
+                      updateToggles({ visibility: 'public' });
+                    }}
                   />
                   <span>Public</span>
                 </label>
@@ -1123,7 +1130,9 @@ export default function Sandbox() {
                     type="radio"
                     name="visibility"
                     checked={toggleState.visibility === 'unlisted'}
-                    onChange={() => updateToggles({ visibility: 'unlisted' })}
+                    onChange={() => {
+                      updateToggles({ visibility: 'unlisted' });
+                    }}
                   />
                   <span>Quiet public</span>
                 </label>
@@ -1134,7 +1143,9 @@ export default function Sandbox() {
                     type="radio"
                     name="visibility"
                     checked={toggleState.visibility === 'private'}
-                    onChange={() => updateToggles({ visibility: 'private' })}
+                    onChange={() => {
+                      updateToggles({ visibility: 'private' });
+                    }}
                   />
                   <span>Private</span>
                 </label>
@@ -1145,7 +1156,9 @@ export default function Sandbox() {
                     type="radio"
                     name="visibility"
                     checked={toggleState.visibility === 'direct'}
-                    onChange={() => updateToggles({ visibility: 'direct' })}
+                    onChange={() => {
+                      updateToggles({ visibility: 'direct' });
+                    }}
                   />
                   <span>Direct</span>
                 </label>
@@ -1188,7 +1201,9 @@ export default function Sandbox() {
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'short'}
-                        onChange={() => updateToggles({ contentType: 'short' })}
+                        onChange={() => {
+                          updateToggles({ contentType: 'short' });
+                        }}
                         disabled={!toggleState.hasContent}
                       />
                       <span>Short</span>
@@ -1200,7 +1215,9 @@ export default function Sandbox() {
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'long'}
-                        onChange={() => updateToggles({ contentType: 'long' })}
+                        onChange={() => {
+                          updateToggles({ contentType: 'long' });
+                        }}
                         disabled={!toggleState.hasContent}
                       />
                       <span>Long</span>
@@ -1212,9 +1229,9 @@ export default function Sandbox() {
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'shortVerticalLr'}
-                        onChange={() =>
-                          updateToggles({ contentType: 'shortVerticalLr' })
-                        }
+                        onChange={() => {
+                          updateToggles({ contentType: 'shortVerticalLr' });
+                        }}
                         disabled={!toggleState.hasContent}
                       />
                       <span>Short vertical-lr</span>
@@ -1226,9 +1243,9 @@ export default function Sandbox() {
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'longVerticalLr'}
-                        onChange={() =>
-                          updateToggles({ contentType: 'longVerticalLr' })
-                        }
+                        onChange={() => {
+                          updateToggles({ contentType: 'longVerticalLr' });
+                        }}
                         disabled={!toggleState.hasContent}
                       />
                       <span>Long vertical-lr</span>
@@ -1240,7 +1257,9 @@ export default function Sandbox() {
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'links'}
-                        onChange={() => updateToggles({ contentType: 'links' })}
+                        onChange={() => {
+                          updateToggles({ contentType: 'links' });
+                        }}
                         disabled={!toggleState.hasContent}
                       />
                       <span>With links</span>
@@ -1252,9 +1271,9 @@ export default function Sandbox() {
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'hashtags'}
-                        onChange={() =>
-                          updateToggles({ contentType: 'hashtags' })
-                        }
+                        onChange={() => {
+                          updateToggles({ contentType: 'hashtags' });
+                        }}
                         disabled={!toggleState.hasContent}
                       />
                       <span>With hashtags</span>
@@ -1266,9 +1285,9 @@ export default function Sandbox() {
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'mentions'}
-                        onChange={() =>
-                          updateToggles({ contentType: 'mentions' })
-                        }
+                        onChange={() => {
+                          updateToggles({ contentType: 'mentions' });
+                        }}
                         disabled={!toggleState.hasContent}
                       />
                       <span>With mentions</span>
@@ -1280,7 +1299,9 @@ export default function Sandbox() {
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'math'}
-                        onChange={() => updateToggles({ contentType: 'math' })}
+                        onChange={() => {
+                          updateToggles({ contentType: 'math' });
+                        }}
                         disabled={!toggleState.hasContent}
                       />
                       <span>With math</span>
@@ -1293,9 +1314,9 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.hasSpoiler}
-                    onChange={() =>
-                      updateToggles({ hasSpoiler: !toggleState.hasSpoiler })
-                    }
+                    onChange={() => {
+                      updateToggles({ hasSpoiler: !toggleState.hasSpoiler });
+                    }}
                   />
                   <span>Content warning</span>
                 </label>
@@ -1307,7 +1328,9 @@ export default function Sandbox() {
                           type="radio"
                           name="spoilerType"
                           checked={toggleState.spoilerType === 'all'}
-                          onChange={() => updateToggles({ spoilerType: 'all' })}
+                          onChange={() => {
+                            updateToggles({ spoilerType: 'all' });
+                          }}
                         />
                         <span>Whole content</span>
                       </label>
@@ -1318,9 +1341,9 @@ export default function Sandbox() {
                           type="radio"
                           name="spoilerType"
                           checked={toggleState.spoilerType === 'mediaOnly'}
-                          onChange={() =>
-                            updateToggles({ spoilerType: 'mediaOnly' })
-                          }
+                          onChange={() => {
+                            updateToggles({ spoilerType: 'mediaOnly' });
+                          }}
                         />
                         <span>Media only</span>
                       </label>
@@ -1333,7 +1356,7 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={parseInt(toggleState.mediaCount) > 0}
-                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                       const newHasMedia = e.currentTarget.checked;
                       const updates: Partial<ToggleState> = {
                         mediaCount: newHasMedia ? '1' : '0',
@@ -1359,7 +1382,7 @@ export default function Sandbox() {
                         : toggleState.mediaCount
                     }
                     step="1"
-                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                       const value = parseInt(e.currentTarget.value, 10) || 1;
                       updateToggles(({ mediaTypes }) => {
                         mediaTypes[value - 1] = 'image';
@@ -1374,7 +1397,7 @@ export default function Sandbox() {
                 </label>
 
                 {parseInt(toggleState.mediaCount) > 0 && (
-                  <ul class="media-types">
+                  <ul className="media-types">
                     {Array.from(
                       { length: parseInt(toggleState.mediaCount) },
                       (_, index) => (
@@ -1456,7 +1479,7 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={parseInt(toggleState.pollCount) > 0}
-                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                       const updates: Partial<ToggleState> = {
                         pollCount: e.currentTarget.checked ? '2' : '0',
                       };
@@ -1474,12 +1497,12 @@ export default function Sandbox() {
                   <input
                     type="number"
                     min="2"
-                    autocomplete="off"
+                    autoComplete="off"
                     value={toggleState.pollCount}
                     step="2"
-                    onChange={(e: TargetedEvent<HTMLInputElement>) =>
-                      updateToggles({ pollCount: e.currentTarget.value })
-                    }
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
+                      updateToggles({ pollCount: e.currentTarget.value });
+                    }}
                     disabled={parseInt(toggleState.pollCount) === 0}
                   />
                 </label>
@@ -1490,11 +1513,11 @@ export default function Sandbox() {
                         <input
                           type="checkbox"
                           checked={toggleState.pollMultiple}
-                          onChange={() =>
+                          onChange={() => {
                             updateToggles({
                               pollMultiple: !toggleState.pollMultiple,
-                            })
-                          }
+                            });
+                          }}
                         />
                         <span>Multiple</span>
                       </label>
@@ -1504,11 +1527,11 @@ export default function Sandbox() {
                         <input
                           type="checkbox"
                           checked={toggleState.pollExpired}
-                          onChange={() =>
+                          onChange={() => {
                             updateToggles({
                               pollExpired: !toggleState.pollExpired,
-                            })
-                          }
+                            });
+                          }}
                         />
                         <span>Expired</span>
                       </label>
@@ -1518,9 +1541,11 @@ export default function Sandbox() {
                         <input
                           type="checkbox"
                           checked={toggleState.pollVoted}
-                          onChange={() =>
-                            updateToggles({ pollVoted: !toggleState.pollVoted })
-                          }
+                          onChange={() => {
+                            updateToggles({
+                              pollVoted: !toggleState.pollVoted,
+                            });
+                          }}
                         />
                         <span>Voted</span>
                       </label>
@@ -1533,9 +1558,9 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.showCard}
-                    onChange={() =>
-                      updateToggles({ showCard: !toggleState.showCard })
-                    }
+                    onChange={() => {
+                      updateToggles({ showCard: !toggleState.showCard });
+                    }}
                   />
                   <span>Link preview card</span>
                   <sup>1</sup>
@@ -1546,9 +1571,9 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.showTags}
-                    onChange={() =>
-                      updateToggles({ showTags: !toggleState.showTags })
-                    }
+                    onChange={() => {
+                      updateToggles({ showTags: !toggleState.showTags });
+                    }}
                   />
                   <span>Out-of-bound tags</span>
                 </label>
@@ -1560,7 +1585,9 @@ export default function Sandbox() {
                           type="radio"
                           name="tagsCount"
                           checked={toggleState.tagsCount === 'few'}
-                          onChange={() => updateToggles({ tagsCount: 'few' })}
+                          onChange={() => {
+                            updateToggles({ tagsCount: 'few' });
+                          }}
                         />
                         <span>Few</span>
                       </label>
@@ -1571,7 +1598,9 @@ export default function Sandbox() {
                           type="radio"
                           name="tagsCount"
                           checked={toggleState.tagsCount === 'many'}
-                          onChange={() => updateToggles({ tagsCount: 'many' })}
+                          onChange={() => {
+                            updateToggles({ tagsCount: 'many' });
+                          }}
                         />
                         <span>Many</span>
                       </label>
@@ -1584,9 +1613,9 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.showQuotes}
-                    onChange={() =>
-                      updateToggles({ showQuotes: !toggleState.showQuotes })
-                    }
+                    onChange={() => {
+                      updateToggles({ showQuotes: !toggleState.showQuotes });
+                    }}
                   />
                   <span>Quote post</span>
                   <input
@@ -1595,7 +1624,7 @@ export default function Sandbox() {
                     max="10"
                     value={toggleState.quotesCount}
                     step="1"
-                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                       // Make sure to convert to a number first to avoid string concatenation
                       const count = parseInt(e.currentTarget.value, 10) || 1;
                       updateToggles({ quotesCount: String(count) });
@@ -1614,7 +1643,7 @@ export default function Sandbox() {
                           max="2"
                           value={toggleState.quoteNestingLevel}
                           step="1"
-                          onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                          onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                             // Make sure to convert to a number first to avoid string concatenation
                             const level =
                               parseInt(e.currentTarget.value, 10) || 0;
@@ -1635,7 +1664,7 @@ export default function Sandbox() {
                               value="accepted"
                               checked={toggleState.quoteState === 'accepted'}
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1653,7 +1682,7 @@ export default function Sandbox() {
                               value="deleted"
                               checked={toggleState.quoteState === 'deleted'}
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1673,7 +1702,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'unauthorized'
                               }
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1691,7 +1720,7 @@ export default function Sandbox() {
                               value="pending"
                               checked={toggleState.quoteState === 'pending'}
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1709,7 +1738,7 @@ export default function Sandbox() {
                               value="rejected"
                               checked={toggleState.quoteState === 'rejected'}
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1727,7 +1756,7 @@ export default function Sandbox() {
                               value="revoked"
                               checked={toggleState.quoteState === 'revoked'}
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1747,7 +1776,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'blocked_account'
                               }
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1767,7 +1796,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'blocked_domain'
                               }
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1787,7 +1816,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'muted_account'
                               }
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1807,7 +1836,9 @@ export default function Sandbox() {
                             <input
                               type="checkbox"
                               checked={toggleState.quoteFilters[0]}
-                              onChange={() => handleQuoteFilterChange(0)}
+                              onChange={() => {
+                                handleQuoteFilterChange(0);
+                              }}
                             />
                             <span>Hide</span>
                           </label>
@@ -1817,7 +1848,9 @@ export default function Sandbox() {
                             <input
                               type="checkbox"
                               checked={toggleState.quoteFilters[1]}
-                              onChange={() => handleQuoteFilterChange(1)}
+                              onChange={() => {
+                                handleQuoteFilterChange(1);
+                              }}
                             />
                             <span>Blur</span>
                           </label>
@@ -1827,7 +1860,9 @@ export default function Sandbox() {
                             <input
                               type="checkbox"
                               checked={toggleState.quoteFilters[2]}
-                              onChange={() => handleQuoteFilterChange(2)}
+                              onChange={() => {
+                                handleQuoteFilterChange(2);
+                              }}
                             />
                             <span>Warn</span>
                           </label>
@@ -1848,7 +1883,9 @@ export default function Sandbox() {
                     type="radio"
                     name="size"
                     checked={toggleState.size === 'small'}
-                    onChange={() => updateToggles({ size: 'small' })}
+                    onChange={() => {
+                      updateToggles({ size: 'small' });
+                    }}
                   />
                   <span>Small</span>
                 </label>
@@ -1859,7 +1896,9 @@ export default function Sandbox() {
                     type="radio"
                     name="size"
                     checked={toggleState.size === 'medium'}
-                    onChange={() => updateToggles({ size: 'medium' })}
+                    onChange={() => {
+                      updateToggles({ size: 'medium' });
+                    }}
                   />
                   <span>Medium</span>
                 </label>
@@ -1870,7 +1909,9 @@ export default function Sandbox() {
                     type="radio"
                     name="size"
                     checked={toggleState.size === 'large'}
-                    onChange={() => updateToggles({ size: 'large' })}
+                    onChange={() => {
+                      updateToggles({ size: 'large' });
+                    }}
                   />
                   <span>Large</span>
                 </label>
@@ -1886,7 +1927,9 @@ export default function Sandbox() {
                     type="radio"
                     name="contextType"
                     checked={toggleState.contextType === 'none'}
-                    onChange={() => updateToggles({ contextType: 'none' })}
+                    onChange={() => {
+                      updateToggles({ contextType: 'none' });
+                    }}
                   />
                   <span>None</span>
                 </label>
@@ -1897,7 +1940,9 @@ export default function Sandbox() {
                     type="radio"
                     name="contextType"
                     checked={toggleState.contextType === 'reblog'}
-                    onChange={() => updateToggles({ contextType: 'reblog' })}
+                    onChange={() => {
+                      updateToggles({ contextType: 'reblog' });
+                    }}
                   />
                   <span>Boost</span>
                 </label>
@@ -1908,7 +1953,9 @@ export default function Sandbox() {
                     type="radio"
                     name="contextType"
                     checked={toggleState.contextType === 'group'}
-                    onChange={() => updateToggles({ contextType: 'group' })}
+                    onChange={() => {
+                      updateToggles({ contextType: 'group' });
+                    }}
                   />
                   <span>Group</span>
                 </label>
@@ -1919,9 +1966,9 @@ export default function Sandbox() {
                     type="radio"
                     name="contextType"
                     checked={toggleState.contextType === 'followed-tags'}
-                    onChange={() =>
-                      updateToggles({ contextType: 'followed-tags' })
-                    }
+                    onChange={() => {
+                      updateToggles({ contextType: 'followed-tags' });
+                    }}
                   />
                   <span>Followed tags</span>
                 </label>
@@ -1932,7 +1979,9 @@ export default function Sandbox() {
                     type="radio"
                     name="contextType"
                     checked={toggleState.contextType === 'reply-to'}
-                    onChange={() => updateToggles({ contextType: 'reply-to' })}
+                    onChange={() => {
+                      updateToggles({ contextType: 'reply-to' });
+                    }}
                   />
                   <span>Reply-to</span>
                 </label>
@@ -1947,7 +1996,9 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.filters[0]}
-                    onChange={() => handleFilterChange(0)}
+                    onChange={() => {
+                      handleFilterChange(0);
+                    }}
                   />
                   <span>Hide</span>
                 </label>
@@ -1957,7 +2008,9 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.filters[1]}
-                    onChange={() => handleFilterChange(1)}
+                    onChange={() => {
+                      handleFilterChange(1);
+                    }}
                   />
                   <span>Blur</span>
                 </label>
@@ -1967,14 +2020,16 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.filters[2]}
-                    onChange={() => handleFilterChange(2)}
+                    onChange={() => {
+                      handleFilterChange(2);
+                    }}
                   />
                   <span>Warn</span>
                 </label>
               </li>
             </ul>
           </li>
-          <li class="toggle-display">
+          <li className="toggle-display">
             <b>Display</b>
             <ul>
               <li>
@@ -1983,7 +2038,9 @@ export default function Sandbox() {
                     type="radio"
                     name="displayStyle"
                     checked={toggleState.displayStyle === 'adaptive'}
-                    onChange={() => updateToggles({ displayStyle: 'adaptive' })}
+                    onChange={() => {
+                      updateToggles({ displayStyle: 'adaptive' });
+                    }}
                   />
                   <span>Adaptive</span>
                 </label>
@@ -1994,7 +2051,9 @@ export default function Sandbox() {
                     type="radio"
                     name="displayStyle"
                     checked={toggleState.displayStyle === 'narrow'}
-                    onChange={() => updateToggles({ displayStyle: 'narrow' })}
+                    onChange={() => {
+                      updateToggles({ displayStyle: 'narrow' });
+                    }}
                   />
                   <span>Narrow</span>
                 </label>
@@ -2013,9 +2072,9 @@ export default function Sandbox() {
                         type="radio"
                         name="mediaPreference"
                         checked={toggleState.mediaPreference === 'default'}
-                        onChange={() =>
-                          updateToggles({ mediaPreference: 'default' })
-                        }
+                        onChange={() => {
+                          updateToggles({ mediaPreference: 'default' });
+                        }}
                       />
                       <span>Hide media marked as sensitive</span>
                     </label>
@@ -2026,9 +2085,9 @@ export default function Sandbox() {
                         type="radio"
                         name="mediaPreference"
                         checked={toggleState.mediaPreference === 'show_all'}
-                        onChange={() =>
-                          updateToggles({ mediaPreference: 'show_all' })
-                        }
+                        onChange={() => {
+                          updateToggles({ mediaPreference: 'show_all' });
+                        }}
                       />
                       <span>Always show media</span>
                     </label>
@@ -2039,9 +2098,9 @@ export default function Sandbox() {
                         type="radio"
                         name="mediaPreference"
                         checked={toggleState.mediaPreference === 'hide_all'}
-                        onChange={() =>
-                          updateToggles({ mediaPreference: 'hide_all' })
-                        }
+                        onChange={() => {
+                          updateToggles({ mediaPreference: 'hide_all' });
+                        }}
                       />
                       <span>Always hide media</span>
                       {/* <sup>2</sup> */}
@@ -2054,11 +2113,11 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={toggleState.expandWarnings}
-                    onChange={() =>
+                    onChange={() => {
                       updateToggles({
                         expandWarnings: !toggleState.expandWarnings,
-                      })
-                    }
+                      });
+                    }}
                   />{' '}
                   <span>Always expand posts marked with content warnings</span>
                 </label>

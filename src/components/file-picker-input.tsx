@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro';
-import type { TargetedEvent } from 'preact';
+import type { SyntheticEvent } from 'react';
 
-export interface FilePickerMediaAttachment {
+interface FilePickerMediaAttachment {
   fileData: ArrayBuffer;
   fileName: string;
   type: string;
@@ -11,13 +11,13 @@ export interface FilePickerMediaAttachment {
   description: string | null;
 }
 
-export interface FilePickerInputAttachment
-  extends Partial<FilePickerMediaAttachment> {
+interface FilePickerInputAttachment extends Partial<FilePickerMediaAttachment> {
   file?: File;
   [key: string]: unknown;
 }
 
-export interface FilePickerInputProps {
+interface FilePickerInputProps {
+  id?: string;
   hidden?: boolean;
   supportedMimeTypes?: string[];
   maxMediaAttachments?: number;
@@ -31,6 +31,7 @@ export interface FilePickerInputProps {
 }
 
 function FilePickerInput({
+  id,
   hidden,
   supportedMimeTypes,
   maxMediaAttachments,
@@ -40,6 +41,7 @@ function FilePickerInput({
 }: FilePickerInputProps) {
   return (
     <input
+      id={id}
       type="file"
       hidden={hidden}
       accept={supportedMimeTypes?.join(',')}
@@ -51,7 +53,7 @@ function FilePickerInput({
         maxMediaAttachments - Number(mediaAttachments) >= 2
       }
       disabled={disabled}
-      onChange={(e: TargetedEvent<HTMLInputElement>) => {
+      onChange={(e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
         const files = target.files;
         if (!files) return;

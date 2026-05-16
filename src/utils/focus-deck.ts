@@ -48,7 +48,9 @@ const focusDeck = (): (() => void) => {
       }
     }
   }, 100);
-  return () => clearTimeout(timer);
+  return () => {
+    clearTimeout(timer);
+  };
 };
 
 export default focusDeck;

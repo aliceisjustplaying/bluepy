@@ -8,6 +8,7 @@ const MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
 interface ListLike {
   id: string;
   title: string;
+  exclusive?: boolean;
   _atproto?: { type?: string } | null;
   [key: string]: unknown;
 }
@@ -22,7 +23,9 @@ interface MastoListsApi {
   $select(id: string): { fetch(): Promise<ListLike> };
 }
 
-export function isFeedList(list: ListLike | null | undefined): boolean {
+export function isFeedList<T extends ListLike>(
+  list: T | null | undefined,
+): list is T & { _atproto: { type: 'feed' } } {
   // TODO(oxlint:no-underscore-dangle) `_atproto` is the project-wide cache key
   // used by the atproto adapter across many modules; renaming is out of scope.
   return list?._atproto?.type === 'feed';
@@ -82,7 +85,7 @@ export async function getUserLists(): Promise<ListLike[]> {
   return splitListsAndFeeds(lists).lists;
 }
 
-export const fetchList = pmem(
+const fetchList = pmem(
   (id: string) => {
     const { masto } = api();
     return (masto.v1.lists as MastoListsApi).$select(id).fetch();

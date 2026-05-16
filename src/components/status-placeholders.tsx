@@ -26,7 +26,7 @@ export function StatusGhost({
   ) as AnyAccount | null;
   return (
     <article
-      class={`status ghost ${mediaFirst ? 'status-media-first small' : ''}`}
+      className={`status ghost ${mediaFirst ? 'status-media-first small' : ''}`}
     >
       {!mediaFirst && (
         <Avatar
@@ -35,8 +35,8 @@ export function StatusGhost({
           squircle={ghostAccount?.bot}
         />
       )}
-      <div class="container">
-        <div class="meta">
+      <div className="container">
+        <div className="meta">
           {(size === 's' || mediaFirst) && (
             <Avatar
               size="m"
@@ -51,10 +51,10 @@ export function StatusGhost({
             />
           )}
         </div>
-        <div class="content-container">
-          {mediaFirst && <div class="media-first-container" />}
-          <div class={`content ${mediaFirst ? 'media-first-content' : ''}`}>
-            <p class="insignificant">
+        <div className="content-container">
+          {mediaFirst && <div className="media-first-container" />}
+          <div className={`content ${mediaFirst ? 'media-first-content' : ''}`}>
+            <p className="insignificant">
               <Trans>Post unavailable</Trans>
             </p>
           </div>
@@ -67,16 +67,16 @@ export function StatusGhost({
 export function StatusSkeleton({ mediaFirst, size = 'm' }: PlaceholderProps) {
   return (
     <div
-      class={`status skeleton ${mediaFirst ? 'status-media-first small' : ''}`}
+      className={`status skeleton ${mediaFirst ? 'status-media-first small' : ''}`}
     >
       {!mediaFirst && <Avatar size="xxl" />}
-      <div class="container">
-        <div class="meta">
+      <div className="container">
+        <div className="meta">
           {(size === 's' || mediaFirst) && <Avatar size="m" />} ███ ████████
         </div>
-        <div class="content-container">
-          {mediaFirst && <div class="media-first-container" />}
-          <div class={`content ${mediaFirst ? 'media-first-content' : ''}`}>
+        <div className="content-container">
+          {mediaFirst && <div className="media-first-container" />}
+          <div className={`content ${mediaFirst ? 'media-first-content' : ''}`}>
             <p>████ ████████</p>
           </div>
         </div>

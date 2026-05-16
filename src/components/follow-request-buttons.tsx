@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useState } from 'preact/hooks';
+import { useState } from 'react';
 
 import { api } from '../utils/api';
 import haptics from '../utils/haptics';
@@ -7,7 +7,7 @@ import haptics from '../utils/haptics';
 import Icon from './icon';
 import Loader from './loader';
 
-export interface FollowRequestButtonsProps {
+interface FollowRequestButtonsProps {
   accountID: string;
   onChange?: () => void;
 }
@@ -36,7 +36,7 @@ function FollowRequestButtons({
   const hasRelationship = relationship !== null;
 
   return (
-    <p class="follow-request-buttons">
+    <p className="follow-request-buttons">
       <button
         type="button"
         disabled={uiState === 'loading' || hasRelationship}
@@ -64,7 +64,7 @@ function FollowRequestButtons({
       <button
         type="button"
         disabled={uiState === 'loading' || hasRelationship}
-        class="light danger"
+        className="light danger"
         onClick={() => {
           void haptics.trigger('light');
           setUIState('loading');
@@ -86,16 +86,20 @@ function FollowRequestButtons({
       >
         <Trans>Reject</Trans>
       </button>
-      <span class="follow-request-states">
+      <span className="follow-request-states">
         {hasRelationship && requestState ? (
           requestState === 'accept' ? (
             <Icon
               icon="check-circle"
               alt={t`Accepted`}
-              class="follow-accepted"
+              className="follow-accepted"
             />
           ) : (
-            <Icon icon="x-circle" alt={t`Rejected`} class="follow-rejected" />
+            <Icon
+              icon="x-circle"
+              alt={t`Rejected`}
+              className="follow-rejected"
+            />
           )
         ) : (
           <Loader hidden={uiState !== 'loading'} />

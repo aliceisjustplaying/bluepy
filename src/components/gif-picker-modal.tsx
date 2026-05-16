@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { CSSProperties } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
 import poweredByGiphyURL from '../assets/powered-by-giphy.svg';
@@ -45,13 +45,13 @@ interface GiphyResponse {
   pagination?: GiphyPagination;
 }
 
-export interface GIFSelectPayload {
+interface GIFSelectPayload {
   url: string;
   type: 'video/mp4' | 'image/gif';
   alt_text: string | undefined;
 }
 
-export interface GIFPickerModalProps {
+interface GIFPickerModalProps {
   onClose?: (e?: unknown) => void;
   onSelect?: (payload: GIFSelectPayload) => void;
 }
@@ -116,9 +116,9 @@ function GIFPickerModal({
   }, 1000);
 
   return (
-    <div id="gif-picker-sheet" class="sheet">
+    <div id="gif-picker-sheet" className="sheet">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -136,17 +136,17 @@ function GIFPickerModal({
             name="q"
             placeholder={t`Search GIFs`}
             required
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck={false}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             dir="auto"
             enterKeyHint="search"
             onInput={debouncedOnInput}
           />
           <input
             type="image"
-            class="powered-button"
+            className="powered-button"
             src={poweredByGiphyURL}
             width="86"
             height="30"
@@ -154,16 +154,19 @@ function GIFPickerModal({
           />
         </form>
       </header>
-      <main ref={scrollableRef} class={uiState === 'loading' ? 'loading' : ''}>
+      <main
+        ref={scrollableRef}
+        className={uiState === 'loading' ? 'loading' : ''}
+      >
         {uiState === 'default' && (
-          <div class="ui-state">
-            <p class="insignificant">
+          <div className="ui-state">
+            <p className="insignificant">
               <Trans>Type to search GIFs</Trans>
             </p>
           </div>
         )}
         {uiState === 'loading' && !results?.data?.length && (
-          <div class="ui-state">
+          <div className="ui-state">
             <Loader abrupt />
           </div>
         )}
@@ -188,12 +191,15 @@ function GIFPickerModal({
                   width = (+width / +height) * 100;
                   height = 100;
                 }
-                const urlObj = URL.parse(url)!;
+                const urlObj = URL.parse(url);
+                if (!urlObj) return null;
                 const strippedURL = urlObj.origin + urlObj.pathname;
                 let strippedWebP: string | undefined;
                 if (webp) {
-                  const webpObj = URL.parse(webp)!;
-                  strippedWebP = webpObj.origin + webpObj.pathname;
+                  const webpObj = URL.parse(webp);
+                  strippedWebP = webpObj
+                    ? webpObj.origin + webpObj.pathname
+                    : undefined;
                 }
                 return (
                   <li key={id}>
@@ -202,7 +208,8 @@ function GIFPickerModal({
                       onClick={() => {
                         const { mp4, url: originalUrl } = original;
                         const theURL = mp4 || originalUrl;
-                        const originalUrlObj = URL.parse(theURL)!;
+                        const originalUrlObj = URL.parse(theURL);
+                        if (!originalUrlObj) return;
                         const originalStrippedURL =
                           originalUrlObj.origin + originalUrlObj.pathname;
                         onClose();
@@ -223,7 +230,7 @@ function GIFPickerModal({
                       >
                         <picture>
                           {strippedWebP && (
-                            <source srcset={strippedWebP} type="image/webp" />
+                            <source srcSet={strippedWebP} type="image/webp" />
                           )}
                           <img
                             src={strippedURL}
@@ -232,7 +239,7 @@ function GIFPickerModal({
                             loading="lazy"
                             decoding="async"
                             alt={alt_text}
-                            referrerpolicy="no-referrer"
+                            referrerPolicy="no-referrer"
                             onLoad={(e) => {
                               e.currentTarget.style.backgroundColor =
                                 'transparent';
@@ -246,11 +253,11 @@ function GIFPickerModal({
                 );
               })}
             </ul>
-            <p class="pagination">
+            <p className="pagination">
               {(results.pagination?.offset ?? 0) > 0 && (
                 <button
                   type="button"
-                  class="light small"
+                  className="light small"
                   disabled={uiState === 'loading'}
                   onClick={() => {
                     fetchGIFs({
@@ -270,7 +277,7 @@ function GIFPickerModal({
                 (results.pagination?.total_count ?? 0) && (
                 <button
                   type="button"
-                  class="light small"
+                  className="light small"
                   disabled={uiState === 'loading'}
                   onClick={() => {
                     fetchGIFs({
@@ -288,13 +295,13 @@ function GIFPickerModal({
           </>
         ) : (
           uiState === 'results' && (
-            <div class="ui-state">
+            <div className="ui-state">
               <p>No results</p>
             </div>
           )
         )}
         {uiState === 'error' && (
-          <div class="ui-state">
+          <div className="ui-state">
             <p>
               <Trans>Error loading GIFs</Trans>
             </p>

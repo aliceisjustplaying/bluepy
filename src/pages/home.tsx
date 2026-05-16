@@ -3,9 +3,9 @@ import './notifications-menu.css';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
-import type { RefObject, TargetedMouseEvent } from 'preact';
-import { memo } from 'preact/compat';
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import type { RefObject } from 'react';
+import { memo } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import Columns from '../components/columns';
@@ -114,10 +114,10 @@ function NotificationsLink() {
       <Link
         ref={notificationLinkRef}
         to="/notifications"
-        class={`button plain notifications-button ${
+        className={`button plain notifications-button ${
           snapStates.notificationsShowNew ? 'has-badge' : ''
         } ${menuState || ''}`}
-        onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
+        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
           e.stopPropagation();
           if (window.matchMedia('(min-width: calc(40em))').matches) {
             e.preventDefault();
@@ -130,14 +130,16 @@ function NotificationsLink() {
       <NotificationsMenu
         state={menuState}
         anchorRef={notificationLinkRef}
-        onClose={() => setMenuState(undefined)}
+        onClose={() => {
+          setMenuState(undefined);
+        }}
       />
     </>
   );
 }
 
 interface NotificationsMenuProps {
-  anchorRef: RefObject<HTMLAnchorElement>;
+  anchorRef: RefObject<HTMLAnchorElement | null>;
   state: MenuState;
   onClose: () => void;
 }
@@ -258,7 +260,7 @@ function NotificationsMenu({
       ref={menuRef}
       menuClassName="notifications-menu"
       state={state}
-      anchorRef={anchorRef}
+      anchorRef={anchorRef as never}
       onClose={onClose}
       portal={{
         target: document.body,
@@ -299,17 +301,22 @@ function NotificationsMenu({
                 ))}
             </>
           ) : uiState === 'loading' ? (
-            <div class="ui-state">
+            <div className="ui-state">
               <Loader abrupt />
             </div>
           ) : (
             uiState === 'error' && (
-              <div class="ui-state">
+              <div className="ui-state">
                 <p>
                   <Trans>Unable to fetch notifications.</Trans>
                 </p>
                 <p>
-                  <button type="button" onClick={() => loadNotifications()}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      loadNotifications();
+                    }}
+                  >
                     <Trans>Try again</Trans>
                   </button>
                 </p>
@@ -319,16 +326,16 @@ function NotificationsMenu({
         </main>
       </FilterContext.Provider>
       <footer>
-        <Link to="/mentions" class="button plain">
+        <Link to="/mentions" className="button plain">
           <Icon icon="at" />{' '}
           <span>
             <Trans>Mentions</Trans>
           </span>
         </Link>
-        <Link to="/notifications" class="button plain2">
+        <Link to="/notifications" className="button plain2">
           {hasFollowRequests ? (
             <Trans>
-              <span class="tag collapsed">New</span>{' '}
+              <span className="tag collapsed">New</span>{' '}
               <span>Follow Requests</span>
             </Trans>
           ) : (

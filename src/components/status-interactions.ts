@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useMemo, useRef } from 'preact/hooks';
+import { useMemo, useRef } from 'react';
 
 import haptics from '../utils/haptics';
 import openCompose from '../utils/open-compose';
@@ -226,9 +226,12 @@ export default function useStatusInteractions({
         })
         .values();
     }
+    if (!reblogIterator.current || !favouriteIterator.current) {
+      return { value: [], done: true };
+    }
     const [reblogResult, favouriteResult] = await Promise.allSettled([
-      reblogIterator.current!.next(),
-      favouriteIterator.current!.next(),
+      reblogIterator.current.next(),
+      favouriteIterator.current.next(),
     ]);
     const reblogResults = (
       reblogResult as PromiseFulfilledResult<IteratorResult>

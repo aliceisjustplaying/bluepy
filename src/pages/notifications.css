@@ -246,6 +246,21 @@
   border-color: var(--quote-color);
   box-shadow: 0 0 5px var(--quote-color);
 }
+.notification-subject-button {
+  display: inline;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  line-height: inherit;
+  font-weight: bold;
+  vertical-align: baseline;
+  text-align: inherit;
+}
+.notification-subject-button:hover,
+.notification-subject-button:focus {
+  text-decoration: underline;
+}
 .notification .status-link.status-type-mention\+quote:is(:hover, :focus) {
   border-color: transparent;
   box-shadow:

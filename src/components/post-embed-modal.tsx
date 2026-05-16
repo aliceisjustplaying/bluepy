@@ -1,6 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import prettify from 'html-prettify';
-import type { TargetedMouseEvent } from 'preact';
 
 import emojifyText from '../utils/emojify-text';
 import showToast from '../utils/show-toast';
@@ -125,9 +124,9 @@ function generateHTMLCode(
           .join('')}
         </ul>`
       : '') +
-    (mediaAttachments!.length > 0
+    ((mediaAttachments?.length ?? 0) > 0
       ? '\n' +
-        mediaAttachments!
+        (mediaAttachments ?? [])
           .map((media: MediaAttachment) => {
             const {
               description,
@@ -227,9 +226,9 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
 
   const htmlCode = generateHTMLCode(post, instance);
   return (
-    <div id="embed-post" class="sheet">
+    <div id="embed-post" className="sheet">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -243,9 +242,9 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
           <Trans>HTML Code</Trans>
         </h3>
         <textarea
-          class="embed-code"
+          className="embed-code"
           readOnly
-          onClick={(e: TargetedMouseEvent<HTMLTextAreaElement>) => {
+          onClick={(e: React.MouseEvent<HTMLTextAreaElement>) => {
             e.currentTarget.select();
           }}
           dir="auto"
@@ -274,7 +273,7 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
             <p>
               <Trans>Media attachments:</Trans>
             </p>
-            <ol class="links-list">
+            <ol className="links-list">
               {mediaAttachments.map((media: MediaAttachment) => {
                 return (
                   <li key={media.id}>
@@ -302,11 +301,11 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
                   <li key={emoji.shortcode}>
                     <picture>
                       <source
-                        srcset={emoji.staticUrl}
+                        srcSet={emoji.staticUrl}
                         media="(prefers-reduced-motion: reduce)"
                       ></source>
                       <img
-                        class="shortcode-emoji emoji"
+                        className="shortcode-emoji emoji"
                         src={emoji.url}
                         alt={`:${emoji.shortcode}:`}
                         width="16"
@@ -347,11 +346,11 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
                   <li key={emoji.shortcode}>
                     <picture>
                       <source
-                        srcset={emoji.staticUrl}
+                        srcSet={emoji.staticUrl}
                         media="(prefers-reduced-motion: reduce)"
                       ></source>
                       <img
-                        class="shortcode-emoji emoji"
+                        className="shortcode-emoji emoji"
                         src={emoji.url}
                         alt={`:${emoji.shortcode}:`}
                         width="16"
@@ -414,7 +413,7 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
           <Trans>Preview</Trans>
         </h3>
         <output
-          class="embed-preview"
+          className="embed-preview"
           dangerouslySetInnerHTML={{ __html: htmlCode }}
           dir="auto"
         />

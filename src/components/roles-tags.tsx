@@ -31,12 +31,12 @@ function RolesTags({
   return roles?.map((role) => (
     <>
       {' '}
-      <span class="tag collapsed tag-role">
+      <span className="tag collapsed tag-role">
         {role.name}
         {!!parsedAccountInstance && (
           <>
             {' '}
-            <span class="more-insignificant">{parsedAccountInstance}</span>
+            <span className="more-insignificant">{parsedAccountInstance}</span>
           </>
         )}
       </span>

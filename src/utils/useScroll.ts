@@ -1,11 +1,11 @@
-import type { RefObject } from 'preact';
-import { useLayoutEffect, useState } from 'preact/hooks';
+import type { RefObject } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
 type ScrollDirection = 'end' | 'start' | null;
 type ScrollAxis = 'vertical' | 'horizontal';
 
 interface UseScrollOpts {
-  scrollableRef: RefObject<HTMLElement>;
+  scrollableRef: RefObject<HTMLElement | null>;
   distanceFromStart?: number;
   distanceFromEnd?: number;
   scrollThresholdStart?: number;

@@ -3,7 +3,8 @@ import './account-statuses.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { TargetedEvent, TargetedMouseEvent } from 'preact';
+import { toUnicode as punycodeToUnicode } from 'punycode/';
+import type { SyntheticEvent } from 'react';
 import {
   useCallback,
   useEffect,
@@ -11,8 +12,7 @@ import {
   useReducer,
   useRef,
   useState,
-} from 'preact/hooks';
-import { toUnicode as punycodeToUnicode } from 'punycode/';
+} from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
@@ -131,18 +131,22 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   // `URLSearchParams` accepts `Record<string, string>`; the JS `{ replies: 1 }`
   // is coerced to "1" at runtime — preserve via string init.
   const profileSearchParamsRef = useRef(new URLSearchParams({ replies: '1' }));
-  const [, forceUpdate] = useReducer<number, undefined>((c) => c + 1, 0);
+  const [, forceUpdate] = useReducer((c: number) => c + 1, 0);
   const profileSetSearchParams = useCallback<SearchParamsSetter>((objOrFn) => {
     const localParams = profileSearchParamsRef.current;
     if (typeof objOrFn === 'function') {
       objOrFn(localParams);
     } else if (objOrFn instanceof URLSearchParams) {
-      [...localParams.keys()].forEach((key) => localParams.delete(key));
-      objOrFn.forEach((value, key) => localParams.set(key, value));
+      [...localParams.keys()].forEach((key) => {
+        localParams.delete(key);
+      });
+      objOrFn.forEach((value, key) => {
+        localParams.set(key, value);
+      });
     } else {
       applySearchParamsObject(localParams, objOrFn);
     }
-    forceUpdate(undefined);
+    forceUpdate();
   }, []);
   const setRouteSearchParams = useCallback<SearchParamsSetter>(
     (objOrFn) => {
@@ -315,10 +319,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       if (value?.length && !tagged && !media) {
         const pinnedStatuses = value.map((status: Status) => {
           saveStatus(stateStatus(status), instance);
-          return {
-            ...status,
-            _pinned: true,
-          };
+          return Object.assign({}, status, { _pinned: true });
         });
         if (pinnedStatuses.length >= 3) {
           const pinnedStatusesIds = pinnedStatuses.map(
@@ -497,7 +498,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         )}
         {!mediaFirst && (
           <div
-            class="filter-bar"
+            className="filter-bar"
             ref={filterBarRef}
             style={{
               position: 'relative',
@@ -506,10 +507,10 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             {filtered ? (
               <Link
                 to={`/${instance}/a/${id}`}
-                class="insignificant filter-clear"
+                className="insignificant filter-clear"
                 title={t`Reset filters`}
                 key="clear-filters"
-                onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   if (columnMode) {
                     e.preventDefault();
                     clearAndSetParam();
@@ -521,12 +522,12 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             ) : (
               <Icon
                 icon="filter"
-                class="insignificant"
+                className="insignificant"
                 size="l"
                 alt={t`Filters`}
               />
             )}
-            <div class="filter-bar-group">
+            <div className="filter-bar-group">
               <label>
                 <input
                   type="checkbox"
@@ -564,7 +565,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
               to={`/${instance}/a/${id}${buildParamStr({
                 media: media ? null : '1',
               })}`}
-              onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
+              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                 if (columnMode) {
                   e.preventDefault();
                   toggleParam('media', '1');
@@ -573,12 +574,12 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                   showToast(t`Showing posts with media`);
                 }
               }}
-              class={media ? 'is-active' : ''}
+              className={media ? 'is-active' : ''}
             >
               <Trans>Media</Trans>
             </Link>
             {featuredTags.length > 0 && (
-              <div class="filter-bar-group">
+              <div className="filter-bar-group">
                 {sorted(featuredTags, (a, b) => {
                   if (a.name === tagged) return -1;
                   if (b.name === tagged) return 1;
@@ -589,7 +590,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                     to={`/${instance}/a/${id}${buildParamStr({
                       tagged: tagged === tag.name ? null : tag.name,
                     })}`}
-                    onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
+                    onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                       if (columnMode) {
                         e.preventDefault();
                         const next = new URLSearchParams(
@@ -606,22 +607,22 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                         showToast(t`Showing posts tagged with #${tag.name}`);
                       }
                     }}
-                    class={tagged === tag.name ? 'is-active' : ''}
+                    className={tagged === tag.name ? 'is-active' : ''}
                   >
                     <span>
-                      <span class="more-insignificant">#</span>
+                      <span className="more-insignificant">#</span>
                       {tag.name}
                     </span>
-                    {/* <span class="filter-count">{tag.statusesCount}</span> */}
+                    {/* <span className="filter-count">{tag.statusesCount}</span> */}
                   </Link>
                 ))}
               </div>
             )}
             {searchEnabled && !columnMode && (
               <>
-                <div class="filter-bar-separator" />
+                <div className="filter-bar-separator" />
                 {supportsInputMonth() ? (
-                  <label class={`filter-field ${month ? 'is-active' : ''}`}>
+                  <label className={`filter-field ${month ? 'is-active' : ''}`}>
                     <Icon icon="month" size="l" />
                     <input
                       type="month"
@@ -629,7 +630,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                       value={month || ''}
                       min={MIN_YEAR_MONTH}
                       max={new Date().toISOString().slice(0, 7)}
-                      onInput={(e: TargetedEvent<HTMLInputElement>) => {
+                      onInput={(e: SyntheticEvent<HTMLInputElement>) => {
                         const { value, validity } = e.currentTarget;
                         if (!validity.valid) return;
                         setSearchParams(
@@ -657,7 +658,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                 ) : (
                   // Fallback to <select> for month and <input type="number"> for year
                   <MonthPicker
-                    class={`filter-field ${month ? 'is-active' : ''}`}
+                    className={`filter-field ${month ? 'is-active' : ''}`}
                     disabled={!account?.acct}
                     value={month || ''}
                     min={MIN_YEAR_MONTH}
@@ -677,7 +678,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                 )}
                 <button
                   type="button"
-                  class="filter-field"
+                  className="filter-field"
                   onClick={() => {
                     states.showSearchCommand = {
                       query: isSelf ? 'from:me ' : `from:${account?.acct} `,
@@ -772,7 +773,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         title={account?.acct ? `@${account.acct}` : t`Posts`}
         titleComponent={
           <h1
-            class="header-double-lines header-account"
+            className="header-double-lines header-account"
             // onClick={() => {
             //   states.showAccount = {
             //     account,
@@ -788,7 +789,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
               />
             </b>
             <div>
-              <span class="bidi-isolate">@{acct}</span>
+              <span className="bidi-isolate">@{acct}</span>
             </div>
           </h1>
         }
@@ -823,7 +824,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             viewScroll="close"
             position="anchor"
             menuButton={
-              <button type="button" class="plain">
+              <button type="button" className="plain">
                 <Icon icon="more" size="l" alt={t`More`} />
               </button>
             }
@@ -854,7 +855,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
               }}
             >
               <Icon icon="transfer" />{' '}
-              <small class="menu-double-lines">
+              <small className="menu-double-lines">
                 <Trans>
                   Switch to account's server{' '}
                   {accountInstance ? (
@@ -889,7 +890,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                 }}
               >
                 <Icon icon="transfer" />{' '}
-                <small class="menu-double-lines">
+                <small className="menu-double-lines">
                   <Trans>
                     Switch to my server (<b>{currentInstance}</b>)
                   </Trans>
@@ -901,7 +902,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       />
       {acct && !isSelf && (
         <data
-          class="compose-data"
+          className="compose-data"
           value={JSON.stringify({
             draftStatus: {
               status: `@${acct} `,
@@ -920,6 +921,7 @@ interface MonthPickerChangePayload {
 
 interface MonthPickerProps {
   class?: string;
+  className?: string;
   disabled?: boolean;
   value?: string;
   min?: string;
@@ -930,7 +932,8 @@ interface MonthPickerProps {
 function MonthPicker(props: MonthPickerProps) {
   const { i18n } = useLingui();
   const {
-    class: className,
+    class: classProp,
+    className = classProp,
     disabled,
     value,
     min,
@@ -952,13 +955,13 @@ function MonthPicker(props: MonthPickerProps) {
   };
 
   return (
-    <div class={className}>
+    <div className={className}>
       <Icon icon="month" size="l" />
       <select
         ref={monthFieldRef}
         disabled={disabled}
         value={_month || ''}
-        onInput={(e: TargetedEvent<HTMLSelectElement>) => {
+        onInput={(e: SyntheticEvent<HTMLSelectElement>) => {
           const { value: month } = e.currentTarget;
           const year = (yearFieldRef.current as HTMLInputElement).value;
           if (!checkValidity(month, year)) {
@@ -1000,7 +1003,7 @@ function MonthPicker(props: MonthPickerProps) {
         value={_year || new Date().getFullYear()}
         min={min?.slice(0, 4) || MIN_YEAR}
         max={max?.slice(0, 4) || new Date().getFullYear()}
-        onInput={(e: TargetedEvent<HTMLInputElement>) => {
+        onInput={(e: SyntheticEvent<HTMLInputElement>) => {
           const { value: year, validity } = e.currentTarget;
           const month = (monthFieldRef.current as HTMLSelectElement).value;
           if (!validity.valid || !checkValidity(month, year)) {

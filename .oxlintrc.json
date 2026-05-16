@@ -50,7 +50,7 @@
     "eslint/func-style": "off",
     "eslint/id-length": "off",
     "eslint/no-magic-numbers": "off",
-    "eslint/no-alert": "warn",
+    "eslint/no-alert": "off",
     "eslint/no-console": "off",
     "eslint/no-undefined": "off",
     "import/no-default-export": "off",

@@ -84,9 +84,7 @@ export function isPushSupported(): boolean {
   return 'serviceWorker' in navigator && 'PushManager' in window;
 }
 
-export function getRegistration(): Promise<
-  ServiceWorkerRegistration | undefined
-> {
+function getRegistration(): Promise<ServiceWorkerRegistration | undefined> {
   // return navigator.serviceWorker.ready;
   return navigator.serviceWorker.getRegistration();
 }

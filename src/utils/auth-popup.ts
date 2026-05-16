@@ -16,7 +16,7 @@ export function openAuthPopup(url: string): Window | null {
   }
 }
 
-export function closeAuthPopup(popup: Window | null): void {
+function closeAuthPopup(popup: Window | null): void {
   if (popup && !popup.closed) {
     try {
       popup.close();

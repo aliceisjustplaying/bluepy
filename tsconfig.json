@@ -14,7 +14,6 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "jsx": "react-jsx",
-    "jsxImportSource": "preact",
     "types": ["vite/client", "node"]
   },
   "include": [

@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import Timeline from '../components/timeline';

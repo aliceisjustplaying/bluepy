@@ -100,15 +100,19 @@ class AssetHashPlugin {
       const cachedRequests = await cache.keys();
       const matchingRequests = [];
 
-      for (const cachedRequest of cachedRequests) {
-        const cachedBaseName = this.getBaseName(cachedRequest.url);
-        if (cachedBaseName === baseName) {
-          const response = await cache.match(cachedRequest);
-          if (response) {
-            matchingRequests.push(cachedRequest);
-          }
+      const matchingRequestCandidates = cachedRequests.filter(
+        (cachedRequest) => this.getBaseName(cachedRequest.url) === baseName,
+      );
+      const matchingResponses = await Promise.all(
+        matchingRequestCandidates.map((cachedRequest) =>
+          cache.match(cachedRequest),
+        ),
+      );
+      matchingResponses.forEach((response, index) => {
+        if (response) {
+          matchingRequests.push(matchingRequestCandidates[index]);
         }
-      }
+      });
 
       if (matchingRequests.length <= this.maxHashes) return;
 
@@ -129,8 +133,8 @@ class AssetHashPlugin {
       // Keep only the maxHashes most recent, delete the rest
       const toDelete = matchingEntries.slice(this.maxHashes);
 
+      await Promise.all(toDelete.map((entry) => cache.delete(entry.request)));
       for (const entry of toDelete) {
-        await cache.delete(entry.request);
         console.log(`[AssetHashPlugin] Deleted old hash: ${entry.url}`);
       }
     } catch (error) {
@@ -404,15 +408,14 @@ self.addEventListener('message', (event) => {
   console.log('💪 SW received event', event, pendingShareData);
   const source = event.data?.type === 'client-ready' && event.source;
   if (source && pendingShareData) {
-    // TODO(oxlint:unicorn/require-post-message-target-origin): `source` is a
-    // service-worker `Client`, whose `postMessage` takes transferables (not a
-    // targetOrigin). The linter is matching the `Window.postMessage` signature
-    // here. Adding `self.origin` would be wrong.
-    source.postMessage({
-      type: 'share-target',
-      data: pendingShareData,
-      action: 'compose-with-shared-data',
-    });
+    source.postMessage(
+      {
+        type: 'share-target',
+        data: pendingShareData,
+        action: 'compose-with-shared-data',
+      },
+      [],
+    );
     pendingShareData = null;
   }
 });

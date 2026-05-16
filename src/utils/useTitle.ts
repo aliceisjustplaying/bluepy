@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect } from 'preact/hooks';
+import { useCallback, useLayoutEffect } from 'react';
 import { matchPath } from 'react-router-dom';
 import { subscribeKey } from 'valtio/utils';
 

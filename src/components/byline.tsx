@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/react/macro';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 import Icon from './icon';
 import NameText, { type NameTextProps } from './name-text';
@@ -20,7 +20,7 @@ interface Author {
 interface BylineProps {
   authors?: Author[];
   hidden?: boolean;
-  children?: ComponentChildren;
+  children?: ReactNode;
 }
 
 function Byline({ authors, hidden, children }: BylineProps) {
@@ -29,9 +29,9 @@ function Byline({ authors, hidden, children }: BylineProps) {
   const author = authors[0].account;
 
   return (
-    <div class="card-byline">
+    <div className="card-byline">
       {children}
-      <div class="card-byline-author">
+      <div className="card-byline-author">
         <Icon icon="link" size="s" />{' '}
         <small>
           <Trans comment="More from [Author]">

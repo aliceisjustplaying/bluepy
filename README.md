@@ -133,7 +133,7 @@ Prerequisites: Node.js 20+ and Bun 1.3+
 ## Tech stack
 
 - [Vite](https://vitejs.dev/) - Build tool
-- [Preact](https://preactjs.com/) - UI library
+- [React](https://react.dev/) - UI library
 - [Valtio](https://valtio.pmnd.rs/) - State management
 - [React Router](https://reactrouter.com/) - Routing
 - [masto.js](https://github.com/neet/masto.js/) - Mastodon API client

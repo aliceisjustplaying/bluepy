@@ -7,8 +7,8 @@ import {
   MenuHeader,
   MenuItem,
 } from '@szhsin/react-menu';
-import { memo } from 'preact/compat';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { memo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
@@ -116,7 +116,7 @@ function NavMenu(props: Record<string, unknown>) {
       <button
         ref={buttonRef}
         type="button"
-        class={`button plain nav-menu-button ${
+        className={`button plain nav-menu-button ${
           showAvatarInButton ? 'with-avatar' : ''
         } ${menuState === 'open' ? 'active' : ''}`}
         style={{ position: 'relative' }}
@@ -147,7 +147,7 @@ function NavMenu(props: Record<string, unknown>) {
       <ControlledMenu
         menuClassName="nav-menu"
         state={menuState}
-        anchorRef={buttonRef}
+        anchorRef={buttonRef as never}
         onClose={() => {
           setMenuState(undefined);
         }}
@@ -175,7 +175,7 @@ function NavMenu(props: Record<string, unknown>) {
       >
         {!!snapStates.appVersion?.commitHash &&
           __COMMIT_HASH__ !== snapStates.appVersion.commitHash && (
-            <div class="top-menu">
+            <div className="top-menu">
               <MenuItem
                 onClick={() => {
                   const yes = confirm(t`Reload page now to update?`);
@@ -188,7 +188,7 @@ function NavMenu(props: Record<string, unknown>) {
                   }
                 }}
               >
-                <Icon icon="sparkles" class="sparkle-icon" size="l" />{' '}
+                <Icon icon="sparkles" className="sparkle-icon" size="l" />{' '}
                 <span>
                   <Trans>New update available…</Trans>
                 </span>
@@ -262,7 +262,7 @@ function NavMenu(props: Record<string, unknown>) {
                 label={
                   <>
                     <Icon icon="more" size="l" />
-                    <span class="menu-grow">
+                    <span className="menu-grow">
                       <Trans>More…</Trans>
                     </span>
                     <Icon icon="chevron-right" />
@@ -458,7 +458,7 @@ function ListMenu({ menuState }: { menuState: MenuStateValue }) {
       label={
         <>
           <Icon icon="list" size="l" />
-          <span class="menu-grow">
+          <span className="menu-grow">
             <Trans>Lists & Feeds</Trans>
           </span>
           <Icon icon="chevron-right" />

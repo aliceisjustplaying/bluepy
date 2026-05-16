@@ -1,15 +1,8 @@
 import { useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ComponentChildren, RefObject } from 'preact';
-import {
-  useCallback,
-  useContext,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'preact/hooks';
+import type { ReactNode, RefObject } from 'react';
+import { useCallback, use, useMemo, useReducer, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { api, getMastoV1Resource } from '../utils/api';
@@ -56,7 +49,7 @@ type StatusContentMediaAttachment = AnyMediaAttachment &
   mastodon.v1.MediaAttachment;
 
 interface StatusContentProps extends StatusRouterProps {
-  renderStatus: (props: StatusComponentProps) => ComponentChildren;
+  renderStatus: (props: StatusComponentProps) => ReactNode;
 }
 
 export default function StatusContent({
@@ -174,7 +167,7 @@ export default function StatusContent({
 
   const currentAccount = getCurrentAccID();
   const isSelf = currentAccount && currentAccount == accountId;
-  const filterContext = useContext(FilterContext);
+  const filterContext = use(FilterContext);
   type FilterInfoShape = {
     action: 'hide' | 'blur' | 'warn';
     titles?: string[];
@@ -189,7 +182,7 @@ export default function StatusContent({
   const filterInfoMaybe = filterInfo || undefined;
 
   const debugHover = useCallback(
-    (e: MouseEvent) => {
+    (e: React.MouseEvent) => {
       if (e.shiftKey) {
         console.log({
           ...status,
@@ -501,8 +494,8 @@ export default function StatusContent({
             ) || node;
           bindHotkeyRefs(nodeRef);
         }}
-        tabindex={-1}
-        class={`status ${
+        tabIndex={-1}
+        className={`status ${
           !withinContext && inReplyToId && inReplyToAccount
             ? 'status-reply-to'
             : ''
@@ -512,22 +505,24 @@ export default function StatusContent({
           isContextMenuOpen ? 'status-menu-open' : ''
         } ${mediaFirst && hasMediaAttachments ? 'status-media-first' : ''}`}
         onMouseEnter={debugHover}
-        onContextMenu={(e: MouseEvent) => {
+        onContextMenu={(e: React.MouseEvent) => {
           if (!showContextMenu) return;
           if (e.metaKey) return;
           // console.log('context menu', e);
           const link = (e.target as Element).closest('a');
+          const href = link?.getAttribute('href');
           if (
             link &&
-            statusRef.current!.contains(link) &&
-            !link.getAttribute('href')!.startsWith('#')
+            statusRef.current?.contains(link) &&
+            href &&
+            !href.startsWith('#')
           )
             return;
 
           // If there's selected text, don't show custom context menu
           const selection = window.getSelection?.();
-          if (selection!.toString().length > 0) {
-            const { anchorNode } = selection!;
+          if (selection?.toString().length) {
+            const { anchorNode } = selection;
             if (statusRef.current?.contains(anchorNode)) {
               return;
             }
@@ -548,7 +543,7 @@ export default function StatusContent({
           <ControlledMenu
             ref={contextMenuRef}
             state={isContextMenuOpen ? 'open' : undefined}
-            {...contextMenuProps}
+            {...(contextMenuProps as object)}
             onClose={(e?: { reason?: string }) => {
               setIsContextMenuOpen(false);
               // statusRef.current?.focus?.();
@@ -599,9 +594,9 @@ export default function StatusContent({
         {size !== 's' && (
           <a
             href={accountURL ?? undefined}
-            tabindex={-1}
+            tabIndex={-1}
             title={`@${acct}`}
-            onClick={(e: MouseEvent) => {
+            onClick={(e: React.MouseEvent) => {
               e.preventDefault();
               e.stopPropagation();
               states.showAccount = {
@@ -617,7 +612,7 @@ export default function StatusContent({
             />
           </a>
         )}
-        <div class="container">
+        <div className="container">
           <StatusHeader
             size={size}
             status={status}

@@ -2,20 +2,15 @@ import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type {
-  ComponentChildren,
+  ReactNode,
   ComponentType,
   RefObject,
-  TargetedMouseEvent,
-  VNode,
-} from 'preact';
-import { memo } from 'preact/compat';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/hooks';
+  MouseEvent,
+  KeyboardEvent,
+  ReactElement,
+} from 'react';
+import { memo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useDebouncedCallback } from 'use-debounce';
@@ -24,7 +19,7 @@ import { useSnapshot } from 'valtio';
 import FilterContext from '../utils/filter-context';
 import { filteredItems, isFiltered } from '../utils/filters';
 import isRTL from '../utils/is-rtl';
-import { navigatePath } from '../utils/router';
+import { isModifiedClick, navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import states, { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
@@ -67,15 +62,68 @@ function Status(props: StatusComponentProps) {
   return <StatusComponent {...(props as StatusViewProps)} />;
 }
 
+interface TimelineStatusLinkProps {
+  to: string;
+  children: ReactNode;
+  className?: string;
+}
+
+const shouldLetStatusLinkTargetHandleEvent = (target: EventTarget | null) =>
+  target instanceof Element &&
+  !!target.closest(
+    'a, button, input, textarea, select, summary, [role="button"], [data-menu-trigger]',
+  );
+
+function TimelineStatusLink({
+  to,
+  children,
+  className = 'status-link timeline-item',
+}: TimelineStatusLinkProps) {
+  const href = to;
+
+  return (
+    <div
+      className={className}
+      role="link"
+      tabIndex={0}
+      data-href={href}
+      onClick={(e: MouseEvent<HTMLDivElement>) => {
+        if (shouldLetStatusLinkTargetHandleEvent(e.target)) return;
+        if (isModifiedClick(e)) return;
+        navigatePath(href);
+      }}
+      onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        navigatePath(href);
+      }}
+    >
+      <a
+        className="status-link-native"
+        href={href}
+        aria-hidden="true"
+        tabIndex={-1}
+        onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+          if (isModifiedClick(e)) return;
+          e.preventDefault();
+          navigatePath(href);
+        }}
+      />
+      {children}
+    </div>
+  );
+}
+
 // `react-intersection-observer`'s `InView` ships without working JSX
-// component typings under our preact compat resolution. Re-type as a
-// preact component with the props this file actually uses.
+// component typings under our React component types. Re-type as a
+// React component with the props this file actually uses.
 type InViewProps = {
   root?: Element | null;
   rootMargin?: string;
   class?: string;
+  className?: string;
   onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
+  children?: ReactNode;
 };
 const InView: ComponentType<InViewProps> =
   InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
@@ -246,7 +294,7 @@ export function useJHotkeys(scrollableRef: ScrollableRef) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.key.toLowerCase() !== 'j',
     },
   );
@@ -310,7 +358,7 @@ export function useKHotkeys(scrollableRef: ScrollableRef) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.key.toLowerCase() !== 'k',
     },
   );
@@ -351,7 +399,7 @@ export function useOHotkeys() {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         // 'enter' doesn't need key validation (physical key, layout-independent)
         if (e.key === 'Enter') return false;
         return (
@@ -375,20 +423,20 @@ interface FetchItemsResult {
 
 interface TimelineProps {
   title?: string;
-  titleComponent?: ComponentChildren;
+  titleComponent?: ReactNode;
   id: string;
   timelineKey?: string;
   instance?: string;
-  emptyText?: ComponentChildren;
+  emptyText?: ReactNode;
   errorText?: string;
   useItemID?: boolean;
   boostsCarousel?: boolean;
   fetchItems?: (firstLoad?: boolean) => Promise<FetchItemsResult>;
   checkForUpdates?: () => Promise<boolean> | boolean | undefined;
   checkForUpdatesInterval?: number;
-  headerStart?: ComponentChildren;
-  headerEnd?: ComponentChildren;
-  timelineStart?: ComponentChildren;
+  headerStart?: ReactNode;
+  headerEnd?: ReactNode;
+  timelineStart?: ReactNode;
   refresh?: unknown;
   view?: string;
   filterContext?: string;
@@ -495,12 +543,9 @@ function Timeline({
                   processed as TimelineStatusEntry[],
                 ) as TimelineEntry[];
               }
-              // groupContext expects `instance: string`; the JS caller passed
-              // through whatever value the prop held (including undefined).
-              // Preserve that behavior with a non-null assertion shim.
               processed = groupContext(
                 processed as TimelineStatusEntry[],
-                instance!,
+                instance,
               ) as TimelineEntry[];
             }
             if (pinnedPosts.length) {
@@ -554,7 +599,7 @@ function Timeline({
   }, [loadItems, showNewPostsIndicator]);
   const dotRef = useHotkeys<HTMLDivElement>('.', handleLoadNewPosts, {
     useKey: true,
-    ignoreEventWhen: (e: KeyboardEvent) => {
+    ignoreEventWhen: (e) => {
       // Allow '.' even with Shift (some keyboard layouts require Shift for '.')
       if (e.key === '.') return false;
       return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
@@ -754,9 +799,10 @@ function Timeline({
           own focusable controls. */}
       <div
         id={`${id}-page`}
-        class={`deck-container ${
+        className={`deck-container ${
           mediaFirst ? 'deck-container-media-first' : ''
         }`}
+        role="presentation"
         ref={(node) => {
           scrollableRef.current = node;
           jRef.current = node;
@@ -765,7 +811,7 @@ function Timeline({
           dotRef.current = node;
         }}
         tabIndex={-1}
-        onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           // If click on timeline item, unhide header
           const target = e.target as Element | null;
           if (
@@ -779,15 +825,16 @@ function Timeline({
           }
         }}
       >
-        <div class="timeline-deck deck">
+        <div className="timeline-deck deck">
           {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
               click-to-scroll-to-top on the timeline header is a navigational
               convenience, not a primary control; keyboard equivalent is the
               standard Home key on the focusable timeline container. */}
           <header
             ref={headerRef}
+            role="presentation"
             // hidden={hiddenUI}
-            onClick={(e: TargetedMouseEvent<HTMLElement>) => {
+            onClick={(e: React.MouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {
                 scrollableRef.current?.scrollTo({
@@ -796,34 +843,34 @@ function Timeline({
                 });
               }
             }}
-            onDblClick={(e: TargetedMouseEvent<HTMLElement>) => {
+            onDoubleClick={(e: React.MouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {
                 loadItems(true);
               }
             }}
-            class={uiState === 'loading' ? 'loading' : ''}
+            className={uiState === 'loading' ? 'loading' : ''}
           >
-            <div class="header-grid">
-              <div class="header-side">
+            <div className="header-grid">
+              <div className="header-side">
                 <NavMenu />
                 {headerStart !== null && headerStart !== undefined ? (
                   headerStart
                 ) : (
-                  <Link to="/" class="button plain home-button">
+                  <Link to="/" className="button plain home-button">
                     <Icon icon="home" size="l" alt={t`Home`} />
                   </Link>
                 )}
               </div>
               {title && (titleComponent ? titleComponent : <h1>{title}</h1>)}
-              <div class="header-side">
+              <div className="header-side">
                 {/* <Loader hidden={uiState !== 'loading'} /> */}
                 {!!headerEnd && headerEnd}
               </div>
             </div>
             {showNewPostsIndicator && (
               <button
-                class="updates-button shiny-pill"
+                className="updates-button shiny-pill"
                 type="button"
                 onClick={handleLoadNewPosts}
               >
@@ -833,14 +880,14 @@ function Timeline({
           </header>
           {!!timelineStart && (
             <div
-              class={`timeline-start ${uiState === 'loading' ? 'loading' : ''}`}
+              className={`timeline-start ${uiState === 'loading' ? 'loading' : ''}`}
             >
               {timelineStart}
             </div>
           )}
           {items.length ? (
             <>
-              <ul class={`timeline ${view ? `timeline-${view}` : ''}`}>
+              <ul className={`timeline ${view ? `timeline-${view}` : ''}`}>
                 {items.map((status) => (
                   <TimelineItem
                     status={status}
@@ -891,7 +938,7 @@ function Timeline({
                   >
                     <button
                       type="button"
-                      class="plain block"
+                      className="plain block"
                       onClick={() => loadItems()}
                       style={{ marginBlockEnd: '6em' }}
                     >
@@ -899,13 +946,13 @@ function Timeline({
                     </button>
                   </InView>
                 ) : (
-                  <p class="ui-state insignificant">
+                  <p className="ui-state insignificant">
                     <Trans>The end.</Trans>
                   </p>
                 ))}
             </>
           ) : uiState === 'loading' ? (
-            <ul class="timeline">
+            <ul className="timeline">
               {Array.from({ length: 5 }).map((_, i) =>
                 view === 'media' ? (
                   <div
@@ -923,10 +970,10 @@ function Timeline({
             </ul>
           ) : (
             uiState !== 'error' &&
-            uiState !== 'start' && <p class="ui-state">{emptyText}</p>
+            uiState !== 'start' && <p className="ui-state">{emptyText}</p>
           )}
           {uiState === 'error' && (
-            <p class="ui-state">
+            <p className="ui-state">
               {errorText}
               <br />
               <br />
@@ -963,7 +1010,7 @@ export const TimelineItem = memo(
     showFollowedTags,
     showReplyParent,
     mediaFirst,
-  }: TimelineItemProps): VNode | VNode[] | null => {
+  }: TimelineItemProps): ReactElement | ReactElement[] | null => {
     const { t } = useLingui();
     console.debug(
       'RENDER TimelineItem',
@@ -986,7 +1033,7 @@ export const TimelineItem = memo(
         groupEntry.items as readonly TimelineStatusEntry[],
         filterContext,
       ) as TimelineItemEntry[];
-      let title: string | VNode = '';
+      let title: string | ReactElement = '';
       if (type === 'boosts') {
         title = plural(fItems.length, {
           one: '# Boost',
@@ -1046,8 +1093,8 @@ export const TimelineItem = memo(
         }
 
         return (
-          <li key={`timeline-${statusID}`} class="timeline-item-carousel">
-            <StatusCarousel title={title} class={`${type}-carousel`}>
+          <li key={`timeline-${statusID}`} className="timeline-item-carousel">
+            <StatusCarousel title={title} className={`${type}-carousel`}>
               {fItems.map((item) => {
                 if (isFilteredGroup(item)) {
                   const grouped = item;
@@ -1057,7 +1104,7 @@ export const TimelineItem = memo(
                   return (
                     <li
                       key={firstPost?.id}
-                      class="timeline-item-carousel-group"
+                      className="timeline-item-carousel-group"
                     >
                       {grouped.posts.map((inner) => {
                         const innerStatus = inner as TimelineStatusEntry;
@@ -1070,9 +1117,9 @@ export const TimelineItem = memo(
                           : `/s/${innerActualID}`;
                         if (innerPinned) useItemID = false;
                         return (
-                          <Link
+                          <TimelineStatusLink
                             key={innerID}
-                            class="status-carousel-link timeline-item-alt"
+                            className="status-carousel-link timeline-item-alt"
                             to={innerURL}
                           >
                             {useItemID ? (
@@ -1088,7 +1135,7 @@ export const TimelineItem = memo(
                                 size="s"
                               />
                             )}
-                          </Link>
+                          </TimelineStatusLink>
                         );
                       })}
                     </li>
@@ -1106,8 +1153,8 @@ export const TimelineItem = memo(
                 if (itemPinned) useItemID = false;
                 return (
                   <li key={itemID}>
-                    <Link
-                      class="status-carousel-link timeline-item-alt"
+                    <TimelineStatusLink
+                      className="status-carousel-link timeline-item-alt"
                       to={itemURL}
                     >
                       {useItemID ? (
@@ -1131,7 +1178,7 @@ export const TimelineItem = memo(
                           mediaFirst={mediaFirst}
                         />
                       )}
-                    </Link>
+                    </TimelineStatusLink>
                   </li>
                 );
               })}
@@ -1175,11 +1222,11 @@ export const TimelineItem = memo(
         const statusItem = (
           <li
             key={`timeline-${itemStatusID}`}
-            class={`timeline-item-container timeline-item-container-type-${type} timeline-item-container-${
+            className={`timeline-item-container timeline-item-container-type-${type} timeline-item-container-${
               isStart ? 'start' : isEnd ? 'end' : 'middle'
             } ${_differentAuthor ? 'timeline-item-diff-author' : ''}`}
           >
-            <Link class="status-link timeline-item" to={itemURL}>
+            <TimelineStatusLink to={itemURL}>
               {showCompact ? (
                 <TimelineStatusCompact
                   status={item}
@@ -1203,21 +1250,21 @@ export const TimelineItem = memo(
                   // allowFilters={allowFilters}
                 />
               )}
-            </Link>
+            </TimelineStatusLink>
           </li>
         );
         if (isIncompleteThreadGap) {
           return [
             <li
               key={`timeline-incomplete-thread-${itemStatusID}`}
-              class={`timeline-item-container timeline-item-container-type-${type} timeline-item-container-${incompleteThreadGapPosition} timeline-item-container-incomplete-thread timeline-item-container-incomplete-thread-${incompleteThreadGapPosition}`}
+              className={`timeline-item-container timeline-item-container-type-${type} timeline-item-container-${incompleteThreadGapPosition} timeline-item-container-incomplete-thread timeline-item-container-incomplete-thread-${incompleteThreadGapPosition}`}
             >
               <Link
-                class="show-more timeline-incomplete-thread-link"
+                className="show-more timeline-incomplete-thread-link"
                 to={threadURL}
               >
                 <span
-                  class="timeline-incomplete-thread-dots"
+                  className="timeline-incomplete-thread-dots"
                   aria-hidden="true"
                 >
                   •••
@@ -1239,7 +1286,7 @@ export const TimelineItem = memo(
     if (view === 'media') {
       return useItemID ? (
         <MediaPost
-          class="timeline-item"
+          className="timeline-item"
           parent="li"
           key={itemKey}
           statusID={statusID}
@@ -1248,7 +1295,7 @@ export const TimelineItem = memo(
         />
       ) : (
         <MediaPost
-          class="timeline-item"
+          className="timeline-item"
           parent="li"
           key={itemKey}
           status={status}
@@ -1260,7 +1307,7 @@ export const TimelineItem = memo(
 
     return (
       <li key={itemKey}>
-        <Link class="status-link timeline-item" to={url}>
+        <TimelineStatusLink to={url}>
           {useItemID ? (
             <Status
               statusID={statusID}
@@ -1282,7 +1329,7 @@ export const TimelineItem = memo(
               mediaFirst={mediaFirst}
             />
           )}
-        </Link>
+        </TimelineStatusLink>
       </li>
     );
   },
@@ -1300,14 +1347,16 @@ export const TimelineItem = memo(
 );
 
 interface StatusCarouselProps {
-  title: string | VNode;
-  class: string;
-  children: ComponentChildren;
+  title: string | ReactElement;
+  class?: string;
+  className?: string;
+  children: ReactNode;
 }
 
 function StatusCarousel({
   title,
-  class: className,
+  class: classProp,
+  className = classProp,
   children,
 }: StatusCarouselProps) {
   const { t } = useLingui();
@@ -1317,24 +1366,27 @@ function StatusCarousel({
 
   const [render, setRender] = useState(false);
   useEffect(() => {
-    setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       setRender(true);
     }, 1);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   // `children` is the `.map(...)` array produced by TimelineItem above; the
   // JS original indexes into it directly. Preserve that shape exactly.
-  const childrenArray = children as ComponentChildren[];
+  const childrenArray = children as ReactNode[];
 
   return (
-    <div class={`status-carousel ${className}`}>
+    <div className={`status-carousel ${className}`}>
       <header>
         <h3>{title}</h3>
         <span>
           <button
             ref={startButtonRef}
             type="button"
-            class="small plain2"
+            className="small plain2"
             // disabled={reachStart}
             onClick={() => {
               const left =
@@ -1351,7 +1403,7 @@ function StatusCarousel({
           <button
             ref={endButtonRef}
             type="button"
-            class="small plain2"
+            className="small plain2"
             // disabled={reachEnd}
             onClick={() => {
               const left =
@@ -1369,7 +1421,7 @@ function StatusCarousel({
       </header>
       <ul ref={carouselRef}>
         <InView
-          class="status-carousel-beacon"
+          className="status-carousel-beacon"
           onChange={(inView) => {
             if (startButtonRef.current)
               startButtonRef.current.disabled = inView;
@@ -1378,7 +1430,7 @@ function StatusCarousel({
         {childrenArray[0]}
         {render && childrenArray.slice(1)}
         <InView
-          class="status-carousel-beacon"
+          className="status-carousel-beacon"
           onChange={(inView) => {
             if (endButtonRef.current) endButtonRef.current.disabled = inView;
           }}
@@ -1394,7 +1446,7 @@ interface TimelineStatusCompactProps {
   filterContext?: string;
 }
 
-export function TimelineStatusCompact({
+function TimelineStatusCompact({
   status,
   instance,
   filterContext,
@@ -1407,25 +1459,25 @@ export function TimelineStatusCompact({
   const filterInfo = isFiltered(status.filtered, filterContext as string);
   return (
     <article
-      class={`status compact-thread ${
+      className={`status compact-thread ${
         visibility === 'direct' ? 'visibility-direct' : ''
       }`}
-      tabindex={-1}
+      tabIndex={-1}
     >
-      <div class="status-thread-badge-container">
+      <div className="status-thread-badge-container">
         <ThreadBadge
           index={sKey ? snapStates.statusThreadNumber[sKey] : undefined}
         />
       </div>
       <div
-        class="content-compact"
+        className="content-compact"
         title={statusPeekText}
         lang={language ?? undefined}
         dir="auto"
       >
         {!!filterInfo && filterInfo?.action !== 'blur' ? (
           <b
-            class="status-filtered-badge badge-meta horizontal"
+            className="status-filtered-badge badge-meta horizontal"
             title={
               ('titlesStr' in filterInfo ? filterInfo.titlesStr : '') || ''
             }
@@ -1446,7 +1498,7 @@ export function TimelineStatusCompact({
             {status.sensitive && status.spoilerText && (
               <>
                 {' '}
-                <span class="spoiler-badge">
+                <span className="spoiler-badge">
                   <Icon icon="eye-close" size="s" alt={t`Content warning`} />
                 </span>
               </>

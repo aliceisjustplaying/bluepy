@@ -1,4 +1,4 @@
-import { useMemo } from 'preact/hooks';
+import { useMemo } from 'react';
 
 import { api } from '../utils/api';
 
@@ -60,7 +60,7 @@ export default function StatusTags({ tags, content }: StatusTagsProps) {
   if (!tagsToShow.length) return null;
 
   return (
-    <ul class="status-tags">
+    <ul className="status-tags">
       {tagsToShow.map((tag) => (
         <li key={tag.name}>
           <Link
@@ -70,7 +70,7 @@ export default function StatusTags({ tags, content }: StatusTagsProps) {
                 : `/t/${encodeURIComponent(tag.name)}`
             }
           >
-            <span class="more-insignificant">#</span>
+            <span className="more-insignificant">#</span>
             {tag.name}
           </Link>
         </li>

@@ -1,9 +1,12 @@
 import './embed-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { CSSProperties } from 'preact';
+import type { CSSProperties } from 'react';
 
 import Icon from './icon';
+
+const EMBED_IFRAME_SANDBOX =
+  'allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts';
 
 interface EmbedModalProps {
   html?: string;
@@ -29,9 +32,15 @@ function EmbedModal({
   const iframeTitle = title || 'Embedded content';
   const { t } = useLingui();
   return (
-    <div class="embed-modal-container">
-      <div class="top-controls">
-        <button type="button" class="light" onClick={() => onClose()}>
+    <div className="embed-modal-container">
+      <div className="top-controls">
+        <button
+          type="button"
+          className="light"
+          onClick={() => {
+            onClose();
+          }}
+        >
           <Icon icon="x" alt={t`Close`} />
         </button>
         {url && (
@@ -39,7 +48,7 @@ function EmbedModal({
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            class="button plain"
+            className="button plain"
           >
             <span>
               <Trans>Open in new window</Trans>
@@ -49,22 +58,18 @@ function EmbedModal({
         )}
       </div>
       {iframeUrl ? (
-        <div class="embed-content iframe-content">
-          {/* TODO(oxlint:react/iframe-missing-sandbox): allow-scripts +
-              allow-same-origin together weaken the sandbox, but many oEmbed
-              providers (YouTube, Spotify, Bluesky) require it. Behavioural
-              regression to remove either; needs per-provider audit. */}
+        <div className="embed-content iframe-content">
           <iframe
             src={iframeUrl}
             title={iframeTitle}
-            sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+            sandbox={EMBED_IFRAME_SANDBOX}
             allow="clipboard-write; fullscreen"
-            referrerpolicy="strict-origin-when-cross-origin"
+            referrerPolicy="strict-origin-when-cross-origin"
           />
         </div>
       ) : (
         <div
-          class="embed-content"
+          className="embed-content"
           dangerouslySetInnerHTML={{ __html: html as string }}
           style={
             {

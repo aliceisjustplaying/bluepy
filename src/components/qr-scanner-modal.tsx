@@ -1,7 +1,7 @@
 import './qr-scanner-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'react';
 
 const hasBarcodeDetector = 'BarcodeDetector' in window;
 
@@ -199,16 +199,95 @@ function QrScannerModal({
     let qrCanvas: QrCanvasLike | undefined;
     let detector: BarcodeDetectorLike | undefined;
     let qrDom: QrDomModule | undefined;
+    let video: HTMLVideoElement | undefined;
+    let cancelled = false;
+
+    const handleLoadedMetadata = () => {
+      setUIState('default');
+    };
+
+    const handlePlay = () => {
+      // We won't have correct size until video starts playing
+      console.log('Video started playing, beginning scan loop');
+
+      if (!video) return;
+      // Get width, height from video
+      const { videoWidth: width, videoHeight: height } = video;
+
+      console.log('📹', { cam, video });
+
+      if (width && height) {
+        containerRef.current?.style.setProperty(
+          '--long-dimension',
+          String(Math.max(width, height)),
+        );
+        containerRef.current?.style.setProperty(
+          '--short-dimension',
+          String(Math.min(width, height)),
+        );
+      }
+
+      if (hasBarcodeDetector) {
+        const mainLoop = async () => {
+          try {
+            if (!detector || !videoRef.current) return;
+            const results = await detector.detect(videoRef.current);
+            if (results.length > 0) {
+              console.log('Scan result:', results[0].rawValue);
+              setDecodedText(results[0].rawValue);
+            }
+          } catch (e) {
+            console.error('Error in barcode detection:', e);
+          }
+        };
+
+        let animationId: number;
+        const rafLoop = () => {
+          void mainLoop();
+          animationId = requestAnimationFrame(rafLoop);
+        };
+        rafLoop();
+        cancelMainLoop = () => {
+          cancelAnimationFrame(animationId);
+        };
+      } else {
+        const mainLoop = () => {
+          try {
+            if (!cam || !qrCanvas) return;
+            const result = cam.readFrame(qrCanvas, true);
+            if (result !== undefined && result !== null) {
+              console.log('Scan result:', result);
+              setDecodedText(result);
+            }
+          } catch (e) {
+            console.error('Error in scan loop:', e);
+          }
+        };
+
+        cancelMainLoop = qrDom?.frameLoop(mainLoop);
+      }
+    };
 
     const startCamera = async () => {
       try {
-        cam = await createQRCamera(videoRef.current as HTMLVideoElement);
+        const currentVideo = videoRef.current;
+        if (!currentVideo) return;
+        cam = await createQRCamera(currentVideo);
+        if (cancelled) {
+          cam.stop();
+          return;
+        }
 
         if (hasBarcodeDetector) {
-          const BarcodeDetectorCtor = window.BarcodeDetector as BarcodeDetectorCtor;
+          const BarcodeDetectorCtor =
+            window.BarcodeDetector as BarcodeDetectorCtor;
           detector = new BarcodeDetectorCtor({ formats: ['qr_code'] });
         } else {
           const qrDomModule: QrDomModule = await import('qr/dom.js');
+          if (cancelled) {
+            cam.stop();
+            return;
+          }
           qrDom = qrDomModule;
           qrCanvas = new qrDomModule.QRCanvas(
             { overlay: overlayRef.current } as { overlay?: HTMLCanvasElement },
@@ -221,69 +300,10 @@ function QrScannerModal({
         }
 
         // Start scanning loop when video plays (following demo pattern)
-        const video = videoRef.current;
+        video = videoRef.current ?? undefined;
         if (video) {
-          video.addEventListener('loadedmetadata', () => {
-            setUIState('default');
-          });
-          video.addEventListener('play', () => {
-            // We won't have correct size until video starts playing
-            console.log('Video started playing, beginning scan loop');
-
-            // Get width, height from video
-            const { videoWidth: width, videoHeight: height } = video;
-
-            console.log('📹', { cam, video });
-
-            if (width && height) {
-              containerRef.current?.style.setProperty(
-                '--long-dimension',
-                String(Math.max(width, height)),
-              );
-              containerRef.current?.style.setProperty(
-                '--short-dimension',
-                String(Math.min(width, height)),
-              );
-            }
-
-            if (hasBarcodeDetector) {
-              const mainLoop = async () => {
-                try {
-                  const results = await detector!.detect(
-                    videoRef.current as HTMLVideoElement,
-                  );
-                  if (results.length > 0) {
-                    console.log('Scan result:', results[0].rawValue);
-                    setDecodedText(results[0].rawValue);
-                  }
-                } catch (e) {
-                  console.error('Error in barcode detection:', e);
-                }
-              };
-
-              let animationId: number;
-              const rafLoop = () => {
-                void mainLoop();
-                animationId = requestAnimationFrame(rafLoop);
-              };
-              rafLoop();
-              cancelMainLoop = () => cancelAnimationFrame(animationId);
-            } else {
-              const mainLoop = () => {
-                try {
-                  const result = cam!.readFrame(qrCanvas!, true);
-                  if (result !== undefined && result !== null) {
-                    console.log('Scan result:', result);
-                    setDecodedText(result);
-                  }
-                } catch (e) {
-                  console.error('Error in scan loop:', e);
-                }
-              };
-
-              cancelMainLoop = qrDom!.frameLoop(mainLoop);
-            }
-          });
+          video.addEventListener('loadedmetadata', handleLoadedMetadata);
+          video.addEventListener('play', handlePlay);
         }
       } catch (err) {
         console.error('Error accessing camera:', err);
@@ -297,6 +317,11 @@ function QrScannerModal({
     }
 
     return () => {
+      cancelled = true;
+      if (video) {
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        video.removeEventListener('play', handlePlay);
+      }
       if (cancelMainLoop) cancelMainLoop();
       if (cam) {
         cam.stop();
@@ -313,28 +338,34 @@ function QrScannerModal({
       : !!decodedText;
 
   return (
-    <div class="qr-scanner-modal">
-      <div class="qr-scanner-header">
+    <div className="qr-scanner-modal">
+      <div className="qr-scanner-header">
         <Loader abrupt hidden={uiState !== 'loading'} />
-        <button type="button" class="plain4" onClick={onClose}>
+        <button
+          type="button"
+          className="plain4"
+          onClick={() => {
+            onClose();
+          }}
+        >
           <Icon icon="x" alt={t`Close`} />
         </button>
       </div>
       {uiState === 'error' ? (
-        <div class="ui-state">
+        <div className="ui-state">
           <p>
             <Trans>Unable to access camera. Please check permissions.</Trans>
           </p>
         </div>
       ) : (
         <>
-          <div ref={containerRef} class="qr-scanner-video-container">
+          <div ref={containerRef} className="qr-scanner-video-container">
             <video ref={videoRef} playsInline muted disablePictureInPicture />
             {!hasBarcodeDetector && (
-              <canvas ref={overlayRef} class="qr-scanner-canvas" />
+              <canvas ref={overlayRef} className="qr-scanner-canvas" />
             )}
             <svg
-              class="qr-scanner-corner-hint"
+              className="qr-scanner-corner-hint"
               viewBox="0 0 100 100"
               preserveAspectRatio="xMidYMid meet"
             >
@@ -368,14 +399,14 @@ function QrScannerModal({
               />
             </svg>
           </div>
-          <div class="qr-scanner-result">
+          <div className="qr-scanner-result">
             {!!decodedText && (
               <>
-                <p class="qr-scanner-text">{decodedText}</p>
+                <p className="qr-scanner-text">{decodedText}</p>
                 {showActionableButton && (
                   <button
                     type="button"
-                    class="button plain6"
+                    className="button plain6"
                     onClick={() => {
                       onClose({ text: decodedText });
                     }}

@@ -1,6 +1,6 @@
 import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
 
-export const BSKY_APPVIEW = 'https://public.api.bsky.app';
+const BSKY_APPVIEW = 'https://public.api.bsky.app';
 export const BSKY_PDS = 'https://bsky.social';
 
 type Fetcher = (

@@ -1,8 +1,8 @@
 import './drafts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { CSSProperties } from 'preact';
-import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
+import type { CSSProperties } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 
 import { api } from '../utils/api';
 import db from '../utils/db';
@@ -92,9 +92,9 @@ function Drafts({ onClose }: DraftsProps) {
   const hasDrafts = drafts?.length > 0;
 
   return (
-    <div class="sheet">
+    <div className="sheet">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -104,7 +104,7 @@ function Drafts({ onClose }: DraftsProps) {
           <Loader abrupt hidden={uiState !== 'loading'} />
         </h2>
         {hasDrafts && (
-          <div class="insignificant">
+          <div className="insignificant">
             <Trans>
               Looks like you have unsent drafts. Let's continue where you left
               off.
@@ -115,19 +115,19 @@ function Drafts({ onClose }: DraftsProps) {
       <main>
         {hasDrafts ? (
           <>
-            <ul class="drafts-list">
+            <ul className="drafts-list">
               {drafts.map((draft) => {
                 const { updatedAt, key, draftStatus, replyTo, quote } = draft;
                 const updatedAtDate = new Date(updatedAt);
                 return (
                   <li key={updatedAt}>
-                    <div class="mini-draft-meta">
+                    <div className="mini-draft-meta">
                       <b>
                         <Icon icon={replyTo ? 'reply' : 'quill'} size="s" />{' '}
                         <time>
                           {!!replyTo && (
                             <>
-                              <span class="bidi-isolate">
+                              <span className="bidi-isolate">
                                 @{replyTo.account?.acct}
                               </span>
                               <br />
@@ -162,7 +162,7 @@ function Drafts({ onClose }: DraftsProps) {
                       >
                         <button
                           type="button"
-                          class="small light"
+                          className="small light"
                           disabled={uiState === 'loading'}
                         >
                           <Trans>Delete…</Trans>
@@ -172,7 +172,7 @@ function Drafts({ onClose }: DraftsProps) {
                     <button
                       type="button"
                       disabled={uiState === 'loading'}
-                      class="draft-item"
+                      className="draft-item"
                       onClick={() => {
                         void (async () => {
                           // console.log({ draftStatus });
@@ -270,7 +270,7 @@ function Drafts({ onClose }: DraftsProps) {
                 >
                   <button
                     type="button"
-                    class="light danger"
+                    className="light danger"
                     disabled={uiState === 'loading'}
                   >
                     <Trans>Delete all…</Trans>
@@ -324,10 +324,10 @@ function MiniDraft({ draft }: MiniDraftProps) {
 
   return (
     <>
-      <div class="mini-draft">
+      <div className="mini-draft">
         {hasPollOrMedia && (
           <div
-            class={`mini-draft-aside ${firstImageMedia ? 'has-image' : ''}`}
+            className={`mini-draft-aside ${firstImageMedia ? 'has-image' : ''}`}
             style={
               firstImageMedia
                 ? ({
@@ -346,9 +346,9 @@ function MiniDraft({ draft }: MiniDraftProps) {
             {hasQuote && <Icon icon="quote" alt={t`Quote`} />}
           </div>
         )}
-        <div class="mini-draft-main">
-          {!!spoilerText && <div class="mini-draft-spoiler">{spoilerText}</div>}
-          {!!status && <div class="mini-draft-status">{status}</div>}
+        <div className="mini-draft-main">
+          {!!spoilerText && <div className="mini-draft-spoiler">{spoilerText}</div>}
+          {!!status && <div className="mini-draft-status">{status}</div>}
         </div>
       </div>
     </>

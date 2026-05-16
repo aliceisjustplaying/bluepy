@@ -1,10 +1,10 @@
-import type { TargetedEvent } from 'preact';
+import type { SyntheticEvent } from 'react';
 
 const isMobileSafari =
   /iPad|iPhone|iPod/.test(navigator.userAgent) &&
   /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-export interface CameraCaptureMediaAttachment {
+interface CameraCaptureMediaAttachment {
   fileData: ArrayBuffer;
   fileName: string;
   type: string;
@@ -14,13 +14,13 @@ export interface CameraCaptureMediaAttachment {
   description: string | null;
 }
 
-export interface CameraCaptureInputAttachment
-  extends Partial<CameraCaptureMediaAttachment> {
+interface CameraCaptureInputAttachment extends Partial<CameraCaptureMediaAttachment> {
   file?: File;
   [key: string]: unknown;
 }
 
-export interface CameraCaptureInputProps {
+interface CameraCaptureInputProps {
+  id?: string;
   hidden?: boolean;
   disabled?: boolean;
   supportedMimeTypes?: string[];
@@ -33,6 +33,7 @@ export interface CameraCaptureInputProps {
 }
 
 function CameraCaptureInput({
+  id,
   hidden,
   disabled = false,
   supportedMimeTypes,
@@ -47,12 +48,13 @@ function CameraCaptureInput({
 
   return (
     <input
+      id={id}
       type="file"
       hidden={hidden}
       accept={filteredSupportedMimeTypes?.join(',')}
       capture="environment"
       disabled={disabled}
-      onChange={(e: TargetedEvent<HTMLInputElement>) => {
+      onChange={(e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.currentTarget;
         const files = target.files;
         if (!files) return;

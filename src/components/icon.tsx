@@ -1,6 +1,6 @@
-import type { CSSProperties } from 'preact';
-import { memo } from 'preact/compat';
-import { useEffect, useRef } from 'preact/hooks';
+import type { CSSProperties } from 'react';
+import { memo } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { ICON_NAMESPACE, useIconSprite } from './icon-sprite-manager';
 import { ICONS } from './ICONS';
@@ -35,6 +35,7 @@ interface IconProps {
   alt?: string;
   title?: string;
   class?: string;
+  className?: string;
   style?: CSSProperties;
 }
 
@@ -43,7 +44,8 @@ function Icon({
   size = 'm',
   alt,
   title,
-  class: className = '',
+  class: classProp = '',
+  className = classProp,
   style = {},
 }: IconProps) {
   title = title || alt;
@@ -93,7 +95,7 @@ function Icon({
 
   return (
     <span
-      class={`icon ${className} ${rtl ? 'rtl-flip' : ''}`}
+      className={`icon ${className} ${rtl ? 'rtl-flip' : ''}`}
       style={Object.assign(
         {
           width: `${iconSize}px`,

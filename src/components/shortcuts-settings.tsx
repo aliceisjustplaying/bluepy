@@ -1,6 +1,6 @@
 import './shortcuts-settings.css';
 
-import { useAutoAnimate } from '@formkit/auto-animate/preact';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg, t } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
@@ -9,8 +9,8 @@ import {
   decompressFromEncodedURIComponent,
 } from 'lz-string';
 import type { mastodon } from 'masto';
-import type { HTMLAttributes } from 'preact';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { HTMLAttributes } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import floatingButtonUrl from '../assets/floating-button.svg';
@@ -40,7 +40,7 @@ export interface ShortcutMetaInput {
   [key: string]: string | undefined;
 }
 
-export interface ShortcutEntry extends ShortcutMetaInput {
+interface ShortcutEntry extends ShortcutMetaInput {
   type: string;
 }
 
@@ -331,9 +331,9 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
   const [shortcutsListParent] = useAutoAnimate<HTMLOListElement>();
 
   return (
-    <div id="shortcuts-settings-container" class="sheet" tabIndex={-1}>
+    <div id="shortcuts-settings-container" className="sheet" tabIndex={-1}>
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -355,7 +355,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
         <p>
           <Trans>Specify a list of shortcuts that'll appear&nbsp;as:</Trans>
         </p>
-        <div class="shortcuts-view-mode">
+        <div className="shortcuts-view-mode">
           {[
             {
               value: 'float-button',
@@ -378,7 +378,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
               (value === 'float-button' &&
                 !snapStates.settings.shortcutsViewMode);
             return (
-              <label key={value} class={checked ? 'checked' : ''}>
+              <label key={value} className={checked ? 'checked' : ''}>
                 <input
                   type="radio"
                   name="shortcuts-view-mode"
@@ -398,7 +398,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
         </div>
         {shortcuts.length > 0 ? (
           <>
-            <ol class="shortcuts-list" ref={shortcutsListParent}>
+            <ol className="shortcuts-list" ref={shortcutsListParent}>
               {shortcuts.filter(Boolean).map((shortcut, i) => {
                 // const key = i + Object.values(shortcut);
                 const key = Object.values(shortcut).join('-');
@@ -441,26 +441,26 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                 return (
                   <li key={key}>
                     <Icon icon={icon as string | undefined} />
-                    <span class="shortcut-text">
+                    <span className="shortcut-text">
                       <AsyncText>{title as string | Promise<string>}</AsyncText>
                       {!!subtitle && (
                         <>
                           {' '}
-                          <small class="ib insignificant">
+                          <small className="ib insignificant">
                             {subtitle as string}
                           </small>
                         </>
                       )}
                       {excludedViewMode && (
-                        <span class="tag">
+                        <span className="tag">
                           <Trans>Not available in current view mode</Trans>
                         </span>
                       )}
                     </span>
-                    <span class="shortcut-actions">
+                    <span className="shortcut-actions">
                       <button
                         type="button"
-                        class="plain small"
+                        className="plain small"
                         disabled={i === 0}
                         onClick={() => {
                           const shortcutsArr = Array.from(states.shortcuts);
@@ -476,7 +476,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                       </button>
                       <button
                         type="button"
-                        class="plain small"
+                        className="plain small"
                         disabled={i === shortcuts.length - 1}
                         onClick={() => {
                           const shortcutsArr = Array.from(states.shortcuts);
@@ -492,7 +492,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                       </button>
                       <button
                         type="button"
-                        class="plain small"
+                        className="plain small"
                         onClick={() => {
                           setShowForm({
                             shortcut,
@@ -504,7 +504,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                       </button>
                       {/* <button
                       type="button"
-                      class="plain small"
+                      className="plain small"
                       onClick={() => {
                         states.shortcuts.splice(i, 1);
                       }}
@@ -518,7 +518,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
             </ol>
             {shortcuts.length === 1 &&
               snapStates.settings.shortcutsViewMode !== 'float-button' && (
-                <div class="ui-state insignificant">
+                <div className="ui-state insignificant">
                   <Icon icon="info" />{' '}
                   <small>
                     <Trans>
@@ -529,7 +529,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
               )}
           </>
         ) : (
-          <div class="ui-state insignificant">
+          <div className="ui-state insignificant">
             <p>{t`No shortcuts yet. Tap on the Add shortcut button.`}</p>
             <p>
               <Trans>
@@ -538,7 +538,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                 Try adding{' '}
                 <button
                   type="button"
-                  class="plain"
+                  className="plain"
                   onClick={() => {
                     states.shortcuts = [
                       {
@@ -557,7 +557,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
             </p>
           </div>
         )}
-        <p class="insignificant">
+        <p className="insignificant">
           {shortcuts.length >= SHORTCUTS_LIMIT &&
             t`Max ${SHORTCUTS_LIMIT} shortcuts`}
         </p>
@@ -570,15 +570,19 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
         >
           <button
             type="button"
-            class="light"
-            onClick={() => setShowImportExport(true)}
+            className="light"
+            onClick={() => {
+              setShowImportExport(true);
+            }}
           >
             <Trans>Import/export</Trans>
           </button>
           <button
             type="button"
             disabled={shortcuts.length >= SHORTCUTS_LIMIT}
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setShowForm(true);
+            }}
           >
             <Icon icon="plus" /> <span>{t`Add shortcut…`}</span>
           </button>
@@ -613,7 +617,9 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                 states.shortcuts.push(result);
               }
             }}
-            onClose={() => setShowForm(false)}
+            onClose={() => {
+              setShowForm(false);
+            }}
           />
         </Modal>
       )}
@@ -627,7 +633,9 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
         >
           <ImportExport
             shortcuts={shortcuts}
-            onClose={() => setShowImportExport(false)}
+            onClose={() => {
+              setShowImportExport(false);
+            }}
           />
         </Modal>
       )}
@@ -725,9 +733,9 @@ function ShortcutForm({
   }, [editMode, currentType, shortcut]);
 
   return (
-    <div id="shortcut-settings-form" class="sheet">
+    <div id="shortcut-settings-form" className="sheet">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -890,7 +898,7 @@ function ShortcutForm({
             !!(FORM_NOTES as Record<string, MessageDescriptor | undefined>)[
               currentType
             ] && (
-              <p class="form-note insignificant">
+              <p className="form-note insignificant">
                 <Icon icon="info" />
                 {_(FORM_NOTES[currentType])}
               </p>
@@ -898,7 +906,7 @@ function ShortcutForm({
           <footer>
             <button
               type="submit"
-              class="block"
+              className="block"
               disabled={disabled || uiState === 'loading'}
             >
               {editMode ? t`Save` : t`Add`}
@@ -906,7 +914,7 @@ function ShortcutForm({
             {editMode && (
               <button
                 type="button"
-                class="light danger"
+                className="light danger"
                 onClick={() => {
                   // shortcutIndex is required in edit mode; cast retains the
                   // original splice-with-undefined runtime behavior if it
@@ -981,34 +989,34 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
   const shortcutsImportFieldRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <div id="import-export-container" class="sheet">
+    <div id="import-export-container" className="sheet">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
       <header>
         <h2>
           <Trans>
-            Import/Export <small class="ib insignificant">Shortcuts</small>
+            Import/Export <small className="ib insignificant">Shortcuts</small>
           </Trans>
         </h2>
       </header>
       <main tabIndex={-1}>
         <section>
           <h3>
-            <Icon icon="arrow-down-circle" size="l" class="insignificant" />{' '}
+            <Icon icon="arrow-down-circle" size="l" className="insignificant" />{' '}
             <span>
               <Trans>Import</Trans>
             </span>
           </h3>
-          <p class="field-button">
+          <p className="field-button">
             <input
               ref={shortcutsImportFieldRef}
               type="text"
               name="import"
               placeholder={t`Paste shortcuts here`}
-              class="block"
+              className="block"
               onInput={(e) => {
                 setImportShortcutStr((e.target as HTMLInputElement).value);
               }}
@@ -1017,7 +1025,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
             {mediaDevicesSupported && (
               <button
                 type="button"
-                class="plain2 small"
+                className="plain2 small"
                 onClick={() => {
                   states.showQrScannerModal = {
                     onClose: ({ text }: { text?: string } = {}) => {
@@ -1039,7 +1047,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
             {states.settings.shortcutSettingsCloudImportExport && (
               <button
                 type="button"
-                class="plain2 small"
+                className="plain2 small"
                 disabled={importUIState === 'cloud-downloading'}
                 onClick={() => {
                   void (async () => {
@@ -1047,8 +1055,8 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                     const currentAccount = getCurrentAccountID();
                     showToast(t`Downloading saved shortcuts from server…`);
                     try {
-                      const relationships = await (
-                        asShortcutsMasto(masto)
+                      const relationships = await asShortcutsMasto(
+                        masto,
                       ).v1.accounts.relationships.fetch({
                         id: [currentAccount as string],
                       });
@@ -1098,11 +1106,11 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 <p>
                   <b>{parsedImportShortcutStr.length}</b> shortcut
                   {parsedImportShortcutStr.length > 1 ? 's' : ''}{' '}
-                  <small class="insignificant">
+                  <small className="insignificant">
                     ({importShortcutStr.length} characters)
                   </small>
                 </p>
-                <ol class="import-settings-list">
+                <ol className="import-settings-list">
                   {parsedImportShortcutStr.map((rawShortcut, idx) => {
                     // The JS original accesses fields directly without
                     // validating each entry. We treat each parsed element as
@@ -1142,7 +1150,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                             ({ text, name, type }) =>
                               shortcut[name] ? (
                                 <>
-                                  <span class="tag collapsed insignificant">
+                                  <span className="tag collapsed insignificant">
                                     {typeof text === 'string' ? text : _(text)}:{' '}
                                     {type === 'checkbox'
                                       ? shortcut[name] === 'on'
@@ -1173,7 +1181,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
               </>
             )}
           {importUIState === 'error' && (
-            <p class="error">
+            <p className="error">
               <small>
                 ⚠️ <Trans>Invalid settings format</Trans>
               </small>
@@ -1185,7 +1193,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 <MenuConfirm
                   confirmLabel={t`Append to current shortcuts?`}
                   menuFooter={
-                    <div class="footer">
+                    <div className="footer">
                       <Trans>
                         Only shortcuts that don’t exist in current shortcuts
                         will be appended.
@@ -1235,7 +1243,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 >
                   <button
                     type="button"
-                    class="plain2"
+                    className="plain2"
                     disabled={!parsedImportShortcutStr}
                   >
                     <Trans>Import & append…</Trans>
@@ -1262,7 +1270,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
             >
               <button
                 type="button"
-                class="plain2"
+                className="plain2"
                 disabled={!parsedImportShortcutStr}
               >
                 {hasCurrentSettings ? t`or override…` : t`Import…`}
@@ -1272,12 +1280,12 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
         </section>
         <section>
           <h3>
-            <Icon icon="arrow-up-circle" size="l" class="insignificant" />{' '}
+            <Icon icon="arrow-up-circle" size="l" className="insignificant" />{' '}
             <span>
               <Trans>Export</Trans>
             </span>
           </h3>
-          <p class="field-button">
+          <p className="field-button">
             <input
               style={{ width: '100%' }}
               type="text"
@@ -1302,7 +1310,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
             />
             <button
               type="button"
-              class="plain2 small"
+              className="plain2 small"
               disabled={!shortcutsStr}
               onClick={() => {
                 states.showQrCodeModal = {
@@ -1315,7 +1323,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
             {states.settings.shortcutSettingsCloudImportExport && (
               <button
                 type="button"
-                class="plain2 small"
+                className="plain2 small"
                 disabled={importUIState === 'cloud-uploading'}
                 onClick={() => {
                   void (async () => {
@@ -1375,7 +1383,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
           <p>
             <button
               type="button"
-              class="plain2"
+              className="plain2"
               disabled={!shortcutsStr}
               onClick={() => {
                 void (async () => {
@@ -1400,7 +1408,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
               }) && (
                 <button
                   type="button"
-                  class="plain2"
+                  className="plain2"
                   disabled={!shortcutsStr}
                   onClick={() => {
                     void (async () => {
@@ -1422,7 +1430,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 </button>
               )}{' '}
             {shortcutsStr.length > 0 && (
-              <small class="insignificant ib">
+              <small className="insignificant ib">
                 <Plural
                   value={shortcutsStr.length}
                   one="# character"
@@ -1433,7 +1441,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
           </p>
           {!!shortcutsStr && (
             <details>
-              <summary class="insignificant">
+              <summary className="insignificant">
                 <small>
                   <Trans>Raw Shortcuts JSON</Trans>
                 </small>

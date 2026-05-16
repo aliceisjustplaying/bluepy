@@ -72,7 +72,7 @@ function computeFilterState(
 }
 export const isFiltered = mem(computeFilterState);
 
-export function filteredItem(
+function filteredItem(
   item: FilterableItem,
   filterContext: string | undefined,
   currentAccountID: string | null | undefined,

@@ -10,9 +10,8 @@ import {
   MenuDivider,
   MenuHeader,
 } from '@szhsin/react-menu';
-import type { TargetedMouseEvent } from 'preact';
-import { memo } from 'preact/compat';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { memo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useNavigate } from 'react-router-dom';
 import { LongPressEventType, useLongPress } from 'use-long-press';
@@ -214,7 +213,9 @@ function Shortcuts() {
         }
       }, 100);
 
-      return () => clearTimeout(timeoutId);
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
     return undefined;
   }, [snapStates.settings.shortcutsViewMode]);
@@ -227,7 +228,7 @@ function Shortcuts() {
       if (index < formattedShortcuts.length) {
         const { path } = formattedShortcuts[index];
         if (path) {
-          navigate(path);
+          void navigate(path);
           menuRef.current?.closeMenu?.();
         }
       }
@@ -235,7 +236,7 @@ function Shortcuts() {
     {
       enabled: !isMultiColumnMode,
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         // Allow number even with Shift (e.g. French AZERTY requires Shift for numbers)
         if (/^[1-9]$/.test(e.key)) return false;
         return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
@@ -289,7 +290,7 @@ function Shortcuts() {
         <>
           <nav
             ref={tabBarRef}
-            class="tab-bar"
+            className="tab-bar"
             onContextMenu={(e) => {
               e.preventDefault();
               states.showShortcutsSettings = true;
@@ -302,7 +303,7 @@ function Shortcuts() {
                     id === 'lists'
                       ? {
                           ref: listsLinkRef,
-                          onContextMenu(e: MouseEvent) {
+                          onContextMenu(e: React.MouseEvent) {
                             e.preventDefault();
                             e.stopPropagation();
                             setListsMenuState('open');
@@ -311,7 +312,7 @@ function Shortcuts() {
                         }
                       : id === 'profile'
                         ? {
-                            onContextMenu(e: MouseEvent) {
+                            onContextMenu(e: React.MouseEvent) {
                               e.preventDefault();
                               e.stopPropagation();
                               states.showAccounts = true;
@@ -323,9 +324,9 @@ function Shortcuts() {
                   return (
                     <li key={keyFor(i, id, title, subtitle, path)}>
                       <Link
-                        class={subtitle ? 'has-subtitle' : ''}
+                        className={subtitle ? 'has-subtitle' : ''}
                         to={path ?? ''}
-                        onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
+                        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                           const target = e.target as HTMLElement;
                           if (target.classList.contains('is-active')) {
                             e.preventDefault();
@@ -349,7 +350,7 @@ function Shortcuts() {
                             <img
                               src={altIcon.url}
                               alt=""
-                              class="shortcut-icon"
+                              className="shortcut-icon"
                               loading="lazy"
                               decoding="async"
                               fetchPriority="low"
@@ -377,7 +378,7 @@ function Shortcuts() {
           <ControlledMenu
             ref={listsMenuRef}
             state={listsMenuState}
-            anchorRef={listsLinkRef}
+            anchorRef={listsLinkRef as never}
             menuClassName="lists-picker-menu"
             onClose={() => {
               setListsMenuState(undefined);
@@ -410,7 +411,7 @@ function Shortcuts() {
             <button
               type="button"
               id="shortcuts-button"
-              class="plain"
+              className="plain"
               onContextMenu={(e) => {
                 e.preventDefault();
                 states.showShortcutsSettings = true;
@@ -443,7 +444,7 @@ function Shortcuts() {
                   label={
                     <>
                       <Icon icon={icon} size="l" />
-                      <span class="menu-grow">
+                      <span className="menu-grow">
                         <AsyncText>{title ?? ''}</AsyncText>
                       </span>
                       <Icon icon="chevron-right" />
@@ -459,21 +460,21 @@ function Shortcuts() {
               <MenuLink
                 to={path}
                 key={keyFor(i, id, title, subtitle, path)}
-                class="glass-menu-item"
+                className="glass-menu-item"
               >
                 <Icon icon={icon} size="l" />{' '}
-                <span class="menu-grow">
+                <span className="menu-grow">
                   <span>
                     <AsyncText>{title ?? ''}</AsyncText>
                   </span>
                   {subtitle && (
                     <>
                       {' '}
-                      <small class="more-insignificant">{subtitle}</small>
+                      <small className="more-insignificant">{subtitle}</small>
                     </>
                   )}
                 </span>
-                <span class="menu-shortcut hide-until-focus-visible">
+                <span className="menu-shortcut hide-until-focus-visible">
                   {i + 1}
                 </span>
               </MenuLink>

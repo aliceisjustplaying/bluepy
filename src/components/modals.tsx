@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
-import { useEffect } from 'preact/hooks';
+import { useEffect } from 'react';
 import { useLocation, type Location } from 'react-router-dom';
 import { subscribe, useSnapshot } from 'valtio';
 
@@ -78,9 +78,12 @@ export default function Modals() {
   const isLoggedIn = useAuth();
 
   useEffect(() => {
-    setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       void preload();
     }, 1000);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   const composerState = snapStates.composerState as Payload;
@@ -90,7 +93,7 @@ export default function Modals() {
     <>
       {isLoggedIn && !!snapStates.showCompose && (
         <Modal
-          class={`solid ${composerState.minimized ? 'min' : ''}`}
+          className={`solid ${composerState.minimized ? 'min' : ''}`}
           minimized={!!composerState.minimized}
         >
           <ComposeSuspense
@@ -238,7 +241,11 @@ export default function Modals() {
             states.showDrafts = false;
           }}
         >
-          <Drafts onClose={() => (states.showDrafts = false)} />
+          <Drafts
+            onClose={() => {
+              states.showDrafts = false;
+            }}
+          />
         </Modal>
       )}
       {!!snapStates.showMediaModal && (
@@ -273,7 +280,9 @@ export default function Modals() {
           }}
         >
           <ShortcutsSettings
-            onClose={() => (states.showShortcutsSettings = false)}
+            onClose={() => {
+              states.showShortcutsSettings = false;
+            }}
           />
         </Modal>
       )}
@@ -295,7 +304,9 @@ export default function Modals() {
             postID={
               p(snapStates.showGenericAccounts).postID as string | undefined
             }
-            onClose={() => (states.showGenericAccounts = false)}
+            onClose={() => {
+              states.showGenericAccounts = false;
+            }}
             blankCopy={
               p(snapStates.showGenericAccounts).blankCopy as string | undefined
             }
@@ -322,7 +333,7 @@ export default function Modals() {
       )}
       {!!snapStates.showEmbedModal && (
         <Modal
-          class="solid"
+          className="solid"
           onClose={() => {
             states.showEmbedModal = false;
           }}
@@ -371,7 +382,7 @@ export default function Modals() {
       )}
       {!!snapStates.showQrCodeModal && (
         <Modal
-          class="solid"
+          className="solid"
           onClose={() => {
             states.showQrCodeModal = false;
           }}
@@ -398,7 +409,7 @@ export default function Modals() {
       )}
       {!!snapStates.showQrScannerModal && (
         <Modal
-          class="solid"
+          className="solid"
           onClose={() => {
             states.showQrScannerModal = false;
           }}

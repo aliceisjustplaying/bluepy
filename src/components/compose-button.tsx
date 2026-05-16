@@ -2,8 +2,8 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu, MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { MenuInstance } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { TargetedMouseEvent } from 'preact';
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import type { MouseEvent } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
@@ -92,7 +92,7 @@ export default function ComposeButton() {
 
   function handleButton(
     e:
-      | TargetedMouseEvent<HTMLButtonElement>
+      | MouseEvent<HTMLButtonElement>
       | KeyboardEvent
       | { key?: string; shiftKey?: boolean },
   ) {
@@ -129,21 +129,11 @@ export default function ComposeButton() {
 
   useHotkeys('c, shift+c', handleButton, {
     useKey: true,
-    ignoreEventWhen: (e: KeyboardEvent) => {
+    ignoreEventWhen: (e) => {
       const hasModal = !!document.querySelector('#modal-container > *');
       return hasModal || e.metaKey || e.ctrlKey || e.altKey;
     },
   });
-
-  // Setup longpress handler to open context menu
-  const bindLongPress = useLongPress(
-    () => {
-      setMenuOpen(true);
-    },
-    {
-      threshold: 600,
-    },
-  );
 
   const fetchLatestPosts = useCallback(async () => {
     try {
@@ -164,6 +154,16 @@ export default function ComposeButton() {
     }
   }, [masto]);
 
+  const openLatestPostsMenu = useCallback(() => {
+    setMenuOpen(true);
+    void fetchLatestPosts();
+  }, [fetchLatestPosts]);
+
+  // Setup longpress handler to open context menu
+  const bindLongPress = useLongPress(openLatestPostsMenu, {
+    threshold: 600,
+  });
+
   // Function to handle opening the compose window to reply to a post
   const handleReplyToPost = useCallback((post: mastodon.v1.Status) => {
     showCompose({
@@ -171,12 +171,6 @@ export default function ComposeButton() {
     });
     setMenuOpen(false);
   }, []);
-
-  useEffect(() => {
-    if (menuOpen) {
-      void fetchLatestPosts();
-    }
-  }, [fetchLatestPosts, menuOpen]);
 
   return (
     <>
@@ -190,10 +184,10 @@ export default function ComposeButton() {
         }}
         onContextMenu={(e) => {
           e.preventDefault();
-          setMenuOpen(true);
+          openLatestPostsMenu();
         }}
         {...bindLongPress()}
-        class={`${snapStates.composerState.minimized ? 'min' : ''} ${
+        className={`${snapStates.composerState.minimized ? 'min' : ''} ${
           snapStates.composerState.publishing ? 'loading' : ''
         } ${snapStates.composerState.publishingError ? 'error' : ''}`}
       >
@@ -202,8 +196,10 @@ export default function ComposeButton() {
       <ControlledMenu
         ref={menuRef}
         state={menuOpen ? 'open' : undefined}
-        anchorRef={buttonRef}
-        onClose={() => setMenuOpen(false)}
+        anchorRef={buttonRef as never}
+        onClose={() => {
+          setMenuOpen(false);
+        }}
         direction="top"
         gap={8} // Add gap between menu and button
         unmountOnClose
@@ -249,9 +245,14 @@ export default function ComposeButton() {
               const isWithinDay = Date.now() - createdDate.getTime() < 86400000;
 
               return (
-                <MenuItem key={post.id} onClick={() => handleReplyToPost(post)}>
+                <MenuItem
+                  key={post.id}
+                  onClick={() => {
+                    handleReplyToPost(post);
+                  }}
+                >
                   <small>
-                    <div class="menu-post-text">
+                    <div className="menu-post-text">
                       {statusPeek(post as StatusPeekPayload)}
                     </div>
                     <span className="more-insignificant">

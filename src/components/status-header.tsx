@@ -30,7 +30,7 @@ interface StatusHeaderProps {
   readOnly?: boolean;
   quoted?: boolean | number;
   id: string;
-  onStatusLinkClick: (e: MouseEvent | KeyboardEvent, status: AnyStatus) => void;
+  onStatusLinkClick: (e: React.MouseEvent | KeyboardEvent, status: AnyStatus) => void;
   setContextMenuProps: (props: ContextMenuPropsShape) => void;
   setIsContextMenuOpen: (value: boolean | string) => void;
   isContextMenuOpen: boolean | string;
@@ -43,6 +43,53 @@ interface StatusHeaderProps {
   createdAtDate: Date;
   inReplyToAccount?: AnyAccount | null;
   showReplyBadge: boolean;
+}
+
+interface StatusTimeIconProps {
+  showCommentHint: boolean;
+  showCommentCount: boolean;
+  repliesCount: number;
+  visibility: keyof typeof visibilityIconsMap;
+  editedAt?: string | null;
+  size: string;
+}
+
+function StatusTimeIcon({
+  showCommentHint,
+  showCommentCount,
+  repliesCount,
+  visibility,
+  editedAt,
+  size,
+}: StatusTimeIconProps) {
+  const { t, i18n } = useLingui();
+  const _ = i18n._.bind(i18n);
+
+  if (showCommentHint && !showCommentCount) {
+    return (
+      <Icon
+        icon="comment2"
+        size="s"
+        alt={plural(repliesCount, {
+          one: '# reply',
+          other: '# replies',
+        })}
+      />
+    );
+  }
+  if (visibility !== 'public' && visibility !== 'direct') {
+    return (
+      <Icon
+        icon={visibilityIconsMap[visibility]}
+        alt={_(visibilityText[visibility])}
+        size="s"
+      />
+    );
+  }
+  if (editedAt && size === 's') {
+    return <Icon icon="pencil" size="s" alt={t`Edited`} />;
+  }
+  return null;
 }
 
 export default function StatusHeader({
@@ -76,61 +123,18 @@ export default function StatusHeader({
   inReplyToAccount,
   showReplyBadge,
 }: StatusHeaderProps) {
-  const { t, i18n } = useLingui();
-  const _ = i18n._.bind(i18n);
-
-  function StatusTimeIcon({
-    showCommentHint: timeShowCommentHint,
-    showCommentCount: timeShowCommentCount,
-    repliesCount: timeRepliesCount,
-    visibility: timeVisibility,
-    editedAt: timeEditedAt,
-    size: timeSize,
-  }: {
-    showCommentHint: boolean;
-    showCommentCount: boolean;
-    repliesCount: number;
-    visibility: keyof typeof visibilityIconsMap;
-    editedAt?: string | null;
-    size: string;
-  }) {
-    if (timeShowCommentHint && !timeShowCommentCount) {
-      return (
-        <Icon
-          icon="comment2"
-          size="s"
-          alt={plural(timeRepliesCount, {
-            one: '# reply',
-            other: '# replies',
-          })}
-        />
-      );
-    }
-    if (timeVisibility !== 'public' && timeVisibility !== 'direct') {
-      return (
-        <Icon
-          icon={visibilityIconsMap[timeVisibility]}
-          alt={_(visibilityText[timeVisibility])}
-          size="s"
-        />
-      );
-    }
-    if (timeEditedAt && timeSize === 's') {
-      return <Icon icon="pencil" size="s" alt={t`Edited`} />;
-    }
-    return null;
-  }
+  const { t } = useLingui();
 
   return (
     <>
       {!!quoteDomain && (
-        <div class="status-quote-meta">
-          <span class="domain">{quoteDomain}</span>
+        <div className="status-quote-meta">
+          <span className="domain">{quoteDomain}</span>
         </div>
       )}
       {!!(status.account || createdAt) && (
-        <div class="meta">
-          <span class="meta-name">
+        <div className="meta">
+          <span className="meta-name">
             <NameText
               account={status.account}
               instance={instance}
@@ -143,13 +147,13 @@ export default function StatusHeader({
           )}{' '}
           {size !== 'l' &&
             (deleted ? (
-              <span class="status-deleted-tag">
+              <span className="status-deleted-tag">
                 <Trans>Deleted</Trans>
               </span>
             ) : url && !previewMode && !readOnly && !quoted ? (
               <Link
                 to={instance ? `/${instance}/s/${id}` : `/s/${id}`}
-                onClick={(e: MouseEvent) => {
+                onClick={(e: React.MouseEvent) => {
                   if (
                     e.metaKey ||
                     e.ctrlKey ||
@@ -172,7 +176,7 @@ export default function StatusHeader({
                   });
                   setIsContextMenuOpen(true);
                 }}
-                class={`time ${
+                className={`time ${
                   isContextMenuOpen && contextMenuProps?.anchorRef ? 'is-open' : ''
                 }`}
               >
@@ -186,11 +190,11 @@ export default function StatusHeader({
                 />{' '}
                 <RelativeTime datetime={createdAtDate} format="micro" />
                 {!previewMode && !readOnly && (
-                  <Icon icon="more2" class="more" alt={t`More`} />
+                  <Icon icon="more2" className="more" alt={t`More`} />
                 )}
               </Link>
             ) : (
-              <span class="time">
+              <span className="time">
                 <StatusTimeIcon
                   showCommentHint={showCommentHint}
                   showCommentCount={showCommentCount}
@@ -204,10 +208,10 @@ export default function StatusHeader({
             ))}
         </div>
       )}
-      <LazyRender id={sKey} class="pre-content-container">
+      <LazyRender id={sKey} className="pre-content-container">
         {visibility === 'direct' && (
           <>
-            <div class="status-direct-badge">
+            <div className="status-direct-badge">
               <Trans>Private mention</Trans>
             </div>{' '}
           </>
@@ -217,7 +221,7 @@ export default function StatusHeader({
             <ThreadBadge showIcon showText index={threadNumber} />
           ) : (
             showReplyBadge && (
-              <div class="status-reply-badge">
+              <div className="status-reply-badge">
                 <Icon icon="reply" />{' '}
                 {inReplyToAccount ? (
                   <NameText

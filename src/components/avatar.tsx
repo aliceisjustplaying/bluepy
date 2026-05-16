@@ -1,6 +1,6 @@
 import './avatar.css';
 
-import { useRef } from 'preact/hooks';
+import { useRef } from 'react';
 
 import mem from '../utils/mem';
 
@@ -59,7 +59,7 @@ function Avatar({
   return (
     <picture
       ref={avatarRef}
-      class={`avatar ${squircle ? 'squircle' : ''} ${
+      className={`avatar ${squircle ? 'squircle' : ''} ${
         alphaCache.get(url) ? 'has-alpha' : ''
       }`}
       style={{
@@ -70,7 +70,7 @@ function Avatar({
       {...props}
     >
       {!!staticUrl && (
-        <source srcset={staticUrl} media="(prefers-reduced-motion: reduce)" />
+        <source srcSet={staticUrl} media="(prefers-reduced-motion: reduce)" />
       )}
       {!!url && (
         <img

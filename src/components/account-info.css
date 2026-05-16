@@ -494,6 +494,19 @@
   display: flex;
   gap: 0.5em;
 }
+.account-container .stats .account-stat-button {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  line-height: inherit;
+  text-align: inherit;
+}
+.account-container .stats .account-stat-button:is(:hover, :focus) {
+  color: var(--text-color);
+  cursor: pointer;
+  text-decoration-color: var(--text-insignificant-color);
+}
 .account-container .stats a:not(.insignificant) {
   color: inherit;
 }

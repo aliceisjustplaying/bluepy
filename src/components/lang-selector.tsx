@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react';
-import { useMemo } from 'preact/hooks';
+import { useMemo } from 'react';
 
 import { CATALOGS, DEFAULT_LANG, DEV_LOCALES, LOCALES } from '../locales';
 import { activateLang } from '../utils/lang';
@@ -51,7 +51,10 @@ export default function LangSelector() {
         // string (catalogs supply a `name` fallback); keep the same assumption
         // so an undefined value still surfaces as a runtime error instead of
         // silently sorting as empty.
-        const order = a.commonName!.localeCompare(b.commonName!, i18n.locale);
+        if (a.commonName === undefined || b.commonName === undefined) {
+          throw new TypeError('Locale common name missing');
+        }
+        const order = a.commonName.localeCompare(b.commonName, i18n.locale);
         if (order !== 0) return order;
         // Sort by code (fallback)
         if (a.code < b.code) return -1;
@@ -62,10 +65,10 @@ export default function LangSelector() {
   }, [i18n.locale]);
 
   return (
-    <label class="lang-selector">
+    <label className="lang-selector">
       🌐{' '}
       <select
-        class="small"
+        className="small"
         value={i18n.locale || DEFAULT_LANG}
         onChange={(e) => {
           const { value } = e.currentTarget;
@@ -96,12 +99,9 @@ export default function LangSelector() {
             {DEV_LOCALES.map((code) => {
               if (code === 'pseudo-LOCALE') {
                 return (
-                  <>
-                    <hr />
-                    <option value={code} key={code}>
-                      Pseudolocalization (test)
-                    </option>
-                  </>
+                  <option value={code} key={code}>
+                    ---------- Pseudolocalization (test)
+                  </option>
                 );
               }
               const nativeName = CATALOGS.find(

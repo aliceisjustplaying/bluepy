@@ -1,4 +1,4 @@
-import { createContext } from 'preact';
+import { createContext } from 'react';
 
 const ThreadCountContext = createContext(0);
 

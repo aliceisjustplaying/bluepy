@@ -4,9 +4,9 @@ import 'swiped-events';
 
 import { useLingui } from '@lingui/react';
 import debounce from 'just-debounce-it';
-import type { VNode } from 'preact';
-import { lazy, memo, Suspense } from 'preact/compat';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { ReactElement } from 'react';
+import { lazy, memo, Suspense } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   matchPath,
   Navigate,
@@ -72,7 +72,11 @@ import {
   initAtprotoOAuthClient,
 } from './utils/atproto-oauth';
 import { getAccessToken } from './utils/auth';
-import { AuthProvider, useAuth } from './utils/auth-context';
+import {
+  AUTH_CHANGED_EVENT,
+  AuthProvider,
+  useAuth,
+} from './utils/auth-context';
 import focusDeck from './utils/focus-deck';
 import { navigatePath } from './utils/router';
 import states, { hideAllModals, initStates, statusKey } from './utils/states';
@@ -194,7 +198,10 @@ appWindow.__STATES_STATS__ = () => {
       const id = el.dataset.statePostId?.trim?.();
       const ids = el.dataset.statePostIds?.trim?.();
       if (id) mountedKeys.add(id);
-      if (ids) ids.split(/\s+/).forEach((key: string) => mountedKeys.add(key));
+      if (ids)
+        ids.split(/\s+/).forEach((key: string) => {
+          mountedKeys.add(key);
+        });
     });
   const unmountedPosts = Object.keys(statuses).filter(
     (key) => !mountedKeys.has(key),
@@ -220,7 +227,9 @@ setInterval(
         const ids = el.dataset.statePostIds;
         if (id) mountedKeys.add(id);
         if (ids)
-          ids.split(/\s+/).forEach((key: string) => mountedKeys.add(key));
+          ids.split(/\s+/).forEach((key: string) => {
+            mountedKeys.add(key);
+          });
       });
     for (const key in statuses) {
       if (!appWindow.__IDLE__) break;
@@ -456,7 +465,7 @@ const __BENCHMARK = (appWindow.__BENCHMARK = {
     if (start) {
       const end = performance.now();
       const duration = end - start;
-      appWindow.__BENCH_RESULTS!.set(name, duration);
+      appWindow.__BENCH_RESULTS?.set(name, duration);
       BENCHES.delete(name);
     }
   },
@@ -505,6 +514,24 @@ function App() {
   useLingui();
 
   useEffect(() => {
+    const updateAuthState = () => {
+      const account = getCurrentAccount();
+      if (!account) {
+        setIsLoggedIn(false);
+        return;
+      }
+      window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+      initStates();
+      setIsLoggedIn(true);
+    };
+    window.addEventListener(AUTH_CHANGED_EVENT, updateAuthState);
+    return () => {
+      window.removeEventListener(AUTH_CHANGED_EVENT, updateAuthState);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
     void (async () => {
       const instanceURL = store.local.get('instanceURL');
       const isAtprotoOAuthCallback =
@@ -525,6 +552,7 @@ function App() {
             ]);
             initStates();
             window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+            if (cancelled) return;
             setIsLoggedIn(true);
             setUIState('default');
             const redirectPath = store.session.get('loginRedirect');
@@ -561,7 +589,7 @@ function App() {
               },
               window.location.origin,
             );
-            setTimeout(() => {
+            window.setTimeout(() => {
               window.close();
             }, 100);
           } catch (e) {
@@ -590,6 +618,7 @@ function App() {
         const vapidKey = getStoredVapidKey(instanceURL) || vapid_key;
         const verifier = store.sessionCookie.get('codeVerifier');
 
+        if (cancelled) return;
         setUIState('loading');
         const { access_token: accessToken } = (await getAccessToken({
           instanceURL: instanceURL as string,
@@ -614,6 +643,7 @@ function App() {
           initStates();
           window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
 
+          if (cancelled) return;
           setIsLoggedIn(true);
           setUIState('default');
 
@@ -626,6 +656,7 @@ function App() {
             navigatePath('/', { replace: true });
           }
         } else {
+          if (cancelled) return;
           setUIState('error');
         }
         __BENCHMARK.end('app-init');
@@ -662,6 +693,7 @@ function App() {
           const { instance } = client;
           // console.log('masto', masto);
           initStates();
+          if (cancelled) return;
           setUIState('loading');
           try {
             if (hasPreferences() && hasInstance(instance)) {
@@ -677,11 +709,14 @@ function App() {
           } catch {
             // ignore — fall through to mark logged in below
           } finally {
-            setIsLoggedIn(true);
-            setUIState('default');
-            __BENCHMARK.end('app-init');
+            if (!cancelled) {
+              setIsLoggedIn(true);
+              setUIState('default');
+              __BENCHMARK.end('app-init');
+            }
           }
         } else {
+          if (cancelled) return;
           setUIState('default');
           __BENCHMARK.end('app-init');
         }
@@ -692,46 +727,51 @@ function App() {
       store.sessionCookie.del('clientSecret');
       store.sessionCookie.del('codeVerifier');
     })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  let location = useLocation();
-  states.currentLocation = location.pathname;
+  let currentLocation = useLocation();
+  states.currentLocation = currentLocation.pathname;
   // useLayoutEffect(() => {
   //   states.currentLocation = location.pathname;
   // }, [location.pathname]);
 
-  useEffect(focusDeck, [location, isLoggedIn]);
+  useEffect(focusDeck, [currentLocation, isLoggedIn]);
 
   // Save last page for PWA restoration
   const restoredRef = useRef(false);
   const lastPathKey = 'pwaLastPath';
   useEffect(() => {
     if (!restoredRef.current) return;
-    // console.log('location.pathname', location.pathname);
+    // console.log('currentLocation.pathname', currentLocation.pathname);
     if (isPWA && isLoggedIn) {
-      if (isRootPath(location.pathname)) {
+      if (isRootPath(currentLocation.pathname)) {
         store.local.del(lastPathKey);
       } else {
         store.local.setJSON(lastPathKey, {
-          path: location.pathname + location.search,
+          path: currentLocation.pathname + currentLocation.search,
           lastAccessed: Date.now(),
         });
       }
     }
-  }, [location.pathname, location.search, isLoggedIn]);
+  }, [currentLocation.pathname, currentLocation.search, isLoggedIn]);
 
   // Restore last page on PWA reopen
   useEffect(() => {
-    if (restoredRef.current) return;
-    const atRootPath = !location.pathname || location.pathname === '/';
-    if (!atRootPath) return;
+    if (restoredRef.current) return undefined;
+    const atRootPath =
+      !currentLocation.pathname || currentLocation.pathname === '/';
+    if (!atRootPath) return undefined;
     if (isPWA && isLoggedIn && uiState === 'default') {
       const lastPath = store.local.getJSON<{
         path?: string;
         lastAccessed?: number;
       }>(lastPathKey);
+      restoredRef.current = true;
       if (lastPath) {
-        setTimeout(() => {
+        const timeoutId = window.setTimeout(() => {
           if (lastPath?.path) {
             const timeSinceLastAccess =
               Date.now() - (lastPath.lastAccessed || 0);
@@ -741,10 +781,13 @@ function App() {
           }
           store.local.del(lastPathKey);
         }, 300);
+        return () => {
+          window.clearTimeout(timeoutId);
+        };
       }
-      restoredRef.current = true;
     }
-  }, [uiState, isLoggedIn, location.pathname]);
+    return undefined;
+  }, [uiState, isLoggedIn, currentLocation.pathname]);
 
   // Signal to service worker that this client is ready to receive share data
   useEffect(() => {
@@ -794,7 +837,11 @@ function App() {
       {isLoggedIn && <NotificationService />}
       <BackgroundService />
       {isLoggedIn && <NavigationCommand />}
-      <SearchCommand onClose={focusDeck} />
+      <SearchCommand
+        onClose={() => {
+          focusDeck();
+        }}
+      />
       <KeyboardShortcutsHelp />
     </AuthProvider>
   );
@@ -851,7 +898,7 @@ const PrimaryRoutes = memo(() => {
 });
 
 // Auth route wrapper that redirects to login if not authenticated
-function AuthRoute({ children }: { children: VNode }) {
+function AuthRoute({ children }: { children: ReactElement }) {
   const isLoggedIn = useAuth();
   const location = useLocation();
 
@@ -868,23 +915,24 @@ function getPrevLocation() {
 }
 function SecondaryRoutes() {
   // const snapStates = useSnapshot(states);
-  const location = useLocation();
+  const currentLocation = useLocation();
   // const prevLocation = snapStates.prevLocation;
   const backgroundLocation = useRef(getPrevLocation());
 
   const isModalPage = useMemo(() => {
-    const atUriParam = matchPath('/:atUri', location.pathname)?.params.atUri;
+    const atUriParam = matchPath('/:atUri', currentLocation.pathname)?.params
+      .atUri;
     return (
-      matchPath('/:instance/s/:id', location.pathname) ||
-      matchPath('/s/:id', location.pathname) ||
-      matchPath('/:scheme://*', location.pathname) ||
+      matchPath('/:instance/s/:id', currentLocation.pathname) ||
+      matchPath('/s/:id', currentLocation.pathname) ||
+      matchPath('/:scheme://*', currentLocation.pathname) ||
       atUriParam?.toLowerCase().startsWith('at:')
     );
-  }, [location.pathname]);
+  }, [currentLocation.pathname]);
 
   // Persist prevLocation to sessionStorage while on a status/post page so it
   // survives a page reload. Clear it when navigating away.
-  useEffect(() => {
+  const syncPrevLocation = useEffectEvent(() => {
     if (isModalPage) {
       if (states.prevLocation) {
         store.session.setJSON('prevLocation', {
@@ -898,6 +946,9 @@ function SecondaryRoutes() {
       }
       store.session.del('prevLocation');
     }
+  });
+  useEffect(() => {
+    syncPrevLocation();
   }, [isModalPage]);
 
   if (isModalPage) {
@@ -1019,7 +1070,7 @@ function SecondaryRoutes() {
               fallback={
                 <div
                   id="year-in-posts-page"
-                  class="deck-container"
+                  className="deck-container"
                   tabIndex={-1}
                 >
                   {/* Prevent flash of no background as this is lazy-loaded */}

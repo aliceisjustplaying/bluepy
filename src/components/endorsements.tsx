@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
@@ -60,8 +60,10 @@ function Endorsements({
   }, [relationshipsMap]);
 
   useEffect(() => {
-    if (!supports('@mastodon/endorsements')) return;
-    if (!open) return;
+    if (!supports('@mastodon/endorsements')) return undefined;
+    if (!open) return undefined;
+    let cancelled = false;
+    let scrollTimeoutId: number | undefined;
     void (async () => {
       setEndorsementsUIState('loading');
       try {
@@ -69,13 +71,14 @@ function Endorsements({
           limit: ENDORSEMENTS_LIMIT,
         });
         console.log({ endorsements: accounts });
+        if (cancelled) return;
         if (!accounts.length) {
           setEndorsementsUIState('default');
           return;
         }
         setEndorsements(accounts);
         setEndorsementsUIState('default');
-        setTimeout(() => {
+        scrollTimeoutId = window.setTimeout(() => {
           endorsementsContainer.current?.scrollIntoView({
             behavior: 'smooth',
             block: 'nearest',
@@ -86,14 +89,21 @@ function Endorsements({
           accounts,
           relationshipsMapRef.current,
         );
-        if (relationships) {
+        if (!cancelled && relationships) {
           setRelationshipsMap(relationships);
         }
       } catch (e) {
+        if (cancelled) return;
         console.error(e);
         setEndorsementsUIState('error');
       }
     })();
+    return () => {
+      cancelled = true;
+      if (scrollTimeoutId !== undefined) {
+        window.clearTimeout(scrollTimeoutId);
+      }
+    };
   }, [open, id, accountsEndpoint]);
 
   const reallyOpen = onlyOpenIfHasEndorsements
@@ -103,19 +113,19 @@ function Endorsements({
   if (!reallyOpen) return null;
 
   return (
-    <div class="shazam-container">
-      <div class="shazam-container-inner">
-        <div class="endorsements-container" ref={endorsementsContainer}>
+    <div className="shazam-container">
+      <div className="shazam-container-inner">
+        <div className="endorsements-container" ref={endorsementsContainer}>
           <h3>
             <Trans>Profiles featured by @{info.username}</Trans>
           </h3>
           {endorsementsUIState === 'loading' ? (
-            <p class="ui-state">
+            <p className="ui-state">
               <Loader abrupt />
             </p>
           ) : endorsements.length > 0 ? (
             <ul
-              class={`endorsements ${
+              className={`endorsements ${
                 endorsements.length > 10 ? 'expanded' : ''
               }`}
             >
@@ -131,7 +141,7 @@ function Endorsements({
               ))}
             </ul>
           ) : (
-            <p class="ui-state insignificant">
+            <p className="ui-state insignificant">
               <Trans>No featured profiles.</Trans>
             </p>
           )}

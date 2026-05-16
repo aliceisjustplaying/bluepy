@@ -1,8 +1,8 @@
 import 'temml/dist/Temml-Local.css';
 
 import { useLingui } from '@lingui/react/macro';
-import type { RefObject, TargetedMouseEvent } from 'preact';
-import { useCallback, useState } from 'preact/hooks';
+import type { RefObject } from 'react';
+import { useCallback, useState } from 'react';
 import type Temml from 'temml';
 
 import showToast from '../utils/show-toast';
@@ -40,7 +40,7 @@ function cleanDOMForTemml(dom: HTMLElement) {
   }
 
   for (const textNode of textNodes) {
-    const text = textNode.textContent!;
+    const text = textNode.textContent ?? '';
     const startMatch = text.match(startRegex);
 
     if (!startMatch) continue; // No start delimiter in this text node
@@ -65,8 +65,9 @@ function cleanDOMForTemml(dom: HTMLElement) {
 
         if (nextSibling.nodeType === Node.TEXT_NODE) {
           nodesToCombine.push(nextSibling);
-          combinedText += nextSibling.textContent;
-          if (nextSibling.textContent!.includes(endDelimiter)) {
+          const siblingText = nextSibling.textContent ?? '';
+          combinedText += siblingText;
+          if (siblingText.includes(endDelimiter)) {
             foundEnd = true;
           }
         } else if (nextSibling instanceof HTMLBRElement) {
@@ -104,7 +105,7 @@ const MathBlock = ({ content, contentRef, onRevert }: MathBlockProps) => {
   const { t } = useLingui();
   const [mathRendered, setMathRendered] = useState(false);
   const toggleMathRendering = useCallback(
-    async (e: TargetedMouseEvent<HTMLButtonElement>) => {
+    async (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
       e.stopPropagation();
       if (mathRendered) {
@@ -118,7 +119,8 @@ const MathBlock = ({ content, contentRef, onRevert }: MathBlockProps) => {
           const temml =
             window.temml || (window.temml = (await import('temml'))?.default);
 
-          const contentEl = contentRef.current!;
+          const contentEl = contentRef.current;
+          if (!contentEl) return;
           cleanDOMForTemml(contentEl);
           const originalContentRefHTML = contentEl.innerHTML;
           temml.renderMathInElement(contentEl, {
@@ -153,11 +155,11 @@ const MathBlock = ({ content, contentRef, onRevert }: MathBlockProps) => {
   if (!hasLatexContent) return null;
 
   return (
-    <div class="math-block">
+    <div className="math-block">
       <Icon icon="formula" size="s" /> <span>{t`Math expressions found.`}</span>{' '}
       <button
         type="button"
-        class="light small"
+        className="light small"
         onClick={(e) => {
           void toggleMathRendering(e);
         }}

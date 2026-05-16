@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 import haptics from '../utils/haptics';
 import { supportsNativeQuote } from '../utils/quote-utils';
@@ -39,9 +39,9 @@ type StatusQuickMenuProps = Pick<
   | 'acct'
   | 'replyStatus'
 > & {
-  ReplyMenuContent: () => ComponentChildren;
+  ReplyMenuContent: () => ReactNode;
   isSizeLarge: boolean;
-  replyModeMenuItems: ComponentChildren;
+  replyModeMenuItems: ReactNode;
   tooManyMentions: boolean;
 };
 
@@ -74,7 +74,7 @@ export default function StatusQuickMenu({
   const { t } = useLingui();
 
   return (
-    <div class="menu-control-group-horizontal status-menu">
+    <div className="menu-control-group-horizontal status-menu">
       {tooManyMentions ? (
         <SubMenu2
           openTrigger="clickOnly"
@@ -110,7 +110,7 @@ export default function StatusQuickMenu({
           <>
             {supportsNativeQuote() && (
               <MenuItem
-                disabled={quoteDisabled}
+                disabled={!!quoteDisabled}
                 onClick={() => {
                   showCompose({
                     quoteStatus: status,
@@ -144,7 +144,7 @@ export default function StatusQuickMenu({
                   <Trans>Quote with link</Trans>
                 </span>
                 {supportsNativeQuote() && DEV && (
-                  <small class="tag collapsed">DEV</small>
+                  <small className="tag collapsed">DEV</small>
                 )}
               </MenuItem>
             )}
@@ -171,7 +171,7 @@ export default function StatusQuickMenu({
         }}
       >
         {canQuote ? (
-          <span class="icon">
+          <span className="icon">
             <Icon icon="rocket" />
             <Icon icon="quote" />
           </span>
@@ -191,7 +191,9 @@ export default function StatusQuickMenu({
         </span>
       </MenuConfirm>
       <MenuItem
-        onClick={favouriteStatusNotify}
+        onClick={() => {
+          void favouriteStatusNotify();
+        }}
         className={`menu-favourite ${favourited ? 'checked' : ''}`}
       >
         <Icon icon="heart" />
@@ -205,7 +207,9 @@ export default function StatusQuickMenu({
       </MenuItem>
       {supports('@mastodon/post-bookmark') && (
         <MenuItem
-          onClick={bookmarkStatusNotify}
+          onClick={() => {
+            void bookmarkStatusNotify();
+          }}
           className={`menu-bookmark ${bookmarked ? 'checked' : ''}`}
         >
           <Icon icon="bookmark" />

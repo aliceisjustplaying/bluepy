@@ -160,8 +160,13 @@
 }
 
 .status-card-link {
+  position: relative;
   text-decoration: none;
   color: var(--text-color);
+}
+.status-card-link :is(a, button, input, textarea, select, summary, [role='button'], [data-menu-trigger]):not(.status-link-native) {
+  position: relative;
+  z-index: 2;
 }
 .status-card-container {
   margin: 8px 0 0;
