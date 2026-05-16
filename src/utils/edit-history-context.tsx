@@ -1,7 +1,7 @@
-import type { ComponentChildren } from 'preact';
-import { createContext } from 'preact';
-import type { MutableRef } from 'preact/hooks';
-import { useContext, useRef, useState } from 'preact/hooks';
+import type { ReactNode } from 'react';
+import { createContext } from 'react';
+import type { RefObject } from 'react';
+import { useContext, useRef, useState } from 'react';
 
 import { api } from '../utils/api';
 
@@ -11,7 +11,7 @@ interface EditHistoryEntry {
 }
 
 interface EditHistoryContextValue {
-  editHistoryRef: MutableRef<EditHistoryEntry[]>;
+  editHistoryRef: RefObject<EditHistoryEntry[]>;
   initEditHistory: () => Promise<void>;
   exitEditHistory: () => void;
   editHistoryMode: boolean;
@@ -30,7 +30,7 @@ export function EditHistoryProvider({
   children,
   statusID,
 }: {
-  children?: ComponentChildren;
+  children?: ReactNode;
   statusID: string;
 }) {
   const editHistoryRef = useRef<EditHistoryEntry[]>([]);

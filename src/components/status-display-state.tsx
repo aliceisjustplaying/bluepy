@@ -1,7 +1,7 @@
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 import type { mastodon } from 'masto';
-import { Fragment } from 'preact';
-import { useCallback, useMemo, useState } from 'preact/hooks';
+import { Fragment } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { getPreferences } from '../utils/api';
@@ -32,7 +32,7 @@ interface StatusDisplayStateArgs {
   showFollowedTags?: boolean;
   enableTranslate?: boolean;
   forceTranslate?: boolean;
-  debugHover: (event: MouseEvent) => void;
+  debugHover: (event: React.MouseEvent) => void;
 }
 
 export default function useStatusDisplayState({
@@ -73,19 +73,19 @@ export default function useStatusDisplayState({
     | readonly string[]
     | undefined;
   const FollowedTagsParent = useCallback(
-    ({ children }: { children?: ComponentChildren }) => (
+    ({ children }: { children?: ReactNode }) => (
       <div
         data-state-post-id={sKey}
-        class="status-followed-tags"
+        className="status-followed-tags"
         onMouseEnter={debugHover}
       >
-        <div class="status-pre-meta">
+        <div className="status-pre-meta">
           <Icon icon="hashtag" size="l" />{' '}
           {followedTagsForKey!.slice(0, 3).map((tag: string) => (
             <Link
               key={tag}
               to={instance ? `/${instance}/t/${tag}` : `/t/${tag}`}
-              class="status-followed-tag-item"
+              className="status-followed-tag-item"
             >
               {tag}
             </Link>

@@ -4,9 +4,9 @@ import 'swiped-events';
 
 import { useLingui } from '@lingui/react';
 import debounce from 'just-debounce-it';
-import type { VNode } from 'preact';
-import { lazy, memo, Suspense } from 'preact/compat';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { ReactElement } from 'react';
+import { lazy, memo, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   matchPath,
   Navigate,
@@ -72,7 +72,11 @@ import {
   initAtprotoOAuthClient,
 } from './utils/atproto-oauth';
 import { getAccessToken } from './utils/auth';
-import { AuthProvider, useAuth } from './utils/auth-context';
+import {
+  AUTH_CHANGED_EVENT,
+  AuthProvider,
+  useAuth,
+} from './utils/auth-context';
 import focusDeck from './utils/focus-deck';
 import { navigatePath } from './utils/router';
 import states, { hideAllModals, initStates, statusKey } from './utils/states';
@@ -505,6 +509,23 @@ function App() {
   useLingui();
 
   useEffect(() => {
+    const updateAuthState = () => {
+      const account = getCurrentAccount();
+      if (!account) {
+        setIsLoggedIn(false);
+        return;
+      }
+      window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+      initStates();
+      setIsLoggedIn(true);
+    };
+    window.addEventListener(AUTH_CHANGED_EVENT, updateAuthState);
+    return () => {
+      window.removeEventListener(AUTH_CHANGED_EVENT, updateAuthState);
+    };
+  }, []);
+
+  useEffect(() => {
     void (async () => {
       const instanceURL = store.local.get('instanceURL');
       const isAtprotoOAuthCallback =
@@ -851,7 +872,7 @@ const PrimaryRoutes = memo(() => {
 });
 
 // Auth route wrapper that redirects to login if not authenticated
-function AuthRoute({ children }: { children: VNode }) {
+function AuthRoute({ children }: { children: ReactElement }) {
   const isLoggedIn = useAuth();
   const location = useLocation();
 
@@ -1019,7 +1040,7 @@ function SecondaryRoutes() {
               fallback={
                 <div
                   id="year-in-posts-page"
-                  class="deck-container"
+                  className="deck-container"
                   tabIndex={-1}
                 >
                   {/* Prevent flash of no background as this is lazy-loaded */}

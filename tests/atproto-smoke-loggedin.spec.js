@@ -182,7 +182,7 @@ async function getRequiredTitle(locator, label) {
 /** @param {Page} page */
 async function openFirstStatusDetail(page) {
   await page.goto('/');
-  const statusLink = page.locator('a.status-link[href]').first();
+  const statusLink = page.locator('.status-link[data-href]').first();
   await statusLink.waitFor({ timeout: 30_000 });
   await statusLink.click();
   await expect(page).toHaveURL(/\/(?:s\/|at:\/\/|at%3A)/i, { timeout: 15_000 });
@@ -195,13 +195,23 @@ async function openFirstStatusDetail(page) {
 async function openStatusDetailFromArticle(page, article) {
   const href = await article.evaluate((element) => {
     const link =
-      element.closest('a.status-link[href]') ||
-      element.querySelector('a.status-link[href]');
-    return link?.getAttribute('href');
+      element.closest('.status-link[data-href]') ||
+      element.querySelector('.status-link[data-href]');
+    return link?.getAttribute('data-href');
   });
   if (!href) throw new Error('created status is missing a detail link');
   await page.goto(href.startsWith('#') ? `/${href}` : href);
   await expect(page).toHaveURL(/\/(?:s\/|at:\/\/|at%3A)/i, { timeout: 15_000 });
+}
+
+/**
+ * @param {Page} page
+ * @param {string} titleSelector
+ */
+function statusDetailButton(page, titleSelector) {
+  return page
+    .locator(`.deck-backdrop .status-deck :is(${titleSelector})`)
+    .first();
 }
 
 // ---------------------------------------------------------------------------
@@ -247,6 +257,26 @@ test.describe('read flows', () => {
 
   test('clicking a status opens its detail view', async ({ page }) => {
     await openFirstStatusDetail(page);
+    await Promise.all(
+      [
+        'reply-button',
+        'reblog-button',
+        'favourite-button',
+        'bookmark-button',
+      ].flatMap(
+        (buttonClass) => {
+          const button = page
+            .locator(`.status.large .actions .action > button.${buttonClass}`)
+            .first();
+          return [
+            expect(button).toHaveClass(/(?:^|\s)plain(?:\s|$)/),
+            expect(button).toHaveClass(
+              new RegExp(`(?:^|\\s)${buttonClass}(?:\\s|$)`),
+            ),
+          ];
+        },
+      ),
+    );
   });
 
   test('notifications page renders', async ({ page }) => {
@@ -497,9 +527,10 @@ test.describe('write flows', () => {
     await openCreatedStatusDetail(page, body);
     const url = page.url();
 
-    const likeBtn = page
-      .locator('button[title="Like"], button[title="Unlike"]')
-      .first();
+    const likeBtn = statusDetailButton(
+      page,
+      'button[title="Like"], button[title="Unlike"]',
+    );
     await likeBtn.waitFor({ timeout: 15_000 });
     const initialTitle = await getRequiredTitle(likeBtn, 'like button');
     const likeMutation = waitForCreateRecord(page, 'app.bsky.feed.like');
@@ -510,9 +541,10 @@ test.describe('write flows', () => {
     });
     // Verify the new state survives a reload (catches optimistic-only flips).
     await page.goto(url);
-    const reloadedLike = page
-      .locator('button[title="Like"], button[title="Unlike"]')
-      .first();
+    const reloadedLike = statusDetailButton(
+      page,
+      'button[title="Like"], button[title="Unlike"]',
+    );
     await reloadedLike.waitFor({ timeout: 15_000 });
     await expect(reloadedLike).not.toHaveAttribute('title', initialTitle, {
       timeout: 15_000,
@@ -532,11 +564,11 @@ test.describe('write flows', () => {
     await composeAndPublish(page, body);
     CREATED.push({ page, body });
     await openCreatedStatusDetail(page, body);
-    const url = page.url();
 
-    const bmBtn = page
-      .locator('button[title="Bookmark"], button[title="Unbookmark"]')
-      .first();
+    const bmBtn = statusDetailButton(
+      page,
+      'button[title="Bookmark"], button[title="Unbookmark"]',
+    );
     await bmBtn.waitFor({ timeout: 15_000 });
     const initial = await getRequiredTitle(bmBtn, 'bookmark button');
     const bookmarkMutation = waitForCreateBookmark(page);
@@ -545,20 +577,25 @@ test.describe('write flows', () => {
     await expect(bmBtn).not.toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
-    await page.goto(url);
-    const reloaded = page
-      .locator('button[title="Bookmark"], button[title="Unbookmark"]')
-      .first();
-    await reloaded.waitFor({ timeout: 15_000 });
-    await expect(reloaded).not.toHaveAttribute('title', initial, {
-      timeout: 15_000,
-    });
+    const bookmarksPage = await page.context().newPage();
+    try {
+      await bookmarksPage.goto('/b');
+      await expect(
+        bookmarksPage.locator('[data-state-post-id]', { hasText: body }).first(),
+      ).toBeVisible({ timeout: 30_000 });
+    } finally {
+      await bookmarksPage.close();
+    }
     const unbookmarkMutation = waitForDeleteBookmark(page);
-    await reloaded.click();
+    await bmBtn.click();
     await unbookmarkMutation;
-    await expect(reloaded).toHaveAttribute('title', initial, {
+    await expect(bmBtn).toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
+    await page.goto('/b');
+    await expect(
+      page.locator('[data-state-post-id]', { hasText: body }),
+    ).toHaveCount(0, { timeout: 30_000 });
   });
 
   test('boost + unboost (self-boost is supported on Bluesky)', async ({

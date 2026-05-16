@@ -3,17 +3,17 @@ import './timeline2.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type {
-  ComponentChildren,
+  ReactNode,
   RefObject,
-  TargetedMouseEvent,
-} from 'preact';
+  MouseEvent,
+} from 'react';
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
-} from 'preact/hooks';
+} from 'react';
 import { useDebouncedCallback, useThrottledCallback } from 'use-debounce';
 
 import { api } from '../utils/api';
@@ -187,20 +187,20 @@ type UIState = 'start' | 'loading' | 'default' | 'error';
 
 interface Timeline2Props {
   title?: string;
-  titleComponent?: ComponentChildren;
+  titleComponent?: ReactNode;
   id: string;
   instance?: string;
-  emptyText?: ComponentChildren;
-  errorText?: ComponentChildren;
+  emptyText?: ReactNode;
+  errorText?: ReactNode;
   useItemID?: boolean;
   fetchItems?: (
     params?: FetchItemsParams,
   ) => Promise<FetchItemsResult | undefined>;
   checkForUpdates?: (params: CheckForUpdatesParams) => Promise<boolean>;
   checkForUpdatesInterval?: number;
-  headerStart?: ComponentChildren;
-  headerEnd?: ComponentChildren;
-  timelineStart?: ComponentChildren;
+  headerStart?: ReactNode;
+  headerEnd?: ReactNode;
+  timelineStart?: ReactNode;
   refresh?: unknown;
   filterContext?: string;
   showFollowedTags?: boolean;
@@ -723,7 +723,7 @@ function Timeline2({
           and buttons inside. */}
       <div
         id={`${id}-page`}
-        class="deck-container timeline-2-container"
+        className="deck-container timeline-2-container"
         ref={(node) => {
           scrollableRef.current = node;
           jRef.current = node;
@@ -731,7 +731,7 @@ function Timeline2({
           oRef.current = node;
         }}
         tabIndex={-1}
-        onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           const target = e.target as Element | null;
           if (
             headerRef.current &&
@@ -744,14 +744,14 @@ function Timeline2({
           }
         }}
       >
-        <div class="timeline-deck deck">
+        <div className="timeline-deck deck">
           {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
               header click is a tap-to-scroll-to-top affordance for touch;
               keyboard users press Home. dblclick reloads. Real interactive
               children (links, buttons) own keyboard navigation. */}
           <header
             ref={headerRef}
-            onClick={(e: TargetedMouseEvent<HTMLElement>) => {
+            onClick={(e: React.MouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {
                 scrollableRef.current?.scrollTo({
@@ -760,32 +760,32 @@ function Timeline2({
                 });
               }
             }}
-            onDblClick={(e: TargetedMouseEvent<HTMLElement>) => {
+            onDoubleClick={(e: React.MouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {
                 loadItems();
               }
             }}
-            // class={uiState === 'loading' ? 'loading' : ''}
+            // className={uiState === 'loading' ? 'loading' : ''}
           >
-            <div class="header-grid">
-              <div class="header-side">
+            <div className="header-grid">
+              <div className="header-side">
                 <NavMenu />
                 {headerStart !== null && headerStart !== undefined ? (
                   headerStart
                 ) : (
-                  <Link to="/" class="button plain home-button">
+                  <Link to="/" className="button plain home-button">
                     <Icon icon="home" size="l" alt={t`Home`} />
                   </Link>
                 )}
               </div>
               {title && (titleComponent ? titleComponent : <h1>{title}</h1>)}
-              <div class="header-side">{!!headerEnd && headerEnd}</div>
+              <div className="header-side">{!!headerEnd && headerEnd}</div>
             </div>
           </header>
           {!!timelineStart && (
             <div
-              class={`timeline-start ${uiState === 'loading' ? 'loading' : ''}`}
+              className={`timeline-start ${uiState === 'loading' ? 'loading' : ''}`}
             >
               {timelineStart}
             </div>
@@ -794,12 +794,12 @@ function Timeline2({
             <>
               {showNewer && (
                 <div
-                  class={`timeline-pagination timeline-pagination-top ${firstLoad.current ? '' : 'transitioning'}`}
+                  className={`timeline-pagination timeline-pagination-top ${firstLoad.current ? '' : 'transitioning'}`}
                 >
                   <button
                     type="button"
                     data-pagination-trigger="latest"
-                    class={`plain4 ${uiState === 'loading' && loadStateRef.current === 'start' ? 'block' : ''}`}
+                    className={`plain4 ${uiState === 'loading' && loadStateRef.current === 'start' ? 'block' : ''}`}
                     onClick={() => {
                       // Load from top (latest)
                       loadItems();
@@ -816,7 +816,7 @@ function Timeline2({
                   <button
                     type="button"
                     data-pagination-trigger="prev"
-                    class={`plain4 ${uiState === 'loading' && loadStateRef.current === 'start' ? '' : 'block'}`}
+                    className={`plain4 ${uiState === 'loading' && loadStateRef.current === 'start' ? '' : 'block'}`}
                     onClick={() => {
                       loadItems({ min_id: minID.current ?? undefined });
                     }}
@@ -831,7 +831,7 @@ function Timeline2({
                   </button>
                 </div>
               )}
-              <ul class="timeline">
+              <ul className="timeline">
                 {items.map((status) => (
                   <TimelineItem
                     status={status}
@@ -857,10 +857,10 @@ function Timeline2({
                 )} */}
               </ul>
               {showOlder ? (
-                <div class="timeline-pagination timeline-pagination-bottom">
+                <div className="timeline-pagination timeline-pagination-bottom">
                   <button
                     type="button"
-                    class="plain4 block"
+                    className="plain4 block"
                     data-pagination-trigger="next"
                     onClick={() => {
                       loadItems({ max_id: maxID.current ?? undefined });
@@ -875,13 +875,13 @@ function Timeline2({
                   </button>
                 </div>
               ) : uiState !== 'loading' ? (
-                <p class="ui-state insignificant">
+                <p className="ui-state insignificant">
                   <Trans>The end.</Trans>
                 </p>
               ) : null}
             </>
           ) : uiState === 'loading' ? (
-            <ul class="timeline">
+            <ul className="timeline">
               {Array.from({ length: 5 }).map((_, i) => (
                 <li key={i}>
                   <Status skeleton />
@@ -890,10 +890,10 @@ function Timeline2({
             </ul>
           ) : (
             uiState !== 'error' &&
-            uiState !== 'start' && <p class="ui-state">{emptyText}</p>
+            uiState !== 'start' && <p className="ui-state">{emptyText}</p>
           )}
           {uiState === 'error' && (
-            <p class="ui-state">
+            <p className="ui-state">
               {errorText}
               <br />
               <br />

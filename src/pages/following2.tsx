@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState } from 'react';
 
 import Timeline2 from '../components/timeline2';
 import { api, getMastoV1Resource } from '../utils/api';

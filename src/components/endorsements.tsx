@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
@@ -103,19 +103,19 @@ function Endorsements({
   if (!reallyOpen) return null;
 
   return (
-    <div class="shazam-container">
-      <div class="shazam-container-inner">
-        <div class="endorsements-container" ref={endorsementsContainer}>
+    <div className="shazam-container">
+      <div className="shazam-container-inner">
+        <div className="endorsements-container" ref={endorsementsContainer}>
           <h3>
             <Trans>Profiles featured by @{info.username}</Trans>
           </h3>
           {endorsementsUIState === 'loading' ? (
-            <p class="ui-state">
+            <p className="ui-state">
               <Loader abrupt />
             </p>
           ) : endorsements.length > 0 ? (
             <ul
-              class={`endorsements ${
+              className={`endorsements ${
                 endorsements.length > 10 ? 'expanded' : ''
               }`}
             >
@@ -131,7 +131,7 @@ function Endorsements({
               ))}
             </ul>
           ) : (
-            <p class="ui-state insignificant">
+            <p className="ui-state insignificant">
               <Trans>No featured profiles.</Trans>
             </p>
           )}

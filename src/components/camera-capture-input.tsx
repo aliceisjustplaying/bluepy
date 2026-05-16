@@ -1,4 +1,4 @@
-import type { TargetedEvent } from 'preact';
+import type { SyntheticEvent } from 'react';
 
 const isMobileSafari =
   /iPad|iPhone|iPod/.test(navigator.userAgent) &&
@@ -52,7 +52,7 @@ function CameraCaptureInput({
       accept={filteredSupportedMimeTypes?.join(',')}
       capture="environment"
       disabled={disabled}
-      onChange={(e: TargetedEvent<HTMLInputElement>) => {
+      onChange={(e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.currentTarget;
         const files = target.files;
         if (!files) return;

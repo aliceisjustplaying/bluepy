@@ -1,8 +1,8 @@
 import './search-command.css';
 
-import type { Ref, TargetedMouseEvent } from 'preact';
-import { memo } from 'preact/compat';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { Ref, MouseEvent } from 'react';
+import { memo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useSnapshot } from 'valtio';
 
@@ -53,7 +53,7 @@ export default memo(function SearchCommand({
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         const path = currentAppPath();
         const isSearchPage = /\/search/.test(path);
         const isYearInPostsPage = /\/yip/.test(path);
@@ -89,7 +89,7 @@ export default memo(function SearchCommand({
       enableOnFormTags: true,
       preventDefault: true,
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
@@ -104,7 +104,7 @@ export default memo(function SearchCommand({
     <div
       id="search-command-container"
       hidden={hidden}
-      onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
+      onClick={(e: React.MouseEvent<HTMLDivElement>) => {
         console.log(e);
         if (e.target === e.currentTarget) {
           closeSearch();

@@ -3,8 +3,9 @@ import fs from 'fs';
 import { resolve } from 'path';
 
 import { lingui } from '@lingui/vite-plugin';
-import preactPreset from '@preact/preset-vite';
+import babel from '@rolldown/plugin-babel';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
+import react from '@vitejs/plugin-react';
 import Sonda from 'sonda/vite';
 import { uid } from 'uid/single';
 import { createLogger, defineConfig, loadEnv } from 'vite';
@@ -223,12 +224,10 @@ export default defineConfig({
         });
       },
     },
-    preactPreset({
-      // Force use Babel instead of ESBuild due to this change: https://github.com/preactjs/preset-vite/pull/114
-      // Else, a bug will happen with importing variables from import.meta.env
-      babel: {
-        plugins: ['@lingui/babel-plugin-lingui-macro'],
-      },
+    react(),
+    babel({
+      plugins: ['@lingui/babel-plugin-lingui-macro'],
+      include: /\.[jt]sx?$/,
     }),
     lingui(),
     run({

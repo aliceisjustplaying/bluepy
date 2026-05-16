@@ -1,17 +1,17 @@
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 interface MultipleMediaFigureProps {
   enabled?: boolean;
-  children?: ComponentChildren;
+  children?: ReactNode;
   lang?: string;
-  captionChildren?: ComponentChildren;
+  captionChildren?: ReactNode;
 }
 
 function MultipleMediaFigure(props: MultipleMediaFigureProps) {
   const { enabled, children, lang, captionChildren } = props;
   if (!enabled || !captionChildren) return children;
   return (
-    <figure class="media-figure-multiple">
+    <figure className="media-figure-multiple">
       {children}
       <figcaption lang={lang} dir="auto">
         {captionChildren}

@@ -28,17 +28,17 @@ function QrCodeModal({
   console.log('onScannerClick', onScannerClick);
 
   return (
-    <div class="qr-code-modal-container">
-      <div class="qr-code-modal-controls">
+    <div className="qr-code-modal-container">
+      <div className="qr-code-modal-controls">
         {mediaDevicesSupported && typeof onScannerClick === 'function' ? (
-          <button type="button" class="plain4" onClick={onScannerClick}>
+          <button type="button" className="plain4" onClick={onScannerClick}>
             <Icon icon="scan" alt={t`Scan QR code`} />
           </button>
         ) : (
           <span />
         )}
         {!!onClose && (
-          <button type="button" class="plain4" onClick={onClose}>
+          <button type="button" className="plain4" onClick={onClose}>
             <Icon icon="x" alt={t`Close`} />
           </button>
         )}
@@ -49,7 +49,7 @@ function QrCodeModal({
         backgroundMask={backgroundMask}
         caption={caption}
       />
-      <div class="qr-code-text">{text}</div>
+      <div className="qr-code-text">{text}</div>
     </div>
   );
 }

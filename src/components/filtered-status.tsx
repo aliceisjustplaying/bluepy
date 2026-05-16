@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentChildren, HTMLAttributes, RefObject } from 'preact';
-import { useState } from 'preact/hooks';
+import type { ReactNode, HTMLAttributes, RefObject } from 'react';
+import { useState } from 'react';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
@@ -33,7 +33,7 @@ interface FilteredStatusProps {
   renderPeekStatus: (
     status: AnyStatus,
     instance: string | undefined,
-  ) => ComponentChildren;
+  ) => ReactNode;
 }
 
 export default function FilteredStatus({
@@ -89,7 +89,7 @@ export default function FilteredStatus({
 
   return (
     <div
-      class={`${
+      className={`${
         quoted
           ? ''
           : isReblog
@@ -102,7 +102,7 @@ export default function FilteredStatus({
       } visibility-${visibility}`}
       {...containerProps}
       // title={statusPeekText}
-      onContextMenu={(e: MouseEvent) => {
+      onContextMenu={(e: React.MouseEvent) => {
         e.preventDefault();
         setShowPeek(true);
       }}
@@ -110,13 +110,13 @@ export default function FilteredStatus({
     >
       <article
         data-state-post-id={ssKey}
-        class={`status filtered ${quoted ? 'status-card' : ''}`}
-        tabindex={-1}
+        className={`status filtered ${quoted ? 'status-card' : ''}`}
+        tabIndex={-1}
       >
         <b
-          class="status-filtered-badge clickable badge-meta"
+          className="status-filtered-badge clickable badge-meta"
           title={filterTitleStr}
-          onClick={(e: MouseEvent) => {
+          onClick={(e: React.MouseEvent) => {
             e.preventDefault();
             setShowPeek(true);
           }}
@@ -127,8 +127,8 @@ export default function FilteredStatus({
           <span>{filterTitleStr}</span>
         </b>{' '}
         <Avatar url={avatarStatic || avatar} squircle={bot} />
-        <span class="status-filtered-info">
-          <span class="status-filtered-info-1">
+        <span className="status-filtered-info">
+          <span className="status-filtered-info-1">
             {isReblog ? (
               <Trans comment="[Name] [Visibility icon] boosted">
                 <NameText
@@ -167,7 +167,7 @@ export default function FilteredStatus({
                     | undefined)!
                     .slice(0, 3)
                     .map((tag: string) => (
-                      <span key={tag} class="status-followed-tag-item">
+                      <span key={tag} className="status-followed-tag-item">
                         #{tag}
                       </span>
                     ))}
@@ -192,7 +192,7 @@ export default function FilteredStatus({
               </>
             )}
           </span>
-          <span class="status-filtered-info-2">
+          <span className="status-filtered-info-2">
             {isReblog && (
               <>
                 <Avatar
@@ -209,16 +209,16 @@ export default function FilteredStatus({
       </article>
       {showPeek && (
         <Modal
-          onClick={(e: MouseEvent) => {
+          onClick={(e: React.MouseEvent) => {
             if (e.target === e.currentTarget) {
               setShowPeek(false);
             }
           }}
         >
-          <div id="filtered-status-peek" class="sheet">
+          <div id="filtered-status-peek" className="sheet">
             <button
               type="button"
-              class="sheet-close"
+              className="sheet-close"
               onClick={() => {
                 setShowPeek(false);
               }}
@@ -226,7 +226,7 @@ export default function FilteredStatus({
               <Icon icon="x" alt={t`Close`} />
             </button>
             <header>
-              <b class="status-filtered-badge">
+              <b className="status-filtered-badge">
                 <Trans>Filtered</Trans>
               </b>{' '}
               {filterTitleStr}
@@ -234,7 +234,7 @@ export default function FilteredStatus({
             <main tabIndex={-1}>
               <Link
                 ref={statusPeekRef}
-                class="status-link"
+                className="status-link"
                 to={url}
                 onClick={() => {
                   setShowPeek(false);

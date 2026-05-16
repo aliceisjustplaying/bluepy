@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { TargetedEvent } from 'preact';
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import type { SyntheticEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useDebouncedCallback } from 'use-debounce';
 
@@ -132,7 +132,7 @@ function MentionModal({
       preventDefault: true,
       enableOnFormTags: ['input'],
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
@@ -161,7 +161,7 @@ function MentionModal({
       preventDefault: true,
       enableOnFormTags: ['input'],
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
@@ -189,15 +189,15 @@ function MentionModal({
       preventDefault: true,
       enableOnFormTags: ['input'],
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
   return (
-    <div id="mention-sheet" class="sheet">
+    <div id="mention-sheet" className="sheet">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -214,16 +214,16 @@ function MentionModal({
             ref={inputRef}
             required
             type="search"
-            class="block"
+            className="block"
             placeholder={t`Search accounts`}
-            onInput={(e: TargetedEvent<HTMLInputElement>) => {
+            onInput={(e: SyntheticEvent<HTMLInputElement>) => {
               const { value } = e.currentTarget;
               debouncedLoadAccounts(value);
             }}
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck={false}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             dir="auto"
             enterKeyHint="search"
             defaultValue={defaultSearchTerm || ''}
@@ -234,14 +234,14 @@ function MentionModal({
         {accounts?.length > 0 ? (
           <ul
             ref={listRef}
-            class={`accounts-list ${uiState === 'loading' ? 'loading' : ''}`}
+            className={`accounts-list ${uiState === 'loading' ? 'loading' : ''}`}
           >
             {accounts.map((account, i) => {
               const relationship = relationshipsMap[account.id];
               return (
                 <li
                   key={account.id}
-                  class={i === selectedIndex ? 'selected' : ''}
+                  className={i === selectedIndex ? 'selected' : ''}
                 >
                   <AccountBlock
                     avatarSize="xxl"
@@ -252,7 +252,7 @@ function MentionModal({
                   />
                   <button
                     type="button"
-                    class="plain2"
+                    className="plain2"
                     onClick={() => {
                       selectAccount(account);
                     }}
@@ -264,11 +264,11 @@ function MentionModal({
             })}
           </ul>
         ) : uiState === 'loading' ? (
-          <div class="ui-state">
+          <div className="ui-state">
             <Loader abrupt />
           </div>
         ) : uiState === 'error' ? (
-          <div class="ui-state">
+          <div className="ui-state">
             <p>
               <Trans>Error loading accounts</Trans>
             </p>

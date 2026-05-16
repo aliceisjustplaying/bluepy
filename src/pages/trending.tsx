@@ -5,7 +5,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import { getBlurHashAverageColor } from 'fast-blurhash';
 import type { mastodon } from 'masto';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
@@ -319,8 +319,8 @@ function Trending({ columnMode, ...props }: TrendingProps) {
     return (
       <>
         {!!hashtags.length && (
-          <div class="filter-bar expandable">
-            <Icon icon="chart" class="insignificant" size="l" />
+          <div className="filter-bar expandable">
+            <Icon icon="chart" className="insignificant" size="l" />
             {hashtags.map((tag: HashtagItem) => {
               const { name, history } = tag;
               const total = history.reduce(
@@ -330,17 +330,17 @@ function Trending({ columnMode, ...props }: TrendingProps) {
               return (
                 <Link to={`/${instance}/t/${name}`} key={name}>
                   <span dir="auto">
-                    <span class="more-insignificant">#</span>
+                    <span className="more-insignificant">#</span>
                     {name}
                   </span>
-                  <span class="filter-count">{shortenNumber(total)}</span>
+                  <span className="filter-count">{shortenNumber(total)}</span>
                 </Link>
               );
             })}
           </div>
         )}
         {!!links.length && (
-          <div class="links-bar">
+          <div className="links-bar">
             <header>
               <h3>
                 <Trans>Trending News</Trans>
@@ -388,7 +388,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class={`link-block ${
+                    className={`link-block ${
                       hasCurrentLink
                         ? currentLink === url
                           ? 'active'
@@ -416,15 +416,15 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                           loading="lazy"
                         />
                       </figure>
-                      <div class="article-body">
+                      <div className="article-body">
                         <header>
-                          <div class="article-meta">
-                            <span class="domain">{domain}</span>{' '}
+                          <div className="article-meta">
+                            <span className="domain">{domain}</span>{' '}
                             {!!publishedAt && <>&middot; </>}
                             {!!publishedAt && (
                               <>
                                 <RelativeTime
-                                  datetime={publishedAt}
+                                  dateTime={publishedAt}
                                   format="micro"
                                 />
                               </>
@@ -432,7 +432,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                           </div>
                           {!!linkTitle && (
                             <h1
-                              class="title"
+                              className="title"
                               lang={language}
                               dir="auto"
                               title={linkTitle}
@@ -443,7 +443,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                         </header>
                         {!!description && (
                           <p
-                            class={`description ${
+                            className={`description ${
                               hasAuthor && !isShortTitle ? '' : 'more-lines'
                             }`}
                             lang={language}
@@ -456,7 +456,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                         {hasAuthor && (
                           <>
                             <hr />
-                            <p class="byline">
+                            <p className="byline">
                               <small>
                                 <Trans comment="By [Author]">
                                   By{' '}
@@ -484,7 +484,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                   {supportsTrendingLinkPosts && (
                     <button
                       type="button"
-                      class="small plain4 block"
+                      className="small plain4 block"
                       onClick={() => {
                         setCurrentLink(url);
                       }}
@@ -504,7 +504,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
         )}
         {supportsTrendingLinkPosts && !!links.length && (
           <div
-            class={`timeline-header-block ${hasCurrentLink ? 'blended' : ''}`}
+            className={`timeline-header-block ${hasCurrentLink ? 'blended' : ''}`}
           >
             {hasCurrentLink ? (
               <>
@@ -514,7 +514,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                   ) : (
                     <button
                       type="button"
-                      class="light"
+                      className="light"
                       onClick={() => {
                         setCurrentLink(null);
                       }}
@@ -526,7 +526,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                 <p>
                   <Trans>
                     Showing posts mentioning{' '}
-                    <span class="link-text">
+                    <span className="link-text">
                       {(currentLink ?? '')
                         .replace(/^https?:\/\/(www\.)?/i, '')
                         .replace(/\/$/, '')}
@@ -535,7 +535,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
                 </p>
               </>
             ) : (
-              <p class="insignificant">
+              <p className="insignificant">
                 <Trans>Trending posts</Trans>
               </p>
             )}
@@ -559,7 +559,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
       key={instance}
       title={title}
       titleComponent={
-        <h1 class="header-double-lines">
+        <h1 className="header-double-lines">
           <b>
             <Trans>Trending</Trans>
           </b>
@@ -591,7 +591,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
           viewScroll="close"
           position="anchor"
           menuButton={
-            <button type="button" class="plain">
+            <button type="button" className="plain">
               <Icon icon="more" size="l" alt={t`More`} />
             </button>
           }
@@ -624,7 +624,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
               }}
             >
               <Icon icon="bus" />{' '}
-              <small class="menu-double-lines">
+              <small className="menu-double-lines">
                 <Trans>
                   Go to my server (<b>{currentInstance}</b>)
                 </Trans>

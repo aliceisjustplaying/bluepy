@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef } from 'react';
 
 type IntervalCallback = () => void;
 type IntervalDelay = number | null | false;

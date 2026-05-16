@@ -1,5 +1,5 @@
 import type { mastodon } from 'masto';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 import type { api } from '../utils/api';
 
@@ -147,7 +147,7 @@ export interface StatusRenderProps extends Record<string, unknown> {
   quoteDomain?: string;
 }
 
-export type RenderStatus = (props: StatusRenderProps) => ComponentChildren;
+export type RenderStatus = (props: StatusRenderProps) => ReactNode;
 
 export interface GhostInfo {
   inReplyToAccountId?: string | null;
@@ -205,7 +205,7 @@ export type LooseClickEvent = {
   shiftKey?: boolean;
   syntheticEvent?: { shiftKey?: boolean };
   preventDefault?: () => void;
-  stopPropagation?: () => void;
+  stopPropagation?: (() => void) | boolean;
   target?: EventTarget | null;
   currentTarget?: EventTarget | null;
   key?: string;

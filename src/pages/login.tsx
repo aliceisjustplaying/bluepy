@@ -2,8 +2,8 @@ import './login.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import Fuse from 'fuse.js';
-import type { TargetedEvent } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { SyntheticEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import logo from '../assets/logo.svg';
@@ -15,6 +15,7 @@ import instancesListURL from '../data/instances.json?url';
 import { initClient, initInstance, initPreferences } from '../utils/api';
 import { BSKY_INSTANCE, loginAtproto } from '../utils/atproto-adapter';
 import { startAtprotoOAuthLogin } from '../utils/atproto-oauth';
+import { notifyAuthChanged } from '../utils/auth-context';
 import {
   getAuthorizationURL,
   getPKCEAuthorizationURL,
@@ -211,7 +212,7 @@ function Login() {
         ? instancesList.find((item) => item.includes(instanceText))
         : null;
 
-  const submitBluesky = (e: TargetedEvent<HTMLFormElement>) => {
+  const submitBluesky = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!bskyIdentifier || !bskyPassword) return;
     void (async () => {
@@ -240,6 +241,7 @@ function Login() {
           initPreferences(client),
           initInstance(client, BSKY_INSTANCE),
         ]);
+        notifyAuthChanged();
         const redirectPath = store.session.get('loginRedirect') || '/';
         store.session.del('loginRedirect');
         navigatePath(redirectPath, { replace: true });
@@ -252,7 +254,7 @@ function Login() {
     })();
   };
 
-  const submitBlueskyOAuth = (e: TargetedEvent<HTMLButtonElement>) => {
+  const submitBlueskyOAuth = (e: SyntheticEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!bskyIdentifier) return;
     void (async () => {
@@ -292,21 +294,21 @@ function Login() {
           <br />
           <Trans>Log in</Trans>
         </h1>
-        <section class="bsky-login">
+        <section className="bsky-login">
           <h2>Bluesky</h2>
           <label>
             <p>Handle or PDS URL</p>
             <input
               value={bskyIdentifier}
               type="text"
-              class="large"
+              className="large"
               disabled={uiState === 'loading'}
-              autocorrect="off"
-              autocapitalize="off"
-              autocomplete="username"
-              spellcheck={false}
+              autoCorrect="off"
+              autoCapitalize="off"
+              autoComplete="username"
+              spellCheck={false}
               placeholder="alice.bsky.social"
-              onInput={(e: TargetedEvent<HTMLInputElement>) =>
+              onInput={(e: SyntheticEvent<HTMLInputElement>) =>
                 setBskyIdentifier(e.currentTarget.value)
               }
             />
@@ -320,17 +322,17 @@ function Login() {
               Continue with OAuth
             </button>
           </div>
-          <details class="bsky-advanced-login">
+          <details className="bsky-advanced-login">
             <summary>Use app password</summary>
             <label>
               <p>App password</p>
               <input
                 value={bskyPassword}
                 type="password"
-                class="large"
+                className="large"
                 disabled={uiState === 'loading'}
-                autocomplete="current-password"
-                onInput={(e: TargetedEvent<HTMLInputElement>) =>
+                autoComplete="current-password"
+                onInput={(e: SyntheticEvent<HTMLInputElement>) =>
                   setBskyPassword(e.currentTarget.value)
                 }
               />
@@ -340,14 +342,14 @@ function Login() {
               <input
                 value={bskyService}
                 type="text"
-                class="large"
+                className="large"
                 disabled={uiState === 'loading'}
-                autocorrect="off"
-                autocapitalize="off"
-                autocomplete="url"
-                spellcheck={false}
+                autoCorrect="off"
+                autoCapitalize="off"
+                autoComplete="url"
+                spellCheck={false}
                 placeholder="pds.example.com"
-                onInput={(e: TargetedEvent<HTMLInputElement>) =>
+                onInput={(e: SyntheticEvent<HTMLInputElement>) =>
                   setBskyService(e.currentTarget.value)
                 }
               />
@@ -365,7 +367,7 @@ function Login() {
           </details>
         </section>
         {uiState === 'error' && (
-          <p class="error">
+          <p className="error">
             <Trans>
               Failed to log in. Please check your handle and app password.
             </Trans>

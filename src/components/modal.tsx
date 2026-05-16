@@ -1,12 +1,12 @@
 import './modal.css';
 
 import type {
-  ComponentChildren,
-  TargetedFocusEvent,
-  TargetedMouseEvent,
-} from 'preact';
-import { createPortal } from 'preact/compat';
-import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
+  ReactNode,
+  FocusEvent,
+  MouseEvent,
+} from 'react';
+import { createPortal } from 'react-dom';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import store from '../utils/store';
@@ -21,9 +21,9 @@ function getBackdropThemeColor() {
 }
 
 interface ModalProps {
-  children?: ComponentChildren;
-  onClose?: ((event?: Event) => void) | null;
-  onClick?: ((event: TargetedMouseEvent<HTMLDivElement>) => void) | null;
+  children?: ReactNode;
+  onClose?: ((event?: React.SyntheticEvent) => void) | null;
+  onClick?: ((event: React.MouseEvent<HTMLDivElement>) => void) | null;
   class?: string;
   minimized?: boolean;
   [key: string]: unknown;
@@ -42,7 +42,7 @@ function Modal({
     if (!hasChildren) return undefined;
     let timer = setTimeout(() => {
       const focusElement = modalRef.current?.querySelector(
-        '[tabindex="-1"]',
+        '[tabIndex="-1"]',
       ) as HTMLElement | null;
       if (focusElement) {
         focusElement.focus();
@@ -67,12 +67,12 @@ function Modal({
       keydown: false,
       keyup: true,
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
     [onClose],
   );
-  useCloseWatcher(onClose, [onClose]);
+  useCloseWatcher(onClose ? () => onClose() : undefined, [onClose]);
 
   useEffect(() => {
     if (!children) return undefined;
@@ -169,12 +169,12 @@ function Modal({
       ref={(node: HTMLDivElement | null) => {
         modalRef.current = node;
         const inner = node?.querySelector?.(
-          '[tabindex="-1"]',
+          '[tabIndex="-1"]',
         ) as HTMLElement | null;
         (escRef as { current: HTMLElement | null }).current = inner || node;
       }}
       className={className}
-      onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
+      onClick={(e: React.MouseEvent<HTMLDivElement>) => {
         onClick?.(e);
         if (e.target === e.currentTarget) {
           onClose?.(e);
@@ -182,11 +182,11 @@ function Modal({
       }}
       tabIndex={minimized ? 0 : -1}
       inert={minimized}
-      onFocus={(e: TargetedFocusEvent<HTMLDivElement>) => {
+      onFocus={(e: FocusEvent<HTMLDivElement>) => {
         try {
           if (e.target === e.currentTarget) {
             const focusElement = modalRef.current?.querySelector(
-              '[tabindex="-1"]',
+              '[tabIndex="-1"]',
             ) as HTMLElement | null;
             const isFocusable =
               !!focusElement &&

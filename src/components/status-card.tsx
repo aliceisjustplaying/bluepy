@@ -2,17 +2,17 @@ import '@justinribeiro/lite-youtube';
 
 import { decodeBlurHash, getBlurHashAverageColor } from 'fast-blurhash';
 import type {
-  HTMLAttributes as PreactHTMLAttributes,
-  TargetedKeyboardEvent,
-  TargetedMouseEvent,
-} from 'preact';
-import { useCallback, useEffect, useState } from 'preact/hooks';
+  HTMLAttributes,
+  KeyboardEvent,
+  MouseEvent,
+} from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
-declare module 'preact' {
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      'lite-youtube': PreactHTMLAttributes<HTMLElement> & {
+      'lite-youtube': HTMLAttributes<HTMLElement> & {
         videoid?: string;
         playlistid?: string;
         videotitle?: string;
@@ -177,8 +177,8 @@ function StatusCard({
   const handleClick = useCallback(
     (
       e:
-        | TargetedMouseEvent<HTMLElement>
-        | TargetedKeyboardEvent<HTMLElement>,
+        | MouseEvent<HTMLElement>
+        | React.KeyboardEvent<HTMLElement>,
     ) => {
       if (hasIframeHTML) {
         e.preventDefault();
@@ -248,16 +248,16 @@ function StatusCard({
           href={cardStatusURL || url}
           target={cardStatusURL ? undefined : '_blank'}
           rel="nofollow noopener"
-          class={`card link ${isPost ? 'card-post' : ''} ${
+          className={`card link ${isPost ? 'card-post' : ''} ${
             blurhashImage ? '' : size
           } ${hasIframeHTML || canReadInline ? 'can-show-embed' : ''}`}
           style={{
             '--average-color':
-              rgbAverageColor && `rgb(${rgbAverageColor.join(',')})`,
+              rgbAverageColor ? `rgb(${rgbAverageColor.join(',')})` : undefined,
           }}
           onClick={handleClick}
         >
-          <div class="card-image">
+          <div className="card-image">
             <img
               src={image || blurhashImage || undefined}
               width={width}
@@ -283,9 +283,9 @@ function StatusCard({
               }}
             />
           </div>
-          <div class="meta-container" lang={language}>
-            <p class="meta domain">
-              <span class="domain">{domain}</span>{' '}
+          <div className="meta-container" lang={language}>
+            <p className="meta domain">
+              <span className="domain">{domain}</span>{' '}
               {!!publishedAt && <>&middot; </>}
               {!!publishedAt && (
                 <>
@@ -293,10 +293,10 @@ function StatusCard({
                 </>
               )}
             </p>
-            <p class="title" dir="auto" title={title}>
+            <p className="title" dir="auto" title={title}>
               {title}
             </p>
-            <p class="meta" dir="auto" title={description}>
+            <p className="meta" dir="auto" title={description}>
               {description ||
                 (!!publishedAt && (
                   <RelativeTime datetime={publishedAt} format="micro" />
@@ -312,7 +312,7 @@ function StatusCard({
         href={url}
         target="_blank"
         rel="nofollow noopener noreferrer"
-        class="card photo"
+        className="card photo"
         onClick={handleClick}
       >
         <img
@@ -336,7 +336,7 @@ function StatusCard({
         if (videoID) {
           return (
             <div
-              class="card video"
+              className="card video"
               role="button"
               tabIndex={0}
               onClick={handleClick}
@@ -351,7 +351,7 @@ function StatusCard({
       }
       // return (
       //   <div
-      //     class="card video"
+      //     className="card video"
       //     style={{
       //       aspectRatio: `${width}/${height}`,
       //     }}
@@ -367,16 +367,16 @@ function StatusCard({
           href={cardStatusURL || url}
           target={cardStatusURL ? undefined : '_blank'}
           rel="nofollow noopener"
-          class={`card link ${isPost ? 'card-post' : ''} no-image ${
+          className={`card link ${isPost ? 'card-post' : ''} no-image ${
             hasIframeHTML || canReadInline ? 'can-show-embed' : ''
           }`}
           lang={language}
           dir="auto"
           onClick={handleClick}
         >
-          <div class="meta-container">
-            <p class="meta domain">
-              <span class="domain">
+          <div className="meta-container">
+            <p className="meta domain">
+              <span className="domain">
                 <Icon icon="link" size="s" /> <span>{domain}</span>
               </span>{' '}
               {!!publishedAt && <>&middot; </>}
@@ -386,10 +386,10 @@ function StatusCard({
                 </>
               )}
             </p>
-            <p class="title" title={title}>
+            <p className="title" title={title}>
               {title}
             </p>
-            <p class="meta" title={description || providerName || authorName}>
+            <p className="meta" title={description || providerName || authorName}>
               {description || providerName || authorName}
             </p>
           </div>

@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import { addListStore, deleteListStore, updateListStore } from '../utils/lists';
@@ -35,7 +35,7 @@ type ListAddEditCloseResult = ListAddEditCloseSuccess | ListAddEditCloseDeleted;
 //   consumers see `undefined`).
 // - From a successful create/update: receives ListAddEditCloseSuccess.
 // - From a successful delete: receives ListAddEditCloseDeleted.
-type ListAddEditCloseArg = ListAddEditCloseResult | Event;
+type ListAddEditCloseArg = ListAddEditCloseResult | Event | React.MouseEvent;
 
 interface ListAddEditProps {
   list?: ListLike | null;
@@ -87,9 +87,9 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
     supports('@gotosocial/list-exclusive');
 
   return (
-    <div class="sheet">
+    <div className="sheet">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={(e) => onClose?.(e)}>
+        <button type="button" className="sheet-close" onClick={(e) => onClose?.(e)}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}{' '}
@@ -98,7 +98,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
       </header>
       <main>
         <form
-          class="list-form"
+          className="list-form"
           onSubmit={(e) => {
             e.preventDefault(); // Get form values
 
@@ -157,8 +157,8 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
             })();
           }}
         >
-          <div class="list-form-row">
-            <label for="list-title">
+          <div className="list-form-row">
+            <label htmlFor="list-title">
               <Trans>Name</Trans>{' '}
               <input
                 ref={nameFieldRef}
@@ -171,7 +171,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
               />
             </label>
           </div>
-          <div class="list-form-row">
+          <div className="list-form-row">
             <select
               ref={repliesPolicyFieldRef}
               name="replies_policy"
@@ -190,8 +190,8 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
             </select>
           </div>
           {supportsExclusive && (
-            <div class="list-form-row">
-              <label class="label-block">
+            <div className="list-form-row">
+              <label className="label-block">
                 <input
                   ref={exclusiveFieldRef}
                   type="checkbox"
@@ -203,7 +203,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
               </label>
             </div>
           )}
-          <div class="list-form-footer">
+          <div className="list-form-footer">
             <button type="submit" disabled={uiState === 'loading'}>
               {editMode ? t`Save` : t`Create`}
             </button>
@@ -239,7 +239,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
               >
                 <button
                   type="button"
-                  class="light danger"
+                  className="light danger"
                   disabled={uiState === 'loading'}
                 >
                   <Trans>Delete…</Trans>

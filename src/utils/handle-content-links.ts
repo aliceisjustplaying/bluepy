@@ -26,11 +26,11 @@ type LinkClickTarget = HTMLElement &
 
 function handleContentLinks(
   opts?: HandleContentLinksOpts,
-): (e: MouseEvent) => void {
+): (e: React.MouseEvent) => void {
   const { mentions = [], instance, previewMode, statusURL } = opts || {};
-  return (e: MouseEvent) => {
+  return (e: React.MouseEvent) => {
     // If cmd/ctrl/shift/alt key is pressed or middle-click, let the browser handle it
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.which === 2) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) {
       return;
     }
 

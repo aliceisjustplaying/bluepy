@@ -1,7 +1,7 @@
 import './qr-scanner-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'react';
 
 const hasBarcodeDetector = 'BarcodeDetector' in window;
 
@@ -313,28 +313,28 @@ function QrScannerModal({
       : !!decodedText;
 
   return (
-    <div class="qr-scanner-modal">
-      <div class="qr-scanner-header">
+    <div className="qr-scanner-modal">
+      <div className="qr-scanner-header">
         <Loader abrupt hidden={uiState !== 'loading'} />
-        <button type="button" class="plain4" onClick={onClose}>
+        <button type="button" className="plain4" onClick={() => onClose()}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       </div>
       {uiState === 'error' ? (
-        <div class="ui-state">
+        <div className="ui-state">
           <p>
             <Trans>Unable to access camera. Please check permissions.</Trans>
           </p>
         </div>
       ) : (
         <>
-          <div ref={containerRef} class="qr-scanner-video-container">
+          <div ref={containerRef} className="qr-scanner-video-container">
             <video ref={videoRef} playsInline muted disablePictureInPicture />
             {!hasBarcodeDetector && (
-              <canvas ref={overlayRef} class="qr-scanner-canvas" />
+              <canvas ref={overlayRef} className="qr-scanner-canvas" />
             )}
             <svg
-              class="qr-scanner-corner-hint"
+              className="qr-scanner-corner-hint"
               viewBox="0 0 100 100"
               preserveAspectRatio="xMidYMid meet"
             >
@@ -368,14 +368,14 @@ function QrScannerModal({
               />
             </svg>
           </div>
-          <div class="qr-scanner-result">
+          <div className="qr-scanner-result">
             {!!decodedText && (
               <>
-                <p class="qr-scanner-text">{decodedText}</p>
+                <p className="qr-scanner-text">{decodedText}</p>
                 {showActionableButton && (
                   <button
                     type="button"
-                    class="button plain6"
+                    className="button plain6"
                     onClick={() => {
                       onClose({ text: decodedText });
                     }}

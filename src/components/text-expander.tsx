@@ -1,9 +1,9 @@
 import '@github/text-expander-element';
 
 import { useLingui } from '@lingui/react/macro';
-import type { HTMLAttributes, Ref } from 'preact';
-import { forwardRef, useImperativeHandle } from 'preact/compat';
-import { useEffect, useRef } from 'preact/hooks';
+import type { HTMLAttributes, Ref } from 'react';
+import { forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
 import { getCustomEmojis } from '../utils/custom-emojis';
@@ -83,10 +83,12 @@ export interface TextExpanderProps extends Omit<
   keys?: string;
 }
 
-declare module 'preact' {
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      'text-expander': HTMLAttributes<HTMLElement>;
+      'text-expander': HTMLAttributes<HTMLElement> & {
+        ref?: Ref<HTMLElement>;
+      };
     }
   }
 }

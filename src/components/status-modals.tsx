@@ -1,4 +1,4 @@
-import type { ComponentChildren, RefObject } from 'preact';
+import type { ReactNode, RefObject } from 'react';
 
 import states from '../utils/states';
 
@@ -30,7 +30,7 @@ interface StatusModalsProps {
   renderHistoryStatus: (
     historyStatus: AnyStatus,
     historyInstance?: string,
-  ) => ComponentChildren;
+  ) => ReactNode;
   statusRef: RefObject<HTMLElement | null>;
   postQuoteApprovalPolicy?: string | null;
   renderStatus: RenderStatus;

@@ -1,7 +1,7 @@
-import { useAutoAnimate } from '@formkit/auto-animate/preact';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { TargetedMouseEvent } from 'preact';
-import { useState } from 'preact/hooks';
+import type { MouseEvent } from 'react';
+import { useState } from 'react';
 
 import { api } from '../utils/api';
 import {
@@ -17,7 +17,7 @@ import Link from './link';
 import { generateSearchItemData } from './search-form';
 
 interface RecentSearchesProps {
-  onItemClick?: (e: TargetedMouseEvent<HTMLAnchorElement>) => void;
+  onItemClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 export default function RecentSearches({ onItemClick }: RecentSearchesProps) {
@@ -48,16 +48,16 @@ export default function RecentSearches({ onItemClick }: RecentSearchesProps) {
   }
 
   return (
-    <div class="recent-searches">
-      <div class="recent-searches-header">
+    <div className="recent-searches">
+      <div className="recent-searches-header">
         <Icon icon="history" />{' '}
         <span>
           <Trans>Recent searches</Trans>
         </span>
-        <span class="spacer" />
+        <span className="spacer" />
         <button
           type="button"
-          class="plain4 small"
+          className="plain4 small"
           onClick={handleClearAll}
           disabled={history.length <= 0}
         >
@@ -66,7 +66,7 @@ export default function RecentSearches({ onItemClick }: RecentSearchesProps) {
           </span>
         </button>
       </div>
-      <ul class="link-list recent-searches-list" ref={listRef}>
+      <ul className="link-list recent-searches-list" ref={listRef}>
         {history.map((historyItem) => {
           const { label, to, icon } = generateSearchItemData(
             historyItem.query,
@@ -77,22 +77,22 @@ export default function RecentSearches({ onItemClick }: RecentSearchesProps) {
           return (
             <li
               key={`${historyItem.query}-${historyItem.queryType}-${historyItem.timestamp}`}
-              class="recent-searches-item"
+              className="recent-searches-item"
             >
               <Link
                 to={to}
-                class="recent-searches-link"
-                onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
+                className="recent-searches-link"
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   addToSearchHistory(historyItem.query, historyItem.queryType);
                   onItemClick?.(e);
                 }}
               >
-                <Icon icon={icon} class="more-insignificant" />
-                <span class="recent-searches-label">{label}</span>
+                <Icon icon={icon} className="more-insignificant" />
+                <span className="recent-searches-label">{label}</span>
               </Link>
               <button
                 type="button"
-                class="plain4 small"
+                className="plain4 small"
                 onClick={() =>
                   handleRemoveItem(historyItem.query, historyItem.queryType)
                 }

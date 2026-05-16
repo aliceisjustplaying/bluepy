@@ -1,5 +1,5 @@
 import type { mastodon } from 'masto';
-import { useMemo } from 'preact/hooks';
+import { useMemo } from 'react';
 
 import states from '../utils/states';
 
@@ -59,7 +59,7 @@ export default function useStatusMediaCaptions({
         <div
           key={media.id}
           data-caption-index={indices.map((i: number) => i + 1).join(' ')}
-          onClick={(e: MouseEvent) => {
+          onClick={(e: React.MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
             handleAltClick();

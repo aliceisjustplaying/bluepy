@@ -1,25 +1,22 @@
-import type { HTMLAttributes, Ref, TargetedMouseEvent } from 'preact';
-import { forwardRef } from 'preact/compat';
-import { useEffect, useState } from 'preact/hooks';
+import type { ButtonHTMLAttributes, Ref } from 'react';
+import { forwardRef } from 'react';
+import { useEffect, useState } from 'react';
 
 import shortenNumber from '../utils/shorten-number';
 
 import Icon from './icon';
 
-interface StatusButtonProps extends Omit<
-  HTMLAttributes<HTMLButtonElement>,
-  'title' | 'class'
-> {
+interface StatusButtonProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'title'> {
   checked?: boolean;
   count?: number;
   extraCount?: number;
-  class?: string;
   title: string | [string, string];
   alt: string | [string, string];
   size?: string;
   icon?: string;
   iconSize?: string;
-  onClick?: (e: TargetedMouseEvent<HTMLButtonElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const StatusButton = forwardRef<HTMLButtonElement, StatusButtonProps>(
@@ -28,13 +25,14 @@ const StatusButton = forwardRef<HTMLButtonElement, StatusButtonProps>(
       checked,
       count,
       extraCount,
-      class: className,
+      className,
       title,
       alt,
       size,
       icon,
       iconSize = 'l',
       onClick,
+      type = 'button',
       ...otherProps
     } = props;
     if (typeof title === 'string') {
@@ -57,21 +55,28 @@ const StatusButton = forwardRef<HTMLButtonElement, StatusButtonProps>(
       }
     }, [checked, title, alt]);
 
+    const buttonClassName = [
+      'plain',
+      size ? 'small' : '',
+      className,
+      checked ? 'checked' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
     return (
       <button
         ref={ref}
-        type="button"
+        {...otherProps}
+        type={type}
         title={buttonTitle}
-        class={`plain ${size ? 'small' : ''} ${className} ${
-          checked ? 'checked' : ''
-        }`}
+        className={buttonClassName}
         onClick={(e) => {
           if (!onClick) return;
           e.preventDefault();
           e.stopPropagation();
           onClick(e);
         }}
-        {...otherProps}
       >
         <Icon icon={icon} size={iconSize} alt={iconAlt} />
         {(!!count || !!extraCount) && (

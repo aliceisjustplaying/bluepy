@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
-import { useEffect } from 'preact/hooks';
+import { useEffect } from 'react';
 import { useLocation, type Location } from 'react-router-dom';
 import { subscribe, useSnapshot } from 'valtio';
 
@@ -90,7 +90,7 @@ export default function Modals() {
     <>
       {isLoggedIn && !!snapStates.showCompose && (
         <Modal
-          class={`solid ${composerState.minimized ? 'min' : ''}`}
+          className={`solid ${composerState.minimized ? 'min' : ''}`}
           minimized={!!composerState.minimized}
         >
           <ComposeSuspense
@@ -322,7 +322,7 @@ export default function Modals() {
       )}
       {!!snapStates.showEmbedModal && (
         <Modal
-          class="solid"
+          className="solid"
           onClose={() => {
             states.showEmbedModal = false;
           }}
@@ -371,7 +371,7 @@ export default function Modals() {
       )}
       {!!snapStates.showQrCodeModal && (
         <Modal
-          class="solid"
+          className="solid"
           onClose={() => {
             states.showQrCodeModal = false;
           }}
@@ -398,7 +398,7 @@ export default function Modals() {
       )}
       {!!snapStates.showQrScannerModal && (
         <Modal
-          class="solid"
+          className="solid"
           onClose={() => {
             states.showQrScannerModal = false;
           }}

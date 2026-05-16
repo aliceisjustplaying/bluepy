@@ -7,7 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'preact/hooks';
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { oklch2rgb, rgb2oklch } from '../utils/color-utils';
@@ -127,7 +127,7 @@ function MediaModal({
       onClose(e, currentIndex, mediaAttachments, carouselRef);
     },
     {
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         const hasModal = !!document.querySelector('#modal-container > *');
         return hasModal || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
       },
@@ -183,7 +183,7 @@ function MediaModal({
       }
       return null;
     });
-  }, undefined);
+  }, [mediaOkColors]);
   const mediaAccentGradients = useMemo(() => {
     const gap = 5;
     const range = 100 / mediaAccentColors.length;
@@ -280,7 +280,7 @@ function MediaModal({
 
   return (
     <div
-      class={`media-modal-container media-modal-count-${mediaAttachments?.length}`}
+      className={`media-modal-container media-modal-count-${mediaAttachments?.length}`}
     >
       {/* TODO(oxlint:jsx-a11y/prefer-tag-over-role,
               jsx-a11y/no-noninteractive-tabindex): the carousel is a
@@ -294,7 +294,7 @@ function MediaModal({
         aria-label="Media carousel"
         tabIndex={0}
         data-swipe-threshold="44"
-        class="carousel"
+        className="carousel"
         onClick={(e) => {
           const target = e.target as HTMLElement;
           if (
@@ -331,7 +331,7 @@ function MediaModal({
             mediaAttachments.length === 1 ? mediaAccentColors[i] : null;
           return (
             <div
-              class="carousel-item"
+              className="carousel-item"
               role="group"
               style={
                 accentColor
@@ -375,7 +375,7 @@ function MediaModal({
               {!!media.description && (
                 <button
                   type="button"
-                  class="media-alt"
+                  className="media-alt"
                   hidden={!showControls}
                   onClick={() => {
                     states.showMediaAlt = {
@@ -384,8 +384,8 @@ function MediaModal({
                     };
                   }}
                 >
-                  <span class="alt-badge">ALT</span>
-                  <span class="media-alt-desc" lang={lang} dir="auto">
+                  <span className="alt-badge">ALT</span>
+                  <span className="media-alt-desc" lang={lang} dir="auto">
                     {media.description}
                   </span>
                 </button>
@@ -395,11 +395,11 @@ function MediaModal({
           );
         })}
       </div>
-      <div class="carousel-top-controls" hidden={!showControls}>
+      <div className="carousel-top-controls" hidden={!showControls}>
         <span>
           <button
             type="button"
-            class="carousel-button"
+            className="carousel-button"
             onClick={(e) =>
               onClose(e, currentIndex, mediaAttachments, carouselRef)
             }
@@ -408,13 +408,13 @@ function MediaModal({
           </button>
         </span>
         {mediaAttachments?.length > 1 ? (
-          <span class="carousel-dots">
+          <span className="carousel-dots">
             {mediaAttachments?.map((media: MediaAttachment, i: number) => (
               <button
                 key={media.id}
                 type="button"
                 disabled={i === currentIndex}
-                class={`carousel-dot ${i === currentIndex ? 'active' : ''}`}
+                className={`carousel-dot ${i === currentIndex ? 'active' : ''}`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -439,7 +439,7 @@ function MediaModal({
             gap={4}
             menuClassName="glass-menu"
             menuButton={
-              <button type="button" class="carousel-button">
+              <button type="button" className="carousel-button">
                 <Icon icon="more2" alt={t`More`} />
               </button>
             }
@@ -447,9 +447,10 @@ function MediaModal({
             <MenuLink
               href={
                 mediaAttachments[currentIndex]?.remoteUrl ||
-                mediaAttachments[currentIndex]?.url
+                mediaAttachments[currentIndex]?.url ||
+                undefined
               }
-              class="carousel-button"
+              className="carousel-button"
               target="_blank"
               title={t`Open original media in new window`}
             >
@@ -510,7 +511,7 @@ function MediaModal({
                   ? `?media=${currentIndex + 1}`
                   : ''
               }`}
-              class="button carousel-button media-post-link"
+              className="button carousel-button media-post-link"
               // onClick={() => {
               //   // if small screen (not media query min-width 40em + 350px), run onClose
               //   if (
@@ -520,7 +521,7 @@ function MediaModal({
               //   }
               // }}
             >
-              <span class="button-label">
+              <span className="button-label">
                 <Trans>View post</Trans>{' '}
               </span>
               &raquo;
@@ -529,10 +530,10 @@ function MediaModal({
         </span>
       </div>
       {mediaAttachments?.length > 1 && (
-        <div class="carousel-controls" hidden={!showControls}>
+        <div className="carousel-controls" hidden={!showControls}>
           <button
             type="button"
-            class="carousel-button"
+            className="carousel-button"
             hidden={currentIndex === 0}
             onClick={(e) => {
               e.preventDefault();
@@ -552,7 +553,7 @@ function MediaModal({
           </button>
           <button
             type="button"
-            class="carousel-button"
+            className="carousel-button"
             hidden={currentIndex === mediaAttachments.length - 1}
             onClick={(e) => {
               e.preventDefault();

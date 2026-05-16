@@ -1,5 +1,5 @@
-import type { TargetedEvent } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import type { SyntheticEvent } from 'react';
+import { useEffect, useState } from 'react';
 
 export const MIN_SCHEDULED_AT = 6 * 60 * 1000; // 6 mins
 const MAX_SCHEDULED_AT = 90 * 24 * 60 * 60 * 1000; // 90 days
@@ -76,7 +76,7 @@ export default function ScheduledAtField({
       min={minStr}
       max={maxStr}
       required
-      onChange={(e: TargetedEvent<HTMLInputElement>) => {
+      onChange={(e: SyntheticEvent<HTMLInputElement>) => {
         setScheduledAt(new Date(e.currentTarget.value));
       }}
     />

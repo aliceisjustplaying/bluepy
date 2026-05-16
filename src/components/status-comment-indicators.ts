@@ -1,4 +1,4 @@
-import { useMemo } from 'preact/hooks';
+import { useMemo } from 'react';
 
 import { QUESTION_REGEX, SHOW_COMMENT_COUNT_LIMIT } from './status-helpers';
 

@@ -43,13 +43,13 @@ function Welcome() {
   useTitle(null, ['/', '/welcome']);
   return (
     <main id="welcome">
-      <div class="hero-container">
-        <div class="hero-content">
+      <div className="hero-container">
+        <div className="hero-content">
           <h1>
             <img src={logo} alt="" width="100" height="100" />
-            <span class="wordmark">Bluepy</span>
+            <span className="wordmark">Bluepy</span>
           </h1>
-          <p class="desc">
+          <p className="desc">
             <Trans>A minimalistic opinionated Bluesky web client.</Trans>
           </p>
           <p>
@@ -59,20 +59,20 @@ function Welcome() {
                   ? `/login?instance=${DEFAULT_INSTANCE}&submit=1`
                   : '/login'
               }
-              class="button plain6"
+              className="button plain6"
             >
               {DEFAULT_INSTANCE ? t`Log in` : t`Log in with Bluesky`}
             </Link>
           </p>
           {DEFAULT_INSTANCE && DEFAULT_INSTANCE_REGISTRATION_URL && (
             <p>
-              <a href={DEFAULT_INSTANCE_REGISTRATION_URL} class="button plain5">
+              <a href={DEFAULT_INSTANCE_REGISTRATION_URL} className="button plain5">
                 <Trans>Sign up</Trans>
               </a>
             </p>
           )}
           {!DEFAULT_INSTANCE && (
-            <p class="insignificant">
+            <p className="insignificant">
               <small>
                 <Trans>
                   Connect your existing Bluesky account.
@@ -85,8 +85,8 @@ function Welcome() {
         </div>
       </div>
       <div id="device-showcase">
-        <div class="device mobile">
-          <div class="device-frame">
+        <div className="device mobile">
+          <div className="device-frame">
             <picture>
               <source
                 srcSet={homeMobileDark}
@@ -102,8 +102,8 @@ function Welcome() {
             </picture>
           </div>
         </div>
-        <div class="device tablet">
-          <div class="device-frame">
+        <div className="device tablet">
+          <div className="device-frame">
             <picture>
               <source
                 srcSet={homeTabletDark}
@@ -121,7 +121,7 @@ function Welcome() {
         </div>
       </div>
       <div id="why-container">
-        <div class="sections">
+        <div className="sections">
           <section>
             <img
               src={boostsCarouselUrl}
@@ -222,7 +222,7 @@ function Welcome() {
       </div>
       <footer>
         {(appSite || appVersion) && (
-          <p class="app-site-version">
+          <p className="app-site-version">
             <small>
               {sameSite ? appSite : ''} {appVersion}
             </small>

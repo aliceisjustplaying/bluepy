@@ -2,13 +2,12 @@ import type {
   TextareaHTMLAttributes,
   Ref,
   RefObject,
-  TargetedClipboardEvent,
-  TargetedEvent,
-  TargetedKeyboardEvent,
-  TargetedUIEvent,
-} from 'preact';
-import { forwardRef } from 'preact/compat';
-import { useRef, useState } from 'preact/hooks';
+  ClipboardEvent,
+  SyntheticEvent,
+  UIEvent,
+} from 'react';
+import { forwardRef } from 'react';
+import { useRef, useState } from 'react';
 import { useDebouncedCallback, useThrottledCallback } from 'use-debounce';
 
 import { langDetector } from '../utils/browser-translator';
@@ -125,7 +124,7 @@ const detectLangs = async (input: string): Promise<string[] | null> => {
 };
 
 export interface TextareaProps extends Omit<
-  TextareaHTMLAttributes,
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
   'onTrigger'
 > {
   maxCharacters?: number;
@@ -215,15 +214,15 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       <TextExpander
         ref={textExpanderRef}
         keys="@ ＠ : # ＃"
-        class="compose-field-container"
+        className="compose-field-container"
         onTrigger={onTrigger}
       >
         <textarea
-          class="compose-field"
+          className="compose-field"
           autoCapitalize="sentences"
           autoComplete="on"
           autoCorrect="on"
-          spellcheck
+          spellCheck
           dir="auto"
           rows={6}
           cols={50}
@@ -231,7 +230,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           name="status"
           value={text}
-          onKeyDown={(e: TargetedKeyboardEvent<HTMLTextAreaElement>) => {
+          onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
             // Get line before cursor position after pressing 'Enter'
             const { key } = e;
             const target = e.currentTarget;
@@ -239,7 +238,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             if (
               key === 'Enter' &&
               !(e.ctrlKey || e.metaKey || hasTextExpander) &&
-              !e.isComposing
+              !e.nativeEvent.isComposing
             ) {
               try {
                 const { value, selectionStart } = target;
@@ -281,26 +280,26 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
               composeHighlightRef.current.scrollTop = target.scrollTop;
             }
           }}
-          onInput={(e: TargetedEvent<HTMLTextAreaElement>) => {
+          onInput={(e: SyntheticEvent<HTMLTextAreaElement>) => {
             const target = e.currentTarget;
             const nextText = target.value;
             setText(nextText);
             autoResizeTextarea(target);
             (
               props.onInput as
-                | ((ev: TargetedEvent<HTMLTextAreaElement>) => void)
+                | ((ev: SyntheticEvent<HTMLTextAreaElement>) => void)
                 | undefined
             )?.(e);
             throttleHighlightText(nextText);
             debouncedAutoDetectLanguage();
           }}
-          onScroll={(e: TargetedUIEvent<HTMLTextAreaElement>) => {
+          onScroll={(e: UIEvent<HTMLTextAreaElement>) => {
             if (composeHighlightRef.current) {
               const { scrollTop } = e.currentTarget;
               composeHighlightRef.current.scrollTop = scrollTop;
             }
           }}
-          onPaste={(e: TargetedClipboardEvent<HTMLTextAreaElement>) => {
+          onPaste={(e: ClipboardEvent<HTMLTextAreaElement>) => {
             try {
               const pastedText = e.clipboardData?.getData('text').trim();
               if (pastedText) {
@@ -316,7 +315,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         />
         <div
           ref={composeHighlightRef}
-          class="compose-highlight"
+          className="compose-highlight"
           aria-hidden="true"
         />
       </TextExpander>

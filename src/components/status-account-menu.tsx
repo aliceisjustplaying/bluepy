@@ -157,7 +157,7 @@ export default function StatusAccountMenu({
               <small>
                 <Trans>Quote settings</Trans>
                 <br />
-                <span class="more-insignificant">
+                <span className="more-insignificant">
                   {_(
                     quoteApprovalPolicyMessages[
                       postQuoteApprovalPolicy as keyof typeof quoteApprovalPolicyMessages
@@ -167,7 +167,7 @@ export default function StatusAccountMenu({
               </small>
             </MenuItem>
           )}
-          <div class="menu-horizontal">
+          <div className="menu-horizontal">
             {supports('@mastodon/post-edit') && (
               <MenuItem
                 onClick={() => {
@@ -238,7 +238,7 @@ export default function StatusAccountMenu({
                   <span>
                     <Trans>
                       Remove my post from{' '}
-                      <span class="bidi-isolate">@{username || acct}</span>'s post?
+                      <span className="bidi-isolate">@{username || acct}</span>'s post?
                     </Trans>
                   </span>
                 </>

@@ -1,7 +1,7 @@
 import './import-export-accounts.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import { useState } from 'preact/hooks';
+import { useState } from 'react';
 
 import showToast from '../utils/show-toast';
 import { getAccounts, type StoredAccount } from '../utils/store-utils';
@@ -86,13 +86,13 @@ export default function ImportExportAccounts({
     }
   };
 
-  const handleImport = (e: Event) => {
+  const handleImport = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLInputElement;
     const file = (target.files as FileList)[0];
     void processFile(file);
   };
 
-  const onDragOver = (e: DragEvent) => {
+  const onDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(true);
   };
@@ -101,7 +101,7 @@ export default function ImportExportAccounts({
     setDragOver(false);
   };
 
-  const onDrop = (e: DragEvent) => {
+  const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = (e.dataTransfer as DataTransfer).files[0];
@@ -111,27 +111,27 @@ export default function ImportExportAccounts({
   return (
     <div
       id="import-export-accounts-container"
-      class="sheet"
+      className="sheet"
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
       <header>
         <h2>
           <Trans>
-            Import/Export <small class="ib insignificant">Accounts</small>
+            Import/Export <small className="ib insignificant">Accounts</small>
           </Trans>
         </h2>
       </header>
       <main>
         <section>
           <label
-            class={`section-button button-import button plain4 ${
+            className={`section-button button-import button plain4 ${
               dragOver ? 'drag-over' : ''
             }`}
             tabIndex={0}
@@ -148,14 +148,14 @@ export default function ImportExportAccounts({
               style={{ display: 'none' }}
             />
             <div>
-              <small class="insignificant">
+              <small className="insignificant">
                 <Trans>Select file…</Trans>
               </small>
             </div>
           </label>{' '}
           <button
             type="button"
-            class="section-button button-export plain4"
+            className="section-button button-export plain4"
             onClick={() => {
               void handleExport();
             }}
@@ -166,7 +166,7 @@ export default function ImportExportAccounts({
               <Trans>Export</Trans>
             </b>
             <div>
-              <small class="insignificant">
+              <small className="insignificant">
                 <Plural
                   value={accounts.length}
                   one="# account"
@@ -177,7 +177,7 @@ export default function ImportExportAccounts({
           </button>
         </section>
 
-        <p class="insignificant">
+        <p className="insignificant">
           <small>
             <Trans>
               No login information or account access details are stored in the

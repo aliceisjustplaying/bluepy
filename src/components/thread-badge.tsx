@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useContext } from 'preact/hooks';
+import { useContext } from 'react';
 
 import { ThreadCountContext } from '../utils/thread-count-context';
 
@@ -26,7 +26,7 @@ function ThreadBadge({ index, showIcon, showText }: ThreadBadgeProps) {
   const hasTotal = total > 0;
 
   return (
-    <div class="status-thread-badge">
+    <div className="status-thread-badge">
       {showIcon && (
         <>
           <ThreadIcon alt={showText ? '' : t`Thread`} />{' '}

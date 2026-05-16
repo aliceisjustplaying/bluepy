@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
-import type { RefObject } from 'preact';
+import type { RefObject } from 'react';
 
 import haptics from '../utils/haptics';
 
@@ -53,7 +53,7 @@ export default function StatusInlineControls({
     <>
       {showActionsBar && size !== 'l' && !previewMode && !readOnly && !deleted && (
         <div
-          class={`status-actions ${
+          className={`status-actions ${
             isContextMenuOpen === 'actions-bar' ? 'open' : ''
           }`}
           ref={actionsRef as RefObject<HTMLDivElement>}
@@ -62,7 +62,7 @@ export default function StatusInlineControls({
             size="s"
             title={t`Reply`}
             alt={t`Reply`}
-            class="reply-button"
+            className="reply-button"
             icon="comment"
             iconSize="m"
             onClick={(e: LooseClickEvent) => {
@@ -75,7 +75,7 @@ export default function StatusInlineControls({
             checked={favourited ?? undefined}
             title={[t`Like`, t`Unlike`]}
             alt={[t`Like`, t`Liked`]}
-            class="favourite-button"
+            className="favourite-button"
             icon="heart"
             iconSize="m"
             count={favouritesCount}
@@ -86,8 +86,8 @@ export default function StatusInlineControls({
           <button
             type="button"
             title={t`More`}
-            class="plain more-button"
-            onClick={(e: MouseEvent) => {
+            className="plain more-button"
+            onClick={(e: React.MouseEvent) => {
               e.preventDefault();
               e.stopPropagation();
               setContextMenuProps({
@@ -107,17 +107,17 @@ export default function StatusInlineControls({
         </div>
       )}
       {size !== 'l' && (
-        <div class="status-badge">
+        <div className="status-badge">
           {reblogged && (
-            <Icon class="reblog" icon="rocket" size="s" alt={t`Boosted`} />
+            <Icon className="reblog" icon="rocket" size="s" alt={t`Boosted`} />
           )}
           {favourited && (
-            <Icon class="favourite" icon="heart" size="s" alt={t`Liked`} />
+            <Icon className="favourite" icon="heart" size="s" alt={t`Liked`} />
           )}
           {bookmarked && (
-            <Icon class="bookmark" icon="bookmark" size="s" alt={t`Bookmarked`} />
+            <Icon className="bookmark" icon="bookmark" size="s" alt={t`Bookmarked`} />
           )}
-          {pinned && <Icon class="pin" icon="pin" size="s" alt={t`Pinned`} />}
+          {pinned && <Icon className="pin" icon="pin" size="s" alt={t`Pinned`} />}
         </div>
       )}
     </>

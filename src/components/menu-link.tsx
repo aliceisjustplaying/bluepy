@@ -1,12 +1,12 @@
 import { FocusableItem } from '@szhsin/react-menu';
-import type { Ref, TargetedMouseEvent } from 'preact';
+import type { Ref, MouseEvent } from 'react';
 
-import Link from './link';
+import Link, { type LinkProps } from './link';
 
-interface MenuLinkProps {
+interface MenuLinkProps extends Partial<LinkProps> {
+  href?: string;
   className?: string;
   disabled?: boolean;
-  [key: string]: unknown;
 }
 
 function MenuLink(props: MenuLinkProps) {
@@ -20,13 +20,23 @@ function MenuLink(props: MenuLinkProps) {
         ref: Ref<unknown>;
         closeMenu: (key?: string) => void;
       }) => (
-        <Link
-          {...restProps}
-          ref={ref as Ref<HTMLAnchorElement>}
-          onClick={({ detail }: TargetedMouseEvent<HTMLAnchorElement>) => {
-            closeMenu(detail === 0 ? 'Enter' : undefined);
-          }}
-        />
+        <>
+        {restProps.to ? (
+          <Link
+            {...(restProps as LinkProps)}
+            ref={ref as Ref<HTMLAnchorElement>}
+            onClick={({ detail }: React.MouseEvent<HTMLAnchorElement>) => {
+              closeMenu(detail === 0 ? 'Enter' : undefined);
+            }}
+          />
+        ) : (
+          <a
+            {...(restProps as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+            ref={ref as Ref<HTMLAnchorElement>}
+            onClick={({ detail }) => closeMenu(detail === 0 ? 'Enter' : undefined)}
+          />
+        )}
+        </>
       )}
     </FocusableItem>
   );

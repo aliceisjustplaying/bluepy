@@ -4,9 +4,9 @@ import type { I18n } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { Fragment } from 'preact';
-import type { TargetedEvent } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { Fragment } from 'react';
+import type { SyntheticEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Icon from '../components/icon';
 import Link from '../components/link';
@@ -48,7 +48,7 @@ interface FiltersAddEditCloseResult {
 
 // The close button passes the raw click event through `onClose`; the consumer
 // branches on `result?.state`, so a non-result payload is a valid cancel.
-type FiltersAddEditCloseArg = FiltersAddEditCloseResult | Event;
+type FiltersAddEditCloseArg = FiltersAddEditCloseResult | Event | React.MouseEvent;
 
 const FILTER_CONTEXT = [
   'home',
@@ -140,23 +140,23 @@ function Filters() {
   }, [reloadCount, masto]);
 
   return (
-    <div id="filters-page" class="deck-container" tabIndex={-1}>
-      <div class="timeline-deck deck">
+    <div id="filters-page" className="deck-container" tabIndex={-1}>
+      <div className="timeline-deck deck">
         <header>
-          <div class="header-grid">
-            <div class="header-side">
+          <div className="header-grid">
+            <div className="header-side">
               <NavMenu />
-              <Link to="/" class="button plain">
+              <Link to="/" className="button plain">
                 <Icon icon="home" size="l" alt={t`Home`} />
               </Link>
             </div>
             <h1>
               <Trans>Filters</Trans>
             </h1>
-            <div class="header-side">
+            <div className="header-side">
               <button
                 type="button"
-                class="plain"
+                className="plain"
                 onClick={() => {
                   setShowFiltersAddEditModal(true);
                 }}
@@ -169,7 +169,7 @@ function Filters() {
         <main>
           {filters.length > 0 ? (
             <>
-              <ul class="filters-list">
+              <ul className="filters-list">
                 {filters.map((filter) => {
                   const { id, title, expiresAt, keywords } = filter;
                   return (
@@ -180,20 +180,20 @@ function Filters() {
                           <div>
                             {keywords.map((k) => (
                               <Fragment key={k.id ?? k.keyword}>
-                                <span class="tag collapsed insignificant">
+                                <span className="tag collapsed insignificant">
                                   {k.wholeWord ? `“${k.keyword}”` : k.keyword}
                                 </span>{' '}
                               </Fragment>
                             ))}
                           </div>
                         )}
-                        <small class="insignificant">
+                        <small className="insignificant">
                           <ExpiryStatus expiresAt={expiresAt} />
                         </small>
                       </div>
                       <button
                         type="button"
-                        class="plain"
+                        className="plain"
                         onClick={() => {
                           setShowFiltersAddEditModal({
                             filter,
@@ -207,8 +207,8 @@ function Filters() {
                 })}
               </ul>
               {filters.length > 1 && (
-                <footer class="ui-state">
-                  <small class="insignificant">
+                <footer className="ui-state">
+                  <small className="insignificant">
                     <Plural
                       value={filters.length}
                       one="# filter"
@@ -219,15 +219,15 @@ function Filters() {
               )}
             </>
           ) : uiState === 'loading' ? (
-            <p class="ui-state">
+            <p className="ui-state">
               <Loader />
             </p>
           ) : uiState === 'error' ? (
-            <p class="ui-state">
+            <p className="ui-state">
               <Trans>Unable to load filters.</Trans>
             </p>
           ) : (
-            <p class="ui-state">
+            <p className="ui-state">
               <Trans>No filters yet.</Trans>
             </p>
           )}
@@ -312,9 +312,9 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
   );
 
   return (
-    <div class="sheet" id="filters-add-edit-modal">
+    <div className="sheet" id="filters-add-edit-modal">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -323,7 +323,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
       </header>
       <main>
         <form
-          onSubmit={(e: TargetedEvent<HTMLFormElement>) => {
+          onSubmit={(e: SyntheticEvent<HTMLFormElement>) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
             const titleValue = formData.get('title');
@@ -466,7 +466,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
             })();
           }}
         >
-          <div class="filter-form-row">
+          <div className="filter-form-row">
             {/* TODO(oxlint:jsx-a11y/label-has-associated-control): rule does
                 not look through <Trans> children for accessible text. */}
             <label>
@@ -484,9 +484,9 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
               />
             </label>
           </div>
-          <div class="filter-form-keywords" ref={keywordsRef}>
+          <div className="filter-form-keywords" ref={keywordsRef}>
             {filteredEditKeywords.length ? (
-              <ul class="filter-keywords">
+              <ul className="filter-keywords">
                 {filteredEditKeywords.map((k) => {
                   const { id: keywordId, keyword, wholeWord, _id: localId } = k;
                   return (
@@ -505,7 +505,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                         dir="auto"
                         enterKeyHint="done"
                       />
-                      <div class="filter-keyword-actions">
+                      <div className="filter-keyword-actions">
                         <label>
                           <input
                             name="keyword_attributes[][whole_word]"
@@ -518,7 +518,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                         </label>
                         <button
                           type="button"
-                          class="light danger small"
+                          className="light danger small"
                           disabled={uiState === 'loading'}
                           onClick={() => {
                             if (keywordId) {
@@ -538,16 +538,16 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                 })}
               </ul>
             ) : (
-              <div class="filter-keywords">
-                <div class="insignificant">
+              <div className="filter-keywords">
+                <div className="insignificant">
                   <Trans>No keywords. Add one.</Trans>
                 </div>
               </div>
             )}
-            <footer class="filter-keywords-footer">
+            <footer className="filter-keywords-footer">
               <button
                 type="button"
-                class="light"
+                className="light"
                 onClick={() => {
                   setEditKeywords([
                     ...editKeywords,
@@ -570,7 +570,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                 <Trans>Add keyword</Trans>
               </button>{' '}
               {filteredEditKeywords?.length > 1 && (
-                <small class="insignificant">
+                <small className="insignificant">
                   <Plural
                     value={filteredEditKeywords.length}
                     one="# keyword"
@@ -580,8 +580,8 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
               )}
             </footer>
           </div>
-          <div class="filter-form-cols">
-            <div class="filter-form-col">
+          <div className="filter-form-cols">
+            <div className="filter-form-col">
               <div>
                 <b>
                   <Trans>Filter from…</Trans>
@@ -590,7 +590,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
               {FILTER_CONTEXT.map((ctx) => (
                 <div key={ctx}>
                   <label
-                    class={
+                    className={
                       FILTER_CONTEXT_UNIMPLEMENTED.includes(ctx)
                         ? 'insignificant'
                         : ''
@@ -609,12 +609,12 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                 </div>
               ))}
               <p>
-                <small class="insignificant">
+                <small className="insignificant">
                   <Trans>* Not implemented yet</Trans>
                 </small>
               </p>
             </div>
-            <div class="filter-form-col">
+            <div className="filter-form-col">
               {editMode && (
                 <Trans>
                   Status:{' '}
@@ -624,7 +624,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                 </Trans>
               )}
               <div>
-                <label for="filters-expires_in">
+                <label htmlFor="filters-expires_in">
                   {editMode ? t`Change expiry` : t`Expiry`}
                 </label>
                 <select
@@ -648,7 +648,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                 <Trans>Filtered post will be…</Trans>
                 <br />
                 {(getAPIVersions()?.mastodon as number) >= 5 && (
-                  <label class="ib">
+                  <label className="ib">
                     <input
                       type="radio"
                       name="filter_action"
@@ -659,7 +659,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                     <Trans>obscured (media only)</Trans>
                   </label>
                 )}{' '}
-                <label class="ib">
+                <label className="ib">
                   <input
                     type="radio"
                     name="filter_action"
@@ -672,7 +672,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                   />{' '}
                   <Trans>minimized</Trans>
                 </label>{' '}
-                <label class="ib">
+                <label className="ib">
                   <input
                     type="radio"
                     name="filter_action"
@@ -685,7 +685,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
               </p>
             </div>
           </div>
-          <footer class="filter-form-footer">
+          <footer className="filter-form-footer">
             <span>
               <button type="submit" disabled={uiState === 'loading'}>
                 {editMode ? t`Save` : t`Create`}
@@ -719,7 +719,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
               >
                 <button
                   type="button"
-                  class="light danger"
+                  className="light danger"
                   onClick={() => {}}
                   disabled={uiState === 'loading'}
                 >

@@ -1,8 +1,8 @@
 import './status.css';
 
 import { shallowEqual } from 'fast-equals';
-import { memo } from 'preact/compat';
-import { useCallback, useContext } from 'preact/hooks';
+import { memo } from 'react';
+import { useCallback, useContext } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { api } from '../utils/api';
@@ -41,7 +41,7 @@ export interface StatusComponentProps {
   previewMode?: boolean;
   allowFilters?: boolean;
   onMediaClick?: (
-    e: MouseEvent,
+    e: React.MouseEvent,
     i: number,
     media: AnyMediaAttachment,
     status: AnyStatus,
@@ -49,7 +49,7 @@ export interface StatusComponentProps {
   quoted?: number | boolean;
   quoteDomain?: string;
   onStatusLinkClick?: (
-    e: MouseEvent | KeyboardEvent,
+    e: React.MouseEvent | KeyboardEvent,
     status: AnyStatus,
   ) => void;
   showFollowedTags?: boolean;
@@ -197,7 +197,7 @@ function StatusRouter({
   const filterInfoMaybe = filterInfo || undefined;
 
   const debugHover = useCallback(
-    (e: MouseEvent) => {
+    (e: React.MouseEvent) => {
       if (e.shiftKey) {
         console.log({
           ...status,

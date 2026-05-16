@@ -1,6 +1,6 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useRef } from 'preact/hooks';
+import { useRef } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import shortenNumber from '../utils/shorten-number';
@@ -67,14 +67,14 @@ export default function AccountInfoMini({
   // TODO(oxlint:jsx-a11y/prefer-tag-over-role) The two stats triggers are
   // rendered as `<div role="button">` to match the existing
   // `.account-container .stats` visual layout — converting to
-  // `<button class="plain">` adds a backdrop-filter and link-color tint
+  // `<button className="plain">` adds a backdrop-filter and link-color tint
   // that visibly regress the UI. A proper a11y fix requires accompanying
   // CSS in `account-info.css` (outside this batch); keeping the div with
   // role/tabIndex/onKeyDown a11y wiring.
   return (
-    <div class="account-container mini">
-      <div class="account-metadata-box">
-        <div class="stats">
+    <div className="account-container mini">
+      <div className="account-metadata-box">
+        <div className="stats">
           <div
             role="button"
             tabIndex={0}
@@ -128,7 +128,7 @@ export default function AccountInfoMini({
             />
           </div>
           <div
-            class="insignificant"
+            className="insignificant"
             role="button"
             tabIndex={0}
             onClick={() => {
@@ -176,7 +176,7 @@ export default function AccountInfoMini({
               }
             />
           </div>
-          <Link class="insignificant" to={accountLink}>
+          <Link className="insignificant" to={accountLink}>
             <Plural
               value={statusesCount}
               one={

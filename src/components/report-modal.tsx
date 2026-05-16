@@ -4,8 +4,8 @@ import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { Fragment, type InputHTMLAttributes } from 'preact';
-import { useMemo, useRef, useState } from 'preact/hooks';
+import { Fragment, type InputHTMLAttributes } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import localeMatch from '../utils/locale-match';
@@ -193,12 +193,12 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
   const [hasRules, setHasRules] = useState(false);
 
   return (
-    <div class="report-modal-container">
-      <div class="top-controls">
+    <div className="report-modal-container">
+      <div className="top-controls">
         <h1>{post ? t`Report Post` : t`Report @${username}`}</h1>
         <button
           type="button"
-          class="plain4 small"
+          className="plain4 small"
           disabled={uiState === 'loading'}
           onClick={() => onClose()}
         >
@@ -206,7 +206,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
         </button>
       </div>
       <main>
-        <div class="report-preview">
+        <div className="report-preview">
           {post ? (
             <Status status={post} size="s" previewMode />
           ) : (
@@ -222,7 +222,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
         {!!selectedCategory &&
           !CATEGORIES_INFO[selectedCategory].excludeStamp && (
             <span
-              class="rubber-stamp"
+              className="rubber-stamp"
               key={selectedCategory}
               aria-hidden="true"
             >
@@ -298,11 +298,11 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               ? t`What's the issue with this post?`
               : t`What's the issue with this profile?`}
           </p>
-          <section class="report-categories">
+          <section className="report-categories">
             {CATEGORIES.map((category) =>
               category === 'violation' && !translatedRules?.length ? null : (
                 <Fragment key={category}>
-                  <label class="report-category">
+                  <label className="report-category">
                     <input
                       type="radio"
                       name="category"
@@ -317,21 +317,21 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                     />
                     <span>
                       {_(CATEGORIES_INFO[category].label)} &nbsp;
-                      <small class="ib insignificant">
+                      <small className="ib insignificant">
                         {_(CATEGORIES_INFO[category].description)}
                       </small>
                     </span>
                   </label>
                   {category === 'violation' && !!translatedRules?.length && (
                     <div
-                      class="shazam-container no-animation"
+                      className="shazam-container no-animation"
                       hidden={!showRules}
                     >
-                      <div class="shazam-container-inner">
-                        <div class="report-rules" ref={rulesRef}>
+                      <div className="shazam-container-inner">
+                        <div className="report-rules" ref={rulesRef}>
                           {translatedRules.map(
                             (rule: TranslatedInstanceRule, i: number) => (
-                              <label class="report-rule" key={rule.id}>
+                              <label className="report-rule" key={rule.id}>
                                 <input
                                   type="checkbox"
                                   name={`rule_ids[${i}]`}
@@ -366,7 +366,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               ),
             )}
           </section>
-          <section class="report-comment">
+          <section className="report-comment">
             <p>
               <label htmlFor="report-comment">
                 <Trans>Additional info</Trans>
@@ -391,7 +391,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                       switch: true,
                       name: 'forward',
                       disabled: uiState === 'loading',
-                    } as InputHTMLAttributes)}
+                    } as InputHTMLAttributes<HTMLInputElement>)}
                   />{' '}
                   <span>
                     <Trans>
@@ -408,7 +408,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
             </button>{' '}
             <button
               type="submit"
-              class="plain2"
+              className="plain2"
               disabled={uiState === 'loading'}
               onClick={() => {
                 void (async () => {
@@ -424,12 +424,12 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               }}
             >
               <Trans>
-                Send Report <small class="ib">+ Mute profile</small>
+                Send Report <small className="ib">+ Mute profile</small>
               </Trans>
             </button>{' '}
             <button
               type="submit"
-              class="plain2"
+              className="plain2"
               disabled={uiState === 'loading'}
               onClick={() => {
                 void (async () => {
@@ -445,7 +445,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               }}
             >
               <Trans>
-                Send Report <small class="ib">+ Block profile</small>
+                Send Report <small className="ib">+ Block profile</small>
               </Trans>
             </button>
             <Loader hidden={uiState !== 'loading'} />

@@ -1,5 +1,5 @@
-import type { RefObject } from 'preact';
-import { useRef, useState } from 'preact/hooks';
+import type { RefObject } from 'react';
+import { useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 
@@ -28,7 +28,10 @@ interface StatusContextMenuArgs {
   deleted?: boolean;
   quoted?: boolean | number;
   statusRef: RefObject<HTMLElement | null>;
-  replyStatus: (e?: KeyboardEvent, replyMode?: string) => void;
+  replyStatus: (
+    e?: React.KeyboardEvent | globalThis.KeyboardEvent,
+    replyMode?: string,
+  ) => void;
   favouriteStatusNotify: () => Promise<void>;
   bookmarkStatusNotify: () => Promise<void>;
   confirmBoostStatus: () => Promise<boolean>;
@@ -82,11 +85,12 @@ export default function useStatusContextMenu({
 
   const bindLongPressContext = useLongPress(
     isIOS && showContextMenu
-      ? (e: PointerEvent | (TouchEvent & { pointerType?: string })) => {
-          if ((e as PointerEvent).pointerType === 'mouse') return;
+      ? (e) => {
+          const event = e as unknown as PointerEvent | TouchEvent;
+          if ((event as PointerEvent).pointerType === 'mouse') return;
           const { clientX, clientY } =
-            (e as TouchEvent).touches?.[0] || (e as PointerEvent);
-          const link = (e.target as Element).closest('a');
+            (event as TouchEvent).touches?.[0] || (event as PointerEvent);
+          const link = ((event as Event).target as Element).closest('a');
           if (
             link &&
             statusRef.current!.contains(link) &&
@@ -122,7 +126,7 @@ export default function useStatusContextMenu({
     {
       enabled: hotkeysEnabled,
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.key.toLowerCase() !== 'r',
     },
   );
@@ -133,7 +137,7 @@ export default function useStatusContextMenu({
     },
     {
       enabled: hotkeysEnabled,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -150,7 +154,7 @@ export default function useStatusContextMenu({
     {
       enabled: hotkeysEnabled,
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -177,13 +181,13 @@ export default function useStatusContextMenu({
     {
       enabled: hotkeysEnabled && canBoost,
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.key.toLowerCase() !== 'b',
     },
   );
   const xRef = useHotkeys(
     'x',
-    (e: KeyboardEvent) => {
+    (e) => {
       const activeStatus = document.activeElement!.closest(
         '.status-link, .status-focus',
       );
@@ -206,7 +210,7 @@ export default function useStatusContextMenu({
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -241,7 +245,7 @@ export default function useStatusContextMenu({
     {
       enabled: hotkeysEnabled,
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||

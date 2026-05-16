@@ -1,5 +1,5 @@
 import type { mastodon } from 'masto';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState } from 'react';
 
 import { shouldShowReplyBadge } from '../utils/reply-badge';
 import states from '../utils/states';

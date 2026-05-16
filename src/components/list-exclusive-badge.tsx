@@ -15,7 +15,7 @@ function ListExclusiveBadge({ insignificant }: ListExclusiveBadgeProps) {
       icon="filter"
       size="xs"
       alt={undefined}
-      class={`list-exclusive-badge ${insignificant ? 'insignificant' : ''}`}
+      className={`list-exclusive-badge ${insignificant ? 'insignificant' : ''}`}
       title={t`Posts on this list are hidden from Home/Following`}
     />
   );

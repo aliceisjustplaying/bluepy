@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 
@@ -45,9 +45,9 @@ function PrivateNoteSheet({
   }, [initialNote]);
 
   return (
-    <div class="sheet" id="private-note-container">
+    <div className="sheet" id="private-note-container">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -55,7 +55,7 @@ function PrivateNoteSheet({
         <b>
           <Trans>Notes</Trans>
         </b>{' '}
-        <small class="insignificant">
+        <small className="insignificant">
           <Trans>Only visible to you</Trans>
         </small>
       </header>
@@ -105,7 +105,7 @@ function PrivateNoteSheet({
           <footer>
             <button
               type="button"
-              class="light"
+              className="light"
               disabled={uiState === 'loading'}
               onClick={() => {
                 onClose?.();

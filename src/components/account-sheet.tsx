@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect } from 'preact/hooks';
+import { useEffect } from 'react';
 
 import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
 import states from '../utils/states';
@@ -28,7 +28,11 @@ interface SearchV2Endpoint {
   }): Promise<{ accounts: mastodon.v1.Account[] }>;
 }
 
-type AccountSheetCloseArg = { destination?: string } | Event | undefined;
+type AccountSheetCloseArg =
+  | { destination?: string }
+  | Event
+  | React.MouseEvent
+  | undefined;
 type AccountSheetCloseHandler = (arg?: AccountSheetCloseArg) => void;
 
 interface AccountSheetProps {
@@ -56,7 +60,7 @@ function AccountSheet({
 
   return (
     <div
-      class="sheet"
+      className="sheet"
       // onClick={(e) => {
       //   const accountBlock = e.target.closest('.account-block');
       //   if (accountBlock) {
@@ -69,7 +73,7 @@ function AccountSheet({
       {!!onClose && (
         <button
           type="button"
-          class="sheet-close outer"
+          className="sheet-close outer"
           onClick={(e) => onClose(e)}
         >
           <Icon icon="x" alt={t`Close`} />

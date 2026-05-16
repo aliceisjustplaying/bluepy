@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useSnapshot } from 'valtio';
 
 import enhanceContent from '../utils/enhance-content';
@@ -124,7 +124,7 @@ const PostContent =
         ref={divRef}
         lang={language}
         dir="auto"
-        class="inner-content"
+        className="inner-content"
         onClick={handleContentLinks({
           mentions,
           instance,

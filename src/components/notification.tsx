@@ -3,15 +3,15 @@ import { msg, t } from '@lingui/core/macro';
 import { Plural, Select, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type {
-  ComponentChildren,
+  ReactNode,
   ComponentType,
   JSX,
   Ref,
-  TargetedMouseEvent,
-  VNode,
-} from 'preact';
-import { Fragment } from 'preact';
-import { memo } from 'preact/compat';
+  MouseEvent,
+  ReactElement,
+} from 'react';
+import { Fragment } from 'react';
+import { memo } from 'react';
 
 import { api, getMastoV2Resource } from '../utils/api';
 import { isFiltered } from '../utils/filters';
@@ -52,7 +52,7 @@ interface NameTextProps {
   showAcct?: boolean;
   short?: boolean;
   external?: boolean;
-  onClick?: (e: MouseEvent) => void;
+  onClick?: (e: React.MouseEvent) => void;
 }
 function NameText(props: NameTextProps) {
   return <NameTextComponent {...(props as NameTextViewProps)} />;
@@ -168,14 +168,14 @@ export interface NotificationProps {
 
 interface SubjectProps {
   clickable?: boolean;
-  children?: ComponentChildren;
+  children?: ReactNode;
   [key: string]: unknown;
 }
 type SubjectComponent = ComponentType<SubjectProps>;
 
 interface ContentTextArgs {
-  account?: VNode | null;
-  targetAccount?: VNode | null;
+  account?: ReactElement | null;
+  targetAccount?: ReactElement | null;
   count?: number;
   postsCount?: number;
   postType?: 'reply' | 'post';
@@ -618,7 +618,7 @@ function Notification({
         role="button"
         tabIndex={0}
         onClick={handleOpenGenericAccounts}
-        onKeyDown={(e: KeyboardEvent) => {
+        onKeyDown={(e: React.KeyboardEvent) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             handleOpenGenericAccounts();
@@ -804,7 +804,7 @@ function Notification({
     }
   }
 
-  const debugHover = (e: TargetedMouseEvent<HTMLDivElement>) => {
+  const debugHover = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.shiftKey) {
       console.log({
         ...notification,
@@ -818,7 +818,7 @@ function Notification({
     // is no interactive ARIA role that fits "selectable feed item"; using
     // `article` keeps the screen-reader landmark intact.
     <div
-      class={`notification notification-${type}`}
+      className={`notification notification-${type}`}
       data-notification-id={_ids || id}
       data-group-key={_groupKeys?.join(' ') || groupKey}
       role="article"
@@ -826,18 +826,18 @@ function Notification({
       onMouseEnter={debugHover}
     >
       <div
-        class={`notification-type notification-${type}`}
+        className={`notification-type notification-${type}`}
         title={formattedCreatedAt || undefined}
       >
         {type === 'favourite+reblog' ? (
           <>
-            <Icon icon="rocket" size="xl" alt={type} class="reblog-icon" />
-            <Icon icon="heart" size="xl" alt={type} class="favourite-icon" />
+            <Icon icon="rocket" size="xl" alt={type} className="reblog-icon" />
+            <Icon icon="heart" size="xl" alt={type} className="favourite-icon" />
           </>
         ) : type === 'mention+quote' ? (
           <>
-            <Icon icon="comment" size="xl" alt={type} class="mention-icon" />
-            <Icon icon="quote" size="xl" alt={type} class="quote-icon" />
+            <Icon icon="comment" size="xl" alt={type} className="mention-icon" />
+            <Icon icon="quote" size="xl" alt={type} className="quote-icon" />
           </>
         ) : (
           <Icon
@@ -847,7 +847,7 @@ function Notification({
           />
         )}
       </div>
-      <div class="notification-content">
+      <div className="notification-content">
         {/* {(type === 'favourite+reblog' ||
           type === 'favourite' ||
           type === 'reblog') && (
@@ -865,7 +865,7 @@ function Notification({
         )} */}
         {type !== 'mention' && type !== 'quote' && type !== 'mention+quote' && (
           <>
-            <p>{text as ComponentChildren}</p>
+            <p>{text as ReactNode}</p>
             {type === 'follow_request' && (
               // JS original passed `account.id` unconditionally; missing
               // account would crash here. Preserve that contract.
@@ -936,14 +936,14 @@ function Notification({
           </>
         )}
         {_accounts && _accounts.length > 1 && (
-          <p class="avatars-stack">
+          <p className="avatars-stack">
             {_accounts.slice(0, AVATARS_LIMIT).map((acct) => (
               <Fragment key={acct.id}>
                 <a
                   key={acct.id}
                   href={acct.url}
                   rel="noopener"
-                  class="account-avatar-stack"
+                  className="account-avatar-stack"
                   onClick={(e) => {
                     e.preventDefault();
                     states.showAccount = acct;
@@ -963,7 +963,7 @@ function Notification({
                     squircle={acct?.bot}
                   />
                   {type === 'favourite+reblog' && (
-                    <div class="account-sub-icons">
+                    <div className="account-sub-icons">
                       {/* JS original accessed `_types` directly without a
                           guard. Preserve crash-on-missing behavior. */}
                       {(acct._types as string[]).map((iconType) => (
@@ -971,7 +971,7 @@ function Notification({
                           key={iconType}
                           icon={NOTIFICATION_ICONS[iconType]}
                           size="s"
-                          class={`${iconType}-icon`}
+                          className={`${iconType}-icon`}
                         />
                       ))}
                     </div>
@@ -982,7 +982,7 @@ function Notification({
             {showRemoteAccounts ? (
               <button
                 type="button"
-                class="small plain"
+                className="small plain"
                 data-group-keys={_groupKeys?.join(' ')}
                 onClick={handleOpenGenericAccounts}
               >
@@ -996,7 +996,7 @@ function Notification({
             ) : (
               <button
                 type="button"
-                class="small plain"
+                className="small plain"
                 onClick={handleOpenGenericAccounts}
               >
                 {_accounts.length > AVATARS_LIMIT &&
@@ -1007,7 +1007,7 @@ function Notification({
           </p>
         )}
         {!_accounts?.length && sampleAccounts && sampleAccounts.length > 1 && (
-          <p class="avatars-stack">
+          <p className="avatars-stack">
             {/* JS original iterated sampleAccounts directly, accessing
                 `account.id`, `account.url`, etc. without guards. `undefined`
                 entries (from `accounts.find(...) => undefined` in
@@ -1019,7 +1019,7 @@ function Notification({
                   key={acct.id}
                   href={acct.url}
                   rel="noopener"
-                  class="account-avatar-stack"
+                  className="account-avatar-stack"
                   onClick={(e) => {
                     e.preventDefault();
                     states.showAccount = acct;
@@ -1033,12 +1033,12 @@ function Notification({
                     squircle={acct?.bot}
                   />
                   {/* {type === 'favourite+reblog' && (
-                    <div class="account-sub-icons">
+                    <div className="account-sub-icons">
                       {account._types.map((type) => (
                         <Icon
                           icon={NOTIFICATION_ICONS[type]}
                           size="s"
-                          class={`${type}-icon`}
+                          className={`${type}-icon`}
                         />
                       ))}
                     </div>
@@ -1052,7 +1052,7 @@ function Notification({
                   to={
                     instance ? `/${instance}/s/${status.id}` : `/s/${status.id}`
                   }
-                  class="button small plain centered"
+                  className="button small plain centered"
                 >
                   +{(notificationsCount as number) - sampleAccounts.length}
                   <Icon icon="chevron-right" />
@@ -1061,11 +1061,11 @@ function Notification({
           </p>
         )}
         {_statuses && _statuses.length > 1 && (
-          <ul class="notification-group-statuses">
+          <ul className="notification-group-statuses">
             {(_statuses as mastodon.v1.Status[]).map((groupStatus) => (
               <li key={groupStatus.id}>
                 <TruncatedLink
-                  class={`status-link status-type-${type}`}
+                  className={`status-link status-type-${type}`}
                   to={
                     instance
                       ? `/${instance}/s/${groupStatus.id}`
@@ -1086,7 +1086,7 @@ function Notification({
         )}
         {status && (!_statuses?.length || _statuses?.length <= 1) && (
           <TruncatedLink
-            class={`status-link status-type-${type}`}
+            className={`status-link status-type-${type}`}
             to={
               instance
                 ? `/${instance}/s/${actualStatusID}`
@@ -1094,7 +1094,7 @@ function Notification({
             }
             onContextMenu={
               !disableContextMenu
-                ? (e: TargetedMouseEvent<HTMLElement>) => {
+                ? (e: React.MouseEvent<HTMLElement>) => {
                     const target = e.target as HTMLElement | null;
                     const post = target?.querySelector('.status');
                     if (post) {
@@ -1137,7 +1137,7 @@ function Notification({
 }
 
 type TruncatedLinkProps = LinkProps & {
-  children?: ComponentChildren;
+  children?: ReactNode;
   [key: string]: unknown;
 };
 

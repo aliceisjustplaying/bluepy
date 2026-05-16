@@ -1,6 +1,6 @@
 import { Menu, type MenuInstance, type MenuProps } from '@szhsin/react-menu';
-import type { RefObject, TargetedMouseEvent } from 'preact';
-import { useRef } from 'preact/hooks';
+import type { RefObject, MouseEvent } from 'react';
+import { useRef } from 'react';
 
 import isRTL from '../utils/is-rtl';
 import safeBoundingBoxPadding from '../utils/safe-bounding-box-padding';
@@ -11,11 +11,18 @@ import useWindowSize from '../utils/useWindowSize';
 // until react-menu writes it, matching common `useRef<T | null>(null)` usage.
 type Menu2Props = MenuProps & {
   instanceRef?: RefObject<MenuInstance | null | undefined>;
+  openTrigger?: string;
 };
 
 // It's like Menu but with sensible defaults, bug fixes and improvements.
 function Menu2(props: Menu2Props) {
-  const { containerProps, instanceRef: externalInstanceRef, align } = props;
+  const {
+    containerProps,
+    instanceRef: externalInstanceRef,
+    align,
+    openTrigger: _openTrigger,
+    ...menuProps
+  } = props;
   const size = useWindowSize();
   const fallbackInstanceRef = useRef<MenuInstance | undefined>(undefined);
   const instanceRef = externalInstanceRef?.current
@@ -37,11 +44,11 @@ function Menu2(props: Menu2Props) {
       boundingBoxPadding={safeBoundingBoxPadding()}
       repositionFlag={`${size.width}x${size.height}`}
       unmountOnClose
-      {...props}
+      {...menuProps}
       align={rtlAlign}
-      instanceRef={instanceRef}
+      instanceRef={instanceRef as RefObject<MenuInstance | null>}
       containerProps={{
-        onClick: (e: TargetedMouseEvent<HTMLElement>) => {
+        onClick: (e: React.MouseEvent<HTMLElement>) => {
           if (e.target === e.currentTarget) {
             instanceRef.current?.closeMenu?.();
           }

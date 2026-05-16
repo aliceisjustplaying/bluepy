@@ -1,6 +1,6 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState } from 'react';
 
 import Icon from '../components/icon';
 import Link from '../components/link';
@@ -36,26 +36,26 @@ function FollowedHashtags() {
   }, []);
 
   return (
-    <div id="followed-hashtags-page" class="deck-container" tabIndex={-1}>
-      <div class="timeline-deck deck">
+    <div id="followed-hashtags-page" className="deck-container" tabIndex={-1}>
+      <div className="timeline-deck deck">
         <header>
-          <div class="header-grid">
-            <div class="header-side">
+          <div className="header-grid">
+            <div className="header-side">
               <NavMenu />
-              <Link to="/" class="button plain">
+              <Link to="/" className="button plain">
                 <Icon icon="home" size="l" alt={t`Home`} />
               </Link>
             </div>
             <h1>
               <Trans>Followed Hashtags</Trans>
             </h1>
-            <div class="header-side" />
+            <div className="header-side" />
           </div>
         </header>
         <main>
           {followedHashtags.length > 0 ? (
             <>
-              <ul class="link-list">
+              <ul className="link-list">
                 {followedHashtags.map((tag) => (
                   <li key={tag.name}>
                     <Link
@@ -71,8 +71,8 @@ function FollowedHashtags() {
                 ))}
               </ul>
               {followedHashtags.length > 1 && (
-                <footer class="ui-state">
-                  <small class="insignificant">
+                <footer className="ui-state">
+                  <small className="insignificant">
                     <Plural
                       value={followedHashtags.length}
                       one="# hashtag"
@@ -83,15 +83,15 @@ function FollowedHashtags() {
               )}
             </>
           ) : uiState === 'loading' ? (
-            <p class="ui-state">
+            <p className="ui-state">
               <Loader abrupt />
             </p>
           ) : uiState === 'error' ? (
-            <p class="ui-state">
+            <p className="ui-state">
               <Trans>Unable to load followed hashtags.</Trans>
             </p>
           ) : (
-            <p class="ui-state">
+            <p className="ui-state">
               <Trans>No hashtags followed yet.</Trans>
             </p>
           )}

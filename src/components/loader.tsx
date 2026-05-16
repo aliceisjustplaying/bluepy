@@ -1,6 +1,6 @@
 import './loader.css';
 
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 interface LoaderProps {
   abrupt?: boolean;
@@ -8,7 +8,7 @@ interface LoaderProps {
   id?: string;
 }
 
-const Loader = (props: Readonly<LoaderProps>): ComponentChildren => {
+const Loader = (props: Readonly<LoaderProps>): ReactNode => {
   const { abrupt, hidden, id } = props;
   const classNames = ['loader-container'];
 
@@ -21,8 +21,8 @@ const Loader = (props: Readonly<LoaderProps>): ComponentChildren => {
   }
 
   return (
-    <span id={id} class={classNames.join(' ')}>
-      <span class="loader" />
+    <span id={id} className={classNames.join(' ')}>
+      <span className="loader" />
     </span>
   );
 };

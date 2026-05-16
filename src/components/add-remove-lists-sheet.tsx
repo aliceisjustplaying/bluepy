@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentChildren } from 'preact';
-import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
+import type { ReactNode } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import { getUserLists } from '../utils/lists';
@@ -37,8 +37,8 @@ type UIState = 'default' | 'loading' | 'error';
 
 interface AddRemoveListsSheetProps {
   accountID: string;
-  onClose?: ((event?: Event) => void) | null;
-  children?: ComponentChildren;
+  onClose?: ((event?: React.SyntheticEvent) => void) | null;
+  children?: ReactNode;
 }
 
 function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
@@ -49,11 +49,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
   const [listsContainingAccount, setListsContainingAccount] = useState<
     ListLike[]
   >([]);
-  const [reloadCount, reload] = useReducer<number, undefined, number>(
-    (c) => c + 1,
-    0,
-    (init) => init,
-  );
+  const [reloadCount, reload] = useReducer((c: number) => c + 1, 0);
 
   // `masto.v1.accounts` is a proxy that yields a fresh reference on every
   // access; depending on the raw expression would re-fire this effect on
@@ -91,9 +87,9 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
     useState<ListAddEditModalState>(false);
 
   return (
-    <div class="sheet" id="list-add-remove-container">
+    <div className="sheet" id="list-add-remove-container">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={(e) => onClose(e)}>
+        <button type="button" className="sheet-close" onClick={(e) => onClose(e)}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -104,7 +100,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
       </header>
       <main>
         {lists.length > 0 ? (
-          <ul class="list-add-remove">
+          <ul className="list-add-remove">
             {lists.map((list) => {
               const inList = listsContainingAccount.some(
                 (l) => l.id === list.id,
@@ -113,7 +109,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
                 <li key={list.id}>
                   <button
                     type="button"
-                    class={`light ${inList ? 'checked' : ''}`}
+                    className={`light ${inList ? 'checked' : ''}`}
                     disabled={uiState === 'loading'}
                     onClick={() => {
                       setUIState('loading');
@@ -135,7 +131,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
                               });
                           }
                           // setUIState('default');
-                          reload(undefined);
+                          reload();
                         } catch (e) {
                           console.error(e);
                           setUIState('error');
@@ -156,21 +152,21 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
             })}
           </ul>
         ) : uiState === 'loading' ? (
-          <p class="ui-state">
+          <p className="ui-state">
             <Loader abrupt />
           </p>
         ) : uiState === 'error' ? (
-          <p class="ui-state">
+          <p className="ui-state">
             <Trans>Unable to load lists.</Trans>
           </p>
         ) : (
-          <p class="ui-state">
+          <p className="ui-state">
             <Trans>No lists.</Trans>
           </p>
         )}
         <button
           type="button"
-          class="plain2"
+          className="plain2"
           onClick={() => setShowListAddEditModal(true)}
           disabled={uiState !== 'default'}
         >
@@ -196,7 +192,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
             }
             onClose={(result) => {
               if (result && 'state' in result && result.state === 'success') {
-                reload(undefined);
+                reload();
               }
               setShowListAddEditModal(false);
             }}

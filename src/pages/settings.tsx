@@ -3,8 +3,8 @@ import './settings.css';
 import '../components/button-install';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { VNode } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { HTMLAttributes, ReactElement } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useSnapshot } from 'valtio';
 
@@ -39,10 +39,10 @@ import {
 // `button-install` is a custom element registered in
 // `../components/button-install`. Declare its JSX shape so the wrapper below
 // type-checks without touching the existing untyped runtime behavior.
-declare module 'preact' {
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      'button-install': preact.HTMLAttributes<HTMLElement>;
+      'button-install': HTMLAttributes<HTMLElement>;
     }
   }
 }
@@ -85,7 +85,7 @@ interface SettingsProps {
   onClose?: () => void;
 }
 
-function Settings({ onClose }: SettingsProps): VNode {
+function Settings({ onClose }: SettingsProps): ReactElement {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const currentTheme = store.local.get('theme') || 'auto';
@@ -135,14 +135,14 @@ function Settings({ onClose }: SettingsProps): VNode {
   return (
     <div
       id="settings-container"
-      class="sheet"
+      className="sheet"
       tabIndex={-1}
       style={{
         '--current-text-size': `${currentTextSize}px`,
       }}
     >
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -235,7 +235,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                       labels wrap their <input> and contain <Trans> text inside
                       a <span>; the rule's static analysis doesn't see <Trans>
                       output as accessible text, but it renders to a string. */}
-                  <div class="radio-group">
+                  <div className="radio-group">
                     <label>
                       <input
                         type="radio"
@@ -315,9 +315,9 @@ function Settings({ onClose }: SettingsProps): VNode {
             <section>
               <ul>
                 <li>
-                  <label for="posting-privacy-field">
+                  <label htmlFor="posting-privacy-field">
                     <Trans>Default visibility</Trans>{' '}
-                    <Icon icon="cloud" alt={t`Synced`} class="synced-icon" />
+                    <Icon icon="cloud" alt={t`Synced`} className="synced-icon" />
                   </label>
                   <select
                     id="posting-privacy-field"
@@ -368,9 +368,9 @@ function Settings({ onClose }: SettingsProps): VNode {
                 </li>
                 {supportsNativeQuote() && (
                   <li>
-                    <label for="posting-quote-policy-field">
+                    <label htmlFor="posting-quote-policy-field">
                       <Trans>Quote settings</Trans>{' '}
-                      <Icon icon="cloud" alt={t`Synced`} class="synced-icon" />
+                      <Icon icon="cloud" alt={t`Synced`} className="synced-icon" />
                     </label>
                     <select
                       id="posting-quote-policy-field"
@@ -422,8 +422,8 @@ function Settings({ onClose }: SettingsProps): VNode {
                 )}
               </ul>
             </section>
-            <p class="section-postnote">
-              <Icon icon="cloud" alt={t`Synced`} class="synced-icon" />{' '}
+            <p className="section-postnote">
+              <Icon icon="cloud" alt={t`Synced`} className="synced-icon" />{' '}
               <small>
                 <Trans>
                   Synced to your server's settings.{' '}
@@ -444,7 +444,7 @@ function Settings({ onClose }: SettingsProps): VNode {
         </h3>
         <section>
           <ul>
-            <li class="block">
+            <li className="block">
               <label>
                 <input
                   type="checkbox"
@@ -456,7 +456,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                 <Trans>Auto refresh timeline posts</Trans>
               </label>
             </li>
-            <li class="block">
+            <li className="block">
               <label>
                 <input
                   type="checkbox"
@@ -469,7 +469,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               </label>
             </li>
             {!!TRANSLANG_INSTANCES && (
-              <li class="block">
+              <li className="block">
                 <label>
                   <input
                     type="checkbox"
@@ -485,7 +485,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                   <Trans>Post translation</Trans>
                 </label>
                 <div
-                  class={`sub-section ${
+                  className={`sub-section ${
                     !snapStates.settings.contentTranslation
                       ? 'more-insignificant'
                       : ''
@@ -529,7 +529,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                     </label>
                   </div>
                   <hr />
-                  <div class="checkbox-fieldset">
+                  <div className="checkbox-fieldset">
                     <Plural
                       value={
                         snapStates.settings.contentTranslationHideLanguages
@@ -538,7 +538,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                       _0={`Hide "Translate" button for:`}
                       other={`Hide "Translate" button for (#):`}
                     />
-                    <div class="checkbox-fields">
+                    <div className="checkbox-fields">
                       {targetLanguages.map((lang) => {
                         const common = localeCode2Text({
                           code: lang.code,
@@ -573,7 +573,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                             {showCommon ? (
                               <span>
                                 {native}{' '}
-                                <span class="insignificant ib">- {common}</span>
+                                <span className="insignificant ib">- {common}</span>
                               </span>
                             ) : (
                               common
@@ -583,7 +583,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                       })}
                     </div>
                   </div>
-                  <p class="insignificant">
+                  <p className="insignificant">
                     <small>
                       <Trans>
                         Note: This feature uses external translation services,
@@ -615,7 +615,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                       />{' '}
                       <Trans>Auto inline translation</Trans>
                     </label>
-                    <p class="insignificant">
+                    <p className="insignificant">
                       <small>
                         <Trans>
                           Automatically show translation for posts in timeline.
@@ -629,7 +629,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               </li>
             )}
             {authenticated && (
-              <li class="block">
+              <li className="block">
                 <label>
                   <input
                     type="checkbox"
@@ -646,7 +646,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                   />{' '}
                   <Trans>Paginated timeline (beta)</Trans>
                 </label>
-                <div class="sub-section insignificant">
+                <div className="sub-section insignificant">
                   <small>
                     <Trans>
                       Manual pagination of timeline posts instead of infinite
@@ -659,7 +659,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               </li>
             )}
             {!!GIPHY_API_KEY && authenticated && (
-              <li class="block">
+              <li className="block">
                 <label>
                   <input
                     type="checkbox"
@@ -671,7 +671,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                   />{' '}
                   <Trans>GIF Picker for composer</Trans>
                 </label>
-                <div class="sub-section insignificant">
+                <div className="sub-section insignificant">
                   <small>
                     <Trans>
                       Note: This feature uses external GIF search service,
@@ -693,7 +693,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               </li>
             )}
             {!!IMG_ALT_API_URL && authenticated && (
-              <li class="block">
+              <li className="block">
                 <label>
                   <input
                     type="checkbox"
@@ -704,16 +704,16 @@ function Settings({ onClose }: SettingsProps): VNode {
                     }}
                   />{' '}
                   <Trans>Image description generator</Trans>{' '}
-                  <Icon icon="sparkles2" class="more-insignificant" />
+                  <Icon icon="sparkles2" className="more-insignificant" />
                 </label>
-                <div class="sub-section insignificant">
+                <div className="sub-section insignificant">
                   <small>
                     <Trans>
                       Only for new images while composing new posts.
                     </Trans>
                   </small>
                 </div>
-                <div class="sub-section insignificant">
+                <div className="sub-section insignificant">
                   <small>
                     <Trans>
                       Note: This feature uses external AI service, powered by{' '}
@@ -731,7 +731,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               </li>
             )}
             {authenticated && (
-              <li class="block">
+              <li className="block">
                 <label>
                   <input
                     type="checkbox"
@@ -744,9 +744,9 @@ function Settings({ onClose }: SettingsProps): VNode {
                     }}
                   />{' '}
                   <Trans>"Cloud" import/export for shortcuts settings</Trans>{' '}
-                  <Icon icon="cloud" class="more-insignificant" />
+                  <Icon icon="cloud" className="more-insignificant" />
                 </label>
-                <div class="sub-section insignificant">
+                <div className="sub-section insignificant">
                   <small>
                     <Trans>
                       ⚠️⚠️⚠️ Very experimental.
@@ -757,7 +757,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                     </Trans>
                   </small>
                 </div>
-                <div class="sub-section insignificant">
+                <div className="sub-section insignificant">
                   <small>
                     <Trans>
                       Note: This feature uses currently-logged-in server API.
@@ -766,7 +766,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                 </div>
               </li>
             )}
-            <li class="block">
+            <li className="block">
               <label>
                 <input
                   type="checkbox"
@@ -777,12 +777,12 @@ function Settings({ onClose }: SettingsProps): VNode {
                 />{' '}
                 <Trans>
                   Cloak mode{' '}
-                  <span class="insignificant">
+                  <span className="insignificant">
                     (<samp>Text</samp> → <samp>████</samp>)
                   </span>
                 </Trans>
               </label>
-              <div class="sub-section insignificant">
+              <div className="sub-section insignificant">
                 <small>
                   <Trans>
                     Replace text as blocks, useful when taking screenshots, for
@@ -791,7 +791,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                 </small>
               </div>
             </li>
-            <li class="block">
+            <li className="block">
               <label>
                 <input
                   type="checkbox"
@@ -802,7 +802,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                 />{' '}
                 <Trans>Disable all animations</Trans>
               </label>
-              <div class="sub-section insignificant">
+              <div className="sub-section insignificant">
                 <small>
                   <Trans>
                     Removes all UI animations, transitions, and smooth
@@ -815,7 +815,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               <li>
                 <button
                   type="button"
-                  class="light"
+                  className="light"
                   onClick={() => {
                     states.showDrafts = true;
                     states.showSettings = false;
@@ -826,13 +826,13 @@ function Settings({ onClose }: SettingsProps): VNode {
               </li>
             )}
             <li>
-              <Link to="/yip" onClick={onClose} class="button light">
+              <Link to="/yip" onClick={onClose} className="button light">
                 Year in Posts
               </Link>
             </li>
             <li>
               <button-install>
-                <button type="button" class="light">
+                <button type="button" className="light">
                   <Trans>Install {CLIENT_NAME}</Trans>
                 </button>
               </button-install>
@@ -963,17 +963,17 @@ function Settings({ onClose }: SettingsProps): VNode {
               {WEBSITE && (
                 <>
                   <Trans>
-                    <span class="insignificant">Site:</span>{' '}
+                    <span className="insignificant">Site:</span>{' '}
                     {WEBSITE.replace(/https?:\/\//g, '').replace(/\/$/, '')}
                   </Trans>
                   <br />
                 </>
               )}
               <Trans>
-                <span class="insignificant">Version:</span>{' '}
+                <span className="insignificant">Version:</span>{' '}
                 <input
                   type="text"
-                  class="version-string"
+                  className="version-string"
                   readOnly
                   size={18} // Manually calculated here
                   value={`${__COMMIT_TIME__.slice(0, 10).replace(/-/g, '.')}${
@@ -993,7 +993,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                   }}
                 />{' '}
                 {!__FAKE_COMMIT_HASH__ && (
-                  <span class="ib insignificant">
+                  <span className="ib insignificant">
                     (
                     <a
                       href={`https://github.com/cheeaun/phanpy/commit/${__COMMIT_HASH__}`}
@@ -1010,13 +1010,13 @@ function Settings({ onClose }: SettingsProps): VNode {
           )}
         </section>
         {(import.meta.env.DEV || import.meta.env.PHANPY_DEV) && (
-          <details class="debug-info">
+          <details className="debug-info">
             <summary></summary>
-            <p class="side">
+            <p className="side">
               <Link
                 to="/_sandbox"
                 onClick={onClose}
-                class="button plain6 small"
+                className="button plain6 small"
               >
                 Sandbox
               </Link>
@@ -1040,7 +1040,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             <p>Service Worker Cache</p>
             <button
               type="button"
-              class="plain2 small"
+              className="plain2 small"
               onClick={() => {
                 void (async () => {
                   alert(await getCachesKeys());
@@ -1051,7 +1051,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             </button>{' '}
             <button
               type="button"
-              class="plain2 small"
+              className="plain2 small"
               onClick={() => {
                 void (async () => {
                   alert(await getCachesSize());
@@ -1062,7 +1062,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             </button>{' '}
             <button
               type="button"
-              class="plain2 small"
+              className="plain2 small"
               onClick={() => {
                 const key = prompt('Enter cache key');
                 if (!key) return;
@@ -1077,7 +1077,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             </button>{' '}
             <button
               type="button"
-              class="plain2 small"
+              className="plain2 small"
               onClick={() => {
                 try {
                   void clearCaches();
@@ -1117,7 +1117,7 @@ interface TextSizeControlProps {
   currentTextSize: number;
 }
 
-function TextSizeControl({ currentTextSize }: TextSizeControlProps): VNode {
+function TextSizeControl({ currentTextSize }: TextSizeControlProps): ReactElement {
   const textSizeFieldRef = useRef<HTMLInputElement | null>(null);
   const [size, setSize] = useState<number>(currentTextSize);
   const [debouncedSize] = useDebounce(size, 1000);
@@ -1135,11 +1135,11 @@ function TextSizeControl({ currentTextSize }: TextSizeControlProps): VNode {
   }, [debouncedSize]);
 
   return (
-    <div class={`text-size-control ${size !== debouncedSize ? 'loading' : ''}`}>
+    <div className={`text-size-control ${size !== debouncedSize ? 'loading' : ''}`}>
       <button
         type="button"
         style={{ fontSize: SMALLEST_TEXT_SIZE }}
-        class={`small light ${size === DEFAULT_TEXT_SIZE ? 'default-size' : ''}`}
+        className={`small light ${size === DEFAULT_TEXT_SIZE ? 'default-size' : ''}`}
         disabled={size === SMALLEST_TEXT_SIZE}
         onClick={() => {
           setSize(Math.max(SMALLEST_TEXT_SIZE, size - 1));
@@ -1163,7 +1163,7 @@ function TextSizeControl({ currentTextSize }: TextSizeControlProps): VNode {
       <button
         type="button"
         style={{ fontSize: LARGEST_TEXT_SIZE }}
-        class={`small light ${size === DEFAULT_TEXT_SIZE ? 'default-size' : ''}`}
+        className={`small light ${size === DEFAULT_TEXT_SIZE ? 'default-size' : ''}`}
         disabled={size === LARGEST_TEXT_SIZE}
         onClick={() => {
           setSize(Math.min(LARGEST_TEXT_SIZE, size + 1));
@@ -1241,7 +1241,7 @@ interface BackendPushSubscriptionShape {
 
 function PushNotificationsSection({
   onClose,
-}: PushNotificationsSectionProps): VNode | null {
+}: PushNotificationsSectionProps): ReactElement | null {
   const { t } = useLingui();
   const pushSupported = isPushSupported();
   const { instance } = api();
@@ -1450,14 +1450,14 @@ function PushNotificationsSection({
               </Trans>
             </label>
             <div
-              class="shazam-container no-animation"
+              className="shazam-container no-animation"
               style={{
                 width: '100%',
               }}
               hidden={!allowNotifications}
             >
-              <div class="shazam-container-inner">
-                <div class="sub-section">
+              <div className="shazam-container-inner">
+                <div className="sub-section">
                   <ul>
                     {[
                       {
@@ -1505,7 +1505,7 @@ function PushNotificationsSection({
               </div>
             </div>
             {needRelogin && (
-              <div class="sub-section">
+              <div className="sub-section">
                 <p>
                   <Trans>
                     Push permission was not granted since your last login.
@@ -1521,7 +1521,7 @@ function PushNotificationsSection({
           </li>
         </ul>
       </section>
-      <p class="section-postnote">
+      <p className="section-postnote">
         <small>
           <Trans>
             NOTE: Push notifications only work for <b>one account</b>.

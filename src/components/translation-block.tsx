@@ -3,8 +3,8 @@ import './translation-block.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import PQueue from 'p-queue';
 import pRetry from 'p-retry';
-import type { ComponentChildren } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import languages from '../data/translang-languages.json';
 import {
@@ -181,7 +181,7 @@ function TranslationBlock({
   text = '',
   mini,
   autoDetected,
-}: TranslationBlockProps): ComponentChildren {
+}: TranslationBlockProps): ReactNode {
   const { t } = useLingui();
   const targetLangRaw = getTranslateTargetLanguage(true);
   const targetLang: string | undefined = targetLangRaw || undefined;
@@ -298,7 +298,7 @@ function TranslationBlock({
     ) {
       return (
         <LazyShazam>
-          <div class="status-translation-block-mini">
+          <div className="status-translation-block-mini">
             <Icon
               icon="translate"
               alt={t`Auto-translated from ${sourceLangText ?? ''}`}
@@ -318,12 +318,12 @@ function TranslationBlock({
   }
 
   return (
-    <div class="status-translation-block">
+    <div className="status-translation-block">
       <details ref={detailsRef}>
         <summary>
           <button
             type="button"
-            class={uiState === 'loading' ? 'loading-mask' : ''}
+            className={uiState === 'loading' ? 'loading-mask' : ''}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -346,10 +346,10 @@ function TranslationBlock({
             </span>
           </button>
         </summary>
-        <div class="translated-block">
-          <div class="translation-info insignificant">
+        <div className="translated-block">
+          <div className="translation-info insignificant">
             <select
-              class="translated-source-select"
+              className="translated-source-select"
               disabled={uiState === 'loading'}
               onChange={(e) => {
                 apiSourceLang.current = e.currentTarget.value;
@@ -381,18 +381,18 @@ function TranslationBlock({
             <Loader abrupt hidden={uiState !== 'loading'} />
           </div>
           {uiState === 'error' ? (
-            <p class="ui-state">
+            <p className="ui-state">
               <Trans>Failed to translate</Trans>
             </p>
           ) : (
             !!translatedContent && (
               <>
-                <output class="translated-content" lang={targetLang} dir="auto">
+                <output className="translated-content" lang={targetLang} dir="auto">
                   {translatedContent}
                 </output>
                 {!!pronunciationContent && (
                   <output
-                    class="translated-pronunciation-content"
+                    className="translated-pronunciation-content"
                     tabIndex={-1}
                     onClick={(e) => {
                       e.currentTarget.classList.toggle('expand');

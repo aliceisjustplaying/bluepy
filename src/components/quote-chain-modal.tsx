@@ -2,8 +2,8 @@ import './quote-chain-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { Ref } from 'preact';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { Ref } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import { getStatus } from '../utils/states';
@@ -151,9 +151,9 @@ export default function QuoteChainModal({
   }, [statusId, fetchQuoteChain]);
 
   return (
-    <div id="quote-chain-modal" class="sheet" tabindex={-1}>
+    <div id="quote-chain-modal" className="sheet" tabIndex={-1}>
       {onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -162,20 +162,20 @@ export default function QuoteChainModal({
           <Trans>Quote chain</Trans>
         </b>{' '}
         {posts.length > 0 && (
-          <small class="tag insignificant collapsed">
+          <small className="tag insignificant collapsed">
             {posts.length}
             {(!!nextPostID || uiState === 'loading') && '+'}
           </small>
         )}
       </header>
       <main>
-        <ul class="quoted-posts-list">
+        <ul className="quoted-posts-list">
           {posts.map((post) => (
-            <li key={post.id} class="quoted-post-item">
+            <li key={post.id} className="quoted-post-item">
               <TruncatedLink
                 to={instance ? `/${instance}/s/${post.id}` : `/s/${post.id}`}
-                class="status-link"
-                onContextMenu={(e: MouseEvent) => {
+                className="status-link"
+                onContextMenu={(e: React.MouseEvent) => {
                   const target = e.target as Element | null;
                   const postEl = target?.querySelector('.status');
                   if (postEl) {
@@ -203,17 +203,17 @@ export default function QuoteChainModal({
           ))}
         </ul>
         {uiState === 'error' ? (
-          <p class="ui-state">
+          <p className="ui-state">
             <Trans>Failed to unwrap quote chain</Trans>
           </p>
         ) : uiState === 'loading' ? (
-          <p class="ui-state">
+          <p className="ui-state">
             <Loader abrupt />
           </p>
         ) : nextPostID ? (
           <button
             type="button"
-            class="light block"
+            className="light block"
             onClick={() => {
               void fetchQuoteChain(nextPostID);
             }}
@@ -221,7 +221,7 @@ export default function QuoteChainModal({
             <Icon icon="arrow-down" /> <Trans>Continue unwrapping…</Trans>
           </button>
         ) : (
-          <p class="ui-state insignificant">
+          <p className="ui-state insignificant">
             <Trans>The end.</Trans>
           </p>
         )}

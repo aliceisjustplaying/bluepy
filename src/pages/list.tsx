@@ -4,11 +4,11 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
 import type {
-  ComponentChildren,
+  ReactNode,
   ComponentType,
-  TargetedMouseEvent,
-} from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+  MouseEvent,
+} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
@@ -87,11 +87,11 @@ interface ListMembersEndpoint {
 }
 
 // react-intersection-observer's InView ships without working JSX
-// component typings under preact compat resolution. Re-type for our usage.
+// component typings under React component types. Re-type for our usage.
 type InViewProps = {
   as?: string;
   onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
+  children?: ReactNode;
 };
 const InView: ComponentType<InViewProps> =
   InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
@@ -211,14 +211,14 @@ function List(props: ListProps) {
         showReplyParent
         // refresh={reloadCount}
         headerStart={
-          // <Link to="/l" class="button plain">
+          // <Link to="/l" className="button plain">
           //   <Icon icon="list" size="l" />
           // </Link>
           <Menu2
             overflow="auto"
             menuClassName="lists-picker-menu"
             menuButton={
-              <button type="button" class="plain">
+              <button type="button" className="plain">
                 <Icon icon="list" size="l" alt={t`Lists & Feeds`} />
                 <Icon icon="chevron-down" size="s" />
               </button>
@@ -249,8 +249,8 @@ function List(props: ListProps) {
                 {menuLists.map((menuList) => (
                   <MenuLink key={menuList.id} to={`/l/${menuList.id}`}>
                     <span>
-                      {menuList.title}
-                      {menuList.exclusive && (
+                      {String(menuList.title)}
+                      {Boolean(menuList.exclusive) && (
                         <>
                           {' '}
                           <ListExclusiveBadge />
@@ -279,7 +279,7 @@ function List(props: ListProps) {
         }
         headerEnd={
           <>
-            <Link to="/notifications" class="button plain notifications-button">
+            <Link to="/notifications" className="button plain notifications-button">
               <Icon icon="notification" size="l" alt={t`Notifications`} />
             </Link>
             {!isFeed && (
@@ -290,7 +290,7 @@ function List(props: ListProps) {
                 viewScroll="close"
                 position="anchor"
                 menuButton={
-                  <button type="button" class="plain">
+                  <button type="button" className="plain">
                     <Icon icon="more" size="l" alt={t`More`} />
                   </button>
                 }
@@ -331,7 +331,7 @@ function List(props: ListProps) {
       />
       {showListAddEditModal && (
         <Modal
-          onClick={(e: TargetedMouseEvent<HTMLElement>) => {
+          onClick={(e: React.MouseEvent<HTMLElement>) => {
             if (e.target === e.currentTarget) {
               setShowListAddEditModal(false);
             }
@@ -370,7 +370,7 @@ function List(props: ListProps) {
       )}
       {showManageMembersModal && (
         <Modal
-          onClick={(e: TargetedMouseEvent<HTMLElement>) => {
+          onClick={(e: React.MouseEvent<HTMLElement>) => {
             if (e.target === e.currentTarget) {
               setShowManageMembersModal(false);
             }
@@ -458,9 +458,9 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
   }, []);
 
   return (
-    <div class="sheet" id="list-manage-members-container">
+    <div className="sheet" id="list-manage-members-container">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -486,7 +486,7 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
             >
               <button
                 type="button"
-                class="light block"
+                className="light block"
                 onClick={() => {
                   fetchMembers();
                 }}
@@ -521,7 +521,7 @@ function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
       confirmLabel={
         <span>
           <Trans>
-            Remove <span class="bidi-isolate">@{account.username}</span> from
+            Remove <span className="bidi-isolate">@{account.username}</span> from
             list?
           </Trans>
         </span>
@@ -563,7 +563,7 @@ function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
     >
       <button
         type="button"
-        class={`light ${removed ? '' : 'danger'}`}
+        className={`light ${removed ? '' : 'danger'}`}
         disabled={uiState === 'loading'}
       >
         {removed ? t`Add` : t`Remove…`}

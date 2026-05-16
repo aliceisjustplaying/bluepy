@@ -71,7 +71,7 @@ export default function StatusUtilityMenu({
   return (
     <>
       {canTranslate && (
-        <div class={supportsTTS ? 'menu-horizontal' : ''}>
+        <div className={supportsTTS ? 'menu-horizontal' : ''}>
           {enableTranslate ? (
             <MenuItem
               disabled={forceTranslate}
@@ -147,17 +147,17 @@ export default function StatusUtilityMenu({
       {!isSizeLarge && (
         <MenuLink
           to={instance ? `/${instance}/s/${id}` : `/s/${id}`}
-          onClick={(e: MouseEvent) => {
+          onClick={(e: React.MouseEvent) => {
             onStatusLinkClick(e, status);
           }}
         >
           <Icon icon="arrows-right" />
           <small>
             <Trans>
-              View post by <span class="bidi-isolate">@{username || acct}</span>
+              View post by <span className="bidi-isolate">@{username || acct}</span>
             </Trans>
             <br />
-            <span class="more-insignificant">
+            <span className="more-insignificant">
               {_(visibilityText[visibility])} • {createdDateText}
             </span>
           </small>
@@ -173,16 +173,16 @@ export default function StatusUtilityMenu({
           <small>
             <Trans>Show Edit History</Trans>
             <br />
-            <span class="more-insignificant">
+            <span className="more-insignificant">
               <Trans>Edited: {editedDateText}</Trans>
             </span>
           </small>
         </MenuItem>
       )}
-      <MenuItem href={url} target="_blank">
+      <MenuItem href={url || undefined} target="_blank">
         <Icon icon="external" />
         <small
-          class="menu-double-lines should-cloak"
+          className="menu-double-lines should-cloak"
           style={{
             maxWidth: '16em',
           }}
@@ -190,7 +190,7 @@ export default function StatusUtilityMenu({
           {nicePostURL(url)}
         </small>
       </MenuItem>
-      <div class="menu-horizontal">
+      <div className="menu-horizontal">
         <MenuItem
           onClick={() => {
             void (async () => {

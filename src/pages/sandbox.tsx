@@ -1,7 +1,7 @@
 import './sandbox.css';
 
-import type { ComponentType, TargetedEvent, TargetedMouseEvent } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import type { ComponentType, SyntheticEvent, MouseEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { uid } from 'uid/single';
 
 import testGIFURL from '../assets/sandbox/big-buck-bunny-muted.webm';
@@ -22,7 +22,7 @@ type SandboxStatusComponentProps = Omit<
 > & {
   status?: MockStatus;
   onMediaClick?: (
-    e: Event,
+    e: React.SyntheticEvent,
     i: number,
     media: unknown,
     status: { mediaAttachments?: unknown[] },
@@ -157,7 +157,7 @@ const MOCK_STATUS = ({
 <p>ᠬᠦᠮᠦᠨ ᠪᠦᠷ ᠲᠥᠷᠥᠵᠦ ᠮᠡᠨᠳᠡᠯᠡᠬᠦ ᠡᠷᠬᠡ ᠴᠢᠯᠥᠭᠡ ᠲᠡᠢ᠂ ᠠᠳᠠᠯᠢᠬᠠᠨ ᠨᠡᠷ᠎ᠡ ᠲᠥᠷᠥ ᠲᠡᠢ᠂ ᠢᠵᠢᠯ ᠡᠷᠬᠡ ᠲᠡᠢ ᠪᠠᠢᠠᠭ᠃</p>
 <p>ᠬᠦᠮᠦᠨ ᠪᠦᠷ ᠲᠥᠷᠥᠵᠦ ᠮᠡᠨᠳᠡᠯᠡᠬᠦ ᠡᠷᠬᠡ ᠴᠢᠯᠥᠭᠡ ᠲᠡᠢ᠂ ᠠᠳᠠᠯᠢᠬᠠᠨ ᠨᠡᠷ᠎ᠡ ᠲᠥᠷᠥ ᠲᠡᠢ᠂ ᠢᠵᠢᠯ ᠡᠷᠬᠡ ᠲᠡᠢ ᠪᠠᠢᠠᠭ᠃</p>`;
   const linksContent = `<p>This is a test status with links. Check out <a href="https://example.com">this website</a> and <a href="https://google.com">Google</a>. Links should be clickable and properly styled.</p>`;
-  const hashtagsContent = `<p>This is a test status with hashtags. <a href="https://example.social/tags/coding" class="hashtag" rel="tag">#coding</a> <a href="https://example.social/tags/webdev" class="hashtag" rel="tag">#webdev</a> <a href="https://example.social/tags/javascript" class="hashtag" rel="tag">#javascript</a> <a href="https://example.social/tags/reactjs" class="hashtag" rel="tag">#reactjs</a> <a href="https://example.social/tags/preact" class="hashtag" rel="tag">#preact</a></p><p>Hashtags should be formatted and clickable.</p>`;
+  const hashtagsContent = `<p>This is a test status with hashtags. <a href="https://example.social/tags/coding" class="hashtag" rel="tag">#coding</a> <a href="https://example.social/tags/webdev" class="hashtag" rel="tag">#webdev</a> <a href="https://example.social/tags/javascript" class="hashtag" rel="tag">#javascript</a> <a href="https://example.social/tags/reactjs" class="hashtag" rel="tag">#reactjs</a> <a href="https://example.social/tags/react" class="hashtag" rel="tag">#react</a></p><p>Hashtags should be formatted and clickable.</p>`;
   const mentionsContent = `<p>This is a test status with mentions. Hello <a href="https://example.social/@cheeaun" class="u-url mention">@cheeaun</a> and <a href="https://example.social/@test" class="u-url mention">@test</a>! What do you think about this <a href="https://example.social/@another_user" class="u-url mention">@another_user</a>?</p><p>Mentions should be highlighted and clickable.</p>`;
   const mathContent = `<p>This is a test status with mathematical expressions. Here's an inline formula \\( E = mc^2 \\) and a display formula:</p><p>\\[ \\frac{\\left(n!\\right)^2}{2}\\sum _{k=0}^m\\frac{1}{n-k}{n-k \\choose k}^2 \\]</p><p>The MathBlock component should detect and offer to render these LaTeX expressions.</p>`;
 
@@ -360,7 +360,7 @@ const MOCK_STATUS = ({
       'webdev',
       'javascript',
       'reactjs',
-      'preact',
+      'react',
       'programming',
       'development',
       'frontend',
@@ -993,14 +993,14 @@ export default function Sandbox() {
   return (
     <main id="sandbox">
       <header>
-        <a href="/" class="button plain4">
+        <a href="/" className="button plain4">
           ×
         </a>
         <h1>Sandbox</h1>
       </header>
       <div
-        class={`sandbox-preview ${toggleState.displayStyle}`}
-        onClickCapture={(e: TargetedMouseEvent<HTMLDivElement>) => {
+        className={`sandbox-preview ${toggleState.displayStyle}`}
+        onClickCapture={(e: React.MouseEvent<HTMLDivElement>) => {
           const target = e.target as Element | null;
           const isAllowed = target?.closest(
             '.media, .media-caption, .spoiler-button, .spoiler-media-button, .math-block button, .status-card-unfulfilled button, .poll .poll-results-button, .poll .poll-hide-results-button, .poll-options .poll-option',
@@ -1034,7 +1034,7 @@ export default function Sandbox() {
               key={`status-${toggleState.mediaPreference}-${toggleState.expandWarnings}-${Date.now()}`}
               // Prevent opening as URL
               onMediaClick={(
-                e: Event,
+                e: React.SyntheticEvent,
                 i: number,
                 _media: unknown,
                 status: { mediaAttachments?: unknown[] },
@@ -1049,13 +1049,13 @@ export default function Sandbox() {
           )}
         </FilterContext.Provider>
       </div>
-      <form class="sandbox-toggles" onSubmit={(e) => e.preventDefault()}>
+      <form className="sandbox-toggles" onSubmit={(e) => e.preventDefault()}>
         <header>
           <h2>Post Controls</h2>
           <button
             type="button"
             onClick={resetToInitialState}
-            class="reset-button small plain6"
+            className="reset-button small plain6"
             hidden={!hasChanges()}
           >
             Reset
@@ -1333,7 +1333,7 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={parseInt(toggleState.mediaCount) > 0}
-                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                       const newHasMedia = e.currentTarget.checked;
                       const updates: Partial<ToggleState> = {
                         mediaCount: newHasMedia ? '1' : '0',
@@ -1359,7 +1359,7 @@ export default function Sandbox() {
                         : toggleState.mediaCount
                     }
                     step="1"
-                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                       const value = parseInt(e.currentTarget.value, 10) || 1;
                       updateToggles(({ mediaTypes }) => {
                         mediaTypes[value - 1] = 'image';
@@ -1374,7 +1374,7 @@ export default function Sandbox() {
                 </label>
 
                 {parseInt(toggleState.mediaCount) > 0 && (
-                  <ul class="media-types">
+                  <ul className="media-types">
                     {Array.from(
                       { length: parseInt(toggleState.mediaCount) },
                       (_, index) => (
@@ -1456,7 +1456,7 @@ export default function Sandbox() {
                   <input
                     type="checkbox"
                     checked={parseInt(toggleState.pollCount) > 0}
-                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                       const updates: Partial<ToggleState> = {
                         pollCount: e.currentTarget.checked ? '2' : '0',
                       };
@@ -1474,10 +1474,10 @@ export default function Sandbox() {
                   <input
                     type="number"
                     min="2"
-                    autocomplete="off"
+                    autoComplete="off"
                     value={toggleState.pollCount}
                     step="2"
-                    onChange={(e: TargetedEvent<HTMLInputElement>) =>
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) =>
                       updateToggles({ pollCount: e.currentTarget.value })
                     }
                     disabled={parseInt(toggleState.pollCount) === 0}
@@ -1595,7 +1595,7 @@ export default function Sandbox() {
                     max="10"
                     value={toggleState.quotesCount}
                     step="1"
-                    onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                       // Make sure to convert to a number first to avoid string concatenation
                       const count = parseInt(e.currentTarget.value, 10) || 1;
                       updateToggles({ quotesCount: String(count) });
@@ -1614,7 +1614,7 @@ export default function Sandbox() {
                           max="2"
                           value={toggleState.quoteNestingLevel}
                           step="1"
-                          onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                          onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                             // Make sure to convert to a number first to avoid string concatenation
                             const level =
                               parseInt(e.currentTarget.value, 10) || 0;
@@ -1635,7 +1635,7 @@ export default function Sandbox() {
                               value="accepted"
                               checked={toggleState.quoteState === 'accepted'}
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1653,7 +1653,7 @@ export default function Sandbox() {
                               value="deleted"
                               checked={toggleState.quoteState === 'deleted'}
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1673,7 +1673,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'unauthorized'
                               }
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1691,7 +1691,7 @@ export default function Sandbox() {
                               value="pending"
                               checked={toggleState.quoteState === 'pending'}
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1709,7 +1709,7 @@ export default function Sandbox() {
                               value="rejected"
                               checked={toggleState.quoteState === 'rejected'}
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1727,7 +1727,7 @@ export default function Sandbox() {
                               value="revoked"
                               checked={toggleState.quoteState === 'revoked'}
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1747,7 +1747,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'blocked_account'
                               }
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1767,7 +1767,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'blocked_domain'
                               }
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1787,7 +1787,7 @@ export default function Sandbox() {
                                 toggleState.quoteState === 'muted_account'
                               }
                               onChange={(
-                                e: TargetedEvent<HTMLInputElement>,
+                                e: SyntheticEvent<HTMLInputElement>,
                               ) => {
                                 updateToggles({
                                   quoteState: e.currentTarget.value,
@@ -1974,7 +1974,7 @@ export default function Sandbox() {
               </li>
             </ul>
           </li>
-          <li class="toggle-display">
+          <li className="toggle-display">
             <b>Display</b>
             <ul>
               <li>

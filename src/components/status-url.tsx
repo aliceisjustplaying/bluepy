@@ -15,10 +15,10 @@ export function nicePostURL(url: string | null | undefined) {
         <>
           /{username}
           <wbr />
-          <span class="more-insignificant">/{restPath}</span>
+          <span className="more-insignificant">/{restPath}</span>
         </>
       ) : (
-        <span class="more-insignificant">{path}</span>
+        <span className="more-insignificant">{path}</span>
       )}
     </>
   );

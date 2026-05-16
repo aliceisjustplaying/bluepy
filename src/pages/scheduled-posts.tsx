@@ -2,7 +2,7 @@ import './scheduled-posts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
-import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import Icon from '../components/icon';
@@ -30,7 +30,7 @@ function Status(props: {
   size?: string;
   previewMode?: boolean;
   readOnly?: boolean;
-  onMediaClick?: (e: Event, i: number, media: unknown, status: unknown) => void;
+  onMediaClick?: (e: React.SyntheticEvent, i: number, media: unknown, status: unknown) => void;
   [key: string]: unknown;
 }) {
   return <StatusComponent {...(props as StatusComponentProps)} />;
@@ -103,13 +103,13 @@ export default function ScheduledPosts() {
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
   );
-  const [reloadCount, reload] = useReducer<number, undefined>((c) => c + 1, 0);
+  const [reloadCount, reload] = useReducer((c: number) => c + 1, 0);
   const [showScheduledPostModal, setShowScheduledPostModal] = useState<
     ScheduledPostModalState | false
   >(false);
 
   useEffect(() => {
-    reload(undefined);
+    reload();
   }, [snapStates.reloadScheduledPosts]);
 
   useEffect(() => {
@@ -144,20 +144,20 @@ export default function ScheduledPosts() {
   }, [reloadCount, masto]);
 
   return (
-    <div id="scheduled-posts-page" class="deck-container" tabIndex={-1}>
-      <div class="timeline-deck deck">
+    <div id="scheduled-posts-page" className="deck-container" tabIndex={-1}>
+      <div className="timeline-deck deck">
         <header>
-          <div class="header-grid">
-            <div class="header-side">
+          <div className="header-grid">
+            <div className="header-side">
               <NavMenu />
-              <Link to="/" class="button plain">
+              <Link to="/" className="button plain">
                 <Icon icon="home" size="l" alt={t`Home`} />
               </Link>
             </div>
             <h1>
               <Trans>Scheduled Posts</Trans>
             </h1>
-            <div class="header-side">
+            <div className="header-side">
               <Menu2
                 portal
                 setDownOverflow
@@ -165,14 +165,14 @@ export default function ScheduledPosts() {
                 viewScroll="close"
                 position="anchor"
                 menuButton={
-                  <button type="button" class="plain">
+                  <button type="button" className="plain">
                     <Icon icon="more" size="l" alt={t`More`} />
                   </button>
                 }
               >
                 <MenuItem
                   onClick={() => {
-                    reload(undefined);
+                    reload();
                   }}
                 >
                   <Icon icon="refresh" size="l" />
@@ -186,11 +186,11 @@ export default function ScheduledPosts() {
         </header>
         <main>
           {!scheduledPosts.length ? (
-            <p class="ui-state">
+            <p className="ui-state">
               {uiState === 'loading' ? <Loader /> : t`No scheduled posts.`}
             </p>
           ) : (
-            <ul class="posts-list">
+            <ul className="posts-list">
               {scheduledPosts.map((post) => {
                 const { id, params, scheduledAt, mediaAttachments } = post;
                 const {
@@ -293,9 +293,9 @@ function ScheduledPostPreview({
   }, [scheduledAt]);
 
   return (
-    <button type="button" class="textual block" onClick={onClick}>
-      <div class={`post-schedule-meta post-schedule-${icon}`}>
-        <Icon icon={icon} class="insignificant" />{' '}
+    <button type="button" className="textual block" onClick={onClick}>
+      <div className={`post-schedule-meta post-schedule-${icon}`}>
+        <Icon icon={icon} className="insignificant" />{' '}
         <span>
           <Trans comment="Scheduled [in 1 day] ([Thu, Feb 27, 6:30:00 PM])">
             Scheduled{' '}
@@ -392,8 +392,8 @@ function ScheduledPostEdit({
   // }, [post.id, quotedStatusId]);
 
   return (
-    <div id="scheduled-post-sheet" class="sheet">
-      <button type="button" class="sheet-close" onClick={onClose}>
+    <div id="scheduled-post-sheet" className="sheet">
+      <button type="button" className="sheet-close" onClick={onClose}>
         <Icon icon="x" size="l" alt={t`Close`} />
       </button>
       <header>
@@ -417,7 +417,7 @@ function ScheduledPostEdit({
       </header>
       <main tabIndex={-1}>
         {!!replyToStatus && (
-          <div class="status-reply">
+          <div className="status-reply">
             <Status status={replyToStatus} size="s" previewMode readOnly />
           </div>
         )}
@@ -458,7 +458,7 @@ function ScheduledPostEdit({
           }}
         >
           <footer>
-            <div class="row">
+            <div className="row">
               <span>
                 <ScheduledAtField
                   scheduledAt={scheduledAt}
@@ -466,10 +466,10 @@ function ScheduledPostEdit({
                     setNewScheduledAt(date);
                   }}
                 />{' '}
-                <small class="ib">{localTZ}</small>
+                <small className="ib">{localTZ}</small>
               </span>
             </div>
-            <div class="row">
+            <div className="row">
               <button
                 disabled={
                   !differentScheduledAt || uiState === 'loading' || pastSchedule
@@ -477,7 +477,7 @@ function ScheduledPostEdit({
               >
                 <Trans>Reschedule</Trans>
               </button>
-              <span class="grow" />
+              <span className="grow" />
               <MenuConfirm
                 align="end"
                 menuItemClassName="danger"
@@ -507,7 +507,7 @@ function ScheduledPostEdit({
               >
                 <button
                   type="button"
-                  class="light danger"
+                  className="light danger"
                   disabled={uiState === 'loading' || pastSchedule}
                 >
                   <Trans>Delete…</Trans>

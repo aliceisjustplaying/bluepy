@@ -3,8 +3,8 @@ import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { HTMLAttributes, VNode } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { HTMLAttributes, ReactElement } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toUnicode as punycodeToUnicode } from 'punycode/';
 
 import { api } from '../utils/api';
@@ -359,17 +359,17 @@ function RelatedActions({
 
   return (
     <>
-      <div class="actions">
+      <div className="actions">
         <span>
           {followedBy ? (
-            <span class="tag">
+            <span className="tag">
               <Trans>Follows you</Trans>
             </span>
           ) : lastStatusAt ? (
-            <small class="insignificant">
+            <small className="insignificant">
               <Trans>
                 Last post:{' '}
-                <span class="ib">
+                <span className="ib">
                   {niceDateTime(lastStatusAt, {
                     hideTime: true,
                   })}
@@ -380,21 +380,21 @@ function RelatedActions({
             <span />
           )}
           {muting && (
-            <span class="tag danger">
+            <span className="tag danger">
               <Trans>Muted</Trans>
             </span>
           )}
           {blocking && (
-            <span class="tag danger">
+            <span className="tag danger">
               <Trans>Blocked</Trans>
             </span>
           )}
         </span>{' '}
-        <span class="buttons">
+        <span className="buttons">
           {!!privateNote && (
             <button
               type="button"
-              class="private-note-tag"
+              className="private-note-tag"
               title={t`Notes`}
               onClick={() => {
                 setShowPrivateNoteModal(true);
@@ -407,7 +407,7 @@ function RelatedActions({
           {currentAuthenticated && isSelf && (
             <button
               type="button"
-              class="plain"
+              className="plain"
               onClick={() => {
                 states.showQrCodeModal = {
                   text: url,
@@ -435,7 +435,7 @@ function RelatedActions({
             position="anchor"
             overflow="auto"
             menuButton={
-              <button type="button" class="plain4" disabled={loading}>
+              <button type="button" className="plain4" disabled={loading}>
                 <Icon icon="more2" size="l" alt={t`More`} />
               </button>
             }
@@ -472,7 +472,7 @@ function RelatedActions({
                   <Icon icon="at" />
                   <span>
                     <Trans>
-                      Mention <span class="bidi-isolate">@{username}</span>
+                      Mention <span className="bidi-isolate">@{username}</span>
                     </Trans>
                   </span>
                 </MenuItem>
@@ -485,7 +485,7 @@ function RelatedActions({
                     <Icon icon="search" />
                     <span>
                       <Trans>
-                        Search <span class="bidi-isolate">@{username}</span>'s
+                        Search <span className="bidi-isolate">@{username}</span>'s
                         posts
                       </Trans>
                     </span>
@@ -650,14 +650,14 @@ function RelatedActions({
                     <Icon icon="list" />
                     {lists.length ? (
                       <>
-                        <small class="menu-grow">
+                        <small className="menu-grow">
                           <Trans>Add/Remove from Lists</Trans>
                           <br />
-                          <span class="more-insignificant">
+                          <span className="more-insignificant">
                             {lists.map((list) => list.title).join(', ')}
                           </span>
                         </small>
-                        <small class="more-insignificant">{lists.length}</small>
+                        <small className="more-insignificant">{lists.length}</small>
                       </>
                     ) : (
                       <span>
@@ -712,16 +712,16 @@ function RelatedActions({
               <small>
                 <Trans>Copy handle</Trans>
                 <br />
-                <span class="more-insignificant bidi-isolate">
+                <span className="more-insignificant bidi-isolate">
                   @{currentInfo?.acct || acctWithInstance}
                 </span>
               </small>
             </MenuItem>
             <MenuItem href={url} target="_blank">
               <Icon icon="external" />
-              <small class="menu-double-lines">{niceAccountURL(url)}</small>
+              <small className="menu-double-lines">{niceAccountURL(url)}</small>
             </MenuItem>
-            <div class="menu-horizontal">
+            <div className="menu-horizontal">
               <MenuItem
                 onClick={() => {
                   // Copy url to clipboard
@@ -808,7 +808,7 @@ function RelatedActions({
                     <Icon icon="unmute" />
                     <span>
                       <Trans>
-                        Unmute <span class="bidi-isolate">@{username}</span>
+                        Unmute <span className="bidi-isolate">@{username}</span>
                       </Trans>
                     </span>
                   </MenuItem>
@@ -822,9 +822,9 @@ function RelatedActions({
                     label={
                       <>
                         <Icon icon="mute" />
-                        <span class="menu-grow">
+                        <span className="menu-grow">
                           <Trans>
-                            Mute <span class="bidi-isolate">@{username}</span>…
+                            Mute <span className="bidi-isolate">@{username}</span>…
                           </Trans>
                         </span>
                         <span
@@ -838,7 +838,7 @@ function RelatedActions({
                       </>
                     }
                   >
-                    <div class="menu-wrap">
+                    <div className="menu-wrap">
                       {MUTE_DURATIONS.map((duration) => (
                         <MenuItem
                           key={duration}
@@ -898,7 +898,7 @@ function RelatedActions({
                         <Icon icon="user-x" />
                         <span>
                           <Trans>
-                            Remove <span class="bidi-isolate">@{username}</span>{' '}
+                            Remove <span className="bidi-isolate">@{username}</span>{' '}
                             from followers?
                           </Trans>
                         </span>
@@ -943,7 +943,7 @@ function RelatedActions({
                       <Icon icon="block" />
                       <span>
                         <Trans>
-                          Block <span class="bidi-isolate">@{username}</span>?
+                          Block <span className="bidi-isolate">@{username}</span>?
                         </Trans>
                       </span>
                     </>
@@ -999,7 +999,7 @@ function RelatedActions({
                       <Icon icon="unblock" />
                       <span>
                         <Trans>
-                          Unblock <span class="bidi-isolate">@{username}</span>
+                          Unblock <span className="bidi-isolate">@{username}</span>
                         </Trans>
                       </span>
                     </>
@@ -1008,7 +1008,7 @@ function RelatedActions({
                       <Icon icon="block" />
                       <span>
                         <Trans>
-                          Block <span class="bidi-isolate">@{username}</span>…
+                          Block <span className="bidi-isolate">@{username}</span>…
                         </Trans>
                       </span>
                     </>
@@ -1025,7 +1025,7 @@ function RelatedActions({
                   <Icon icon="flag" />
                   <span>
                     <Trans>
-                      Report <span class="bidi-isolate">@{username}</span>…
+                      Report <span className="bidi-isolate">@{username}</span>…
                     </Trans>
                   </span>
                 </MenuItem>
@@ -1053,17 +1053,19 @@ function RelatedActions({
               <>
                 <MenuDivider />
                 <MenuItem
-                  onClick={async () => {
-                    const relationships = await getAccountsEndpoint(
-                      currentMasto,
-                    ).relationships.fetch({
-                      id: [accountID.current],
-                    });
-                    const { note: fetchedNote } = relationships[0] || {};
-                    if (fetchedNote) {
-                      alert(fetchedNote);
-                      console.log(fetchedNote);
-                    }
+                  onClick={() => {
+                    void (async () => {
+                      const relationships = await getAccountsEndpoint(
+                        currentMasto,
+                      ).relationships.fetch({
+                        id: [accountID.current],
+                      });
+                      const { note: fetchedNote } = relationships[0] || {};
+                      if (fetchedNote) {
+                        alert(fetchedNote);
+                        console.log(fetchedNote);
+                      }
+                    })();
                   }}
                 >
                   <Icon icon="pencil" />
@@ -1139,7 +1141,7 @@ function RelatedActions({
             >
               <button
                 type="button"
-                class={following || requested ? 'light swap' : ''}
+                className={following || requested ? 'light swap' : ''}
                 data-swap-state={following || requested ? 'danger' : ''}
                 disabled={loading}
               >
@@ -1224,7 +1226,7 @@ function RelatedActions({
 
 function niceAccountURL(
   url: string | null | undefined,
-): VNode<HTMLAttributes<HTMLElement>> | undefined {
+): ReactElement<HTMLAttributes<HTMLElement>> | undefined {
   if (!url) return undefined;
   const urlObj = URL.parse(url);
   if (!urlObj) return undefined;
@@ -1232,7 +1234,7 @@ function niceAccountURL(
   const path = pathname.replace(/\/$/, '').replace(/^\//, '');
   return (
     <>
-      <span class="more-insignificant">{punycodeToUnicode(host)}/</span>
+      <span className="more-insignificant">{punycodeToUnicode(host)}/</span>
       <wbr />
       <span>{path}</span>
     </>

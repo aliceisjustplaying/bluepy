@@ -2,8 +2,8 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu, MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { MenuInstance } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { TargetedMouseEvent } from 'preact';
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import type { MouseEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
@@ -92,7 +92,7 @@ export default function ComposeButton() {
 
   function handleButton(
     e:
-      | TargetedMouseEvent<HTMLButtonElement>
+      | MouseEvent<HTMLButtonElement>
       | KeyboardEvent
       | { key?: string; shiftKey?: boolean },
   ) {
@@ -129,7 +129,7 @@ export default function ComposeButton() {
 
   useHotkeys('c, shift+c', handleButton, {
     useKey: true,
-    ignoreEventWhen: (e: KeyboardEvent) => {
+    ignoreEventWhen: (e) => {
       const hasModal = !!document.querySelector('#modal-container > *');
       return hasModal || e.metaKey || e.ctrlKey || e.altKey;
     },
@@ -193,7 +193,7 @@ export default function ComposeButton() {
           setMenuOpen(true);
         }}
         {...bindLongPress()}
-        class={`${snapStates.composerState.minimized ? 'min' : ''} ${
+        className={`${snapStates.composerState.minimized ? 'min' : ''} ${
           snapStates.composerState.publishing ? 'loading' : ''
         } ${snapStates.composerState.publishingError ? 'error' : ''}`}
       >
@@ -202,7 +202,7 @@ export default function ComposeButton() {
       <ControlledMenu
         ref={menuRef}
         state={menuOpen ? 'open' : undefined}
-        anchorRef={buttonRef}
+        anchorRef={buttonRef as never}
         onClose={() => setMenuOpen(false)}
         direction="top"
         gap={8} // Add gap between menu and button
@@ -251,7 +251,7 @@ export default function ComposeButton() {
               return (
                 <MenuItem key={post.id} onClick={() => handleReplyToPost(post)}>
                   <small>
-                    <div class="menu-post-text">
+                    <div className="menu-post-text">
                       {statusPeek(post as StatusPeekPayload)}
                     </div>
                     <span className="more-insignificant">

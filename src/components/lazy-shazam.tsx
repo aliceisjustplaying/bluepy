@@ -1,8 +1,8 @@
 /*
   Rendered but hidden. Only show when visible
 */
-import type { ComponentChildren } from 'preact';
-import { useCallback, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import type { ReactNode } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { useOnInView } from 'react-intersection-observer';
 
 // The sticky header, usually at the top
@@ -12,7 +12,7 @@ const shazamIDs: Record<string, boolean> = {};
 
 interface LazyShazamProps {
   id?: string;
-  children?: ComponentChildren;
+  children?: ReactNode;
 }
 
 export default function LazyShazam({ id, children }: LazyShazamProps) {
@@ -53,8 +53,8 @@ export default function LazyShazam({ id, children }: LazyShazamProps) {
   if (visibleStart) return children;
 
   return (
-    <div ref={containerRef} class="shazam-container no-animation" hidden>
-      <div ref={ref} class="shazam-container-inner">
+    <div ref={containerRef} className="shazam-container no-animation" hidden>
+      <div ref={ref} className="shazam-container-inner">
         {children}
       </div>
     </div>

@@ -45,21 +45,21 @@ function ComposePoll({
   const { options, expiresIn, multiple } = poll;
 
   return (
-    <div class={`poll ${multiple ? 'multiple' : ''}`}>
-      <div class="poll-choices">
+    <div className={`poll ${multiple ? 'multiple' : ''}`}>
+      <div className="poll-choices">
         {options.map((option, i) => (
-          <div class="poll-choice" key={i}>
-            <TextExpander keys=":" class="poll-field-container">
+          <div className="poll-choice" key={i}>
+            <TextExpander keys=":" className="poll-field-container">
               <input
                 required
                 type="text"
                 value={option}
                 disabled={disabled}
-                maxlength={maxCharactersPerOption}
+                maxLength={maxCharactersPerOption}
                 placeholder={t`Choice ${i + 1}`}
                 lang={lang}
-                spellcheck={true}
-                autocomplete="off"
+                spellCheck={true}
+                autoComplete="off"
                 dir="auto"
                 data-allow-custom-emoji="true"
                 onInput={(e) => {
@@ -71,7 +71,7 @@ function ComposePoll({
             </TextExpander>
             <button
               type="button"
-              class="plain4 poll-button"
+              className="plain4 poll-button"
               disabled={disabled || options.length <= 1}
               onClick={() => {
                 options.splice(i, 1);
@@ -84,10 +84,10 @@ function ComposePoll({
           </div>
         ))}
       </div>
-      <div class="poll-toolbar">
+      <div className="poll-toolbar">
         <button
           type="button"
-          class="plain2 poll-button"
+          className="plain2 poll-button"
           disabled={disabled || options.length >= maxOptions}
           onClick={() => {
             options.push('');
@@ -97,8 +97,8 @@ function ComposePoll({
         >
           +
         </button>{' '}
-        <div class="poll-config">
-          <label class="multiple-choices">
+        <div className="poll-config">
+          <label className="multiple-choices">
             <input
               type="checkbox"
               checked={multiple}
@@ -111,7 +111,7 @@ function ComposePoll({
             />{' '}
             <Trans>Multiple choice</Trans>
           </label>
-          <label class="expires-in">
+          <label className="expires-in">
             <Trans>Duration</Trans>{' '}
             <select
               value={expiresIn}
@@ -134,10 +134,10 @@ function ComposePoll({
                 ))}
             </select>
           </label>
-          <div class="spacer" />
+          <div className="spacer" />
           <button
             type="button"
-            class="light danger small"
+            className="light danger small"
             disabled={disabled}
             onClick={() => {
               onInput(null);

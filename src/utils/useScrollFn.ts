@@ -1,5 +1,5 @@
-import type { RefObject } from 'preact';
-import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
+import type { RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useThrottledCallback } from 'use-debounce';
 
 type ScrollDirection = 'end' | 'start' | null;

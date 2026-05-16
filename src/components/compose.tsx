@@ -5,8 +5,8 @@ import { msg, plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { deepEqual } from 'fast-equals';
-import type { RefObject, TargetedEvent, TargetedKeyboardEvent } from 'preact';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { RefObject, SyntheticEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { uid } from 'uid/single';
 import { useSnapshot } from 'valtio';
@@ -485,7 +485,6 @@ function Compose({
   const rtf = RTF(i18n.locale);
   const lf = LF(i18n.locale);
 
-  console.warn('RENDER COMPOSER');
   const apiResult = api();
   const { masto } = apiResult;
   const statusesEndpoint = getMastoV1Resource<MastoStatusesEditableSelector>(
@@ -1233,7 +1232,7 @@ function Compose({
       enabled: !supportsCloseWatcher,
       enableOnFormTags: true,
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
@@ -1250,7 +1249,7 @@ function Compose({
       enableOnFormTags: true,
       // Use keyup because Esc keydown will close the confirm dialog on Safari
       keyup: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         const modals = document.querySelectorAll('#modal-container > *');
         const hasModal = !!modals;
         const hasOnlyComposer =
@@ -1543,10 +1542,10 @@ function Compose({
       <div
         id="compose-container"
         tabIndex={-1}
-        class={standalone ? 'standalone' : ''}
+        className={standalone ? 'standalone' : ''}
       >
-        <div class="compose-top">
-          {currentAccountInfo?.avatarStatic && (
+        <div className="compose-top">
+          {Boolean(currentAccountInfo?.avatarStatic) && (
             // <Avatar
             //   url={currentAccountInfo.avatarStatic}
             //   size="xl"
@@ -1561,11 +1560,11 @@ function Compose({
             />
           )}
           {!standalone ? (
-            <span class="compose-controls">
+            <span className="compose-controls">
               {!isPopOutNotSupported && (
                 <button
                   type="button"
-                  class="plain4 pop-button"
+                  className="plain4 pop-button"
                   disabled={uiState === 'loading'}
                   onClick={() => {
                     // If there are non-ID media attachments (not yet uploaded), show confirmation dialog because they are not going to be passed to the new window
@@ -1614,14 +1613,14 @@ function Compose({
               )}
               <button
                 type="button"
-                class="plain4 min-button"
+                className="plain4 min-button"
                 onClick={onMinimize}
               >
                 <Icon icon="minimize" alt={t`Minimize`} />
               </button>{' '}
               <button
                 type="button"
-                class="plain4 close-button"
+                className="plain4 close-button"
                 disabled={uiState === 'loading'}
                 onClick={() => {
                   if (confirmClose()) {
@@ -1636,7 +1635,7 @@ function Compose({
             hasOpener && (
               <button
                 type="button"
-                class="light pop-button"
+                className="light pop-button"
                 disabled={uiState === 'loading'}
                 onClick={() => {
                   // If there are non-ID media attachments (not yet uploaded), show confirmation dialog because they are not going to be passed to the new window
@@ -1720,9 +1719,9 @@ function Compose({
           )}
         </div>
         {!!replyToStatus && (
-          <details class="status-preview" open>
+          <details className="status-preview" open>
             <Status status={replyToStatus} size="s" previewMode />
-            <summary class="status-preview-legend reply-to">
+            <summary className="status-preview-legend reply-to">
               {replyToStatusMonthsAgo > 0 ? (
                 <Trans>
                   Replying to @
@@ -1746,16 +1745,16 @@ function Compose({
           </details>
         )}
         {!!editStatus && (
-          <details class="status-preview">
+          <details className="status-preview">
             <Status status={editStatus} size="s" previewMode />
-            <summary class="status-preview-legend">
+            <summary className="status-preview-legend">
               <Trans>Editing source post</Trans>
             </summary>
           </details>
         )}
         <form
           ref={formRef}
-          class={`form-visibility-${visibility}`}
+          className={`form-visibility-${visibility}`}
           style={{
             pointerEvents: uiState === 'loading' ? 'none' : 'auto',
             opacity: uiState === 'loading' ? 0.5 : 1,
@@ -1767,7 +1766,7 @@ function Compose({
               }
             }, 10);
           }}
-          onKeyDown={(keyEvent: TargetedKeyboardEvent<HTMLFormElement>) => {
+          onKeyDown={(keyEvent: React.KeyboardEvent<HTMLFormElement>) => {
             if (
               keyEvent.key === 'Enter' &&
               (keyEvent.ctrlKey || keyEvent.metaKey)
@@ -1777,7 +1776,7 @@ function Compose({
               );
             }
           }}
-          onSubmit={(submitEvent: TargetedEvent<HTMLFormElement>) => {
+          onSubmit={(submitEvent: SyntheticEvent<HTMLFormElement>) => {
             submitEvent.preventDefault();
 
             const formData = new FormData(
@@ -2034,7 +2033,7 @@ function Compose({
           }}
         >
           <div>
-            <div class={`compose-cw-container ${sensitive ? '' : 'collapsed'}`}>
+            <div className={`compose-cw-container ${sensitive ? '' : 'collapsed'}`}>
               <input
                 type="hidden"
                 name="sensitive"
@@ -2043,7 +2042,7 @@ function Compose({
               {/* mimic the old checkbox */}
               <TextExpander
                 keys=":"
-                class="spoiler-text-field-container"
+                className="spoiler-text-field-container"
                 onTrigger={(action) => {
                   if (action?.name === 'custom-emojis') {
                     setShowEmoji2Picker({
@@ -2064,20 +2063,20 @@ function Compose({
                   placeholder={t`Content warning`}
                   data-allow-custom-emoji="true"
                   disabled={uiState === 'loading'}
-                  class="spoiler-text-field"
+                  className="spoiler-text-field"
                   lang={language}
-                  spellcheck
-                  autocomplete="off"
+                  spellCheck
+                  autoComplete="off"
                   dir="auto"
                   onInput={() => {
                     updateCharCount();
                   }}
-                  onKeyDown={(e: TargetedKeyboardEvent<HTMLInputElement>) => {
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (
                       e.key === 'Enter' &&
                       !e.ctrlKey &&
                       !e.metaKey &&
-                      !e.isComposing
+                      !e.nativeEvent.isComposing
                     ) {
                       e.preventDefault();
                       focusTextarea();
@@ -2087,7 +2086,7 @@ function Compose({
               </TextExpander>
               <button
                 type="button"
-                class="close-button plain4 small"
+                className="close-button plain4 small"
                 onClick={() => {
                   setSensitive(false);
                   textareaRef.current!.focus();
@@ -2138,10 +2137,10 @@ function Compose({
             />
           </div>
           {!!linkPreview && !linkPreview.removed && (
-            <div class="compose-link-preview">
+            <div className="compose-link-preview">
               {linkPreview.loading ? (
-                <div class="compose-link-preview-body">
-                  <span class="compose-link-preview-title">
+                <div className="compose-link-preview-body">
+                  <span className="compose-link-preview-title">
                     Loading link preview...
                   </span>
                   <small>{linkPreview.url}</small>
@@ -2155,8 +2154,8 @@ function Compose({
                       loading="lazy"
                     />
                   )}
-                  <div class="compose-link-preview-body">
-                    <span class="compose-link-preview-title">
+                  <div className="compose-link-preview-body">
+                    <span className="compose-link-preview-title">
                       {linkPreview.metadata?.title || linkPreview.url}
                     </span>
                     {!!linkPreview.metadata?.description && (
@@ -2170,7 +2169,7 @@ function Compose({
               )}
               <button
                 type="button"
-                class="plain4 close-button small"
+                className="plain4 close-button small"
                 onClick={() => {
                   if (linkPreviewRef.current.timeout) {
                     clearTimeout(linkPreviewRef.current.timeout);
@@ -2186,7 +2185,7 @@ function Compose({
             </div>
           )}
           {mediaAttachments?.length > 0 && (
-            <div class="media-attachments">
+            <div className="media-attachments">
               {mediaAttachments.map((attachment, i) => {
                 const { id, file } = attachment;
                 const fileID: string | number =
@@ -2217,13 +2216,13 @@ function Compose({
                   />
                 );
               })}
-              <label class="media-sensitive">
+              <label className="media-sensitive">
                 <input
                   name="sensitiveMedia"
                   type="checkbox"
                   checked={sensitiveMedia}
                   disabled={uiState === 'loading'}
-                  onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                  onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                     const nextSensitiveMedia = (e.target as HTMLInputElement)
                       .checked;
                     setSensitiveMedia(nextSensitiveMedia);
@@ -2257,7 +2256,7 @@ function Compose({
             />
           )}
           {!!currentQuoteStatus?.id && (
-            <div class="quote-status">
+            <div className="quote-status">
               <Status
                 status={currentQuoteStatus}
                 instance={instance}
@@ -2267,7 +2266,7 @@ function Compose({
             </div>
           )}
           {scheduledAt && (
-            <div class="toolbar scheduled-at">
+            <div className="toolbar scheduled-at">
               <span>
                 <label>
                   <Trans>
@@ -2278,13 +2277,13 @@ function Compose({
                     />
                   </Trans>
                 </label>{' '}
-                <small class="tag insignificant">
+                <small className="tag insignificant">
                   {getLocalTimezoneName()}
                 </small>
               </span>
               <button
                 type="button"
-                class="plain4 close-button small"
+                className="plain4 close-button small"
                 onClick={() => {
                   setScheduledAt(null);
                   focusLastFocusedField();
@@ -2340,8 +2339,8 @@ function Compose({
             }}
             onCancel={() => setQuoteSuggestion(null)}
           />
-          <div class="toolbar compose-footer">
-            <span class="add-toolbar-button-group spacer">
+          <div className="toolbar compose-footer">
+            <span className="add-toolbar-button-group spacer">
               {showAddButton && (
                 <Menu2
                   portal={{
@@ -2355,7 +2354,7 @@ function Compose({
                   menuButton={({ open }: { open: boolean }) => (
                     <button
                       type="button"
-                      class={`toolbar-button add-button ${
+                      className={`toolbar-button add-button ${
                         open ? 'active' : ''
                       }`}
                     >
@@ -2372,7 +2371,7 @@ function Compose({
                           the wrapped CameraCaptureInput renders the actual
                           <input type="file"> — the rule cannot see through
                           the component boundary. */}
-                      <label class="compose-menu-add-media-field">
+                      <label className="compose-menu-add-media-field">
                         <CameraCaptureInput
                           hidden
                           supportedMimeTypes={supportedImagesVideosTypes}
@@ -2391,7 +2390,7 @@ function Compose({
                         the wrapped FilePickerInput renders the actual
                         <input type="file"> — the rule cannot see through
                         the component boundary. */}
-                    <label class="compose-menu-add-media-field">
+                    <label className="compose-menu-add-media-field">
                       <FilePickerInput
                         hidden
                         supportedMimeTypes={supportedMimeTypes}
@@ -2435,7 +2434,7 @@ function Compose({
                         setShowGIFPicker(true);
                       }}
                     >
-                      <span class="icon icon-gif" role="img" />
+                      <span className="icon icon-gif" role="img" />
                       <span>{_(ADD_LABELS.gif)}</span>
                     </MenuItem>
                   )}
@@ -2454,7 +2453,7 @@ function Compose({
                 </Menu2>
               )}
               <span
-                class="add-sub-toolbar-button-group"
+                className="add-sub-toolbar-button-group"
                 ref={addSubToolbarRef}
                 hidden
               >
@@ -2463,7 +2462,7 @@ function Compose({
                   // wrapped CameraCaptureInput renders the actual <input
                   // type="file"> — the rule cannot see through the component
                   // boundary.
-                  <label class="toolbar-button">
+                  <label className="toolbar-button">
                     <CameraCaptureInput
                       supportedMimeTypes={supportedImagesVideosTypes}
                       mediaAttachments={mediaAttachments}
@@ -2477,7 +2476,7 @@ function Compose({
                     wrapped FilePickerInput renders the actual <input
                     type="file"> — the rule cannot see through the
                     component boundary. */}
-                <label class="toolbar-button">
+                <label className="toolbar-button">
                   <FilePickerInput
                     supportedMimeTypes={supportedMimeTypes}
                     maxMediaAttachments={maxMediaAttachments}
@@ -2489,7 +2488,7 @@ function Compose({
                 </label>
                 <button
                   type="button"
-                  class="toolbar-button"
+                  className="toolbar-button"
                   disabled={cwButtonDisabled}
                   onClick={onCWButtonClick}
                 >
@@ -2498,17 +2497,17 @@ function Compose({
                 {showPollButton && (
                   <button
                     type="button"
-                    class="toolbar-button"
+                    className="toolbar-button"
                     disabled={pollButtonDisabled}
                     onClick={onPollButtonClick}
                   >
                     <Icon icon="poll" alt={_(ADD_LABELS.poll)} />
                   </button>
                 )}
-                <div class="toolbar-divider" />
+                <div className="toolbar-divider" />
                 {/* <button
                   type="button"
-                  class="toolbar-button"
+                  className="toolbar-button"
                   disabled={uiState === 'loading'}
                   onClick={() => {
                     setShowMentionPicker(true);
@@ -2518,7 +2517,7 @@ function Compose({
                 </button> */}
                 <button
                   type="button"
-                  class="toolbar-button"
+                  className="toolbar-button"
                   disabled={uiState === 'loading'}
                   onClick={() => {
                     setShowEmoji2Picker({
@@ -2531,24 +2530,24 @@ function Compose({
                 {states.settings.composerGIFPicker && (
                   <button
                     type="button"
-                    class="toolbar-button gif-picker-button"
+                    className="toolbar-button gif-picker-button"
                     disabled={mediaButtonDisabled}
                     onClick={() => {
                       setShowGIFPicker(true);
                     }}
                   >
                     <span
-                      class="icon icon-gif"
+                      className="icon icon-gif"
                       aria-label={_(ADD_LABELS.gif)}
                     />
                   </button>
                 )}
                 {showScheduledAt && (
                   <>
-                    <div class="toolbar-divider" />
+                    <div className="toolbar-divider" />
                     <button
                       type="button"
-                      class={`toolbar-button ${scheduledAt ? 'highlight' : ''}`}
+                      className={`toolbar-button ${scheduledAt ? 'highlight' : ''}`}
                       disabled={scheduledAtButtonDisabled}
                       onClick={onScheduledAtClick}
                     >
@@ -2570,19 +2569,19 @@ function Compose({
             )}
             {supportsNativeQuote() && (
               <label
-                class={`toolbar-button ${highlightQuoteApprovalPolicyField ? 'highlight' : ''}`}
+                className={`toolbar-button ${highlightQuoteApprovalPolicyField ? 'highlight' : ''}`}
               >
                 <Icon icon="quote2" alt="Quote settings" />
                 {quoteApprovalPolicy === 'followers' && (
-                  <Icon icon="group" class="insignificant" />
+                  <Icon icon="group" className="insignificant" />
                 )}
                 {quoteApprovalPolicy === 'nobody' && (
-                  <Icon icon="block" class="insignificant" />
+                  <Icon icon="block" className="insignificant" />
                 )}
                 <select
                   name="quoteApprovalPolicy"
                   value={quoteApprovalPolicy}
-                  onChange={(e: TargetedEvent<HTMLSelectElement>) => {
+                  onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
                     setQuoteApprovalPolicy(
                       (e.target as HTMLSelectElement).value,
                     );
@@ -2603,7 +2602,7 @@ function Compose({
               </label>
             )}
             <label
-              class={`toolbar-button ${highlightVisibilityField ? 'highlight' : ''}`}
+              className={`toolbar-button ${highlightVisibilityField ? 'highlight' : ''}`}
               title={_(
                 visibilityText[visibility as keyof typeof visibilityText],
               )}
@@ -2620,14 +2619,14 @@ function Compose({
                   )}
                 />
               ) : (
-                <span class="icon-text">
+                <span className="icon-text">
                   {_(visibilityText[visibility as keyof typeof visibilityText])}
                 </span>
               )}
               <select
                 name="visibility"
                 value={visibility}
-                onChange={(e: TargetedEvent<HTMLSelectElement>) => {
+                onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
                   const target = e.target as HTMLSelectElement;
                   setVisibility(target.value);
                   if (target.value === 'private' || target.value === 'direct') {
@@ -2687,17 +2686,17 @@ function Compose({
               </select>
             </label>{' '}
             <label
-              class={`toolbar-button ${
+              className={`toolbar-button ${
                 highlightLanguageField ? 'highlight' : ''
               }`}
             >
-              <span class="icon-text">
+              <span className="icon-text">
                 {supportedLanguagesMap[language]?.native || language}
               </span>
               <select
                 name="language"
                 value={language}
-                onChange={(e: TargetedEvent<HTMLSelectElement>) => {
+                onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
                   const { value } = e.target as HTMLSelectElement;
                   setLanguage(value || DEFAULT_LANG);
                   store.session.set('currentLanguage', value || DEFAULT_LANG);

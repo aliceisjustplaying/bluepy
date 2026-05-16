@@ -2,7 +2,7 @@ import './mentions.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useMemo, useRef, useState } from 'preact/hooks';
+import { useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import Link from '../components/link';
@@ -316,11 +316,11 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
             <Trans>Only followings</Trans>
           </label>
         </div>
-        <div class="filter-bar">
+        <div className="filter-bar">
           <Link
             to="/mentions"
-            class={!type ? 'is-active' : ''}
-            onClick={(e: Event) => {
+            className={!type ? 'is-active' : ''}
+            onClick={(e: React.SyntheticEvent) => {
               if (columnMode) {
                 e.preventDefault();
                 setStateType(null);
@@ -331,8 +331,8 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
           </Link>
           <Link
             to="/mentions?type=private"
-            class={type === 'private' ? 'is-active' : ''}
-            onClick={(e: Event) => {
+            className={type === 'private' ? 'is-active' : ''}
+            onClick={(e: React.SyntheticEvent) => {
               if (columnMode) {
                 e.preventDefault();
                 setStateType('private');

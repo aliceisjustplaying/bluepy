@@ -1,12 +1,12 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import type {
-  ComponentChildren,
+  ReactNode,
   Ref,
-  TargetedEvent,
-  TargetedKeyboardEvent,
-} from 'preact';
-import { forwardRef } from 'preact/compat';
-import { useImperativeHandle, useMemo, useRef, useState } from 'preact/hooks';
+  SyntheticEvent,
+  KeyboardEvent,
+} from 'react';
+import { forwardRef } from 'react';
+import { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { api } from '../utils/api';
@@ -18,7 +18,7 @@ import Icon from './icon';
 import Link from './link';
 
 interface SearchItemData {
-  label: ComponentChildren;
+  label: ReactNode;
   to: string;
   icon: string;
 }
@@ -57,7 +57,7 @@ export interface SearchFormHandle {
 
 export interface SearchFormProps {
   hidden?: boolean;
-  onSubmit?: (e: Event) => void;
+  onSubmit?: (e: React.SyntheticEvent) => void;
 }
 
 // Helper function to generate search item data (label and URL)
@@ -66,7 +66,7 @@ export const generateSearchItemData = (
   queryType: string | null | undefined,
   instance: string | undefined,
 ): SearchItemData => {
-  let label: ComponentChildren;
+  let label: ReactNode;
   let to: string;
   let icon: string;
 
@@ -103,7 +103,7 @@ export const generateSearchItemData = (
     label = (
       <Trans>
         {query}{' '}
-        <small class="insignificant">‒ accounts, hashtags &amp; posts</small>
+        <small className="insignificant">‒ accounts, hashtags &amp; posts</small>
       </Trans>
     );
     to = `/search?q=${encodeURIComponent(query)}`;
@@ -124,6 +124,20 @@ const SearchForm = forwardRef(
     const formRef = useRef<HTMLFormElement | null>(null);
 
     const searchFieldRef = useRef<HTMLInputElement | null>(null);
+    useEffect(() => {
+      const searchField = searchFieldRef.current;
+      if (!searchField) return;
+      const handleSearch = () => {
+        if (!searchField.value) {
+          setSearchParams({});
+        }
+      };
+      searchField.addEventListener('search', handleSearch);
+      return () => {
+        searchField.removeEventListener('search', handleSearch);
+      };
+    }, [setSearchParams]);
+
     useImperativeHandle(ref, () => ({
       setValue: (value: string) => {
         setQuery(value);
@@ -238,8 +252,8 @@ const SearchForm = forwardRef(
     return (
       <form
         ref={formRef}
-        class="search-popover-container"
-        onSubmit={(e: TargetedEvent<HTMLFormElement>) => {
+        className="search-popover-container"
+        onSubmit={(e: SyntheticEvent<HTMLFormElement>) => {
           e.preventDefault();
 
           const isSearchPage = /\/search/.test(currentAppPath());
@@ -278,17 +292,12 @@ const SearchForm = forwardRef(
           // autofocus
           placeholder={t`Search`}
           dir="auto"
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck={false}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           enterKeyHint="search"
-          onSearch={(e: TargetedEvent<HTMLInputElement>) => {
-            if (!e.currentTarget.value) {
-              setSearchParams({});
-            }
-          }}
-          onInput={(e: TargetedEvent<HTMLInputElement>) => {
+          onInput={(e: SyntheticEvent<HTMLInputElement>) => {
             setQuery(e.currentTarget.value);
             setSearchMenuOpen(true);
           }}
@@ -310,7 +319,7 @@ const SearchForm = forwardRef(
               ?.querySelector('.search-popover-item.focus')
               ?.classList.remove('focus');
           }}
-          onKeyDown={(e: TargetedKeyboardEvent<HTMLInputElement>) => {
+          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
             const { key } = e;
             switch (key) {
               case 'Escape':
@@ -402,11 +411,11 @@ const SearchForm = forwardRef(
             }
           }}
         />
-        <div class="search-popover" hidden={!searchMenuOpen}>
+        <div className="search-popover" hidden={!searchMenuOpen}>
           {/* Search History - show when no query */}
           {!query && searchHistory.length > 0 && (
-            <div class="search-popover-recent-searches">
-              <div class="search-popover-header">
+            <div className="search-popover-recent-searches">
+              <div className="search-popover-header">
                 <Icon icon="history" size="s" />
                 <Trans>Recent searches</Trans>
               </div>
@@ -421,8 +430,8 @@ const SearchForm = forwardRef(
                   <Link
                     key={`${historyItem.query}-${historyItem.queryType}-${historyItem.timestamp}`}
                     to={to}
-                    class={`search-popover-item ${i === 0 ? 'focus' : ''}`}
-                    onClick={(e: Event) => {
+                    className={`search-popover-item ${i === 0 ? 'focus' : ''}`}
+                    onClick={(e: React.SyntheticEvent) => {
                       addToSearchHistory(
                         historyItem.query,
                         historyItem.queryType,
@@ -430,16 +439,16 @@ const SearchForm = forwardRef(
                       props?.onSubmit?.(e);
                     }}
                   >
-                    <Icon icon={icon} class="more-insignificant" />
+                    <Icon icon={icon} className="more-insignificant" />
                     <span>{label}</span>
                   </Link>
                 );
               })}
               <Link
                 to="/search"
-                class="search-popover-item search-history-see-all"
+                className="search-popover-item search-history-see-all"
               >
-                <Icon icon="more2" class="more-insignificant" />
+                <Icon icon="more2" className="more-insignificant" />
                 <span>
                   <Trans>See all</Trans>
                 </span>
@@ -460,15 +469,15 @@ const SearchForm = forwardRef(
                     : `suggestion-${queryType || 'general'}-${i}`
                 }
                 to={to}
-                class={`search-popover-item ${isRecentSearch ? 'search-popover-item-recent' : ''} ${i === 0 ? 'focus' : ''}`}
-                onClick={(e: Event) => {
+                className={`search-popover-item ${isRecentSearch ? 'search-popover-item-recent' : ''} ${i === 0 ? 'focus' : ''}`}
+                onClick={(e: React.SyntheticEvent) => {
                   if (!isRecentSearch) {
                     addToSearchHistory(query, queryType);
                   }
                   props?.onSubmit?.(e);
                 }}
               >
-                <Icon icon={icon} class="more-insignificant" />
+                <Icon icon={icon} className="more-insignificant" />
                 <span>{label}</span>
               </Link>
             ),

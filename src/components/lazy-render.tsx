@@ -1,6 +1,6 @@
-import type { ComponentChildren, ComponentType, JSX } from 'preact';
-import { Children } from 'preact/compat';
-import { useMemo, useRef } from 'preact/hooks';
+import type { ReactNode, ComponentType, JSX } from 'react';
+import { Children } from 'react';
+import { useMemo, useRef } from 'react';
 import { useOnInView } from 'react-intersection-observer';
 
 // The sticky header, usually at the top
@@ -12,7 +12,8 @@ interface LazyRenderProps {
   as?: LazyRenderAs;
   id?: string;
   class?: string;
-  children?: ComponentChildren;
+  className?: string;
+  children?: ReactNode;
   renderIfHasChildren?: boolean;
   [key: string]: unknown;
 }
@@ -20,7 +21,8 @@ interface LazyRenderProps {
 interface LazyRenderRootProps {
   id?: string;
   class?: string;
-  children?: ComponentChildren;
+  className?: string;
+  children?: ReactNode;
   ref?: (node: HTMLElement | null) => void;
   [key: string]: unknown;
 }
@@ -32,7 +34,8 @@ function lazyRenderRoot(root: unknown): ComponentType<LazyRenderRootProps> {
 export default function LazyRender({
   as: Root = 'div',
   id,
-  class: className,
+  class: classProp,
+  className = classProp,
   children,
   renderIfHasChildren = true,
   ...props
@@ -80,7 +83,7 @@ export default function LazyRender({
         rootRef.current = node;
         observerRef(node);
       }}
-      class={`lazy-render ${className || ''}`}
+      className={`lazy-render ${className || ''}`}
     >
       {children}
     </RootEl>

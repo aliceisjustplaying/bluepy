@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import states from '../utils/states';
@@ -141,9 +141,9 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   ];
 
   return (
-    <div class="sheet" id="edit-profile-container">
+    <div className="sheet" id="edit-profile-container">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={() => onClose()}>
+        <button type="button" className="sheet-close" onClick={() => onClose()}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -154,7 +154,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
       </header>
       <main>
         {uiState === 'loading' ? (
-          <p class="ui-state">
+          <p className="ui-state">
             <Loader abrupt />
           </p>
         ) : (
@@ -212,7 +212,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
               })();
             }}
           >
-            <div class="edit-profile-media-container">
+            <div className="edit-profile-media-container">
               <label>
                 <Trans>Header picture</Trans>{' '}
                 <input
@@ -228,11 +228,11 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                   }}
                 />
               </label>
-              <div class="edit-profile-media-field">
+              <div className="edit-profile-media-field">
                 {header ? (
                   <button
                     type="button"
-                    class="edit-media plain"
+                    className="edit-media plain"
                     style={{
                       padding: 0,
                       backgroundColor: 'transparent',
@@ -249,14 +249,14 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                     <img src={header} alt="" />
                   </button>
                 ) : (
-                  <div class="edit-media"></div>
+                  <div className="edit-media"></div>
                 )}
                 {headerPreview && (
                   <>
                     <Icon icon="arrow-right" />
                     <button
                       type="button"
-                      class="edit-media plain"
+                      className="edit-media plain"
                       style={{
                         padding: 0,
                         backgroundColor: 'transparent',
@@ -276,7 +276,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                 )}
               </div>
             </div>
-            <div class="edit-profile-media-container">
+            <div className="edit-profile-media-container">
               <label>
                 <Trans>Profile picture</Trans>{' '}
                 <input
@@ -292,11 +292,11 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                   }}
                 />
               </label>
-              <div class="edit-profile-media-field">
+              <div className="edit-profile-media-field">
                 {avatar ? (
                   <button
                     type="button"
-                    class="edit-media plain"
+                    className="edit-media plain"
                     style={{
                       padding: 0,
                       backgroundColor: 'transparent',
@@ -313,14 +313,14 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                     <img src={avatar} alt="" />
                   </button>
                 ) : (
-                  <div class="edit-media"></div>
+                  <div className="edit-media"></div>
                 )}
                 {avatarPreview && (
                   <>
                     <Icon icon="arrow-right" />
                     <button
                       type="button"
-                      class="edit-media plain"
+                      className="edit-media plain"
                       style={{
                         padding: 0,
                         backgroundColor: 'transparent',
@@ -405,7 +405,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
             <footer>
               <button
                 type="button"
-                class="light"
+                className="light"
                 disabled={uiState === 'loading'}
                 onClick={() => {
                   onClose?.();

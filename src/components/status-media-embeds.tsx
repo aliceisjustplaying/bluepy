@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentChildren, RefObject } from 'preact';
+import type { ReactNode, RefObject } from 'react';
 
 import states from '../utils/states';
 
@@ -29,14 +29,14 @@ interface StatusMediaEmbedsProps {
   instance: string;
   id: string;
   onMediaClick?: (
-    e: MouseEvent,
+    e: React.MouseEvent,
     index: number,
     media: AnyMediaAttachment,
     status: AnyStatus,
   ) => void;
   status: AnyStatus;
   showMultipleMediaCaptions: boolean;
-  captionChildren: ComponentChildren;
+  captionChildren: ReactNode;
   mediaContainerRef: RefObject<HTMLDivElement>;
   displayedMediaAttachments: AnyMediaAttachment[];
   content?: string | null;
@@ -77,7 +77,7 @@ export default function StatusMediaEmbeds({
         (readingExpandMedia !== 'show_all' ||
           filterInfoMaybe?.action === 'blur') && (
           <button
-            class={`plain spoiler-media-button ${
+            className={`plain spoiler-media-button ${
               showSpoilerMedia ? 'spoiling' : ''
             }`}
             type="button"
@@ -107,10 +107,10 @@ export default function StatusMediaEmbeds({
       {!!mediaAttachments.length &&
         (mediaAttachments.length > 1 &&
         (isSizeLarge || (withinContext && size === 'm')) ? (
-          <div class="media-large-container">
+          <div className="media-large-container">
             {mediaAttachments.map(
               (media: AnyMediaAttachment, i: number) => (
-                <div key={media.id} class={`media-container media-eq1`}>
+                <div key={media.id} className={`media-container media-eq1`}>
                   <Media
                     media={media}
                     autoAnimate
@@ -122,7 +122,7 @@ export default function StatusMediaEmbeds({
                     }=${i + 1}`}
                     onClick={
                       onMediaClick
-                        ? (e: MouseEvent) => {
+                        ? (e: React.MouseEvent) => {
                             onMediaClick(e, i, media, status);
                           }
                         : undefined
@@ -140,7 +140,7 @@ export default function StatusMediaEmbeds({
           >
             <div
               ref={mediaContainerRef}
-              class={`media-container media-eq${mediaAttachments.length} ${
+              className={`media-container media-eq${mediaAttachments.length} ${
                 mediaAttachments.length > 2 ? 'media-gt2' : ''
               } ${mediaAttachments.length > 4 ? 'media-gt4' : ''}`}
             >
@@ -163,7 +163,7 @@ export default function StatusMediaEmbeds({
                     }=${i + 1}`}
                     onClick={
                       onMediaClick
-                        ? (e: MouseEvent) => {
+                        ? (e: React.MouseEvent) => {
                             onMediaClick(e, i, media, status);
                           }
                         : undefined

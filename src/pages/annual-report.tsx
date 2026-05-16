@@ -1,8 +1,8 @@
 import './annual-report.css';
 
 import { Trans } from '@lingui/react/macro';
-import { Fragment, type ComponentChildren, type ComponentProps } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import { Fragment, type ReactNode, type ComponentProps } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import Link from '../components/link';
@@ -20,7 +20,7 @@ function NameText(props: {
   showAcct?: boolean;
   short?: boolean;
   external?: boolean;
-  onClick?: (event: Event) => void;
+  onClick?: (event: React.SyntheticEvent) => void;
   [key: string]: unknown;
 }) {
   return (
@@ -99,8 +99,8 @@ export default function AnnualReport() {
   const datePlaceholder = new Date();
 
   return (
-    <div id="annual-report-page" class="deck-container" tabIndex={-1}>
-      <div class={`report ${uiState === 'loading' ? 'loading-mask' : ''}`}>
+    <div id="annual-report-page" className="deck-container" tabIndex={-1}>
+      <div className={`report ${uiState === 'loading' ? 'loading-mask' : ''}`}>
         <h1>{year} #Wrapstodon</h1>
         {!!report && (
           <dl>
@@ -122,7 +122,7 @@ export default function AnnualReport() {
               return (
                 <Fragment key={key}>
                   <dt>{key}</dt>
-                  <dd class={`report-${key}`}>
+                  <dd className={`report-${key}`}>
                     {Array.isArray(value) ? (
                       <table>
                         <thead>
@@ -132,7 +132,7 @@ export default function AnnualReport() {
                             ).map(([colKey, colValue]) => (
                               <th
                                 key={colKey}
-                                class={
+                                className={
                                   colKey !== 'month' &&
                                   typeof colValue === 'number'
                                     ? 'number'
@@ -152,7 +152,7 @@ export default function AnnualReport() {
                               ).map(([k, cellValue]) => (
                                 <td
                                   key={k}
-                                  class={
+                                  className={
                                     k !== 'month' &&
                                     typeof cellValue === 'number'
                                       ? 'number'
@@ -192,7 +192,7 @@ export default function AnnualReport() {
                                   ) : typeof cellValue === 'number' ? (
                                     cellValue.toLocaleString()
                                   ) : (
-                                    (cellValue as ComponentChildren)
+                                    (cellValue as ReactNode)
                                   )}
                                 </td>
                               ))}
@@ -221,7 +221,7 @@ export default function AnnualReport() {
                                             showCommentCount
                                           />
                                         </Link>
-                                      )) as ComponentChildren
+                                      )) as ReactNode
                                   }
                                 </dd>
                               </Fragment>
@@ -237,13 +237,13 @@ export default function AnnualReport() {
                               <tr key={k}>
                                 <th>{k}</th>
                                 <td
-                                  class={
+                                  className={
                                     typeof sectionValue === 'number'
                                       ? 'number'
                                       : ''
                                   }
                                 >
-                                  {sectionValue as ComponentChildren}
+                                  {sectionValue as ReactNode}
                                 </td>
                               </tr>
                             ))}

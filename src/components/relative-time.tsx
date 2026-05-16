@@ -1,6 +1,6 @@
 import { i18n } from '@lingui/core';
 import { t } from '@lingui/core/macro';
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useState } from 'react';
 
 import DateTimeFormat from '../utils/date-time-format';
 import RTF from '../utils/relative-time-format';
@@ -61,18 +61,23 @@ const twitterFromNow = (date: Date): string => {
 
 interface RelativeTimeProps {
   datetime?: Date | string | number | null;
+  dateTime?: Date | string | number | null;
   format?: string;
 }
 
-export default function RelativeTime({ datetime, format }: RelativeTimeProps) {
+export default function RelativeTime({
+  datetime,
+  dateTime,
+  format,
+}: RelativeTimeProps) {
   // `tick` increments from a self-scheduled timer to force the rendered
   // relative string to refresh on its own cadence. It's intentionally part of
   // the memo dep arrays so the formatted output recomputes when the tick
   // changes, even though `tick` is not read inside the callback bodies.
   const [tick, setTick] = useState(0);
   const date = useMemo(
-    () => (datetime ? new Date(datetime) : null),
-    [datetime],
+    () => (datetime || dateTime ? new Date(datetime || dateTime || 0) : null),
+    [datetime, dateTime],
   );
   const [dateStr, dt, title] = useMemo(() => {
     if (!date || !isValidDate(date)) {
@@ -137,10 +142,10 @@ export default function RelativeTime({ datetime, format }: RelativeTimeProps) {
     };
   }, [date]);
 
-  if (!datetime) return null;
+  if (!datetime && !dateTime) return null;
 
   return (
-    <time datetime={dt} title={title}>
+    <time dateTime={dt} title={title}>
       {dateStr}
     </time>
   );

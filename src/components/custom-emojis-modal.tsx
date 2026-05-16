@@ -2,15 +2,15 @@ import './custom-emojis-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type Fuse from 'fuse.js';
-import type { TargetedEvent } from 'preact';
-import { memo } from 'preact/compat';
+import type { SyntheticEvent } from 'react';
+import { memo } from 'react';
 import {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-} from 'preact/hooks';
+} from 'react';
 
 import { getCustomEmojis } from '../utils/custom-emojis';
 import store from '../utils/store';
@@ -39,7 +39,7 @@ interface CustomEmojiButtonProps {
   showCode?: boolean;
 }
 
-const addEdges = (e: TargetedEvent<HTMLButtonElement>) => {
+const addEdges = (e: SyntheticEvent<HTMLButtonElement>) => {
   // Add edge-left or edge-right class based on self position relative to scrollable parent
   // If near left edge, add edge-left, if near right edge, add edge-right
   const buffer = 88;
@@ -124,7 +124,7 @@ const CustomEmojisList = memo(({ emojis, onSelect }: CustomEmojisListProps) => {
       {showMore && (
         <button
           type="button"
-          class="plain small"
+          className="plain small"
           onClick={() => setMax(max + CUSTOM_EMOJIS_COUNT)}
         >
           <Trans>{i18n.number(emojis.length - max)} more…</Trans>
@@ -318,13 +318,13 @@ function CustomEmojisModal({
   return (
     <div
       id="custom-emojis-sheet"
-      class="sheet"
+      className="sheet"
       style={{
         '--custom-emoji-size': emojiSize,
       }}
     >
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -336,13 +336,13 @@ function CustomEmojisModal({
           {uiState === 'loading' ? (
             <Loader />
           ) : (
-            <small class="insignificant">
+            <small className="insignificant">
               {' '}
               •{' '}
               {import.meta.env.DEV ? (
                 <button
                   type="button"
-                  class="textual"
+                  className="textual"
                   onClick={() => {
                     const newInstance = prompt(
                       '[DEV] Change instance. Leave blank to reset',
@@ -380,10 +380,10 @@ function CustomEmojisModal({
               type="search"
               placeholder={t`Search emoji`}
               onInput={onFind}
-              autocomplete="off"
-              autocorrect="off"
-              autocapitalize="off"
-              spellcheck={false}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
               dir="auto"
               enterKeyHint="search"
               defaultValue={defaultSearchTerm || ''}
@@ -395,9 +395,9 @@ function CustomEmojisModal({
         {hasCustomEmojis ? (
           <>
             {matches !== null ? (
-              <ul class="custom-emojis-matches custom-emojis-list">
+              <ul className="custom-emojis-matches custom-emojis-list">
                 {matches.map((emoji) => (
-                  <li key={emoji.shortcode} class="custom-emojis-match">
+                  <li key={emoji.shortcode} className="custom-emojis-match">
                     <CustomEmojiButton
                       emoji={emoji}
                       onSelect={onSelectEmoji}
@@ -407,9 +407,9 @@ function CustomEmojisModal({
                 ))}
               </ul>
             ) : (
-              <div class="custom-emojis-list">
+              <div className="custom-emojis-list">
                 {uiState === 'error' && (
-                  <div class="ui-state">
+                  <div className="ui-state">
                     <p>
                       <Trans>Error loading custom emojis</Trans>
                     </p>
@@ -419,8 +419,8 @@ function CustomEmojisModal({
                   Object.entries(customEmojisCatList).map(
                     ([category, emojis]) =>
                       !!emojis?.length && (
-                        <div key={category} class="section-container">
-                          <div class="section-header">
+                        <div key={category} className="section-container">
+                          <div className="section-header">
                             {{
                               '--recent--': t`Recently used`,
                               '--others--': t`Others`,
@@ -435,10 +435,10 @@ function CustomEmojisModal({
                   )}
               </div>
             )}
-            <div class="size-range">
+            <div className="size-range">
               <button
                 type="button"
-                class="plain4"
+                className="plain4"
                 onClick={onEmojiSizeDecrease}
                 disabled={emojiSize <= EMOJI_SIZE_MIN}
               >
@@ -446,7 +446,7 @@ function CustomEmojisModal({
               </button>
               <button
                 type="button"
-                class="plain4"
+                className="plain4"
                 onClick={onEmojiSizeIncrease}
                 disabled={emojiSize >= EMOJI_SIZE_MAX}
               >
@@ -455,7 +455,7 @@ function CustomEmojisModal({
             </div>
           </>
         ) : (
-          <div class="ui-state">
+          <div className="ui-state">
             <p>
               <Trans>Custom emojis are not available on this server.</Trans>
             </p>

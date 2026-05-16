@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/react/macro';
-import { useContext } from 'preact/hooks';
+import { useContext } from 'react';
 import { useSnapshot } from 'valtio';
 
 import FilterContext from '../utils/filter-context';
@@ -80,22 +80,22 @@ function StatusCompact({ sKey }: StatusCompactProps) {
     <LazyRender
       as="article"
       id={srKey}
-      class={`status compact-reply ${
+      className={`status compact-reply ${
         visibility === 'direct' ? 'visibility-direct' : ''
       }`}
-      tabindex="-1"
+      tabIndex={-1}
       data-state-post-id={srKey}
       renderIfHasChildren={false}
     >
       <Avatar url={avatarStatic || avatar} squircle={bot} />
       <div
-        class="content-compact"
+        className="content-compact"
         title={statusPeekText}
         lang={language}
         dir="auto"
       >
         {filterInfo ? (
-          <b class="status-filtered-badge badge-meta" title={filterTitleStr}>
+          <b className="status-filtered-badge badge-meta" title={filterTitleStr}>
             <span>
               <Trans>Filtered</Trans>
             </span>

@@ -8,11 +8,11 @@ import './polyfills';
 import { i18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
 import * as Sentry from '@sentry/react';
+import type { ComponentType, ReactElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 // Polyfill needed for Firefox < 122
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1423593
 // import '@formatjs/intl-segmenter/polyfill';
-import { render } from 'preact';
-import type { ComponentType, VNode } from 'preact';
 import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './app';
@@ -26,16 +26,18 @@ import { initPWAViewport } from './utils/pwa-viewport';
 import { migrateLegacyHashRoute } from './utils/router';
 import states from './utils/states';
 
-function preactComponent<P>(component: unknown): ComponentType<P> {
+function reactComponent<P>(component: unknown): ComponentType<P> {
   return component as ComponentType<P>;
 }
 
-// Vite aliases `react` to `preact/compat` at bundle time, so Sentry's
-// `ErrorBoundary` works at runtime with preact children. The shipped Sentry
-// types extend `React.Component`, and preact's JSX type system does not
-// accept React class components directly.
-const SentryErrorBoundary = preactComponent<{
-  fallback?: VNode;
+const bluepyReactRoot = Symbol.for('bluepy.reactRoot');
+
+type RootContainer = HTMLElement & {
+  [bluepyReactRoot]?: Root;
+};
+
+const SentryErrorBoundary = reactComponent<{
+  fallback?: ReactElement;
   children?: unknown;
 }>(Sentry.ErrorBoundary);
 
@@ -70,10 +72,6 @@ if (!redirectLegacyOrigin()) {
     initActivateLang();
     initPWAViewport();
 
-    if (import.meta.env.DEV) {
-      void import('preact/debug');
-    }
-
     if (import.meta.env.DEV && 'serviceWorker' in navigator) {
       void navigator.serviceWorker
         .getRegistrations()
@@ -89,7 +87,13 @@ if (!redirectLegacyOrigin()) {
     document.getElementById('boot-status')?.remove();
     migrateLegacyHashRoute();
 
-    render(
+    // The HTML template guarantees this element. Preserve the original JS
+    // behavior of failing loudly if it is ever missing.
+    const appContainer = document.getElementById('app') as RootContainer;
+    const root =
+      appContainer[bluepyReactRoot] ||
+      (appContainer[bluepyReactRoot] = createRoot(appContainer));
+    root.render(
       <I18nProvider i18n={i18n}>
         <BrowserRouter>
           <IconSpriteProvider>
@@ -99,10 +103,6 @@ if (!redirectLegacyOrigin()) {
           </IconSpriteProvider>
         </BrowserRouter>
       </I18nProvider>,
-      // The HTML template guarantees this element. Preserve the original JS
-      // behavior of failing loudly through `render(...)` if it is ever missing
-      // rather than silently skipping mount.
-      document.getElementById('app') as HTMLElement,
     );
 
     (

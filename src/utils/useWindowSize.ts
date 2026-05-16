@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'preact/hooks';
+import { useLayoutEffect, useState } from 'react';
 
 interface WindowSize {
   width: number | null;

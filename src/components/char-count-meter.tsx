@@ -9,21 +9,25 @@ interface CharCountMeterProps {
 
 function CharCountMeter({ maxCharacters = 500, hidden }: CharCountMeterProps) {
   const snapStates = useSnapshot(states);
-  const charCount = snapStates.composerCharacterCount as number;
+  const snapCharCount = snapStates.composerCharacterCount as number | undefined;
+  const charCount =
+    typeof snapCharCount === 'number' && Number.isFinite(snapCharCount)
+      ? snapCharCount
+      : 0;
   const leftChars = maxCharacters - charCount;
   if (hidden) {
-    return <span class="char-counter" hidden />;
+    return <span className="char-counter" hidden />;
   }
   return (
     <span
-      class="char-counter"
+      className="char-counter"
       title={`${leftChars}/${maxCharacters}`}
       style={{
         '--percentage': (charCount / maxCharacters) * 100,
       }}
     >
       <meter
-        class={
+        className={
           leftChars <= -10
             ? 'explode'
             : leftChars <= 0
@@ -35,7 +39,7 @@ function CharCountMeter({ maxCharacters = 500, hidden }: CharCountMeterProps) {
         value={charCount}
         max={maxCharacters}
       />
-      <span class="counter">{leftChars}</span>
+      <span className="counter">{leftChars}</span>
     </span>
   );
 }

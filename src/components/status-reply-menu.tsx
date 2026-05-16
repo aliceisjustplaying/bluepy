@@ -1,7 +1,7 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import { useMemo } from 'preact/hooks';
+import { useMemo } from 'react';
 
 import haptics from '../utils/haptics';
 import shortenNumber from '../utils/shorten-number';
@@ -63,7 +63,7 @@ export default function useStatusReplyMenu({
         <small>
           <Trans>Reply all</Trans>
           <br />
-          <span class="more-insignificant">
+          <span className="more-insignificant">
             <Plural value={mentionsCount} other="# mentions" />
           </span>
         </small>
@@ -77,12 +77,12 @@ export default function useStatusReplyMenu({
         <small>
           <Trans>Reply all</Trans>
           <br />
-          <span class="more-insignificant">
+          <span className="more-insignificant">
             <Plural
               value={mentionsCount - 1}
               other={
                 <Trans comment="Author mention appears first, other mentions appear below with newlines in between">
-                  <span class="bidi-isolate">@{username || acct}</span> first, #
+                  <span className="bidi-isolate">@{username || acct}</span> first, #
                   others below
                 </Trans>
               }
@@ -99,9 +99,9 @@ export default function useStatusReplyMenu({
         <small>
           <Trans>Reply</Trans>
           <br />
-          <span class="more-insignificant">
+          <span className="more-insignificant">
             <Trans>
-              Only <span class="bidi-isolate">@{username || acct}</span>
+              Only <span className="bidi-isolate">@{username || acct}</span>
             </Trans>
           </span>
         </small>

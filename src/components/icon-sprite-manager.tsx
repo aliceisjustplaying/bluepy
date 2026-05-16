@@ -1,7 +1,7 @@
-import type { ComponentChildren } from 'preact';
-import { createContext } from 'preact';
-import { memo } from 'preact/compat';
-import { useCallback, useContext, useState } from 'preact/hooks';
+import type { ReactNode } from 'react';
+import { createContext } from 'react';
+import { memo } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 
 interface IconData {
   width: number;
@@ -9,7 +9,7 @@ interface IconData {
   body: string;
 }
 
-type IconModule = () => Promise<{ default: IconData }>;
+type IconModule = () => Promise<{ default: unknown }>;
 type IconTupleEntry = (IconModule | string | undefined)[];
 type IconBlock = IconModule | IconTupleEntry | { module: IconModule };
 
@@ -23,9 +23,20 @@ interface IconSpriteContextValue {
 const IconSpriteContext = createContext<IconSpriteContextValue | null>(null);
 
 export const ICON_NAMESPACE = 'sprite-icon';
+const hiddenSvgStyle = { display: 'none' };
+
+function isIconData(value: unknown): value is IconData {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { width?: unknown }).width === 'number' &&
+    typeof (value as { height?: unknown }).height === 'number' &&
+    typeof (value as { body?: unknown }).body === 'string'
+  );
+}
 
 interface IconSpriteProviderProps {
-  children?: ComponentChildren;
+  children?: ReactNode;
 }
 
 export function IconSpriteProvider({ children }: IconSpriteProviderProps) {
@@ -61,6 +72,10 @@ export function IconSpriteProvider({ children }: IconSpriteProviderProps) {
 
         const iconResult = await iconModule();
         const iconDataResult = iconResult.default;
+        if (!isIconData(iconDataResult)) {
+          console.warn(`Icon ${iconName} has invalid data`);
+          return;
+        }
 
         setIconData((prev) => ({ ...prev, [iconName]: iconDataResult }));
         setLoadedIcons((prev) => new Set([...prev, iconName]));
@@ -76,12 +91,15 @@ export function IconSpriteProvider({ children }: IconSpriteProviderProps) {
     [loadedIcons],
   );
 
-  const contextValue: IconSpriteContextValue = {
-    loadIcon,
-    isIconLoaded,
-    loadedIcons,
-    iconData,
-  };
+  const contextValue: IconSpriteContextValue = useMemo(
+    () => ({
+      loadIcon,
+      isIconLoaded,
+      loadedIcons,
+      iconData,
+    }),
+    [iconData, isIconLoaded, loadIcon, loadedIcons],
+  );
 
   return (
     <IconSpriteContext.Provider value={contextValue}>
@@ -99,7 +117,7 @@ function IconSprite() {
   }
 
   return (
-    <svg style={{ display: 'none' }} aria-hidden="true">
+    <svg style={hiddenSvgStyle} aria-hidden="true">
       <defs>
         {Array.from(loadedIcons).map((iconName) => {
           const data = iconData[iconName];

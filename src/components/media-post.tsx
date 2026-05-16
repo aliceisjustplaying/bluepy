@@ -2,9 +2,9 @@ import './media-post.css';
 
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentChild, ComponentType, JSX } from 'preact';
-import { memo } from 'preact/compat';
-import { useContext, useMemo } from 'preact/hooks';
+import type { ReactNode, ComponentType, JSX } from 'react';
+import { memo } from 'react';
+import { useContext, useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { getPreferences } from '../utils/api';
@@ -48,12 +48,13 @@ type ParentTag = keyof JSX.IntrinsicElements;
 
 interface MediaPostProps {
   class?: string;
+  className?: string;
   statusID?: string;
   status?: StatusLike;
   instance?: string;
   parent?: ParentTag | ComponentType<Record<string, unknown>>;
   onMediaClick?: (
-    e: MouseEvent,
+    e: React.MouseEvent,
     i: number,
     media: MediaAttachmentLike,
     status: StatusLike,
@@ -61,14 +62,15 @@ interface MediaPostProps {
 }
 
 function MediaPost({
-  class: className,
+  class: classProp,
+  className = classProp,
   statusID,
   status,
   instance,
   parent,
   // allowFilters,
   onMediaClick,
-}: MediaPostProps): ComponentChild | ComponentChild[] {
+}: MediaPostProps): ReactNode | ReactNode[] {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const currentAccount = useMemo(() => {
@@ -106,7 +108,7 @@ function MediaPost({
     return null;
   }
 
-  const debugHover = (e: MouseEvent) => {
+  const debugHover = (e: React.MouseEvent) => {
     if (e.shiftKey) {
       console.log({
         ...status,
@@ -158,7 +160,7 @@ function MediaPost({
               : t`Filtered`
             : undefined
         }
-        class={`
+        className={`
           media-post
           ${filterInfo ? 'filtered' : ''}
           ${hasSpoiler ? 'has-spoiler' : ''}
@@ -166,7 +168,7 @@ function MediaPost({
         `}
       >
         <Media
-          class={className}
+          className={className}
           media={media}
           lang={language}
           to={`/${instance}/s/${id}?media-only=${i + 1}`}

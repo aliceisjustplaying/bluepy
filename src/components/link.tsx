@@ -1,5 +1,5 @@
-import type { HTMLAttributes, Ref, TargetedMouseEvent } from 'preact';
-import { forwardRef } from 'preact/compat';
+import type { HTMLAttributes, Ref } from 'react';
+import { forwardRef } from 'react';
 import { useInRouterContext, useLocation } from 'react-router-dom';
 
 import {
@@ -27,7 +27,11 @@ export interface LinkProps extends Omit<
   'href'
 > {
   to: string;
-  [key: string]: unknown;
+  class?: string;
+  className?: string;
+  target?: string;
+  [key: `data-${string}`]: unknown;
+  [key: `aria-${string}`]: unknown;
 }
 
 // useLocation throws if Link renders outside a Router (static previews).
@@ -36,14 +40,14 @@ export interface LinkProps extends Omit<
 // because each inner component (with vs without useLocation) is itself
 // consistent across all of its own renders.
 const LinkInsideRouter = forwardRef<HTMLAnchorElement, LinkProps>(
-  (props: LinkProps, ref: Ref<HTMLAnchorElement>) => {
+  (props, ref: Ref<HTMLAnchorElement>) => {
     const routerLocation = useLocation();
     return <LinkBody {...props} ref={ref} routerLocation={routerLocation} />;
   },
 );
 
 const LinkOutsideRouter = forwardRef<HTMLAnchorElement, LinkProps>(
-  (props: LinkProps, ref: Ref<HTMLAnchorElement>) => {
+  (props, ref: Ref<HTMLAnchorElement>) => {
     return <LinkBody {...props} ref={ref} routerLocation={undefined} />;
   },
 );
@@ -53,7 +57,7 @@ interface LinkBodyProps extends LinkProps {
 }
 
 const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  (props: LinkProps, ref: Ref<HTMLAnchorElement>) => {
+  (props, ref: Ref<HTMLAnchorElement>) => {
     const inRouter = useInRouterContext();
     return inRouter ? (
       <LinkInsideRouter {...props} ref={ref} />
@@ -64,8 +68,15 @@ const Link = forwardRef<HTMLAnchorElement, LinkProps>(
 );
 
 const LinkBody = forwardRef<HTMLAnchorElement, LinkBodyProps>(
-  (props: LinkBodyProps, ref: Ref<HTMLAnchorElement>) => {
-    const { to, children, routerLocation, ...restProps } = props;
+  (props, ref: Ref<HTMLAnchorElement>) => {
+    const {
+      to,
+      children,
+      routerLocation,
+      class: classProp,
+      className,
+      ...restProps
+    } = props;
     let currentPath = currentAppPath();
     const href = canonicalizeAppPath(to);
 
@@ -82,15 +93,17 @@ const LinkBody = forwardRef<HTMLAnchorElement, LinkBodyProps>(
 
     const isActive =
       currentPath === href || decodeURIComponent(currentPath) === href;
-    const classProp = props.class;
-    const classStr = typeof classProp === 'string' ? classProp : '';
+    const classStr =
+      typeof (className || classProp) === 'string'
+        ? (className || classProp)
+        : '';
     return (
       <a
         ref={ref}
         href={href}
         {...(restProps as HTMLAttributes<HTMLAnchorElement>)}
-        class={`${classStr} ${isActive ? 'is-active' : ''}`}
-        onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
+        className={`${classStr} ${isActive ? 'is-active' : ''}`}
+        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
           const parent = e.currentTarget?.parentNode as Element | null;
           if (parent?.closest?.('a')) {
             // If this <a> is nested inside another <a>
@@ -104,13 +117,10 @@ const LinkBody = forwardRef<HTMLAnchorElement, LinkBodyProps>(
           }
           (
             props.onClick as
-              | ((ev: TargetedMouseEvent<HTMLAnchorElement>) => void)
+              | ((ev: React.MouseEvent<HTMLAnchorElement>) => void)
               | undefined
           )?.(e);
-          if (
-            e.defaultPrevented ||
-            isModifiedClick(e as unknown as MouseEvent)
-          ) {
+          if (e.defaultPrevented || isModifiedClick(e)) {
             return;
           }
           const target = (props.target as string | undefined) || '';

@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 import haptics from '../utils/haptics';
 import { supportsNativeQuote } from '../utils/quote-utils';
@@ -38,7 +38,7 @@ interface StatusLargeFooterProps {
   emojis?: readonly mastodon.v1.CustomEmoji[];
   tooManyMentions: boolean;
   repliesCount?: number;
-  replyModeMenuItems: ComponentChildren;
+  replyModeMenuItems: ReactNode;
   replyStatus: (e?: LooseClickEvent) => void;
   canQuote?: boolean;
   reblogsCount?: number;
@@ -50,13 +50,13 @@ interface StatusLargeFooterProps {
   quoteText?: string;
   quoteMetaText?: string | null;
   status: AnyStatus;
-  menuFooter: ComponentChildren;
+  menuFooter: ReactNode;
   favourited?: boolean | null;
   favouritesCount?: number;
   favouriteStatus: () => Promise<boolean>;
   bookmarked?: boolean | null;
   bookmarkStatus: () => Promise<boolean>;
-  menuItems: ComponentChildren;
+  menuItems: ReactNode;
 }
 
 export default function StatusLargeFooter({
@@ -100,9 +100,9 @@ export default function StatusLargeFooter({
 
   return (
     <>
-      <div class="extra-meta">
+      <div className="extra-meta">
         {deleted ? (
-          <span class="status-deleted-tag">
+          <span className="status-deleted-tag">
             <Trans>Deleted</Trans>
           </span>
         ) : (
@@ -117,8 +117,8 @@ export default function StatusLargeFooter({
               )}
               {!!createdAt && (
                 <time
-                  class="created"
-                  datetime={createdAtDate.toISOString()}
+                  className="created"
+                  dateTime={createdAtDate.toISOString()}
                   title={createdAtDate.toLocaleString()}
                 >
                   {createdDateText}
@@ -126,17 +126,17 @@ export default function StatusLargeFooter({
               )}
             </a>
             {editedAt && (
-              <span class="edited-container">
+              <span className="edited-container">
                 {' '}
                 &bull; <Icon icon="pencil" alt={t`Edited`} />{' '}
                 <button
                   type="button"
-                  class="edited plain plain3"
+                  className="edited plain plain3"
                   onClick={() => {
                     setShowEdited(id);
                   }}
                 >
-                  <time datetime={editedAtDate.toISOString()}>
+                  <time dateTime={editedAtDate.toISOString()}>
                     {editedDateText}
                   </time>
                 </button>
@@ -146,7 +146,7 @@ export default function StatusLargeFooter({
         )}
       </div>
       {!!emojiReactions?.length && (
-        <div class="emoji-reactions">
+        <div className="emoji-reactions">
           {emojiReactions.map((emojiReaction: Record<string, unknown>) => {
             const {
               name,
@@ -165,7 +165,7 @@ export default function StatusLargeFooter({
               return (
                 <span
                   key={name}
-                  class={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
+                  className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
                 >
                   <CustomEmoji
                     alt={name}
@@ -186,7 +186,7 @@ export default function StatusLargeFooter({
                 return (
                   <span
                     key={name}
-                    class={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
+                    className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
                   >
                     <CustomEmoji
                       alt={name}
@@ -201,7 +201,7 @@ export default function StatusLargeFooter({
             return (
               <span
                 key={name}
-                class={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
+                className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
               >
                 {name} {count}
               </span>
@@ -209,8 +209,8 @@ export default function StatusLargeFooter({
           })}
         </div>
       )}
-      <div class={`actions ${deleted ? 'disabled' : ''}`}>
-        <div class="action has-count">
+      <div className={`actions ${deleted ? 'disabled' : ''}`}>
+        <div className="action has-count">
           {tooManyMentions ? (
             <Menu2
               openTrigger="clickOnly"
@@ -223,7 +223,7 @@ export default function StatusLargeFooter({
                 <StatusButton
                   title={t`Reply`}
                   alt={t`Comments`}
-                  class="reply-button"
+                  className="reply-button"
                   icon="comment"
                   count={repliesCount}
                 />
@@ -235,7 +235,7 @@ export default function StatusLargeFooter({
             <StatusButton
               title={t`Reply`}
               alt={t`Comments`}
-              class="reply-button"
+              className="reply-button"
               icon="comment"
               count={repliesCount}
               onClick={(e) => {
@@ -246,7 +246,7 @@ export default function StatusLargeFooter({
           )}
         </div>
         <div
-          class={`action ${
+          className={`action ${
             canQuote && reblogsCount > 0 && quotesCount > 0
               ? 'has-counts'
               : 'has-count'
@@ -262,11 +262,11 @@ export default function StatusLargeFooter({
             confirmLabel={
               <>
                 <Icon icon="rocket" />
-                <span class="menu-grow">
+                <span className="menu-grow">
                   {reblogged ? t`Unboost` : t`Boost`}
                 </span>
                 {reblogsCount > 0 && (
-                  <small class="more-insignificant">
+                  <small className="more-insignificant">
                     {shortenNumber(reblogsCount)}
                   </small>
                 )}
@@ -276,7 +276,7 @@ export default function StatusLargeFooter({
               <>
                 {supportsNativeQuote() && (
                   <MenuItem
-                    disabled={quoteDisabled}
+                    disabled={!!quoteDisabled}
                     onClick={() => {
                       showCompose({
                         quoteStatus: status,
@@ -291,10 +291,10 @@ export default function StatusLargeFooter({
                         {quoteMetaText}
                       </small>
                     ) : (
-                      <span class="menu-grow">{quoteText}</span>
+                      <span className="menu-grow">{quoteText}</span>
                     )}
                     {quotesCount > 0 && (
-                      <small class="more-insignificant">
+                      <small className="more-insignificant">
                         {shortenNumber(quotesCount)}
                       </small>
                     )}
@@ -315,7 +315,7 @@ export default function StatusLargeFooter({
                       <Trans>Quote with link</Trans>
                     </span>
                     {supportsNativeQuote() && DEV && (
-                      <small class="tag collapsed">DEV</small>
+                      <small className="tag collapsed">DEV</small>
                     )}
                   </MenuItem>
                 )}
@@ -324,26 +324,24 @@ export default function StatusLargeFooter({
             menuFooter={menuFooter}
           >
             <StatusButton
-              {...({
-                checked: reblogged ?? undefined,
-                title: [canQuote ? t`Boost/Quote…` : t`Boost…`, t`Unboost`],
-                alt: [t`Boost`, t`Boosted`],
-                class: 'reblog-button',
-                icon: reblogsCount <= 0 && quotesCount > 0 ? 'quote' : 'rocket',
-                count: reblogsCount,
-                extraCount: quotesCount,
-                disabled: !canBoost,
-                'data-testid': 'status-boost-button',
-              } as Parameters<typeof StatusButton>[0] & { disabled?: boolean })}
+              checked={reblogged ?? undefined}
+              title={[canQuote ? t`Boost/Quote…` : t`Boost…`, t`Unboost`]}
+              alt={[t`Boost`, t`Boosted`]}
+              className="reblog-button"
+              icon={reblogsCount <= 0 && quotesCount > 0 ? 'quote' : 'rocket'}
+              count={reblogsCount}
+              extraCount={quotesCount}
+              disabled={!canBoost}
+              data-testid="status-boost-button"
             />
           </MenuConfirm>
         </div>
-        <div class="action has-count">
+        <div className="action has-count">
           <StatusButton
             checked={favourited ?? undefined}
             title={[t`Like`, t`Unlike`]}
             alt={[t`Like`, t`Liked`]}
-            class="favourite-button"
+            className="favourite-button"
             icon="heart"
             count={favouritesCount}
             onClick={() => {
@@ -353,12 +351,12 @@ export default function StatusLargeFooter({
           />
         </div>
         {supports('@mastodon/post-bookmark') && (
-          <div class="action">
+          <div className="action">
             <StatusButton
               checked={bookmarked ?? undefined}
               title={[t`Bookmark`, t`Unbookmark`]}
               alt={[t`Bookmark`, t`Bookmarked`]}
-              class="bookmark-button"
+              className="bookmark-button"
               icon="bookmark"
               onClick={() => {
                 void haptics.trigger('light');
@@ -376,11 +374,11 @@ export default function StatusLargeFooter({
           overflow="auto"
           viewScroll="close"
           menuButton={
-            <div class="action">
+            <div className="action">
               <button
                 type="button"
                 title={t`More`}
-                class="plain more-button"
+                className="plain more-button"
                 data-testid="status-more-button"
               >
                 <Icon icon="more2" size="l" alt={t`More`} />

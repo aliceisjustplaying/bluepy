@@ -1,7 +1,7 @@
 import './lists.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useReducer, useState } from 'preact/hooks';
+import { useEffect, useReducer, useState } from 'react';
 
 import Icon from '../components/icon';
 import Link from '../components/link';
@@ -28,7 +28,7 @@ function Lists() {
   useTitle(t`Lists & Feeds`, `/l`);
   const [uiState, setUIState] = useState<UIState>('default');
 
-  const [reloadCount, reload] = useReducer<number, undefined>((c) => c + 1, 0);
+  const [reloadCount, reload] = useReducer((c: number) => c + 1, 0);
   const [lists, setLists] = useState<ListItem[]>([]);
   useEffect(() => {
     setUIState('loading');
@@ -54,23 +54,23 @@ function Lists() {
   );
 
   return (
-    <div id="lists-page" class="deck-container" tabIndex={-1}>
-      <div class="timeline-deck deck">
+    <div id="lists-page" className="deck-container" tabIndex={-1}>
+      <div className="timeline-deck deck">
         <header>
-          <div class="header-grid">
-            <div class="header-side">
+          <div className="header-grid">
+            <div className="header-side">
               <NavMenu />
-              <Link to="/" class="button plain">
+              <Link to="/" className="button plain">
                 <Icon icon="home" size="l" />
               </Link>
             </div>
             <h1>
               <Trans>Lists & Feeds</Trans>
             </h1>
-            <div class="header-side">
+            <div className="header-side">
               <button
                 type="button"
-                class="plain"
+                className="plain"
                 onClick={() => setShowListAddEditModal(true)}
               >
                 <Icon icon="plus" size="l" alt={t`New list`} />
@@ -83,10 +83,10 @@ function Lists() {
             <>
               {userLists.length > 0 && (
                 <>
-                  <h2 class="timeline-header">
+                  <h2 className="timeline-header">
                     <Trans>Lists</Trans>
                   </h2>
-                  <ul class="link-list">
+                  <ul className="link-list">
                     {userLists.map((list) => (
                       <li key={list.id}>
                         <Link to={`/l/${list.id}`}>
@@ -102,7 +102,7 @@ function Lists() {
                           </span>
                           {/* <button
                       type="button"
-                      class="plain"
+                      className="plain"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -121,10 +121,10 @@ function Lists() {
               )}
               {feeds.length > 0 && (
                 <>
-                  <h2 class="timeline-header">
+                  <h2 className="timeline-header">
                     <Trans>Feeds</Trans>
                   </h2>
-                  <ul class="link-list">
+                  <ul className="link-list">
                     {feeds.map((feed) => (
                       <li key={feed.id}>
                         <Link to={`/l/${feed.id}`}>
@@ -136,10 +136,10 @@ function Lists() {
                 </>
               )}
               {lists.length > 1 && (
-                <footer class="ui-state">
+                <footer className="ui-state">
                   {hasExclusiveLists && (
                     <p>
-                      <small class="insignificant">
+                      <small className="insignificant">
                         <ListExclusiveBadge />{' '}
                         <Trans>
                           Posts on this list are hidden from Home/Following
@@ -148,7 +148,7 @@ function Lists() {
                     </p>
                   )}
                   <p>
-                    <small class="insignificant">
+                    <small className="insignificant">
                       {userLists.length > 0 && (
                         <Plural
                           value={userLists.length}
@@ -170,15 +170,15 @@ function Lists() {
               )}
             </>
           ) : uiState === 'loading' ? (
-            <p class="ui-state">
+            <p className="ui-state">
               <Loader />
             </p>
           ) : uiState === 'error' ? (
-            <p class="ui-state">
+            <p className="ui-state">
               <Trans>Unable to load lists.</Trans>
             </p>
           ) : (
-            <p class="ui-state">
+            <p className="ui-state">
               <Trans>No lists or feeds yet.</Trans>
             </p>
           )}
@@ -199,12 +199,12 @@ function Lists() {
                 : undefined
             }
             onClose={(result) => {
-              if (
-                result &&
-                !(result instanceof Event) &&
-                result.state === 'success'
-              ) {
-                reload(undefined);
+              const closeResult =
+                result && typeof result === 'object' && 'state' in result
+                  ? result
+                  : null;
+              if (closeResult?.state === 'success') {
+                reload();
               }
               setShowListAddEditModal(false);
             }}

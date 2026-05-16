@@ -1,5 +1,5 @@
 import { plural } from '@lingui/core/macro';
-import type { TargetedEvent } from 'preact';
+import type { SyntheticEvent } from 'react';
 
 export interface FilePickerMediaAttachment {
   fileData: ArrayBuffer;
@@ -51,7 +51,7 @@ function FilePickerInput({
         maxMediaAttachments - Number(mediaAttachments) >= 2
       }
       disabled={disabled}
-      onChange={(e: TargetedEvent<HTMLInputElement>) => {
+      onChange={(e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
         const files = target.files;
         if (!files) return;

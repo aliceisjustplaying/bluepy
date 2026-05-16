@@ -1,8 +1,8 @@
 import 'temml/dist/Temml-Local.css';
 
 import { useLingui } from '@lingui/react/macro';
-import type { RefObject, TargetedMouseEvent } from 'preact';
-import { useCallback, useState } from 'preact/hooks';
+import type { RefObject, MouseEvent } from 'react';
+import { useCallback, useState } from 'react';
 import type Temml from 'temml';
 
 import showToast from '../utils/show-toast';
@@ -104,7 +104,7 @@ const MathBlock = ({ content, contentRef, onRevert }: MathBlockProps) => {
   const { t } = useLingui();
   const [mathRendered, setMathRendered] = useState(false);
   const toggleMathRendering = useCallback(
-    async (e: TargetedMouseEvent<HTMLButtonElement>) => {
+    async (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
       e.stopPropagation();
       if (mathRendered) {
@@ -153,11 +153,11 @@ const MathBlock = ({ content, contentRef, onRevert }: MathBlockProps) => {
   if (!hasLatexContent) return null;
 
   return (
-    <div class="math-block">
+    <div className="math-block">
       <Icon icon="formula" size="s" /> <span>{t`Math expressions found.`}</span>{' '}
       <button
         type="button"
-        class="light small"
+        className="light small"
         onClick={(e) => {
           void toggleMathRendering(e);
         }}

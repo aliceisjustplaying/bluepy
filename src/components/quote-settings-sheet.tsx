@@ -2,8 +2,8 @@ import './quote-settings-sheet.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { TargetedEvent } from 'preact';
-import { useState } from 'preact/hooks';
+import type { SyntheticEvent } from 'react';
+import { useState } from 'react';
 
 import { api } from '../utils/api';
 import showToast from '../utils/show-toast';
@@ -70,7 +70,7 @@ function QuoteSettingsSheet({
     currentPolicy || 'public',
   );
 
-  const handleFormSubmit = async (e: TargetedEvent<HTMLFormElement>) => {
+  const handleFormSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const raw = formData.get('quoteApprovalPolicy');
@@ -108,11 +108,11 @@ function QuoteSettingsSheet({
   };
 
   return (
-    <div class="sheet" id="quote-settings-container">
+    <div className="sheet" id="quote-settings-container">
       {!!onClose && (
         <button
           type="button"
-          class="sheet-close"
+          className="sheet-close"
           onClick={onClose}
           disabled={uiState === 'loading'}
         >
@@ -126,7 +126,7 @@ function QuoteSettingsSheet({
       </header>
       <main>
         {!!post && (
-          <div class="post-preview">
+          <div className="post-preview">
             {renderStatus({
               status: post as AnyStatus,
               size: 's',

@@ -20,7 +20,7 @@ function currentAppPath(): string {
   return `${location.pathname}${location.search}`;
 }
 
-function isModifiedClick(e: MouseEvent): boolean {
+function isModifiedClick(e: React.MouseEvent): boolean {
   return e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1;
 }
 

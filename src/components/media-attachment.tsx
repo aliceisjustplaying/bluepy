@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
-import type { TargetedEvent } from 'preact';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { SyntheticEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
 import extractImageDescription from '../utils/extract-image-desc';
@@ -342,8 +342,8 @@ function MediaAttachment({
   const descTextarea = (
     <>
       {!!id && !supportsEdit ? (
-        <div class="media-desc">
-          <span class="tag">
+        <div className="media-desc">
+          <span className="tag">
             <Trans>Uploaded</Trans>
           </span>
           <p title={description}>
@@ -368,12 +368,12 @@ function MediaAttachment({
           autoCapitalize="sentences"
           autoComplete="on"
           autoCorrect="on"
-          spellcheck={true}
+          spellCheck={true}
           dir="auto"
           disabled={disabled || uiState === 'loading'}
-          class={uiState === 'loading' ? 'loading' : ''}
-          maxlength={descriptionLimit} // Not unicode-aware :(
-          onInput={(e: TargetedEvent<HTMLTextAreaElement>) => {
+          className={uiState === 'loading' ? 'loading' : ''}
+          maxLength={descriptionLimit} // Not unicode-aware :(
+          onInput={(e: SyntheticEvent<HTMLTextAreaElement>) => {
             const { value } = e.target as HTMLTextAreaElement;
             setDescription(value);
             // debouncedOnDescriptionChange(value);
@@ -455,12 +455,12 @@ function MediaAttachment({
 
   return (
     <>
-      <div class="media-attachment">
+      <div className="media-attachment">
         {/* TODO(oxlint:jsx-a11y/prefer-tag-over-role): replacing the wrapping
             <div role="button"> with a <button> would nest <audio>/<video>
             elements inside a button, which breaks their built-in controls. */}
         <div
-          class="media-preview"
+          className="media-preview"
           role="button"
           tabIndex={0}
           onClick={() => {
@@ -477,7 +477,7 @@ function MediaAttachment({
             <img
               src={url as string}
               alt=""
-              onLoad={(e: TargetedEvent<HTMLImageElement>) => {
+              onLoad={(e: SyntheticEvent<HTMLImageElement>) => {
                 if (!checkMaxError) return;
                 const { naturalWidth, naturalHeight } =
                   e.target as HTMLImageElement;
@@ -491,11 +491,11 @@ function MediaAttachment({
           ) : suffixType === 'video' || suffixType === 'gifv' ? (
             <video
               src={url + '#t=0.1'} // Make Safari show 1st-frame preview
-              playsinline
+              playsInline
               muted
               disablePictureInPicture
               preload="metadata"
-              onLoadedMetadata={(e: TargetedEvent<HTMLVideoElement>) => {
+              onLoadedMetadata={(e: SyntheticEvent<HTMLVideoElement>) => {
                 if (!checkMaxError) return;
                 const { videoWidth, videoHeight } =
                   e.target as HTMLVideoElement;
@@ -516,10 +516,10 @@ function MediaAttachment({
           ) : null}
         </div>
         {descTextarea}
-        <div class="media-aside">
+        <div className="media-aside">
           <button
             type="button"
-            class="plain close-button"
+            className="plain close-button"
             disabled={disabled}
             onClick={onRemove}
           >
@@ -528,7 +528,7 @@ function MediaAttachment({
           {!!maxError && (
             <button
               type="button"
-              class="media-error"
+              className="media-error"
               title={maxErrorText(maxError)}
               onClick={() => {
                 if (maxErrorToast.current) {
@@ -551,10 +551,10 @@ function MediaAttachment({
             setShowModal(false);
           }}
         >
-          <div id="media-sheet" class="sheet sheet-max">
+          <div id="media-sheet" className="sheet sheet-max">
             <button
               type="button"
-              class="sheet-close"
+              className="sheet-close"
               onClick={() => {
                 setShowModal(false);
               }}
@@ -576,7 +576,7 @@ function MediaAttachment({
               </h2>
             </header>
             <main tabIndex={-1}>
-              <div class="media-preview">
+              <div className="media-preview">
                 {suffixType === 'image' ? (
                   <img src={url as string} alt="" />
                 ) : suffixType === 'video' || suffixType === 'gifv' ? (
@@ -584,7 +584,7 @@ function MediaAttachment({
                   // attachment preview; no captions track is available,
                   // and emitting an empty <track> would advertise fake
                   // captions.
-                  <video src={url as string} playsinline controls />
+                  <video src={url as string} playsInline controls />
                 ) : suffixType === 'audio' ? (
                   // TODO(oxlint:jsx-a11y/media-has-caption): user-uploaded
                   // attachment preview; no captions track is available,
@@ -593,7 +593,7 @@ function MediaAttachment({
                   <audio src={url as string} controls />
                 ) : null}
               </div>
-              <div class="media-form">
+              <div className="media-form">
                 {descTextarea}
                 <footer>
                   {suffixType === 'image' &&
@@ -613,7 +613,7 @@ function MediaAttachment({
                         position="anchor"
                         overflow="auto"
                         menuButton={
-                          <button type="button" class="plain">
+                          <button type="button" className="plain">
                             <Icon icon="more" size="l" alt={t`More`} />
                           </button>
                         }
@@ -736,7 +736,7 @@ function MediaAttachment({
                               <br />
                               <Trans>
                                 ({localeCode2Text(lang)}){' '}
-                                <span class="more-insignificant">
+                                <span className="more-insignificant">
                                   — experimental
                                 </span>
                               </Trans>
@@ -747,7 +747,7 @@ function MediaAttachment({
                     )}
                   <button
                     type="button"
-                    class="light block"
+                    className="light block"
                     onClick={() => {
                       setShowModal(false);
                     }}

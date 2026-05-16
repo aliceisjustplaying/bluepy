@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import { useRef, useState } from 'preact/hooks';
+import { useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
@@ -178,7 +178,7 @@ function Public({ local, columnMode, ...props }: PublicProps) {
       key={instance + isLocal}
       title={title}
       titleComponent={
-        <h1 class="header-double-lines">
+        <h1 className="header-double-lines">
           <b>{isLocal ? t`Local timeline` : t`Federated timeline`}</b>
           <div>{instance}</div>
         </h1>
@@ -209,7 +209,7 @@ function Public({ local, columnMode, ...props }: PublicProps) {
           viewScroll="close"
           position="anchor"
           menuButton={
-            <button type="button" class="plain">
+            <button type="button" className="plain">
               <Icon icon="more" size="l" alt={t`More`} />
             </button>
           }
@@ -268,7 +268,7 @@ function Public({ local, columnMode, ...props }: PublicProps) {
               }}
             >
               <Icon icon="bus" />{' '}
-              <small class="menu-double-lines">
+              <small className="menu-double-lines">
                 <Trans>
                   Go to my server (<b>{currentInstance}</b>)
                 </Trans>

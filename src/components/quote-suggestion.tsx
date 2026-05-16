@@ -36,14 +36,14 @@ export default function QuoteSuggestion({
   if (!quoteSuggestion) return null;
 
   return (
-    <div class="quote-suggestion">
-      <div class="quote-suggestion-header">
+    <div className="quote-suggestion">
+      <div className="quote-suggestion-header">
         <b>
           <Trans>Turn link into a quote?</Trans>
         </b>
-        <div class="quote-suggestion-url">{quoteSuggestion.url}</div>
+        <div className="quote-suggestion-url">{quoteSuggestion.url}</div>
       </div>
-      <div class="quote-status">
+      <div className="quote-status">
         <Status
           status={quoteSuggestion.status}
           instance={quoteSuggestion.instance}
@@ -51,16 +51,16 @@ export default function QuoteSuggestion({
           readOnly
         />
       </div>
-      <div class="quote-suggestion-actions">
-        <span class="spacer" />
-        <button type="button" class="plain" onClick={onCancel}>
+      <div className="quote-suggestion-actions">
+        <span className="spacer" />
+        <button type="button" className="plain" onClick={onCancel}>
           {hasCurrentQuoteStatus ? (
             <Trans>Cancel</Trans>
           ) : (
             <Trans>Keep as link</Trans>
           )}
         </button>
-        <button type="button" class="plain6" onClick={onAccept}>
+        <button type="button" className="plain6" onClick={onAccept}>
           {hasCurrentQuoteStatus ? (
             <Trans>Replace current quote</Trans>
           ) : (
