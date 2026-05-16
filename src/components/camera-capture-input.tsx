@@ -44,13 +44,13 @@ function CameraCaptureInput({
   // It also can't switch between photo and video mode like iOS/Safari
   const filteredSupportedMimeTypes = isMobileSafari
     ? supportedMimeTypes
-    : supportedMimeTypes?.filter((mimeType) => !/^image\//i.test(mimeType));
+    : supportedMimeTypes?.filter((mimeType) => /^image\//i.test(mimeType));
 
   return (
     <input
       id={id}
       type="file"
-      hidden={hidden}
+      className={hidden ? 'file-input-hidden' : undefined}
       accept={filteredSupportedMimeTypes?.join(',')}
       capture="environment"
       disabled={disabled}

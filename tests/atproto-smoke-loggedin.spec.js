@@ -403,6 +403,26 @@ test.describe('modals', () => {
     });
   });
 
+  test('compose add-media menu attaches an image on narrow viewports', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openModal(page, 'showCompose');
+    await page.locator('#compose-container .add-button').click();
+
+    const mediaItem = page.locator('.szh-menu__item.compose-menu-add-media');
+    await expect(mediaItem.first()).toBeVisible({ timeout: 5_000 });
+
+    const chooserPromise = page.waitForEvent('filechooser');
+    await mediaItem.first().click();
+    const chooser = await chooserPromise;
+    await chooser.setFiles(path.join(process.cwd(), 'public/logo-192.png'));
+
+    await expect(
+      page.locator('#compose-container img[src^="blob:"]').first(),
+    ).toBeVisible({ timeout: 10_000 });
+  });
+
   test('shortcuts modal opens', async ({ page }) => {
     await openModal(page, 'showShortcutsSettings');
     await expect(page.locator('text=/Shortcut/i').first()).toBeVisible({
