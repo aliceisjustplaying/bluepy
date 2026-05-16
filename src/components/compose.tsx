@@ -22,6 +22,7 @@ import {
   fetchAtprotoLinkMetadata,
   getFirstPostURL,
 } from '../utils/atproto-unfurl';
+import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
 import db from '../utils/db';
 import { getDtfLocale } from '../utils/dtf-locale';
 import haptics from '../utils/haptics';
@@ -707,15 +708,20 @@ function Compose({
         allowedFiles = allowedFiles.slice(0, max);
       }
       return Promise.all(
-        allowedFiles.map(async (file) => ({
-          fileData: await file.arrayBuffer(),
-          fileName: file.name,
-          type: file.type,
-          size: file.size,
-          url: URL.createObjectURL(file),
-          id: null,
-          description: null,
-        })),
+        allowedFiles.map(async (file) => {
+          const uploadFile = supports('@atproto')
+            ? await compressAtprotoImageIfNeeded(file)
+            : file;
+          return {
+            fileData: await uploadFile.arrayBuffer(),
+            fileName: uploadFile.name,
+            type: uploadFile.type,
+            size: uploadFile.size,
+            url: URL.createObjectURL(uploadFile),
+            id: null,
+            description: null,
+          };
+        }),
       );
     }
     return null;

@@ -1,6 +1,9 @@
 import { plural } from '@lingui/core/macro';
 import type { SyntheticEvent } from 'react';
 
+import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
+import supports from '../utils/supports';
+
 export interface FilePickerMediaAttachment {
   fileData: ArrayBuffer;
   fileName: string;
@@ -62,15 +65,20 @@ function FilePickerInput({
           let mediaFiles: FilePickerMediaAttachment[];
           try {
             mediaFiles = await Promise.all(
-              Array.from(files).map(async (file) => ({
-                fileData: await file.arrayBuffer(),
-                fileName: file.name,
-                type: file.type,
-                size: file.size,
-                url: URL.createObjectURL(file),
-                id: null, // indicate uploaded state
-                description: null,
-              })),
+              Array.from(files).map(async (file) => {
+                const uploadFile = supports('@atproto')
+                  ? await compressAtprotoImageIfNeeded(file)
+                  : file;
+                return {
+                  fileData: await uploadFile.arrayBuffer(),
+                  fileName: uploadFile.name,
+                  type: uploadFile.type,
+                  size: uploadFile.size,
+                  url: URL.createObjectURL(uploadFile),
+                  id: null, // indicate uploaded state
+                  description: null,
+                };
+              }),
             );
           } catch (err) {
             console.error('Failed to read file(s):', err);
