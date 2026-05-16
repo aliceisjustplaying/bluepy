@@ -476,6 +476,11 @@ function insertTextAtCursor({
   targetElement.dispatchEvent(new Event('input'));
 }
 
+function clickFileInput(inputId: string): void {
+  const input = document.getElementById(inputId);
+  if (input instanceof HTMLInputElement) input.click();
+}
+
 function Compose({
   onClose,
   replyToStatus,
@@ -2395,11 +2400,11 @@ function Compose({
                       <MenuItem
                         disabled={mediaButtonDisabled}
                         className="compose-menu-add-media"
+                        onClick={(event) => {
+                          event.keepOpen = true;
+                          clickFileInput(menuCameraInputId);
+                        }}
                       >
-                        <label
-                          className="compose-menu-add-media-field"
-                          htmlFor={menuCameraInputId}
-                        />
                         <Icon icon="camera" />{' '}
                         <span>{_(ADD_LABELS.camera)}</span>
                       </MenuItem>
@@ -2407,11 +2412,11 @@ function Compose({
                     <MenuItem
                       disabled={mediaButtonDisabled}
                       className="compose-menu-add-media"
+                      onClick={(event) => {
+                        event.keepOpen = true;
+                        clickFileInput(menuMediaInputId);
+                      }}
                     >
-                      <label
-                        className="compose-menu-add-media-field"
-                        htmlFor={menuMediaInputId}
-                      />
                       <Icon icon="media" /> <span>{_(ADD_LABELS.media)}</span>
                     </MenuItem>
                     <MenuItem
