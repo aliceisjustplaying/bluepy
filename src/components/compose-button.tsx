@@ -3,7 +3,7 @@ import { ControlledMenu, MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { MenuInstance } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
 import type { MouseEvent } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
@@ -135,16 +135,6 @@ export default function ComposeButton() {
     },
   });
 
-  // Setup longpress handler to open context menu
-  const bindLongPress = useLongPress(
-    () => {
-      setMenuOpen(true);
-    },
-    {
-      threshold: 600,
-    },
-  );
-
   const fetchLatestPosts = useCallback(async () => {
     try {
       setLoadingPosts(true);
@@ -164,6 +154,16 @@ export default function ComposeButton() {
     }
   }, [masto]);
 
+  const openLatestPostsMenu = useCallback(() => {
+    setMenuOpen(true);
+    void fetchLatestPosts();
+  }, [fetchLatestPosts]);
+
+  // Setup longpress handler to open context menu
+  const bindLongPress = useLongPress(openLatestPostsMenu, {
+    threshold: 600,
+  });
+
   // Function to handle opening the compose window to reply to a post
   const handleReplyToPost = useCallback((post: mastodon.v1.Status) => {
     showCompose({
@@ -171,12 +171,6 @@ export default function ComposeButton() {
     });
     setMenuOpen(false);
   }, []);
-
-  useEffect(() => {
-    if (menuOpen) {
-      void fetchLatestPosts();
-    }
-  }, [fetchLatestPosts, menuOpen]);
 
   return (
     <>
@@ -190,7 +184,7 @@ export default function ComposeButton() {
         }}
         onContextMenu={(e) => {
           e.preventDefault();
-          setMenuOpen(true);
+          openLatestPostsMenu();
         }}
         {...bindLongPress()}
         className={`${snapStates.composerState.minimized ? 'min' : ''} ${

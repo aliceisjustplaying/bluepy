@@ -1,5 +1,4 @@
 import type { ButtonHTMLAttributes, Ref } from 'react';
-import { useEffect, useState } from 'react';
 
 import shortenNumber from '../utils/shorten-number';
 
@@ -44,18 +43,8 @@ function StatusButton(props: StatusButtonProps) {
     alt = [alt, alt];
   }
 
-  const [buttonTitle, setButtonTitle] = useState(title[0] || '');
-  const [iconAlt, setIconAlt] = useState(alt[0] || '');
-
-  useEffect(() => {
-    if (checked) {
-      setButtonTitle(title[1] || '');
-      setIconAlt(alt[1] || '');
-    } else {
-      setButtonTitle(title[0] || '');
-      setIconAlt(alt[0] || '');
-    }
-  }, [checked, title, alt]);
+  const buttonTitle = checked ? title[1] || '' : title[0] || '';
+  const iconAlt = checked ? alt[1] || '' : alt[0] || '';
 
   const buttonClassName = [
     'plain',

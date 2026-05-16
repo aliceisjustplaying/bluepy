@@ -92,10 +92,6 @@ function MentionModal({
 
   const debouncedLoadAccounts = useDebouncedCallback(loadAccounts, 1000);
 
-  useEffect(() => {
-    loadAccounts();
-  }, [loadAccounts]);
-
   const inputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     if (inputRef.current) {
@@ -109,9 +105,7 @@ function MentionModal({
   }, []);
 
   useEffect(() => {
-    if (defaultSearchTerm) {
-      loadAccounts(defaultSearchTerm);
-    }
+    loadAccounts(defaultSearchTerm || undefined);
   }, [defaultSearchTerm, loadAccounts]);
 
   const selectAccount = (account: mastodon.v1.Account) => {
