@@ -52,6 +52,8 @@ Reference clients (read-only): `~/social-app` (primary), optionally clone `githu
 - Package manager: **Bun only** (`bun install`, `bun run …`, `bunx …`). Runtime is browser / CF Workers.
 - Verify: `bun run typecheck` (gates), `bun run test` (gates for files with Playwright coverage), `bun run build` only when bundling/routing/imports/assets affected (gates if run), `bunx oxlint <changed files>` (gates on changed-file delta; project baseline is being burned down).
 - Browser: `source ~/.secrets/bluepy/source.env`, `bun run dev`, expose via funnel, walk the flow **logged in**. Logged-out is not correctness evidence.
+- **Ad-hoc visual / exploratory checks** → `agent-browser` (start with `agent-browser skills get core --full`). **Smoke / regression tests** → `bun run test` (Playwright). Don't write a one-off Playwright test for a single manual check; don't take screenshots by hand when `agent-browser` will do.
+- **Playwright browsers ARE installed — via Nix, not via `npx playwright install`.** If `bun run test` says browsers are missing, the bundled Chromium is failing to load shared libs on NixOS. Don't reinstall; point Playwright at the Nix-provided bundle per `/workspace/notes/reference/nixos-gotchas.md`.
 - Smoke tests: if flaky, fix; do not skip.
 
 ## Commits
