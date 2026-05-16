@@ -263,19 +263,17 @@ test.describe('read flows', () => {
         'reblog-button',
         'favourite-button',
         'bookmark-button',
-      ].flatMap(
-        (buttonClass) => {
-          const button = page
-            .locator(`.status.large .actions .action > button.${buttonClass}`)
-            .first();
-          return [
-            expect(button).toHaveClass(/(?:^|\s)plain(?:\s|$)/),
-            expect(button).toHaveClass(
-              new RegExp(`(?:^|\\s)${buttonClass}(?:\\s|$)`),
-            ),
-          ];
-        },
-      ),
+      ].flatMap((buttonClass) => {
+        const button = page
+          .locator(`.status.large .actions .action > button.${buttonClass}`)
+          .first();
+        return [
+          expect(button).toHaveClass(/(?:^|\s)plain(?:\s|$)/),
+          expect(button).toHaveClass(
+            new RegExp(`(?:^|\\s)${buttonClass}(?:\\s|$)`),
+          ),
+        ];
+      }),
     );
   });
 
@@ -401,6 +399,9 @@ test.describe('modals', () => {
     await expect(page.locator('textarea').first()).toBeVisible({
       timeout: 15_000,
     });
+    await expect(page.locator('#modal-container > div').first()).toHaveClass(
+      /(?:^|\s)solid(?:\s|$)/,
+    );
   });
 
   test('compose add-media menu attaches an image on narrow viewports', async ({
@@ -471,6 +472,28 @@ test.describe('write flows', () => {
     await expect(textarea).toHaveCount(0, { timeout: 30_000 });
   }
 
+  /**
+   * @param {Page} page
+   * @param {string} body
+   */
+  async function composeAndPublishWithShortcut(page, body) {
+    await page.goto('/');
+    await expect(page.locator('.deck-container').first()).toBeVisible({
+      timeout: 30_000,
+    });
+    await page.evaluate(() => {
+      const appWindow = /** @type {TestWindow} */ (window);
+      if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
+        appWindow.__STATES__.showCompose = true;
+      }
+    });
+    const textarea = page.locator('textarea').first();
+    await textarea.waitFor({ timeout: 15_000 });
+    await textarea.fill(body);
+    await textarea.press('Control+Enter');
+    await expect(textarea).toHaveCount(0, { timeout: 30_000 });
+  }
+
   async function openCreatedStatusDetail(page, body) {
     const article = page
       .locator('[data-state-post-id]', { hasText: body })
@@ -502,6 +525,15 @@ test.describe('write flows', () => {
     await expect(
       page.locator('[data-state-post-id]', { hasText: body.slice(0, 28) }),
     ).toHaveCount(0, { timeout: 30_000 });
+  });
+
+  test('compose keyboard shortcut publishes a post', async ({ page }) => {
+    const body = `${RUN_TAG} shortcut ${Date.now()}`;
+    await composeAndPublishWithShortcut(page, body);
+    CREATED.push({ page, body });
+    await expect(
+      page.getByText('Post published. Check it out.', { exact: false }).first(),
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   test('compose: a published post survives a reload (then leaves for sweep)', async ({
@@ -601,7 +633,9 @@ test.describe('write flows', () => {
     try {
       await bookmarksPage.goto('/b');
       await expect(
-        bookmarksPage.locator('[data-state-post-id]', { hasText: body }).first(),
+        bookmarksPage
+          .locator('[data-state-post-id]', { hasText: body })
+          .first(),
       ).toBeVisible({ timeout: 30_000 });
     } finally {
       await bookmarksPage.close();
