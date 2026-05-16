@@ -3,7 +3,7 @@ import escapeHTML from './escape-html';
 import mem from './mem';
 
 const fauxDiv = document.createElement('div');
-const whitelistLinkClasses = ['u-url', 'mention', 'hashtag'];
+const whitelistLinkClasses = new Set(['u-url', 'mention', 'hashtag']);
 
 const LINK_REGEX = /<a/i;
 const HTTP_LINK_REGEX = /^https?:\/\//i;
@@ -78,7 +78,7 @@ function enhanceContentRaw(
     const links = dom.querySelectorAll<HTMLAnchorElement>('a[class]');
     for (const link of links) {
       for (const c of link.classList) {
-        if (!whitelistLinkClasses.includes(c)) {
+        if (!whitelistLinkClasses.has(c)) {
           link.classList.remove(c);
         }
       }

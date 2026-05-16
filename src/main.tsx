@@ -137,7 +137,7 @@ if (!redirectLegacyOrigin()) {
     // Service worker cache cleanup
     if ('serviceWorker' in navigator && typeof caches !== 'undefined') {
       const MAX_SW_CACHE_SIZE = 50;
-      const IGNORE_CACHE_KEYS = ['icons'];
+      const IGNORE_CACHE_KEYS = new Set(['icons']);
       let clearRanOnce = false;
       const FAST_INTERVAL = 10_000; // 10 seconds
       const SLOW_INTERVAL = 60 * 60 * 1000; // 1 hour
@@ -146,7 +146,7 @@ if (!redirectLegacyOrigin()) {
           try {
             const keys = await caches.keys();
             for (const key of keys) {
-              if (IGNORE_CACHE_KEYS.includes(key)) continue;
+              if (IGNORE_CACHE_KEYS.has(key)) continue;
               const cache = await caches.open(key);
               const cacheKeys = await cache.keys();
               if (cacheKeys.length > MAX_SW_CACHE_SIZE) {

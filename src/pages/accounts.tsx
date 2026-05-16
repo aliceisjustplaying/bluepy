@@ -390,7 +390,9 @@ function Accounts({ onClose }: AccountsProps) {
             <button
               type="button"
               className="light"
-              onClick={() => (states.showImportExportAccounts = true)}
+              onClick={() => {
+                states.showImportExportAccounts = true;
+              }}
             >
               <Trans>Import/export</Trans>
             </button>

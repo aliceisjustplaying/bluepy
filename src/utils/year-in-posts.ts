@@ -73,10 +73,9 @@ export function loadAvailableYears(): AvailableYear[] {
     const list =
       store.account.get<YearInPostsList>(YEAR_IN_POSTS_LIST_KEY) || {};
     const sortedYears = sorted(
-      Object.entries(list).map(([year, data]) => ({
-        year: parseInt(year, 10),
-        ...data,
-      })),
+      Object.entries(list).map(([year, data]) =>
+        Object.assign({ year: parseInt(year, 10) }, data),
+      ),
       (a, b) => b.year - a.year,
     );
     return sortedYears;

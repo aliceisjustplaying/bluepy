@@ -198,7 +198,10 @@ appWindow.__STATES_STATS__ = () => {
       const id = el.dataset.statePostId?.trim?.();
       const ids = el.dataset.statePostIds?.trim?.();
       if (id) mountedKeys.add(id);
-      if (ids) ids.split(/\s+/).forEach((key: string) => mountedKeys.add(key));
+      if (ids)
+        ids.split(/\s+/).forEach((key: string) => {
+          mountedKeys.add(key);
+        });
     });
   const unmountedPosts = Object.keys(statuses).filter(
     (key) => !mountedKeys.has(key),
@@ -224,7 +227,9 @@ setInterval(
         const ids = el.dataset.statePostIds;
         if (id) mountedKeys.add(id);
         if (ids)
-          ids.split(/\s+/).forEach((key: string) => mountedKeys.add(key));
+          ids.split(/\s+/).forEach((key: string) => {
+            mountedKeys.add(key);
+          });
       });
     for (const key in statuses) {
       if (!appWindow.__IDLE__) break;
@@ -816,7 +821,11 @@ function App() {
       {isLoggedIn && <NotificationService />}
       <BackgroundService />
       {isLoggedIn && <NavigationCommand />}
-      <SearchCommand onClose={focusDeck} />
+      <SearchCommand
+        onClose={() => {
+          focusDeck();
+        }}
+      />
       <KeyboardShortcutsHelp />
     </AuthProvider>
   );

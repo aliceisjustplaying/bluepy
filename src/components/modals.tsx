@@ -238,7 +238,11 @@ export default function Modals() {
             states.showDrafts = false;
           }}
         >
-          <Drafts onClose={() => (states.showDrafts = false)} />
+          <Drafts
+            onClose={() => {
+              states.showDrafts = false;
+            }}
+          />
         </Modal>
       )}
       {!!snapStates.showMediaModal && (
@@ -273,7 +277,9 @@ export default function Modals() {
           }}
         >
           <ShortcutsSettings
-            onClose={() => (states.showShortcutsSettings = false)}
+            onClose={() => {
+              states.showShortcutsSettings = false;
+            }}
           />
         </Modal>
       )}
@@ -295,7 +301,9 @@ export default function Modals() {
             postID={
               p(snapStates.showGenericAccounts).postID as string | undefined
             }
-            onClose={() => (states.showGenericAccounts = false)}
+            onClose={() => {
+              states.showGenericAccounts = false;
+            }}
             blankCopy={
               p(snapStates.showGenericAccounts).blankCopy as string | undefined
             }

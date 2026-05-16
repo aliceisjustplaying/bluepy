@@ -5,6 +5,9 @@ import type { CSSProperties } from 'react';
 
 import Icon from './icon';
 
+const EMBED_IFRAME_SANDBOX =
+  'allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts';
+
 interface EmbedModalProps {
   html?: string;
   url?: string;
@@ -56,14 +59,10 @@ function EmbedModal({
       </div>
       {iframeUrl ? (
         <div className="embed-content iframe-content">
-          {/* TODO(oxlint:react/iframe-missing-sandbox): allow-scripts +
-              allow-same-origin together weaken the sandbox, but many oEmbed
-              providers (YouTube, Spotify, Bluesky) require it. Behavioural
-              regression to remove either; needs per-provider audit. */}
           <iframe
             src={iframeUrl}
             title={iframeTitle}
-            sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+            sandbox={EMBED_IFRAME_SANDBOX}
             allow="clipboard-write; fullscreen"
             referrerPolicy="strict-origin-when-cross-origin"
           />

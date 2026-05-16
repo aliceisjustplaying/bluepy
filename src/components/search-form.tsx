@@ -184,16 +184,20 @@ const SearchForm = forwardRef(
         .slice(0, 2); // Max 2 recent searches
 
       const recentSearchItems: SearchSuggestionRecent[] = matchingHistory.map(
-        (historyItem): SearchSuggestionRecent => ({
-          ...generateSearchItemData(
-            historyItem.query,
-            historyItem.queryType,
-            instance,
+        (historyItem): SearchSuggestionRecent =>
+          Object.assign(
+            {},
+            generateSearchItemData(
+              historyItem.query,
+              historyItem.queryType,
+              instance,
+            ),
+            {
+              queryType: historyItem.queryType,
+              isRecentSearch: true,
+              historyItem,
+            } as const,
           ),
-          queryType: historyItem.queryType,
-          isRecentSearch: true,
-          historyItem,
-        }),
       );
 
       const allItems: SearchSuggestionItem[] = [

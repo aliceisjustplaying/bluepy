@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { createContext } from 'react';
 import type { RefObject } from 'react';
-import { useContext, useRef, useState } from 'react';
+import { useCallback, useContext, useMemo, useRef, useState } from 'react';
 
 import { api } from '../utils/api';
 
@@ -39,18 +39,24 @@ export function EditHistoryProvider({
   const [editedAtIndex, _setEditedAtIndex] = useState(0);
 
   // setEditedAtIndex, with View Transitions API
-  function setEditedAtIndex(i: number | ((prev: number) => number)) {
-    if (i === editedAtIndex) return;
-    if (supportsViewTransition) {
-      document.startViewTransition(() => {
-        _setEditedAtIndex(i);
-      });
-    } else {
-      _setEditedAtIndex(i);
-    }
-  }
+  const setEditedAtIndex = useCallback(
+    (i: number | ((prev: number) => number)) => {
+      const updateIndex = (prev: number) => {
+        const next = typeof i === 'function' ? i(prev) : i;
+        return next === prev ? prev : next;
+      };
+      if (supportsViewTransition) {
+        document.startViewTransition(() => {
+          _setEditedAtIndex(updateIndex);
+        });
+      } else {
+        _setEditedAtIndex(updateIndex);
+      }
+    },
+    [],
+  );
 
-  async function fetchEditHistory() {
+  const fetchEditHistory = useCallback(async () => {
     const { masto } = api();
     const statuses = masto.v1.statuses as {
       $select: (id: string) => {
@@ -64,9 +70,9 @@ export function EditHistoryProvider({
         Date.parse(b.createdAt) - Date.parse(a.createdAt),
     );
     editHistoryRef.current = history;
-  }
+  }, [statusID]);
 
-  async function initEditHistory() {
+  const initEditHistory = useCallback(async () => {
     console.log('initEditHistory', statusID);
     try {
       await fetchEditHistory();
@@ -76,36 +82,47 @@ export function EditHistoryProvider({
       console.error(e);
       setEditHistoryMode(false);
     }
-  }
+  }, [fetchEditHistory, setEditedAtIndex, statusID]);
 
-  function exitEditHistory() {
+  const exitEditHistory = useCallback(() => {
     editHistoryRef.current = [];
     setEditHistoryMode(false);
     setEditedAtIndex(0);
-  }
+  }, [setEditedAtIndex]);
 
-  function prevEditedAt() {
+  const prevEditedAt = useCallback(() => {
     setEditedAtIndex((i: number) =>
       Math.min(i + 1, editHistoryRef.current.length - 1),
     );
-  }
+  }, [setEditedAtIndex]);
 
-  function nextEditedAt() {
+  const nextEditedAt = useCallback(() => {
     setEditedAtIndex((i: number) => Math.max(i - 1, 0));
-  }
+  }, [setEditedAtIndex]);
+
+  const contextValue = useMemo(
+    () => ({
+      editHistoryRef,
+      initEditHistory,
+      exitEditHistory,
+      editHistoryMode,
+      editedAtIndex,
+      prevEditedAt,
+      nextEditedAt,
+    }),
+    [
+      editHistoryRef,
+      initEditHistory,
+      exitEditHistory,
+      editHistoryMode,
+      editedAtIndex,
+      prevEditedAt,
+      nextEditedAt,
+    ],
+  );
 
   return (
-    <EditHistoryContext.Provider
-      value={{
-        editHistoryRef,
-        initEditHistory,
-        exitEditHistory,
-        editHistoryMode,
-        editedAtIndex,
-        prevEditedAt,
-        nextEditedAt,
-      }}
-    >
+    <EditHistoryContext.Provider value={contextValue}>
       {children}
     </EditHistoryContext.Provider>
   );

@@ -61,10 +61,10 @@ const FILTER_CONTEXT = [
   'account',
 ] as const satisfies readonly mastodon.v2.FilterContext[];
 type FilterContextName = (typeof FILTER_CONTEXT)[number];
-const FILTER_CONTEXT_UNIMPLEMENTED: readonly FilterContextName[] = [
+const FILTER_CONTEXT_UNIMPLEMENTED = new Set<FilterContextName>([
   'thread',
   'account',
-];
+]);
 const FILTER_CONTEXT_LABELS: Record<
   FilterContextName,
   ReturnType<typeof msg>
@@ -594,7 +594,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                 <div key={ctx}>
                   <label
                     className={
-                      FILTER_CONTEXT_UNIMPLEMENTED.includes(ctx)
+                      FILTER_CONTEXT_UNIMPLEMENTED.has(ctx)
                         ? 'insignificant'
                         : ''
                     }
@@ -607,7 +607,7 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                       disabled={uiState === 'loading'}
                     />{' '}
                     {_(FILTER_CONTEXT_LABELS[ctx])}
-                    {FILTER_CONTEXT_UNIMPLEMENTED.includes(ctx) ? '*' : ''}
+                    {FILTER_CONTEXT_UNIMPLEMENTED.has(ctx) ? '*' : ''}
                   </label>{' '}
                 </div>
               ))}

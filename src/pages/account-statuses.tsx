@@ -319,10 +319,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       if (value?.length && !tagged && !media) {
         const pinnedStatuses = value.map((status: Status) => {
           saveStatus(stateStatus(status), instance);
-          return {
-            ...status,
-            _pinned: true,
-          };
+          return Object.assign({}, status, { _pinned: true });
         });
         if (pinnedStatuses.length >= 3) {
           const pinnedStatusesIds = pinnedStatuses.map(

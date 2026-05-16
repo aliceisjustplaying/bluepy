@@ -106,9 +106,9 @@ const notificationTypeKeys: Record<string, string[]> = {
   update: ['status'],
 };
 
-const GROUP_TYPES = ['favourite', 'reblog', 'follow', 'admin.sign_up'];
+const GROUP_TYPES = new Set(['favourite', 'reblog', 'follow', 'admin.sign_up']);
 const groupable = (type: string | undefined): boolean =>
-  !!type && GROUP_TYPES.includes(type);
+  !!type && GROUP_TYPES.has(type);
 
 export function fixNotifications(
   notifications: NotificationLike[],
@@ -149,11 +149,10 @@ export function massageNotifications2(
       const sampleAccounts =
         sampleAccountIds?.map((id) => accounts.find((a) => a.id === id)) || [];
       const status = statuses?.find((s) => s.id === statusId) || null;
-      return {
-        ...group,
+      return Object.assign({}, group, {
         sampleAccounts,
         status,
-      } as NotificationGroupLike;
+      }) as NotificationGroupLike;
     });
   }
   return notifications as NotificationLike[] | undefined;
@@ -281,10 +280,9 @@ export function groupNotifications2(
       // missing array here is a malformed-input crash. Individual entries
       // can still be `undefined` (see `massageNotifications2`), which the
       // spread turns into malformed `{_types: [type]}` objects downstream.
-      const accounts = (sampleAccounts ?? []).map((a) => ({
-        ...a,
-        _types: [type as string],
-      }));
+      const accounts = (sampleAccounts ?? []).map((a) =>
+        Object.assign({}, a, { _types: [type as string] }),
+      );
       // Preserve JS-original behavior: pushes `undefined` if the upstream
       // payload omitted the field, rather than normalizing to 0.
       const newEntry: AugmentedNotificationGroup = {

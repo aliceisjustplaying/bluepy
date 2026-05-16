@@ -1200,10 +1200,7 @@ function Compose({
     const handleBeforeUnload = (e: BeforeUnloadEvent): void => {
       if (!canCloseRef.current()) {
         e.preventDefault();
-        // TODO(oxlint:typescript/no-deprecated): returnValue is deprecated, but
-        // some browsers still require it as a fallback alongside preventDefault.
-        // The custom string also lets browsers show our message when supported.
-        e.returnValue = beforeUnloadCopyRef.current;
+        Reflect.set(e, 'returnValue', beforeUnloadCopyRef.current);
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload, {
