@@ -46,7 +46,11 @@ interface StatusContextMenuArgs {
   quoteMetaText?: string | null;
   status: AnyStatus;
   url?: string | null;
-  boostToast: (reblogged?: boolean | null, username?: string, acct?: string) => string;
+  boostToast: (
+    reblogged?: boolean | null,
+    username?: string,
+    acct?: string,
+  ) => string;
 }
 
 export default function useStatusContextMenu({
@@ -91,10 +95,12 @@ export default function useStatusContextMenu({
           const { clientX, clientY } =
             (event as TouchEvent).touches?.[0] || (event as PointerEvent);
           const link = ((event as Event).target as Element).closest('a');
+          const href = link?.getAttribute('href');
           if (
             link &&
-            statusRef.current!.contains(link) &&
-            !link.getAttribute('href')!.startsWith('#')
+            statusRef.current?.contains(link) &&
+            href &&
+            !href.startsWith('#')
           )
             return;
           e.preventDefault();
@@ -188,7 +194,7 @@ export default function useStatusContextMenu({
   const xRef = useHotkeys(
     'x',
     (e) => {
-      const activeStatus = document.activeElement!.closest(
+      const activeStatus = document.activeElement?.closest(
         '.status-link, .status-focus',
       );
       if (!activeStatus) return;

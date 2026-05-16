@@ -40,7 +40,7 @@ function cleanDOMForTemml(dom: HTMLElement) {
   }
 
   for (const textNode of textNodes) {
-    const text = textNode.textContent!;
+    const text = textNode.textContent ?? '';
     const startMatch = text.match(startRegex);
 
     if (!startMatch) continue; // No start delimiter in this text node
@@ -65,8 +65,9 @@ function cleanDOMForTemml(dom: HTMLElement) {
 
         if (nextSibling.nodeType === Node.TEXT_NODE) {
           nodesToCombine.push(nextSibling);
-          combinedText += nextSibling.textContent;
-          if (nextSibling.textContent!.includes(endDelimiter)) {
+          const siblingText = nextSibling.textContent ?? '';
+          combinedText += siblingText;
+          if (siblingText.includes(endDelimiter)) {
             foundEnd = true;
           }
         } else if (nextSibling instanceof HTMLBRElement) {

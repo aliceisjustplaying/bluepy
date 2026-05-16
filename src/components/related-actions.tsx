@@ -3,9 +3,9 @@ import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
+import { toUnicode as punycodeToUnicode } from 'punycode/';
 import type { HTMLAttributes, ReactElement } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { toUnicode as punycodeToUnicode } from 'punycode/';
 
 import { api } from '../utils/api';
 import i18nDuration from '../utils/i18n-duration';
@@ -444,9 +444,7 @@ function RelatedActions({
                 // Fetch lists that have this account
                 void (async () => {
                   try {
-                    const fetchedLists = await getAccountsEndpoint(
-                      currentMasto,
-                    )
+                    const fetchedLists = await getAccountsEndpoint(currentMasto)
                       .$select(accountID.current)
                       .lists.list();
                     console.log('fetched account lists', fetchedLists);
@@ -485,8 +483,8 @@ function RelatedActions({
                     <Icon icon="search" />
                     <span>
                       <Trans>
-                        Search <span className="bidi-isolate">@{username}</span>'s
-                        posts
+                        Search <span className="bidi-isolate">@{username}</span>
+                        's posts
                       </Trans>
                     </span>
                   </MenuItem>
@@ -518,9 +516,7 @@ function RelatedActions({
                         setRelationshipUIState('loading');
                         void (async () => {
                           try {
-                            const rel = await getAccountsEndpoint(
-                              currentMasto,
-                            )
+                            const rel = await getAccountsEndpoint(currentMasto)
                               .$select(accountID.current)
                               .follow({
                                 notify: !notifying,
@@ -551,9 +547,7 @@ function RelatedActions({
                         setRelationshipUIState('loading');
                         void (async () => {
                           try {
-                            const rel = await getAccountsEndpoint(
-                              currentMasto,
-                            )
+                            const rel = await getAccountsEndpoint(currentMasto)
                               .$select(accountID.current)
                               .follow({
                                 reblogs: !showingReblogs,
@@ -633,7 +627,11 @@ function RelatedActions({
                 {showEndorsements &&
                   supportsEndorsements &&
                   !renderEndorsements && (
-                    <MenuItem onClick={() => setRenderEndorsements(true)}>
+                    <MenuItem
+                      onClick={() => {
+                        setRenderEndorsements(true);
+                      }}
+                    >
                       <Icon icon="endorsement" />
                       <span>
                         <Trans>Show featured profiles</Trans>
@@ -657,7 +655,9 @@ function RelatedActions({
                             {lists.map((list) => list.title).join(', ')}
                           </span>
                         </small>
-                        <small className="more-insignificant">{lists.length}</small>
+                        <small className="more-insignificant">
+                          {lists.length}
+                        </small>
                       </>
                     ) : (
                       <span>
@@ -684,7 +684,11 @@ function RelatedActions({
                 )}
                 {supportsEndorsements && !renderEndorsements && (
                   <>
-                    <MenuItem onClick={() => setRenderEndorsements(true)}>
+                    <MenuItem
+                      onClick={() => {
+                        setRenderEndorsements(true);
+                      }}
+                    >
                       <Icon icon="endorsement" />
                       <Trans>Show featured profiles</Trans>
                     </MenuItem>
@@ -824,7 +828,8 @@ function RelatedActions({
                         <Icon icon="mute" />
                         <span className="menu-grow">
                           <Trans>
-                            Mute <span className="bidi-isolate">@{username}</span>…
+                            Mute{' '}
+                            <span className="bidi-isolate">@{username}</span>…
                           </Trans>
                         </span>
                         <span
@@ -847,9 +852,7 @@ function RelatedActions({
                             void (async () => {
                               try {
                                 const newRelationship =
-                                  await getAccountsEndpoint(
-                                    currentMasto,
-                                  )
+                                  await getAccountsEndpoint(currentMasto)
                                     .$select(currentInfo?.id || id)
                                     .mute({
                                       duration,
@@ -898,7 +901,8 @@ function RelatedActions({
                         <Icon icon="user-x" />
                         <span>
                           <Trans>
-                            Remove <span className="bidi-isolate">@{username}</span>{' '}
+                            Remove{' '}
+                            <span className="bidi-isolate">@{username}</span>{' '}
                             from followers?
                           </Trans>
                         </span>
@@ -943,7 +947,8 @@ function RelatedActions({
                       <Icon icon="block" />
                       <span>
                         <Trans>
-                          Block <span className="bidi-isolate">@{username}</span>?
+                          Block{' '}
+                          <span className="bidi-isolate">@{username}</span>?
                         </Trans>
                       </span>
                     </>
@@ -999,7 +1004,8 @@ function RelatedActions({
                       <Icon icon="unblock" />
                       <span>
                         <Trans>
-                          Unblock <span className="bidi-isolate">@{username}</span>
+                          Unblock{' '}
+                          <span className="bidi-isolate">@{username}</span>
                         </Trans>
                       </span>
                     </>
@@ -1008,7 +1014,8 @@ function RelatedActions({
                       <Icon icon="block" />
                       <span>
                         <Trans>
-                          Block <span className="bidi-isolate">@{username}</span>…
+                          Block{' '}
+                          <span className="bidi-isolate">@{username}</span>…
                         </Trans>
                       </span>
                     </>
@@ -1104,16 +1111,12 @@ function RelatedActions({
                       // );
 
                       // if (yes) {
-                      newRelationship = await getAccountsEndpoint(
-                        currentMasto,
-                      )
+                      newRelationship = await getAccountsEndpoint(currentMasto)
                         .$select(accountID.current)
                         .unfollow();
                       // }
                     } else {
-                      newRelationship = await getAccountsEndpoint(
-                        currentMasto,
-                      )
+                      newRelationship = await getAccountsEndpoint(currentMasto)
                         .$select(accountID.current)
                         .follow();
                     }
@@ -1187,7 +1190,9 @@ function RelatedActions({
           <TranslatedBioSheet
             note={note}
             fields={fields}
-            onClose={() => setShowTranslatedBio(false)}
+            onClose={() => {
+              setShowTranslatedBio(false);
+            }}
           />
         </Modal>
       )}
@@ -1199,7 +1204,9 @@ function RelatedActions({
         >
           <AddRemoveListsSheet
             accountID={accountID.current}
-            onClose={() => setShowAddRemoveLists(false)}
+            onClose={() => {
+              setShowAddRemoveLists(false);
+            }}
           />
         </Modal>
       )}
@@ -1216,7 +1223,9 @@ function RelatedActions({
               setRelationship(nextRelationship as Relationship);
               // onRelationshipChange({ relationship: nextRelationship, currentID: accountID.current });
             }}
-            onClose={() => setShowPrivateNoteModal(false)}
+            onClose={() => {
+              setShowPrivateNoteModal(false);
+            }}
           />
         </Modal>
       )}

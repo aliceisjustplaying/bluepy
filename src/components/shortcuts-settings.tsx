@@ -571,14 +571,18 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
           <button
             type="button"
             className="light"
-            onClick={() => setShowImportExport(true)}
+            onClick={() => {
+              setShowImportExport(true);
+            }}
           >
             <Trans>Import/export</Trans>
           </button>
           <button
             type="button"
             disabled={shortcuts.length >= SHORTCUTS_LIMIT}
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setShowForm(true);
+            }}
           >
             <Icon icon="plus" /> <span>{t`Add shortcut…`}</span>
           </button>
@@ -613,7 +617,9 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                 states.shortcuts.push(result);
               }
             }}
-            onClose={() => setShowForm(false)}
+            onClose={() => {
+              setShowForm(false);
+            }}
           />
         </Modal>
       )}
@@ -627,7 +633,9 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
         >
           <ImportExport
             shortcuts={shortcuts}
-            onClose={() => setShowImportExport(false)}
+            onClose={() => {
+              setShowImportExport(false);
+            }}
           />
         </Modal>
       )}
@@ -1047,8 +1055,8 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                     const currentAccount = getCurrentAccountID();
                     showToast(t`Downloading saved shortcuts from server…`);
                     try {
-                      const relationships = await (
-                        asShortcutsMasto(masto)
+                      const relationships = await asShortcutsMasto(
+                        masto,
                       ).v1.accounts.relationships.fetch({
                         id: [currentAccount as string],
                       });

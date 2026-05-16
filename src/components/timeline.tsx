@@ -10,13 +10,7 @@ import type {
   ReactElement,
 } from 'react';
 import { memo } from 'react';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useDebouncedCallback } from 'use-debounce';
@@ -549,12 +543,9 @@ function Timeline({
                   processed as TimelineStatusEntry[],
                 ) as TimelineEntry[];
               }
-              // groupContext expects `instance: string`; the JS caller passed
-              // through whatever value the prop held (including undefined).
-              // Preserve that behavior with a non-null assertion shim.
               processed = groupContext(
                 processed as TimelineStatusEntry[],
-                instance!,
+                instance,
               ) as TimelineEntry[];
             }
             if (pinnedPosts.length) {

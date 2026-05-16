@@ -4,13 +4,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import type Fuse from 'fuse.js';
 import type { SyntheticEvent } from 'react';
 import { memo } from 'react';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { getCustomEmojis } from '../utils/custom-emojis';
 import store from '../utils/store';
@@ -125,7 +119,9 @@ const CustomEmojisList = memo(({ emojis, onSelect }: CustomEmojisListProps) => {
         <button
           type="button"
           className="plain small"
-          onClick={() => setMax(max + CUSTOM_EMOJIS_COUNT)}
+          onClick={() => {
+            setMax(max + CUSTOM_EMOJIS_COUNT);
+          }}
         >
           <Trans>{i18n.number(emojis.length - max)} more…</Trans>
         </button>
@@ -367,9 +363,7 @@ function CustomEmojisModal({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              // Original used `matches[0]` unchecked, which throws when
-              // `matches` is null; preserve that exact behavior here.
-              const emoji = matches![0];
+              const emoji = matches?.[0];
               if (emoji) {
                 onSelectEmoji(`:${emoji.shortcode}:`);
               }

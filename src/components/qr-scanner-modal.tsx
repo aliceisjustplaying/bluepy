@@ -202,10 +202,13 @@ function QrScannerModal({
 
     const startCamera = async () => {
       try {
-        cam = await createQRCamera(videoRef.current as HTMLVideoElement);
+        const currentVideo = videoRef.current;
+        if (!currentVideo) return;
+        cam = await createQRCamera(currentVideo);
 
         if (hasBarcodeDetector) {
-          const BarcodeDetectorCtor = window.BarcodeDetector as BarcodeDetectorCtor;
+          const BarcodeDetectorCtor =
+            window.BarcodeDetector as BarcodeDetectorCtor;
           detector = new BarcodeDetectorCtor({ formats: ['qr_code'] });
         } else {
           const qrDomModule: QrDomModule = await import('qr/dom.js');
@@ -249,9 +252,8 @@ function QrScannerModal({
             if (hasBarcodeDetector) {
               const mainLoop = async () => {
                 try {
-                  const results = await detector!.detect(
-                    videoRef.current as HTMLVideoElement,
-                  );
+                  if (!detector || !videoRef.current) return;
+                  const results = await detector.detect(videoRef.current);
                   if (results.length > 0) {
                     console.log('Scan result:', results[0].rawValue);
                     setDecodedText(results[0].rawValue);
@@ -267,11 +269,14 @@ function QrScannerModal({
                 animationId = requestAnimationFrame(rafLoop);
               };
               rafLoop();
-              cancelMainLoop = () => cancelAnimationFrame(animationId);
+              cancelMainLoop = () => {
+                cancelAnimationFrame(animationId);
+              };
             } else {
               const mainLoop = () => {
                 try {
-                  const result = cam!.readFrame(qrCanvas!, true);
+                  if (!cam || !qrCanvas) return;
+                  const result = cam.readFrame(qrCanvas, true);
                   if (result !== undefined && result !== null) {
                     console.log('Scan result:', result);
                     setDecodedText(result);
@@ -281,7 +286,7 @@ function QrScannerModal({
                 }
               };
 
-              cancelMainLoop = qrDom!.frameLoop(mainLoop);
+              cancelMainLoop = qrDom?.frameLoop(mainLoop);
             }
           });
         }
@@ -316,7 +321,13 @@ function QrScannerModal({
     <div className="qr-scanner-modal">
       <div className="qr-scanner-header">
         <Loader abrupt hidden={uiState !== 'loading'} />
-        <button type="button" className="plain4" onClick={() => onClose()}>
+        <button
+          type="button"
+          className="plain4"
+          onClick={() => {
+            onClose();
+          }}
+        >
           <Icon icon="x" alt={t`Close`} />
         </button>
       </div>

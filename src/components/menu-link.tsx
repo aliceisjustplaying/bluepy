@@ -21,23 +21,25 @@ function MenuLink(props: MenuLinkProps) {
         closeMenu: (key?: string) => void;
       }) => (
         <>
-        {restProps.to ? (
-          <Link
-            {...(restProps as LinkProps)}
-            ref={ref as Ref<HTMLAnchorElement>}
-            onClick={({ detail }: React.MouseEvent<HTMLAnchorElement>) => {
-              closeMenu(detail === 0 ? 'Enter' : undefined);
-            }}
-          />
-        ) : (
-          <a
-            {...(restProps as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
-            ref={ref as Ref<HTMLAnchorElement>}
-            onClick={({ detail }) => closeMenu(detail === 0 ? 'Enter' : undefined)}
-          >
-            {restProps.children}
-          </a>
-        )}
+          {restProps.to ? (
+            <Link
+              {...(restProps as LinkProps)}
+              ref={ref as Ref<HTMLAnchorElement>}
+              onClick={({ detail }: React.MouseEvent<HTMLAnchorElement>) => {
+                closeMenu(detail === 0 ? 'Enter' : undefined);
+              }}
+            />
+          ) : (
+            <a
+              {...(restProps as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+              ref={ref as Ref<HTMLAnchorElement>}
+              onClick={({ detail }) => {
+                closeMenu(detail === 0 ? 'Enter' : undefined);
+              }}
+            >
+              {restProps.children}
+            </a>
+          )}
         </>
       )}
     </FocusableItem>

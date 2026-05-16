@@ -180,16 +180,18 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                       html.classList.remove('is-light', 'is-dark');
 
                       // Disable manual theme <meta>
-                      const $manualMeta = document.querySelector<HTMLMetaElement>(
-                        'meta[data-theme-setting="manual"]',
-                      );
+                      const $manualMeta =
+                        document.querySelector<HTMLMetaElement>(
+                          'meta[data-theme-setting="manual"]',
+                        );
                       if ($manualMeta) {
                         $manualMeta.name = '';
                       }
                       // Enable auto theme <meta>s
-                      const $autoMetas = document.querySelectorAll<HTMLMetaElement>(
-                        'meta[data-theme-setting="auto"]',
-                      );
+                      const $autoMetas =
+                        document.querySelectorAll<HTMLMetaElement>(
+                          'meta[data-theme-setting="auto"]',
+                        );
                       $autoMetas.forEach((m) => {
                         m.name = 'theme-color';
                       });
@@ -198,9 +200,10 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                       html.classList.toggle('is-dark', theme === 'dark');
 
                       // Enable manual theme <meta>
-                      const $manualMeta = document.querySelector<HTMLMetaElement>(
-                        'meta[data-theme-setting="manual"]',
-                      );
+                      const $manualMeta =
+                        document.querySelector<HTMLMetaElement>(
+                          'meta[data-theme-setting="manual"]',
+                        );
                       if ($manualMeta) {
                         $manualMeta.name = 'theme-color';
                         $manualMeta.content =
@@ -209,9 +212,10 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                             : String($manualMeta.dataset.themeDarkColor);
                       }
                       // Disable auto theme <meta>s
-                      const $autoMetas = document.querySelectorAll<HTMLMetaElement>(
-                        'meta[data-theme-setting="auto"]',
-                      );
+                      const $autoMetas =
+                        document.querySelectorAll<HTMLMetaElement>(
+                          'meta[data-theme-setting="auto"]',
+                        );
                       $autoMetas.forEach((m) => {
                         m.name = '';
                       });
@@ -219,7 +223,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                     const $colorScheme = document.querySelector(
                       'meta[name="color-scheme"]',
                     );
-                    $colorScheme!.setAttribute(
+                    $colorScheme?.setAttribute(
                       'content',
                       theme === 'auto' ? 'light dark' : (theme as string),
                     );
@@ -317,7 +321,11 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                 <li>
                   <label htmlFor="posting-privacy-field">
                     <Trans>Default visibility</Trans>{' '}
-                    <Icon icon="cloud" alt={t`Synced`} className="synced-icon" />
+                    <Icon
+                      icon="cloud"
+                      alt={t`Synced`}
+                      className="synced-icon"
+                    />
                   </label>
                   <select
                     id="posting-privacy-field"
@@ -370,7 +378,11 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                   <li>
                     <label htmlFor="posting-quote-policy-field">
                       <Trans>Quote settings</Trans>{' '}
-                      <Icon icon="cloud" alt={t`Synced`} className="synced-icon" />
+                      <Icon
+                        icon="cloud"
+                        alt={t`Synced`}
+                        className="synced-icon"
+                      />
                     </label>
                     <select
                       id="posting-quote-policy-field"
@@ -573,7 +585,9 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                             {showCommon ? (
                               <span>
                                 {native}{' '}
-                                <span className="insignificant ib">- {common}</span>
+                                <span className="insignificant ib">
+                                  - {common}
+                                </span>
                               </span>
                             ) : (
                               common
@@ -1028,7 +1042,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             </p>
             {(window.__BENCH_RESULTS?.size ?? 0) > 0 && (
               <ul>
-                {Array.from(window.__BENCH_RESULTS!.entries()).map(
+                {Array.from(window.__BENCH_RESULTS?.entries() ?? []).map(
                   ([name, duration]) => (
                     <li key={name}>
                       <b>{name}</b>: {duration as number}ms
@@ -1117,7 +1131,9 @@ interface TextSizeControlProps {
   currentTextSize: number;
 }
 
-function TextSizeControl({ currentTextSize }: TextSizeControlProps): ReactElement {
+function TextSizeControl({
+  currentTextSize,
+}: TextSizeControlProps): ReactElement {
   const textSizeFieldRef = useRef<HTMLInputElement | null>(null);
   const [size, setSize] = useState<number>(currentTextSize);
   const [debouncedSize] = useDebounce(size, 1000);
@@ -1135,7 +1151,9 @@ function TextSizeControl({ currentTextSize }: TextSizeControlProps): ReactElemen
   }, [debouncedSize]);
 
   return (
-    <div className={`text-size-control ${size !== debouncedSize ? 'loading' : ''}`}>
+    <div
+      className={`text-size-control ${size !== debouncedSize ? 'loading' : ''}`}
+    >
       <button
         type="button"
         style={{ fontSize: SMALLEST_TEXT_SIZE }}
@@ -1201,7 +1219,8 @@ async function getCachesSize(): Promise<Record<string, string>> {
     for (const item of k) {
       try {
         const response = await cache.match(item);
-        const blob = await response!.blob();
+        const blob = await response?.blob();
+        if (!blob) continue;
         total[key] = (total[key] || 0) + blob.size;
         TOTAL += blob.size;
       } catch (e) {

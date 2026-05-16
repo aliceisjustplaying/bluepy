@@ -130,7 +130,9 @@ function NotificationsLink() {
       <NotificationsMenu
         state={menuState}
         anchorRef={notificationLinkRef}
-        onClose={() => setMenuState(undefined)}
+        onClose={() => {
+          setMenuState(undefined);
+        }}
       />
     </>
   );
@@ -309,7 +311,12 @@ function NotificationsMenu({
                   <Trans>Unable to fetch notifications.</Trans>
                 </p>
                 <p>
-                  <button type="button" onClick={() => loadNotifications()}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      loadNotifications();
+                    }}
+                  >
                     <Trans>Try again</Trans>
                   </button>
                 </p>

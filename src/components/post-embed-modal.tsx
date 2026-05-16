@@ -124,9 +124,9 @@ function generateHTMLCode(
           .join('')}
         </ul>`
       : '') +
-    (mediaAttachments!.length > 0
+    ((mediaAttachments?.length ?? 0) > 0
       ? '\n' +
-        mediaAttachments!
+        (mediaAttachments ?? [])
           .map((media: MediaAttachment) => {
             const {
               description,

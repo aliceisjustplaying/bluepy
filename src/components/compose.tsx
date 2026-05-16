@@ -267,12 +267,14 @@ function MediaAttachment(props: {
   return <MediaAttachmentComponent {...(props as MediaAttachmentProps)} />;
 }
 
-function QuoteSuggestion(props: Omit<
-  Parameters<typeof QuoteSuggestionComponent>[0],
-  'quoteSuggestion'
-> & {
-  quoteSuggestion?: QuoteSuggestionState | null;
-}) {
+function QuoteSuggestion(
+  props: Omit<
+    Parameters<typeof QuoteSuggestionComponent>[0],
+    'quoteSuggestion'
+  > & {
+    quoteSuggestion?: QuoteSuggestionState | null;
+  },
+) {
   return (
     <QuoteSuggestionComponent
       {...(props as Parameters<typeof QuoteSuggestionComponent>[0])}
@@ -499,10 +501,8 @@ function Compose({
   const UID = useRef(draftStatus?.uid || uid());
   console.log('Compose UID', UID.current);
 
-  // Original JS treats currentAccount as non-null when reading `.info`;
-  // the `?.atproto` / `?.instanceURL` reads are defensive. Mirror that.
   const currentAccount = useMemo(getCurrentAccount, []);
-  const currentAccountInfo = currentAccount!.info;
+  const currentAccountInfo = currentAccount?.info;
 
   interface ConfigurationShape {
     statuses?: {
@@ -849,8 +849,8 @@ function Compose({
   prefsRef.current = prefs;
   const statusesEndpointRef = useRef(statusesEndpoint);
   statusesEndpointRef.current = statusesEndpoint;
-  const currentAccountAcctRef = useRef(currentAccountInfo.acct);
-  currentAccountAcctRef.current = currentAccountInfo.acct;
+  const currentAccountAcctRef = useRef(currentAccountInfo?.acct);
+  currentAccountAcctRef.current = currentAccountInfo?.acct;
 
   useEffect(() => {
     const prefStringFn = prefStringRef.current;
@@ -879,6 +879,8 @@ function Compose({
       );
 
       if (allMentions.length > 0) {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
         const authorMention = `@${account.acct ?? ''}`;
         const otherMentions = allMentions
           .filter((m) => m !== account.acct)
@@ -886,28 +888,26 @@ function Compose({
 
         if (replyMode === 'author-only') {
           // Mode 1: Only mention the author
-          textareaRef.current!.value = `${authorMention} `;
+          textarea.value = `${authorMention} `;
           oninputTextarea();
           focusTextarea();
         } else if (replyMode === 'author-first') {
           // Mode 2: Mention author first, then others at the end after 2 newlines
           if (otherMentions.length > 0) {
-            textareaRef.current!.value = `${authorMention} \n\n${otherMentions.join(' ')}`;
+            textarea.value = `${authorMention} \n\n${otherMentions.join(' ')}`;
             oninputTextarea();
             // Set cursor position after the author mention
             const cursorPosition = authorMention.length + 1; // +1 for the space
             focusTextarea(cursorPosition);
           } else {
             // If no other mentions, just mention the author
-            textareaRef.current!.value = `${authorMention} `;
+            textarea.value = `${authorMention} `;
             oninputTextarea();
             focusTextarea();
           }
         } else {
           // Mode 3 (default 'all'): All mentions at the beginning
-          textareaRef.current!.value = `${allMentions
-            .map((m) => `@${m}`)
-            .join(' ')} `;
+          textarea.value = `${allMentions.map((m) => `@${m}`).join(' ')} `;
           oninputTextarea();
           focusTextarea();
         }
@@ -953,8 +953,10 @@ function Compose({
             .source.fetch();
           console.log({ statusSource });
           const { text, spoilerText } = statusSource;
-          textareaRef.current!.value = text;
-          textareaRef.current!.dataset.source = text;
+          const textarea = textareaRef.current;
+          if (!textarea) return;
+          textarea.value = text;
+          textarea.dataset.source = text;
           oninputTextarea();
           focusTextarea();
           if (spoilerTextRef.current) {
@@ -1034,7 +1036,9 @@ function Compose({
             multiple: !!draftPoll.multiple,
           }
         : null;
-      textareaRef.current!.value = status ?? '';
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      textarea.value = status ?? '';
       oninputTextarea();
       // status starts with newline or space, focus on first position
       const cursorPos = /^\n|\s/.test(status ?? '') ? 0 : undefined;
@@ -1115,7 +1119,9 @@ function Compose({
 
   const beforeUnloadCopy = t`You have unsaved changes. Discard this post?`;
   const canClose = (): boolean => {
-    const { value, dataset } = textareaRef.current!;
+    const textarea = textareaRef.current;
+    const value = textarea?.value ?? '';
+    const dataset = textarea?.dataset;
 
     // check if loading
     if (uiState === 'loading') {
@@ -1143,7 +1149,7 @@ function Compose({
     }
 
     // check if status contains only "@acct", if replying
-    const isSelf = replyToStatus?.account?.id === currentAccountInfo.id;
+    const isSelf = replyToStatus?.account?.id === currentAccountInfo?.id;
     const hasOnlyAcct =
       !!replyToStatus &&
       value.trim() === `@${replyToStatus.account?.acct ?? ''}`;
@@ -1203,15 +1209,16 @@ function Compose({
     window.addEventListener('beforeunload', handleBeforeUnload, {
       capture: true,
     });
-    return () =>
+    return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload, {
         capture: true,
       });
+    };
   }, []);
 
   const getCharCount = (): number => {
-    const { value } = textareaRef.current!;
-    const { value: spoilerText } = spoilerTextRef.current!;
+    const { value = '' } = textareaRef.current ?? {};
+    const { value: spoilerText = '' } = spoilerTextRef.current ?? {};
     return stringLength(countableText(value)) + stringLength(spoilerText);
   };
   const updateCharCount = (): void => {
@@ -1232,8 +1239,7 @@ function Compose({
       enabled: !supportsCloseWatcher,
       enableOnFormTags: true,
       useKey: true,
-      ignoreEventWhen: (e) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
   useHotkeys(
@@ -1303,8 +1309,8 @@ function Compose({
         : null,
       draftStatus: {
         uid: UID.current,
-        status: textareaRef.current!.value,
-        spoilerText: spoilerTextRef.current!.value,
+        status: textareaRef.current?.value ?? '',
+        spoilerText: spoilerTextRef.current?.value ?? '',
         visibility,
         language,
         sensitive,
@@ -1520,12 +1526,13 @@ function Compose({
     box: 'border-box',
     onResize: ({ width }) => {
       // If scrollable, it's truncated
-      const { scrollWidth } = addSubToolbarRef.current!;
+      const toolbar = addSubToolbarRef.current;
+      if (!toolbar) return;
+      const { scrollWidth } = toolbar;
       const truncated = width !== undefined && scrollWidth > width;
-      const overTruncated =
-        width !== undefined && width < BUTTON_WIDTH * 4;
+      const overTruncated = width !== undefined && width < BUTTON_WIDTH * 4;
       setShowAddButton(overTruncated || truncated);
-      addSubToolbarRef.current!.hidden = overTruncated;
+      toolbar.hidden = overTruncated;
     },
   });
 
@@ -1554,7 +1561,7 @@ function Compose({
             // />
             <AccountBlock
               account={currentAccountInfo}
-              accountInstance={currentAccount!.instanceURL}
+              accountInstance={currentAccount?.instanceURL}
               hideDisplayName
               useAvatarStatic
             />
@@ -1589,8 +1596,8 @@ function Compose({
                       replyToStatus,
                       draftStatus: {
                         uid: UID.current,
-                        status: textareaRef.current!.value,
-                        spoilerText: spoilerTextRef.current!.value,
+                        status: textareaRef.current?.value ?? '',
+                        spoilerText: spoilerTextRef.current?.value ?? '',
                         visibility,
                         language,
                         sensitive,
@@ -1684,8 +1691,8 @@ function Compose({
                         replyMode,
                         draftStatus: {
                           uid: UID.current,
-                          status: textareaRef.current!.value,
-                          spoilerText: spoilerTextRef.current!.value,
+                          status: textareaRef.current?.value ?? '',
+                          spoilerText: spoilerTextRef.current?.value ?? '',
                           visibility,
                           language,
                           sensitive,
@@ -1771,7 +1778,7 @@ function Compose({
               keyEvent.key === 'Enter' &&
               (keyEvent.ctrlKey || keyEvent.metaKey)
             ) {
-              formRef.current!.dispatchEvent(
+              formRef.current?.dispatchEvent(
                 new Event('submit', { cancelable: true }),
               );
             }
@@ -2033,7 +2040,9 @@ function Compose({
           }}
         >
           <div>
-            <div className={`compose-cw-container ${sensitive ? '' : 'collapsed'}`}>
+            <div
+              className={`compose-cw-container ${sensitive ? '' : 'collapsed'}`}
+            >
               <input
                 type="hidden"
                 name="sensitive"
@@ -2089,7 +2098,7 @@ function Compose({
                 className="close-button plain4 small"
                 onClick={() => {
                   setSensitive(false);
-                  textareaRef.current!.focus();
+                  textareaRef.current?.focus();
                 }}
               >
                 <Icon icon="x" alt={t`Cancel`} />
@@ -2188,8 +2197,9 @@ function Compose({
             <div className="media-attachments">
               {mediaAttachments.map((attachment, i) => {
                 const { id, file } = attachment;
-                const fileID: string | number =
-                  file ? file.size + file.type + file.name : Number.NaN;
+                const fileID: string | number = file
+                  ? file.size + file.type + file.name
+                  : Number.NaN;
                 return (
                   <MediaAttachment
                     key={id || fileID || i}
@@ -2337,7 +2347,9 @@ function Compose({
               }
               focusTextarea();
             }}
-            onCancel={() => setQuoteSuggestion(null)}
+            onCancel={() => {
+              setQuoteSuggestion(null);
+            }}
           />
           <div className="toolbar compose-footer">
             <span className="add-toolbar-button-group spacer">
@@ -2636,11 +2648,14 @@ function Compose({
                   if (target.value === 'direct' && currentQuoteStatus?.id) {
                     const quoteURL = currentQuoteStatus.url;
                     if (quoteURL) {
-                      const currentText = textareaRef.current!.value;
+                      const currentText = textareaRef.current?.value ?? '';
                       if (!currentText.includes(quoteURL)) {
-                        textareaRef.current!.value =
-                          currentText + (currentText ? '\n' : '') + quoteURL;
-                        oninputTextarea();
+                        const textarea = textareaRef.current;
+                        if (textarea) {
+                          textarea.value =
+                            currentText + (currentText ? '\n' : '') + quoteURL;
+                          oninputTextarea();
+                        }
                       }
                     }
                     setQuoteCleared(true);
@@ -2821,7 +2836,9 @@ function Compose({
           }}
         >
           <GIFPickerModal
-            onClose={() => setShowGIFPicker(false)}
+            onClose={() => {
+              setShowGIFPicker(false);
+            }}
             onSelect={({
               url,
               type,

@@ -15,12 +15,12 @@ import instancesListURL from '../data/instances.json?url';
 import { initClient, initInstance, initPreferences } from '../utils/api';
 import { BSKY_INSTANCE, loginAtproto } from '../utils/atproto-adapter';
 import { startAtprotoOAuthLogin } from '../utils/atproto-oauth';
-import { notifyAuthChanged } from '../utils/auth-context';
 import {
   getAuthorizationURL,
   getPKCEAuthorizationURL,
   registerApplication,
 } from '../utils/auth';
+import { notifyAuthChanged } from '../utils/auth-context';
 import { openAuthPopup, watchAuthPopup } from '../utils/auth-popup';
 import { supportsPKCE } from '../utils/oauth-pkce';
 import { navigatePath } from '../utils/router';
@@ -93,11 +93,13 @@ function Login() {
         // Get Link[template]
         const link = xmlDoc.getElementsByTagName('Link')[0];
         const template = link.getAttribute('template');
-        const url = URL.parse(template!);
-        const { host } = url!; // host includes the port
-        if (instanceURL !== host) {
-          console.log(`💫 ${instanceURL} -> ${host}`);
-          instanceURL = host;
+        const url = template ? URL.parse(template) : null;
+        if (url) {
+          const { host } = url; // host includes the port
+          if (instanceURL !== host) {
+            console.log(`💫 ${instanceURL} -> ${host}`);
+            instanceURL = host;
+          }
         }
       } catch (e) {
         // Silently fail
@@ -308,9 +310,9 @@ function Login() {
               autoComplete="username"
               spellCheck={false}
               placeholder="alice.bsky.social"
-              onInput={(e: SyntheticEvent<HTMLInputElement>) =>
-                setBskyIdentifier(e.currentTarget.value)
-              }
+              onInput={(e: SyntheticEvent<HTMLInputElement>) => {
+                setBskyIdentifier(e.currentTarget.value);
+              }}
             />
           </label>
           <div>
@@ -332,9 +334,9 @@ function Login() {
                 className="large"
                 disabled={uiState === 'loading'}
                 autoComplete="current-password"
-                onInput={(e: SyntheticEvent<HTMLInputElement>) =>
-                  setBskyPassword(e.currentTarget.value)
-                }
+                onInput={(e: SyntheticEvent<HTMLInputElement>) => {
+                  setBskyPassword(e.currentTarget.value);
+                }}
               />
             </label>
             <label>
@@ -349,9 +351,9 @@ function Login() {
                 autoComplete="url"
                 spellCheck={false}
                 placeholder="pds.example.com"
-                onInput={(e: SyntheticEvent<HTMLInputElement>) =>
-                  setBskyService(e.currentTarget.value)
-                }
+                onInput={(e: SyntheticEvent<HTMLInputElement>) => {
+                  setBskyService(e.currentTarget.value);
+                }}
               />
             </label>
             <div>

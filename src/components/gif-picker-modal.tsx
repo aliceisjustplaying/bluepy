@@ -154,7 +154,10 @@ function GIFPickerModal({
           />
         </form>
       </header>
-      <main ref={scrollableRef} className={uiState === 'loading' ? 'loading' : ''}>
+      <main
+        ref={scrollableRef}
+        className={uiState === 'loading' ? 'loading' : ''}
+      >
         {uiState === 'default' && (
           <div className="ui-state">
             <p className="insignificant">
@@ -188,12 +191,15 @@ function GIFPickerModal({
                   width = (+width / +height) * 100;
                   height = 100;
                 }
-                const urlObj = URL.parse(url)!;
+                const urlObj = URL.parse(url);
+                if (!urlObj) return null;
                 const strippedURL = urlObj.origin + urlObj.pathname;
                 let strippedWebP: string | undefined;
                 if (webp) {
-                  const webpObj = URL.parse(webp)!;
-                  strippedWebP = webpObj.origin + webpObj.pathname;
+                  const webpObj = URL.parse(webp);
+                  strippedWebP = webpObj
+                    ? webpObj.origin + webpObj.pathname
+                    : undefined;
                 }
                 return (
                   <li key={id}>
@@ -202,7 +208,8 @@ function GIFPickerModal({
                       onClick={() => {
                         const { mp4, url: originalUrl } = original;
                         const theURL = mp4 || originalUrl;
-                        const originalUrlObj = URL.parse(theURL)!;
+                        const originalUrlObj = URL.parse(theURL);
+                        if (!originalUrlObj) return;
                         const originalStrippedURL =
                           originalUrlObj.origin + originalUrlObj.pathname;
                         onClose();

@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
 import type { mastodon } from 'masto';
+import type { ReactNode } from 'react';
 import { Fragment } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { useSnapshot } from 'valtio';
@@ -81,7 +81,7 @@ export default function useStatusDisplayState({
       >
         <div className="status-pre-meta">
           <Icon icon="hashtag" size="l" />{' '}
-          {followedTagsForKey!.slice(0, 3).map((tag: string) => (
+          {(followedTagsForKey ?? []).slice(0, 3).map((tag: string) => (
             <Link
               key={tag}
               to={instance ? `/${instance}/t/${tag}` : `/t/${tag}`}
@@ -101,7 +101,10 @@ export default function useStatusDisplayState({
       ? FollowedTagsParent
       : Fragment;
 
-  const contentLength = useMemo(() => htmlContentLength(content || ''), [content]);
+  const contentLength = useMemo(
+    () => htmlContentLength(content || ''),
+    [content],
+  );
   const [forceTranslate, setForceTranslate] = useState(initialForceTranslate);
   const { contentTranslation, contentTranslationAutoInline } =
     snapStates.settings;

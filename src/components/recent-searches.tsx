@@ -23,7 +23,9 @@ export default function RecentSearches({ onItemClick }: RecentSearchesProps) {
   const { t } = useLingui();
   const { instance } = api();
   const [, setReloadTick] = useState(0);
-  const reload = () => setReloadTick((c) => c + 1);
+  const reload = () => {
+    setReloadTick((c) => c + 1);
+  };
   const history = getSearchHistory();
 
   const handleClearAll = () => {
@@ -92,9 +94,9 @@ export default function RecentSearches({ onItemClick }: RecentSearchesProps) {
               <button
                 type="button"
                 className="plain4 small"
-                onClick={() =>
-                  handleRemoveItem(historyItem.query, historyItem.queryType)
-                }
+                onClick={() => {
+                  handleRemoveItem(historyItem.query, historyItem.queryType);
+                }}
               >
                 <Icon icon="trash" alt={t`Clear`} />
               </button>

@@ -30,7 +30,12 @@ function Status(props: {
   size?: string;
   previewMode?: boolean;
   readOnly?: boolean;
-  onMediaClick?: (e: React.SyntheticEvent, i: number, media: unknown, status: unknown) => void;
+  onMediaClick?: (
+    e: React.SyntheticEvent,
+    i: number,
+    media: unknown,
+    status: unknown,
+  ) => void;
   [key: string]: unknown;
 }) {
   return <StatusComponent {...(props as StatusComponentProps)} />;
@@ -115,10 +120,7 @@ export default function ScheduledPosts() {
   useEffect(() => {
     setUIState('loading');
     const scheduledStatusesResource =
-      getMastoV1Resource<ScheduledStatusesResource>(
-        masto,
-        'scheduledStatuses',
-      );
+      getMastoV1Resource<ScheduledStatusesResource>(masto, 'scheduledStatuses');
     void (async () => {
       try {
         const postsIterator = scheduledStatusesResource
@@ -258,7 +260,9 @@ export default function ScheduledPosts() {
               <ScheduledPostEdit
                 post={showScheduledPostModal.post}
                 scheduledAt={showScheduledPostModal.scheduledAt}
-                onClose={() => setShowScheduledPostModal(false)}
+                onClose={() => {
+                  setShowScheduledPostModal(false);
+                }}
               />
             </Modal>
           )}
@@ -333,10 +337,7 @@ function ScheduledPostEdit({
 }: ScheduledPostEditProps) {
   const { masto } = api();
   const scheduledStatusesResource =
-    getMastoV1Resource<ScheduledStatusesResource>(
-      masto,
-      'scheduledStatuses',
-    );
+    getMastoV1Resource<ScheduledStatusesResource>(masto, 'scheduledStatuses');
   const { t } = useLingui();
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',

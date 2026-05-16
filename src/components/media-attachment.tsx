@@ -329,9 +329,10 @@ function MediaAttachment({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    if (showModal && textareaRef.current) {
+    const textarea = textareaRef.current;
+    if (showModal && textarea) {
       timer = setTimeout(() => {
-        textareaRef.current!.focus();
+        textarea.focus();
       }, 100);
     }
     return () => {

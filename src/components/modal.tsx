@@ -1,11 +1,8 @@
 import './modal.css';
 
-import type {
-  ReactNode,
-  FocusEvent,
-} from 'react';
-import { createPortal } from 'react-dom';
+import type { ReactNode, FocusEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import store from '../utils/store';
@@ -47,7 +44,9 @@ function Modal({
         focusElement.focus();
       }
     }, 100);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [hasChildren]);
 
   const supportsCloseWatcher = (window as Window & { CloseWatcher?: unknown })
@@ -66,12 +65,18 @@ function Modal({
       keydown: false,
       keyup: true,
       useKey: true,
-      ignoreEventWhen: (e) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
     [onClose],
   );
-  useCloseWatcher(onClose ? () => onClose() : undefined, [onClose]);
+  useCloseWatcher(
+    onClose
+      ? () => {
+          onClose();
+        }
+      : undefined,
+    [onClose],
+  );
 
   useEffect(() => {
     if (!children) return undefined;
@@ -203,7 +208,8 @@ function Modal({
     </div>
   );
 
-  return createPortal(modalContent, $modalContainer!);
+  if (!$modalContainer) return null;
+  return createPortal(modalContent, $modalContainer);
 
   // return createPortal(children, $modalContainer);
 }

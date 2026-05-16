@@ -38,7 +38,7 @@ function handleContentLinks(
 
     // Experiment opening custom emoji in a modal
     // TODO: Rename this function because it's not just for links
-    if (target!.closest('.shortcode-emoji')) {
+    if (target?.closest('.shortcode-emoji')) {
       const { naturalWidth, naturalHeight, width, height } =
         target as HTMLImageElement;
       const kindaLargeRatio = 2;
@@ -63,7 +63,7 @@ function handleContentLinks(
       }
     }
 
-    target = target!.closest('a') as LinkClickTarget | null;
+    target = target?.closest('a') as LinkClickTarget | null;
     if (!target) return;
     // Only handle links inside, not itself or anything outside
     if (!(e.currentTarget as Node | null)?.contains(target)) return;
@@ -147,7 +147,7 @@ function handleContentLinks(
         navigatePath(
           (
             states.unfurledLinks as Record<string, { url?: string } | undefined>
-          )[href]!.url as string,
+          )[href]?.url as string,
         );
         return;
       }
@@ -155,9 +155,8 @@ function handleContentLinks(
 
     try {
       const urlObj = URL.parse(href);
-      // Preserve original JS: don't null-check; rely on the try/catch to absorb
-      // a TypeError if URL.parse returns null.
-      const domain = urlObj!.hostname.replace(/^www\./i, '');
+      if (!urlObj) return;
+      const domain = urlObj.hostname.replace(/^www\./i, '');
       const containsDomain = targetInnerText
         .toLowerCase()
         .includes(domain.toLowerCase());

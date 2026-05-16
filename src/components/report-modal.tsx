@@ -163,10 +163,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
   const { t, i18n } = useLingui();
   const _ = (descriptor: MessageDescriptor) => i18n._(descriptor);
   const { masto } = api();
-  const reportsResource = getMastoV1Resource<ReportsResource>(
-    masto,
-    'reports',
-  );
+  const reportsResource = getMastoV1Resource<ReportsResource>(masto, 'reports');
   const accountsResource = getMastoV1Resource<ReportAccountsResource>(
     masto,
     'accounts',
@@ -200,7 +197,9 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
           type="button"
           className="plain4 small"
           disabled={uiState === 'loading'}
-          onClick={() => onClose()}
+          onClick={() => {
+            onClose();
+          }}
         >
           <Icon icon="x" size="xl" alt={t`Close`} />
         </button>

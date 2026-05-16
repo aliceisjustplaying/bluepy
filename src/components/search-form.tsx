@@ -1,11 +1,13 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type {
-  ReactNode,
-  Ref,
-  SyntheticEvent,
-} from 'react';
+import type { ReactNode, Ref, SyntheticEvent } from 'react';
 import { forwardRef } from 'react';
-import { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import {
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { api } from '../utils/api';
@@ -102,7 +104,9 @@ export const generateSearchItemData = (
     label = (
       <Trans>
         {query}{' '}
-        <small className="insignificant">‒ accounts, hashtags &amp; posts</small>
+        <small className="insignificant">
+          ‒ accounts, hashtags &amp; posts
+        </small>
       </Trans>
     );
     to = `/search?q=${encodeURIComponent(query)}`;
@@ -142,13 +146,13 @@ const SearchForm = forwardRef(
         setQuery(value);
       },
       focus: () => {
-        searchFieldRef.current!.focus();
+        searchFieldRef.current?.focus();
       },
       select: () => {
-        searchFieldRef.current!.select();
+        searchFieldRef.current?.select();
       },
       blur: () => {
-        searchFieldRef.current!.blur();
+        searchFieldRef.current?.blur();
       },
     }));
 

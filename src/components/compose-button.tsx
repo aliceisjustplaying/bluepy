@@ -203,7 +203,9 @@ export default function ComposeButton() {
         ref={menuRef}
         state={menuOpen ? 'open' : undefined}
         anchorRef={buttonRef as never}
-        onClose={() => setMenuOpen(false)}
+        onClose={() => {
+          setMenuOpen(false);
+        }}
         direction="top"
         gap={8} // Add gap between menu and button
         unmountOnClose
@@ -249,7 +251,12 @@ export default function ComposeButton() {
               const isWithinDay = Date.now() - createdDate.getTime() < 86400000;
 
               return (
-                <MenuItem key={post.id} onClick={() => handleReplyToPost(post)}>
+                <MenuItem
+                  key={post.id}
+                  onClick={() => {
+                    handleReplyToPost(post);
+                  }}
+                >
                   <small>
                     <div className="menu-post-text">
                       {statusPeek(post as StatusPeekPayload)}

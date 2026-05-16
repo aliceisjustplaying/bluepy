@@ -87,7 +87,9 @@ function FieldsAttributesRow({
           defaultValue={value}
           disabled={disabled}
           maxLength={255}
-          onChange={(e) => setHasValue(!!e.currentTarget.value)}
+          onChange={(e) => {
+            setHasValue(!!e.currentTarget.value);
+          }}
           dir="auto"
           enterKeyHint="done"
         />
@@ -143,7 +145,13 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   return (
     <div className="sheet" id="edit-profile-container">
       {!!onClose && (
-        <button type="button" className="sheet-close" onClick={() => onClose()}>
+        <button
+          type="button"
+          className="sheet-close"
+          onClick={() => {
+            onClose();
+          }}
+        >
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}

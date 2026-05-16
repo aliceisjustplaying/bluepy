@@ -89,7 +89,13 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
   return (
     <div className="sheet" id="list-add-remove-container">
       {!!onClose && (
-        <button type="button" className="sheet-close" onClick={(e) => onClose(e)}>
+        <button
+          type="button"
+          className="sheet-close"
+          onClick={(e) => {
+            onClose(e);
+          }}
+        >
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -167,7 +173,9 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
         <button
           type="button"
           className="plain2"
-          onClick={() => setShowListAddEditModal(true)}
+          onClick={() => {
+            setShowListAddEditModal(true);
+          }}
           disabled={uiState !== 'default'}
         >
           <Icon icon="plus" size="l" />{' '}

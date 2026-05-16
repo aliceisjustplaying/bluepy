@@ -5,6 +5,7 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import debounce from 'just-debounce-it';
 import pRetry from 'p-retry';
+import { toUnicode } from 'punycode/';
 import type {
   ReactNode,
   ComponentType,
@@ -21,7 +22,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { toUnicode } from 'punycode/';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { matchPath, useSearchParams } from 'react-router-dom';
@@ -435,7 +435,9 @@ function StatusPage(params: StatusPageParams) {
         $carousel.focus();
       }
     }, 100);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [showMediaOnly]);
 
   useEffect(() => {
@@ -963,15 +965,14 @@ function StatusThread({
     console.debug('STATUSES', statuses);
     const scrollPosition = scrollPositions[id];
     console.debug('scrollPosition', scrollPosition);
-    // Use non-null assertions on `scrollableRef.current` to preserve the
-    // original JS behavior (which assumed the ref was always attached by
-    // the time this layout effect runs).
+    const scrollable = scrollableRef.current;
+    if (!scrollable) return;
     if (scrollPosition) {
       console.debug('Case 1', {
         id,
         scrollPosition,
       });
-      scrollableRef.current!.scrollTop = scrollPosition;
+      scrollable.scrollTop = scrollPosition;
     } else if (scrollOffsets.current) {
       const newScrollOffsets = {
         offsetTop: heroStatusRef.current?.offsetTop,
@@ -987,12 +988,12 @@ function StatusThread({
         newScrollTop,
         statuses: [...statuses],
       });
-      scrollableRef.current!.scrollTop = newScrollTop;
+      scrollable.scrollTop = newScrollTop;
     } else if (statuses.length === 1) {
       console.debug('Case 3', {
         id,
       });
-      scrollableRef.current!.scrollTop = 0;
+      scrollable.scrollTop = 0;
     }
 
     // RESET
@@ -1004,10 +1005,9 @@ function StatusThread({
     // Delete the cache for the context
     void (async () => {
       try {
-        // Original JS destructured without null-checking, throwing if no
-        // current account; non-null assertion preserves that behavior under
-        // the try/catch.
-        const { instanceURL } = getCurrentAccount()!;
+        const currentAccount = getCurrentAccount();
+        if (!currentAccount) return;
+        const { instanceURL } = currentAccount;
         const contextURL = `https://${instanceURL}/api/v1/statuses/${id}/context`;
         console.log('Clear cache', contextURL);
         const apiCache = await caches.open('api');
@@ -1124,8 +1124,7 @@ function StatusThread({
     },
     {
       useKey: true,
-      ignoreEventWhen: (e) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
 
@@ -1136,14 +1135,16 @@ function StatusThread({
         '.status-link, .status-focus',
       );
       const activeStatusRect = activeStatus?.getBoundingClientRect();
+      const scrollable = scrollableRef.current;
+      if (!scrollable) return;
       const allStatusLinks = Array.from(
-        scrollableRef.current!.querySelectorAll<HTMLElement>(STATUSES_SELECTOR),
+        scrollable.querySelectorAll<HTMLElement>(STATUSES_SELECTOR),
       );
       console.log({ allStatusLinks });
       if (
         activeStatus &&
         activeStatusRect &&
-        activeStatusRect.top < scrollableRef.current!.clientHeight &&
+        activeStatusRect.top < scrollable.clientHeight &&
         activeStatusRect.bottom > 0
       ) {
         const activeStatusIndex = allStatusLinks.indexOf(activeStatus);
@@ -1182,13 +1183,15 @@ function StatusThread({
         '.status-link, .status-focus',
       );
       const activeStatusRect = activeStatus?.getBoundingClientRect();
+      const scrollable = scrollableRef.current;
+      if (!scrollable) return;
       const allStatusLinks = Array.from(
-        scrollableRef.current!.querySelectorAll<HTMLElement>(STATUSES_SELECTOR),
+        scrollable.querySelectorAll<HTMLElement>(STATUSES_SELECTOR),
       );
       if (
         activeStatus &&
         activeStatusRect &&
-        activeStatusRect.top < scrollableRef.current!.clientHeight &&
+        activeStatusRect.top < scrollable.clientHeight &&
         activeStatusRect.bottom > 0
       ) {
         const activeStatusIndex = allStatusLinks.indexOf(activeStatus);
@@ -1285,7 +1288,12 @@ function StatusThread({
   );
 
   const handleMediaClick = useCallback(
-    (e: React.MouseEvent, i: number, _media: unknown, status: { id: string }) => {
+    (
+      e: React.MouseEvent,
+      i: number,
+      _media: unknown,
+      status: { id: string },
+    ) => {
       e.preventDefault();
       e.stopPropagation();
       setSearchParams({
@@ -1403,6 +1411,9 @@ function StatusThread({
                         setUIState('loading');
                         void (async () => {
                           try {
+                            if (!heroStatus?.url) {
+                              throw new Error('No status URL');
+                            }
                             const results = await getMastoV2Resource<{
                               list(params: {
                                 q: string;
@@ -1411,7 +1422,7 @@ function StatusThread({
                                 limit: number;
                               }): Promise<{ statuses?: { id: string }[] }>;
                             }>(currentMastoRef.current, 'search').list({
-                              q: heroStatus!.url as string,
+                              q: heroStatus.url,
                               type: 'statuses',
                               resolve: true,
                               limit: 1,
@@ -1533,7 +1544,9 @@ function StatusThread({
               lazyRenderReplies={totalDescendants.current > LIMIT}
               parentLink={{
                 to: instance ? `/${instance}/s/${statusID}` : `/s/${statusID}`,
-                onClick: () => resetScrollPosition(statusID),
+                onClick: () => {
+                  resetScrollPosition(statusID);
+                },
               }}
             />
           )}
@@ -1706,7 +1719,9 @@ function StatusThread({
       );
       if (spoilerButton) spoilerButton.click();
     }, 1000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [id]);
 
   return (
@@ -1787,7 +1802,7 @@ function StatusThread({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      heroStatusRef.current!.scrollIntoView({
+                      heroStatusRef.current?.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start',
                       });
@@ -1809,7 +1824,7 @@ function StatusThread({
                       // Scroll to top
                       e.preventDefault();
                       e.stopPropagation();
-                      scrollableRef.current!.scrollTo({
+                      scrollableRef.current?.scrollTo({
                         top: 0,
                         behavior: 'smooth',
                       });
@@ -1945,9 +1960,9 @@ function StatusThread({
                   onClick={() => {
                     // Click all buttons with class .spoiler but not .spoiling
                     const buttons = Array.from(
-                      scrollableRef.current!.querySelectorAll<HTMLElement>(
+                      scrollableRef.current?.querySelectorAll<HTMLElement>(
                         '.spoiler-button:not(.spoiling), .spoiler-media-button:not(.spoiling)',
-                      ),
+                      ) ?? [],
                     );
                     buttons.forEach((button) => {
                       button.click();
@@ -2018,7 +2033,9 @@ function StatusThread({
                   type="button"
                   className="plain block show-more"
                   disabled={uiState === 'loading'}
-                  onClick={() => setLimit((l) => l + LIMIT)}
+                  onClick={() => {
+                    setLimit((l) => l + LIMIT);
+                  }}
                   style={{ marginBlockEnd: '6em' }}
                 >
                   <div className="ib avatars-bunch">
@@ -2146,7 +2163,12 @@ function SubComments({
   const openBefore = cachedRepliesToggle[replies[0].id];
 
   const handleMediaClick = useCallback(
-    (e: React.MouseEvent, i: number, _media: unknown, status: { id: string }) => {
+    (
+      e: React.MouseEvent,
+      i: number,
+      _media: unknown,
+      status: { id: string },
+    ) => {
       e.preventDefault();
       e.stopPropagation();
       setSearchParams({

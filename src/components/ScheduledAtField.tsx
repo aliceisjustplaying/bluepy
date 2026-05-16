@@ -53,7 +53,9 @@ export default function ScheduledAtField({
       updateMinStr();
       updateMaxStr();
     }, 1000 * 10);
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [isValid, timezoneOffset]);
 
   if (!validScheduledAt) {

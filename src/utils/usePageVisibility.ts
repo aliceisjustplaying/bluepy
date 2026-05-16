@@ -19,7 +19,8 @@ export default function usePageVisibility(
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () =>
+    return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 }

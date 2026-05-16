@@ -215,9 +215,9 @@ function Public({ local, columnMode, ...props }: PublicProps) {
           }
         >
           <MenuItem
-            onClick={() =>
-              navigatePath(isLocal ? `/${instance}/p` : `/${instance}/p/l`)
-            }
+            onClick={() => {
+              navigatePath(isLocal ? `/${instance}/p` : `/${instance}/p/l`);
+            }}
           >
             {isLocal ? (
               <>

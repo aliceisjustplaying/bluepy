@@ -1186,9 +1186,12 @@ function YearInPosts() {
                           key={key}
                           type="button"
                           className={`filter-cat plain ${postType === key ? 'is-active' : ''}`}
-                          onClick={() => setPostType(key)}
+                          onClick={() => {
+                            setPostType(key);
+                          }}
                         >
-                          {label} <span className="count">{filterCounts[key]}</span>
+                          {label}{' '}
+                          <span className="count">{filterCounts[key]}</span>
                         </button>
                       ),
                   )}
@@ -1327,9 +1330,9 @@ function YearInPosts() {
                       <button
                         type="button"
                         className="plain6 block"
-                        onClick={() =>
-                          setSearchLimit((l) => l + SEARCH_RESULT_PAGE_SIZE)
-                        }
+                        onClick={() => {
+                          setSearchLimit((l) => l + SEARCH_RESULT_PAGE_SIZE);
+                        }}
                       >
                         More…
                       </button>
@@ -1406,7 +1409,9 @@ const IntersectionPostItem = ({
       (entries) => {
         const entry = entries[0];
         if (entry.isIntersecting) {
-          queueMicrotask(() => setShow(true));
+          queueMicrotask(() => {
+            setShow(true);
+          });
           if (node) observer.unobserve(node);
         }
       },
@@ -1507,7 +1512,9 @@ function CalendarBar({
                         if (!item)
                           return <span key={i} className="media-day empty" />;
                         if (!item.hasMedia)
-                          return <span key={i} className="media-day no-media" />;
+                          return (
+                            <span key={i} className="media-day no-media" />
+                          );
                         const status = item.post as MastoStatus;
                         // hasMedia guarantees mediaAttachments[0] exists.
                         const media = (status.mediaAttachments ?? [])[0] as {

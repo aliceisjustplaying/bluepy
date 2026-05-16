@@ -1,13 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { getBlurHashAverageColor } from 'fast-blurhash';
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { oklch2rgb, rgb2oklch } from '../utils/color-utils';
@@ -93,7 +87,8 @@ function MediaModal({
   }, []);
   const prevStatusID = useRef(statusID);
   useEffect(() => {
-    const carousel = carouselRef.current!;
+    const carousel = carouselRef.current;
+    if (!carousel) return;
     const scrollLeft = index * carousel.clientWidth;
     const differentStatusID = prevStatusID.current !== statusID;
     if (differentStatusID) prevStatusID.current = statusID;
@@ -138,7 +133,10 @@ function MediaModal({
 
   useEffect(() => {
     const handleScroll = () => {
-      const { clientWidth, scrollLeft } = carouselRef.current!;
+      const { clientWidth, scrollLeft } = carouselRef.current ?? {
+        clientWidth: 1,
+        scrollLeft: 0,
+      };
       const nextIndex = Math.round(Math.abs(scrollLeft) / clientWidth);
       setCurrentIndex(nextIndex);
     };
@@ -159,7 +157,9 @@ function MediaModal({
     let timer = setTimeout(() => {
       carouselRef.current?.focus?.();
     }, 100);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   const mediaOkColors = useMemo(() => {
@@ -400,9 +400,9 @@ function MediaModal({
           <button
             type="button"
             className="carousel-button"
-            onClick={(e) =>
-              onClose(e, currentIndex, mediaAttachments, carouselRef)
-            }
+            onClick={(e) => {
+              onClose(e, currentIndex, mediaAttachments, carouselRef);
+            }}
           >
             <Icon icon="x" alt={t`Close`} />
           </button>
@@ -418,7 +418,8 @@ function MediaModal({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  const carousel = carouselRef.current!;
+                  const carousel = carouselRef.current;
+                  if (!carousel) return;
                   const left = carousel.clientWidth * i * (isRTL() ? -1 : 1);
                   carousel.focus();
                   carousel.scrollTo({ left, behavior: 'smooth' });
@@ -538,7 +539,8 @@ function MediaModal({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              const carousel = carouselRef.current!;
+              const carousel = carouselRef.current;
+              if (!carousel) return;
               carousel.focus();
               carousel.scrollTo({
                 left:
@@ -558,7 +560,8 @@ function MediaModal({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              const carousel = carouselRef.current!;
+              const carousel = carouselRef.current;
+              if (!carousel) return;
               carousel.focus();
               carousel.scrollTo({
                 left:

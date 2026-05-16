@@ -365,7 +365,9 @@ function Search({ columnMode, ...props }: SearchProps) {
         searchFormRef.current?.focus?.();
       }, 150); // Right after focusDeck runs
     }
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [q, type, instance, loadResults]);
 
   useHotkeys(
@@ -749,7 +751,9 @@ function Search({ columnMode, ...props }: SearchProps) {
                       <button
                         type="button"
                         className="plain block"
-                        onClick={() => loadResults()}
+                        onClick={() => {
+                          loadResults();
+                        }}
                         style={{ marginBlockEnd: '6em' }}
                       >
                         <Trans>Show more…</Trans>

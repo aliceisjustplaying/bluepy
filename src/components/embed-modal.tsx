@@ -31,7 +31,13 @@ function EmbedModal({
   return (
     <div className="embed-modal-container">
       <div className="top-controls">
-        <button type="button" className="light" onClick={() => onClose()}>
+        <button
+          type="button"
+          className="light"
+          onClick={() => {
+            onClose();
+          }}
+        >
           <Icon icon="x" alt={t`Close`} />
         </button>
         {url && (

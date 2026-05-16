@@ -84,7 +84,9 @@ export default function StatusAccountMenu({
                   ? stmtAction.unmute()
                   : stmtAction.mute());
                 saveStatus(newStatus, instance);
-                showToast(muted ? t`Conversation unmuted` : t`Conversation muted`);
+                showToast(
+                  muted ? t`Conversation unmuted` : t`Conversation muted`,
+                );
               } catch (e) {
                 console.error(e);
                 showToast(
@@ -125,11 +127,15 @@ export default function StatusAccountMenu({
                   : stmtAction.pin());
                 saveStatus(newStatus, instance);
                 showToast(
-                  pinned ? t`Post unpinned from profile` : t`Post pinned to profile`,
+                  pinned
+                    ? t`Post unpinned from profile`
+                    : t`Post pinned to profile`,
                 );
               } catch (e) {
                 console.error(e);
-                showToast(pinned ? t`Unable to unpin post` : t`Unable to pin post`);
+                showToast(
+                  pinned ? t`Unable to unpin post` : t`Unable to pin post`,
+                );
               }
             })();
           }}
@@ -153,34 +159,36 @@ export default function StatusAccountMenu({
       )}
       {isSelf && (
         <>
-          {supportsNativeQuote() && !['private', 'direct'].includes(visibility) && (
-            <MenuItem
-              onClick={() => {
-                setShowQuoteSettings(true);
-              }}
-            >
-              <Icon icon="quote2" />
-              <small>
-                <Trans>Quote settings</Trans>
-                <br />
-                <span className="more-insignificant">
-                  {_(
-                    quoteApprovalPolicyMessages[
-                      postQuoteApprovalPolicy as keyof typeof quoteApprovalPolicyMessages
-                    ],
-                  )}
-                </span>
-              </small>
-            </MenuItem>
-          )}
+          {supportsNativeQuote() &&
+            !['private', 'direct'].includes(visibility) && (
+              <MenuItem
+                onClick={() => {
+                  setShowQuoteSettings(true);
+                }}
+              >
+                <Icon icon="quote2" />
+                <small>
+                  <Trans>Quote settings</Trans>
+                  <br />
+                  <span className="more-insignificant">
+                    {_(
+                      quoteApprovalPolicyMessages[
+                        postQuoteApprovalPolicy as keyof typeof quoteApprovalPolicyMessages
+                      ],
+                    )}
+                  </span>
+                </small>
+              </MenuItem>
+            )}
           <div className="menu-horizontal">
             {supports('@mastodon/post-edit') && (
               <MenuItem
                 onClick={() => {
                   showCompose({
                     editStatus: status,
-                    quoteStatus: (status.quote as mastodon.v1.Quote | null | undefined)
-                      ?.quotedStatus,
+                    quoteStatus: (
+                      status.quote as mastodon.v1.Quote | null | undefined
+                    )?.quotedStatus,
                   } as Parameters<typeof showCompose>[0]);
                 }}
               >
@@ -213,8 +221,10 @@ export default function StatusAccountMenu({
                   void (async () => {
                     try {
                       await masto.v1.statuses.$select(id).remove();
-                      const cachedStatus = getStatus(id, instance)!;
-                      cachedStatus._deleted = true;
+                      const cachedStatus = getStatus(id, instance);
+                      if (cachedStatus) {
+                        cachedStatus._deleted = true;
+                      }
                       showToast(t`Post deleted`);
                     } catch (e) {
                       console.error(e);
@@ -244,7 +254,8 @@ export default function StatusAccountMenu({
                   <span>
                     <Trans>
                       Remove my post from{' '}
-                      <span className="bidi-isolate">@{username || acct}</span>'s post?
+                      <span className="bidi-isolate">@{username || acct}</span>
+                      's post?
                     </Trans>
                   </span>
                 </>
@@ -255,11 +266,13 @@ export default function StatusAccountMenu({
                 void haptics.trigger('light');
                 void (async () => {
                   try {
-                    const quotedStatusID = (quote as mastodon.v1.Quote).quotedStatus!
-                      .id;
-                    const quotesResource = masto.v1.statuses.$select(
-                      quotedStatusID,
-                    ).quotes;
+                    const quotedStatusID = (quote as mastodon.v1.Quote)
+                      .quotedStatus?.id;
+                    if (!quotedStatusID) {
+                      throw new Error('Quoted status unavailable');
+                    }
+                    const quotesResource =
+                      masto.v1.statuses.$select(quotedStatusID).quotes;
                     if (!hasQuoteRevokeResource(quotesResource)) {
                       throw new Error('Quote revoke endpoint unavailable');
                     }

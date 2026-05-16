@@ -113,7 +113,9 @@ export default function Poll({
 
     observer.observe(loadMoreRef.current);
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, [visibleOptionsCount, options.length]);
 
   useEffect(() => {

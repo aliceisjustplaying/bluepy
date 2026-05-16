@@ -48,7 +48,10 @@ interface FiltersAddEditCloseResult {
 
 // The close button passes the raw click event through `onClose`; the consumer
 // branches on `result?.state`, so a non-result payload is a valid cancel.
-type FiltersAddEditCloseArg = FiltersAddEditCloseResult | Event | React.MouseEvent;
+type FiltersAddEditCloseArg =
+  | FiltersAddEditCloseResult
+  | Event
+  | React.MouseEvent;
 
 const FILTER_CONTEXT = [
   'home',
@@ -560,10 +563,10 @@ function FiltersAddEdit({ filter, onClose }: FiltersAddEditProps) {
                   setTimeout(() => {
                     // Focus last input
                     const fields =
-                      keywordsRef.current!.querySelectorAll<HTMLInputElement>(
+                      keywordsRef.current?.querySelectorAll<HTMLInputElement>(
                         'input[type="text"]',
                       );
-                    fields[fields.length - 1]?.focus?.();
+                    fields?.[fields.length - 1]?.focus?.();
                   }, 10);
                 }}
               >

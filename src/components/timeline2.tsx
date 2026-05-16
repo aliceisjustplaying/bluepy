@@ -2,10 +2,7 @@ import './timeline2.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type {
-  ReactNode,
-  RefObject,
-} from 'react';
+import type { ReactNode, RefObject } from 'react';
 import {
   useCallback,
   useEffect,
@@ -19,12 +16,12 @@ import { api } from '../utils/api';
 import FilterContext from '../utils/filter-context';
 import states, { saveStatus, statusKey } from '../utils/states';
 import store from '../utils/store';
+import { dedupeTimelineContextItems } from '../utils/timeline-context';
 import {
   dedupeBoosts,
   filterHiddenStatuses,
   groupContext,
 } from '../utils/timeline-utils';
-import { dedupeTimelineContextItems } from '../utils/timeline-context';
 import useInterval from '../utils/useInterval';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScrollFn from '../utils/useScrollFn';
@@ -269,18 +266,10 @@ function Timeline2({
     cachedItems.forEach((item) => {
       if (isGroupEntry(item)) {
         item.items.forEach((subItem) => {
-          saveStatus(
-            toSaveStatus(subItem),
-            instance,
-            { sync: true },
-          );
+          saveStatus(toSaveStatus(subItem), instance, { sync: true });
         });
       } else {
-        saveStatus(
-          toSaveStatus(item),
-          instance,
-          { sync: true },
-        );
+        saveStatus(toSaveStatus(item), instance, { sync: true });
       }
     });
     return cachedItems;
@@ -336,11 +325,7 @@ function Timeline2({
             });
             if (hydratedStatuses?.length) {
               hydratedStatuses.forEach((status) => {
-                saveStatus(
-                  toSaveStatus(status),
-                  instance,
-                  { sync: true },
-                );
+                saveStatus(toSaveStatus(status), instance, { sync: true });
               });
             }
           } catch (e) {
@@ -459,22 +444,13 @@ function Timeline2({
 
           if (value?.length) {
             if (shouldDedupeBoosts) {
-              // dedupeBoosts requires `instance: string`; the JS caller passed
-              // it through unconditionally. Preserve that exact behavior — an
-              // undefined instance would have stringified into the cache key
-              // there, and we mirror that with a non-null assertion rather
-              // than silently skipping the dedupe step.
-              value = dedupeBoosts(value, instance!);
+              value = dedupeBoosts(value, instance);
             }
             value = filterHiddenStatuses(
               value,
               filterContext,
             ) as TimelineStatusEntry[];
-            // groupContext expects `instance: string`; JS passed `undefined`
-            // through when the prop was omitted (only reply-hint code paths
-            // care, and they short-circuit on falsy keys). Preserve runtime
-            // behavior via a non-null assertion.
-            const grouped = groupContext(value, instance!) as TimelineEntry[];
+            const grouped = groupContext(value, instance) as TimelineEntry[];
 
             if (loadState === 'start') {
               minID.current = minIDValue;

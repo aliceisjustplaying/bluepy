@@ -3,6 +3,7 @@ import './account-statuses.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
+import { toUnicode as punycodeToUnicode } from 'punycode/';
 import type { SyntheticEvent } from 'react';
 import {
   useCallback,
@@ -12,7 +13,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { toUnicode as punycodeToUnicode } from 'punycode/';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
@@ -137,8 +137,12 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     if (typeof objOrFn === 'function') {
       objOrFn(localParams);
     } else if (objOrFn instanceof URLSearchParams) {
-      [...localParams.keys()].forEach((key) => localParams.delete(key));
-      objOrFn.forEach((value, key) => localParams.set(key, value));
+      [...localParams.keys()].forEach((key) => {
+        localParams.delete(key);
+      });
+      objOrFn.forEach((value, key) => {
+        localParams.set(key, value);
+      });
     } else {
       applySearchParamsObject(localParams, objOrFn);
     }

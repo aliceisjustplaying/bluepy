@@ -89,7 +89,13 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
   return (
     <div className="sheet">
       {!!onClose && (
-        <button type="button" className="sheet-close" onClick={(e) => onClose?.(e)}>
+        <button
+          type="button"
+          className="sheet-close"
+          onClick={(e) => {
+            onClose?.(e);
+          }}
+        >
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}{' '}

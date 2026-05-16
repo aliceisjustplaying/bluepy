@@ -460,7 +460,7 @@ const __BENCHMARK = (appWindow.__BENCHMARK = {
     if (start) {
       const end = performance.now();
       const duration = end - start;
-      appWindow.__BENCH_RESULTS!.set(name, duration);
+      appWindow.__BENCH_RESULTS?.set(name, duration);
       BENCHES.delete(name);
     }
   },

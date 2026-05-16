@@ -517,17 +517,19 @@ export default function StatusContent({
           if (e.metaKey) return;
           // console.log('context menu', e);
           const link = (e.target as Element).closest('a');
+          const href = link?.getAttribute('href');
           if (
             link &&
-            statusRef.current!.contains(link) &&
-            !link.getAttribute('href')!.startsWith('#')
+            statusRef.current?.contains(link) &&
+            href &&
+            !href.startsWith('#')
           )
             return;
 
           // If there's selected text, don't show custom context menu
           const selection = window.getSelection?.();
-          if (selection!.toString().length > 0) {
-            const { anchorNode } = selection!;
+          if (selection?.toString().length) {
+            const { anchorNode } = selection;
             if (statusRef.current?.contains(anchorNode)) {
               return;
             }

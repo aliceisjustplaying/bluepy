@@ -3,20 +3,10 @@ import './notifications.css';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type {
-  ComponentType,
-  SyntheticEvent,
-  ReactNode,
-} from 'react';
+import type { ComponentType, SyntheticEvent, ReactNode } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useSearchParams } from 'react-router-dom';
@@ -118,7 +108,8 @@ interface MastoV2NotificationsListIterable {
   values(): NotificationsIterator;
 }
 interface MastoV1NotificationsListResult
-  extends MastoV2NotificationsListIterable,
+  extends
+    MastoV2NotificationsListIterable,
     PromiseLike<NotificationLike[] | undefined> {}
 interface MastoV2NotificationsApi {
   list(opts: {
@@ -324,11 +315,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     // `false` (`String(undefined)` → `"undefined"`). Keep the dead guard
     // verbatim so behavior matches; do not coerce away from `undefined`.
     if (
-      /max_id=($|&)/i.test(
-        String(
-          notificationsIterator.current?.nextParams,
-        ),
-      )
+      /max_id=($|&)/i.test(String(notificationsIterator.current?.nextParams))
     ) {
       // Pixelfed returns next paginationed link with empty max_id
       // I assume, it's done (end of list)
@@ -673,7 +660,9 @@ function Notifications({ columnMode }: NotificationsProps) {
       if (v) loadUpdatesRef.current();
       setShowNew(v);
     });
-    return () => unsub?.();
+    return () => {
+      unsub?.();
+    };
   }, []);
 
   const todayDate = new Date();
@@ -925,7 +914,9 @@ function Notifications({ columnMode }: NotificationsProps) {
       }}
       tabIndex={-1}
     >
-      <div className={`timeline-deck deck ${onlyMentions ? 'only-mentions' : ''}`}>
+      <div
+        className={`timeline-deck deck ${onlyMentions ? 'only-mentions' : ''}`}
+      >
         <header
           hidden={hiddenUI}
           role="presentation"
@@ -999,7 +990,11 @@ function Notifications({ columnMode }: NotificationsProps) {
               <details className="announcements">
                 <summary>
                   <span>
-                    <Icon icon="announce" className="announcement-icon" size="l" />{' '}
+                    <Icon
+                      icon="announce"
+                      className="announcement-icon"
+                      size="l"
+                    />{' '}
                     <Plural
                       value={announcements.length}
                       one="Announcement"
@@ -1204,7 +1199,9 @@ function Notifications({ columnMode }: NotificationsProps) {
         )}
         <h2 className="timeline-header">
           <Trans>Today</Trans>{' '}
-          <small className="insignificant bidi-isolate">{todaySubHeading}</small>
+          <small className="insignificant bidi-isolate">
+            {todaySubHeading}
+          </small>
         </h2>
         {showTodayEmpty && (
           <p className="ui-state insignificant">
@@ -1284,7 +1281,12 @@ function Notifications({ columnMode }: NotificationsProps) {
                 <Trans>Unable to load notifications</Trans>
                 <br />
                 <br />
-                <button type="button" onClick={() => loadNotifications(true)}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    loadNotifications(true);
+                  }}
+                >
                   <Trans>Try again</Trans>
                 </button>
               </p>
@@ -1303,7 +1305,9 @@ function Notifications({ columnMode }: NotificationsProps) {
               type="button"
               className="plain block"
               disabled={uiState === 'loading'}
-              onClick={() => loadNotifications()}
+              onClick={() => {
+                loadNotifications();
+              }}
               style={{ marginBlockEnd: '6em' }}
             >
               {uiState === 'loading' ? (
@@ -1327,7 +1331,9 @@ function Notifications({ columnMode }: NotificationsProps) {
             <button
               type="button"
               className="sheet-close"
-              onClick={() => setShowNotificationsSettings(false)}
+              onClick={() => {
+                setShowNotificationsSettings(false);
+              }}
             >
               <Icon icon="x" alt={t`Close`} />
             </button>
@@ -1382,7 +1388,11 @@ function Notifications({ columnMode }: NotificationsProps) {
                       <div key={key}>
                         <label>
                           {_(NOTIFICATIONS_POLICIES_TEXT[key])}
-                          <select name={key} defaultValue={value} className="small">
+                          <select
+                            name={key}
+                            defaultValue={value}
+                            className="small"
+                          >
                             <option value="accept">
                               <Trans>Accept</Trans>
                             </option>
@@ -1537,7 +1547,8 @@ function NotificationRequestModalButton({
       // `masto.v1.notifications.list(...)` directly without `.values()`.
       // The masto paginator returns a thenable-ish object; awaiting it
       // resolves to the first-page array. Mirror that runtime contract.
-      const notifs = (await fetchNotficationsByAccount(request.account.id)) || [];
+      const notifs =
+        (await fetchNotficationsByAccount(request.account.id)) || [];
       setNotifications(notifs);
       setUIState('default');
     })();

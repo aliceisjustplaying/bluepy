@@ -3,10 +3,7 @@ import './lists.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type {
-  ReactNode,
-  ComponentType,
-} from 'react';
+import type { ReactNode, ComponentType } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
@@ -278,7 +275,10 @@ function List(props: ListProps) {
         }
         headerEnd={
           <>
-            <Link to="/notifications" className="button plain notifications-button">
+            <Link
+              to="/notifications"
+              className="button plain notifications-button"
+            >
               <Icon icon="notification" size="l" alt={t`Notifications`} />
             </Link>
             {!isFeed && (
@@ -306,18 +306,22 @@ function List(props: ListProps) {
                   </>
                 )}
                 <MenuItem
-                  onClick={() =>
+                  onClick={() => {
                     setShowListAddEditModal({
                       list,
-                    })
-                  }
+                    });
+                  }}
                 >
                   <Icon icon="pencil" size="l" />
                   <span>
                     <Trans>Edit</Trans>
                   </span>
                 </MenuItem>
-                <MenuItem onClick={() => setShowManageMembersModal(true)}>
+                <MenuItem
+                  onClick={() => {
+                    setShowManageMembersModal(true);
+                  }}
+                >
                   <Icon icon="group" size="l" />
                   <span>
                     <Trans>Manage members</Trans>
@@ -377,7 +381,9 @@ function List(props: ListProps) {
         >
           <ListManageMembers
             listID={id ?? ''}
-            onClose={() => setShowManageMembersModal(false)}
+            onClose={() => {
+              setShowManageMembersModal(false);
+            }}
           />
         </Modal>
       )}
@@ -520,8 +526,8 @@ function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
       confirmLabel={
         <span>
           <Trans>
-            Remove <span className="bidi-isolate">@{account.username}</span> from
-            list?
+            Remove <span className="bidi-isolate">@{account.username}</span>{' '}
+            from list?
           </Trans>
         </span>
       }

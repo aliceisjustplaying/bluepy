@@ -131,40 +131,28 @@ export default function FilteredStatus({
           <span className="status-filtered-info-1">
             {isReblog ? (
               <Trans comment="[Name] [Visibility icon] boosted">
-                <NameText
-                  account={status.account}
-                  instance={instance}
-                />{' '}
+                <NameText account={status.account} instance={instance} />{' '}
                 <Icon
-                  icon={
-                    visibilityIconsMap[visibility]
-                  }
-                  alt={_(
-                    visibilityText[visibility],
-                  )}
+                  icon={visibilityIconsMap[visibility]}
+                  alt={_(visibilityText[visibility])}
                   size="s"
                 />{' '}
                 boosted
               </Trans>
             ) : isFollowedTags ? (
               <>
-                <NameText
-                  account={status.account}
-                  instance={instance}
-                />{' '}
+                <NameText account={status.account} instance={instance} />{' '}
                 <Icon
-                  icon={
-                    visibilityIconsMap[visibility]
-                  }
-                  alt={_(
-                    visibilityText[visibility],
-                  )}
+                  icon={visibilityIconsMap[visibility]}
+                  alt={_(visibilityText[visibility])}
                   size="s"
                 />{' '}
                 <span>
-                  {(snapStates.statusFollowedTags[sKey] as
-                    | readonly string[]
-                    | undefined)!
+                  {(
+                    (snapStates.statusFollowedTags[sKey] as
+                      | readonly string[]
+                      | undefined) ?? []
+                  )
                     .slice(0, 3)
                     .map((tag: string) => (
                       <span key={tag} className="status-followed-tag-item">
@@ -175,17 +163,10 @@ export default function FilteredStatus({
               </>
             ) : (
               <>
-                <NameText
-                  account={status.account}
-                  instance={instance}
-                />{' '}
+                <NameText account={status.account} instance={instance} />{' '}
                 <Icon
-                  icon={
-                    visibilityIconsMap[visibility]
-                  }
-                  alt={_(
-                    visibilityText[visibility],
-                  )}
+                  icon={visibilityIconsMap[visibility]}
+                  alt={_(visibilityText[visibility])}
                   size="s"
                 />{' '}
                 <RelativeTime datetime={createdAtDate} format="micro" />
@@ -196,9 +177,7 @@ export default function FilteredStatus({
             {isReblog && (
               <>
                 <Avatar
-                  url={
-                    reblog.account.avatarStatic || reblog.account.avatar
-                  }
+                  url={reblog.account.avatarStatic || reblog.account.avatar}
                   squircle={bot}
                 />{' '}
               </>

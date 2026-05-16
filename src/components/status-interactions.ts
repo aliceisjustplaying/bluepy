@@ -226,9 +226,12 @@ export default function useStatusInteractions({
         })
         .values();
     }
+    if (!reblogIterator.current || !favouriteIterator.current) {
+      return { value: [], done: true };
+    }
     const [reblogResult, favouriteResult] = await Promise.allSettled([
-      reblogIterator.current!.next(),
-      favouriteIterator.current!.next(),
+      reblogIterator.current.next(),
+      favouriteIterator.current.next(),
     ]);
     const reblogResults = (
       reblogResult as PromiseFulfilledResult<IteratorResult>

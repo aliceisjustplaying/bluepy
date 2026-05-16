@@ -213,7 +213,9 @@ function Shortcuts() {
         }
       }, 100);
 
-      return () => clearTimeout(timeoutId);
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
     return undefined;
   }, [snapStates.settings.shortcutsViewMode]);

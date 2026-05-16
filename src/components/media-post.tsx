@@ -173,7 +173,11 @@ function MediaPost({
           lang={language}
           to={`/${instance}/s/${id}?media-only=${i + 1}`}
           onClick={
-            onMediaClick ? (e) => onMediaClick(e, i, media, status) : undefined
+            onMediaClick
+              ? (e) => {
+                  onMediaClick(e, i, media, status);
+                }
+              : undefined
           }
         />
       </Parent>

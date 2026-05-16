@@ -951,7 +951,9 @@ function Catchup() {
         }
       }, 100);
 
-      return () => clearTimeout(timeoutId);
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
     return undefined;
   }, [id, uiState, sortedFilteredPosts.length]);
@@ -1061,30 +1063,31 @@ function Catchup() {
     if (selectedAuthor) {
       if (authors[selectedAuthor]) {
         // Check if author is visible and within the scrollable area viewport
-        const authorElement =
-          authorsListParent.current!.querySelector<HTMLElement>(
-            `[data-author="${selectedAuthor}"]`,
-          );
+        const authorsList = authorsListParent.current;
+        const authorElement = authorsList?.querySelector<HTMLElement>(
+          `[data-author="${selectedAuthor}"]`,
+        );
         const scrollableRect =
           authorsListParent.current?.getBoundingClientRect();
         const authorRect = authorElement?.getBoundingClientRect();
+        if (!scrollableRect || !authorRect || !authorElement) return;
         console.log({
-          sLeft: scrollableRect!.left,
-          sRight: scrollableRect!.right,
-          aLeft: authorRect!.left,
-          aRight: authorRect!.right,
+          sLeft: scrollableRect.left,
+          sRight: scrollableRect.right,
+          aLeft: authorRect.left,
+          aRight: authorRect.right,
         });
         if (
-          authorRect!.left < scrollableRect!.left ||
-          authorRect!.right > scrollableRect!.right
+          authorRect.left < scrollableRect.left ||
+          authorRect.right > scrollableRect.right
         ) {
-          authorElement!.scrollIntoView({
+          authorElement.scrollIntoView({
             block: 'nearest',
             inline: 'center',
             behavior: 'smooth',
           });
-        } else if (authorRect!.top < 0) {
-          authorElement!.scrollIntoView({
+        } else if (authorRect.top < 0) {
+          authorElement.scrollIntoView({
             block: 'nearest',
             inline: 'nearest',
             behavior: 'smooth',
@@ -1251,8 +1254,7 @@ function Catchup() {
     },
     {
       preventDefault: true,
-      ignoreEventWhen: (e) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
       enableOnFormTags: ['input'],
       useKey: true,
     },
@@ -1420,9 +1422,9 @@ function Catchup() {
                   max={RANGES[RANGES.length - 1].value}
                   step="1"
                   list="catchup-ranges"
-                  onChange={(e) =>
-                    setRange(+(e.target as HTMLInputElement).value)
-                  }
+                  onChange={(e) => {
+                    setRange(+(e.target as HTMLInputElement).value);
+                  }}
                 />{' '}
                 <span
                   style={{
@@ -1449,7 +1451,7 @@ function Catchup() {
                   onClick={() => {
                     let duration: number | undefined;
                     const beyondRange = RANGES.find((r) => r.beyond);
-                    if (range < beyondRange!.value) {
+                    if (beyondRange && range < beyondRange.value) {
                       // Within range
                       duration = range * 60 * 60 * 1000;
                     } else {
@@ -1612,7 +1614,9 @@ function Catchup() {
                     <button
                       type="button"
                       className="plain small"
-                      onClick={() => setShowTopLinks(!showTopLinks)}
+                      onClick={() => {
+                        setShowTopLinks(!showTopLinks);
+                      }}
                     >
                       <Trans>Top links</Trans>{' '}
                       <Icon
@@ -1627,7 +1631,10 @@ function Catchup() {
                   )}
                 </aside>
               </div>
-              <div className="shazam-container no-animation" hidden={!showTopLinks}>
+              <div
+                className="shazam-container no-animation"
+                hidden={!showTopLinks}
+              >
                 <div className="shazam-container-inner">
                   <div className="catchup-top-links links-bar">
                     {links.map((link) => {
@@ -1786,7 +1793,8 @@ function Catchup() {
                         setSelectedFilterCategory('all');
                       }}
                     />
-                    <Trans>All</Trans> <span className="count">{posts.length}</span>
+                    <Trans>All</Trans>{' '}
+                    <span className="count">{posts.length}</span>
                   </label>
                   {Object.entries(FILTER_KEYS).map(
                     ([key, label]) =>
@@ -1859,7 +1867,9 @@ function Catchup() {
                         alt={`${authors[author].displayName} (@${authors[author].acct})`}
                       />{' '}
                       <span className="count">{authorCounts[author]}</span>
-                      <span className="username">{authors[author].username}</span>
+                      <span className="username">
+                        {authors[author].username}
+                      </span>
                     </label>
                   ))}
                   {authorCountsList.length > 5 && (
@@ -2034,7 +2044,9 @@ function Catchup() {
                       type="button"
                       className="textual"
                       onClick={() => {
-                        scrollableRef.current!.scrollTop = 0;
+                        if (scrollableRef.current) {
+                          scrollableRef.current.scrollTop = 0;
+                        }
                       }}
                     >
                       <Trans>Back to top</Trans>
@@ -2048,12 +2060,18 @@ function Catchup() {
         </main>
       </div>
       {showHelp && (
-        <Modal onClose={() => setShowHelp(false)}>
+        <Modal
+          onClose={() => {
+            setShowHelp(false);
+          }}
+        >
           <div className="sheet" id="catchup-help-sheet">
             <button
               type="button"
               className="sheet-close"
-              onClick={() => setShowHelp(false)}
+              onClick={() => {
+                setShowHelp(false);
+              }}
             >
               <Icon icon="x" alt={t`Close`} />
             </button>
@@ -2296,7 +2314,9 @@ const IntersectionPostLineItem = ({
       (entries) => {
         const entry = entries[0];
         if (entry.isIntersecting) {
-          queueMicrotask(() => setShow(true));
+          queueMicrotask(() => {
+            setShow(true);
+          });
           if (ref.current) observer.unobserve(ref.current);
         }
       },

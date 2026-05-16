@@ -100,8 +100,9 @@ const PostContent =
     useEffect(() => {
       // Find all links that's in states.statusQuotes and add 'is-quote' class
       const currentQuotes = quotesRef.current;
+      const currentDiv = divRef.current;
       if (currentQuotes?.length) {
-        for (const a of divRef.current!.querySelectorAll('a')) {
+        for (const a of currentDiv?.querySelectorAll('a') ?? []) {
           if (
             currentQuotes.some(
               (quote) =>

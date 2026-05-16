@@ -74,7 +74,9 @@ function AccountSheet({
         <button
           type="button"
           className="sheet-close outer"
-          onClick={(e) => onClose(e)}
+          onClick={(e) => {
+            onClose(e);
+          }}
         >
           <Icon icon="x" alt={t`Close`} />
         </button>

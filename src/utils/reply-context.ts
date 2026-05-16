@@ -11,7 +11,9 @@ interface ThreadParentInput {
   readonly status?: ReplyContextStatus | null;
 }
 
-function shouldFetchReplyContextForInstance(instance: string): boolean {
+function shouldFetchReplyContextForInstance(
+  instance: string | undefined,
+): boolean {
   return instance !== 'bsky.social';
 }
 

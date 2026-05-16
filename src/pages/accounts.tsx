@@ -58,7 +58,9 @@ function Accounts({ onClose }: AccountsProps) {
   const moreThanOneAccount = accounts.length > 1;
 
   const [, setReloadTick] = useState(0);
-  const reload = () => setReloadTick((x) => x + 1);
+  const reload = () => {
+    setReloadTick((x) => x + 1);
+  };
   const [accountsListParent] = useAutoAnimate<HTMLUListElement>();
   const saveOAuthAccounts = () => {
     saveAccounts(accounts as readonly StoredAccount[]);
@@ -109,7 +111,9 @@ function Accounts({ onClose }: AccountsProps) {
                 <li key={account.info.id}>
                   <div>
                     {moreThanOneAccount && (
-                      <span className={`current ${isCurrent ? 'is-current' : ''}`}>
+                      <span
+                        className={`current ${isCurrent ? 'is-current' : ''}`}
+                      >
                         <Icon icon="check-circle" alt={t`Current`} />
                       </span>
                     )}

@@ -71,7 +71,9 @@ function Lists() {
               <button
                 type="button"
                 className="plain"
-                onClick={() => setShowListAddEditModal(true)}
+                onClick={() => {
+                  setShowListAddEditModal(true);
+                }}
               >
                 <Icon icon="plus" size="l" alt={t`New list`} />
               </button>

@@ -4,7 +4,9 @@
 if ('AbortSignal' in window && typeof AbortSignal.timeout !== 'function') {
   AbortSignal.timeout = (duration) => {
     const controller = new AbortController();
-    setTimeout(() => controller.abort(), duration);
+    setTimeout(() => {
+      controller.abort();
+    }, duration);
     return controller.signal;
   };
 }

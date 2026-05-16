@@ -2,13 +2,7 @@ import type { MessageDescriptor } from '@lingui/core';
 import { msg, t } from '@lingui/core/macro';
 import { Plural, Select, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type {
-  ReactNode,
-  ComponentType,
-  JSX,
-  Ref,
-  ReactElement,
-} from 'react';
+import type { ReactNode, ComponentType, JSX, Ref, ReactElement } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
 
@@ -171,6 +165,7 @@ interface SubjectProps {
   [key: string]: unknown;
 }
 type SubjectComponent = ComponentType<SubjectProps>;
+const SubjectFallback = ({ children }: SubjectProps) => <>{children}</>;
 
 interface ContentTextArgs {
   account?: ReactElement | null;
@@ -260,7 +255,7 @@ const contentText: Record<string, ContentTextRenderer> = {
     const count = args.count as number;
     const postsCount = args.postsCount as number;
     const postType = args.postType as 'reply' | 'post';
-    const Subject = components!.Subject;
+    const Subject = components?.Subject ?? SubjectFallback;
     return (
       <Plural
         value={count}
@@ -310,7 +305,7 @@ const contentText: Record<string, ContentTextRenderer> = {
   follow: (args) => {
     const { account, components } = args;
     const count = args.count as number;
-    const Subject = components!.Subject;
+    const Subject = components?.Subject ?? SubjectFallback;
     return (
       <Plural
         value={count}
@@ -334,7 +329,7 @@ const contentText: Record<string, ContentTextRenderer> = {
     const count = args.count as number;
     const postsCount = args.postsCount as number;
     const postType = args.postType as 'reply' | 'post';
-    const Subject = components!.Subject;
+    const Subject = components?.Subject ?? SubjectFallback;
     return (
       <Plural
         value={count}
@@ -395,7 +390,7 @@ const contentText: Record<string, ContentTextRenderer> = {
     const count = args.count as number;
     const postsCount = args.postsCount as number;
     const postType = args.postType as 'reply' | 'post';
-    const Subject = components!.Subject;
+    const Subject = components?.Subject ?? SubjectFallback;
     return (
       <Plural
         value={count}
@@ -448,7 +443,7 @@ const contentText: Record<string, ContentTextRenderer> = {
   'admin.sign_up': (args) => {
     const { account, components } = args;
     const count = args.count as number;
-    const Subject = components!.Subject;
+    const Subject = components?.Subject ?? SubjectFallback;
     return (
       <Plural
         value={count}
@@ -722,11 +717,10 @@ function Notification({
         heading: genericAccountsHeading,
         accounts: _accounts,
         fetchAccounts: async () => {
-          const mastoV2Notifications =
-            getMastoV2Resource<MastoV2Notifications>(
-              masto,
-              'notifications',
-            );
+          const mastoV2Notifications = getMastoV2Resource<MastoV2Notifications>(
+            masto,
+            'notifications',
+          );
           // JS original called `.map` on `_groupKeys` directly. Preserve
           // that crash-on-missing behavior with a non-null cast.
           const keyAccounts = await Promise.allSettled(
@@ -766,7 +760,8 @@ function Notification({
             for (const acct of keyAccountsList as AccountWithBot[]) {
               const theAccount = accounts.find((a) => a.id === acct.id);
               if (theAccount && reactionType) {
-                theAccount._types!.push(reactionType);
+                theAccount._types ??= [];
+                theAccount._types.push(reactionType);
               } else {
                 if (reactionType) acct._types = [reactionType];
                 accounts.push(acct);
@@ -831,11 +826,21 @@ function Notification({
         {type === 'favourite+reblog' ? (
           <>
             <Icon icon="rocket" size="xl" alt={type} className="reblog-icon" />
-            <Icon icon="heart" size="xl" alt={type} className="favourite-icon" />
+            <Icon
+              icon="heart"
+              size="xl"
+              alt={type}
+              className="favourite-icon"
+            />
           </>
         ) : type === 'mention+quote' ? (
           <>
-            <Icon icon="comment" size="xl" alt={type} className="mention-icon" />
+            <Icon
+              icon="comment"
+              size="xl"
+              alt={type}
+              className="mention-icon"
+            />
             <Icon icon="quote" size="xl" alt={type} className="quote-icon" />
           </>
         ) : (
@@ -865,13 +870,13 @@ function Notification({
         {type !== 'mention' && type !== 'quote' && type !== 'mention+quote' && (
           <>
             <p>{text as ReactNode}</p>
-            {type === 'follow_request' && (
-              // JS original passed `account.id` unconditionally; missing
-              // account would crash here. Preserve that contract.
-              <FollowRequestButtons
-                accountID={(account as AccountWithBot).id!}
-              />
-            )}
+            {type === 'follow_request' &&
+              (() => {
+                const accountID = (account as AccountWithBot).id;
+                return accountID ? (
+                  <FollowRequestButtons accountID={accountID} />
+                ) : null;
+              })()}
             {type === 'severed_relationships' && (
               <div>
                 {/* JS original accessed `event.type` directly without a

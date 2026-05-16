@@ -322,7 +322,9 @@ export default function GenericAccounts({
                   <button
                     type="button"
                     className="plain block"
-                    onClick={() => loadAccounts()}
+                    onClick={() => {
+                      loadAccounts();
+                    }}
                   >
                     <Trans>Show more…</Trans>
                   </button>
