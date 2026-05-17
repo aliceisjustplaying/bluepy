@@ -53,16 +53,11 @@ check_agent() {
   require_cmd agent-browser
   require_cmd codex
   require_cmd claude
-  smoke_contains playwright-browser ok node --input-type=module -e '
-    import { chromium } from "@playwright/test";
-    const browser = await chromium.launch({
-      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
-      headless: true,
-    });
-    const page = await browser.newPage();
-    await page.goto("data:text/html,<title>ok</title>");
-    console.log(await page.title());
-    await browser.close();
+  smoke_contains agent-browser-open ok bash -c '
+    agent-browser --session bluepy-preflight close >/dev/null 2>&1 || true
+    agent-browser --session bluepy-preflight open "data:text/html,<title>ok</title><main>ok</main>"
+    agent-browser --session bluepy-preflight get title
+    agent-browser --session bluepy-preflight close
   '
   BLUEPY_LOG_SUCCESS_TAIL=8 run_logged "preflight agent-browser" "${log_dir}/preflight-agent-browser.log" \
     agent-browser doctor --offline --quick

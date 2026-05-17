@@ -23,29 +23,22 @@ stream_log_progress() {
   local pattern="${BLUEPY_LOG_STREAM_PATTERN:-apply patch|patch: completed|codex|claude|exec|running|Run |Running |passed|failed|Error|error|warning|commit|pull request|created|updated|Verification|Browser|Playwright|agent-browser|wrangler|deploy|upload|Success|Done}"
   local limit="${BLUEPY_LOG_STREAM_LIMIT:-120}"
   local max_len="${BLUEPY_LOG_STREAM_LINE_CHARS:-300}"
+  local count=0 line
 
-  tail -n 0 -f "$log_file" 2>/dev/null |
-    awk -v name="$name" -v pattern="$pattern" -v limit="$limit" -v max_len="$max_len" '
-      function clean(line) {
-        gsub(/\033\[[0-9;?]*[[:alpha:]]/, "", line)
-        gsub(/\r/, "", line)
-        return line
-      }
-      $0 ~ pattern {
-        line = clean($0)
-        if (length(line) > max_len) {
-          line = substr(line, 1, max_len) " ..."
-        }
-        print "live " name ": " line
-        fflush()
-        count += 1
-        if (count >= limit) {
-          print "live " name ": stream limit reached; continuing in full log only"
-          fflush()
-          exit
-        }
-      }
-    '
+  while IFS= read -r line; do
+    if [[ "$line" =~ $pattern ]]; then
+      line="${line//$'\r'/}"
+      if (( ${#line} > max_len )); then
+        line="${line:0:max_len} ..."
+      fi
+      printf 'live %s: %s\n' "$name" "$line"
+      count=$((count + 1))
+      if (( count >= limit )); then
+        printf 'live %s: stream limit reached; continuing in full log only\n' "$name"
+        return 0
+      fi
+    fi
+  done < <(tail -n 0 -f "$log_file" 2>/dev/null)
 }
 
 run_logged() {
