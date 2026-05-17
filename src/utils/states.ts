@@ -8,6 +8,10 @@ import isMastodonLinkMaybe from './is-mastodon-link-maybe';
 import pmem from './pmem';
 import rateLimit from './ratelimit';
 import { shouldFetchThreadParent } from './reply-context';
+import {
+  persistShortcutsViewMode,
+  restoreShortcutsViewMode,
+} from './settings-storage';
 import store from './store';
 // TODO(oxlint:import/no-cycle): states <-> unfurl-link cycle is structural;
 // breaking it requires extracting unfurled-link types into a separate module
@@ -226,7 +230,7 @@ export function initStates(): void {
     'settings-shortcutsViewMode',
   );
   states.settings.shortcutsViewMode =
-    shortcutsViewMode === 'multi-column' ? null : (shortcutsViewMode ?? null);
+    restoreShortcutsViewMode(shortcutsViewMode);
   states.settings.shortcutsColumnsMode = false;
   states.settings.boostsCarousel =
     store.account.get<boolean>('settings-boostsCarousel') ?? true;
@@ -277,7 +281,7 @@ subscribe(states, (changes) => {
     if (path.join('.') === 'settings.shortcutsViewMode') {
       store.account.set(
         'settings-shortcutsViewMode',
-        value === 'multi-column' ? null : value,
+        persistShortcutsViewMode(value),
       );
     }
     if (path.join('.') === 'settings.contentTranslation') {
