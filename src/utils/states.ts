@@ -9,7 +9,9 @@ import pmem from './pmem';
 import rateLimit from './ratelimit';
 import { shouldFetchThreadParent } from './reply-context';
 import {
+  persistShortcutsColumnsMode,
   persistShortcutsViewMode,
+  restoreShortcutsColumnsMode,
   restoreShortcutsViewMode,
 } from './settings-storage';
 import store from './store';
@@ -229,9 +231,21 @@ export function initStates(): void {
   const shortcutsViewMode = store.account.get<string>(
     'settings-shortcutsViewMode',
   );
-  states.settings.shortcutsViewMode =
-    restoreShortcutsViewMode(shortcutsViewMode);
-  states.settings.shortcutsColumnsMode = false;
+  const shortcutsColumnsMode = restoreShortcutsColumnsMode(
+    store.account.get<boolean>('settings-shortcutsColumnsMode'),
+  );
+  const restoredShortcutsViewMode = restoreShortcutsViewMode(
+    shortcutsViewMode,
+    shortcutsColumnsMode,
+  );
+  states.settings.shortcutsViewMode = restoredShortcutsViewMode;
+  if (!shortcutsViewMode && restoredShortcutsViewMode) {
+    store.account.set(
+      'settings-shortcutsViewMode',
+      persistShortcutsViewMode(restoredShortcutsViewMode),
+    );
+  }
+  states.settings.shortcutsColumnsMode = shortcutsColumnsMode;
   states.settings.boostsCarousel =
     store.account.get<boolean>('settings-boostsCarousel') ?? true;
   states.settings.contentTranslation =
@@ -282,6 +296,12 @@ subscribe(states, (changes) => {
       store.account.set(
         'settings-shortcutsViewMode',
         persistShortcutsViewMode(value),
+      );
+    }
+    if (path.join('.') === 'settings.shortcutsColumnsMode') {
+      store.account.set(
+        'settings-shortcutsColumnsMode',
+        persistShortcutsColumnsMode(value),
       );
     }
     if (path.join('.') === 'settings.contentTranslation') {
