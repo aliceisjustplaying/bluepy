@@ -26,6 +26,19 @@ smoke_contains() {
   }
 }
 
+smoke_contains_stdin() {
+  local name="$1"
+  local expected="$2"
+  local stdin_file="$3"
+  shift 3
+  local log_file="${log_dir}/preflight-${name// /-}.log"
+  BLUEPY_LOG_SUCCESS_TAIL=8 run_logged_stdin "preflight ${name}" "$log_file" "$stdin_file" "$@"
+  grep -q "$expected" "$log_file" || {
+    printf 'preflight %s did not print %s\n' "$name" "$expected" >&2
+    exit 1
+  }
+}
+
 check_base() {
   require_cmd bash
   require_cmd bun
@@ -50,29 +63,27 @@ check_base() {
 }
 
 check_agent() {
+  local prompt_file
   require_cmd agent-browser
   require_cmd codex
   require_cmd claude
-  smoke_contains agent-browser-open ok bash -c '
-    agent-browser --session bluepy-preflight close >/dev/null 2>&1 || true
-    agent-browser --session bluepy-preflight open "data:text/html,<title>ok</title><main>ok</main>"
-    agent-browser --session bluepy-preflight get title
-    agent-browser --session bluepy-preflight close
-  '
-  BLUEPY_LOG_SUCCESS_TAIL=8 run_logged "preflight agent-browser" "${log_dir}/preflight-agent-browser.log" \
-    agent-browser doctor --offline --quick
   run_logged "preflight codex login" "${log_dir}/preflight-codex-login.log" \
     codex login status
   if [[ "${BLUEPY_PREFLIGHT_LLM_SMOKE:-0}" == "1" ]]; then
-    smoke_contains codex CODEX_OK codex exec \
+    prompt_file="$(mktemp)"
+    printf 'Reply with EXACTLY CODEX_OK and nothing else.\n' >"$prompt_file"
+    smoke_contains_stdin codex CODEX_OK "$prompt_file" codex exec \
+      -c "model=\"${BLUEPY_CODEX_MODEL:-gpt-5.5}\"" \
+      -c "model_reasoning_effort=\"${BLUEPY_CODEX_REASONING_EFFORT:-high}\"" \
       --dangerously-bypass-approvals-and-sandbox \
       --ignore-rules \
       --skip-git-repo-check \
-      "Reply with EXACTLY CODEX_OK and nothing else."
+      -
+    rm -f "$prompt_file"
   fi
-  smoke_contains claude CLAUDE_OK claude -p \
-    --model claude-opus-4-7 \
-    --effort xhigh \
+  smoke_contains claude CLAUDE_OK claude --bare -p \
+    --model "${BLUEPY_CLAUDE_MODEL:-claude-opus-4-7}" \
+    --effort "${BLUEPY_CLAUDE_EFFORT:-xhigh}" \
     --no-session-persistence \
     "Reply with EXACTLY CLAUDE_OK and nothing else."
 }
@@ -115,7 +126,6 @@ check_base
 case "$mode" in
   agent)
     check_agent
-    check_deploy
     ;;
   deploy)
     check_deploy

@@ -41,11 +41,17 @@ stream_log_progress() {
   done < <(tail -n 0 -f "$log_file" 2>/dev/null)
 }
 
-run_logged() {
+_run_logged_impl() {
   local name="$1"
   local log_file="$2"
+  local stdin_file="$3"
   local status shell_flags command_pid stream_pid start elapsed interval line_count next_heartbeat
-  shift 2
+  shift 3
+
+  if [[ ! -r "$stdin_file" ]]; then
+    printf 'run_logged stdin file is not readable: %s\n' "$stdin_file" >&2
+    return 2
+  fi
 
   printf '::group::%s\n' "$name"
   printf 'running %s; full log: %s\n' "$name" "$log_file"
@@ -53,7 +59,13 @@ run_logged() {
 
   shell_flags="$-"
   set +e
-  "$@" >>"$log_file" 2>&1 < /dev/null &
+  if [[ -n "${BLUEPY_COMMAND_TIMEOUT_SECONDS:-}" ]] && command -v timeout >/dev/null 2>&1; then
+    timeout --kill-after="${BLUEPY_COMMAND_KILL_AFTER_SECONDS:-60}" \
+      "${BLUEPY_COMMAND_TIMEOUT_SECONDS}" "$@" \
+      >>"$log_file" 2>&1 <"$stdin_file" &
+  else
+    "$@" >>"$log_file" 2>&1 <"$stdin_file" &
+  fi
   command_pid="$!"
   stream_pid=""
   if [[ "${BLUEPY_LOG_STREAM:-1}" != "0" ]]; then
@@ -100,6 +112,21 @@ run_logged() {
   return "$status"
 }
 
+run_logged() {
+  local name="$1"
+  local log_file="$2"
+  shift 2
+  _run_logged_impl "$name" "$log_file" /dev/null "$@"
+}
+
+run_logged_stdin() {
+  local name="$1"
+  local log_file="$2"
+  local stdin_file="$3"
+  shift 3
+  _run_logged_impl "$name" "$log_file" "$stdin_file" "$@"
+}
+
 load_cloudflare_credentials() {
   local api_token global_key
   if [[ -n "${CLOUDFLARE_API_TOKEN:-}" || -n "${CLOUDFLARE_API_KEY:-}" ]]; then
@@ -131,8 +158,7 @@ load_cloudflare_credentials() {
 }
 
 configure_agent_browser() {
-  local scripts_dir="$1"
+  local _scripts_dir="$1"
   export BLUEPY_AGENT_BROWSER=1
-  export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="${PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:-${scripts_dir}/chromium-for-agents}"
-  export AGENT_BROWSER_EXECUTABLE_PATH="${AGENT_BROWSER_EXECUTABLE_PATH:-${scripts_dir}/chromium-for-agents}"
+  export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="${PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:-/run/current-system/sw/bin/chromium}"
 }

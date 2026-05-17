@@ -12,6 +12,7 @@ permissions:
 concurrency:
   group: bluepy-agent-${{ github.event.issue.number }}
   cancel-in-progress: false
+  queue: max
 
 jobs:
   issue-agent:
@@ -23,6 +24,7 @@ jobs:
         with:
           ref: bluesky
           fetch-depth: 0
+          persist-credentials: false
       - run: scripts/agent-preflight.sh agent
       - run: scripts/agent-loop.sh issue "${{ github.event.issue.number }}"
       - if: failure()

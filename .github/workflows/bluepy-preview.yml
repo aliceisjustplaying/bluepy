@@ -18,13 +18,14 @@ jobs:
     if: >-
       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association) ||
       contains(github.event.pull_request.labels.*.name, 'agent:preview')
-    runs-on: [self-hosted, bluepy-agent]
+    runs-on: [self-hosted, bluepy-deploy]
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+          persist-credentials: false
       - run: scripts/agent-preflight.sh deploy
       - run: scripts/deploy-preview.sh "${{ github.event.pull_request.number }}"
       - if: failure()
