@@ -28,6 +28,8 @@ Agent-runner browser checks inherit `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` and `A
 
 Make small commits by concern. Push deploy-relevant commits to `fork/bluesky`. Report any remaining dirty files explicitly.
 
+Local agent workflows stream bounded live progress from `run_logged` and keep the full raw logs under `/workspace/agent-worktrees/bluepy/logs`. Tune with `BLUEPY_LOG_STREAM_LIMIT`, `BLUEPY_LOG_STREAM_LINE_CHARS`, `BLUEPY_LOG_HEARTBEAT_SECONDS`, or `BLUEPY_LOG_STREAM=0`.
+
 ## TypeScript Migration: Roles
 
 - **Coder**: The active coding agent, or worker subagents in parallel-worktree mode. Owns file conversions, type annotations, fixes, verification, and commits.

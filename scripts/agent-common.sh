@@ -17,19 +17,74 @@ summary_line() {
   fi
 }
 
+stream_log_progress() {
+  local name="$1"
+  local log_file="$2"
+  local pattern="${BLUEPY_LOG_STREAM_PATTERN:-apply patch|patch: completed|codex|claude|exec|running|Run |Running |passed|failed|Error|error|warning|commit|pull request|created|updated|Verification|Browser|Playwright|agent-browser|wrangler|deploy|upload|Success|Done}"
+  local limit="${BLUEPY_LOG_STREAM_LIMIT:-120}"
+  local max_len="${BLUEPY_LOG_STREAM_LINE_CHARS:-300}"
+
+  tail -n 0 -f "$log_file" 2>/dev/null |
+    awk -v name="$name" -v pattern="$pattern" -v limit="$limit" -v max_len="$max_len" '
+      function clean(line) {
+        gsub(/\033\[[0-9;?]*[[:alpha:]]/, "", line)
+        gsub(/\r/, "", line)
+        return line
+      }
+      $0 ~ pattern {
+        line = clean($0)
+        if (length(line) > max_len) {
+          line = substr(line, 1, max_len) " ..."
+        }
+        print "live " name ": " line
+        fflush()
+        count += 1
+        if (count >= limit) {
+          print "live " name ": stream limit reached; continuing in full log only"
+          fflush()
+          exit
+        }
+      }
+    '
+}
+
 run_logged() {
   local name="$1"
   local log_file="$2"
-  local status shell_flags
+  local status shell_flags command_pid stream_pid start elapsed interval line_count next_heartbeat
   shift 2
 
   printf '::group::%s\n' "$name"
   printf 'running %s; full log: %s\n' "$name" "$log_file"
+  : >"$log_file"
 
   shell_flags="$-"
   set +e
-  "$@" >"$log_file" 2>&1 < /dev/null
+  "$@" >>"$log_file" 2>&1 < /dev/null &
+  command_pid="$!"
+  stream_pid=""
+  if [[ "${BLUEPY_LOG_STREAM:-1}" != "0" ]]; then
+    stream_log_progress "$name" "$log_file" &
+    stream_pid="$!"
+  fi
+  start="$SECONDS"
+  interval="${BLUEPY_LOG_HEARTBEAT_SECONDS:-30}"
+  next_heartbeat="$interval"
+  while kill -0 "$command_pid" >/dev/null 2>&1; do
+    sleep 1
+    elapsed=$((SECONDS - start))
+    if (( elapsed >= next_heartbeat )) && kill -0 "$command_pid" >/dev/null 2>&1; then
+      line_count="$(wc -l <"$log_file" 2>/dev/null || printf '0')"
+      printf 'still running %s (%ss elapsed, %s log lines)\n' "$name" "$elapsed" "$line_count"
+      next_heartbeat=$((next_heartbeat + interval))
+    fi
+  done
+  wait "$command_pid"
   status="$?"
+  if [[ -n "$stream_pid" ]]; then
+    kill "$stream_pid" >/dev/null 2>&1 || true
+    wait "$stream_pid" >/dev/null 2>&1 || true
+  fi
   if [[ "$shell_flags" == *e* ]]; then
     set -e
   else
