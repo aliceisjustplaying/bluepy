@@ -4,6 +4,8 @@
 repo="${BLUEPY_REPO:-${GITHUB_REPOSITORY:-aliceisjustplaying/bluepy}}"
 run_id="${GITHUB_RUN_ID:-local}-$(date -u +%Y%m%d%H%M%S)"
 agent_root="${BLUEPY_AGENT_ROOT:-/workspace/agent-worktrees/bluepy}"
+# shellcheck disable=SC2034 # Used by scripts that source this shared file.
+agent_repo="${BLUEPY_AGENT_REPO:-${agent_root}/repo}"
 log_dir="${BLUEPY_AGENT_LOG_DIR:-${agent_root}/logs/${run_id}}"
 cloudflare_env_file="${BLUEPY_CF_ENV_FILE:-/home/agent/alice-cf.env}"
 cloudflare_email="${BLUEPY_CF_EMAIL:-aliceisjustplaying@gmail.com}"

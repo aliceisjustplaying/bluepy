@@ -51,9 +51,22 @@ use_repo_ssh_remote() {
   git remote set-url origin "$(gh repo view "$repo" --json sshUrl --jq .sshUrl)"
 }
 
+ensure_agent_repo() {
+  local ssh_url
+  ssh_url="$(gh repo view "$repo" --json sshUrl --jq .sshUrl)"
+  if [[ -d "${agent_repo}/.git" ]]; then
+    git -C "$agent_repo" remote set-url origin "$ssh_url"
+  else
+    rm -rf "$agent_repo"
+    git clone --no-checkout "$ssh_url" "$agent_repo"
+  fi
+  git -C "$agent_repo" config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+  git -C "$agent_repo" worktree prune
+}
+
 remote_branch_exists() {
   local branch="$1"
-  git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1
+  git -C "$agent_repo" ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1
 }
 
 worktree_is_dirty() {
@@ -70,7 +83,8 @@ prepare_issue_worktree() {
   local worktree="$2"
 
   use_repo_ssh_remote
-  git fetch origin "$base_branch"
+  ensure_agent_repo
+  git -C "$agent_repo" fetch origin "$base_branch"
   if [[ -d "$worktree" ]]; then
     if git -C "$worktree" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       cd "$worktree"
@@ -103,12 +117,12 @@ prepare_issue_worktree() {
   fi
 
   if remote_branch_exists "$branch"; then
-    git fetch origin "$branch"
-    git worktree add -B "$branch" "$worktree" "origin/${branch}"
-  elif git show-ref --verify --quiet "refs/heads/${branch}"; then
-    git worktree add "$worktree" "$branch"
+    git -C "$agent_repo" fetch origin "$branch"
+    git -C "$agent_repo" worktree add -B "$branch" "$worktree" "origin/${branch}"
+  elif git -C "$agent_repo" show-ref --verify --quiet "refs/heads/${branch}"; then
+    git -C "$agent_repo" worktree add "$worktree" "$branch"
   else
-    git worktree add -b "$branch" "$worktree" "origin/${base_branch}"
+    git -C "$agent_repo" worktree add -b "$branch" "$worktree" "origin/${base_branch}"
   fi
   cd "$worktree"
   use_repo_ssh_remote
@@ -118,9 +132,10 @@ prepare_pr_worktree() {
   local branch="$1"
   local worktree="$2"
   use_repo_ssh_remote
-  git fetch origin "$branch"
+  ensure_agent_repo
+  git -C "$agent_repo" fetch origin "$branch"
   rm -rf "$worktree"
-  git worktree add --detach "$worktree" "origin/${branch}"
+  git -C "$agent_repo" worktree add --detach "$worktree" "origin/${branch}"
   cd "$worktree"
   use_repo_ssh_remote
 }

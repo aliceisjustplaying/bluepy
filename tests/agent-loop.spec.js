@@ -56,3 +56,16 @@ printf '%s\\n' "$pr_number"
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('agent worktrees are created from the persistent agent repo', () => {
+  const agentCommon = readFileSync('scripts/agent-common.sh', 'utf8');
+  const agentLoop = readFileSync('scripts/agent-loop.sh', 'utf8');
+
+  expect(agentCommon).toContain(
+    'agent_repo="${BLUEPY_AGENT_REPO:-${agent_root}/repo}"',
+  );
+  expect(agentLoop).toContain('ensure_agent_repo');
+  expect(agentLoop).toContain('git -C "$agent_repo" worktree add');
+  expect(agentLoop).not.toContain('\n    git worktree add');
+  expect(agentLoop).not.toContain('\n  git worktree add');
+});
