@@ -21,6 +21,10 @@ ensure_label() {
   gh label create "$name" --color "$color" --repo "$repo" >/dev/null 2>&1 || true
 }
 
+use_repo_ssh_remote() {
+  git remote set-url origin "$(gh repo view "$repo" --json sshUrl --jq .sshUrl)"
+}
+
 run_codex() {
   local prompt_file="$1"
   codex exec \
@@ -136,6 +140,7 @@ start_issue() {
   git fetch origin "$base_branch"
   git worktree add -b "$branch" "$worktree" "origin/${base_branch}"
   cd "$worktree"
+  use_repo_ssh_remote
 
   {
     printf 'Implement Bluepy issue #%s: %s\n\n' "$issue" "$title"
@@ -178,6 +183,7 @@ start_pr() {
   git fetch origin "$branch"
   git worktree add -B "$branch" "$worktree" "origin/${branch}"
   cd "$worktree"
+  use_repo_ssh_remote
   review_and_fix_loop "$pr" "$pr"
 }
 
