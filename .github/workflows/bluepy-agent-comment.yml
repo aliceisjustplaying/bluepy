@@ -1,0 +1,28 @@
+name: Bluepy Agent Comment
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: bluepy-agent-comment-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  comment-agent:
+    if: >-
+      contains(github.event.comment.body, '/bluepy-agent') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: [self-hosted, bluepy-agent]
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: bluesky
+          fetch-depth: 0
+      - run: scripts/agent-loop.sh comment "${{ github.event.issue.number }}"

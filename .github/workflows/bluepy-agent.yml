@@ -1,0 +1,26 @@
+name: Bluepy Agent
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: bluepy-agent-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  issue-agent:
+    if: github.event.label.name == 'agent:codex'
+    runs-on: [self-hosted, bluepy-agent]
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: bluesky
+          fetch-depth: 0
+      - run: scripts/agent-loop.sh issue "${{ github.event.issue.number }}"
