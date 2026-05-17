@@ -269,7 +269,7 @@ open_or_update_pr() {
   local title="$3"
   local body_file="$4"
   local pr_number
-  push_current_head "$branch"
+  push_current_head "$branch" >&2
   if gh pr view "$branch" --repo "$repo" --json number --jq .number >/dev/null 2>&1; then
     pr_number="$(gh pr view "$branch" --repo "$repo" --json number --jq .number)"
     gh pr edit "$pr_number" --repo "$repo" --title "$title" --body-file "$body_file" >/dev/null || true
