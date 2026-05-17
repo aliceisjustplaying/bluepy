@@ -95,10 +95,10 @@ review_and_fix_loop() {
     {
       printf 'Fix the actionable Claude review findings for Bluepy PR #%s.\n\n' "$pr"
       printf 'Rules:\n'
-      printf '- Touch only files needed for the findings.\n'
-      printf '- Use bun/bunx only.\n'
-      printf '- Do not disable lint/type/test rules.\n'
-      printf '- Run verification before finishing.\n\n'
+      printf '%s\n' '- Touch only files needed for the findings.'
+      printf '%s\n' '- Use bun/bunx only.'
+      printf '%s\n' '- Do not disable lint/type/test rules.'
+      printf '%s\n\n' '- Run verification before finishing.'
       printf 'Claude review:\n'
       cat "$review_file"
     } >"$prompt_file"
@@ -141,10 +141,10 @@ start_issue() {
     printf 'Implement Bluepy issue #%s: %s\n\n' "$issue" "$title"
     printf 'Issue body:\n%s\n\n' "$body"
     printf 'Rules:\n'
-    printf '- Keep the change narrow.\n'
-    printf '- Use bun/bunx only.\n'
-    printf '- Run verification before finishing.\n'
-    printf '- Do not disable lint/type/test rules.\n'
+    printf '%s\n' '- Keep the change narrow.'
+    printf '%s\n' '- Use bun/bunx only.'
+    printf '%s\n' '- Run verification before finishing.'
+    printf '%s\n' '- Do not disable lint/type/test rules.'
   } >"$prompt_file"
 
   run_codex "$prompt_file"
