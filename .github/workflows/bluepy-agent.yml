@@ -1,0 +1,35 @@
+name: Bluepy Agent
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: bluepy-agent-${{ github.event.issue.number }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  issue-agent:
+    if: github.event.label.name == 'agent:codex'
+    runs-on: [self-hosted, bluepy-agent]
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: bluesky
+          fetch-depth: 0
+          persist-credentials: false
+      - run: scripts/agent-preflight.sh agent
+      - run: scripts/agent-loop.sh issue "${{ github.event.issue.number }}"
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bluepy-agent-logs-${{ github.run_id }}
+          path: /workspace/agent-worktrees/bluepy/logs/${{ github.run_id }}-*
+          if-no-files-found: ignore

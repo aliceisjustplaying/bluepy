@@ -1,0 +1,35 @@
+name: Bluepy Preview
+
+on:
+  pull_request:
+    branches: [bluesky]
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: bluepy-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    if: >-
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association) ||
+      contains(github.event.pull_request.labels.*.name, 'agent:preview')
+    runs-on: [self-hosted, bluepy-deploy]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - run: scripts/agent-preflight.sh deploy
+      - run: scripts/deploy-preview.sh "${{ github.event.pull_request.number }}"
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bluepy-preview-logs-${{ github.run_id }}
+          path: /workspace/agent-worktrees/bluepy/logs/${{ github.run_id }}-*

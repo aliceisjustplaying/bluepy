@@ -8,6 +8,12 @@ import isMastodonLinkMaybe from './is-mastodon-link-maybe';
 import pmem from './pmem';
 import rateLimit from './ratelimit';
 import { shouldFetchThreadParent } from './reply-context';
+import {
+  persistShortcutsColumnsMode,
+  persistShortcutsViewMode,
+  restoreShortcutsColumnsMode,
+  restoreShortcutsViewMode,
+} from './settings-storage';
 import store from './store';
 // TODO(oxlint:import/no-cycle): states <-> unfurl-link cycle is structural;
 // breaking it requires extracting unfurled-link types into a separate module
@@ -225,9 +231,21 @@ export function initStates(): void {
   const shortcutsViewMode = store.account.get<string>(
     'settings-shortcutsViewMode',
   );
-  states.settings.shortcutsViewMode =
-    shortcutsViewMode === 'multi-column' ? null : (shortcutsViewMode ?? null);
-  states.settings.shortcutsColumnsMode = false;
+  const shortcutsColumnsMode = restoreShortcutsColumnsMode(
+    store.account.get<boolean>('settings-shortcutsColumnsMode'),
+  );
+  const restoredShortcutsViewMode = restoreShortcutsViewMode(
+    shortcutsViewMode,
+    shortcutsColumnsMode,
+  );
+  states.settings.shortcutsViewMode = restoredShortcutsViewMode;
+  if (!shortcutsViewMode && restoredShortcutsViewMode) {
+    store.account.set(
+      'settings-shortcutsViewMode',
+      persistShortcutsViewMode(restoredShortcutsViewMode),
+    );
+  }
+  states.settings.shortcutsColumnsMode = shortcutsColumnsMode;
   states.settings.boostsCarousel =
     store.account.get<boolean>('settings-boostsCarousel') ?? true;
   states.settings.contentTranslation =
@@ -277,7 +295,13 @@ subscribe(states, (changes) => {
     if (path.join('.') === 'settings.shortcutsViewMode') {
       store.account.set(
         'settings-shortcutsViewMode',
-        value === 'multi-column' ? null : value,
+        persistShortcutsViewMode(value),
+      );
+    }
+    if (path.join('.') === 'settings.shortcutsColumnsMode') {
+      store.account.set(
+        'settings-shortcutsColumnsMode',
+        persistShortcutsColumnsMode(value),
       );
     }
     if (path.join('.') === 'settings.contentTranslation') {
