@@ -225,8 +225,7 @@ export function initStates(): void {
   const shortcutsViewMode = store.account.get<string>(
     'settings-shortcutsViewMode',
   );
-  states.settings.shortcutsViewMode =
-    shortcutsViewMode === 'multi-column' ? null : (shortcutsViewMode ?? null);
+  states.settings.shortcutsViewMode = shortcutsViewMode ?? null;
   states.settings.shortcutsColumnsMode = false;
   states.settings.boostsCarousel =
     store.account.get<boolean>('settings-boostsCarousel') ?? true;
@@ -275,10 +274,7 @@ subscribe(states, (changes) => {
       store.account.set('settings-boostsCarousel', !!value);
     }
     if (path.join('.') === 'settings.shortcutsViewMode') {
-      store.account.set(
-        'settings-shortcutsViewMode',
-        value === 'multi-column' ? null : value,
-      );
+      store.account.set('settings-shortcutsViewMode', value);
     }
     if (path.join('.') === 'settings.contentTranslation') {
       store.account.set('settings-contentTranslation', !!value);
