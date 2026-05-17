@@ -28,7 +28,7 @@ jobs:
       - run: scripts/agent-preflight.sh agent
       - run: scripts/agent-loop.sh issue "${{ github.event.issue.number }}"
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bluepy-agent-logs-${{ github.run_id }}
           path: /workspace/agent-worktrees/bluepy/logs/${{ github.run_id }}-*

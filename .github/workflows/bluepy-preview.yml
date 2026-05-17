@@ -29,7 +29,7 @@ jobs:
       - run: scripts/agent-preflight.sh deploy
       - run: scripts/deploy-preview.sh "${{ github.event.pull_request.number }}"
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bluepy-preview-logs-${{ github.run_id }}
           path: /workspace/agent-worktrees/bluepy/logs/${{ github.run_id }}-*

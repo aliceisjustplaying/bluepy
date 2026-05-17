@@ -326,8 +326,10 @@ run_claude_review() {
   local prompt_file="$1"
   local raw_json_file="$2"
   local normalized_json_file="$3"
-  local log_file tmpdir status
+  local log_file raw_log_file normalized_log_file tmpdir status
   log_file="${log_dir}/claude-review-$(date -u +%Y%m%d%H%M%S-%N).log"
+  raw_log_file="${log_file%.log}-raw.json"
+  normalized_log_file="${log_file%.log}-normalized.json"
   tmpdir="$(mktemp -d)"
   status=0
   (
@@ -357,14 +359,24 @@ run_claude_review() {
     def parse_json_string:
       if type == "string" then (fromjson? // .) else . end;
 
-    (
-      if type == "object" and has("structured_output") then .structured_output
-      elif type == "object" and has("result") then .result
-      elif type == "array" then (.[-1].structured_output // .[-1].result // .[-1])
-      else .
-      end
-    ) | parse_json_string | parse_json_string
+    def review_candidate:
+      parse_json_string
+      | if type == "object" and (.verdict == "clean" or .verdict == "needs_fix") then .
+        elif type == "object" and has("structured_output") then (.structured_output | parse_json_string)
+        elif type == "object" and .name == "StructuredOutput" and has("input") then (.input | parse_json_string)
+        elif type == "object" and has("result") then (.result | parse_json_string)
+        else empty
+        end;
+
+    [
+      (review_candidate),
+      (.. | objects | review_candidate)
+    ]
+    | map(select(type == "object" and (.verdict == "clean" or .verdict == "needs_fix")))
+    | last // .
   ' "$raw_json_file" >"$normalized_json_file"
+  cp "$raw_json_file" "$raw_log_file"
+  cp "$normalized_json_file" "$normalized_log_file"
 
   local verdict
   verdict="$(jq -r 'if type == "object" then .verdict // empty else empty end' "$normalized_json_file")"
@@ -373,6 +385,8 @@ run_claude_review() {
     *)
       printf 'Claude review JSON did not contain a valid verdict. Raw output: %s\n' "$raw_json_file" >&2
       printf 'Normalized output: %s\n' "$normalized_json_file" >&2
+      printf 'Preserved raw output: %s\n' "$raw_log_file" >&2
+      printf 'Preserved normalized output: %s\n' "$normalized_log_file" >&2
       return 1
       ;;
   esac
@@ -438,6 +452,30 @@ mark_needs_human() {
   comment_text "$target" "Agent needs human attention: ${message}"
 }
 
+wait_for_preview_deploy() {
+  local pr="$1"
+  local timeout="${BLUEPY_PREVIEW_WAIT_SECONDS:-900}"
+  local interval="${BLUEPY_PREVIEW_WAIT_INTERVAL_SECONDS:-10}"
+  local elapsed=0 checks
+
+  while (( elapsed <= timeout )); do
+    checks="$(gh pr checks "$pr" --repo "$repo" --json name,state,bucket,link,workflow 2>/dev/null || printf '[]')"
+    if jq -e '.[] | select(.name == "deploy-preview" and .state == "SUCCESS")' >/dev/null <<<"$checks"; then
+      return 0
+    fi
+    if jq -e '.[] | select(.name == "deploy-preview" and (.state == "FAILURE" or .bucket == "fail"))' >/dev/null <<<"$checks"; then
+      printf 'deploy-preview failed for PR #%s\n' "$pr" >&2
+      jq -r '.[] | select(.name == "deploy-preview") | .link' <<<"$checks" >&2
+      return 1
+    fi
+    sleep "$interval"
+    elapsed=$((elapsed + interval))
+  done
+
+  printf 'timed out waiting for deploy-preview on PR #%s after %ss\n' "$pr" "$timeout" >&2
+  return 1
+}
+
 review_and_fix_loop() {
   local pr="$1"
   local issue="$2"
@@ -461,6 +499,11 @@ review_and_fix_loop() {
 
     if [[ "$verdict" == "clean" ]]; then
       ensure_agent_labels
+      if ! wait_for_preview_deploy "$pr"; then
+        mark_needs_human "$pr" "Preview deploy did not pass before human-review handoff."
+        rm -f "$prompt_file" "$raw_review_file" "$review_file"
+        return 1
+      fi
       gh pr edit "$pr" --repo "$repo" --add-label human-review >/dev/null
       comment_text "$pr" "Ready for human review.${human_review_mention:+ ${human_review_mention}}"
       rm -f "$prompt_file" "$raw_review_file" "$review_file"

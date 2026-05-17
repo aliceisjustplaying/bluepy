@@ -1,0 +1,38 @@
+name: Bluepy Agent PR Review
+
+on:
+  pull_request:
+    branches: [bluesky]
+    types: [labeled, reopened, ready_for_review]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: bluepy-agent-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  pr-agent:
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'agent:preview') &&
+      !contains(github.event.pull_request.labels.*.name, 'human-review') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
+    runs-on: [self-hosted, bluepy-agent]
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: bluesky
+          fetch-depth: 0
+          persist-credentials: false
+      - run: scripts/agent-preflight.sh agent
+      - run: scripts/agent-loop.sh pr "${{ github.event.pull_request.number }}"
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bluepy-agent-pr-logs-${{ github.run_id }}
+          path: /workspace/agent-worktrees/bluepy/logs/${{ github.run_id }}-*
