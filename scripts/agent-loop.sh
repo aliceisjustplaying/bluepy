@@ -357,16 +357,31 @@ run_claude_review() {
 
   jq '
     def parse_json_string:
-      if type == "string" then (fromjson? // .) else . end;
+      if type == "string" then
+        (fromjson? // (capture("```json\\s*(?<json>(.|\\n)*?)\\s*```").json | fromjson?) // .)
+      else .
+      end;
+
+    def normalize_review:
+      if type == "object" and (.verdict == "clean" or .verdict == "needs_fix") then
+        {
+          verdict,
+          summary: (.summary // (if .verdict == "clean" then "No actionable findings." else "" end)),
+          findings: (.findings // []),
+          residual_risks: (.residual_risks // [])
+        }
+      else empty
+      end;
 
     def review_candidate:
       parse_json_string
-      | if type == "object" and (.verdict == "clean" or .verdict == "needs_fix") then .
+      | if type == "object" and (.verdict == "clean" or .verdict == "needs_fix") then normalize_review
         elif type == "object" and has("structured_output") then (.structured_output | parse_json_string)
         elif type == "object" and .name == "StructuredOutput" and has("input") then (.input | parse_json_string)
         elif type == "object" and has("result") then (.result | parse_json_string)
         else empty
-        end;
+        end
+      | normalize_review;
 
     [
       (review_candidate),
