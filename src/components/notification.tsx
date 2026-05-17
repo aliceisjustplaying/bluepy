@@ -60,6 +60,7 @@ interface StatusComponentProps {
   readOnly?: boolean;
   allowContextMenu?: boolean;
   allowFilters?: boolean;
+  hideReplyBadge?: boolean;
 }
 function Status(props: StatusComponentProps) {
   return <StatusComponent {...(props as StatusViewProps)} />;
@@ -950,10 +951,10 @@ function Notification({
                     url={acct.avatarStatic}
                     size={
                       _accounts.length <= 10
-                        ? 'xxl'
+                        ? 'xl'
                         : _accounts.length < 20
-                          ? 'xl'
-                          : 'l'
+                          ? 'l'
+                          : 'm'
                     }
                     key={acct.id}
                     alt={`${acct.displayName} @${acct.acct}`}
@@ -1024,7 +1025,7 @@ function Notification({
                 >
                   <Avatar
                     url={acct.avatarStatic}
-                    size="xxl"
+                    size="xl"
                     key={acct.id}
                     alt={`${acct.displayName} @${acct.acct}`}
                     squircle={acct?.bot}
@@ -1073,6 +1074,7 @@ function Notification({
                     status={groupStatus}
                     size="s"
                     previewMode
+                    hideReplyBadge={isReplyToOthers}
                     allowContextMenu
                     allowFilters
                   />
@@ -1114,6 +1116,7 @@ function Notification({
                 status={actualStatus}
                 size="s"
                 readOnly
+                hideReplyBadge={isReplyToOthers}
                 allowContextMenu
                 allowFilters
               />
@@ -1122,6 +1125,7 @@ function Notification({
                 statusID={actualStatusID}
                 size="s"
                 readOnly
+                hideReplyBadge={isReplyToOthers}
                 allowContextMenu
                 allowFilters
               />

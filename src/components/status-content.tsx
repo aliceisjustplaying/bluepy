@@ -74,6 +74,7 @@ export default function StatusContent({
   allowContextMenu,
   showActionsBar,
   showReplyParent,
+  hideReplyBadge,
   mediaFirst,
   showCommentCount: forceShowCommentCount,
   showQuoteCount: forceShowQuoteCount,
@@ -644,7 +645,7 @@ export default function StatusContent({
             editedAt={editedAt}
             createdAtDate={createdAtDate}
             inReplyToAccount={inReplyToAccount as AnyStatus['account'] | null}
-            showReplyBadge={showReplyBadge}
+            showReplyBadge={showReplyBadge && !hideReplyBadge}
           />
           <StatusPostBody
             mediaFirst={mediaFirst}

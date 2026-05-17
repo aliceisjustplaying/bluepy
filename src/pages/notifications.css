@@ -23,7 +23,7 @@
     @media (min-width: 40em) {
       background-color: var(--bg-faded-color);
     }
-    padding-block: 16px;
+    padding-block: 12px;
     margin: 0;
     opacity: 1;
 
@@ -41,8 +41,8 @@
 
 .notification {
   display: flex;
-  padding: 16px !important;
-  gap: 12px;
+  padding: 10px 12px !important;
+  gap: 10px;
   animation: appear 0.2s ease-out;
   clear: both;
 
@@ -56,7 +56,7 @@
   .notification-quote,
   .notification-mention\+quote
 ) {
-  padding-top: 16px;
+  padding-top: 10px;
 }
 .only-mentions .notification:not(.notification-mention),
 .only-mentions .timeline-empty {
@@ -67,7 +67,7 @@
 }
 
 .notification-type {
-  width: 24px;
+  width: 20px;
   flex-shrink: 0;
   opacity: 0.75;
   color: var(--text-insignificant-color);
@@ -280,8 +280,14 @@
 }
 .notification-content > p:first-child {
   margin-top: 0;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   text-wrap: pretty;
+}
+.notification-content > .avatars-stack {
+  margin-block: 6px 0;
+}
+.notification-content > .avatars-stack:has(+ .status-link) {
+  margin-block-end: 8px;
 }
 
 .notification-group-statuses {
@@ -347,10 +353,10 @@
 /* FOLLOW REQUESTS */
 
 .follow-requests {
-  padding-block-end: 16px;
+  padding-block-end: 12px;
 }
 .follow-requests summary {
-  padding: 8px 16px;
+  padding: 8px 12px;
   cursor: pointer;
 }
 .follow-requests summary::marker,
@@ -375,7 +381,7 @@
 .follow-requests ul li {
   display: flex;
   align-items: center;
-  padding: 16px;
+  padding: 12px;
   border-bottom: var(--hairline-width) solid var(--outline-color);
   justify-content: space-between;
   column-gap: 16px;
@@ -547,10 +553,10 @@
 /* FILTERED NOTIFICATIONS */
 
 .filtered-notifications {
-  padding-block-end: 16px;
+  padding-block-end: 12px;
 
   summary {
-    padding: 8px 16px;
+    padding: 8px 12px;
     cursor: pointer;
     font-weight: 600;
     user-select: none;
@@ -587,9 +593,9 @@
 
     li {
       display: flex;
-      padding: 16px;
-      row-gap: 8px;
-      column-gap: 16px;
+      padding: 12px;
+      row-gap: 6px;
+      column-gap: 12px;
       border-bottom: 1px solid var(--outline-color);
     }
     li:last-child {
@@ -705,5 +711,41 @@
     select:has(option[value='drop']:checked) {
       box-shadow: 0 0 0 2px var(--red-color);
     }
+  }
+}
+
+@media (max-width: calc(40em - 1px)) {
+  #notifications-page .timeline-header {
+    padding-block: 8px;
+  }
+
+  .notification {
+    padding: 8px 12px !important;
+    gap: 8px;
+  }
+
+  .notification-type {
+    width: 18px;
+  }
+
+  .notification-type:is(
+    .notification-mention,
+    .notification-quote,
+    .notification-mention\+quote
+  ) {
+    padding-top: 6px;
+  }
+
+  .notification-content > p:first-child {
+    margin-bottom: 4px;
+  }
+
+  .notification-content > .avatars-stack:has(+ .status-link) {
+    margin-bottom: 6px;
+  }
+
+  .follow-requests ul li,
+  .filtered-notifications ul li {
+    padding: 10px 12px;
   }
 }

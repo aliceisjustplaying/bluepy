@@ -56,6 +56,7 @@ export interface StatusComponentProps {
   allowContextMenu?: boolean;
   showActionsBar?: boolean;
   showReplyParent?: boolean;
+  hideReplyBadge?: boolean;
   mediaFirst?: boolean;
   showCommentCount?: boolean | ((count?: number) => boolean);
   showQuoteCount?: boolean | ((count?: number) => boolean);
@@ -130,6 +131,7 @@ function StatusRouter({
   allowContextMenu,
   showActionsBar,
   showReplyParent,
+  hideReplyBadge,
   mediaFirst,
   showCommentCount: forceShowCommentCount,
   showQuoteCount: forceShowQuoteCount,
@@ -276,6 +278,7 @@ function StatusRouter({
       allowContextMenu={allowContextMenu}
       showActionsBar={showActionsBar}
       showReplyParent={showReplyParent}
+      hideReplyBadge={hideReplyBadge}
       mediaFirst={mediaFirst}
       showCommentCount={forceShowCommentCount}
       showQuoteCount={forceShowQuoteCount}
