@@ -354,18 +354,25 @@ run_claude_review() {
   fi
 
   jq '
-    if type == "object" and has("structured_output") then .structured_output
-    elif type == "array" then (.[-1].structured_output // .[-1].result // .[-1])
-    else .
-    end
+    def parse_json_string:
+      if type == "string" then (fromjson? // .) else . end;
+
+    (
+      if type == "object" and has("structured_output") then .structured_output
+      elif type == "object" and has("result") then .result
+      elif type == "array" then (.[-1].structured_output // .[-1].result // .[-1])
+      else .
+      end
+    ) | parse_json_string | parse_json_string
   ' "$raw_json_file" >"$normalized_json_file"
 
   local verdict
-  verdict="$(jq -r '.verdict // empty' "$normalized_json_file")"
+  verdict="$(jq -r 'if type == "object" then .verdict // empty else empty end' "$normalized_json_file")"
   case "$verdict" in
     clean|needs_fix) return 0 ;;
     *)
       printf 'Claude review JSON did not contain a valid verdict. Raw output: %s\n' "$raw_json_file" >&2
+      printf 'Normalized output: %s\n' "$normalized_json_file" >&2
       return 1
       ;;
   esac
