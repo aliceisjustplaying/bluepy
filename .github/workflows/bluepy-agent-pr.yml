@@ -74,8 +74,9 @@ jobs:
         if: steps.pr.outputs.should_run == 'true'
       - run: scripts/agent-loop.sh pr "${{ steps.pr.outputs.number }}"
         if: steps.pr.outputs.should_run == 'true'
-      - if: failure()
+      - if: always()
         uses: actions/upload-artifact@v7
         with:
           name: bluepy-agent-pr-logs-${{ github.run_id }}
           path: /workspace/agent-worktrees/bluepy/logs/${{ github.run_id }}-*
+          if-no-files-found: ignore

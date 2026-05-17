@@ -29,8 +29,9 @@ jobs:
           persist-credentials: false
       - run: scripts/agent-preflight.sh agent
       - run: scripts/agent-loop.sh comment "${{ github.event.issue.number }}"
-      - if: failure()
+      - if: always()
         uses: actions/upload-artifact@v7
         with:
           name: bluepy-agent-comment-logs-${{ github.run_id }}
           path: /workspace/agent-worktrees/bluepy/logs/${{ github.run_id }}-*
+          if-no-files-found: ignore
