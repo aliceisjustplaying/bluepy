@@ -9,6 +9,15 @@ tmp_output="$(mktemp)"
 tmp_body="$(mktemp)"
 trap 'rm -f "$tmp_output" "$tmp_body"' EXIT
 
+if [[ -z "${CLOUDFLARE_API_TOKEN:-}" && -z "${CLOUDFLARE_API_KEY:-}" && -f /home/agent/alice-cf.env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source /home/agent/alice-cf.env
+  set +a
+  export CLOUDFLARE_API_KEY="${ALICE_CF_GLOBAL_KEY:-}"
+  export CLOUDFLARE_EMAIL="${CLOUDFLARE_EMAIL:-aliceisjustplaying@gmail.com}"
+fi
+
 bun install --frozen-lockfile
 bun run build
 
