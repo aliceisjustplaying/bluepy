@@ -4,6 +4,8 @@ set -euo pipefail
 pr_number="${1:?usage: scripts/deploy-preview.sh <pr-number>}"
 repo="${GITHUB_REPOSITORY:-aliceisjustplaying/bluepy}"
 worker_name="bluepy-pr-${pr_number}"
+preview_host="pr-${pr_number}.bluepy.social"
+preview_url="https://${preview_host}"
 commit_hash="$(git rev-parse --short HEAD)"
 build_time="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 tmp_output="$(mktemp)"
@@ -25,19 +27,15 @@ bun run build
 if bunx wrangler deploy \
   --env preview \
   --name "$worker_name" \
+  --domain "$preview_host" \
   --message "PR #${pr_number} ${commit_hash}" \
   --var "BLUEPY_BUILD_TIME:${build_time}" \
   --var "BLUEPY_COMMIT_HASH:${commit_hash}" \
   >"$tmp_output" 2>&1; then
-  preview_url="$(grep -Eo 'https://[^[:space:]]+workers\.dev' "$tmp_output" | head -n 1 || true)"
   {
     printf "Preview deployed for \`%s\`.\n\n" "$commit_hash"
-    if [[ -n "$preview_url" ]]; then
-      printf '%s\n\n' "$preview_url"
-      printf "OAuth metadata: \`%s/oauth-client-metadata.json\`\n" "$preview_url"
-    else
-      printf 'Wrangler did not print a workers.dev URL. Check the workflow log.\n'
-    fi
+    printf '%s\n\n' "$preview_url"
+    printf "OAuth metadata: \`%s/oauth-client-metadata.json\`\n" "$preview_url"
   } >"$tmp_body"
   gh pr comment "$pr_number" --repo "$repo" --body-file "$tmp_body"
 else
