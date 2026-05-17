@@ -81,3 +81,10 @@ load_cloudflare_credentials() {
     export CLOUDFLARE_EMAIL="${CLOUDFLARE_EMAIL:-${cloudflare_email}}"
   fi
 }
+
+configure_agent_browser() {
+  local scripts_dir="$1"
+  export BLUEPY_AGENT_BROWSER=1
+  export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="${PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:-${scripts_dir}/chromium-for-agents}"
+  export AGENT_BROWSER_EXECUTABLE_PATH="${AGENT_BROWSER_EXECUTABLE_PATH:-${scripts_dir}/chromium-for-agents}"
+}

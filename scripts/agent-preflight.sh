@@ -5,6 +5,7 @@ mode="${1:-agent}"
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/agent-common.sh
 source "${script_dir}/agent-common.sh"
+configure_agent_browser "$script_dir"
 
 require_cmd() {
   command -v "$1" >/dev/null || {
@@ -49,8 +50,22 @@ check_base() {
 }
 
 check_agent() {
+  require_cmd agent-browser
   require_cmd codex
   require_cmd claude
+  smoke_contains playwright-browser ok node --input-type=module -e '
+    import { chromium } from "@playwright/test";
+    const browser = await chromium.launch({
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+      headless: true,
+    });
+    const page = await browser.newPage();
+    await page.goto("data:text/html,<title>ok</title>");
+    console.log(await page.title());
+    await browser.close();
+  '
+  BLUEPY_LOG_SUCCESS_TAIL=8 run_logged "preflight agent-browser" "${log_dir}/preflight-agent-browser.log" \
+    agent-browser doctor --offline --quick
   run_logged "preflight codex login" "${log_dir}/preflight-codex-login.log" \
     codex login status
   if [[ "${BLUEPY_PREFLIGHT_LLM_SMOKE:-0}" == "1" ]]; then

@@ -4,6 +4,7 @@ set -euo pipefail
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/agent-common.sh
 source "${script_dir}/agent-common.sh"
+configure_agent_browser "$script_dir"
 
 mode="${1:?usage: scripts/agent-loop.sh issue|pr|comment <number>}"
 number="${2:?usage: scripts/agent-loop.sh issue|pr|comment <number>}"

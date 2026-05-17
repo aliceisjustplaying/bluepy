@@ -22,6 +22,8 @@ Use Bun for installs and scripts: `bun install`, `bun run ...`, and `bunx ...`. 
 
 Use authenticated views when checking visual or behavioral regressions. Do not use logged-out routes as correctness evidence for authenticated timeline, post, compose, notification, or account flows.
 
+Agent-runner browser checks inherit `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` and `AGENT_BROWSER_EXECUTABLE_PATH` from `scripts/agent-loop.sh`; both point at `scripts/chromium-for-agents`. Keep `bun run test` and `agent-browser` on that wrapper in runner worktrees so Chromium uses the same headless flags everywhere.
+
 ## Long-Running Work
 
 Make small commits by concern. Push deploy-relevant commits to `fork/bluesky`. Report any remaining dirty files explicitly.
