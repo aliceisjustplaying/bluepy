@@ -2,6 +2,7 @@
 set -euo pipefail
 
 pr_number="${1:?usage: scripts/deploy-preview.sh <pr-number>}"
+repo="${GITHUB_REPOSITORY:-aliceisjustplaying/bluepy}"
 worker_name="bluepy-pr-${pr_number}"
 commit_hash="$(git rev-parse --short HEAD)"
 build_time="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -38,7 +39,7 @@ if bunx wrangler deploy \
       printf 'Wrangler did not print a workers.dev URL. Check the workflow log.\n'
     fi
   } >"$tmp_body"
-  gh pr comment "$pr_number" --body-file "$tmp_body"
+  gh pr comment "$pr_number" --repo "$repo" --body-file "$tmp_body"
 else
   {
     printf "Preview deploy failed for \`%s\`.\n\n" "$commit_hash"
@@ -46,7 +47,7 @@ else
     tail -n 120 "$tmp_output"
     printf '\n```\n'
   } >"$tmp_body"
-  gh pr comment "$pr_number" --body-file "$tmp_body" || true
+  gh pr comment "$pr_number" --repo "$repo" --body-file "$tmp_body" || true
   cat "$tmp_output"
   exit 1
 fi
