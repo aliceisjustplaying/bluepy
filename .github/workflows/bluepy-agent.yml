@@ -10,7 +10,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: bluepy-agent-issue-${{ github.event.issue.number }}
+  group: bluepy-agent-${{ github.event.issue.number }}
   cancel-in-progress: false
 
 jobs:
@@ -23,4 +23,10 @@ jobs:
         with:
           ref: bluesky
           fetch-depth: 0
+      - run: scripts/agent-preflight.sh agent
       - run: scripts/agent-loop.sh issue "${{ github.event.issue.number }}"
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bluepy-agent-logs-${{ github.run_id }}
+          path: /workspace/agent-worktrees/bluepy/logs/${{ github.run_id }}-*
