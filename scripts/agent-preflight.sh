@@ -81,7 +81,7 @@ check_agent() {
       -
     rm -f "$prompt_file"
   fi
-  smoke_contains claude CLAUDE_OK claude --bare -p \
+  smoke_contains claude CLAUDE_OK claude -p \
     --model "${BLUEPY_CLAUDE_MODEL:-claude-opus-4-7}" \
     --effort "${BLUEPY_CLAUDE_EFFORT:-xhigh}" \
     --no-session-persistence \

@@ -338,7 +338,7 @@ run_claude_review() {
       output_file="$2"
       model="$3"
       effort="$4"
-      claude --bare -p \
+      claude -p \
         --model "$model" \
         --effort "$effort" \
         --no-session-persistence \
