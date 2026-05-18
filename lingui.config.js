@@ -14,7 +14,7 @@ const config = {
     },
   ],
   // compileNamespace: 'es',
-  orderBy: 'origin',
+  orderBy: 'messageId',
 };
 
 export default config;
