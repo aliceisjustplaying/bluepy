@@ -64,6 +64,7 @@ type AccountStatusesListParams = mastodon.rest.v1.ListAccountStatusesParams & {
 interface AccountStatusesProps {
   columnMode?: boolean;
   id?: string;
+  instance?: string;
   // Forwarded via `...props` in column mode.
   [key: string]: unknown;
 }
@@ -126,7 +127,10 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   const snapStates = useSnapshot(states);
   const routeParams = useParams() as { id?: string; instance?: string };
   const [routeSearchParams, setRouteSearchParamsBase] = useSearchParams();
-  const { id, ...params } = columnMode ? { id: props.id } : routeParams;
+  const id = columnMode ? props.id : props.id || routeParams.id;
+  const params = columnMode
+    ? { instance: props.instance }
+    : { instance: props.instance || routeParams.instance };
 
   // `URLSearchParams` accepts `Record<string, string>`; the JS `{ replies: 1 }`
   // is coerced to "1" at runtime — preserve via string init.
@@ -420,7 +424,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       title = accountDisplay;
     }
   }
-  useTitle(title, '/:instance?/a/:id');
+  useTitle(title, ['/:instance/a/:id', '/a/:id', '/:scheme://*', '/:atUri']);
 
   const refetchAccount = useCallback(() => {
     return memFetchAccount(id as string, masto);

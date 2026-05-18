@@ -9,7 +9,11 @@ import { useSnapshot } from 'valtio';
 
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
-import { isModifiedClick, navigatePath } from '../utils/router';
+import {
+  canonicalizeAppPath,
+  isModifiedClick,
+  navigatePath,
+} from '../utils/router';
 import states, { statusKey } from '../utils/states';
 import { getCurrentAccID } from '../utils/store-utils';
 import useTruncated from '../utils/useTruncated';
@@ -53,33 +57,34 @@ function StatusCardLink({
   readMore: string;
   children: ReactNode;
 }) {
+  const href = canonicalizeAppPath(to);
   return (
     <div
       className={className}
       role="link"
       tabIndex={0}
-      data-href={to}
+      data-href={href}
       data-read-more={readMore}
       onClick={(e: MouseEvent<HTMLDivElement>) => {
         if (shouldLetStatusCardTargetHandleEvent(e.target)) return;
         if (isModifiedClick(e)) return;
-        navigatePath(to);
+        navigatePath(href);
       }}
       onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        navigatePath(to);
+        navigatePath(href);
       }}
     >
       <a
         className="status-link-native"
-        href={to}
+        href={href}
         aria-hidden="true"
         tabIndex={-1}
         onClick={(e: MouseEvent<HTMLAnchorElement>) => {
           if (isModifiedClick(e)) return;
           e.preventDefault();
-          navigatePath(to);
+          navigatePath(href);
         }}
       />
       {children}

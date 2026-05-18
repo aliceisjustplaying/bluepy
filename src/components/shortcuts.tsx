@@ -13,7 +13,6 @@ import {
 import { memo } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { useNavigate } from 'react-router-dom';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
@@ -24,6 +23,7 @@ import {
 } from '../components/shortcuts-settings';
 import { api } from '../utils/api';
 import { getLists, splitListsAndFeeds } from '../utils/lists';
+import { navigatePath } from '../utils/router';
 import safeBoundingBoxPadding from '../utils/safe-bounding-box-padding';
 import states from '../utils/states';
 
@@ -220,7 +220,6 @@ function Shortcuts() {
     return undefined;
   }, [snapStates.settings.shortcutsViewMode]);
 
-  const navigate = useNavigate();
   useHotkeys(
     ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
     (e) => {
@@ -228,7 +227,7 @@ function Shortcuts() {
       if (index < formattedShortcuts.length) {
         const { path } = formattedShortcuts[index];
         if (path) {
-          void navigate(path);
+          navigatePath(path);
           menuRef.current?.closeMenu?.();
         }
       }

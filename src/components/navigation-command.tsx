@@ -1,12 +1,15 @@
 import { memo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { useNavigate } from 'react-router-dom';
 
+import { navigatePath } from '../utils/router';
 import states from '../utils/states';
 import { getCurrentAccount } from '../utils/store-utils';
 
 // ignoreEventWhen doesn't work with sequence shortcuts, so we wrap callbacks instead
-const useGoHotkeys = (key: string, callback: (e: globalThis.KeyboardEvent) => void) => {
+const useGoHotkeys = (
+  key: string,
+  callback: (e: globalThis.KeyboardEvent) => void,
+) => {
   useHotkeys(
     `g>${key}`,
     (e) => {
@@ -21,13 +24,11 @@ const useGoHotkeys = (key: string, callback: (e: globalThis.KeyboardEvent) => vo
 };
 
 export default memo(function NavigationCommand() {
-  const navigate = useNavigate();
-
   useGoHotkeys('h', () => {
-    void navigate('/');
+    navigatePath('/');
   });
   useGoHotkeys('n', () => {
-    void navigate('/notifications');
+    navigatePath('/notifications');
   });
   useGoHotkeys('s', () => {
     states.showSettings = true;
@@ -37,11 +38,11 @@ export default memo(function NavigationCommand() {
     if (account) {
       const { instanceURL } = account;
       const { id } = account.info;
-      void navigate(`/${instanceURL}/a/${id}`);
+      navigatePath(`/${instanceURL}/a/${id}`);
     }
   });
   useGoHotkeys('b', () => {
-    void navigate('/b');
+    navigatePath('/b');
   });
 
   return null;

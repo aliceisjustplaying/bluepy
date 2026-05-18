@@ -86,8 +86,8 @@ export async function getUserLists(): Promise<ListLike[]> {
 }
 
 const fetchList = pmem(
-  (id: string) => {
-    const { masto } = api();
+  (id: string, instance?: string) => {
+    const { masto } = api({ instance });
     return (masto.v1.lists as MastoListsApi).$select(id).fetch();
   },
   {
@@ -95,16 +95,19 @@ const fetchList = pmem(
   },
 );
 
-export async function getList(id: string): Promise<ListLike | null> {
+export async function getList(
+  id: string,
+  instance?: string,
+): Promise<ListLike | null> {
   const { lists } =
     store.account.get<StoredLists>('lists') || ({} as Partial<StoredLists>);
   console.log({ lists });
-  if (lists?.length) {
+  if (!instance && lists?.length) {
     const theList = lists.find((l) => l.id === id);
     if (theList) return theList;
   }
   try {
-    return fetchList(id);
+    return fetchList(id, instance);
   } catch {
     return null;
   }
