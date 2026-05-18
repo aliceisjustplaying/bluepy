@@ -77,7 +77,7 @@ function Welcome() {
                 <Trans>
                   Connect your existing Bluesky account.
                   <br />
-                  Your credentials are not stored on this server.
+                  Your credentials are not stored by Bluepy.
                 </Trans>
               </small>
             </p>
@@ -94,7 +94,7 @@ function Welcome() {
               />
               <img
                 src={homeMobileLight}
-                alt={t`Screenshot of Phanpy home timeline on mobile device`}
+                alt={t`Screenshot of Bluepy home timeline on mobile device`}
                 width="375"
                 height="812"
                 loading="lazy"
@@ -111,7 +111,7 @@ function Welcome() {
               />
               <img
                 src={homeTabletLight}
-                alt={t`Screenshot of Phanpy home timeline on tablet device`}
+                alt={t`Screenshot of Bluepy home timeline on tablet device`}
                 width="768"
                 height="1024"
                 loading="lazy"
@@ -125,18 +125,18 @@ function Welcome() {
           <section>
             <img
               src={boostsCarouselUrl}
-              alt={t`Screenshot of Boosts Carousel`}
+              alt={t`Screenshot of Reposts Carousel`}
               width="400"
               height="303"
               loading="lazy"
             />
             <div>
               <h4>
-                <Trans>Boosts Carousel</Trans>
+                <Trans>Reposts Carousel</Trans>
               </h4>
               <p>
                 <Trans>
-                  Visually separate original posts and re-shared posts (boosted
+                  Visually separate original posts and re-shared posts (reposted
                   posts).
                 </Trans>
               </p>

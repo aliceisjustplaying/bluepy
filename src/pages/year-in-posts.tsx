@@ -146,7 +146,7 @@ const FILTER_KEYS: Record<FilterKey, string> = {
   original: 'Original',
   replies: 'Replies',
   quotes: 'Quotes',
-  boosts: 'Boosts',
+  boosts: 'Reposts',
   media: 'Media',
 };
 
@@ -1029,7 +1029,7 @@ function YearInPosts() {
                     <small>
                       <p>
                         This downloads your posts (excluding media files) from
-                        the server and saves them locally. It may take a longer
+                        Bluesky and saves them locally. It may take a longer
                         time and require more disk space.
                       </p>
                       <p>
@@ -1041,8 +1041,8 @@ function YearInPosts() {
                   {!searchEnabled && (
                     <p className="insignificant">
                       <small>
-                        ⚠️ Your server doesn't support advanced search, this
-                        will make more requests to the server and take much
+                        ⚠️ Advanced search is unavailable, so this
+                        will make more requests to Bluesky and take much
                         longer time.
                       </small>
                     </p>
@@ -1240,7 +1240,7 @@ function YearInPosts() {
                             createdAt: `Date`,
                             repliesCount: `Replies`,
                             favouritesCount: `Likes`,
-                            reblogsCount: `Boosts`,
+                            reblogsCount: `Reposts`,
                           }[key]
                         }
                         {sortBy === key &&
@@ -1614,7 +1614,7 @@ function CalendarLegend() {
       )}
       <span className="ib">
         <span className="calendar-bar-legend-item calendar-bar-boost" />{' '}
-        <Trans>Boosts</Trans>
+        <Trans>Reposts</Trans>
       </span>
     </div>
   );

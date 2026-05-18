@@ -102,7 +102,7 @@ export default function StatusQuickMenu({
         confirmLabel={
           <>
             <Icon icon="rocket" />
-            <span>{reblogged ? t`Unboost` : t`Boost`}</span>
+            <span>{reblogged ? t`Undo repost` : t`Repost`}</span>
           </>
         }
         className={`menu-reblog ${reblogged ? 'checked' : ''}`}
@@ -160,8 +160,8 @@ export default function StatusQuickMenu({
               if (!isSizeLarge && done) {
                 showToast(
                   reblogged
-                    ? t`Unboosted @${username || acct}'s post`
-                    : t`Boosted @${username || acct}'s post`,
+                    ? t`Removed repost of @${username || acct}'s post`
+                    : t`Reposted @${username || acct}'s post`,
                 );
               }
             } catch (e) {
@@ -184,10 +184,10 @@ export default function StatusQuickMenu({
                 reblogsCount > 0 && quotesCount > 0 ? '+' : ''
               }${quotesCount > 0 ? shortenNumber(quotesCount) : ''}`
             : reblogged
-              ? t`Unboost`
+              ? t`Undo repost`
               : canQuote
-                ? t`Boost/Quote…`
-                : t`Boost…`}
+                ? t`Repost/Quote…`
+                : t`Repost…`}
         </span>
       </MenuConfirm>
       <MenuItem
