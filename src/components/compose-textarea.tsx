@@ -6,7 +6,7 @@ import type {
   SyntheticEvent,
   UIEvent,
 } from 'react';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useDebouncedCallback, useThrottledCallback } from 'use-debounce';
 
 import { langDetector } from '../utils/browser-translator';
@@ -31,6 +31,15 @@ const HASHTAG_RE = new RegExp(
 );
 
 const segmenter = new Intl.Segmenter();
+
+function dispatchTextareaInput(textarea: HTMLTextAreaElement): void {
+  textarea.dispatchEvent(
+    new InputEvent('input', {
+      bubbles: true,
+      inputType: 'insertText',
+    }),
+  );
+}
 
 function highlightText(
   rawText: string,
@@ -123,7 +132,6 @@ interface TextareaProps extends Omit<
 function Textarea(props: TextareaProps) {
   const { ref } = props;
   const textareaRef = ref as RefObject<HTMLTextAreaElement>;
-  const [text, setText] = useState<string>(textareaRef?.current?.value || '');
   const { maxCharacters, onTrigger = null, ...textareaProps } = props;
 
   const textExpanderRef = useRef<TextExpanderHandle | null>(null);
@@ -217,7 +225,6 @@ function Textarea(props: TextareaProps) {
         {...textareaProps}
         ref={ref}
         name="status"
-        value={text}
         onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
           // Get line before cursor position after pressing 'Enter'
           const { key } = e;
@@ -256,7 +263,7 @@ function Textarea(props: TextareaProps) {
                     target.setRangeText('', pos, selectionStart);
                   }
                   autoResizeTextarea(target);
-                  target.dispatchEvent(new Event('input'));
+                  dispatchTextareaInput(target);
                 }
               }
             } catch (err) {
@@ -271,7 +278,6 @@ function Textarea(props: TextareaProps) {
         onInput={(e: SyntheticEvent<HTMLTextAreaElement>) => {
           const target = e.currentTarget;
           const nextText = target.value;
-          setText(nextText);
           autoResizeTextarea(target);
           (
             props.onInput as

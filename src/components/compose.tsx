@@ -25,11 +25,16 @@ import {
   getMastoV2Resource,
   getPreferences,
 } from '../utils/api';
+import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
 import {
   fetchAtprotoLinkMetadata,
   getFirstPostURL,
 } from '../utils/atproto-unfurl';
-import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
+import {
+  revokeAttachmentObjectUrl,
+  revokeAttachmentObjectUrls,
+  uploadComposeMediaAttachments,
+} from '../utils/compose-media';
 import db from '../utils/db';
 import { getDtfLocale } from '../utils/dtf-locale';
 import haptics from '../utils/haptics';
@@ -110,6 +115,7 @@ interface MediaAttachmentLike {
   type?: string;
   size?: number;
   url?: string;
+  ownedObjectUrl?: boolean;
   description?: string | null;
   [key: string]: unknown;
 }
@@ -416,7 +422,18 @@ function insertTextAtCursor({
   const newPos = selectionEnd + text.length + spaceAfterInsert.length;
   targetElement.selectionStart = targetElement.selectionEnd = newPos;
   targetElement.focus();
-  targetElement.dispatchEvent(new Event('input'));
+  dispatchComposeInput(targetElement);
+}
+
+function dispatchComposeInput(
+  targetElement: HTMLInputElement | HTMLTextAreaElement,
+): void {
+  targetElement.dispatchEvent(
+    new InputEvent('input', {
+      bubbles: true,
+      inputType: 'insertText',
+    }),
+  );
 }
 
 function clickFileInput(inputId: string): void {
@@ -508,6 +525,8 @@ function Compose({
   const [mediaAttachments, setMediaAttachments] = useState<
     MediaAttachmentLike[]
   >([]);
+  const mediaAttachmentsRef = useRef<MediaAttachmentLike[]>([]);
+  mediaAttachmentsRef.current = mediaAttachments;
   const [quoteSuggestion, setQuoteSuggestion] =
     useState<QuoteSuggestionState | null>(null);
   const [localQuoteStatus, setLocalQuoteStatus] = useState<
@@ -655,6 +674,7 @@ function Compose({
             type: uploadFile.type,
             size: uploadFile.size,
             url: URL.createObjectURL(uploadFile),
+            ownedObjectUrl: true,
             id: null,
             description: null,
           };
@@ -724,7 +744,7 @@ function Compose({
 
   const oninputTextarea = (): void => {
     if (!textareaRef.current) return;
-    textareaRef.current.dispatchEvent(new Event('input'));
+    dispatchComposeInput(textareaRef.current);
   };
   const focusTextarea = (cursorPosition?: number): void => {
     setTimeout(() => {
@@ -1028,6 +1048,26 @@ function Compose({
     return true;
   };
 
+  const prevBackgroundDraft = useRef<Record<string, unknown>>({});
+  const draftKey = (): string => {
+    const ns = getCurrentAccountNS();
+    return `${ns}#${UID.current}`;
+  };
+  const composerState = states.composerState;
+  const shouldSaveDraftOnUnmountRef = useRef(true);
+  const deleteDraft = (): void => {
+    void db.drafts.del(draftKey());
+    prevBackgroundDraft.current = {};
+  };
+  const discardDraft = (): void => {
+    shouldSaveDraftOnUnmountRef.current = false;
+    deleteDraft();
+  };
+  const transferDraft = (): void => {
+    saveUnsavedDraft();
+    shouldSaveDraftOnUnmountRef.current = false;
+  };
+
   // Latest-value refs so the mount-only beforeunload handler always sees
   // fresh canClose() and beforeUnloadCopy without re-binding the listener
   // on every render.
@@ -1082,6 +1122,7 @@ function Compose({
     'esc',
     () => {
       if (!standalone && escDownRef.current && confirmClose()) {
+        discardDraft();
         onClose();
       }
       escDownRef.current = false;
@@ -1109,16 +1150,11 @@ function Compose({
   );
   useCloseWatcher(() => {
     if (!standalone && confirmClose()) {
+      discardDraft();
       onClose();
     }
   }, []);
 
-  const prevBackgroundDraft = useRef<Record<string, unknown>>({});
-  const draftKey = (): string => {
-    const ns = getCurrentAccountNS();
-    return `${ns}#${UID.current}`;
-  };
-  const composerState = states.composerState;
   const saveUnsavedDraft = (): void => {
     // Not enabling this for editing status
     // I don't think this warrant a draft mode for a status that's already posted
@@ -1126,6 +1162,12 @@ function Compose({
     if (editStatus) return;
     if (composerState.minimized) return;
     const key = draftKey();
+    if (canClose()) {
+      if (prevBackgroundDraft.current.key === key) {
+        deleteDraft();
+      }
+      return;
+    }
     const backgroundDraft: Record<string, unknown> = {
       key,
       replyTo: replyToStatus
@@ -1157,10 +1199,7 @@ function Compose({
           }
         : null,
     };
-    if (
-      !deepEqual(backgroundDraft, prevBackgroundDraft.current) &&
-      !canClose()
-    ) {
+    if (!deepEqual(backgroundDraft, prevBackgroundDraft.current)) {
       console.debug('not equal', backgroundDraft, prevBackgroundDraft.current);
       void (async () => {
         try {
@@ -1184,10 +1223,11 @@ function Compose({
   saveUnsavedDraftRef.current = saveUnsavedDraft;
   useEffect(() => {
     saveUnsavedDraftRef.current();
-    // If unmounted, means user discarded the draft
-    // Also means pop-out 🙈, but it's okay because the pop-out will persist the ID and re-create the draft
     return () => {
-      void db.drafts.del(draftKey());
+      if (shouldSaveDraftOnUnmountRef.current) {
+        saveUnsavedDraftRef.current();
+      }
+      revokeAttachmentObjectUrls(mediaAttachmentsRef.current);
     };
   }, []);
 
@@ -1392,6 +1432,7 @@ function Compose({
                       return;
                     }
 
+                    transferDraft();
                     onClose();
                   }}
                 >
@@ -1411,6 +1452,7 @@ function Compose({
                 disabled={uiState === 'loading'}
                 onClick={() => {
                   if (confirmClose()) {
+                    discardDraft();
                     onClose();
                   }
                 }}
@@ -1463,6 +1505,7 @@ function Compose({
                   //   (media) => media.id,
                   // );
 
+                  transferDraft();
                   onClose({
                     fn: () => {
                       const passData = {
@@ -1600,32 +1643,27 @@ function Compose({
             void (async () => {
               try {
                 console.log('MEDIA ATTACHMENTS', mediaAttachments);
+                let submitMediaAttachments = mediaAttachments;
                 if (mediaAttachments.length > 0) {
                   // Upload media attachments first
-                  const mediaPromises = mediaAttachments.map((attachment) => {
-                    const { fileData, fileName, file, type, description, id } =
-                      attachment;
-                    console.log('UPLOADING', attachment);
-                    if (id) {
-                      // If already uploaded
-                      return Promise.resolve(attachment);
-                    } else {
-                      // Reconstruct File from fileData, or fall back to legacy file object
-                      const fileObj = fileData
-                        ? new File([fileData], fileName || 'upload', { type })
-                        : file;
-                      const params = removeNullUndefined({
-                        file: fileObj,
-                        description,
-                      });
-                      return mediaEndpoint.create(params).then((res) => {
-                        if (res.id) {
-                          attachment.id = res.id;
-                        }
-                        return res;
-                      });
-                    }
-                  });
+                  const mediaPromises = mediaAttachments.map(
+                    async (attachment) => {
+                      const [uploadedAttachment] =
+                        await uploadComposeMediaAttachments(
+                          [attachment],
+                          (params) => {
+                            console.log('UPLOADING', attachment);
+                            return mediaEndpoint.create(
+                              removeNullUndefined({
+                                file: params.file,
+                                description: params.description,
+                              }),
+                            );
+                          },
+                        );
+                      return uploadedAttachment;
+                    },
+                  );
                   const results = await Promise.allSettled(mediaPromises);
 
                   // If any failed, return
@@ -1653,7 +1691,15 @@ function Compose({
                     return;
                   }
 
-                  console.log({ results, mediaAttachments });
+                  submitMediaAttachments = results.map((result) => {
+                    if (result.status === 'fulfilled') return result.value;
+                    throw result.reason;
+                  });
+                  setMediaAttachments(submitMediaAttachments);
+                  console.log({
+                    results,
+                    mediaAttachments: submitMediaAttachments,
+                  });
                 }
 
                 /* NOTE:
@@ -1666,7 +1712,7 @@ function Compose({
                   status,
                   language,
                   // mediaIds: mediaAttachments.map((attachment) => attachment.id),
-                  media_ids: mediaAttachments.map(
+                  media_ids: submitMediaAttachments.map(
                     (attachment) => attachment.id,
                   ),
                 };
@@ -1678,7 +1724,7 @@ function Compose({
                     supports('@mastodon') ||
                     supports('@gotosocial/edit-media-attributes')
                   ) {
-                    params.media_attributes = mediaAttachments.map(
+                    params.media_attributes = submitMediaAttachments.map(
                       (attachment) => {
                         return {
                           id: attachment.id,
@@ -1738,6 +1784,8 @@ function Compose({
                 composerState.minimized = false;
                 composerState.publishing = false;
                 setUIState('default');
+                discardDraft();
+                revokeAttachmentObjectUrls(submitMediaAttachments);
 
                 // Close
                 onClose({
@@ -1867,6 +1915,7 @@ function Compose({
                     }}
                     onRemove={() => {
                       setMediaAttachments((attachments) => {
+                        revokeAttachmentObjectUrl(attachments[i]);
                         return attachments.filter((_a, j) => j !== i);
                       });
                     }}
@@ -1905,7 +1954,7 @@ function Compose({
                 currentValue.slice(pastedLinkPos + quoteSuggestion.url.length);
               if (textareaRef.current) {
                 textareaRef.current.value = newValue;
-                textareaRef.current.dispatchEvent(new Event('input'));
+                dispatchComposeInput(textareaRef.current);
               }
 
               const hasCurrentQuote = !!currentQuoteStatus?.id;

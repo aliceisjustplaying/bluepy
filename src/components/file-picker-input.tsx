@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro';
 import type { SyntheticEvent } from 'react';
 
 import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
+import { revokeAttachmentObjectUrls } from '../utils/compose-media';
 import supports from '../utils/supports';
 
 interface FilePickerMediaAttachment {
@@ -10,6 +11,7 @@ interface FilePickerMediaAttachment {
   type: string;
   size: number;
   url: string;
+  ownedObjectUrl: boolean;
   id: string | null;
   description: string | null;
 }
@@ -72,6 +74,7 @@ function FilePickerInput({
                   type: uploadFile.type,
                   size: uploadFile.size,
                   url: URL.createObjectURL(uploadFile),
+                  ownedObjectUrl: true,
                   id: null, // indicate uploaded state
                   description: null,
                 };
@@ -94,6 +97,7 @@ function FilePickerInput({
                 other: 'You can only attach up to # files.',
               }),
             );
+            revokeAttachmentObjectUrls(mediaFiles);
           } else {
             setMediaAttachments((attachments) => {
               return attachments.concat(

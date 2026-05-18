@@ -13,6 +13,7 @@ interface CameraCaptureMediaAttachment {
   type: string;
   size: number;
   url: string;
+  ownedObjectUrl: boolean;
   id: string | null;
   description: string | null;
 }
@@ -81,6 +82,7 @@ function CameraCaptureInput({
             type: uploadFile.type,
             size: uploadFile.size,
             url: URL.createObjectURL(uploadFile),
+            ownedObjectUrl: true,
             id: null, // indicate uploaded state
             description: null,
           };
