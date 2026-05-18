@@ -734,7 +734,10 @@
     )
     > li {
     margin-bottom: 0;
+  }
 
+  &.catchup-group-account:is(.catchup-filter-original, .catchup-filter-replies)
+    > li {
     &:first-child ~ li {
       .post-author:not(:has(.post-reblog-avatar)) {
         opacity: 0.25;
