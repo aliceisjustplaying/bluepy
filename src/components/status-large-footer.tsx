@@ -36,9 +36,7 @@ interface StatusLargeFooterProps {
   setShowEdited: (value: string | false) => void;
   emojiReactions?: readonly Record<string, unknown>[];
   emojis?: readonly mastodon.v1.CustomEmoji[];
-  tooManyMentions: boolean;
   repliesCount?: number;
-  replyModeMenuItems: ReactNode;
   replyStatus: (e?: LooseClickEvent) => void;
   canQuote?: boolean;
   reblogsCount?: number;
@@ -73,9 +71,7 @@ export default function StatusLargeFooter({
   setShowEdited,
   emojiReactions,
   emojis,
-  tooManyMentions,
   repliesCount,
-  replyModeMenuItems,
   replyStatus,
   canQuote,
   reblogsCount = 0,
@@ -211,39 +207,17 @@ export default function StatusLargeFooter({
       )}
       <div className={`actions ${deleted ? 'disabled' : ''}`}>
         <div className="action has-count">
-          {tooManyMentions ? (
-            <Menu2
-              openTrigger="clickOnly"
-              direction="bottom"
-              overflow="auto"
-              gap={-8}
-              shift={8}
-              menuClassName="menu-emphasized"
-              menuButton={
-                <StatusButton
-                  title={t`Reply`}
-                  alt={t`Comments`}
-                  className="reply-button"
-                  icon="comment"
-                  count={repliesCount}
-                />
-              }
-            >
-              {replyModeMenuItems}
-            </Menu2>
-          ) : (
-            <StatusButton
-              title={t`Reply`}
-              alt={t`Comments`}
-              className="reply-button"
-              icon="comment"
-              count={repliesCount}
-              onClick={(e) => {
-                void haptics.trigger('light');
-                replyStatus(e as LooseClickEvent);
-              }}
-            />
-          )}
+          <StatusButton
+            title={t`Reply`}
+            alt={t`Comments`}
+            className="reply-button"
+            icon="comment"
+            count={repliesCount}
+            onClick={(e) => {
+              void haptics.trigger('light');
+              replyStatus(e as LooseClickEvent);
+            }}
+          />
         </div>
         <div
           className={`action ${

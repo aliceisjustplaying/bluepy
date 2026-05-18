@@ -338,7 +338,7 @@ export default function StatusContent({
   });
 
   const actionsRef = useRef<HTMLDivElement | null>(null);
-  const { menuFooter, replyModeMenuItems, StatusMenuItems, tooManyMentions } =
+  const { menuFooter, StatusMenuItems } =
     useStatusMenuState({
       mediaNoDesc,
       statusMonthsAgo,
@@ -579,7 +579,6 @@ export default function StatusContent({
           setContextMenuProps={setContextMenuProps}
           setIsContextMenuOpen={setIsContextMenuOpen}
           replyStatus={replyStatus}
-          tooManyMentions={tooManyMentions}
           favourited={favourited}
           favouritesCount={favouritesCount}
           favouriteStatusNotify={favouriteStatusNotify}
@@ -715,9 +714,7 @@ export default function StatusContent({
               setShowEdited={setShowEdited}
               emojiReactions={emojiReactions}
               emojis={emojis}
-              tooManyMentions={tooManyMentions}
               repliesCount={repliesCount}
-              replyModeMenuItems={replyModeMenuItems}
               replyStatus={replyStatus}
               canQuote={canQuote}
               reblogsCount={reblogsCount}

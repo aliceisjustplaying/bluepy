@@ -160,11 +160,7 @@ export default function useStatusMenuState({
         </div>
       )
     );
-  const {
-    replyModeMenuItems,
-    statusMenuItems: StatusMenuItems,
-    tooManyMentions,
-  } = useStatusMenuParts({
+  const { statusMenuItems: StatusMenuItems } = useStatusMenuParts({
     accountId,
     mentions,
     currentAccount,
@@ -226,5 +222,5 @@ export default function useStatusMenuState({
     fetchBoostedLikedByAccounts,
   });
 
-  return { menuFooter, replyModeMenuItems, StatusMenuItems, tooManyMentions };
+  return { menuFooter, StatusMenuItems };
 }

@@ -267,7 +267,7 @@ msgstr "View post stats"
 
 #: src/components/account-sheet.tsx:81
 #: src/components/add-remove-lists-sheet.tsx:99
-#: src/components/compose.tsx:1418
+#: src/components/compose.tsx:1355
 #: src/components/drafts.tsx:96
 #: src/components/edit-profile-sheet.tsx:155
 #: src/components/embed-modal.tsx:44
@@ -361,7 +361,7 @@ msgid "Home"
 msgstr ""
 
 #: src/components/compose-button.tsx:193
-#: src/compose.tsx:64
+#: src/compose.tsx:63
 msgid "Compose"
 msgstr ""
 
@@ -369,96 +369,96 @@ msgstr ""
 msgid "Add to thread"
 msgstr "Add to thread"
 
-#: src/components/compose.tsx:345
+#: src/components/compose.tsx:344
 msgid "Take photo or video"
 msgstr "Take photo or video"
 
-#: src/components/compose.tsx:346
+#: src/components/compose.tsx:345
 msgid "Add media"
 msgstr "Add media"
 
-#: src/components/compose.tsx:347
+#: src/components/compose.tsx:346
 msgid "Add GIF"
 msgstr "Add GIF"
 
 #. placeholder {0}: unsupportedFiles.length
 #. placeholder {1}: unsupportedFiles[0].name
 #. placeholder {2}: lf.format( unsupportedFiles.map((f) => f.name), )
-#: src/components/compose.tsx:622
+#: src/components/compose.tsx:620
 msgid "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
 msgstr "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
 
-#: src/components/compose.tsx:638
-#: src/components/compose.tsx:2234
+#: src/components/compose.tsx:636
+#: src/components/compose.tsx:2170
 #: src/components/file-picker-input.tsx:92
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
 msgstr ""
 
-#: src/components/compose.tsx:961
+#: src/components/compose.tsx:911
 msgid "You have unsaved changes. Discard this post?"
 msgstr "You have unsaved changes. Discard this post?"
 
-#: src/components/compose.tsx:1398
+#: src/components/compose.tsx:1335
 msgid "Pop out"
 msgstr "Pop out"
 
-#: src/components/compose.tsx:1406
+#: src/components/compose.tsx:1343
 msgid "Minimize"
 msgstr "Minimize"
 
-#: src/components/compose.tsx:1442
+#: src/components/compose.tsx:1379
 msgid "Looks like you closed the parent window."
 msgstr "Looks like you closed the parent window."
 
-#: src/components/compose.tsx:1452
+#: src/components/compose.tsx:1389
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 msgstr "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 
-#: src/components/compose.tsx:1457
+#: src/components/compose.tsx:1394
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
 msgstr "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
 
-#: src/components/compose.tsx:1497
+#: src/components/compose.tsx:1433
 msgid "Pop in"
 msgstr "Pop in"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #. placeholder {1}: rtf.format(-replyToStatusMonthsAgo, 'month')
-#: src/components/compose.tsx:1507
+#: src/components/compose.tsx:1443
 msgid "Replying to @{0}’s post (<0>{1}</0>)"
 msgstr ""
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
-#: src/components/compose.tsx:1518
+#: src/components/compose.tsx:1454
 msgid "Replying to @{0}’s post"
 msgstr ""
 
-#: src/components/compose.tsx:1532
+#: src/components/compose.tsx:1468
 msgid "Editing source post"
 msgstr ""
 
-#: src/components/compose.tsx:1589
+#: src/components/compose.tsx:1525
 msgid "Some media have no descriptions. Continue?"
 msgstr "Some media have no descriptions. Continue?"
 
 #. placeholder {0}: mediaAttachments[index]?.fileName || index + 1
-#: src/components/compose.tsx:1649
+#: src/components/compose.tsx:1585
 msgid "Attachment #{0} failed"
 msgstr "Attachment #{0} failed"
 
-#: src/components/compose.tsx:1766
+#: src/components/compose.tsx:1702
 msgid "Post your reply"
 msgstr "Post your reply"
 
-#: src/components/compose.tsx:1768
+#: src/components/compose.tsx:1704
 msgid "Edit your post"
 msgstr "Edit your post"
 
-#: src/components/compose.tsx:1769
+#: src/components/compose.tsx:1705
 msgid "What are you doing?"
 msgstr "What are you doing?"
 
-#: src/components/compose.tsx:1839
+#: src/components/compose.tsx:1775
 #: src/components/edit-profile-sheet.tsx:422
 #: src/components/import-accounts-selection.tsx:202
 #: src/components/open-link-sheet.tsx:87
@@ -466,59 +466,57 @@ msgstr "What are you doing?"
 msgid "Cancel"
 msgstr ""
 
-#: src/components/compose.tsx:1974
+#: src/components/compose.tsx:1910
 #: src/components/mention-modal.tsx:251
 #: src/components/shortcuts-settings.tsx:857
 #: src/pages/list.tsx:577
 msgid "Add"
 msgstr ""
 
-#: src/components/compose.tsx:2104
+#: src/components/compose.tsx:2040
 #: src/components/quote-settings-sheet.tsx:148
 #: src/components/status-helpers.ts:286
 #: src/pages/settings.tsx:427
 msgid "Anyone can quote"
 msgstr "Anyone can quote"
 
-#: src/components/compose.tsx:2107
+#: src/components/compose.tsx:2043
 #: src/components/quote-settings-sheet.tsx:151
 #: src/components/status-helpers.ts:287
 #: src/pages/settings.tsx:430
 msgid "Your followers can quote"
 msgstr "Your followers can quote"
 
-#: src/components/compose.tsx:2110
+#: src/components/compose.tsx:2046
 #: src/components/quote-settings-sheet.tsx:154
 #: src/components/status-helpers.ts:288
 #: src/pages/settings.tsx:433
 msgid "Only you can quote"
 msgstr "Only you can quote"
 
-#: src/components/compose.tsx:2169
+#: src/components/compose.tsx:2105
 #: src/components/keyboard-shortcuts-help.tsx:151
-#: src/components/status-inline-controls.tsx:63
-#: src/components/status-inline-controls.tsx:64
-#: src/components/status-large-footer.tsx:224
-#: src/components/status-large-footer.tsx:236
-#: src/components/status-reply-menu.tsx:51
-#: src/components/status-reply-menu.tsx:100
+#: src/components/status-inline-controls.tsx:61
+#: src/components/status-inline-controls.tsx:62
+#: src/components/status-large-footer.tsx:211
+#: src/components/status-reply-menu.tsx:17
 msgid "Reply"
 msgstr ""
 
-#: src/components/compose.tsx:2171
+#: src/components/compose.tsx:2107
 msgid "Update"
 msgstr "Update"
 
-#: src/components/compose.tsx:2172
+#: src/components/compose.tsx:2108
 msgctxt "Submit button in composer"
 msgid "Post"
 msgstr "Post"
 
-#: src/components/compose.tsx:2246
+#: src/components/compose.tsx:2182
 msgid "Downloading GIF…"
 msgstr "Downloading GIF…"
 
-#: src/components/compose.tsx:2270
+#: src/components/compose.tsx:2206
 msgid "Failed to download GIF"
 msgstr "Failed to download GIF"
 
@@ -878,8 +876,8 @@ msgid "<0>l</0> or <1>f</1>"
 msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx:172
-#: src/components/status-large-footer.tsx:266
-#: src/components/status-large-footer.tsx:329
+#: src/components/status-large-footer.tsx:240
+#: src/components/status-large-footer.tsx:303
 msgid "Boost"
 msgstr ""
 
@@ -888,9 +886,9 @@ msgid "<0>Shift</0> + <1>b</1>"
 msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx:184
-#: src/components/status-large-footer.tsx:357
-#: src/components/status-large-footer.tsx:358
-#: src/components/status-quick-menu.tsx:216
+#: src/components/status-large-footer.tsx:331
+#: src/components/status-large-footer.tsx:332
+#: src/components/status-quick-menu.tsx:197
 msgid "Bookmark"
 msgstr ""
 
@@ -996,10 +994,10 @@ msgstr ""
 #: src/components/media-modal.tsx:440
 #: src/components/related-actions.tsx:413
 #: src/components/status-header.tsx:193
-#: src/components/status-inline-controls.tsx:88
-#: src/components/status-inline-controls.tsx:105
-#: src/components/status-large-footer.tsx:380
-#: src/components/status-large-footer.tsx:384
+#: src/components/status-inline-controls.tsx:86
+#: src/components/status-inline-controls.tsx:103
+#: src/components/status-large-footer.tsx:354
+#: src/components/status-large-footer.tsx:358
 #: src/pages/account-statuses.tsx:831
 #: src/pages/accounts.tsx:187
 #: src/pages/hashtag.tsx:263
@@ -1065,7 +1063,7 @@ msgid "Remove"
 msgstr ""
 
 #: src/components/media-attachment.tsx:544
-#: src/compose.tsx:111
+#: src/compose.tsx:110
 msgid "Error"
 msgstr ""
 
@@ -1156,15 +1154,15 @@ msgstr "Open file"
 msgid "Search accounts"
 msgstr "Search accounts"
 
-#: src/components/modals.tsx:139
+#: src/components/modals.tsx:134
 msgid "Post published. Check it out."
 msgstr ""
 
-#: src/components/modals.tsx:140
+#: src/components/modals.tsx:135
 msgid "Reply posted. Check it out."
 msgstr ""
 
-#: src/components/modals.tsx:141
+#: src/components/modals.tsx:136
 msgid "Post updated. Check it out."
 msgstr ""
 
@@ -2378,12 +2376,12 @@ msgid "{repliesCount, plural, one {# reply} other {# replies}}"
 msgstr "{repliesCount, plural, one {# reply} other {# replies}}"
 
 #: src/components/status-header.tsx:90
-#: src/components/status-large-footer.tsx:131
+#: src/components/status-large-footer.tsx:127
 msgid "Edited"
 msgstr ""
 
 #: src/components/status-header.tsx:151
-#: src/components/status-large-footer.tsx:106
+#: src/components/status-large-footer.tsx:102
 msgid "Deleted"
 msgstr ""
 
@@ -2412,37 +2410,37 @@ msgstr "Only followers can quote this post"
 msgid "You are not allowed to quote this post"
 msgstr "You are not allowed to quote this post"
 
-#: src/components/status-inline-controls.tsx:76
-#: src/components/status-large-footer.tsx:342
-#: src/components/status-quick-menu.tsx:204
+#: src/components/status-inline-controls.tsx:74
+#: src/components/status-large-footer.tsx:316
+#: src/components/status-quick-menu.tsx:185
 msgid "Unlike"
 msgstr ""
 
-#: src/components/status-inline-controls.tsx:76
-#: src/components/status-inline-controls.tsx:77
-#: src/components/status-large-footer.tsx:342
-#: src/components/status-large-footer.tsx:343
-#: src/components/status-quick-menu.tsx:205
+#: src/components/status-inline-controls.tsx:74
+#: src/components/status-inline-controls.tsx:75
+#: src/components/status-large-footer.tsx:316
+#: src/components/status-large-footer.tsx:317
+#: src/components/status-quick-menu.tsx:186
 msgid "Like"
 msgstr ""
 
-#: src/components/status-inline-controls.tsx:77
-#: src/components/status-inline-controls.tsx:115
-#: src/components/status-large-footer.tsx:343
+#: src/components/status-inline-controls.tsx:75
+#: src/components/status-inline-controls.tsx:113
+#: src/components/status-large-footer.tsx:317
 msgid "Liked"
 msgstr ""
 
-#: src/components/status-inline-controls.tsx:112
-#: src/components/status-large-footer.tsx:329
+#: src/components/status-inline-controls.tsx:110
+#: src/components/status-large-footer.tsx:303
 msgid "Boosted"
 msgstr ""
 
-#: src/components/status-inline-controls.tsx:118
-#: src/components/status-large-footer.tsx:358
+#: src/components/status-inline-controls.tsx:116
+#: src/components/status-large-footer.tsx:332
 msgid "Bookmarked"
 msgstr ""
 
-#: src/components/status-inline-controls.tsx:120
+#: src/components/status-inline-controls.tsx:118
 msgid "Pinned"
 msgstr ""
 
@@ -2451,50 +2449,49 @@ msgid "Sorry, your current logged-in server can't interact with this post from a
 msgstr "Sorry, your current logged-in server can't interact with this post from another server."
 
 #. placeholder {0}: username || acct
-#: src/components/status-interactions.ts:160
+#: src/components/status-interactions.ts:158
 msgid "Unliked @{0}'s post"
 msgstr ""
 
 #. placeholder {0}: username || acct
-#: src/components/status-interactions.ts:161
+#: src/components/status-interactions.ts:159
 msgid "Liked @{0}'s post"
 msgstr "Liked @{0}'s post"
 
 #. placeholder {0}: username || acct
-#: src/components/status-interactions.ts:202
+#: src/components/status-interactions.ts:200
 msgid "Unbookmarked @{0}'s post"
 msgstr "Unbookmarked @{0}'s post"
 
 #. placeholder {0}: username || acct
-#: src/components/status-interactions.ts:203
+#: src/components/status-interactions.ts:201
 msgid "Bookmarked @{0}'s post"
 msgstr "Bookmarked @{0}'s post"
 
-#: src/components/status-large-footer.tsx:225
-#: src/components/status-large-footer.tsx:237
+#: src/components/status-large-footer.tsx:212
 msgid "Comments"
 msgstr ""
 
-#: src/components/status-large-footer.tsx:266
-#: src/components/status-large-footer.tsx:328
+#: src/components/status-large-footer.tsx:240
+#: src/components/status-large-footer.tsx:302
 msgid "Unboost"
 msgstr ""
 
-#: src/components/status-large-footer.tsx:315
-#: src/components/status-quick-menu.tsx:144
+#: src/components/status-large-footer.tsx:289
+#: src/components/status-quick-menu.tsx:125
 msgid "Quote with link"
 msgstr "Quote with link"
 
-#: src/components/status-large-footer.tsx:328
+#: src/components/status-large-footer.tsx:302
 msgid "Boost/Quote…"
 msgstr "Boost/Quote…"
 
-#: src/components/status-large-footer.tsx:328
+#: src/components/status-large-footer.tsx:302
 msgid "Boost…"
 msgstr ""
 
-#: src/components/status-large-footer.tsx:357
-#: src/components/status-quick-menu.tsx:216
+#: src/components/status-large-footer.tsx:331
+#: src/components/status-quick-menu.tsx:197
 msgid "Unbookmark"
 msgstr ""
 
@@ -2539,30 +2536,30 @@ msgstr ""
 msgid "Show content"
 msgstr ""
 
-#: src/components/status-quick-menu.tsx:105
-#: src/components/status-quick-menu.tsx:187
+#: src/components/status-quick-menu.tsx:86
+#: src/components/status-quick-menu.tsx:168
 msgid "Undo repost"
 msgstr "Undo repost"
 
-#: src/components/status-quick-menu.tsx:105
+#: src/components/status-quick-menu.tsx:86
 msgid "Repost"
 msgstr "Repost"
 
 #. placeholder {0}: username || acct
-#: src/components/status-quick-menu.tsx:163
+#: src/components/status-quick-menu.tsx:144
 msgid "Removed repost of @{0}'s post"
 msgstr "Removed repost of @{0}'s post"
 
 #. placeholder {0}: username || acct
-#: src/components/status-quick-menu.tsx:164
+#: src/components/status-quick-menu.tsx:145
 msgid "Reposted @{0}'s post"
 msgstr "Reposted @{0}'s post"
 
-#: src/components/status-quick-menu.tsx:189
+#: src/components/status-quick-menu.tsx:170
 msgid "Repost/Quote…"
 msgstr "Repost/Quote…"
 
-#: src/components/status-quick-menu.tsx:190
+#: src/components/status-quick-menu.tsx:171
 msgid "Repost…"
 msgstr "Repost…"
 
@@ -2597,30 +2594,6 @@ msgstr "Show anyway"
 #: src/components/status-reblog.tsx:88
 msgid "<0/> <1>boosted</1>"
 msgstr "<0/> <1>boosted</1>"
-
-#: src/components/status-reply-menu.tsx:50
-msgid "Reply…"
-msgstr "Reply…"
-
-#: src/components/status-reply-menu.tsx:64
-#: src/components/status-reply-menu.tsx:78
-msgid "Reply all"
-msgstr "Reply all"
-
-#: src/components/status-reply-menu.tsx:67
-msgid "{mentionsCount, plural, other {# mentions}}"
-msgstr "{mentionsCount, plural, other {# mentions}}"
-
-#. placeholder {0}: mentionsCount - 1
-#. placeholder {1}: username || acct
-#: src/components/status-reply-menu.tsx:81
-msgid "{0, plural, other {<0>@{1}</0> first, # others below}}"
-msgstr "{0, plural, other {<0>@{1}</0> first, # others below}}"
-
-#. placeholder {0}: username || acct
-#: src/components/status-reply-menu.tsx:103
-msgid "Only <0>@{0}</0>"
-msgstr "Only <0>@{0}</0>"
 
 #: src/components/status-utility-menu.tsx:132
 msgid "Post text copied"
@@ -2726,28 +2699,28 @@ msgstr ""
 msgid "Failed to translate"
 msgstr ""
 
-#: src/compose.tsx:59
+#: src/compose.tsx:58
 msgid "Editing source status"
 msgstr ""
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
-#: src/compose.tsx:61
+#: src/compose.tsx:60
 msgid "Replying to @{0}"
 msgstr ""
 
-#: src/compose.tsx:90
+#: src/compose.tsx:89
 msgid "You may close this page now."
 msgstr ""
 
-#: src/compose.tsx:98
+#: src/compose.tsx:97
 msgid "Close window"
 msgstr ""
 
-#: src/compose.tsx:114
+#: src/compose.tsx:113
 msgid "Login required."
 msgstr "Login required."
 
-#: src/compose.tsx:118
+#: src/compose.tsx:117
 #: src/pages/http-route.tsx:102
 #: src/pages/login.tsx:382
 msgid "Go home"

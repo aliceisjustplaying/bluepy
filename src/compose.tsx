@@ -24,7 +24,6 @@ interface ComposePayload {
     account?: { acct?: string; username?: string };
     [key: string]: unknown;
   };
-  replyMode?: string;
   draftStatus?: unknown;
   quoteStatus?: unknown;
 }
@@ -51,7 +50,7 @@ function App() {
   const [uiState, setUIState] = useState('default');
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  const { editStatus, replyToStatus, replyMode, draftStatus, quoteStatus } =
+  const { editStatus, replyToStatus, draftStatus, quoteStatus } =
     (window as Window & { __COMPOSE__?: ComposePayload }).__COMPOSE__ || {};
 
   useTitle(
@@ -127,7 +126,6 @@ function App() {
       <ComposeSuspense
         editStatus={editStatus}
         replyToStatus={replyToStatus}
-        replyMode={replyMode || 'all'}
         draftStatus={draftStatus}
         quoteStatus={quoteStatus}
         standalone

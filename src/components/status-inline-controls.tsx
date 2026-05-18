@@ -18,8 +18,7 @@ interface StatusInlineControlsProps {
   actionsRef: RefObject<HTMLDivElement | null>;
   setContextMenuProps: (props: ContextMenuPropsShape) => void;
   setIsContextMenuOpen: (value: boolean | string) => void;
-  replyStatus: (e?: LooseClickEvent, replyMode?: string) => void;
-  tooManyMentions: boolean;
+  replyStatus: (e?: LooseClickEvent) => void;
   favourited?: boolean | null;
   favouritesCount?: number;
   favouriteStatusNotify: () => Promise<void>;
@@ -39,7 +38,6 @@ export default function StatusInlineControls({
   setContextMenuProps,
   setIsContextMenuOpen,
   replyStatus,
-  tooManyMentions,
   favourited,
   favouritesCount,
   favouriteStatusNotify,
@@ -67,7 +65,7 @@ export default function StatusInlineControls({
             iconSize="m"
             onClick={(e: LooseClickEvent) => {
               void haptics.trigger('light');
-              replyStatus(e, tooManyMentions ? 'author-first' : 'all');
+              replyStatus(e);
             }}
           />
           <StatusButton
