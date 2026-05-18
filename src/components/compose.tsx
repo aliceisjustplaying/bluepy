@@ -1063,6 +1063,10 @@ function Compose({
     shouldSaveDraftOnUnmountRef.current = false;
     deleteDraft();
   };
+  const transferDraft = (): void => {
+    saveUnsavedDraft();
+    shouldSaveDraftOnUnmountRef.current = false;
+  };
 
   // Latest-value refs so the mount-only beforeunload handler always sees
   // fresh canClose() and beforeUnloadCopy without re-binding the listener
@@ -1428,7 +1432,7 @@ function Compose({
                       return;
                     }
 
-                    discardDraft();
+                    transferDraft();
                     onClose();
                   }}
                 >
@@ -1501,7 +1505,7 @@ function Compose({
                   //   (media) => media.id,
                   // );
 
-                  discardDraft();
+                  transferDraft();
                   onClose({
                     fn: () => {
                       const passData = {
