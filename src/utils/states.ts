@@ -98,7 +98,6 @@ interface StateProxy {
   scrollPositions: Record<string, unknown>;
   unfurledLinks: Record<string, unknown>;
   statusQuotes: Record<string, unknown[]>;
-  statusFollowedTags: Record<string, unknown>;
   statusReply: Record<string, unknown>;
   accounts: Record<string, Account>;
   routeNotification: unknown;
@@ -175,7 +174,6 @@ const states = proxy<StateProxy>({
   scrollPositions: {},
   unfurledLinks: {},
   statusQuotes: {},
-  statusFollowedTags: {},
   statusReply: {},
   accounts: {},
   routeNotification: null,

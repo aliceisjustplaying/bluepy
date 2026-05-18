@@ -199,7 +199,6 @@ interface Timeline2Props {
   timelineStart?: ReactNode;
   refresh?: unknown;
   filterContext?: string;
-  showFollowedTags?: boolean;
   showReplyParent?: boolean;
   dedupeBoosts?: boolean;
   // clearWhenRefresh?: boolean;
@@ -222,7 +221,6 @@ function Timeline2({
   timelineStart,
   refresh,
   filterContext,
-  showFollowedTags,
   showReplyParent,
   dedupeBoosts: shouldDedupeBoosts,
   // clearWhenRefresh,
@@ -822,7 +820,6 @@ function Timeline2({
                     key={
                       Array.isArray(status.id) ? status.id.join(',') : status.id
                     }
-                    showFollowedTags={showFollowedTags}
                     showReplyParent={showReplyParent}
                   />
                 ))}

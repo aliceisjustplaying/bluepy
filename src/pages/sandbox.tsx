@@ -647,19 +647,6 @@ export default function Sandbox() {
     const groupStatus = { ...mockStatus };
     mockStatus.account = { ...mockStatus.account, group: true };
     mockStatus.reblog = groupStatus;
-  } else if (toggleState.contextType === 'followed-tags') {
-    const concreteId = 'followed-tags-status-123';
-    mockStatus.id = concreteId;
-
-    const sKey = statusKey(concreteId, currentInstance);
-    console.log('Setting followed tags for key:', sKey);
-
-    // Clear any existing tags for this status
-    Object.keys(states.statusFollowedTags).forEach((key) => {
-      delete states.statusFollowedTags[key];
-    });
-
-    if (sKey) states.statusFollowedTags[sKey] = ['hashtag', 'test'];
   } else if (toggleState.contextType === 'reply-to') {
     // Generate a unique ID
     const parentID = uid();
@@ -1030,7 +1017,6 @@ export default function Sandbox() {
               }
               instance={currentInstance}
               allowFilters={true}
-              showFollowedTags
               key={`status-${toggleState.mediaPreference}-${toggleState.expandWarnings}-${Date.now()}`}
               // Prevent opening as URL
               onMediaClick={(
@@ -1958,19 +1944,6 @@ export default function Sandbox() {
                     }}
                   />
                   <span>Group</span>
-                </label>
-              </li>
-              <li>
-                <label>
-                  <input
-                    type="radio"
-                    name="contextType"
-                    checked={toggleState.contextType === 'followed-tags'}
-                    onChange={() => {
-                      updateToggles({ contextType: 'followed-tags' });
-                    }}
-                  />
-                  <span>Followed tags</span>
                 </label>
               </li>
               <li>

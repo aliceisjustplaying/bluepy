@@ -2,9 +2,8 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import type { ReactNode, HTMLAttributes, RefObject } from 'react';
 import { useState } from 'react';
 import { LongPressEventType, useLongPress } from 'use-long-press';
-import { useSnapshot } from 'valtio';
 
-import states, { statusKey } from '../utils/states';
+import { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
 import useTruncated from '../utils/useTruncated';
 import visibilityIconsMap from '../utils/visibility-icons-map';
@@ -28,7 +27,6 @@ interface FilteredStatusProps {
   };
   instance?: string;
   containerProps?: HTMLAttributes<HTMLDivElement>;
-  showFollowedTags?: boolean;
   quoted?: number | boolean;
   renderPeekStatus: (
     status: AnyStatus,
@@ -41,13 +39,11 @@ export default function FilteredStatus({
   filterInfo,
   instance,
   containerProps = {},
-  showFollowedTags,
   quoted,
   renderPeekStatus,
 }: FilteredStatusProps) {
   const { t, i18n } = useLingui();
   const _ = i18n._.bind(i18n);
-  const snapStates = useSnapshot(states);
   const { id: statusID, account, createdAt, visibility, reblog } = status;
   const { avatar, avatarStatic, bot, group } = account || {};
   const isReblog = !!reblog;
@@ -69,7 +65,6 @@ export default function FilteredStatus({
   );
 
   const statusPeekRef = useTruncated() as RefObject<HTMLAnchorElement>;
-  const sKey = statusKey(status.id, instance);
   const ssKey =
     statusKey(status.id, instance) +
     ' ' +
@@ -79,14 +74,6 @@ export default function FilteredStatus({
   const url = instance
     ? `/${instance}/s/${actualStatusID}`
     : `/s/${actualStatusID}`;
-  const isFollowedTags =
-    showFollowedTags &&
-    !!(
-      sKey &&
-      (snapStates.statusFollowedTags[sKey] as readonly unknown[] | undefined)
-        ?.length
-    );
-
   return (
     <div
       className={`${
@@ -96,9 +83,7 @@ export default function FilteredStatus({
             ? group
               ? 'status-group'
               : 'status-reblog'
-            : isFollowedTags
-              ? 'status-followed-tags'
-              : ''
+            : ''
       } visibility-${visibility}`}
       {...containerProps}
       // title={statusPeekText}
@@ -140,28 +125,6 @@ export default function FilteredStatus({
                 />{' '}
                 boosted
               </Trans>
-            ) : isFollowedTags ? (
-              <>
-                <NameText account={status.account} instance={instance} />{' '}
-                <Icon
-                  icon={visibilityIconsMap[visibility]}
-                  alt={_(visibilityText[visibility])}
-                  size="s"
-                />{' '}
-                <span>
-                  {(
-                    (snapStates.statusFollowedTags[sKey] as
-                      | readonly string[]
-                      | undefined) ?? []
-                  )
-                    .slice(0, 3)
-                    .map((tag: string) => (
-                      <span key={tag} className="status-followed-tag-item">
-                        #{tag}
-                      </span>
-                    ))}
-                </span>
-              </>
             ) : (
               <>
                 <NameText account={status.account} instance={instance} />{' '}

@@ -2949,11 +2949,6 @@ export function createAtprotoClient({
           };
         },
       },
-      followedTags: {
-        list() {
-          return emptyCollection<unknown>();
-        },
-      },
       featuredTags: {
         async list(): Promise<never[]> {
           return [];
