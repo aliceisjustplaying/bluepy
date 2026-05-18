@@ -11,7 +11,6 @@ import Hashtag from '../pages/hashtag';
 import List from '../pages/list';
 import Mentions from '../pages/mentions';
 import Notifications from '../pages/notifications';
-import Public from '../pages/public';
 import Search from '../pages/search';
 import Trending from '../pages/trending';
 import isRTL from '../utils/is-rtl';
@@ -46,7 +45,6 @@ const columnComponents = columnComponentMap({
   following: Following,
   notifications: Notifications,
   list: List,
-  public: Public,
   bookmarks: Bookmarks,
   favourites: Favourites,
   hashtag: Hashtag,
@@ -78,6 +76,9 @@ function Columns() {
     // If profile, provide the account ID
     if (type === 'profile') {
       params.id = getCurrentAccountID();
+    }
+    if (type === 'mentions') {
+      return <Component key={type + JSON.stringify(params)} {...params} />;
     }
     return (
       <Component key={type + JSON.stringify(params)} {...params} columnMode />

@@ -94,13 +94,14 @@ const InView: ComponentType<InViewProps> =
 
 interface ListProps {
   id?: string;
+  instance?: string;
   timelineId?: string;
 }
 
 function List(props: ListProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const { masto, instance } = api();
+  const { masto, instance } = api({ instance: props.instance });
   const params = useParams();
   const id = props?.id || params?.id;
   const timelineId = props?.timelineId || 'list';
@@ -168,20 +169,22 @@ function List(props: ListProps) {
   const isFeed = isFeedList(list);
   const { lists: menuLists, feeds: menuFeeds } = splitListsAndFeeds(lists);
   // const [title, setTitle] = useState(`List`);
-  useTitle(list.title, `/l/:id`);
+  useTitle(list.title, ['/l/:id', '/:scheme://*', '/:atUri']);
   useEffect(() => {
     void (async () => {
       try {
-        const fetchedList = await getList(id ?? '');
+        const fetchedList = props.instance
+          ? await getList(id ?? '', props.instance)
+          : await getList(id ?? '');
         if (fetchedList) {
-          setList(fetchedList as ListLike);
+          setList(fetchedList);
         }
         // setTitle(list.title);
       } catch (e) {
         console.error(e);
       }
     })();
-  }, [id]);
+  }, [id, props.instance]);
 
   const [showListAddEditModal, setShowListAddEditModal] = useState<
     boolean | { list: ListLike }

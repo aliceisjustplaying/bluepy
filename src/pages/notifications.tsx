@@ -23,7 +23,6 @@ import { subscribeKey } from 'valtio/utils';
 import AccountBlock, {
   type AccountBlockProps,
 } from '../components/account-block';
-import FollowRequestButtons from '../components/follow-request-buttons';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
@@ -49,7 +48,6 @@ import niceDateTime from '../utils/nice-date-time';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
-import store from '../utils/store';
 import { getAPIVersions, getCurrentInstance } from '../utils/store-utils';
 import supports from '../utils/supports';
 import usePageVisibility from '../utils/usePageVisibility';
@@ -86,7 +84,6 @@ type NotificationLike = NotificationProps['notification'] & {
   notificationsCount?: number;
   status?: { id?: string } | null;
   _ids?: string;
-  annualReport?: { year?: string | number };
   [key: string]: unknown;
 };
 
@@ -290,9 +287,6 @@ function Notifications({ columnMode }: NotificationsProps) {
     scrollableRef,
   });
   const hiddenUI = scrollDirection === 'end' && !nearReachStart;
-  const [followRequests, setFollowRequests] = useState<
-    NotificationRequestLike['account'][]
-  >([]);
   const [announcements, setAnnouncements] = useState<AnnouncementLike[]>([]);
 
   console.debug('RENDER Notifications');
@@ -398,23 +392,6 @@ function Notifications({ columnMode }: NotificationsProps) {
     states.notificationsShowNew = false;
     states.notificationsLastFetchTime = Date.now();
     return allNotifications as { done?: boolean; value?: unknown };
-  }
-
-  async function fetchFollowRequests() {
-    // Note: no pagination here yet because this better be on a separate page. Should be rare use-case???
-    try {
-      const followRequestsApi = masto.v1.followRequests as {
-        list(opts: {
-          limit: number;
-        }): Promise<NotificationRequestLike['account'][]>;
-      };
-      return await followRequestsApi.list({
-        limit: 80,
-      });
-    } catch {
-      // Silently fail
-      return [];
-    }
   }
 
   async function fetchAnnouncements(): Promise<AnnouncementLike[]> {
@@ -561,13 +538,6 @@ function Notifications({ columnMode }: NotificationsProps) {
             })
             .catch(() => {});
 
-          void fetchFollowRequests()
-            .then((requests) => {
-              setFollowRequests(requests);
-              return undefined;
-            })
-            .catch(() => {});
-
           if (supportsFilteredNotifications) {
             loadNotificationsPolicy();
           }
@@ -675,11 +645,13 @@ function Notifications({ columnMode }: NotificationsProps) {
   const todayDate = new Date();
   const yesterdayDate = new Date(todayDate.getTime() - 24 * 60 * 60 * 1000);
   let currentDay = new Date();
-  const showTodayEmpty = !snapStates.notifications.some(
+  const visibleNotifications = (
+    snapStates.notifications as NotificationLike[]
+  ).filter((notification) => notification.type !== 'follow_request');
+  const showTodayEmpty = !visibleNotifications.some(
     (notification) =>
-      new Date(
-        (notification as NotificationLike).createdAt as string,
-      ).toDateString() === todayDate.toDateString(),
+      new Date(notification.createdAt as string).toDateString() ===
+      todayDate.toDateString(),
   );
 
   const announcementsListRef = useRef<HTMLUListElement | null>(null);
@@ -713,53 +685,6 @@ function Notifications({ columnMode }: NotificationsProps) {
   //     })();
   //   }
   // }, [uiState]);
-
-  const [annualReportNotification, setAnnualReportNotification] =
-    useState<NotificationLike | null>(null);
-  // NOTE: The JS original passed an async function directly to `useEffect`.
-  // React ignores the returned promise, but the IIFE-style still
-  // fires once on mount, matching original runtime behavior. We preserve
-  // that exact shape.
-  useEffect(() => {
-    void (async () => {
-      // Skip this if not in December
-      const date = new Date();
-      if (date.getMonth() !== 11) return;
-      const dateYear = date.getFullYear();
-
-      // Skip if doesn't support annual report
-      if (!supports('@mastodon/annual-report')) return;
-
-      let currentAnnualReport: NotificationLike | null =
-        store.account.get<NotificationLike>('annualReportNotification');
-      if (currentAnnualReport) {
-        const annualReportYear = currentAnnualReport?.annualReport?.year;
-        if (annualReportYear == dateYear) {
-          setAnnualReportNotification(currentAnnualReport);
-          return;
-        }
-      }
-      const notificationIterator = mastoFetchNotifications({
-        types: ['annual_report'],
-      });
-      try {
-        const notification = await notificationIterator.next();
-        const value = notification?.value as
-          | { notificationGroups?: NotificationLike[] }
-          | undefined;
-        currentAnnualReport = value?.notificationGroups?.[0] ?? null;
-        const annualReportYear = currentAnnualReport?.annualReport?.year;
-        // If same year, show the annual report
-        if (annualReportYear == dateYear) {
-          console.log('ANNUAL REPORT', annualReportYear, currentAnnualReport);
-          setAnnualReportNotification(currentAnnualReport);
-          store.account.set('annualReportNotification', currentAnnualReport);
-        }
-      } catch (e) {
-        console.warn(e);
-      }
-    })();
-  }, []);
 
   const itemsSelector = '.notification';
   const jRef = useHotkeys<HTMLDivElement>(
@@ -1052,53 +977,6 @@ function Notifications({ columnMode }: NotificationsProps) {
             </div>
           </div>
         )}
-        {followRequests.length > 0 && (
-          <div className="follow-requests">
-            <h2 className="timeline-header">
-              <Trans>Follow requests</Trans>
-            </h2>
-            {followRequests.length > 5 ? (
-              <details>
-                <summary>
-                  <Plural
-                    value={followRequests.length}
-                    one="# follow request"
-                    other="# follow requests"
-                  />
-                </summary>
-                <ul>
-                  {followRequests.map((account) => (
-                    <li key={account.id}>
-                      <AccountBlock account={account} />
-                      <FollowRequestButtons
-                        accountID={account.id}
-                        onChange={() => {
-                          // loadFollowRequests();
-                          // loadNotifications(true);
-                        }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            ) : (
-              <ul>
-                {followRequests.map((account) => (
-                  <li key={account.id}>
-                    <AccountBlock account={account} />
-                    <FollowRequestButtons
-                      accountID={account.id}
-                      onChange={() => {
-                        // loadFollowRequests();
-                        // loadNotifications(true);
-                      }}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
         {supportsFilteredNotifications &&
           (notificationsPolicy?.summary?.pendingRequestsCount ?? 0) > 0 && (
             <div className="shazam-container">
@@ -1176,13 +1054,6 @@ function Notifications({ columnMode }: NotificationsProps) {
               </div>
             </div>
           )}
-        {annualReportNotification && (
-          <div className="shazam-container">
-            <div className="shazam-container-inner">
-              <Notification notification={annualReportNotification} />
-            </div>
-          </div>
-        )}
         {!!hasAnalyzedFirstLoad && (
           <div id="mentions-option">
             {showMentionsLink ? (
@@ -1218,12 +1089,9 @@ function Notifications({ columnMode }: NotificationsProps) {
             {uiState === 'default' ? t`You're all caught up.` : <>&hellip;</>}
           </p>
         )}
-        {snapStates.notifications.length ? (
+        {visibleNotifications.length ? (
           <FilterContext.Provider value="notifications">
-            {(snapStates.notifications as NotificationLike[])
-              // This is leaked from Notifications popover
-              .filter((n) => n.type !== 'follow_request')
-              .map((notification) => {
+            {visibleNotifications.map((notification) => {
                 if (onlyMentions && notification.type !== 'mention') {
                   return null;
                 }

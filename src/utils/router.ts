@@ -1,4 +1,4 @@
-import { getAtprotoPostPathFromStatusRoute } from './atproto-route';
+import { getAtprotoPathFromLegacyRoute } from './atproto-route';
 
 function normalizeAppPath(path: string): string {
   if (!path) return '/';
@@ -13,7 +13,7 @@ function normalizeAppPath(path: string): string {
 
 function canonicalizeAppPath(path: string): string {
   const normalized = normalizeAppPath(path);
-  return getAtprotoPostPathFromStatusRoute(normalized) || normalized;
+  return getAtprotoPathFromLegacyRoute(normalized) || normalized;
 }
 
 function currentAppPath(): string {
@@ -50,10 +50,18 @@ function migrateLegacyHashRoute(): void {
   history.replaceState(history.state, '', next);
 }
 
+function migrateLegacyCanonicalRoute(): void {
+  const current = currentAppPath();
+  const next = canonicalizeAppPath(current);
+  if (next === current) return;
+  history.replaceState(history.state, '', `${next}${location.hash}`);
+}
+
 export {
   canonicalizeAppPath,
   currentAppPath,
   isModifiedClick,
+  migrateLegacyCanonicalRoute,
   migrateLegacyHashRoute,
   navigatePath,
 };

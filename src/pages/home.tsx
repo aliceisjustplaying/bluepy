@@ -147,6 +147,7 @@ interface NotificationsMenuProps {
 interface NotificationItem {
   id: string;
   _ids?: string;
+  type?: string;
   status?: unknown;
 }
 
@@ -169,10 +170,8 @@ function NotificationsMenu({
     'default',
   );
 
-  const [hasFollowRequests, setHasFollowRequests] = useState(false);
-
   const loadNotifications = useCallback(
-    ({ skipFollowRequests = false }: { skipFollowRequests?: boolean } = {}) => {
+    () => {
       setUIState('loading');
       void (async () => {
         try {
@@ -222,14 +221,6 @@ function NotificationsMenu({
           states.notificationsShowNew = false;
           states.notificationsLastFetchTime = Date.now();
 
-          if (!skipFollowRequests) {
-            const followRequests = await (
-              masto.v1.followRequests as {
-                list(options: { limit: number }): Promise<unknown[]>;
-              }
-            ).list({ limit: 1 });
-            setHasFollowRequests(!!followRequests?.length);
-          }
           setUIState('default');
         } catch {
           setUIState('error');
@@ -243,17 +234,17 @@ function NotificationsMenu({
   const headerHeight = 52;
   useEffect(() => {
     if (state !== 'open') return;
-    if (snapStates.notificationsShowNew) {
-      const menuElement = menuRef.current;
-      if ((menuElement?.scrollTop ?? 0) <= headerHeight) {
-        loadNotifications({
-          skipFollowRequests: true,
-        });
-      }
-    } else {
+    if (
+      !snapStates.notificationsShowNew ||
+      (menuRef.current?.scrollTop ?? 0) <= headerHeight
+    ) {
       loadNotifications();
     }
   }, [state, snapStates.notificationsShowNew, loadNotifications]);
+
+  const visibleNotifications = (
+    snapStates.notifications as NotificationItem[]
+  ).filter((notification) => notification.type !== 'follow_request');
 
   return (
     <ControlledMenu
@@ -283,9 +274,9 @@ function NotificationsMenu({
       </header>
       <FilterContext.Provider value="notifications">
         <main>
-          {snapStates.notifications.length ? (
+          {visibleNotifications.length ? (
             <>
-              {(snapStates.notifications as NotificationItem[])
+              {visibleNotifications
                 .slice(0, NOTIFICATIONS_DISPLAY_LIMIT)
                 .map((notification) => (
                   <Notification
@@ -333,16 +324,9 @@ function NotificationsMenu({
           </span>
         </Link>
         <Link to="/notifications" className="button plain2">
-          {hasFollowRequests ? (
-            <Trans>
-              <span className="tag collapsed">New</span>{' '}
-              <span>Follow Requests</span>
-            </Trans>
-          ) : (
-            <b>
-              <Trans>See all</Trans>
-            </b>
-          )}{' '}
+          <b>
+            <Trans>See all</Trans>
+          </b>{' '}
           <Icon icon="arrow-right" />
         </Link>
       </footer>

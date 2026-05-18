@@ -9,11 +9,10 @@ import {
 } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
 import type { SyntheticEvent } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import Icon from '../components/icon';
-import MenuConfirm from '../components/menu-confirm';
 import Menu2 from '../components/menu2';
 import { SHORTCUTS_LIMIT } from '../components/shortcuts-settings';
 import Timeline from '../components/timeline';
@@ -73,34 +72,6 @@ interface HashtagTimelineEndpoint {
   };
 }
 
-interface HashtagInfo {
-  name: string;
-  following?: boolean;
-  [key: string]: unknown;
-}
-
-interface FeaturedTag {
-  id: string;
-  name: string;
-  [key: string]: unknown;
-}
-
-interface TagsApi {
-  $select(hashtag: string): {
-    fetch(): Promise<HashtagInfo>;
-    follow(): Promise<unknown>;
-    unfollow(): Promise<unknown>;
-  };
-}
-
-interface FeaturedTagsApi {
-  list(): Promise<FeaturedTag[]>;
-  create(params: { name: string }): Promise<FeaturedTag>;
-  $select(id: string): {
-    remove(): Promise<unknown>;
-  };
-}
-
 type TimelineAccess = string | null;
 
 interface HashtagsProps {
@@ -136,8 +107,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const { masto, instance, authenticated } = api({
     instance: props?.instance || params.instance,
   });
-  const { instance: currentInstance, authenticated: currentAuthenticated } =
-    api();
+  const { authenticated: currentAuthenticated } = api();
   const hashtagTitle = hashtags.map((tag) => `#${tag}`).join(' ');
   const title = instance
     ? media
@@ -161,9 +131,6 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
     masto,
     'timelines',
   ).tag;
-  const tagsApi = masto.v1.tags as TagsApi;
-  const featuredTagsApi = masto.v1.featuredTags as FeaturedTagsApi;
-
   // const hashtagsIterator = useRef();
   const maxID = useRef<string | undefined>(undefined);
   async function fetchHashtags(
@@ -249,47 +216,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
     }
   }
 
-  const [followUIState, setFollowUIState] = useState('default');
-  const [info, setInfo] = useState<HashtagInfo | undefined>();
-  // Get hashtag info. `masto` is a cached client (api() returns a stable
-  // reference per instance/access-token), so capturing the proxy inside the
-  // effect body avoids the per-render `masto.v1.tags` proxy churn while
-  // keeping the dep list accurate.
-  useEffect(() => {
-    const tagsResource = masto.v1.tags as TagsApi;
-    void (async () => {
-      try {
-        const fetchedInfo = await tagsResource.$select(hashtag).fetch();
-        console.log(fetchedInfo);
-        setInfo(fetchedInfo);
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-  }, [hashtag, masto]);
-
   const reachLimit = hashtags.length >= TOTAL_TAGS_LIMIT;
-
-  const [featuredUIState, setFeaturedUIState] = useState('default');
-  const [featuredTags, setFeaturedTags] = useState<FeaturedTag[]>([]);
-  const [isFeaturedTag, setIsFeaturedTag] = useState(false);
-  useEffect(() => {
-    if (!authenticated) return;
-    const featuredTagsResource = masto.v1.featuredTags as FeaturedTagsApi;
-    void (async () => {
-      try {
-        const fetchedFeaturedTags = await featuredTagsResource.list();
-        setFeaturedTags(fetchedFeaturedTags);
-        setIsFeaturedTag(
-          fetchedFeaturedTags.some(
-            (tag) => tag.name.toLowerCase() === hashtag.toLowerCase(),
-          ),
-        );
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-  }, [authenticated, hashtag, masto]);
 
   return (
     <>
@@ -337,146 +264,6 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
               </button>
             }
           >
-            {!!info && hashtags.length === 1 && (
-              <>
-                <MenuConfirm
-                  subMenu
-                  confirm={info.following}
-                  confirmLabel={t`Unfollow #${hashtag}?`}
-                  disabled={followUIState === 'loading' || !authenticated}
-                  onClick={() => {
-                    setFollowUIState('loading');
-                    if (info.following) {
-                      // const yes = confirm(`Unfollow #${hashtag}?`);
-                      // if (!yes) {
-                      //   setFollowUIState('default');
-                      //   return;
-                      // }
-                      void tagsApi
-                        .$select(hashtag)
-                        .unfollow()
-                        .then(() => {
-                          setInfo({ ...info, following: false });
-                          showToast(t`Unfollowed #${hashtag}`);
-                          return undefined;
-                        })
-                        .catch((e) => {
-                          alert(e);
-                          console.error(e);
-                        })
-                        .finally(() => {
-                          setFollowUIState('default');
-                        });
-                    } else {
-                      void tagsApi
-                        .$select(hashtag)
-                        .follow()
-                        .then(() => {
-                          setInfo({ ...info, following: true });
-                          showToast(t`Followed #${hashtag}`);
-                          return undefined;
-                        })
-                        .catch((e) => {
-                          alert(e);
-                          console.error(e);
-                        })
-                        .finally(() => {
-                          setFollowUIState('default');
-                        });
-                    }
-                  }}
-                >
-                  {info.following ? (
-                    <>
-                      <Icon icon="check-circle" />{' '}
-                      <span>
-                        <Trans>Following…</Trans>
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Icon icon="plus" />{' '}
-                      <span>
-                        <Trans>Follow</Trans>
-                      </span>
-                    </>
-                  )}
-                </MenuConfirm>
-                <MenuItem
-                  type="checkbox"
-                  checked={isFeaturedTag}
-                  disabled={featuredUIState === 'loading' || !authenticated}
-                  onClick={() => {
-                    setFeaturedUIState('loading');
-                    if (isFeaturedTag) {
-                      const featuredTagID = (
-                        featuredTags.find(
-                          (tag) =>
-                            tag.name.toLowerCase() === hashtag.toLowerCase(),
-                        ) as FeaturedTag
-                      ).id;
-                      if (featuredTagID) {
-                        void featuredTagsApi
-                          .$select(featuredTagID)
-                          .remove()
-                          .then(() => {
-                            setIsFeaturedTag(false);
-                            showToast(t`Unfeatured on profile`);
-                            setFeaturedTags(
-                              featuredTags.filter(
-                                (tag) => tag.id !== featuredTagID,
-                              ),
-                            );
-                            return undefined;
-                          })
-                          .catch((e) => {
-                            console.error(e);
-                          })
-                          .finally(() => {
-                            setFeaturedUIState('default');
-                          });
-                      } else {
-                        showToast(t`Unable to unfeature on profile`);
-                      }
-                    } else {
-                      void featuredTagsApi
-                        .create({
-                          name: hashtag,
-                        })
-                        .then((value) => {
-                          setIsFeaturedTag(true);
-                          showToast(t`Featured on profile`);
-                          setFeaturedTags(featuredTags.concat(value));
-                          return undefined;
-                        })
-                        .catch((e) => {
-                          console.error(e);
-                        })
-                        .finally(() => {
-                          setFeaturedUIState('default');
-                        });
-                    }
-                  }}
-                >
-                  {isFeaturedTag ? (
-                    <>
-                      <Icon icon="check-circle" />
-                      <span>
-                        <Trans>Featured on profile</Trans>
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Icon icon="check-circle" />
-                      <span>
-                        <Trans>Feature on profile</Trans>
-                      </span>
-                    </>
-                  )}
-                </MenuItem>
-                <MenuDivider />
-              </>
-            )}
             {!mediaFirst && (
               <>
                 <MenuHeader className="plain">
@@ -626,45 +413,6 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                 <Trans>Add to Shortcuts</Trans>
               </span>
             </MenuItem>
-            <MenuItem
-              onClick={() => {
-                let newInstance = prompt(
-                  t`Enter a new server e.g. "mastodon.social"`,
-                );
-                if (!/\./.test(newInstance as string)) {
-                  if (newInstance) alert(t`Invalid server`);
-                  return;
-                }
-                if (newInstance) {
-                  newInstance = newInstance.toLowerCase().trim();
-                  // navigate(`/${newInstance}/t/${hashtags.join('+')}`);
-                  navigatePath(
-                    `/${newInstance}/t/${hashtags.join('+')}${linkParams}`,
-                  );
-                }
-              }}
-            >
-              <Icon icon="bus" />{' '}
-              <span>
-                <Trans>Go to another server…</Trans>
-              </span>
-            </MenuItem>
-            {currentInstance !== instance && (
-              <MenuItem
-                onClick={() => {
-                  navigatePath(
-                    `/${currentInstance}/t/${hashtags.join('+')}${linkParams}`,
-                  );
-                }}
-              >
-                <Icon icon="bus" />{' '}
-                <small className="menu-double-lines">
-                  <Trans>
-                    Go to my server (<b>{currentInstance}</b>)
-                  </Trans>
-                </small>
-              </MenuItem>
-            )}
           </Menu2>
         }
       />

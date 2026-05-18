@@ -315,20 +315,6 @@ test.describe('read flows', () => {
     });
   });
 
-  test('scheduled posts page renders', async ({ page }) => {
-    await goto(page, '/sp');
-    await expect(page.locator('#scheduled-posts-page')).toBeVisible({
-      timeout: 15_000,
-    });
-  });
-
-  test('filters page renders', async ({ page }) => {
-    await goto(page, '/ft');
-    await expect(page.locator('#filters-page')).toBeVisible({
-      timeout: 15_000,
-    });
-  });
-
   test('catchup page renders', async ({ page }) => {
     await goto(page, '/catchup');
     await expect(page.locator('#catchup-page')).toBeVisible({
@@ -339,13 +325,6 @@ test.describe('read flows', () => {
   test('year-in-posts page renders', async ({ page }) => {
     await goto(page, '/yip');
     await expect(page.locator('#year-in-posts-page')).toBeVisible({
-      timeout: 15_000,
-    });
-  });
-
-  test('followed hashtags page renders', async ({ page }) => {
-    await goto(page, '/fh');
-    await expect(page.locator('#followed-hashtags-page')).toBeVisible({
       timeout: 15_000,
     });
   });

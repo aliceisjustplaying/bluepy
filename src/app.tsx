@@ -34,13 +34,10 @@ import NotificationService from './components/notification-service';
 import SearchCommand from './components/search-command';
 import Shortcuts from './components/shortcuts';
 import AccountStatuses from './pages/account-statuses';
-import AnnualReport from './pages/annual-report';
 import AtprotoRoute from './pages/atproto-route';
 import Bookmarks from './pages/bookmarks';
 import Catchup from './pages/catchup';
 import Favourites from './pages/favourites';
-import Filters from './pages/filters';
-import FollowedHashtags from './pages/followed-hashtags';
 import Following from './pages/following';
 import Following2 from './pages/following2';
 import Hashtag from './pages/hashtag';
@@ -51,8 +48,6 @@ import Lists from './pages/lists';
 import Login from './pages/login';
 import Mentions from './pages/mentions';
 import Notifications from './pages/notifications';
-import Public from './pages/public';
-import ScheduledPosts from './pages/scheduled-posts';
 import Search from './pages/search';
 import StatusRoute from './pages/status-route';
 import Trending from './pages/trending';
@@ -1043,30 +1038,6 @@ function SecondaryRoutes() {
         />
       </Route>
       <Route
-        path="/fh"
-        element={
-          <AuthRoute>
-            <FollowedHashtags />
-          </AuthRoute>
-        }
-      />
-      <Route
-        path="/sp"
-        element={
-          <AuthRoute>
-            <ScheduledPosts />
-          </AuthRoute>
-        }
-      />
-      <Route
-        path="/ft"
-        element={
-          <AuthRoute>
-            <Filters />
-          </AuthRoute>
-        }
-      />
-      <Route
         path="/catchup"
         element={
           <AuthRoute>
@@ -1095,20 +1066,8 @@ function SecondaryRoutes() {
           </AuthRoute>
         }
       />
-      <Route
-        path="/annual_report/:year"
-        element={
-          <AuthRoute>
-            <AnnualReport />
-          </AuthRoute>
-        }
-      />
       <Route path="/:instance?/t/:hashtag" element={<Hashtag />} />
       <Route path="/:instance?/a/:id" element={<AccountStatuses />} />
-      <Route path="/:instance?/p">
-        <Route index element={<Public />} />
-        <Route path="l" element={<Public local />} />
-      </Route>
       <Route path="/:instance?/trending" element={<Trending />} />
       <Route path="/:instance?/search" element={<Search />} />
       {/* <Route path="/:anything" element={<NotFound />} /> */}

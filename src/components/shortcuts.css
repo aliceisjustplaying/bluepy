@@ -115,7 +115,6 @@ body.exp-tab-bar-v2 {
   }
 }
 body.exp-tab-bar-v2 {
-  #filters-page ~ #shortcuts .tab-bar:not([hidden]),
   #lists-page ~ #shortcuts .tab-bar:not([hidden]) {
     max-width: calc(
       100vw - var(--inset-inline-start) - var(--inset-inline-end)

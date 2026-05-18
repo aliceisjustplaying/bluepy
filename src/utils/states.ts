@@ -62,7 +62,6 @@ interface StatesSettings {
   contentTranslationTargetLanguage: string | null;
   contentTranslationHideLanguages: string[];
   contentTranslationAutoInline: boolean;
-  shortcutSettingsCloudImportExport: boolean;
   mediaAltGenerator: boolean;
   composerGIFPicker: boolean;
   cloakMode: boolean;
@@ -92,14 +91,12 @@ interface StateProxy {
   notificationsLastFetchTime: number | null;
   reloadStatusPage: number;
   reloadGenericAccounts: ReloadGenericAccounts;
-  reloadScheduledPosts: number;
   spoilers: Record<string, unknown>;
   spoilersMedia: Record<string, unknown>;
   revealedQuotes: Record<string, unknown>;
   scrollPositions: Record<string, unknown>;
   unfurledLinks: Record<string, unknown>;
   statusQuotes: Record<string, unknown[]>;
-  statusFollowedTags: Record<string, unknown>;
   statusReply: Record<string, unknown>;
   accounts: Record<string, Account>;
   routeNotification: unknown;
@@ -170,14 +167,12 @@ const states = proxy<StateProxy>({
     id: null,
     counter: 0,
   },
-  reloadScheduledPosts: 0,
   spoilers: {},
   spoilersMedia: {},
   revealedQuotes: {},
   scrollPositions: {},
   unfurledLinks: {},
   statusQuotes: {},
-  statusFollowedTags: {},
   statusReply: {},
   accounts: {},
   routeNotification: null,
@@ -211,7 +206,6 @@ const states = proxy<StateProxy>({
     contentTranslationTargetLanguage: null,
     contentTranslationHideLanguages: [],
     contentTranslationAutoInline: false,
-    shortcutSettingsCloudImportExport: false,
     mediaAltGenerator: false,
     composerGIFPicker: false,
     cloakMode: false,
@@ -258,9 +252,6 @@ export function initStates(): void {
     [];
   states.settings.contentTranslationAutoInline =
     store.account.get<boolean>('settings-contentTranslationAutoInline') ??
-    false;
-  states.settings.shortcutSettingsCloudImportExport =
-    store.account.get<boolean>('settings-shortcutSettingsCloudImportExport') ??
     false;
   states.settings.mediaAltGenerator =
     store.account.get<boolean>('settings-mediaAltGenerator') ?? false;
@@ -309,9 +300,6 @@ subscribe(states, (changes) => {
     }
     if (path.join('.') === 'settings.contentTranslationAutoInline') {
       store.account.set('settings-contentTranslationAutoInline', !!value);
-    }
-    if (path.join('.') === 'settings.shortcutSettingsCloudImportExport') {
-      store.account.set('settings-shortcutSettingsCloudImportExport', !!value);
     }
     if (path.join('.') === 'settings.contentTranslationTargetLanguage') {
       console.log('SET', value);

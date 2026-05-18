@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { ControlledMenu, MenuDivider, MenuItem } from '@szhsin/react-menu';
+import { ControlledMenu, MenuItem } from '@szhsin/react-menu';
 import type { MenuInstance } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
 import type { MouseEvent } from 'react';
@@ -21,7 +21,6 @@ import statusPeek from '../utils/status-peek';
 import { getCurrentAccountID } from '../utils/store-utils';
 
 import Icon from './icon';
-import MenuLink from './menu-link';
 import RelativeTime from './relative-time';
 import SubMenu2 from './submenu2';
 
@@ -217,13 +216,6 @@ export default function ComposeButton() {
         }}
         submenuOpenDelay={600}
       >
-        <MenuLink to="/sp">
-          <Icon icon="schedule" />{' '}
-          <span>
-            <Trans>Scheduled Posts</Trans>
-          </span>
-        </MenuLink>
-        <MenuDivider />
         <SubMenu2
           align="end"
           direction="top"

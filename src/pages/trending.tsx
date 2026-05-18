@@ -2,7 +2,6 @@ import '../components/links-bar.css';
 import './trending.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import { MenuItem } from '@szhsin/react-menu';
 import { getBlurHashAverageColor } from 'fast-blurhash';
 import type { mastodon } from 'masto';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -12,7 +11,6 @@ import { useSnapshot } from 'valtio';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
-import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import Timeline from '../components/timeline';
@@ -21,7 +19,6 @@ import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import { filteredItems } from '../utils/filters';
 import getDomain from '../utils/get-domain';
 import pmem from '../utils/pmem';
-import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import states, { saveStatus } from '../utils/states';
 import supports from '../utils/supports';
@@ -583,56 +580,6 @@ function Trending({ columnMode, ...props }: TrendingProps) {
       refresh={currentLink}
       clearWhenRefresh
       view={hasCurrentLink ? 'link-mentions' : undefined}
-      headerEnd={
-        <Menu2
-          portal
-          // setDownOverflow
-          overflow="auto"
-          viewScroll="close"
-          position="anchor"
-          menuButton={
-            <button type="button" className="plain">
-              <Icon icon="more" size="l" alt={t`More`} />
-            </button>
-          }
-        >
-          <MenuItem
-            onClick={() => {
-              let newInstance = prompt(
-                t`Enter a new server e.g. "mastodon.social"`,
-              );
-              if (!/\./.test(newInstance as string)) {
-                if (newInstance) alert(t`Invalid server`);
-                return;
-              }
-              if (newInstance) {
-                newInstance = newInstance.toLowerCase().trim();
-                // navigate(`/${newInstance}/trending`);
-                navigatePath(`/${newInstance}/trending`);
-              }
-            }}
-          >
-            <Icon icon="bus" />{' '}
-            <span>
-              <Trans>Go to another server…</Trans>
-            </span>
-          </MenuItem>
-          {currentInstance !== instance && (
-            <MenuItem
-              onClick={() => {
-                navigatePath(`/${currentInstance}/trending`);
-              }}
-            >
-              <Icon icon="bus" />{' '}
-              <small className="menu-double-lines">
-                <Trans>
-                  Go to my server (<b>{currentInstance}</b>)
-                </Trans>
-              </small>
-            </MenuItem>
-          )}
-        </Menu2>
-      }
     />
   );
 }

@@ -4,6 +4,7 @@ import { useLingui } from '@lingui/react';
 
 import { api } from '../utils/api';
 import mem from '../utils/mem';
+import { canonicalizeAppPath } from '../utils/router';
 import states from '../utils/states';
 
 import Avatar from './avatar';
@@ -129,7 +130,7 @@ function NameText({
           return;
         }
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) {
-          const internalURL = `/${instance}/a/${id}`;
+          const internalURL = canonicalizeAppPath(`/${instance}/a/${id}`);
           window.open(internalURL, '_blank');
           return;
         }
