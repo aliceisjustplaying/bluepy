@@ -580,8 +580,6 @@ interface CreateAtprotoClientOptions {
 
 export interface AtprotoPostParams {
   status?: string;
-  scheduled_at?: string;
-  scheduledAt?: string;
   poll?: unknown;
   in_reply_to_id?: string;
   inReplyToId?: string;
@@ -608,9 +606,6 @@ export interface AtprotoPostParams {
 export function assertAtprotoPostParamsSupported(
   params: AtprotoPostParams,
 ): void {
-  if (params.scheduled_at || params.scheduledAt) {
-    throw new Error('Bluesky scheduled posts are not supported');
-  }
   if (params.poll) {
     throw new Error('Bluesky polls are not supported');
   }
@@ -3102,21 +3097,6 @@ export function createAtprotoClient({
             },
             async reject() {
               return relationshipFor(id);
-            },
-          };
-        },
-      },
-      scheduledStatuses: {
-        list() {
-          return emptyCollection<unknown>();
-        },
-        $select() {
-          return {
-            async update() {
-              throw new Error('Bluesky scheduled posts are not supported');
-            },
-            async remove() {
-              throw new Error('Bluesky scheduled posts are not supported');
             },
           };
         },

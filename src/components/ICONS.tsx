@@ -182,7 +182,6 @@ export const ICONS = {
   'user-x': () => import('../iconify-icons/mingcute/user-x-line.js'),
   minimize: () => import('../iconify-icons/mingcute/down-line.js'),
   celebrate: () => import('../iconify-icons/mingcute/celebrate-line.js'),
-  schedule: () => import('../iconify-icons/mingcute/calendar-time-add-line.js'),
   day: () => import('../iconify-icons/mingcute/calendar-day-line.js'),
   camera: () => import('../iconify-icons/mingcute/camera-line.js'),
   endorsement: {

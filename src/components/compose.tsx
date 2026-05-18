@@ -84,10 +84,6 @@ import MentionModal from './mention-modal';
 import Menu2 from './menu2';
 import Modal from './modal';
 import QuoteSuggestionComponent from './quote-suggestion';
-import ScheduledAtField, {
-  getLocalTimezoneName,
-  MIN_SCHEDULED_AT,
-} from './ScheduledAtField';
 import StatusComponent, { type StatusComponentProps } from './status';
 import TextExpander from './text-expander';
 
@@ -163,7 +159,6 @@ interface DraftStatusLike {
   sensitiveMedia?: boolean | null;
   poll?: StatusPoll | null;
   mediaAttachments?: MediaAttachmentLike[];
-  scheduledAt?: Date | string | null;
   quoteApprovalPolicy?: string;
   [key: string]: unknown;
 }
@@ -215,7 +210,6 @@ interface OnCloseInfo {
   type?: 'edit' | 'reply' | 'post';
   newStatus?: unknown;
   instance?: string;
-  scheduledAt?: string | undefined;
   fn?: () => void;
 }
 
@@ -400,10 +394,7 @@ const ADD_LABELS = {
   gif: msg`Add GIF`,
   poll: msg`Add poll`,
   sensitive: msg`Add content warning`,
-  scheduledPost: msg`Schedule post`,
 };
-
-const DEFAULT_SCHEDULED_AT = Math.max(10 * 60 * 1000, MIN_SCHEDULED_AT); // 10 mins
 
 function isMimeTypeSupported(
   fileType: string,
@@ -583,7 +574,6 @@ function Compose({
     MediaAttachmentLike[]
   >([]);
   const [poll, setPoll] = useState<PollState | null>(null);
-  const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
   const [quoteSuggestion, setQuoteSuggestion] =
     useState<QuoteSuggestionState | null>(null);
   const [localQuoteStatus, setLocalQuoteStatus] = useState<
@@ -1052,7 +1042,6 @@ function Compose({
         sensitiveMedia: draftSensitiveMedia,
         poll: draftPoll,
         mediaAttachments: draftMediaAttachments,
-        scheduledAt: draftScheduledAt,
         quoteApprovalPolicy: draftQuoteApprovalPolicy,
       } = draftStatus;
       const composablePoll = draftPoll?.options
@@ -1091,13 +1080,6 @@ function Compose({
       if (draftSensitive !== null) setSensitive(!!draftSensitive);
       if (composablePoll) setPoll(composablePoll);
       if (draftMediaAttachments) setMediaAttachments(draftMediaAttachments);
-      if (draftScheduledAt) {
-        const d =
-          draftScheduledAt instanceof Date
-            ? draftScheduledAt
-            : new Date(draftScheduledAt);
-        setScheduledAt(d);
-      }
       if (draftQuoteApprovalPolicy)
         setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
     }
@@ -1344,7 +1326,6 @@ function Compose({
         sensitiveMedia,
         poll,
         mediaAttachments,
-        scheduledAt,
         quoteApprovalPolicy,
       },
       quote: currentQuoteStatus?.id
@@ -1561,14 +1542,6 @@ function Compose({
     },
   });
 
-  const showScheduledAt =
-    !editStatus && currentAccount?.instanceURL !== 'bsky.social';
-  const scheduledAtButtonDisabled = uiState === 'loading' || !!scheduledAt;
-  const onScheduledAtClick = (): void => {
-    const date = new Date(Date.now() + DEFAULT_SCHEDULED_AT);
-    setScheduledAt(date);
-  };
-
   return (
     <div id="compose-container-outer" ref={composeContainerRef}>
       <div
@@ -1628,7 +1601,6 @@ function Compose({
                         sensitive,
                         poll,
                         mediaAttachments,
-                        scheduledAt,
                       },
                       quoteStatus: currentQuoteStatus,
                     });
@@ -1724,7 +1696,6 @@ function Compose({
                           sensitiveMedia,
                           poll,
                           mediaAttachments,
-                          scheduledAt,
                         },
                         quoteStatus: currentQuoteStatus,
                       };
@@ -1823,18 +1794,12 @@ function Compose({
             const rawSensitive = entries.sensitive;
             const rawSensitiveMedia = entries.sensitiveMedia;
             const rawSpoilerText = entries.spoilerText;
-            const rawScheduledAt = entries.scheduledAt;
             const rawQuoteApprovalPolicy = entries.quoteApprovalPolicy;
 
             // Pre-cleanup
             // checkboxes return "on" if checked
             const sensitiveBool: boolean = rawSensitive === 'on';
             const sensitiveMediaBool: boolean = rawSensitiveMedia === 'on';
-
-            // Convert datetime-local input value to RFC3339 Date string value
-            const scheduledAtIso: string | undefined = rawScheduledAt
-              ? new Date(rawScheduledAt as string).toISOString()
-              : undefined;
 
             let status: string | undefined =
               typeof rawStatus === 'string' ? rawStatus : undefined;
@@ -2003,7 +1968,6 @@ function Compose({
                   params.visibility = submitVisibility;
                   // params.inReplyToId = replyToStatus?.id || undefined;
                   params.in_reply_to_id = replyToStatus?.id || undefined;
-                  params.scheduled_at = scheduledAtIso;
                   if (linkPreview?.removed) {
                     params.disable_card = true;
                   } else if (linkPreview?.metadata) {
@@ -2049,7 +2013,6 @@ function Compose({
                   type: editStatus ? 'edit' : replyToStatus ? 'reply' : 'post',
                   newStatus,
                   instance,
-                  scheduledAt: scheduledAtIso,
                 });
               } catch (e) {
                 composerState.publishing = false;
@@ -2301,34 +2264,6 @@ function Compose({
               />
             </div>
           )}
-          {scheduledAt && (
-            <div className="toolbar scheduled-at">
-              <span>
-                <label>
-                  <Trans>
-                    Posting on{' '}
-                    <ScheduledAtField
-                      scheduledAt={scheduledAt}
-                      setScheduledAt={setScheduledAt}
-                    />
-                  </Trans>
-                </label>{' '}
-                <small className="tag insignificant">
-                  {getLocalTimezoneName()}
-                </small>
-              </span>
-              <button
-                type="button"
-                className="plain4 close-button small"
-                onClick={() => {
-                  setScheduledAt(null);
-                  focusLastFocusedField();
-                }}
-              >
-                <Icon icon="x" alt={t`Cancel`} />
-              </button>
-            </div>
-          )}
           <QuoteSuggestion
             quoteSuggestion={quoteSuggestion}
             hasCurrentQuoteStatus={!!currentQuoteStatus?.id}
@@ -2481,18 +2416,6 @@ function Compose({
                         <span>{_(ADD_LABELS.gif)}</span>
                       </MenuItem>
                     )}
-                    {showScheduledAt && (
-                      <>
-                        <MenuDivider />
-                        <MenuItem
-                          disabled={scheduledAtButtonDisabled}
-                          onClick={onScheduledAtClick}
-                        >
-                          <Icon icon="schedule" />{' '}
-                          <span>{_(ADD_LABELS.scheduledPost)}</span>
-                        </MenuItem>
-                      </>
-                    )}
                   </Menu2>
                 </>
               )}
@@ -2592,19 +2515,6 @@ function Compose({
                       aria-label={_(ADD_LABELS.gif)}
                     />
                   </button>
-                )}
-                {showScheduledAt && (
-                  <>
-                    <div className="toolbar-divider" />
-                    <button
-                      type="button"
-                      className={`toolbar-button ${scheduledAt ? 'highlight' : ''}`}
-                      disabled={scheduledAtButtonDisabled}
-                      onClick={onScheduledAtClick}
-                    >
-                      <Icon icon="schedule" alt={_(ADD_LABELS.scheduledPost)} />
-                    </button>
-                  </>
                 )}
               </span>
             </span>
@@ -2798,16 +2708,14 @@ function Compose({
                 void haptics.trigger('medium');
               }}
             >
-              {scheduledAt
-                ? t`Schedule`
-                : replyToStatus
-                  ? t`Reply`
-                  : editStatus
-                    ? t`Update`
-                    : t({
-                        message: 'Post',
-                        context: 'Submit button in composer',
-                      })}
+              {replyToStatus
+                ? t`Reply`
+                : editStatus
+                  ? t`Update`
+                  : t({
+                      message: 'Post',
+                      context: 'Submit button in composer',
+                    })}
             </button>
           </div>
         </form>

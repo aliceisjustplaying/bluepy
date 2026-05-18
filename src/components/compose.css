@@ -732,26 +732,6 @@
   height: 100%;
 }
 
-#compose-container {
-  .scheduled-at {
-    background-color: var(--bg-faded-blur-color);
-    padding: 8px;
-
-    @media (min-width: 40em) {
-      border-radius: 8px;
-    }
-
-    input[type='datetime-local'] {
-      max-width: 80vw;
-      padding: 4px;
-
-      &:invalid {
-        border-color: var(--red-color);
-      }
-    }
-  }
-}
-
 .compose-menu-add-media {
   position: relative;
 
