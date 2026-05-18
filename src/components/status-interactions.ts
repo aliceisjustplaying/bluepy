@@ -80,7 +80,7 @@ export default function useStatusInteractions({
     );
   }, [createdAt]);
 
-  const replyStatus = (e?: ReplyEvent, replyMode: string = 'all') => {
+  const replyStatus = (e?: ReplyEvent) => {
     if (!sameInstance || !authenticated) {
       alert(unauthInteractionErrorMessage);
       return;
@@ -88,13 +88,11 @@ export default function useStatusInteractions({
     if (e?.shiftKey || e?.syntheticEvent?.shiftKey) {
       const newWin = openCompose({
         replyToStatus: status,
-        replyMode,
       });
       if (newWin) return;
     }
     showCompose({
       replyToStatus: status,
-      replyMode,
     } as Parameters<typeof showCompose>[0]);
   };
 

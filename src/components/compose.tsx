@@ -185,7 +185,6 @@ interface OnCloseInfo {
 interface ComposeProps {
   onClose: (info?: OnCloseInfo) => void;
   replyToStatus?: StatusLike | null;
-  replyMode?: 'all' | 'author-only' | 'author-first';
   editStatus?: StatusLike | null;
   draftStatus?: DraftStatusLike | null;
   quoteStatus?: StatusLike | null;
@@ -427,7 +426,6 @@ function clickFileInput(inputId: string): void {
 function Compose({
   onClose,
   replyToStatus,
-  replyMode = 'all',
   editStatus,
   draftStatus,
   quoteStatus,
@@ -780,60 +778,12 @@ function Compose({
   prefsRef.current = prefs;
   const statusesEndpointRef = useRef(statusesEndpoint);
   statusesEndpointRef.current = statusesEndpoint;
-  const currentAccountAcctRef = useRef(currentAccountInfo?.acct);
-  currentAccountAcctRef.current = currentAccountInfo?.acct;
-
   useEffect(() => {
     const prefStringFn = prefStringRef.current;
     const prefsLocal = prefsRef.current;
     const statusesEndpointLocal = statusesEndpointRef.current;
-    const currentAcct = currentAccountAcctRef.current;
     if (replyToStatus) {
       const { language: replyLanguage } = replyToStatus;
-      const account = replyToStatus.account ?? {};
-      const mentionsList = replyToStatus.mentions ?? [];
-      const mentions = new Set<string | undefined>([
-        account.acct,
-        ...mentionsList.map((m) => m.acct),
-      ]);
-      const allMentions = [...mentions].filter(
-        (m): m is string => typeof m === 'string' && m !== currentAcct,
-      );
-
-      if (allMentions.length > 0) {
-        const textarea = textareaRef.current;
-        if (!textarea) return;
-        const authorMention = `@${account.acct ?? ''}`;
-        const otherMentions = allMentions
-          .filter((m) => m !== account.acct)
-          .map((m) => `@${m}`);
-
-        if (replyMode === 'author-only') {
-          // Mode 1: Only mention the author
-          textarea.value = `${authorMention} `;
-          oninputTextarea();
-          focusTextarea();
-        } else if (replyMode === 'author-first') {
-          // Mode 2: Mention author first, then others at the end after 2 newlines
-          if (otherMentions.length > 0) {
-            textarea.value = `${authorMention} \n\n${otherMentions.join(' ')}`;
-            oninputTextarea();
-            // Set cursor position after the author mention
-            const cursorPosition = authorMention.length + 1; // +1 for the space
-            focusTextarea(cursorPosition);
-          } else {
-            // If no other mentions, just mention the author
-            textarea.value = `${authorMention} `;
-            oninputTextarea();
-            focusTextarea();
-          }
-        } else {
-          // Mode 3 (default 'all'): All mentions at the beginning
-          textarea.value = `${allMentions.map((m) => `@${m}`).join(' ')} `;
-          oninputTextarea();
-          focusTextarea();
-        }
-      }
       setLanguage(
         fixLanguage(replyLanguage) ||
           prefStringFn('posting:default:language')?.toLowerCase() ||
@@ -913,10 +863,10 @@ function Compose({
         setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
     }
     // Effect deliberately runs only when an explicit source status changes;
-    // prefString/prefs/masto/currentAccountInfo are read through latest-value
+    // prefString/prefs/masto are read through latest-value
     // refs declared below so we always see fresh values without re-running on
     // every render.
-  }, [draftStatus, editStatus, replyToStatus, replyMode]);
+  }, [draftStatus, editStatus, replyToStatus]);
 
   const processFilesRef = useRef(processFiles);
   processFilesRef.current = processFiles;
@@ -989,17 +939,6 @@ function Compose({
       return true;
     }
 
-    // check if status contains only "@acct", if replying
-    const isSelf = replyToStatus?.account?.id === currentAccountInfo?.id;
-    const hasOnlyAcct =
-      !!replyToStatus &&
-      value.trim() === `@${replyToStatus.account?.acct ?? ''}`;
-    // TODO: check for mentions, or maybe just generic "@username<space>", including multiple mentions like "@username1<space>@username2<space>"
-    if (!isSelf && hasOnlyAcct) {
-      console.log('canClose', { isSelf, hasOnlyAcct });
-      return true;
-    }
-
     // check if status is same with source
     const sameWithSource = value === dataset?.source;
     if (sameWithSource) {
@@ -1011,8 +950,6 @@ function Compose({
       value,
       hasMediaAttachments,
       hasIDMediaAttachments,
-      isSelf,
-      hasOnlyAcct,
       sameWithSource,
       uiState,
     });
@@ -1468,7 +1405,6 @@ function Compose({
                       const passData = {
                         editStatus,
                         replyToStatus,
-                        replyMode,
                         draftStatus: {
                           uid: UID.current,
                           status: textareaRef.current?.value ?? '',

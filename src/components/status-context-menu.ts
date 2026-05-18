@@ -28,10 +28,7 @@ interface StatusContextMenuArgs {
   deleted?: boolean;
   quoted?: boolean | number;
   statusRef: RefObject<HTMLElement | null>;
-  replyStatus: (
-    e?: React.KeyboardEvent | globalThis.KeyboardEvent,
-    replyMode?: string,
-  ) => void;
+  replyStatus: (e?: React.KeyboardEvent | globalThis.KeyboardEvent) => void;
   favouriteStatusNotify: () => Promise<void>;
   bookmarkStatusNotify: () => Promise<void>;
   confirmBoostStatus: () => Promise<boolean>;

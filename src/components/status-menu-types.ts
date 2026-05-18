@@ -16,7 +16,7 @@ export interface StatusMenuPartsArgs {
   repliesCount?: number;
   username?: string;
   acct?: string;
-  replyStatus: (e?: LooseClickEvent, replyMode?: string) => void;
+  replyStatus: (e?: LooseClickEvent) => void;
   isSizeLarge: boolean;
   sameInstance: boolean;
   showActionsBar?: boolean;

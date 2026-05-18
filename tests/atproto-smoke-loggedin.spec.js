@@ -36,6 +36,18 @@ import { expect, test as base } from '@playwright/test';
 /** @typedef {import('@playwright/test').Locator} Locator */
 /** @typedef {Record<string, unknown> & { showCompose?: unknown }} TestStates */
 /** @typedef {Window & { __STATES__?: TestStates }} TestWindow */
+/**
+ * @typedef {{
+ *   record?: {
+ *     text?: string,
+ *     facets?: unknown[],
+ *     reply?: {
+ *       parent?: { uri?: string, cid?: string },
+ *       root?: { uri?: string },
+ *     },
+ *   },
+ * }} CreateRecordPayload
+ */
 
 const IDENTIFIER = process.env.ATPROTO_TEST_IDENTIFIER;
 const PASSWORD = process.env.ATPROTO_TEST_PASSWORD;
@@ -547,6 +559,29 @@ test.describe('write flows', () => {
         .click();
       await expect(textarea).toBeVisible({ timeout: 15_000 });
     }
+    await expect(textarea).toHaveValue('');
+
+    const replyBody = `${RUN_TAG} reply ${Date.now()}`;
+    await textarea.fill(replyBody);
+    const replyMutation = waitForCreateRecord(page, 'app.bsky.feed.post');
+    await page.getByRole('button', { name: /^Reply$/ }).first().click();
+    const replyResponse = await replyMutation;
+    /** @type {CreateRecordPayload} */
+    const createRecordPayload = JSON.parse(
+      replyResponse.request().postData() || '{}',
+    );
+    const replyRecord = createRecordPayload.record || {};
+    expect(replyRecord.text).toBe(replyBody);
+    expect(replyRecord.reply?.parent?.uri).toMatch(
+      /^at:\/\/[^/]+\/app\.bsky\.feed\.post\//,
+    );
+    expect(replyRecord.reply?.parent?.cid).toEqual(expect.any(String));
+    expect(replyRecord.reply?.root?.uri).toMatch(
+      /^at:\/\/[^/]+\/app\.bsky\.feed\.post\//,
+    );
+    expect(replyRecord.facets || []).toEqual([]);
+    CREATED.push({ page, body: replyBody });
+    await expect(textarea).toHaveCount(0, { timeout: 30_000 });
   });
 
   test('like + unlike persists across reload', async ({ page }) => {

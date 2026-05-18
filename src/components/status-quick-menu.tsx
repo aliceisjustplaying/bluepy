@@ -11,7 +11,6 @@ import supports from '../utils/supports';
 
 import Icon from './icon';
 import MenuConfirm from './menu-confirm';
-import SubMenu2 from './submenu2';
 import { DEV } from './status-helpers';
 import type { StatusMenuPartsArgs } from './status-menu-types';
 import type { LooseClickEvent } from './status-types';
@@ -41,15 +40,11 @@ type StatusQuickMenuProps = Pick<
 > & {
   ReplyMenuContent: () => ReactNode;
   isSizeLarge: boolean;
-  replyModeMenuItems: ReactNode;
-  tooManyMentions: boolean;
 };
 
 export default function StatusQuickMenu({
   ReplyMenuContent,
   isSizeLarge,
-  replyModeMenuItems,
-  tooManyMentions,
   replyStatus,
   reblogged,
   quoteDisabled,
@@ -75,28 +70,14 @@ export default function StatusQuickMenu({
 
   return (
     <div className="menu-control-group-horizontal status-menu">
-      {tooManyMentions ? (
-        <SubMenu2
-          openTrigger="clickOnly"
-          direction="bottom"
-          overflow="auto"
-          gap={-8}
-          shift={8}
-          menuClassName="menu-emphasized"
-          label={<ReplyMenuContent />}
-        >
-          {replyModeMenuItems}
-        </SubMenu2>
-      ) : (
-        <MenuItem
-          onClick={(e: LooseClickEvent) => {
-            void haptics.trigger('light');
-            replyStatus(e);
-          }}
-        >
-          <ReplyMenuContent />
-        </MenuItem>
-      )}
+      <MenuItem
+        onClick={(e: LooseClickEvent) => {
+          void haptics.trigger('light');
+          replyStatus(e);
+        }}
+      >
+        <ReplyMenuContent />
+      </MenuItem>
       <MenuConfirm
         subMenu
         confirmLabel={

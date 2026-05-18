@@ -102,11 +102,6 @@ export default function Modals() {
                 ? p(snapStates.showCompose).replyToStatus
                 : composeWindow.__COMPOSE__?.replyToStatus || null
             }
-            replyMode={
-              p(states.showCompose).replyMode ||
-              composeWindow.__COMPOSE__?.replyMode ||
-              'all'
-            }
             editStatus={
               p(states.showCompose).editStatus ||
               composeWindow.__COMPOSE__?.editStatus ||
