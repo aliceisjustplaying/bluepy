@@ -441,13 +441,13 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <Icon icon="cloud" alt={t`Synced`} className="synced-icon" />{' '}
               <small>
                 <Trans>
-                  Synced to your server's settings.{' '}
+                  Synced to your Bluesky account settings.{' '}
                   <a
                     href={`https://${instance}/`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Go to your server ({instance}) for more settings.
+                    Open Bluesky settings ({instance}).
                   </a>
                 </Trans>
               </small>
@@ -480,7 +480,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                     states.settings.boostsCarousel = e.currentTarget.checked;
                   }}
                 />{' '}
-                <Trans>Boosts carousel</Trans>
+                <Trans>Reposts carousel</Trans>
               </label>
             </li>
             {!!TRANSLANG_INSTANCES && (
@@ -668,7 +668,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                     <Trans>
                       Manual pagination of timeline posts instead of infinite
                       scrolling. Only works for Home/Following timeline for now.
-                      Auto refresh and boosts carousel will not work when this
+                      Auto refresh and reposts carousel will not work when this
                       is enabled.
                     </Trans>
                   </small>
@@ -1469,7 +1469,7 @@ function PushNotificationsSection({
                       },
                       {
                         value: 'reblog',
-                        label: t`Boosts`,
+                        label: t`Reposts`,
                       },
                       {
                         value: 'follow',

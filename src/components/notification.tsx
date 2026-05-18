@@ -189,9 +189,9 @@ Notification types
 ==================
 mention = Someone mentioned you in their status
 status = Someone you enabled notifications for has posted a status
-reblog = Someone boosted one of your statuses
+reblog = Someone reposted one of your statuses
 follow = Someone followed you
-favourite = Someone favourited one of your statuses
+favourite = Someone liked one of your statuses
 poll = A poll you have voted in or created has ended
 update = A status you interacted with has been edited
 admin.sign_up = Someone signed up (optionally sent to admins)
@@ -244,13 +244,13 @@ const contentText: Record<string, ContentTextRenderer> = {
             _1={
               <Select
                 value={postType}
-                _reply={<Trans>{account} boosted your reply.</Trans>}
-                other={<Trans>{account} boosted your post.</Trans>}
+                _reply={<Trans>{account} reposted your reply.</Trans>}
+                other={<Trans>{account} reposted your post.</Trans>}
               />
             }
             other={
               <Trans>
-                {account} boosted {postsCount} of your posts.
+                {account} reposted {postsCount} of your posts.
               </Trans>
             }
           />
@@ -264,7 +264,7 @@ const contentText: Record<string, ContentTextRenderer> = {
                   <span title={String(count)}>{shortenNumber(count)}</span>{' '}
                   people
                 </Subject>{' '}
-                boosted your reply.
+                reposted your reply.
               </Trans>
             }
             other={
@@ -273,7 +273,7 @@ const contentText: Record<string, ContentTextRenderer> = {
                   <span title={String(count)}>{shortenNumber(count)}</span>{' '}
                   people
                 </Subject>{' '}
-                boosted your post.
+                reposted your post.
               </Trans>
             }
           />
@@ -376,13 +376,13 @@ const contentText: Record<string, ContentTextRenderer> = {
             _1={
               <Select
                 value={postType}
-                _reply={<Trans>{account} boosted & liked your reply.</Trans>}
-                other={<Trans>{account} boosted & liked your post.</Trans>}
+                _reply={<Trans>{account} reposted & liked your reply.</Trans>}
+                other={<Trans>{account} reposted & liked your post.</Trans>}
               />
             }
             other={
               <Trans>
-                {account} boosted & liked {postsCount} of your posts.
+                {account} reposted & liked {postsCount} of your posts.
               </Trans>
             }
           />
@@ -396,7 +396,7 @@ const contentText: Record<string, ContentTextRenderer> = {
                   <span title={String(count)}>{shortenNumber(count)}</span>{' '}
                   people
                 </Subject>{' '}
-                boosted & liked your reply.
+                reposted & liked your reply.
               </Trans>
             }
             other={
@@ -405,7 +405,7 @@ const contentText: Record<string, ContentTextRenderer> = {
                   <span title={String(count)}>{shortenNumber(count)}</span>{' '}
                   people
                 </Subject>{' '}
-                boosted & liked your post.
+                reposted & liked your post.
               </Trans>
             }
           />
@@ -665,9 +665,9 @@ function Notification({
     (type !== undefined &&
       (
         {
-          'favourite+reblog': t`Boosted/Liked by…`,
+          'favourite+reblog': t`Reposted/Liked by…`,
           favourite: t`Liked by…`,
-          reblog: t`Boosted by…`,
+          reblog: t`Reposted by…`,
           follow: t`Followed by…`,
         } as Record<string, string>
       )[type]) ||
