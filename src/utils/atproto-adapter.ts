@@ -522,6 +522,15 @@ type AdaptedNotificationType =
   | 'follow'
   | 'status';
 
+const notificationReasonsByType: Record<AdaptedNotificationType, string[]> = {
+  favourite: ['like', 'like-via-repost'],
+  reblog: ['repost', 'repost-via-repost'],
+  quote: ['quote'],
+  mention: ['mention', 'reply'],
+  follow: ['follow'],
+  status: [],
+};
+
 interface AdaptedNotification {
   id: string;
   type: AdaptedNotificationType;
@@ -1744,6 +1753,19 @@ export function notificationStatusURI(
   );
 }
 
+function notificationReasonsForTypes(
+  types: AdaptedNotificationType[] | undefined,
+): string[] | undefined {
+  if (!types?.length) return undefined;
+  const reasons = new Set<string>();
+  types.forEach((type) => {
+    notificationReasonsByType[type].forEach((reason) => {
+      reasons.add(reason);
+    });
+  });
+  return reasons.size ? [...reasons] : undefined;
+}
+
 interface GroupedNotificationsItems {
   accounts: AdaptedAccount[];
   statuses: AdaptedStatus[];
@@ -2470,9 +2492,11 @@ export function createAtprotoClient({
     } = {},
     cursor?: string,
   ): Promise<CollectionPage<AdaptedNotification[]>> {
+    const reasons = notificationReasonsForTypes(types);
     const res = await agent.listNotifications({
       limit,
       cursor,
+      reasons,
     });
     const allowedTypes = types?.length
       ? new Set<AdaptedNotificationType>(types)
