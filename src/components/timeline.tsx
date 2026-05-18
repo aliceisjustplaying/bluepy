@@ -19,7 +19,11 @@ import { useSnapshot } from 'valtio';
 import FilterContext from '../utils/filter-context';
 import { filteredItems, isFiltered } from '../utils/filters';
 import isRTL from '../utils/is-rtl';
-import { isModifiedClick, navigatePath } from '../utils/router';
+import {
+  canonicalizeAppPath,
+  isModifiedClick,
+  navigatePath,
+} from '../utils/router';
 import showToast from '../utils/show-toast';
 import states, { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
@@ -79,7 +83,7 @@ function TimelineStatusLink({
   children,
   className = 'status-link timeline-item',
 }: TimelineStatusLinkProps) {
-  const href = to;
+  const href = canonicalizeAppPath(to);
 
   return (
     <div

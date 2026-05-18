@@ -23,7 +23,10 @@ import {
   redirectLegacyOrigin,
 } from './utils/origin-migration';
 import { initPWAViewport } from './utils/pwa-viewport';
-import { migrateLegacyHashRoute } from './utils/router';
+import {
+  migrateLegacyCanonicalRoute,
+  migrateLegacyHashRoute,
+} from './utils/router';
 import states from './utils/states';
 
 function reactComponent<P>(component: unknown): ComponentType<P> {
@@ -91,6 +94,7 @@ if (!redirectLegacyOrigin()) {
 
       document.getElementById('boot-status')?.remove();
       migrateLegacyHashRoute();
+      migrateLegacyCanonicalRoute();
 
       // The HTML template guarantees this element. Preserve the original JS
       // behavior of failing loudly if it is ever missing.
