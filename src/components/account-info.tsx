@@ -39,7 +39,6 @@ import EditProfileSheetComponent, {
   type EditProfileSheetProps,
 } from './edit-profile-sheet';
 import EmojiText from './emoji-text';
-import Endorsements from './endorsements';
 import Icon from './icon';
 import Link, { type LinkProps } from './link';
 import Menu2 from './menu2';
@@ -258,7 +257,6 @@ interface AccountInfoProps {
   standalone?: boolean;
   instance?: string;
   authenticated?: boolean;
-  showEndorsements?: boolean;
 }
 
 function AccountInfo({
@@ -267,7 +265,6 @@ function AccountInfo({
   standalone,
   instance,
   authenticated,
-  showEndorsements = false,
 }: AccountInfoProps) {
   const { i18n, t } = useLingui();
   const { masto, authenticated: currentAuthenticated } = api({
@@ -549,10 +546,6 @@ function AccountInfo({
   const isStringURL = isString && account && /^https?:\/\//.test(account);
 
   const [showEditProfile, setShowEditProfile] = useState(false);
-
-  const [renderEndorsements, setRenderEndorsements] = useState<
-    boolean | string
-  >(false);
 
   return (
     <>
@@ -1337,19 +1330,8 @@ function AccountInfo({
                   onRelationshipChange={onRelationshipChange}
                   onProfileUpdate={onProfileUpdate}
                   setShowEditProfile={setShowEditProfile}
-                  showEndorsements={showEndorsements}
-                  renderEndorsements={renderEndorsements}
-                  setRenderEndorsements={setRenderEndorsements}
                 />
               </footer>
-              <Endorsements
-                accountID={id ?? ''}
-                info={info}
-                open={renderEndorsements}
-                onlyOpenIfHasEndorsements={
-                  renderEndorsements === 'onlyOpenIfHasEndorsements'
-                }
-              />
             </>
           )
         )}

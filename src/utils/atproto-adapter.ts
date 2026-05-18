@@ -511,7 +511,6 @@ interface AdaptedRelationship {
   mutingNotifications: boolean;
   requested: boolean;
   domainBlocking: boolean;
-  endorsed: boolean;
   _atproto?: AdaptedRelationshipAtproto;
 }
 
@@ -580,8 +579,6 @@ interface CreateAtprotoClientOptions {
 
 export interface AtprotoPostParams {
   status?: string;
-  scheduled_at?: string;
-  scheduledAt?: string;
   poll?: unknown;
   in_reply_to_id?: string;
   inReplyToId?: string;
@@ -608,9 +605,6 @@ export interface AtprotoPostParams {
 export function assertAtprotoPostParamsSupported(
   params: AtprotoPostParams,
 ): void {
-  if (params.scheduled_at || params.scheduledAt) {
-    throw new Error('Bluesky scheduled posts are not supported');
-  }
   if (params.poll) {
     throw new Error('Bluesky polls are not supported');
   }
@@ -1679,7 +1673,6 @@ function relationshipFor(id: string | undefined): AdaptedRelationship {
     mutingNotifications: false,
     requested: false,
     domainBlocking: false,
-    endorsed: false,
   };
 }
 
@@ -2251,16 +2244,6 @@ export function createAtprotoClient({
         return [];
       },
     },
-    endorsements: {
-      async list(): Promise<never[]> {
-        return [];
-      },
-    },
-    note: {
-      async create() {
-        throw new Error('Bluesky private notes are not supported');
-      },
-    },
     async follow(): Promise<AdaptedRelationship> {
       const current = await fetchRelationship(id);
       if (!current.following) {
@@ -2327,12 +2310,6 @@ export function createAtprotoClient({
         blocking: false,
         _atproto: { ...current._atproto, blocking: undefined },
       };
-    },
-    async pin() {
-      throw new Error('Bluesky featured profiles are not supported');
-    },
-    async unpin() {
-      throw new Error('Bluesky featured profiles are not supported');
     },
   });
 
@@ -2934,46 +2911,6 @@ export function createAtprotoClient({
           });
         },
       },
-      tags: {
-        $select(name: string) {
-          return {
-            async fetch() {
-              return {
-                name,
-                url: `/t/${encodeURIComponent(name)}`,
-                history: [],
-                following: false,
-              };
-            },
-            async follow() {
-              throw new Error('Bluesky hashtag follows are not supported');
-            },
-            async unfollow() {
-              throw new Error('Bluesky hashtag follows are not supported');
-            },
-          };
-        },
-      },
-      followedTags: {
-        list() {
-          return emptyCollection<unknown>();
-        },
-      },
-      featuredTags: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-        async create() {
-          throw new Error('Bluesky featured hashtags are not supported');
-        },
-        $select() {
-          return {
-            async remove() {
-              throw new Error('Bluesky featured hashtags are not supported');
-            },
-          };
-        },
-      },
       trends: {
         tags: {
           list() {
@@ -3045,18 +2982,6 @@ export function createAtprotoClient({
           },
         },
       },
-      conversations: {
-        list() {
-          return emptyCollection<unknown>();
-        },
-        $select() {
-          return {
-            async read() {
-              return {};
-            },
-          };
-        },
-      },
       announcements: {
         async list(): Promise<never[]> {
           return [];
@@ -3084,41 +3009,6 @@ export function createAtprotoClient({
         },
         async fetch() {
           return {};
-        },
-      },
-      customEmojis: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-      },
-      followRequests: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-        $select(id: string) {
-          return {
-            async authorize() {
-              return relationshipFor(id);
-            },
-            async reject() {
-              return relationshipFor(id);
-            },
-          };
-        },
-      },
-      scheduledStatuses: {
-        list() {
-          return emptyCollection<unknown>();
-        },
-        $select() {
-          return {
-            async update() {
-              throw new Error('Bluesky scheduled posts are not supported');
-            },
-            async remove() {
-              throw new Error('Bluesky scheduled posts are not supported');
-            },
-          };
         },
       },
       statuses: {
@@ -3287,19 +3177,6 @@ export function createAtprotoClient({
           };
         },
       },
-      annualReports: {
-        $select(year: number | string) {
-          return {
-            async fetch() {
-              return {
-                accounts: [],
-                statuses: [],
-                annualReports: [{ year, data: {} }],
-              };
-            },
-          };
-        },
-      },
       media: {
         async create({
           file,
@@ -3400,24 +3277,6 @@ export function createAtprotoClient({
           async update(policy: Record<string, unknown> = {}) {
             return policy;
           },
-        },
-      },
-      filters: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-        async create() {
-          throw new Error('Bluesky filters are not supported');
-        },
-        $select() {
-          return {
-            async update() {
-              throw new Error('Bluesky filters are not supported');
-            },
-            async remove() {
-              throw new Error('Bluesky filters are not supported');
-            },
-          };
         },
       },
       search: {

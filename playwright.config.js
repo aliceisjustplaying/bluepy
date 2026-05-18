@@ -10,6 +10,18 @@ console.debug = () => {};
 
 const DEV_PORT = Number(process.env.PORT || process.env.VITE_PORT) || 5173;
 const BASE_URL = `http://localhost:${DEV_PORT}`;
+const AGENT_CHROMIUM_ARGS = [
+  '--disable-gpu',
+  '--disable-dev-shm-usage',
+  '--no-sandbox',
+  '--single-process',
+];
+const CHROMIUM_ARGS = (
+  process.env.BLUEPY_CHROMIUM_ARGS?.split(/\s+/).filter(Boolean) ??
+  (process.env.BLUEPY_AGENT_BROWSER || process.env.CI
+    ? AGENT_CHROMIUM_ARGS
+    : [])
+);
 
 /**
  * Read environment variables from file.
@@ -53,6 +65,7 @@ export default defineConfig({
           executablePath:
             process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ||
             '/run/current-system/sw/bin/chromium',
+          args: CHROMIUM_ARGS,
         },
       },
     },

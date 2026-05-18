@@ -24,23 +24,6 @@
     transparent var(--post-gradient-height)
   );
 }
-.status-followed-tags {
-  background: linear-gradient(
-    var(--post-gradient-angle),
-    var(--hashtag-faded-color),
-    transparent var(--post-gradient-height)
-  );
-
-  .timeline-item-container:not(.timeline-item-container-start) & {
-    background: radial-gradient(
-      ellipse at 0 1.2em,
-      var(--hashtag-faded-color),
-      transparent var(--post-gradient-height)
-    );
-    background-size: 100% 3em;
-    background-repeat: no-repeat;
-  }
-}
 .status-reply-to {
   background: linear-gradient(
     var(--post-gradient-angle),
@@ -48,7 +31,7 @@
     transparent var(--post-gradient-height)
   );
 }
-:is(.status-reblog, .status-group, .status-followed-tags) .status-reply-to {
+:is(.status-reblog, .status-group) .status-reply-to {
   background: linear-gradient(
     var(--post-gradient-chip-angle),
     var(--reply-to-faded-color),
@@ -90,55 +73,12 @@
   margin-inline-end: 4px;
   vertical-align: text-bottom;
 }
-.status-followed-tags {
-  .status-pre-meta {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    align-items: center;
-
-    .icon {
-      color: var(--hashtag-color);
-      margin-inline-end: 4px;
-      vertical-align: text-bottom;
-    }
-    a {
-      color: var(--hashtag-text-color);
-      font-weight: bold;
-      font-size: 12px;
-      text-decoration-color: var(--hashtag-faded-color);
-      text-underline-offset: 2px;
-      text-decoration-thickness: 2px;
-      display: inline-block;
-      padding: 2px;
-      vertical-align: top;
-      text-transform: uppercase;
-      /* text-shadow: 0 1px var(--bg-color); */
-
-      &:hover {
-        color: var(--text-color);
-        text-decoration-color: var(--hashtag-color);
-      }
-    }
-  }
-
-  .status-followed-tag-item {
-    color: var(--hashtag-text-color);
-    padding: 2px;
-    font-weight: bold;
-    font-size: 12px;
-    text-transform: uppercase;
-    margin-inline-end: 0.5em;
-  }
-}
 
 /* STATUS */
 
 .status {
   display: flex;
-  padding: 16px;
+  padding: 14px;
   line-height: 1.4;
   align-items: flex-start;
   position: relative;
@@ -164,15 +104,25 @@
   text-decoration: none;
   color: var(--text-color);
 }
-.status-card-link :is(a, button, input, textarea, select, summary, [role='button'], [data-menu-trigger]):not(.status-link-native) {
+.status-card-link
+  :is(
+    a,
+    button,
+    input,
+    textarea,
+    select,
+    summary,
+    [role='button'],
+    [data-menu-trigger]
+  ):not(.status-link-native) {
   position: relative;
   z-index: 2;
 }
 .status-card-container {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 .timeline-deck .status:not(.large) {
   .content.truncated ~ .status-card-container {
@@ -246,7 +196,7 @@
   font-size: calc(var(--text-size) * 0.9);
   /* margin: 1em 0 0; */
   border-radius: 16px;
-  padding: 12px;
+  padding: 10px;
   border: 1px solid var(--outline-color);
   background-color: var(--bg-color);
   box-shadow: inset 0 0 4px var(--outline-color);
@@ -562,7 +512,7 @@
   min-width: 0;
 }
 .status:not(.small) > .container {
-  padding-inline-start: 12px;
+  padding-inline-start: 10px;
 }
 
 .status > .container .status-quote-meta {
@@ -589,6 +539,31 @@
   min-width: 0;
   overflow: hidden;
   /* text-overflow: ellipsis; */
+}
+
+@media (max-width: calc(40em - 1px)) {
+  .status {
+    padding: 10px 12px;
+  }
+
+  .status:not(.small) > a > .avatar,
+  .status.skeleton > .avatar {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .status:not(.small) > .container {
+    padding-inline-start: 8px;
+  }
+
+  .status-card-container {
+    margin-top: 5px;
+    gap: 5px;
+  }
+
+  .status-card {
+    padding: 8px;
+  }
 }
 .status > .container > .meta .meta-name {
   mask-image: linear-gradient(var(--to-backward), transparent, black 16px);
@@ -2486,6 +2461,14 @@ a.card:is(:hover, :focus):visited {
   color: var(--text-insignificant-color);
   border-top: var(--hairline-width) solid var(--outline-color);
   margin-top: 8px;
+}
+@media (max-width: calc(40em - 1px)) {
+  .status.large > .container > .content-container,
+  .status.large .extra-meta,
+  .status.large .emoji-reactions,
+  .status.large .actions {
+    margin-inline-start: calc(-42px - 12px);
+  }
 }
 .status.large .actions.disabled {
   pointer-events: none;

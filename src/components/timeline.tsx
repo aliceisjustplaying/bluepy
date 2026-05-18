@@ -19,7 +19,11 @@ import { useSnapshot } from 'valtio';
 import FilterContext from '../utils/filter-context';
 import { filteredItems, isFiltered } from '../utils/filters';
 import isRTL from '../utils/is-rtl';
-import { isModifiedClick, navigatePath } from '../utils/router';
+import {
+  canonicalizeAppPath,
+  isModifiedClick,
+  navigatePath,
+} from '../utils/router';
 import showToast from '../utils/show-toast';
 import states, { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
@@ -55,7 +59,6 @@ interface StatusComponentProps {
   mediaFirst?: boolean;
   contentTextWeight?: boolean;
   enableCommentHint?: boolean;
-  showFollowedTags?: boolean;
   showReplyParent?: boolean;
 }
 function Status(props: StatusComponentProps) {
@@ -79,7 +82,7 @@ function TimelineStatusLink({
   children,
   className = 'status-link timeline-item',
 }: TimelineStatusLinkProps) {
-  const href = to;
+  const href = canonicalizeAppPath(to);
 
   return (
     <div
@@ -440,7 +443,6 @@ interface TimelineProps {
   refresh?: unknown;
   view?: string;
   filterContext?: string;
-  showFollowedTags?: boolean;
   showReplyParent?: boolean;
   clearWhenRefresh?: boolean;
 }
@@ -465,7 +467,6 @@ function Timeline({
   refresh,
   view,
   filterContext,
-  showFollowedTags,
   showReplyParent,
   clearWhenRefresh,
 }: TimelineProps) {
@@ -899,7 +900,6 @@ function Timeline({
                       Array.isArray(status.id) ? status.id.join(',') : status.id
                     }${String((status as TimelineStatusEntry)._pinned)}${view}`}
                     view={view}
-                    showFollowedTags={showFollowedTags}
                     showReplyParent={showReplyParent}
                     mediaFirst={mediaFirst}
                   />
@@ -994,7 +994,6 @@ interface TimelineItemProps {
   useItemID?: boolean;
   filterContext?: string;
   view?: string;
-  showFollowedTags?: boolean;
   showReplyParent?: boolean;
   mediaFirst?: boolean;
 }
@@ -1007,7 +1006,6 @@ export const TimelineItem = memo(
     // allowFilters,
     filterContext,
     view,
-    showFollowedTags,
     showReplyParent,
     mediaFirst,
   }: TimelineItemProps): ReactElement | ReactElement[] | null => {
@@ -1238,7 +1236,6 @@ export const TimelineItem = memo(
                   statusID={itemStatusID}
                   instance={instance}
                   enableCommentHint={isEnd}
-                  showFollowedTags={showFollowedTags}
                   // allowFilters={allowFilters}
                 />
               ) : (
@@ -1246,7 +1243,6 @@ export const TimelineItem = memo(
                   status={item}
                   instance={instance}
                   enableCommentHint={isEnd}
-                  showFollowedTags={showFollowedTags}
                   // allowFilters={allowFilters}
                 />
               )}
@@ -1313,7 +1309,6 @@ export const TimelineItem = memo(
               statusID={statusID}
               instance={instance}
               enableCommentHint
-              showFollowedTags={showFollowedTags}
               showReplyParent={showReplyParent}
               // allowFilters={allowFilters}
               mediaFirst={mediaFirst}
@@ -1323,7 +1318,6 @@ export const TimelineItem = memo(
               status={status}
               instance={instance}
               enableCommentHint
-              showFollowedTags={showFollowedTags}
               showReplyParent={showReplyParent}
               // allowFilters={allowFilters}
               mediaFirst={mediaFirst}

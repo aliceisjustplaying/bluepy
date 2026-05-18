@@ -618,9 +618,6 @@
     &.reply-to {
       --post-bg-color: var(--reply-to-faded-color);
     }
-    &.followed-tags {
-      --post-bg-color: var(--hashtag-faded-color);
-    }
     &.filtered {
       filter: grayscale(1);
       background-image: none;

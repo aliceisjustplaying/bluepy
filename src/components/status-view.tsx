@@ -52,10 +52,10 @@ export interface StatusComponentProps {
     e: React.MouseEvent | KeyboardEvent,
     status: AnyStatus,
   ) => void;
-  showFollowedTags?: boolean;
   allowContextMenu?: boolean;
   showActionsBar?: boolean;
   showReplyParent?: boolean;
+  hideReplyBadge?: boolean;
   mediaFirst?: boolean;
   showCommentCount?: boolean | ((count?: number) => boolean);
   showQuoteCount?: boolean | ((count?: number) => boolean);
@@ -126,10 +126,10 @@ function StatusRouter({
   quoted,
   quoteDomain,
   onStatusLinkClick = () => {},
-  showFollowedTags,
   allowContextMenu,
   showActionsBar,
   showReplyParent,
+  hideReplyBadge,
   mediaFirst,
   showCommentCount: forceShowCommentCount,
   showQuoteCount: forceShowQuoteCount,
@@ -220,7 +220,6 @@ function StatusRouter({
         containerProps={{
           onMouseEnter: debugHover,
         }}
-        showFollowedTags
         quoted={quoted}
         renderPeekStatus={(peekStatus, peekInstance) => (
           <Status
@@ -272,10 +271,10 @@ function StatusRouter({
       quoted={quoted}
       quoteDomain={quoteDomain}
       onStatusLinkClick={onStatusLinkClick}
-      showFollowedTags={showFollowedTags}
       allowContextMenu={allowContextMenu}
       showActionsBar={showActionsBar}
       showReplyParent={showReplyParent}
+      hideReplyBadge={hideReplyBadge}
       mediaFirst={mediaFirst}
       showCommentCount={forceShowCommentCount}
       showQuoteCount={forceShowQuoteCount}

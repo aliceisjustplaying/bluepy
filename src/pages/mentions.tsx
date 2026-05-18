@@ -3,9 +3,7 @@ import './mentions.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import { useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 
-import Link from '../components/link';
 import Timeline from '../components/timeline';
 import { api, getMastoV1Resource } from '../utils/api';
 import { fixNotifications } from '../utils/group-notifications';
@@ -15,20 +13,12 @@ import { getCurrentAccountID } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
-const emptySearchParams = new URLSearchParams();
-
 interface MentionNotificationLike {
   id?: string;
   type?: string;
   createdAt?: string;
   account?: Partial<mastodon.v1.Account>;
   status?: mastodon.v1.Status | null;
-  [key: string]: unknown;
-}
-
-interface ConversationLike {
-  id?: string;
-  lastStatus?: mastodon.v1.Status | null;
   [key: string]: unknown;
 }
 
@@ -55,39 +45,19 @@ interface MastoNotificationsApi {
   };
 }
 
-interface MastoConversationsApi {
-  list(options: { limit: number; since_id?: string }): {
-    values(): AsyncIterator<ConversationLike[]>;
-  };
-}
-
 interface FetchItemsResult {
   done?: boolean;
   value: (StatusLike | null | undefined)[] | undefined;
 }
 
-interface MentionsProps {
-  columnMode?: boolean;
-  type?: string;
-  [key: string]: unknown;
-}
-
-function Mentions({ columnMode, ...props }: MentionsProps) {
+function Mentions() {
   const { t } = useLingui();
   const { masto, instance } = api();
   const notificationsApi = getMastoV1Resource<MastoNotificationsApi>(
     masto,
     'notifications',
   );
-  const conversationsApi = getMastoV1Resource<MastoConversationsApi>(
-    masto,
-    'conversations',
-  );
-  const [routerSearchParams] = useSearchParams();
-  const searchParams = columnMode ? emptySearchParams : routerSearchParams;
-  const [stateType, setStateType] = useState<string | null>(null);
-  const type = props?.type || searchParams.get('type') || stateType;
-  useTitle(type === 'private' ? t`Private mentions` : t`Mentions`, '/mentions');
+  useTitle(t`Mentions`, '/mentions');
 
   const [onlyFollowings, setOnlyFollowings] = useState(false);
   const relationshipsMap = useRef<Record<string, mastodon.v1.Relationship>>({});
@@ -173,131 +143,31 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
     };
   }
 
-  const conversationsIterator = useRef<
-    AsyncIterator<ConversationLike[]> | undefined
-  >(undefined);
-  const latestConversationItem = useRef<string | undefined>(undefined);
-  async function fetchConversations(
-    firstLoad?: boolean,
-  ): Promise<FetchItemsResult> {
-    if (firstLoad || !conversationsIterator.current) {
-      conversationsIterator.current = conversationsApi
-        .list({
-          limit: LIMIT,
-        })
-        .values();
-    }
-    const results = await conversationsIterator.current.next();
-    let { value } = results as {
-      done?: boolean;
-      value: ConversationLike[] | undefined;
-    };
-    value = value?.filter((item) => item.lastStatus);
-    if (value?.length) {
-      if (firstLoad) {
-        latestConversationItem.current = value[0].lastStatus?.id;
-        console.log('First load', latestConversationItem.current);
-      }
-
-      value.forEach(({ lastStatus: item }) => {
-        saveStatus(toSaveStatus(item), instance);
-      });
-
-      let statuses: (mastodon.v1.Status | null | undefined)[] = value.map(
-        (item) => item.lastStatus,
-      );
-      if (onlyFollowings && statuses?.length) {
-        const accounts = statuses
-          .map((status) => status?.account)
-          .filter((a): a is mastodon.v1.Account => !!a && !!a.id);
-        const relationships = await fetchRelationships(
-          accounts,
-          relationshipsMap.current,
-        );
-        if (relationships) {
-          relationshipsMap.current = {
-            ...relationshipsMap.current,
-            ...relationships,
-          };
-        }
-        statuses = filterByFollowings(statuses);
-      }
-
-      console.log('results', results);
-      return {
-        ...(results as { done?: boolean }),
-        value: statuses,
-      };
-    }
-    console.log('results', results);
-    return {
-      ...(results as { done?: boolean }),
-      value: value?.map((item) => item.lastStatus),
-    };
-  }
-
   function fetchItems(firstLoad?: boolean): Promise<FetchItemsResult> {
-    if (type === 'private') {
-      return fetchConversations(firstLoad);
-    }
     return fetchMentions(firstLoad);
   }
 
   async function checkForUpdates(): Promise<boolean> {
-    if (type === 'private') {
-      try {
-        const results = await conversationsApi
-          .list({
-            limit: 1,
-            since_id: latestConversationItem.current,
-          })
-          .values()
-          .next();
-        let { value } = results as { value: ConversationLike[] | undefined };
-        console.log(
-          'checkForUpdates PRIVATE',
-          latestConversationItem.current,
-          value,
-        );
-        const valueContainsLatestItem =
-          value?.[0]?.id === latestConversationItem.current; // since_id might not be supported
-        if (value?.length && !valueContainsLatestItem) {
-          // Preserve JS behavior: throw if lastStatus is missing.
-          const lastStatus = value[0].lastStatus;
-          if (!lastStatus) {
-            throw new TypeError(
-              "Cannot read properties of undefined (reading 'id')",
-            );
-          }
-          latestConversationItem.current = lastStatus.id;
-          return true;
-        }
-        return false;
-      } catch {
-        return false;
+    try {
+      const results = await notificationsApi
+        .list({
+          limit: 1,
+          types: ['mention'],
+          since_id: latestItem.current,
+        })
+        .values()
+        .next();
+      let { value } = results as {
+        value: MentionNotificationLike[] | undefined;
+      };
+      console.log('checkForUpdates ALL', latestItem.current, value);
+      if (value?.length) {
+        latestItem.current = value[0].id;
+        return true;
       }
-    } else {
-      try {
-        const results = await notificationsApi
-          .list({
-            limit: 1,
-            types: ['mention'],
-            since_id: latestItem.current,
-          })
-          .values()
-          .next();
-        let { value } = results as {
-          value: MentionNotificationLike[] | undefined;
-        };
-        console.log('checkForUpdates ALL', latestItem.current, value);
-        if (value?.length) {
-          latestItem.current = value[0].id;
-          return true;
-        }
-        return false;
-      } catch {
-        return false;
-      }
+      return false;
+    } catch {
+      return false;
     }
   }
 
@@ -316,41 +186,15 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
             <Trans>Only followings</Trans>
           </label>
         </div>
-        <div className="filter-bar">
-          <Link
-            to="/mentions"
-            className={!type ? 'is-active' : ''}
-            onClick={(e: React.SyntheticEvent) => {
-              if (columnMode) {
-                e.preventDefault();
-                setStateType(null);
-              }
-            }}
-          >
-            <Trans>All</Trans>
-          </Link>
-          <Link
-            to="/mentions?type=private"
-            className={type === 'private' ? 'is-active' : ''}
-            onClick={(e: React.SyntheticEvent) => {
-              if (columnMode) {
-                e.preventDefault();
-                setStateType('private');
-              }
-            }}
-          >
-            <Trans>Private</Trans>
-          </Link>
-        </div>
       </>
     );
-  }, [type, onlyFollowings, columnMode]);
+  }, [onlyFollowings]);
 
   return (
     <Timeline
       title={t`Mentions`}
       id="mentions"
-      timelineKey={`mentions-${type}-${onlyFollowings}`}
+      timelineKey={`mentions-${onlyFollowings}`}
       emptyText={t`No one mentioned you :(`}
       errorText={t`Unable to load mentions.`}
       instance={instance}
@@ -358,7 +202,7 @@ function Mentions({ columnMode, ...props }: MentionsProps) {
       checkForUpdates={checkForUpdates}
       useItemID
       timelineStart={TimelineStart}
-      refresh={`${type}-${onlyFollowings}`}
+      refresh={`${onlyFollowings}`}
       filterContext="notifications"
     />
   );
