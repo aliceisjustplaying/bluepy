@@ -8,7 +8,6 @@ import {
   compressToEncodedURIComponent,
   decompressFromEncodedURIComponent,
 } from 'lz-string';
-import type { mastodon } from 'masto';
 import type { HTMLAttributes } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
@@ -18,7 +17,6 @@ import multiColumnUrl from '../assets/multi-column.svg';
 import tabMenuBarUrl from '../assets/tab-menu-bar.svg';
 
 import { api, type MastoClient } from '../utils/api';
-import { fetchFollowedTags } from '../utils/followed-tags';
 import { getLists, getListTitle, splitListsAndFeeds } from '../utils/lists';
 import pmem from '../utils/pmem';
 import showToast from '../utils/show-toast';
@@ -97,7 +95,6 @@ const TYPES: string[] = [
   'mentions',
   'notifications',
   'list',
-  'public',
   'trending',
   'search',
   'hashtag',
@@ -111,7 +108,6 @@ const TYPE_TEXT: Record<string, MessageDescriptor> = {
   following: msg`Home / Following`,
   notifications: msg`Notifications`,
   list: msg`Lists & Feeds`,
-  public: msg`Public (Local / Federated)`,
   search: msg`Search`,
   'account-statuses': msg`Account`,
   bookmarks: msg`Bookmarks`,
@@ -126,20 +122,6 @@ const TYPE_PARAMS: Record<string, TypeParam[]> = {
     {
       text: msg`List ID`,
       name: 'id',
-      notRequired: true,
-    },
-  ],
-  public: [
-    {
-      text: msg`Local only`,
-      name: 'local',
-      type: 'checkbox',
-    },
-    {
-      text: msg`Server`,
-      name: 'instance',
-      type: 'text',
-      placeholder: msg`Optional, e.g. mastodon.social`,
       notRequired: true,
     },
   ],
@@ -240,13 +222,6 @@ export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
     title: ({ id }) => (id ? getListTitle(id) : t`Lists & Feeds`),
     path: ({ id }) => (id ? `/l/${id}` : '/l'),
     icon: 'list',
-  },
-  public: {
-    id: 'public',
-    title: ({ local }) => (local ? t`Local` : t`Federated`),
-    subtitle: ({ instance }) => instance || api().instance,
-    path: ({ local, instance }) => `/${instance}/p${local ? '/l' : ''}`,
-    icon: ({ local }) => (local ? 'building' : 'earth'),
   },
   trending: {
     id: 'trending',
@@ -681,9 +656,6 @@ function ShortcutForm({
   const [uiState, setUIState] = useState('default');
   const [lists, setLists] = useState<ListLike[]>([]);
   const { lists: userLists, feeds } = splitListsAndFeeds(lists);
-  const [followedHashtags, setFollowedHashtags] = useState<mastodon.v1.Tag[]>(
-    [],
-  );
   useEffect(() => {
     void (async () => {
       if (currentType !== 'list') return;
@@ -698,15 +670,6 @@ function ShortcutForm({
       }
     })();
 
-    void (async () => {
-      if (currentType !== 'hashtag') return;
-      try {
-        const tags = await fetchFollowedTags();
-        setFollowedHashtags(tags);
-      } catch (e) {
-        console.error(e);
-      }
-    })();
   }, [currentType]);
 
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -868,10 +831,7 @@ function ShortcutForm({
                             disabled,
                             // Original JS passed `null` here. Preact treats
                             // null/undefined the same for HTML attributes.
-                            list:
-                              currentType === 'hashtag'
-                                ? 'followed-hashtags-datalist'
-                                : null,
+                            list: null,
                             autocorrect: 'off',
                             autocapitalize: 'off',
                             spellCheck: false,
@@ -880,14 +840,6 @@ function ShortcutForm({
                           } as HTMLAttributes<HTMLInputElement>;
                           return <input {...inputProps} />;
                         })()}
-                        {currentType === 'hashtag' &&
-                          followedHashtags.length > 0 && (
-                            <datalist id="followed-hashtags-datalist">
-                              {followedHashtags.map((tag) => (
-                                <option key={tag.name} value={tag.name} />
-                              ))}
-                            </datalist>
-                          )}
                       </label>
                     </p>
                   );

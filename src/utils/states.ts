@@ -92,7 +92,6 @@ interface StateProxy {
   notificationsLastFetchTime: number | null;
   reloadStatusPage: number;
   reloadGenericAccounts: ReloadGenericAccounts;
-  reloadScheduledPosts: number;
   spoilers: Record<string, unknown>;
   spoilersMedia: Record<string, unknown>;
   revealedQuotes: Record<string, unknown>;
@@ -170,7 +169,6 @@ const states = proxy<StateProxy>({
     id: null,
     counter: 0,
   },
-  reloadScheduledPosts: 0,
   spoilers: {},
   spoilersMedia: {},
   revealedQuotes: {},

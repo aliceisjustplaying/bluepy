@@ -32,7 +32,6 @@ const containPleroma = /pleroma/i;
 const containAkkoma = /akkoma/i;
 const platformFeatures: Record<string, RegExp> = {
   '@mastodon/lists': notContainPixelfed,
-  '@mastodon/filters': notContainPixelfed,
   '@mastodon/mentions': notContainPixelfed,
   '@mastodon/trending-hashtags': notContainPixelfed,
   '@mastodon/trending-links': notContainPixelfed,
@@ -50,7 +49,6 @@ const platformFeatures: Record<string, RegExp> = {
 
 const supportsCache: Record<string, boolean> = {};
 const bskyUnsupportedFeatures = new Set<string>([
-  '@mastodon/filters',
   '@mastodon/endorsements',
   '@mastodon/pinned-posts',
   '@mastodon/post-edit',

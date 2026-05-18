@@ -49,7 +49,6 @@ import niceDateTime from '../utils/nice-date-time';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
-import store from '../utils/store';
 import { getAPIVersions, getCurrentInstance } from '../utils/store-utils';
 import supports from '../utils/supports';
 import usePageVisibility from '../utils/usePageVisibility';
@@ -86,7 +85,6 @@ type NotificationLike = NotificationProps['notification'] & {
   notificationsCount?: number;
   status?: { id?: string } | null;
   _ids?: string;
-  annualReport?: { year?: string | number };
   [key: string]: unknown;
 };
 
@@ -714,53 +712,6 @@ function Notifications({ columnMode }: NotificationsProps) {
   //   }
   // }, [uiState]);
 
-  const [annualReportNotification, setAnnualReportNotification] =
-    useState<NotificationLike | null>(null);
-  // NOTE: The JS original passed an async function directly to `useEffect`.
-  // React ignores the returned promise, but the IIFE-style still
-  // fires once on mount, matching original runtime behavior. We preserve
-  // that exact shape.
-  useEffect(() => {
-    void (async () => {
-      // Skip this if not in December
-      const date = new Date();
-      if (date.getMonth() !== 11) return;
-      const dateYear = date.getFullYear();
-
-      // Skip if doesn't support annual report
-      if (!supports('@mastodon/annual-report')) return;
-
-      let currentAnnualReport: NotificationLike | null =
-        store.account.get<NotificationLike>('annualReportNotification');
-      if (currentAnnualReport) {
-        const annualReportYear = currentAnnualReport?.annualReport?.year;
-        if (annualReportYear == dateYear) {
-          setAnnualReportNotification(currentAnnualReport);
-          return;
-        }
-      }
-      const notificationIterator = mastoFetchNotifications({
-        types: ['annual_report'],
-      });
-      try {
-        const notification = await notificationIterator.next();
-        const value = notification?.value as
-          | { notificationGroups?: NotificationLike[] }
-          | undefined;
-        currentAnnualReport = value?.notificationGroups?.[0] ?? null;
-        const annualReportYear = currentAnnualReport?.annualReport?.year;
-        // If same year, show the annual report
-        if (annualReportYear == dateYear) {
-          console.log('ANNUAL REPORT', annualReportYear, currentAnnualReport);
-          setAnnualReportNotification(currentAnnualReport);
-          store.account.set('annualReportNotification', currentAnnualReport);
-        }
-      } catch (e) {
-        console.warn(e);
-      }
-    })();
-  }, []);
-
   const itemsSelector = '.notification';
   const jRef = useHotkeys<HTMLDivElement>(
     'j',
@@ -1176,13 +1127,6 @@ function Notifications({ columnMode }: NotificationsProps) {
               </div>
             </div>
           )}
-        {annualReportNotification && (
-          <div className="shazam-container">
-            <div className="shazam-container-inner">
-              <Notification notification={annualReportNotification} />
-            </div>
-          </div>
-        )}
         {!!hasAnalyzedFirstLoad && (
           <div id="mentions-option">
             {showMentionsLink ? (

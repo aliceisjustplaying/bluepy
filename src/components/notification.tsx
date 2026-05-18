@@ -99,11 +99,6 @@ interface EmojiUrlObject {
   staticUrl?: string;
 }
 
-interface AnnualReportData {
-  year?: string | number;
-  [key: string]: unknown;
-}
-
 interface ModerationWarningPayload {
   id?: string;
   action?: keyof typeof MODERATION_WARNING_TEXT;
@@ -132,7 +127,6 @@ interface NotificationInput {
   report?: NotificationReport;
   event?: SeveredRelationshipEvent;
   moderation_warning?: ModerationWarningPayload;
-  annualReport?: AnnualReportData;
   emoji?: string;
   emoji_url?: string | EmojiUrlObject;
   // Client-side grouped notification
@@ -199,7 +193,6 @@ const NOTIFICATION_ICONS: Record<string, string> = {
   emoji_reaction: 'emoji2',
   reaction: 'emoji2',
   'pleroma:emoji_reaction': 'emoji2',
-  annual_report: 'celebrate',
   quote: 'quote',
   quoted_update: 'pencil',
 };
@@ -477,7 +470,6 @@ const contentText: Record<string, ContentTextRenderer> = {
   emoji_reaction: emojiText,
   reaction: emojiText,
   'pleroma:emoji_reaction': emojiText,
-  annual_report: ({ year }) => <Trans>Your {year} #Wrapstodon is here!</Trans>,
 };
 
 interface SeveredRelationshipArgs {
@@ -541,7 +533,6 @@ function Notification({
     report,
     event,
     moderation_warning,
-    annualReport,
     // Client-side grouped notification
     _ids,
     _accounts,
@@ -664,10 +655,6 @@ function Notification({
         account: <NameText account={account} showAvatar />,
         emoji: notification.emoji,
         emojiURL,
-      });
-    } else if (type === 'annual_report') {
-      text = renderer({
-        ...notification.annualReport,
       });
     } else {
       text = renderer({
@@ -921,13 +908,6 @@ function Notification({
                     Learn more <Icon icon="external" size="s" />
                   </Trans>
                 </a>
-              </div>
-            )}
-            {type === 'annual_report' && (
-              <div>
-                <Link to={`/annual_report/${annualReport?.year}`}>
-                  <Trans>View #Wrapstodon</Trans>
-                </Link>
               </div>
             )}
           </>

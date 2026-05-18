@@ -3287,19 +3287,6 @@ export function createAtprotoClient({
           };
         },
       },
-      annualReports: {
-        $select(year: number | string) {
-          return {
-            async fetch() {
-              return {
-                accounts: [],
-                statuses: [],
-                annualReports: [{ year, data: {} }],
-              };
-            },
-          };
-        },
-      },
       media: {
         async create({
           file,
@@ -3400,24 +3387,6 @@ export function createAtprotoClient({
           async update(policy: Record<string, unknown> = {}) {
             return policy;
           },
-        },
-      },
-      filters: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-        async create() {
-          throw new Error('Bluesky filters are not supported');
-        },
-        $select() {
-          return {
-            async update() {
-              throw new Error('Bluesky filters are not supported');
-            },
-            async remove() {
-              throw new Error('Bluesky filters are not supported');
-            },
-          };
         },
       },
       search: {

@@ -136,34 +136,34 @@ export default function Modals() {
               composeWindow.__SHARED_DATA__ = null;
               if (newStatus) {
                 states.reloadStatusPage++;
-                if (scheduledAt) states.reloadScheduledPosts++;
+                const toastText = {
+                  post: scheduledAt
+                    ? t`Post scheduled`
+                    : t`Post published. Check it out.`,
+                  reply: scheduledAt
+                    ? t`Reply scheduled`
+                    : t`Reply posted. Check it out.`,
+                  edit: t`Post updated. Check it out.`,
+                }[type || 'post'];
                 showToast({
-                  text: {
-                    post: scheduledAt
-                      ? t`Post scheduled`
-                      : t`Post published. Check it out.`,
-                    reply: scheduledAt
-                      ? t`Reply scheduled`
-                      : t`Reply posted. Check it out.`,
-                    edit: t`Post updated. Check it out.`,
-                  }[type || 'post'],
+                  text: toastText,
                   delay: 1000,
                   duration: 10_000, // 10 seconds
-                  onClick: (toast: { hideToast: () => void }) => {
-                    toast.hideToast();
-                    states.prevLocation = toPrevLocation(location);
-                    if (scheduledAt) {
-                      navigatePath('/sp');
-                    } else {
-                      navigatePath(
-                        canonicalizeAppPath(
-                          instance
-                            ? `/${instance}/s/${newStatus.id}`
-                            : `/s/${newStatus.id}`,
-                        ),
-                      );
-                    }
-                  },
+                  ...(scheduledAt
+                    ? {}
+                    : {
+                        onClick: (toast: { hideToast: () => void }) => {
+                          toast.hideToast();
+                          states.prevLocation = toPrevLocation(location);
+                          navigatePath(
+                            canonicalizeAppPath(
+                              instance
+                                ? `/${instance}/s/${newStatus.id}`
+                                : `/s/${newStatus.id}`,
+                            ),
+                          );
+                        },
+                      }),
                 });
               }
             }}
