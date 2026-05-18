@@ -63,7 +63,7 @@
 }
 
 @media (max-width: calc(40em - 1px)) {
-  #app[data-shortcuts-view-mode='tab-menu-bar'] ~ #modal-container > div.min {
+  #app:has(#shortcuts > .tab-bar) ~ #modal-container > div.min {
     border: 2px solid red;
 
     --bottom: calc(
