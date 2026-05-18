@@ -3,9 +3,9 @@ import './compose.css';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg, plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { MenuDivider, MenuItem } from '@szhsin/react-menu';
+import { MenuItem } from '@szhsin/react-menu';
 import { deepEqual } from 'fast-equals';
-import type { RefObject, SyntheticEvent } from 'react';
+import type { SyntheticEvent } from 'react';
 import {
   useEffect,
   useEffectEvent,
@@ -57,8 +57,6 @@ import urlRegexObj from '../utils/url-regex';
 import useCloseWatcher from '../utils/useCloseWatcher';
 import useInterval from '../utils/useInterval';
 import useThrottledResizeObserver from '../utils/useThrottledResizeObserver';
-import visibilityIconsMap from '../utils/visibility-icons-map';
-import visibilityText from '../utils/visibility-text';
 
 type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => unknown;
@@ -70,9 +68,7 @@ import CameraCaptureInput, {
   supportsCameraCapture,
 } from './camera-capture-input';
 import CharCountMeter from './char-count-meter';
-import ComposePoll, { expiryOptions, type PollState } from './compose-poll';
 import Textarea from './compose-textarea';
-import CustomEmojisModal from './custom-emojis-modal';
 import FilePickerInput from './file-picker-input';
 import GIFPickerModal from './gif-picker-modal';
 import Icon from './icon';
@@ -84,17 +80,12 @@ import MentionModal from './mention-modal';
 import Menu2 from './menu2';
 import Modal from './modal';
 import QuoteSuggestionComponent from './quote-suggestion';
-import ScheduledAtField, {
-  getLocalTimezoneName,
-  MIN_SCHEDULED_AT,
-} from './ScheduledAtField';
 import StatusComponent, { type StatusComponentProps } from './status';
-import TextExpander from './text-expander';
 
 // ---------------------------------------------------------------------------
 // Local type shims for still-untyped peers — narrow to what compose uses.
-// These mirror the shapes already exposed by compose-textarea.tsx,
-// compose-poll.tsx, and drafts.tsx so the modal stays consistent.
+// These mirror the shapes already exposed by compose-textarea.tsx and drafts.tsx
+// so the modal stays consistent.
 // ---------------------------------------------------------------------------
 
 interface AccountInfoLike {
@@ -108,19 +99,6 @@ interface AccountInfoLike {
 
 interface MastodonMention {
   acct: string;
-  [key: string]: unknown;
-}
-
-interface PollOption {
-  title?: string;
-  [key: string]: unknown;
-}
-
-interface StatusPoll {
-  options?: Array<PollOption | string>;
-  expiresIn?: number | string;
-  expiresAt?: string | number | null;
-  multiple?: boolean;
   [key: string]: unknown;
 }
 
@@ -142,9 +120,6 @@ interface StatusLike {
   mentions?: MastodonMention[];
   visibility?: string;
   language?: string | null;
-  sensitive?: boolean;
-  spoilerText?: string;
-  poll?: StatusPoll | null;
   mediaAttachments?: MediaAttachmentLike[];
   quoteApproval?: Record<string, unknown> | null;
   quoteApprovalPolicy?: string;
@@ -156,14 +131,8 @@ interface StatusLike {
 interface DraftStatusLike {
   uid?: string;
   status?: string;
-  spoilerText?: string;
-  visibility?: string;
   language?: string | null;
-  sensitive?: boolean | null;
-  sensitiveMedia?: boolean | null;
-  poll?: StatusPoll | null;
   mediaAttachments?: MediaAttachmentLike[];
-  scheduledAt?: Date | string | null;
   quoteApprovalPolicy?: string;
   [key: string]: unknown;
 }
@@ -189,11 +158,6 @@ interface QuoteSuggestionState {
   url: string;
 }
 
-interface EmojiPickerState {
-  targetElement?: RefObject<HTMLElement | null> | null;
-  defaultSearchTerm?: string | null;
-}
-
 interface MentionPickerState {
   defaultSearchTerm?: string | null;
 }
@@ -215,7 +179,6 @@ interface OnCloseInfo {
   type?: 'edit' | 'reply' | 'post';
   newStatus?: unknown;
   instance?: string;
-  scheduledAt?: string | undefined;
   fn?: () => void;
 }
 
@@ -305,9 +268,7 @@ interface MastoStatusesEditableSelector {
   $select(id: string | undefined): {
     fetch(): Promise<StatusLike>;
     update(params: Record<string, unknown>): Promise<unknown>;
-    source: {
-      fetch(): Promise<{ text: string; spoilerText: string }>;
-    };
+    source: { fetch(): Promise<{ text: string }> };
   };
   create(
     params: Record<string, unknown>,
@@ -353,19 +314,6 @@ const isPopOutNotSupported =
   /Android|iPhone|iPad|iPod/.test(navigator.userAgent) &&
   !/CrOS/.test(navigator.userAgent);
 
-const expirySeconds = Object.keys(expiryOptions);
-const oneDay = 24 * 60 * 60;
-
-const expiresInFromExpiresAt = (
-  expiresAt: string | number | Date | null | undefined,
-): number | string => {
-  if (!expiresAt) return oneDay;
-  const delta = (Date.parse(String(expiresAt)) - Date.now()) / 1000;
-  // Original JS compared string seconds to numeric delta; find on string keys
-  // returned a string. Coerce-compare to keep equivalent runtime semantics.
-  return expirySeconds.find((s) => Number(s) >= delta) || oneDay;
-};
-
 // localeMatch can return false when no match exists; original JS silently
 // stored that value and relied on `|| DEFAULT_LANG` chains to handle the
 // falsy case. Mirror the behavior — narrow to a runtime string where set,
@@ -396,14 +344,8 @@ const LF = mem(
 const ADD_LABELS = {
   camera: msg`Take photo or video`,
   media: msg`Add media`,
-  customEmoji: msg`Add custom emoji`,
   gif: msg`Add GIF`,
-  poll: msg`Add poll`,
-  sensitive: msg`Add content warning`,
-  scheduledPost: msg`Schedule post`,
 };
-
-const DEFAULT_SCHEDULED_AT = Math.max(10 * 60 * 1000, MIN_SCHEDULED_AT); // 10 mins
 
 function isMimeTypeSupported(
   fileType: string,
@@ -536,12 +478,6 @@ function Compose({
       videoFrameRateLimit?: number;
       descriptionLimit?: number;
     };
-    polls?: {
-      maxOptions?: number;
-      maxCharactersPerOption?: number;
-      maxExpiration?: number;
-      minExpiration?: number;
-    };
   }
 
   const configuration = getCurrentInstanceConfiguration() as
@@ -556,25 +492,15 @@ function Compose({
       maxMediaAttachments, // Beware: it can be undefined!
     } = {},
     mediaAttachments: { supportedMimeTypes, descriptionLimit } = {},
-    polls: {
-      maxOptions,
-      maxCharactersPerOption,
-      maxExpiration,
-      minExpiration,
-    } = {},
   } = configuration || {};
   const supportedImagesVideosTypes = supportedMimeTypes?.filter(
     (mimeType: string) => /^(image|video)/i.test(mimeType),
   );
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const spoilerTextRef = useRef<HTMLInputElement | null>(null);
 
-  const [visibility, setVisibility] = useState<string>('public');
   const [quoteApprovalPolicy, setQuoteApprovalPolicy] =
     useState<string>('public');
-  const [sensitive, setSensitive] = useState<boolean>(false);
-  const [sensitiveMedia, setSensitiveMedia] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>(
     store.session.get('currentLanguage') || DEFAULT_LANG,
   );
@@ -582,14 +508,11 @@ function Compose({
   const [mediaAttachments, setMediaAttachments] = useState<
     MediaAttachmentLike[]
   >([]);
-  const [poll, setPoll] = useState<PollState | null>(null);
-  const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
   const [quoteSuggestion, setQuoteSuggestion] =
     useState<QuoteSuggestionState | null>(null);
   const [localQuoteStatus, setLocalQuoteStatus] = useState<
     StatusLike | null | undefined
   >(quoteStatus);
-  const [quoteCleared, setQuoteCleared] = useState<boolean>(false);
   const [linkPreview, setLinkPreview] = useState<LinkPreviewState | null>(null);
   const linkPreviewRef = useRef<{
     id: number;
@@ -602,9 +525,7 @@ function Compose({
     return typeof v === 'string' ? v : undefined;
   };
 
-  const currentQuoteStatus = quoteCleared
-    ? null
-    : localQuoteStatus || quoteStatus;
+  const currentQuoteStatus = localQuoteStatus || quoteStatus;
   const isAtprotoCompose =
     !!currentAccount?.atproto || currentAccount?.instanceURL === 'bsky.social';
   const supportsQuoteApprovalPolicy =
@@ -650,18 +571,6 @@ function Compose({
       })();
     }, 300);
   };
-
-  useEffect(() => {
-    if (!isAtprotoCompose) return;
-    setVisibility('public');
-    setQuoteApprovalPolicy('public');
-    setSensitive(false);
-    setSensitiveMedia(false);
-    if (spoilerTextRef.current?.value) {
-      spoilerTextRef.current.value = '';
-      updateCharCount();
-    }
-  }, [isAtprotoCompose]);
 
   // Quote eligibility logic duplicated from status.jsx
   const checkQuoteEligibility = (status: StatusLike): boolean => {
@@ -758,18 +667,13 @@ function Compose({
   const handlePastedLink = async (url: string): Promise<void> => {
     // Handle QP links
     if (supportsNativeQuote()) {
-      // Quotes cannot coexist with media attachments or polls
-      if (mediaAttachments.length > 0 || poll) {
+      // Quotes cannot coexist with media attachments
+      if (mediaAttachments.length > 0) {
         return;
       }
 
       // Cannot add/remove/replace current quote when editing
       if (editStatus) {
-        return;
-      }
-
-      // Don't show quote suggestion when visibility is 'direct'
-      if (visibility === 'direct') {
         return;
       }
 
@@ -834,7 +738,6 @@ function Compose({
     }, 300);
   };
   const lastFocusedFieldRef = useRef<HTMLElement | null>(null);
-  const lastFocusedEmojiFieldRef = useRef<HTMLElement | null>(null);
   const focusLastFocusedField = (): void => {
     setTimeout(() => {
       if (!lastFocusedFieldRef.current) return;
@@ -852,9 +755,6 @@ function Compose({
 
       const target = e.target;
       if (!(target instanceof HTMLElement)) return;
-      if (target.hasAttribute('data-allow-custom-emoji')) {
-        lastFocusedEmojiFieldRef.current = target;
-      }
       const isFormElement = ['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA'].includes(
         target.tagName,
       );
@@ -889,16 +789,7 @@ function Compose({
     const statusesEndpointLocal = statusesEndpointRef.current;
     const currentAcct = currentAccountAcctRef.current;
     if (replyToStatus) {
-      // sensitive read here only for parity with the original JS destructure
-      // (it is read from `!!spoilerText` below). Keep destructure shape stable.
-      const {
-        spoilerText,
-        visibility: replyVisibility,
-        language: replyLanguage,
-      } = replyToStatus;
-      if (spoilerText && spoilerTextRef.current) {
-        spoilerTextRef.current.value = spoilerText;
-      }
+      const { language: replyLanguage } = replyToStatus;
       const account = replyToStatus.account ?? {};
       const mentionsList = replyToStatus.mentions ?? [];
       const mentions = new Set<string | undefined>([
@@ -943,39 +834,17 @@ function Compose({
           focusTextarea();
         }
       }
-      const defaultVisPref = prefStringFn('posting:default:visibility');
-      // Preserve original: passes `visibility` directly when no pref override.
-      setVisibility(
-        replyVisibility === 'public' && defaultVisPref
-          ? defaultVisPref.toLowerCase()
-          : (replyVisibility as string),
-      );
       setLanguage(
         fixLanguage(replyLanguage) ||
           prefStringFn('posting:default:language')?.toLowerCase() ||
           DEFAULT_LANG,
       );
-      setSensitive(!!spoilerText);
     } else if (editStatus) {
       const {
-        visibility: editVisibility,
         language: editLanguage,
-        sensitive: editSensitive,
-        poll: editPoll,
         mediaAttachments: editMediaAttachments,
         quoteApproval,
       } = editStatus;
-      const composablePoll = editPoll?.options
-        ? {
-            ...editPoll,
-            options: editPoll.options.map(
-              (o) => (typeof o === 'string' ? o : o?.title || o) as string,
-            ),
-            expiresIn:
-              editPoll?.expiresIn || expiresInFromExpiresAt(editPoll.expiresAt),
-            multiple: !!editPoll.multiple,
-          }
-        : null;
       setUIState('loading');
       void (async () => {
         try {
@@ -983,19 +852,13 @@ function Compose({
             .$select(editStatus.id)
             .source.fetch();
           console.log({ statusSource });
-          const { text, spoilerText } = statusSource;
+          const { text } = statusSource;
           const textarea = textareaRef.current;
           if (!textarea) return;
           textarea.value = text;
           textarea.dataset.source = text;
           oninputTextarea();
           focusTextarea();
-          if (spoilerTextRef.current) {
-            spoilerTextRef.current.value = spoilerText;
-          }
-          // Original JS passed `visibility` directly; preserve that (may be
-          // undefined for some statuses, mirroring the JS state shape).
-          setVisibility(editVisibility as string);
           setLanguage(
             editLanguage ||
               prefStringFn('posting:default:language')?.toLowerCase() ||
@@ -1006,8 +869,6 @@ function Compose({
               getPostQuoteApprovalPolicy(quoteApproval);
             setQuoteApprovalPolicy(postQuoteApprovalPolicy);
           }
-          setSensitive(!!editSensitive);
-          if (composablePoll) setPoll(composablePoll);
           setMediaAttachments(editMediaAttachments ?? []);
           setUIState('default');
         } catch (e) {
@@ -1019,54 +880,22 @@ function Compose({
     } else {
       focusTextarea();
       console.log('Apply prefs', prefsLocal);
-      const defaultVis = prefStringFn('posting:default:visibility');
-      if (defaultVis) {
-        setVisibility(defaultVis.toLowerCase());
-      }
       const defaultLang = prefStringFn('posting:default:language');
       if (defaultLang) {
         setLanguage(defaultLang.toLowerCase());
       }
-      if (prefsLocal['posting:default:sensitive']) {
-        setSensitive(!!prefsLocal['posting:default:sensitive']);
-      }
       const defaultQuotePolicy = prefStringFn('posting:default:quote_policy');
       if (defaultQuotePolicy) {
-        let policy = defaultQuotePolicy.toLowerCase();
-        if (defaultVis) {
-          const visLower = defaultVis.toLowerCase();
-          if (visLower === 'private' || visLower === 'direct') {
-            policy = 'nobody';
-          }
-        }
-        setQuoteApprovalPolicy(policy);
+        setQuoteApprovalPolicy(defaultQuotePolicy.toLowerCase());
       }
     }
     if (draftStatus) {
       const {
         status,
-        spoilerText,
-        visibility: draftVisibility,
         language: draftLanguage,
-        sensitive: draftSensitive,
-        sensitiveMedia: draftSensitiveMedia,
-        poll: draftPoll,
         mediaAttachments: draftMediaAttachments,
-        scheduledAt: draftScheduledAt,
         quoteApprovalPolicy: draftQuoteApprovalPolicy,
       } = draftStatus;
-      const composablePoll = draftPoll?.options
-        ? {
-            ...draftPoll,
-            options: draftPoll.options.map(
-              (o) => (typeof o === 'string' ? o : o?.title || o) as string,
-            ),
-            expiresIn:
-              draftPoll?.expiresIn ||
-              expiresInFromExpiresAt(draftPoll.expiresAt),
-            multiple: !!draftPoll.multiple,
-          }
-        : null;
       const textarea = textareaRef.current;
       if (!textarea) return;
       textarea.value = status ?? '';
@@ -1074,30 +903,12 @@ function Compose({
       // status starts with newline or space, focus on first position
       const cursorPos = /^\n|\s/.test(status ?? '') ? 0 : undefined;
       focusTextarea(cursorPos);
-      if (spoilerText && spoilerTextRef.current)
-        spoilerTextRef.current.value = spoilerText;
-      if (draftVisibility) setVisibility(draftVisibility);
       setLanguage(
         draftLanguage ||
           prefStringFn('posting:default:language')?.toLowerCase() ||
           DEFAULT_LANG,
       );
-      // Match JS guard: only skip when explicitly null. Coerce to boolean
-      // because the state is typed boolean; undefined would silently set the
-      // store to undefined in JS, which downstream readers already treat as
-      // falsy via `!!` checks.
-      if (draftSensitiveMedia !== null)
-        setSensitiveMedia(!!draftSensitiveMedia);
-      if (draftSensitive !== null) setSensitive(!!draftSensitive);
-      if (composablePoll) setPoll(composablePoll);
       if (draftMediaAttachments) setMediaAttachments(draftMediaAttachments);
-      if (draftScheduledAt) {
-        const d =
-          draftScheduledAt instanceof Date
-            ? draftScheduledAt
-            : new Date(draftScheduledAt);
-        setScheduledAt(d);
-      }
       if (draftQuoteApprovalPolicy)
         setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
     }
@@ -1200,7 +1011,6 @@ function Compose({
       value,
       hasMediaAttachments,
       hasIDMediaAttachments,
-      poll,
       isSelf,
       hasOnlyAcct,
       sameWithSource,
@@ -1245,8 +1055,7 @@ function Compose({
 
   const getCharCount = (): number => {
     const { value = '' } = textareaRef.current ?? {};
-    const { value: spoilerText = '' } = spoilerTextRef.current ?? {};
-    return stringLength(countableText(value)) + stringLength(spoilerText);
+    return stringLength(countableText(value));
   };
   const updateCharCount = (): void => {
     const count = getCharCount();
@@ -1337,14 +1146,8 @@ function Compose({
       draftStatus: {
         uid: UID.current,
         status: textareaRef.current?.value ?? '',
-        spoilerText: spoilerTextRef.current?.value ?? '',
-        visibility,
         language,
-        sensitive,
-        sensitiveMedia,
-        poll,
         mediaAttachments,
-        scheduledAt,
         quoteApprovalPolicy,
       },
       quote: currentQuoteStatus?.id
@@ -1443,9 +1246,6 @@ function Compose({
   const [showMentionPicker, setShowMentionPicker] = useState<
     boolean | MentionPickerState
   >(false);
-  const [showEmoji2Picker, setShowEmoji2Picker] = useState<
-    boolean | EmojiPickerState
-  >(false);
   const [showGIFPicker, setShowGIFPicker] = useState<boolean>(false);
 
   const [autoDetectedLanguages, setAutoDetectedLanguages] = useState<
@@ -1502,46 +1302,14 @@ function Compose({
   const mediaButtonDisabled =
     uiState === 'loading' ||
     (maxMediaAttachments !== undefined &&
-      mediaAttachments.length >= maxMediaAttachments) ||
-    !!poll; /* ||
+      mediaAttachments.length >= maxMediaAttachments); /* ||
     !!currentQuoteStatus?.id; */
-
-  const cwButtonDisabled = uiState === 'loading' || sensitive;
-  const onCWButtonClick = (): void => {
-    setSensitive(true);
-    setTimeout(() => {
-      spoilerTextRef.current?.focus();
-    }, 0);
-  };
-
-  // If maxOptions is not defined or defined and is greater than 1, show poll button
-  const showPollButton = maxOptions == null || maxOptions > 1;
-  const pollButtonDisabled =
-    uiState === 'loading' || !!poll || !!mediaAttachments.length; /* ||
-    !!currentQuoteStatus?.id; */
-  const onPollButtonClick = (): void => {
-    setPoll({
-      options: ['', ''],
-      expiresIn: 24 * 60 * 60, // 1 day
-      multiple: false,
-    });
-    // Focus first choice field
-    setTimeout(() => {
-      composeContainerRef.current
-        ?.querySelector<HTMLInputElement>('.poll-choice input[type="text"]')
-        ?.focus();
-    }, 0);
-  };
 
   const highlightLanguageField =
     language !== prevLanguage.current ||
     (autoDetectedLanguages?.length &&
       !autoDetectedLanguages.includes(language));
-  const highlightVisibilityField = visibility !== 'public';
-
   const highlightQuoteApprovalPolicyField = quoteApprovalPolicy !== 'public';
-  const disableQuotePolicy =
-    visibility === 'private' || visibility === 'direct';
 
   const addSubToolbarRef = useRef<HTMLSpanElement | null>(null);
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
@@ -1560,14 +1328,6 @@ function Compose({
       toolbar.hidden = overTruncated;
     },
   });
-
-  const showScheduledAt =
-    !editStatus && currentAccount?.instanceURL !== 'bsky.social';
-  const scheduledAtButtonDisabled = uiState === 'loading' || !!scheduledAt;
-  const onScheduledAtClick = (): void => {
-    const date = new Date(Date.now() + DEFAULT_SCHEDULED_AT);
-    setScheduledAt(date);
-  };
 
   return (
     <div id="compose-container-outer" ref={composeContainerRef}>
@@ -1622,13 +1382,8 @@ function Compose({
                       draftStatus: {
                         uid: UID.current,
                         status: textareaRef.current?.value ?? '',
-                        spoilerText: spoilerTextRef.current?.value ?? '',
-                        visibility,
                         language,
-                        sensitive,
-                        poll,
                         mediaAttachments,
-                        scheduledAt,
                       },
                       quoteStatus: currentQuoteStatus,
                     });
@@ -1717,14 +1472,8 @@ function Compose({
                         draftStatus: {
                           uid: UID.current,
                           status: textareaRef.current?.value ?? '',
-                          spoilerText: spoilerTextRef.current?.value ?? '',
-                          visibility,
                           language,
-                          sensitive,
-                          sensitiveMedia,
-                          poll,
                           mediaAttachments,
-                          scheduledAt,
                         },
                         quoteStatus: currentQuoteStatus,
                       };
@@ -1786,7 +1535,6 @@ function Compose({
         )}
         <form
           ref={formRef}
-          className={`form-visibility-${visibility}`}
           style={{
             pointerEvents: uiState === 'loading' ? 'none' : 'auto',
             opacity: uiState === 'loading' ? 0.5 : 1,
@@ -1819,60 +1567,16 @@ function Compose({
             >;
             console.log('ENTRIES', entries);
             const rawStatus = entries.status;
-            const rawVisibility = entries.visibility;
-            const rawSensitive = entries.sensitive;
-            const rawSensitiveMedia = entries.sensitiveMedia;
-            const rawSpoilerText = entries.spoilerText;
-            const rawScheduledAt = entries.scheduledAt;
             const rawQuoteApprovalPolicy = entries.quoteApprovalPolicy;
-
-            // Pre-cleanup
-            // checkboxes return "on" if checked
-            const sensitiveBool: boolean = rawSensitive === 'on';
-            const sensitiveMediaBool: boolean = rawSensitiveMedia === 'on';
-
-            // Convert datetime-local input value to RFC3339 Date string value
-            const scheduledAtIso: string | undefined = rawScheduledAt
-              ? new Date(rawScheduledAt as string).toISOString()
-              : undefined;
 
             let status: string | undefined =
               typeof rawStatus === 'string' ? rawStatus : undefined;
-            let spoilerText: string | undefined =
-              typeof rawSpoilerText === 'string' ? rawSpoilerText : undefined;
-            const submitVisibility: string | undefined =
-              typeof rawVisibility === 'string' ? rawVisibility : undefined;
             const submitQuoteApprovalPolicy: string | undefined =
               typeof rawQuoteApprovalPolicy === 'string'
                 ? rawQuoteApprovalPolicy
                 : undefined;
 
-            // Validation
-            /* Let the backend validate this
-          if (stringLength(status) > maxCharacters) {
-            alert(`Status is too long! Max characters: ${maxCharacters}`);
-            return;
-          }
-          if (
-            sensitive &&
-            stringLength(status) + stringLength(spoilerText) > maxCharacters
-          ) {
-            alert(
-              `Status and content warning is too long! Max characters: ${maxCharacters}`,
-            );
-            return;
-          }
-          */
-            if (poll) {
-              if (poll.options.length < 2) {
-                alert(t`Poll must have at least 2 options`);
-                return;
-              }
-              if (poll.options.some((option) => option === '')) {
-                alert(t`Some poll choices are empty`);
-                return;
-              }
-            }
+            // Let the backend validate character limits.
             // TODO: check for URLs and use `charactersReservedPerUrl` to calculate max characters
 
             if (mediaAttachments.length > 0) {
@@ -1888,8 +1592,6 @@ function Compose({
               }
             }
 
-            // Post-cleanup
-            spoilerText = (sensitiveBool && spoilerText) || undefined;
             status = status === '' ? undefined : status;
 
             // states.composerState.minimized = true;
@@ -1962,11 +1664,7 @@ function Compose({
               */
                 let params: Record<string, unknown> = {
                   status,
-                  // spoilerText,
-                  spoiler_text: spoilerText,
                   language,
-                  sensitive: sensitiveBool || sensitiveMediaBool,
-                  poll,
                   // mediaIds: mediaAttachments.map((attachment) => attachment.id),
                   media_ids: mediaAttachments.map(
                     (attachment) => attachment.id,
@@ -2000,10 +1698,8 @@ function Compose({
                       params.quoted_status_id = currentQuoteStatus.id;
                     }
                   }
-                  params.visibility = submitVisibility;
                   // params.inReplyToId = replyToStatus?.id || undefined;
                   params.in_reply_to_id = replyToStatus?.id || undefined;
-                  params.scheduled_at = scheduledAtIso;
                   if (linkPreview?.removed) {
                     params.disable_card = true;
                   } else if (linkPreview?.metadata) {
@@ -2049,7 +1745,6 @@ function Compose({
                   type: editStatus ? 'edit' : replyToStatus ? 'reply' : 'post',
                   newStatus,
                   instance,
-                  scheduledAt: scheduledAtIso,
                 });
               } catch (e) {
                 composerState.publishing = false;
@@ -2064,81 +1759,14 @@ function Compose({
           }}
         >
           <div>
-            <div
-              className={`compose-cw-container ${sensitive ? '' : 'collapsed'}`}
-            >
-              <input
-                type="hidden"
-                name="sensitive"
-                value={sensitive ? 'on' : 'off'}
-              />
-              {/* mimic the old checkbox */}
-              <TextExpander
-                keys=":"
-                className="spoiler-text-field-container"
-                onTrigger={(action) => {
-                  if (action?.name === 'custom-emojis') {
-                    setShowEmoji2Picker({
-                      targetElement:
-                        spoilerTextRef as RefObject<HTMLElement | null>,
-                      defaultSearchTerm:
-                        typeof action?.defaultSearchTerm === 'string'
-                          ? action.defaultSearchTerm || null
-                          : null,
-                    });
-                  }
-                }}
-              >
-                <input
-                  ref={spoilerTextRef}
-                  type="text"
-                  name="spoilerText"
-                  placeholder={t`Content warning`}
-                  data-allow-custom-emoji="true"
-                  disabled={uiState === 'loading'}
-                  className="spoiler-text-field"
-                  lang={language}
-                  spellCheck
-                  autoComplete="off"
-                  dir="auto"
-                  onInput={() => {
-                    updateCharCount();
-                  }}
-                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                    if (
-                      e.key === 'Enter' &&
-                      !e.ctrlKey &&
-                      !e.metaKey &&
-                      !e.nativeEvent.isComposing
-                    ) {
-                      e.preventDefault();
-                      focusTextarea();
-                    }
-                  }}
-                />
-              </TextExpander>
-              <button
-                type="button"
-                className="close-button plain4 small"
-                onClick={() => {
-                  setSensitive(false);
-                  textareaRef.current?.focus();
-                }}
-              >
-                <Icon icon="x" alt={t`Cancel`} />
-              </button>
-            </div>
             <Textarea
               ref={textareaRef}
-              data-allow-custom-emoji="true"
               placeholder={
                 replyToStatus
                   ? t`Post your reply`
                   : editStatus
                     ? t`Edit your post`
-                    : poll
-                      ? t`Ask a question`
-                      : t`What are you doing?`
+                    : t`What are you doing?`
               }
               required={mediaAttachments?.length === 0}
               disabled={uiState === 'loading'}
@@ -2149,12 +1777,7 @@ function Compose({
               }}
               maxCharacters={maxCharacters}
               onTrigger={(action: ToolbarAction) => {
-                if (action?.name === 'custom-emojis') {
-                  setShowEmoji2Picker({
-                    targetElement: lastFocusedEmojiFieldRef,
-                    defaultSearchTerm: action?.defaultSearchTerm || null,
-                  });
-                } else if (action?.name === 'mention') {
+                if (action?.name === 'mention') {
                   setShowMentionPicker({
                     defaultSearchTerm: action?.defaultSearchTerm || null,
                   });
@@ -2250,46 +1873,7 @@ function Compose({
                   />
                 );
               })}
-              {!isAtprotoCompose && (
-                <label className="media-sensitive">
-                  <input
-                    name="sensitiveMedia"
-                    type="checkbox"
-                    checked={sensitiveMedia}
-                    disabled={uiState === 'loading'}
-                    onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-                      const nextSensitiveMedia = (e.target as HTMLInputElement)
-                        .checked;
-                      setSensitiveMedia(nextSensitiveMedia);
-                    }}
-                  />{' '}
-                  <span>
-                    <Trans>Mark media as sensitive</Trans>
-                  </span>{' '}
-                  <Icon icon={`eye-${sensitiveMedia ? 'close' : 'open'}`} />
-                </label>
-              )}
             </div>
-          )}
-          {!!poll && (
-            <ComposePoll
-              lang={language}
-              maxOptions={maxOptions as number}
-              maxExpiration={maxExpiration as number}
-              minExpiration={minExpiration as number}
-              maxCharactersPerOption={maxCharactersPerOption}
-              poll={poll}
-              disabled={uiState === 'loading'}
-              onInput={(nextPoll) => {
-                if (nextPoll) {
-                  const newPoll = { ...nextPoll };
-                  setPoll(newPoll);
-                } else {
-                  setPoll(null);
-                  focusLastFocusedField();
-                }
-              }}
-            />
           )}
           {!!currentQuoteStatus?.id && (
             <div className="quote-status">
@@ -2299,34 +1883,6 @@ function Compose({
                 size="s"
                 readOnly
               />
-            </div>
-          )}
-          {scheduledAt && (
-            <div className="toolbar scheduled-at">
-              <span>
-                <label>
-                  <Trans>
-                    Posting on{' '}
-                    <ScheduledAtField
-                      scheduledAt={scheduledAt}
-                      setScheduledAt={setScheduledAt}
-                    />
-                  </Trans>
-                </label>{' '}
-                <small className="tag insignificant">
-                  {getLocalTimezoneName()}
-                </small>
-              </span>
-              <button
-                type="button"
-                className="plain4 close-button small"
-                onClick={() => {
-                  setScheduledAt(null);
-                  focusLastFocusedField();
-                }}
-              >
-                <Icon icon="x" alt={t`Cancel`} />
-              </button>
             </div>
           )}
           <QuoteSuggestion
@@ -2442,34 +1998,6 @@ function Compose({
                     >
                       <Icon icon="media" /> <span>{_(ADD_LABELS.media)}</span>
                     </MenuItem>
-                    {!isAtprotoCompose && (
-                      <MenuItem
-                        disabled={cwButtonDisabled}
-                        onClick={onCWButtonClick}
-                      >
-                        <Icon icon="alert" />{' '}
-                        <span>{_(ADD_LABELS.sensitive)}</span>
-                      </MenuItem>
-                    )}
-                    {showPollButton && (
-                      <MenuItem
-                        disabled={pollButtonDisabled}
-                        onClick={onPollButtonClick}
-                      >
-                        <Icon icon="poll" /> <span>{_(ADD_LABELS.poll)}</span>
-                      </MenuItem>
-                    )}
-                    <MenuDivider />
-                    <MenuItem
-                      onClick={() => {
-                        setShowEmoji2Picker({
-                          targetElement: lastFocusedEmojiFieldRef,
-                        });
-                      }}
-                    >
-                      <Icon icon="emoji2" />{' '}
-                      <span>{_(ADD_LABELS.customEmoji)}</span>
-                    </MenuItem>
                     {states.settings.composerGIFPicker && (
                       <MenuItem
                         disabled={mediaButtonDisabled}
@@ -2480,18 +2008,6 @@ function Compose({
                         <span className="icon icon-gif" role="img" />
                         <span>{_(ADD_LABELS.gif)}</span>
                       </MenuItem>
-                    )}
-                    {showScheduledAt && (
-                      <>
-                        <MenuDivider />
-                        <MenuItem
-                          disabled={scheduledAtButtonDisabled}
-                          onClick={onScheduledAtClick}
-                        >
-                          <Icon icon="schedule" />{' '}
-                          <span>{_(ADD_LABELS.scheduledPost)}</span>
-                        </MenuItem>
-                      </>
                     )}
                   </Menu2>
                 </>
@@ -2535,49 +2051,6 @@ function Compose({
                   />
                   <Icon icon="media" alt={_(ADD_LABELS.media)} />
                 </label>
-                {!isAtprotoCompose && (
-                  <button
-                    type="button"
-                    className="toolbar-button"
-                    disabled={cwButtonDisabled}
-                    onClick={onCWButtonClick}
-                  >
-                    <Icon icon="alert" alt={_(ADD_LABELS.sensitive)} />
-                  </button>
-                )}
-                {showPollButton && (
-                  <button
-                    type="button"
-                    className="toolbar-button"
-                    disabled={pollButtonDisabled}
-                    onClick={onPollButtonClick}
-                  >
-                    <Icon icon="poll" alt={_(ADD_LABELS.poll)} />
-                  </button>
-                )}
-                <div className="toolbar-divider" />
-                {/* <button
-                  type="button"
-                  className="toolbar-button"
-                  disabled={uiState === 'loading'}
-                  onClick={() => {
-                    setShowMentionPicker(true);
-                  }}
-                >
-                  <Icon icon="at" />
-                </button> */}
-                <button
-                  type="button"
-                  className="toolbar-button"
-                  disabled={uiState === 'loading'}
-                  onClick={() => {
-                    setShowEmoji2Picker({
-                      targetElement: lastFocusedEmojiFieldRef,
-                    });
-                  }}
-                >
-                  <Icon icon="emoji2" alt={_(ADD_LABELS.customEmoji)} />
-                </button>
                 {states.settings.composerGIFPicker && (
                   <button
                     type="button"
@@ -2592,19 +2065,6 @@ function Compose({
                       aria-label={_(ADD_LABELS.gif)}
                     />
                   </button>
-                )}
-                {showScheduledAt && (
-                  <>
-                    <div className="toolbar-divider" />
-                    <button
-                      type="button"
-                      className={`toolbar-button ${scheduledAt ? 'highlight' : ''}`}
-                      disabled={scheduledAtButtonDisabled}
-                      onClick={onScheduledAtClick}
-                    >
-                      <Icon icon="schedule" alt={_(ADD_LABELS.scheduledPost)} />
-                    </button>
-                  </>
                 )}
               </span>
             </span>
@@ -2640,10 +2100,10 @@ function Compose({
                   disabled={uiState === 'loading'}
                   dir="auto"
                 >
-                  <option value="public" disabled={disableQuotePolicy}>
+                  <option value="public">
                     <Trans>Anyone can quote</Trans>
                   </option>
-                  <option value="followers" disabled={disableQuotePolicy}>
+                  <option value="followers">
                     <Trans>Your followers can quote</Trans>
                   </option>
                   <option value="nobody">
@@ -2652,99 +2112,6 @@ function Compose({
                 </select>
               </label>
             )}
-            <label
-              className={`toolbar-button ${highlightVisibilityField ? 'highlight' : ''}`}
-              title={_(
-                visibilityText[visibility as keyof typeof visibilityText],
-              )}
-            >
-              {visibility === 'public' || visibility === 'direct' ? (
-                <Icon
-                  icon={
-                    visibilityIconsMap[
-                      visibility as keyof typeof visibilityIconsMap
-                    ]
-                  }
-                  alt={_(
-                    visibilityText[visibility as keyof typeof visibilityText],
-                  )}
-                />
-              ) : (
-                <span className="icon-text">
-                  {_(visibilityText[visibility as keyof typeof visibilityText])}
-                </span>
-              )}
-              <select
-                name="visibility"
-                value={visibility}
-                onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
-                  const target = e.target as HTMLSelectElement;
-                  setVisibility(target.value);
-                  if (target.value === 'private' || target.value === 'direct') {
-                    setQuoteApprovalPolicy('nobody');
-                  }
-
-                  if (target.value === 'direct' && currentQuoteStatus?.id) {
-                    const quoteURL = currentQuoteStatus.url;
-                    if (quoteURL) {
-                      const currentText = textareaRef.current?.value ?? '';
-                      if (!currentText.includes(quoteURL)) {
-                        const textarea = textareaRef.current;
-                        if (textarea) {
-                          textarea.value =
-                            currentText + (currentText ? '\n' : '') + quoteURL;
-                          oninputTextarea();
-                        }
-                      }
-                    }
-                    setQuoteCleared(true);
-                    showToast(t`Quotes can't be embedded in private mentions.`);
-                  } else if (target.value !== 'direct' && quoteCleared) {
-                    const quoteURL = (localQuoteStatus || quoteStatus)?.url;
-                    if (quoteURL && textareaRef.current) {
-                      const currentValue = textareaRef.current.value;
-                      const linkPos = currentValue.indexOf(quoteURL);
-                      if (linkPos !== -1) {
-                        let newValue =
-                          currentValue.slice(0, linkPos) +
-                          currentValue.slice(linkPos + quoteURL.length);
-                        newValue = newValue.replace(/\n+$/, '');
-                        textareaRef.current.value = newValue;
-                        oninputTextarea();
-                      }
-                    }
-                    setQuoteCleared(false);
-                  }
-                }}
-                disabled={
-                  uiState === 'loading' || !!editStatus || isAtprotoCompose
-                }
-                dir="auto"
-              >
-                <option value="public">
-                  <Trans>Public</Trans>
-                </option>
-                {!isAtprotoCompose && (
-                  <>
-                    {(supports('@pleroma/local-visibility-post') ||
-                      supports('@akkoma/local-visibility-post')) && (
-                      <option value="local">
-                        <Trans>Local</Trans>
-                      </option>
-                    )}
-                    <option value="unlisted">
-                      <Trans>Quiet public</Trans>
-                    </option>
-                    <option value="private">
-                      <Trans>Followers</Trans>
-                    </option>
-                    <option value="direct">
-                      <Trans>Private mention</Trans>
-                    </option>
-                  </>
-                )}
-              </select>
-            </label>{' '}
             <label
               className={`toolbar-button ${
                 highlightLanguageField ? 'highlight' : ''
@@ -2798,16 +2165,14 @@ function Compose({
                 void haptics.trigger('medium');
               }}
             >
-              {scheduledAt
-                ? t`Schedule`
-                : replyToStatus
-                  ? t`Reply`
-                  : editStatus
-                    ? t`Update`
-                    : t({
-                        message: 'Post',
-                        context: 'Submit button in composer',
-                      })}
+              {replyToStatus
+                ? t`Reply`
+                : editStatus
+                  ? t`Update`
+                  : t({
+                      message: 'Post',
+                      context: 'Submit button in composer',
+                    })}
             </button>
           </div>
         </form>
@@ -2835,39 +2200,6 @@ function Compose({
                   targetElement: textarea,
                   text: '@' + socialAddress,
                 });
-              }
-            }}
-          />
-        </Modal>
-      )}
-      {showEmoji2Picker && (
-        <Modal
-          onClose={() => {
-            setShowEmoji2Picker(false);
-            focusLastFocusedField();
-          }}
-        >
-          <CustomEmojisModal
-            instance={instance}
-            onClose={() => {
-              setShowEmoji2Picker(false);
-            }}
-            defaultSearchTerm={
-              typeof showEmoji2Picker === 'object'
-                ? showEmoji2Picker?.defaultSearchTerm
-                : undefined
-            }
-            onSelect={(emojiShortcode: string) => {
-              const emojiState =
-                typeof showEmoji2Picker === 'object' ? showEmoji2Picker : null;
-              const targetElement =
-                (emojiState?.targetElement?.current as
-                  | HTMLInputElement
-                  | HTMLTextAreaElement
-                  | null
-                  | undefined) || textareaRef.current;
-              if (targetElement) {
-                insertTextAtCursor({ targetElement, text: emojiShortcode });
               }
             }}
           />

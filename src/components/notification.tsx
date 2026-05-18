@@ -15,7 +15,6 @@ import useTruncated from '../utils/useTruncated';
 
 import Avatar from './avatar';
 import CustomEmoji from './custom-emoji';
-import FollowRequestButtonsRaw from './follow-request-buttons';
 import Icon from './icon';
 import Link, { type LinkProps } from './link';
 import NameTextComponent, {
@@ -65,17 +64,6 @@ function Status(props: StatusComponentProps) {
   return <StatusComponent {...(props as StatusViewProps)} />;
 }
 
-// The typed FollowRequestButtons requires `onChange`, but the JS original
-// (and the `notification` use site) historically omits it; preserve that
-// behavior with a shim that marks `onChange` as optional.
-interface FollowRequestButtonsShimProps {
-  accountID: string;
-  onChange?: () => void;
-}
-function FollowRequestButtons(props: FollowRequestButtonsShimProps) {
-  return <FollowRequestButtonsRaw {...props} />;
-}
-
 // `masto.v2.notifications` is typed as `unknown` in our local MastoClient
 // shim. Describe just the surface this component uses.
 interface MastoV2NotificationAccountsList {
@@ -97,11 +85,6 @@ interface MastoV2Notifications {
 interface EmojiUrlObject {
   url?: string;
   staticUrl?: string;
-}
-
-interface AnnualReportData {
-  year?: string | number;
-  [key: string]: unknown;
 }
 
 interface ModerationWarningPayload {
@@ -132,7 +115,6 @@ interface NotificationInput {
   report?: NotificationReport;
   event?: SeveredRelationshipEvent;
   moderation_warning?: ModerationWarningPayload;
-  annualReport?: AnnualReportData;
   emoji?: string;
   emoji_url?: string | EmojiUrlObject;
   // Client-side grouped notification
@@ -188,7 +170,6 @@ const NOTIFICATION_ICONS: Record<string, string> = {
   status: 'notification',
   reblog: 'rocket',
   follow: 'follow',
-  follow_request: 'follow-add',
   favourite: 'heart',
   poll: 'poll',
   update: 'pencil',
@@ -199,7 +180,6 @@ const NOTIFICATION_ICONS: Record<string, string> = {
   emoji_reaction: 'emoji2',
   reaction: 'emoji2',
   'pleroma:emoji_reaction': 'emoji2',
-  annual_report: 'celebrate',
   quote: 'quote',
   quoted_update: 'pencil',
 };
@@ -211,7 +191,6 @@ mention = Someone mentioned you in their status
 status = Someone you enabled notifications for has posted a status
 reblog = Someone boosted one of your statuses
 follow = Someone followed you
-follow_request = Someone requested to follow you
 favourite = Someone favourited one of your statuses
 poll = A poll you have voted in or created has ended
 update = A status you interacted with has been edited
@@ -321,9 +300,6 @@ const contentText: Record<string, ContentTextRenderer> = {
       />
     );
   },
-  follow_request: ({ account }) => (
-    <Trans>{account} requested to follow you.</Trans>
-  ),
   favourite: (args) => {
     const { account, components } = args;
     const count = args.count as number;
@@ -477,7 +453,6 @@ const contentText: Record<string, ContentTextRenderer> = {
   emoji_reaction: emojiText,
   reaction: emojiText,
   'pleroma:emoji_reaction': emojiText,
-  annual_report: ({ year }) => <Trans>Your {year} #Wrapstodon is here!</Trans>,
 };
 
 interface SeveredRelationshipArgs {
@@ -541,7 +516,6 @@ function Notification({
     report,
     event,
     moderation_warning,
-    annualReport,
     // Client-side grouped notification
     _ids,
     _accounts,
@@ -553,6 +527,10 @@ function Notification({
     groupKey,
   } = notification;
   let { type } = notification;
+
+  if (type === 'follow_request') {
+    return null;
+  }
 
   if ((type === 'mention' || type === 'quote') && !status) {
     // Could be deleted
@@ -664,10 +642,6 @@ function Notification({
         account: <NameText account={account} showAvatar />,
         emoji: notification.emoji,
         emojiURL,
-      });
-    } else if (type === 'annual_report') {
-      text = renderer({
-        ...notification.annualReport,
       });
     } else {
       text = renderer({
@@ -863,13 +837,6 @@ function Notification({
         {type !== 'mention' && type !== 'quote' && type !== 'mention+quote' && (
           <>
             <p>{text as ReactNode}</p>
-            {type === 'follow_request' &&
-              (() => {
-                const accountID = (account as AccountWithBot).id;
-                return accountID ? (
-                  <FollowRequestButtons accountID={accountID} />
-                ) : null;
-              })()}
             {type === 'severed_relationships' && (
               <div>
                 {/* JS original accessed `event.type` directly without a
@@ -921,13 +888,6 @@ function Notification({
                     Learn more <Icon icon="external" size="s" />
                   </Trans>
                 </a>
-              </div>
-            )}
-            {type === 'annual_report' && (
-              <div>
-                <Link to={`/annual_report/${annualReport?.year}`}>
-                  <Trans>View #Wrapstodon</Trans>
-                </Link>
               </div>
             )}
           </>

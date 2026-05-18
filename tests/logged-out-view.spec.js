@@ -595,8 +595,6 @@ test('keeps app-local routes outside the AT URI schema', async ({ page }) => {
     '/search',
     '/bsky.social/search',
     '/bsky.social/trending',
-    '/bsky.social/p',
-    '/bsky.social/p/l',
     '/bsky.social/a/12345',
     '/t/bluepy',
     '/notifications',
@@ -604,12 +602,8 @@ test('keeps app-local routes outside the AT URI schema', async ({ page }) => {
     '/following',
     '/b',
     '/f',
-    '/fh',
-    '/sp',
-    '/ft',
     '/catchup',
     '/yip',
-    '/annual_report/2024',
   ];
 
   /**

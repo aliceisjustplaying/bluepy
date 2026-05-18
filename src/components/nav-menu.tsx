@@ -219,14 +219,12 @@ function NavMenu(props: Record<string, unknown>) {
                   <Trans>Catch-up</Trans>
                 </span>
               </MenuLink>
-              {supports('@mastodon/mentions') && (
-                <MenuLink to="/mentions">
-                  <Icon icon="at" size="l" />{' '}
-                  <span>
-                    <Trans>Mentions</Trans>
-                  </span>
-                </MenuLink>
-              )}
+              <MenuLink to="/mentions">
+                <Icon icon="at" size="l" />{' '}
+                <span>
+                  <Trans>Mentions</Trans>
+                </span>
+              </MenuLink>
               <MenuLink to="/notifications">
                 <Icon icon="notification" size="l" />{' '}
                 <span>
@@ -275,27 +273,6 @@ function NavMenu(props: Record<string, unknown>) {
                     <Trans>Likes</Trans>
                   </span>
                 </MenuLink>
-                <MenuLink to="/fh">
-                  <Icon icon="hashtag" size="l" />{' '}
-                  <span>
-                    <Trans>Followed Hashtags</Trans>
-                  </span>
-                </MenuLink>
-                <MenuLink to="/sp">
-                  <Icon icon="schedule" size="l" />{' '}
-                  <span>
-                    <Trans>Scheduled Posts</Trans>
-                  </span>
-                </MenuLink>
-                <MenuDivider />
-                {supports('@mastodon/filters') && (
-                  <MenuLink to="/ft">
-                    <Icon icon="filters" size="l" />{' '}
-                    <span>
-                      <Trans>Filters</Trans>
-                    </span>
-                  </MenuLink>
-                )}
                 <MenuItem
                   onClick={() => {
                     states.showGenericAccounts = {
@@ -363,18 +340,6 @@ function NavMenu(props: Record<string, unknown>) {
             <Icon icon="chart" size="l" />{' '}
             <span>
               <Trans>Trending</Trans>
-            </span>
-          </MenuLink>
-          <MenuLink to={`/${instance}/p/l`}>
-            <Icon icon="building" size="l" />{' '}
-            <span>
-              <Trans>Local</Trans>
-            </span>
-          </MenuLink>
-          <MenuLink to={`/${instance}/p`}>
-            <Icon icon="earth" size="l" />{' '}
-            <span>
-              <Trans>Federated</Trans>
             </span>
           </MenuLink>
           {authenticated ? (

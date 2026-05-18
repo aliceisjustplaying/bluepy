@@ -45,12 +45,10 @@ import { supportsNativeQuote } from '../utils/quote-utils';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import { sorted } from '../utils/sorted';
-import states, { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
 import store from '../utils/store';
 import { getCurrentAccountID, getCurrentAccountNS } from '../utils/store-utils';
 import supports from '../utils/supports';
-import { assignFollowedTags } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
 // Types -----------------------------------------------------------------
@@ -108,7 +106,6 @@ type CatchupPost = mastodon.v1.Status & {
   account: CatchupAccount;
   reblog?: CatchupPost | null;
   _filtered?: FilterInfo;
-  _followedTags?: string[];
   _thread?: boolean;
   __FILTER?: string;
   __HIDDEN?: boolean;
@@ -176,7 +173,6 @@ interface FilterCounts {
   boosts: number;
   quotes: number;
   replies: number;
-  followedTags: number;
   original: number;
   [key: string]: number;
 }
@@ -223,7 +219,6 @@ const FILTER_KEYS: Record<string, MessageDescriptor> = {
   replies: msg`Replies`,
   quotes: msg`Quotes`,
   boosts: msg`Boosts`,
-  followedTags: msg`Followed tags`,
   groups: msg`Groups`,
   filtered: msg`Filtered`,
 };
@@ -382,8 +377,6 @@ function Catchup() {
           const results = await homeIterator.next();
           const { value } = results as { value: CatchupPost[] | undefined };
           if (value?.length) {
-            // This ignores maxCreatedAt filter, but it's ok for now
-            await assignFollowedTags(value, instance);
             let addedResults = false;
             for (let i = 0; i < value.length; i++) {
               const item = value[i];
@@ -401,15 +394,6 @@ function Catchup() {
                   );
                 if (filterInfo && filterInfo.action === 'hide') continue;
                 item._filtered = filterInfo as FilterInfo;
-
-                // Followed tags
-                const sKey = statusKey(item.id, instance);
-                const followed = sKey
-                  ? (states.statusFollowedTags[sKey] as
-                      | Iterable<string>
-                      | undefined)
-                  : undefined;
-                item._followedTags = followed ? [...followed] : [];
 
                 allResults.push(item);
                 addedResults = true;
@@ -450,7 +434,7 @@ function Catchup() {
 
       return allResults;
     },
-    [masto, supportsPixelfed, instance, isSelf],
+    [masto, supportsPixelfed, isSelf],
   );
 
   const [posts, setPosts] = useState<CatchupPost[]>([]);
@@ -599,7 +583,6 @@ function Catchup() {
       boosts = 0,
       quotes = 0,
       replies = 0,
-      followedTags = 0,
       original = 0;
     const linksMap: Record<string, LinkAggregate> = {};
     for (const post of posts) {
@@ -615,9 +598,6 @@ function Catchup() {
       } else if (supportsNativeQuote() && hasQuote(post.quote)) {
         quotes++;
         post.__FILTER = 'quotes';
-      } else if (post._followedTags?.length) {
-        followedTags++;
-        post.__FILTER = 'followedTags';
       } else if (
         post.inReplyToId &&
         post.inReplyToAccountId !== post.account?.id
@@ -700,7 +680,6 @@ function Catchup() {
         boosts,
         quotes,
         replies,
-        followedTags,
         original,
       },
       topLinks,
@@ -1013,7 +992,6 @@ function Catchup() {
         replies: 'replies',
         boosts: 'boosts',
         quotes: 'quotes',
-        followedTags: 'followed tags',
         groups: 'groups',
         filtered: 'filtered posts',
         other: '',
@@ -2215,7 +2193,6 @@ const PostLine = memo(
       quote,
       inReplyToId,
       inReplyToAccountId,
-      _followedTags: isFollowedTags,
       _filtered: filterInfo,
       visibility,
       __BOOSTERS,
@@ -2238,11 +2215,9 @@ const PostLine = memo(
             ? 'group'
             : reblog
               ? 'reblog'
-              : supportsNativeQuote() && hasQuote(quote)
-                ? 'quote'
-                : isFollowedTags?.length
-                  ? 'followed-tags'
-                  : ''
+            : supportsNativeQuote() && hasQuote(quote)
+              ? 'quote'
+              : ''
         } ${isReplyTo ? 'reply-to' : ''} ${
           postIsFiltered ? 'filtered' : ''
         } visibility-${visibility}`}

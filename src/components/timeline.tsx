@@ -59,7 +59,6 @@ interface StatusComponentProps {
   mediaFirst?: boolean;
   contentTextWeight?: boolean;
   enableCommentHint?: boolean;
-  showFollowedTags?: boolean;
   showReplyParent?: boolean;
 }
 function Status(props: StatusComponentProps) {
@@ -444,7 +443,6 @@ interface TimelineProps {
   refresh?: unknown;
   view?: string;
   filterContext?: string;
-  showFollowedTags?: boolean;
   showReplyParent?: boolean;
   clearWhenRefresh?: boolean;
 }
@@ -469,7 +467,6 @@ function Timeline({
   refresh,
   view,
   filterContext,
-  showFollowedTags,
   showReplyParent,
   clearWhenRefresh,
 }: TimelineProps) {
@@ -903,7 +900,6 @@ function Timeline({
                       Array.isArray(status.id) ? status.id.join(',') : status.id
                     }${String((status as TimelineStatusEntry)._pinned)}${view}`}
                     view={view}
-                    showFollowedTags={showFollowedTags}
                     showReplyParent={showReplyParent}
                     mediaFirst={mediaFirst}
                   />
@@ -998,7 +994,6 @@ interface TimelineItemProps {
   useItemID?: boolean;
   filterContext?: string;
   view?: string;
-  showFollowedTags?: boolean;
   showReplyParent?: boolean;
   mediaFirst?: boolean;
 }
@@ -1011,7 +1006,6 @@ export const TimelineItem = memo(
     // allowFilters,
     filterContext,
     view,
-    showFollowedTags,
     showReplyParent,
     mediaFirst,
   }: TimelineItemProps): ReactElement | ReactElement[] | null => {
@@ -1242,7 +1236,6 @@ export const TimelineItem = memo(
                   statusID={itemStatusID}
                   instance={instance}
                   enableCommentHint={isEnd}
-                  showFollowedTags={showFollowedTags}
                   // allowFilters={allowFilters}
                 />
               ) : (
@@ -1250,7 +1243,6 @@ export const TimelineItem = memo(
                   status={item}
                   instance={instance}
                   enableCommentHint={isEnd}
-                  showFollowedTags={showFollowedTags}
                   // allowFilters={allowFilters}
                 />
               )}
@@ -1317,7 +1309,6 @@ export const TimelineItem = memo(
               statusID={statusID}
               instance={instance}
               enableCommentHint
-              showFollowedTags={showFollowedTags}
               showReplyParent={showReplyParent}
               // allowFilters={allowFilters}
               mediaFirst={mediaFirst}
@@ -1327,7 +1318,6 @@ export const TimelineItem = memo(
               status={status}
               instance={instance}
               enableCommentHint
-              showFollowedTags={showFollowedTags}
               showReplyParent={showReplyParent}
               // allowFilters={allowFilters}
               mediaFirst={mediaFirst}

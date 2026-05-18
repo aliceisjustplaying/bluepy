@@ -70,7 +70,6 @@ export default function StatusContent({
   quoted,
   quoteDomain,
   onStatusLinkClick = () => {},
-  showFollowedTags,
   allowContextMenu,
   showActionsBar,
   showReplyParent,
@@ -233,8 +232,6 @@ export default function StatusContent({
     showSpoiler,
     showSpoilerMedia,
   } = useStatusDisplayState({
-    sKey,
-    instance,
     id,
     content,
     language: _language,
@@ -248,10 +245,8 @@ export default function StatusContent({
     poll,
     card,
     filterInfoMaybe,
-    showFollowedTags,
     enableTranslate,
     forceTranslate: _forceTranslate,
-    debugHover,
   });
   enableTranslate = resolvedEnableTranslate;
 

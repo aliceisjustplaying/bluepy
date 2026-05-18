@@ -497,7 +497,6 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             fetchAccount={refetchAccount}
             authenticated={authenticated}
             standalone
-            showEndorsements
           />
         )}
         {!mediaFirst && (

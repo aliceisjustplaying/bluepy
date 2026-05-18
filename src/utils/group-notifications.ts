@@ -100,7 +100,6 @@ const notificationTypeKeys: Record<string, string[]> = {
   status: ['account', 'status'],
   reblog: ['account', 'status'],
   follow: ['account'],
-  follow_request: ['account'],
   favourite: ['account', 'status'],
   poll: ['status'],
   update: ['status'],

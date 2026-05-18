@@ -23,8 +23,6 @@ interface MediaAttachment {
 
 interface DraftStatus {
   status?: string;
-  spoilerText?: string;
-  poll?: { options?: unknown[] };
   mediaAttachments?: MediaAttachment[];
 }
 
@@ -296,11 +294,10 @@ interface MiniDraftProps {
 function MiniDraft({ draft }: MiniDraftProps) {
   const { t } = useLingui();
   const { draftStatus, quote } = draft;
-  const { status, spoilerText, poll, mediaAttachments } = draftStatus;
-  const hasPoll = (poll?.options?.length ?? 0) > 0;
+  const { status, mediaAttachments } = draftStatus;
   const hasMedia = (mediaAttachments?.length ?? 0) > 0;
   const hasQuote = !!quote?.id;
-  const hasPollOrMedia = hasPoll || hasMedia || hasQuote;
+  const hasMediaOrQuote = hasMedia || hasQuote;
   const firstImageMedia = useMemo<string | null | undefined>(() => {
     if (!hasMedia || !mediaAttachments) return undefined;
     const image = mediaAttachments.find((media) => /image/.test(media.type));
@@ -325,7 +322,7 @@ function MiniDraft({ draft }: MiniDraftProps) {
   return (
     <>
       <div className="mini-draft">
-        {hasPollOrMedia && (
+        {hasMediaOrQuote && (
           <div
             className={`mini-draft-aside ${firstImageMedia ? 'has-image' : ''}`}
             style={
@@ -336,7 +333,6 @@ function MiniDraft({ draft }: MiniDraftProps) {
                 : {}
             }
           >
-            {hasPoll && <Icon icon="poll" alt={t`Poll`} />}
             {hasMedia && (
               <span>
                 <Icon icon="attachment" alt={t`Media`} />{' '}
@@ -347,7 +343,6 @@ function MiniDraft({ draft }: MiniDraftProps) {
           </div>
         )}
         <div className="mini-draft-main">
-          {!!spoilerText && <div className="mini-draft-spoiler">{spoilerText}</div>}
           {!!status && <div className="mini-draft-status">{status}</div>}
         </div>
       </div>

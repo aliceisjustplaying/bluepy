@@ -124,45 +124,36 @@ export default function Modals() {
             }
             sharedData={composeWindow.__SHARED_DATA__ || null}
             onClose={(results: Payload | undefined) => {
-              const { newStatus, instance, type, scheduledAt } = (results ||
+              const { newStatus, instance, type } = (results ||
                 {}) as {
                 newStatus?: { id: string } | null;
                 instance?: string | null;
                 type?: 'post' | 'reply' | 'edit';
-                scheduledAt?: string | null;
               };
               states.showCompose = false;
               composeWindow.__COMPOSE__ = null;
               composeWindow.__SHARED_DATA__ = null;
               if (newStatus) {
                 states.reloadStatusPage++;
-                if (scheduledAt) states.reloadScheduledPosts++;
+                const toastText = {
+                  post: t`Post published. Check it out.`,
+                  reply: t`Reply posted. Check it out.`,
+                  edit: t`Post updated. Check it out.`,
+                }[type || 'post'];
                 showToast({
-                  text: {
-                    post: scheduledAt
-                      ? t`Post scheduled`
-                      : t`Post published. Check it out.`,
-                    reply: scheduledAt
-                      ? t`Reply scheduled`
-                      : t`Reply posted. Check it out.`,
-                    edit: t`Post updated. Check it out.`,
-                  }[type || 'post'],
+                  text: toastText,
                   delay: 1000,
                   duration: 10_000, // 10 seconds
                   onClick: (toast: { hideToast: () => void }) => {
                     toast.hideToast();
                     states.prevLocation = toPrevLocation(location);
-                    if (scheduledAt) {
-                      navigatePath('/sp');
-                    } else {
-                      navigatePath(
-                        canonicalizeAppPath(
-                          instance
-                            ? `/${instance}/s/${newStatus.id}`
-                            : `/s/${newStatus.id}`,
-                        ),
-                      );
-                    }
+                    navigatePath(
+                      canonicalizeAppPath(
+                        instance
+                          ? `/${instance}/s/${newStatus.id}`
+                          : `/s/${newStatus.id}`,
+                      ),
+                    );
                   },
                 });
               }
