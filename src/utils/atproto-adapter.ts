@@ -1758,11 +1758,18 @@ function notificationReasonsForTypes(
 ): string[] | undefined {
   if (!types?.length) return undefined;
   const reasons = new Set<string>();
+  let hasTypeWithoutReasons = false;
   types.forEach((type) => {
-    notificationReasonsByType[type].forEach((reason) => {
+    const typeReasons = notificationReasonsByType[type];
+    if (!typeReasons?.length) {
+      hasTypeWithoutReasons = true;
+      return;
+    }
+    typeReasons.forEach((reason) => {
       reasons.add(reason);
     });
   });
+  if (hasTypeWithoutReasons) return undefined;
   return reasons.size ? [...reasons] : undefined;
 }
 
