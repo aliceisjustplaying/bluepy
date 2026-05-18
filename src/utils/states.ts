@@ -62,7 +62,6 @@ interface StatesSettings {
   contentTranslationTargetLanguage: string | null;
   contentTranslationHideLanguages: string[];
   contentTranslationAutoInline: boolean;
-  shortcutSettingsCloudImportExport: boolean;
   mediaAltGenerator: boolean;
   composerGIFPicker: boolean;
   cloakMode: boolean;
@@ -207,7 +206,6 @@ const states = proxy<StateProxy>({
     contentTranslationTargetLanguage: null,
     contentTranslationHideLanguages: [],
     contentTranslationAutoInline: false,
-    shortcutSettingsCloudImportExport: false,
     mediaAltGenerator: false,
     composerGIFPicker: false,
     cloakMode: false,
@@ -254,9 +252,6 @@ export function initStates(): void {
     [];
   states.settings.contentTranslationAutoInline =
     store.account.get<boolean>('settings-contentTranslationAutoInline') ??
-    false;
-  states.settings.shortcutSettingsCloudImportExport =
-    store.account.get<boolean>('settings-shortcutSettingsCloudImportExport') ??
     false;
   states.settings.mediaAltGenerator =
     store.account.get<boolean>('settings-mediaAltGenerator') ?? false;
@@ -305,9 +300,6 @@ subscribe(states, (changes) => {
     }
     if (path.join('.') === 'settings.contentTranslationAutoInline') {
       store.account.set('settings-contentTranslationAutoInline', !!value);
-    }
-    if (path.join('.') === 'settings.shortcutSettingsCloudImportExport') {
-      store.account.set('settings-shortcutSettingsCloudImportExport', !!value);
     }
     if (path.join('.') === 'settings.contentTranslationTargetLanguage') {
       console.log('SET', value);

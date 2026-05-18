@@ -747,42 +747,6 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                 </div>
               </li>
             )}
-            {authenticated && (
-              <li className="block">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={
-                      snapStates.settings.shortcutSettingsCloudImportExport
-                    }
-                    onChange={(e) => {
-                      states.settings.shortcutSettingsCloudImportExport =
-                        e.currentTarget.checked;
-                    }}
-                  />{' '}
-                  <Trans>"Cloud" import/export for shortcuts settings</Trans>{' '}
-                  <Icon icon="cloud" className="more-insignificant" />
-                </label>
-                <div className="sub-section insignificant">
-                  <small>
-                    <Trans>
-                      ⚠️⚠️⚠️ Very experimental.
-                      <br />
-                      Stored in your own profile’s notes. Profile (private)
-                      notes are mainly used for other profiles, and hidden for
-                      own profile.
-                    </Trans>
-                  </small>
-                </div>
-                <div className="sub-section insignificant">
-                  <small>
-                    <Trans>
-                      Note: This feature uses currently-logged-in server API.
-                    </Trans>
-                  </small>
-                </div>
-              </li>
-            )}
             <li className="block">
               <label>
                 <input

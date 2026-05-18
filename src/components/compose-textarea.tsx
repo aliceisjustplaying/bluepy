@@ -30,13 +30,6 @@ const HASHTAG_RE = new RegExp(
   'iug',
 );
 
-// https://github.com/mastodon/mastodon/blob/23e32a4b3031d1da8b911e0145d61b4dd47c4f96/app/models/custom_emoji.rb#L31
-const SHORTCODE_RE_FRAGMENT = '[a-zA-Z0-9_]{2,}';
-const SCAN_RE = new RegExp(
-  `(^|[^=\\/\\w])(:${SHORTCODE_RE_FRAGMENT}:)(?=[^A-Za-z0-9_:]|$)`,
-  'g',
-);
-
 const segmenter = new Intl.Segmenter();
 
 function highlightText(
@@ -72,11 +65,7 @@ function highlightText(
   return escapeHTML(rawText)
     .replace(urlRegexObj, '$2<mark class="compose-highlight-url">$3</mark>') // URLs
     .replace(MENTION_RE, '$1<mark class="compose-highlight-mention">$2</mark>') // Mentions
-    .replace(HASHTAG_RE, '$1<mark class="compose-highlight-hashtag">$2</mark>') // Hashtags
-    .replace(
-      SCAN_RE,
-      '$1<mark class="compose-highlight-emoji-shortcode">$2</mark>',
-    ); // Emoji shortcodes
+    .replace(HASHTAG_RE, '$1<mark class="compose-highlight-hashtag">$2</mark>'); // Hashtags
 }
 
 function autoResizeTextarea(textarea: HTMLTextAreaElement | null): void {
@@ -212,7 +201,7 @@ function Textarea(props: TextareaProps) {
   return (
     <TextExpander
       ref={textExpanderRef}
-      keys="@ ＠ : # ＃"
+      keys="@ ＠ # ＃"
       className="compose-field-container"
       onTrigger={onTrigger}
     >

@@ -77,6 +77,9 @@ function Columns() {
     if (type === 'profile') {
       params.id = getCurrentAccountID();
     }
+    if (type === 'mentions') {
+      return <Component key={type + JSON.stringify(params)} {...params} />;
+    }
     return (
       <Component key={type + JSON.stringify(params)} {...params} columnMode />
     );

@@ -511,7 +511,6 @@ interface AdaptedRelationship {
   mutingNotifications: boolean;
   requested: boolean;
   domainBlocking: boolean;
-  endorsed: boolean;
   _atproto?: AdaptedRelationshipAtproto;
 }
 
@@ -1674,7 +1673,6 @@ function relationshipFor(id: string | undefined): AdaptedRelationship {
     mutingNotifications: false,
     requested: false,
     domainBlocking: false,
-    endorsed: false,
   };
 }
 
@@ -2246,16 +2244,6 @@ export function createAtprotoClient({
         return [];
       },
     },
-    endorsements: {
-      async list(): Promise<never[]> {
-        return [];
-      },
-    },
-    note: {
-      async create() {
-        throw new Error('Bluesky private notes are not supported');
-      },
-    },
     async follow(): Promise<AdaptedRelationship> {
       const current = await fetchRelationship(id);
       if (!current.following) {
@@ -2322,12 +2310,6 @@ export function createAtprotoClient({
         blocking: false,
         _atproto: { ...current._atproto, blocking: undefined },
       };
-    },
-    async pin() {
-      throw new Error('Bluesky featured profiles are not supported');
-    },
-    async unpin() {
-      throw new Error('Bluesky featured profiles are not supported');
     },
   });
 
@@ -2929,41 +2911,6 @@ export function createAtprotoClient({
           });
         },
       },
-      tags: {
-        $select(name: string) {
-          return {
-            async fetch() {
-              return {
-                name,
-                url: `/t/${encodeURIComponent(name)}`,
-                history: [],
-                following: false,
-              };
-            },
-            async follow() {
-              throw new Error('Bluesky hashtag follows are not supported');
-            },
-            async unfollow() {
-              throw new Error('Bluesky hashtag follows are not supported');
-            },
-          };
-        },
-      },
-      featuredTags: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-        async create() {
-          throw new Error('Bluesky featured hashtags are not supported');
-        },
-        $select() {
-          return {
-            async remove() {
-              throw new Error('Bluesky featured hashtags are not supported');
-            },
-          };
-        },
-      },
       trends: {
         tags: {
           list() {
@@ -3035,18 +2982,6 @@ export function createAtprotoClient({
           },
         },
       },
-      conversations: {
-        list() {
-          return emptyCollection<unknown>();
-        },
-        $select() {
-          return {
-            async read() {
-              return {};
-            },
-          };
-        },
-      },
       announcements: {
         async list(): Promise<never[]> {
           return [];
@@ -3074,26 +3009,6 @@ export function createAtprotoClient({
         },
         async fetch() {
           return {};
-        },
-      },
-      customEmojis: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-      },
-      followRequests: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-        $select(id: string) {
-          return {
-            async authorize() {
-              return relationshipFor(id);
-            },
-            async reject() {
-              return relationshipFor(id);
-            },
-          };
         },
       },
       statuses: {

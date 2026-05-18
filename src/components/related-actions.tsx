@@ -28,7 +28,6 @@ import Loader from './loader';
 import MenuConfirm from './menu-confirm';
 import Menu2 from './menu2';
 import Modal from './modal';
-import PrivateNoteSheet from './private-note-sheet';
 import SubMenu2 from './submenu2';
 import TranslatedBioSheet from './translated-bio-sheet';
 
@@ -87,8 +86,6 @@ interface AccountSelectEndpoint {
     reblogs?: boolean;
   }): Promise<Relationship>;
   unfollow(): Promise<Relationship>;
-  pin(): Promise<Relationship>;
-  unpin(): Promise<Relationship>;
   mute(params: { duration: number }): Promise<Relationship>;
   unmute(): Promise<Relationship>;
   block(): Promise<Relationship>;
@@ -148,9 +145,6 @@ interface RelatedActionsProps {
   // dropped this prop.
   onProfileUpdate?: (account: AccountInfoShape) => void;
   setShowEditProfile?: (show: boolean) => void;
-  showEndorsements?: boolean;
-  renderEndorsements?: boolean | string;
-  setRenderEndorsements?: (value: boolean | string) => void;
 }
 
 function RelatedActions({
@@ -160,9 +154,6 @@ function RelatedActions({
   authenticated,
   onRelationshipChange = () => {},
   setShowEditProfile = () => {},
-  showEndorsements = false,
-  renderEndorsements = false,
-  setRenderEndorsements = () => {},
 }: RelatedActionsProps) {
   const { i18n, t } = useLingui();
   const {
@@ -201,10 +192,7 @@ function RelatedActions({
     blockedBy: _blockedBy,
     muting,
     mutingNotifications: _mutingNotifications,
-    requested,
     domainBlocking: _domainBlocking,
-    endorsed,
-    note: privateNote,
   } = (relationship ?? {}) as Partial<Relationship>;
 
   const [currentInfo, setCurrentInfo] = useState<mastodon.v1.Account | null>(
@@ -213,8 +201,6 @@ function RelatedActions({
   const [isSelf, setIsSelf] = useState<boolean>(false);
 
   const acctWithInstance = acct.includes('@') ? acct : `${acct}@${instance}`;
-
-  const supportsEndorsements = supports('@mastodon/endorsements');
 
   // The relationship fetch should re-run only when `info` or `authenticated`
   // change — never on every parent render of the (possibly non-memoized)
@@ -334,8 +320,6 @@ function RelatedActions({
 
   const [showTranslatedBio, setShowTranslatedBio] = useState<boolean>(false);
   const [showAddRemoveLists, setShowAddRemoveLists] = useState<boolean>(false);
-  const [showPrivateNoteModal, setShowPrivateNoteModal] =
-    useState<boolean>(false);
   const [lists, setLists] = useState<ListLike[]>([]);
   const [searchEnabled, setSearchEnabled] = useState<boolean>(false);
 
@@ -394,19 +378,6 @@ function RelatedActions({
           )}
         </span>{' '}
         <span className="buttons">
-          {!!privateNote && (
-            <button
-              type="button"
-              className="private-note-tag"
-              title={t`Notes`}
-              onClick={() => {
-                setShowPrivateNoteModal(true);
-              }}
-              dir="auto"
-            >
-              <span>{privateNote}</span>
-            </button>
-          )}
           {currentAuthenticated && isSelf && (
             <button
               type="button"
@@ -502,16 +473,6 @@ function RelatedActions({
                     <Trans>Translate bio</Trans>
                   </span>
                 </MenuItem>
-                {supports('@mastodon/profile-private-note') && (
-                  <MenuItem
-                    onClick={() => {
-                      setShowPrivateNoteModal(true);
-                    }}
-                  >
-                    <Icon icon="note" />
-                    <span>{privateNote ? t`Edit notes` : t`Add notes`}</span>
-                  </MenuItem>
-                )}
                 {following && !!relationship && (
                   <>
                     <MenuItem
@@ -576,71 +537,6 @@ function RelatedActions({
                     </MenuItem>
                   </>
                 )}
-                {supportsEndorsements && following && (
-                  <MenuItem
-                    onClick={() => {
-                      setRelationshipUIState('loading');
-                      void (async () => {
-                        try {
-                          if (endorsed) {
-                            const newRelationship = await getAccountsEndpoint(
-                              currentMasto,
-                            )
-                              .$select(currentInfo?.id || id)
-                              .unpin();
-                            setRelationship(newRelationship);
-                            setRelationshipUIState('default');
-                            showToast(
-                              t`@${username} is no longer featured on your profile.`,
-                            );
-                          } else {
-                            const newRelationship = await getAccountsEndpoint(
-                              currentMasto,
-                            )
-                              .$select(currentInfo?.id || id)
-                              .pin();
-                            setRelationship(newRelationship);
-                            setRelationshipUIState('default');
-                            showToast(
-                              t`@${username} is now featured on your profile.`,
-                            );
-                          }
-                        } catch (e) {
-                          console.error(e);
-                          setRelationshipUIState('error');
-                          if (endorsed) {
-                            showToast(
-                              t`Unable to unfeature @${username} on your profile.`,
-                            );
-                          } else {
-                            showToast(
-                              t`Unable to feature @${username} on your profile.`,
-                            );
-                          }
-                        }
-                      })();
-                    }}
-                  >
-                    <Icon icon="endorsement" />
-                    {endorsed
-                      ? t`Don't feature on profile`
-                      : t`Feature on profile`}
-                  </MenuItem>
-                )}
-                {showEndorsements &&
-                  supportsEndorsements &&
-                  !renderEndorsements && (
-                    <MenuItem
-                      onClick={() => {
-                        setRenderEndorsements(true);
-                      }}
-                    >
-                      <Icon icon="endorsement" />
-                      <span>
-                        <Trans>Show featured profiles</Trans>
-                      </span>
-                    </MenuItem>
-                  )}
                 {/* Add/remove from lists is only possible if following the account */}
                 {following && (
                   <MenuItem
@@ -685,22 +581,7 @@ function RelatedActions({
                     </span>
                   </MenuItem>
                 )}
-                {supportsEndorsements && !renderEndorsements && (
-                  <>
-                    <MenuItem
-                      onClick={() => {
-                        setRenderEndorsements(true);
-                      }}
-                    >
-                      <Icon icon="endorsement" />
-                      <Trans>Show featured profiles</Trans>
-                    </MenuItem>
-                  </>
-                )}
-                {((searchEnabled && isSelf) ||
-                  (supportsEndorsements && !renderEndorsements)) && (
-                  <MenuDivider />
-                )}
+                {searchEnabled && isSelf && <MenuDivider />}
               </>
             )}
             <MenuItem
@@ -1059,42 +940,16 @@ function RelatedActions({
                   </MenuItem>
                 </>
               )}
-            {import.meta.env.DEV && currentAuthenticated && isSelf && (
-              <>
-                <MenuDivider />
-                <MenuItem
-                  onClick={() => {
-                    void (async () => {
-                      const relationships = await getAccountsEndpoint(
-                        currentMasto,
-                      ).relationships.fetch({
-                        id: [accountID.current],
-                      });
-                      const { note: fetchedNote } = relationships[0] || {};
-                      if (fetchedNote) {
-                        alert(fetchedNote);
-                        console.log(fetchedNote);
-                      }
-                    })();
-                  }}
-                >
-                  <Icon icon="pencil" />
-                  <span>See note</span>
-                </MenuItem>
-              </>
-            )}
           </Menu2>
           {!relationship && relationshipUIState === 'loading' && (
             <Loader abrupt />
           )}
           {!!relationship && !moved && (
             <MenuConfirm
-              confirm={following || requested}
+              confirm={following}
               confirmLabel={
                 <span>
-                  {requested
-                    ? t`Withdraw follow request?`
-                    : t`Unfollow @${info.acct || info.username}?`}
+                  {t`Unfollow @${info.acct || info.username}?`}
                 </span>
               }
               menuItemClassName="danger"
@@ -1106,18 +961,10 @@ function RelatedActions({
                   try {
                     let newRelationship: Relationship | undefined;
 
-                    if (following || requested) {
-                      // const yes = confirm(
-                      //   requested
-                      //     ? 'Withdraw follow request?'
-                      //     : `Unfollow @${info.acct || info.username}?`,
-                      // );
-
-                      // if (yes) {
+                    if (following) {
                       newRelationship = await getAccountsEndpoint(currentMasto)
                         .$select(accountID.current)
                         .unfollow();
-                      // }
                     } else {
                       newRelationship = await getAccountsEndpoint(currentMasto)
                         .$select(accountID.current)
@@ -1126,16 +973,6 @@ function RelatedActions({
 
                     if (newRelationship) {
                       setRelationship(newRelationship);
-
-                      // Show endorsements if start following
-                      if (
-                        showEndorsements &&
-                        supportsEndorsements &&
-                        !renderEndorsements &&
-                        newRelationship.following
-                      ) {
-                        setRenderEndorsements('onlyOpenIfHasEndorsements');
-                      }
                     }
                     setRelationshipUIState('default');
                   } catch (e) {
@@ -1147,8 +984,8 @@ function RelatedActions({
             >
               <button
                 type="button"
-                className={following || requested ? 'light swap' : ''}
-                data-swap-state={following || requested ? 'danger' : ''}
+                className={following ? 'light swap' : ''}
+                data-swap-state={following ? 'danger' : ''}
                 disabled={loading}
               >
                 {following ? (
@@ -1158,15 +995,6 @@ function RelatedActions({
                     </span>
                     <span>
                       <Trans>Unfollow…</Trans>
-                    </span>
-                  </>
-                ) : requested ? (
-                  <>
-                    <span>
-                      <Trans>Requested</Trans>
-                    </span>
-                    <span>
-                      <Trans>Withdraw…</Trans>
                     </span>
                   </>
                 ) : locked ? (
@@ -1209,25 +1037,6 @@ function RelatedActions({
             accountID={accountID.current}
             onClose={() => {
               setShowAddRemoveLists(false);
-            }}
-          />
-        </Modal>
-      )}
-      {showPrivateNoteModal && (
-        <Modal
-          onClose={() => {
-            setShowPrivateNoteModal(false);
-          }}
-        >
-          <PrivateNoteSheet
-            account={info}
-            note={privateNote ?? undefined}
-            onRelationshipChange={(nextRelationship: unknown) => {
-              setRelationship(nextRelationship as Relationship);
-              // onRelationshipChange({ relationship: nextRelationship, currentID: accountID.current });
-            }}
-            onClose={() => {
-              setShowPrivateNoteModal(false);
             }}
           />
         </Modal>

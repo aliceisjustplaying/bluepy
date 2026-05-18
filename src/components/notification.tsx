@@ -15,7 +15,6 @@ import useTruncated from '../utils/useTruncated';
 
 import Avatar from './avatar';
 import CustomEmoji from './custom-emoji';
-import FollowRequestButtonsRaw from './follow-request-buttons';
 import Icon from './icon';
 import Link, { type LinkProps } from './link';
 import NameTextComponent, {
@@ -63,17 +62,6 @@ interface StatusComponentProps {
 }
 function Status(props: StatusComponentProps) {
   return <StatusComponent {...(props as StatusViewProps)} />;
-}
-
-// The typed FollowRequestButtons requires `onChange`, but the JS original
-// (and the `notification` use site) historically omits it; preserve that
-// behavior with a shim that marks `onChange` as optional.
-interface FollowRequestButtonsShimProps {
-  accountID: string;
-  onChange?: () => void;
-}
-function FollowRequestButtons(props: FollowRequestButtonsShimProps) {
-  return <FollowRequestButtonsRaw {...props} />;
 }
 
 // `masto.v2.notifications` is typed as `unknown` in our local MastoClient
@@ -182,7 +170,6 @@ const NOTIFICATION_ICONS: Record<string, string> = {
   status: 'notification',
   reblog: 'rocket',
   follow: 'follow',
-  follow_request: 'follow-add',
   favourite: 'heart',
   poll: 'poll',
   update: 'pencil',
@@ -204,7 +191,6 @@ mention = Someone mentioned you in their status
 status = Someone you enabled notifications for has posted a status
 reblog = Someone boosted one of your statuses
 follow = Someone followed you
-follow_request = Someone requested to follow you
 favourite = Someone favourited one of your statuses
 poll = A poll you have voted in or created has ended
 update = A status you interacted with has been edited
@@ -314,9 +300,6 @@ const contentText: Record<string, ContentTextRenderer> = {
       />
     );
   },
-  follow_request: ({ account }) => (
-    <Trans>{account} requested to follow you.</Trans>
-  ),
   favourite: (args) => {
     const { account, components } = args;
     const count = args.count as number;
@@ -544,6 +527,10 @@ function Notification({
     groupKey,
   } = notification;
   let { type } = notification;
+
+  if (type === 'follow_request') {
+    return null;
+  }
 
   if ((type === 'mention' || type === 'quote') && !status) {
     // Could be deleted
@@ -850,13 +837,6 @@ function Notification({
         {type !== 'mention' && type !== 'quote' && type !== 'mention+quote' && (
           <>
             <p>{text as ReactNode}</p>
-            {type === 'follow_request' &&
-              (() => {
-                const accountID = (account as AccountWithBot).id;
-                return accountID ? (
-                  <FollowRequestButtons accountID={accountID} />
-                ) : null;
-              })()}
             {type === 'severed_relationships' && (
               <div>
                 {/* JS original accessed `event.type` directly without a

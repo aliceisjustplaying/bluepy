@@ -28,8 +28,6 @@ const featuresMap = features as Record<string, string | undefined>;
 // Non-semver(?) UA string detection
 const containPixelfed = /pixelfed/i;
 const notContainPixelfed = /^(?!.*pixelfed).*$/i;
-const containPleroma = /pleroma/i;
-const containAkkoma = /akkoma/i;
 const platformFeatures: Record<string, RegExp> = {
   '@mastodon/lists': notContainPixelfed,
   '@mastodon/mentions': notContainPixelfed,
@@ -38,21 +36,16 @@ const platformFeatures: Record<string, RegExp> = {
   '@mastodon/post-bookmark': notContainPixelfed,
   '@mastodon/post-edit': notContainPixelfed,
   '@mastodon/profile-edit': notContainPixelfed,
-  '@mastodon/profile-private-note': notContainPixelfed,
   '@mastodon/pinned-posts': notContainPixelfed,
   '@pixelfed/trending': containPixelfed,
   '@pixelfed/home-include-reblogs': containPixelfed,
   '@pixelfed/global-feed': containPixelfed,
-  '@pleroma/local-visibility-post': containPleroma,
-  '@akkoma/local-visibility-post': containAkkoma,
 };
 
 const supportsCache: Record<string, boolean> = {};
 const bskyUnsupportedFeatures = new Set<string>([
-  '@mastodon/endorsements',
   '@mastodon/pinned-posts',
   '@mastodon/post-edit',
-  '@mastodon/profile-private-note',
   '@mastodon/trending-hashtags',
   '@mastodon/trending-links',
 ]);
