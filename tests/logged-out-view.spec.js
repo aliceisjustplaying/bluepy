@@ -6,6 +6,20 @@ test('has welcome page', async ({ page }) => {
   await expect(page.locator('#welcome')).toBeVisible();
 });
 
+test('login page appview switcher updates data-appview on html element', async ({ page }) => {
+  await page.goto('/login');
+  // Default should be bluesky
+  await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
+
+  // Switch to Blacksky
+  await page.getByRole('combobox').selectOption('blacksky');
+  await expect(page.locator('html')).toHaveAttribute('data-appview', 'blacksky');
+
+  // Switch back
+  await page.getByRole('combobox').selectOption('bluesky');
+  await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
+});
+
 test('loads post page and works', async ({ page }) => {
   await page.route('**/api/v1/statuses/123', async (route) => {
     await route.fulfill({
