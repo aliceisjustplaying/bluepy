@@ -467,9 +467,6 @@ function Compose({
   const toolbarCameraInputId = useId();
   const toolbarMediaInputId = useId();
   const disableQuotesId = useId();
-  const tgEverybodyId = useId();
-  const tgNobodyId = useId();
-  const tgCustomId = useId();
   const ruleFollowingId = useId();
   const ruleFollowersId = useId();
   const ruleMentionId = useId();
