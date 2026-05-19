@@ -795,7 +795,7 @@ msgid "Unable to mute conversation"
 msgstr ""
 
 #: src/components/compose.tsx
-msgid "Custom..."
+msgid "Custom"
 msgstr ""
 
 #: src/pages/account-statuses.tsx
@@ -862,6 +862,10 @@ msgstr ""
 msgid "Image description generator"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "Bluesky Post Controls"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut…"
 msgstr ""
@@ -878,10 +882,6 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Allow others to quote this post"
 msgstr ""
 
 #: src/components/status-media-embeds.tsx
@@ -3217,10 +3217,6 @@ msgstr ""
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Bluesky Reply & Quote Controls"
-msgstr ""
-
 #: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
 msgid "Explicit or potentially disturbing media."
@@ -3452,6 +3448,10 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcut settings"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Allow Quote Posts"
 msgstr ""
 
 #: src/components/drafts.tsx

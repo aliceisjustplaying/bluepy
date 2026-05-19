@@ -795,8 +795,8 @@ msgid "Unable to mute conversation"
 msgstr "Unable to mute conversation"
 
 #: src/components/compose.tsx
-msgid "Custom..."
-msgstr "Custom..."
+msgid "Custom"
+msgstr "Custom"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
@@ -862,6 +862,10 @@ msgstr "Back to showing trending posts"
 msgid "Image description generator"
 msgstr "Image description generator"
 
+#: src/components/compose.tsx
+msgid "Bluesky Post Controls"
+msgstr "Bluesky Post Controls"
+
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut…"
 msgstr "Add shortcut…"
@@ -879,10 +883,6 @@ msgstr "Trending News"
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
 msgstr "Open media or post details"
-
-#: src/components/compose.tsx
-msgid "Allow others to quote this post"
-msgstr "Allow others to quote this post"
 
 #: src/components/status-media-embeds.tsx
 msgid "Show media"
@@ -3220,10 +3220,6 @@ msgstr "Who can reply:"
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
 msgstr "{repliesCount, plural, one {# reply} other {# replies}}"
 
-#: src/components/compose.tsx
-msgid "Bluesky Reply & Quote Controls"
-msgstr "Bluesky Reply & Quote Controls"
-
 #: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
 msgid "Explicit or potentially disturbing media."
@@ -3456,6 +3452,10 @@ msgstr "Save"
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcut settings"
 msgstr "Unable to copy shortcut settings"
+
+#: src/components/compose.tsx
+msgid "Allow Quote Posts"
+msgstr "Allow Quote Posts"
 
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
