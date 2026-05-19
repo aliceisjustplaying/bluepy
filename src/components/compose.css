@@ -1091,19 +1091,10 @@
 
 /* Bluesky Interaction Settings Ultra-Compact UI Styles */
 .atproto-interaction-settings {
-  margin: 10px 8px 0 8px;
-  border: 1px solid
-    var(--outline-color, var(--divider-color, rgba(0, 0, 0, 0.12)));
-  border-radius: 12px;
-  padding: 10px 12px;
-  background-color: var(
-    --bg-faded-blur-color,
-    var(--bg-color-alt, rgba(0, 0, 0, 0.02))
-  );
-  backdrop-filter: blur(12px);
-  font-size: 0.9em;
-  box-shadow: 0 2px 6px var(--drop-shadow-color, rgba(0, 0, 0, 0.03));
-  transition: all 0.2s cubic-bezier(0.3, 0.5, 0, 1);
+  margin: 4px 8px 0 8px;
+  padding: 0 4px;
+  color: var(--text-insignificant-color);
+  font-size: 0.86em;
 }
 
 @media (min-width: 40em) {
@@ -1114,9 +1105,11 @@
 
 .atproto-interaction-settings-summary {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, max-content) auto;
   align-items: center;
-  gap: 8px;
+  justify-content: start;
+  gap: 4px;
+  min-height: 24px;
   cursor: pointer;
   user-select: none;
 }
@@ -1141,24 +1134,16 @@
 .atproto-interaction-settings-panel {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.atproto-interaction-settings-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 6px;
+  margin-top: 6px;
 }
 
 .atproto-interaction-settings-title {
-  font-weight: 700;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--text-color);
-  font-size: 0.9em;
+  color: var(--text-insignificant-color);
+  font-size: 0.94em;
   min-width: 0;
 }
 
@@ -1166,126 +1151,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.quote-toggle-icon-button {
-  display: inline-grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.12));
-  background-color: var(--bg-color, #fff);
-  color: var(--text-insignificant-color);
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.quote-toggle-icon-button.on {
-  border-color: var(--accent-color, var(--blue-color, #0085ff));
-  background-color: var(--accent-faded-color, rgba(0, 133, 255, 0.08));
-  color: var(--accent-color, var(--blue-color, #0085ff));
-}
-
-.quote-toggle-icon-button.off {
-  color: var(--text-insignificant-color);
-}
-
-.quote-toggle-icon-button:hover:not(:disabled) {
-  background-color: var(--bg-color-alt, rgba(0, 0, 0, 0.04));
-  border-color: var(--outline-hover-color, rgba(0, 0, 0, 0.25));
-}
-
-.quote-toggle-icon-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-/* Quote switch inline header layout */
-.quote-toggle-compact {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.quote-toggle-text {
-  font-size: 0.8em;
-  font-weight: 600;
-  color: var(--text-insignificant-color);
-}
-
-/* Switch Toggle small override */
-.switch-toggle {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 22px;
-}
-
-.switch-toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.switch-toggle .slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background-color: var(--outline-color, rgba(0, 0, 0, 0.18));
-  transition: 0.2s;
-  border-radius: 22px;
-}
-
-.switch-toggle .slider:before {
-  position: absolute;
-  content: '';
-  height: 16px;
-  width: 16px;
-  left: 3px;
-  bottom: 3px;
-  background-color: #fff;
-  transition: 0.2s;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-
-.switch-toggle input:checked + .slider {
-  background-color: var(--accent-color, var(--blue-color, #0085ff));
-}
-
-.switch-toggle input:checked + .slider:before {
-  transform: translateX(18px);
-}
-
-.switch-toggle input:disabled + .slider {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.switch-toggle.small {
-  width: 32px;
-  height: 18px;
-}
-
-.switch-toggle.small .slider {
-  border-radius: 18px;
-}
-
-.switch-toggle.small .slider:before {
-  height: 12px;
-  width: 12px;
-  left: 3px;
-  bottom: 3px;
-}
-
-.switch-toggle.small input:checked + .slider:before {
-  transform: translateX(14px);
 }
 
 /* Reply pills list container */

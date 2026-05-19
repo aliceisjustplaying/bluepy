@@ -765,13 +765,6 @@ msgstr ""
 msgid "No drafts found."
 msgstr ""
 
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-msgid "Turn quotes on"
-msgstr ""
-
 #: src/pages/bookmarks.tsx
 msgid "No bookmarks yet. Go bookmark something!"
 msgstr ""
@@ -3152,10 +3145,6 @@ msgstr ""
 msgid "Close window"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Quote settings:"
-msgstr ""
-
 #: src/pages/catchup.tsx
 msgid "That's all."
 msgstr ""
@@ -4106,13 +4095,6 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
-msgstr ""
-
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-msgid "Turn quotes off"
 msgstr ""
 
 #: src/components/account-info.tsx

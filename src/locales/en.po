@@ -765,13 +765,6 @@ msgstr "Read more →"
 msgid "No drafts found."
 msgstr "No drafts found."
 
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-msgid "Turn quotes on"
-msgstr "Turn quotes on"
-
 #: src/pages/bookmarks.tsx
 msgid "No bookmarks yet. Go bookmark something!"
 msgstr "No bookmarks yet. Go bookmark something!"
@@ -3155,10 +3148,6 @@ msgstr "Error deleting draft! Please try again."
 msgid "Close window"
 msgstr "Close window"
 
-#: src/components/compose.tsx
-msgid "Quote settings:"
-msgstr "Quote settings:"
-
 #: src/pages/catchup.tsx
 msgid "That's all."
 msgstr "That's all."
@@ -4110,13 +4099,6 @@ msgstr "Groups"
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
 msgstr "Invalid settings format"
-
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-msgid "Turn quotes off"
-msgstr "Turn quotes off"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx

@@ -466,7 +466,6 @@ function Compose({
   const menuMediaInputId = useId();
   const toolbarCameraInputId = useId();
   const toolbarMediaInputId = useId();
-  const disableQuotesId = useId();
 
   const apiResult = api();
   const { masto } = apiResult;
@@ -661,11 +660,6 @@ function Compose({
 
     return threadgateRules.length ? t`Some can reply` : t`Anyone can reply`;
   })();
-  const toggleDisableQuotes = (): void => {
-    const value = !disableQuotes;
-    setDisableQuotes(value);
-    store.session.set('currentDisableQuotes', value ? 'true' : 'false');
-  };
 
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
   const supportsQuoteApprovalPolicy =
@@ -2107,23 +2101,6 @@ function Compose({
                 <span className="atproto-interaction-settings-title">
                   <span>{replyGateSummary}</span>
                 </span>
-                <button
-                  type="button"
-                  className={`quote-toggle-icon-button ${disableQuotes ? 'off' : 'on'}`}
-                  aria-label={
-                    disableQuotes ? t`Turn quotes on` : t`Turn quotes off`
-                  }
-                  aria-pressed={!disableQuotes}
-                  title={disableQuotes ? t`Turn quotes on` : t`Turn quotes off`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleDisableQuotes();
-                  }}
-                  disabled={uiState === 'loading'}
-                >
-                  <Icon icon={disableQuotes ? 'block' : 'quote'} size="s" />
-                </button>
                 <Icon
                   icon="chevron-down"
                   size="s"
@@ -2131,28 +2108,6 @@ function Compose({
                 />
               </summary>
               <div className="atproto-interaction-settings-panel">
-                <div className="atproto-interaction-settings-header">
-                  <span className="reply-pills-label">
-                    <Trans>Quote settings:</Trans>
-                  </span>
-                  <button
-                    id={disableQuotesId}
-                    type="button"
-                    className={`quote-toggle-icon-button ${disableQuotes ? 'off' : 'on'}`}
-                    aria-label={
-                      disableQuotes ? t`Turn quotes on` : t`Turn quotes off`
-                    }
-                    aria-pressed={!disableQuotes}
-                    title={
-                      disableQuotes ? t`Turn quotes on` : t`Turn quotes off`
-                    }
-                    onClick={toggleDisableQuotes}
-                    disabled={uiState === 'loading'}
-                  >
-                    <Icon icon={disableQuotes ? 'block' : 'quote'} size="s" />
-                  </button>
-                </div>
-
                 <div className="reply-pills-container">
                   <span className="reply-pills-label">
                     <Trans>Who can reply:</Trans>
