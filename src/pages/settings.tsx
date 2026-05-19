@@ -131,7 +131,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
     store.local.get('experiments-timeline2') ?? false,
   );
 
-  const disableQuotePolicy = prefs['posting:default:visibility'] === 'private';
+  const disableQuotePolicy = false;
 
   return (
     <div
@@ -323,58 +323,41 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <section>
               <ul>
                 <li>
-                  <label htmlFor="posting-privacy-field">
-                    <Trans>Default visibility</Trans>{' '}
-                    <Icon
-                      icon="cloud"
-                      alt={t`Synced`}
-                      className="synced-icon"
-                    />
+                  <label htmlFor="posting-threadgate-field">
+                    <Trans>Default threadgate (Who can reply)</Trans>
                   </label>
                   <select
-                    id="posting-privacy-field"
+                    id="posting-threadgate-field"
                     value={
-                      (prefs['posting:default:visibility'] as
+                      (prefs['posting:default:threadgate'] as
                         | string
-                        | undefined) || 'public'
+                        | undefined) || 'everybody'
                     }
                     onChange={(e) => {
                       const { value } = e.currentTarget;
-                      void (async () => {
-                        try {
-                          await getMastoV1Resource<AccountsUpdateCredentialsClient>(
-                            masto,
-                            'accounts',
-                          ).updateCredentials({
-                            source: {
-                              privacy: value,
-                            },
-                          });
-                          const newPrefs: Preferences = {
-                            ...prefs,
-                            'posting:default:visibility': value,
-                          };
-                          if (value === 'private') {
-                            newPrefs['posting:default:quote_policy'] = 'nobody';
-                          }
-                          setPrefs(newPrefs);
-                          setPreferences(newPrefs);
-                          showToast(t`Default visibility updated`);
-                        } catch (err) {
-                          alert(t`Failed to update default visibility`);
-                          console.error(err);
-                        }
-                      })();
+                      const newPrefs: Preferences = {
+                        ...prefs,
+                        'posting:default:threadgate': value,
+                      };
+                      setPrefs(newPrefs);
+                      setPreferences(newPrefs);
+                      showToast(t`Default threadgate updated`);
                     }}
                   >
-                    <option value="public">
-                      <Trans>Public</Trans>
+                    <option value="everybody">
+                      <Trans>Everybody can reply</Trans>
                     </option>
-                    <option value="unlisted">
-                      <Trans>Quiet public</Trans>
+                    <option value="nobody">
+                      <Trans>Nobody can reply</Trans>
                     </option>
-                    <option value="private">
-                      <Trans>Followers</Trans>
+                    <option value="mention">
+                      <Trans>Only people you mention can reply</Trans>
+                    </option>
+                    <option value="following">
+                      <Trans>Only people you follow can reply</Trans>
+                    </option>
+                    <option value="followers">
+                      <Trans>Only your followers can reply</Trans>
                     </option>
                   </select>
                 </li>
@@ -451,14 +434,16 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                       : 'https://bsky.app/settings';
                   return (
                     <Trans>
-                      Synced to your {appviewLabel} account settings.{' '}
+                      Quote settings are synced to your {appviewLabel} account
+                      settings.{' '}
                       <a
                         href={settingsURL}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         Open {appviewLabel} settings.
-                      </a>
+                      </a>{' '}
+                      Default threadgate settings are stored locally.
                     </Trans>
                   );
                 })()}

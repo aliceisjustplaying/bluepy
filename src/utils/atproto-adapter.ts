@@ -667,6 +667,14 @@ interface CreateAtprotoClientOptions {
   persistSession?: AtpPersistSessionHandler;
 }
 
+export type ThreadgateAllowUISetting =
+  | { type: 'everybody' }
+  | { type: 'nobody' }
+  | { type: 'mention' }
+  | { type: 'following' }
+  | { type: 'followers' }
+  | { type: 'list'; list: string };
+
 export interface AtprotoPostParams {
   status?: string;
   poll?: unknown;
@@ -690,6 +698,7 @@ export interface AtprotoPostParams {
   quote_approval_policy?: string;
   quoteApprovalPolicy?: string;
   language?: string | null;
+  threadgate?: ThreadgateAllowUISetting[];
 }
 
 export function assertAtprotoPostParamsSupported(
@@ -3445,6 +3454,62 @@ export function createAtprotoClient({
             }
           }
           const res = await agent.post(record);
+
+          const threadgate = params.threadgate;
+
+          if (
+            threadgate &&
+            threadgate.length > 0 &&
+            !threadgate.some((tg) => tg.type === 'everybody')
+          ) {
+            const allow: Array<{ $type: string; list?: string }> = [];
+            if (!threadgate.some((tg) => tg.type === 'nobody')) {
+              for (const rule of threadgate) {
+                if (rule.type === 'mention') {
+                  allow.push({ $type: 'app.bsky.feed.threadgate#mentionRule' });
+                } else if (rule.type === 'following') {
+                  allow.push({ $type: 'app.bsky.feed.threadgate#followingRule' });
+                } else if (rule.type === 'followers') {
+                  allow.push({ $type: 'app.bsky.feed.threadgate#followerRule' });
+                } else if (rule.type === 'list') {
+                  allow.push({ $type: 'app.bsky.feed.threadgate#listRule', list: rule.list });
+                }
+              }
+            }
+            try {
+              const rkey = res.uri.split('/').pop();
+              if (rkey) {
+                await agent.com.atproto.repo.putRecord({
+                  repo: agentLoose.did ?? '',
+                  collection: 'app.bsky.feed.threadgate',
+                  rkey: rkey,
+                  record: {
+                    $type: 'app.bsky.feed.threadgate',
+                    post: res.uri,
+                    createdAt: new Date().toISOString(),
+                    allow: allow,
+                    hiddenReplies: [],
+                  },
+                });
+              }
+            } catch (err) {
+              console.error('Failed to create threadgate, deleting published post', err);
+              try {
+                const rkey = res.uri.split('/').pop();
+                if (rkey) {
+                  await agent.com.atproto.repo.deleteRecord({
+                    repo: agentLoose.did ?? '',
+                    collection: 'app.bsky.feed.post',
+                    rkey: rkey,
+                  });
+                }
+              } catch (deleteErr) {
+                console.error('Failed to delete orphaned post', deleteErr);
+              }
+              throw err;
+            }
+          }
+
           const id = encodeAtprotoID(res.uri);
           for (let i = 0; i < 10; i++) {
             try {

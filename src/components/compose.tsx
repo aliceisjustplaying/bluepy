@@ -140,6 +140,7 @@ interface DraftStatusLike {
   language?: string | null;
   mediaAttachments?: MediaAttachmentLike[];
   quoteApprovalPolicy?: string;
+  threadgate?: string;
   [key: string]: unknown;
 }
 
@@ -542,6 +543,12 @@ function Compose({
     return typeof v === 'string' ? v : undefined;
   };
 
+  const [threadgate, setThreadgate] = useState<string>(
+    store.session.get('currentThreadgate') ||
+      prefString('posting:default:threadgate') ||
+      'everybody',
+  );
+
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
   const isAtprotoCompose =
     !!currentAccount?.atproto || currentAccount?.instanceURL === 'bsky.social';
@@ -881,6 +888,9 @@ function Compose({
       if (draftMediaAttachments) setMediaAttachments(draftMediaAttachments);
       if (draftQuoteApprovalPolicy)
         setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
+      if (draftStatus.threadgate) {
+        setThreadgate(draftStatus.threadgate);
+      }
     }
     // Effect deliberately runs only when an explicit source status changes;
     // prefString/prefs/masto are read through latest-value
@@ -1128,6 +1138,7 @@ function Compose({
         language,
         mediaAttachments,
         quoteApprovalPolicy,
+        threadgate,
       },
       quote: currentQuoteStatus?.id
         ? {
@@ -1365,6 +1376,7 @@ function Compose({
                         status: textareaRef.current?.value ?? '',
                         language,
                         mediaAttachments,
+                        threadgate,
                       },
                       quoteStatus: currentQuoteStatus,
                     });
@@ -1457,6 +1469,7 @@ function Compose({
                           status: textareaRef.current?.value ?? '',
                           language,
                           mediaAttachments,
+                          threadgate,
                         },
                         quoteStatus: currentQuoteStatus,
                       };
@@ -1690,6 +1703,19 @@ function Compose({
                     params.disable_card = true;
                   } else if (linkPreview?.metadata) {
                     params.card_url = linkPreview.url;
+                  }
+                }
+                if (isAtprotoCompose && !replyToStatus) {
+                  if (threadgate === 'nobody') {
+                    params.threadgate = [{ type: 'nobody' }];
+                  } else if (threadgate === 'mention') {
+                    params.threadgate = [{ type: 'mention' }];
+                  } else if (threadgate === 'following') {
+                    params.threadgate = [{ type: 'following' }];
+                  } else if (threadgate === 'followers') {
+                    params.threadgate = [{ type: 'followers' }];
+                  } else {
+                    params.threadgate = [{ type: 'everybody' }];
                   }
                 }
                 params = removeNullUndefined(params);
@@ -2097,6 +2123,54 @@ function Compose({
                   </option>
                   <option value="nobody">
                     <Trans>Only you can quote</Trans>
+                  </option>
+                </select>
+              </label>
+            )}
+            {isAtprotoCompose && !replyToStatus && (
+              <label
+                className={`toolbar-button ${threadgate !== 'everybody' ? 'highlight' : ''}`}
+              >
+                {threadgate === 'everybody' && (
+                  <Icon icon="earth" alt={t`Who can reply: Everybody`} />
+                )}
+                {threadgate === 'nobody' && (
+                  <Icon icon="block" alt={t`Who can reply: Nobody`} />
+                )}
+                {threadgate === 'mention' && (
+                  <Icon icon="message" alt={t`Who can reply: Mentioned people`} />
+                )}
+                {threadgate === 'following' && (
+                  <Icon icon="group" alt={t`Who can reply: Followed people`} />
+                )}
+                {threadgate === 'followers' && (
+                  <Icon icon="lock" alt={t`Who can reply: Followers`} />
+                )}
+                <select
+                  name="threadgate"
+                  value={threadgate}
+                  onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
+                    const value = (e.target as HTMLSelectElement).value;
+                    setThreadgate(value);
+                    store.session.set('currentThreadgate', value);
+                  }}
+                  disabled={uiState === 'loading'}
+                  dir="auto"
+                >
+                  <option value="everybody">
+                    <Trans>Everybody can reply</Trans>
+                  </option>
+                  <option value="nobody">
+                    <Trans>Nobody can reply</Trans>
+                  </option>
+                  <option value="mention">
+                    <Trans>Only people you mention can reply</Trans>
+                  </option>
+                  <option value="following">
+                    <Trans>Only people you follow can reply</Trans>
+                  </option>
+                  <option value="followers">
+                    <Trans>Only your followers can reply</Trans>
                   </option>
                 </select>
               </label>
