@@ -520,8 +520,8 @@ function RelatedActions({
                             setRelationshipUIState('default');
                             showToast(
                               rel.showingReblogs
-                                ? t`Boosts from @${username} enabled.`
-                                : t`Boosts from @${username} disabled.`,
+                                ? t`Reposts from @${username} enabled.`
+                                : t`Reposts from @${username} disabled.`,
                             );
                           } catch (e) {
                             alert(e);
@@ -532,7 +532,7 @@ function RelatedActions({
                     >
                       <Icon icon="rocket" />
                       <span>
-                        {showingReblogs ? t`Disable boosts` : t`Enable boosts`}
+                        {showingReblogs ? t`Disable reposts` : t`Enable reposts`}
                       </span>
                     </MenuItem>
                   </>

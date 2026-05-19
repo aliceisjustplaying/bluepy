@@ -1170,7 +1170,7 @@ function AccountInfo({
                                     postingStats.boosts / postingStats.total
                                   ).toLocaleString(i18n.locale || undefined, {
                                     style: 'percent',
-                                  })} boosts`
+                                  })} reposts`
                                 : t`${(
                                     postingStats.originals / postingStats.total
                                   ).toLocaleString(i18n.locale || undefined, {
@@ -1183,7 +1183,7 @@ function AccountInfo({
                                     postingStats.boosts / postingStats.total
                                   ).toLocaleString(i18n.locale || undefined, {
                                     style: 'percent',
-                                  })} boosts`
+                                  })} reposts`
                             }
                           >
                             <div>
@@ -1277,7 +1277,7 @@ function AccountInfo({
                               )}
                               <span className="ib">
                                 <span className="posting-stats-legend-item posting-stats-bar-boosts" />{' '}
-                                <Trans>Boosts</Trans>
+                                <Trans>Reposts</Trans>
                               </span>
                             </div>
                           </div>

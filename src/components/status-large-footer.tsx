@@ -237,7 +237,7 @@ export default function StatusLargeFooter({
               <>
                 <Icon icon="rocket" />
                 <span className="menu-grow">
-                  {reblogged ? t`Unboost` : t`Boost`}
+                  {reblogged ? t`Undo repost` : t`Repost`}
                 </span>
                 {reblogsCount > 0 && (
                   <small className="more-insignificant">
@@ -299,8 +299,8 @@ export default function StatusLargeFooter({
           >
             <StatusButton
               checked={reblogged ?? undefined}
-              title={[canQuote ? t`Boost/Quote…` : t`Boost…`, t`Unboost`]}
-              alt={[t`Boost`, t`Boosted`]}
+              title={[canQuote ? t`Repost/Quote…` : t`Repost…`, t`Undo repost`]}
+              alt={[t`Repost`, t`Reposted`]}
               className="reblog-button"
               icon={reblogsCount <= 0 && quotesCount > 0 ? 'quote' : 'rocket'}
               count={reblogsCount}

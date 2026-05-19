@@ -1930,7 +1930,7 @@ export default function Sandbox() {
                       updateToggles({ contextType: 'reblog' });
                     }}
                   />
-                  <span>Boost</span>
+                  <span>Repost</span>
                 </label>
               </li>
               <li>

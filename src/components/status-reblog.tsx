@@ -91,7 +91,7 @@ export default function StatusReblog({
             instance={instance}
             showAvatar
           />{' '}
-          <span>boosted</span>
+          <span>reposted</span>
         </Trans>
       </div>
       {renderStatus({

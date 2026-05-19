@@ -238,9 +238,9 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
         instance={instance}
         emptyText={
           isDisabled
-            ? t`This timeline is disabled on this server.`
+            ? t`This timeline is disabled on Bluesky.`
             : isPrivate
-              ? t`Login required to see posts from this server.`
+              ? t`Login required to see posts from Bluesky.`
               : t`No one has posted anything with this tag yet.`
         }
         errorText={t`Unable to load posts with this tag`}
