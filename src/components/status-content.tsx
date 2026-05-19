@@ -309,7 +309,8 @@ export default function StatusContent({
   // - authenticated AND
   // - visibility != direct OR
   // - visibility = private AND isSelf
-  const isPublic = ['public', 'unlisted'].includes(visibility);
+  // - OR if it's an AT Protocol post (all are public and boostable)
+  const isPublic = ['public', 'unlisted'].includes(visibility) || !!status._atproto;
   let canBoost = authenticated && isPublic;
   if (visibility === 'private' && isSelf) {
     canBoost = true;
