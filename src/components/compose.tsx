@@ -2026,184 +2026,174 @@ function Compose({
                   <Icon icon="earth" size="s" />
                   <Trans>Post interaction settings</Trans>
                 </span>
-                <span className="atproto-interaction-settings-subtitle">
-                  <Trans>Who can reply and quote your post</Trans>
+                <label
+                  htmlFor={disableQuotesId}
+                  className="quote-toggle-compact"
+                >
+                  <span className="quote-toggle-text">
+                    <Trans>Allow quotes</Trans>
+                  </span>
+                  <span className="switch-toggle small">
+                    <input
+                      id={disableQuotesId}
+                      type="checkbox"
+                      checked={!disableQuotes}
+                      onChange={(e) => {
+                        const value = !e.target.checked;
+                        setDisableQuotes(value);
+                        store.session.set(
+                          'currentDisableQuotes',
+                          value ? 'true' : 'false',
+                        );
+                      }}
+                      disabled={uiState === 'loading'}
+                    />
+                    <span className="slider" />
+                  </span>
+                </label>
+              </div>
+
+              <div className="reply-pills-container">
+                <span className="reply-pills-label">
+                  <Trans>Who can reply:</Trans>
                 </span>
-              </div>
-
-              {/* Top Quick Options: Anyone / Nobody */}
-              <div className="reply-quick-options">
-                <button
-                  type="button"
-                  className={`reply-quick-option ${threadgate === 'everybody' ? 'active' : ''}`}
-                  onClick={() => {
-                    setThreadgate('everybody');
-                    setThreadgateRules([]);
-                    store.session.set('currentThreadgate', 'everybody');
-                    store.session.set(
-                      'currentThreadgateRules',
-                      JSON.stringify([]),
-                    );
-                  }}
-                  disabled={uiState === 'loading'}
-                >
-                  <span className="option-indicator">
-                    <span className="option-indicator-inner" />
-                  </span>
-                  <Icon icon="earth" size="s" />
-                  <span>
-                    <Trans>Anyone</Trans>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className={`reply-quick-option ${threadgate === 'nobody' ? 'active' : ''}`}
-                  onClick={() => {
-                    setThreadgate('nobody');
-                    setThreadgateRules([]);
-                    store.session.set('currentThreadgate', 'nobody');
-                    store.session.set(
-                      'currentThreadgateRules',
-                      JSON.stringify([]),
-                    );
-                  }}
-                  disabled={uiState === 'loading'}
-                >
-                  <span className="option-indicator">
-                    <span className="option-indicator-inner" />
-                  </span>
-                  <Icon icon="block" size="s" />
-                  <span>
-                    <Trans>Nobody</Trans>
-                  </span>
-                </button>
-              </div>
-
-              {/* Specific Rules (Checkboxes) - disabled if 'nobody' is active */}
-              <div
-                className={`reply-custom-options ${threadgate === 'nobody' ? 'disabled' : ''}`}
-              >
-                <div className="reply-options-title">
-                  <Trans>Limit replies to</Trans>
-                </div>
-
-                {/* Your followers */}
-                <button
-                  type="button"
-                  className={`reply-custom-row ${threadgateRules.includes('followers') ? 'active' : ''}`}
-                  aria-pressed={threadgateRules.includes('followers')}
-                  disabled={uiState === 'loading' || threadgate === 'nobody'}
-                  onClick={() => {
-                    const isChecked = threadgateRules.includes('followers');
-                    const nextRules = isChecked
-                      ? threadgateRules.filter((r) => r !== 'followers')
-                      : [...threadgateRules, 'followers'];
-                    setThreadgateRules(nextRules);
-                    setThreadgate(
-                      nextRules.length > 0 ? 'custom' : 'everybody',
-                    );
-                    store.session.set(
-                      'currentThreadgate',
-                      nextRules.length > 0 ? 'custom' : 'everybody',
-                    );
-                    store.session.set(
-                      'currentThreadgateRules',
-                      JSON.stringify(nextRules),
-                    );
-                  }}
-                >
-                  <div className="row-content">
-                    <span className="checkbox-indicator">
-                      <Icon icon="check" size="xs" />
-                    </span>
-                    <Icon icon="lock" size="s" />
-                    <span>
-                      <Trans>Your followers</Trans>
-                    </span>
-                  </div>
-                </button>
-
-                {/* People you follow */}
-                <button
-                  type="button"
-                  className={`reply-custom-row ${threadgateRules.includes('following') ? 'active' : ''}`}
-                  aria-pressed={threadgateRules.includes('following')}
-                  disabled={uiState === 'loading' || threadgate === 'nobody'}
-                  onClick={() => {
-                    const isChecked = threadgateRules.includes('following');
-                    const nextRules = isChecked
-                      ? threadgateRules.filter((r) => r !== 'following')
-                      : [...threadgateRules, 'following'];
-                    setThreadgateRules(nextRules);
-                    setThreadgate(
-                      nextRules.length > 0 ? 'custom' : 'everybody',
-                    );
-                    store.session.set(
-                      'currentThreadgate',
-                      nextRules.length > 0 ? 'custom' : 'everybody',
-                    );
-                    store.session.set(
-                      'currentThreadgateRules',
-                      JSON.stringify(nextRules),
-                    );
-                  }}
-                >
-                  <div className="row-content">
-                    <span className="checkbox-indicator">
-                      <Icon icon="check" size="xs" />
-                    </span>
-                    <Icon icon="group" size="s" />
-                    <span>
-                      <Trans>People you follow</Trans>
-                    </span>
-                  </div>
-                </button>
-
-                {/* People you mention */}
-                <button
-                  type="button"
-                  className={`reply-custom-row ${threadgateRules.includes('mention') ? 'active' : ''}`}
-                  aria-pressed={threadgateRules.includes('mention')}
-                  disabled={uiState === 'loading' || threadgate === 'nobody'}
-                  onClick={() => {
-                    const isChecked = threadgateRules.includes('mention');
-                    const nextRules = isChecked
-                      ? threadgateRules.filter((r) => r !== 'mention')
-                      : [...threadgateRules, 'mention'];
-                    setThreadgateRules(nextRules);
-                    setThreadgate(
-                      nextRules.length > 0 ? 'custom' : 'everybody',
-                    );
-                    store.session.set(
-                      'currentThreadgate',
-                      nextRules.length > 0 ? 'custom' : 'everybody',
-                    );
-                    store.session.set(
-                      'currentThreadgateRules',
-                      JSON.stringify(nextRules),
-                    );
-                  }}
-                >
-                  <div className="row-content">
-                    <span className="checkbox-indicator">
-                      <Icon icon="check" size="xs" />
-                    </span>
-                    <Icon icon="message" size="s" />
-                    <span>
-                      <Trans>People you mention</Trans>
-                    </span>
-                  </div>
-                </button>
-
-                {/* People from list */}
-                <div
-                  className={`reply-list-row-container ${threadgateRules.includes('list') ? 'active' : ''}`}
-                >
+                <div className="reply-pills-list">
+                  {/* Anyone Button */}
                   <button
                     type="button"
-                    className="reply-custom-row list-row-button"
-                    aria-pressed={threadgateRules.includes('list')}
+                    className={`reply-pill-btn ${threadgate === 'everybody' ? 'active' : ''}`}
+                    onClick={() => {
+                      setThreadgate('everybody');
+                      setThreadgateRules([]);
+                      store.session.set('currentThreadgate', 'everybody');
+                      store.session.set(
+                        'currentThreadgateRules',
+                        JSON.stringify([]),
+                      );
+                    }}
+                    disabled={uiState === 'loading'}
+                  >
+                    <Icon icon="earth" size="s" />
+                    <span>
+                      <Trans>Anyone</Trans>
+                    </span>
+                  </button>
+
+                  {/* Nobody Button */}
+                  <button
+                    type="button"
+                    className={`reply-pill-btn ${threadgate === 'nobody' ? 'active' : ''}`}
+                    onClick={() => {
+                      setThreadgate('nobody');
+                      setThreadgateRules([]);
+                      store.session.set('currentThreadgate', 'nobody');
+                      store.session.set(
+                        'currentThreadgateRules',
+                        JSON.stringify([]),
+                      );
+                    }}
+                    disabled={uiState === 'loading'}
+                  >
+                    <Icon icon="block" size="s" />
+                    <span>
+                      <Trans>Nobody</Trans>
+                    </span>
+                  </button>
+
+                  {/* Your followers */}
+                  <button
+                    type="button"
+                    className={`reply-pill-btn ${threadgateRules.includes('followers') ? 'active' : ''}`}
+                    onClick={() => {
+                      const isChecked = threadgateRules.includes('followers');
+                      const nextRules = isChecked
+                        ? threadgateRules.filter((r) => r !== 'followers')
+                        : [...threadgateRules, 'followers'];
+                      setThreadgateRules(nextRules);
+                      setThreadgate(
+                        nextRules.length > 0 ? 'custom' : 'everybody',
+                      );
+                      store.session.set(
+                        'currentThreadgate',
+                        nextRules.length > 0 ? 'custom' : 'everybody',
+                      );
+                      store.session.set(
+                        'currentThreadgateRules',
+                        JSON.stringify(nextRules),
+                      );
+                    }}
                     disabled={uiState === 'loading' || threadgate === 'nobody'}
+                  >
+                    <Icon icon="lock" size="s" />
+                    <span>
+                      <Trans>Followers</Trans>
+                    </span>
+                  </button>
+
+                  {/* People you follow */}
+                  <button
+                    type="button"
+                    className={`reply-pill-btn ${threadgateRules.includes('following') ? 'active' : ''}`}
+                    onClick={() => {
+                      const isChecked = threadgateRules.includes('following');
+                      const nextRules = isChecked
+                        ? threadgateRules.filter((r) => r !== 'following')
+                        : [...threadgateRules, 'following'];
+                      setThreadgateRules(nextRules);
+                      setThreadgate(
+                        nextRules.length > 0 ? 'custom' : 'everybody',
+                      );
+                      store.session.set(
+                        'currentThreadgate',
+                        nextRules.length > 0 ? 'custom' : 'everybody',
+                      );
+                      store.session.set(
+                        'currentThreadgateRules',
+                        JSON.stringify(nextRules),
+                      );
+                    }}
+                    disabled={uiState === 'loading' || threadgate === 'nobody'}
+                  >
+                    <Icon icon="group" size="s" />
+                    <span>
+                      <Trans>Following</Trans>
+                    </span>
+                  </button>
+
+                  {/* People you mention */}
+                  <button
+                    type="button"
+                    className={`reply-pill-btn ${threadgateRules.includes('mention') ? 'active' : ''}`}
+                    onClick={() => {
+                      const isChecked = threadgateRules.includes('mention');
+                      const nextRules = isChecked
+                        ? threadgateRules.filter((r) => r !== 'mention')
+                        : [...threadgateRules, 'mention'];
+                      setThreadgateRules(nextRules);
+                      setThreadgate(
+                        nextRules.length > 0 ? 'custom' : 'everybody',
+                      );
+                      store.session.set(
+                        'currentThreadgate',
+                        nextRules.length > 0 ? 'custom' : 'everybody',
+                      );
+                      store.session.set(
+                        'currentThreadgateRules',
+                        JSON.stringify(nextRules),
+                      );
+                    }}
+                    disabled={uiState === 'loading' || threadgate === 'nobody'}
+                  >
+                    <Icon icon="message" size="s" />
+                    <span>
+                      <Trans>Mentioned</Trans>
+                    </span>
+                  </button>
+
+                  {/* People from list */}
+                  <button
+                    type="button"
+                    className={`reply-pill-btn ${threadgateRules.includes('list') ? 'active' : ''}`}
                     onClick={() => {
                       const isChecked = threadgateRules.includes('list');
                       const nextRules = isChecked
@@ -2239,142 +2229,58 @@ function Compose({
                         );
                       }
                     }}
+                    disabled={uiState === 'loading' || threadgate === 'nobody'}
                   >
-                    <div className="row-content">
-                      <span className="checkbox-indicator">
-                        <Icon icon="check" size="xs" />
-                      </span>
-                      <Icon icon="building" size="s" />
-                      <span>
-                        <Trans>People from list</Trans>
-                      </span>
-                    </div>
+                    <Icon icon="building" size="s" />
+                    <span>
+                      <Trans>From List</Trans>
+                    </span>
                   </button>
-
-                  {threadgateRules.includes('list') && (
-                    <div className="reply-list-dropdown-container">
-                      {userLists.length > 0 ? (
-                        <select
-                          className="rule-list-select-bluepy"
-                          value={threadgateList}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setThreadgateList(value);
-                            store.session.set('currentThreadgateList', value);
-                            const matched = userLists.find(
-                              (l) =>
-                                (l._atproto?.uri ||
-                                  decodeURIComponent(l.id)) === value,
-                            );
-                            const name = matched?.title || '';
-                            setThreadgateListName(name);
-                            store.session.set(
-                              'currentThreadgateListName',
-                              name,
-                            );
-                          }}
-                          disabled={uiState === 'loading'}
-                          dir="auto"
-                        >
-                          <option value="" disabled>
-                            <Trans>Select a list...</Trans>
-                          </option>
-                          {userLists.map((list) => {
-                            const uri =
-                              list._atproto?.uri || decodeURIComponent(list.id);
-                            return (
-                              <option value={uri} key={uri}>
-                                {list.title}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      ) : (
-                        <span className="no-lists-warning">
-                          <Trans>(No user lists found)</Trans>
-                        </span>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {/* Allow quote posts (full-width pill row at the bottom) */}
-              <div
-                className={`quote-post-toggle-row ${!disableQuotes ? 'active' : ''}`}
-              >
-                <label htmlFor={disableQuotesId} className="quote-toggle-label">
-                  <div className="quote-label-content">
-                    <Icon icon="quote2" size="s" />
-                    <div className="quote-text-group">
-                      <span className="quote-title">
-                        <Trans>Allow quote posts</Trans>
-                      </span>
-                      <span className="quote-desc">
-                        <Trans>Let others quote or embed this post</Trans>
-                      </span>
-                    </div>
-                  </div>
-                  <span className="switch-toggle">
-                    <input
-                      id={disableQuotesId}
-                      type="checkbox"
-                      checked={!disableQuotes}
+              {threadgateRules.includes('list') && (
+                <div className="reply-list-dropdown-container-compact">
+                  {userLists.length > 0 ? (
+                    <select
+                      className="rule-list-select-bluepy-compact"
+                      value={threadgateList}
                       onChange={(e) => {
-                        const value = !e.target.checked;
-                        setDisableQuotes(value);
-                        store.session.set(
-                          'currentDisableQuotes',
-                          value ? 'true' : 'false',
+                        const value = e.target.value;
+                        setThreadgateList(value);
+                        store.session.set('currentThreadgateList', value);
+                        const matched = userLists.find(
+                          (l) =>
+                            (l._atproto?.uri || decodeURIComponent(l.id)) ===
+                            value,
                         );
+                        const name = matched?.title || '';
+                        setThreadgateListName(name);
+                        store.session.set('currentThreadgateListName', name);
                       }}
                       disabled={uiState === 'loading'}
-                    />
-                    <span className="slider" />
-                  </span>
-                </label>
-              </div>
-
-              {/* Human-readable live summary block */}
-              <div className="interaction-live-summary">
-                <Icon icon="info" size="xs" />
-                <span>
-                  {threadgate === 'everybody' && (
-                    <Trans>Anybody can reply.</Trans>
-                  )}
-                  {threadgate === 'nobody' && (
-                    <Trans>Replies are disabled.</Trans>
-                  )}
-                  {threadgate === 'custom' && (
-                    <>
-                      <Trans>Replies allowed for: </Trans>
-                      <strong>
-                        {threadgateRules
-                          .map((rule) => {
-                            if (rule === 'followers') return t`Your followers`;
-                            if (rule === 'following')
-                              return t`People you follow`;
-                            if (rule === 'mention')
-                              return t`People you mention`;
-                            if (rule === 'list') {
-                              return threadgateListName
-                                ? t`Members of "${threadgateListName}"`
-                                : t`Members of selected list`;
-                            }
-                            return rule;
-                          })
-                          .join(', ')}
-                      </strong>
-                    </>
-                  )}
-                  <span> • </span>
-                  {!disableQuotes ? (
-                    <Trans>Quote posts are enabled.</Trans>
+                      dir="auto"
+                    >
+                      <option value="" disabled>
+                        <Trans>Select a list...</Trans>
+                      </option>
+                      {userLists.map((list) => {
+                        const uri =
+                          list._atproto?.uri || decodeURIComponent(list.id);
+                        return (
+                          <option value={uri} key={uri}>
+                            {list.title}
+                          </option>
+                        );
+                      })}
+                    </select>
                   ) : (
-                    <Trans>Quote posts are disabled.</Trans>
+                    <span className="no-lists-warning-compact">
+                      <Trans>(No user lists found)</Trans>
+                    </span>
                   )}
-                </span>
-              </div>
+                </div>
+              )}
             </div>
           )}
           <div className="toolbar compose-footer">
