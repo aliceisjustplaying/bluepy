@@ -2042,178 +2042,91 @@ function Compose({
             }}
           />
           {isAtprotoCompose && !replyToStatus && (
-            <div
-              className="atproto-interaction-settings"
-              style={{
-                padding: '8px 12px',
-                borderTop: '1px solid var(--border-color)',
-                borderBottom: '1px solid var(--border-color)',
-                background: 'var(--bg-color-alt, rgba(0,0,0,0.02))',
-                fontSize: '0.9em',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '12px',
-                }}
-              >
-                <span
-                  style={{
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                >
+            <div className="atproto-interaction-settings">
+              <div className="atproto-interaction-settings-header">
+                <span className="atproto-interaction-settings-title">
                   <Icon icon="earth" size="s" />
-                  <Trans>Bluesky Reply & Quote Controls</Trans>
+                  <Trans>Bluesky Post Controls</Trans>
                 </span>
                 <label
                   htmlFor={disableQuotesId}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: '8px',
                     cursor: 'pointer',
+                    userSelect: 'none',
                   }}
                 >
-                  <input
-                    id={disableQuotesId}
-                    type="checkbox"
-                    checked={!disableQuotes}
-                    onChange={(e) => {
-                      const value = !e.target.checked;
-                      setDisableQuotes(value);
-                      store.session.set(
-                        'currentDisableQuotes',
-                        value ? 'true' : 'false',
-                      );
-                    }}
-                    disabled={uiState === 'loading'}
-                  />
-                  <span>
-                    <Trans>Allow others to quote this post</Trans>
+                  <span style={{ fontSize: '0.9em', color: 'var(--text-insignificant-color)' }}>
+                    <Trans>Allow Quote Posts</Trans>
+                  </span>
+                  <span className="switch-toggle">
+                    <input
+                      id={disableQuotesId}
+                      type="checkbox"
+                      checked={!disableQuotes}
+                      onChange={(e) => {
+                        const value = !e.target.checked;
+                        setDisableQuotes(value);
+                        store.session.set(
+                          'currentDisableQuotes',
+                          value ? 'true' : 'false',
+                        );
+                      }}
+                      disabled={uiState === 'loading'}
+                    />
+                    <span className="slider" />
                   </span>
                 </label>
               </div>
 
-              <div
-                style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <span>
-                    <Trans>Who can reply:</Trans>
-                  </span>
-                  <label
-                    htmlFor={tgEverybodyId}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      cursor: 'pointer',
+              <div className="reply-controls-container">
+                <span className="reply-controls-label">
+                  <Trans>Who can reply:</Trans>
+                </span>
+                <div className="reply-segmented-control">
+                  <button
+                    type="button"
+                    className={`reply-segment-option ${threadgate === 'everybody' ? 'active' : ''}`}
+                    onClick={() => {
+                      setThreadgate('everybody');
+                      store.session.set('currentThreadgate', 'everybody');
                     }}
+                    disabled={uiState === 'loading'}
                   >
-                    <input
-                      id={tgEverybodyId}
-                      type="radio"
-                      name="tg-type"
-                      checked={threadgate === 'everybody'}
-                      onChange={() => {
-                        setThreadgate('everybody');
-                        store.session.set('currentThreadgate', 'everybody');
-                      }}
-                      disabled={uiState === 'loading'}
-                    />
-                    <span>
-                      <Trans>Everybody</Trans>
-                    </span>
-                  </label>
-                  <label
-                    htmlFor={tgNobodyId}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      cursor: 'pointer',
+                    <Trans>Everybody</Trans>
+                  </button>
+                  <button
+                    type="button"
+                    className={`reply-segment-option ${threadgate === 'nobody' ? 'active' : ''}`}
+                    onClick={() => {
+                      setThreadgate('nobody');
+                      store.session.set('currentThreadgate', 'nobody');
                     }}
+                    disabled={uiState === 'loading'}
                   >
-                    <input
-                      id={tgNobodyId}
-                      type="radio"
-                      name="tg-type"
-                      checked={threadgate === 'nobody'}
-                      onChange={() => {
-                        setThreadgate('nobody');
-                        store.session.set('currentThreadgate', 'nobody');
-                      }}
-                      disabled={uiState === 'loading'}
-                    />
-                    <span>
-                      <Trans>Nobody</Trans>
-                    </span>
-                  </label>
-                  <label
-                    htmlFor={tgCustomId}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      cursor: 'pointer',
+                    <Trans>Nobody</Trans>
+                  </button>
+                  <button
+                    type="button"
+                    className={`reply-segment-option ${threadgate === 'custom' ? 'active' : ''}`}
+                    onClick={() => {
+                      setThreadgate('custom');
+                      store.session.set('currentThreadgate', 'custom');
                     }}
+                    disabled={uiState === 'loading'}
                   >
-                    <input
-                      id={tgCustomId}
-                      type="radio"
-                      name="tg-type"
-                      checked={threadgate === 'custom'}
-                      onChange={() => {
-                        setThreadgate('custom');
-                        store.session.set('currentThreadgate', 'custom');
-                      }}
-                      disabled={uiState === 'loading'}
-                    />
-                    <span>
-                      <Trans>Custom...</Trans>
-                    </span>
-                  </label>
+                    <Trans>Custom</Trans>
+                  </button>
                 </div>
 
                 {threadgate === 'custom' && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px',
-                      paddingLeft: '16px',
-                      borderLeft: '2px solid var(--border-color)',
-                      marginTop: '4px',
-                    }}
-                  >
-                    <div
-                      style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}
-                    >
+                  <div className="custom-rules-container">
+                    <div className="custom-rule-pills">
                       <label
                         htmlFor={ruleFollowingId}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          cursor: 'pointer',
-                        }}
+                        className={`custom-rule-pill ${threadgateRules.includes('following') ? 'active' : ''}`}
                       >
                         <input
                           id={ruleFollowingId}
@@ -2233,18 +2146,14 @@ function Compose({
                           }}
                           disabled={uiState === 'loading'}
                         />
+                        <Icon icon="group" size="s" />
                         <span>
                           <Trans>People you follow</Trans>
                         </span>
                       </label>
                       <label
                         htmlFor={ruleFollowersId}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          cursor: 'pointer',
-                        }}
+                        className={`custom-rule-pill ${threadgateRules.includes('followers') ? 'active' : ''}`}
                       >
                         <input
                           id={ruleFollowersId}
@@ -2264,18 +2173,14 @@ function Compose({
                           }}
                           disabled={uiState === 'loading'}
                         />
+                        <Icon icon="lock" size="s" />
                         <span>
                           <Trans>Your followers</Trans>
                         </span>
                       </label>
                       <label
                         htmlFor={ruleMentionId}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          cursor: 'pointer',
-                        }}
+                        className={`custom-rule-pill ${threadgateRules.includes('mention') ? 'active' : ''}`}
                       >
                         <input
                           id={ruleMentionId}
@@ -2293,29 +2198,15 @@ function Compose({
                           }}
                           disabled={uiState === 'loading'}
                         />
+                        <Icon icon="message" size="s" />
                         <span>
                           <Trans>People you mention</Trans>
                         </span>
                       </label>
-                    </div>
 
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        flexWrap: 'wrap',
-                        marginTop: '4px',
-                      }}
-                    >
                       <label
                         htmlFor={ruleListId}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          cursor: 'pointer',
-                        }}
+                        className={`custom-rule-pill ${threadgateRules.includes('list') ? 'active' : ''}`}
                       >
                         <input
                           id={ruleListId}
@@ -2350,14 +2241,18 @@ function Compose({
                           }}
                           disabled={uiState === 'loading'}
                         />
+                        <Icon icon="building" size="s" />
                         <span>
                           <Trans>People from list</Trans>
                         </span>
                       </label>
+                    </div>
 
-                      {threadgateRules.includes('list') &&
-                        (userLists.length > 0 ? (
+                    {threadgateRules.includes('list') && (
+                      <div className="custom-rules-actions">
+                        {userLists.length > 0 ? (
                           <select
+                            className="rule-list-select"
                             value={threadgateList}
                             onChange={(e) => {
                               const value = e.target.value;
@@ -2376,20 +2271,13 @@ function Compose({
                               );
                             }}
                             disabled={uiState === 'loading'}
-                            style={{
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              border: '1px solid var(--border-color)',
-                              background: 'var(--bg-color)',
-                            }}
                           >
                             <option value="" disabled>
                               <Trans>Select a list...</Trans>
                             </option>
                             {userLists.map((list) => {
                               const uri =
-                                list._atproto?.uri ||
-                                decodeURIComponent(list.id);
+                                list._atproto?.uri || decodeURIComponent(list.id);
                               return (
                                 <option value={uri} key={uri}>
                                   {list.title}
@@ -2401,8 +2289,10 @@ function Compose({
                           <span style={{ opacity: 0.6, fontSize: '0.9em' }}>
                             <Trans>(No user lists found)</Trans>
                           </span>
-                        ))}
-                    </div>
+                        )}
+                      </div>
+                    )}
+
                     {threadgateRules.length === 0 && (
                       <span
                         style={{
