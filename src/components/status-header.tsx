@@ -80,7 +80,11 @@ function StatusTimeIcon({
       />
     );
   }
-  if (visibility !== 'public' && visibility !== 'everybody' && visibility !== 'direct') {
+  if (
+    visibility !== 'public' &&
+    visibility !== 'everybody' &&
+    visibility !== 'direct'
+  ) {
     return (
       <Icon
         icon={visibilityIconsMap[visibility]}

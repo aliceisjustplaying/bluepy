@@ -1769,14 +1769,22 @@ function getThreadgateVisibility(post: AtprotoPost): string {
     const threadgate = post.threadgate as Record<string, unknown>;
     const record = threadgate.record as Record<string, unknown> | undefined;
     const threadgateRecord = record || threadgate;
-    const allow = threadgateRecord.allow as Array<{ $type?: string }> | undefined;
+    const allow = threadgateRecord.allow as
+      | Array<{ $type?: string }>
+      | undefined;
     if (allow) {
       if (allow.length === 0) {
         return 'nobody';
       }
-      const hasFollower = allow.some((rule) => rule?.$type === 'app.bsky.feed.threadgate#followerRule');
-      const hasFollowing = allow.some((rule) => rule?.$type === 'app.bsky.feed.threadgate#followingRule');
-      const hasMention = allow.some((rule) => rule?.$type === 'app.bsky.feed.threadgate#mentionRule');
+      const hasFollower = allow.some(
+        (rule) => rule?.$type === 'app.bsky.feed.threadgate#followerRule',
+      );
+      const hasFollowing = allow.some(
+        (rule) => rule?.$type === 'app.bsky.feed.threadgate#followingRule',
+      );
+      const hasMention = allow.some(
+        (rule) => rule?.$type === 'app.bsky.feed.threadgate#mentionRule',
+      );
       if (hasFollower) {
         return 'followers';
       }
@@ -3496,11 +3504,18 @@ export function createAtprotoClient({
                 if (rule.type === 'mention') {
                   allow.push({ $type: 'app.bsky.feed.threadgate#mentionRule' });
                 } else if (rule.type === 'following') {
-                  allow.push({ $type: 'app.bsky.feed.threadgate#followingRule' });
+                  allow.push({
+                    $type: 'app.bsky.feed.threadgate#followingRule',
+                  });
                 } else if (rule.type === 'followers') {
-                  allow.push({ $type: 'app.bsky.feed.threadgate#followerRule' });
+                  allow.push({
+                    $type: 'app.bsky.feed.threadgate#followerRule',
+                  });
                 } else if (rule.type === 'list') {
-                  allow.push({ $type: 'app.bsky.feed.threadgate#listRule', list: rule.list });
+                  allow.push({
+                    $type: 'app.bsky.feed.threadgate#listRule',
+                    list: rule.list,
+                  });
                 }
               }
             }
@@ -3521,7 +3536,10 @@ export function createAtprotoClient({
                 });
               }
             } catch (err) {
-              console.error('Failed to create threadgate, deleting published post', err);
+              console.error(
+                'Failed to create threadgate, deleting published post',
+                err,
+              );
               try {
                 const rkey = res.uri.split('/').pop();
                 if (rkey) {
