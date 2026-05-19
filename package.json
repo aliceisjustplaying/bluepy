@@ -12,7 +12,7 @@
     "fetch-instances": "node scripts/fetch-instances-list.js",
     "sourcemap": "bunx source-map-explorer dist/assets/*.js",
     "bundle-visualizer": "bunx vite-bundle-visualizer",
-    "messages:extract": "lingui extract",
+    "messages:extract": "lingui extract --clean",
     "messages:extract:clean": "lingui extract --locale en --clean",
     "messages:compile": "lingui compile",
     "fetch-i18n-volunteers": "env $(cat .env.local | grep -v \"#\" | xargs) node scripts/fetch-i18n-volunteers.js",

@@ -373,6 +373,7 @@ interface AtprotoPost extends Partial<
   indexedAt?: string;
   viewer?: AppBskyFeedDefs.ViewerState;
   reply?: { root?: AtprotoReplyRefLike; parent?: AtprotoReplyRefLike };
+  threadgate?: AppBskyFeedDefs.ThreadgateView;
 }
 
 type AtprotoReason =
@@ -527,7 +528,7 @@ interface AdaptedStatusBase {
   createdAt?: string;
   account: AdaptedAccount;
   content: string;
-  visibility: 'public';
+  visibility: string;
   sensitive: boolean;
   spoilerText: string;
   language?: string;
@@ -1763,6 +1764,33 @@ export function postProcessFollowingFeed(
   });
 }
 
+function getThreadgateVisibility(post: AtprotoPost): string {
+  if (post.threadgate) {
+    const threadgate = post.threadgate as Record<string, unknown>;
+    const record = threadgate.record as Record<string, unknown> | undefined;
+    const threadgateRecord = record || threadgate;
+    const allow = threadgateRecord.allow as Array<{ $type?: string }> | undefined;
+    if (allow) {
+      if (allow.length === 0) {
+        return 'nobody';
+      }
+      const hasFollower = allow.some((rule) => rule?.$type === 'app.bsky.feed.threadgate#followerRule');
+      const hasFollowing = allow.some((rule) => rule?.$type === 'app.bsky.feed.threadgate#followingRule');
+      const hasMention = allow.some((rule) => rule?.$type === 'app.bsky.feed.threadgate#mentionRule');
+      if (hasFollower) {
+        return 'followers';
+      }
+      if (hasFollowing) {
+        return 'following';
+      }
+      if (hasMention) {
+        return 'mention';
+      }
+    }
+  }
+  return 'public';
+}
+
 export function postToStatus(
   feedItemOrPost:
     | AtprotoFeedItem
@@ -1827,7 +1855,7 @@ export function postToStatus(
     createdAt: record.createdAt || post.indexedAt,
     account: actorToAccount(post.author),
     content: richTextToHTML(record.text || '', record.facets),
-    visibility: 'public',
+    visibility: getThreadgateVisibility(post),
     sensitive: !!post.labels?.length,
     spoilerText: '',
     language: record.langs?.[0],

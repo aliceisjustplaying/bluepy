@@ -2174,6 +2174,7 @@ msgstr "Send Report <0>+ Block profile</0>"
 
 #: src/components/compose.tsx
 #: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
 msgid "Nobody can reply"
 msgstr "Nobody can reply"
 
@@ -2212,6 +2213,7 @@ msgstr "This notification is from your other account."
 
 #: src/components/compose.tsx
 #: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
 msgid "Only your followers can reply"
 msgstr "Only your followers can reply"
 
@@ -2434,6 +2436,7 @@ msgstr "Add"
 
 #: src/components/compose.tsx
 #: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
 msgid "Only people you follow can reply"
 msgstr "Only people you follow can reply"
 
@@ -3623,6 +3626,7 @@ msgstr "Screenshot of multi-column UI"
 
 #: src/components/compose.tsx
 #: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
 msgid "Only people you mention can reply"
 msgstr "Only people you mention can reply"
 
