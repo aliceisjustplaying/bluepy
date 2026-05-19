@@ -5,6 +5,10 @@ import { subscribeKey } from 'valtio/utils';
 
 import { api } from './api';
 import isMastodonLinkMaybe from './is-mastodon-link-maybe';
+import {
+  DEFAULT_MUTED_POST_VISIBILITY,
+  type MutedPostVisibility,
+} from './muted-post-visibility';
 import pmem from './pmem';
 import rateLimit from './ratelimit';
 import { shouldFetchThreadParent } from './reply-context';
@@ -66,6 +70,7 @@ interface StatesSettings {
   composerGIFPicker: boolean;
   cloakMode: boolean;
   noAnimations: boolean;
+  mutedPostVisibility: MutedPostVisibility;
   // Future settings keys land here without touching this hub.
   [key: string]: unknown;
 }
@@ -94,6 +99,7 @@ interface StateProxy {
   spoilers: Record<string, unknown>;
   spoilersMedia: Record<string, unknown>;
   revealedQuotes: Record<string, unknown>;
+  revealedMutedPosts: Record<string, boolean>;
   scrollPositions: Record<string, unknown>;
   unfurledLinks: Record<string, unknown>;
   statusQuotes: Record<string, unknown[]>;
@@ -171,6 +177,7 @@ const states = proxy<StateProxy>({
   spoilers: {},
   spoilersMedia: {},
   revealedQuotes: {},
+  revealedMutedPosts: {},
   scrollPositions: {},
   unfurledLinks: {},
   statusQuotes: {},
@@ -212,6 +219,7 @@ const states = proxy<StateProxy>({
     composerGIFPicker: false,
     cloakMode: false,
     noAnimations: false,
+    mutedPostVisibility: DEFAULT_MUTED_POST_VISIBILITY,
   },
 });
 
@@ -263,6 +271,9 @@ export function initStates(): void {
     store.account.get<boolean>('settings-cloakMode') ?? false;
   states.settings.noAnimations =
     store.account.get<boolean>('settings-noAnimations') ?? false;
+  states.settings.mutedPostVisibility =
+    store.account.get<MutedPostVisibility>('settings-mutedPostVisibility') ??
+    DEFAULT_MUTED_POST_VISIBILITY;
   // Apply persisted body classes on init (subscribe handlers only fire on change)
   if (typeof document !== 'undefined' && document.body) {
     document.body.classList.toggle(
@@ -327,6 +338,9 @@ subscribe(states, (changes) => {
     }
     if (path.join('.') === 'settings.noAnimations') {
       store.account.set('settings-noAnimations', !!value);
+    }
+    if (path.join('.') === 'settings.mutedPostVisibility') {
+      store.account.set('settings-mutedPostVisibility', value);
     }
   }
 });

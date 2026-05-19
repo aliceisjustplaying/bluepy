@@ -2,20 +2,26 @@ import './status.css';
 
 import { shallowEqual } from 'fast-equals';
 import { memo } from 'react';
-import { use, useCallback } from 'react';
+import { use, useCallback, useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { api } from '../utils/api';
 import { useEditHistory } from '../utils/edit-history-context';
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
+import {
+  getMutedPostVisibility,
+  shouldCollapseMutedStatus,
+  shouldHideMutedStatus,
+} from '../utils/muted-post-visibility';
 import states, { statusKey } from '../utils/states';
 import { getCurrentAccID } from '../utils/store-utils';
 
 import FilteredStatus from './filtered-status';
+import MutedStatus from './muted-status';
 import StatusContent from './status-content';
 import { StatusGhost, StatusSkeleton } from './status-placeholders';
-import StatusReblog from './status-reblog';
+import StatusReblog, { type RenderReblogStatusArgs } from './status-reblog';
 import type {
   AnyMediaAttachment,
   AnyStatus,
@@ -60,6 +66,7 @@ export interface StatusComponentProps {
   showCommentCount?: boolean | ((count?: number) => boolean);
   showQuoteCount?: boolean | ((count?: number) => boolean);
   ghost?: GhostInfo | null;
+  forceShowMuted?: boolean;
 }
 
 function Status(props: StatusComponentProps) {
@@ -133,9 +140,11 @@ function StatusRouter({
   mediaFirst,
   showCommentCount: forceShowCommentCount,
   showQuoteCount: forceShowQuoteCount,
+  forceShowMuted,
 }: StatusRouterProps) {
   const apiResult = api({ instance: propInstance });
   const instance = apiResult.instance;
+  const snapStates = useSnapshot(states);
   const { editHistoryRef, editHistoryMode, editedAtIndex } = useEditHistory();
   const sKey = resolvedSKey;
 
@@ -170,6 +179,8 @@ function StatusRouter({
 
   const currentAccount = getCurrentAccID();
   const isSelf = currentAccount && currentAccount == accountId;
+  const mutedPostVisibility = getMutedPostVisibility(snapStates.settings);
+  const directContext = withinContext || size === 'l';
 
   const filterContext = use(FilterContext);
   // The short-circuited `&&` chain narrows to `false | FilterState`; in
@@ -200,8 +211,91 @@ function StatusRouter({
     },
     [status],
   );
+  const hoverContainerProps = useMemo(
+    () => ({
+      onMouseEnter: debugHover,
+    }),
+    [debugHover],
+  );
+  const renderPeekStatus = useCallback(
+    (peekStatus: AnyStatus, peekInstance: string | undefined) => (
+      <Status status={peekStatus} instance={peekInstance} size="s" readOnly />
+    ),
+    [],
+  );
+  const renderExpandedStatus = useCallback(
+    (expandedStatus: AnyStatus, expandedInstance: string | undefined) => (
+      <Status
+        status={expandedStatus}
+        instance={expandedInstance}
+        size={size}
+        contentTextWeight={contentTextWeight}
+        readOnly={readOnly}
+        enableCommentHint={enableCommentHint}
+        withinContext={withinContext}
+        enableTranslate={enableTranslate}
+        forceTranslate={_forceTranslate}
+        previewMode={previewMode}
+        allowFilters={allowFilters}
+        onMediaClick={onMediaClick}
+        quoted={quoted}
+        quoteDomain={quoteDomain}
+        onStatusLinkClick={onStatusLinkClick}
+        allowContextMenu={allowContextMenu}
+        showActionsBar={showActionsBar}
+        showReplyParent={showReplyParent}
+        hideReplyBadge={hideReplyBadge}
+        mediaFirst={mediaFirst}
+        showCommentCount={forceShowCommentCount}
+        showQuoteCount={forceShowQuoteCount}
+        forceShowMuted
+      />
+    ),
+    [
+      _forceTranslate,
+      allowContextMenu,
+      allowFilters,
+      contentTextWeight,
+      enableCommentHint,
+      enableTranslate,
+      forceShowCommentCount,
+      forceShowQuoteCount,
+      hideReplyBadge,
+      mediaFirst,
+      onMediaClick,
+      onStatusLinkClick,
+      previewMode,
+      quoteDomain,
+      quoted,
+      readOnly,
+      showActionsBar,
+      showReplyParent,
+      size,
+      withinContext,
+    ],
+  );
+  const renderReblogStatus = useCallback(
+    (args: RenderReblogStatusArgs) => <Status {...args} />,
+    [],
+  );
+  const renderContentStatus = useCallback(
+    (statusProps: StatusComponentProps) => <Status {...statusProps} />,
+    [],
+  );
 
   if (filterInfoMaybe && filterInfoMaybe.action === 'hide') {
+    return null;
+  }
+
+  if (
+    shouldHideMutedStatus({
+      status,
+      currentAccountID: currentAccount,
+      visibility: mutedPostVisibility,
+      forceShowMuted,
+      directContext,
+    })
+  ) {
     return null;
   }
 
@@ -217,18 +311,29 @@ function StatusRouter({
         status={status}
         filterInfo={filterInfo}
         instance={instance}
-        containerProps={{
-          onMouseEnter: debugHover,
-        }}
+        containerProps={hoverContainerProps}
         quoted={quoted}
-        renderPeekStatus={(peekStatus, peekInstance) => (
-          <Status
-            status={peekStatus}
-            instance={peekInstance}
-            size="s"
-            readOnly
-          />
-        )}
+        renderPeekStatus={renderPeekStatus}
+      />
+    );
+  }
+
+  if (
+    shouldCollapseMutedStatus({
+      status,
+      currentAccountID: currentAccount,
+      visibility: mutedPostVisibility,
+      forceShowMuted,
+      directContext,
+    })
+  ) {
+    return (
+      <MutedStatus
+        status={status}
+        instance={instance}
+        containerProps={hoverContainerProps}
+        quoted={quoted}
+        renderExpandedStatus={renderExpandedStatus}
       />
     );
   }
@@ -247,7 +352,7 @@ function StatusRouter({
         mediaFirst={mediaFirst}
         group={group}
         onMouseEnter={debugHover}
-        renderStatus={(args) => <Status {...args} />}
+        renderStatus={renderReblogStatus}
       />
     );
   }
@@ -278,7 +383,7 @@ function StatusRouter({
       mediaFirst={mediaFirst}
       showCommentCount={forceShowCommentCount}
       showQuoteCount={forceShowQuoteCount}
-      renderStatus={(statusProps) => <Status {...statusProps} />}
+      renderStatus={renderContentStatus}
     />
   );
 }

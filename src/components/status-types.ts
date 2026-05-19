@@ -91,6 +91,8 @@ export interface StatusAtprotoMeta {
   labels?: AtprotoLabel[];
   replyParentAccount?: AnyAccount | null;
   replyParentUnavailable?: boolean;
+  mutedAuthor?: boolean;
+  mutedByList?: boolean;
 }
 
 interface StatusQuoteApproval {

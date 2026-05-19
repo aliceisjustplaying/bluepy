@@ -24,6 +24,7 @@ import {
 import { APPVIEW_OPTIONS, getActiveAppview } from '../utils/atproto-adapter';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import localeCode2Text from '../utils/localeCode2Text';
+import { isMutedPostVisibility } from '../utils/muted-post-visibility';
 import prettyBytes from '../utils/pretty-bytes';
 import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
@@ -494,6 +495,37 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                 />{' '}
                 <Trans>Reposts carousel</Trans>
               </label>
+            </li>
+            <li className="block">
+              <label>
+                <Trans>Muted posts</Trans>{' '}
+                <select
+                  value={snapStates.settings.mutedPostVisibility}
+                  onChange={(e) => {
+                    const visibility = e.currentTarget.value;
+                    if (isMutedPostVisibility(visibility)) {
+                      states.settings.mutedPostVisibility = visibility;
+                    }
+                  }}
+                >
+                  <option value="hide">
+                    <Trans>Hide entirely</Trans>
+                  </option>
+                  <option value="collapse">
+                    <Trans>Collapse with reveal</Trans>
+                  </option>
+                  <option value="show">
+                    <Trans>Show normally</Trans>
+                  </option>
+                </select>
+              </label>
+              <div className="sub-section insignificant">
+                <small>
+                  <Trans>
+                    Notifications from muted accounts are always hidden.
+                  </Trans>
+                </small>
+              </div>
             </li>
             {!!TRANSLANG_INSTANCES && (
               <li className="block">

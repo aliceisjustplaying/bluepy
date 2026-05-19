@@ -351,6 +351,9 @@
     padding-inline-start: 24px;
   }
 }
+.status.filtered.muted {
+  color: var(--text-insignificant-color);
+}
 .status.filtered .status-filtered-info {
   pointer-events: none;
   flex-grow: 1;
@@ -746,6 +749,24 @@
 .status-filtered-badge.horizontal.badge-meta > span + span {
   font-weight: normal;
   text-transform: none;
+}
+
+.status-muted-expanded {
+  display: flex;
+  flex-direction: column;
+}
+.status-muted-expanded-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-block: 8px 0;
+  padding-inline: 16px;
+}
+.status-muted-expanded-banner .status-filtered-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .status.large > .container > .content-container {
