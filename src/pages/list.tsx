@@ -7,7 +7,6 @@ import type { ReactNode, ComponentType } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
-import { useSnapshot } from 'valtio';
 
 import AccountBlock from '../components/account-block';
 import Icon from '../components/icon';
@@ -28,7 +27,7 @@ import {
   splitListsAndFeeds,
 } from '../utils/lists';
 import { navigatePath } from '../utils/router';
-import states, { saveStatus } from '../utils/states';
+import { saveStatus } from '../utils/states';
 import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
@@ -100,7 +99,6 @@ interface ListProps {
 
 function List(props: ListProps) {
   const { t } = useLingui();
-  const snapStates = useSnapshot(states);
   const { masto, instance } = api({ instance: props.instance });
   const params = useParams();
   const id = props?.id || params?.id;
@@ -204,7 +202,6 @@ function List(props: ListProps) {
         fetchItems={fetchList}
         checkForUpdates={checkForUpdates}
         useItemID
-        boostsCarousel={snapStates.settings.boostsCarousel}
         // allowFilters
         filterContext="home"
         showReplyParent

@@ -6,7 +6,6 @@ import { getBlurHashAverageColor } from 'fast-blurhash';
 import type { mastodon } from 'masto';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSnapshot } from 'valtio';
 
 import Icon from '../components/icon';
 import Link from '../components/link';
@@ -20,7 +19,7 @@ import { filteredItems } from '../utils/filters';
 import getDomain from '../utils/get-domain';
 import pmem from '../utils/pmem';
 import shortenNumber from '../utils/shorten-number';
-import states, { saveStatus } from '../utils/states';
+import { saveStatus } from '../utils/states';
 import supports from '../utils/supports';
 import useTitle from '../utils/useTitle';
 
@@ -160,7 +159,6 @@ interface TrendingProps {
 
 function Trending({ columnMode, ...props }: TrendingProps) {
   const { t } = useLingui();
-  const snapStates = useSnapshot(states);
   const routeParams = useParams() as Record<string, string>;
   const params = columnMode ? ({} as Record<string, string>) : routeParams;
   const { masto, instance } = api({
@@ -573,7 +571,6 @@ function Trending({ columnMode, ...props }: TrendingProps) {
       checkForUpdatesInterval={5 * 60 * 1000} // 5 minutes
       useItemID
       headerStart={<></>}
-      boostsCarousel={snapStates.settings.boostsCarousel}
       // allowFilters
       filterContext="public"
       timelineStart={TimelineStart}

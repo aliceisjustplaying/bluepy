@@ -57,7 +57,6 @@ interface StatesSettings {
   autoRefresh: boolean;
   shortcutsViewMode: string | null;
   shortcutsColumnsMode: boolean;
-  boostsCarousel: boolean;
   contentTranslation: boolean;
   contentTranslationTargetLanguage: string | null;
   contentTranslationHideLanguages: string[];
@@ -203,7 +202,6 @@ const states = proxy<StateProxy>({
     autoRefresh: false,
     shortcutsViewMode: null,
     shortcutsColumnsMode: false,
-    boostsCarousel: true,
     contentTranslation: true,
     contentTranslationTargetLanguage: null,
     contentTranslationHideLanguages: [],
@@ -242,8 +240,7 @@ export function initStates(): void {
     );
   }
   states.settings.shortcutsColumnsMode = shortcutsColumnsMode;
-  states.settings.boostsCarousel =
-    store.account.get<boolean>('settings-boostsCarousel') ?? true;
+  store.account.del('settings-boostsCarousel');
   states.settings.contentTranslation =
     store.account.get<boolean>('settings-contentTranslation') ?? true;
   states.settings.contentTranslationTargetLanguage =
@@ -281,9 +278,6 @@ subscribe(states, (changes) => {
   for (const [, path, value] of changes) {
     if (path.join('.') === 'settings.autoRefresh') {
       store.account.set('settings-autoRefresh', !!value);
-    }
-    if (path.join('.') === 'settings.boostsCarousel') {
-      store.account.set('settings-boostsCarousel', !!value);
     }
     if (path.join('.') === 'settings.shortcutsViewMode') {
       store.account.set(

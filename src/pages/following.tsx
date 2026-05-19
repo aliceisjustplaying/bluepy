@@ -1,7 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import { useEffect, useRef, useState } from 'react';
-import { useSnapshot } from 'valtio';
 
 import Timeline from '../components/timeline';
 import { api, getMastoV1Resource } from '../utils/api';
@@ -93,7 +92,6 @@ function Following({ title, path, id, ...props }: FollowingProps) {
   const { masto, streaming, instance, client } = api();
   const [streamingClient, setStreamingClient] = useState<unknown>(streaming);
 
-  const snapStates = useSnapshot(states);
   const homeIterable = useRef<HomeIterable | undefined>(undefined);
   const homeIterator = useRef<AsyncIterator<mastodon.v1.Status[]> | undefined>(
     undefined,
@@ -249,7 +247,6 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       fetchItems={fetchHome}
       checkForUpdates={checkForUpdates}
       useItemID
-      boostsCarousel={snapStates.settings.boostsCarousel}
       {...props}
       // allowFilters
       filterContext="home"

@@ -483,18 +483,6 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                 <Trans>Auto refresh timeline posts</Trans>
               </label>
             </li>
-            <li className="block">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={snapStates.settings.boostsCarousel}
-                  onChange={(e) => {
-                    states.settings.boostsCarousel = e.currentTarget.checked;
-                  }}
-                />{' '}
-                <Trans>Reposts carousel</Trans>
-              </label>
-            </li>
             {!!TRANSLANG_INSTANCES && (
               <li className="block">
                 <label>
@@ -680,7 +668,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                     <Trans>
                       Manual pagination of timeline posts instead of infinite
                       scrolling. Only works for Home/Following timeline for now.
-                      Auto refresh and reposts carousel will not work when this
+                      Auto refresh and repost grouping will not work when this
                       is enabled.
                     </Trans>
                   </small>
@@ -1334,7 +1322,7 @@ function PushNotificationsSection({
               alerts: {
                 mention: !!values.mention,
                 favourite: !!values.favourite,
-                reblog: !!values.reblog,
+                reblog: false,
                 follow: !!values.follow,
                 follow_request: !!values.followRequest,
                 poll: !!values.poll,
@@ -1349,10 +1337,13 @@ function PushNotificationsSection({
           // Remove false values from data.alerts
           // API defaults to false anyway
           Object.keys(params.data.alerts).forEach((key) => {
-            if (!params.data.alerts[key]) {
-              delete params.data.alerts[key];
-            } else {
+            if (params.data.alerts[key]) {
               alertsCount++;
+              return;
+            }
+            // Keep explicit false to clear pre-existing repost alerts.
+            if (key !== 'reblog') {
+              delete params.data.alerts[key];
             }
           });
           const policyChanged =
@@ -1478,10 +1469,6 @@ function PushNotificationsSection({
                       {
                         value: 'favourite',
                         label: t`Likes`,
-                      },
-                      {
-                        value: 'reblog',
-                        label: t`Reposts`,
                       },
                       {
                         value: 'follow',
