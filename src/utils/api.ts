@@ -277,7 +277,7 @@ export function initClient({
   return client;
 }
 
-export function isAtprotoInstance(instance?: string | null): boolean {
+function isAtprotoInstance(instance?: string | null): boolean {
   return (
     instance === BSKY_INSTANCE || instance === 'atproto' || instance === 'bsky'
   );
@@ -317,15 +317,25 @@ export function hasInstance(instance: string): boolean {
 export function getMastoV1Resource<T>(
   masto: MastoClient,
   resourceName: string,
+  assertResource?: (resource: unknown) => resource is T,
 ): T {
-  return masto.v1[resourceName] as T;
+  const resource: unknown = masto.v1[resourceName];
+  if (assertResource && !assertResource(resource)) {
+    throw new TypeError(`Invalid masto.v1 resource: ${resourceName}`);
+  }
+  return resource as T;
 }
 
 export function getMastoV2Resource<T>(
   masto: MastoClient,
   resourceName: string,
+  assertResource?: (resource: unknown) => resource is T,
 ): T {
-  return masto.v2[resourceName] as T;
+  const resource: unknown = masto.v2[resourceName];
+  if (assertResource && !assertResource(resource)) {
+    throw new TypeError(`Invalid masto.v2 resource: ${resourceName}`);
+  }
+  return resource as T;
 }
 
 // Get the instance information
@@ -559,11 +569,9 @@ export function api({
 
   if (accessToken) {
     // If only accessToken is provided, get the masto instance for that accessToken
-    console.log('X 1', accountApis);
     for (const cachedInstance in accountApis) {
       const clientForAccessToken = getAccountApi(cachedInstance, accessToken);
       if (clientForAccessToken) {
-        console.log('X 2', accountApis, cachedInstance, accessToken);
         const { masto, streaming } = clientForAccessToken;
         return {
           authenticated: true,
@@ -573,26 +581,25 @@ export function api({
           streaming,
         };
       }
-      console.log('X 3', accountApis, cachedInstance, accessToken);
-      const storedAccount = getAccountByAccessToken(accessToken);
-      if (storedAccount) {
-        const storedAccessToken = storedAccount.accessToken;
-        const storedInstance = storedAccount.instanceURL.toLowerCase().trim();
-        const client = initClient({
-          accessToken: storedAccessToken,
-          instance: storedInstance,
-        });
-        const { masto, streaming } = client;
-        return {
-          authenticated: true,
-          client,
-          instance: storedInstance,
-          masto,
-          streaming,
-        };
-      }
-      throw new Error('Access token not found');
     }
+    const storedAccount = getAccountByAccessToken(accessToken);
+    if (storedAccount) {
+      const storedAccessToken = storedAccount.accessToken;
+      const storedInstance = storedAccount.instanceURL.toLowerCase().trim();
+      const client = initClient({
+        accessToken: storedAccessToken,
+        instance: storedInstance,
+      });
+      const { masto, streaming } = client;
+      return {
+        authenticated: true,
+        client,
+        instance: storedInstance,
+        masto,
+        streaming,
+      };
+    }
+    throw new Error('Access token not found');
   }
 
   // If account is provided, get the masto instance for that account

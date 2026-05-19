@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import Timeline from '../components/timeline';
@@ -9,11 +9,7 @@ import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
 import supports from '../utils/supports';
-import {
-  assignFollowedTags,
-  clearFollowedTagsState,
-  dedupeBoosts,
-} from '../utils/timeline-utils';
+import { dedupeBoosts } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
 type StreamingEntry = {
@@ -148,12 +144,10 @@ function Following({ title, path, id, ...props }: FollowingProps) {
     const results = await homeIterator.current.next();
     let { value } = results;
     if (value?.length) {
-      let latestItemChanged = false;
       if (firstLoad) {
         if (value[0].id !== latestItem.current) {
-          latestItemChanged = true;
+          latestItem.current = value[0].id;
         }
-        latestItem.current = value[0].id;
         console.log('First load', latestItem.current);
       }
 
@@ -162,10 +156,6 @@ function Following({ title, path, id, ...props }: FollowingProps) {
         saveStatus(toSaveStatus(item), instance);
       });
       value = dedupeBoosts(value, instance);
-      if (firstLoad && latestItemChanged) clearFollowedTagsState();
-      setTimeout(() => {
-        void assignFollowedTags(value, instance);
-      }, 100);
 
       // ENFORCE sort by datetime (Latest first)
       value.sort((a: mastodon.v1.Status, b: mastodon.v1.Status) => {
@@ -266,7 +256,6 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       {...props}
       // allowFilters
       filterContext="home"
-      showFollowedTags
       showReplyParent
     />
   );

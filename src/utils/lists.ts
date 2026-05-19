@@ -8,6 +8,7 @@ const MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
 interface ListLike {
   id: string;
   title: string;
+  exclusive?: boolean;
   _atproto?: { type?: string } | null;
   [key: string]: unknown;
 }
@@ -22,7 +23,9 @@ interface MastoListsApi {
   $select(id: string): { fetch(): Promise<ListLike> };
 }
 
-export function isFeedList(list: ListLike | null | undefined): boolean {
+export function isFeedList<T extends ListLike>(
+  list: T | null | undefined,
+): list is T & { _atproto: { type: 'feed' } } {
   // TODO(oxlint:no-underscore-dangle) `_atproto` is the project-wide cache key
   // used by the atproto adapter across many modules; renaming is out of scope.
   return list?._atproto?.type === 'feed';
@@ -82,9 +85,9 @@ export async function getUserLists(): Promise<ListLike[]> {
   return splitListsAndFeeds(lists).lists;
 }
 
-export const fetchList = pmem(
-  (id: string) => {
-    const { masto } = api();
+const fetchList = pmem(
+  (id: string, instance?: string) => {
+    const { masto } = api({ instance });
     return (masto.v1.lists as MastoListsApi).$select(id).fetch();
   },
   {
@@ -92,16 +95,19 @@ export const fetchList = pmem(
   },
 );
 
-export async function getList(id: string): Promise<ListLike | null> {
+export async function getList(
+  id: string,
+  instance?: string,
+): Promise<ListLike | null> {
   const { lists } =
     store.account.get<StoredLists>('lists') || ({} as Partial<StoredLists>);
   console.log({ lists });
-  if (lists?.length) {
+  if (!instance && lists?.length) {
     const theList = lists.find((l) => l.id === id);
     if (theList) return theList;
   }
   try {
-    return fetchList(id);
+    return fetchList(id, instance);
   } catch {
     return null;
   }

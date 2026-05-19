@@ -3,8 +3,9 @@ import fs from 'fs';
 import { resolve } from 'path';
 
 import { lingui } from '@lingui/vite-plugin';
-import preactPreset from '@preact/preset-vite';
+import babel from '@rolldown/plugin-babel';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
+import react from '@vitejs/plugin-react';
 import Sonda from 'sonda/vite';
 import { uid } from 'uid/single';
 import { createLogger, defineConfig, loadEnv } from 'vite';
@@ -115,7 +116,7 @@ logger.warn = (msg, options) => {
 // https://vitejs.dev/config/
 export default defineConfig({
   customLogger: logger,
-  base: './',
+  base: '/',
   envPrefix: allowedEnvPrefixes,
   appType: 'mpa',
   mode: NODE_ENV,
@@ -163,27 +164,78 @@ export default defineConfig({
           '/oauth-client-metadata.json',
           (req, res, next) => {
             const origin = devOrigin || devRequestOrigin(req);
-            if (!origin) return next();
+            if (!origin) {
+              next();
+              return;
+            }
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify(oauthMetadata(origin)));
           },
         );
       },
     },
-    preactPreset({
-      // Force use Babel instead of ESBuild due to this change: https://github.com/preactjs/preset-vite/pull/114
-      // Else, a bug will happen with importing variables from import.meta.env
-      babel: {
-        plugins: ['@lingui/babel-plugin-lingui-macro'],
+    {
+      name: 'browser-router-fallback',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const method = req.method || 'GET';
+          const url = req.url || '/';
+          if (method !== 'GET' && method !== 'HEAD') {
+            next();
+            return;
+          }
+          if (!(req.headers.accept || '').includes('text/html')) {
+            next();
+            return;
+          }
+          let pathname = url;
+          try {
+            pathname = new URL(url, 'http://localhost').pathname;
+          } catch {}
+          const assetExtensionRE =
+            /\.(?:avif|css|gif|html|ico|jpe?g|js|json|map|mjs|mp4|png|svg|txt|wasm|webmanifest|webp|woff2?)$/i;
+          const isComposePath =
+            pathname === '/compose' || pathname.startsWith('/compose/');
+          if (
+            url.startsWith('/@') ||
+            url.startsWith('/__') ||
+            url.startsWith('/assets/') ||
+            isComposePath ||
+            url.startsWith('/oauth-client-metadata.json') ||
+            assetExtensionRE.test(pathname)
+          ) {
+            next();
+            return;
+          }
+          void (async () => {
+            try {
+              const html = fs.readFileSync(
+                resolve(__dirname, 'index.html'),
+                'utf-8',
+              );
+              const transformed = await server.transformIndexHtml(url, html);
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'text/html');
+              res.end(transformed);
+            } catch (error) {
+              next(error);
+            }
+          })();
+        });
       },
+    },
+    babel({
+      plugins: ['@lingui/babel-plugin-lingui-macro'],
+      include: /\.[jt]sx?$/,
     }),
+    react(),
     lingui(),
     run({
       silent: false,
       input: [
         {
           name: 'messages:extract:clean',
-          run: ['npm', 'run', 'messages:extract:clean'],
+          run: ['bun', 'run', 'messages:extract:clean'],
           pattern: 'src/**/*.{js,jsx,ts,tsx}',
         },
         // {

@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
-import type { ComponentType } from 'preact';
+import type { ComponentType } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useSnapshot } from 'valtio';
 
@@ -11,7 +11,6 @@ import Hashtag from '../pages/hashtag';
 import List from '../pages/list';
 import Mentions from '../pages/mentions';
 import Notifications from '../pages/notifications';
-import Public from '../pages/public';
 import Search from '../pages/search';
 import Trending from '../pages/trending';
 import isRTL from '../utils/is-rtl';
@@ -46,7 +45,6 @@ const columnComponents = columnComponentMap({
   following: Following,
   notifications: Notifications,
   list: List,
-  public: Public,
   bookmarks: Bookmarks,
   favourites: Favourites,
   hashtag: Hashtag,
@@ -79,6 +77,9 @@ function Columns() {
     if (type === 'profile') {
       params.id = getCurrentAccountID();
     }
+    if (type === 'mentions') {
+      return <Component key={type + JSON.stringify(params)} {...params} />;
+    }
     return (
       <Component key={type + JSON.stringify(params)} {...params} columnMode />
     );
@@ -101,7 +102,7 @@ function Columns() {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         // Allow number even with Shift (e.g. French AZERTY requires Shift for numbers)
         if (/^[1-9]$/.test(e.key)) return false;
         return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
@@ -140,7 +141,7 @@ function Columns() {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         // Allow '[' or ']' even with Alt (e.g. German keyboards require Alt for these)
         if (['[', ']'].includes(e.key)) return false;
         return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;

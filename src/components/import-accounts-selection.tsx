@@ -1,7 +1,7 @@
 import './import-accounts-selection.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import { useMemo, useState } from 'preact/hooks';
+import { useMemo, useState } from 'react';
 
 import states from '../utils/states';
 import {
@@ -93,11 +93,11 @@ function ImportAccountsSelection({
   const selectedCount = Object.values(selectedAccounts).filter(Boolean).length;
 
   return (
-    <div id="import-accounts-selection-container" class="sheet">
+    <div id="import-accounts-selection-container" className="sheet">
       {!!onClose && (
         <button
           type="button"
-          class="sheet-close"
+          className="sheet-close"
           onClick={onClose}
           disabled={uiState === 'importing'}
         >
@@ -110,11 +110,11 @@ function ImportAccountsSelection({
         </b>
       </header>
       <main>
-        <div class="import-selection">
+        <div className="import-selection">
           {accountsToImport.filter((a) => a.importStatus !== 'duplicate')
             .length > 3 && (
-            <div class="accounts-list-header">
-              <label class="account-item" aria-label={t`Select all`}>
+            <div className="accounts-list-header">
+              <label className="account-item" aria-label={t`Select all`}>
                 <input
                   type="checkbox"
                   checked={
@@ -137,20 +137,20 @@ function ImportAccountsSelection({
                   }}
                   disabled={uiState === 'importing'}
                 />
-                <span class="account-info">
+                <span className="account-info">
                   <Trans>Select all</Trans>
                 </span>
               </label>
             </div>
           )}
-          <ul class="accounts-list">
+          <ul className="accounts-list">
             {accountsToImport.map((account) => {
               const key = account.info.id + account.instanceURL;
               const isSelected = selectedAccounts[key];
               const { importStatus: status } = account;
               return (
                 <li key={key}>
-                  <label class="account-item">
+                  <label className="account-item">
                     <input
                       type="checkbox"
                       checked={isSelected}
@@ -168,7 +168,7 @@ function ImportAccountsSelection({
                       url={account.info.avatarStatic as string | undefined}
                       size="xl"
                     />
-                    <div class="account-info">
+                    <div className="account-info">
                       <NameText
                         account={{
                           ...account.info,
@@ -179,9 +179,9 @@ function ImportAccountsSelection({
                         showAcct
                       />
                     </div>
-                    <div class="account-meta">
+                    <div className="account-meta">
                       {status === 'duplicate' && (
-                        <span class="tag collapsed">
+                        <span className="tag collapsed">
                           <Trans>Existing</Trans>
                         </span>
                       )}
@@ -195,7 +195,7 @@ function ImportAccountsSelection({
           <footer>
             <button
               type="button"
-              class="light"
+              className="light"
               onClick={onClose}
               disabled={uiState === 'importing'}
             >

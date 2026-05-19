@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'react';
 
 import isRTL from '../utils/is-rtl';
 
@@ -42,10 +42,10 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
 
   return (
     <>
-      <div class="media-first-container">
-        <div class="media-first-carousel" ref={carouselRef}>
+      <div className="media-first-container">
+        <div className="media-first-carousel" ref={carouselRef}>
           {mediaAttachments.map((media, i) => (
-            <div class="media-first-item" key={media.id}>
+            <div className="media-first-item" key={media.id}>
               <Media
                 media={media}
                 lang={language}
@@ -55,14 +55,14 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
           ))}
         </div>
         {moreThanOne && (
-          <div class="media-carousel-controls">
-            <div class="carousel-indexer">
+          <div className="media-carousel-controls">
+            <div className="carousel-indexer">
               {currentIndex + 1}/{mediaAttachments.length}
             </div>
-            <div class="media-carousel-button">
+            <div className="media-carousel-button">
               <button
                 type="button"
-                class="carousel-button"
+                className="carousel-button"
                 hidden={currentIndex === 0}
                 onClick={(e) => {
                   e.preventDefault();
@@ -82,10 +82,10 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
                 <Icon icon="arrow-left" />
               </button>
             </div>
-            <div class="media-carousel-button">
+            <div className="media-carousel-button">
               <button
                 type="button"
-                class="carousel-button"
+                className="carousel-button"
                 hidden={currentIndex === mediaAttachments.length - 1}
                 onClick={(e) => {
                   e.preventDefault();
@@ -110,7 +110,7 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
       </div>
       {moreThanOne && (
         <div
-          class="media-carousel-dots"
+          className="media-carousel-dots"
           style={{
             '--dots-count': mediaAttachments.length,
           }}
@@ -118,7 +118,7 @@ function MediaFirstContainer(props: MediaFirstContainerProps) {
           {mediaAttachments.map((media, i) => (
             <span
               key={media.id}
-              class={`carousel-dot ${i === currentIndex ? 'active' : ''}`}
+              className={`carousel-dot ${i === currentIndex ? 'active' : ''}`}
             />
           ))}
         </div>

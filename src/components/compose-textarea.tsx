@@ -2,13 +2,11 @@ import type {
   TextareaHTMLAttributes,
   Ref,
   RefObject,
-  TargetedClipboardEvent,
-  TargetedEvent,
-  TargetedKeyboardEvent,
-  TargetedUIEvent,
-} from 'preact';
-import { forwardRef } from 'preact/compat';
-import { useRef, useState } from 'preact/hooks';
+  ClipboardEvent,
+  SyntheticEvent,
+  UIEvent,
+} from 'react';
+import { useRef } from 'react';
 import { useDebouncedCallback, useThrottledCallback } from 'use-debounce';
 
 import { langDetector } from '../utils/browser-translator';
@@ -32,14 +30,16 @@ const HASHTAG_RE = new RegExp(
   'iug',
 );
 
-// https://github.com/mastodon/mastodon/blob/23e32a4b3031d1da8b911e0145d61b4dd47c4f96/app/models/custom_emoji.rb#L31
-const SHORTCODE_RE_FRAGMENT = '[a-zA-Z0-9_]{2,}';
-const SCAN_RE = new RegExp(
-  `(^|[^=\\/\\w])(:${SHORTCODE_RE_FRAGMENT}:)(?=[^A-Za-z0-9_:]|$)`,
-  'g',
-);
-
 const segmenter = new Intl.Segmenter();
+
+function dispatchTextareaInput(textarea: HTMLTextAreaElement): void {
+  textarea.dispatchEvent(
+    new InputEvent('input', {
+      bubbles: true,
+      inputType: 'insertText',
+    }),
+  );
+}
 
 function highlightText(
   rawText: string,
@@ -74,11 +74,7 @@ function highlightText(
   return escapeHTML(rawText)
     .replace(urlRegexObj, '$2<mark class="compose-highlight-url">$3</mark>') // URLs
     .replace(MENTION_RE, '$1<mark class="compose-highlight-mention">$2</mark>') // Mentions
-    .replace(HASHTAG_RE, '$1<mark class="compose-highlight-hashtag">$2</mark>') // Hashtags
-    .replace(
-      SCAN_RE,
-      '$1<mark class="compose-highlight-emoji-shortcode">$2</mark>',
-    ); // Emoji shortcodes
+    .replace(HASHTAG_RE, '$1<mark class="compose-highlight-hashtag">$2</mark>'); // Hashtags
 }
 
 function autoResizeTextarea(textarea: HTMLTextAreaElement | null): void {
@@ -124,204 +120,200 @@ const detectLangs = async (input: string): Promise<string[] | null> => {
   return null;
 };
 
-export interface TextareaProps extends Omit<
-  TextareaHTMLAttributes,
+interface TextareaProps extends Omit<
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
   'onTrigger'
 > {
+  ref?: Ref<HTMLTextAreaElement>;
   maxCharacters?: number;
   onTrigger?: ((payload: Record<string, unknown>) => void) | null;
 }
 
-const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  (props: TextareaProps, ref: Ref<HTMLTextAreaElement>) => {
-    const textareaRef = ref as RefObject<HTMLTextAreaElement>;
-    const [text, setText] = useState<string>(textareaRef?.current?.value || '');
-    const { maxCharacters, onTrigger = null, ...textareaProps } = props;
+function Textarea(props: TextareaProps) {
+  const { ref } = props;
+  const textareaRef = ref as RefObject<HTMLTextAreaElement>;
+  const { maxCharacters, onTrigger = null, ...textareaProps } = props;
 
-    const textExpanderRef = useRef<TextExpanderHandle | null>(null);
+  const textExpanderRef = useRef<TextExpanderHandle | null>(null);
 
-    useThrottledResizeObserver<HTMLTextAreaElement>({
-      ref: textareaRef,
-      onResize: () => {
-        // Get height of textarea, set height to textExpander
-        if (textExpanderRef.current && textareaRef?.current) {
-          const { height } = textareaRef.current.getBoundingClientRect();
-          if (height) {
-            textExpanderRef.current.setStyle({
-              minHeight: height + 'px',
-            });
-          }
-        }
-      },
-    });
-
-    const slowHighlightPerf = useRef(0); // increment if slow
-    const composeHighlightRef = useRef<HTMLDivElement | null>(null);
-    const throttleHighlightText = useThrottledCallback((input: string) => {
-      if (!composeHighlightRef.current) return;
-      if (slowHighlightPerf.current > 3) {
-        // After 3 times of lag, disable highlighting
-        composeHighlightRef.current.innerHTML = '';
-        composeHighlightRef.current = null; // Destroy the whole thing
-        throttleHighlightText?.cancel?.();
-        return;
-      }
-      let start: number | undefined;
-      let end: number | undefined;
-      if (slowHighlightPerf.current <= 3) start = Date.now();
-      composeHighlightRef.current.innerHTML =
-        highlightText(input, {
-          maxCharacters,
-        }) + '\n';
-      if (slowHighlightPerf.current <= 3) end = Date.now();
-      console.debug('HIGHLIGHT PERF', {
-        start,
-        end,
-        diff:
-          end !== undefined && start !== undefined ? end - start : undefined,
-      });
-      if (start && end && end - start > 50) {
-        // if slow, increment
-        slowHighlightPerf.current++;
-      }
-      // Newline to prevent multiple line breaks at the end from being collapsed, no idea why
-    }, 500);
-
-    const debouncedAutoDetectLanguage = useDebouncedCallback(() => {
-      // Make use of the highlightRef to get the DOM
-      // Clone the dom
-      const dom = composeHighlightRef.current?.cloneNode(true) as
-        | HTMLElement
-        | undefined;
-      if (!dom) return;
-      // Remove mark
-      dom.querySelectorAll('mark').forEach((mark: HTMLElement) => {
-        mark.remove();
-      });
-      const detectText = dom.innerText?.trim();
-      if (!detectText) return;
-      void (async () => {
-        const langs = await detectLangs(detectText);
-        if (langs?.length) {
-          onTrigger?.({
-            name: 'auto-detect-language',
-            languages: langs,
+  useThrottledResizeObserver<HTMLTextAreaElement>({
+    ref: textareaRef,
+    onResize: () => {
+      // Get height of textarea, set height to textExpander
+      if (textExpanderRef.current && textareaRef?.current) {
+        const { height } = textareaRef.current.getBoundingClientRect();
+        if (height) {
+          textExpanderRef.current.setStyle({
+            minHeight: height + 'px',
           });
         }
-      })();
-    }, 2000);
+      }
+    },
+  });
 
-    return (
-      <TextExpander
-        ref={textExpanderRef}
-        keys="@ ＠ : # ＃"
-        class="compose-field-container"
-        onTrigger={onTrigger}
-      >
-        <textarea
-          class="compose-field"
-          autoCapitalize="sentences"
-          autoComplete="on"
-          autoCorrect="on"
-          spellcheck
-          dir="auto"
-          rows={6}
-          cols={50}
-          {...textareaProps}
-          ref={ref}
-          name="status"
-          value={text}
-          onKeyDown={(e: TargetedKeyboardEvent<HTMLTextAreaElement>) => {
-            // Get line before cursor position after pressing 'Enter'
-            const { key } = e;
-            const target = e.currentTarget;
-            const hasTextExpander = textExpanderRef.current?.activated();
-            if (
-              key === 'Enter' &&
-              !(e.ctrlKey || e.metaKey || hasTextExpander) &&
-              !e.isComposing
-            ) {
-              try {
-                const { value, selectionStart } = target;
-                const textBeforeCursor = value.slice(0, selectionStart);
-                const lastLine = textBeforeCursor.split('\n').slice(-1)[0];
-                if (lastLine) {
-                  // If line starts with "- " or "12. "
-                  if (/^\s*(-|\d+\.)\s/.test(lastLine)) {
-                    // insert "- " at cursor position
-                    const [_, preSpaces, bullet, postSpaces, anything] =
-                      lastLine.match(/^(\s*)(-|\d+\.)(\s+)(.+)?/) || [];
-                    if (anything) {
-                      e.preventDefault();
-                      const [number] = bullet.match(/\d+/) || [];
-                      const newBullet = number ? `${+number + 1}.` : '-';
-                      const bulletText = `\n${preSpaces}${newBullet}${postSpaces}`;
-                      target.setRangeText(
-                        bulletText,
-                        selectionStart,
-                        selectionStart,
-                      );
-                      const pos = selectionStart + bulletText.length;
-                      target.setSelectionRange(pos, pos);
-                    } else {
-                      // trim the line before the cursor, then insert new line
-                      const pos = selectionStart - lastLine.length;
-                      target.setRangeText('', pos, selectionStart);
-                    }
-                    autoResizeTextarea(target);
-                    target.dispatchEvent(new Event('input'));
-                  }
-                }
-              } catch (err) {
-                // silent fail
-                console.error(err);
-              }
-            }
-            if (composeHighlightRef.current) {
-              composeHighlightRef.current.scrollTop = target.scrollTop;
-            }
-          }}
-          onInput={(e: TargetedEvent<HTMLTextAreaElement>) => {
-            const target = e.currentTarget;
-            const nextText = target.value;
-            setText(nextText);
-            autoResizeTextarea(target);
-            (
-              props.onInput as
-                | ((ev: TargetedEvent<HTMLTextAreaElement>) => void)
-                | undefined
-            )?.(e);
-            throttleHighlightText(nextText);
-            debouncedAutoDetectLanguage();
-          }}
-          onScroll={(e: TargetedUIEvent<HTMLTextAreaElement>) => {
-            if (composeHighlightRef.current) {
-              const { scrollTop } = e.currentTarget;
-              composeHighlightRef.current.scrollTop = scrollTop;
-            }
-          }}
-          onPaste={(e: TargetedClipboardEvent<HTMLTextAreaElement>) => {
+  const slowHighlightPerf = useRef(0); // increment if slow
+  const composeHighlightRef = useRef<HTMLDivElement | null>(null);
+  const throttleHighlightText = useThrottledCallback((input: string) => {
+    if (!composeHighlightRef.current) return;
+    if (slowHighlightPerf.current > 3) {
+      // After 3 times of lag, disable highlighting
+      composeHighlightRef.current.innerHTML = '';
+      composeHighlightRef.current = null; // Destroy the whole thing
+      throttleHighlightText?.cancel?.();
+      return;
+    }
+    let start: number | undefined;
+    let end: number | undefined;
+    if (slowHighlightPerf.current <= 3) start = Date.now();
+    composeHighlightRef.current.innerHTML =
+      highlightText(input, {
+        maxCharacters,
+      }) + '\n';
+    if (slowHighlightPerf.current <= 3) end = Date.now();
+    console.debug('HIGHLIGHT PERF', {
+      start,
+      end,
+      diff: end !== undefined && start !== undefined ? end - start : undefined,
+    });
+    if (start && end && end - start > 50) {
+      // if slow, increment
+      slowHighlightPerf.current++;
+    }
+    // Newline to prevent multiple line breaks at the end from being collapsed, no idea why
+  }, 500);
+
+  const debouncedAutoDetectLanguage = useDebouncedCallback(() => {
+    // Make use of the highlightRef to get the DOM
+    // Clone the dom
+    const dom = composeHighlightRef.current?.cloneNode(true) as
+      | HTMLElement
+      | undefined;
+    if (!dom) return;
+    // Remove mark
+    dom.querySelectorAll('mark').forEach((mark: HTMLElement) => {
+      mark.remove();
+    });
+    const detectText = dom.innerText?.trim();
+    if (!detectText) return;
+    void (async () => {
+      const langs = await detectLangs(detectText);
+      if (langs?.length) {
+        onTrigger?.({
+          name: 'auto-detect-language',
+          languages: langs,
+        });
+      }
+    })();
+  }, 2000);
+
+  return (
+    <TextExpander
+      ref={textExpanderRef}
+      keys="@ ＠ # ＃"
+      className="compose-field-container"
+      onTrigger={onTrigger}
+    >
+      <textarea
+        className="compose-field"
+        autoCapitalize="sentences"
+        autoComplete="on"
+        autoCorrect="on"
+        spellCheck
+        dir="auto"
+        rows={6}
+        cols={50}
+        {...textareaProps}
+        ref={ref}
+        name="status"
+        onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+          // Get line before cursor position after pressing 'Enter'
+          const { key } = e;
+          const target = e.currentTarget;
+          const hasTextExpander = textExpanderRef.current?.activated();
+          if (
+            key === 'Enter' &&
+            !(e.ctrlKey || e.metaKey || hasTextExpander) &&
+            !e.nativeEvent.isComposing
+          ) {
             try {
-              const pastedText = e.clipboardData?.getData('text').trim();
-              if (pastedText) {
-                onTrigger?.({
-                  name: 'pasted-link',
-                  url: pastedText,
-                });
+              const { value, selectionStart } = target;
+              const textBeforeCursor = value.slice(0, selectionStart);
+              const lastLine = textBeforeCursor.split('\n').slice(-1)[0];
+              if (lastLine) {
+                // If line starts with "- " or "12. "
+                if (/^\s*(-|\d+\.)\s/.test(lastLine)) {
+                  // insert "- " at cursor position
+                  const [_, preSpaces, bullet, postSpaces, anything] =
+                    lastLine.match(/^(\s*)(-|\d+\.)(\s+)(.+)?/) || [];
+                  if (anything) {
+                    e.preventDefault();
+                    const [number] = bullet.match(/\d+/) || [];
+                    const newBullet = number ? `${+number + 1}.` : '-';
+                    const bulletText = `\n${preSpaces}${newBullet}${postSpaces}`;
+                    target.setRangeText(
+                      bulletText,
+                      selectionStart,
+                      selectionStart,
+                    );
+                    const pos = selectionStart + bulletText.length;
+                    target.setSelectionRange(pos, pos);
+                  } else {
+                    // trim the line before the cursor, then insert new line
+                    const pos = selectionStart - lastLine.length;
+                    target.setRangeText('', pos, selectionStart);
+                  }
+                  autoResizeTextarea(target);
+                  dispatchTextareaInput(target);
+                }
               }
-            } catch (error) {
-              console.error(error);
+            } catch (err) {
+              // silent fail
+              console.error(err);
             }
-          }}
-        />
-        <div
-          ref={composeHighlightRef}
-          class="compose-highlight"
-          aria-hidden="true"
-        />
-      </TextExpander>
-    );
-  },
-);
+          }
+          if (composeHighlightRef.current) {
+            composeHighlightRef.current.scrollTop = target.scrollTop;
+          }
+        }}
+        onInput={(e: SyntheticEvent<HTMLTextAreaElement>) => {
+          const target = e.currentTarget;
+          const nextText = target.value;
+          autoResizeTextarea(target);
+          (
+            props.onInput as
+              | ((ev: SyntheticEvent<HTMLTextAreaElement>) => void)
+              | undefined
+          )?.(e);
+          throttleHighlightText(nextText);
+          debouncedAutoDetectLanguage();
+        }}
+        onScroll={(e: UIEvent<HTMLTextAreaElement>) => {
+          if (composeHighlightRef.current) {
+            const { scrollTop } = e.currentTarget;
+            composeHighlightRef.current.scrollTop = scrollTop;
+          }
+        }}
+        onPaste={(e: ClipboardEvent<HTMLTextAreaElement>) => {
+          try {
+            const pastedText = e.clipboardData?.getData('text').trim();
+            if (pastedText) {
+              onTrigger?.({
+                name: 'pasted-link',
+                url: pastedText,
+              });
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }}
+      />
+      <div
+        ref={composeHighlightRef}
+        className="compose-highlight"
+        aria-hidden="true"
+      />
+    </TextExpander>
+  );
+}
 
 export default Textarea;

@@ -1,21 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { getBlurHashAverageColor } from 'fast-blurhash';
-import type {
-  ComponentChildren,
-  ComponentType,
-  HTMLAttributes,
-  Ref,
-  TargetedMouseEvent,
-} from 'preact';
-import { Fragment } from 'preact';
-import { forwardRef, memo } from 'preact/compat';
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/hooks';
+import type { ReactNode, ComponentType, HTMLAttributes, Ref } from 'react';
+import { Fragment } from 'react';
+import { forwardRef, memo } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import QuickPinchZoomImport, {
   make3dTransformValue,
   type PinchZoomProps as ReactQuickPinchZoomProps,
@@ -25,7 +13,7 @@ type QuickPinchZoomProps = Omit<
   ReactQuickPinchZoomProps,
   'children' | 'containerProps'
 > & {
-  children: ComponentChildren;
+  children: ReactNode;
   containerProps?: HTMLAttributes<HTMLDivElement>;
 };
 const QuickPinchZoom =
@@ -33,6 +21,7 @@ const QuickPinchZoom =
 
 import formatDuration from '../utils/format-duration';
 import mem from '../utils/mem';
+import { navigatePath } from '../utils/router';
 import states from '../utils/states';
 
 import Icon from './icon';
@@ -74,7 +63,7 @@ const AltBadge = (props: AltBadgeProps) => {
   return (
     <button
       type="button"
-      class="alt-badge clickable"
+      className="alt-badge clickable"
       {...(rest as HTMLAttributes<HTMLButtonElement>)}
       onClick={(e) => {
         e.stopPropagation();
@@ -116,7 +105,7 @@ const isStreamingVideoSupported = (() => {
   }
 })();
 
-export interface MediaAttachment {
+interface MediaAttachment {
   id?: string;
   blurhash?: string | null;
   description?: string | null;
@@ -132,8 +121,9 @@ export interface MediaAttachment {
   type?: string;
 }
 
-export interface MediaProps {
+interface MediaProps {
   class?: string;
+  className?: string;
   media: MediaAttachment;
   to?: string;
   lang?: string;
@@ -143,15 +133,16 @@ export interface MediaProps {
   allowLongerCaption?: boolean;
   altIndex?: number;
   checkAspectRatio?: boolean;
-  onClick?: (e: TargetedMouseEvent<HTMLElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLElement>) => void;
 }
 
 interface MediaParentProps extends Record<string, unknown> {
-  children?: ComponentChildren;
+  children?: ReactNode;
 }
 
 function Media({
-  class: className = '',
+  class: classProp = '',
+  className = classProp,
   media,
   to,
   lang,
@@ -259,26 +250,23 @@ function Media({
 
   const [mediaLoadError, setMediaLoadError] = useState(false);
 
-  const Parent = useMemo<ComponentType<MediaParentProps>>(
-    () => {
-      if (to && !mediaLoadError) {
-        return forwardRef<HTMLElement, MediaParentProps>((props, ref) => (
-          <Link
-            to={to}
-            {...(props as Omit<LinkProps, 'to'>)}
-            ref={ref as Ref<HTMLAnchorElement>}
-          />
-        ));
-      }
+  const Parent = useMemo<ComponentType<MediaParentProps>>(() => {
+    if (to && !mediaLoadError) {
       return forwardRef<HTMLElement, MediaParentProps>((props, ref) => (
-        <div
-          {...(props as HTMLAttributes<HTMLDivElement>)}
-          ref={ref as Ref<HTMLDivElement>}
+        <Link
+          to={to}
+          {...(props as Omit<LinkProps, 'to'>)}
+          ref={ref as Ref<HTMLAnchorElement>}
         />
       ));
-    },
-    [to, mediaLoadError],
-  );
+    }
+    return forwardRef<HTMLElement, MediaParentProps>((props, ref) => (
+      <div
+        {...(props as HTMLAttributes<HTMLDivElement>)}
+        ref={ref as Ref<HTMLDivElement>}
+      />
+    ));
+  }, [to, mediaLoadError]);
 
   const remoteMediaURLObj = remoteMediaURL ? getURLObj(remoteMediaURL) : null;
   const isVideoMaybe =
@@ -351,58 +339,58 @@ function Media({
   ) {
     showInlineDesc = true;
   }
-  const Figure: ComponentType<{ children?: ComponentChildren }> =
-    !showInlineDesc
-      ? (Fragment as ComponentType<{
-          children?: ComponentChildren;
-        }>)
-      : (props: { children?: ComponentChildren }) => {
-          const { children, ...restProps } = props;
-          return (
-            <figure {...(restProps as HTMLAttributes<HTMLElement>)}>
-              {children}
-              {/* TODO(oxlint:jsx-a11y/no-noninteractive-tabindex,click-events-have-key-events):
+  const Figure: ComponentType<{ children?: ReactNode }> = !showInlineDesc
+    ? (Fragment as ComponentType<{
+        children?: ReactNode;
+      }>)
+    : (props: { children?: ReactNode }) => {
+        const { children, ...restProps } = props;
+        return (
+          <figure {...(restProps as HTMLAttributes<HTMLElement>)}>
+            {children}
+            {/* TODO(oxlint:jsx-a11y/no-noninteractive-tabindex,click-events-have-key-events):
                   figcaption serves the dual role of semantic caption and an
                   interactive "expand alt text" surface. We keep the figcaption
                   for its figure-semantics and add keyboard support. Converting
                   to <button> would lose the figure semantics and require CSS
                   rework around .media-caption. */}
-              <figcaption
-                class="media-caption"
-                lang={lang}
-                dir="auto"
-                tabIndex={0}
-                onClick={(e) => {
+            <figcaption
+              className="media-caption"
+              lang={lang}
+              dir="auto"
+              tabIndex={0}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                states.showMediaAlt = {
+                  alt: description,
+                  lang,
+                };
+              }}
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   e.stopPropagation();
                   states.showMediaAlt = {
                     alt: description,
                     lang,
                   };
-                }}
-                onKeyDown={(e: KeyboardEvent) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    states.showMediaAlt = {
-                      alt: description,
-                      lang,
-                    };
-                  }
-                }}
-              >
-                {description}
-              </figcaption>
-            </figure>
-          );
-        };
+                }
+              }}
+            >
+              {description}
+            </figcaption>
+          </figure>
+        );
+      };
 
   const interceptOnClick = useCallback(
-    (e: TargetedMouseEvent<HTMLElement>) => {
+    (e: React.MouseEvent<HTMLElement>) => {
       const target = e.target as Element;
       const isOnPostPage = target.closest('.status-deck');
-      const startViewTransition = (document as ViewTransitionDocument)
-        .startViewTransition?.bind(document);
+      const startViewTransition = (
+        document as ViewTransitionDocument
+      ).startViewTransition?.bind(document);
       if (
         showOriginal ||
         (postViewState() === 'large' && isOnPostPage) ||
@@ -421,21 +409,22 @@ function Media({
         if (onClick) {
           onClick(e);
         } else {
+          if (!to) return;
           e.preventDefault();
           if (el.dataset.viewTransitioned) {
             el.style.viewTransitionName = mediaVTN;
             try {
               startViewTransition(() => {
                 el.style.viewTransitionName = '';
-                location.hash = `#${to}`;
+                navigatePath(to);
               });
             } catch (err) {
               console.error(err);
               el.style.viewTransitionName = '';
-              location.hash = `#${to}`;
+              navigatePath(to);
             }
           } else {
-            location.hash = `#${to}`;
+            navigatePath(to);
           }
         }
       } else {
@@ -469,7 +458,7 @@ function Media({
       <Figure>
         <Parent
           ref={parentRef}
-          class={`media media-image ${className}`}
+          className={`media media-image ${className}`}
           onClick={interceptOnClick}
           data-orientation={orientation}
           data-has-alt={!showInlineDesc || undefined}
@@ -498,7 +487,7 @@ function Media({
                 loading="eager"
                 decoding="sync"
                 style={{
-                  'view-transition-name': mediaVTN,
+                  viewTransitionName: mediaVTN,
                 }}
                 onLoad={(e) => {
                   const el = e.target as HTMLImageElement;
@@ -630,7 +619,7 @@ function Media({
           <div>
             <a
               href={remoteUrl as string | undefined}
-              class="button plain6 small"
+              className="button plain6 small"
               target="_blank"
             >
               <Icon icon="external" />{' '}
@@ -671,7 +660,7 @@ function Media({
         preload="auto"
         autoplay
         muted
-        playsinline
+        playsInline
         ${loopable ? 'loop' : ''}
         ondblclick="this.paused ? this.play() : this.pause()"
         ${
@@ -693,7 +682,7 @@ function Media({
         style="view-transition-name: ${mediaVTN}"
         preload="auto"
         autoplay
-        playsinline
+        playsInline
         ${loopable ? 'loop' : ''}
         controls
       ></video>
@@ -703,7 +692,7 @@ function Media({
       <Figure>
         <Parent
           ref={parentRef}
-          class={`media ${className} media-${isGIF ? 'gif' : 'video'} ${
+          className={`media ${className} media-${isGIF ? 'gif' : 'video'} ${
             autoGIFAnimate ? 'media-contain' : ''
           } ${hoverAnimate ? 'media-hover-animate' : ''}`}
           data-orientation={orientation}
@@ -719,7 +708,7 @@ function Media({
           //     rgbAverageColor && `rgb(${rgbAverageColor.join(',')})`,
           // }}
           style={!showOriginal ? mediaStyles : undefined}
-          onClick={(e: TargetedMouseEvent<HTMLElement>) => {
+          onClick={(e: React.MouseEvent<HTMLElement>) => {
             if (hoverAnimate) {
               try {
                 videoRef.current?.pause();
@@ -768,14 +757,14 @@ function Media({
               </QuickPinchZoom>
             ) : isGIF ? (
               <div
-                class="video-container"
+                className="video-container"
                 dangerouslySetInnerHTML={{
                   __html: gifHTML,
                 }}
               />
             ) : (
               <div
-                class="video-container"
+                className="video-container"
                 dangerouslySetInnerHTML={{ __html: videoHTML }}
               />
             )
@@ -790,7 +779,7 @@ function Media({
               data-view-transition-name={mediaVTN}
               preload="auto"
               // controls
-              playsinline
+              playsInline
               loop
               muted
               onTimeUpdate={
@@ -875,7 +864,7 @@ function Media({
                   }}
                 />
               )}
-              <div class="media-play">
+              <div className="media-play">
                 <Icon icon="play" size="xl" alt="▶" />
               </div>
             </>
@@ -891,7 +880,7 @@ function Media({
     return (
       <Figure>
         <Parent
-          class={`media media-audio ${className}`}
+          className={`media media-audio ${className}`}
           data-formatted-duration={
             !showOriginal ? formattedDuration : undefined
           }
@@ -949,7 +938,7 @@ function Media({
           ) : null}
           {!showOriginal && (
             <>
-              <div class="media-play">
+              <div className="media-play">
                 <Icon icon="play" size="xl" alt="▶" />
               </div>
               {!showInlineDesc && (

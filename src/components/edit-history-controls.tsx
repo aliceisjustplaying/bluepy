@@ -16,14 +16,14 @@ export default function EditHistoryControls() {
   } = useEditHistory();
   if (!editHistoryMode) return null;
   return (
-    <div class="edit-history-controls">
+    <div className="edit-history-controls">
       <Icon icon="edit" />
-      <b class="edit-history-heading">{t`Edit History Snapshots`}</b>
-      <span class="spacer" />
-      <span class="edit-history-pagination">
+      <b className="edit-history-heading">{t`Edit History Snapshots`}</b>
+      <span className="spacer" />
+      <span className="edit-history-pagination">
         <button
           type="button"
-          class="plain4"
+          className="plain4"
           onClick={() => {
             prevEditedAt();
           }}
@@ -38,7 +38,7 @@ export default function EditHistoryControls() {
         {editHistoryRef.current.length}{' '}
         <button
           type="button"
-          class="plain4"
+          className="plain4"
           onClick={() => {
             nextEditedAt();
           }}
@@ -49,7 +49,7 @@ export default function EditHistoryControls() {
       </span>
       <button
         type="button"
-        class="plain3"
+        className="plain3"
         onClick={() => {
           exitEditHistory();
         }}

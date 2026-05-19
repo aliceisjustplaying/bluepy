@@ -1,167 +1,105 @@
-# Bluepy Agent Runbook
+# Bluepy Agent Runbook (Codex)
 
-> CLAUDE.md and AGENTS.md must stay aligned. They may differ only where review tooling must be reciprocal: Codex-facing instructions use Claude as reviewer, and Claude-facing instructions use Codex as reviewer. Commit both files together.
+> CLAUDE.md mirrors this file. Only difference: reviewer identity. This file is for Codex coders; Claude reviews Codex-authored work. CLAUDE.md is for Claude coders; Codex reviews Claude-authored work. Commit both files together. Product/UX conventions, footer credits, palette, and domain language live in `docs/CONTEXT.md`.
 
-## Deployment Source Of Truth
+## Always
 
-Production deploys from `fork/bluesky`, not feature branches. Use `/tmp/bluepy-bluesky-deploy` or another clean worktree for deploy-target work. Do not assume Cloudflare Pages; this project deploys on Cloudflare Workers with static assets.
+- Work in a **worktree** off `bluesky`, on a branch: `fix/<name>`, `feat/<name>`, `chore/<name>`, or `agent/issue-<number>`.
+  - `git worktree add -b fix/<name> /tmp/bluepy-<name> bluesky`
+- Use Bun only: `bun install`, `bun run ...`, `bunx ...`. Runtime is browser / Cloudflare Workers.
+- Run `git status -sb` and `git diff --name-status` before staging. Report dirty files.
+- Open a draft PR against `bluesky` when work is ready for automated preview/review.
 
-## Before Committing
+## Don't
 
-Always run `git status -sb` and `git diff --name-status` before staging. Never commit generated images unless explicitly requested in the current turn. Keep generated locale catalogs in separate commits.
+- Merge PRs, force-push, or amend published commits unless the user explicitly asks.
+- Delete or restore files you don't own. No `git restore`, `git checkout --`, or `git clean -f` outside your own staged work.
+- Bypass checks: no `--no-verify`, `.skip`, `xfail`, `eslint-disable`, `@ts-ignore`, `@ts-expect-error`, or `any`.
+- Commit generated images unless asked. Keep generated locale catalogs in separate commits.
+- Run `lingui extract` unless source strings changed. Never strip `<Trans>` tags.
+- Touch the prod Worker (`bluepy`) unless explicitly asked.
+- Self-review. Codex never reviews Codex-authored work.
 
-## Lint Rules
+## Secrets & Paths
 
-Do not turn off lint rules without explicit permission in the current turn. If a rule blocks useful work, report the rule name, the concrete violation, and the smallest compliant change or ask for permission to change the rule.
+All secrets live in `~/.secrets/bluepy/` with private permissions. Never log, print, or commit them.
 
-## Package Manager
+- Load secrets with `source ~/.secrets/bluepy/source.env`.
+- This sets `CLOUDFLARE_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `ATPROTO_TEST_IDENTIFIER`, and `ATPROTO_TEST_PASSWORD`.
+- Reference clients are read-only: `~/social-app` first, optionally `github.com/mozzius/graysky`.
 
-Use Bun for installs and scripts: `bun install`, `bun run ...`, and `bunx ...`. Runtime remains browser/Cloudflare Workers, not Bun.
+## Branches, Remotes & Deploy
 
-## Browser Verification
+- `bluesky` is main. Old TypeScript migration branches are not the default base for new work.
+- `fork` (`github.com/aliceisjustplaying/bluepy`) is the GitHub deploy source. `tangled` is a mirror.
+- Production deploys from `fork/bluesky`, not feature branches. Use `/tmp/bluepy-bluesky-deploy` or another clean worktree for deploy-target work.
+- Cloudflare account: `aliceisjustplaying@gmail.com`, account ID `b752c979e541327de3e87e52f0906aa1`, zone `bluepy.social` id `c3e3ebea11871d784375b74624d3b6cd`.
+- Workers:
+  - `bluepy` -> `bluepy.social` (prod). Do not touch unless asked.
+  - `bluepy-dev` -> `dev.bluepy.social` (`bunx wrangler deploy --env dev`).
+  - PR previews -> `https://pr-<number>.bluepy.social` via `.github/workflows/bluepy-preview.yml`.
 
-Use authenticated views when checking visual or behavioral regressions. Do not use logged-out routes as correctness evidence for authenticated timeline, post, compose, notification, or account flows.
+## PR Automation
 
-## Long-Running Work
+- Issue label `agent:codex` runs `.github/workflows/bluepy-agent.yml`, which calls `scripts/agent-loop.sh issue <number>`.
+- PRs with `agent:preview` get a preview deploy on open, sync, reopen, ready-for-review, or label events.
+- After a successful `Bluepy Preview` run, `.github/workflows/bluepy-agent-pr.yml` calls `scripts/agent-loop.sh pr <number>` unless the PR already has `human-review`.
+- The PR loop runs deterministic verification, asks Claude for structured JSON review, lets Codex fix actionable findings, repeats, waits for a passing preview, then labels `human-review`.
+- `/bluepy-agent` comments from owners, members, or collaborators run `scripts/agent-loop.sh comment <number>`.
+- Self-hosted preview jobs require runners tagged `bluepy-deploy`; agent jobs require `bluepy-agent`.
+- Agent workflow logs live under `/workspace/agent-worktrees/bluepy/logs` and are uploaded as GitHub artifacts. Claude raw and normalized review JSON are preserved there.
 
-Make small commits by concern. Push deploy-relevant commits to `fork/bluesky`. Report any remaining dirty files explicitly.
+## Environment Quirks
 
-## TypeScript Migration: Roles
+- Use authenticated views when checking visual or behavioral regressions. Logged-out routes are not correctness evidence for timeline, post, compose, notification, or account flows.
+- Agent-runner browser checks inherit `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` and `AGENT_BROWSER_EXECUTABLE_PATH` from `scripts/agent-loop.sh`; both point at `scripts/chromium-for-agents`.
+- Use `agent-browser` for ad-hoc visual checks (`agent-browser skills get core --full`). Use `bun run test` for Playwright smoke/regression tests.
+- Playwright browsers are installed via Nix, not `npx playwright install`. If browser launch fails on NixOS, point Playwright at the Nix-provided Chromium wrapper.
+- Tailscale previews need HTTPS for OAuth/SubtleCrypto. Use `p.tailec2dc.ts.net`; the bare IP only works for non-OAuth flows.
+- Mobile Safari content blockers can kill `src/utils/push-notifications.js` and leave "Bluepy is still loading...".
+- Host is Hermes (Hetzner arm64, 4cpu/8gb). If CPU is hot, inspect `hermes`, `codex`, `claude`, `camoufox`, and `agent-browser` processes before killing anything.
 
-- **Coder**: The active coding agent, or worker subagents in parallel-worktree mode. Owns file conversions, type annotations, fixes, verification, and commits.
-- **Reviewer**: Claude Opus 4.7 through the local `claude` CLI at xhigh effort. Owns review verdicts only. Claude output is read-only signal; Claude does not edit files in this workflow.
+## Verification
 
-Coder writes, Claude reviews, Coder fixes. Loop until Claude reports no actionable findings, then commit.
+- `bun run typecheck` gates normal code changes.
+- `bun run test` gates modules with Playwright coverage.
+- `bun run build` gates bundling, routing, import, asset, and runtime packaging changes.
+- `bunx oxlint <changed files>` gates changed-file delta; the project baseline still has unrelated noise.
+- Browser verification must be logged in for authenticated flows: `source ~/.secrets/bluepy/source.env`, `bun run dev`, expose via HTTPS, then walk the affected flow.
 
-## TypeScript Migration OODA Loop
+## Models
 
-Work in reviewable batches. Prefer 3-8 tiny independent leaf files, one leaf utility cluster, one boundary module, or one cohesive import chain per batch. Aim for under 300 changed lines; split at 500. Prefer extensionless import-safe `.js -> .ts` and `.jsx -> .tsx` conversions first, because they avoid import churn.
+- Claude: `claude-opus-4-7` with `--effort xhigh`. Never Sonnet, Haiku, or defaults.
+- Codex: `gpt-5.5` with `model_reasoning_effort="high"`. Never defaults.
+- External manual reviewer of record: GPT-5.5 Pro via `scripts/dump-source-for-review.sh`.
 
-For each batch:
+## Lint & Code Discipline
 
-1. Orient: inspect callers, runtime behavior, existing tests, and current JS assumptions. Keep a candidate queue by inspecting a set of small JS/JSX leaves once, then convert the next safe batch from that queue without rediscovering from scratch. Identify the smallest type boundary or independent leaf batch that removes casts from already-converted code.
-2. Decide: state the batch target and success checks. Do not disable rules to make progress.
-3. Act: convert the files to TypeScript and keep behavior stable. Use `git mv` so renames are tracked. No drive-bys in the same commit — import-path tweaks, formatting, version bumps, and renames belong in their own. No pure helpers extracted solely to test trivial assertions; if it's one expression, inline it. Shimming an untyped peer with `as unknown as X` is acceptable debt — the next batch that converts the peer removes the shim.
-4. Verify: `bun run typecheck` (gates), `bun run build` only when the batch may affect bundling, routing, imports, generated assets, or runtime packaging (gates when run), `bun run test` for modules with Playwright coverage (gates), and targeted `bunx oxlint <changed files>` for review delta (informational — project baseline is ~32 000 errors). Then exercise the batch in the browser only when it affects user-visible app flows: source `~/.secrets/phanpy-atproto-test.env` (`ATPROTO_TEST_IDENTIFIER`, `ATPROTO_TEST_PASSWORD`), run `bun run dev`, and walk the affected flows. For pure leaf utilities, use direct module probes or targeted runtime checks when useful; otherwise types, targeted lint, and review are sufficient.
-5. Review: stage the batch (`git add -A`), then run Claude review against the working-tree diff. See "Claude Review CLI" below. Ask Claude for bugs, behavioral regressions, unsafe type claims, missing tests, over-decomposition, and rule bypasses.
-6. Fix: address actionable Claude findings with code changes, not lint disables. If a lint rule appears wrong for the project, follow the rule-change protocol below.
-7. Re-review: after addressing any actionable Claude finding, rerun the relevant verification and re-run Claude review. Repeat until Claude reports no actionable findings. Commit only after that final clean review. Skip re-review only when the first review contains no actionable findings or only explicitly non-actionable residual risks. Hard cap: 5 review rounds per batch — escalate if still not clean by then.
-8. Commit & push: run `git status -sb` and `git diff --name-status`, then commit the batch with a narrow message only when the batch is green and Claude reports no actionable findings. Do not batch unrelated catalog, image, domain, or package-manager changes. In single-worker mode, push to `fork/typescript` immediately after committing. In parallel-worktree mode (see below), workers commit on their branch and do **not** push; the coordinator merges and pushes.
-9. Loop: pick the next batch by removing the largest remaining JS boundary around already-typed code.
+- Do not turn off lint rules without explicit permission in the current turn.
+- If a rule blocks useful work, report the rule name, diagnostic, and smallest compliant change. For a real rule change, write `docs/rule-change-proposals/YYYY-MM-DD-name.md` and get reviewer approval first.
+- Reuse `@atproto/*` types before defining new ones.
+- "Type X" means convert X to TS, not patch JSDoc into `.js`.
+- Do not invent types that codify known-broken behavior.
+- AT URIs are native: serialize as `at://...`, never `at:/...`.
+- Bluesky image limits: 2 MB and about 4000 px long edge.
 
-Pick batches leaves-first by import graph — modules whose dependencies are already typed. Out-of-order is fine; it just leaves `as unknown as X` shims that the next batch removes. Avoid creating types for known-broken behavior; mark those as follow-up bugs or fix behavior first.
+## Review Loop
 
-### Parallel-Worktree Wave Mode
-
-For high-throughput migration runs, run multiple workers in parallel rather than serially. The coordinator drives waves of up to 5 worker subagents.
-
-Per wave:
-
-1. Coordinator surveys remaining JS/JSX leaves and picks N independent batches. **No shared files between batches in the same wave** — workers must be able to merge cleanly.
-2. For each batch, coordinator creates a fresh worktree branched from `typescript`:
-   ```bash
-   git worktree add -b ts/<wave>-<batch-name> /tmp/bluepy-<wave>/<batch-name> typescript
-   ```
-3. Coordinator spawns one worker subagent per worktree. Each worker is given: worktree path, file list, and the OODA loop above (steps 2–7). Workers commit on their branch but do **not** push.
-4. As each worker returns SUCCESS, coordinator runs `git merge --no-ff ts/<wave>-<batch-name>` from the `typescript` branch in the main checkout. Trivial conflicts (unrelated import paths) — coordinator resolves. Real conflicts — coordinator halts and surfaces them.
-5. After all wave branches merged, coordinator pushes once: `git push fork typescript`.
-6. Coordinator removes wave worktrees (`git worktree remove --force <path>`) and deletes their branches.
-7. Pick next 5 batches; loop until no JS/JSX remains under `src/`.
-
-Worker constraints (enforce in every worker prompt):
-
-- Stay inside the assigned worktree. Never edit files outside the batch list.
-- No `bun install`, no `package.json` edits, no `tsconfig*` edits, no lint/eslint/oxlint/vite config edits, no CI edits.
-- No `--no-verify`, no `eslint-disable`, no `@ts-ignore` / `@ts-expect-error`, no `any`. Use explicit types or `as unknown as X` shims only.
-- No push. Commit on the assigned branch only.
-- Use `bun` / `bunx` exclusively.
-- Use `git mv` for renames so git tracks them as renames, not delete+add.
+Codex writes, verifies, stages, and fixes. Claude reviews read-only through structured output. Fix actionable findings in code, re-run relevant verification, and re-review until Claude reports no actionable findings. Hard cap is 5 review rounds.
 
 ### Claude Review CLI
 
-Reviews call the local `claude` CLI directly. **Always** use Claude Opus 4.7 at xhigh effort — never rely on config defaults, and do not use Codex to review Codex-authored code.
-
-Canonical review invocation (run from inside the worktree where the batch is staged):
+Run from the staged worktree. `< /dev/null` is mandatory in non-TTY contexts.
 
 ```bash
 DIFF="$(git diff --no-color HEAD)"
 TYPECHECK="$(bun run typecheck 2>&1)"
-LINT="$(bunx oxlint <changed-files> 2>&1)"
+LINT="$(bunx oxlint <changed> 2>&1)"
 claude -p \
   --model claude-opus-4-7 \
   --effort xhigh \
   --no-session-persistence \
   "$PROMPT" < /dev/null > claude-review.out 2>&1
-# Where $PROMPT is the heredoc contents below. CRITICAL: `< /dev/null` is
-# mandatory whenever claude is spawned from a non-TTY context (background
-# tasks, sub-agents, scripts).
-#
-# Heredoc prompt body (write to a file or assemble in $PROMPT):
-# <<EOF
-You are reviewing a TypeScript migration batch in Bluepy. The diff is a set of
-\`.js -> .ts\` and \`.jsx -> .tsx\` renames with the smallest type annotations
-needed to compile. Review for correctness only. Find:
-
-- Behavioral regressions vs the JS original
-- Unsafe type claims, casts, or \`as unknown as X\` shims that hide bugs
-- Use of \`any\`, \`@ts-ignore\`, \`@ts-expect-error\`, or \`eslint-disable\`
-- Missing tests around changed behavior
-- Over-decomposition or unnecessary abstraction
-- Drive-by changes (formatting, version bumps, unrelated edits, package.json,
-  tsconfig, lint config, lockfiles, generated images, locale catalogs, .claude/)
-- Files renamed without \`git mv\` (delete+add instead of rename)
-
-Return findings ordered by severity with file:line refs. If none, say
-"no actionable findings" and name residual risks (if any).
-
-Typecheck output:
-${TYPECHECK}
-
-Oxlint output (informational, project baseline ~32 510 errors):
-${LINT}
-
-Diff:
-${DIFF}
-EOF
 ```
 
-- Read Claude's output: actionable findings (bugs, unsafe casts, regressions, missing tests for changed behavior, over-decomposition, rule bypasses) → fix in code. Explicitly non-actionable residual risks → acceptable; commit anyway.
-
-Do not let Claude edit files during review. Treat Claude output as review input only; the coding agent owns code changes, verification, and commits.
-
-For smoke testing Claude availability:
-
-```bash
-claude -p \
-  --model claude-opus-4-7 \
-  --effort xhigh \
-  --no-session-persistence \
-  "Reply with EXACTLY CLAUDE_OK and nothing else."
-```
-
-### Rule-Change Protocol
-
-Default behavior is to obey every configured rule. A migration batch must not silently relax lint, typecheck, formatter, test, build, or runtime checks.
-
-If a rule blocks useful work, first try the smallest compliant code change. If that makes the code materially worse, create a separate rule-change proposal artifact instead of editing config inline.
-
-Use `docs/rule-change-proposals/YYYY-MM-DD-brief-name.md` with:
-
-- rule/check name
-- exact command and diagnostic
-- changed files blocked by the rule
-- why compliant code is worse for this codebase
-- proposed config change or scoped exception
-- blast radius
-- rollback plan
-- Claude review result on the proposal
-
-Automation may commit a rule-change proposal document without human approval. Automation may apply the rule change only when all of these are true:
-
-1. The proposal is in its own commit.
-2. Claude's review explicitly approves the rule change.
-3. The change is narrower than disabling the whole rule globally.
-4. The commit message starts with `Adjust lint rule:`.
-5. The next migration batch confirms the adjusted rule no longer hides unrelated findings.
-
-If those conditions are not met, leave the proposal committed and continue with a different migration batch.
+The prompt should ask for correctness findings ordered by severity with `file:line` refs: behavioral regressions, unsafe casts, hidden runtime assumptions, missing tests, rule bypasses, generated/lockfile/locale churn, unrelated drive-bys, and skipped tests. If none, Claude should say "no actionable findings" and list residual risks.

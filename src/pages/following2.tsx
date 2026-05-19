@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState } from 'react';
 
 import Timeline2 from '../components/timeline2';
 import { api, getMastoV1Resource } from '../utils/api';
@@ -8,7 +8,7 @@ import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
 import supports from '../utils/supports';
-import { assignFollowedTags, dedupeBoosts } from '../utils/timeline-utils';
+import { dedupeBoosts } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
@@ -149,9 +149,6 @@ function Following2({ title, path, id, ...props }: Following2Props) {
         saveStatus(toSaveStatus(item), instance);
       });
       // value = dedupeBoosts(value, instance);
-      setTimeout(() => {
-        void assignFollowedTags(value, instance);
-      }, 100);
 
       // ENFORCE sort by datetime (Latest first)
       value.sort((a, b) => {
@@ -242,7 +239,6 @@ function Following2({ title, path, id, ...props }: Following2Props) {
       useItemID
       {...props}
       filterContext="home"
-      showFollowedTags
       showReplyParent
     />
   );

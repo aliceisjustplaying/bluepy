@@ -1,6 +1,6 @@
 import { shouldPolyfill } from '@formatjs/intl-segmenter/should-polyfill.js';
-import type { ComponentType } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import type { ComponentType } from 'react';
+import { useEffect, useState } from 'react';
 
 import Loader from './loader';
 

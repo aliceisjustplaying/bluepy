@@ -26,6 +26,7 @@ import {
 import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
 
 import { BSKY_PDS, resolveAtprotoLoginService } from './atproto-login-service';
+import { compressAtprotoImageIfNeeded } from './atproto-image-compression';
 import { createAtprotoOAuthAgent } from './atproto-oauth';
 import { encodeAtprotoID } from './atproto-route';
 import { createAtprotoExternalEmbed, getFirstPostURL } from './atproto-unfurl';
@@ -40,7 +41,6 @@ const BSKY_GET_POSTS_LIMIT = 25;
 const BSKY_THREAD_CONTEXT_DEPTH = 1000;
 const BSKY_VIDEO_SERVICE = 'https://video.bsky.app';
 const BSKY_VIDEO_SERVICE_DID = 'did:web:video.bsky.app';
-export { BSKY_PDS, resolveAtprotoLoginService };
 
 /**
  * The adapter accepts both regular and OAuth-authenticated AtpAgent / Agent
@@ -511,7 +511,6 @@ interface AdaptedRelationship {
   mutingNotifications: boolean;
   requested: boolean;
   domainBlocking: boolean;
-  endorsed: boolean;
   _atproto?: AdaptedRelationshipAtproto;
 }
 
@@ -522,6 +521,15 @@ type AdaptedNotificationType =
   | 'mention'
   | 'follow'
   | 'status';
+
+const notificationReasonsByType: Record<AdaptedNotificationType, string[]> = {
+  favourite: ['like', 'like-via-repost'],
+  reblog: ['repost', 'repost-via-repost'],
+  quote: ['quote'],
+  mention: ['mention', 'reply'],
+  follow: ['follow'],
+  status: [],
+};
 
 interface AdaptedNotification {
   id: string;
@@ -576,6 +584,53 @@ interface CreateAtprotoClientOptions {
   oauthSession?: unknown;
   service?: string;
   persistSession?: AtpPersistSessionHandler;
+}
+
+export interface AtprotoPostParams {
+  status?: string;
+  poll?: unknown;
+  in_reply_to_id?: string;
+  inReplyToId?: string;
+  quoted_status_id?: string;
+  quote_id?: string;
+  quoteId?: string;
+  media_ids?: string[];
+  mediaIds?: string[];
+  disable_card?: boolean;
+  disableCard?: boolean;
+  card_url?: string;
+  cardUrl?: string;
+  external_url?: string;
+  externalUrl?: string;
+  visibility?: string;
+  sensitive?: boolean;
+  spoiler_text?: string;
+  spoilerText?: string;
+  quote_approval_policy?: string;
+  quoteApprovalPolicy?: string;
+  language?: string | null;
+}
+
+export function assertAtprotoPostParamsSupported(
+  params: AtprotoPostParams,
+): void {
+  if (params.poll) {
+    throw new Error('Bluesky polls are not supported');
+  }
+  if (params.visibility && params.visibility !== 'public') {
+    throw new Error('Bluesky posts only support public visibility');
+  }
+  if (params.sensitive) {
+    throw new Error('Bluesky content warnings are not supported');
+  }
+  if ((params.spoiler_text || params.spoilerText || '').trim()) {
+    throw new Error('Bluesky content warnings are not supported');
+  }
+  const quoteApprovalPolicy =
+    params.quote_approval_policy || params.quoteApprovalPolicy;
+  if (quoteApprovalPolicy && quoteApprovalPolicy !== 'public') {
+    throw new Error('Bluesky quote approval settings are not supported');
+  }
 }
 
 function getServiceAuthAudFromUrl(url: string | URL): string {
@@ -1627,7 +1682,6 @@ function relationshipFor(id: string | undefined): AdaptedRelationship {
     mutingNotifications: false,
     requested: false,
     domainBlocking: false,
-    endorsed: false,
   };
 }
 
@@ -1699,6 +1753,19 @@ export function notificationStatusURI(
   );
 }
 
+function notificationReasonsForTypes(
+  types: AdaptedNotificationType[] | undefined,
+): string[] | undefined {
+  if (!types?.length) return undefined;
+  const reasons = new Set<string>();
+  types.forEach((type) => {
+    notificationReasonsByType[type].forEach((reason) => {
+      reasons.add(reason);
+    });
+  });
+  return reasons.size ? [...reasons] : undefined;
+}
+
 interface GroupedNotificationsItems {
   accounts: AdaptedAccount[];
   statuses: AdaptedStatus[];
@@ -1763,16 +1830,18 @@ async function createMediaUpload({
   const url = URL.createObjectURL(file);
 
   if (file.type?.startsWith('image/')) {
-    const res = await agent.uploadBlob(file, {
-      encoding: file.type,
+    const uploadFile = await compressAtprotoImageIfNeeded(file);
+    const res = await agent.uploadBlob(uploadFile, {
+      encoding: uploadFile.type,
     });
     const blob = res.data.blob;
     const id = blobRefID(blob);
+    const mediaUrl = URL.createObjectURL(uploadFile);
     const media: AdaptedUploadedMedia = {
       id,
       type: 'image',
-      url,
-      previewUrl: url,
+      url: mediaUrl,
+      previewUrl: mediaUrl,
       description,
       blob,
     };
@@ -2197,16 +2266,6 @@ export function createAtprotoClient({
         return [];
       },
     },
-    endorsements: {
-      async list(): Promise<never[]> {
-        return [];
-      },
-    },
-    note: {
-      async create() {
-        throw new Error('Bluesky private notes are not supported');
-      },
-    },
     async follow(): Promise<AdaptedRelationship> {
       const current = await fetchRelationship(id);
       if (!current.following) {
@@ -2273,12 +2332,6 @@ export function createAtprotoClient({
         blocking: false,
         _atproto: { ...current._atproto, blocking: undefined },
       };
-    },
-    async pin() {
-      throw new Error('Bluesky featured profiles are not supported');
-    },
-    async unpin() {
-      throw new Error('Bluesky featured profiles are not supported');
     },
   });
 
@@ -2439,9 +2492,11 @@ export function createAtprotoClient({
     } = {},
     cursor?: string,
   ): Promise<CollectionPage<AdaptedNotification[]>> {
+    const reasons = notificationReasonsForTypes(types);
     const res = await agent.listNotifications({
       limit,
       cursor,
+      reasons,
     });
     const allowedTypes = types?.length
       ? new Set<AdaptedNotificationType>(types)
@@ -2880,46 +2935,6 @@ export function createAtprotoClient({
           });
         },
       },
-      tags: {
-        $select(name: string) {
-          return {
-            async fetch() {
-              return {
-                name,
-                url: `/t/${encodeURIComponent(name)}`,
-                history: [],
-                following: false,
-              };
-            },
-            async follow() {
-              throw new Error('Bluesky hashtag follows are not supported');
-            },
-            async unfollow() {
-              throw new Error('Bluesky hashtag follows are not supported');
-            },
-          };
-        },
-      },
-      followedTags: {
-        list() {
-          return emptyCollection<unknown>();
-        },
-      },
-      featuredTags: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-        async create() {
-          throw new Error('Bluesky featured hashtags are not supported');
-        },
-        $select() {
-          return {
-            async remove() {
-              throw new Error('Bluesky featured hashtags are not supported');
-            },
-          };
-        },
-      },
       trends: {
         tags: {
           list() {
@@ -2991,18 +3006,6 @@ export function createAtprotoClient({
           },
         },
       },
-      conversations: {
-        list() {
-          return emptyCollection<unknown>();
-        },
-        $select() {
-          return {
-            async read() {
-              return {};
-            },
-          };
-        },
-      },
       announcements: {
         async list(): Promise<never[]> {
           return [];
@@ -3032,41 +3035,6 @@ export function createAtprotoClient({
           return {};
         },
       },
-      customEmojis: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-      },
-      followRequests: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-        $select(id: string) {
-          return {
-            async authorize() {
-              return relationshipFor(id);
-            },
-            async reject() {
-              return relationshipFor(id);
-            },
-          };
-        },
-      },
-      scheduledStatuses: {
-        list() {
-          return emptyCollection<unknown>();
-        },
-        $select() {
-          return {
-            async update() {
-              throw new Error('Bluesky scheduled posts are not supported');
-            },
-            async remove() {
-              throw new Error('Bluesky scheduled posts are not supported');
-            },
-          };
-        },
-      },
       statuses: {
         $select: statusAPI,
         async list({ id }: { id?: string | string[] } = {}): Promise<
@@ -3080,33 +3048,8 @@ export function createAtprotoClient({
           const res = await agent.getPosts({ uris });
           return res.data.posts.map((post) => postToStatus(post, agent));
         },
-        async create(
-          params: {
-            status?: string;
-            scheduled_at?: string;
-            scheduledAt?: string;
-            poll?: unknown;
-            in_reply_to_id?: string;
-            inReplyToId?: string;
-            quoted_status_id?: string;
-            quote_id?: string;
-            quoteId?: string;
-            media_ids?: string[];
-            mediaIds?: string[];
-            disable_card?: boolean;
-            disableCard?: boolean;
-            card_url?: string;
-            cardUrl?: string;
-            external_url?: string;
-            externalUrl?: string;
-          } = {},
-        ): Promise<AdaptedStatus> {
-          if (params.scheduled_at || params.scheduledAt) {
-            throw new Error('Bluesky scheduled posts are not supported');
-          }
-          if (params.poll) {
-            throw new Error('Bluesky polls are not supported');
-          }
+        async create(params: AtprotoPostParams = {}): Promise<AdaptedStatus> {
+          assertAtprotoPostParamsSupported(params);
           const inReplyToId = params.in_reply_to_id || params.inReplyToId;
           const quoteId =
             params.quoted_status_id || params.quote_id || params.quoteId;
@@ -3119,6 +3062,9 @@ export function createAtprotoClient({
             facets,
             createdAt: new Date().toISOString(),
           };
+          if (params.language) {
+            record.langs = [params.language];
+          }
           let quoteEmbed: TypedRecordEmbed | undefined;
           if (inReplyToId) {
             const parent = await statusAPI(inReplyToId).fetch();
@@ -3255,19 +3201,6 @@ export function createAtprotoClient({
           };
         },
       },
-      annualReports: {
-        $select(year: number | string) {
-          return {
-            async fetch() {
-              return {
-                accounts: [],
-                statuses: [],
-                annualReports: [{ year, data: {} }],
-              };
-            },
-          };
-        },
-      },
       media: {
         async create({
           file,
@@ -3368,24 +3301,6 @@ export function createAtprotoClient({
           async update(policy: Record<string, unknown> = {}) {
             return policy;
           },
-        },
-      },
-      filters: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-        async create() {
-          throw new Error('Bluesky filters are not supported');
-        },
-        $select() {
-          return {
-            async update() {
-              throw new Error('Bluesky filters are not supported');
-            },
-            async remove() {
-              throw new Error('Bluesky filters are not supported');
-            },
-          };
         },
       },
       search: {
@@ -3489,7 +3404,7 @@ export function atprotoInstanceInfo() {
           'image/gif',
           'video/mp4',
         ],
-        imageSizeLimit: 1_000_000,
+        imageSizeLimit: 2_000_000,
         videoSizeLimit: 100_000_000,
         descriptionLimit: 1_000,
       },

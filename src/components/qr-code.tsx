@@ -1,6 +1,6 @@
 import './qr-code.css';
 
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { encodeQR } from 'qr';
 
 interface QrCodeProps {
@@ -209,7 +209,7 @@ export default function QrCode({
 
   return (
     <svg
-      class="qr-code"
+      className="qr-code"
       viewBox={`${-padding} ${-padding} ${viewBoxWidth} ${viewBoxHeight}`}
       xmlns="http://www.w3.org/2000/svg"
       shape-rendering="geometricPrecision"
@@ -369,7 +369,7 @@ export default function QrCode({
           <div
             ref={captionRef}
             {...{ xmlns: 'http://www.w3.org/1999/xhtml' }}
-            class="qr-code-caption"
+            className="qr-code-caption"
             dangerouslySetInnerHTML={{ __html: caption }}
           />
         </foreignObject>

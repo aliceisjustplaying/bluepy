@@ -100,15 +100,14 @@ const notificationTypeKeys: Record<string, string[]> = {
   status: ['account', 'status'],
   reblog: ['account', 'status'],
   follow: ['account'],
-  follow_request: ['account'],
   favourite: ['account', 'status'],
   poll: ['status'],
   update: ['status'],
 };
 
-const GROUP_TYPES = ['favourite', 'reblog', 'follow', 'admin.sign_up'];
+const GROUP_TYPES = new Set(['favourite', 'reblog', 'follow', 'admin.sign_up']);
 const groupable = (type: string | undefined): boolean =>
-  !!type && GROUP_TYPES.includes(type);
+  !!type && GROUP_TYPES.has(type);
 
 export function fixNotifications(
   notifications: NotificationLike[],
@@ -149,11 +148,10 @@ export function massageNotifications2(
       const sampleAccounts =
         sampleAccountIds?.map((id) => accounts.find((a) => a.id === id)) || [];
       const status = statuses?.find((s) => s.id === statusId) || null;
-      return {
-        ...group,
+      return Object.assign({}, group, {
         sampleAccounts,
         status,
-      } as NotificationGroupLike;
+      }) as NotificationGroupLike;
     });
   }
   return notifications as NotificationLike[] | undefined;
@@ -177,7 +175,7 @@ export function groupNotifications2(
       return {
         id: '' + mostRecentNotificationId,
         createdAt: latestPageNotificationAt,
-        account: sampleAccounts![0],
+        account: sampleAccounts?.[0],
         ...gn,
       };
     },
@@ -243,20 +241,22 @@ export function groupNotifications2(
       // `massageNotifications2`) — a missing `sampleAccounts` here is a
       // malformed-input crash. Individual entries can still be `undefined`,
       // matching `massageNotifications2`'s lookup-by-id behavior.
-      sampleAccounts!.forEach((a) => {
+      (sampleAccounts ?? []).forEach((a) => {
+        if (!a) return;
         const mappedAccount = mappedNotification.sampleAccounts.find(
-          (ma) => ma!.id === a!.id,
+          (ma) => ma?.id === a.id,
         );
         if (!mappedAccount) {
           mappedNotification.sampleAccounts.push({
-            ...a!,
+            ...a,
             _types: [type as string],
           });
         } else {
-          mappedAccount._types!.push(type as string);
+          mappedAccount._types ??= [];
+          mappedAccount._types.push(type as string);
           // Equivalent to the JS original `_types.sort().reverse()`: default
           // string compare then reverse, without requiring ES2023 toSorted.
-          mappedAccount._types = sorted(mappedAccount._types!, (t1, t2) =>
+          mappedAccount._types = sorted(mappedAccount._types, (t1, t2) =>
             t1 < t2 ? 1 : t1 > t2 ? -1 : 0,
           );
         }
@@ -271,7 +271,7 @@ export function groupNotifications2(
         notificationsCount as number,
       );
       mappedNotification._notificationsCount.push(notificationsCount as number);
-      mappedNotification._sampleAccountsCount.push(sampleAccounts!.length);
+      mappedNotification._sampleAccountsCount.push(sampleAccounts?.length ?? 0);
       mappedNotification._accounts = mappedNotification.sampleAccounts;
       if (groupKey) mappedNotification._groupKeys.push(groupKey);
     } else {
@@ -279,10 +279,9 @@ export function groupNotifications2(
       // missing array here is a malformed-input crash. Individual entries
       // can still be `undefined` (see `massageNotifications2`), which the
       // spread turns into malformed `{_types: [type]}` objects downstream.
-      const accounts = sampleAccounts!.map((a) => ({
-        ...a,
-        _types: [type as string],
-      }));
+      const accounts = (sampleAccounts ?? []).map((a) =>
+        Object.assign({}, a, { _types: [type as string] }),
+      );
       // Preserve JS-original behavior: pushes `undefined` if the upstream
       // payload omitted the field, rather than normalizing to 0.
       const newEntry: AugmentedNotificationGroup = {
@@ -292,7 +291,7 @@ export function groupNotifications2(
         _accounts: accounts,
         _groupKeys: groupKey ? [groupKey] : [],
         _notificationsCount: [notificationsCount as number],
-        _sampleAccountsCount: [sampleAccounts!.length],
+        _sampleAccountsCount: [sampleAccounts?.length ?? 0],
       };
       notificationsMap[key] = newEntry;
       newGroupNotifications1.push(newEntry);
@@ -368,24 +367,25 @@ export default function groupNotifications(
     const mappedNotification = notificationsMap[key];
     if (!groupable(type)) {
       cleanNotifications[j++] = notification;
-    } else if (mappedNotification?.account) {
+    } else if (mappedNotification?.account && account) {
       // The JS original dereferences `account.id` directly here — `account`
       // is expected to exist when the existing mapped entry has one
       // (groupable notifications share the same key). Match that contract.
       const mappedAccount = mappedNotification._accounts.find(
-        (a) => a.id === account!.id,
+        (a) => a.id === account.id,
       );
       if (mappedAccount) {
-        mappedAccount._types!.push(type as string);
+        mappedAccount._types ??= [];
+        mappedAccount._types.push(type as string);
         // Equivalent to the JS original `_types.sort().reverse()`: default
         // string compare then reverse, without requiring ES2023 toSorted.
-        mappedAccount._types = sorted(mappedAccount._types!, (a, b) =>
+        mappedAccount._types = sorted(mappedAccount._types, (a, b) =>
           a < b ? 1 : a > b ? -1 : 0,
         );
         mappedNotification._ids = `${mappedNotification._ids}-${id}`;
       } else {
-        account!._types = [type as string];
-        mappedNotification._accounts.push(account!);
+        account._types = [type as string];
+        mappedNotification._accounts.push(account);
         mappedNotification._ids = `${mappedNotification._ids}-${id}`;
       }
     } else {
@@ -415,7 +415,7 @@ export default function groupNotifications(
     // Original JS uses `_accounts.length` directly; `type === 'favourite+reblog'`
     // is only set in the first-pass `else` branch which initializes `_accounts`,
     // so `_accounts` is always an array here.
-    if (type === 'favourite+reblog' && account && _accounts!.length === 1) {
+    if (type === 'favourite+reblog' && account && _accounts?.length === 1) {
       const key = `${account?.id}-${type}-${date}`;
       const mappedNotification = notificationsMap2[key];
       if (mappedNotification) {

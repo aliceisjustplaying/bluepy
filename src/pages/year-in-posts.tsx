@@ -4,14 +4,14 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import { Document as FlexSearchIndexDocument } from 'flexsearch';
 import type { mastodon } from 'masto';
-import { forwardRef } from 'preact/compat';
+import type { Ref } from 'react';
 import {
   useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
-} from 'preact/hooks';
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useSearchParams } from 'react-router-dom';
 import { useThrottledCallback } from 'use-debounce';
@@ -146,7 +146,7 @@ const FILTER_KEYS: Record<FilterKey, string> = {
   original: 'Original',
   replies: 'Replies',
   quotes: 'Quotes',
-  boosts: 'Boosts',
+  boosts: 'Reposts',
   media: 'Media',
 };
 
@@ -210,7 +210,7 @@ interface SearchFieldHandle {
 }
 
 function YearInPosts() {
-  const { i18n } = useLingui();
+  const { i18n, t } = useLingui();
   const [searchParams, setSearchParams] = useSearchParams();
   const yearParam = searchParams.get('year');
   const monthParam = searchParams.get('month');
@@ -265,7 +265,7 @@ function YearInPosts() {
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         const hasModal = !!document.querySelector('#modal-container > *');
         const target = e.target as HTMLElement | null;
         const isInput = ['INPUT', 'TEXTAREA'].includes(target?.tagName ?? '');
@@ -305,7 +305,7 @@ function YearInPosts() {
     loadYears();
   }, [year]);
 
-  const handleGenerate = async (e: Event) => {
+  const handleGenerate = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const yearInput = form.elements.namedItem('year');
@@ -830,31 +830,32 @@ function YearInPosts() {
     <div
       ref={scrollableRef}
       id="year-in-posts-page"
-      class="deck-container"
+      className="deck-container"
       tabIndex={-1}
       style={{
         '--month': month || 0,
       }}
     >
-      <div class="timeline-deck deck">
+      <div className="timeline-deck deck">
         {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
             header click is a tap-to-scroll-to-top affordance for touch; keyboard
             users press Home. Adding a stub keyboard handler would be no-op. */}
         <header
-          class={uiState === 'loading' ? 'loading' : ''}
+          className={uiState === 'loading' ? 'loading' : ''}
+          role="presentation"
           onClick={(e) => {
             if (!(e.target as HTMLElement).closest('a, button')) {
               scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }}
         >
-          <div class="header-grid">
-            <div class="header-side">
+          <div className="header-grid">
+            <div className="header-side">
               <NavMenu />
               {year && month !== null ? (
                 <Link
                   to={`/yip?year=${year}`}
-                  class="button plain"
+                  className="button plain"
                   onClick={() => {
                     setSearchQuery('');
                   }}
@@ -864,7 +865,7 @@ function YearInPosts() {
               ) : year ? (
                 <Link
                   to="/yip"
-                  class="button plain"
+                  className="button plain"
                   onClick={() => {
                     setSearchQuery('');
                   }}
@@ -872,7 +873,7 @@ function YearInPosts() {
                   <Icon icon="month" size="l" alt="Year in Posts" />
                 </Link>
               ) : (
-                <Link to="/" class="button plain">
+                <Link to="/" className="button plain">
                   <Icon icon="home" size="l" alt="Home" />
                 </Link>
               )}
@@ -896,7 +897,7 @@ function YearInPosts() {
                     }}
                   />
                 ) : (
-                  <h1 class="header-double-lines">
+                  <h1 className="header-double-lines">
                     <b>{year}</b>
                     {uiState === 'results' && (
                       <div>
@@ -915,12 +916,12 @@ function YearInPosts() {
                 )}
               </>
             )}
-            <div class="header-side">
+            <div className="header-side">
               {year && (
                 <>
                   <button
                     type="button"
-                    class={`plain ${showSearchField ? 'is-active' : ''}`}
+                    className={`plain ${showSearchField ? 'is-active' : ''}`}
                     onClick={() => {
                       if (showSearchField) {
                         setShowSearchField(false);
@@ -938,7 +939,7 @@ function YearInPosts() {
                   <Menu2
                     align="end"
                     menuButton={
-                      <button type="button" class="plain">
+                      <button type="button" className="plain">
                         <Icon icon="more" size="l" alt="More" />
                       </button>
                     }
@@ -951,7 +952,7 @@ function YearInPosts() {
                       }}
                     >
                       <Icon icon="check-circle" alt="☑️" />{' '}
-                      <span class="menu-grow">Media only</span>
+                      <span className="menu-grow">Media only</span>
                     </MenuItem>
                   </Menu2>
                 </>
@@ -962,7 +963,7 @@ function YearInPosts() {
 
         <main>
           {!year && (
-            <div class="year-in-posts-start">
+            <div className="year-in-posts-start">
               {uiState !== 'generating' ? (
                 <>
                   <h1>
@@ -999,7 +1000,7 @@ function YearInPosts() {
                   </details>
 
                   <form
-                    class="year-generate"
+                    className="year-generate"
                     onSubmit={(e) => {
                       void handleGenerate(e);
                     }}
@@ -1009,6 +1010,7 @@ function YearInPosts() {
                     <label>
                       <input
                         type="number"
+                        aria-label={t`Year`}
                         min={MIN_YEAR}
                         max={new Date().getFullYear()}
                         name="year"
@@ -1023,11 +1025,11 @@ function YearInPosts() {
                       <Icon icon="arrow-right" alt="Generate" size="l" />
                     </button>
                   </form>
-                  <div class="insignificant">
+                  <div className="insignificant">
                     <small>
                       <p>
                         This downloads your posts (excluding media files) from
-                        the server and saves them locally. It may take a longer
+                        Bluesky and saves them locally. It may take a longer
                         time and require more disk space.
                       </p>
                       <p>
@@ -1037,25 +1039,25 @@ function YearInPosts() {
                     </small>
                   </div>
                   {!searchEnabled && (
-                    <p class="insignificant">
+                    <p className="insignificant">
                       <small>
-                        ⚠️ Your server doesn't support advanced search, this
-                        will make more requests to the server and take much
+                        ⚠️ Advanced search is unavailable, so this
+                        will make more requests to Bluesky and take much
                         longer time.
                       </small>
                     </p>
                   )}
                 </>
               ) : (
-                <div class="ui-state year-in-posts-start">
+                <div className="ui-state year-in-posts-start">
                   <Loader abrupt />
-                  <p class="insignificant">Generating Year in Posts…</p>
-                  <p class="insignificant">This might take a while.</p>
+                  <p className="insignificant">Generating Year in Posts…</p>
+                  <p className="insignificant">This might take a while.</p>
                 </div>
               )}
 
               {availableYears.length > 0 && uiState !== 'generating' && (
-                <div class="year-selection">
+                <div className="year-selection">
                   <p>Archived Year in Posts:</p>
                   <ul>
                     {availableYears.map(
@@ -1075,18 +1077,18 @@ function YearInPosts() {
                           <li key={archivedYear}>
                             <Link
                               to={`/yip?year=${archivedYear}`}
-                              class="year-card available"
+                              className="year-card available"
                             >
                               <Icon icon="month" /> {archivedYear}
                             </Link>{' '}
-                            <small class="ib insignificant">
+                            <small className="ib insignificant">
                               {/* <Plural value={count} one="# post" other="# posts" /> */}
                               {count} posts{' '}
                               {/* TODO: Use Plural above when finalized */}
                             </small>{' '}
                             {size && (
                               <small
-                                class="tag insignificant collapsed"
+                                className="tag insignificant collapsed"
                                 title={`${size.toLocaleString(i18n.locale || undefined)} bytes`}
                               >
                                 ~{prettyBytes(size)}
@@ -1103,16 +1105,16 @@ function YearInPosts() {
                             >
                               <button
                                 type="button"
-                                class="light small"
+                                className="light small"
                                 disabled={uiState === 'loading'}
                                 title={String(fetchedAt)}
                               >
                                 <Icon
                                   icon="refresh"
                                   size="s"
-                                  class="insignificant"
+                                  className="insignificant"
                                 />{' '}
-                                <span class="insignificant">
+                                <span className="insignificant">
                                   {new Date(fetchedAt).toLocaleDateString(
                                     i18n.locale,
                                     {
@@ -1124,7 +1126,7 @@ function YearInPosts() {
                                 </span>{' '}
                                 {timezoneOffset !== undefined && (
                                   <small
-                                    class={`tag insignificant collapsed ${tzMismatch ? 'warn' : ''}`}
+                                    className={`tag insignificant collapsed ${tzMismatch ? 'warn' : ''}`}
                                     title={
                                       tzMismatch
                                         ? `Generated in ${formatTimezoneOffset(timezoneOffset)}, current timezone is ${formatTimezoneOffset(currentOffset)}`
@@ -1139,7 +1141,7 @@ function YearInPosts() {
                             </MenuConfirm>
                             <button
                               type="button"
-                              class="light danger small"
+                              className="light danger small"
                               onClick={(e) => {
                                 e.preventDefault();
                                 void handleRemoveYear(archivedYear);
@@ -1158,7 +1160,7 @@ function YearInPosts() {
           )}
 
           {year && uiState === 'loading' && (
-            <div class="ui-state year-in-posts-start">
+            <div className="ui-state year-in-posts-start">
               <Loader abrupt />
             </div>
           )}
@@ -1178,17 +1180,20 @@ function YearInPosts() {
               )}
 
               {(month !== null || searchQuery) && (
-                <div class="post-type-filters">
+                <div className="post-type-filters">
                   {(Object.entries(FILTER_KEYS) as [FilterKey, string][]).map(
                     ([key, label]) =>
                       filterCounts[key] > 0 && (
                         <button
                           key={key}
                           type="button"
-                          class={`filter-cat plain ${postType === key ? 'is-active' : ''}`}
-                          onClick={() => setPostType(key)}
+                          className={`filter-cat plain ${postType === key ? 'is-active' : ''}`}
+                          onClick={() => {
+                            setPostType(key);
+                          }}
                         >
-                          {label} <span class="count">{filterCounts[key]}</span>
+                          {label}{' '}
+                          <span className="count">{filterCounts[key]}</span>
                         </button>
                       ),
                   )}
@@ -1196,16 +1201,16 @@ function YearInPosts() {
               )}
 
               {(month !== null || searchQuery) && filteredPosts.length > 1 && (
-                <div class="sort-controls">
-                  <span class="filter-label">Sort</span>{' '}
-                  <fieldset class="radio-field-group">
+                <div className="sort-controls">
+                  <span className="filter-label">Sort</span>{' '}
+                  <fieldset className="radio-field-group">
                     {SORT_OPTIONS.filter((o) => {
                       if (o.key === 'relevance') return !!searchQuery;
                       if (o.key === 'createdAt') return true;
                       return !searchQuery;
                     }).map(({ key }) => (
                       <label
-                        class="filter-sort"
+                        className="filter-sort"
                         key={key}
                         onClick={(e) => {
                           if (sortBy === key && key !== 'relevance') {
@@ -1235,7 +1240,7 @@ function YearInPosts() {
                             createdAt: `Date`,
                             repliesCount: `Replies`,
                             favouritesCount: `Likes`,
-                            reblogsCount: `Boosts`,
+                            reblogsCount: `Reposts`,
                           }[key]
                         }
                         {sortBy === key &&
@@ -1249,9 +1254,9 @@ function YearInPosts() {
 
               {(month !== null || searchQuery) && (
                 <>
-                  <ul class="timeline">
+                  <ul className="timeline">
                     {filteredPosts.length === 0 ? (
-                      <p class="ui-state insignificant">…</p>
+                      <p className="ui-state insignificant">…</p>
                     ) : (
                       filteredPosts.map((post, index) => {
                         const currentDate = new Date(post.createdAt);
@@ -1268,7 +1273,7 @@ function YearInPosts() {
                         return (
                           <>
                             {showDateHeader && (
-                              <li class="date-header" key={post.createdAt}>
+                              <li className="date-header" key={post.createdAt}>
                                 <h2>
                                   <span>
                                     {niceDateTime(post.createdAt, {
@@ -1278,7 +1283,7 @@ function YearInPosts() {
                                       },
                                     })}
                                   </span>{' '}
-                                  <small class="insignificant bidi-isolate">
+                                  <small className="insignificant bidi-isolate">
                                     {niceDateTime(post.createdAt, {
                                       forceOpts: {
                                         weekday: 'long',
@@ -1299,7 +1304,7 @@ function YearInPosts() {
                                 />
                               ) : (
                                 <Link
-                                  class="status-link timeline-item"
+                                  className="status-link timeline-item"
                                   to={
                                     post.reblog
                                       ? `/${instance}/s/${post.reblog.id}`
@@ -1323,13 +1328,13 @@ function YearInPosts() {
                   </ul>
 
                   {searchQuery && hasMore && (
-                    <div class="ui-state">
+                    <div className="ui-state">
                       <button
                         type="button"
-                        class="plain6 block"
-                        onClick={() =>
-                          setSearchLimit((l) => l + SEARCH_RESULT_PAGE_SIZE)
-                        }
+                        className="plain6 block"
+                        onClick={() => {
+                          setSearchLimit((l) => l + SEARCH_RESULT_PAGE_SIZE);
+                        }}
                       >
                         More…
                       </button>
@@ -1337,11 +1342,11 @@ function YearInPosts() {
                   )}
 
                   {!searchQuery && (
-                    <div class="year-in-posts-nav">
+                    <div className="year-in-posts-nav">
                       {prevMonth ? (
                         <Link
                           to={`/yip?year=${year}&month=${prevMonth.month}`}
-                          class="button light"
+                          className="button light"
                           onClick={() => {
                             scrollableRef.current?.scrollTo({
                               top: 0,
@@ -1358,7 +1363,7 @@ function YearInPosts() {
                       {nextMonth && (
                         <Link
                           to={`/yip?year=${year}&month=${nextMonth.month}`}
-                          class="button light"
+                          className="button light"
                           onClick={() => {
                             scrollableRef.current?.scrollTo({
                               top: 0,
@@ -1378,7 +1383,7 @@ function YearInPosts() {
           )}
         </main>
       </div>
-      <div class={`tron-grid ${month === null ? 'animated' : ''}`} />
+      <div className={`tron-grid ${month === null ? 'animated' : ''}`} />
     </div>
   );
 }
@@ -1406,7 +1411,9 @@ const IntersectionPostItem = ({
       (entries) => {
         const entry = entries[0];
         if (entry.isIntersecting) {
-          queueMicrotask(() => setShow(true));
+          queueMicrotask(() => {
+            setShow(true);
+          });
           if (node) observer.unobserve(node);
         }
       },
@@ -1432,7 +1439,7 @@ const IntersectionPostItem = ({
     >
       {show ? (
         <Link
-          class="status-link timeline-item"
+          className="status-link timeline-item"
           to={`/${instance}/s/${statusId}`}
         >
           <Status
@@ -1466,7 +1473,7 @@ function CalendarBar({
   const { i18n } = useLingui();
   return (
     <div
-      class={`calendar-bar ${month === null ? 'grid' : 'horizontal'} ${postType === 'media' ? 'media-grid' : ''}`}
+      className={`calendar-bar ${month === null ? 'grid' : 'horizontal'} ${postType === 'media' ? 'media-grid' : ''}`}
     >
       {monthsWithPosts.map(
         ({
@@ -1488,7 +1495,7 @@ function CalendarBar({
             <Link
               to={`/yip?year=${year}&month=${m}${postType !== 'all' ? `&postType=${postType}` : ''}`}
               key={m}
-              class={`button plain ${
+              className={`button plain ${
                 month === m ? 'is-active month-filter' : 'month-filter'
               }`}
               style={{
@@ -1499,15 +1506,17 @@ function CalendarBar({
               }}
               data-month={m}
             >
-              <div class="month-name">{getMonthName(m, i18n.locale)}</div>
+              <div className="month-name">{getMonthName(m, i18n.locale)}</div>
               {postType === 'media'
                 ? mediaGrid.length > 0 && (
-                    <div class="month-media-grid">
+                    <div className="month-media-grid">
                       {mediaGrid.map((item, i) => {
                         if (!item)
-                          return <span key={i} class="media-day empty" />;
+                          return <span key={i} className="media-day empty" />;
                         if (!item.hasMedia)
-                          return <span key={i} class="media-day no-media" />;
+                          return (
+                            <span key={i} className="media-day no-media" />
+                          );
                         const status = item.post as MastoStatus;
                         // hasMedia guarantees mediaAttachments[0] exists.
                         const media = (status.mediaAttachments ?? [])[0] as {
@@ -1517,7 +1526,7 @@ function CalendarBar({
                           remoteUrl?: string | null;
                         };
                         return (
-                          <span key={i} class="media-day">
+                          <span key={i} className="media-day">
                             <img
                               src={(media.previewUrl || media.url) as string}
                               loading="lazy"
@@ -1543,7 +1552,7 @@ function CalendarBar({
                     </div>
                   )
                 : heatmap.length > 0 && (
-                    <div class="month-heatmap">
+                    <div className="month-heatmap">
                       {heatmap.map((dayData, i) => {
                         const total = dayData.count || 0;
                         const dayOriginalRatio =
@@ -1558,7 +1567,7 @@ function CalendarBar({
                         return (
                           <span
                             key={i}
-                            class={`heatmap-day ${dayData.day === null ? 'empty' : ''} ${i % 7 === 0 || i % 7 === 6 ? 'weekend' : ''}`}
+                            className={`heatmap-day ${dayData.day === null ? 'empty' : ''} ${i % 7 === 0 || i % 7 === 6 ? 'weekend' : ''}`}
                             data-ratio={dayData.ratio}
                             style={{
                               '--ratio': dayData.ratio,
@@ -1572,7 +1581,7 @@ function CalendarBar({
                       })}
                     </div>
                   )}
-              <div class="month-metadata">
+              <div className="month-metadata">
                 {/* <Plural value={count} one="# post" other="# posts" /> */}
                 {count} posts {/* TODO: Use Plural above when finalized */}
               </div>
@@ -1586,96 +1595,101 @@ function CalendarBar({
 
 function CalendarLegend() {
   return (
-    <div class="calendar-bar-legends">
-      <span class="ib">
-        <span class="calendar-bar-legend-item calendar-bar-original" />{' '}
+    <div className="calendar-bar-legends">
+      <span className="ib">
+        <span className="calendar-bar-legend-item calendar-bar-original" />{' '}
         <Trans>Original</Trans>
       </span>{' '}
-      <span class="ib">
-        <span class="calendar-bar-legend-item calendar-bar-reply" />{' '}
+      <span className="ib">
+        <span className="calendar-bar-legend-item calendar-bar-reply" />{' '}
         <Trans>Replies</Trans>
       </span>{' '}
       {supportsNativeQuote() && (
         <>
-          <span class="ib">
-            <span class="calendar-bar-legend-item calendar-bar-quote" />{' '}
+          <span className="ib">
+            <span className="calendar-bar-legend-item calendar-bar-quote" />{' '}
             <Trans>Quotes</Trans>
           </span>{' '}
         </>
       )}
-      <span class="ib">
-        <span class="calendar-bar-legend-item calendar-bar-boost" />{' '}
-        <Trans>Boosts</Trans>
+      <span className="ib">
+        <span className="calendar-bar-legend-item calendar-bar-boost" />{' '}
+        <Trans>Reposts</Trans>
       </span>
     </div>
   );
 }
 
 interface SearchFieldProps {
+  ref?: Ref<SearchFieldHandle>;
   searchQuery: string;
   onSearch: (val: string) => void;
   placeholder?: string;
   onEscape?: () => void;
 }
 
-const SearchField = forwardRef<SearchFieldHandle, SearchFieldProps>(
-  ({ searchQuery, onSearch, placeholder, onEscape }, ref) => {
-    const searchInputRef = useRef<HTMLInputElement | null>(null);
+function SearchField({
+  ref,
+  searchQuery,
+  onSearch,
+  placeholder,
+  onEscape,
+}: SearchFieldProps) {
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-    useImperativeHandle(ref, () => ({
-      focus: () => {
-        searchInputRef.current?.focus();
-      },
-      setValue: (val: string) => {
-        // Original JS dereferenced without null-check; preserve.
-        (searchInputRef.current as HTMLInputElement).value = val;
-      },
-      isFocused: () => {
-        return document.activeElement === searchInputRef.current;
-      },
-    }));
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      searchInputRef.current?.focus();
+    },
+    setValue: (val: string) => {
+      // Original JS dereferenced without null-check; preserve.
+      (searchInputRef.current as HTMLInputElement).value = val;
+    },
+    isFocused: () => {
+      return document.activeElement === searchInputRef.current;
+    },
+  }));
 
-    const throttledSearch = useThrottledCallback(onSearch, 150);
+  const throttledSearch = useThrottledCallback(onSearch, 150);
 
-    return (
-      <form
-        class="search-field"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const q = (searchInputRef.current as HTMLInputElement).value.trim();
-          throttledSearch?.cancel();
-          throttledSearch(q);
+  return (
+    <form
+      className="search-field"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const q = (searchInputRef.current as HTMLInputElement).value.trim();
+        throttledSearch?.cancel();
+        throttledSearch(q);
+      }}
+    >
+      <input
+        ref={searchInputRef}
+        type="search"
+        name="q"
+        className="block"
+        placeholder={placeholder || 'Search posts…'}
+        defaultValue={searchQuery}
+        dir="auto"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        enterKeyHint="search"
+        onInput={(e) => {
+          const val = (e.target as HTMLInputElement).value;
+          throttledSearch(val);
         }}
-      >
-        <input
-          ref={searchInputRef}
-          type="search"
-          name="q"
-          class="block"
-          placeholder={placeholder || 'Search posts…'}
-          defaultValue={searchQuery}
-          dir="auto"
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck={false}
-          enterKeyHint="search"
-          onInput={(e) => {
-            const val = (e.target as HTMLInputElement).value;
-            throttledSearch(val);
-          }}
-          onKeyDown={(e) => {
-            if (
-              e.key === 'Escape' &&
-              !(e.target as HTMLInputElement).value.trim()
-            ) {
-              onEscape?.();
-            }
-          }}
-        />
-      </form>
-    );
-  },
-);
+        onKeyDown={(e) => {
+          if (
+            e.key === 'Escape' &&
+            !(e.target as HTMLInputElement).value.trim()
+          ) {
+            onEscape?.();
+          }
+        }}
+      />
+    </form>
+  );
+}
 
 export default YearInPosts;

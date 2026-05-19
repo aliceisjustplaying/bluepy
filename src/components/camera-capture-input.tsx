@@ -1,26 +1,30 @@
-import type { TargetedEvent } from 'preact';
+import type { SyntheticEvent } from 'react';
+
+import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
+import supports from '../utils/supports';
 
 const isMobileSafari =
   /iPad|iPhone|iPod/.test(navigator.userAgent) &&
   /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-export interface CameraCaptureMediaAttachment {
+interface CameraCaptureMediaAttachment {
   fileData: ArrayBuffer;
   fileName: string;
   type: string;
   size: number;
   url: string;
+  ownedObjectUrl: boolean;
   id: string | null;
   description: string | null;
 }
 
-export interface CameraCaptureInputAttachment
-  extends Partial<CameraCaptureMediaAttachment> {
+interface CameraCaptureInputAttachment extends Partial<CameraCaptureMediaAttachment> {
   file?: File;
   [key: string]: unknown;
 }
 
-export interface CameraCaptureInputProps {
+interface CameraCaptureInputProps {
+  id?: string;
   hidden?: boolean;
   disabled?: boolean;
   supportedMimeTypes?: string[];
@@ -33,6 +37,7 @@ export interface CameraCaptureInputProps {
 }
 
 function CameraCaptureInput({
+  id,
   hidden,
   disabled = false,
   supportedMimeTypes,
@@ -43,16 +48,17 @@ function CameraCaptureInput({
   // It also can't switch between photo and video mode like iOS/Safari
   const filteredSupportedMimeTypes = isMobileSafari
     ? supportedMimeTypes
-    : supportedMimeTypes?.filter((mimeType) => !/^image\//i.test(mimeType));
+    : supportedMimeTypes?.filter((mimeType) => /^image\//i.test(mimeType));
 
   return (
     <input
+      id={id}
       type="file"
-      hidden={hidden}
+      className={hidden ? 'file-input-hidden' : undefined}
       accept={filteredSupportedMimeTypes?.join(',')}
       capture="environment"
       disabled={disabled}
-      onChange={(e: TargetedEvent<HTMLInputElement>) => {
+      onChange={(e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.currentTarget;
         const files = target.files;
         if (!files) return;
@@ -60,18 +66,23 @@ function CameraCaptureInput({
         if (!mediaFile) return;
         void (async () => {
           let fileData;
+          let uploadFile: File;
           try {
-            fileData = await mediaFile.arrayBuffer();
+            uploadFile = supports('@atproto')
+              ? await compressAtprotoImageIfNeeded(mediaFile)
+              : mediaFile;
+            fileData = await uploadFile.arrayBuffer();
           } catch (err) {
             console.error('Failed to read file:', err);
             return;
           }
           const attachment: CameraCaptureMediaAttachment = {
             fileData,
-            fileName: mediaFile.name,
-            type: mediaFile.type,
-            size: mediaFile.size,
-            url: URL.createObjectURL(mediaFile),
+            fileName: uploadFile.name,
+            type: uploadFile.type,
+            size: uploadFile.size,
+            url: URL.createObjectURL(uploadFile),
+            ownedObjectUrl: true,
             id: null, // indicate uploaded state
             description: null,
           };

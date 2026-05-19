@@ -3,8 +3,8 @@ import './settings.css';
 import '../components/button-install';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { VNode } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { HTMLAttributes, ReactElement } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useSnapshot } from 'valtio';
 
@@ -39,10 +39,10 @@ import {
 // `button-install` is a custom element registered in
 // `../components/button-install`. Declare its JSX shape so the wrapper below
 // type-checks without touching the existing untyped runtime behavior.
-declare module 'preact' {
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      'button-install': preact.HTMLAttributes<HTMLElement>;
+      'button-install': HTMLAttributes<HTMLElement>;
     }
   }
 }
@@ -85,7 +85,7 @@ interface SettingsProps {
   onClose?: () => void;
 }
 
-function Settings({ onClose }: SettingsProps): VNode {
+function Settings({ onClose }: SettingsProps): ReactElement {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const currentTheme = store.local.get('theme') || 'auto';
@@ -135,14 +135,14 @@ function Settings({ onClose }: SettingsProps): VNode {
   return (
     <div
       id="settings-container"
-      class="sheet"
+      className="sheet"
       tabIndex={-1}
       style={{
         '--current-text-size': `${currentTextSize}px`,
       }}
     >
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -160,9 +160,9 @@ function Settings({ onClose }: SettingsProps): VNode {
                     section heading; not a form control label. The form below
                     has no single primary input for htmlFor. Keeping <label>
                     for the styling hook in settings.css. */}
-                <label>
+                <span className="settings-section-label">
                   <Trans>Appearance</Trans>
-                </label>
+                </span>
               </div>
               <div>
                 <form
@@ -180,16 +180,18 @@ function Settings({ onClose }: SettingsProps): VNode {
                       html.classList.remove('is-light', 'is-dark');
 
                       // Disable manual theme <meta>
-                      const $manualMeta = document.querySelector<HTMLMetaElement>(
-                        'meta[data-theme-setting="manual"]',
-                      );
+                      const $manualMeta =
+                        document.querySelector<HTMLMetaElement>(
+                          'meta[data-theme-setting="manual"]',
+                        );
                       if ($manualMeta) {
                         $manualMeta.name = '';
                       }
                       // Enable auto theme <meta>s
-                      const $autoMetas = document.querySelectorAll<HTMLMetaElement>(
-                        'meta[data-theme-setting="auto"]',
-                      );
+                      const $autoMetas =
+                        document.querySelectorAll<HTMLMetaElement>(
+                          'meta[data-theme-setting="auto"]',
+                        );
                       $autoMetas.forEach((m) => {
                         m.name = 'theme-color';
                       });
@@ -198,9 +200,10 @@ function Settings({ onClose }: SettingsProps): VNode {
                       html.classList.toggle('is-dark', theme === 'dark');
 
                       // Enable manual theme <meta>
-                      const $manualMeta = document.querySelector<HTMLMetaElement>(
-                        'meta[data-theme-setting="manual"]',
-                      );
+                      const $manualMeta =
+                        document.querySelector<HTMLMetaElement>(
+                          'meta[data-theme-setting="manual"]',
+                        );
                       if ($manualMeta) {
                         $manualMeta.name = 'theme-color';
                         $manualMeta.content =
@@ -209,9 +212,10 @@ function Settings({ onClose }: SettingsProps): VNode {
                             : String($manualMeta.dataset.themeDarkColor);
                       }
                       // Disable auto theme <meta>s
-                      const $autoMetas = document.querySelectorAll<HTMLMetaElement>(
-                        'meta[data-theme-setting="auto"]',
-                      );
+                      const $autoMetas =
+                        document.querySelectorAll<HTMLMetaElement>(
+                          'meta[data-theme-setting="auto"]',
+                        );
                       $autoMetas.forEach((m) => {
                         m.name = '';
                       });
@@ -219,7 +223,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                     const $colorScheme = document.querySelector(
                       'meta[name="color-scheme"]',
                     );
-                    $colorScheme!.setAttribute(
+                    $colorScheme?.setAttribute(
                       'content',
                       theme === 'auto' ? 'light dark' : (theme as string),
                     );
@@ -235,12 +239,13 @@ function Settings({ onClose }: SettingsProps): VNode {
                       labels wrap their <input> and contain <Trans> text inside
                       a <span>; the rule's static analysis doesn't see <Trans>
                       output as accessible text, but it renders to a string. */}
-                  <div class="radio-group">
+                  <div className="radio-group">
                     <label>
                       <input
                         type="radio"
                         name="theme"
                         value="light"
+                        aria-label={t`Light`}
                         defaultChecked={currentTheme === 'light'}
                       />
                       <span>
@@ -252,6 +257,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                         type="radio"
                         name="theme"
                         value="dark"
+                        aria-label={t`Dark`}
                         defaultChecked={currentTheme === 'dark'}
                       />
                       <span>
@@ -263,6 +269,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                         type="radio"
                         name="theme"
                         value="auto"
+                        aria-label={t`Auto`}
                         defaultChecked={
                           currentTheme !== 'light' && currentTheme !== 'dark'
                         }
@@ -279,9 +286,9 @@ function Settings({ onClose }: SettingsProps): VNode {
               <div>
                 {/* TODO(oxlint:jsx-a11y/label-has-associated-control): visual
                     section heading for a multi-button control. */}
-                <label>
+                <span className="settings-section-label">
                   <Trans>Text size</Trans>
-                </label>
+                </span>
               </div>
               <TextSizeControl currentTextSize={currentTextSize} />
             </li>
@@ -290,9 +297,9 @@ function Settings({ onClose }: SettingsProps): VNode {
                 {/* TODO(oxlint:jsx-a11y/label-has-associated-control): visual
                     label sibling to <LangSelector />'s internal <select>; no
                     stable id to point htmlFor at. */}
-                <label>
+                <span className="settings-section-label">
                   <Trans>Display language</Trans>
-                </label>{' '}
+                </span>{' '}
                 <small>
                   <a
                     href="https://crowdin.com/project/phanpy"
@@ -315,9 +322,13 @@ function Settings({ onClose }: SettingsProps): VNode {
             <section>
               <ul>
                 <li>
-                  <label for="posting-privacy-field">
+                  <label htmlFor="posting-privacy-field">
                     <Trans>Default visibility</Trans>{' '}
-                    <Icon icon="cloud" alt={t`Synced`} class="synced-icon" />
+                    <Icon
+                      icon="cloud"
+                      alt={t`Synced`}
+                      className="synced-icon"
+                    />
                   </label>
                   <select
                     id="posting-privacy-field"
@@ -368,9 +379,13 @@ function Settings({ onClose }: SettingsProps): VNode {
                 </li>
                 {supportsNativeQuote() && (
                   <li>
-                    <label for="posting-quote-policy-field">
+                    <label htmlFor="posting-quote-policy-field">
                       <Trans>Quote settings</Trans>{' '}
-                      <Icon icon="cloud" alt={t`Synced`} class="synced-icon" />
+                      <Icon
+                        icon="cloud"
+                        alt={t`Synced`}
+                        className="synced-icon"
+                      />
                     </label>
                     <select
                       id="posting-quote-policy-field"
@@ -422,17 +437,17 @@ function Settings({ onClose }: SettingsProps): VNode {
                 )}
               </ul>
             </section>
-            <p class="section-postnote">
-              <Icon icon="cloud" alt={t`Synced`} class="synced-icon" />{' '}
+            <p className="section-postnote">
+              <Icon icon="cloud" alt={t`Synced`} className="synced-icon" />{' '}
               <small>
                 <Trans>
-                  Synced to your server's settings.{' '}
+                  Synced to your Bluesky account settings.{' '}
                   <a
                     href={`https://${instance}/`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Go to your server ({instance}) for more settings.
+                    Open Bluesky settings ({instance}).
                   </a>
                 </Trans>
               </small>
@@ -444,7 +459,7 @@ function Settings({ onClose }: SettingsProps): VNode {
         </h3>
         <section>
           <ul>
-            <li class="block">
+            <li className="block">
               <label>
                 <input
                   type="checkbox"
@@ -456,7 +471,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                 <Trans>Auto refresh timeline posts</Trans>
               </label>
             </li>
-            <li class="block">
+            <li className="block">
               <label>
                 <input
                   type="checkbox"
@@ -465,11 +480,11 @@ function Settings({ onClose }: SettingsProps): VNode {
                     states.settings.boostsCarousel = e.currentTarget.checked;
                   }}
                 />{' '}
-                <Trans>Boosts carousel</Trans>
+                <Trans>Reposts carousel</Trans>
               </label>
             </li>
             {!!TRANSLANG_INSTANCES && (
-              <li class="block">
+              <li className="block">
                 <label>
                   <input
                     type="checkbox"
@@ -485,7 +500,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                   <Trans>Post translation</Trans>
                 </label>
                 <div
-                  class={`sub-section ${
+                  className={`sub-section ${
                     !snapStates.settings.contentTranslation
                       ? 'more-insignificant'
                       : ''
@@ -529,7 +544,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                     </label>
                   </div>
                   <hr />
-                  <div class="checkbox-fieldset">
+                  <div className="checkbox-fieldset">
                     <Plural
                       value={
                         snapStates.settings.contentTranslationHideLanguages
@@ -538,7 +553,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                       _0={`Hide "Translate" button for:`}
                       other={`Hide "Translate" button for (#):`}
                     />
-                    <div class="checkbox-fields">
+                    <div className="checkbox-fields">
                       {targetLanguages.map((lang) => {
                         const common = localeCode2Text({
                           code: lang.code,
@@ -573,7 +588,9 @@ function Settings({ onClose }: SettingsProps): VNode {
                             {showCommon ? (
                               <span>
                                 {native}{' '}
-                                <span class="insignificant ib">- {common}</span>
+                                <span className="insignificant ib">
+                                  - {common}
+                                </span>
                               </span>
                             ) : (
                               common
@@ -583,7 +600,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                       })}
                     </div>
                   </div>
-                  <p class="insignificant">
+                  <p className="insignificant">
                     <small>
                       <Trans>
                         Note: This feature uses external translation services,
@@ -615,7 +632,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                       />{' '}
                       <Trans>Auto inline translation</Trans>
                     </label>
-                    <p class="insignificant">
+                    <p className="insignificant">
                       <small>
                         <Trans>
                           Automatically show translation for posts in timeline.
@@ -629,7 +646,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               </li>
             )}
             {authenticated && (
-              <li class="block">
+              <li className="block">
                 <label>
                   <input
                     type="checkbox"
@@ -646,12 +663,12 @@ function Settings({ onClose }: SettingsProps): VNode {
                   />{' '}
                   <Trans>Paginated timeline (beta)</Trans>
                 </label>
-                <div class="sub-section insignificant">
+                <div className="sub-section insignificant">
                   <small>
                     <Trans>
                       Manual pagination of timeline posts instead of infinite
                       scrolling. Only works for Home/Following timeline for now.
-                      Auto refresh and boosts carousel will not work when this
+                      Auto refresh and reposts carousel will not work when this
                       is enabled.
                     </Trans>
                   </small>
@@ -659,7 +676,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               </li>
             )}
             {!!GIPHY_API_KEY && authenticated && (
-              <li class="block">
+              <li className="block">
                 <label>
                   <input
                     type="checkbox"
@@ -671,7 +688,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                   />{' '}
                   <Trans>GIF Picker for composer</Trans>
                 </label>
-                <div class="sub-section insignificant">
+                <div className="sub-section insignificant">
                   <small>
                     <Trans>
                       Note: This feature uses external GIF search service,
@@ -693,7 +710,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               </li>
             )}
             {!!IMG_ALT_API_URL && authenticated && (
-              <li class="block">
+              <li className="block">
                 <label>
                   <input
                     type="checkbox"
@@ -704,16 +721,16 @@ function Settings({ onClose }: SettingsProps): VNode {
                     }}
                   />{' '}
                   <Trans>Image description generator</Trans>{' '}
-                  <Icon icon="sparkles2" class="more-insignificant" />
+                  <Icon icon="sparkles2" className="more-insignificant" />
                 </label>
-                <div class="sub-section insignificant">
+                <div className="sub-section insignificant">
                   <small>
                     <Trans>
                       Only for new images while composing new posts.
                     </Trans>
                   </small>
                 </div>
-                <div class="sub-section insignificant">
+                <div className="sub-section insignificant">
                   <small>
                     <Trans>
                       Note: This feature uses external AI service, powered by{' '}
@@ -730,43 +747,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                 </div>
               </li>
             )}
-            {authenticated && (
-              <li class="block">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={
-                      snapStates.settings.shortcutSettingsCloudImportExport
-                    }
-                    onChange={(e) => {
-                      states.settings.shortcutSettingsCloudImportExport =
-                        e.currentTarget.checked;
-                    }}
-                  />{' '}
-                  <Trans>"Cloud" import/export for shortcuts settings</Trans>{' '}
-                  <Icon icon="cloud" class="more-insignificant" />
-                </label>
-                <div class="sub-section insignificant">
-                  <small>
-                    <Trans>
-                      ⚠️⚠️⚠️ Very experimental.
-                      <br />
-                      Stored in your own profile’s notes. Profile (private)
-                      notes are mainly used for other profiles, and hidden for
-                      own profile.
-                    </Trans>
-                  </small>
-                </div>
-                <div class="sub-section insignificant">
-                  <small>
-                    <Trans>
-                      Note: This feature uses currently-logged-in server API.
-                    </Trans>
-                  </small>
-                </div>
-              </li>
-            )}
-            <li class="block">
+            <li className="block">
               <label>
                 <input
                   type="checkbox"
@@ -777,12 +758,12 @@ function Settings({ onClose }: SettingsProps): VNode {
                 />{' '}
                 <Trans>
                   Cloak mode{' '}
-                  <span class="insignificant">
+                  <span className="insignificant">
                     (<samp>Text</samp> → <samp>████</samp>)
                   </span>
                 </Trans>
               </label>
-              <div class="sub-section insignificant">
+              <div className="sub-section insignificant">
                 <small>
                   <Trans>
                     Replace text as blocks, useful when taking screenshots, for
@@ -791,7 +772,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                 </small>
               </div>
             </li>
-            <li class="block">
+            <li className="block">
               <label>
                 <input
                   type="checkbox"
@@ -802,7 +783,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                 />{' '}
                 <Trans>Disable all animations</Trans>
               </label>
-              <div class="sub-section insignificant">
+              <div className="sub-section insignificant">
                 <small>
                   <Trans>
                     Removes all UI animations, transitions, and smooth
@@ -815,7 +796,7 @@ function Settings({ onClose }: SettingsProps): VNode {
               <li>
                 <button
                   type="button"
-                  class="light"
+                  className="light"
                   onClick={() => {
                     states.showDrafts = true;
                     states.showSettings = false;
@@ -826,13 +807,13 @@ function Settings({ onClose }: SettingsProps): VNode {
               </li>
             )}
             <li>
-              <Link to="/yip" onClick={onClose} class="button light">
+              <Link to="/yip" onClick={onClose} className="button light">
                 Year in Posts
               </Link>
             </li>
             <li>
               <button-install>
-                <button type="button" class="light">
+                <button type="button" className="light">
                   <Trans>Install {CLIENT_NAME}</Trans>
                 </button>
               </button-install>
@@ -963,17 +944,17 @@ function Settings({ onClose }: SettingsProps): VNode {
               {WEBSITE && (
                 <>
                   <Trans>
-                    <span class="insignificant">Site:</span>{' '}
+                    <span className="insignificant">Site:</span>{' '}
                     {WEBSITE.replace(/https?:\/\//g, '').replace(/\/$/, '')}
                   </Trans>
                   <br />
                 </>
               )}
               <Trans>
-                <span class="insignificant">Version:</span>{' '}
+                <span className="insignificant">Version:</span>{' '}
                 <input
                   type="text"
-                  class="version-string"
+                  className="version-string"
                   readOnly
                   size={18} // Manually calculated here
                   value={`${__COMMIT_TIME__.slice(0, 10).replace(/-/g, '.')}${
@@ -993,7 +974,7 @@ function Settings({ onClose }: SettingsProps): VNode {
                   }}
                 />{' '}
                 {!__FAKE_COMMIT_HASH__ && (
-                  <span class="ib insignificant">
+                  <span className="ib insignificant">
                     (
                     <a
                       href={`https://github.com/cheeaun/phanpy/commit/${__COMMIT_HASH__}`}
@@ -1010,13 +991,13 @@ function Settings({ onClose }: SettingsProps): VNode {
           )}
         </section>
         {(import.meta.env.DEV || import.meta.env.PHANPY_DEV) && (
-          <details class="debug-info">
+          <details className="debug-info">
             <summary></summary>
-            <p class="side">
+            <p className="side">
               <Link
                 to="/_sandbox"
                 onClick={onClose}
-                class="button plain6 small"
+                className="button plain6 small"
               >
                 Sandbox
               </Link>
@@ -1028,7 +1009,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             </p>
             {(window.__BENCH_RESULTS?.size ?? 0) > 0 && (
               <ul>
-                {Array.from(window.__BENCH_RESULTS!.entries()).map(
+                {Array.from(window.__BENCH_RESULTS?.entries() ?? []).map(
                   ([name, duration]) => (
                     <li key={name}>
                       <b>{name}</b>: {duration as number}ms
@@ -1040,7 +1021,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             <p>Service Worker Cache</p>
             <button
               type="button"
-              class="plain2 small"
+              className="plain2 small"
               onClick={() => {
                 void (async () => {
                   alert(await getCachesKeys());
@@ -1051,7 +1032,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             </button>{' '}
             <button
               type="button"
-              class="plain2 small"
+              className="plain2 small"
               onClick={() => {
                 void (async () => {
                   alert(await getCachesSize());
@@ -1062,7 +1043,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             </button>{' '}
             <button
               type="button"
-              class="plain2 small"
+              className="plain2 small"
               onClick={() => {
                 const key = prompt('Enter cache key');
                 if (!key) return;
@@ -1077,7 +1058,7 @@ function Settings({ onClose }: SettingsProps): VNode {
             </button>{' '}
             <button
               type="button"
-              class="plain2 small"
+              className="plain2 small"
               onClick={() => {
                 try {
                   void clearCaches();
@@ -1117,7 +1098,9 @@ interface TextSizeControlProps {
   currentTextSize: number;
 }
 
-function TextSizeControl({ currentTextSize }: TextSizeControlProps): VNode {
+function TextSizeControl({
+  currentTextSize,
+}: TextSizeControlProps): ReactElement {
   const textSizeFieldRef = useRef<HTMLInputElement | null>(null);
   const [size, setSize] = useState<number>(currentTextSize);
   const [debouncedSize] = useDebounce(size, 1000);
@@ -1135,11 +1118,13 @@ function TextSizeControl({ currentTextSize }: TextSizeControlProps): VNode {
   }, [debouncedSize]);
 
   return (
-    <div class={`text-size-control ${size !== debouncedSize ? 'loading' : ''}`}>
+    <div
+      className={`text-size-control ${size !== debouncedSize ? 'loading' : ''}`}
+    >
       <button
         type="button"
         style={{ fontSize: SMALLEST_TEXT_SIZE }}
-        class={`small light ${size === DEFAULT_TEXT_SIZE ? 'default-size' : ''}`}
+        className={`small light ${size === DEFAULT_TEXT_SIZE ? 'default-size' : ''}`}
         disabled={size === SMALLEST_TEXT_SIZE}
         onClick={() => {
           setSize(Math.max(SMALLEST_TEXT_SIZE, size - 1));
@@ -1163,7 +1148,7 @@ function TextSizeControl({ currentTextSize }: TextSizeControlProps): VNode {
       <button
         type="button"
         style={{ fontSize: LARGEST_TEXT_SIZE }}
-        class={`small light ${size === DEFAULT_TEXT_SIZE ? 'default-size' : ''}`}
+        className={`small light ${size === DEFAULT_TEXT_SIZE ? 'default-size' : ''}`}
         disabled={size === LARGEST_TEXT_SIZE}
         onClick={() => {
           setSize(Math.min(LARGEST_TEXT_SIZE, size + 1));
@@ -1182,34 +1167,42 @@ function TextSizeControl({ currentTextSize }: TextSizeControlProps): VNode {
 
 async function getCachesKeys(): Promise<Record<string, number>> {
   const keys = await caches.keys();
-  const total: Record<string, number> = {};
-  for (const key of keys) {
-    const cache = await caches.open(key);
-    const k = await cache.keys();
-    total[key] = k.length;
-  }
-  return total;
+  const entries = await Promise.all(
+    keys.map(async (key) => {
+      const cache = await caches.open(key);
+      const k = await cache.keys();
+      return [key, k.length] as const;
+    }),
+  );
+  return Object.fromEntries(entries);
 }
 
 async function getCachesSize(): Promise<Record<string, string>> {
   const keys = await caches.keys();
   const total: Record<string, number> = {};
   let TOTAL = 0;
-  for (const key of keys) {
-    const cache = await caches.open(key);
-    const k = await cache.keys();
-    for (const item of k) {
-      try {
-        const response = await cache.match(item);
-        const blob = await response!.blob();
-        total[key] = (total[key] || 0) + blob.size;
-        TOTAL += blob.size;
-      } catch (e) {
-        alert(`Failed to get cache size for ${item.url}`);
-        alert(e instanceof Error ? e.message : String(e));
-      }
-    }
-  }
+  await Promise.all(
+    keys.map(async (key) => {
+      const cache = await caches.open(key);
+      const k = await cache.keys();
+      const sizes = await Promise.all(
+        k.map(async (item) => {
+          try {
+            const response = await cache.match(item);
+            const blob = await response?.blob();
+            return blob?.size ?? 0;
+          } catch (e) {
+            alert(`Failed to get cache size for ${item.url}`);
+            alert(e instanceof Error ? e.message : String(e));
+            return 0;
+          }
+        }),
+      );
+      const keyTotal = sizes.reduce((sum, size) => sum + size, 0);
+      total[key] = keyTotal;
+      TOTAL += keyTotal;
+    }),
+  );
   return {
     ...Object.fromEntries(
       Object.entries(total).map(([k, v]) => [k, prettyBytes(v)]),
@@ -1224,9 +1217,7 @@ function clearCacheKey(key: string): Promise<boolean> {
 
 async function clearCaches(): Promise<void> {
   const keys = await caches.keys();
-  for (const key of keys) {
-    await caches.delete(key);
-  }
+  await Promise.all(keys.map((key) => caches.delete(key)));
 }
 
 interface PushNotificationsSectionProps {
@@ -1241,7 +1232,7 @@ interface BackendPushSubscriptionShape {
 
 function PushNotificationsSection({
   onClose,
-}: PushNotificationsSectionProps): VNode | null {
+}: PushNotificationsSectionProps): ReactElement | null {
   const { t } = useLingui();
   const pushSupported = isPushSupported();
   const { instance } = api();
@@ -1364,26 +1355,34 @@ function PushNotificationsSection({
           if (allowNext && alertsCount > 0) {
             if (policyChanged) {
               console.debug('Policy changed.');
-              removeSubscription()
-                .then(() => {
-                  void updateSubscription(params);
-                  return undefined;
-                })
-                .catch((err) => {
+              void (async () => {
+                try {
+                  await removeSubscription();
+                  await updateSubscription(params);
+                } catch (err) {
                   console.warn(err);
                   alert(t`Failed to update subscription. Please try again.`);
-                });
+                }
+              })();
             } else {
-              updateSubscription(params).catch((err) => {
-                console.warn(err);
-                alert(t`Failed to update subscription. Please try again.`);
-              });
+              void (async () => {
+                try {
+                  await updateSubscription(params);
+                } catch (err) {
+                  console.warn(err);
+                  alert(t`Failed to update subscription. Please try again.`);
+                }
+              })();
             }
           } else {
-            removeSubscription().catch((err) => {
-              console.warn(err);
-              alert(t`Failed to remove subscription. Please try again.`);
-            });
+            void (async () => {
+              try {
+                await removeSubscription();
+              } catch (err) {
+                console.warn(err);
+                alert(t`Failed to remove subscription. Please try again.`);
+              }
+            })();
           }
         }, 100);
       }}
@@ -1450,14 +1449,14 @@ function PushNotificationsSection({
               </Trans>
             </label>
             <div
-              class="shazam-container no-animation"
+              className="shazam-container no-animation"
               style={{
                 width: '100%',
               }}
               hidden={!allowNotifications}
             >
-              <div class="shazam-container-inner">
-                <div class="sub-section">
+              <div className="shazam-container-inner">
+                <div className="sub-section">
                   <ul>
                     {[
                       {
@@ -1470,7 +1469,7 @@ function PushNotificationsSection({
                       },
                       {
                         value: 'reblog',
-                        label: t`Boosts`,
+                        label: t`Reposts`,
                       },
                       {
                         value: 'follow',
@@ -1505,7 +1504,7 @@ function PushNotificationsSection({
               </div>
             </div>
             {needRelogin && (
-              <div class="sub-section">
+              <div className="sub-section">
                 <p>
                   <Trans>
                     Push permission was not granted since your last login.
@@ -1521,7 +1520,7 @@ function PushNotificationsSection({
           </li>
         </ul>
       </section>
-      <p class="section-postnote">
+      <p className="section-postnote">
         <small>
           <Trans>
             NOTE: Push notifications only work for <b>one account</b>.

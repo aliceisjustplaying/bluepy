@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentChildren, CSSProperties, RefObject } from 'preact';
+import type { ReactNode, CSSProperties, RefObject } from 'react';
 
 import states from '../utils/states';
 
@@ -69,17 +69,17 @@ interface StatusPostBodyProps {
   languageAutoDetected?: boolean;
   displayedMediaAttachments: AnyMediaAttachment[];
   showMultipleMediaCaptions: boolean;
-  captionChildren: ComponentChildren;
+  captionChildren: ReactNode;
   mediaContainerRef: RefObject<HTMLDivElement>;
   onMediaClick?: (
-    e: MouseEvent,
+    e: React.MouseEvent,
     index: number,
     media: AnyMediaAttachment,
     status: AnyStatus,
   ) => void;
   quoted?: boolean | number;
   quote?: FallbackQuote | null;
-  renderStatus: (props: StatusComponentProps) => ComponentChildren;
+  renderStatus: (props: StatusComponentProps) => ReactNode;
   card?: AnyPreviewCard | null;
   statusQuoteState?: unknown;
   currentInstance: string;
@@ -154,7 +154,7 @@ export default function StatusPostBody({
   return (
     <>
       <div
-        class={`content-container ${
+        className={`content-container ${
           spoilerText ||
           sensitive ||
           filterInfoMaybe?.action === 'blur' ||
@@ -179,7 +179,7 @@ export default function StatusPostBody({
               <>
                 {!!spoilerText && (
                   <span
-                    class="spoiler-content media-first-spoiler-content"
+                    className="spoiler-content media-first-spoiler-content"
                     lang={language ?? undefined}
                     dir="auto"
                     ref={spoilerContentRef}
@@ -203,7 +203,7 @@ export default function StatusPostBody({
               instance={instance}
             />
             {!!content && (
-              <div class="media-first-content content" ref={contentRef}>
+              <div className="media-first-content content" ref={contentRef}>
                 <PostContent
                   post={status}
                   instance={instance}
@@ -217,7 +217,7 @@ export default function StatusPostBody({
             {!!spoilerText && (
               <>
                 <div
-                  class="content spoiler-content"
+                  className="content spoiler-content"
                   lang={language ?? undefined}
                   dir="auto"
                   ref={spoilerContentRef}
@@ -228,7 +228,7 @@ export default function StatusPostBody({
                   </p>
                 </div>
                 {readingExpandSpoilers || previewMode ? (
-                  <div class="spoiler-divider">
+                  <div className="spoiler-divider">
                     <Icon icon="eye-open" /> <Trans>Content warning</Trans>
                   </div>
                 ) : (
@@ -242,7 +242,7 @@ export default function StatusPostBody({
             )}
             {!!content && (
               <div
-                class="content"
+                className="content"
                 ref={contentRef}
                 data-read-more={_(readMoreText)}
                 inert={!!spoilerText && !showSpoiler ? true : undefined}
@@ -378,7 +378,7 @@ export default function StatusPostBody({
         )}
       </div>
       {!isSizeLarge && (showCommentCount || showQuoteCount) && (
-        <div class="content-comment-hint insignificant">
+        <div className="content-comment-hint insignificant">
           {showCommentCount && (
             <>
               <Icon icon="comment2" alt={t`Replies`} /> {repliesCount}
@@ -409,7 +409,7 @@ function SpoilerButton({
   const { t } = useLingui();
   return (
     <button
-      class={[
+      className={[
         'light',
         'spoiler-button',
         mediaFirst ? 'media-first-spoiler-button' : '',

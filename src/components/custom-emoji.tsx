@@ -1,4 +1,4 @@
-import type { TargetedEvent } from 'preact';
+import type { SyntheticEvent } from 'react';
 
 interface CustomEmojiProps {
   staticUrl?: string;
@@ -10,19 +10,19 @@ export default function CustomEmoji({ staticUrl, alt, url }: CustomEmojiProps) {
   return (
     <picture>
       {staticUrl && (
-        <source srcset={staticUrl} media="(prefers-reduced-motion: reduce)" />
+        <source srcSet={staticUrl} media="(prefers-reduced-motion: reduce)" />
       )}
       <img
         key={alt || url}
         src={url}
         alt={alt}
-        class="shortcode-emoji emoji"
+        className="shortcode-emoji emoji"
         width="16"
         height="16"
         loading="lazy"
         decoding="async"
         fetchPriority="low"
-        onLoad={(e: TargetedEvent<HTMLImageElement>) => {
+        onLoad={(e: SyntheticEvent<HTMLImageElement>) => {
           try {
             const target = e.currentTarget;
             target.dataset.isLarger = String(

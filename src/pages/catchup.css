@@ -618,9 +618,6 @@
     &.reply-to {
       --post-bg-color: var(--reply-to-faded-color);
     }
-    &.followed-tags {
-      --post-bg-color: var(--hashtag-faded-color);
-    }
     &.filtered {
       filter: grayscale(1);
       background-image: none;
@@ -737,7 +734,10 @@
     )
     > li {
     margin-bottom: 0;
+  }
 
+  &.catchup-group-account:is(.catchup-filter-original, .catchup-filter-replies)
+    > li {
     &:first-child ~ li {
       .post-author:not(:has(.post-reblog-avatar)) {
         opacity: 0.25;

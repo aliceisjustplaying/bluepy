@@ -1,0 +1,82 @@
+name: Bluepy Agent PR Review
+
+on:
+  pull_request:
+    branches: [bluesky]
+    types: [labeled, reopened, ready_for_review]
+  workflow_run:
+    workflows: [Bluepy Preview]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull request number
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: bluepy-agent-${{ github.event.pull_request.number || github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  pr-agent:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'pull_request' &&
+        contains(github.event.pull_request.labels.*.name, 'agent:preview') &&
+        !contains(github.event.pull_request.labels.*.name, 'human-review') &&
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
+      ) ||
+      (
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.pull_requests[0].number
+      )
+    runs-on: [self-hosted, bluepy-agent]
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: bluesky
+          fetch-depth: 0
+          persist-credentials: false
+      - id: pr
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          WORKFLOW_RUN_PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          INPUT_PR_NUMBER: ${{ inputs.pr }}
+        run: |
+          set -euo pipefail
+          case "$EVENT_NAME" in
+            pull_request) pr="$PULL_REQUEST_NUMBER" ;;
+            workflow_run) pr="$WORKFLOW_RUN_PR_NUMBER" ;;
+            workflow_dispatch) pr="$INPUT_PR_NUMBER" ;;
+            *) exit 2 ;;
+          esac
+
+          labels="$(gh pr view "$pr" --repo "$GITHUB_REPOSITORY" --json labels --jq '[.labels[].name]')"
+          if jq -e 'index("agent:preview") and (index("human-review") | not)' >/dev/null <<<"$labels"; then
+            printf 'number=%s\n' "$pr" >>"$GITHUB_OUTPUT"
+            printf 'should_run=true\n' >>"$GITHUB_OUTPUT"
+          else
+            printf 'number=%s\n' "$pr" >>"$GITHUB_OUTPUT"
+            printf 'should_run=false\n' >>"$GITHUB_OUTPUT"
+          fi
+      - run: scripts/agent-preflight.sh agent
+        if: steps.pr.outputs.should_run == 'true'
+      - run: scripts/agent-loop.sh pr "${{ steps.pr.outputs.number }}"
+        if: steps.pr.outputs.should_run == 'true'
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bluepy-agent-pr-logs-${{ github.run_id }}
+          path: /workspace/agent-worktrees/bluepy/logs/${{ github.run_id }}-*
+          if-no-files-found: ignore

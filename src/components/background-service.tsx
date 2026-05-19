@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
-import { memo } from 'preact/compat';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { memo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { api } from '../utils/api';
@@ -205,7 +205,7 @@ export default memo(function BackgroundService() {
       });
     },
     {
-      ignoreEventWhen: (e: KeyboardEvent) => e.metaKey || e.ctrlKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey,
     },
   );
 

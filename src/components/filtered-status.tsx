@@ -1,10 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentChildren, HTMLAttributes, RefObject } from 'preact';
-import { useState } from 'preact/hooks';
+import type { ReactNode, HTMLAttributes, RefObject } from 'react';
+import { useState } from 'react';
 import { LongPressEventType, useLongPress } from 'use-long-press';
-import { useSnapshot } from 'valtio';
 
-import states, { statusKey } from '../utils/states';
+import { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
 import useTruncated from '../utils/useTruncated';
 import visibilityIconsMap from '../utils/visibility-icons-map';
@@ -28,12 +27,11 @@ interface FilteredStatusProps {
   };
   instance?: string;
   containerProps?: HTMLAttributes<HTMLDivElement>;
-  showFollowedTags?: boolean;
   quoted?: number | boolean;
   renderPeekStatus: (
     status: AnyStatus,
     instance: string | undefined,
-  ) => ComponentChildren;
+  ) => ReactNode;
 }
 
 export default function FilteredStatus({
@@ -41,13 +39,11 @@ export default function FilteredStatus({
   filterInfo,
   instance,
   containerProps = {},
-  showFollowedTags,
   quoted,
   renderPeekStatus,
 }: FilteredStatusProps) {
   const { t, i18n } = useLingui();
   const _ = i18n._.bind(i18n);
-  const snapStates = useSnapshot(states);
   const { id: statusID, account, createdAt, visibility, reblog } = status;
   const { avatar, avatarStatic, bot, group } = account || {};
   const isReblog = !!reblog;
@@ -69,7 +65,6 @@ export default function FilteredStatus({
   );
 
   const statusPeekRef = useTruncated() as RefObject<HTMLAnchorElement>;
-  const sKey = statusKey(status.id, instance);
   const ssKey =
     statusKey(status.id, instance) +
     ' ' +
@@ -79,30 +74,20 @@ export default function FilteredStatus({
   const url = instance
     ? `/${instance}/s/${actualStatusID}`
     : `/s/${actualStatusID}`;
-  const isFollowedTags =
-    showFollowedTags &&
-    !!(
-      sKey &&
-      (snapStates.statusFollowedTags[sKey] as readonly unknown[] | undefined)
-        ?.length
-    );
-
   return (
     <div
-      class={`${
+      className={`${
         quoted
           ? ''
           : isReblog
             ? group
               ? 'status-group'
               : 'status-reblog'
-            : isFollowedTags
-              ? 'status-followed-tags'
-              : ''
+            : ''
       } visibility-${visibility}`}
       {...containerProps}
       // title={statusPeekText}
-      onContextMenu={(e: MouseEvent) => {
+      onContextMenu={(e: React.MouseEvent) => {
         e.preventDefault();
         setShowPeek(true);
       }}
@@ -110,13 +95,14 @@ export default function FilteredStatus({
     >
       <article
         data-state-post-id={ssKey}
-        class={`status filtered ${quoted ? 'status-card' : ''}`}
-        tabindex={-1}
+        className={`status filtered ${quoted ? 'status-card' : ''}`}
+        tabIndex={-1}
       >
-        <b
-          class="status-filtered-badge clickable badge-meta"
+        <button
+          type="button"
+          className="status-filtered-badge clickable badge-meta"
           title={filterTitleStr}
-          onClick={(e: MouseEvent) => {
+          onClick={(e: React.MouseEvent) => {
             e.preventDefault();
             setShowPeek(true);
           }}
@@ -125,80 +111,37 @@ export default function FilteredStatus({
             <Trans>Filtered</Trans>
           </span>
           <span>{filterTitleStr}</span>
-        </b>{' '}
+        </button>{' '}
         <Avatar url={avatarStatic || avatar} squircle={bot} />
-        <span class="status-filtered-info">
-          <span class="status-filtered-info-1">
+        <span className="status-filtered-info">
+          <span className="status-filtered-info-1">
             {isReblog ? (
               <Trans comment="[Name] [Visibility icon] boosted">
-                <NameText
-                  account={status.account}
-                  instance={instance}
-                />{' '}
+                <NameText account={status.account} instance={instance} />{' '}
                 <Icon
-                  icon={
-                    visibilityIconsMap[visibility]
-                  }
-                  alt={_(
-                    visibilityText[visibility],
-                  )}
+                  icon={visibilityIconsMap[visibility]}
+                  alt={_(visibilityText[visibility])}
                   size="s"
                 />{' '}
                 boosted
               </Trans>
-            ) : isFollowedTags ? (
-              <>
-                <NameText
-                  account={status.account}
-                  instance={instance}
-                />{' '}
-                <Icon
-                  icon={
-                    visibilityIconsMap[visibility]
-                  }
-                  alt={_(
-                    visibilityText[visibility],
-                  )}
-                  size="s"
-                />{' '}
-                <span>
-                  {(snapStates.statusFollowedTags[sKey] as
-                    | readonly string[]
-                    | undefined)!
-                    .slice(0, 3)
-                    .map((tag: string) => (
-                      <span key={tag} class="status-followed-tag-item">
-                        #{tag}
-                      </span>
-                    ))}
-                </span>
-              </>
             ) : (
               <>
-                <NameText
-                  account={status.account}
-                  instance={instance}
-                />{' '}
+                <NameText account={status.account} instance={instance} />{' '}
                 <Icon
-                  icon={
-                    visibilityIconsMap[visibility]
-                  }
-                  alt={_(
-                    visibilityText[visibility],
-                  )}
+                  icon={visibilityIconsMap[visibility]}
+                  alt={_(visibilityText[visibility])}
                   size="s"
                 />{' '}
                 <RelativeTime datetime={createdAtDate} format="micro" />
               </>
             )}
           </span>
-          <span class="status-filtered-info-2">
+          <span className="status-filtered-info-2">
             {isReblog && (
               <>
                 <Avatar
-                  url={
-                    reblog.account.avatarStatic || reblog.account.avatar
-                  }
+                  url={reblog.account.avatarStatic || reblog.account.avatar}
                   squircle={bot}
                 />{' '}
               </>
@@ -209,16 +152,16 @@ export default function FilteredStatus({
       </article>
       {showPeek && (
         <Modal
-          onClick={(e: MouseEvent) => {
+          onClick={(e: React.MouseEvent) => {
             if (e.target === e.currentTarget) {
               setShowPeek(false);
             }
           }}
         >
-          <div id="filtered-status-peek" class="sheet">
+          <div id="filtered-status-peek" className="sheet">
             <button
               type="button"
-              class="sheet-close"
+              className="sheet-close"
               onClick={() => {
                 setShowPeek(false);
               }}
@@ -226,7 +169,7 @@ export default function FilteredStatus({
               <Icon icon="x" alt={t`Close`} />
             </button>
             <header>
-              <b class="status-filtered-badge">
+              <b className="status-filtered-badge">
                 <Trans>Filtered</Trans>
               </b>{' '}
               {filterTitleStr}
@@ -234,7 +177,7 @@ export default function FilteredStatus({
             <main tabIndex={-1}>
               <Link
                 ref={statusPeekRef}
-                class="status-link"
+                className="status-link"
                 to={url}
                 onClick={() => {
                   setShowPeek(false);

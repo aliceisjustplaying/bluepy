@@ -1,10 +1,10 @@
 import './name-text.css';
 
 import { useLingui } from '@lingui/react';
-import type { TargetedMouseEvent } from 'preact';
 
 import { api } from '../utils/api';
 import mem from '../utils/mem';
+import { canonicalizeAppPath } from '../utils/router';
 import states from '../utils/states';
 
 import Avatar from './avatar';
@@ -42,7 +42,7 @@ export interface NameTextProps {
   showAcct?: boolean;
   short?: boolean;
   external?: boolean;
-  onClick?: (e: TargetedMouseEvent<HTMLAnchorElement>) => unknown;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => unknown;
 }
 
 const nameCollator = mem((locale: string | undefined) => {
@@ -111,7 +111,7 @@ function NameText({
 
   return (
     <a
-      class={`name-text ${showAcct ? 'show-acct' : ''} ${short ? 'short' : ''}`}
+      className={`name-text ${showAcct ? 'show-acct' : ''} ${short ? 'short' : ''}`}
       href={url}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
@@ -130,7 +130,7 @@ function NameText({
           return;
         }
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) {
-          const internalURL = `#/${instance}/a/${id}`;
+          const internalURL = canonicalizeAppPath(`/${instance}/a/${id}`);
           window.open(internalURL, '_blank');
           return;
         }
@@ -158,7 +158,7 @@ function NameText({
           {!showAcct && !hideUsername && (
             <>
               {' '}
-              <i class="bidi-isolate">@{username}</i>
+              <i className="bidi-isolate">@{username}</i>
               <RolesTags
                 roles={roles}
                 accountId={id}
@@ -176,10 +176,10 @@ function NameText({
       {showAcct && (
         <>
           <br />
-          <i class="bidi-isolate">
+          <i className="bidi-isolate">
             {acct2 ? '' : '@'}
             {acct1}
-            {!!acct2 && <span class="ib">{acct2}</span>}
+            {!!acct2 && <span className="ib">{acct2}</span>}
           </i>
           <RolesTags roles={roles} accountUrl={url} />
         </>

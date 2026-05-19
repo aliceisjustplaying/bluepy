@@ -115,7 +115,6 @@ body.exp-tab-bar-v2 {
   }
 }
 body.exp-tab-bar-v2 {
-  #filters-page ~ #shortcuts .tab-bar:not([hidden]),
   #lists-page ~ #shortcuts .tab-bar:not([hidden]) {
     max-width: calc(
       100vw - var(--inset-inline-start) - var(--inset-inline-end)
@@ -260,7 +259,7 @@ shortcuts .tab-bar[hidden] {
 }
 
 @media (max-width: calc(40em - 1px)) {
-  #app[data-shortcuts-view-mode='tab-menu-bar'] .deck-container {
+  #app:has(#shortcuts > .tab-bar) .deck-container {
     padding-bottom: 52px;
   }
   #shortcuts .tab-bar li a.has-subtitle .icon,
@@ -274,10 +273,10 @@ shortcuts .tab-bar[hidden] {
 }
 
 @media (min-width: 40em) and (hover: hover) {
-  #app[data-shortcuts-view-mode='tab-menu-bar'] .timeline-deck {
+  #app:has(#shortcuts > .tab-bar) .timeline-deck {
     margin-top: 44px;
   }
-  #app[data-shortcuts-view-mode='tab-menu-bar'] .timeline-deck > header {
+  #app:has(#shortcuts > .tab-bar) .timeline-deck > header {
     --margin-top: calc(44px + 8px);
   }
   #shortcuts .tab-bar:not([hidden]) {

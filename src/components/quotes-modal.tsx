@@ -2,7 +2,7 @@ import './quotes-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 
@@ -111,9 +111,9 @@ export default function QuotesModal({
   }, [loadQuotes]);
 
   return (
-    <div id="quotes-modal" class="sheet" tabindex={-1}>
+    <div id="quotes-modal" className="sheet" tabIndex={-1}>
       {onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -125,15 +125,15 @@ export default function QuotesModal({
       <main>
         {posts.length > 0 ? (
           <>
-            <ul class="quoted-posts-list">
+            <ul className="quoted-posts-list">
               {posts.map((post) => (
-                <li key={post.id} class="quoted-post-item">
+                <li key={post.id} className="quoted-post-item">
                   <Link
                     to={
                       instance ? `/${instance}/s/${post.id}` : `/s/${post.id}`
                     }
-                    class="status-link"
-                    onContextMenu={(e: MouseEvent) => {
+                    className="status-link"
+                    onContextMenu={(e: React.MouseEvent) => {
                       const target = e.target as Element | null;
                       const postEl = target?.querySelector('.status');
                       if (postEl) {
@@ -165,7 +165,7 @@ export default function QuotesModal({
               showMore ? (
                 <button
                   type="button"
-                  class="plain block"
+                  className="plain block"
                   onClick={() => {
                     loadQuotes();
                   }}
@@ -173,28 +173,28 @@ export default function QuotesModal({
                   <Trans>Show more…</Trans>
                 </button>
               ) : (
-                <p class="ui-state insignificant">
+                <p className="ui-state insignificant">
                   <Trans>The end.</Trans>
                 </p>
               )
             ) : (
               uiState === 'loading' && (
-                <p class="ui-state">
+                <p className="ui-state">
                   <Loader abrupt />
                 </p>
               )
             )}
           </>
         ) : uiState === 'loading' ? (
-          <p class="ui-state">
+          <p className="ui-state">
             <Loader abrupt />
           </p>
         ) : uiState === 'error' ? (
-          <p class="ui-state">
+          <p className="ui-state">
             <Trans>Error loading quotes</Trans>
           </p>
         ) : (
-          <p class="ui-state insignificant">
+          <p className="ui-state insignificant">
             <Trans>No quotes yet</Trans>
           </p>
         )}

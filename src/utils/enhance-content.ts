@@ -3,7 +3,7 @@ import escapeHTML from './escape-html';
 import mem from './mem';
 
 const fauxDiv = document.createElement('div');
-const whitelistLinkClasses = ['u-url', 'mention', 'hashtag'];
+const whitelistLinkClasses = new Set(['u-url', 'mention', 'hashtag']);
 
 const LINK_REGEX = /<a/i;
 const HTTP_LINK_REGEX = /^https?:\/\//i;
@@ -78,7 +78,7 @@ function enhanceContentRaw(
     const links = dom.querySelectorAll<HTMLAnchorElement>('a[class]');
     for (const link of links) {
       for (const c of link.classList) {
-        if (!whitelistLinkClasses.includes(c)) {
+        if (!whitelistLinkClasses.has(c)) {
           link.classList.remove(c);
         }
       }
@@ -403,12 +403,21 @@ function shortenLink(link: HTMLAnchorElement | null | undefined): void {
     );
     const suffix = url.slice(prefix.length + URL_DISPLAY_LENGTH);
     const cutoff = url.slice(prefix.length).length > URL_DISPLAY_LENGTH;
-    link.innerHTML = `<span class="invisible">${prefix}</span><span class=${
-      cutoff ? 'ellipsis' : ''
-    }>${displayURL}</span><span class="invisible">${suffix}</span>`;
+    link.replaceChildren(
+      createTextSpan(prefix, 'invisible'),
+      createTextSpan(displayURL, cutoff ? 'ellipsis' : ''),
+      createTextSpan(suffix, 'invisible'),
+    );
   } catch {
     // Silently fail on malformed URLs
   }
+}
+
+function createTextSpan(text: string, className: string): HTMLSpanElement {
+  const span = document.createElement('span');
+  if (className) span.className = className;
+  span.textContent = text;
+  return span;
 }
 
 interface ExtractTextNodesOpts {

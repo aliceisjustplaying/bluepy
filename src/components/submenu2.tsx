@@ -3,7 +3,7 @@ import {
   type MenuInstance,
   type SubMenuProps,
 } from '@szhsin/react-menu';
-import { useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 export default function SubMenu2(props: SubMenuProps) {
   const menuRef = useRef<MenuInstance | null>(null);
@@ -37,12 +37,12 @@ export default function SubMenu2(props: SubMenuProps) {
       // Test fix for bug; submenus not opening on Android
       itemProps={{
         ref: itemRef,
-        onPointerMove: (e: PointerEvent) => {
+        onPointerMove: (e: React.PointerEvent) => {
           if (e.pointerType === 'touch') {
             menuRef.current?.openMenu?.();
           }
         },
-        onPointerLeave: (e: PointerEvent) => {
+        onPointerLeave: (e: React.PointerEvent) => {
           if (e.pointerType === 'touch') {
             menuRef.current?.openMenu?.();
           }

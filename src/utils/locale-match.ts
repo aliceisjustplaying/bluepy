@@ -87,7 +87,7 @@ function normalizeBestFitMatch(
   return canonicalMatch;
 }
 
-export function baseLocaleMatch(...args: MatchArgs): string | false {
+function baseLocaleMatch(...args: MatchArgs): string | false {
   try {
     const matchedLocale = match(...args);
     return normalizeBestFitMatch(args[0], args[1], matchedLocale);

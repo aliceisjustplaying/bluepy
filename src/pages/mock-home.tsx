@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'preact/hooks';
+import { useEffect, useMemo } from 'react';
 
 import ComposeButton from '../components/compose-button';
 import Icon from '../components/icon';
@@ -95,27 +95,27 @@ function MockHome() {
 
   return (
     <>
-      <div id="home-page" class="deck-container" tabIndex={-1}>
-        <div class="timeline-deck deck">
+      <div id="home-page" className="deck-container" tabIndex={-1}>
+        <div className="timeline-deck deck">
           <header>
-            <div class="header-grid">
-              <div class="header-side">
+            <div className="header-grid">
+              <div className="header-side">
                 <NavMenu />
               </div>
               <h1>Home</h1>
-              <div class="header-side">
-                <Link to="/notifications" class="button plain">
+              <div className="header-side">
+                <Link to="/notifications" className="button plain">
                   <Icon icon="notification" size="l" alt="Notifications" />
                 </Link>
               </div>
             </div>
           </header>
           <main>
-            <ul class="timeline">
+            <ul className="timeline">
               {statuses.map((status) => {
                 const instance = status._instance;
                 return (
-                  <li key={status.id} class="timeline-item">
+                  <li key={status.id} className="timeline-item">
                     <StatusComponent
                       status={status}
                       instance={instance}

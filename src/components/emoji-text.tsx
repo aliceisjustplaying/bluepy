@@ -1,6 +1,6 @@
 import PQueue from 'p-queue';
-import type { ComponentChildren } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getGifFirstFrame } from '../utils/get-gif-first-frame';
 import mem from '../utils/mem';
@@ -133,7 +133,7 @@ function EmojiText({
   emojis = [],
   staticEmoji,
   resolverURL,
-}: EmojiTextProps): ComponentChildren {
+}: EmojiTextProps): ReactNode {
   const [resolvedEmojis, setResolvedEmojis] = useState<ResolvedEmoji[]>(
     () => (resolverURL && resolvedEmojisCache.get(resolverURL)) || [],
   );

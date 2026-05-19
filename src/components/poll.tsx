@@ -2,8 +2,8 @@ import { i18n } from '@lingui/core';
 import { plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { Ref } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { Ref } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import haptics from '../utils/haptics';
 import shortenNumber from '../utils/shorten-number';
@@ -113,7 +113,9 @@ export default function Poll({
 
     observer.observe(loadMoreRef.current);
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, [visibleOptionsCount, options.length]);
 
   useEffect(() => {
@@ -134,13 +136,13 @@ export default function Poll({
     <div
       lang={lang}
       dir="auto"
-      class={`poll ${readOnly ? 'read-only' : ''} ${
+      className={`poll ${readOnly ? 'read-only' : ''} ${
         uiState === 'loading' ? 'loading' : ''
       }`}
     >
       {resultsView ? (
         <>
-          <div class="poll-options" ref={ref as Ref<HTMLDivElement>}>
+          <div className="poll-options" ref={ref as Ref<HTMLDivElement>}>
             {options.slice(0, visibleOptionsCount).map((option, i) => {
               const { title, votesCount: optionVotesCountRaw } = option;
               const optionVotesCount = optionVotesCountRaw ?? 0;
@@ -161,20 +163,20 @@ export default function Poll({
               return (
                 <div
                   key={`${i}-${title}`}
-                  class={`poll-option poll-result ${
+                  className={`poll-option poll-result ${
                     isLeading ? 'poll-option-leading' : ''
                   }`}
                   style={{
                     '--percentage': `${ratio * 100}%`,
                   }}
                 >
-                  <div class="poll-option-title">
+                  <div className="poll-option-title">
                     <span>
                       <EmojiText text={title} emojis={emojis} />
                     </span>
                   </div>
                   <div
-                    class="poll-option-votes"
+                    className="poll-option-votes"
                     title={plural(optionVotesCount, {
                       one: `# vote`,
                       other: `# votes`,
@@ -185,7 +187,7 @@ export default function Poll({
                         <Icon icon="check-circle" alt={t`Voted`} />{' '}
                       </>
                     )}
-                    <span class="poll-option-votes-percentage">
+                    <span className="poll-option-votes-percentage">
                       {percentage}
                     </span>
                   </div>
@@ -197,9 +199,9 @@ export default function Poll({
             )}
           </div>
           {!expired && !voted && (
-            <div class="poll-actions">
+            <div className="poll-actions">
               <button
-                class="poll-hide-results-button plain2"
+                className="poll-hide-results-button plain2"
                 disabled={uiState === 'loading'}
                 onClick={(e) => {
                   e.preventDefault();
@@ -208,9 +210,9 @@ export default function Poll({
               >
                 <Icon icon="arrow-left" size="s" /> <Trans>Hide results</Trans>
               </button>{' '}
-              <div class="poll-info">
+              <div className="poll-info">
                 {showPollInfo && (
-                  <small class="insignificant">
+                  <small className="insignificant">
                     <Plural
                       value={options.length}
                       one={`# choice`}
@@ -245,15 +247,15 @@ export default function Poll({
             })();
           }}
         >
-          <div class="poll-options" ref={ref as Ref<HTMLDivElement>}>
+          <div className="poll-options" ref={ref as Ref<HTMLDivElement>}>
             {options.slice(0, visibleOptionsCount).map((option, i) => {
               const { title } = option;
               const isSelected = Array.isArray(selectedOptions)
                 ? selectedOptions.includes(i)
                 : selectedOptions === i;
               return (
-                <div class="poll-option" key={`${i}-${title}`}>
-                  <label class="poll-label">
+                <div className="poll-option" key={`${i}-${title}`}>
+                  <label className="poll-label">
                     <input
                       type={multiple ? 'checkbox' : 'radio'}
                       name="poll"
@@ -276,7 +278,7 @@ export default function Poll({
                         }
                       }}
                     />
-                    <span class="poll-option-title">
+                    <span className="poll-option-title">
                       <EmojiText text={title} emojis={emojis} />
                     </span>
                   </label>
@@ -287,9 +289,9 @@ export default function Poll({
               <div ref={loadMoreRef} style={{ minHeight: '1em' }} />
             )}
           </div>
-          <div class="poll-actions">
+          <div className="poll-actions">
             <button
-              class="poll-vote-button"
+              className="poll-vote-button"
               type="submit"
               disabled={
                 readOnly ||
@@ -302,15 +304,15 @@ export default function Poll({
             >
               <Trans>Vote</Trans>
             </button>{' '}
-            <div class="poll-info">
+            <div className="poll-info">
               {showPollInfo &&
                 (multiple && voteOptionsSelectionCount > 0 ? (
                   <small>
                     {voteOptionsSelectionCount}{' '}
-                    <span class="insignificant">/ {options.length}</span>
+                    <span className="insignificant">/ {options.length}</span>
                   </small>
                 ) : (
-                  <small class="insignificant">
+                  <small className="insignificant">
                     <Plural
                       value={options.length}
                       one={`# choice`}
@@ -322,11 +324,11 @@ export default function Poll({
           </div>
         </form>
       )}
-      <p class="poll-meta">
-        <span class="spacer">
+      <p className="poll-meta">
+        <span className="spacer">
           {(expired || voted) && showPollInfo && (
             <>
-              <span class="ib">
+              <span className="ib">
                 <Plural
                   value={options.length}
                   one={`# choice`}
@@ -336,7 +338,7 @@ export default function Poll({
               &bull;{' '}
             </>
           )}
-          <span class="ib">
+          <span className="ib">
             <Plural
               value={votesCount}
               one={
@@ -361,7 +363,7 @@ export default function Poll({
             <>
               {' '}
               &bull;{' '}
-              <span class="ib">
+              <span className="ib">
                 <Plural
                   value={votersCount}
                   one={
@@ -387,7 +389,7 @@ export default function Poll({
           &bull;{' '}
           {expired ? (
             expiresAtDate ? (
-              <span class="ib">
+              <span className="ib">
                 <Trans>
                   Ended <RelativeTime datetime={expiresAtDate} />
                 </Trans>
@@ -396,7 +398,7 @@ export default function Poll({
               t`Ended`
             )
           ) : expiresAtDate ? (
-            <span class="ib">
+            <span className="ib">
               <Trans>
                 Ending <RelativeTime datetime={expiresAtDate} />
               </Trans>
@@ -408,7 +410,7 @@ export default function Poll({
         {!voted && !expired && !readOnly && optionsHaveVoteCounts && (
           <button
             type="button"
-            class="plain small poll-results-button"
+            className="plain small poll-results-button"
             disabled={uiState === 'loading'}
             onClick={(e) => {
               e.preventDefault();
@@ -425,7 +427,7 @@ export default function Poll({
         {!expired && !readOnly && (
           <button
             type="button"
-            class="plain small"
+            className="plain small"
             disabled={uiState === 'loading'}
             onClick={(e) => {
               e.preventDefault();

@@ -1,9 +1,10 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { memo } from 'preact/compat';
-import { useLayoutEffect, useState } from 'preact/hooks';
+import { memo } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { api } from '../utils/api';
+import { currentAppPath, navigatePath } from '../utils/router';
 import states from '../utils/states';
 import type { StoredAccount } from '../utils/store-utils';
 import {
@@ -133,13 +134,13 @@ export default memo(function NotificationService() {
         } else {
           if (hasStatus) {
             // Go to status page
-            location.hash = `/${currentInstance}/s/${status?.id}`;
+            navigatePath(`/${currentInstance}/s/${status?.id}`);
           } else if (isFollow) {
             // Go to profile page
-            location.hash = `/${currentInstance}/a/${notificationAccount?.id}`;
+            navigatePath(`/${currentInstance}/a/${notificationAccount?.id}`);
           } else {
             // Go to notifications page
-            location.hash = '/notifications';
+            navigatePath('/notifications');
           }
         }
       } else {
@@ -186,9 +187,8 @@ export default memo(function NotificationService() {
     setShowNotificationSheet(false);
     states.routeNotification = null;
 
-    // If url is #/notifications?id=123, go to #/notifications
-    if (/\/notifications\?id=/i.test(location.hash)) {
-      location.hash = '/notifications';
+    if (/\/notifications\?id=/i.test(currentAppPath())) {
+      navigatePath('/notifications');
     }
   };
 
@@ -202,8 +202,8 @@ export default memo(function NotificationService() {
           }
         }}
       >
-        <div class="sheet" tabIndex={-1}>
-          <button type="button" class="sheet-close" onClick={onClose}>
+        <div className="sheet" tabIndex={-1}>
+          <button type="button" className="sheet-close" onClick={onClose}>
             <Icon icon="x" alt={t`Close`} />
           </button>
           <header>
@@ -225,7 +225,8 @@ export default memo(function NotificationService() {
                 activation logic runs (closing the sheet first). The
                 children themselves own their keyboard semantics. */}
             <div
-              class="notification-peek"
+              className="notification-peek"
+              role="presentation"
               // style={{
               //   pointerEvents: sameInstance ? '' : 'none',
               // }}
@@ -248,7 +249,11 @@ export default memo(function NotificationService() {
                 textAlign: 'end',
               }}
             >
-              <Link to="/notifications" class="button light" onClick={onClose}>
+              <Link
+                to="/notifications"
+                className="button light"
+                onClick={onClose}
+              >
                 <span>
                   <Trans>View all notifications</Trans>
                 </span>{' '}

@@ -1,7 +1,12 @@
-import type { HTMLAttributes, Ref, TargetedMouseEvent } from 'preact';
-import { forwardRef } from 'preact/compat';
+import type { HTMLAttributes, Ref } from 'react';
 import { useInRouterContext, useLocation } from 'react-router-dom';
 
+import {
+  canonicalizeAppPath,
+  currentAppPath,
+  isModifiedClick,
+  navigatePath,
+} from '../utils/router';
 import states from '../utils/states';
 
 /* NOTES
@@ -20,8 +25,13 @@ export interface LinkProps extends Omit<
   HTMLAttributes<HTMLAnchorElement>,
   'href'
 > {
+  ref?: Ref<HTMLAnchorElement>;
   to: string;
-  [key: string]: unknown;
+  class?: string;
+  className?: string;
+  target?: string;
+  [key: `data-${string}`]: unknown;
+  [key: `aria-${string}`]: unknown;
 }
 
 // useLocation throws if Link renders outside a Router (static previews).
@@ -29,83 +39,91 @@ export interface LinkProps extends Omit<
 // boolean; gating on it keeps both render branches hook-rule compliant
 // because each inner component (with vs without useLocation) is itself
 // consistent across all of its own renders.
-const LinkInsideRouter = forwardRef<HTMLAnchorElement, LinkProps>(
-  (props: LinkProps, ref: Ref<HTMLAnchorElement>) => {
-    const routerLocation = useLocation();
-    return <LinkBody {...props} ref={ref} routerLocation={routerLocation} />;
-  },
-);
+function LinkInsideRouter(props: LinkProps) {
+  const routerLocation = useLocation();
+  return <LinkBody {...props} routerLocation={routerLocation} />;
+}
 
-const LinkOutsideRouter = forwardRef<HTMLAnchorElement, LinkProps>(
-  (props: LinkProps, ref: Ref<HTMLAnchorElement>) => {
-    return <LinkBody {...props} ref={ref} routerLocation={undefined} />;
-  },
-);
+function LinkOutsideRouter(props: LinkProps) {
+  return <LinkBody {...props} routerLocation={undefined} />;
+}
 
 interface LinkBodyProps extends LinkProps {
   routerLocation: ReturnType<typeof useLocation> | undefined;
 }
 
-const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  (props: LinkProps, ref: Ref<HTMLAnchorElement>) => {
-    const inRouter = useInRouterContext();
-    return inRouter ? (
-      <LinkInsideRouter {...props} ref={ref} />
-    ) : (
-      <LinkOutsideRouter {...props} ref={ref} />
-    );
-  },
-);
+function Link(props: LinkProps) {
+  const inRouter = useInRouterContext();
+  return inRouter ? (
+    <LinkInsideRouter {...props} />
+  ) : (
+    <LinkOutsideRouter {...props} />
+  );
+}
 
-const LinkBody = forwardRef<HTMLAnchorElement, LinkBodyProps>(
-  (props: LinkBodyProps, ref: Ref<HTMLAnchorElement>) => {
-    let hash = (location.hash || '').replace(/^#/, '').trim();
-    if (hash === '') hash = '/';
-    const { to, children, routerLocation, ...restProps } = props;
+function LinkBody(props: LinkBodyProps) {
+  const {
+    to,
+    children,
+    routerLocation,
+    class: classProp,
+    className,
+    ref,
+    ...restProps
+  } = props;
+  let currentPath = currentAppPath();
+  const href = canonicalizeAppPath(to);
 
-    // Handle encodeURIComponent of searchParams values
-    if (!!hash && hash !== '/' && hash.includes('?')) {
-      const parsedHash = URL.parse(hash, location.origin); // Fake base URL
-      if (parsedHash?.searchParams?.size) {
-        const searchParamsStr = Array.from(parsedHash.searchParams.entries())
-          .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-          .join('&');
-        hash = parsedHash.pathname + '?' + searchParamsStr;
-      }
+  // Handle encodeURIComponent of searchParams values
+  if (currentPath !== '/' && currentPath.includes('?')) {
+    const parsedPath = URL.parse(currentPath, location.origin);
+    if (parsedPath?.searchParams?.size) {
+      const searchParamsStr = Array.from(parsedPath.searchParams.entries())
+        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+        .join('&');
+      currentPath = parsedPath.pathname + '?' + searchParamsStr;
     }
+  }
 
-    const isActive = hash === to || decodeURIComponent(hash) === to;
-    const classProp = props.class;
-    const classStr = typeof classProp === 'string' ? classProp : '';
-    return (
-      <a
-        ref={ref}
-        href={`#${to}`}
-        {...(restProps as HTMLAttributes<HTMLAnchorElement>)}
-        class={`${classStr} ${isActive ? 'is-active' : ''}`}
-        onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
-          const parent = e.currentTarget?.parentNode as Element | null;
-          if (parent?.closest?.('a')) {
-            // If this <a> is nested inside another <a>
-            e.stopPropagation();
-          }
-          if (routerLocation) {
-            // react-router Location has typed fields that don't widen to
-            // PrevLocation's unknown index signature; spread into the
-            // PrevLocation shape to satisfy both types without a shim.
-            states.prevLocation = { ...routerLocation };
-          }
-          (
-            props.onClick as
-              | ((ev: TargetedMouseEvent<HTMLAnchorElement>) => void)
-              | undefined
-          )?.(e);
-        }}
-      >
-        {children}
-      </a>
-    );
-  },
-);
+  const isActive =
+    currentPath === href || decodeURIComponent(currentPath) === href;
+  const classStr =
+    typeof (className || classProp) === 'string' ? className || classProp : '';
+  return (
+    <a
+      ref={ref}
+      href={href}
+      {...(restProps as HTMLAttributes<HTMLAnchorElement>)}
+      className={`${classStr} ${isActive ? 'is-active' : ''}`}
+      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+        const parent = e.currentTarget?.parentNode as Element | null;
+        if (parent?.closest?.('a')) {
+          // If this <a> is nested inside another <a>
+          e.stopPropagation();
+        }
+        if (routerLocation) {
+          // react-router Location has typed fields that don't widen to
+          // PrevLocation's unknown index signature; spread into the
+          // PrevLocation shape to satisfy both types without a shim.
+          states.prevLocation = { ...routerLocation };
+        }
+        (
+          props.onClick as
+            | ((ev: React.MouseEvent<HTMLAnchorElement>) => void)
+            | undefined
+        )?.(e);
+        if (e.defaultPrevented || isModifiedClick(e)) {
+          return;
+        }
+        const target = props.target || '';
+        if (target && target !== '_self') return;
+        e.preventDefault();
+        navigatePath(href);
+      }}
+    >
+      {children}
+    </a>
+  );
+}
 
 export default Link;

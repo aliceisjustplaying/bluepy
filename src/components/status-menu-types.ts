@@ -1,6 +1,6 @@
 import type { MessageDescriptor } from '@lingui/core';
 import type { mastodon } from 'masto';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 import type {
   AnyStatus,
@@ -16,7 +16,7 @@ export interface StatusMenuPartsArgs {
   repliesCount?: number;
   username?: string;
   acct?: string;
-  replyStatus: (e?: LooseClickEvent, replyMode?: string) => void;
+  replyStatus: (e?: LooseClickEvent) => void;
   isSizeLarge: boolean;
   sameInstance: boolean;
   showActionsBar?: boolean;
@@ -26,7 +26,7 @@ export interface StatusMenuPartsArgs {
   quoteMetaText?: string | null;
   quoteText?: string;
   url?: string | null;
-  menuFooter: ComponentChildren;
+  menuFooter: ReactNode;
   canBoost?: boolean;
   confirmBoostStatus: () => Promise<boolean>;
   canQuote?: boolean;
@@ -50,7 +50,7 @@ export interface StatusMenuPartsArgs {
   setForceTranslate: (value: boolean) => void;
   instance: string;
   id: string;
-  onStatusLinkClick: (e: MouseEvent | KeyboardEvent, status: AnyStatus) => void;
+  onStatusLinkClick: (e: React.MouseEvent | KeyboardEvent, status: AnyStatus) => void;
   createdDateText?: string | false | null;
   editedAt?: string | null;
   setShowEdited: (value: string | false) => void;

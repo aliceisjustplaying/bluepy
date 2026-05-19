@@ -7,16 +7,17 @@ import { msg, select } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { getBlurHashAverageColor } from 'fast-blurhash';
 import type { mastodon } from 'masto';
-import { Fragment, type JSX } from 'preact';
-import { memo } from 'preact/compat';
+import { Fragment, type JSX } from 'react';
+import { memo } from 'react';
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-} from 'preact/hooks';
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useSearchParams } from 'react-router-dom';
 import { uid } from 'uid/single';
@@ -44,12 +45,10 @@ import { supportsNativeQuote } from '../utils/quote-utils';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import { sorted } from '../utils/sorted';
-import states, { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
 import store from '../utils/store';
 import { getCurrentAccountID, getCurrentAccountNS } from '../utils/store-utils';
 import supports from '../utils/supports';
-import { assignFollowedTags } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
 // Types -----------------------------------------------------------------
@@ -107,7 +106,6 @@ type CatchupPost = mastodon.v1.Status & {
   account: CatchupAccount;
   reblog?: CatchupPost | null;
   _filtered?: FilterInfo;
-  _followedTags?: string[];
   _thread?: boolean;
   __FILTER?: string;
   __HIDDEN?: boolean;
@@ -175,7 +173,6 @@ interface FilterCounts {
   boosts: number;
   quotes: number;
   replies: number;
-  followedTags: number;
   original: number;
   [key: string]: number;
 }
@@ -222,7 +219,6 @@ const FILTER_KEYS: Record<string, MessageDescriptor> = {
   replies: msg`Replies`,
   quotes: msg`Quotes`,
   boosts: msg`Boosts`,
-  followedTags: msg`Followed tags`,
   groups: msg`Groups`,
   filtered: msg`Filtered`,
 };
@@ -381,8 +377,6 @@ function Catchup() {
           const results = await homeIterator.next();
           const { value } = results as { value: CatchupPost[] | undefined };
           if (value?.length) {
-            // This ignores maxCreatedAt filter, but it's ok for now
-            await assignFollowedTags(value, instance);
             let addedResults = false;
             for (let i = 0; i < value.length; i++) {
               const item = value[i];
@@ -400,15 +394,6 @@ function Catchup() {
                   );
                 if (filterInfo && filterInfo.action === 'hide') continue;
                 item._filtered = filterInfo as FilterInfo;
-
-                // Followed tags
-                const sKey = statusKey(item.id, instance);
-                const followed = sKey
-                  ? (states.statusFollowedTags[sKey] as
-                      | Iterable<string>
-                      | undefined)
-                  : undefined;
-                item._followedTags = followed ? [...followed] : [];
 
                 allResults.push(item);
                 addedResults = true;
@@ -449,7 +434,7 @@ function Catchup() {
 
       return allResults;
     },
-    [masto, supportsPixelfed, instance, isSelf],
+    [masto, supportsPixelfed, isSelf],
   );
 
   const [posts, setPosts] = useState<CatchupPost[]>([]);
@@ -489,7 +474,7 @@ function Catchup() {
     [dtf, fetchHome, NS, setSearchParams],
   );
 
-  useEffect(() => {
+  const syncRouteCatchup = useEffectEvent(() => {
     if (id) {
       void (async () => {
         const catchup = (await db.catchup.get(id)) as CatchupRecord | undefined;
@@ -503,6 +488,9 @@ function Catchup() {
       setPosts([]);
       setUIState('start');
     }
+  });
+  useEffect(() => {
+    syncRouteCatchup();
   }, [id, uiState]);
 
   const [reloadCatchupsCount, setReloadCatchupsCount] = useState(0);
@@ -595,7 +583,6 @@ function Catchup() {
       boosts = 0,
       quotes = 0,
       replies = 0,
-      followedTags = 0,
       original = 0;
     const linksMap: Record<string, LinkAggregate> = {};
     for (const post of posts) {
@@ -611,9 +598,6 @@ function Catchup() {
       } else if (supportsNativeQuote() && hasQuote(post.quote)) {
         quotes++;
         post.__FILTER = 'quotes';
-      } else if (post._followedTags?.length) {
-        followedTags++;
-        post.__FILTER = 'followedTags';
       } else if (
         post.inReplyToId &&
         post.inReplyToAccountId !== post.account?.id
@@ -696,7 +680,6 @@ function Catchup() {
         boosts,
         quotes,
         replies,
-        followedTags,
         original,
       },
       topLinks,
@@ -904,7 +887,7 @@ function Catchup() {
       return (
         <span
           key={post.id}
-          class={`post-dot ${postIsFiltered ? 'post-dot-highlight' : ''}`}
+          className={`post-dot ${postIsFiltered ? 'post-dot-highlight' : ''}`}
         />
       );
     });
@@ -916,13 +899,13 @@ function Catchup() {
     const bins = binByTime(posts, 'createdAt', 320);
     return bins.map((postsInBin, i) => {
       return (
-        <div class="posts-bin" key={i}>
+        <div className="posts-bin" key={i}>
           {postsInBin.map((post) => {
             const postIsFiltered = filteredPostsMap[post.id];
             return (
               <span
                 key={post.id}
-                class={`post-dot ${postIsFiltered ? 'post-dot-highlight' : ''}`}
+                className={`post-dot ${postIsFiltered ? 'post-dot-highlight' : ''}`}
               />
             );
           })}
@@ -951,7 +934,9 @@ function Catchup() {
         }
       }, 100);
 
-      return () => clearTimeout(timeoutId);
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
     return undefined;
   }, [id, uiState, sortedFilteredPosts.length]);
@@ -1007,7 +992,6 @@ function Catchup() {
         replies: 'replies',
         boosts: 'boosts',
         quotes: 'quotes',
-        followedTags: 'followed tags',
         groups: 'groups',
         filtered: 'filtered posts',
         other: '',
@@ -1057,34 +1041,35 @@ function Catchup() {
     t,
   ]);
 
-  useEffect(() => {
+  const scrollSelectedAuthorIntoView = useEffectEvent(() => {
     if (selectedAuthor) {
       if (authors[selectedAuthor]) {
         // Check if author is visible and within the scrollable area viewport
-        const authorElement =
-          authorsListParent.current!.querySelector<HTMLElement>(
-            `[data-author="${selectedAuthor}"]`,
-          );
+        const authorsList = authorsListParent.current;
+        const authorElement = authorsList?.querySelector<HTMLElement>(
+          `[data-author="${selectedAuthor}"]`,
+        );
         const scrollableRect =
           authorsListParent.current?.getBoundingClientRect();
         const authorRect = authorElement?.getBoundingClientRect();
+        if (!scrollableRect || !authorRect || !authorElement) return;
         console.log({
-          sLeft: scrollableRect!.left,
-          sRight: scrollableRect!.right,
-          aLeft: authorRect!.left,
-          aRight: authorRect!.right,
+          sLeft: scrollableRect.left,
+          sRight: scrollableRect.right,
+          aLeft: authorRect.left,
+          aRight: authorRect.right,
         });
         if (
-          authorRect!.left < scrollableRect!.left ||
-          authorRect!.right > scrollableRect!.right
+          authorRect.left < scrollableRect.left ||
+          authorRect.right > scrollableRect.right
         ) {
-          authorElement!.scrollIntoView({
+          authorElement.scrollIntoView({
             block: 'nearest',
             inline: 'center',
             behavior: 'smooth',
           });
-        } else if (authorRect!.top < 0) {
-          authorElement!.scrollIntoView({
+        } else if (authorRect.top < 0) {
+          authorElement.scrollIntoView({
             block: 'nearest',
             inline: 'nearest',
             behavior: 'smooth',
@@ -1092,6 +1077,9 @@ function Catchup() {
         }
       }
     }
+  });
+  useEffect(() => {
+    scrollSelectedAuthorIntoView();
   }, [selectedAuthor, authors]);
 
   const [showHelp, setShowHelp] = useState(false);
@@ -1143,7 +1131,7 @@ function Catchup() {
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -1198,7 +1186,7 @@ function Catchup() {
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -1233,7 +1221,7 @@ function Catchup() {
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -1251,8 +1239,7 @@ function Catchup() {
     },
     {
       preventDefault: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
       enableOnFormTags: ['input'],
       useKey: true,
     },
@@ -1269,7 +1256,7 @@ function Catchup() {
     {
       useKey: true,
       preventDefault: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         // Allow '.' even with Shift (some keyboard layouts require Shift for '.')
         if (e.key === '.') return false;
         return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
@@ -1278,7 +1265,7 @@ function Catchup() {
     },
   );
 
-  const handleArrowKeys = useCallback((e: KeyboardEvent) => {
+  const handleArrowKeys = useCallback((e: React.KeyboardEvent) => {
     const activeElement = document.activeElement as
       | (HTMLElement & { type?: string })
       | null;
@@ -1307,16 +1294,17 @@ function Catchup() {
         dotRef.current = node;
       }}
       id="catchup-page"
-      class="deck-container"
+      className="deck-container"
       tabIndex={-1}
     >
-      <div class="timeline-deck deck wide">
+      <div className="timeline-deck deck wide">
         {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
             click-to-scroll on the header; semantically a non-interactive
             scrollback affordance, not a button. Keyboard equivalent is the
             standard browser Home key on the focusable container. */}
         <header
-          class={uiState === 'loading' ? 'loading' : ''}
+          className={uiState === 'loading' ? 'loading' : ''}
+          role="presentation"
           onClick={(e) => {
             if (!(e.target as HTMLElement | null)?.closest('a, button')) {
               scrollableRef.current?.scrollTo({
@@ -1326,16 +1314,16 @@ function Catchup() {
             }
           }}
         >
-          <div class="header-grid">
-            <div class="header-side">
+          <div className="header-grid">
+            <div className="header-side">
               <NavMenu />
               {uiState === 'results' && (
-                <Link to="/catchup" class="button plain">
+                <Link to="/catchup" className="button plain">
                   <Icon icon="history2" size="l" alt={t`Catch-up`} />
                 </Link>
               )}
               {uiState === 'start' && (
-                <Link to="/" class="button plain">
+                <Link to="/" className="button plain">
                   <Icon icon="home" size="l" alt={t`Home`} />
                 </Link>
               )}
@@ -1347,11 +1335,11 @@ function Catchup() {
                 </Trans>
               )}
             </h1>
-            <div class="header-side">
+            <div className="header-side">
               {uiState !== 'start' && uiState !== 'loading' && (
                 <button
                   type="button"
-                  class="plain"
+                  className="plain"
                   onClick={() => {
                     setShowHelp(true);
                   }}
@@ -1364,7 +1352,7 @@ function Catchup() {
         </header>
         <main onKeyDown={handleArrowKeys}>
           {uiState === 'start' && (
-            <div class="catchup-start">
+            <div className="catchup-start">
               <h1>
                 <Trans>
                   Catch-up <sup>beta</sup>
@@ -1411,7 +1399,7 @@ function Catchup() {
                   <Trans>Show me all posts from…</Trans>
                 </b>
               </p>
-              <div class="catchup-form">
+              <div className="catchup-form">
                 <input
                   ref={catchupRangeRef}
                   type="range"
@@ -1420,9 +1408,9 @@ function Catchup() {
                   max={RANGES[RANGES.length - 1].value}
                   step="1"
                   list="catchup-ranges"
-                  onChange={(e) =>
-                    setRange(+(e.target as HTMLInputElement).value)
-                  }
+                  onChange={(e) => {
+                    setRange(+(e.target as HTMLInputElement).value);
+                  }}
                 />{' '}
                 <span
                   style={{
@@ -1431,7 +1419,7 @@ function Catchup() {
                 >
                   {_(RANGES[range - 1].label)}
                   <br />
-                  <small class="insignificant">
+                  <small className="insignificant">
                     {range == RANGES[RANGES.length - 1].value
                       ? t`until the max`
                       : niceDateTime(
@@ -1449,7 +1437,7 @@ function Catchup() {
                   onClick={() => {
                     let duration: number | undefined;
                     const beyondRange = RANGES.find((r) => r.beyond);
-                    if (range < beyondRange!.value) {
+                    if (beyondRange && range < beyondRange.value) {
                       // Within range
                       duration = range * 60 * 60 * 1000;
                     } else {
@@ -1470,13 +1458,13 @@ function Catchup() {
                 </button>
               </div>
               {lastCatchupRange && range > lastCatchupRange ? (
-                <p class="catchup-info">
+                <p className="catchup-info">
                   <Icon icon="info" />{' '}
                   <Trans>Overlaps with your last catch-up</Trans>
                 </p>
               ) : range === RANGES[RANGES.length - 1].value &&
                 lastCatchupEndAt ? (
-                <p class="catchup-info">
+                <p className="catchup-info">
                   <label>
                     <input
                       type="checkbox"
@@ -1491,7 +1479,7 @@ function Catchup() {
                   </label>
                 </p>
               ) : null}
-              <p class="insignificant">
+              <p className="insignificant">
                 <small>
                   <Trans>
                     Note: your server might only show a maximum of 800 posts in
@@ -1501,7 +1489,7 @@ function Catchup() {
                 </small>
               </p>
               {!!prevCatchups?.length && (
-                <div class="catchup-prev">
+                <div className="catchup-prev">
                   <p>
                     <Trans>Previously…</Trans>
                   </p>
@@ -1520,7 +1508,7 @@ function Catchup() {
                           </span>
                         </Link>{' '}
                         <span>
-                          <small class="ib insignificant">
+                          <small className="ib insignificant">
                             <Plural
                               value={pc.count}
                               one="# post"
@@ -1529,7 +1517,7 @@ function Catchup() {
                           </small>{' '}
                           <button
                             type="button"
-                            class="light danger small"
+                            className="light danger small"
                             onClick={() => {
                               const yes = confirm(t`Remove this catch-up?`);
                               if (!yes) return;
@@ -1565,22 +1553,22 @@ function Catchup() {
             </div>
           )}
           {uiState === 'loading' && (
-            <div class="ui-state catchup-start">
+            <div className="ui-state catchup-start">
               <Loader abrupt />
-              <p class="insignificant">
+              <p className="insignificant">
                 <Trans>Fetching posts…</Trans>
               </p>
-              <p class="insignificant">
+              <p className="insignificant">
                 <Trans>This might take a while.</Trans>
               </p>
             </div>
           )}
           {uiState === 'results' && (
             <>
-              <div class="catchup-header">
+              <div className="catchup-header">
                 {posts.length > 0 && (
                   <p>
-                    <b class="ib">
+                    <b className="ib">
                       {dtf.formatRange(
                         new Date(posts[0].createdAt),
                         new Date(posts[posts.length - 1].createdAt),
@@ -1597,7 +1585,7 @@ function Catchup() {
                       sortOrder === 'asc'
                     }
                     type="button"
-                    class="plain4 small"
+                    className="plain4 small"
                     onClick={() => {
                       setSelectedFilterCategory('all');
                       setSelectedAuthor(null);
@@ -1611,8 +1599,10 @@ function Catchup() {
                   {links?.length > 0 && (
                     <button
                       type="button"
-                      class="plain small"
-                      onClick={() => setShowTopLinks(!showTopLinks)}
+                      className="plain small"
+                      onClick={() => {
+                        setShowTopLinks(!showTopLinks);
+                      }}
                     >
                       <Trans>Top links</Trans>{' '}
                       <Icon
@@ -1627,9 +1617,12 @@ function Catchup() {
                   )}
                 </aside>
               </div>
-              <div class="shazam-container no-animation" hidden={!showTopLinks}>
-                <div class="shazam-container-inner">
-                  <div class="catchup-top-links links-bar">
+              <div
+                className="shazam-container no-animation"
+                hidden={!showTopLinks}
+              >
+                <div className="shazam-container-inner">
+                  <div className="catchup-top-links links-bar">
                     {links.map((link) => {
                       const { card, sharers } = link;
                       const {
@@ -1662,7 +1655,7 @@ function Catchup() {
                           href={url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="link-block"
+                          className="link-block"
                           style={
                             accentColor
                               ? {
@@ -1686,15 +1679,15 @@ function Catchup() {
                                 loading="lazy"
                               />
                             </figure>
-                            <div class="article-body">
+                            <div className="article-body">
                               <header>
-                                <div class="article-meta">
-                                  <span class="domain">{domain}</span>{' '}
+                                <div className="article-meta">
+                                  <span className="domain">{domain}</span>{' '}
                                   {!!publishedAt && <>&middot; </>}
                                   {!!publishedAt && (
                                     <>
                                       <RelativeTime
-                                        datetime={publishedAt}
+                                        dateTime={publishedAt}
                                         format="micro"
                                       />
                                     </>
@@ -1702,7 +1695,7 @@ function Catchup() {
                                 </div>
                                 {!!title && (
                                   <h1
-                                    class="title"
+                                    className="title"
                                     lang={language}
                                     dir="auto"
                                     title={title}
@@ -1713,7 +1706,7 @@ function Catchup() {
                               </header>
                               {!!description && (
                                 <p
-                                  class="description"
+                                  className="description"
                                   lang={language}
                                   dir="auto"
                                   title={description}
@@ -1739,7 +1732,7 @@ function Catchup() {
                                       <button
                                         key={sharerId}
                                         type="button"
-                                        class="plain"
+                                        className="plain"
                                         style={{
                                           padding: 0,
                                         }}
@@ -1771,13 +1764,13 @@ function Catchup() {
               </div>
               {posts.length >= 5 &&
                 (postsBarType === '3d' ? (
-                  <div class="catchup-posts-viz-time-bar">{postsBins}</div>
+                  <div className="catchup-posts-viz-time-bar">{postsBins}</div>
                 ) : (
-                  <div class="catchup-posts-viz-bar">{postsBar}</div>
+                  <div className="catchup-posts-viz-bar">{postsBar}</div>
                 ))}
               {posts.length >= 2 && (
-                <div class="catchup-filters">
-                  <label class="filter-cat">
+                <div className="catchup-filters">
+                  <label className="filter-cat">
                     <input
                       type="radio"
                       name="filter-cat"
@@ -1786,13 +1779,14 @@ function Catchup() {
                         setSelectedFilterCategory('all');
                       }}
                     />
-                    <Trans>All</Trans> <span class="count">{posts.length}</span>
+                    <Trans>All</Trans>{' '}
+                    <span className="count">{posts.length}</span>
                   </label>
                   {Object.entries(FILTER_KEYS).map(
                     ([key, label]) =>
                       !!filterCounts[key] && (
                         <label
-                          class="filter-cat"
+                          className="filter-cat"
                           key={_(label)}
                           title={
                             ((filterCounts[key] / posts.length) * 100).toFixed(
@@ -1818,7 +1812,7 @@ function Catchup() {
                             }}
                           />
                           {_(label)}{' '}
-                          <span class="count">{filterCounts[key]}</span>
+                          <span className="count">{filterCounts[key]}</span>
                         </label>
                       ),
                   )}
@@ -1826,16 +1820,16 @@ function Catchup() {
               )}
               {posts.length >= 2 && !!authorCounts && (
                 <div
-                  class="catchup-filters authors-filters"
+                  className="catchup-filters authors-filters"
                   ref={authorsListParent}
                 >
                   {authorCountsList.map((author) => (
                     <label
-                      class="filter-author"
+                      className="filter-author"
                       data-author={author}
                       key={`${author}-${authorCounts[author]}`}
-                      // Preact messed up the order sometimes, need additional key besides just `author`
-                      // https://github.com/preactjs/preact/issues/2849
+                      // Keep the extra key stable across reordered grouped authors`author`
+                      // Legacy ordering note removed during React migration
                     >
                       <input
                         type="radio"
@@ -1858,8 +1852,10 @@ function Catchup() {
                         size="xxl"
                         alt={`${authors[author].displayName} (@${authors[author].acct})`}
                       />{' '}
-                      <span class="count">{authorCounts[author]}</span>
-                      <span class="username">{authors[author].username}</span>
+                      <span className="count">{authorCounts[author]}</span>
+                      <span className="username">
+                        {authors[author].username}
+                      </span>
                     </label>
                   ))}
                   {authorCountsList.length > 5 && (
@@ -1881,14 +1877,14 @@ function Catchup() {
                 </div>
               )}
               {posts.length >= 2 && (
-                <div class="catchup-filters">
-                  <span class="filter-label">
+                <div className="catchup-filters">
+                  <span className="filter-label">
                     <Trans>Sort</Trans>
                   </span>{' '}
-                  <fieldset class="radio-field-group">
+                  <fieldset className="radio-field-group">
                     {FILTER_SORTS.map((key) => (
                       <label
-                        class="filter-sort"
+                        className="filter-sort"
                         key={key}
                         onClick={(e) => {
                           if (sortBy === key) {
@@ -1925,9 +1921,9 @@ function Catchup() {
                       </label>
                     ))}
                   </fieldset>
-                  {/* <fieldset class="radio-field-group">
+                  {/* <fieldset className="radio-field-group">
                     {['asc', 'desc'].map((key) => (
-                      <label class="filter-sort" key={key}>
+                      <label className="filter-sort" key={key}>
                         <input
                           type="radio"
                           name="filter-sort-dir"
@@ -1940,12 +1936,12 @@ function Catchup() {
                       </label>
                     ))}
                   </fieldset> */}
-                  <span class="filter-label">
+                  <span className="filter-label">
                     <Trans id="group.filter">Group</Trans>
                   </span>{' '}
-                  <fieldset class="radio-field-group">
+                  <fieldset className="radio-field-group">
                     {FILTER_GROUPS.map((key) => (
-                      <label class="filter-group" key={key || 'none'}>
+                      <label className="filter-group" key={key || 'none'}>
                         <input
                           type="radio"
                           name="filter-group"
@@ -1969,7 +1965,7 @@ function Catchup() {
                     selectedAuthor && authorCountsList.length > 1 ? (
                       <button
                         type="button"
-                        class="plain6 small"
+                        className="plain6 small"
                         onClick={() => {
                           setSelectedAuthor(null);
                         }}
@@ -1982,7 +1978,7 @@ function Catchup() {
                     ) : null
                     // <button
                     //   type="button"
-                    //   class="plain4 small"
+                    //   className="plain4 small"
                     //   onClick={() => {}}
                     // >
                     //   Group by authors
@@ -1991,7 +1987,7 @@ function Catchup() {
                 </div>
               )}
               <ul
-                class={`catchup-list catchup-filter-${
+                className={`catchup-list catchup-filter-${
                   selectedFilterCategory || ''
                 } ${sortBy ? `catchup-sort-${sortBy}` : ''} ${
                   selectedAuthor && authors[selectedAuthor]
@@ -2014,7 +2010,7 @@ function Catchup() {
                   }
                   return (
                     <Fragment key={`${post.id}-${showSeparator}`}>
-                      {showSeparator && <li class="separator" />}
+                      {showSeparator && <li className="separator" />}
                       <IntersectionPostLineItem
                         to={`/${instance}/s/${postId}`}
                         post={post}
@@ -2032,9 +2028,11 @@ function Catchup() {
                       : t`That's all.`}{' '}
                     <button
                       type="button"
-                      class="textual"
+                      className="textual"
                       onClick={() => {
-                        scrollableRef.current!.scrollTop = 0;
+                        if (scrollableRef.current) {
+                          scrollableRef.current.scrollTop = 0;
+                        }
                       }}
                     >
                       <Trans>Back to top</Trans>
@@ -2048,12 +2046,18 @@ function Catchup() {
         </main>
       </div>
       {showHelp && (
-        <Modal onClose={() => setShowHelp(false)}>
-          <div class="sheet" id="catchup-help-sheet">
+        <Modal
+          onClose={() => {
+            setShowHelp(false);
+          }}
+        >
+          <div className="sheet" id="catchup-help-sheet">
             <button
               type="button"
-              class="sheet-close"
-              onClick={() => setShowHelp(false)}
+              className="sheet-close"
+              onClick={() => {
+                setShowHelp(false);
+              }}
             >
               <Icon icon="x" alt={t`Close`} />
             </button>
@@ -2189,7 +2193,6 @@ const PostLine = memo(
       quote,
       inReplyToId,
       inReplyToAccountId,
-      _followedTags: isFollowedTags,
       _filtered: filterInfo,
       visibility,
       __BOOSTERS,
@@ -2197,7 +2200,7 @@ const PostLine = memo(
     const isReplyTo = inReplyToId && inReplyToAccountId !== account.id;
     const postIsFiltered = !!filterInfo && filterInfo.action !== 'blur';
 
-    const debugHover = (e: MouseEvent) => {
+    const debugHover = (e: React.MouseEvent) => {
       if (e.shiftKey) {
         console.log({
           ...post,
@@ -2207,24 +2210,22 @@ const PostLine = memo(
 
     return (
       <article
-        class={`post-line ${
+        className={`post-line ${
           group
             ? 'group'
             : reblog
               ? 'reblog'
-              : supportsNativeQuote() && hasQuote(quote)
-                ? 'quote'
-                : isFollowedTags?.length
-                  ? 'followed-tags'
-                  : ''
+            : supportsNativeQuote() && hasQuote(quote)
+              ? 'quote'
+              : ''
         } ${isReplyTo ? 'reply-to' : ''} ${
           postIsFiltered ? 'filtered' : ''
         } visibility-${visibility}`}
         onMouseEnter={debugHover}
       >
-        <span class="post-author">
+        <span className="post-author">
           {reblog ? (
-            <span class="post-reblog-avatar">
+            <span className="post-reblog-avatar">
               <Avatar
                 url={account.avatarStatic || account.avatar}
                 squircle={account.bot}
@@ -2246,7 +2247,7 @@ const PostLine = memo(
               <NameText account={reblog.account} showAvatar />
             </span>
           ) : hasQuote(quote) ? (
-            <span class="post-quote-avatar">
+            <span className="post-quote-avatar">
               <Avatar
                 url={account.avatarStatic || account.avatar}
                 squircle={account.bot}
@@ -2262,12 +2263,12 @@ const PostLine = memo(
           post={(reblog as CatchupPost | null | undefined) || post}
           filterInfo={filterInfo}
         />
-        <span class="post-meta">
+        <span className="post-meta">
           <PostStats
             post={(reblog as CatchupPost | null | undefined) || post}
           />{' '}
           <RelativeTime
-            datetime={new Date(reblog?.createdAt || post.createdAt)}
+            dateTime={new Date(reblog?.createdAt || post.createdAt)}
             format="micro"
           />
         </span>
@@ -2296,7 +2297,9 @@ const IntersectionPostLineItem = ({
       (entries) => {
         const entry = entries[0];
         if (entry.isIntersecting) {
-          queueMicrotask(() => setShow(true));
+          queueMicrotask(() => {
+            setShow(true);
+          });
           if (ref.current) observer.unobserve(ref.current);
         }
       },
@@ -2392,15 +2395,15 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
   const showPostContent = !spoilerText || readingExpandSpoilers;
 
   return (
-    <div class="post-peek" title={!spoilerText ? postText : ''}>
-      <span class="post-peek-content">
+    <div className="post-peek" title={!spoilerText ? postText : ''}>
+      <span className="post-peek-content">
         {isThread && !showPostContent && (
           <>
-            <span class="post-peek-tag post-peek-thread">Thread</span>{' '}
+            <span className="post-peek-tag post-peek-thread">Thread</span>{' '}
           </>
         )}
         {!!filterInfo && filterInfo?.action !== 'blur' ? (
-          <span class="post-peek-filtered">
+          <span className="post-peek-filtered">
             {/* Filtered{filterInfo?.titlesStr ? `: ${filterInfo.titlesStr}` : ''} */}
             {filterInfo?.titlesStr
               ? t`Filtered: ${filterInfo.titlesStr}`
@@ -2409,16 +2412,16 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
         ) : (
           <>
             {!!spoilerText && (
-              <span class="post-peek-spoiler">
+              <span className="post-peek-spoiler">
                 <Icon icon={readingExpandSpoilers ? 'eye-open' : 'eye-close'} />{' '}
                 {spoilerText}
               </span>
             )}
             {showPostContent && (
-              <div class="post-peek-html">
+              <div className="post-peek-html">
                 {isThread && (
                   <>
-                    <span class="post-peek-tag post-peek-thread">
+                    <span className="post-peek-tag post-peek-thread">
                       <Trans>Thread</Trans>
                     </span>{' '}
                   </>
@@ -2444,7 +2447,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                   mediaAttachments?.length === 1 &&
                   mediaAttachments[0].description && (
                     <>
-                      <span class="post-peek-tag post-peek-alt">ALT</span>{' '}
+                      <span className="post-peek-tag post-peek-alt">ALT</span>{' '}
                       <div>{mediaAttachments[0].description}</div>
                     </>
                   )}
@@ -2454,9 +2457,9 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
         )}
       </span>
       {(!filterInfo || filterInfo?.action === 'blur') && (
-        <span class="post-peek-post-content">
+        <span className="post-peek-post-content">
           {!!poll && (
-            <span class="post-peek-tag post-peek-poll">
+            <span className="post-peek-tag post-peek-poll">
               <Icon icon="poll" size="s" />
               <Trans>Poll</Trans>
             </span>
@@ -2509,7 +2512,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                         }}
                       />
                     ) : (
-                      <span class="post-peek-faux-media">🖼</span>
+                      <span className="post-peek-faux-media">🖼</span>
                     ),
                   gifv:
                     (mediaURL || remoteMediaURL) && showMedia ? (
@@ -2532,7 +2535,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                         }}
                       />
                     ) : (
-                      <span class="post-peek-faux-media">🎞️</span>
+                      <span className="post-peek-faux-media">🎞️</span>
                     ),
                   video:
                     (mediaURL || remoteMediaURL) && showMedia ? (
@@ -2555,12 +2558,12 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                         }}
                       />
                     ) : (
-                      <span class="post-peek-faux-media">📹</span>
+                      <span className="post-peek-faux-media">📹</span>
                     ),
-                  audio: <span class="post-peek-faux-media">🎵</span>,
+                  audio: <span className="post-peek-faux-media">🎵</span>,
                 };
                 return (
-                  <span key={m.id} class="post-peek-media">
+                  <span key={m.id} className="post-peek-media">
                     {mediaByType[m.type as string] || null}
                   </span>
                 );
@@ -2569,7 +2572,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
               cardLike.image &&
               showMedia && (
                 <span
-                  class={`post-peek-media post-peek-card card-${
+                  className={`post-peek-media post-peek-card card-${
                     cardLike.type || ''
                   }`}
                 >
@@ -2598,7 +2601,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                       }}
                     />
                   ) : (
-                    <span class="post-peek-faux-media">🔗</span>
+                    <span className="post-peek-faux-media">🔗</span>
                   )}
                 </span>
               )}
@@ -2617,21 +2620,21 @@ function PostStats({ post }: PostStatsProps) {
   const { reblogsCount, repliesCount, favouritesCount, quotesCount } = post;
   const safeQuotesCount = quotesCount ?? 0;
   return (
-    <span class="post-stats">
+    <span className="post-stats">
       {repliesCount > 0 && (
-        <span class="post-stat-replies">
+        <span className="post-stat-replies">
           <Icon icon="comment2" size="s" alt={t`Replies`} />{' '}
           {shortenNumber(repliesCount)}
         </span>
       )}
       {favouritesCount > 0 && (
-        <span class="post-stat-likes">
+        <span className="post-stat-likes">
           <Icon icon="heart" size="s" alt={t`Likes`} />{' '}
           {shortenNumber(favouritesCount)}
         </span>
       )}
       {reblogsCount > 0 || safeQuotesCount > 0 ? (
-        <span class="post-stat-boosts">
+        <span className="post-stat-boosts">
           <Icon icon="rocket" size="s" alt={t`Boosts`} />{' '}
           {reblogsCount > 0 || safeQuotesCount > 0
             ? `${reblogsCount > 0 ? shortenNumber(reblogsCount) : ''}${

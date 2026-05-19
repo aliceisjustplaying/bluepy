@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 // Hook that runs a callback when the location changes

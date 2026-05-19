@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef } from 'react';
 
 type CloseWatcherCtor = new () => {
   addEventListener(type: 'close', listener: (event: Event) => void): void;
+  removeEventListener(type: 'close', listener: (event: Event) => void): void;
   destroy(): void;
 };
 
@@ -27,7 +28,7 @@ const CloseWatcher = window.CloseWatcher;
 // call sites; explicit re-attachment is no longer required to avoid stale
 // closures because the listener always reads the current `fn` via the ref.
 function useCloseWatcher(
-  fn: ((event: Event) => void) | null | undefined,
+  fn: ((event?: Event) => void) | null | undefined,
   _deps: readonly unknown[] = [],
 ): void {
   const fnRef = useRef<typeof fn>(fn);
@@ -44,10 +45,12 @@ function useCloseWatcher(
     if (!active || !CloseWatcher) return undefined;
     console.log('useCloseWatcher');
     const watcher = new CloseWatcher();
-    watcher.addEventListener('close', (event) => {
+    const handleClose = (event: Event) => {
       fnRef.current?.(event);
-    });
+    };
+    watcher.addEventListener('close', handleClose);
     return () => {
+      watcher.removeEventListener('close', handleClose);
       watcher.destroy();
     };
   }, [active]);

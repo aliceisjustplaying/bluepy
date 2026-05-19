@@ -1,10 +1,10 @@
-import type { ComponentChildren } from 'preact';
-import { useLayoutEffect, useRef, useState } from 'preact/hooks';
+import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 interface IntersectionViewProps {
-  children: ComponentChildren;
+  children: ReactNode;
   root?: Element | Document | null;
-  fallback?: ComponentChildren;
+  fallback?: ReactNode;
 }
 
 const IntersectionView = ({

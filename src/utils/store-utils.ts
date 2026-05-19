@@ -53,8 +53,13 @@ export function getAccounts(): StoredAccount[] {
   return store.local.getJSON<StoredAccount[]>('accounts') ?? [];
 }
 
+const removedAccountIDs = new Set<string>();
+
 export function saveAccounts(accounts: readonly StoredAccount[]): void {
-  store.local.setJSON('accounts', accounts);
+  store.local.setJSON(
+    'accounts',
+    accounts.filter((account) => !removedAccountIDs.has(account.info.id)),
+  );
 }
 
 const MINS_5 = 5 * 60 * 1000;
@@ -141,6 +146,27 @@ export function setCurrentAccountID(id: string): void {
   }
 }
 
+export function removeAccount(id: string): void {
+  removedAccountIDs.add(id);
+  getCurrentAccID.cache.clear();
+  try {
+    getCurrentAcc.cache.clear();
+  } catch {}
+  saveAccounts(getAccounts());
+  try {
+    if (store.session.get('currentAccount') === id) {
+      store.session.del('currentAccount');
+    }
+  } catch {}
+  if (standaloneMQ?.matches) {
+    try {
+      if (store.local.get('currentAccount') === id) {
+        store.local.del('currentAccount');
+      }
+    } catch {}
+  }
+}
+
 export function getCurrentAccount(): StoredAccount | null {
   if (!window.__IGNORE_GET_ACCOUNT_ERROR__) {
     // Track down getCurrentAccount() calls before account-based states are initialized
@@ -176,6 +202,7 @@ export function getCurrentAccountNS(): string {
 }
 
 export function saveAccount(account: StoredAccount): void {
+  removedAccountIDs.delete(account.info.id);
   const accounts = getAccounts();
   const acc = accounts.find(
     (storedAccount) => storedAccount.info.id === account.info.id,

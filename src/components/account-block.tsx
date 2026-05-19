@@ -2,11 +2,11 @@ import './account-block.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { TargetedMouseEvent } from 'preact';
 
 // import { useNavigate } from 'react-router-dom';
 import enhanceContent from '../utils/enhance-content';
 import niceDateTime from '../utils/nice-date-time';
+import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import states from '../utils/states';
 
@@ -24,7 +24,7 @@ export interface AccountBlockProps {
   instance?: string;
   external?: boolean;
   internal?: boolean;
-  onClick?: (e: TargetedMouseEvent<HTMLAnchorElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   showActivity?: boolean;
   showStats?: boolean;
   accountInstance?: string;
@@ -53,12 +53,12 @@ function AccountBlock({
   const { t } = useLingui();
   if (skeleton) {
     return (
-      <div class="account-block skeleton">
+      <div className="account-block skeleton">
         <Avatar size={avatarSize} />
         <span>
           <b>████████</b>
           <br />
-          <span class="account-block-acct">██████</span>
+          <span className="account-block-acct">██████</span>
         </span>
       </div>
     );
@@ -104,13 +104,13 @@ function AccountBlock({
     }
   }
   const hasRelationship =
-    excludedRelationship.following ||
-    excludedRelationship.followedBy ||
-    excludedRelationship.requested;
+    !!excludedRelationship.following ||
+    !!excludedRelationship.followedBy ||
+    !!excludedRelationship.requested;
 
   return (
     <a
-      class="account-block"
+      className="account-block"
       href={url}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
@@ -124,7 +124,7 @@ function AccountBlock({
         }
         if (internal) {
           // navigate(`/${instance}/a/${id}`);
-          location.hash = `/${instance}/a/${id}`;
+          navigatePath(`/${instance}/a/${id}`);
         } else {
           states.showAccount = {
             account,
@@ -133,7 +133,7 @@ function AccountBlock({
         }
       }}
     >
-      <div class="avatar-container">
+      <div className="avatar-container">
         <Avatar
           url={useAvatarStatic ? avatarStatic : avatar || avatarStatic}
           staticUrl={useAvatarStatic ? undefined : avatarStatic}
@@ -142,7 +142,7 @@ function AccountBlock({
           alt={avatarDescription || ''}
         />
       </div>
-      <span class="account-block-content">
+      <span className="account-block-content">
         {!hideDisplayName && (
           <>
             {displayName ? (
@@ -158,7 +158,7 @@ function AccountBlock({
             )}
           </>
         )}{' '}
-        <span class="account-block-acct bidi-isolate">
+        <span className="account-block-acct bidi-isolate">
           {acct2 ? '' : '@'}
           {acct1}
           <wbr />
@@ -172,7 +172,7 @@ function AccountBlock({
         </span>
         <RolesTags roles={roles} accountUrl={url} />
         {showActivity && (
-          <div class="account-block-stats">
+          <div className="account-block-stats">
             <Trans>Posts: {shortenNumber(statusesCount)}</Trans>
             {!!lastStatusAt && (
               <>
@@ -189,39 +189,39 @@ function AccountBlock({
           </div>
         )}
         {showStats && (
-          <div class="account-block-stats">
+          <div className="account-block-stats">
             {bot && (
               <>
-                <span class="tag collapsed">
+                <span className="tag collapsed">
                   <Icon icon="bot" /> <Trans>Automated</Trans>
                 </span>
               </>
             )}
             {group && (
               <>
-                <span class="tag collapsed">
+                <span className="tag collapsed">
                   <Icon icon="group" /> <Trans>Group</Trans>
                 </span>
               </>
             )}
             {hasRelationship && (
-              <div key={relationship?.id} class="shazam-container-horizontal">
-                <div class="shazam-container-inner">
+              <div key={relationship?.id} className="shazam-container-horizontal">
+                <div className="shazam-container-inner">
                   {excludedRelationship.following &&
                   excludedRelationship.followedBy ? (
-                    <span class="tag minimal">
+                    <span className="tag minimal">
                       <Trans>Mutual</Trans>
                     </span>
                   ) : excludedRelationship.requested ? (
-                    <span class="tag minimal">
+                    <span className="tag minimal">
                       <Trans>Requested</Trans>
                     </span>
                   ) : excludedRelationship.following ? (
-                    <span class="tag minimal">
+                    <span className="tag minimal">
                       <Trans>Following</Trans>
                     </span>
                   ) : excludedRelationship.followedBy ? (
-                    <span class="tag minimal">
+                    <span className="tag minimal">
                       <Trans>Follows you</Trans>
                     </span>
                   ) : null}
@@ -229,7 +229,7 @@ function AccountBlock({
               </div>
             )}
             {!!followersCount && (
-              <span class="ib">
+              <span className="ib">
                 <Plural
                   value={followersCount}
                   one="# follower"
@@ -238,7 +238,7 @@ function AccountBlock({
               </span>
             )}
             {!!verifiedField && (
-              <span class="verified-field">
+              <span className="verified-field">
                 <Icon icon="check-circle" size="s" alt={t`Verified`} />{' '}
                 <span
                   dangerouslySetInnerHTML={{
@@ -255,10 +255,10 @@ function AccountBlock({
               !followersCount &&
               !verifiedField &&
               !!createdAt && (
-                <span class="created-at">
+                <span className="created-at">
                   <Trans>
                     Joined{' '}
-                    <time datetime={createdAt}>
+                    <time dateTime={createdAt}>
                       {niceDateTime(createdAt, {
                         hideTime: true,
                       })}

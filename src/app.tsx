@@ -4,9 +4,9 @@ import 'swiped-events';
 
 import { useLingui } from '@lingui/react';
 import debounce from 'just-debounce-it';
-import type { VNode } from 'preact';
-import { lazy, memo, Suspense } from 'preact/compat';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { ReactElement } from 'react';
+import { lazy, memo, Suspense } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   matchPath,
   Navigate,
@@ -34,12 +34,10 @@ import NotificationService from './components/notification-service';
 import SearchCommand from './components/search-command';
 import Shortcuts from './components/shortcuts';
 import AccountStatuses from './pages/account-statuses';
-import AnnualReport from './pages/annual-report';
+import AtprotoRoute from './pages/atproto-route';
 import Bookmarks from './pages/bookmarks';
 import Catchup from './pages/catchup';
 import Favourites from './pages/favourites';
-import Filters from './pages/filters';
-import FollowedHashtags from './pages/followed-hashtags';
 import Following from './pages/following';
 import Following2 from './pages/following2';
 import Hashtag from './pages/hashtag';
@@ -50,8 +48,6 @@ import Lists from './pages/lists';
 import Login from './pages/login';
 import Mentions from './pages/mentions';
 import Notifications from './pages/notifications';
-import Public from './pages/public';
-import ScheduledPosts from './pages/scheduled-posts';
 import Search from './pages/search';
 import StatusRoute from './pages/status-route';
 import Trending from './pages/trending';
@@ -71,15 +67,22 @@ import {
   initAtprotoOAuthClient,
 } from './utils/atproto-oauth';
 import { getAccessToken } from './utils/auth';
-import { AuthProvider, useAuth } from './utils/auth-context';
+import {
+  AUTH_CHANGED_EVENT,
+  AuthProvider,
+  useAuth,
+} from './utils/auth-context';
 import focusDeck from './utils/focus-deck';
+import { navigatePath } from './utils/router';
 import states, { hideAllModals, initStates, statusKey } from './utils/states';
 import store from './utils/store';
 import {
+  getAccounts,
   getAccount,
   getCredentialApplication,
   getCurrentAccount,
   getVapidKey,
+  removeAccount,
   setCurrentAccountID,
 } from './utils/store-utils';
 
@@ -101,7 +104,7 @@ function QrScanTest() {
     states.showQrScannerModal = {
       onClose: ({ text }: { text?: string } = {}) => {
         hideAllModals();
-        location.hash = text ? `/${text}` : '/';
+        navigatePath(text ? `/${text}` : '/');
       },
     };
   }, []);
@@ -192,7 +195,10 @@ appWindow.__STATES_STATS__ = () => {
       const id = el.dataset.statePostId?.trim?.();
       const ids = el.dataset.statePostIds?.trim?.();
       if (id) mountedKeys.add(id);
-      if (ids) ids.split(/\s+/).forEach((key: string) => mountedKeys.add(key));
+      if (ids)
+        ids.split(/\s+/).forEach((key: string) => {
+          mountedKeys.add(key);
+        });
     });
   const unmountedPosts = Object.keys(statuses).filter(
     (key) => !mountedKeys.has(key),
@@ -218,7 +224,9 @@ setInterval(
         const ids = el.dataset.statePostIds;
         if (id) mountedKeys.add(id);
         if (ids)
-          ids.split(/\s+/).forEach((key: string) => mountedKeys.add(key));
+          ids.split(/\s+/).forEach((key: string) => {
+            mountedKeys.add(key);
+          });
       });
     for (const key in statuses) {
       if (!appWindow.__IDLE__) break;
@@ -454,7 +462,7 @@ const __BENCHMARK = (appWindow.__BENCHMARK = {
     if (start) {
       const end = performance.now();
       const duration = end - start;
-      appWindow.__BENCH_RESULTS!.set(name, duration);
+      appWindow.__BENCH_RESULTS?.set(name, duration);
       BENCHES.delete(name);
     }
   },
@@ -503,6 +511,24 @@ function App() {
   useLingui();
 
   useEffect(() => {
+    const updateAuthState = () => {
+      const account = getCurrentAccount();
+      if (!account) {
+        setIsLoggedIn(false);
+        return;
+      }
+      window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+      initStates();
+      setIsLoggedIn(true);
+    };
+    window.addEventListener(AUTH_CHANGED_EVENT, updateAuthState);
+    return () => {
+      window.removeEventListener(AUTH_CHANGED_EVENT, updateAuthState);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
     void (async () => {
       const instanceURL = store.local.get('instanceURL');
       const isAtprotoOAuthCallback =
@@ -523,12 +549,15 @@ function App() {
             ]);
             initStates();
             window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+            if (cancelled) return;
             setIsLoggedIn(true);
             setUIState('default');
             const redirectPath = store.session.get('loginRedirect');
             if (redirectPath) {
               store.session.del('loginRedirect');
-              window.location.hash = redirectPath;
+              navigatePath(redirectPath);
+            } else if (isRootPath(window.location.pathname)) {
+              navigatePath('/', { replace: true });
             }
             __BENCHMARK.end('app-init');
             return;
@@ -557,7 +586,7 @@ function App() {
               },
               window.location.origin,
             );
-            setTimeout(() => {
+            window.setTimeout(() => {
               window.close();
             }, 100);
           } catch (e) {
@@ -586,6 +615,7 @@ function App() {
         const vapidKey = getStoredVapidKey(instanceURL) || vapid_key;
         const verifier = store.sessionCookie.get('codeVerifier');
 
+        if (cancelled) return;
         setUIState('loading');
         const { access_token: accessToken } = (await getAccessToken({
           instanceURL: instanceURL as string,
@@ -610,6 +640,7 @@ function App() {
           initStates();
           window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
 
+          if (cancelled) return;
           setIsLoggedIn(true);
           setUIState('default');
 
@@ -617,9 +648,12 @@ function App() {
           const redirectPath = store.session.get('loginRedirect');
           if (redirectPath) {
             store.session.del('loginRedirect');
-            window.location.hash = redirectPath;
+            navigatePath(redirectPath);
+          } else if (isRootPath(window.location.pathname)) {
+            navigatePath('/', { replace: true });
           }
         } else {
+          if (cancelled) return;
           setUIState('error');
         }
         __BENCHMARK.end('app-init');
@@ -647,15 +681,25 @@ function App() {
         if (!account) {
           account = getCurrentAccount();
         }
-        if (account) {
+        while (account) {
           setCurrentAccountID(account.info.id);
-          account.accessToken = await hydrateAtprotoOAuthAccessToken(
-            account.accessToken,
-          );
+          try {
+            account.accessToken = await hydrateAtprotoOAuthAccessToken(
+              account.accessToken,
+            );
+            break;
+          } catch (error) {
+            console.error(error);
+            removeAccount(account.info.id);
+            account = getAccounts()[0] ?? null;
+          }
+        }
+        if (account) {
           const { client } = api({ account });
           const { instance } = client;
           // console.log('masto', masto);
           initStates();
+          if (cancelled) return;
           setUIState('loading');
           try {
             if (hasPreferences() && hasInstance(instance)) {
@@ -671,11 +715,15 @@ function App() {
           } catch {
             // ignore — fall through to mark logged in below
           } finally {
-            setIsLoggedIn(true);
-            setUIState('default');
-            __BENCHMARK.end('app-init');
+            if (!cancelled) {
+              setIsLoggedIn(true);
+              setUIState('default');
+              __BENCHMARK.end('app-init');
+            }
           }
         } else {
+          if (cancelled) return;
+          setIsLoggedIn(false);
           setUIState('default');
           __BENCHMARK.end('app-init');
         }
@@ -686,59 +734,67 @@ function App() {
       store.sessionCookie.del('clientSecret');
       store.sessionCookie.del('codeVerifier');
     })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  let location = useLocation();
-  states.currentLocation = location.pathname;
+  let currentLocation = useLocation();
+  states.currentLocation = currentLocation.pathname;
   // useLayoutEffect(() => {
   //   states.currentLocation = location.pathname;
   // }, [location.pathname]);
 
-  useEffect(focusDeck, [location, isLoggedIn]);
+  useEffect(focusDeck, [currentLocation, isLoggedIn]);
 
   // Save last page for PWA restoration
   const restoredRef = useRef(false);
   const lastPathKey = 'pwaLastPath';
   useEffect(() => {
     if (!restoredRef.current) return;
-    // console.log('location.pathname', location.pathname);
+    // console.log('currentLocation.pathname', currentLocation.pathname);
     if (isPWA && isLoggedIn) {
-      if (isRootPath(location.pathname)) {
+      if (isRootPath(currentLocation.pathname)) {
         store.local.del(lastPathKey);
       } else {
         store.local.setJSON(lastPathKey, {
-          path: location.pathname + location.search,
+          path: currentLocation.pathname + currentLocation.search,
           lastAccessed: Date.now(),
         });
       }
     }
-  }, [location.pathname, location.search, isLoggedIn]);
+  }, [currentLocation.pathname, currentLocation.search, isLoggedIn]);
 
   // Restore last page on PWA reopen
   useEffect(() => {
-    if (restoredRef.current) return;
-    const atRootPath = !location.pathname || location.pathname === '/';
-    if (!atRootPath) return;
+    if (restoredRef.current) return undefined;
+    const atRootPath =
+      !currentLocation.pathname || currentLocation.pathname === '/';
+    if (!atRootPath) return undefined;
     if (isPWA && isLoggedIn && uiState === 'default') {
       const lastPath = store.local.getJSON<{
         path?: string;
         lastAccessed?: number;
       }>(lastPathKey);
+      restoredRef.current = true;
       if (lastPath) {
-        setTimeout(() => {
+        const timeoutId = window.setTimeout(() => {
           if (lastPath?.path) {
             const timeSinceLastAccess =
               Date.now() - (lastPath.lastAccessed || 0);
             if (timeSinceLastAccess < PATH_RESTORE_TIME_LIMIT) {
-              window.location.hash = lastPath.path;
+              navigatePath(lastPath.path);
             }
           }
           store.local.del(lastPathKey);
         }, 300);
+        return () => {
+          window.clearTimeout(timeoutId);
+        };
       }
-      restoredRef.current = true;
     }
-  }, [uiState, isLoggedIn, location.pathname]);
+    return undefined;
+  }, [uiState, isLoggedIn, currentLocation.pathname]);
 
   // Signal to service worker that this client is ready to receive share data
   useEffect(() => {
@@ -778,6 +834,8 @@ function App() {
       <PrimaryRoutes />
       <SecondaryRoutes />
       <Routes>
+        <Route path="/:scheme://*" element={<AtprotoRoute />} />
+        <Route path="/:atUri" element={<AtprotoRoute />} />
         <Route path="/:instance?/s/:id" element={<StatusRoute />} />
       </Routes>
       {isLoggedIn && <ComposeButton />}
@@ -786,7 +844,11 @@ function App() {
       {isLoggedIn && <NotificationService />}
       <BackgroundService />
       {isLoggedIn && <NavigationCommand />}
-      <SearchCommand onClose={focusDeck} />
+      <SearchCommand
+        onClose={() => {
+          focusDeck();
+        }}
+      />
       <KeyboardShortcutsHelp />
     </AuthProvider>
   );
@@ -843,7 +905,7 @@ const PrimaryRoutes = memo(() => {
 });
 
 // Auth route wrapper that redirects to login if not authenticated
-function AuthRoute({ children }: { children: VNode }) {
+function AuthRoute({ children }: { children: ReactElement }) {
   const isLoggedIn = useAuth();
   const location = useLocation();
 
@@ -860,20 +922,24 @@ function getPrevLocation() {
 }
 function SecondaryRoutes() {
   // const snapStates = useSnapshot(states);
-  const location = useLocation();
+  const currentLocation = useLocation();
   // const prevLocation = snapStates.prevLocation;
   const backgroundLocation = useRef(getPrevLocation());
 
   const isModalPage = useMemo(() => {
+    const atUriParam = matchPath('/:atUri', currentLocation.pathname)?.params
+      .atUri;
     return (
-      matchPath('/:instance/s/:id', location.pathname) ||
-      matchPath('/s/:id', location.pathname)
+      matchPath('/:instance/s/:id', currentLocation.pathname) ||
+      matchPath('/s/:id', currentLocation.pathname) ||
+      matchPath('/:scheme://*', currentLocation.pathname) ||
+      atUriParam?.toLowerCase().startsWith('at:')
     );
-  }, [location.pathname]);
+  }, [currentLocation.pathname]);
 
   // Persist prevLocation to sessionStorage while on a status/post page so it
   // survives a page reload. Clear it when navigating away.
-  useEffect(() => {
+  const syncPrevLocation = useEffectEvent(() => {
     if (isModalPage) {
       if (states.prevLocation) {
         store.session.setJSON('prevLocation', {
@@ -887,6 +953,9 @@ function SecondaryRoutes() {
       }
       store.session.del('prevLocation');
     }
+  });
+  useEffect(() => {
+    syncPrevLocation();
   }, [isModalPage]);
 
   if (isModalPage) {
@@ -901,7 +970,7 @@ function SecondaryRoutes() {
   });
 
   return (
-    <Routes location={backgroundLocation.current || location}>
+    <Routes location={backgroundLocation.current || currentLocation}>
       <Route
         path="/notifications"
         element={
@@ -969,30 +1038,6 @@ function SecondaryRoutes() {
         />
       </Route>
       <Route
-        path="/fh"
-        element={
-          <AuthRoute>
-            <FollowedHashtags />
-          </AuthRoute>
-        }
-      />
-      <Route
-        path="/sp"
-        element={
-          <AuthRoute>
-            <ScheduledPosts />
-          </AuthRoute>
-        }
-      />
-      <Route
-        path="/ft"
-        element={
-          <AuthRoute>
-            <Filters />
-          </AuthRoute>
-        }
-      />
-      <Route
         path="/catchup"
         element={
           <AuthRoute>
@@ -1008,7 +1053,7 @@ function SecondaryRoutes() {
               fallback={
                 <div
                   id="year-in-posts-page"
-                  class="deck-container"
+                  className="deck-container"
                   tabIndex={-1}
                 >
                   {/* Prevent flash of no background as this is lazy-loaded */}
@@ -1021,20 +1066,8 @@ function SecondaryRoutes() {
           </AuthRoute>
         }
       />
-      <Route
-        path="/annual_report/:year"
-        element={
-          <AuthRoute>
-            <AnnualReport />
-          </AuthRoute>
-        }
-      />
       <Route path="/:instance?/t/:hashtag" element={<Hashtag />} />
       <Route path="/:instance?/a/:id" element={<AccountStatuses />} />
-      <Route path="/:instance?/p">
-        <Route index element={<Public />} />
-        <Route path="l" element={<Public local />} />
-      </Route>
       <Route path="/:instance?/trending" element={<Trending />} />
       <Route path="/:instance?/search" element={<Search />} />
       {/* <Route path="/:anything" element={<NotFound />} /> */}

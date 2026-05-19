@@ -1,6 +1,6 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useRef } from 'preact/hooks';
+import { useRef } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import shortenNumber from '../utils/shorten-number';
@@ -64,36 +64,14 @@ export default function AccountInfoMini({
     return await followingIterator.current.next();
   }
 
-  // TODO(oxlint:jsx-a11y/prefer-tag-over-role) The two stats triggers are
-  // rendered as `<div role="button">` to match the existing
-  // `.account-container .stats` visual layout — converting to
-  // `<button class="plain">` adds a backdrop-filter and link-color tint
-  // that visibly regress the UI. A proper a11y fix requires accompanying
-  // CSS in `account-info.css` (outside this batch); keeping the div with
-  // role/tabIndex/onKeyDown a11y wiring.
   return (
-    <div class="account-container mini">
-      <div class="account-metadata-box">
-        <div class="stats">
-          <div
-            role="button"
-            tabIndex={0}
+    <div className="account-container mini">
+      <div className="account-metadata-box">
+        <div className="stats">
+          <button
+            type="button"
+            className="account-stat-button"
             onClick={() => {
-              setTimeout(() => {
-                states.showGenericAccounts = {
-                  id: 'followers',
-                  heading: t`Followers`,
-                  fetchAccounts: fetchFollowers,
-                  instance,
-                  blankCopy: hideCollections
-                    ? t`This user has chosen to not make this information available.`
-                    : undefined,
-                };
-              }, 0);
-            }}
-            onKeyDown={(e) => {
-              if (e.key !== 'Enter' && e.key !== ' ') return;
-              e.preventDefault();
               setTimeout(() => {
                 states.showGenericAccounts = {
                   id: 'followers',
@@ -126,29 +104,11 @@ export default function AccountInfoMini({
                 </Trans>
               }
             />
-          </div>
-          <div
-            class="insignificant"
-            role="button"
-            tabIndex={0}
+          </button>
+          <button
+            type="button"
+            className="account-stat-button insignificant"
             onClick={() => {
-              setTimeout(() => {
-                states.showGenericAccounts = {
-                  heading: t({
-                    id: 'following.stats',
-                    message: 'Following',
-                  }),
-                  fetchAccounts: fetchFollowing,
-                  instance,
-                  blankCopy: hideCollections
-                    ? t`This user has chosen to not make this information available.`
-                    : undefined,
-                };
-              }, 0);
-            }}
-            onKeyDown={(e) => {
-              if (e.key !== 'Enter' && e.key !== ' ') return;
-              e.preventDefault();
               setTimeout(() => {
                 states.showGenericAccounts = {
                   heading: t({
@@ -175,8 +135,8 @@ export default function AccountInfoMini({
                 </Trans>
               }
             />
-          </div>
-          <Link class="insignificant" to={accountLink}>
+          </button>
+          <Link className="insignificant" to={accountLink}>
             <Plural
               value={statusesCount}
               one={

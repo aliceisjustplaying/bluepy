@@ -3,10 +3,17 @@ import './compose.css';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg, plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { MenuDivider, MenuItem } from '@szhsin/react-menu';
+import { MenuItem } from '@szhsin/react-menu';
 import { deepEqual } from 'fast-equals';
-import type { RefObject, TargetedEvent, TargetedKeyboardEvent } from 'preact';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { SyntheticEvent } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { uid } from 'uid/single';
 import { useSnapshot } from 'valtio';
@@ -18,10 +25,16 @@ import {
   getMastoV2Resource,
   getPreferences,
 } from '../utils/api';
+import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
 import {
   fetchAtprotoLinkMetadata,
   getFirstPostURL,
 } from '../utils/atproto-unfurl';
+import {
+  revokeAttachmentObjectUrl,
+  revokeAttachmentObjectUrls,
+  uploadComposeMediaAttachments,
+} from '../utils/compose-media';
 import db from '../utils/db';
 import { getDtfLocale } from '../utils/dtf-locale';
 import haptics from '../utils/haptics';
@@ -49,8 +62,6 @@ import urlRegexObj from '../utils/url-regex';
 import useCloseWatcher from '../utils/useCloseWatcher';
 import useInterval from '../utils/useInterval';
 import useThrottledResizeObserver from '../utils/useThrottledResizeObserver';
-import visibilityIconsMap from '../utils/visibility-icons-map';
-import visibilityText from '../utils/visibility-text';
 
 type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => unknown;
@@ -62,9 +73,7 @@ import CameraCaptureInput, {
   supportsCameraCapture,
 } from './camera-capture-input';
 import CharCountMeter from './char-count-meter';
-import ComposePoll, { expiryOptions, type PollState } from './compose-poll';
 import Textarea from './compose-textarea';
-import CustomEmojisModal from './custom-emojis-modal';
 import FilePickerInput from './file-picker-input';
 import GIFPickerModal from './gif-picker-modal';
 import Icon from './icon';
@@ -76,17 +85,12 @@ import MentionModal from './mention-modal';
 import Menu2 from './menu2';
 import Modal from './modal';
 import QuoteSuggestionComponent from './quote-suggestion';
-import ScheduledAtField, {
-  getLocalTimezoneName,
-  MIN_SCHEDULED_AT,
-} from './ScheduledAtField';
 import StatusComponent, { type StatusComponentProps } from './status';
-import TextExpander from './text-expander';
 
 // ---------------------------------------------------------------------------
 // Local type shims for still-untyped peers — narrow to what compose uses.
-// These mirror the shapes already exposed by compose-textarea.tsx,
-// compose-poll.tsx, and drafts.tsx so the modal stays consistent.
+// These mirror the shapes already exposed by compose-textarea.tsx and drafts.tsx
+// so the modal stays consistent.
 // ---------------------------------------------------------------------------
 
 interface AccountInfoLike {
@@ -103,19 +107,6 @@ interface MastodonMention {
   [key: string]: unknown;
 }
 
-interface PollOption {
-  title?: string;
-  [key: string]: unknown;
-}
-
-interface StatusPoll {
-  options?: Array<PollOption | string>;
-  expiresIn?: number | string;
-  expiresAt?: string | number | null;
-  multiple?: boolean;
-  [key: string]: unknown;
-}
-
 interface MediaAttachmentLike {
   id?: string | null;
   fileData?: ArrayBuffer;
@@ -124,6 +115,7 @@ interface MediaAttachmentLike {
   type?: string;
   size?: number;
   url?: string;
+  ownedObjectUrl?: boolean;
   description?: string | null;
   [key: string]: unknown;
 }
@@ -134,9 +126,6 @@ interface StatusLike {
   mentions?: MastodonMention[];
   visibility?: string;
   language?: string | null;
-  sensitive?: boolean;
-  spoilerText?: string;
-  poll?: StatusPoll | null;
   mediaAttachments?: MediaAttachmentLike[];
   quoteApproval?: Record<string, unknown> | null;
   quoteApprovalPolicy?: string;
@@ -148,14 +137,8 @@ interface StatusLike {
 interface DraftStatusLike {
   uid?: string;
   status?: string;
-  spoilerText?: string;
-  visibility?: string;
   language?: string | null;
-  sensitive?: boolean | null;
-  sensitiveMedia?: boolean | null;
-  poll?: StatusPoll | null;
   mediaAttachments?: MediaAttachmentLike[];
-  scheduledAt?: Date | string | null;
   quoteApprovalPolicy?: string;
   [key: string]: unknown;
 }
@@ -181,11 +164,6 @@ interface QuoteSuggestionState {
   url: string;
 }
 
-interface EmojiPickerState {
-  targetElement?: RefObject<HTMLElement | null> | null;
-  defaultSearchTerm?: string | null;
-}
-
 interface MentionPickerState {
   defaultSearchTerm?: string | null;
 }
@@ -207,14 +185,12 @@ interface OnCloseInfo {
   type?: 'edit' | 'reply' | 'post';
   newStatus?: unknown;
   instance?: string;
-  scheduledAt?: string | undefined;
   fn?: () => void;
 }
 
 interface ComposeProps {
   onClose: (info?: OnCloseInfo) => void;
   replyToStatus?: StatusLike | null;
-  replyMode?: 'all' | 'author-only' | 'author-first';
   editStatus?: StatusLike | null;
   draftStatus?: DraftStatusLike | null;
   quoteStatus?: StatusLike | null;
@@ -267,12 +243,14 @@ function MediaAttachment(props: {
   return <MediaAttachmentComponent {...(props as MediaAttachmentProps)} />;
 }
 
-function QuoteSuggestion(props: Omit<
-  Parameters<typeof QuoteSuggestionComponent>[0],
-  'quoteSuggestion'
-> & {
-  quoteSuggestion?: QuoteSuggestionState | null;
-}) {
+function QuoteSuggestion(
+  props: Omit<
+    Parameters<typeof QuoteSuggestionComponent>[0],
+    'quoteSuggestion'
+  > & {
+    quoteSuggestion?: QuoteSuggestionState | null;
+  },
+) {
   return (
     <QuoteSuggestionComponent
       {...(props as Parameters<typeof QuoteSuggestionComponent>[0])}
@@ -295,9 +273,7 @@ interface MastoStatusesEditableSelector {
   $select(id: string | undefined): {
     fetch(): Promise<StatusLike>;
     update(params: Record<string, unknown>): Promise<unknown>;
-    source: {
-      fetch(): Promise<{ text: string; spoilerText: string }>;
-    };
+    source: { fetch(): Promise<{ text: string }> };
   };
   create(
     params: Record<string, unknown>,
@@ -343,19 +319,6 @@ const isPopOutNotSupported =
   /Android|iPhone|iPad|iPod/.test(navigator.userAgent) &&
   !/CrOS/.test(navigator.userAgent);
 
-const expirySeconds = Object.keys(expiryOptions);
-const oneDay = 24 * 60 * 60;
-
-const expiresInFromExpiresAt = (
-  expiresAt: string | number | Date | null | undefined,
-): number | string => {
-  if (!expiresAt) return oneDay;
-  const delta = (Date.parse(String(expiresAt)) - Date.now()) / 1000;
-  // Original JS compared string seconds to numeric delta; find on string keys
-  // returned a string. Coerce-compare to keep equivalent runtime semantics.
-  return expirySeconds.find((s) => Number(s) >= delta) || oneDay;
-};
-
 // localeMatch can return false when no match exists; original JS silently
 // stored that value and relied on `|| DEFAULT_LANG` chains to handle the
 // falsy case. Mirror the behavior — narrow to a runtime string where set,
@@ -386,14 +349,8 @@ const LF = mem(
 const ADD_LABELS = {
   camera: msg`Take photo or video`,
   media: msg`Add media`,
-  customEmoji: msg`Add custom emoji`,
   gif: msg`Add GIF`,
-  poll: msg`Add poll`,
-  sensitive: msg`Add content warning`,
-  scheduledPost: msg`Schedule post`,
 };
-
-const DEFAULT_SCHEDULED_AT = Math.max(10 * 60 * 1000, MIN_SCHEDULED_AT); // 10 mins
 
 function isMimeTypeSupported(
   fileType: string,
@@ -464,13 +421,28 @@ function insertTextAtCursor({
   const newPos = selectionEnd + text.length + spaceAfterInsert.length;
   targetElement.selectionStart = targetElement.selectionEnd = newPos;
   targetElement.focus();
-  targetElement.dispatchEvent(new Event('input'));
+  dispatchComposeInput(targetElement);
+}
+
+function dispatchComposeInput(
+  targetElement: HTMLInputElement | HTMLTextAreaElement,
+): void {
+  targetElement.dispatchEvent(
+    new InputEvent('input', {
+      bubbles: true,
+      inputType: 'insertText',
+    }),
+  );
+}
+
+function clickFileInput(inputId: string): void {
+  const input = document.getElementById(inputId);
+  if (input instanceof HTMLInputElement) input.click();
 }
 
 function Compose({
   onClose,
   replyToStatus,
-  replyMode = 'all',
   editStatus,
   draftStatus,
   quoteStatus,
@@ -484,8 +456,11 @@ function Compose({
   const _ = (descriptor: MessageDescriptor): string => i18n._(descriptor);
   const rtf = RTF(i18n.locale);
   const lf = LF(i18n.locale);
+  const menuCameraInputId = useId();
+  const menuMediaInputId = useId();
+  const toolbarCameraInputId = useId();
+  const toolbarMediaInputId = useId();
 
-  console.warn('RENDER COMPOSER');
   const apiResult = api();
   const { masto } = apiResult;
   const statusesEndpoint = getMastoV1Resource<MastoStatusesEditableSelector>(
@@ -500,10 +475,8 @@ function Compose({
   const UID = useRef(draftStatus?.uid || uid());
   console.log('Compose UID', UID.current);
 
-  // Original JS treats currentAccount as non-null when reading `.info`;
-  // the `?.atproto` / `?.instanceURL` reads are defensive. Mirror that.
   const currentAccount = useMemo(getCurrentAccount, []);
-  const currentAccountInfo = currentAccount!.info;
+  const currentAccountInfo = currentAccount?.info;
 
   interface ConfigurationShape {
     statuses?: {
@@ -520,12 +493,6 @@ function Compose({
       videoFrameRateLimit?: number;
       descriptionLimit?: number;
     };
-    polls?: {
-      maxOptions?: number;
-      maxCharactersPerOption?: number;
-      maxExpiration?: number;
-      minExpiration?: number;
-    };
   }
 
   const configuration = getCurrentInstanceConfiguration() as
@@ -540,25 +507,15 @@ function Compose({
       maxMediaAttachments, // Beware: it can be undefined!
     } = {},
     mediaAttachments: { supportedMimeTypes, descriptionLimit } = {},
-    polls: {
-      maxOptions,
-      maxCharactersPerOption,
-      maxExpiration,
-      minExpiration,
-    } = {},
   } = configuration || {};
   const supportedImagesVideosTypes = supportedMimeTypes?.filter(
     (mimeType: string) => /^(image|video)/i.test(mimeType),
   );
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const spoilerTextRef = useRef<HTMLInputElement | null>(null);
 
-  const [visibility, setVisibility] = useState<string>('public');
   const [quoteApprovalPolicy, setQuoteApprovalPolicy] =
     useState<string>('public');
-  const [sensitive, setSensitive] = useState<boolean>(false);
-  const [sensitiveMedia, setSensitiveMedia] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>(
     store.session.get('currentLanguage') || DEFAULT_LANG,
   );
@@ -566,14 +523,13 @@ function Compose({
   const [mediaAttachments, setMediaAttachments] = useState<
     MediaAttachmentLike[]
   >([]);
-  const [poll, setPoll] = useState<PollState | null>(null);
-  const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
+  const mediaAttachmentsRef = useRef<MediaAttachmentLike[]>([]);
+  mediaAttachmentsRef.current = mediaAttachments;
   const [quoteSuggestion, setQuoteSuggestion] =
     useState<QuoteSuggestionState | null>(null);
   const [localQuoteStatus, setLocalQuoteStatus] = useState<
     StatusLike | null | undefined
   >(quoteStatus);
-  const [quoteCleared, setQuoteCleared] = useState<boolean>(false);
   const [linkPreview, setLinkPreview] = useState<LinkPreviewState | null>(null);
   const linkPreviewRef = useRef<{
     id: number;
@@ -586,9 +542,11 @@ function Compose({
     return typeof v === 'string' ? v : undefined;
   };
 
-  const currentQuoteStatus = quoteCleared
-    ? null
-    : localQuoteStatus || quoteStatus;
+  const currentQuoteStatus = localQuoteStatus || quoteStatus;
+  const isAtprotoCompose =
+    !!currentAccount?.atproto || currentAccount?.instanceURL === 'bsky.social';
+  const supportsQuoteApprovalPolicy =
+    supportsNativeQuote() && !isAtprotoCompose;
   const canShowLinkPreview =
     currentAccount?.atproto &&
     !editStatus &&
@@ -704,15 +662,21 @@ function Compose({
         allowedFiles = allowedFiles.slice(0, max);
       }
       return Promise.all(
-        allowedFiles.map(async (file) => ({
-          fileData: await file.arrayBuffer(),
-          fileName: file.name,
-          type: file.type,
-          size: file.size,
-          url: URL.createObjectURL(file),
-          id: null,
-          description: null,
-        })),
+        allowedFiles.map(async (file) => {
+          const uploadFile = supports('@atproto')
+            ? await compressAtprotoImageIfNeeded(file)
+            : file;
+          return {
+            fileData: await uploadFile.arrayBuffer(),
+            fileName: uploadFile.name,
+            type: uploadFile.type,
+            size: uploadFile.size,
+            url: URL.createObjectURL(uploadFile),
+            ownedObjectUrl: true,
+            id: null,
+            description: null,
+          };
+        }),
       );
     }
     return null;
@@ -721,18 +685,13 @@ function Compose({
   const handlePastedLink = async (url: string): Promise<void> => {
     // Handle QP links
     if (supportsNativeQuote()) {
-      // Quotes cannot coexist with media attachments or polls
-      if (mediaAttachments.length > 0 || poll) {
+      // Quotes cannot coexist with media attachments
+      if (mediaAttachments.length > 0) {
         return;
       }
 
       // Cannot add/remove/replace current quote when editing
       if (editStatus) {
-        return;
-      }
-
-      // Don't show quote suggestion when visibility is 'direct'
-      if (visibility === 'direct') {
         return;
       }
 
@@ -783,7 +742,7 @@ function Compose({
 
   const oninputTextarea = (): void => {
     if (!textareaRef.current) return;
-    textareaRef.current.dispatchEvent(new Event('input'));
+    dispatchComposeInput(textareaRef.current);
   };
   const focusTextarea = (cursorPosition?: number): void => {
     setTimeout(() => {
@@ -797,7 +756,6 @@ function Compose({
     }, 300);
   };
   const lastFocusedFieldRef = useRef<HTMLElement | null>(null);
-  const lastFocusedEmojiFieldRef = useRef<HTMLElement | null>(null);
   const focusLastFocusedField = (): void => {
     setTimeout(() => {
       if (!lastFocusedFieldRef.current) return;
@@ -806,20 +764,15 @@ function Compose({
   };
   const composeContainerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
+    const composeContainer = composeContainerRef.current;
+    if (!composeContainer) return undefined;
+
     const handleFocus = (e: FocusEvent): void => {
       // Toggle focused if in or out if any fields are focused
-      // The container is non-null at handler time (the listener is only
-      // attached when composeContainer was defined). Mirror the original JS
-      // direct access.
-      (composeContainerRef.current as HTMLDivElement).classList.toggle(
-        'focused',
-        e.type === 'focusin',
-      );
+      composeContainer.classList.toggle('focused', e.type === 'focusin');
 
-      const target = e.target as HTMLElement;
-      if (target.hasAttribute('data-allow-custom-emoji')) {
-        lastFocusedEmojiFieldRef.current = target;
-      }
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
       const isFormElement = ['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA'].includes(
         target.tagName,
       );
@@ -828,17 +781,12 @@ function Compose({
       }
     };
 
-    const composeContainer = composeContainerRef.current;
-    if (composeContainer) {
-      composeContainer.addEventListener('focusin', handleFocus);
-      composeContainer.addEventListener('focusout', handleFocus);
-    }
+    composeContainer.addEventListener('focusin', handleFocus);
+    composeContainer.addEventListener('focusout', handleFocus);
 
     return () => {
-      if (composeContainer) {
-        composeContainer.removeEventListener('focusin', handleFocus);
-        composeContainer.removeEventListener('focusout', handleFocus);
-      }
+      composeContainer.removeEventListener('focusin', handleFocus);
+      composeContainer.removeEventListener('focusout', handleFocus);
     };
   }, []);
 
@@ -850,102 +798,23 @@ function Compose({
   prefsRef.current = prefs;
   const statusesEndpointRef = useRef(statusesEndpoint);
   statusesEndpointRef.current = statusesEndpoint;
-  const currentAccountAcctRef = useRef(currentAccountInfo.acct);
-  currentAccountAcctRef.current = currentAccountInfo.acct;
-
   useEffect(() => {
     const prefStringFn = prefStringRef.current;
     const prefsLocal = prefsRef.current;
     const statusesEndpointLocal = statusesEndpointRef.current;
-    const currentAcct = currentAccountAcctRef.current;
     if (replyToStatus) {
-      // sensitive read here only for parity with the original JS destructure
-      // (it is read from `!!spoilerText` below). Keep destructure shape stable.
-      const {
-        spoilerText,
-        visibility: replyVisibility,
-        language: replyLanguage,
-      } = replyToStatus;
-      if (spoilerText && spoilerTextRef.current) {
-        spoilerTextRef.current.value = spoilerText;
-      }
-      const account = replyToStatus.account ?? {};
-      const mentionsList = replyToStatus.mentions ?? [];
-      const mentions = new Set<string | undefined>([
-        account.acct,
-        ...mentionsList.map((m) => m.acct),
-      ]);
-      const allMentions = [...mentions].filter(
-        (m): m is string => typeof m === 'string' && m !== currentAcct,
-      );
-
-      if (allMentions.length > 0) {
-        const authorMention = `@${account.acct ?? ''}`;
-        const otherMentions = allMentions
-          .filter((m) => m !== account.acct)
-          .map((m) => `@${m}`);
-
-        if (replyMode === 'author-only') {
-          // Mode 1: Only mention the author
-          textareaRef.current!.value = `${authorMention} `;
-          oninputTextarea();
-          focusTextarea();
-        } else if (replyMode === 'author-first') {
-          // Mode 2: Mention author first, then others at the end after 2 newlines
-          if (otherMentions.length > 0) {
-            textareaRef.current!.value = `${authorMention} \n\n${otherMentions.join(' ')}`;
-            oninputTextarea();
-            // Set cursor position after the author mention
-            const cursorPosition = authorMention.length + 1; // +1 for the space
-            focusTextarea(cursorPosition);
-          } else {
-            // If no other mentions, just mention the author
-            textareaRef.current!.value = `${authorMention} `;
-            oninputTextarea();
-            focusTextarea();
-          }
-        } else {
-          // Mode 3 (default 'all'): All mentions at the beginning
-          textareaRef.current!.value = `${allMentions
-            .map((m) => `@${m}`)
-            .join(' ')} `;
-          oninputTextarea();
-          focusTextarea();
-        }
-      }
-      const defaultVisPref = prefStringFn('posting:default:visibility');
-      // Preserve original: passes `visibility` directly when no pref override.
-      setVisibility(
-        replyVisibility === 'public' && defaultVisPref
-          ? defaultVisPref.toLowerCase()
-          : (replyVisibility as string),
-      );
+      const { language: replyLanguage } = replyToStatus;
       setLanguage(
         fixLanguage(replyLanguage) ||
           prefStringFn('posting:default:language')?.toLowerCase() ||
           DEFAULT_LANG,
       );
-      setSensitive(!!spoilerText);
     } else if (editStatus) {
       const {
-        visibility: editVisibility,
         language: editLanguage,
-        sensitive: editSensitive,
-        poll: editPoll,
         mediaAttachments: editMediaAttachments,
         quoteApproval,
       } = editStatus;
-      const composablePoll = editPoll?.options
-        ? {
-            ...editPoll,
-            options: editPoll.options.map(
-              (o) => (typeof o === 'string' ? o : o?.title || o) as string,
-            ),
-            expiresIn:
-              editPoll?.expiresIn || expiresInFromExpiresAt(editPoll.expiresAt),
-            multiple: !!editPoll.multiple,
-          }
-        : null;
       setUIState('loading');
       void (async () => {
         try {
@@ -953,17 +822,13 @@ function Compose({
             .$select(editStatus.id)
             .source.fetch();
           console.log({ statusSource });
-          const { text, spoilerText } = statusSource;
-          textareaRef.current!.value = text;
-          textareaRef.current!.dataset.source = text;
+          const { text } = statusSource;
+          const textarea = textareaRef.current;
+          if (!textarea) return;
+          textarea.value = text;
+          textarea.dataset.source = text;
           oninputTextarea();
           focusTextarea();
-          if (spoilerTextRef.current) {
-            spoilerTextRef.current.value = spoilerText;
-          }
-          // Original JS passed `visibility` directly; preserve that (may be
-          // undefined for some statuses, mirroring the JS state shape).
-          setVisibility(editVisibility as string);
           setLanguage(
             editLanguage ||
               prefStringFn('posting:default:language')?.toLowerCase() ||
@@ -974,8 +839,6 @@ function Compose({
               getPostQuoteApprovalPolicy(quoteApproval);
             setQuoteApprovalPolicy(postQuoteApprovalPolicy);
           }
-          setSensitive(!!editSensitive);
-          if (composablePoll) setPoll(composablePoll);
           setMediaAttachments(editMediaAttachments ?? []);
           setUIState('default');
         } catch (e) {
@@ -987,99 +850,48 @@ function Compose({
     } else {
       focusTextarea();
       console.log('Apply prefs', prefsLocal);
-      const defaultVis = prefStringFn('posting:default:visibility');
-      if (defaultVis) {
-        setVisibility(defaultVis.toLowerCase());
-      }
       const defaultLang = prefStringFn('posting:default:language');
       if (defaultLang) {
         setLanguage(defaultLang.toLowerCase());
       }
-      if (prefsLocal['posting:default:sensitive']) {
-        setSensitive(!!prefsLocal['posting:default:sensitive']);
-      }
       const defaultQuotePolicy = prefStringFn('posting:default:quote_policy');
       if (defaultQuotePolicy) {
-        let policy = defaultQuotePolicy.toLowerCase();
-        if (defaultVis) {
-          const visLower = defaultVis.toLowerCase();
-          if (visLower === 'private' || visLower === 'direct') {
-            policy = 'nobody';
-          }
-        }
-        setQuoteApprovalPolicy(policy);
+        setQuoteApprovalPolicy(defaultQuotePolicy.toLowerCase());
       }
     }
     if (draftStatus) {
       const {
         status,
-        spoilerText,
-        visibility: draftVisibility,
         language: draftLanguage,
-        sensitive: draftSensitive,
-        sensitiveMedia: draftSensitiveMedia,
-        poll: draftPoll,
         mediaAttachments: draftMediaAttachments,
-        scheduledAt: draftScheduledAt,
         quoteApprovalPolicy: draftQuoteApprovalPolicy,
       } = draftStatus;
-      const composablePoll = draftPoll?.options
-        ? {
-            ...draftPoll,
-            options: draftPoll.options.map(
-              (o) => (typeof o === 'string' ? o : o?.title || o) as string,
-            ),
-            expiresIn:
-              draftPoll?.expiresIn ||
-              expiresInFromExpiresAt(draftPoll.expiresAt),
-            multiple: !!draftPoll.multiple,
-          }
-        : null;
-      textareaRef.current!.value = status ?? '';
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      textarea.value = status ?? '';
       oninputTextarea();
       // status starts with newline or space, focus on first position
       const cursorPos = /^\n|\s/.test(status ?? '') ? 0 : undefined;
       focusTextarea(cursorPos);
-      if (spoilerText && spoilerTextRef.current)
-        spoilerTextRef.current.value = spoilerText;
-      if (draftVisibility) setVisibility(draftVisibility);
       setLanguage(
         draftLanguage ||
           prefStringFn('posting:default:language')?.toLowerCase() ||
           DEFAULT_LANG,
       );
-      // Match JS guard: only skip when explicitly null. Coerce to boolean
-      // because the state is typed boolean; undefined would silently set the
-      // store to undefined in JS, which downstream readers already treat as
-      // falsy via `!!` checks.
-      if (draftSensitiveMedia !== null)
-        setSensitiveMedia(!!draftSensitiveMedia);
-      if (draftSensitive !== null) setSensitive(!!draftSensitive);
-      if (composablePoll) setPoll(composablePoll);
       if (draftMediaAttachments) setMediaAttachments(draftMediaAttachments);
-      if (draftScheduledAt) {
-        const d =
-          draftScheduledAt instanceof Date
-            ? draftScheduledAt
-            : new Date(draftScheduledAt);
-        setScheduledAt(d);
-      }
       if (draftQuoteApprovalPolicy)
         setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
     }
     // Effect deliberately runs only when an explicit source status changes;
-    // prefString/prefs/masto/currentAccountInfo are read through latest-value
+    // prefString/prefs/masto are read through latest-value
     // refs declared below so we always see fresh values without re-running on
     // every render.
-  }, [draftStatus, editStatus, replyToStatus, replyMode]);
+  }, [draftStatus, editStatus, replyToStatus]);
 
-  // Latest-value ref so the sharedData effect can dispatch the current
-  // processFiles without re-running on every render (the function is
-  // recreated each render but its observable behavior is stable).
   const processFilesRef = useRef(processFiles);
   processFilesRef.current = processFiles;
 
-  useEffect(() => {
+  const applySharedData = useEffectEvent(() => {
     if (sharedData) {
       const { initialText, files } = sharedData;
 
@@ -1089,19 +901,21 @@ function Compose({
       }
 
       if (files && files.length > 0) {
-        processFilesRef
-          .current(files)
-          .then((mediaFiles) => {
+        void (async () => {
+          try {
+            const mediaFiles = await processFiles(files);
             if (mediaFiles) {
               setMediaAttachments(mediaFiles);
             }
-            return undefined;
-          })
-          .catch((err) => {
+          } catch (err) {
             console.error('Failed to process file(s):', err);
-          });
+          }
+        })();
       }
     }
+  });
+  useEffect(() => {
+    applySharedData();
   }, [sharedData]);
 
   // focus textarea when state.composerState.minimized turns false
@@ -1116,7 +930,9 @@ function Compose({
 
   const beforeUnloadCopy = t`You have unsaved changes. Discard this post?`;
   const canClose = (): boolean => {
-    const { value, dataset } = textareaRef.current!;
+    const textarea = textareaRef.current;
+    const value = textarea?.value ?? '';
+    const dataset = textarea?.dataset;
 
     // check if loading
     if (uiState === 'loading') {
@@ -1143,17 +959,6 @@ function Compose({
       return true;
     }
 
-    // check if status contains only "@acct", if replying
-    const isSelf = replyToStatus?.account?.id === currentAccountInfo.id;
-    const hasOnlyAcct =
-      !!replyToStatus &&
-      value.trim() === `@${replyToStatus.account?.acct ?? ''}`;
-    // TODO: check for mentions, or maybe just generic "@username<space>", including multiple mentions like "@username1<space>@username2<space>"
-    if (!isSelf && hasOnlyAcct) {
-      console.log('canClose', { isSelf, hasOnlyAcct });
-      return true;
-    }
-
     // check if status is same with source
     const sameWithSource = value === dataset?.source;
     if (sameWithSource) {
@@ -1165,9 +970,6 @@ function Compose({
       value,
       hasMediaAttachments,
       hasIDMediaAttachments,
-      poll,
-      isSelf,
-      hasOnlyAcct,
       sameWithSource,
       uiState,
     });
@@ -1183,6 +985,26 @@ function Compose({
     return true;
   };
 
+  const prevBackgroundDraft = useRef<Record<string, unknown>>({});
+  const draftKey = (): string => {
+    const ns = getCurrentAccountNS();
+    return `${ns}#${UID.current}`;
+  };
+  const composerState = states.composerState;
+  const shouldSaveDraftOnUnmountRef = useRef(true);
+  const deleteDraft = (): void => {
+    void db.drafts.del(draftKey());
+    prevBackgroundDraft.current = {};
+  };
+  const discardDraft = (): void => {
+    shouldSaveDraftOnUnmountRef.current = false;
+    deleteDraft();
+  };
+  const transferDraft = (): void => {
+    saveUnsavedDraft();
+    shouldSaveDraftOnUnmountRef.current = false;
+  };
+
   // Latest-value refs so the mount-only beforeunload handler always sees
   // fresh canClose() and beforeUnloadCopy without re-binding the listener
   // on every render.
@@ -1195,25 +1017,22 @@ function Compose({
     const handleBeforeUnload = (e: BeforeUnloadEvent): void => {
       if (!canCloseRef.current()) {
         e.preventDefault();
-        // TODO(oxlint:typescript/no-deprecated): returnValue is deprecated, but
-        // some browsers still require it as a fallback alongside preventDefault.
-        // The custom string also lets browsers show our message when supported.
-        e.returnValue = beforeUnloadCopyRef.current;
+        Reflect.set(e, 'returnValue', beforeUnloadCopyRef.current);
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload, {
       capture: true,
     });
-    return () =>
+    return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload, {
         capture: true,
       });
+    };
   }, []);
 
   const getCharCount = (): number => {
-    const { value } = textareaRef.current!;
-    const { value: spoilerText } = spoilerTextRef.current!;
-    return stringLength(countableText(value)) + stringLength(spoilerText);
+    const { value = '' } = textareaRef.current ?? {};
+    return stringLength(countableText(value));
   };
   const updateCharCount = (): void => {
     const count = getCharCount();
@@ -1233,14 +1052,14 @@ function Compose({
       enabled: !supportsCloseWatcher,
       enableOnFormTags: true,
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
-        e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
+      ignoreEventWhen: (e) => e.metaKey || e.ctrlKey || e.altKey || e.shiftKey,
     },
   );
   useHotkeys(
     'esc',
     () => {
       if (!standalone && escDownRef.current && confirmClose()) {
+        discardDraft();
         onClose();
       }
       escDownRef.current = false;
@@ -1250,9 +1069,9 @@ function Compose({
       enableOnFormTags: true,
       // Use keyup because Esc keydown will close the confirm dialog on Safari
       keyup: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         const modals = document.querySelectorAll('#modal-container > *');
-        const hasModal = !!modals;
+        const hasModal = modals.length > 0;
         const hasOnlyComposer =
           modals.length === 1 && modals[0].querySelector('#compose-container');
         return (
@@ -1268,16 +1087,11 @@ function Compose({
   );
   useCloseWatcher(() => {
     if (!standalone && confirmClose()) {
+      discardDraft();
       onClose();
     }
   }, []);
 
-  const prevBackgroundDraft = useRef<Record<string, unknown>>({});
-  const draftKey = (): string => {
-    const ns = getCurrentAccountNS();
-    return `${ns}#${UID.current}`;
-  };
-  const composerState = states.composerState;
   const saveUnsavedDraft = (): void => {
     // Not enabling this for editing status
     // I don't think this warrant a draft mode for a status that's already posted
@@ -1285,6 +1099,12 @@ function Compose({
     if (editStatus) return;
     if (composerState.minimized) return;
     const key = draftKey();
+    if (canClose()) {
+      if (prevBackgroundDraft.current.key === key) {
+        deleteDraft();
+      }
+      return;
+    }
     const backgroundDraft: Record<string, unknown> = {
       key,
       replyTo: replyToStatus
@@ -1304,15 +1124,9 @@ function Compose({
         : null,
       draftStatus: {
         uid: UID.current,
-        status: textareaRef.current!.value,
-        spoilerText: spoilerTextRef.current!.value,
-        visibility,
+        status: textareaRef.current?.value ?? '',
         language,
-        sensitive,
-        sensitiveMedia,
-        poll,
         mediaAttachments,
-        scheduledAt,
         quoteApprovalPolicy,
       },
       quote: currentQuoteStatus?.id
@@ -1322,24 +1136,20 @@ function Compose({
           }
         : null,
     };
-    if (
-      !deepEqual(backgroundDraft, prevBackgroundDraft.current) &&
-      !canClose()
-    ) {
+    if (!deepEqual(backgroundDraft, prevBackgroundDraft.current)) {
       console.debug('not equal', backgroundDraft, prevBackgroundDraft.current);
-      db.drafts
-        .set(key, {
-          ...backgroundDraft,
-          state: 'unsaved',
-          updatedAt: Date.now(),
-        })
-        .then(() => {
+      void (async () => {
+        try {
+          await db.drafts.set(key, {
+            ...backgroundDraft,
+            state: 'unsaved',
+            updatedAt: Date.now(),
+          });
           console.debug('DRAFT saved', key, backgroundDraft);
-          return undefined;
-        })
-        .catch((e: unknown) => {
+        } catch (e) {
           console.error('DRAFT failed', key, e);
-        });
+        }
+      })();
       prevBackgroundDraft.current = structuredClone(backgroundDraft);
     }
   };
@@ -1350,10 +1160,11 @@ function Compose({
   saveUnsavedDraftRef.current = saveUnsavedDraft;
   useEffect(() => {
     saveUnsavedDraftRef.current();
-    // If unmounted, means user discarded the draft
-    // Also means pop-out 🙈, but it's okay because the pop-out will persist the ID and re-create the draft
     return () => {
-      void db.drafts.del(draftKey());
+      if (shouldSaveDraftOnUnmountRef.current) {
+        saveUnsavedDraftRef.current();
+      }
+      revokeAttachmentObjectUrls(mediaAttachmentsRef.current);
     };
   }, []);
 
@@ -1377,17 +1188,16 @@ function Compose({
       if (files.length > 0) {
         e.preventDefault();
         e.stopPropagation();
-        processFilesRef
-          .current(files)
-          .then((mediaFiles) => {
+        void (async () => {
+          try {
+            const mediaFiles = await processFilesRef.current(files);
             if (mediaFiles) {
               setMediaAttachments((prev) => [...prev, ...mediaFiles]);
             }
-            return undefined;
-          })
-          .catch((err: unknown) => {
+          } catch (err) {
             console.error('Failed to process file(s):', err);
-          });
+          }
+        })();
       }
     };
     window.addEventListener('paste', handleItems);
@@ -1412,9 +1222,6 @@ function Compose({
 
   const [showMentionPicker, setShowMentionPicker] = useState<
     boolean | MentionPickerState
-  >(false);
-  const [showEmoji2Picker, setShowEmoji2Picker] = useState<
-    boolean | EmojiPickerState
   >(false);
   const [showGIFPicker, setShowGIFPicker] = useState<boolean>(false);
 
@@ -1472,46 +1279,14 @@ function Compose({
   const mediaButtonDisabled =
     uiState === 'loading' ||
     (maxMediaAttachments !== undefined &&
-      mediaAttachments.length >= maxMediaAttachments) ||
-    !!poll; /* ||
+      mediaAttachments.length >= maxMediaAttachments); /* ||
     !!currentQuoteStatus?.id; */
-
-  const cwButtonDisabled = uiState === 'loading' || sensitive;
-  const onCWButtonClick = (): void => {
-    setSensitive(true);
-    setTimeout(() => {
-      spoilerTextRef.current?.focus();
-    }, 0);
-  };
-
-  // If maxOptions is not defined or defined and is greater than 1, show poll button
-  const showPollButton = maxOptions == null || maxOptions > 1;
-  const pollButtonDisabled =
-    uiState === 'loading' || !!poll || !!mediaAttachments.length; /* ||
-    !!currentQuoteStatus?.id; */
-  const onPollButtonClick = (): void => {
-    setPoll({
-      options: ['', ''],
-      expiresIn: 24 * 60 * 60, // 1 day
-      multiple: false,
-    });
-    // Focus first choice field
-    setTimeout(() => {
-      composeContainerRef.current
-        ?.querySelector<HTMLInputElement>('.poll-choice input[type="text"]')
-        ?.focus();
-    }, 0);
-  };
 
   const highlightLanguageField =
     language !== prevLanguage.current ||
     (autoDetectedLanguages?.length &&
       !autoDetectedLanguages.includes(language));
-  const highlightVisibilityField = visibility !== 'public';
-
   const highlightQuoteApprovalPolicyField = quoteApprovalPolicy !== 'public';
-  const disableQuotePolicy =
-    visibility === 'private' || visibility === 'direct';
 
   const addSubToolbarRef = useRef<HTMLSpanElement | null>(null);
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
@@ -1521,32 +1296,25 @@ function Compose({
     box: 'border-box',
     onResize: ({ width }) => {
       // If scrollable, it's truncated
-      const { scrollWidth } = addSubToolbarRef.current!;
+      const toolbar = addSubToolbarRef.current;
+      if (!toolbar) return;
+      const { scrollWidth } = toolbar;
       const truncated = width !== undefined && scrollWidth > width;
-      const overTruncated =
-        width !== undefined && width < BUTTON_WIDTH * 4;
+      const overTruncated = width !== undefined && width < BUTTON_WIDTH * 4;
       setShowAddButton(overTruncated || truncated);
-      addSubToolbarRef.current!.hidden = overTruncated;
+      toolbar.hidden = overTruncated;
     },
   });
-
-  const showScheduledAt =
-    !editStatus && currentAccount?.instanceURL !== 'bsky.social';
-  const scheduledAtButtonDisabled = uiState === 'loading' || !!scheduledAt;
-  const onScheduledAtClick = (): void => {
-    const date = new Date(Date.now() + DEFAULT_SCHEDULED_AT);
-    setScheduledAt(date);
-  };
 
   return (
     <div id="compose-container-outer" ref={composeContainerRef}>
       <div
         id="compose-container"
         tabIndex={-1}
-        class={standalone ? 'standalone' : ''}
+        className={standalone ? 'standalone' : ''}
       >
-        <div class="compose-top">
-          {currentAccountInfo?.avatarStatic && (
+        <div className="compose-top">
+          {Boolean(currentAccountInfo?.avatarStatic) && (
             // <Avatar
             //   url={currentAccountInfo.avatarStatic}
             //   size="xl"
@@ -1555,17 +1323,17 @@ function Compose({
             // />
             <AccountBlock
               account={currentAccountInfo}
-              accountInstance={currentAccount!.instanceURL}
+              accountInstance={currentAccount?.instanceURL}
               hideDisplayName
               useAvatarStatic
             />
           )}
           {!standalone ? (
-            <span class="compose-controls">
+            <span className="compose-controls">
               {!isPopOutNotSupported && (
                 <button
                   type="button"
-                  class="plain4 pop-button"
+                  className="plain4 pop-button"
                   disabled={uiState === 'loading'}
                   onClick={() => {
                     // If there are non-ID media attachments (not yet uploaded), show confirmation dialog because they are not going to be passed to the new window
@@ -1590,14 +1358,9 @@ function Compose({
                       replyToStatus,
                       draftStatus: {
                         uid: UID.current,
-                        status: textareaRef.current!.value,
-                        spoilerText: spoilerTextRef.current!.value,
-                        visibility,
+                        status: textareaRef.current?.value ?? '',
                         language,
-                        sensitive,
-                        poll,
                         mediaAttachments,
-                        scheduledAt,
                       },
                       quoteStatus: currentQuoteStatus,
                     });
@@ -1606,6 +1369,7 @@ function Compose({
                       return;
                     }
 
+                    transferDraft();
                     onClose();
                   }}
                 >
@@ -1614,17 +1378,18 @@ function Compose({
               )}
               <button
                 type="button"
-                class="plain4 min-button"
+                className="plain4 min-button"
                 onClick={onMinimize}
               >
                 <Icon icon="minimize" alt={t`Minimize`} />
               </button>{' '}
               <button
                 type="button"
-                class="plain4 close-button"
+                className="plain4 close-button"
                 disabled={uiState === 'loading'}
                 onClick={() => {
                   if (confirmClose()) {
+                    discardDraft();
                     onClose();
                   }
                 }}
@@ -1636,7 +1401,7 @@ function Compose({
             hasOpener && (
               <button
                 type="button"
-                class="light pop-button"
+                className="light pop-button"
                 disabled={uiState === 'loading'}
                 onClick={() => {
                   // If there are non-ID media attachments (not yet uploaded), show confirmation dialog because they are not going to be passed to the new window
@@ -1677,23 +1442,17 @@ function Compose({
                   //   (media) => media.id,
                   // );
 
+                  transferDraft();
                   onClose({
                     fn: () => {
                       const passData = {
                         editStatus,
                         replyToStatus,
-                        replyMode,
                         draftStatus: {
                           uid: UID.current,
-                          status: textareaRef.current!.value,
-                          spoilerText: spoilerTextRef.current!.value,
-                          visibility,
+                          status: textareaRef.current?.value ?? '',
                           language,
-                          sensitive,
-                          sensitiveMedia,
-                          poll,
                           mediaAttachments,
-                          scheduledAt,
                         },
                         quoteStatus: currentQuoteStatus,
                       };
@@ -1720,9 +1479,9 @@ function Compose({
           )}
         </div>
         {!!replyToStatus && (
-          <details class="status-preview" open>
+          <details className="status-preview" open>
             <Status status={replyToStatus} size="s" previewMode />
-            <summary class="status-preview-legend reply-to">
+            <summary className="status-preview-legend reply-to">
               {replyToStatusMonthsAgo > 0 ? (
                 <Trans>
                   Replying to @
@@ -1746,16 +1505,15 @@ function Compose({
           </details>
         )}
         {!!editStatus && (
-          <details class="status-preview">
+          <details className="status-preview">
             <Status status={editStatus} size="s" previewMode />
-            <summary class="status-preview-legend">
+            <summary className="status-preview-legend">
               <Trans>Editing source post</Trans>
             </summary>
           </details>
         )}
         <form
           ref={formRef}
-          class={`form-visibility-${visibility}`}
           style={{
             pointerEvents: uiState === 'loading' ? 'none' : 'auto',
             opacity: uiState === 'loading' ? 0.5 : 1,
@@ -1767,17 +1525,16 @@ function Compose({
               }
             }, 10);
           }}
-          onKeyDown={(keyEvent: TargetedKeyboardEvent<HTMLFormElement>) => {
+          onKeyDown={(keyEvent: React.KeyboardEvent<HTMLFormElement>) => {
             if (
               keyEvent.key === 'Enter' &&
               (keyEvent.ctrlKey || keyEvent.metaKey)
             ) {
-              formRef.current!.dispatchEvent(
-                new Event('submit', { cancelable: true }),
-              );
+              keyEvent.preventDefault();
+              keyEvent.currentTarget.requestSubmit();
             }
           }}
-          onSubmit={(submitEvent: TargetedEvent<HTMLFormElement>) => {
+          onSubmit={(submitEvent: SyntheticEvent<HTMLFormElement>) => {
             submitEvent.preventDefault();
 
             const formData = new FormData(
@@ -1789,60 +1546,16 @@ function Compose({
             >;
             console.log('ENTRIES', entries);
             const rawStatus = entries.status;
-            const rawVisibility = entries.visibility;
-            const rawSensitive = entries.sensitive;
-            const rawSensitiveMedia = entries.sensitiveMedia;
-            const rawSpoilerText = entries.spoilerText;
-            const rawScheduledAt = entries.scheduledAt;
             const rawQuoteApprovalPolicy = entries.quoteApprovalPolicy;
-
-            // Pre-cleanup
-            // checkboxes return "on" if checked
-            const sensitiveBool: boolean = rawSensitive === 'on';
-            const sensitiveMediaBool: boolean = rawSensitiveMedia === 'on';
-
-            // Convert datetime-local input value to RFC3339 Date string value
-            const scheduledAtIso: string | undefined = rawScheduledAt
-              ? new Date(rawScheduledAt as string).toISOString()
-              : undefined;
 
             let status: string | undefined =
               typeof rawStatus === 'string' ? rawStatus : undefined;
-            let spoilerText: string | undefined =
-              typeof rawSpoilerText === 'string' ? rawSpoilerText : undefined;
-            const submitVisibility: string | undefined =
-              typeof rawVisibility === 'string' ? rawVisibility : undefined;
             const submitQuoteApprovalPolicy: string | undefined =
               typeof rawQuoteApprovalPolicy === 'string'
                 ? rawQuoteApprovalPolicy
                 : undefined;
 
-            // Validation
-            /* Let the backend validate this
-          if (stringLength(status) > maxCharacters) {
-            alert(`Status is too long! Max characters: ${maxCharacters}`);
-            return;
-          }
-          if (
-            sensitive &&
-            stringLength(status) + stringLength(spoilerText) > maxCharacters
-          ) {
-            alert(
-              `Status and content warning is too long! Max characters: ${maxCharacters}`,
-            );
-            return;
-          }
-          */
-            if (poll) {
-              if (poll.options.length < 2) {
-                alert(t`Poll must have at least 2 options`);
-                return;
-              }
-              if (poll.options.some((option) => option === '')) {
-                alert(t`Some poll choices are empty`);
-                return;
-              }
-            }
+            // Let the backend validate character limits.
             // TODO: check for URLs and use `charactersReservedPerUrl` to calculate max characters
 
             if (mediaAttachments.length > 0) {
@@ -1858,8 +1571,6 @@ function Compose({
               }
             }
 
-            // Post-cleanup
-            spoilerText = (sensitiveBool && spoilerText) || undefined;
             status = status === '' ? undefined : status;
 
             // states.composerState.minimized = true;
@@ -1868,32 +1579,27 @@ function Compose({
             void (async () => {
               try {
                 console.log('MEDIA ATTACHMENTS', mediaAttachments);
+                let submitMediaAttachments = mediaAttachments;
                 if (mediaAttachments.length > 0) {
                   // Upload media attachments first
-                  const mediaPromises = mediaAttachments.map((attachment) => {
-                    const { fileData, fileName, file, type, description, id } =
-                      attachment;
-                    console.log('UPLOADING', attachment);
-                    if (id) {
-                      // If already uploaded
-                      return Promise.resolve(attachment);
-                    } else {
-                      // Reconstruct File from fileData, or fall back to legacy file object
-                      const fileObj = fileData
-                        ? new File([fileData], fileName || 'upload', { type })
-                        : file;
-                      const params = removeNullUndefined({
-                        file: fileObj,
-                        description,
-                      });
-                      return mediaEndpoint.create(params).then((res) => {
-                        if (res.id) {
-                          attachment.id = res.id;
-                        }
-                        return res;
-                      });
-                    }
-                  });
+                  const mediaPromises = mediaAttachments.map(
+                    async (attachment) => {
+                      const [uploadedAttachment] =
+                        await uploadComposeMediaAttachments(
+                          [attachment],
+                          (params) => {
+                            console.log('UPLOADING', attachment);
+                            return mediaEndpoint.create(
+                              removeNullUndefined({
+                                file: params.file,
+                                description: params.description,
+                              }),
+                            );
+                          },
+                        );
+                      return uploadedAttachment;
+                    },
+                  );
                   const results = await Promise.allSettled(mediaPromises);
 
                   // If any failed, return
@@ -1909,21 +1615,27 @@ function Compose({
                     composerState.publishingError = true;
                     setUIState('error');
                     // Alert all the reasons
-                    results.forEach((result) => {
+                    results.forEach((result, index) => {
                       if (result.status === 'rejected') {
                         console.error(result);
-                        // Note: original referenced `i` which wasn't in scope;
-                        // preserve that pre-existing behavior — message reads
-                        // "Attachment #undefined failed" at runtime. Follow-up
-                        // bug, not changed in this TS migration.
-                        const i: number | undefined = undefined;
-                        alert(result.reason || t`Attachment #${i} failed`);
+                        alert(
+                          result.reason ||
+                            t`Attachment #${mediaAttachments[index]?.fileName || index + 1} failed`,
+                        );
                       }
                     });
                     return;
                   }
 
-                  console.log({ results, mediaAttachments });
+                  submitMediaAttachments = results.map((result) => {
+                    if (result.status === 'fulfilled') return result.value;
+                    throw result.reason;
+                  });
+                  setMediaAttachments(submitMediaAttachments);
+                  console.log({
+                    results,
+                    mediaAttachments: submitMediaAttachments,
+                  });
                 }
 
                 /* NOTE:
@@ -1934,25 +1646,21 @@ function Compose({
               */
                 let params: Record<string, unknown> = {
                   status,
-                  // spoilerText,
-                  spoiler_text: spoilerText,
                   language,
-                  sensitive: sensitiveBool || sensitiveMediaBool,
-                  poll,
                   // mediaIds: mediaAttachments.map((attachment) => attachment.id),
-                  media_ids: mediaAttachments.map(
+                  media_ids: submitMediaAttachments.map(
                     (attachment) => attachment.id,
                   ),
                 };
                 if (editStatus) {
-                  if (supportsNativeQuote()) {
+                  if (supportsQuoteApprovalPolicy) {
                     params.quote_approval_policy = quoteApprovalPolicy;
                   }
                   if (
                     supports('@mastodon') ||
                     supports('@gotosocial/edit-media-attributes')
                   ) {
-                    params.media_attributes = mediaAttachments.map(
+                    params.media_attributes = submitMediaAttachments.map(
                       (attachment) => {
                         return {
                           id: attachment.id,
@@ -1964,16 +1672,16 @@ function Compose({
                     );
                   }
                 } else {
-                  if (supportsNativeQuote()) {
+                  if (supportsQuoteApprovalPolicy) {
                     params.quote_approval_policy = submitQuoteApprovalPolicy;
+                  }
+                  if (supportsNativeQuote()) {
                     if (currentQuoteStatus?.id) {
                       params.quoted_status_id = currentQuoteStatus.id;
                     }
                   }
-                  params.visibility = submitVisibility;
                   // params.inReplyToId = replyToStatus?.id || undefined;
                   params.in_reply_to_id = replyToStatus?.id || undefined;
-                  params.scheduled_at = scheduledAtIso;
                   if (linkPreview?.removed) {
                     params.disable_card = true;
                   } else if (linkPreview?.metadata) {
@@ -2012,6 +1720,8 @@ function Compose({
                 composerState.minimized = false;
                 composerState.publishing = false;
                 setUIState('default');
+                discardDraft();
+                revokeAttachmentObjectUrls(submitMediaAttachments);
 
                 // Close
                 onClose({
@@ -2019,7 +1729,6 @@ function Compose({
                   type: editStatus ? 'edit' : replyToStatus ? 'reply' : 'post',
                   newStatus,
                   instance,
-                  scheduledAt: scheduledAtIso,
                 });
               } catch (e) {
                 composerState.publishing = false;
@@ -2034,79 +1743,14 @@ function Compose({
           }}
         >
           <div>
-            <div class={`compose-cw-container ${sensitive ? '' : 'collapsed'}`}>
-              <input
-                type="hidden"
-                name="sensitive"
-                value={sensitive ? 'on' : 'off'}
-              />
-              {/* mimic the old checkbox */}
-              <TextExpander
-                keys=":"
-                class="spoiler-text-field-container"
-                onTrigger={(action) => {
-                  if (action?.name === 'custom-emojis') {
-                    setShowEmoji2Picker({
-                      targetElement:
-                        spoilerTextRef as RefObject<HTMLElement | null>,
-                      defaultSearchTerm:
-                        typeof action?.defaultSearchTerm === 'string'
-                          ? action.defaultSearchTerm || null
-                          : null,
-                    });
-                  }
-                }}
-              >
-                <input
-                  ref={spoilerTextRef}
-                  type="text"
-                  name="spoilerText"
-                  placeholder={t`Content warning`}
-                  data-allow-custom-emoji="true"
-                  disabled={uiState === 'loading'}
-                  class="spoiler-text-field"
-                  lang={language}
-                  spellcheck
-                  autocomplete="off"
-                  dir="auto"
-                  onInput={() => {
-                    updateCharCount();
-                  }}
-                  onKeyDown={(e: TargetedKeyboardEvent<HTMLInputElement>) => {
-                    if (
-                      e.key === 'Enter' &&
-                      !e.ctrlKey &&
-                      !e.metaKey &&
-                      !e.isComposing
-                    ) {
-                      e.preventDefault();
-                      focusTextarea();
-                    }
-                  }}
-                />
-              </TextExpander>
-              <button
-                type="button"
-                class="close-button plain4 small"
-                onClick={() => {
-                  setSensitive(false);
-                  textareaRef.current!.focus();
-                }}
-              >
-                <Icon icon="x" alt={t`Cancel`} />
-              </button>
-            </div>
             <Textarea
               ref={textareaRef}
-              data-allow-custom-emoji="true"
               placeholder={
                 replyToStatus
                   ? t`Post your reply`
                   : editStatus
                     ? t`Edit your post`
-                    : poll
-                      ? t`Ask a question`
-                      : t`What are you doing?`
+                    : t`What are you doing?`
               }
               required={mediaAttachments?.length === 0}
               disabled={uiState === 'loading'}
@@ -2117,12 +1761,7 @@ function Compose({
               }}
               maxCharacters={maxCharacters}
               onTrigger={(action: ToolbarAction) => {
-                if (action?.name === 'custom-emojis') {
-                  setShowEmoji2Picker({
-                    targetElement: lastFocusedEmojiFieldRef,
-                    defaultSearchTerm: action?.defaultSearchTerm || null,
-                  });
-                } else if (action?.name === 'mention') {
+                if (action?.name === 'mention') {
                   setShowMentionPicker({
                     defaultSearchTerm: action?.defaultSearchTerm || null,
                   });
@@ -2138,10 +1777,10 @@ function Compose({
             />
           </div>
           {!!linkPreview && !linkPreview.removed && (
-            <div class="compose-link-preview">
+            <div className="compose-link-preview">
               {linkPreview.loading ? (
-                <div class="compose-link-preview-body">
-                  <span class="compose-link-preview-title">
+                <div className="compose-link-preview-body">
+                  <span className="compose-link-preview-title">
                     Loading link preview...
                   </span>
                   <small>{linkPreview.url}</small>
@@ -2155,8 +1794,8 @@ function Compose({
                       loading="lazy"
                     />
                   )}
-                  <div class="compose-link-preview-body">
-                    <span class="compose-link-preview-title">
+                  <div className="compose-link-preview-body">
+                    <span className="compose-link-preview-title">
                       {linkPreview.metadata?.title || linkPreview.url}
                     </span>
                     {!!linkPreview.metadata?.description && (
@@ -2170,7 +1809,7 @@ function Compose({
               )}
               <button
                 type="button"
-                class="plain4 close-button small"
+                className="plain4 close-button small"
                 onClick={() => {
                   if (linkPreviewRef.current.timeout) {
                     clearTimeout(linkPreviewRef.current.timeout);
@@ -2186,11 +1825,12 @@ function Compose({
             </div>
           )}
           {mediaAttachments?.length > 0 && (
-            <div class="media-attachments">
+            <div className="media-attachments">
               {mediaAttachments.map((attachment, i) => {
                 const { id, file } = attachment;
-                const fileID: string | number =
-                  file ? file.size + file.type + file.name : Number.NaN;
+                const fileID: string | number = file
+                  ? file.size + file.type + file.name
+                  : Number.NaN;
                 return (
                   <MediaAttachment
                     key={id || fileID || i}
@@ -2211,87 +1851,23 @@ function Compose({
                     }}
                     onRemove={() => {
                       setMediaAttachments((attachments) => {
+                        revokeAttachmentObjectUrl(attachments[i]);
                         return attachments.filter((_a, j) => j !== i);
                       });
                     }}
                   />
                 );
               })}
-              <label class="media-sensitive">
-                <input
-                  name="sensitiveMedia"
-                  type="checkbox"
-                  checked={sensitiveMedia}
-                  disabled={uiState === 'loading'}
-                  onChange={(e: TargetedEvent<HTMLInputElement>) => {
-                    const nextSensitiveMedia = (e.target as HTMLInputElement)
-                      .checked;
-                    setSensitiveMedia(nextSensitiveMedia);
-                  }}
-                />{' '}
-                <span>
-                  <Trans>Mark media as sensitive</Trans>
-                </span>{' '}
-                <Icon icon={`eye-${sensitiveMedia ? 'close' : 'open'}`} />
-              </label>
             </div>
           )}
-          {!!poll && (
-            <ComposePoll
-              lang={language}
-              maxOptions={maxOptions as number}
-              maxExpiration={maxExpiration as number}
-              minExpiration={minExpiration as number}
-              maxCharactersPerOption={maxCharactersPerOption}
-              poll={poll}
-              disabled={uiState === 'loading'}
-              onInput={(nextPoll) => {
-                if (nextPoll) {
-                  const newPoll = { ...nextPoll };
-                  setPoll(newPoll);
-                } else {
-                  setPoll(null);
-                  focusLastFocusedField();
-                }
-              }}
-            />
-          )}
           {!!currentQuoteStatus?.id && (
-            <div class="quote-status">
+            <div className="quote-status">
               <Status
                 status={currentQuoteStatus}
                 instance={instance}
                 size="s"
                 readOnly
               />
-            </div>
-          )}
-          {scheduledAt && (
-            <div class="toolbar scheduled-at">
-              <span>
-                <label>
-                  <Trans>
-                    Posting on{' '}
-                    <ScheduledAtField
-                      scheduledAt={scheduledAt}
-                      setScheduledAt={setScheduledAt}
-                    />
-                  </Trans>
-                </label>{' '}
-                <small class="tag insignificant">
-                  {getLocalTimezoneName()}
-                </small>
-              </span>
-              <button
-                type="button"
-                class="plain4 close-button small"
-                onClick={() => {
-                  setScheduledAt(null);
-                  focusLastFocusedField();
-                }}
-              >
-                <Icon icon="x" alt={t`Cancel`} />
-              </button>
             </div>
           )}
           <QuoteSuggestion
@@ -2314,7 +1890,7 @@ function Compose({
                 currentValue.slice(pastedLinkPos + quoteSuggestion.url.length);
               if (textareaRef.current) {
                 textareaRef.current.value = newValue;
-                textareaRef.current.dispatchEvent(new Event('input'));
+                dispatchComposeInput(textareaRef.current);
               }
 
               const hasCurrentQuote = !!currentQuoteStatus?.id;
@@ -2338,123 +1914,91 @@ function Compose({
               }
               focusTextarea();
             }}
-            onCancel={() => setQuoteSuggestion(null)}
+            onCancel={() => {
+              setQuoteSuggestion(null);
+            }}
           />
-          <div class="toolbar compose-footer">
-            <span class="add-toolbar-button-group spacer">
+          <div className="toolbar compose-footer">
+            <span className="add-toolbar-button-group spacer">
               {showAddButton && (
-                <Menu2
-                  portal={{
-                    target: document.body,
-                  }}
-                  containerProps={{
-                    style: {
-                      zIndex: 1001,
-                    },
-                  }}
-                  menuButton={({ open }: { open: boolean }) => (
-                    <button
-                      type="button"
-                      class={`toolbar-button add-button ${
-                        open ? 'active' : ''
-                      }`}
-                    >
-                      <Icon icon="plus" title={t`Add`} />
-                    </button>
-                  )}
-                >
+                <>
                   {supportsCameraCapture && (
+                    <CameraCaptureInput
+                      id={menuCameraInputId}
+                      hidden
+                      supportedMimeTypes={supportedImagesVideosTypes}
+                      disabled={mediaButtonDisabled}
+                      setMediaAttachments={setMediaAttachments}
+                    />
+                  )}
+                  <FilePickerInput
+                    id={menuMediaInputId}
+                    hidden
+                    supportedMimeTypes={supportedMimeTypes}
+                    maxMediaAttachments={maxMediaAttachments}
+                    mediaAttachments={mediaAttachments}
+                    disabled={mediaButtonDisabled}
+                    setMediaAttachments={setMediaAttachments}
+                  />
+                  <Menu2
+                    portal={{
+                      target: document.body,
+                    }}
+                    containerProps={{
+                      style: {
+                        zIndex: 1001,
+                      },
+                    }}
+                    menuButton={({ open }: { open: boolean }) => (
+                      <button
+                        type="button"
+                        className={`toolbar-button add-button ${
+                          open ? 'active' : ''
+                        }`}
+                      >
+                        <Icon icon="plus" title={t`Add`} />
+                      </button>
+                    )}
+                  >
+                    {supportsCameraCapture && (
+                      <MenuItem
+                        disabled={mediaButtonDisabled}
+                        className="compose-menu-add-media"
+                        onClick={(event) => {
+                          event.keepOpen = true;
+                          clickFileInput(menuCameraInputId);
+                        }}
+                      >
+                        <Icon icon="camera" />{' '}
+                        <span>{_(ADD_LABELS.camera)}</span>
+                      </MenuItem>
+                    )}
                     <MenuItem
                       disabled={mediaButtonDisabled}
                       className="compose-menu-add-media"
-                    >
-                      {/* TODO(oxlint:jsx-a11y/label-has-associated-control):
-                          the wrapped CameraCaptureInput renders the actual
-                          <input type="file"> — the rule cannot see through
-                          the component boundary. */}
-                      <label class="compose-menu-add-media-field">
-                        <CameraCaptureInput
-                          hidden
-                          supportedMimeTypes={supportedImagesVideosTypes}
-                          disabled={mediaButtonDisabled}
-                          setMediaAttachments={setMediaAttachments}
-                        />
-                      </label>
-                      <Icon icon="camera" /> <span>{_(ADD_LABELS.camera)}</span>
-                    </MenuItem>
-                  )}
-                  <MenuItem
-                    disabled={mediaButtonDisabled}
-                    className="compose-menu-add-media"
-                  >
-                    {/* TODO(oxlint:jsx-a11y/label-has-associated-control):
-                        the wrapped FilePickerInput renders the actual
-                        <input type="file"> — the rule cannot see through
-                        the component boundary. */}
-                    <label class="compose-menu-add-media-field">
-                      <FilePickerInput
-                        hidden
-                        supportedMimeTypes={supportedMimeTypes}
-                        maxMediaAttachments={maxMediaAttachments}
-                        mediaAttachments={mediaAttachments}
-                        disabled={mediaButtonDisabled}
-                        setMediaAttachments={setMediaAttachments}
-                      />
-                    </label>
-                    <Icon icon="media" /> <span>{_(ADD_LABELS.media)}</span>
-                  </MenuItem>
-                  <MenuItem
-                    disabled={cwButtonDisabled}
-                    onClick={onCWButtonClick}
-                  >
-                    <Icon icon="alert" /> <span>{_(ADD_LABELS.sensitive)}</span>
-                  </MenuItem>
-                  {showPollButton && (
-                    <MenuItem
-                      disabled={pollButtonDisabled}
-                      onClick={onPollButtonClick}
-                    >
-                      <Icon icon="poll" /> <span>{_(ADD_LABELS.poll)}</span>
-                    </MenuItem>
-                  )}
-                  <MenuDivider />
-                  <MenuItem
-                    onClick={() => {
-                      setShowEmoji2Picker({
-                        targetElement: lastFocusedEmojiFieldRef,
-                      });
-                    }}
-                  >
-                    <Icon icon="emoji2" />{' '}
-                    <span>{_(ADD_LABELS.customEmoji)}</span>
-                  </MenuItem>
-                  {states.settings.composerGIFPicker && (
-                    <MenuItem
-                      disabled={mediaButtonDisabled}
-                      onClick={() => {
-                        setShowGIFPicker(true);
+                      onClick={(event) => {
+                        event.keepOpen = true;
+                        clickFileInput(menuMediaInputId);
                       }}
                     >
-                      <span class="icon icon-gif" role="img" />
-                      <span>{_(ADD_LABELS.gif)}</span>
+                      <Icon icon="media" /> <span>{_(ADD_LABELS.media)}</span>
                     </MenuItem>
-                  )}
-                  {showScheduledAt && (
-                    <>
-                      <MenuDivider />
+                    {states.settings.composerGIFPicker && (
                       <MenuItem
-                        disabled={scheduledAtButtonDisabled}
-                        onClick={onScheduledAtClick}
+                        disabled={mediaButtonDisabled}
+                        onClick={() => {
+                          setShowGIFPicker(true);
+                        }}
                       >
-                        <Icon icon="schedule" />{' '}
-                        <span>{_(ADD_LABELS.scheduledPost)}</span>
+                        <span className="icon icon-gif" role="img" />
+                        <span>{_(ADD_LABELS.gif)}</span>
                       </MenuItem>
-                    </>
-                  )}
-                </Menu2>
+                    )}
+                  </Menu2>
+                </>
               )}
               <span
-                class="add-sub-toolbar-button-group"
+                className="add-sub-toolbar-button-group"
                 ref={addSubToolbarRef}
                 hidden
               >
@@ -2463,8 +2007,12 @@ function Compose({
                   // wrapped CameraCaptureInput renders the actual <input
                   // type="file"> — the rule cannot see through the component
                   // boundary.
-                  <label class="toolbar-button">
+                  <label
+                    className="toolbar-button"
+                    htmlFor={toolbarCameraInputId}
+                  >
                     <CameraCaptureInput
+                      id={toolbarCameraInputId}
                       supportedMimeTypes={supportedImagesVideosTypes}
                       mediaAttachments={mediaAttachments}
                       disabled={mediaButtonDisabled}
@@ -2477,8 +2025,9 @@ function Compose({
                     wrapped FilePickerInput renders the actual <input
                     type="file"> — the rule cannot see through the
                     component boundary. */}
-                <label class="toolbar-button">
+                <label className="toolbar-button" htmlFor={toolbarMediaInputId}>
                   <FilePickerInput
+                    id={toolbarMediaInputId}
                     supportedMimeTypes={supportedMimeTypes}
                     maxMediaAttachments={maxMediaAttachments}
                     mediaAttachments={mediaAttachments}
@@ -2487,74 +2036,20 @@ function Compose({
                   />
                   <Icon icon="media" alt={_(ADD_LABELS.media)} />
                 </label>
-                <button
-                  type="button"
-                  class="toolbar-button"
-                  disabled={cwButtonDisabled}
-                  onClick={onCWButtonClick}
-                >
-                  <Icon icon="alert" alt={_(ADD_LABELS.sensitive)} />
-                </button>
-                {showPollButton && (
-                  <button
-                    type="button"
-                    class="toolbar-button"
-                    disabled={pollButtonDisabled}
-                    onClick={onPollButtonClick}
-                  >
-                    <Icon icon="poll" alt={_(ADD_LABELS.poll)} />
-                  </button>
-                )}
-                <div class="toolbar-divider" />
-                {/* <button
-                  type="button"
-                  class="toolbar-button"
-                  disabled={uiState === 'loading'}
-                  onClick={() => {
-                    setShowMentionPicker(true);
-                  }}
-                >
-                  <Icon icon="at" />
-                </button> */}
-                <button
-                  type="button"
-                  class="toolbar-button"
-                  disabled={uiState === 'loading'}
-                  onClick={() => {
-                    setShowEmoji2Picker({
-                      targetElement: lastFocusedEmojiFieldRef,
-                    });
-                  }}
-                >
-                  <Icon icon="emoji2" alt={_(ADD_LABELS.customEmoji)} />
-                </button>
                 {states.settings.composerGIFPicker && (
                   <button
                     type="button"
-                    class="toolbar-button gif-picker-button"
+                    className="toolbar-button gif-picker-button"
                     disabled={mediaButtonDisabled}
                     onClick={() => {
                       setShowGIFPicker(true);
                     }}
                   >
                     <span
-                      class="icon icon-gif"
+                      className="icon icon-gif"
                       aria-label={_(ADD_LABELS.gif)}
                     />
                   </button>
-                )}
-                {showScheduledAt && (
-                  <>
-                    <div class="toolbar-divider" />
-                    <button
-                      type="button"
-                      class={`toolbar-button ${scheduledAt ? 'highlight' : ''}`}
-                      disabled={scheduledAtButtonDisabled}
-                      onClick={onScheduledAtClick}
-                    >
-                      <Icon icon="schedule" alt={_(ADD_LABELS.scheduledPost)} />
-                    </button>
-                  </>
                 )}
               </span>
             </span>
@@ -2568,21 +2063,21 @@ function Compose({
                 hidden={(uiState as string) === 'loading'}
               />
             )}
-            {supportsNativeQuote() && (
+            {supportsQuoteApprovalPolicy && (
               <label
-                class={`toolbar-button ${highlightQuoteApprovalPolicyField ? 'highlight' : ''}`}
+                className={`toolbar-button ${highlightQuoteApprovalPolicyField ? 'highlight' : ''}`}
               >
                 <Icon icon="quote2" alt="Quote settings" />
                 {quoteApprovalPolicy === 'followers' && (
-                  <Icon icon="group" class="insignificant" />
+                  <Icon icon="group" className="insignificant" />
                 )}
                 {quoteApprovalPolicy === 'nobody' && (
-                  <Icon icon="block" class="insignificant" />
+                  <Icon icon="block" className="insignificant" />
                 )}
                 <select
                   name="quoteApprovalPolicy"
                   value={quoteApprovalPolicy}
-                  onChange={(e: TargetedEvent<HTMLSelectElement>) => {
+                  onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
                     setQuoteApprovalPolicy(
                       (e.target as HTMLSelectElement).value,
                     );
@@ -2590,10 +2085,10 @@ function Compose({
                   disabled={uiState === 'loading'}
                   dir="auto"
                 >
-                  <option value="public" disabled={disableQuotePolicy}>
+                  <option value="public">
                     <Trans>Anyone can quote</Trans>
                   </option>
-                  <option value="followers" disabled={disableQuotePolicy}>
+                  <option value="followers">
                     <Trans>Your followers can quote</Trans>
                   </option>
                   <option value="nobody">
@@ -2603,101 +2098,17 @@ function Compose({
               </label>
             )}
             <label
-              class={`toolbar-button ${highlightVisibilityField ? 'highlight' : ''}`}
-              title={_(
-                visibilityText[visibility as keyof typeof visibilityText],
-              )}
-            >
-              {visibility === 'public' || visibility === 'direct' ? (
-                <Icon
-                  icon={
-                    visibilityIconsMap[
-                      visibility as keyof typeof visibilityIconsMap
-                    ]
-                  }
-                  alt={_(
-                    visibilityText[visibility as keyof typeof visibilityText],
-                  )}
-                />
-              ) : (
-                <span class="icon-text">
-                  {_(visibilityText[visibility as keyof typeof visibilityText])}
-                </span>
-              )}
-              <select
-                name="visibility"
-                value={visibility}
-                onChange={(e: TargetedEvent<HTMLSelectElement>) => {
-                  const target = e.target as HTMLSelectElement;
-                  setVisibility(target.value);
-                  if (target.value === 'private' || target.value === 'direct') {
-                    setQuoteApprovalPolicy('nobody');
-                  }
-
-                  if (target.value === 'direct' && currentQuoteStatus?.id) {
-                    const quoteURL = currentQuoteStatus.url;
-                    if (quoteURL) {
-                      const currentText = textareaRef.current!.value;
-                      if (!currentText.includes(quoteURL)) {
-                        textareaRef.current!.value =
-                          currentText + (currentText ? '\n' : '') + quoteURL;
-                        oninputTextarea();
-                      }
-                    }
-                    setQuoteCleared(true);
-                    showToast(t`Quotes can't be embedded in private mentions.`);
-                  } else if (target.value !== 'direct' && quoteCleared) {
-                    const quoteURL = (localQuoteStatus || quoteStatus)?.url;
-                    if (quoteURL && textareaRef.current) {
-                      const currentValue = textareaRef.current.value;
-                      const linkPos = currentValue.indexOf(quoteURL);
-                      if (linkPos !== -1) {
-                        let newValue =
-                          currentValue.slice(0, linkPos) +
-                          currentValue.slice(linkPos + quoteURL.length);
-                        newValue = newValue.replace(/\n+$/, '');
-                        textareaRef.current.value = newValue;
-                        oninputTextarea();
-                      }
-                    }
-                    setQuoteCleared(false);
-                  }
-                }}
-                disabled={uiState === 'loading' || !!editStatus}
-                dir="auto"
-              >
-                <option value="public">
-                  <Trans>Public</Trans>
-                </option>
-                {(supports('@pleroma/local-visibility-post') ||
-                  supports('@akkoma/local-visibility-post')) && (
-                  <option value="local">
-                    <Trans>Local</Trans>
-                  </option>
-                )}
-                <option value="unlisted">
-                  <Trans>Quiet public</Trans>
-                </option>
-                <option value="private">
-                  <Trans>Followers</Trans>
-                </option>
-                <option value="direct">
-                  <Trans>Private mention</Trans>
-                </option>
-              </select>
-            </label>{' '}
-            <label
-              class={`toolbar-button ${
+              className={`toolbar-button ${
                 highlightLanguageField ? 'highlight' : ''
               }`}
             >
-              <span class="icon-text">
+              <span className="icon-text">
                 {supportedLanguagesMap[language]?.native || language}
               </span>
               <select
                 name="language"
                 value={language}
-                onChange={(e: TargetedEvent<HTMLSelectElement>) => {
+                onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
                   const { value } = e.target as HTMLSelectElement;
                   setLanguage(value || DEFAULT_LANG);
                   store.session.set('currentLanguage', value || DEFAULT_LANG);
@@ -2739,16 +2150,14 @@ function Compose({
                 void haptics.trigger('medium');
               }}
             >
-              {scheduledAt
-                ? t`Schedule`
-                : replyToStatus
-                  ? t`Reply`
-                  : editStatus
-                    ? t`Update`
-                    : t({
-                        message: 'Post',
-                        context: 'Submit button in composer',
-                      })}
+              {replyToStatus
+                ? t`Reply`
+                : editStatus
+                  ? t`Update`
+                  : t({
+                      message: 'Post',
+                      context: 'Submit button in composer',
+                    })}
             </button>
           </div>
         </form>
@@ -2781,39 +2190,6 @@ function Compose({
           />
         </Modal>
       )}
-      {showEmoji2Picker && (
-        <Modal
-          onClose={() => {
-            setShowEmoji2Picker(false);
-            focusLastFocusedField();
-          }}
-        >
-          <CustomEmojisModal
-            instance={instance}
-            onClose={() => {
-              setShowEmoji2Picker(false);
-            }}
-            defaultSearchTerm={
-              typeof showEmoji2Picker === 'object'
-                ? showEmoji2Picker?.defaultSearchTerm
-                : undefined
-            }
-            onSelect={(emojiShortcode: string) => {
-              const emojiState =
-                typeof showEmoji2Picker === 'object' ? showEmoji2Picker : null;
-              const targetElement =
-                (emojiState?.targetElement?.current as
-                  | HTMLInputElement
-                  | HTMLTextAreaElement
-                  | null
-                  | undefined) || textareaRef.current;
-              if (targetElement) {
-                insertTextAtCursor({ targetElement, text: emojiShortcode });
-              }
-            }}
-          />
-        </Modal>
-      )}
       {showGIFPicker && (
         <Modal
           onClose={() => {
@@ -2822,7 +2198,9 @@ function Compose({
           }}
         >
           <GIFPickerModal
-            onClose={() => setShowGIFPicker(false)}
+            onClose={() => {
+              setShowGIFPicker(false);
+            }}
             onSelect={({
               url,
               type,

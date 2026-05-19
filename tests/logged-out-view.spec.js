@@ -32,7 +32,7 @@ test('loads post page and works', async ({ page }) => {
     });
   });
 
-  await page.goto('/#/test.social/s/123');
+  await page.goto('/test.social/s/123');
   await expect(page.locator('text=This is a test post')).toBeVisible();
 });
 
@@ -51,19 +51,17 @@ test('uses cache-busting reloads when the app script never mounts', async ({
 
   await page.goto('/');
 
-  await expect
-    .poll(() => appScriptRequests, { timeout: 25_000 })
-    .toBe(4);
+  await expect.poll(() => appScriptRequests, { timeout: 25_000 }).toBe(4);
   await expect(page.locator('#boot-status')).toContainText(
     'Safari did not run the app script',
     { timeout: 7_000 },
   );
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        JSON.parse(
-          sessionStorage.getItem('bluepy:boot-reload-state') || '{}',
-        ).attempts,
+      page.evaluate(
+        () =>
+          JSON.parse(sessionStorage.getItem('bluepy:boot-reload-state') || '{}')
+            .attempts,
       ),
     )
     .toBe(3);
@@ -86,15 +84,13 @@ test('uses cache-busting reloads when the app script fails to load', async ({
 
   await page.goto('/');
 
-  await expect
-    .poll(() => appScriptRequests, { timeout: 10_000 })
-    .toBe(4);
+  await expect.poll(() => appScriptRequests, { timeout: 10_000 }).toBe(4);
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        JSON.parse(
-          sessionStorage.getItem('bluepy:boot-reload-state') || '{}',
-        ).attempts,
+      page.evaluate(
+        () =>
+          JSON.parse(sessionStorage.getItem('bluepy:boot-reload-state') || '{}')
+            .attempts,
       ),
     )
     .toBe(3);
@@ -124,9 +120,7 @@ test('shows boot failure without recovery on app runtime errors', async ({
   expect(appScriptRequests).toBe(1);
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        sessionStorage.getItem('bluepy:boot-reload-state'),
-      ),
+      page.evaluate(() => sessionStorage.getItem('bluepy:boot-reload-state')),
     )
     .toBeNull();
 });
@@ -176,9 +170,452 @@ test('does not treat post-mount module failures as boot failures', async ({
   expect(page.url()).toBe(mountedURL);
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        sessionStorage.getItem('bluepy:boot-reload-state'),
-      ),
+      page.evaluate(() => sessionStorage.getItem('bluepy:boot-reload-state')),
     )
     .toBeNull();
+});
+
+test('redirects old hash post URLs to path routes', async ({ page }) => {
+  await page.route('**/api/v1/statuses/123', async (route) => {
+    await route.fulfill({
+      json: {
+        id: '123',
+        created_at: '2024-01-01T12:00:00.000Z',
+        account: {
+          id: '1',
+          username: 'testuser',
+          display_name: 'Test User',
+          acct: 'testuser@test.social',
+        },
+        content: '<p>Legacy hash post</p>',
+      },
+    });
+  });
+
+  await page.route('**/api/v1/statuses/123/context', async (route) => {
+    await route.fulfill({ json: { ancestors: [], descendants: [] } });
+  });
+
+  await page.goto('/#/test.social/s/123');
+  await expect(page).toHaveURL(/\/test\.social\/s\/123$/);
+  await expect(page.locator('text=Legacy hash post')).toBeVisible();
+});
+
+test('loads native AT URI post URLs', async ({ page }) => {
+  const atUri =
+    'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/3mlvekixsll23';
+  const post = {
+    uri: atUri,
+    cid: 'bafyreihltdmuzgj3iaoj5woin7jn3yfhftewnsijzf4b5gqsuxorrhw4qi',
+    author: {
+      did: 'did:plc:by3jhwdqgbtrcc7q4tkkv3cf',
+      handle: 'alice.mosphere.at',
+      displayName: 'Alice',
+    },
+    record: {
+      $type: 'app.bsky.feed.post',
+      text: 'Native AT URI post',
+      createdAt: '2024-01-01T12:00:00.000Z',
+    },
+    indexedAt: '2024-01-01T12:00:00.000Z',
+    replyCount: 0,
+    repostCount: 0,
+    likeCount: 0,
+    quoteCount: 0,
+    labels: [],
+    viewer: {},
+  };
+
+  await page.route('**/xrpc/app.bsky.feed.getPosts*', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: { posts: [post] },
+    });
+  });
+  await page.route('**/xrpc/app.bsky.feed.getPostThread*', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: {
+        thread: {
+          $type: 'app.bsky.feed.defs#threadViewPost',
+          post,
+          replies: [],
+        },
+      },
+    });
+  });
+
+  await page.goto(`/${atUri}`);
+  await expect(page.locator('text=Native AT URI post')).toBeVisible();
+  await expect(page).toHaveURL(
+    new RegExp(
+      `/at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app\\.bsky\\.feed\\.post/3mlvekixsll23$`,
+    ),
+  );
+});
+
+const AT_REPO = 'did:plc:by3jhwdqgbtrcc7q4tkkv3cf';
+const AT_PROFILE_URI = `at://${AT_REPO}/app.bsky.actor.profile/self`;
+const AT_PROFILE_PATH = `/${AT_PROFILE_URI}`;
+const AT_LIST_URI = `at://${AT_REPO}/app.bsky.graph.list/abc123`;
+const AT_LIST_PATH = `/${AT_LIST_URI}`;
+const AT_FEED_URI = `at://${AT_REPO}/app.bsky.feed.generator/whats-hot`;
+const AT_FEED_PATH = `/${AT_FEED_URI}`;
+const AT_POST_URI = `at://${AT_REPO}/app.bsky.feed.post/post123`;
+const AT_POST_PATH = `/${AT_POST_URI}`;
+
+/**
+ * @param {string} path
+ */
+function pathRegex(path) {
+  return new RegExp(`${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+}
+
+function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
+  return {
+    $type: 'app.bsky.feed.defs#postView',
+    uri,
+    cid: 'bafyreihltdmuzgj3iaoj5woin7jn3yfhftewnsijzf4b5gqsuxorrhw4qi',
+    author: {
+      $type: 'app.bsky.actor.defs#profileViewBasic',
+      did: AT_REPO,
+      handle: 'alice.test',
+      displayName: 'Alice Profile',
+    },
+    record: {
+      $type: 'app.bsky.feed.post',
+      text,
+      createdAt: '2024-01-01T12:00:00.000Z',
+    },
+    indexedAt: '2024-01-01T12:00:00.000Z',
+    replyCount: 0,
+    repostCount: 0,
+    likeCount: 0,
+    quoteCount: 0,
+    labels: [],
+    viewer: {},
+  };
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+async function routeAtprotoRecords(page) {
+  const post = makeAtprotoPost();
+  const listPost = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/listpost`,
+    'AT list timeline post',
+  );
+  const feedPost = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/feedpost`,
+    'AT feed timeline post',
+  );
+  const posts = [post, listPost, feedPost];
+  const profile = {
+    $type: 'app.bsky.actor.defs#profileView',
+    did: AT_REPO,
+    handle: 'alice.test',
+    displayName: 'Alice Profile',
+    description: 'Profile loaded through an AT URI',
+    followersCount: 1,
+    followsCount: 2,
+    postsCount: 3,
+    labels: [],
+    viewer: {},
+  };
+  const list = {
+    $type: 'app.bsky.graph.defs#listView',
+    uri: AT_LIST_URI,
+    cid: 'bafyreihltdmuzgj3iaoj5woin7jn3yfhftewnsijzf4b5gqsuxorrhw4qi',
+    creator: profile,
+    name: 'AT List',
+    description: '',
+    purpose: 'app.bsky.graph.defs#curatelist',
+    indexedAt: '2024-01-01T12:00:00.000Z',
+    listItemCount: 1,
+    viewer: {},
+  };
+  const feed = {
+    $type: 'app.bsky.feed.defs#generatorView',
+    uri: AT_FEED_URI,
+    cid: 'bafyreihltdmuzgj3iaoj5woin7jn3yfhftewnsijzf4b5gqsuxorrhw4qi',
+    did: AT_REPO,
+    displayName: 'AT Feed',
+    description: '',
+    creator: profile,
+    indexedAt: '2024-01-01T12:00:00.000Z',
+    likeCount: 0,
+    viewer: {},
+  };
+  const headers = { 'access-control-allow-origin': '*' };
+
+  await page.route(
+    '**/xrpc/**',
+    async (/** @type {import('@playwright/test').Route} */ route) => {
+      const url = new URL(route.request().url());
+      const endpoint = url.pathname.replace('/xrpc/', '');
+      if (endpoint === 'app.bsky.actor.getProfile') {
+        await route.fulfill({ headers, json: profile });
+        return;
+      }
+      if (endpoint === 'app.bsky.feed.getAuthorFeed') {
+        await route.fulfill({
+          headers,
+          json: { feed: [{ post }] },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.feed.getPosts') {
+        const uris = url.searchParams.getAll('uris');
+        const selectedPosts = uris.length
+          ? posts.filter(({ uri }) => uris.includes(uri))
+          : posts;
+        await route.fulfill({
+          headers,
+          json: { posts: selectedPosts },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.feed.getPostThread') {
+        const requestedPost =
+          posts.find(({ uri }) => uri === url.searchParams.get('uri')) || post;
+        await route.fulfill({
+          headers,
+          json: {
+            thread: {
+              $type: 'app.bsky.feed.defs#threadViewPost',
+              post: requestedPost,
+              replies: [],
+            },
+          },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.graph.getList') {
+        expect(url.searchParams.get('list')).toBe(AT_LIST_URI);
+        await route.fulfill({
+          headers,
+          json: {
+            list,
+            items: [
+              {
+                $type: 'app.bsky.graph.defs#listItemView',
+                uri: `at://${AT_REPO}/app.bsky.graph.listitem/item1`,
+                subject: profile,
+              },
+            ],
+          },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.feed.getListFeed') {
+        expect(url.searchParams.get('list')).toBe(AT_LIST_URI);
+        await route.fulfill({
+          headers,
+          json: { feed: [{ post: listPost }] },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.feed.getFeedGenerator') {
+        expect(url.searchParams.get('feed')).toBe(AT_FEED_URI);
+        await route.fulfill({
+          headers,
+          json: { view: feed, isOnline: true, isValid: true },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.feed.getFeed') {
+        expect(url.searchParams.get('feed')).toBe(AT_FEED_URI);
+        await route.fulfill({
+          headers,
+          json: { feed: [{ post: feedPost }] },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.feed.searchPosts') {
+        await route.fulfill({ headers, json: { posts: [] } });
+        return;
+      }
+      await route.fulfill({ headers, json: {} });
+    },
+  );
+}
+
+test('canonicalizes legacy AT record routes on direct load', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await routeAtprotoRecords(page);
+
+  await page.goto('/search', { waitUntil: 'domcontentloaded' });
+  await page.goto(`/bsky.social/s/${encodeURIComponent(AT_POST_URI)}`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
+  await expect(page.locator('text=AT route post')).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(pathRegex('/search'));
+
+  await page.goto(`/bsky.social/s/${encodeURIComponent(AT_POST_URI)}#reply`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(`${AT_POST_PATH}#reply`));
+
+  await page.goto(`/bsky.social/s/${encodeURIComponent(AT_POST_URI)}?q=1`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(`${AT_POST_PATH}?q=1`));
+
+  await page.goto(`/bsky.social/a/${AT_REPO}`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_PROFILE_PATH));
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+
+  await page.goto(`/a/${AT_REPO}`, { waitUntil: 'domcontentloaded' });
+  await expect(page).toHaveURL(pathRegex(AT_PROFILE_PATH));
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+
+  await page.goto(`/l/${encodeURIComponent(AT_LIST_URI)}`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_LIST_PATH));
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+
+  await page.goto(`/bsky.social/l/${encodeURIComponent(AT_LIST_URI)}`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_LIST_PATH));
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+
+  await page.goto(`/bsky.social/l/${encodeURIComponent(AT_LIST_URI)}?q=1`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(`${AT_LIST_PATH}?q=1`));
+
+  await page.goto(`/l/${encodeURIComponent(AT_FEED_URI)}`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+});
+
+test('loads and reloads canonical AT profile URLs', async ({ page }) => {
+  await routeAtprotoRecords(page);
+
+  await page.goto(AT_PROFILE_PATH);
+  await expect(page).toHaveURL(pathRegex(AT_PROFILE_PATH));
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+  await expect(page).toHaveTitle(/Alice Profile/);
+
+  await page.reload();
+  await expect(page).toHaveURL(pathRegex(AT_PROFILE_PATH));
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+  await expect(page).toHaveTitle(/Alice Profile/);
+});
+
+test('keeps titles working on legacy account routes', async ({ page }) => {
+  const account = {
+    id: '12345',
+    username: 'legacyuser',
+    acct: 'legacyuser@mastodon.social',
+    display_name: 'Legacy Account',
+    avatar: '',
+    avatar_static: '',
+    header: '',
+    header_static: '',
+    followers_count: 0,
+    following_count: 0,
+    statuses_count: 0,
+    bot: false,
+    locked: false,
+    emojis: [],
+  };
+  await page.route('**/api/v1/accounts/12345', async (route) => {
+    await route.fulfill({ json: account });
+  });
+  await page.route('**/api/v1/accounts/12345/statuses*', async (route) => {
+    await route.fulfill({ json: [] });
+  });
+
+  await page.goto('/mastodon.social/a/12345', {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex('/mastodon.social/a/12345'));
+  await expect(page).toHaveTitle(/Legacy Account/);
+});
+
+test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
+  await routeAtprotoRecords(page);
+
+  await page.goto(AT_LIST_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+  await expect(page.locator('text=AT list timeline post')).toBeVisible();
+  await expect(page).toHaveTitle(/AT List/);
+  await page.reload();
+  await expect(page).toHaveURL(pathRegex(AT_LIST_PATH));
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+  await expect(page.locator('.status-link-native').first()).toHaveAttribute(
+    'href',
+    new RegExp(`/at://${AT_REPO}/app\\.bsky\\.feed\\.post/listpost$`),
+  );
+  await page.locator('.status-link-native').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/listpost`),
+  );
+  await expect(page.locator('text=AT list timeline post')).toBeVisible();
+
+  await page.goto(AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  await expect(page.locator('text=AT feed timeline post')).toBeVisible();
+  await expect(page).toHaveTitle(/AT Feed/);
+  await page.reload();
+  await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+});
+
+test('keeps app-local routes outside the AT URI schema', async ({ page }) => {
+  test.setTimeout(75_000);
+  await page.route('**/xrpc/**', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: {},
+    });
+  });
+  const appLocalPaths = [
+    '/',
+    '/search',
+    '/bsky.social/search',
+    '/bsky.social/trending',
+    '/bsky.social/a/12345',
+    '/t/bluepy',
+    '/notifications',
+    '/mentions',
+    '/following',
+    '/b',
+    '/f',
+    '/catchup',
+    '/yip',
+  ];
+
+  /**
+   * @param {string[]} paths
+   */
+  async function assertAppLocalPaths(paths) {
+    const [path, ...rest] = paths;
+    if (!path) return;
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    expect(new URL(page.url()).pathname).not.toMatch(/^\/at:\/\//);
+    await assertAppLocalPaths(rest);
+  }
+
+  await assertAppLocalPaths(appLocalPaths);
 });

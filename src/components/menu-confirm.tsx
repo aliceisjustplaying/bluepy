@@ -3,8 +3,8 @@ import {
   type MenuItemProps,
   type MenuProps,
 } from '@szhsin/react-menu';
-import type { ComponentChildren, VNode } from 'preact';
-import { cloneElement } from 'preact';
+import type { ReactNode, ReactElement } from 'react';
+import { cloneElement } from 'react';
 
 import Menu2 from './menu2';
 import SubMenu2 from './submenu2';
@@ -17,19 +17,22 @@ type MenuClickHandler = (
 // MenuItem (when `!confirm && subMenu`) or Menu2/SubMenu2 (the confirm path).
 // Typed as the union of those prop surfaces (Partial because all are optional
 // from this component's view) plus the explicit local props.
-type PassThroughProps = Partial<MenuProps> & Partial<MenuItemProps>;
-type ConfirmItemProps = Omit<MenuItemProps, 'className' | 'onClick'>;
+type ConfirmItemProps = Omit<MenuItemProps, 'onClick'> & {
+  [key: `data-${string}`]: unknown;
+};
 
-interface MenuConfirmProps extends PassThroughProps {
+interface MenuConfirmProps {
   subMenu?: boolean;
   confirm?: boolean;
-  confirmLabel?: ComponentChildren;
+  confirmLabel?: ReactNode;
   confirmItemProps?: ConfirmItemProps;
   menuItemClassName?: string;
-  menuFooter?: ComponentChildren;
-  menuExtras?: ComponentChildren;
-  children?: ComponentChildren;
+  menuFooter?: ReactNode;
+  menuExtras?: ReactNode;
+  children?: ReactNode;
   onClick?: MenuClickHandler;
+  itemProps?: ConfirmItemProps;
+  [key: string]: unknown;
 }
 
 function MenuConfirm({
@@ -44,33 +47,36 @@ function MenuConfirm({
 }: MenuConfirmProps) {
   const { children, onClick, ...restProps } = props;
   if (!confirm) {
-    if (subMenu) return <MenuItem {...props} />;
+    if (subMenu) return <MenuItem {...(props as MenuItemProps)} />;
     if (onClick) {
-      // JS contract requires `children` to be a single trigger VNode when
+      // JS contract requires `children` to be a single trigger ReactElement when
       // `onClick` is supplied without confirm; runtime crashes identically
       // on anything else.
-      return cloneElement(children as VNode, {
+      return cloneElement(children as ReactElement<Record<string, unknown>>, {
         onClick,
       });
     }
-    return children;
+    return <>{children}</>;
   }
   // Menu2 and SubMenu2 share most layout props but have non-identical
   // signatures (e.g. SubMenu has no portal). JS picks at runtime, so we cast
   // through the wider Menu2 shape — the only branch that actually uses extras
   // like `portal` is the non-subMenu path.
-  const Parent = (subMenu ? SubMenu2 : Menu2) as typeof Menu2;
+  const Parent = (subMenu ? SubMenu2 : Menu2) as unknown as (props: {
+    [key: string]: unknown;
+    children?: ReactNode;
+  }) => ReactElement;
   return (
     <Parent
-      openTrigger="clickOnly"
       direction="bottom"
       overflow="auto"
       gap={-8}
       shift={8}
       menuClassName="menu-emphasized"
-      {...restProps}
-      menuButton={subMenu ? undefined : children}
-      label={subMenu ? children : undefined}
+      {...(restProps as unknown as MenuProps)}
+      {...(subMenu
+        ? { label: children, openTrigger: 'clickOnly' }
+        : { menuButton: children, openTrigger: 'clickOnly' })}
     >
       <MenuItem
         {...confirmItemProps}

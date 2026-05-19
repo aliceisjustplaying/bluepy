@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
@@ -65,21 +65,21 @@ export default function MediaAltModal({
   }, [differentLanguage, alt]);
 
   return (
-    <div class="sheet" tabIndex={-1}>
+    <div className="sheet" tabIndex={-1}>
       {!!onClose && (
-        <button type="button" class="sheet-close outer" onClick={onClose}>
+        <button type="button" className="sheet-close outer" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
-      <header class="header-grid">
+      <header className="header-grid">
         <h2>
           <Trans>Media description</Trans>
         </h2>
-        <div class="header-side">
+        <div className="header-side">
           <Menu2
             align="end"
             menuButton={
-              <button type="button" class="plain4">
+              <button type="button" className="plain4">
                 <Icon icon="more" alt={t`More`} size="xl" />
               </button>
             }

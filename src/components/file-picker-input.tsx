@@ -1,23 +1,28 @@
 import { plural } from '@lingui/core/macro';
-import type { TargetedEvent } from 'preact';
+import type { SyntheticEvent } from 'react';
 
-export interface FilePickerMediaAttachment {
+import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
+import { revokeAttachmentObjectUrls } from '../utils/compose-media';
+import supports from '../utils/supports';
+
+interface FilePickerMediaAttachment {
   fileData: ArrayBuffer;
   fileName: string;
   type: string;
   size: number;
   url: string;
+  ownedObjectUrl: boolean;
   id: string | null;
   description: string | null;
 }
 
-export interface FilePickerInputAttachment
-  extends Partial<FilePickerMediaAttachment> {
+interface FilePickerInputAttachment extends Partial<FilePickerMediaAttachment> {
   file?: File;
   [key: string]: unknown;
 }
 
-export interface FilePickerInputProps {
+interface FilePickerInputProps {
+  id?: string;
   hidden?: boolean;
   supportedMimeTypes?: string[];
   maxMediaAttachments?: number;
@@ -31,6 +36,7 @@ export interface FilePickerInputProps {
 }
 
 function FilePickerInput({
+  id,
   hidden,
   supportedMimeTypes,
   maxMediaAttachments,
@@ -40,18 +46,16 @@ function FilePickerInput({
 }: FilePickerInputProps) {
   return (
     <input
+      id={id}
       type="file"
-      hidden={hidden}
+      className={hidden ? 'file-input-hidden' : undefined}
       accept={supportedMimeTypes?.join(',')}
       multiple={
         maxMediaAttachments === undefined ||
-        // Preserves JS runtime: original code subtracted the whole array,
-        // which coerces via Number() to NaN (or 0 if empty). Pre-existing
-        // bug; follow-up, not changed in this TS migration.
-        maxMediaAttachments - Number(mediaAttachments) >= 2
+        maxMediaAttachments - mediaAttachments.length >= 2
       }
       disabled={disabled}
-      onChange={(e: TargetedEvent<HTMLInputElement>) => {
+      onChange={(e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
         const files = target.files;
         if (!files) return;
@@ -60,15 +64,21 @@ function FilePickerInput({
           let mediaFiles: FilePickerMediaAttachment[];
           try {
             mediaFiles = await Promise.all(
-              Array.from(files).map(async (file) => ({
-                fileData: await file.arrayBuffer(),
-                fileName: file.name,
-                type: file.type,
-                size: file.size,
-                url: URL.createObjectURL(file),
-                id: null, // indicate uploaded state
-                description: null,
-              })),
+              Array.from(files).map(async (file) => {
+                const uploadFile = supports('@atproto')
+                  ? await compressAtprotoImageIfNeeded(file)
+                  : file;
+                return {
+                  fileData: await uploadFile.arrayBuffer(),
+                  fileName: uploadFile.name,
+                  type: uploadFile.type,
+                  size: uploadFile.size,
+                  url: URL.createObjectURL(uploadFile),
+                  ownedObjectUrl: true,
+                  id: null, // indicate uploaded state
+                  description: null,
+                };
+              }),
             );
           } catch (err) {
             console.error('Failed to read file(s):', err);
@@ -87,6 +97,7 @@ function FilePickerInput({
                 other: 'You can only attach up to # files.',
               }),
             );
+            revokeAttachmentObjectUrls(mediaFiles);
           } else {
             setMediaAttachments((attachments) => {
               return attachments.concat(

@@ -6,8 +6,8 @@ import './polyfills';
 import { i18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { render } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 
 import ComposeSuspense from './components/compose-suspense';
 import { IconSpriteProvider } from './components/icon-sprite-manager';
@@ -24,7 +24,6 @@ interface ComposePayload {
     account?: { acct?: string; username?: string };
     [key: string]: unknown;
   };
-  replyMode?: string;
   draftStatus?: unknown;
   quoteStatus?: unknown;
 }
@@ -51,7 +50,7 @@ function App() {
   const [uiState, setUIState] = useState('default');
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  const { editStatus, replyToStatus, replyMode, draftStatus, quoteStatus } =
+  const { editStatus, replyToStatus, draftStatus, quoteStatus } =
     (window as Window & { __COMPOSE__?: ComposePayload }).__COMPOSE__ || {};
 
   useTitle(
@@ -85,7 +84,7 @@ function App() {
 
   if (uiState === 'closed') {
     return (
-      <div class="box">
+      <div className="box">
         <p>
           <Trans>You may close this page now.</Trans>
         </p>
@@ -106,7 +105,7 @@ function App() {
 
   if (isLoggedIn === false) {
     return (
-      <div class="box">
+      <div className="box">
         <h1>
           <Trans>Error</Trans>
         </h1>
@@ -127,7 +126,6 @@ function App() {
       <ComposeSuspense
         editStatus={editStatus}
         replyToStatus={replyToStatus}
-        replyMode={replyMode || 'all'}
         draftStatus={draftStatus}
         quoteStatus={quoteStatus}
         standalone
@@ -151,19 +149,28 @@ function App() {
   }
 
   return (
-    <div class="box">
+    <div className="box">
       <Loader />
     </div>
   );
 }
 
-render(
+const bluepyReactRoot = Symbol.for('bluepy.reactRoot');
+
+type RootContainer = HTMLElement & {
+  [bluepyReactRoot]?: Root;
+};
+
+// Preserve original JS behavior of failing loudly if the template's root
+// element is ever missing.
+const appContainer = document.getElementById('app-standalone') as RootContainer;
+const root =
+  appContainer[bluepyReactRoot] ||
+  (appContainer[bluepyReactRoot] = createRoot(appContainer));
+root.render(
   <I18nProvider i18n={i18n}>
     <IconSpriteProvider>
       <App />
     </IconSpriteProvider>
   </I18nProvider>,
-  // Preserve original JS behavior of failing loudly via `render(...)` if the
-  // template's root element is ever missing rather than silently skipping.
-  document.getElementById('app-standalone') as HTMLElement,
 );

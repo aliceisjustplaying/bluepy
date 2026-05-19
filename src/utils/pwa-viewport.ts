@@ -16,10 +16,7 @@ function updateViewportForPWA(): void {
 
   if (isStandalone) {
     const currentContent = viewportMeta.getAttribute('content');
-    // Faithful to JS: original threw TypeError on null content. Asserting
-    // non-null preserves that runtime behavior; viewport meta always has a
-    // content attribute in this app's index.html.
-    if (!currentContent!.includes('user-scalable=no')) {
+    if (currentContent && !currentContent.includes('user-scalable=no')) {
       viewportMeta.setAttribute(
         'content',
         currentContent + ', user-scalable=no',

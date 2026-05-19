@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 import RTF from '../utils/relative-time-format';
 
@@ -50,7 +50,7 @@ interface StatusMenuStateArgs {
   setForceTranslate: (value: boolean) => void;
   instance: string;
   id: string;
-  onStatusLinkClick: (e: MouseEvent | KeyboardEvent, status: AnyStatus) => void;
+  onStatusLinkClick: (e: React.MouseEvent | KeyboardEvent, status: AnyStatus) => void;
   createdDateText?: string | false | null;
   editedAt?: string | null;
   setShowEdited: (value: string | false) => void;
@@ -141,15 +141,15 @@ export default function useStatusMenuState({
     quoteAny?.state === 'accepted' &&
     quoteAny?.quotedStatus?.account?.id === currentAccount;
   const isPinnable = ['public', 'unlisted', 'private'].includes(visibility);
-  const menuFooter: ComponentChildren =
+  const menuFooter: ReactNode =
     mediaNoDesc && !reblogged ? (
-      <div class="footer">
+      <div className="footer">
         <Icon icon="alert" />
         <Trans>Some media have no descriptions.</Trans>
       </div>
     ) : (
       statusMonthsAgo >= 3 && (
-        <div class="footer">
+        <div className="footer">
           <Icon icon="info" />
           <span>
             <Trans>
@@ -160,11 +160,7 @@ export default function useStatusMenuState({
         </div>
       )
     );
-  const {
-    replyModeMenuItems,
-    statusMenuItems: StatusMenuItems,
-    tooManyMentions,
-  } = useStatusMenuParts({
+  const { statusMenuItems: StatusMenuItems } = useStatusMenuParts({
     accountId,
     mentions,
     currentAccount,
@@ -226,5 +222,5 @@ export default function useStatusMenuState({
     fetchBoostedLikedByAccounts,
   });
 
-  return { menuFooter, replyModeMenuItems, StatusMenuItems, tooManyMentions };
+  return { menuFooter, StatusMenuItems };
 }

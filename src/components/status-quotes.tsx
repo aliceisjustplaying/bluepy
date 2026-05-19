@@ -1,21 +1,25 @@
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentChildren, RefObject } from 'preact';
-import { Fragment } from 'preact';
-import { memo } from 'preact/compat';
-import { useContext } from 'preact/hooks';
+import type { KeyboardEvent, MouseEvent, ReactNode, RefObject } from 'react';
+import { Fragment } from 'react';
+import { memo } from 'react';
+import { use } from 'react';
 import { useSnapshot } from 'valtio';
 
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
+import {
+  canonicalizeAppPath,
+  isModifiedClick,
+  navigatePath,
+} from '../utils/router';
 import states, { statusKey } from '../utils/states';
 import { getCurrentAccID } from '../utils/store-utils';
 import useTruncated from '../utils/useTruncated';
 
 import Icon from './icon';
 import LazyShazam from './lazy-shazam';
-import Link from './link';
 import NameText from './name-text';
 import { readMoreText } from './status-helpers';
 import type { AnyAccount, AnyStatus } from './status-types';
@@ -35,6 +39,59 @@ const revealableUnfulfilledStates = new Set([
   'blocked_domain',
   'muted_account',
 ]);
+
+const shouldLetStatusCardTargetHandleEvent = (target: EventTarget | null) =>
+  target instanceof Element &&
+  !!target.closest(
+    'a, button, input, textarea, select, summary, [role="button"], [data-menu-trigger]',
+  );
+
+function StatusCardLink({
+  to,
+  className,
+  readMore,
+  children,
+}: {
+  to: string;
+  className: string;
+  readMore: string;
+  children: ReactNode;
+}) {
+  const href = canonicalizeAppPath(to);
+  return (
+    <div
+      className={className}
+      role="link"
+      tabIndex={0}
+      data-href={href}
+      data-read-more={readMore}
+      onClick={(e: MouseEvent<HTMLDivElement>) => {
+        if (shouldLetStatusCardTargetHandleEvent(e.target)) return;
+        if (isModifiedClick(e)) return;
+        navigatePath(href);
+      }}
+      onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        navigatePath(href);
+      }}
+    >
+      <a
+        className="status-link-native"
+        href={href}
+        aria-hidden="true"
+        tabIndex={-1}
+        onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+          if (isModifiedClick(e)) return;
+          e.preventDefault();
+          navigatePath(href);
+        }}
+      />
+      {children}
+    </div>
+  );
+}
+
 type StaticUnfulfilledState =
   | 'filterHidden'
   | 'pending'
@@ -82,7 +139,7 @@ interface RenderStatusArgs {
   quoteDomain?: string;
 }
 
-type RenderStatus = (args: RenderStatusArgs) => ComponentChildren;
+type RenderStatus = (args: RenderStatusArgs) => ReactNode;
 
 interface QuoteStatusProps {
   quote: QuoteRef;
@@ -95,7 +152,7 @@ const QuoteStatus = memo(
     const { i18n } = useLingui();
     const _ = i18n._.bind(i18n);
     const snapStates = useSnapshot(states);
-    const filterContext = useContext(FilterContext);
+    const filterContext = use(FilterContext);
     const currentAccount = getCurrentAccID();
 
     const q = quote;
@@ -104,9 +161,9 @@ const QuoteStatus = memo(
     const isStaticQuote = !!q.quoteStatus;
     const quoteStatusKey = statusKey(q.id, q.instance);
     const quoteStatus =
-      ((quoteStatusKey
-        ? snapStates.statuses[quoteStatusKey]
-        : undefined) as AnyStatus | undefined) || q.quoteStatus;
+      ((quoteStatusKey ? snapStates.statuses[quoteStatusKey] : undefined) as
+        | AnyStatus
+        | undefined) || q.quoteStatus;
     if (quoteStatus) {
       const isSelf =
         currentAccount && currentAccount === quoteStatus.account?.id;
@@ -165,7 +222,7 @@ const QuoteStatus = memo(
       return (
         <div
           key={quoteKey}
-          class={`status-card-unfulfilled ${
+          className={`status-card-unfulfilled ${
             unfulfilledState === 'filterHidden' || isRevealable
               ? 'status-card-ghost'
               : ''
@@ -176,7 +233,7 @@ const QuoteStatus = memo(
           {isRevealable && quoteKey && (
             <button
               type="button"
-              class="textual"
+              className="textual"
               onClick={() => {
                 states.revealedQuotes[quoteKey] = true;
               }}
@@ -188,25 +245,29 @@ const QuoteStatus = memo(
       );
     }
 
-    const Parent = q.native ? Fragment : LazyShazam;
     const qKey = `${q.instance ?? ''}${q.id ?? ''}`;
-    return (
-      <Parent id={qKey} key={qKey}>
-        <Link
-          key={qKey}
-          to={`${q.instance ? `/${q.instance}` : ''}/s/${q.id}`}
-          class={`status-card-link ${q.native ? 'quote-post-native' : ''}`}
-          data-read-more={_(readMoreText)}
-        >
-          {renderStatus({
-            statusID: q.id,
-            status: isStaticQuote ? quoteStatus : undefined,
-            instance: q.instance,
-            level: level + 1,
-            quoteDomain: q.originalDomain,
-          })}
-        </Link>
-      </Parent>
+    const card = (
+      <StatusCardLink
+        key={qKey}
+        to={`${q.instance ? `/${q.instance}` : ''}/s/${q.id}`}
+        className={`status-card-link ${q.native ? 'quote-post-native' : ''}`}
+        readMore={_(readMoreText)}
+      >
+        {renderStatus({
+          statusID: q.id,
+          status: isStaticQuote ? quoteStatus : undefined,
+          instance: q.instance,
+          level: level + 1,
+          quoteDomain: q.originalDomain,
+        })}
+      </StatusCardLink>
+    );
+    return q.native ? (
+      <Fragment key={qKey}>{card}</Fragment>
+    ) : (
+      <LazyShazam id={qKey} key={qKey}>
+        {card}
+      </LazyShazam>
     );
   },
 );
@@ -215,11 +276,11 @@ const ShallowQuote = ({ quote }: { quote?: QuoteRef } = {}) => {
   const { account, native, instance } = quote || ({} as QuoteRef);
   if (!account) return null;
   return (
-    <div class="status-card-container">
-      <div class={native ? 'quote-post-native' : ''}>
-        <div class="status-card status-shallow-card">
+    <div className="status-card-container">
+      <div className={native ? 'quote-post-native' : ''}>
+        <div className="status-card status-shallow-card">
           <NameText account={account} instance={instance} showAvatar />{' '}
-          <span class="insignificant">…</span>
+          <span className="insignificant">…</span>
         </div>
       </div>
     </div>
@@ -261,7 +322,7 @@ const QuoteStatuses = memo(
     if (!uniqueQuotes?.length && fallbackQuote?.quotedStatus) {
       return (
         <div
-          class="status-card-container"
+          className="status-card-container"
           ref={containerRef}
           data-read-more={_(readMoreText)}
           data-quote-container-static={true}
@@ -291,7 +352,7 @@ const QuoteStatuses = memo(
 
     return (
       <div
-        class="status-card-container"
+        className="status-card-container"
         ref={containerRef}
         data-read-more={_(readMoreText)}
       >

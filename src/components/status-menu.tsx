@@ -8,9 +8,6 @@ import type { StatusMenuPartsArgs } from './status-menu-types';
 import StatusUtilityMenu from './status-utility-menu';
 
 export default function useStatusMenuParts({
-  accountId,
-  mentions,
-  currentAccount,
   repliesCount = 0,
   username,
   acct,
@@ -21,16 +18,7 @@ export default function useStatusMenuParts({
   authenticated,
   ...menuProps
 }: StatusMenuPartsArgs) {
-  const { ReplyMenuContent, replyModeMenuItems, tooManyMentions } =
-    useStatusReplyMenu({
-      accountId,
-      mentions,
-      currentAccount,
-      repliesCount,
-      username,
-      acct,
-      replyStatus,
-    });
+  const { ReplyMenuContent } = useStatusReplyMenu({ repliesCount });
   const showActivityItems = isSizeLarge || showActionsBar;
   const showTranslateDivider =
     isSizeLarge ||
@@ -45,8 +33,6 @@ export default function useStatusMenuParts({
         <StatusQuickMenu
           {...menuProps}
           ReplyMenuContent={ReplyMenuContent}
-          replyModeMenuItems={replyModeMenuItems}
-          tooManyMentions={tooManyMentions}
           replyStatus={replyStatus}
           isSizeLarge={isSizeLarge}
           username={username}
@@ -74,5 +60,5 @@ export default function useStatusMenuParts({
     </>
   );
 
-  return { replyModeMenuItems, statusMenuItems, tooManyMentions };
+  return { statusMenuItems };
 }

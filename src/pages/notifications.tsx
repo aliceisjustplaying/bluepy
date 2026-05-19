@@ -3,21 +3,17 @@ import './notifications.css';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type {
-  ComponentType,
-  TargetedEvent,
-  TargetedMouseEvent,
-  ComponentChildren,
-} from 'preact';
-import { Fragment } from 'preact';
-import { memo } from 'preact/compat';
+import type { ComponentType, SyntheticEvent, ReactNode } from 'react';
+import { Fragment } from 'react';
+import { memo } from 'react';
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
   useState,
-} from 'preact/hooks';
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useSearchParams } from 'react-router-dom';
@@ -27,7 +23,6 @@ import { subscribeKey } from 'valtio/utils';
 import AccountBlock, {
   type AccountBlockProps,
 } from '../components/account-block';
-import FollowRequestButtons from '../components/follow-request-buttons';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
@@ -53,18 +48,17 @@ import niceDateTime from '../utils/nice-date-time';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
-import store from '../utils/store';
 import { getAPIVersions, getCurrentInstance } from '../utils/store-utils';
 import supports from '../utils/supports';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScroll from '../utils/useScroll';
 import useTitle from '../utils/useTitle';
 
-// `InView` is still untyped for our preact/react interop; shim with just the
+// `InView` is still untyped for our React interop; shim with just the
 // surface this page uses.
 type InViewProps = {
   onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
+  children?: ReactNode;
 };
 const InView: ComponentType<InViewProps> =
   InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
@@ -90,7 +84,6 @@ type NotificationLike = NotificationProps['notification'] & {
   notificationsCount?: number;
   status?: { id?: string } | null;
   _ids?: string;
-  annualReport?: { year?: string | number };
   [key: string]: unknown;
 };
 
@@ -119,7 +112,8 @@ interface MastoV2NotificationsListIterable {
   values(): NotificationsIterator;
 }
 interface MastoV1NotificationsListResult
-  extends MastoV2NotificationsListIterable,
+  extends
+    MastoV2NotificationsListIterable,
     PromiseLike<NotificationLike[] | undefined> {}
 interface MastoV2NotificationsApi {
   list(opts: {
@@ -139,9 +133,6 @@ interface MastoV1NotificationsRequestsApi {
   };
 }
 interface MastoV1NotificationsApi {
-  // The JS original passes `accountID` (capital-ID) as the param key. masto's
-  // actual API expects `accountId`, but we preserve the JS bug intentionally —
-  // accept both via the index signature so the runtime call shape is unchanged.
   list(opts?: {
     limit?: number;
     [key: string]: unknown;
@@ -296,9 +287,6 @@ function Notifications({ columnMode }: NotificationsProps) {
     scrollableRef,
   });
   const hiddenUI = scrollDirection === 'end' && !nearReachStart;
-  const [followRequests, setFollowRequests] = useState<
-    NotificationRequestLike['account'][]
-  >([]);
   const [announcements, setAnnouncements] = useState<AnnouncementLike[]>([]);
 
   console.debug('RENDER Notifications');
@@ -325,11 +313,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     // `false` (`String(undefined)` → `"undefined"`). Keep the dead guard
     // verbatim so behavior matches; do not coerce away from `undefined`.
     if (
-      /max_id=($|&)/i.test(
-        String(
-          notificationsIterator.current?.nextParams,
-        ),
-      )
+      /max_id=($|&)/i.test(String(notificationsIterator.current?.nextParams))
     ) {
       // Pixelfed returns next paginationed link with empty max_id
       // I assume, it's done (end of list)
@@ -408,23 +392,6 @@ function Notifications({ columnMode }: NotificationsProps) {
     states.notificationsShowNew = false;
     states.notificationsLastFetchTime = Date.now();
     return allNotifications as { done?: boolean; value?: unknown };
-  }
-
-  async function fetchFollowRequests() {
-    // Note: no pagination here yet because this better be on a separate page. Should be rare use-case???
-    try {
-      const followRequestsApi = masto.v1.followRequests as {
-        list(opts: {
-          limit: number;
-        }): Promise<NotificationRequestLike['account'][]>;
-      };
-      return await followRequestsApi.list({
-        limit: 80,
-      });
-    } catch {
-      // Silently fail
-      return [];
-    }
   }
 
   async function fetchAnnouncements(): Promise<AnnouncementLike[]> {
@@ -571,13 +538,6 @@ function Notifications({ columnMode }: NotificationsProps) {
             })
             .catch(() => {});
 
-          void fetchFollowRequests()
-            .then((requests) => {
-              setFollowRequests(requests);
-              return undefined;
-            })
-            .catch(() => {});
-
           if (supportsFilteredNotifications) {
             loadNotificationsPolicy();
           }
@@ -603,10 +563,13 @@ function Notifications({ columnMode }: NotificationsProps) {
   useEffect(() => {
     loadNotificationsRef.current(true);
   }, []);
-  useEffect(() => {
+  const loadReachStartNotifications = useEffectEvent(() => {
     if (reachStart) {
       loadNotificationsRef.current(true);
     }
+  });
+  useEffect(() => {
+    loadReachStartNotifications();
   }, [reachStart]);
 
   // useEffect(() => {
@@ -674,28 +637,35 @@ function Notifications({ columnMode }: NotificationsProps) {
       if (v) loadUpdatesRef.current();
       setShowNew(v);
     });
-    return () => unsub?.();
+    return () => {
+      unsub?.();
+    };
   }, []);
 
   const todayDate = new Date();
   const yesterdayDate = new Date(todayDate.getTime() - 24 * 60 * 60 * 1000);
   let currentDay = new Date();
-  const showTodayEmpty = !snapStates.notifications.some(
+  const visibleNotifications = (
+    snapStates.notifications as NotificationLike[]
+  ).filter((notification) => notification.type !== 'follow_request');
+  const showTodayEmpty = !visibleNotifications.some(
     (notification) =>
-      new Date(
-        (notification as NotificationLike).createdAt as string,
-      ).toDateString() === todayDate.toDateString(),
+      new Date(notification.createdAt as string).toDateString() ===
+      todayDate.toDateString(),
   );
 
   const announcementsListRef = useRef<HTMLUListElement | null>(null);
 
-  useEffect(() => {
+  const syncRouteNotification = useEffectEvent(() => {
     if (notificationID) {
       states.routeNotification = {
         id: notificationID,
         accessToken: atob(notificationAccessToken as string),
       };
     }
+  });
+  useEffect(() => {
+    syncRouteNotification();
   }, [notificationID, notificationAccessToken]);
 
   // useEffect(() => {
@@ -715,53 +685,6 @@ function Notifications({ columnMode }: NotificationsProps) {
   //     })();
   //   }
   // }, [uiState]);
-
-  const [annualReportNotification, setAnnualReportNotification] =
-    useState<NotificationLike | null>(null);
-  // NOTE: The JS original passed an async function directly to `useEffect`.
-  // React/preact ignores the returned promise, but the IIFE-style still
-  // fires once on mount, matching original runtime behavior. We preserve
-  // that exact shape.
-  useEffect(() => {
-    void (async () => {
-      // Skip this if not in December
-      const date = new Date();
-      if (date.getMonth() !== 11) return;
-      const dateYear = date.getFullYear();
-
-      // Skip if doesn't support annual report
-      if (!supports('@mastodon/annual-report')) return;
-
-      let currentAnnualReport: NotificationLike | null =
-        store.account.get<NotificationLike>('annualReportNotification');
-      if (currentAnnualReport) {
-        const annualReportYear = currentAnnualReport?.annualReport?.year;
-        if (annualReportYear == dateYear) {
-          setAnnualReportNotification(currentAnnualReport);
-          return;
-        }
-      }
-      const notificationIterator = mastoFetchNotifications({
-        types: ['annual_report'],
-      });
-      try {
-        const notification = await notificationIterator.next();
-        const value = notification?.value as
-          | { notificationGroups?: NotificationLike[] }
-          | undefined;
-        currentAnnualReport = value?.notificationGroups?.[0] ?? null;
-        const annualReportYear = currentAnnualReport?.annualReport?.year;
-        // If same year, show the annual report
-        if (annualReportYear == dateYear) {
-          console.log('ANNUAL REPORT', annualReportYear, currentAnnualReport);
-          setAnnualReportNotification(currentAnnualReport);
-          store.account.set('annualReportNotification', currentAnnualReport);
-        }
-      } catch (e) {
-        console.warn(e);
-      }
-    })();
-  }, []);
 
   const itemsSelector = '.notification';
   const jRef = useHotkeys<HTMLDivElement>(
@@ -801,7 +724,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -848,7 +771,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) =>
+      ignoreEventWhen: (e) =>
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
@@ -870,7 +793,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         // 'enter' doesn't need key validation (physical key, layout-independent)
         if (e.key === 'Enter') return false;
         return (
@@ -895,7 +818,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     },
     {
       useKey: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
+      ignoreEventWhen: (e) => {
         // Allow '.' even with Shift (some keyboard layouts require Shift for '.')
         if (e.key === '.') return false;
         return e.metaKey || e.ctrlKey || e.altKey || e.shiftKey;
@@ -916,7 +839,7 @@ function Notifications({ columnMode }: NotificationsProps) {
   return (
     <div
       id="notifications-page"
-      class="deck-container"
+      className="deck-container"
       ref={(node) => {
         scrollableRef.current = node;
         jRef.current = node;
@@ -926,16 +849,18 @@ function Notifications({ columnMode }: NotificationsProps) {
       }}
       tabIndex={-1}
     >
-      <div class={`timeline-deck deck ${onlyMentions ? 'only-mentions' : ''}`}>
+      <div
+        className={`timeline-deck deck ${onlyMentions ? 'only-mentions' : ''}`}
+      >
         <header
           hidden={hiddenUI}
           role="presentation"
-          onClick={(e: TargetedMouseEvent<HTMLElement>) => {
+          onClick={(e: React.MouseEvent<HTMLElement>) => {
             if (!(e.target as HTMLElement | null)?.closest('a, button')) {
               scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }}
-          onKeyDown={(e: KeyboardEvent) => {
+          onKeyDown={(e: React.KeyboardEvent) => {
             if (e.key === 'Enter' || e.key === ' ') {
               const target = e.target as HTMLElement | null;
               if (target?.closest('a, button')) return;
@@ -943,28 +868,28 @@ function Notifications({ columnMode }: NotificationsProps) {
               scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }}
-          onDblClick={(e: TargetedMouseEvent<HTMLElement>) => {
+          onDoubleClick={(e: React.MouseEvent<HTMLElement>) => {
             if (!(e.target as HTMLElement | null)?.closest('a, button')) {
               loadNotifications(true);
             }
           }}
-          class={uiState === 'loading' ? 'loading' : ''}
+          className={uiState === 'loading' ? 'loading' : ''}
         >
-          <div class="header-grid">
-            <div class="header-side">
+          <div className="header-grid">
+            <div className="header-side">
               <NavMenu />
-              <Link to="/" class="button plain">
+              <Link to="/" className="button plain">
                 <Icon icon="home" size="l" alt={t`Home`} />
               </Link>
             </div>
             <h1>
               <Trans>Notifications</Trans>
             </h1>
-            <div class="header-side">
+            <div className="header-side">
               {supportsFilteredNotifications && (
                 <button
                   type="button"
-                  class="button plain4"
+                  className="button plain4"
                   onClick={() => {
                     setShowNotificationsSettings(true);
                   }}
@@ -980,7 +905,7 @@ function Notifications({ columnMode }: NotificationsProps) {
           </div>
           {showNew && uiState !== 'loading' && (
             <button
-              class="updates-button shiny-pill"
+              className="updates-button shiny-pill"
               type="button"
               onClick={() => {
                 loadNotifications(true);
@@ -995,26 +920,30 @@ function Notifications({ columnMode }: NotificationsProps) {
           )}
         </header>
         {announcements.length > 0 && (
-          <div class="shazam-container">
-            <div class="shazam-container-inner">
-              <details class="announcements">
+          <div className="shazam-container">
+            <div className="shazam-container-inner">
+              <details className="announcements">
                 <summary>
                   <span>
-                    <Icon icon="announce" class="announcement-icon" size="l" />{' '}
+                    <Icon
+                      icon="announce"
+                      className="announcement-icon"
+                      size="l"
+                    />{' '}
                     <Plural
                       value={announcements.length}
                       one="Announcement"
                       other="Announcements"
                     />{' '}
-                    <small class="insignificant">{instance}</small>
+                    <small className="insignificant">{instance}</small>
                   </span>
                   {announcements.length > 1 && (
-                    <span class="announcements-nav-buttons">
+                    <span className="announcements-nav-buttons">
                       {announcements.map((announcement, index) => (
                         <button
                           key={announcement.id}
                           type="button"
-                          class="plain2 small"
+                          className="plain2 small"
                           onClick={() => {
                             (
                               announcementsListRef.current?.children[index] as
@@ -1033,7 +962,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                   )}
                 </summary>
                 <ul
-                  class={`announcements-list-${
+                  className={`announcements-list-${
                     announcements.length > 1 ? 'multiple' : 'single'
                   }`}
                   ref={announcementsListRef}
@@ -1048,60 +977,13 @@ function Notifications({ columnMode }: NotificationsProps) {
             </div>
           </div>
         )}
-        {followRequests.length > 0 && (
-          <div class="follow-requests">
-            <h2 class="timeline-header">
-              <Trans>Follow requests</Trans>
-            </h2>
-            {followRequests.length > 5 ? (
-              <details>
-                <summary>
-                  <Plural
-                    value={followRequests.length}
-                    one="# follow request"
-                    other="# follow requests"
-                  />
-                </summary>
-                <ul>
-                  {followRequests.map((account) => (
-                    <li key={account.id}>
-                      <AccountBlock account={account} />
-                      <FollowRequestButtons
-                        accountID={account.id}
-                        onChange={() => {
-                          // loadFollowRequests();
-                          // loadNotifications(true);
-                        }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            ) : (
-              <ul>
-                {followRequests.map((account) => (
-                  <li key={account.id}>
-                    <AccountBlock account={account} />
-                    <FollowRequestButtons
-                      accountID={account.id}
-                      onChange={() => {
-                        // loadFollowRequests();
-                        // loadNotifications(true);
-                      }}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
         {supportsFilteredNotifications &&
           (notificationsPolicy?.summary?.pendingRequestsCount ?? 0) > 0 && (
-            <div class="shazam-container">
-              <div class="shazam-container-inner">
-                <div class="filtered-notifications">
+            <div className="shazam-container">
+              <div className="shazam-container-inner">
+                <div className="filtered-notifications">
                   <details
-                    onToggle={(e: TargetedEvent<HTMLDetailsElement>) => {
+                    onToggle={(e: SyntheticEvent<HTMLDetailsElement>) => {
                       const { open } = e.target as HTMLDetailsElement;
                       if (open) {
                         void (async () => {
@@ -1122,7 +1004,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                       />
                     </summary>
                     {!notificationsRequests ? (
-                      <p class="ui-state">
+                      <p className="ui-state">
                         <Loader abrupt />
                       </p>
                     ) : (
@@ -1130,7 +1012,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                         <ul>
                           {notificationsRequests.map((request) => (
                             <li key={request.id}>
-                              <div class="request-notifcations">
+                              <div className="request-notifcations">
                                 {!request.lastStatus?.id && (
                                   <AccountBlock
                                     useAvatarStatic
@@ -1139,9 +1021,9 @@ function Notifications({ columnMode }: NotificationsProps) {
                                   />
                                 )}
                                 {request.lastStatus?.id && (
-                                  <div class="last-post">
+                                  <div className="last-post">
                                     <Link
-                                      class="status-link"
+                                      className="status-link"
                                       to={`/${instance}/s/${request.lastStatus.id}`}
                                     >
                                       <Status
@@ -1172,29 +1054,22 @@ function Notifications({ columnMode }: NotificationsProps) {
               </div>
             </div>
           )}
-        {annualReportNotification && (
-          <div class="shazam-container">
-            <div class="shazam-container-inner">
-              <Notification notification={annualReportNotification} />
-            </div>
-          </div>
-        )}
         {!!hasAnalyzedFirstLoad && (
           <div id="mentions-option">
             {showMentionsLink ? (
-              <Link to="/mentions" class="button plain">
+              <Link to="/mentions" className="button plain">
                 <Icon icon="at" />{' '}
                 <span>
                   <Trans>Mentions</Trans>
                 </span>{' '}
-                <Icon icon="arrow-right" class="more-insignificant" />
+                <Icon icon="arrow-right" className="more-insignificant" />
               </Link>
             ) : (
               <label>
                 <input
                   type="checkbox"
                   checked={onlyMentions}
-                  onChange={(e: TargetedEvent<HTMLInputElement>) => {
+                  onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                     setOnlyMentions((e.target as HTMLInputElement).checked);
                   }}
                 />{' '}
@@ -1203,21 +1078,20 @@ function Notifications({ columnMode }: NotificationsProps) {
             )}
           </div>
         )}
-        <h2 class="timeline-header">
+        <h2 className="timeline-header">
           <Trans>Today</Trans>{' '}
-          <small class="insignificant bidi-isolate">{todaySubHeading}</small>
+          <small className="insignificant bidi-isolate">
+            {todaySubHeading}
+          </small>
         </h2>
         {showTodayEmpty && (
-          <p class="ui-state insignificant">
+          <p className="ui-state insignificant">
             {uiState === 'default' ? t`You're all caught up.` : <>&hellip;</>}
           </p>
         )}
-        {snapStates.notifications.length ? (
+        {visibleNotifications.length ? (
           <FilterContext.Provider value="notifications">
-            {(snapStates.notifications as NotificationLike[])
-              // This is leaked from Notifications popover
-              .filter((n) => n.type !== 'follow_request')
-              .map((notification) => {
+            {visibleNotifications.map((notification) => {
                 if (onlyMentions && notification.type !== 'mention') {
                   return null;
                 }
@@ -1246,9 +1120,9 @@ function Notifications({ columnMode }: NotificationsProps) {
                 return (
                   <Fragment key={notification._ids || notification.id}>
                     {differentDay && (
-                      <h2 class="timeline-header">
+                      <h2 className="timeline-header">
                         <span>{heading}</span>{' '}
-                        <small class="insignificant bidi-isolate">
+                        <small className="insignificant bidi-isolate">
                           {subHeading}
                         </small>
                       </h2>
@@ -1266,13 +1140,13 @@ function Notifications({ columnMode }: NotificationsProps) {
           <>
             {uiState === 'loading' && (
               <>
-                <ul class="timeline flat">
+                <ul className="timeline flat">
                   {Array.from({ length: 5 }).map((skel, i) => (
-                    <li key={i} class="notification skeleton">
-                      <div class="notification-type">
+                    <li key={i} className="notification skeleton">
+                      <div className="notification-type">
                         <Icon icon="notification" size="xl" />
                       </div>
-                      <div class="notification-content">
+                      <div className="notification-content">
                         <p>███████████ ████</p>
                       </div>
                     </li>
@@ -1281,11 +1155,16 @@ function Notifications({ columnMode }: NotificationsProps) {
               </>
             )}
             {uiState === 'error' && (
-              <p class="ui-state">
+              <p className="ui-state">
                 <Trans>Unable to load notifications</Trans>
                 <br />
                 <br />
-                <button type="button" onClick={() => loadNotifications(true)}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    loadNotifications(true);
+                  }}
+                >
                   <Trans>Try again</Trans>
                 </button>
               </p>
@@ -1302,9 +1181,11 @@ function Notifications({ columnMode }: NotificationsProps) {
           >
             <button
               type="button"
-              class="plain block"
+              className="plain block"
               disabled={uiState === 'loading'}
-              onClick={() => loadNotifications()}
+              onClick={() => {
+                loadNotifications();
+              }}
               style={{ marginBlockEnd: '6em' }}
             >
               {uiState === 'loading' ? (
@@ -1324,11 +1205,13 @@ function Notifications({ columnMode }: NotificationsProps) {
             }
           }}
         >
-          <div class="sheet" id="notifications-settings" tabIndex={-1}>
+          <div className="sheet" id="notifications-settings" tabIndex={-1}>
             <button
               type="button"
-              class="sheet-close"
-              onClick={() => setShowNotificationsSettings(false)}
+              className="sheet-close"
+              onClick={() => {
+                setShowNotificationsSettings(false);
+              }}
             >
               <Icon icon="x" alt={t`Close`} />
             </button>
@@ -1339,7 +1222,7 @@ function Notifications({ columnMode }: NotificationsProps) {
             </header>
             <main>
               <form
-                onSubmit={(ev: TargetedEvent<HTMLFormElement>) => {
+                onSubmit={(ev: SyntheticEvent<HTMLFormElement>) => {
                   ev.preventDefault();
                   const form = ev.currentTarget
                     .elements as HTMLFormControlsCollection &
@@ -1376,14 +1259,18 @@ function Notifications({ columnMode }: NotificationsProps) {
                 <p>
                   <Trans>Filter out notifications from people:</Trans>
                 </p>
-                <div class="notification-policy-fields">
+                <div className="notification-policy-fields">
                   {NOTIFICATIONS_POLICIES.map((key) => {
                     const value = notificationsPolicy[key];
                     return (
                       <div key={key}>
                         <label>
                           {_(NOTIFICATIONS_POLICIES_TEXT[key])}
-                          <select name={key} defaultValue={value} class="small">
+                          <select
+                            name={key}
+                            defaultValue={value}
+                            className="small"
+                          >
                             <option value="accept">
                               <Trans>Accept</Trans>
                             </option>
@@ -1435,7 +1322,7 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
   const updatedAtText = niceDateTime(updatedAtDate);
 
   return (
-    <div class="announcement-block">
+    <div className="announcement-block">
       <AccountBlock
         account={
           contactAccount as Parameters<typeof AccountBlock>[0]['account']
@@ -1446,7 +1333,7 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
           anchors are focusable. A non-functional role/keydown shim would
           provide no real a11y benefit. */}
       <div
-        class="announcement-content"
+        className="announcement-content"
         role="presentation"
         onClick={handleContentLinks({
           mentions: mentions as { url?: string; acct?: string }[] | undefined,
@@ -1458,18 +1345,18 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
           }) as string,
         }}
       />
-      <p class="insignificant">
-        <time datetime={publishedAtDate.toISOString()}>
+      <p className="insignificant">
+        <time dateTime={publishedAtDate.toISOString()}>
           {niceDateTime(publishedAtDate)}
         </time>
         {updatedAt && updatedAtText !== publishedDateText && (
           <>
             {' '}
             &bull;{' '}
-            <span class="ib">
+            <span className="ib">
               <Trans>
                 Updated{' '}
-                <time datetime={updatedAtDate.toISOString()}>
+                <time dateTime={updatedAtDate.toISOString()}>
                   {niceDateTime(updatedAtDate)}
                 </time>
               </Trans>
@@ -1477,21 +1364,21 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
           </>
         )}
       </p>
-      <div class="announcement-reactions" hidden>
+      <div className="announcement-reactions" hidden>
         {reactions.map((reaction: AnnouncementReaction) => {
           const { name, count, me, staticUrl, url } = reaction;
           return (
             <button
               key={name}
               type="button"
-              class={`plain4 small ${me ? 'reacted' : ''}`}
+              className={`plain4 small ${me ? 'reacted' : ''}`}
             >
               {url || staticUrl ? (
                 <img src={url || staticUrl} alt={name} width="16" height="16" />
               ) : (
                 <span>{name}</span>
               )}{' '}
-              <span class="count">{shortenNumber(count)}</span>
+              <span className="count">{shortenNumber(count)}</span>
             </button>
           );
         })}
@@ -1503,11 +1390,8 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
 function fetchNotficationsByAccount(accountID: string) {
   const { masto } = api();
   const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
-  // NOTE: JS original passes `accountID` (capital-ID). masto's actual API
-  // expects `accountId`. Preserving the original (broken) request shape
-  // exactly — fixing it would be a behavior change outside this migration.
   return v1Notifications.list({
-    accountID,
+    accountId: accountID,
   });
 }
 interface NotificationRequestModalButtonProps {
@@ -1538,7 +1422,8 @@ function NotificationRequestModalButton({
       // `masto.v1.notifications.list(...)` directly without `.values()`.
       // The masto paginator returns a thenable-ish object; awaiting it
       // resolves to the first-page array. Mirror that runtime contract.
-      const notifs = (await fetchNotficationsByAccount(request.account.id)) || [];
+      const notifs =
+        (await fetchNotficationsByAccount(request.account.id)) || [];
       setNotifications(notifs);
       setUIState('default');
     })();
@@ -1548,16 +1433,16 @@ function NotificationRequestModalButton({
     <>
       <button
         type="button"
-        class="plain4 request-notifications-account"
+        className="plain4 request-notifications-account"
         onClick={() => {
           setShowModal(true);
         }}
       >
-        <Icon icon="notification" class="more-insignificant" />{' '}
+        <Icon icon="notification" className="more-insignificant" />{' '}
         <small>
           <Trans>
             View notifications from{' '}
-            <span class="bidi-isolate">@{account.username}</span>
+            <span className="bidi-isolate">@{account.username}</span>
           </Trans>
         </small>{' '}
         <Icon icon="chevron-down" />
@@ -1570,21 +1455,21 @@ function NotificationRequestModalButton({
             }
           }}
         >
-          <div class="sheet" tabIndex={-1}>
-            <button type="button" class="sheet-close" onClick={onClose}>
+          <div className="sheet" tabIndex={-1}>
+            <button type="button" className="sheet-close" onClick={onClose}>
               <Icon icon="x" alt={t`Close`} />
             </button>
             <header>
               <b>
                 <Trans>
                   Notifications from{' '}
-                  <span class="bidi-isolate">@{account.username}</span>
+                  <span className="bidi-isolate">@{account.username}</span>
                 </Trans>
               </b>
             </header>
             <main>
               {uiState === 'loading' ? (
-                <p class="ui-state">
+                <p className="ui-state">
                   <Loader abrupt />
                 </p>
               ) : (
@@ -1595,9 +1480,9 @@ function NotificationRequestModalButton({
                   // happens via the child interactive elements.
                   <div
                     key={notification.id}
-                    class="notification-peek"
+                    className="notification-peek"
                     role="presentation"
-                    onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
+                    onClick={(e: React.MouseEvent<HTMLDivElement>) => {
                       const target = e.target as HTMLElement | null;
                       // If button or links
                       if (
@@ -1644,7 +1529,7 @@ function NotificationRequestButtons({
   const hasRequestState = requestState !== null;
 
   return (
-    <p class="notification-request-buttons">
+    <p className="notification-request-buttons">
       <button
         type="button"
         disabled={uiState === 'loading' || hasRequestState}
@@ -1678,7 +1563,7 @@ function NotificationRequestButtons({
       <button
         type="button"
         disabled={uiState === 'loading' || hasRequestState}
-        class="light danger"
+        className="light danger"
         onClick={() => {
           void haptics.trigger('light');
           setUIState('loading');
@@ -1706,21 +1591,21 @@ function NotificationRequestButtons({
       >
         <Trans>Dismiss</Trans>
       </button>
-      <span class="notification-request-states">
+      <span className="notification-request-states">
         {uiState === 'loading' ? (
           <Loader abrupt />
         ) : requestState === 'accept' ? (
           <Icon
             icon="check-circle"
             alt={t`Accepted`}
-            class="notification-accepted"
+            className="notification-accepted"
           />
         ) : (
           requestState === 'dismiss' && (
             <Icon
               icon="x-circle"
               alt={t`Dismissed`}
-              class="notification-dismissed"
+              className="notification-dismissed"
             />
           )
         )}

@@ -2,30 +2,26 @@ import './timeline2.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type {
-  ComponentChildren,
-  RefObject,
-  TargetedMouseEvent,
-} from 'preact';
+import type { ReactNode, RefObject } from 'react';
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
-} from 'preact/hooks';
+} from 'react';
 import { useDebouncedCallback, useThrottledCallback } from 'use-debounce';
 
 import { api } from '../utils/api';
 import FilterContext from '../utils/filter-context';
 import states, { saveStatus, statusKey } from '../utils/states';
 import store from '../utils/store';
+import { dedupeTimelineContextItems } from '../utils/timeline-context';
 import {
   dedupeBoosts,
   filterHiddenStatuses,
   groupContext,
 } from '../utils/timeline-utils';
-import { dedupeTimelineContextItems } from '../utils/timeline-context';
 import useInterval from '../utils/useInterval';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScrollFn from '../utils/useScrollFn';
@@ -187,23 +183,22 @@ type UIState = 'start' | 'loading' | 'default' | 'error';
 
 interface Timeline2Props {
   title?: string;
-  titleComponent?: ComponentChildren;
+  titleComponent?: ReactNode;
   id: string;
   instance?: string;
-  emptyText?: ComponentChildren;
-  errorText?: ComponentChildren;
+  emptyText?: ReactNode;
+  errorText?: ReactNode;
   useItemID?: boolean;
   fetchItems?: (
     params?: FetchItemsParams,
   ) => Promise<FetchItemsResult | undefined>;
   checkForUpdates?: (params: CheckForUpdatesParams) => Promise<boolean>;
   checkForUpdatesInterval?: number;
-  headerStart?: ComponentChildren;
-  headerEnd?: ComponentChildren;
-  timelineStart?: ComponentChildren;
+  headerStart?: ReactNode;
+  headerEnd?: ReactNode;
+  timelineStart?: ReactNode;
   refresh?: unknown;
   filterContext?: string;
-  showFollowedTags?: boolean;
   showReplyParent?: boolean;
   dedupeBoosts?: boolean;
   // clearWhenRefresh?: boolean;
@@ -226,7 +221,6 @@ function Timeline2({
   timelineStart,
   refresh,
   filterContext,
-  showFollowedTags,
   showReplyParent,
   dedupeBoosts: shouldDedupeBoosts,
   // clearWhenRefresh,
@@ -270,18 +264,10 @@ function Timeline2({
     cachedItems.forEach((item) => {
       if (isGroupEntry(item)) {
         item.items.forEach((subItem) => {
-          saveStatus(
-            toSaveStatus(subItem),
-            instance,
-            { sync: true },
-          );
+          saveStatus(toSaveStatus(subItem), instance, { sync: true });
         });
       } else {
-        saveStatus(
-          toSaveStatus(item),
-          instance,
-          { sync: true },
-        );
+        saveStatus(toSaveStatus(item), instance, { sync: true });
       }
     });
     return cachedItems;
@@ -337,11 +323,7 @@ function Timeline2({
             });
             if (hydratedStatuses?.length) {
               hydratedStatuses.forEach((status) => {
-                saveStatus(
-                  toSaveStatus(status),
-                  instance,
-                  { sync: true },
-                );
+                saveStatus(toSaveStatus(status), instance, { sync: true });
               });
             }
           } catch (e) {
@@ -460,22 +442,13 @@ function Timeline2({
 
           if (value?.length) {
             if (shouldDedupeBoosts) {
-              // dedupeBoosts requires `instance: string`; the JS caller passed
-              // it through unconditionally. Preserve that exact behavior — an
-              // undefined instance would have stringified into the cache key
-              // there, and we mirror that with a non-null assertion rather
-              // than silently skipping the dedupe step.
-              value = dedupeBoosts(value, instance!);
+              value = dedupeBoosts(value, instance);
             }
             value = filterHiddenStatuses(
               value,
               filterContext,
             ) as TimelineStatusEntry[];
-            // groupContext expects `instance: string`; JS passed `undefined`
-            // through when the prop was omitted (only reply-hint code paths
-            // care, and they short-circuit on falsy keys). Preserve runtime
-            // behavior via a non-null assertion.
-            const grouped = groupContext(value, instance!) as TimelineEntry[];
+            const grouped = groupContext(value, instance) as TimelineEntry[];
 
             if (loadState === 'start') {
               minID.current = minIDValue;
@@ -666,12 +639,12 @@ function Timeline2({
   );
 
   useLayoutEffect(() => {
-    if (uiState !== 'default') return;
+    if (uiState !== 'default') return undefined;
     console.log('🔍 Scroll', {
       scrollableRef: scrollableRef.current,
       scrollAnchorRef: scrollAnchorRef.current,
     });
-    if (!scrollableRef.current || !scrollAnchorRef.current) return;
+    if (!scrollableRef.current || !scrollAnchorRef.current) return undefined;
 
     // Clear the anchor immediately to prevent re-entrant executions
     const anchor = scrollAnchorRef.current;
@@ -700,11 +673,14 @@ function Timeline2({
       if (Math.abs(delta) > 1) {
         scrollableRef.current.scrollTop += delta;
       }
-      setTimeout(() => {
+      const timeoutId = window.setTimeout(() => {
         if (direction) {
           scrollableRef.current?.classList.remove(`scrolling-${direction}`);
         }
       }, 300);
+      return () => {
+        window.clearTimeout(timeoutId);
+      };
     } else {
       console.warn('Target element not found', {
         itemId,
@@ -712,6 +688,7 @@ function Timeline2({
         targetElement,
       });
     }
+    return undefined;
   }, [items, uiState]);
 
   return (
@@ -723,7 +700,8 @@ function Timeline2({
           and buttons inside. */}
       <div
         id={`${id}-page`}
-        class="deck-container timeline-2-container"
+        className="deck-container timeline-2-container"
+        role="presentation"
         ref={(node) => {
           scrollableRef.current = node;
           jRef.current = node;
@@ -731,7 +709,7 @@ function Timeline2({
           oRef.current = node;
         }}
         tabIndex={-1}
-        onClick={(e: TargetedMouseEvent<HTMLDivElement>) => {
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           const target = e.target as Element | null;
           if (
             headerRef.current &&
@@ -744,14 +722,15 @@ function Timeline2({
           }
         }}
       >
-        <div class="timeline-deck deck">
+        <div className="timeline-deck deck">
           {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
               header click is a tap-to-scroll-to-top affordance for touch;
               keyboard users press Home. dblclick reloads. Real interactive
               children (links, buttons) own keyboard navigation. */}
           <header
             ref={headerRef}
-            onClick={(e: TargetedMouseEvent<HTMLElement>) => {
+            role="presentation"
+            onClick={(e: React.MouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {
                 scrollableRef.current?.scrollTo({
@@ -760,32 +739,32 @@ function Timeline2({
                 });
               }
             }}
-            onDblClick={(e: TargetedMouseEvent<HTMLElement>) => {
+            onDoubleClick={(e: React.MouseEvent<HTMLElement>) => {
               const target = e.target as Element | null;
               if (!target?.closest('a, button')) {
                 loadItems();
               }
             }}
-            // class={uiState === 'loading' ? 'loading' : ''}
+            // className={uiState === 'loading' ? 'loading' : ''}
           >
-            <div class="header-grid">
-              <div class="header-side">
+            <div className="header-grid">
+              <div className="header-side">
                 <NavMenu />
                 {headerStart !== null && headerStart !== undefined ? (
                   headerStart
                 ) : (
-                  <Link to="/" class="button plain home-button">
+                  <Link to="/" className="button plain home-button">
                     <Icon icon="home" size="l" alt={t`Home`} />
                   </Link>
                 )}
               </div>
               {title && (titleComponent ? titleComponent : <h1>{title}</h1>)}
-              <div class="header-side">{!!headerEnd && headerEnd}</div>
+              <div className="header-side">{!!headerEnd && headerEnd}</div>
             </div>
           </header>
           {!!timelineStart && (
             <div
-              class={`timeline-start ${uiState === 'loading' ? 'loading' : ''}`}
+              className={`timeline-start ${uiState === 'loading' ? 'loading' : ''}`}
             >
               {timelineStart}
             </div>
@@ -794,12 +773,12 @@ function Timeline2({
             <>
               {showNewer && (
                 <div
-                  class={`timeline-pagination timeline-pagination-top ${firstLoad.current ? '' : 'transitioning'}`}
+                  className={`timeline-pagination timeline-pagination-top ${firstLoad.current ? '' : 'transitioning'}`}
                 >
                   <button
                     type="button"
                     data-pagination-trigger="latest"
-                    class={`plain4 ${uiState === 'loading' && loadStateRef.current === 'start' ? 'block' : ''}`}
+                    className={`plain4 ${uiState === 'loading' && loadStateRef.current === 'start' ? 'block' : ''}`}
                     onClick={() => {
                       // Load from top (latest)
                       loadItems();
@@ -816,7 +795,7 @@ function Timeline2({
                   <button
                     type="button"
                     data-pagination-trigger="prev"
-                    class={`plain4 ${uiState === 'loading' && loadStateRef.current === 'start' ? '' : 'block'}`}
+                    className={`plain4 ${uiState === 'loading' && loadStateRef.current === 'start' ? '' : 'block'}`}
                     onClick={() => {
                       loadItems({ min_id: minID.current ?? undefined });
                     }}
@@ -831,7 +810,7 @@ function Timeline2({
                   </button>
                 </div>
               )}
-              <ul class="timeline">
+              <ul className="timeline">
                 {items.map((status) => (
                   <TimelineItem
                     status={status}
@@ -841,7 +820,6 @@ function Timeline2({
                     key={
                       Array.isArray(status.id) ? status.id.join(',') : status.id
                     }
-                    showFollowedTags={showFollowedTags}
                     showReplyParent={showReplyParent}
                   />
                 ))}
@@ -857,10 +835,10 @@ function Timeline2({
                 )} */}
               </ul>
               {showOlder ? (
-                <div class="timeline-pagination timeline-pagination-bottom">
+                <div className="timeline-pagination timeline-pagination-bottom">
                   <button
                     type="button"
-                    class="plain4 block"
+                    className="plain4 block"
                     data-pagination-trigger="next"
                     onClick={() => {
                       loadItems({ max_id: maxID.current ?? undefined });
@@ -875,13 +853,13 @@ function Timeline2({
                   </button>
                 </div>
               ) : uiState !== 'loading' ? (
-                <p class="ui-state insignificant">
+                <p className="ui-state insignificant">
                   <Trans>The end.</Trans>
                 </p>
               ) : null}
             </>
           ) : uiState === 'loading' ? (
-            <ul class="timeline">
+            <ul className="timeline">
               {Array.from({ length: 5 }).map((_, i) => (
                 <li key={i}>
                   <Status skeleton />
@@ -890,10 +868,10 @@ function Timeline2({
             </ul>
           ) : (
             uiState !== 'error' &&
-            uiState !== 'start' && <p class="ui-state">{emptyText}</p>
+            uiState !== 'start' && <p className="ui-state">{emptyText}</p>
           )}
           {uiState === 'error' && (
-            <p class="ui-state">
+            <p className="ui-state">
               {errorText}
               <br />
               <br />

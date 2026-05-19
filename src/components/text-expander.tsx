@@ -1,18 +1,15 @@
 import '@github/text-expander-element';
 
 import { useLingui } from '@lingui/react/macro';
-import type { HTMLAttributes, Ref } from 'preact';
-import { forwardRef, useImperativeHandle } from 'preact/compat';
-import { useEffect, useRef } from 'preact/hooks';
+import type { HTMLAttributes, Ref } from 'react';
+import { useImperativeHandle } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
-import { getCustomEmojis } from '../utils/custom-emojis';
 import emojifyText from '../utils/emojify-text';
 import getDomain from '../utils/get-domain';
 import isRTL from '../utils/is-rtl';
 import shortenNumber from '../utils/shorten-number';
-
-type EmojiSearcher = Awaited<ReturnType<typeof getCustomEmojis>>[1];
 
 interface AccountResult {
   name?: string;
@@ -75,18 +72,21 @@ export interface TextExpanderHandle {
   activated(): boolean;
 }
 
-export interface TextExpanderProps extends Omit<
+interface TextExpanderProps extends Omit<
   HTMLAttributes<HTMLElement>,
   'onTrigger' | 'keys'
 > {
+  ref?: Ref<TextExpanderHandle>;
   onTrigger?: ((payload: Record<string, unknown>) => void) | null;
   keys?: string;
 }
 
-declare module 'preact' {
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      'text-expander': HTMLAttributes<HTMLElement>;
+      'text-expander': HTMLAttributes<HTMLElement> & {
+        ref?: Ref<HTMLElement>;
+      };
     }
   }
 }
@@ -118,14 +118,10 @@ function encodeHTML(str: string | number | null | undefined = '') {
   });
 }
 
-function TextExpander(
-  { onTrigger = null, ...props }: TextExpanderProps,
-  ref: Ref<TextExpanderHandle>,
-) {
+function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
   const { t } = useLingui();
   const textExpanderRef = useRef<HTMLElement | null>(null);
-  const { masto, instance } = api();
-  const searcherRef = useRef<EmojiSearcher | undefined>(undefined);
+  const { masto } = api();
   const textExpanderTextRef = useRef<string>('');
   const hasTextExpanderRef = useRef<boolean>(false);
 
@@ -138,20 +134,6 @@ function TextExpander(
     },
     activated: () => hasTextExpanderRef.current,
   }));
-
-  // Setup emoji search if not already set up
-  useEffect(() => {
-    if (searcherRef.current) return; // Already set up
-
-    void (async () => {
-      try {
-        const [, searcher] = await getCustomEmojis(instance);
-        searcherRef.current = searcher;
-      } catch (e: unknown) {
-        console.error(e);
-      }
-    })();
-  }, [instance]);
 
   useEffect(() => {
     const textExpander = textExpanderRef.current;
@@ -166,38 +148,6 @@ function TextExpander(
         detail.provide(
           Promise.resolve({
             matched: false,
-          }),
-        );
-        return;
-      }
-
-      if (key === ':') {
-        const showMore = !!onTrigger;
-        const results = searcherRef.current?.search(text, {
-          limit: 5,
-        });
-
-        let html = '';
-        results?.forEach(({ item: emoji }) => {
-          const { shortcode } = emoji;
-          const url = typeof emoji.url === 'string' ? emoji.url : undefined;
-          html += `
-            <li role="option" data-value="${encodeHTML(shortcode)}">
-              <img src="${encodeHTML(
-                url,
-              )}" width="16" height="16" alt="" loading="lazy" />
-              ${encodeHTML(shortcode)}
-            </li>`;
-        });
-        if (showMore) {
-          html += `<li role="option" data-value="" data-more="${text}">More…</li>`;
-        }
-        menu.innerHTML = html;
-
-        detail.provide(
-          Promise.resolve({
-            matched: (results?.length || 0) > 0,
-            fragment: menu,
           }),
         );
         return;
@@ -219,15 +169,14 @@ function TextExpander(
             try {
               let searchResults: AccountResult[];
               if (type === 'accounts') {
-                searchResults =
-                  await getMastoV1Resource<AccountSearchResource>(
-                    masto,
-                    'accounts',
-                  ).search.list({
-                    q: text,
-                    limit: 5,
-                    resolve: false,
-                  });
+                searchResults = await getMastoV1Resource<AccountSearchResource>(
+                  masto,
+                  'accounts',
+                ).search.list({
+                  q: text,
+                  limit: 5,
+                  resolve: false,
+                });
               } else {
                 const response =
                   await getMastoV2Resource<TextExpanderSearchResource>(
@@ -350,21 +299,7 @@ function TextExpander(
       const { key, item } = detail;
       const { value, more } = item.dataset;
 
-      if (key === ':') {
-        detail.value = value ? `:${value}:` : '​'; // zero-width space
-        if (more) {
-          // Prevent adding space after the above value
-          detail.continue = true;
-
-          setTimeout(() => {
-            // Trigger custom emoji picker modal for more options
-            onTrigger?.({
-              name: 'custom-emojis',
-              defaultSearchTerm: more,
-            });
-          }, 300);
-        }
-      } else if (key === '@') {
+      if (key === '@') {
         detail.value = value ? `@${value}` : '​'; // zero-width space
         if (more) {
           detail.continue = true;
@@ -436,4 +371,4 @@ function TextExpander(
   return <text-expander ref={textExpanderRef} {...props} />;
 }
 
-export default forwardRef(TextExpander);
+export default TextExpander;

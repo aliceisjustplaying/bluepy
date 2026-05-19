@@ -4,7 +4,7 @@ import { msg, plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { HTMLAttributes } from 'preact';
+import type { HTMLAttributes } from 'react';
 import {
   useCallback,
   useEffect,
@@ -12,7 +12,7 @@ import {
   useReducer,
   useRef,
   useState,
-} from 'preact/hooks';
+} from 'react';
 
 import { api } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
@@ -20,6 +20,7 @@ import handleContentLinks from '../utils/handle-content-links';
 import niceDateTime from '../utils/nice-date-time';
 import pmem from '../utils/pmem';
 import { supportsNativeQuote } from '../utils/quote-utils';
+import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { hideAllModals } from '../utils/states';
@@ -38,7 +39,6 @@ import EditProfileSheetComponent, {
   type EditProfileSheetProps,
 } from './edit-profile-sheet';
 import EmojiText from './emoji-text';
-import Endorsements from './endorsements';
 import Icon from './icon';
 import Link, { type LinkProps } from './link';
 import Menu2 from './menu2';
@@ -243,7 +243,7 @@ export const handleScannerClick = (): void => {
     onClose: ({ text }: { text?: string } = {}) => {
       if (text) {
         hideAllModals();
-        location.hash = `/${text}`;
+        navigatePath(`/${text}`);
       }
     },
   };
@@ -257,7 +257,6 @@ interface AccountInfoProps {
   standalone?: boolean;
   instance?: string;
   authenticated?: boolean;
-  showEndorsements?: boolean;
 }
 
 function AccountInfo({
@@ -266,7 +265,6 @@ function AccountInfo({
   standalone,
   instance,
   authenticated,
-  showEndorsements = false,
 }: AccountInfoProps) {
   const { i18n, t } = useLingui();
   const { masto, authenticated: currentAuthenticated } = api({
@@ -464,13 +462,16 @@ function AccountInfo({
     return results;
   }
 
-  const LinkOrDiv = useCallback(({ to, ...props }: LinkProps) => {
-    return standalone ? (
-      <div {...(props as HTMLAttributes<HTMLDivElement>)} />
-    ) : (
-      <Link to={to} {...props} />
-    );
-  }, [standalone]);
+  const LinkOrDiv = useCallback(
+    ({ to, ...props }: LinkProps) => {
+      return standalone ? (
+        <div {...(props as HTMLAttributes<HTMLDivElement>)} />
+      ) : (
+        <Link to={to} {...props} />
+      );
+    },
+    [standalone],
+  );
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
 
   const [familiarFollowers, setFamiliarFollowers] = useState<
@@ -490,7 +491,7 @@ function AccountInfo({
         );
         console.log('fetched familiar followers', followers);
         setFamiliarFollowers(
-          followers[0].accounts.slice(0, FAMILIAR_FOLLOWERS_LIMIT),
+          (followers[0]?.accounts ?? []).slice(0, FAMILIAR_FOLLOWERS_LIMIT),
         );
       } catch (e) {
         console.error(e);
@@ -528,12 +529,7 @@ function AccountInfo({
         }
       }
     },
-    [
-      standalone,
-      statusesCount,
-      renderFamiliarFollowers,
-      renderPostingStats,
-    ],
+    [standalone, statusesCount, renderFamiliarFollowers, renderPostingStats],
   );
 
   const onProfileUpdate = useCallback(
@@ -551,15 +547,11 @@ function AccountInfo({
 
   const [showEditProfile, setShowEditProfile] = useState(false);
 
-  const [renderEndorsements, setRenderEndorsements] = useState<
-    boolean | string
-  >(false);
-
   return (
     <>
       <div
         tabIndex={-1}
-        class={`account-container ${uiState === 'loading' ? 'skeleton' : ''}`}
+        className={`account-container ${uiState === 'loading' ? 'skeleton' : ''}`}
         style={
           {
             '--header-color-1': headerCornerColors[0],
@@ -570,7 +562,7 @@ function AccountInfo({
         }
       >
         {uiState === 'error' && (
-          <div class="ui-state">
+          <div className="ui-state">
             <p>
               <Trans>Unable to load account.</Trans>
             </p>
@@ -581,7 +573,7 @@ function AccountInfo({
                     {account}
                   </a>
                 ) : (
-                  <code class="insignificant">{account}</code>
+                  <code className="insignificant">{account}</code>
                 )}
               </p>
             ) : (
@@ -604,22 +596,22 @@ function AccountInfo({
               <AccountBlock avatarSize="xxxl" skeleton />
             </header>
             <main>
-              <div class="note">
+              <div className="note">
                 <p>███████ ████ ████</p>
                 <p>████ ████████ ██████ █████████ ████ ██</p>
               </div>
-              <div class="account-metadata-box">
-                <div class="profile-metadata">
-                  <div class="profile-field">
-                    <b class="more-insignificant">███</b>
+              <div className="account-metadata-box">
+                <div className="profile-metadata">
+                  <div className="profile-field">
+                    <b className="more-insignificant">███</b>
                     <p>██████</p>
                   </div>
-                  <div class="profile-field">
-                    <b class="more-insignificant">████</b>
+                  <div className="profile-field">
+                    <b className="more-insignificant">████</b>
                     <p>███████████</p>
                   </div>
                 </div>
-                <div class="stats">
+                <div className="stats">
                   <div>
                     <span>██</span> ██████
                   </div>
@@ -631,10 +623,10 @@ function AccountInfo({
                   </div>
                 </div>
               </div>
-              <div class="actions">
+              <div className="actions">
                 <span />
-                <span class="buttons">
-                  <button type="button" class="plain4" disabled>
+                <span className="buttons">
+                  <button type="button" className="plain4" disabled>
                     <Icon icon="more2" size="l" />
                   </button>
                 </span>
@@ -645,7 +637,7 @@ function AccountInfo({
           info && (
             <>
               {!!moved && (
-                <div class="account-moved">
+                <div className="account-moved">
                   <p>
                     <Trans>
                       <b>{displayName}</b> has indicated that their new account
@@ -666,7 +658,7 @@ function AccountInfo({
                 <img
                   src={header}
                   alt={headerDescription || ''}
-                  class={`header-banner ${
+                  className={`header-banner ${
                     headerIsAvatar ? 'header-is-avatar' : ''
                   }`}
                   onError={(e) => {
@@ -803,7 +795,7 @@ function AccountInfo({
                       </div>
                     }
                   >
-                    <div class="szh-menu__header">
+                    <div className="szh-menu__header">
                       <AccountHandleInfo
                         acct={acct ?? ''}
                         instance={instance}
@@ -921,30 +913,30 @@ function AccountInfo({
                   />
                 )}
               </header>
-              <div class="faux-header-bg" aria-hidden="true" />
+              <div className="faux-header-bg" aria-hidden="true" />
               <main>
                 {!!memorial && (
-                  <span class="tag">
+                  <span className="tag">
                     <Trans>In Memoriam</Trans>
                   </span>
                 )}
                 {bot && (
-                  <span class="tag">
+                  <span className="tag">
                     <Icon icon="bot" /> <Trans>Automated</Trans>
                   </span>
                 )}
                 {group && (
-                  <span class="tag">
+                  <span className="tag">
                     <Icon icon="group" /> <Trans>Group</Trans>
                   </span>
                 )}
                 {/* {roles?.map((role) => (
-                  <span class="tag">
+                  <span className="tag">
                     {role.name}
                     {!!accountInstance && (
                       <>
                         {' '}
-                        <span class="more-insignificant">
+                        <span className="more-insignificant">
                           {accountInstance}
                         </span>
                       </>
@@ -952,7 +944,7 @@ function AccountInfo({
                   </span>
                 ))} */}
                 <div
-                  class="note"
+                  className="note"
                   dir="auto"
                   role="presentation"
                   onClick={handleContentLinks({
@@ -968,12 +960,12 @@ function AccountInfo({
                     __html: enhanceContent(note, { emojis }) as string,
                   }}
                 />
-                <div class="account-metadata-box">
+                <div className="account-metadata-box">
                   {!!fields?.length && (
-                    <div class="profile-metadata">
+                    <div className="profile-metadata">
                       {fields.map(({ name, value, verifiedAt }, i) => (
                         <div
-                          class={`profile-field ${
+                          className={`profile-field ${
                             verifiedAt ? 'profile-verified' : ''
                           }`}
                           key={name + i}
@@ -1000,7 +992,7 @@ function AccountInfo({
                       ))}
                     </div>
                   )}
-                  <div class="stats">
+                  <div className="stats">
                     <LinkOrDiv
                       tabIndex={0}
                       to={accountLink}
@@ -1023,8 +1015,8 @@ function AccountInfo({
                       }}
                     >
                       {!!familiarFollowers.length && (
-                        <span class="shazam-container-horizontal">
-                          <span class="shazam-container-inner stats-avatars-bunch">
+                        <span className="shazam-container-horizontal">
+                          <span className="shazam-container-inner stats-avatars-bunch">
                             {familiarFollowers.map((follower) => (
                               <Avatar
                                 key={follower.id}
@@ -1058,7 +1050,7 @@ function AccountInfo({
                       />
                     </LinkOrDiv>
                     <LinkOrDiv
-                      class="insignificant"
+                      className="insignificant"
                       tabIndex={0}
                       to={accountLink}
                       onClick={() => {
@@ -1095,7 +1087,7 @@ function AccountInfo({
                       <br />
                     </LinkOrDiv>
                     <LinkOrDiv
-                      class="insignificant"
+                      className="insignificant"
                       to={accountLink}
                       // onClick={
                       //   standalone
@@ -1126,10 +1118,10 @@ function AccountInfo({
                       />
                     </LinkOrDiv>
                     {!!createdAt && (
-                      <div class="insignificant">
+                      <div className="insignificant">
                         <Trans>
                           Joined{' '}
-                          <time datetime={createdAt}>
+                          <time dateTime={createdAt}>
                             {niceDateTime(createdAt, {
                               hideTime: true,
                             })}
@@ -1142,7 +1134,7 @@ function AccountInfo({
                 {!!postingStats && (
                   <LinkOrDiv
                     to={accountLink}
-                    class="account-metadata-box"
+                    className="account-metadata-box"
                     // onClick={() => {
                     //   states.showAccount = false;
                     // }}
@@ -1155,11 +1147,11 @@ function AccountInfo({
                         : undefined
                     }
                   >
-                    <div class="shazam-container">
-                      <div class="shazam-container-inner">
+                    <div className="shazam-container">
+                      <div className="shazam-container-inner">
                         {hasPostingStats ? (
                           <div
-                            class="posting-stats"
+                            className="posting-stats"
                             title={
                               supportsNativeQuote()
                                 ? t`${(
@@ -1218,10 +1210,10 @@ function AccountInfo({
                                     other: `Last ${postingStats.total} posts in the past year(s)`,
                                   })}
                             </div>
-                            <div class="posting-stats-bar">
+                            <div className="posting-stats-bar">
                               {postingStats.originals > 0 && (
                                 <div
-                                  class="posting-stats-bar-section posting-stats-bar-originals"
+                                  className="posting-stats-bar-section posting-stats-bar-originals"
                                   style={{
                                     '--percentage': `${
                                       (postingStats.originals /
@@ -1233,7 +1225,7 @@ function AccountInfo({
                               )}
                               {postingStats.replies > 0 && (
                                 <div
-                                  class="posting-stats-bar-section posting-stats-bar-replies"
+                                  className="posting-stats-bar-section posting-stats-bar-replies"
                                   style={{
                                     '--percentage': `${
                                       (postingStats.replies /
@@ -1245,7 +1237,7 @@ function AccountInfo({
                               )}
                               {postingStats.quotes > 0 && (
                                 <div
-                                  class="posting-stats-bar-section posting-stats-bar-quotes"
+                                  className="posting-stats-bar-section posting-stats-bar-quotes"
                                   style={{
                                     '--percentage': `${
                                       (postingStats.quotes /
@@ -1257,7 +1249,7 @@ function AccountInfo({
                               )}
                               {postingStats.boosts > 0 && (
                                 <div
-                                  class="posting-stats-bar-section posting-stats-bar-boosts"
+                                  className="posting-stats-bar-section posting-stats-bar-boosts"
                                   style={{
                                     '--percentage': `${
                                       (postingStats.boosts /
@@ -1268,29 +1260,29 @@ function AccountInfo({
                                 />
                               )}
                             </div>
-                            <div class="posting-stats-legends">
-                              <span class="ib">
-                                <span class="posting-stats-legend-item posting-stats-bar-originals" />{' '}
+                            <div className="posting-stats-legends">
+                              <span className="ib">
+                                <span className="posting-stats-legend-item posting-stats-bar-originals" />{' '}
                                 <Trans>Original</Trans>
                               </span>{' '}
-                              <span class="ib">
-                                <span class="posting-stats-legend-item posting-stats-bar-replies" />{' '}
+                              <span className="ib">
+                                <span className="posting-stats-legend-item posting-stats-bar-replies" />{' '}
                                 <Trans>Replies</Trans>
                               </span>{' '}
                               {supportsNativeQuote() && (
-                                <span class="ib">
-                                  <span class="posting-stats-legend-item posting-stats-bar-quotes" />{' '}
+                                <span className="ib">
+                                  <span className="posting-stats-legend-item posting-stats-bar-quotes" />{' '}
                                   <Trans>Quotes</Trans>
                                 </span>
                               )}
-                              <span class="ib">
-                                <span class="posting-stats-legend-item posting-stats-bar-boosts" />{' '}
+                              <span className="ib">
+                                <span className="posting-stats-legend-item posting-stats-bar-boosts" />{' '}
                                 <Trans>Boosts</Trans>
                               </span>
                             </div>
                           </div>
                         ) : (
-                          <div class="posting-stats">
+                          <div className="posting-stats">
                             <Trans>Post stats unavailable.</Trans>
                           </div>
                         )}
@@ -1299,22 +1291,22 @@ function AccountInfo({
                   </LinkOrDiv>
                 )}
                 {!moved && (
-                  <div class="account-metadata-box">
+                  <div className="account-metadata-box">
                     <div
-                      class="shazam-container no-animation"
+                      className="shazam-container no-animation"
                       hidden={!!postingStats}
                     >
-                      <div class="shazam-container-inner">
+                      <div className="shazam-container-inner">
                         <button
                           type="button"
-                          class="posting-stats-button"
+                          className="posting-stats-button"
                           disabled={postingStatsUIState === 'loading'}
                           onClick={() => {
                             void renderPostingStats();
                           }}
                         >
                           <div
-                            class={`posting-stats-icon ${
+                            className={`posting-stats-icon ${
                               postingStatsUIState === 'loading' ? 'loading' : ''
                             }`}
                           />
@@ -1338,19 +1330,8 @@ function AccountInfo({
                   onRelationshipChange={onRelationshipChange}
                   onProfileUpdate={onProfileUpdate}
                   setShowEditProfile={setShowEditProfile}
-                  showEndorsements={showEndorsements}
-                  renderEndorsements={renderEndorsements}
-                  setRenderEndorsements={setRenderEndorsements}
                 />
               </footer>
-              <Endorsements
-                accountID={id ?? ''}
-                info={info}
-                open={renderEndorsements}
-                onlyOpenIfHasEndorsements={
-                  renderEndorsements === 'onlyOpenIfHasEndorsements'
-                }
-              />
             </>
           )
         )}

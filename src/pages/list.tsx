@@ -3,12 +3,8 @@ import './lists.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type {
-  ComponentChildren,
-  ComponentType,
-  TargetedMouseEvent,
-} from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import type { ReactNode, ComponentType } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
@@ -31,6 +27,7 @@ import {
   isFeedList,
   splitListsAndFeeds,
 } from '../utils/lists';
+import { navigatePath } from '../utils/router';
 import states, { saveStatus } from '../utils/states';
 import useTitle from '../utils/useTitle';
 
@@ -86,24 +83,25 @@ interface ListMembersEndpoint {
 }
 
 // react-intersection-observer's InView ships without working JSX
-// component typings under preact compat resolution. Re-type for our usage.
+// component typings under React component types. Re-type for our usage.
 type InViewProps = {
   as?: string;
   onChange?: (inView: boolean) => void;
-  children?: ComponentChildren;
+  children?: ReactNode;
 };
 const InView: ComponentType<InViewProps> =
   InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
 interface ListProps {
   id?: string;
+  instance?: string;
   timelineId?: string;
 }
 
 function List(props: ListProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const { masto, instance } = api();
+  const { masto, instance } = api({ instance: props.instance });
   const params = useParams();
   const id = props?.id || params?.id;
   const timelineId = props?.timelineId || 'list';
@@ -171,20 +169,22 @@ function List(props: ListProps) {
   const isFeed = isFeedList(list);
   const { lists: menuLists, feeds: menuFeeds } = splitListsAndFeeds(lists);
   // const [title, setTitle] = useState(`List`);
-  useTitle(list.title, `/l/:id`);
+  useTitle(list.title, ['/l/:id', '/:scheme://*', '/:atUri']);
   useEffect(() => {
     void (async () => {
       try {
-        const fetchedList = await getList(id ?? '');
+        const fetchedList = props.instance
+          ? await getList(id ?? '', props.instance)
+          : await getList(id ?? '');
         if (fetchedList) {
-          setList(fetchedList as ListLike);
+          setList(fetchedList);
         }
         // setTitle(list.title);
       } catch (e) {
         console.error(e);
       }
     })();
-  }, [id]);
+  }, [id, props.instance]);
 
   const [showListAddEditModal, setShowListAddEditModal] = useState<
     boolean | { list: ListLike }
@@ -210,14 +210,14 @@ function List(props: ListProps) {
         showReplyParent
         // refresh={reloadCount}
         headerStart={
-          // <Link to="/l" class="button plain">
+          // <Link to="/l" className="button plain">
           //   <Icon icon="list" size="l" />
           // </Link>
           <Menu2
             overflow="auto"
             menuClassName="lists-picker-menu"
             menuButton={
-              <button type="button" class="plain">
+              <button type="button" className="plain">
                 <Icon icon="list" size="l" alt={t`Lists & Feeds`} />
                 <Icon icon="chevron-down" size="s" />
               </button>
@@ -249,7 +249,7 @@ function List(props: ListProps) {
                   <MenuLink key={menuList.id} to={`/l/${menuList.id}`}>
                     <span>
                       {menuList.title}
-                      {menuList.exclusive && (
+                      {Boolean(menuList.exclusive) && (
                         <>
                           {' '}
                           <ListExclusiveBadge />
@@ -278,7 +278,10 @@ function List(props: ListProps) {
         }
         headerEnd={
           <>
-            <Link to="/notifications" class="button plain notifications-button">
+            <Link
+              to="/notifications"
+              className="button plain notifications-button"
+            >
               <Icon icon="notification" size="l" alt={t`Notifications`} />
             </Link>
             {!isFeed && (
@@ -289,7 +292,7 @@ function List(props: ListProps) {
                 viewScroll="close"
                 position="anchor"
                 menuButton={
-                  <button type="button" class="plain">
+                  <button type="button" className="plain">
                     <Icon icon="more" size="l" alt={t`More`} />
                   </button>
                 }
@@ -306,18 +309,22 @@ function List(props: ListProps) {
                   </>
                 )}
                 <MenuItem
-                  onClick={() =>
+                  onClick={() => {
                     setShowListAddEditModal({
                       list,
-                    })
-                  }
+                    });
+                  }}
                 >
                   <Icon icon="pencil" size="l" />
                   <span>
                     <Trans>Edit</Trans>
                   </span>
                 </MenuItem>
-                <MenuItem onClick={() => setShowManageMembersModal(true)}>
+                <MenuItem
+                  onClick={() => {
+                    setShowManageMembersModal(true);
+                  }}
+                >
                   <Icon icon="group" size="l" />
                   <span>
                     <Trans>Manage members</Trans>
@@ -330,7 +337,7 @@ function List(props: ListProps) {
       />
       {showListAddEditModal && (
         <Modal
-          onClick={(e: TargetedMouseEvent<HTMLElement>) => {
+          onClick={(e: React.MouseEvent<HTMLElement>) => {
             if (e.target === e.currentTarget) {
               setShowListAddEditModal(false);
             }
@@ -360,7 +367,7 @@ function List(props: ListProps) {
                 result.state === 'deleted'
               ) {
                 // navigate('/l');
-                location.hash = '/l';
+                navigatePath('/l');
               }
               setShowListAddEditModal(false);
             }}
@@ -369,7 +376,7 @@ function List(props: ListProps) {
       )}
       {showManageMembersModal && (
         <Modal
-          onClick={(e: TargetedMouseEvent<HTMLElement>) => {
+          onClick={(e: React.MouseEvent<HTMLElement>) => {
             if (e.target === e.currentTarget) {
               setShowManageMembersModal(false);
             }
@@ -377,7 +384,9 @@ function List(props: ListProps) {
         >
           <ListManageMembers
             listID={id ?? ''}
-            onClose={() => setShowManageMembersModal(false)}
+            onClose={() => {
+              setShowManageMembersModal(false);
+            }}
           />
         </Modal>
       )}
@@ -457,9 +466,9 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
   }, []);
 
   return (
-    <div class="sheet" id="list-manage-members-container">
+    <div className="sheet" id="list-manage-members-container">
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
@@ -485,7 +494,7 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
             >
               <button
                 type="button"
-                class="light block"
+                className="light block"
                 onClick={() => {
                   fetchMembers();
                 }}
@@ -520,8 +529,8 @@ function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
       confirmLabel={
         <span>
           <Trans>
-            Remove <span class="bidi-isolate">@{account.username}</span> from
-            list?
+            Remove <span className="bidi-isolate">@{account.username}</span>{' '}
+            from list?
           </Trans>
         </span>
       }
@@ -562,7 +571,7 @@ function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
     >
       <button
         type="button"
-        class={`light ${removed ? '' : 'danger'}`}
+        className={`light ${removed ? '' : 'danger'}`}
         disabled={uiState === 'loading'}
       >
         {removed ? t`Add` : t`Remove…`}

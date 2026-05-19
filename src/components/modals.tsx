@@ -1,12 +1,13 @@
 import { useLingui } from '@lingui/react/macro';
-import { useEffect } from 'preact/hooks';
-import { useLocation, useNavigate, type Location } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useLocation, type Location } from 'react-router-dom';
 import { subscribe, useSnapshot } from 'valtio';
 
 import Accounts from '../pages/accounts';
 import Settings from '../pages/settings';
 import { useAuth } from '../utils/auth-context';
 import focusDeck from '../utils/focus-deck';
+import { canonicalizeAppPath, navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 
@@ -73,14 +74,16 @@ subscribe(states, (changes) => {
 export default function Modals() {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const navigate = useNavigate();
   const location = useLocation();
   const isLoggedIn = useAuth();
 
   useEffect(() => {
-    setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       void preload();
     }, 1000);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   const composerState = snapStates.composerState as Payload;
@@ -90,7 +93,7 @@ export default function Modals() {
     <>
       {isLoggedIn && !!snapStates.showCompose && (
         <Modal
-          class={`solid ${composerState.minimized ? 'min' : ''}`}
+          className={`solid ${composerState.minimized ? 'min' : ''}`}
           minimized={!!composerState.minimized}
         >
           <ComposeSuspense
@@ -98,11 +101,6 @@ export default function Modals() {
               typeof snapStates.showCompose !== 'boolean'
                 ? p(snapStates.showCompose).replyToStatus
                 : composeWindow.__COMPOSE__?.replyToStatus || null
-            }
-            replyMode={
-              p(states.showCompose).replyMode ||
-              composeWindow.__COMPOSE__?.replyMode ||
-              'all'
             }
             editStatus={
               p(states.showCompose).editStatus ||
@@ -121,43 +119,36 @@ export default function Modals() {
             }
             sharedData={composeWindow.__SHARED_DATA__ || null}
             onClose={(results: Payload | undefined) => {
-              const { newStatus, instance, type, scheduledAt } = (results ||
+              const { newStatus, instance, type } = (results ||
                 {}) as {
                 newStatus?: { id: string } | null;
                 instance?: string | null;
                 type?: 'post' | 'reply' | 'edit';
-                scheduledAt?: string | null;
               };
               states.showCompose = false;
               composeWindow.__COMPOSE__ = null;
               composeWindow.__SHARED_DATA__ = null;
               if (newStatus) {
                 states.reloadStatusPage++;
-                if (scheduledAt) states.reloadScheduledPosts++;
+                const toastText = {
+                  post: t`Post published. Check it out.`,
+                  reply: t`Reply posted. Check it out.`,
+                  edit: t`Post updated. Check it out.`,
+                }[type || 'post'];
                 showToast({
-                  text: {
-                    post: scheduledAt
-                      ? t`Post scheduled`
-                      : t`Post published. Check it out.`,
-                    reply: scheduledAt
-                      ? t`Reply scheduled`
-                      : t`Reply posted. Check it out.`,
-                    edit: t`Post updated. Check it out.`,
-                  }[type || 'post'],
+                  text: toastText,
                   delay: 1000,
                   duration: 10_000, // 10 seconds
                   onClick: (toast: { hideToast: () => void }) => {
                     toast.hideToast();
                     states.prevLocation = toPrevLocation(location);
-                    if (scheduledAt) {
-                      navigate('/sp');
-                    } else {
-                      navigate(
+                    navigatePath(
+                      canonicalizeAppPath(
                         instance
                           ? `/${instance}/s/${newStatus.id}`
                           : `/s/${newStatus.id}`,
-                      );
-                    }
+                      ),
+                    );
                   },
                 });
               }
@@ -236,7 +227,11 @@ export default function Modals() {
             states.showDrafts = false;
           }}
         >
-          <Drafts onClose={() => (states.showDrafts = false)} />
+          <Drafts
+            onClose={() => {
+              states.showDrafts = false;
+            }}
+          />
         </Modal>
       )}
       {!!snapStates.showMediaModal && (
@@ -271,7 +266,9 @@ export default function Modals() {
           }}
         >
           <ShortcutsSettings
-            onClose={() => (states.showShortcutsSettings = false)}
+            onClose={() => {
+              states.showShortcutsSettings = false;
+            }}
           />
         </Modal>
       )}
@@ -293,7 +290,9 @@ export default function Modals() {
             postID={
               p(snapStates.showGenericAccounts).postID as string | undefined
             }
-            onClose={() => (states.showGenericAccounts = false)}
+            onClose={() => {
+              states.showGenericAccounts = false;
+            }}
             blankCopy={
               p(snapStates.showGenericAccounts).blankCopy as string | undefined
             }
@@ -320,7 +319,7 @@ export default function Modals() {
       )}
       {!!snapStates.showEmbedModal && (
         <Modal
-          class="solid"
+          className="solid"
           onClose={() => {
             states.showEmbedModal = false;
           }}
@@ -369,7 +368,7 @@ export default function Modals() {
       )}
       {!!snapStates.showQrCodeModal && (
         <Modal
-          class="solid"
+          className="solid"
           onClose={() => {
             states.showQrCodeModal = false;
           }}
@@ -396,7 +395,7 @@ export default function Modals() {
       )}
       {!!snapStates.showQrScannerModal && (
         <Modal
-          class="solid"
+          className="solid"
           onClose={() => {
             states.showQrScannerModal = false;
           }}

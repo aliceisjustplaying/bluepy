@@ -3,9 +3,9 @@ import './notifications-menu.css';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
-import type { RefObject, TargetedMouseEvent } from 'preact';
-import { memo } from 'preact/compat';
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import type { RefObject } from 'react';
+import { memo } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import Columns from '../components/columns';
@@ -114,10 +114,10 @@ function NotificationsLink() {
       <Link
         ref={notificationLinkRef}
         to="/notifications"
-        class={`button plain notifications-button ${
+        className={`button plain notifications-button ${
           snapStates.notificationsShowNew ? 'has-badge' : ''
         } ${menuState || ''}`}
-        onClick={(e: TargetedMouseEvent<HTMLAnchorElement>) => {
+        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
           e.stopPropagation();
           if (window.matchMedia('(min-width: calc(40em))').matches) {
             e.preventDefault();
@@ -130,14 +130,16 @@ function NotificationsLink() {
       <NotificationsMenu
         state={menuState}
         anchorRef={notificationLinkRef}
-        onClose={() => setMenuState(undefined)}
+        onClose={() => {
+          setMenuState(undefined);
+        }}
       />
     </>
   );
 }
 
 interface NotificationsMenuProps {
-  anchorRef: RefObject<HTMLAnchorElement>;
+  anchorRef: RefObject<HTMLAnchorElement | null>;
   state: MenuState;
   onClose: () => void;
 }
@@ -145,6 +147,7 @@ interface NotificationsMenuProps {
 interface NotificationItem {
   id: string;
   _ids?: string;
+  type?: string;
   status?: unknown;
 }
 
@@ -167,10 +170,8 @@ function NotificationsMenu({
     'default',
   );
 
-  const [hasFollowRequests, setHasFollowRequests] = useState(false);
-
   const loadNotifications = useCallback(
-    ({ skipFollowRequests = false }: { skipFollowRequests?: boolean } = {}) => {
+    () => {
       setUIState('loading');
       void (async () => {
         try {
@@ -220,14 +221,6 @@ function NotificationsMenu({
           states.notificationsShowNew = false;
           states.notificationsLastFetchTime = Date.now();
 
-          if (!skipFollowRequests) {
-            const followRequests = await (
-              masto.v1.followRequests as {
-                list(options: { limit: number }): Promise<unknown[]>;
-              }
-            ).list({ limit: 1 });
-            setHasFollowRequests(!!followRequests?.length);
-          }
           setUIState('default');
         } catch {
           setUIState('error');
@@ -241,24 +234,24 @@ function NotificationsMenu({
   const headerHeight = 52;
   useEffect(() => {
     if (state !== 'open') return;
-    if (snapStates.notificationsShowNew) {
-      const menuElement = menuRef.current;
-      if ((menuElement?.scrollTop ?? 0) <= headerHeight) {
-        loadNotifications({
-          skipFollowRequests: true,
-        });
-      }
-    } else {
+    if (
+      !snapStates.notificationsShowNew ||
+      (menuRef.current?.scrollTop ?? 0) <= headerHeight
+    ) {
       loadNotifications();
     }
   }, [state, snapStates.notificationsShowNew, loadNotifications]);
+
+  const visibleNotifications = (
+    snapStates.notifications as NotificationItem[]
+  ).filter((notification) => notification.type !== 'follow_request');
 
   return (
     <ControlledMenu
       ref={menuRef}
       menuClassName="notifications-menu"
       state={state}
-      anchorRef={anchorRef}
+      anchorRef={anchorRef as never}
       onClose={onClose}
       portal={{
         target: document.body,
@@ -281,9 +274,9 @@ function NotificationsMenu({
       </header>
       <FilterContext.Provider value="notifications">
         <main>
-          {snapStates.notifications.length ? (
+          {visibleNotifications.length ? (
             <>
-              {(snapStates.notifications as NotificationItem[])
+              {visibleNotifications
                 .slice(0, NOTIFICATIONS_DISPLAY_LIMIT)
                 .map((notification) => (
                   <Notification
@@ -299,17 +292,22 @@ function NotificationsMenu({
                 ))}
             </>
           ) : uiState === 'loading' ? (
-            <div class="ui-state">
+            <div className="ui-state">
               <Loader abrupt />
             </div>
           ) : (
             uiState === 'error' && (
-              <div class="ui-state">
+              <div className="ui-state">
                 <p>
                   <Trans>Unable to fetch notifications.</Trans>
                 </p>
                 <p>
-                  <button type="button" onClick={() => loadNotifications()}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      loadNotifications();
+                    }}
+                  >
                     <Trans>Try again</Trans>
                   </button>
                 </p>
@@ -319,23 +317,16 @@ function NotificationsMenu({
         </main>
       </FilterContext.Provider>
       <footer>
-        <Link to="/mentions" class="button plain">
+        <Link to="/mentions" className="button plain">
           <Icon icon="at" />{' '}
           <span>
             <Trans>Mentions</Trans>
           </span>
         </Link>
-        <Link to="/notifications" class="button plain2">
-          {hasFollowRequests ? (
-            <Trans>
-              <span class="tag collapsed">New</span>{' '}
-              <span>Follow Requests</span>
-            </Trans>
-          ) : (
-            <b>
-              <Trans>See all</Trans>
-            </b>
-          )}{' '}
+        <Link to="/notifications" className="button plain2">
+          <b>
+            <Trans>See all</Trans>
+          </b>{' '}
           <Icon icon="arrow-right" />
         </Link>
       </footer>

@@ -1,9 +1,9 @@
 import './accounts.css';
 
-import { useAutoAnimate } from '@formkit/auto-animate/preact';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
-import { useState } from 'preact/hooks';
+import { useState } from 'react';
 
 import Avatar from '../components/avatar';
 import Icon from '../components/icon';
@@ -17,6 +17,7 @@ import { api, getMastoV1Resource } from '../utils/api';
 import { revokeAccessToken } from '../utils/auth';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
+import { navigatePath } from '../utils/router';
 import states from '../utils/states';
 import store from '../utils/store';
 import {
@@ -57,27 +58,29 @@ function Accounts({ onClose }: AccountsProps) {
   const moreThanOneAccount = accounts.length > 1;
 
   const [, setReloadTick] = useState(0);
-  const reload = () => setReloadTick((x) => x + 1);
+  const reload = () => {
+    setReloadTick((x) => x + 1);
+  };
   const [accountsListParent] = useAutoAnimate<HTMLUListElement>();
   const saveOAuthAccounts = () => {
     saveAccounts(accounts as readonly StoredAccount[]);
   };
 
   return (
-    <div id="accounts-container" class="sheet" tabIndex={-1}>
+    <div id="accounts-container" className="sheet" tabIndex={-1}>
       {!!onClose && (
-        <button type="button" class="sheet-close" onClick={onClose}>
+        <button type="button" className="sheet-close" onClick={onClose}>
           <Icon icon="x" alt={t`Close`} />
         </button>
       )}
-      <header class="header-grid">
+      <header className="header-grid">
         <h2>
           <Trans>Accounts</Trans>
         </h2>
       </header>
       <main>
         <section>
-          <ul class="accounts-list" ref={accountsListParent}>
+          <ul className="accounts-list" ref={accountsListParent}>
             {accounts.map((account, i) => {
               const isCurrent = account.info.id === currentAccount;
               const isDefault = i === 0; // first account is always default
@@ -108,14 +111,16 @@ function Accounts({ onClose }: AccountsProps) {
                 <li key={account.info.id}>
                   <div>
                     {moreThanOneAccount && (
-                      <span class={`current ${isCurrent ? 'is-current' : ''}`}>
+                      <span
+                        className={`current ${isCurrent ? 'is-current' : ''}`}
+                      >
                         <Icon icon="check-circle" alt={t`Current`} />
                       </span>
                     )}
                     <Avatar
                       url={avatarStatic}
                       size="xxl"
-                      onDblClick={async () => {
+                      onDoubleClick={async () => {
                         if (isCurrent) {
                           try {
                             const accountsApi =
@@ -149,7 +154,9 @@ function Accounts({ onClose }: AccountsProps) {
                       onClick={() => {
                         void haptics.trigger('medium');
                         if (isLoggedOut) {
-                          location.href = `/#/login?instance=${account.instanceURL}`;
+                          navigatePath(
+                            `/login?instance=${account.instanceURL}`,
+                          );
                           onClose?.();
                         } else if (isCurrent) {
                           states.showAccount = `${username}@${account.instanceURL}`;
@@ -160,15 +167,15 @@ function Accounts({ onClose }: AccountsProps) {
                       }}
                     />
                   </div>
-                  <div class="actions">
+                  <div className="actions">
                     {isLoggedOut && (
-                      <span class="tag">
+                      <span className="tag">
                         <Trans>Logged out</Trans>
                       </span>
                     )}
                     {isDefault && moreThanOneAccount && (
                       <>
-                        <span class="tag">
+                        <span className="tag">
                           <Trans>Default</Trans>
                         </span>{' '}
                       </>
@@ -176,7 +183,7 @@ function Accounts({ onClose }: AccountsProps) {
                     <Menu2
                       align="end"
                       menuButton={
-                        <button type="button" class="plain more-button">
+                        <button type="button" className="plain more-button">
                           <Icon icon="more" size="l" alt={t`More`} />
                         </button>
                       }
@@ -277,7 +284,7 @@ function Accounts({ onClose }: AccountsProps) {
                               <span>
                                 <Trans>
                                   Log out{' '}
-                                  <span class="bidi-isolate">@{acct}</span>?
+                                  <span className="bidi-isolate">@{acct}</span>?
                                 </Trans>
                               </span>
                             </>
@@ -307,7 +314,7 @@ function Accounts({ onClose }: AccountsProps) {
                               <span>
                                 <Trans>
                                   Log out and remove{' '}
-                                  <span class="bidi-isolate">@{acct}</span>
+                                  <span className="bidi-isolate">@{acct}</span>
                                 </Trans>
                               </span>
                             </MenuItem>
@@ -327,7 +334,7 @@ function Accounts({ onClose }: AccountsProps) {
                               <span>
                                 <Trans>
                                   Remove{' '}
-                                  <span class="bidi-isolate">@{acct}</span>?
+                                  <span className="bidi-isolate">@{acct}</span>?
                                 </Trans>
                               </span>
                             </>
@@ -345,7 +352,7 @@ function Accounts({ onClose }: AccountsProps) {
                         </MenuConfirm>
                       )}
                       {!!account?.createdAt && (
-                        <div class="footer">
+                        <div className="footer">
                           <Icon icon="account-add" />
                           <span>
                             <Trans>
@@ -362,7 +369,7 @@ function Accounts({ onClose }: AccountsProps) {
             })}
           </ul>
           <p>
-            <Link to="/login" class="button plain2" onClick={onClose}>
+            <Link to="/login" className="button plain2" onClick={onClose}>
               <Icon icon="plus" />{' '}
               <span>
                 <Trans>Add an existing account</Trans>
@@ -382,8 +389,10 @@ function Accounts({ onClose }: AccountsProps) {
           <p>
             <button
               type="button"
-              class="light"
-              onClick={() => (states.showImportExportAccounts = true)}
+              className="light"
+              onClick={() => {
+                states.showImportExportAccounts = true;
+              }}
             >
               <Trans>Import/export</Trans>
             </button>

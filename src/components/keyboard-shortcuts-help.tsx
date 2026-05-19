@@ -1,10 +1,11 @@
 import './keyboard-shortcuts-help.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import { memo } from 'preact/compat';
+import { memo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useSnapshot } from 'valtio';
 
+import { currentAppPath } from '../utils/router';
 import states from '../utils/states';
 
 import Icon from './icon';
@@ -36,8 +37,8 @@ export default memo(function KeyboardShortcutsHelp() {
     {
       useKey: true,
       ignoreModifiers: true,
-      ignoreEventWhen: (e: KeyboardEvent) => {
-        const isCatchUpPage = /\/catchup/i.test(location.hash);
+      ignoreEventWhen: (e) => {
+        const isCatchUpPage = /\/catchup/i.test(currentAppPath());
         return isCatchUpPage || e.metaKey || e.ctrlKey || e.altKey;
         // const hasModal = !!document.querySelector('#modal-container > *');
         // return hasModal;
@@ -48,12 +49,8 @@ export default memo(function KeyboardShortcutsHelp() {
   return (
     !!snapStates.showKeyboardShortcutsHelp && (
       <Modal onClose={onClose}>
-        <div
-          id="keyboard-shortcuts-help-container"
-          class="sheet"
-          tabIndex={-1}
-        >
-          <button type="button" class="sheet-close" onClick={onClose}>
+        <div id="keyboard-shortcuts-help-container" className="sheet" tabIndex={-1}>
+          <button type="button" className="sheet-close" onClick={onClose}>
             <Icon icon="x" alt={t`Close`} />
           </button>
           <header>
@@ -216,13 +213,13 @@ export default memo(function KeyboardShortcutsHelp() {
                       keys: <SequentialKeys key1="g" key2="b" />,
                     },
                   ] as ReadonlyArray<{
-                    action: import('preact').ComponentChildren;
+                    action: import('react').ReactNode;
                     className?: string;
-                    keys: import('preact').ComponentChildren;
+                    keys: import('react').ReactNode;
                   }>
                 ).map(({ action, className, keys }) => (
-                  <tr key={action as import('preact').Key}>
-                    <th class={className}>{action}</th>
+                  <tr key={action as import('react').Key}>
+                    <th className={className}>{action}</th>
                     <td>{keys}</td>
                   </tr>
                 ))}

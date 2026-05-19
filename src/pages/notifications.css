@@ -23,7 +23,7 @@
     @media (min-width: 40em) {
       background-color: var(--bg-faded-color);
     }
-    padding-block: 16px;
+    padding-block: 12px;
     margin: 0;
     opacity: 1;
 
@@ -41,8 +41,8 @@
 
 .notification {
   display: flex;
-  padding: 16px !important;
-  gap: 12px;
+  padding: 10px 12px !important;
+  gap: 10px;
   animation: appear 0.2s ease-out;
   clear: both;
 
@@ -56,7 +56,7 @@
   .notification-quote,
   .notification-mention\+quote
 ) {
-  padding-top: 16px;
+  padding-top: 10px;
 }
 .only-mentions .notification:not(.notification-mention),
 .only-mentions .timeline-empty {
@@ -67,7 +67,7 @@
 }
 
 .notification-type {
-  width: 24px;
+  width: 20px;
   flex-shrink: 0;
   opacity: 0.75;
   color: var(--text-insignificant-color);
@@ -246,6 +246,21 @@
   border-color: var(--quote-color);
   box-shadow: 0 0 5px var(--quote-color);
 }
+.notification-subject-button {
+  display: inline;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  line-height: inherit;
+  font-weight: bold;
+  vertical-align: baseline;
+  text-align: inherit;
+}
+.notification-subject-button:hover,
+.notification-subject-button:focus {
+  text-decoration: underline;
+}
 .notification .status-link.status-type-mention\+quote:is(:hover, :focus) {
   border-color: transparent;
   box-shadow:
@@ -265,8 +280,14 @@
 }
 .notification-content > p:first-child {
   margin-top: 0;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   text-wrap: pretty;
+}
+.notification-content > .avatars-stack {
+  margin-block: 6px 0;
+}
+.notification-content > .avatars-stack:has(+ .status-link) {
+  margin-block-end: 8px;
 }
 
 .notification-group-statuses {
@@ -327,72 +348,6 @@
 }
 #mentions-option .button {
   background-color: var(--bg-blur-color);
-}
-
-/* FOLLOW REQUESTS */
-
-.follow-requests {
-  padding-block-end: 16px;
-}
-.follow-requests summary {
-  padding: 8px 16px;
-  cursor: pointer;
-}
-.follow-requests summary::marker,
-.follow-requests summary::-webkit-details-marker {
-  color: var(--text-insignificant-color);
-}
-.follow-requests details[open] summary {
-  color: var(--text-insignificant-color);
-}
-.follow-requests ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  max-height: 50vh;
-  max-height: 50dvh;
-  overflow: auto;
-  border-bottom: var(--hairline-width) solid var(--outline-color);
-}
-.follow-requests summary + ul {
-  border-top: var(--hairline-width) solid var(--outline-color);
-}
-.follow-requests ul li {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border-bottom: var(--hairline-width) solid var(--outline-color);
-  justify-content: space-between;
-  column-gap: 16px;
-  row-gap: 4px;
-  flex-wrap: wrap;
-}
-.follow-requests ul li:last-child {
-  border-bottom: none;
-}
-.follow-requests ul li .follow-request-buttons {
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex: 1;
-  gap: 4px;
-  justify-content: flex-end;
-  align-items: center;
-}
-.follow-request-buttons .follow-request-states {
-  vertical-align: middle;
-}
-.follow-request-buttons .follow-request-states .icon {
-  margin-inline: 8px;
-}
-.follow-request-buttons .follow-request-states .icon.follow-accepted {
-  color: var(--green-color);
-}
-.follow-request-buttons .follow-request-states .icon.follow-rejected {
-  color: var(--red-color);
-}
-.follow-requests ul li .follow-request-buttons .follow-request-states {
-  order: -1;
 }
 
 /* ANNOUNCEMENTS */
@@ -532,10 +487,10 @@
 /* FILTERED NOTIFICATIONS */
 
 .filtered-notifications {
-  padding-block-end: 16px;
+  padding-block-end: 12px;
 
   summary {
-    padding: 8px 16px;
+    padding: 8px 12px;
     cursor: pointer;
     font-weight: 600;
     user-select: none;
@@ -572,9 +527,9 @@
 
     li {
       display: flex;
-      padding: 16px;
-      row-gap: 8px;
-      column-gap: 16px;
+      padding: 12px;
+      row-gap: 6px;
+      column-gap: 12px;
       border-bottom: 1px solid var(--outline-color);
     }
     li:last-child {
@@ -690,5 +645,40 @@
     select:has(option[value='drop']:checked) {
       box-shadow: 0 0 0 2px var(--red-color);
     }
+  }
+}
+
+@media (max-width: calc(40em - 1px)) {
+  #notifications-page .timeline-header {
+    padding-block: 8px;
+  }
+
+  .notification {
+    padding: 8px 12px !important;
+    gap: 8px;
+  }
+
+  .notification-type {
+    width: 18px;
+  }
+
+  .notification-type:is(
+    .notification-mention,
+    .notification-quote,
+    .notification-mention\+quote
+  ) {
+    padding-top: 6px;
+  }
+
+  .notification-content > p:first-child {
+    margin-bottom: 4px;
+  }
+
+  .notification-content > .avatars-stack:has(+ .status-link) {
+    margin-bottom: 6px;
+  }
+
+  .filtered-notifications ul li {
+    padding: 10px 12px;
   }
 }

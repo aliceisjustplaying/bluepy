@@ -40,7 +40,7 @@ test.describe('ATProto OAuth', () => {
       };
     });
 
-    await page.goto('/#/login', { waitUntil: 'domcontentloaded' });
+    await page.goto('/login', { waitUntil: 'domcontentloaded' });
     await page.getByLabel('Handle or PDS URL').fill('alice.mosphere.at');
     await page.getByRole('button', { name: 'Continue with OAuth' }).click();
 
@@ -60,7 +60,7 @@ test.describe('ATProto OAuth', () => {
         signIn: async () => {},
       };
     });
-    await page.goto('/#/login', { waitUntil: 'domcontentloaded' });
+    await page.goto('/login', { waitUntil: 'domcontentloaded' });
 
     await expect(
       page.getByRole('button', { name: 'Continue with OAuth' }),
@@ -135,5 +135,51 @@ test.describe('ATProto OAuth', () => {
       type: 'atproto-oauth',
       sub: 'did:plc:oauthalice',
     });
+  });
+
+  test('clears a stale OAuth account instead of hanging on startup', async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.addInitScript(() => {
+      const did = 'did:plc:staleoauth';
+      window.__BLUEPY_OAUTH_TEST_CLIENT__ = {
+        init: async () => undefined,
+        restore: async () => {
+          throw new Error('The session was deleted by another process');
+        },
+      };
+      localStorage.setItem(
+        'accounts',
+        JSON.stringify([
+          {
+            accessToken: JSON.stringify({
+              type: 'atproto-oauth',
+              sub: did,
+            }),
+            atproto: true,
+            info: {
+              id: did,
+              username: 'stale.test',
+              acct: 'stale.test',
+              displayName: 'Stale OAuth',
+            },
+            instanceURL: 'bsky.social',
+          },
+        ]),
+      );
+      sessionStorage.setItem('currentAccount', did);
+    });
+
+    await page.goto('/');
+
+    await expect(
+      page.getByRole('link', { name: 'Log in with Bluesky' }),
+    ).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem('accounts')))
+      .toBe('[]');
   });
 });

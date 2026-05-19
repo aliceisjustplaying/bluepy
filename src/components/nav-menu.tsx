@@ -7,8 +7,8 @@ import {
   MenuHeader,
   MenuItem,
 } from '@szhsin/react-menu';
-import { memo } from 'preact/compat';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { memo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
@@ -116,7 +116,7 @@ function NavMenu(props: Record<string, unknown>) {
       <button
         ref={buttonRef}
         type="button"
-        class={`button plain nav-menu-button ${
+        className={`button plain nav-menu-button ${
           showAvatarInButton ? 'with-avatar' : ''
         } ${menuState === 'open' ? 'active' : ''}`}
         style={{ position: 'relative' }}
@@ -147,7 +147,7 @@ function NavMenu(props: Record<string, unknown>) {
       <ControlledMenu
         menuClassName="nav-menu"
         state={menuState}
-        anchorRef={buttonRef}
+        anchorRef={buttonRef as never}
         onClose={() => {
           setMenuState(undefined);
         }}
@@ -175,7 +175,7 @@ function NavMenu(props: Record<string, unknown>) {
       >
         {!!snapStates.appVersion?.commitHash &&
           __COMMIT_HASH__ !== snapStates.appVersion.commitHash && (
-            <div class="top-menu">
+            <div className="top-menu">
               <MenuItem
                 onClick={() => {
                   const yes = confirm(t`Reload page now to update?`);
@@ -188,7 +188,7 @@ function NavMenu(props: Record<string, unknown>) {
                   }
                 }}
               >
-                <Icon icon="sparkles" class="sparkle-icon" size="l" />{' '}
+                <Icon icon="sparkles" className="sparkle-icon" size="l" />{' '}
                 <span>
                   <Trans>New update available…</Trans>
                 </span>
@@ -219,14 +219,12 @@ function NavMenu(props: Record<string, unknown>) {
                   <Trans>Catch-up</Trans>
                 </span>
               </MenuLink>
-              {supports('@mastodon/mentions') && (
-                <MenuLink to="/mentions">
-                  <Icon icon="at" size="l" />{' '}
-                  <span>
-                    <Trans>Mentions</Trans>
-                  </span>
-                </MenuLink>
-              )}
+              <MenuLink to="/mentions">
+                <Icon icon="at" size="l" />{' '}
+                <span>
+                  <Trans>Mentions</Trans>
+                </span>
+              </MenuLink>
               <MenuLink to="/notifications">
                 <Icon icon="notification" size="l" />{' '}
                 <span>
@@ -262,7 +260,7 @@ function NavMenu(props: Record<string, unknown>) {
                 label={
                   <>
                     <Icon icon="more" size="l" />
-                    <span class="menu-grow">
+                    <span className="menu-grow">
                       <Trans>More…</Trans>
                     </span>
                     <Icon icon="chevron-right" />
@@ -275,27 +273,6 @@ function NavMenu(props: Record<string, unknown>) {
                     <Trans>Likes</Trans>
                   </span>
                 </MenuLink>
-                <MenuLink to="/fh">
-                  <Icon icon="hashtag" size="l" />{' '}
-                  <span>
-                    <Trans>Followed Hashtags</Trans>
-                  </span>
-                </MenuLink>
-                <MenuLink to="/sp">
-                  <Icon icon="schedule" size="l" />{' '}
-                  <span>
-                    <Trans>Scheduled Posts</Trans>
-                  </span>
-                </MenuLink>
-                <MenuDivider />
-                {supports('@mastodon/filters') && (
-                  <MenuLink to="/ft">
-                    <Icon icon="filters" size="l" />{' '}
-                    <span>
-                      <Trans>Filters</Trans>
-                    </span>
-                  </MenuLink>
-                )}
                 <MenuItem
                   onClick={() => {
                     states.showGenericAccounts = {
@@ -363,18 +340,6 @@ function NavMenu(props: Record<string, unknown>) {
             <Icon icon="chart" size="l" />{' '}
             <span>
               <Trans>Trending</Trans>
-            </span>
-          </MenuLink>
-          <MenuLink to={`/${instance}/p/l`}>
-            <Icon icon="building" size="l" />{' '}
-            <span>
-              <Trans>Local</Trans>
-            </span>
-          </MenuLink>
-          <MenuLink to={`/${instance}/p`}>
-            <Icon icon="earth" size="l" />{' '}
-            <span>
-              <Trans>Federated</Trans>
             </span>
           </MenuLink>
           {authenticated ? (
@@ -458,7 +423,7 @@ function ListMenu({ menuState }: { menuState: MenuStateValue }) {
       label={
         <>
           <Icon icon="list" size="l" />
-          <span class="menu-grow">
+          <span className="menu-grow">
             <Trans>Lists & Feeds</Trans>
           </span>
           <Icon icon="chevron-right" />
