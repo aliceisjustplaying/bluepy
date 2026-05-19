@@ -57,6 +57,11 @@ export function getActiveAppview(): string {
   return (store.local.get('settings-appview') as string) || 'bluesky';
 }
 
+export function applyAppviewTheme(appview?: string): void {
+  const active = appview ?? getActiveAppview();
+  document.documentElement.dataset.appview = active;
+}
+
 function getActiveAppviewConfig() {
   return APPVIEW_OPTIONS[getActiveAppview()] ?? APPVIEW_OPTIONS.bluesky;
 }

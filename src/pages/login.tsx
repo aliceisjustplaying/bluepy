@@ -16,6 +16,7 @@ import { initClient, initInstance, initPreferences } from '../utils/api';
 import {
   APPVIEW_OPTIONS,
   BSKY_INSTANCE,
+  applyAppviewTheme,
   getActiveAppview,
   loginAtproto,
 } from '../utils/atproto-adapter';
@@ -55,6 +56,7 @@ function Login() {
   const [bskyPassword, setBskyPassword] = useState('');
   const [bskyService, setBskyService] = useState('');
   const [appview, setAppview] = useState(getActiveAppview());
+  useEffect(() => { applyAppviewTheme(appview); }, [appview]);
   const HANDLE_SUFFIXES = [
     '.bsky.social', '.blacksky.app', '.eurosky.social', '.pckt.cafe', '.com',
     '.tngl.sh', '.myatproto.social', '.margin.cafe', '.selfhosted.social', '.npmx.social',
@@ -248,6 +250,7 @@ function Login() {
     if (!bskyIdentifier || !bskyPassword) return;
     void (async () => {
       store.local.set('settings-appview', appview);
+      applyAppviewTheme(appview);
       setUIState('loading');
       try {
         const { account, session, service } = await loginAtproto({
@@ -291,6 +294,7 @@ function Login() {
     if (!bskyIdentifier) return;
     void (async () => {
       store.local.set('settings-appview', appview);
+      applyAppviewTheme(appview);
       setUIState('loading');
       try {
         await startAtprotoOAuthLogin(bskyIdentifier.trim());
