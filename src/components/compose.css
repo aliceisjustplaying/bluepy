@@ -1091,44 +1091,314 @@
 
 /* Bluesky Interaction Settings Premium UI Styles */
 .atproto-interaction-settings {
-  margin: 0 8px;
-  border: 1px solid var(--outline-color, var(--divider-color, rgba(0,0,0,0.1)));
-  border-radius: 12px;
-  padding: 12px 16px;
-  background-color: var(--bg-faded-blur-color, var(--bg-color-alt, rgba(0,0,0,0.02)));
+  margin: 12px 8px 0 8px;
+  border: 1px solid
+    var(--outline-color, var(--divider-color, rgba(0, 0, 0, 0.12)));
+  border-radius: 16px;
+  padding: 16px;
+  background-color: var(
+    --bg-faded-blur-color,
+    var(--bg-color-alt, rgba(0, 0, 0, 0.02))
+  );
   backdrop-filter: blur(12px);
   font-size: 0.9em;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-  transition: all 0.2s ease-in-out;
+  gap: 16px;
+  box-shadow: 0 4px 12px var(--drop-shadow-color, rgba(0, 0, 0, 0.05));
+  transition: all 0.25s cubic-bezier(0.3, 0.5, 0, 1);
+}
 
-  @media (min-width: 40em) {
-    margin: 0;
+@media (min-width: 40em) {
+  .atproto-interaction-settings {
+    margin: 12px 0 0 0;
   }
 }
 
 .atproto-interaction-settings-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  border-bottom: 1px dashed var(--outline-color, var(--divider-color, rgba(0,0,0,0.08)));
-  padding-bottom: 10px;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.08));
+  padding-bottom: 12px;
 }
 
 .atproto-interaction-settings-title {
-  font-weight: bold;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
   color: var(--text-color);
+  font-size: 1.05em;
+  letter-spacing: -0.01em;
+}
+
+.atproto-interaction-settings-subtitle {
+  font-size: 0.85em;
+  color: var(--text-insignificant-color);
+  font-weight: 450;
+}
+
+/* Quick Anyone / Nobody options (large side-by-side selectors) */
+.reply-quick-options {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.reply-quick-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--outline-color, rgba(0, 0, 0, 0.12));
+  background-color: var(--bg-color, #fff);
+  color: var(--text-color);
+  font-size: 0.95em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.reply-quick-option:hover:not(:disabled) {
+  background-color: var(--bg-color-alt, rgba(0, 0, 0, 0.04));
+  border-color: var(--outline-hover-color, rgba(0, 0, 0, 0.25));
+}
+
+.reply-quick-option.active {
+  border-color: var(--accent-color, var(--blue-color, #0085ff));
+  background-color: var(--accent-faded-color, rgba(0, 133, 255, 0.08));
+  color: var(--accent-color, var(--blue-color, #0085ff));
+}
+
+/* Radio circle inside Anyone / Nobody */
+.option-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--text-insignificant-color, rgba(0, 0, 0, 0.4));
+  transition: all 0.2s ease;
+  background-color: transparent;
+}
+
+.reply-quick-option.active .option-indicator {
+  border-color: var(--accent-color, var(--blue-color, #0085ff));
+}
+
+.option-indicator-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--accent-color, var(--blue-color, #0085ff));
+  transform: scale(0);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.reply-quick-option.active .option-indicator-inner {
+  transform: scale(1);
+}
+
+/* Custom rule block container */
+.reply-custom-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: opacity 0.25s ease;
+}
+
+.reply-custom-options.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.reply-options-title {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--text-insignificant-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+/* Custom Rule Row buttons */
+.reply-custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.1));
+  background-color: var(--bg-color, #fff);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  font-weight: 500;
+  text-align: left;
+}
+
+.reply-custom-row:hover:not(:disabled) {
+  background-color: var(--bg-color-alt, rgba(0, 0, 0, 0.04));
+  border-color: var(--outline-hover-color, rgba(0, 0, 0, 0.25));
+}
+
+.reply-custom-row.active {
+  background-color: var(--accent-faded-color, rgba(0, 133, 255, 0.08));
+  border-color: var(--accent-color, var(--blue-color, #0085ff));
+  color: var(--accent-color, var(--blue-color, #0085ff));
+  font-weight: 600;
+}
+
+.row-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Checkbox Indicator inside custom rows */
+.checkbox-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--outline-color, rgba(0, 0, 0, 0.18));
+  transition: all 0.2s ease;
+  background-color: var(--bg-color, #fff);
+  color: transparent;
+}
+
+.reply-custom-row.active .checkbox-indicator {
+  border-color: var(--accent-color, var(--blue-color, #0085ff));
+  background-color: var(--accent-color, var(--blue-color, #0085ff));
+  color: #fff;
+}
+
+/* Special rule select container */
+.reply-list-row-container {
+  border-radius: 12px;
+  border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.1));
+  background-color: var(--bg-color, #fff);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.reply-list-row-container.active {
+  border-color: var(--accent-color, var(--blue-color, #0085ff));
+  background-color: var(--accent-faded-color, rgba(0, 133, 255, 0.04));
+}
+
+.reply-list-row-container .list-row-button {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.reply-list-row-container.active .list-row-button {
+  background: transparent;
+  color: var(--accent-color, var(--blue-color, #0085ff));
+}
+
+.reply-list-dropdown-container {
+  padding: 10px 14px 14px 46px;
+  border-top: 1px dashed var(--divider-color, rgba(0, 0, 0, 0.08));
+  background-color: var(--bg-color, #fff);
+  animation: slide-down 0.2s ease-out;
+}
+
+.rule-list-select-bluepy {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--outline-color, rgba(0, 0, 0, 0.14));
+  background-color: var(--bg-color, #fff);
+  color: var(--text-color);
+  font-size: 0.95em;
+  font-weight: 550;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.rule-list-select-bluepy:focus {
+  border-color: var(--accent-color, var(--blue-color, #0085ff));
+  box-shadow: 0 0 0 2px var(--accent-faded-color, rgba(0, 133, 255, 0.15));
+}
+
+.no-lists-warning {
+  font-size: 0.85em;
+  color: var(--error-color, #ff4444);
+  opacity: 0.8;
+}
+
+/* Quote toggle pill row at the bottom */
+.quote-post-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.1));
+  background-color: var(--bg-color, #fff);
+  transition: all 0.2s ease;
+}
+
+.quote-post-toggle-row.active {
+  border-color: var(--accent-color, var(--blue-color, #0085ff));
+  background-color: var(--accent-faded-color, rgba(0, 133, 255, 0.04));
+}
+
+.quote-toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+  user-select: none;
+}
+
+.quote-label-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.quote-label-content .icon {
+  margin-top: 2px;
+  color: var(--text-insignificant-color);
+}
+
+.quote-post-toggle-row.active .quote-label-content .icon {
+  color: var(--accent-color, var(--blue-color, #0085ff));
+}
+
+.quote-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quote-title {
+  font-weight: 600;
+  color: var(--text-color);
   font-size: 0.95em;
 }
 
-/* Switch Toggle styling */
+.quote-desc {
+  font-size: 0.8em;
+  color: var(--text-insignificant-color);
+  font-weight: 450;
+}
+
+/* Switch Toggle styling overrides */
 .switch-toggle {
   position: relative;
   display: inline-block;
@@ -1146,14 +1416,14 @@
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background-color: var(--outline-color, rgba(0,0,0,0.15));
+  background-color: var(--outline-color, rgba(0, 0, 0, 0.18));
   transition: 0.2s;
   border-radius: 22px;
 }
 
 .switch-toggle .slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 16px;
   width: 16px;
   left: 3px;
@@ -1161,11 +1431,11 @@
   background-color: #fff;
   transition: 0.2s;
   border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .switch-toggle input:checked + .slider {
-  background-color: var(--accent-color, #0085ff);
+  background-color: var(--accent-color, var(--blue-color, #0085ff));
 }
 
 .switch-toggle input:checked + .slider:before {
@@ -1177,125 +1447,33 @@
   cursor: not-allowed;
 }
 
-/* Who Can Reply Section styling */
-.reply-controls-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.reply-controls-label {
-  font-weight: 600;
-  color: var(--text-color);
-  font-size: 0.9em;
-}
-
-/* Segmented Pill Control */
-.reply-segmented-control {
-  display: flex;
-  background-color: var(--bg-color, #fff);
-  border: 1px solid var(--outline-color, rgba(0,0,0,0.1));
-  border-radius: 20px;
-  padding: 3px;
-  width: 100%;
-}
-
-.reply-segment-option {
-  flex: 1;
-  text-align: center;
-  padding: 6px 12px;
-  border-radius: 17px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 0.9em;
-  transition: all 0.2s ease;
-  color: var(--text-insignificant-color);
-  user-select: none;
-}
-
-.reply-segment-option.active {
-  background-color: var(--accent-color, #0085ff);
-  color: #fff !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.reply-segment-option:not(.active):hover {
-  background-color: var(--bg-color-alt, rgba(0,0,0,0.04));
-  color: var(--text-color);
-}
-
-/* Custom Rules and Interactive Tag Pills */
-.custom-rules-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-left: 12px;
-  border-left: 2px solid var(--accent-color, #0085ff);
-  margin-top: 4px;
-  animation: fade-in 0.2s ease-out;
-}
-
-.custom-rule-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.custom-rule-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1px solid var(--outline-color, rgba(0,0,0,0.12));
-  background-color: var(--bg-color, #fff);
-  cursor: pointer;
-  font-size: 0.9em;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  color: var(--text-insignificant-color);
-  user-select: none;
-}
-
-.custom-rule-pill input {
-  display: none; /* Hide the native checkbox! */
-}
-
-.custom-rule-pill.active {
-  border-color: var(--accent-color, #0085ff);
-  background-color: var(--accent-faded-color, rgba(0, 133, 255, 0.08));
-  color: var(--accent-color, #0085ff);
-  box-shadow: 0 1px 2px rgba(0, 133, 255, 0.05);
-}
-
-.custom-rule-pill:not(.active):hover {
-  background-color: var(--bg-color-alt, rgba(0,0,0,0.04));
-  border-color: var(--divider-color, rgba(0,0,0,0.2));
-  color: var(--text-color);
-}
-
-.custom-rules-actions {
+/* Live summary block styling */
+.interaction-live-summary {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
-
-.rule-list-select {
-  padding: 4px 10px;
-  border-radius: 12px;
-  border: 1px solid var(--outline-color, rgba(0,0,0,0.12));
-  background-color: var(--bg-color, #fff);
-  color: var(--text-color);
-  font-size: 0.9em;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background-color: var(--bg-color-alt, rgba(0, 0, 0, 0.03));
+  border: 1.5px solid var(--outline-color, rgba(0, 0, 0, 0.06));
+  color: var(--text-insignificant-color);
+  font-size: 0.82em;
   font-weight: 500;
-  cursor: pointer;
-  outline: none;
-  transition: all 0.2s ease;
 }
 
-.rule-list-select:focus {
-  border-color: var(--accent-color, #0085ff);
-  box-shadow: 0 0 0 2px var(--accent-faded-color, rgba(0, 133, 255, 0.15));
+.interaction-live-summary .icon {
+  color: var(--accent-color, var(--blue-color, #0085ff));
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
