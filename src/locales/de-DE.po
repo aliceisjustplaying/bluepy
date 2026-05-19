@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2026-05-20 20:09+0000\n"
+"POT-Creation-Date: 2026-05-20 20:10+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -786,8 +786,16 @@ msgstr ""
 msgid "Show all sensitive content"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "(No user lists found)"
+msgstr ""
+
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Custom..."
 msgstr ""
 
 #: src/pages/account-statuses.tsx
@@ -870,6 +878,10 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Allow others to quote this post"
 msgstr ""
 
 #: src/components/status-media-embeds.tsx
@@ -997,6 +1009,10 @@ msgstr ""
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Looks like you have unsent drafts. Let's continue where you left off."
 msgstr ""
@@ -1121,12 +1137,16 @@ msgstr ""
 msgid "This user has chosen to not make this information available."
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Who can reply: Everybody"
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and mentioned people can reply"
 msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and followed people can reply"
 msgstr ""
 
 #: src/components/related-actions.tsx
@@ -1373,10 +1393,6 @@ msgstr ""
 msgid "Error: {e}"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Who can reply: Followed people"
-msgstr ""
-
 #. placeholder {0}: replies.length
 #. placeholder {1}: shortenNumber(replies.length)
 #: src/pages/status.tsx
@@ -1470,10 +1486,6 @@ msgstr ""
 msgid "Multiple hashtags are supported. Space-separated."
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Who can reply: Mentioned people"
-msgstr ""
-
 #: src/components/status-edit-history-modal.tsx
 msgid "Failed to load history"
 msgstr ""
@@ -1526,6 +1538,10 @@ msgstr ""
 #: src/components/status-account-menu.tsx
 #: src/pages/settings.tsx
 msgid "Quote settings"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, mentioned people, and list members can reply"
 msgstr ""
 
 #: src/components/notification.tsx
@@ -1630,6 +1646,10 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "List members can reply"
 msgstr ""
 
 #: src/components/media-post.tsx
@@ -1755,6 +1775,10 @@ msgstr ""
 msgid "Export"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "People from list"
+msgstr ""
+
 #: src/components/search-form.tsx
 #: src/pages/home.tsx
 msgid "See all"
@@ -1790,10 +1814,6 @@ msgstr ""
 msgid "Only followings"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Who can reply: Followers"
-msgstr ""
-
 #: src/pages/notifications.tsx
 msgid "Allow"
 msgstr ""
@@ -1818,6 +1838,10 @@ msgstr ""
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Select a list..."
 msgstr ""
 
 #: src/components/compose.tsx
@@ -2028,6 +2052,10 @@ msgstr ""
 msgid "View post"
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followers, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/nav-menu.tsx
 msgid "New"
 msgstr ""
@@ -2172,7 +2200,6 @@ msgstr ""
 msgid "Send Report <0>+ Block profile</0>"
 msgstr ""
 
-#: src/components/compose.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Nobody can reply"
@@ -2211,7 +2238,6 @@ msgstr ""
 msgid "This notification is from your other account."
 msgstr ""
 
-#: src/components/compose.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Only your followers can reply"
@@ -2271,6 +2297,10 @@ msgstr ""
 
 #: src/pages/list.tsx
 msgid "Nothing yet."
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and mentioned people can reply"
 msgstr ""
 
 #: src/components/media-attachment.tsx
@@ -2434,7 +2464,6 @@ msgstr ""
 msgid "Add"
 msgstr ""
 
-#: src/components/compose.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Only people you follow can reply"
@@ -2870,6 +2899,10 @@ msgstr ""
 msgid "Unable to block {username}"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "Your followers"
+msgstr ""
+
 #. js-lingui-explicit-id
 #: src/pages/status.tsx
 #: src/pages/status.tsx
@@ -2985,6 +3018,10 @@ msgstr ""
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followed people and mentioned people can reply"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx
@@ -3129,6 +3166,10 @@ msgstr ""
 msgid "Showing posts with media"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "People you follow"
+msgstr ""
+
 #: src/components/feedback-modal.tsx
 #: src/pages/welcome.tsx
 msgid "Send feedback"
@@ -3151,7 +3192,6 @@ msgstr ""
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} liked your reply.} other {{account} liked your post.}}} other {{account} liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> liked your reply.} other {<2><3>{1}</3> people</2> liked your post.}}}}"
 msgstr ""
 
-#: src/components/compose.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Everybody can reply"
@@ -3169,8 +3209,16 @@ msgstr ""
 msgid "Resolving…"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "Who can reply:"
+msgstr ""
+
 #: src/components/status-header.tsx
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Bluesky Reply & Quote Controls"
 msgstr ""
 
 #: src/components/atproto-labels.tsx
@@ -3207,6 +3255,10 @@ msgstr ""
 #: src/components/list-add-edit.tsx
 #: src/pages/lists.tsx
 msgid "New list"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and list members can reply"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx
@@ -3444,6 +3496,14 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followed people and list members can reply"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Mentioned people and list members can reply"
+msgstr ""
+
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
 msgstr ""
@@ -3622,7 +3682,6 @@ msgstr ""
 msgid "Screenshot of multi-column UI"
 msgstr ""
 
-#: src/components/compose.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Only people you mention can reply"
@@ -3654,6 +3713,10 @@ msgstr ""
 
 #: src/utils/show-compose.ts
 msgid "A post is currently open. Post or discard it before creating a new one."
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "People you mention"
 msgstr ""
 
 #: src/components/related-actions.tsx
@@ -3708,8 +3771,16 @@ msgstr ""
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followers and list members can reply"
+msgstr ""
+
 #: src/components/compose.tsx
 msgid "Editing source post"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Everybody"
 msgstr ""
 
 #: src/pages/settings.tsx
@@ -3781,6 +3852,10 @@ msgstr ""
 msgid "Post hidden by your filters"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "Please select at least one rule, otherwise nobody can reply."
+msgstr ""
+
 #: src/components/recent-searches.tsx
 msgid "Clear"
 msgstr ""
@@ -3814,6 +3889,10 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Nobody"
 msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
@@ -3870,10 +3949,6 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Previously…"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Who can reply: Nobody"
 msgstr ""
 
 #: src/components/status-account-menu.tsx
