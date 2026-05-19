@@ -876,10 +876,6 @@ msgstr ""
 msgid "Open media or post details"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Let others quote or embed this post"
-msgstr ""
-
 #: src/components/status-media-embeds.tsx
 msgid "Show media"
 msgstr ""
@@ -1038,10 +1034,6 @@ msgstr ""
 msgid "Request to quote"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Limit replies to"
-msgstr ""
-
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
 #: src/components/status-activity-menu.tsx
@@ -1073,10 +1065,6 @@ msgstr ""
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Unable to copy handle"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Who can reply and quote your post"
 msgstr ""
 
 #: src/pages/settings.tsx
@@ -1317,10 +1305,6 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "You don't follow"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Quote posts are disabled."
 msgstr ""
 
 #: src/compose.tsx
@@ -1567,10 +1551,6 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Members of \"{threadgateListName}\""
-msgstr ""
-
 #: src/pages/catchup.tsx
 msgid "You don't have to read everything."
 msgstr ""
@@ -1787,10 +1767,6 @@ msgstr ""
 msgid "Export"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "People from list"
-msgstr ""
-
 #: src/components/search-form.tsx
 #: src/pages/home.tsx
 msgid "See all"
@@ -1991,10 +1967,6 @@ msgstr ""
 msgid "Who unsolicitedly private mention you"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Members of selected list"
-msgstr ""
-
 #: src/components/notification.tsx
 msgid "{account} published a post."
 msgstr ""
@@ -2176,6 +2148,10 @@ msgstr ""
 msgid "System language ({systemTargetLanguageText})"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "Allow quotes"
+msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>…"
 msgstr ""
@@ -2343,10 +2319,6 @@ msgstr ""
 msgid "You're all caught up."
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Replies allowed for: "
-msgstr ""
-
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr ""
@@ -2405,6 +2377,10 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Image description"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Mentioned"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx
@@ -2918,11 +2894,6 @@ msgstr ""
 msgid "Unable to block {username}"
 msgstr ""
 
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-msgid "Your followers"
-msgstr ""
-
 #. js-lingui-explicit-id
 #: src/pages/status.tsx
 #: src/pages/status.tsx
@@ -3062,10 +3033,6 @@ msgstr ""
 msgid "Connect to Atmosphere"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Anybody can reply."
-msgstr ""
-
 #. placeholder {0}: shortenNumber(totalComments)
 #: src/pages/status.tsx
 msgid "{totalComments, plural, one {# comment} other {<0>{0}</0> comments}}"
@@ -3194,11 +3161,6 @@ msgstr ""
 msgid "Showing posts with media"
 msgstr ""
 
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-msgid "People you follow"
-msgstr ""
-
 #: src/components/feedback-modal.tsx
 #: src/pages/welcome.tsx
 msgid "Send feedback"
@@ -3236,6 +3198,10 @@ msgstr ""
 
 #: src/pages/http-route.tsx
 msgid "Resolving…"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Who can reply:"
 msgstr ""
 
 #: src/components/status-header.tsx
@@ -3415,10 +3381,6 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Quote posts are enabled."
-msgstr ""
-
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Profile"
 msgstr ""
@@ -3479,6 +3441,10 @@ msgstr ""
 msgid "Unable to copy shortcut settings"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "From List"
+msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
 msgstr ""
@@ -3505,10 +3471,6 @@ msgstr ""
 msgid "Sharing doesn't seem to work."
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Replies are disabled."
-msgstr ""
-
 #: src/components/list-add-edit.tsx
 msgid "Edit list"
 msgstr ""
@@ -3523,10 +3485,6 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Settings"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Allow quote posts"
 msgstr ""
 
 #: src/utils/visibility-text.ts
@@ -3748,11 +3706,6 @@ msgstr ""
 msgid "A post is currently open. Post or discard it before creating a new one."
 msgstr ""
 
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-msgid "People you mention"
-msgstr ""
-
 #: src/components/related-actions.tsx
 msgid "Unable to mute @{username}"
 msgstr ""
@@ -3870,6 +3823,7 @@ msgstr ""
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
+#: src/components/compose.tsx
 #: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr ""
@@ -3961,6 +3915,7 @@ msgid "Post reported"
 msgstr ""
 
 #: src/components/account-block.tsx
+#: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
 msgstr ""
