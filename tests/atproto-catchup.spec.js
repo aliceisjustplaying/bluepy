@@ -38,7 +38,7 @@ async function loginViaUI(page) {
 /**
  * @param {number} index
  */
-function fakePost(index) {
+function fakePost(index, overrides = {}) {
   const createdAt = new Date(Date.UTC(2026, 0, 1, 0, index)).toISOString();
   const score = index + 1;
   return {
@@ -72,6 +72,7 @@ function fakePost(index) {
     quotesCount: 0,
     inReplyToId: null,
     inReplyToAccountId: null,
+    ...overrides,
   };
 }
 
@@ -136,5 +137,92 @@ base(
     await expect(
       page.locator('.catchup-list > li:not(.separator)').nth(2),
     ).toContainText('rank target 78');
+  },
+);
+
+base(
+  'catch-up sort rerenders duplicate post ids after changing sort',
+  async ({ page }) => {
+    await loginViaUI(page);
+
+    const id = `catchup-duplicate-sort-${Date.now()}`;
+    const duplicateCreatedAt = new Date(
+      Date.UTC(2026, 0, 1, 0, 0),
+    ).toISOString();
+    const duplicateAccount = { ...fakePost(0).account };
+    const posts = [
+      fakePost(0, {
+        id: 'duplicate-post-id',
+        account: duplicateAccount,
+        createdAt: duplicateCreatedAt,
+        content: 'duplicate low rank one',
+        favouritesCount: 1,
+        reblogsCount: 0,
+      }),
+      fakePost(1, {
+        id: 'duplicate-post-id',
+        account: duplicateAccount,
+        createdAt: duplicateCreatedAt,
+        content: 'duplicate low rank two',
+        favouritesCount: 2,
+        reblogsCount: 0,
+      }),
+      fakePost(2, {
+        id: 'highest-ranked-post',
+        content: 'duplicate key top rank',
+        favouritesCount: 100,
+        reblogsCount: 50,
+      }),
+    ];
+    await page.goto('/');
+    await page.evaluate(
+      async ({ id: catchupId, posts: catchupPosts }) => {
+        await new Promise((resolve, reject) => {
+          const request = indexedDB.open('catchup-db');
+          request.addEventListener('upgradeneeded', () => {
+            request.result.createObjectStore('catchup-store');
+          });
+          request.addEventListener('error', () => {
+            reject(request.error ?? new Error('Failed to open catch-up DB'));
+          });
+          request.addEventListener('success', () => {
+            const tx = request.result.transaction('catchup-store', 'readwrite');
+            tx.objectStore('catchup-store').put(
+              {
+                id: catchupId,
+                posts: catchupPosts,
+                count: catchupPosts.length,
+                startAt: Date.parse(catchupPosts[0].createdAt),
+                endAt: Date.parse(
+                  catchupPosts[catchupPosts.length - 1].createdAt,
+                ),
+              },
+              catchupId,
+            );
+            tx.addEventListener('complete', () => {
+              request.result.close();
+              resolve(undefined);
+            });
+            tx.addEventListener('error', () => {
+              request.result.close();
+              reject(tx.error ?? new Error('Failed to seed catch-up DB'));
+            });
+          });
+        });
+      },
+      { id, posts },
+    );
+
+    await page.goto(`/catchup?id=${id}`);
+    await expect(page.locator('.catchup-list')).toBeVisible();
+    await expect(
+      page.locator('.catchup-list > li:not(.separator)').first(),
+    ).toContainText('duplicate low rank one');
+
+    await page.locator('label.filter-sort', { hasText: 'Likes' }).click();
+
+    await expect(
+      page.locator('.catchup-list > li:not(.separator)').first(),
+    ).toContainText('duplicate key top rank');
   },
 );

@@ -863,6 +863,25 @@ function Catchup() {
     );
   }, [filteredPosts, sortBy, sortOrder, groupBy, authorCountsList]);
 
+  const sortedFilteredPostRows = useMemo(() => {
+    const keyCounts = new Map<string, number>();
+    return sortedFilteredPosts.map((post) => {
+      const baseKey = [
+        post.id,
+        post.reblog?.id ?? '',
+        post.createdAt,
+        post.reblog?.createdAt ?? '',
+        post.account.id,
+      ].join('|');
+      const keyCount = keyCounts.get(baseKey) ?? 0;
+      keyCounts.set(baseKey, keyCount + 1);
+      return {
+        post,
+        renderKey: keyCount ? `${baseKey}|${keyCount}` : baseKey,
+      };
+    });
+  }, [sortedFilteredPosts]);
+
   const prevGroup = useRef<string | null>(null);
 
   const authorsListParent = useRef<HTMLDivElement | null>(null);
@@ -1995,7 +2014,7 @@ function Catchup() {
                     : ''
                 } ${groupBy ? `catchup-group-${groupBy}` : ''}`}
               >
-                {sortedFilteredPosts.map((post, i) => {
+                {sortedFilteredPostRows.map(({ post, renderKey }, i) => {
                   const postId = post.reblog?.id || post.id;
                   let showSeparator = false;
                   if (groupBy === 'account') {
@@ -2009,7 +2028,7 @@ function Catchup() {
                     prevGroup.current = post.account.id;
                   }
                   return (
-                    <Fragment key={`${post.id}-${showSeparator}`}>
+                    <Fragment key={`${renderKey}-${showSeparator}`}>
                       {showSeparator && <li className="separator" />}
                       <li>
                         <Link to={`/${instance}/s/${postId}`}>
