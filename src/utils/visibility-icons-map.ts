@@ -8,6 +8,7 @@ const visibilityIconsMap = {
   mention: 'message',
   following: 'group',
   followers: 'lock',
+  everybody: 'earth',
 } as const;
 
 export default visibilityIconsMap;

@@ -10,6 +10,7 @@ const visibilityText = {
   mention: msg`Only people you mention can reply`,
   following: msg`Only people you follow can reply`,
   followers: msg`Only your followers can reply`,
+  everybody: msg`Everybody can reply`,
 } as const;
 
 export default visibilityText;

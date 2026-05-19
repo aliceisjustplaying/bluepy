@@ -3153,6 +3153,7 @@ msgstr ""
 
 #: src/components/compose.tsx
 #: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
 msgid "Everybody can reply"
 msgstr ""
 

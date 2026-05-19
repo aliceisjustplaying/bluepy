@@ -1788,7 +1788,7 @@ function getThreadgateVisibility(post: AtprotoPost): string {
       }
     }
   }
-  return 'public';
+  return 'everybody';
 }
 
 export function postToStatus(

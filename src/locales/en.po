@@ -3156,6 +3156,7 @@ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{
 
 #: src/components/compose.tsx
 #: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
 msgid "Everybody can reply"
 msgstr "Everybody can reply"
 
