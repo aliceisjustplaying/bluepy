@@ -33,6 +33,7 @@ import NameText, { type NameTextAccount } from '../components/name-text';
 import NavMenu from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
 import { api, getMastoV1Resource, getPreferences } from '../utils/api';
+import { catchupPageHasItemsInRange } from '../utils/catchup-fetch';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import db from '../utils/db';
 import emojifyText from '../utils/emojify-text';
@@ -377,7 +378,6 @@ function Catchup() {
           const results = await homeIterator.next();
           const { value } = results as { value: CatchupPost[] | undefined };
           if (value?.length) {
-            let addedResults = false;
             for (let i = 0; i < value.length; i++) {
               const item = value[i];
               const createdAtTime = Date.parse(item.createdAt);
@@ -396,15 +396,15 @@ function Catchup() {
                 item._filtered = filterInfo as FilterInfo;
 
                 allResults.push(item);
-                addedResults = true;
               } else {
                 // Don't immediately stop, still add the other items that might still be within range
                 // break mainloop;
               }
-              // Only stop when ALL items are outside of range
-              if (!addedResults) {
-                break mainloop;
-              }
+            }
+            // Only stop when ALL items are outside of range. Hidden filtered
+            // posts still count as in-range so they don't truncate catch-up.
+            if (!catchupPageHasItemsInRange(value, maxCreatedAt)) {
+              break mainloop;
             }
           } else {
             break mainloop;
