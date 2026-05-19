@@ -515,7 +515,6 @@ interface AdaptedStatusAtproto {
   replyParentAccount?: AdaptedAccount;
   replyParentUnavailable: boolean;
   mutedAuthor?: boolean;
-  mutedByList?: boolean;
   like?: string;
   repost?: string;
   text: string;
@@ -1627,10 +1626,6 @@ function isActorMuted(actor: AtprotoActor | undefined): boolean {
   return !!(actor?.viewer?.muted || actor?.viewer?.mutedByList);
 }
 
-function isActorMutedByList(actor: AtprotoActor | undefined): boolean {
-  return !!actor?.viewer?.mutedByList;
-}
-
 function blobRefID(blob: BlobRefLike): string {
   const json = blob.toJSON();
   if (isRecord(json)) {
@@ -1866,7 +1861,6 @@ export function postToStatus(
         : undefined,
       replyParentUnavailable: !!replyParentURI && !replyParent?.author,
       mutedAuthor: isActorMuted(post.author),
-      mutedByList: isActorMutedByList(post.author),
       like: post.viewer?.like,
       repost: post.viewer?.repost,
       text: record.text || '',
@@ -1889,8 +1883,6 @@ export function postToStatus(
       _atproto: {
         ...status._atproto,
         mutedAuthor: status._atproto.mutedAuthor || isActorMuted(reason.by),
-        mutedByList:
-          status._atproto.mutedByList || isActorMutedByList(reason.by),
       },
       reblog: status,
     };

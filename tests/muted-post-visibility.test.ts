@@ -1,0 +1,107 @@
+/// <reference types="node" />
+
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import {
+  DEFAULT_MUTED_POST_VISIBILITY,
+  getMutedPostVisibility,
+  hasMutedAuthor,
+  isMutedPostVisibility,
+  shouldCollapseMutedStatus,
+  shouldHideMutedStatus,
+} from '../src/utils/muted-post-visibility';
+
+const mutedStatus = {
+  id: 'post',
+  account: { id: 'did:plc:author' },
+  _atproto: { mutedAuthor: true },
+};
+
+void test('muted post visibility validates persisted values', () => {
+  assert.equal(getMutedPostVisibility({ mutedPostVisibility: 'hide' }), 'hide');
+  assert.equal(
+    getMutedPostVisibility({ mutedPostVisibility: 'collapse' }),
+    'collapse',
+  );
+  assert.equal(getMutedPostVisibility({ mutedPostVisibility: 'show' }), 'show');
+  assert.equal(
+    getMutedPostVisibility({ mutedPostVisibility: 'invalid' }),
+    DEFAULT_MUTED_POST_VISIBILITY,
+  );
+  assert.equal(isMutedPostVisibility('collapse'), true);
+  assert.equal(isMutedPostVisibility('invalid'), false);
+});
+
+void test('muted author detection recurses through reposts and quotes', () => {
+  assert.equal(hasMutedAuthor(mutedStatus), true);
+  assert.equal(hasMutedAuthor({ reblog: mutedStatus }), true);
+  assert.equal(hasMutedAuthor({ quote: { quotedStatus: mutedStatus } }), true);
+  assert.equal(
+    hasMutedAuthor({
+      quote: {
+        quotedStatus: {
+          quote: { quotedStatus: mutedStatus },
+        },
+      },
+    }),
+    true,
+  );
+  assert.equal(hasMutedAuthor({ _atproto: { mutedAuthor: false } }), false);
+});
+
+void test('hide mode drops muted statuses except direct context and current account', () => {
+  assert.equal(
+    shouldHideMutedStatus({
+      status: mutedStatus,
+      currentAccountID: null,
+      visibility: 'hide',
+    }),
+    true,
+  );
+  assert.equal(
+    shouldHideMutedStatus({
+      status: mutedStatus,
+      currentAccountID: null,
+      visibility: 'hide',
+      directContext: true,
+    }),
+    false,
+  );
+  assert.equal(
+    shouldHideMutedStatus({
+      status: mutedStatus,
+      currentAccountID: 'did:plc:author',
+      visibility: 'hide',
+    }),
+    false,
+  );
+});
+
+void test('collapse mode keeps muted statuses renderable behind a reveal row', () => {
+  assert.equal(
+    shouldCollapseMutedStatus({
+      status: mutedStatus,
+      currentAccountID: null,
+      visibility: 'collapse',
+    }),
+    true,
+  );
+  assert.equal(
+    shouldCollapseMutedStatus({
+      status: mutedStatus,
+      currentAccountID: null,
+      visibility: 'show',
+    }),
+    false,
+  );
+  assert.equal(
+    shouldCollapseMutedStatus({
+      status: mutedStatus,
+      currentAccountID: null,
+      visibility: 'hide',
+      directContext: true,
+    }),
+    true,
+  );
+});

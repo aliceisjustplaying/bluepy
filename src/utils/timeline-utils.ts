@@ -150,6 +150,8 @@ export function filterHiddenStatuses<T extends TimelineStatus>(
   const currentAccount = getCurrentAccountID();
   const mutedPostVisibility = getMutedPostVisibility(states.settings);
   return items.filter((item) => {
+    // Muted-account visibility is a timeline preference, not a Mastodon filter
+    // context. Keep applying it when content filters are disabled.
     if (
       shouldHideMutedStatus({
         status: item,

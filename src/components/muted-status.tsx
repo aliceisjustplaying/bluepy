@@ -74,7 +74,6 @@ export default function MutedStatus({
           <button
             type="button"
             className="status-filtered-badge clickable badge-meta"
-            aria-expanded={expanded}
             title={t`Show muted post`}
             onClick={showPost}
           >
