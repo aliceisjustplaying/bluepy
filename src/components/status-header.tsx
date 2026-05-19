@@ -80,11 +80,7 @@ function StatusTimeIcon({
       />
     );
   }
-  if (
-    visibility !== 'public' &&
-    visibility !== 'everybody' &&
-    visibility !== 'direct'
-  ) {
+  if (visibility !== 'everybody') {
     return (
       <Icon
         icon={visibilityIconsMap[visibility]}
@@ -218,13 +214,6 @@ export default function StatusHeader({
         </div>
       )}
       <LazyRender id={sKey} className="pre-content-container">
-        {visibility === 'direct' && (
-          <>
-            <div className="status-direct-badge">
-              <Trans>Private mention</Trans>
-            </div>{' '}
-          </>
-        )}
         {!withinContext &&
           (isThread ? (
             <ThreadBadge showIcon showText index={threadNumber} />

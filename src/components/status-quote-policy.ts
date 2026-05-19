@@ -15,16 +15,10 @@ interface QuoteApprovalShape {
 
 interface StatusQuotePolicyArgs {
   quoteApproval?: QuoteApprovalShape;
-  isPublic: boolean;
-  isSelf: boolean | '' | null | undefined;
-  visibility?: string;
 }
 
 export default function useStatusQuotePolicy({
   quoteApproval,
-  isPublic,
-  isSelf,
-  visibility,
 }: StatusQuotePolicyArgs) {
   const { t, i18n } = useLingui();
   const _ = i18n._.bind(i18n);
@@ -34,20 +28,13 @@ export default function useStatusQuotePolicy({
   let quoteMetaText: string | undefined;
 
   if (supportsNativeQuote()) {
-    const isMine = isSelf;
-    const isMineAndPrivate = isMine && visibility === 'private';
     const isQuoteAutomaticallyAccepted =
-      quoteApproval?.currentUser === 'automatic' &&
-      (isPublic || isMineAndPrivate);
-    const isQuoteManuallyAccepted =
-      quoteApproval?.currentUser === 'manual' && (isPublic || isMineAndPrivate);
+      quoteApproval?.currentUser === 'automatic';
+    const isQuoteManuallyAccepted = quoteApproval?.currentUser === 'manual';
     const isQuoteFollowersOnly =
       quoteApproval?.automatic?.[0] === 'followers' ||
       quoteApproval?.manual?.[0] === 'followers';
-    if (!isPublic && !isMine) {
-      quoteDisabled = true;
-      quoteMetaText = _(quoteMessages.quotePrivate);
-    } else if (isQuoteAutomaticallyAccepted) {
+    if (isQuoteAutomaticallyAccepted) {
       // No need to do anything
     } else if (isQuoteManuallyAccepted) {
       quoteText = _(quoteMessages.requestQuote);

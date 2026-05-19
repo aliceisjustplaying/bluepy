@@ -37,7 +37,6 @@ function StatusCompact({ sKey }: StatusCompactProps) {
     sensitive,
     spoilerText,
     account: { avatar, avatarStatic, bot } = {},
-    visibility,
     content,
     language,
     filtered,
@@ -80,9 +79,7 @@ function StatusCompact({ sKey }: StatusCompactProps) {
     <LazyRender
       as="article"
       id={srKey}
-      className={`status compact-reply ${
-        visibility === 'direct' ? 'visibility-direct' : ''
-      }`}
+      className="status compact-reply"
       tabIndex={-1}
       data-state-post-id={srKey}
       renderIfHasChildren={false}

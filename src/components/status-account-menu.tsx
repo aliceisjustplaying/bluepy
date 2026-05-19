@@ -35,7 +35,6 @@ type StatusAccountMenuProps = Pick<
   | 'instance'
   | 'pinned'
   | 'isPinnable'
-  | 'visibility'
   | 'setShowQuoteSettings'
   | 'quoteApprovalPolicyMessages'
   | 'postQuoteApprovalPolicy'
@@ -56,7 +55,6 @@ export default function StatusAccountMenu({
   instance,
   pinned,
   isPinnable,
-  visibility,
   setShowQuoteSettings,
   quoteApprovalPolicyMessages,
   postQuoteApprovalPolicy,
@@ -159,27 +157,26 @@ export default function StatusAccountMenu({
       )}
       {isSelf && (
         <>
-          {supportsNativeQuote() &&
-            !['private', 'direct'].includes(visibility) && (
-              <MenuItem
-                onClick={() => {
-                  setShowQuoteSettings(true);
-                }}
-              >
-                <Icon icon="quote2" />
-                <small>
-                  <Trans>Quote settings</Trans>
-                  <br />
-                  <span className="more-insignificant">
-                    {_(
-                      quoteApprovalPolicyMessages[
-                        postQuoteApprovalPolicy as keyof typeof quoteApprovalPolicyMessages
-                      ],
-                    )}
-                  </span>
-                </small>
-              </MenuItem>
-            )}
+          {supportsNativeQuote() && (
+            <MenuItem
+              onClick={() => {
+                setShowQuoteSettings(true);
+              }}
+            >
+              <Icon icon="quote2" />
+              <small>
+                <Trans>Quote settings</Trans>
+                <br />
+                <span className="more-insignificant">
+                  {_(
+                    quoteApprovalPolicyMessages[
+                      postQuoteApprovalPolicy as keyof typeof quoteApprovalPolicyMessages
+                    ],
+                  )}
+                </span>
+              </small>
+            </MenuItem>
+          )}
           <div className="menu-horizontal">
             {supports('@mastodon/post-edit') && (
               <MenuItem

@@ -147,7 +147,7 @@ export default function useStatusMenuState({
   const isQuotingMyPost =
     quoteAny?.state === 'accepted' &&
     quoteAny?.quotedStatus?.account?.id === currentAccount;
-  const isPinnable = ['public', 'unlisted', 'private'].includes(visibility);
+  const isPinnable = false;
   const menuFooter: ReactNode =
     mediaNoDesc && !reblogged ? (
       <div className="footer">

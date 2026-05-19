@@ -305,16 +305,8 @@ export default function StatusContent({
   const createdDateText = createdAt && niceDateTime(createdAtDate);
   const editedDateText = editedAt && niceDateTime(editedAtDate);
 
-  // Can boost if:
-  // - authenticated AND
-  // - visibility != direct OR
-  // - visibility = private AND isSelf
-  // - OR if it's an AT Protocol post (all are public and boostable)
-  const isPublic = ['public', 'unlisted'].includes(visibility) || !!status._atproto;
-  let canBoost = authenticated && isPublic;
-  if (visibility === 'private' && isSelf) {
-    canBoost = true;
-  }
+  // On Bluesky/Bluepy, all posts are public, so they are always shareable and boostable if authenticated.
+  const canBoost = authenticated;
 
   const {
     quoteDisabled,
@@ -325,9 +317,6 @@ export default function StatusContent({
     quoteApprovalPolicyMessages,
   } = useStatusQuotePolicy({
     quoteApproval,
-    isPublic,
-    isSelf,
-    visibility,
   });
 
   const {
@@ -410,7 +399,7 @@ export default function StatusContent({
     editedAt,
     setShowEdited,
     editedDateText,
-    isPublic,
+    isPublic: true,
     authenticated,
     isSelf,
     mentionSelf,

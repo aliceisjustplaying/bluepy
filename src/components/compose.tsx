@@ -654,36 +654,21 @@ function Compose({
     }, 300);
   };
 
-  // Quote eligibility logic duplicated from status.jsx
+  // Quote eligibility logic
   const checkQuoteEligibility = (status: StatusLike): boolean => {
     if (!supportsNativeQuote()) return false;
 
-    const { visibility: statusVisibility, quoteApproval, account } = status;
-    const isSelf =
-      !!currentAccountInfo && currentAccountInfo.id === account?.id;
-    const isPublic = ['public', 'unlisted'].includes(statusVisibility ?? '');
-    const isMineAndPrivate = isSelf && statusVisibility === 'private';
-
+    const { quoteApproval } = status;
     const quoteApprovalNarrowed = quoteApproval as
       | { currentUser?: string }
       | null
       | undefined;
     const isQuoteAutomaticallyAccepted =
-      quoteApprovalNarrowed?.currentUser === 'automatic' &&
-      (isPublic || isMineAndPrivate);
+      quoteApprovalNarrowed?.currentUser === 'automatic';
     const isQuoteManuallyAccepted =
-      quoteApprovalNarrowed?.currentUser === 'manual' &&
-      (isPublic || isMineAndPrivate);
+      quoteApprovalNarrowed?.currentUser === 'manual';
 
-    if (!isPublic && !isSelf) {
-      return false;
-    } else if (isQuoteAutomaticallyAccepted) {
-      return true;
-    } else if (isQuoteManuallyAccepted) {
-      return true;
-    } else {
-      return false;
-    }
+    return isQuoteAutomaticallyAccepted || isQuoteManuallyAccepted;
   };
 
   const processFiles = async (
@@ -2055,7 +2040,12 @@ function Compose({
                     userSelect: 'none',
                   }}
                 >
-                  <span style={{ fontSize: '0.9em', color: 'var(--text-insignificant-color)' }}>
+                  <span
+                    style={{
+                      fontSize: '0.9em',
+                      color: 'var(--text-insignificant-color)',
+                    }}
+                  >
                     <Trans>Allow Quote Posts</Trans>
                   </span>
                   <span className="switch-toggle">
@@ -2274,7 +2264,8 @@ function Compose({
                             </option>
                             {userLists.map((list) => {
                               const uri =
-                                list._atproto?.uri || decodeURIComponent(list.id);
+                                list._atproto?.uri ||
+                                decodeURIComponent(list.id);
                               return (
                                 <option value={uri} key={uri}>
                                   {list.title}
