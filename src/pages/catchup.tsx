@@ -2011,11 +2011,11 @@ function Catchup() {
                   return (
                     <Fragment key={`${post.id}-${showSeparator}`}>
                       {showSeparator && <li className="separator" />}
-                      <IntersectionPostLineItem
-                        to={`/${instance}/s/${postId}`}
-                        post={post}
-                        root={scrollableRef.current}
-                      />
+                      <li>
+                        <Link to={`/${instance}/s/${postId}`}>
+                          <PostLine post={post} />
+                        </Link>
+                      </li>
                     </Fragment>
                   );
                 })}
@@ -2215,9 +2215,9 @@ const PostLine = memo(
             ? 'group'
             : reblog
               ? 'reblog'
-            : supportsNativeQuote() && hasQuote(quote)
-              ? 'quote'
-              : ''
+              : supportsNativeQuote() && hasQuote(quote)
+                ? 'quote'
+                : ''
         } ${isReplyTo ? 'reply-to' : ''} ${
           postIsFiltered ? 'filtered' : ''
         } visibility-${visibility}`}
@@ -2279,52 +2279,6 @@ const PostLine = memo(
     return oldProps?.post?.id === newProps?.post?.id;
   },
 );
-
-interface IntersectionPostLineItemProps extends PostLineProps {
-  root: Element | null;
-  to: string;
-}
-
-const IntersectionPostLineItem = ({
-  root,
-  to,
-  ...props
-}: IntersectionPostLineItemProps) => {
-  const ref = useRef<HTMLLIElement | null>(null);
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting) {
-          queueMicrotask(() => {
-            setShow(true);
-          });
-          if (ref.current) observer.unobserve(ref.current);
-        }
-      },
-      {
-        root,
-        rootMargin: `${Math.max(320, screen.height * 0.75)}px`,
-      },
-    );
-    const node = ref.current;
-    if (node) observer.observe(node);
-    return () => {
-      if (node) observer.unobserve(node);
-    };
-  }, [root]);
-
-  return show ? (
-    <li>
-      <Link to={to}>
-        <PostLine {...props} />
-      </Link>
-    </li>
-  ) : (
-    <li ref={ref} style={{ height: '4em' }} />
-  );
-};
 
 // A media speak a thousand words
 const MEDIA_DENSITY = 8;
