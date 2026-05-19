@@ -1114,7 +1114,7 @@
 
 .atproto-interaction-settings-summary {
   display: grid;
-  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 8px;
   cursor: pointer;
@@ -1127,28 +1127,6 @@
 
 .atproto-interaction-settings-summary::marker {
   content: '';
-}
-
-.atproto-interaction-settings-current {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 0;
-  gap: 5px;
-  color: var(--text-insignificant-color);
-  font-size: 0.82em;
-  font-weight: 600;
-}
-
-.atproto-interaction-settings-current span:first-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.atproto-interaction-settings-dot {
-  flex: 0 0 auto;
-  opacity: 0.65;
 }
 
 .atproto-interaction-settings-chevron {
@@ -1181,6 +1159,49 @@
   gap: 6px;
   color: var(--text-color);
   font-size: 0.9em;
+  min-width: 0;
+}
+
+.atproto-interaction-settings-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quote-toggle-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.12));
+  background-color: var(--bg-color, #fff);
+  color: var(--text-insignificant-color);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.quote-toggle-icon-button.on {
+  border-color: var(--accent-color, var(--blue-color, #0085ff));
+  background-color: var(--accent-faded-color, rgba(0, 133, 255, 0.08));
+  color: var(--accent-color, var(--blue-color, #0085ff));
+}
+
+.quote-toggle-icon-button.off {
+  color: var(--text-insignificant-color);
+}
+
+.quote-toggle-icon-button:hover:not(:disabled) {
+  background-color: var(--bg-color-alt, rgba(0, 0, 0, 0.04));
+  border-color: var(--outline-hover-color, rgba(0, 0, 0, 0.25));
+}
+
+.quote-toggle-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 /* Quote switch inline header layout */

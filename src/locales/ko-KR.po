@@ -765,6 +765,13 @@ msgstr ""
 msgid "No drafts found."
 msgstr ""
 
+#: src/components/compose.tsx
+#: src/components/compose.tsx
+#: src/components/compose.tsx
+#: src/components/compose.tsx
+msgid "Turn quotes on"
+msgstr ""
+
 #: src/pages/bookmarks.tsx
 msgid "No bookmarks yet. Go bookmark something!"
 msgstr ""
@@ -1074,10 +1081,6 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Default threadgate updated"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Quotes on"
 msgstr ""
 
 #: src/components/import-export-accounts.tsx
@@ -2161,10 +2164,6 @@ msgstr ""
 msgid "System language ({systemTargetLanguageText})"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Allow quotes"
-msgstr ""
-
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>…"
 msgstr ""
@@ -2393,7 +2392,6 @@ msgstr ""
 msgid "Image description"
 msgstr ""
 
-#: src/components/compose.tsx
 #: src/components/compose.tsx
 msgid "Mentioned"
 msgstr ""
@@ -2695,6 +2693,10 @@ msgstr ""
 msgid "Posts with <0>{query}</0>"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "Some can reply"
+msgstr ""
+
 #: src/components/poll.tsx
 msgid "Ending"
 msgstr ""
@@ -2975,10 +2977,6 @@ msgstr ""
 msgid "Unmute <0>@{username}</0>"
 msgstr ""
 
-#: src/components/compose.tsx
-msgid "Post interaction settings"
-msgstr ""
-
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #. placeholder {1}: rtf.format(-replyToStatusMonthsAgo, 'month')
 #: src/components/compose.tsx
@@ -3042,10 +3040,6 @@ msgstr ""
 #: src/components/compose-button.tsx
 #: src/compose.tsx
 msgid "Compose"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Selected list"
 msgstr ""
 
 #: src/pages/welcome.tsx
@@ -3851,7 +3845,6 @@ msgstr ""
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/components/compose.tsx
-#: src/components/compose.tsx
 #: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr ""
@@ -3944,7 +3937,6 @@ msgstr ""
 
 #: src/components/account-block.tsx
 #: src/components/compose.tsx
-#: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
 msgstr ""
@@ -3990,10 +3982,6 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Quotes off"
 msgstr ""
 
 #. [Name] [Visibility icon] reposted
@@ -4118,6 +4106,13 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
+msgstr ""
+
+#: src/components/compose.tsx
+#: src/components/compose.tsx
+#: src/components/compose.tsx
+#: src/components/compose.tsx
+msgid "Turn quotes off"
 msgstr ""
 
 #: src/components/account-info.tsx

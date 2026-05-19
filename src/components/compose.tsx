@@ -659,16 +659,13 @@ function Compose({
     if (threadgate === 'nobody') return t`Nobody can reply`;
     if (threadgate !== 'custom') return t`Anyone can reply`;
 
-    const rules: string[] = [];
-    if (threadgateRules.includes('followers')) rules.push(t`Followers`);
-    if (threadgateRules.includes('following')) rules.push(t`Following`);
-    if (threadgateRules.includes('mention')) rules.push(t`Mentioned`);
-    if (threadgateRules.includes('list')) {
-      rules.push(threadgateListName || t`Selected list`);
-    }
-    return rules.length ? rules.join(', ') : t`Anyone can reply`;
+    return threadgateRules.length ? t`Some can reply` : t`Anyone can reply`;
   })();
-  const quoteGateSummary = disableQuotes ? t`Quotes off` : t`Quotes on`;
+  const toggleDisableQuotes = (): void => {
+    const value = !disableQuotes;
+    setDisableQuotes(value);
+    store.session.set('currentDisableQuotes', value ? 'true' : 'false');
+  };
 
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
   const supportsQuoteApprovalPolicy =
@@ -2108,14 +2105,25 @@ function Compose({
             <details className="atproto-interaction-settings">
               <summary className="atproto-interaction-settings-summary">
                 <span className="atproto-interaction-settings-title">
-                  <Icon icon="earth" size="s" />
-                  <Trans>Post interaction settings</Trans>
-                </span>
-                <span className="atproto-interaction-settings-current">
                   <span>{replyGateSummary}</span>
-                  <span className="atproto-interaction-settings-dot">·</span>
-                  <span>{quoteGateSummary}</span>
                 </span>
+                <button
+                  type="button"
+                  className={`quote-toggle-icon-button ${disableQuotes ? 'off' : 'on'}`}
+                  aria-label={
+                    disableQuotes ? t`Turn quotes on` : t`Turn quotes off`
+                  }
+                  aria-pressed={!disableQuotes}
+                  title={disableQuotes ? t`Turn quotes on` : t`Turn quotes off`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleDisableQuotes();
+                  }}
+                  disabled={uiState === 'loading'}
+                >
+                  <Icon icon={disableQuotes ? 'block' : 'quote'} size="s" />
+                </button>
                 <Icon
                   icon="chevron-down"
                   size="s"
@@ -2127,31 +2135,22 @@ function Compose({
                   <span className="reply-pills-label">
                     <Trans>Quote settings:</Trans>
                   </span>
-                  <label
-                    htmlFor={disableQuotesId}
-                    className="quote-toggle-compact"
+                  <button
+                    id={disableQuotesId}
+                    type="button"
+                    className={`quote-toggle-icon-button ${disableQuotes ? 'off' : 'on'}`}
+                    aria-label={
+                      disableQuotes ? t`Turn quotes on` : t`Turn quotes off`
+                    }
+                    aria-pressed={!disableQuotes}
+                    title={
+                      disableQuotes ? t`Turn quotes on` : t`Turn quotes off`
+                    }
+                    onClick={toggleDisableQuotes}
+                    disabled={uiState === 'loading'}
                   >
-                    <span className="quote-toggle-text">
-                      <Trans>Allow quotes</Trans>
-                    </span>
-                    <span className="switch-toggle small">
-                      <input
-                        id={disableQuotesId}
-                        type="checkbox"
-                        checked={!disableQuotes}
-                        onChange={(e) => {
-                          const value = !e.target.checked;
-                          setDisableQuotes(value);
-                          store.session.set(
-                            'currentDisableQuotes',
-                            value ? 'true' : 'false',
-                          );
-                        }}
-                        disabled={uiState === 'loading'}
-                      />
-                      <span className="slider" />
-                    </span>
-                  </label>
+                    <Icon icon={disableQuotes ? 'block' : 'quote'} size="s" />
+                  </button>
                 </div>
 
                 <div className="reply-pills-container">
