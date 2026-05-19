@@ -38,6 +38,7 @@ import {
 import db from '../utils/db';
 import { getDtfLocale } from '../utils/dtf-locale';
 import haptics from '../utils/haptics';
+import { getUserLists, type ListLike } from '../utils/lists';
 import localeMatch from '../utils/locale-match';
 import localeCode2Text from '../utils/localeCode2Text';
 import mem from '../utils/mem';
@@ -141,6 +142,10 @@ interface DraftStatusLike {
   mediaAttachments?: MediaAttachmentLike[];
   quoteApprovalPolicy?: string;
   threadgate?: string;
+  threadgateRules?: string[];
+  threadgateList?: string;
+  threadgateListName?: string;
+  disableQuotes?: boolean;
   [key: string]: unknown;
 }
 
@@ -461,6 +466,14 @@ function Compose({
   const menuMediaInputId = useId();
   const toolbarCameraInputId = useId();
   const toolbarMediaInputId = useId();
+  const disableQuotesId = useId();
+  const tgEverybodyId = useId();
+  const tgNobodyId = useId();
+  const tgCustomId = useId();
+  const ruleFollowingId = useId();
+  const ruleFollowersId = useId();
+  const ruleMentionId = useId();
+  const ruleListId = useId();
 
   const apiResult = api();
   const { masto } = apiResult;
@@ -478,6 +491,8 @@ function Compose({
 
   const currentAccount = useMemo(getCurrentAccount, []);
   const currentAccountInfo = currentAccount?.info;
+  const isAtprotoCompose =
+    !!currentAccount?.atproto || currentAccount?.instanceURL === 'bsky.social';
 
   interface ConfigurationShape {
     statuses?: {
@@ -543,15 +558,61 @@ function Compose({
     return typeof v === 'string' ? v : undefined;
   };
 
-  const [threadgate, setThreadgate] = useState<string>(
-    store.session.get('currentThreadgate') ||
-      prefString('posting:default:threadgate') ||
-      'everybody',
+  const defaultPrefThreadgate =
+    prefString('posting:default:threadgate') || 'everybody';
+
+  const [threadgate, setThreadgate] = useState<string>(() => {
+    const saved = store.session.get('currentThreadgate');
+    if (saved) return saved;
+    if (
+      defaultPrefThreadgate === 'everybody' ||
+      defaultPrefThreadgate === 'nobody'
+    ) {
+      return defaultPrefThreadgate;
+    }
+    return 'custom';
+  });
+  const [threadgateRules, setThreadgateRules] = useState<string[]>(() => {
+    try {
+      const savedRules = store.session.get('currentThreadgateRules');
+      if (savedRules) return JSON.parse(savedRules);
+    } catch {}
+    if (
+      defaultPrefThreadgate !== 'everybody' &&
+      defaultPrefThreadgate !== 'nobody'
+    ) {
+      return [defaultPrefThreadgate];
+    }
+    return ['following', 'mention'];
+  });
+  const [threadgateList, setThreadgateList] = useState<string>(
+    store.session.get('currentThreadgateList') || '',
   );
+  const [threadgateListName, setThreadgateListName] = useState<string>(
+    store.session.get('currentThreadgateListName') || '',
+  );
+  const [disableQuotes, setDisableQuotes] = useState<boolean>(
+    store.session.get('currentDisableQuotes') === 'true' ||
+      prefString('posting:default:quote_policy') === 'nobody' ||
+      false,
+  );
+  const [userLists, setUserLists] = useState<ListLike[]>([]);
+
+  useEffect(() => {
+    if (isAtprotoCompose) {
+      const loadLists = async () => {
+        try {
+          const lists = await getUserLists();
+          setUserLists(lists);
+        } catch (err) {
+          console.error('Failed to load user lists', err);
+        }
+      };
+      void loadLists();
+    }
+  }, [isAtprotoCompose]);
 
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
-  const isAtprotoCompose =
-    !!currentAccount?.atproto || currentAccount?.instanceURL === 'bsky.social';
   const supportsQuoteApprovalPolicy =
     supportsNativeQuote() && !isAtprotoCompose;
   const canShowLinkPreview =
@@ -889,7 +950,25 @@ function Compose({
       if (draftQuoteApprovalPolicy)
         setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
       if (draftStatus.threadgate) {
-        setThreadgate(draftStatus.threadgate);
+        const tg = draftStatus.threadgate;
+        if (tg === 'everybody' || tg === 'nobody' || tg === 'custom') {
+          setThreadgate(tg);
+        } else {
+          setThreadgate('custom');
+          setThreadgateRules([tg]);
+        }
+      }
+      if (draftStatus.threadgateRules) {
+        setThreadgateRules(draftStatus.threadgateRules);
+      }
+      if (draftStatus.threadgateList) {
+        setThreadgateList(draftStatus.threadgateList);
+      }
+      if (draftStatus.threadgateListName) {
+        setThreadgateListName(draftStatus.threadgateListName);
+      }
+      if (draftStatus.disableQuotes !== undefined) {
+        setDisableQuotes(draftStatus.disableQuotes);
       }
     }
     // Effect deliberately runs only when an explicit source status changes;
@@ -1139,6 +1218,10 @@ function Compose({
         mediaAttachments,
         quoteApprovalPolicy,
         threadgate,
+        threadgateRules,
+        threadgateList,
+        threadgateListName,
+        disableQuotes,
       },
       quote: currentQuoteStatus?.id
         ? {
@@ -1706,14 +1789,24 @@ function Compose({
                   }
                 }
                 if (isAtprotoCompose && !replyToStatus) {
+                  params.disableQuotes = disableQuotes;
                   if (threadgate === 'nobody') {
                     params.threadgate = [{ type: 'nobody' }];
-                  } else if (threadgate === 'mention') {
-                    params.threadgate = [{ type: 'mention' }];
-                  } else if (threadgate === 'following') {
-                    params.threadgate = [{ type: 'following' }];
-                  } else if (threadgate === 'followers') {
-                    params.threadgate = [{ type: 'followers' }];
+                  } else if (threadgate === 'custom') {
+                    const rules: { type: string; list?: string }[] = [];
+                    if (threadgateRules.includes('mention')) {
+                      rules.push({ type: 'mention' });
+                    }
+                    if (threadgateRules.includes('following')) {
+                      rules.push({ type: 'following' });
+                    }
+                    if (threadgateRules.includes('followers')) {
+                      rules.push({ type: 'followers' });
+                    }
+                    if (threadgateRules.includes('list') && threadgateList) {
+                      rules.push({ type: 'list', list: threadgateList });
+                    }
+                    params.threadgate = rules;
                   } else {
                     params.threadgate = [{ type: 'everybody' }];
                   }
@@ -1948,6 +2041,387 @@ function Compose({
               setQuoteSuggestion(null);
             }}
           />
+          {isAtprotoCompose && !replyToStatus && (
+            <div
+              className="atproto-interaction-settings"
+              style={{
+                padding: '8px 12px',
+                borderTop: '1px solid var(--border-color)',
+                borderBottom: '1px solid var(--border-color)',
+                background: 'var(--bg-color-alt, rgba(0,0,0,0.02))',
+                fontSize: '0.9em',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Icon icon="earth" size="s" />
+                  <Trans>Bluesky Reply & Quote Controls</Trans>
+                </span>
+                <label
+                  htmlFor={disableQuotesId}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <input
+                    id={disableQuotesId}
+                    type="checkbox"
+                    checked={!disableQuotes}
+                    onChange={(e) => {
+                      const value = !e.target.checked;
+                      setDisableQuotes(value);
+                      store.session.set(
+                        'currentDisableQuotes',
+                        value ? 'true' : 'false',
+                      );
+                    }}
+                    disabled={uiState === 'loading'}
+                  />
+                  <span>
+                    <Trans>Allow others to quote this post</Trans>
+                  </span>
+                </label>
+              </div>
+
+              <div
+                style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span>
+                    <Trans>Who can reply:</Trans>
+                  </span>
+                  <label
+                    htmlFor={tgEverybodyId}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      id={tgEverybodyId}
+                      type="radio"
+                      name="tg-type"
+                      checked={threadgate === 'everybody'}
+                      onChange={() => {
+                        setThreadgate('everybody');
+                        store.session.set('currentThreadgate', 'everybody');
+                      }}
+                      disabled={uiState === 'loading'}
+                    />
+                    <span>
+                      <Trans>Everybody</Trans>
+                    </span>
+                  </label>
+                  <label
+                    htmlFor={tgNobodyId}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      id={tgNobodyId}
+                      type="radio"
+                      name="tg-type"
+                      checked={threadgate === 'nobody'}
+                      onChange={() => {
+                        setThreadgate('nobody');
+                        store.session.set('currentThreadgate', 'nobody');
+                      }}
+                      disabled={uiState === 'loading'}
+                    />
+                    <span>
+                      <Trans>Nobody</Trans>
+                    </span>
+                  </label>
+                  <label
+                    htmlFor={tgCustomId}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      id={tgCustomId}
+                      type="radio"
+                      name="tg-type"
+                      checked={threadgate === 'custom'}
+                      onChange={() => {
+                        setThreadgate('custom');
+                        store.session.set('currentThreadgate', 'custom');
+                      }}
+                      disabled={uiState === 'loading'}
+                    />
+                    <span>
+                      <Trans>Custom...</Trans>
+                    </span>
+                  </label>
+                </div>
+
+                {threadgate === 'custom' && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                      paddingLeft: '16px',
+                      borderLeft: '2px solid var(--border-color)',
+                      marginTop: '4px',
+                    }}
+                  >
+                    <div
+                      style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}
+                    >
+                      <label
+                        htmlFor={ruleFollowingId}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input
+                          id={ruleFollowingId}
+                          type="checkbox"
+                          checked={threadgateRules.includes('following')}
+                          onChange={(e) => {
+                            const next = e.target.checked
+                              ? [...threadgateRules, 'following']
+                              : threadgateRules.filter(
+                                  (r) => r !== 'following',
+                                );
+                            setThreadgateRules(next);
+                            store.session.set(
+                              'currentThreadgateRules',
+                              JSON.stringify(next),
+                            );
+                          }}
+                          disabled={uiState === 'loading'}
+                        />
+                        <span>
+                          <Trans>People you follow</Trans>
+                        </span>
+                      </label>
+                      <label
+                        htmlFor={ruleFollowersId}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input
+                          id={ruleFollowersId}
+                          type="checkbox"
+                          checked={threadgateRules.includes('followers')}
+                          onChange={(e) => {
+                            const next = e.target.checked
+                              ? [...threadgateRules, 'followers']
+                              : threadgateRules.filter(
+                                  (r) => r !== 'followers',
+                                );
+                            setThreadgateRules(next);
+                            store.session.set(
+                              'currentThreadgateRules',
+                              JSON.stringify(next),
+                            );
+                          }}
+                          disabled={uiState === 'loading'}
+                        />
+                        <span>
+                          <Trans>Your followers</Trans>
+                        </span>
+                      </label>
+                      <label
+                        htmlFor={ruleMentionId}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input
+                          id={ruleMentionId}
+                          type="checkbox"
+                          checked={threadgateRules.includes('mention')}
+                          onChange={(e) => {
+                            const next = e.target.checked
+                              ? [...threadgateRules, 'mention']
+                              : threadgateRules.filter((r) => r !== 'mention');
+                            setThreadgateRules(next);
+                            store.session.set(
+                              'currentThreadgateRules',
+                              JSON.stringify(next),
+                            );
+                          }}
+                          disabled={uiState === 'loading'}
+                        />
+                        <span>
+                          <Trans>People you mention</Trans>
+                        </span>
+                      </label>
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        flexWrap: 'wrap',
+                        marginTop: '4px',
+                      }}
+                    >
+                      <label
+                        htmlFor={ruleListId}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input
+                          id={ruleListId}
+                          type="checkbox"
+                          checked={threadgateRules.includes('list')}
+                          onChange={(e) => {
+                            const next = e.target.checked
+                              ? [...threadgateRules, 'list']
+                              : threadgateRules.filter((r) => r !== 'list');
+                            setThreadgateRules(next);
+                            store.session.set(
+                              'currentThreadgateRules',
+                              JSON.stringify(next),
+                            );
+                            if (
+                              e.target.checked &&
+                              !threadgateList &&
+                              userLists.length > 0
+                            ) {
+                              const firstList = userLists[0];
+                              const uri =
+                                firstList._atproto?.uri ||
+                                decodeURIComponent(firstList.id);
+                              setThreadgateList(uri);
+                              setThreadgateListName(firstList.title || '');
+                              store.session.set('currentThreadgateList', uri);
+                              store.session.set(
+                                'currentThreadgateListName',
+                                firstList.title || '',
+                              );
+                            }
+                          }}
+                          disabled={uiState === 'loading'}
+                        />
+                        <span>
+                          <Trans>People from list</Trans>
+                        </span>
+                      </label>
+
+                      {threadgateRules.includes('list') &&
+                        (userLists.length > 0 ? (
+                          <select
+                            value={threadgateList}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setThreadgateList(value);
+                              store.session.set('currentThreadgateList', value);
+                              const matched = userLists.find(
+                                (l) =>
+                                  (l._atproto?.uri ||
+                                    decodeURIComponent(l.id)) === value,
+                              );
+                              const name = matched?.title || '';
+                              setThreadgateListName(name);
+                              store.session.set(
+                                'currentThreadgateListName',
+                                name,
+                              );
+                            }}
+                            disabled={uiState === 'loading'}
+                            style={{
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-color)',
+                            }}
+                          >
+                            <option value="" disabled>
+                              <Trans>Select a list...</Trans>
+                            </option>
+                            {userLists.map((list) => {
+                              const uri =
+                                list._atproto?.uri ||
+                                decodeURIComponent(list.id);
+                              return (
+                                <option value={uri} key={uri}>
+                                  {list.title}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        ) : (
+                          <span style={{ opacity: 0.6, fontSize: '0.9em' }}>
+                            <Trans>(No user lists found)</Trans>
+                          </span>
+                        ))}
+                    </div>
+                    {threadgateRules.length === 0 && (
+                      <span
+                        style={{
+                          color: 'var(--error-color, #ff4444)',
+                          fontSize: '0.9em',
+                          marginTop: '2px',
+                        }}
+                      >
+                        <Trans>
+                          Please select at least one rule, otherwise nobody can
+                          reply.
+                        </Trans>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           <div className="toolbar compose-footer">
             <span className="add-toolbar-button-group spacer">
               {showAddButton && (
@@ -2123,54 +2597,6 @@ function Compose({
                   </option>
                   <option value="nobody">
                     <Trans>Only you can quote</Trans>
-                  </option>
-                </select>
-              </label>
-            )}
-            {isAtprotoCompose && !replyToStatus && (
-              <label
-                className={`toolbar-button ${threadgate !== 'everybody' ? 'highlight' : ''}`}
-              >
-                {threadgate === 'everybody' && (
-                  <Icon icon="earth" alt={t`Who can reply: Everybody`} />
-                )}
-                {threadgate === 'nobody' && (
-                  <Icon icon="block" alt={t`Who can reply: Nobody`} />
-                )}
-                {threadgate === 'mention' && (
-                  <Icon icon="message" alt={t`Who can reply: Mentioned people`} />
-                )}
-                {threadgate === 'following' && (
-                  <Icon icon="group" alt={t`Who can reply: Followed people`} />
-                )}
-                {threadgate === 'followers' && (
-                  <Icon icon="lock" alt={t`Who can reply: Followers`} />
-                )}
-                <select
-                  name="threadgate"
-                  value={threadgate}
-                  onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
-                    const value = (e.target as HTMLSelectElement).value;
-                    setThreadgate(value);
-                    store.session.set('currentThreadgate', value);
-                  }}
-                  disabled={uiState === 'loading'}
-                  dir="auto"
-                >
-                  <option value="everybody">
-                    <Trans>Everybody can reply</Trans>
-                  </option>
-                  <option value="nobody">
-                    <Trans>Nobody can reply</Trans>
-                  </option>
-                  <option value="mention">
-                    <Trans>Only people you mention can reply</Trans>
-                  </option>
-                  <option value="following">
-                    <Trans>Only people you follow can reply</Trans>
-                  </option>
-                  <option value="followers">
-                    <Trans>Only your followers can reply</Trans>
                   </option>
                 </select>
               </label>

@@ -5,11 +5,11 @@ import store from './store';
 const FETCH_MAX_AGE = 1000 * 60; // 1 minute
 const MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
 
-interface ListLike {
+export interface ListLike {
   id: string;
   title: string;
   exclusive?: boolean;
-  _atproto?: { type?: string } | null;
+  _atproto?: { type?: string; uri?: string; cid?: string } | null;
   [key: string]: unknown;
 }
 

@@ -700,6 +700,7 @@ export interface AtprotoPostParams {
   quoteApprovalPolicy?: string;
   language?: string | null;
   threadgate?: ThreadgateAllowUISetting[];
+  disableQuotes?: boolean;
 }
 
 export function assertAtprotoPostParamsSupported(
@@ -1785,14 +1786,18 @@ function getThreadgateVisibility(post: AtprotoPost): string {
       const hasMention = allow.some(
         (rule) => rule?.$type === 'app.bsky.feed.threadgate#mentionRule',
       );
-      if (hasFollower) {
-        return 'followers';
-      }
-      if (hasFollowing) {
-        return 'following';
-      }
-      if (hasMention) {
-        return 'mention';
+      const hasList = allow.some(
+        (rule) => rule?.$type === 'app.bsky.feed.threadgate#listRule',
+      );
+
+      const parts: string[] = [];
+      if (hasFollower) parts.push('followers');
+      if (hasFollowing) parts.push('following');
+      if (hasMention) parts.push('mention');
+      if (hasList) parts.push('list');
+
+      if (parts.length > 0) {
+        return parts.join('_');
       }
     }
   }
@@ -3493,11 +3498,7 @@ export function createAtprotoClient({
 
           const threadgate = params.threadgate;
 
-          if (
-            threadgate &&
-            threadgate.length > 0 &&
-            !threadgate.some((tg) => tg.type === 'everybody')
-          ) {
+          if (threadgate && !threadgate.some((tg) => tg.type === 'everybody')) {
             const allow: Array<{ $type: string; list?: string }> = [];
             if (!threadgate.some((tg) => tg.type === 'nobody')) {
               for (const rule of threadgate) {
@@ -3543,6 +3544,64 @@ export function createAtprotoClient({
               try {
                 const rkey = res.uri.split('/').pop();
                 if (rkey) {
+                  await agent.com.atproto.repo.deleteRecord({
+                    repo: agentLoose.did ?? '',
+                    collection: 'app.bsky.feed.post',
+                    rkey: rkey,
+                  });
+                }
+              } catch (deleteErr) {
+                console.error('Failed to delete orphaned post', deleteErr);
+              }
+              throw err;
+            }
+          }
+
+          if (params.disableQuotes) {
+            try {
+              const rkey = res.uri.split('/').pop();
+              if (rkey) {
+                await agent.com.atproto.repo.putRecord({
+                  repo: agentLoose.did ?? '',
+                  collection: 'app.bsky.feed.postgate',
+                  rkey: rkey,
+                  record: {
+                    $type: 'app.bsky.feed.postgate',
+                    post: res.uri,
+                    createdAt: new Date().toISOString(),
+                    detachedEmbeddingUris: [],
+                    embeddingRules: [
+                      { $type: 'app.bsky.feed.postgate#disableRule' },
+                    ],
+                  },
+                });
+              }
+            } catch (err) {
+              console.error(
+                'Failed to create postgate, deleting published post',
+                err,
+              );
+              try {
+                const rkey = res.uri.split('/').pop();
+                if (rkey) {
+                  if (
+                    threadgate &&
+                    threadgate.length > 0 &&
+                    !threadgate.some((tg) => tg.type === 'everybody')
+                  ) {
+                    await agent.com.atproto.repo
+                      .deleteRecord({
+                        repo: agentLoose.did ?? '',
+                        collection: 'app.bsky.feed.threadgate',
+                        rkey: rkey,
+                      })
+                      .catch((cleanupErr) => {
+                        console.error(
+                          'Failed to clean up threadgate on postgate error',
+                          cleanupErr,
+                        );
+                      });
+                  }
                   await agent.com.atproto.repo.deleteRecord({
                     repo: agentLoose.did ?? '',
                     collection: 'app.bsky.feed.post',
