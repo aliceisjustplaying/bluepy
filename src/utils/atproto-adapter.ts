@@ -3586,7 +3586,6 @@ export function createAtprotoClient({
                 if (rkey) {
                   if (
                     threadgate &&
-                    threadgate.length > 0 &&
                     !threadgate.some((tg) => tg.type === 'everybody')
                   ) {
                     await agent.com.atproto.repo
