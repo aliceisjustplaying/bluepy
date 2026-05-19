@@ -34,6 +34,7 @@ import NavMenu from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
 import { api, getMastoV1Resource, getPreferences } from '../utils/api';
 import { catchupPageHasItemsInRange } from '../utils/catchup-fetch';
+import { compareCreatedAt } from '../utils/catchup-sort';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import db from '../utils/db';
 import emojifyText from '../utils/emojify-text';
@@ -479,7 +480,7 @@ function Catchup() {
       void (async () => {
         const catchup = (await db.catchup.get(id)) as CatchupRecord | undefined;
         if (catchup) {
-          catchup.posts.sort((a, b) => (a.createdAt > b.createdAt ? 1 : -1));
+          catchup.posts.sort(compareCreatedAt);
           setPosts(catchup.posts);
           setUIState('results');
         }
@@ -838,7 +839,7 @@ function Catchup() {
           a = (a.reblog as CatchupPost | null | undefined) || a;
           b = (b.reblog as CatchupPost | null | undefined) || b;
           if (sortBy !== 'density' && a[sortBy] === b[sortBy]) {
-            return a.createdAt > b.createdAt ? 1 : -1;
+            return compareCreatedAt(a, b);
           }
         }
         if (sortBy === 'density') {
@@ -851,10 +852,12 @@ function Catchup() {
           }
         }
         if (sortOrder === 'asc') {
+          if (sortBy === 'createdAt') return compareCreatedAt(a, b);
           return (a[sortBy] as number | string) > (b[sortBy] as number | string)
             ? 1
             : -1;
         } else {
+          if (sortBy === 'createdAt') return compareCreatedAt(b, a);
           return (b[sortBy] as number | string) > (a[sortBy] as number | string)
             ? 1
             : -1;

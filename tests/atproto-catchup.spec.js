@@ -226,3 +226,74 @@ base(
     ).toContainText('duplicate key top rank');
   },
 );
+
+base(
+  'catch-up date sort compares timezone-offset timestamps by instant',
+  async ({ page }) => {
+    await loginViaUI(page);
+
+    const id = `catchup-date-offset-${Date.now()}`;
+    const posts = [
+      fakePost(0, {
+        id: 'timezone-offset-newer-post',
+        content: 'timezone offset newer post',
+        createdAt: '2026-05-18T20:46:14-04:00',
+      }),
+      fakePost(1, {
+        id: 'utc-older-post',
+        content: 'utc older post',
+        createdAt: '2026-05-18T21:30:00.000Z',
+      }),
+      fakePost(2, {
+        id: 'utc-newest-post',
+        content: 'utc newest post',
+        createdAt: '2026-05-19T01:00:00.000Z',
+      }),
+    ];
+    await page.goto('/');
+    await page.evaluate(
+      async ({ id: catchupId, posts: catchupPosts }) => {
+        await new Promise((resolve, reject) => {
+          const request = indexedDB.open('catchup-db');
+          request.addEventListener('upgradeneeded', () => {
+            request.result.createObjectStore('catchup-store');
+          });
+          request.addEventListener('error', () => {
+            reject(request.error ?? new Error('Failed to open catch-up DB'));
+          });
+          request.addEventListener('success', () => {
+            const tx = request.result.transaction('catchup-store', 'readwrite');
+            tx.objectStore('catchup-store').put(
+              {
+                id: catchupId,
+                posts: catchupPosts,
+                count: catchupPosts.length,
+                startAt: Date.parse(catchupPosts[0].createdAt),
+                endAt: Date.parse(
+                  catchupPosts[catchupPosts.length - 1].createdAt,
+                ),
+              },
+              catchupId,
+            );
+            tx.addEventListener('complete', () => {
+              request.result.close();
+              resolve(undefined);
+            });
+            tx.addEventListener('error', () => {
+              request.result.close();
+              reject(tx.error ?? new Error('Failed to seed catch-up DB'));
+            });
+          });
+        });
+      },
+      { id, posts },
+    );
+
+    await page.goto(`/catchup?id=${id}`);
+    await expect(page.locator('.catchup-list')).toBeVisible();
+
+    await expect(
+      page.locator('.catchup-list > li:not(.separator)').first(),
+    ).toContainText('utc older post');
+  },
+);
