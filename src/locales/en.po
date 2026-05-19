@@ -2068,7 +2068,6 @@ msgstr "Post text copied"
 msgid "Violation"
 msgstr "Violation"
 
-#: src/components/status-header.tsx
 #: src/utils/visibility-text.ts
 msgid "Private mention"
 msgstr "Private mention"
