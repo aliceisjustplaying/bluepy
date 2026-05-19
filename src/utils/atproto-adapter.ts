@@ -3496,9 +3496,14 @@ export function createAtprotoClient({
           }
           const res = await agent.post(record);
 
-          const threadgate = params.threadgate;
+          const threadgate = params.threadgate?.filter(
+            (rule) => rule.type !== 'list' || !!rule.list,
+          );
 
-          if (threadgate && !threadgate.some((tg) => tg.type === 'everybody')) {
+          if (
+            threadgate?.length &&
+            !threadgate.some((tg) => tg.type === 'everybody')
+          ) {
             const allow: Array<{ $type: string; list?: string }> = [];
             if (!threadgate.some((tg) => tg.type === 'nobody')) {
               for (const rule of threadgate) {
@@ -3585,7 +3590,7 @@ export function createAtprotoClient({
                 const rkey = res.uri.split('/').pop();
                 if (rkey) {
                   if (
-                    threadgate &&
+                    threadgate?.length &&
                     !threadgate.some((tg) => tg.type === 'everybody')
                   ) {
                     await agent.com.atproto.repo

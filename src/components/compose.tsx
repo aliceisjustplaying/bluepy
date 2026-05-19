@@ -556,7 +556,17 @@ function Compose({
 
   const [threadgate, setThreadgate] = useState<string>(() => {
     const saved = store.session.get('currentThreadgate');
-    if (saved) return saved;
+    if (saved === 'everybody' || saved === 'nobody' || saved === 'custom') {
+      return saved;
+    }
+    if (
+      saved === 'mention' ||
+      saved === 'following' ||
+      saved === 'followers' ||
+      saved === 'list'
+    ) {
+      return 'custom';
+    }
     if (
       defaultPrefThreadgate === 'everybody' ||
       defaultPrefThreadgate === 'nobody'
@@ -566,17 +576,41 @@ function Compose({
     return 'custom';
   });
   const [threadgateRules, setThreadgateRules] = useState<string[]>(() => {
+    const savedThreadgate = store.session.get('currentThreadgate');
     try {
       const savedRules = store.session.get('currentThreadgateRules');
-      if (savedRules) return JSON.parse(savedRules);
+      if (savedRules) {
+        const parsed: unknown = JSON.parse(savedRules);
+        if (
+          Array.isArray(parsed) &&
+          parsed.length > 0 &&
+          parsed.every((rule) => typeof rule === 'string')
+        ) {
+          return parsed;
+        }
+        if (
+          Array.isArray(parsed) &&
+          (savedThreadgate === 'everybody' || savedThreadgate === 'nobody')
+        ) {
+          return [];
+        }
+      }
     } catch {}
+    if (
+      savedThreadgate === 'mention' ||
+      savedThreadgate === 'following' ||
+      savedThreadgate === 'followers' ||
+      savedThreadgate === 'list'
+    ) {
+      return [savedThreadgate];
+    }
     if (
       defaultPrefThreadgate !== 'everybody' &&
       defaultPrefThreadgate !== 'nobody'
     ) {
       return [defaultPrefThreadgate];
     }
-    return ['following', 'mention'];
+    return [];
   });
   const [threadgateList, setThreadgateList] = useState<string>(
     store.session.get('currentThreadgateList') || '',
@@ -604,6 +638,22 @@ function Compose({
       void loadLists();
     }
   }, [isAtprotoCompose]);
+  useEffect(() => {
+    if (
+      !threadgateRules.includes('list') ||
+      threadgateList ||
+      userLists.length === 0
+    ) {
+      return;
+    }
+    const firstList = userLists[0];
+    if (!firstList) return;
+    const uri = firstList._atproto?.uri || decodeURIComponent(firstList.id);
+    setThreadgateList(uri);
+    setThreadgateListName(firstList.title || '');
+    store.session.set('currentThreadgateList', uri);
+    store.session.set('currentThreadgateListName', firstList.title || '');
+  }, [threadgateRules, threadgateList, userLists]);
 
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
   const supportsQuoteApprovalPolicy =
@@ -1438,6 +1488,10 @@ function Compose({
                         language,
                         mediaAttachments,
                         threadgate,
+                        threadgateRules,
+                        threadgateList,
+                        threadgateListName,
+                        disableQuotes,
                       },
                       quoteStatus: currentQuoteStatus,
                     });
@@ -1531,6 +1585,10 @@ function Compose({
                           language,
                           mediaAttachments,
                           threadgate,
+                          threadgateRules,
+                          threadgateList,
+                          threadgateListName,
+                          disableQuotes,
                         },
                         quoteStatus: currentQuoteStatus,
                       };
@@ -1650,6 +1708,17 @@ function Compose({
             }
 
             status = status === '' ? undefined : status;
+
+            if (
+              isAtprotoCompose &&
+              !replyToStatus &&
+              threadgate === 'custom' &&
+              threadgateRules.includes('list') &&
+              !threadgateList
+            ) {
+              alert(t`Select a list before publishing this post.`);
+              return;
+            }
 
             // states.composerState.minimized = true;
             composerState.publishing = true;
@@ -1784,7 +1853,8 @@ function Compose({
                     if (threadgateRules.includes('list') && threadgateList) {
                       rules.push({ type: 'list', list: threadgateList });
                     }
-                    params.threadgate = rules;
+                    params.threadgate =
+                      rules.length > 0 ? rules : [{ type: 'everybody' }];
                   } else {
                     params.threadgate = [{ type: 'everybody' }];
                   }
@@ -2196,6 +2266,14 @@ function Compose({
                     className={`reply-pill-btn ${threadgateRules.includes('list') ? 'active' : ''}`}
                     onClick={() => {
                       const isChecked = threadgateRules.includes('list');
+                      if (
+                        !isChecked &&
+                        !threadgateList &&
+                        userLists.length === 0
+                      ) {
+                        alert(t`No user lists found.`);
+                        return;
+                      }
                       const nextRules = isChecked
                         ? threadgateRules.filter((r) => r !== 'list')
                         : [...threadgateRules, 'list'];

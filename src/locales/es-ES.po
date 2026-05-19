@@ -2015,6 +2015,10 @@ msgstr ""
 msgid "Reply"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "No user lists found."
+msgstr ""
+
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
 msgstr ""
@@ -3743,6 +3747,10 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Like"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Select a list before publishing this post."
 msgstr ""
 
 #: src/components/import-accounts-selection.tsx
