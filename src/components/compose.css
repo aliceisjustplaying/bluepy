@@ -1102,9 +1102,6 @@
   );
   backdrop-filter: blur(12px);
   font-size: 0.9em;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   box-shadow: 0 2px 6px var(--drop-shadow-color, rgba(0, 0, 0, 0.03));
   transition: all 0.2s cubic-bezier(0.3, 0.5, 0, 1);
 }
@@ -1113,6 +1110,61 @@
   .atproto-interaction-settings {
     margin: 10px 0 0 0;
   }
+}
+
+.atproto-interaction-settings-summary {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.atproto-interaction-settings-summary::-webkit-details-marker {
+  display: none;
+}
+
+.atproto-interaction-settings-summary::marker {
+  content: '';
+}
+
+.atproto-interaction-settings-current {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  gap: 5px;
+  color: var(--text-insignificant-color);
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
+.atproto-interaction-settings-current span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.atproto-interaction-settings-dot {
+  flex: 0 0 auto;
+  opacity: 0.65;
+}
+
+.atproto-interaction-settings-chevron {
+  color: var(--text-insignificant-color);
+  transition: transform 0.15s ease;
+}
+
+.atproto-interaction-settings[open] .atproto-interaction-settings-chevron {
+  transform: rotate(180deg);
+}
+
+.atproto-interaction-settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .atproto-interaction-settings-header {
@@ -1129,7 +1181,6 @@
   gap: 6px;
   color: var(--text-color);
   font-size: 0.9em;
-  letter-spacing: -0.01em;
 }
 
 /* Quote switch inline header layout */

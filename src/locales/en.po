@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2026-05-20 20:10+0000\n"
+"POT-Creation-Date: 2026-05-20 20:11+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -300,6 +300,11 @@ msgstr "Dismiss"
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
 msgstr "Let's catch up on the posts from your followings."
+
+#: src/components/compose.tsx
+#: src/components/compose.tsx
+msgid "Anyone can reply"
+msgstr "Anyone can reply"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open"
@@ -1070,6 +1075,10 @@ msgstr "Unable to copy handle"
 #: src/pages/settings.tsx
 msgid "Default threadgate updated"
 msgstr "Default threadgate updated"
+
+#: src/components/compose.tsx
+msgid "Quotes on"
+msgstr "Quotes on"
 
 #: src/components/import-export-accounts.tsx
 msgid "Import failed"
@@ -2195,6 +2204,7 @@ msgstr "New notifications"
 msgid "Send Report <0>+ Block profile</0>"
 msgstr "Send Report <0>+ Block profile</0>"
 
+#: src/components/compose.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Nobody can reply"
@@ -2383,6 +2393,7 @@ msgstr "Share…"
 msgid "Image description"
 msgstr "Image description"
 
+#: src/components/compose.tsx
 #: src/components/compose.tsx
 msgid "Mentioned"
 msgstr "Mentioned"
@@ -3036,6 +3047,10 @@ msgstr "Shortcuts imported"
 msgid "Compose"
 msgstr "Compose"
 
+#: src/components/compose.tsx
+msgid "Selected list"
+msgstr "Selected list"
+
 #: src/pages/welcome.tsx
 msgid "Connect to Atmosphere"
 msgstr "Connect to Atmosphere"
@@ -3145,6 +3160,10 @@ msgstr "Error deleting draft! Please try again."
 #: src/compose.tsx
 msgid "Close window"
 msgstr "Close window"
+
+#: src/components/compose.tsx
+msgid "Quote settings:"
+msgstr "Quote settings:"
 
 #: src/pages/catchup.tsx
 msgid "That's all."
@@ -3835,6 +3854,7 @@ msgstr "people I follow"
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/components/compose.tsx
+#: src/components/compose.tsx
 #: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr "Followers"
@@ -3927,6 +3947,7 @@ msgstr "Post reported"
 
 #: src/components/account-block.tsx
 #: src/components/compose.tsx
+#: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
 msgstr "Following"
@@ -3973,6 +3994,10 @@ msgstr "This timeline is disabled on Bluesky."
 #: src/pages/catchup.tsx
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
 msgstr "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
+
+#: src/components/compose.tsx
+msgid "Quotes off"
+msgstr "Quotes off"
 
 #. [Name] [Visibility icon] reposted
 #: src/components/filtered-status.tsx
