@@ -33,6 +33,8 @@ import NameText, { type NameTextAccount } from '../components/name-text';
 import NavMenu from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
 import { api, getMastoV1Resource, getPreferences } from '../utils/api';
+import { catchupPageHasItemsInRange } from '../utils/catchup-fetch';
+import { compareCreatedAt } from '../utils/catchup-sort';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import db from '../utils/db';
 import emojifyText from '../utils/emojify-text';
@@ -377,7 +379,6 @@ function Catchup() {
           const results = await homeIterator.next();
           const { value } = results as { value: CatchupPost[] | undefined };
           if (value?.length) {
-            let addedResults = false;
             for (let i = 0; i < value.length; i++) {
               const item = value[i];
               const createdAtTime = Date.parse(item.createdAt);
@@ -396,15 +397,15 @@ function Catchup() {
                 item._filtered = filterInfo as FilterInfo;
 
                 allResults.push(item);
-                addedResults = true;
               } else {
                 // Don't immediately stop, still add the other items that might still be within range
                 // break mainloop;
               }
-              // Only stop when ALL items are outside of range
-              if (!addedResults) {
-                break mainloop;
-              }
+            }
+            // Only stop when ALL items are outside of range. Hidden filtered
+            // posts still count as in-range so they don't truncate catch-up.
+            if (!catchupPageHasItemsInRange(value, maxCreatedAt)) {
+              break mainloop;
             }
           } else {
             break mainloop;
@@ -479,7 +480,7 @@ function Catchup() {
       void (async () => {
         const catchup = (await db.catchup.get(id)) as CatchupRecord | undefined;
         if (catchup) {
-          catchup.posts.sort((a, b) => (a.createdAt > b.createdAt ? 1 : -1));
+          catchup.posts.sort(compareCreatedAt);
           setPosts(catchup.posts);
           setUIState('results');
         }
@@ -838,7 +839,7 @@ function Catchup() {
           a = (a.reblog as CatchupPost | null | undefined) || a;
           b = (b.reblog as CatchupPost | null | undefined) || b;
           if (sortBy !== 'density' && a[sortBy] === b[sortBy]) {
-            return a.createdAt > b.createdAt ? 1 : -1;
+            return compareCreatedAt(a, b);
           }
         }
         if (sortBy === 'density') {
@@ -851,10 +852,12 @@ function Catchup() {
           }
         }
         if (sortOrder === 'asc') {
+          if (sortBy === 'createdAt') return compareCreatedAt(a, b);
           return (a[sortBy] as number | string) > (b[sortBy] as number | string)
             ? 1
             : -1;
         } else {
+          if (sortBy === 'createdAt') return compareCreatedAt(b, a);
           return (b[sortBy] as number | string) > (a[sortBy] as number | string)
             ? 1
             : -1;
@@ -862,6 +865,25 @@ function Catchup() {
       },
     );
   }, [filteredPosts, sortBy, sortOrder, groupBy, authorCountsList]);
+
+  const sortedFilteredPostRows = useMemo(() => {
+    const keyCounts = new Map<string, number>();
+    return sortedFilteredPosts.map((post) => {
+      const baseKey = [
+        post.id,
+        post.reblog?.id ?? '',
+        post.createdAt,
+        post.reblog?.createdAt ?? '',
+        post.account.id,
+      ].join('|');
+      const keyCount = keyCounts.get(baseKey) ?? 0;
+      keyCounts.set(baseKey, keyCount + 1);
+      return {
+        post,
+        renderKey: keyCount ? `${baseKey}|${keyCount}` : baseKey,
+      };
+    });
+  }, [sortedFilteredPosts]);
 
   const prevGroup = useRef<string | null>(null);
 
@@ -1995,7 +2017,7 @@ function Catchup() {
                     : ''
                 } ${groupBy ? `catchup-group-${groupBy}` : ''}`}
               >
-                {sortedFilteredPosts.map((post, i) => {
+                {sortedFilteredPostRows.map(({ post, renderKey }, i) => {
                   const postId = post.reblog?.id || post.id;
                   let showSeparator = false;
                   if (groupBy === 'account') {
@@ -2009,13 +2031,13 @@ function Catchup() {
                     prevGroup.current = post.account.id;
                   }
                   return (
-                    <Fragment key={`${post.id}-${showSeparator}`}>
+                    <Fragment key={`${renderKey}-${showSeparator}`}>
                       {showSeparator && <li className="separator" />}
-                      <IntersectionPostLineItem
-                        to={`/${instance}/s/${postId}`}
-                        post={post}
-                        root={scrollableRef.current}
-                      />
+                      <li>
+                        <Link to={`/${instance}/s/${postId}`}>
+                          <PostLine post={post} />
+                        </Link>
+                      </li>
                     </Fragment>
                   );
                 })}
@@ -2215,9 +2237,9 @@ const PostLine = memo(
             ? 'group'
             : reblog
               ? 'reblog'
-            : supportsNativeQuote() && hasQuote(quote)
-              ? 'quote'
-              : ''
+              : supportsNativeQuote() && hasQuote(quote)
+                ? 'quote'
+                : ''
         } ${isReplyTo ? 'reply-to' : ''} ${
           postIsFiltered ? 'filtered' : ''
         } visibility-${visibility}`}
@@ -2279,52 +2301,6 @@ const PostLine = memo(
     return oldProps?.post?.id === newProps?.post?.id;
   },
 );
-
-interface IntersectionPostLineItemProps extends PostLineProps {
-  root: Element | null;
-  to: string;
-}
-
-const IntersectionPostLineItem = ({
-  root,
-  to,
-  ...props
-}: IntersectionPostLineItemProps) => {
-  const ref = useRef<HTMLLIElement | null>(null);
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting) {
-          queueMicrotask(() => {
-            setShow(true);
-          });
-          if (ref.current) observer.unobserve(ref.current);
-        }
-      },
-      {
-        root,
-        rootMargin: `${Math.max(320, screen.height * 0.75)}px`,
-      },
-    );
-    const node = ref.current;
-    if (node) observer.observe(node);
-    return () => {
-      if (node) observer.unobserve(node);
-    };
-  }, [root]);
-
-  return show ? (
-    <li>
-      <Link to={to}>
-        <PostLine {...props} />
-      </Link>
-    </li>
-  ) : (
-    <li ref={ref} style={{ height: '4em' }} />
-  );
-};
 
 // A media speak a thousand words
 const MEDIA_DENSITY = 8;
