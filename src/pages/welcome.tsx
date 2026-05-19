@@ -50,7 +50,7 @@ function Welcome() {
             <span className="wordmark">Bluepy</span>
           </h1>
           <p className="desc">
-            <Trans>A minimalistic opinionated Bluesky web client.</Trans>
+            <Trans>A minimalistic opinionated Atmosphere web client.</Trans>
           </p>
           <p>
             <Link
@@ -61,7 +61,7 @@ function Welcome() {
               }
               className="button plain6"
             >
-              {DEFAULT_INSTANCE ? t`Log in` : t`Log in with Bluesky`}
+              {DEFAULT_INSTANCE ? t`Log in` : t`Connect to Atmosphere`}
             </Link>
           </p>
           {DEFAULT_INSTANCE && DEFAULT_INSTANCE_REGISTRATION_URL && (
@@ -75,7 +75,7 @@ function Welcome() {
             <p className="insignificant">
               <small>
                 <Trans>
-                  Connect your existing Bluesky account.
+                  Connect your existing Bluesky or Blacksky account.
                   <br />
                   Your credentials are not stored by Bluepy.
                 </Trans>
@@ -258,7 +258,7 @@ function Welcome() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Anuj Ahooja (@quillmatiq.com)
+            @quillmatiq.com
           </a>
           .{' '}
           <a

@@ -74,8 +74,8 @@ function Login() {
           return remainingSuffixes.current.pop()!;
         });
         setSuffixFading(false);
-      }, 250);
-    }, 1250);
+      }, 500);
+    }, 1500);
     return () => clearInterval(id);
   }, []);
   const [searchParams] = useSearchParams();
@@ -328,9 +328,7 @@ function Login() {
           <Trans>Log in</Trans>
         </h1>
         <section className="bsky-login">
-          <h2>Bluesky</h2>
           <label>
-            <p>Handle or PDS URL</p>
             <div style={{ position: 'relative', display: 'inline-block', width: '100%' }}>
               <input
                 value={bskyIdentifier}
@@ -365,8 +363,10 @@ function Login() {
                   you
                   <span
                     style={{
+                      display: 'inline-block',
                       opacity: suffixFading ? 0 : 1,
-                      transition: 'opacity 0.25s ease',
+                      transform: suffixFading ? 'translateY(-4px)' : 'translateY(0)',
+                      transition: 'opacity 0.25s ease, transform 0.25s ease',
                     }}
                   >
                     {currentSuffix}

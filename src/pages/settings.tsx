@@ -27,6 +27,7 @@ import prettyBytes from '../utils/pretty-bytes';
 import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
+import { APPVIEW_OPTIONS, getActiveAppview } from '../utils/atproto-adapter';
 import store from '../utils/store';
 import { getVapidKey } from '../utils/store-utils';
 import {
@@ -104,7 +105,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
     parseInt(storedTextSize as string, 10) || DEFAULT_TEXT_SIZE;
 
   const [prefs, setPrefs] = useState<Preferences>(getPreferences());
-  const { masto, authenticated, instance } = api();
+  const { masto, authenticated } = api();
 
   // Get preferences every time Settings is opened
   // NOTE: Disabled for now because I don't expect this to change often. Also for some reason, the /api/v1/preferences endpoint is cached for a while and return old prefs if refresh immediately after changing them.
@@ -440,16 +441,25 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <p className="section-postnote">
               <Icon icon="cloud" alt={t`Synced`} className="synced-icon" />{' '}
               <small>
-                <Trans>
-                  Synced to your Bluesky account settings.{' '}
-                  <a
-                    href={`https://${instance}/`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Open Bluesky settings ({instance}).
-                  </a>
-                </Trans>
+                {(() => {
+                  const activeAppview = getActiveAppview();
+                  const appviewLabel = APPVIEW_OPTIONS[activeAppview]?.label ?? 'Bluesky';
+                  const settingsURL = activeAppview === 'blacksky'
+                    ? 'https://blacksky.community/settings'
+                    : 'https://bsky.app/settings';
+                  return (
+                    <Trans>
+                      Synced to your {appviewLabel} account settings.{' '}
+                      <a
+                        href={settingsURL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Open {appviewLabel} settings.
+                      </a>
+                    </Trans>
+                  );
+                })()}
               </small>
             </p>
           </>
@@ -894,7 +904,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Anuj Ahooja (@quillmatiq.com)
+                @quillmatiq.com
               </a>
             </div>
           </div>
