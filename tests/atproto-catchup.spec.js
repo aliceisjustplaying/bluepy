@@ -23,7 +23,7 @@ async function loginViaUI(page) {
   ) {
     return;
   }
-  await page.getByPlaceholder('alice.bsky.social').fill(IDENTIFIER);
+  await page.getByLabel('Handle or PDS URL').fill(IDENTIFIER);
   await page.getByText('Use app password').click();
   await page.locator('input[type="password"]').fill(PASSWORD);
   await page
