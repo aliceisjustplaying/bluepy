@@ -417,7 +417,7 @@ msgstr ""
 msgid "Blocked"
 msgstr ""
 
-#: src/components/atproto-labels.tsx:148
+#: src/components/atproto-labels.tsx:114
 msgid "Explicit sexual images."
 msgstr "Explicit sexual images."
 
@@ -853,7 +853,7 @@ msgstr ""
 
 #: src/components/account-block.tsx:196
 #: src/components/account-info.tsx:926
-#: src/components/atproto-labels.tsx:167
+#: src/components/atproto-labels.tsx:133
 msgid "Automated"
 msgstr ""
 
@@ -1026,7 +1026,7 @@ msgstr "Reposted/Liked by…"
 msgid "Polls are not interactive, becomes a list with vote counts."
 msgstr ""
 
-#: src/components/atproto-labels.tsx:151
+#: src/components/atproto-labels.tsx:117
 msgid "Sexually Suggestive"
 msgstr "Sexually Suggestive"
 
@@ -1089,7 +1089,7 @@ msgid "Search my posts"
 msgstr "Search my posts"
 
 #. placeholder {0}: usernameValue || acctValue
-#: src/components/status-content.tsx:459
+#: src/components/status-content.tsx:460
 msgid "Unboosted @{0}'s post"
 msgstr "Unboosted @{0}'s post"
 
@@ -1324,7 +1324,7 @@ msgid "Old post (<0>{0}</0>)"
 msgstr ""
 
 #. placeholder {0}: usernameValue || acctValue
-#: src/components/status-content.tsx:460
+#: src/components/status-content.tsx:461
 msgid "Boosted @{0}'s post"
 msgstr "Boosted @{0}'s post"
 
@@ -2098,7 +2098,7 @@ msgstr ""
 msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
 msgstr "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
 
-#: src/components/atproto-labels.tsx:152
+#: src/components/atproto-labels.tsx:118
 msgid "Does not include nudity."
 msgstr "Does not include nudity."
 
@@ -2216,7 +2216,7 @@ msgstr "Something went wrong."
 msgid "This shortcut already exists"
 msgstr ""
 
-#: src/components/atproto-labels.tsx:155
+#: src/components/atproto-labels.tsx:121
 msgid "Non-sexual Nudity"
 msgstr "Non-sexual Nudity"
 
@@ -2817,7 +2817,7 @@ msgstr ""
 msgid "<0>Site:</0> {0}"
 msgstr ""
 
-#: src/components/atproto-labels.tsx:156
+#: src/components/atproto-labels.tsx:122
 msgid "E.g. artistic nudes."
 msgstr "E.g. artistic nudes."
 
@@ -2989,7 +2989,7 @@ msgstr "Looks like you closed the parent window."
 msgid "Show Edit History"
 msgstr ""
 
-#: src/components/atproto-labels.tsx:147
+#: src/components/atproto-labels.tsx:113
 msgid "Adult Content"
 msgstr "Adult Content"
 
@@ -3176,8 +3176,8 @@ msgstr "{repliesCount, plural, one {# reply} other {# replies}}"
 msgid "server domain name"
 msgstr ""
 
-#: src/components/atproto-labels.tsx:160
-#: src/components/atproto-labels.tsx:164
+#: src/components/atproto-labels.tsx:126
+#: src/components/atproto-labels.tsx:130
 msgid "Explicit or potentially disturbing media."
 msgstr "Explicit or potentially disturbing media."
 
@@ -4044,8 +4044,8 @@ msgstr "Failed to register application"
 msgid "Bugs, confusing behavior, missing features, or anything else."
 msgstr "Bugs, confusing behavior, missing features, or anything else."
 
-#: src/components/atproto-labels.tsx:159
-#: src/components/atproto-labels.tsx:163
+#: src/components/atproto-labels.tsx:125
+#: src/components/atproto-labels.tsx:129
 msgid "Graphic Media"
 msgstr "Graphic Media"
 
@@ -4072,7 +4072,7 @@ msgstr "Translate to "
 msgid "Translating…"
 msgstr ""
 
-#: src/components/atproto-labels.tsx:168
+#: src/components/atproto-labels.tsx:134
 msgid "This account has marked itself as automated."
 msgstr "This account has marked itself as automated."
 
