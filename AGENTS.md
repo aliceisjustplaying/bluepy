@@ -18,7 +18,9 @@
 → **Review loop** (cross-model, read-only): Claude reviews → you fix actionable findings in code → re-run relevant verification → re-review until Claude reports "no actionable findings". Hard cap 5 rounds. See *Review CLI* below.
 → **Ship:** only after review rounds are clean and e2e is written/run — push your branch and open a draft PR against `bluesky`. Automation takes over: preview deploy → agent-pr loop → `human-review` label.
 
-## Hard Stops — these need an explicit ask before proceeding
+## Ask first — everything else is yours
+
+The Path above is yours to run autonomously. These few actions are the exceptions — check in before proceeding:
 
 - To update pushed work, add a follow-up commit and `git push`. Force-push (`--force`, `--force-with-lease`) is not part of our workflow.
 - Add new commits to update published work. Merging and amending published commits need an explicit ask.
