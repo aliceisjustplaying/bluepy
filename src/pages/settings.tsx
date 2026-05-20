@@ -105,7 +105,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
     parseInt(storedTextSize as string, 10) || DEFAULT_TEXT_SIZE;
 
   const [prefs, setPrefs] = useState<Preferences>(getPreferences());
-  const { masto, authenticated } = api();
+  const { masto, authenticated, client } = api();
 
   // Get preferences every time Settings is opened
   // NOTE: Disabled for now because I don't expect this to change often. Also for some reason, the /api/v1/preferences endpoint is cached for a while and return old prefs if refresh immediately after changing them.
@@ -830,7 +830,9 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             </li>
           </ul>
         </section>
-        {authenticated && <PushNotificationsSection onClose={onClose} />}
+        {authenticated && !client.atproto && (
+          <PushNotificationsSection onClose={onClose} />
+        )}
         <h3>
           <Trans>About</Trans>
         </h3>
