@@ -13,8 +13,10 @@ import homeMobileLight from '../assets/screenshots/home-mobile-light@2x.png';
 import homeTabletDark from '../assets/screenshots/home-tablet-dark@2x.png';
 import homeTabletLight from '../assets/screenshots/home-tablet-light@2x.png';
 
+import Icon from '../components/icon';
 import LangSelector from '../components/lang-selector';
 import Link from '../components/link';
+import states from '../utils/states';
 import useTitle from '../utils/useTitle';
 
 const {
@@ -66,7 +68,10 @@ function Welcome() {
           </p>
           {DEFAULT_INSTANCE && DEFAULT_INSTANCE_REGISTRATION_URL && (
             <p>
-              <a href={DEFAULT_INSTANCE_REGISTRATION_URL} className="button plain5">
+              <a
+                href={DEFAULT_INSTANCE_REGISTRATION_URL}
+                className="button plain5"
+              >
                 <Trans>Sign up</Trans>
               </a>
             </p>
@@ -272,6 +277,17 @@ function Welcome() {
         </p>
         <div>
           <LangSelector />
+        </div>
+        <div>
+          <button
+            type="button"
+            className="plain"
+            onClick={() => {
+              states.showFeedbackModal = true;
+            }}
+          >
+            <Icon icon="comment" size="l" /> <Trans>Send feedback</Trans>
+          </button>
         </div>
       </footer>
     </main>

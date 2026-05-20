@@ -116,6 +116,7 @@ interface StateProxy {
   showGenericAccounts: unknown;
   showMediaAlt: unknown;
   showEmbedModal: unknown;
+  showFeedbackModal: unknown;
   showReportModal: unknown;
   showQrCodeModal: unknown;
   showQrScannerModal: unknown;
@@ -189,6 +190,7 @@ const states = proxy<StateProxy>({
   showGenericAccounts: false,
   showMediaAlt: false,
   showEmbedModal: false,
+  showFeedbackModal: false,
   showReportModal: false,
   showQrCodeModal: false,
   showQrScannerModal: false,
@@ -341,6 +343,7 @@ export function hideAllModals(): void {
   states.showGenericAccounts = false;
   states.showMediaAlt = false;
   states.showEmbedModal = false;
+  states.showFeedbackModal = false;
   states.showReportModal = false;
   states.showQrCodeModal = false;
   states.showQrScannerModal = false;
@@ -515,7 +518,10 @@ export function saveStatus(
   // UNFURLER
   if (!skipUnfurling) {
     setTimeout(() => {
-      unfurlStatus(statusForStorage.reblog || statusForStorage, resolvedInstance);
+      unfurlStatus(
+        statusForStorage.reblog || statusForStorage,
+        resolvedInstance,
+      );
     }, 100);
   }
 }

@@ -15,6 +15,7 @@ import AccountSheet from './account-sheet';
 import ComposeSuspense, { preload } from './compose-suspense';
 import Drafts from './drafts';
 import EmbedModal from './embed-modal';
+import FeedbackModal from './feedback-modal';
 import GenericAccounts from './generic-accounts';
 import ImportExportAccounts from './import-export-accounts';
 import MediaAltModal from './media-alt-modal';
@@ -119,8 +120,7 @@ export default function Modals() {
             }
             sharedData={composeWindow.__SHARED_DATA__ || null}
             onClose={(results: Payload | undefined) => {
-              const { newStatus, instance, type } = (results ||
-                {}) as {
+              const { newStatus, instance, type } = (results || {}) as {
                 newStatus?: { id: string } | null;
                 instance?: string | null;
                 type?: 'post' | 'reply' | 'edit';
@@ -339,6 +339,24 @@ export default function Modals() {
             }
             onClose={() => {
               states.showEmbedModal = false;
+            }}
+          />
+        </Modal>
+      )}
+      {!!snapStates.showFeedbackModal && (
+        <Modal
+          onClose={() => {
+            states.showFeedbackModal = false;
+          }}
+        >
+          <FeedbackModal
+            defaultMessage={
+              p(snapStates.showFeedbackModal).defaultMessage as
+                | string
+                | undefined
+            }
+            onClose={() => {
+              states.showFeedbackModal = false;
             }}
           />
         </Modal>
