@@ -2,6 +2,7 @@
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
+
 import type { InterpretedLabelValueDefinition } from '@atproto/api';
 
 import {
@@ -101,8 +102,11 @@ void test('custom label definitions win over global strings', () => {
 
 void test('locale fallback tries language before first locale', () => {
   assert.equal(
-    describeAtprotoLabel(label(), { 'did:plc:custom': [customLabelDef] }, 'fr-CA')
-      .name,
+    describeAtprotoLabel(
+      label(),
+      { 'did:plc:custom': [customLabelDef] },
+      'fr-CA',
+    ).name,
     'Robot personnalisé',
   );
 });
@@ -113,7 +117,8 @@ void test('unknown labels get humanized fallback text', () => {
     'Bridged From Bridgy Fed Web',
   );
   assert.equal(
-    describeAtprotoLabel(label({ val: 'bridged-from-bridgy-fed-web' })).severity,
+    describeAtprotoLabel(label({ val: 'bridged-from-bridgy-fed-web' }))
+      .severity,
     'none',
   );
 });
@@ -232,5 +237,17 @@ void test('normalizeAtprotoLabelerDids handles cached strings and pref objects',
       ['did:plc:app'],
     ),
     ['did:plc:stored', 'did:plc:pref'],
+  );
+});
+
+void test('normalizeAtprotoLabelerDids deduplicates DIDs', () => {
+  assert.deepEqual(
+    normalizeAtprotoLabelerDids([
+      'did:plc:a',
+      'did:plc:a',
+      { did: 'did:plc:b' },
+      'did:plc:b',
+    ]),
+    ['did:plc:a', 'did:plc:b'],
   );
 });

@@ -2,6 +2,7 @@ import type { mastodon } from 'masto';
 import type { ReactNode } from 'react';
 
 import type { api } from '../utils/api';
+import type { AtprotoLabel } from '../utils/atproto-labels';
 
 export type AnyAccount = mastodon.v1.Account & Record<string, unknown>;
 
@@ -87,7 +88,7 @@ interface AnyQuote {
 export interface StatusAtprotoMeta {
   uri?: string;
   cid?: string;
-  labels?: unknown[];
+  labels?: AtprotoLabel[];
   replyParentAccount?: AnyAccount | null;
   replyParentUnavailable?: boolean;
 }

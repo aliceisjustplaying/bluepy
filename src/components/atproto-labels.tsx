@@ -3,6 +3,7 @@ import './atproto-labels.css';
 import { useLingui } from '@lingui/react/macro';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { getPreferences } from '../utils/api';
 import {
   type AtprotoGlobalLabelStrings,
   type AtprotoLabelerInfo,
@@ -12,7 +13,6 @@ import {
   getAtprotoLabelDefinitions,
   getAtprotoLabelerInfoMap,
 } from '../utils/atproto-labels';
-import { getPreferences } from '../utils/api';
 
 import Avatar from './avatar';
 
@@ -30,18 +30,32 @@ function getString(value: unknown): string | undefined {
 }
 
 function getOwn<T>(record: Record<string, T>, key: string): T | undefined {
-  return Object.prototype.hasOwnProperty.call(record, key) ? record[key] : undefined;
+  return Object.prototype.hasOwnProperty.call(record, key)
+    ? record[key]
+    : undefined;
 }
 
 function uniqueStrings(values: readonly string[]): string[] {
   return Array.from(new Set(values));
 }
 
-function getSourceProfileInfo(profile: unknown): AtprotoLabelerInfo | undefined {
+const sharedFetchedLabelers: AtprotoLabelerInfoMap = {};
+const sharedInflightLabelers = new Map<
+  string,
+  Promise<AtprotoLabelerInfoMap>
+>();
+
+function getSourceProfileInfo(
+  profile: unknown,
+): AtprotoLabelerInfo | undefined {
   if (!isRecord(profile)) return undefined;
   const id = getString(profile.id);
   const uri = getString(profile.uri);
-  const did = id?.startsWith('did:') ? id : uri?.startsWith('did:') ? uri : undefined;
+  const did = id?.startsWith('did:')
+    ? id
+    : uri?.startsWith('did:')
+      ? uri
+      : undefined;
   if (!did) return undefined;
   return {
     did,
@@ -64,7 +78,9 @@ function getLabelerInfoFromView(view: unknown): AtprotoLabelerInfo | undefined {
 }
 
 function getSourceProfileMap(sourceProfiles: unknown): AtprotoLabelerInfoMap {
-  const profiles = Array.isArray(sourceProfiles) ? sourceProfiles : [sourceProfiles];
+  const profiles = Array.isArray(sourceProfiles)
+    ? sourceProfiles
+    : [sourceProfiles];
   return Object.fromEntries(
     profiles.flatMap((profile) => {
       const info = getSourceProfileInfo(profile);
@@ -95,10 +111,45 @@ async function fetchPublicLabelerInfo(
   );
 }
 
-export default function AtprotoLabels({ labels, sourceProfiles }: AtprotoLabelsProps) {
+async function fetchPublicLabelerInfoCached(
+  dids: readonly string[],
+): Promise<AtprotoLabelerInfoMap> {
+  const uniqueDids = uniqueStrings(dids);
+  const missingDids = uniqueDids.filter(
+    (did) => !getOwn(sharedFetchedLabelers, did),
+  );
+  if (missingDids.length) {
+    const key = [...missingDids].sort().join(',');
+    let request = sharedInflightLabelers.get(key);
+    if (!request) {
+      request = fetchPublicLabelerInfo(missingDids)
+        .then((nextLabelers) => {
+          Object.assign(sharedFetchedLabelers, nextLabelers);
+          return nextLabelers;
+        })
+        .finally(() => {
+          sharedInflightLabelers.delete(key);
+        });
+      sharedInflightLabelers.set(key, request);
+    }
+    await request;
+  }
+  return Object.fromEntries(
+    uniqueDids.flatMap((did) => {
+      const info = getOwn(sharedFetchedLabelers, did);
+      return info ? [[did, info]] : [];
+    }),
+  );
+}
+
+export default function AtprotoLabels({
+  labels,
+  sourceProfiles,
+}: AtprotoLabelsProps) {
   const { i18n, t } = useLingui();
-  const [fetchedLabelers, setFetchedLabelers] = useState<AtprotoLabelerInfoMap>({});
-  const attemptedLabelerDids = useRef<Set<string>>(new Set());
+  const [fetchedLabelers, setFetchedLabelers] = useState<AtprotoLabelerInfoMap>(
+    () => ({ ...sharedFetchedLabelers }),
+  );
   const mounted = useRef(true);
   const globalLabelStrings = useMemo<AtprotoGlobalLabelStrings>(
     () => ({
@@ -129,7 +180,10 @@ export default function AtprotoLabels({ labels, sourceProfiles }: AtprotoLabelsP
     }),
     [t],
   );
-  const visibleLabels = useMemo(() => getDisplayAtprotoLabels(labels), [labels]);
+  const visibleLabels = useMemo(
+    () => getDisplayAtprotoLabels(labels),
+    [labels],
+  );
 
   const preferences = getPreferences();
   const labelDefs = getAtprotoLabelDefinitions(preferences);
@@ -154,12 +208,7 @@ export default function AtprotoLabels({ labels, sourceProfiles }: AtprotoLabelsP
       uniqueStrings(
         visibleLabels
           .map((label) => label.src)
-          .filter(
-            (did) =>
-              did.startsWith('did:') &&
-              !getOwn(labelerInfo, did) &&
-              !attemptedLabelerDids.current.has(did),
-          ),
+          .filter((did) => did.startsWith('did:') && !getOwn(labelerInfo, did)),
       ),
     [labelerInfo, visibleLabels],
   );
@@ -173,12 +222,10 @@ export default function AtprotoLabels({ labels, sourceProfiles }: AtprotoLabelsP
 
   useEffect(() => {
     if (!missingLabelerDids.length) return undefined;
-    missingLabelerDids.forEach((did) => {
-      attemptedLabelerDids.current.add(did);
-    });
     const fetchLabelers = async () => {
       try {
-        const nextLabelers = await fetchPublicLabelerInfo(missingLabelerDids);
+        const nextLabelers =
+          await fetchPublicLabelerInfoCached(missingLabelerDids);
         if (!mounted.current) return undefined;
         if (Object.keys(nextLabelers).length) {
           setFetchedLabelers((current) => ({ ...current, ...nextLabelers }));

@@ -31,15 +31,19 @@ export type AtprotoGlobalLabelStrings = Record<
 export type AtprotoLabelerInfoMap = Record<string, AtprotoLabelerInfo>;
 export type AtprotoLabelSeverity = 'none' | 'inform' | 'alert';
 
-const LABELS_BY_VALUE: Record<string, InterpretedLabelValueDefinition | undefined> =
-  LABELS;
+const LABELS_BY_VALUE: Record<
+  string,
+  InterpretedLabelValueDefinition | undefined
+> = LABELS;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
 }
 
 function getOwn<T>(record: Record<string, T>, key: string): T | undefined {
-  return Object.prototype.hasOwnProperty.call(record, key) ? record[key] : undefined;
+  return Object.prototype.hasOwnProperty.call(record, key)
+    ? record[key]
+    : undefined;
 }
 
 export function normalizeAtprotoLabels(value: unknown): AtprotoLabel[] {
@@ -69,9 +73,13 @@ export function normalizeAtprotoLabels(value: unknown): AtprotoLabel[] {
   });
 }
 
-export function dedupeAtprotoLabels(labels: readonly AtprotoLabel[]): AtprotoLabel[] {
+export function dedupeAtprotoLabels(
+  labels: readonly AtprotoLabel[],
+): AtprotoLabel[] {
   return Array.from(
-    new Map(labels.map((label) => [`${label.src}:${label.val}`, label])).values(),
+    new Map(
+      labels.map((label) => [`${label.src}:${label.val}`, label]),
+    ).values(),
   );
 }
 
@@ -87,6 +95,7 @@ export function normalizeAtprotoLabelerDids(
 ): string[] {
   if (!Array.isArray(value)) return [];
   const appLabelerSet = new Set(appLabelers);
+  const seen = new Set<string>();
   return value.flatMap((labeler) => {
     const did =
       typeof labeler === 'string'
@@ -94,12 +103,15 @@ export function normalizeAtprotoLabelerDids(
         : isRecord(labeler) && typeof labeler.did === 'string'
           ? labeler.did
           : undefined;
-    if (!did || appLabelerSet.has(did)) return [];
+    if (!did || appLabelerSet.has(did) || seen.has(did)) return [];
+    seen.add(did);
     return [did];
   });
 }
 
-function isLabelDefinition(value: unknown): value is InterpretedLabelValueDefinition {
+function isLabelDefinition(
+  value: unknown,
+): value is InterpretedLabelValueDefinition {
   return (
     isRecord(value) &&
     typeof value.identifier === 'string' &&
@@ -115,12 +127,15 @@ function isLabelerInfo(value: unknown): value is AtprotoLabelerInfo {
     isRecord(value) &&
     typeof value.did === 'string' &&
     (value.handle === undefined || typeof value.handle === 'string') &&
-    (value.displayName === undefined || typeof value.displayName === 'string') &&
+    (value.displayName === undefined ||
+      typeof value.displayName === 'string') &&
     (value.avatar === undefined || typeof value.avatar === 'string')
   );
 }
 
-export function getAtprotoLabelDefinitions(value: unknown): AtprotoLabelDefinitionMap {
+export function getAtprotoLabelDefinitions(
+  value: unknown,
+): AtprotoLabelDefinitionMap {
   if (!isRecord(value)) return {};
   const defs = value.atprotoLabelDefs;
   if (!isRecord(defs)) return {};
@@ -132,7 +147,9 @@ export function getAtprotoLabelDefinitions(value: unknown): AtprotoLabelDefiniti
   );
 }
 
-export function getAtprotoLabelerInfoMap(value: unknown): AtprotoLabelerInfoMap {
+export function getAtprotoLabelerInfoMap(
+  value: unknown,
+): AtprotoLabelerInfoMap {
   if (!isRecord(value)) return {};
   const labelers = value.atprotoLabelers;
   if (!isRecord(labelers)) return {};
@@ -189,7 +206,7 @@ export function describeAtprotoLabel(
   const globalStrings = getOwn(globalLabelStrings, label.val);
   const strings = customDef
     ? getLocaleStrings(customDef, locale)
-    : globalStrings ?? (globalDef && getLocaleStrings(globalDef, locale));
+    : (globalStrings ?? (globalDef && getLocaleStrings(globalDef, locale)));
   const fallbackName = label.val
     .replace(/^!/, '')
     .replace(/-/g, ' ')

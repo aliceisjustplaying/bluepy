@@ -28,12 +28,7 @@ import {
 } from '@atproto/api';
 import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
 
-import { BSKY_PDS, resolveAtprotoLoginService } from './atproto-login-service';
-import store from './store';
-import { compressAtprotoImageIfNeeded } from './atproto-image-compression';
-import { createAtprotoOAuthAgent } from './atproto-oauth';
-import { encodeAtprotoID } from './atproto-route';
-import { createAtprotoExternalEmbed, getFirstPostURL } from './atproto-unfurl';
+import { prepareAtprotoImageUpload } from './atproto-image-compression';
 import {
   type AtprotoLabel,
   type AtprotoLabelDefinitionMap,
@@ -41,6 +36,11 @@ import {
   normalizeAtprotoLabelerDids,
   normalizeAtprotoLabels,
 } from './atproto-labels';
+import { BSKY_PDS, resolveAtprotoLoginService } from './atproto-login-service';
+import { createAtprotoOAuthAgent } from './atproto-oauth';
+import { encodeAtprotoID } from './atproto-route';
+import { createAtprotoExternalEmbed, getFirstPostURL } from './atproto-unfurl';
+import store from './store';
 
 const BSKY_APPVIEW = 'https://public.api.bsky.app';
 const BSKY_APPVIEW_DID = 'did:web:api.bsky.app';
@@ -50,7 +50,10 @@ const BLACKSKY_APPVIEW = 'https://api.blacksky.community';
 const BLACKSKY_APPVIEW_DID = 'did:web:api.blacksky.community';
 const BLACKSKY_APPVIEW_PROXY = `${BLACKSKY_APPVIEW_DID}#bsky_appview`;
 
-export const APPVIEW_OPTIONS: Record<string, { label: string; url: string; proxy: string }> = {
+export const APPVIEW_OPTIONS: Record<
+  string,
+  { label: string; url: string; proxy: string }
+> = {
   bluesky: {
     label: 'Bluesky',
     url: BSKY_APPVIEW,
@@ -620,6 +623,7 @@ interface AdaptedUploadedMedia {
   previewUrl: string;
   description?: string;
   blob: BlobRefLike;
+  aspectRatio?: { width: number; height: number };
 }
 
 interface CollectionPage<T> {
@@ -958,7 +962,9 @@ function actorToAccount(actor: AtprotoActor = {}): AdaptedAccount {
 function getStoredAtprotoLabelerDids(agent: AtprotoAgent): string[] {
   const preferences = store.account.get('preferences');
   if (!isRecord(preferences)) return [];
-  const appLabelers = isAtprotoLabelersAgent(agent) ? (agent.appLabelers ?? []) : [];
+  const appLabelers = isAtprotoLabelersAgent(agent)
+    ? (agent.appLabelers ?? [])
+    : [];
   const storedDids = normalizeAtprotoLabelerDids(
     preferences.atprotoLabelerDids,
     appLabelers,
@@ -977,7 +983,9 @@ function getAtprotoLabelerDids(
   preferences: BskyPreferences,
   agent: AtprotoAgent,
 ): string[] {
-  const appLabelers = isAtprotoLabelersAgent(agent) ? (agent.appLabelers ?? []) : [];
+  const appLabelers = isAtprotoLabelersAgent(agent)
+    ? (agent.appLabelers ?? [])
+    : [];
   return normalizeAtprotoLabelerDids(
     preferences.moderationPrefs.labelers,
     appLabelers,
@@ -1022,7 +1030,9 @@ async function fetchAtprotoLabelerMetadata(
       : {};
     return { labelDefs, labelers: {} };
   }
-  const dids = Array.from(new Set([...(agent.appLabelers ?? []), ...labelerDids]));
+  const dids = Array.from(
+    new Set([...(agent.appLabelers ?? []), ...labelerDids]),
+  );
   if (!dids.length) return { labelDefs: {}, labelers: {} };
   const res = await agent
     .getLabelers({ dids, detailed: true })
@@ -1036,7 +1046,10 @@ async function fetchAtprotoLabelerMetadata(
       ]),
     ),
     labelers: Object.fromEntries(
-      views.map((labeler) => [labeler.creator.did, toAtprotoLabelerInfo(labeler)]),
+      views.map((labeler) => [
+        labeler.creator.did,
+        toAtprotoLabelerInfo(labeler),
+      ]),
     ),
   };
 }
@@ -1988,10 +2001,10 @@ async function createMediaUpload({
   description?: string;
 }): Promise<AdaptedUploadedMedia> {
   if (!file) throw new Error('Missing media file');
-  const url = URL.createObjectURL(file);
 
   if (file.type?.startsWith('image/')) {
-    const uploadFile = await compressAtprotoImageIfNeeded(file);
+    const { file: uploadFile, dimensions } =
+      await prepareAtprotoImageUpload(file);
     const res = await agent.uploadBlob(uploadFile, {
       encoding: uploadFile.type,
     });
@@ -2005,6 +2018,7 @@ async function createMediaUpload({
       previewUrl: mediaUrl,
       description,
       blob,
+      aspectRatio: dimensions,
     };
     uploadedMedia.set(id, media);
     return media;
@@ -2013,6 +2027,7 @@ async function createMediaUpload({
   if (file.type?.startsWith('video/')) {
     const blob = await uploadVideoBlob(agent, file);
     const id = blobRefID(blob);
+    const url = URL.createObjectURL(file);
     const media: AdaptedUploadedMedia = {
       id,
       type: 'video',
@@ -3280,10 +3295,14 @@ export function createAtprotoClient({
             const videos = media.filter((item) => item.type === 'video');
             const images: AppBskyEmbedImages.Image[] = media
               .filter((item) => item.type === 'image')
-              .map((item) => ({
-                image: item.blob,
-                alt: item.description || '',
-              }));
+              .map((item) => {
+                const image: AppBskyEmbedImages.Image = {
+                  image: item.blob,
+                  alt: item.description || '',
+                };
+                if (item.aspectRatio) image.aspectRatio = item.aspectRatio;
+                return image;
+              });
             if (videos.length && images.length) {
               throw new Error('Bluesky posts cannot mix images and video');
             }
