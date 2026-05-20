@@ -456,7 +456,7 @@ function Timeline({
   emptyText,
   errorText,
   useItemID, // use statusID instead of status object, assuming it's already in states
-  boostsCarousel = true,
+  boostsCarousel,
   fetchItems = () => Promise.resolve({} as FetchItemsResult),
   checkForUpdates = () => undefined,
   checkForUpdatesInterval = 15_000, // 15 seconds

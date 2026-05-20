@@ -570,6 +570,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
       checkForUpdates={hasCurrentLink ? undefined : checkForUpdates}
       checkForUpdatesInterval={5 * 60 * 1000} // 5 minutes
       useItemID
+      boostsCarousel
       headerStart={<></>}
       // allowFilters
       filterContext="public"

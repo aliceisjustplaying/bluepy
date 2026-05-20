@@ -247,6 +247,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       fetchItems={fetchHome}
       checkForUpdates={checkForUpdates}
       useItemID
+      boostsCarousel
       {...props}
       // allowFilters
       filterContext="home"

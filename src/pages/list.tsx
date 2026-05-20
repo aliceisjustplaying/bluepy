@@ -202,6 +202,7 @@ function List(props: ListProps) {
         fetchItems={fetchList}
         checkForUpdates={checkForUpdates}
         useItemID
+        boostsCarousel
         // allowFilters
         filterContext="home"
         showReplyParent
