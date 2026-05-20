@@ -558,8 +558,10 @@ function App() {
 
       window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
       const rawSearchAccount =
-        (window.location.search.match(/account=([^&]+)/) || [undefined, ''])[1] ??
-        '';
+        (window.location.search.match(/account=([^&]+)/) || [
+          undefined,
+          '',
+        ])[1] ?? '';
       let searchAccount = '';
       try {
         searchAccount = rawSearchAccount

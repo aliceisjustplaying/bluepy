@@ -21,10 +21,7 @@ import { startAtprotoOAuthLogin } from '../utils/atproto-oauth';
 import { notifyAuthChanged } from '../utils/auth-context';
 import { navigatePath } from '../utils/router';
 import store from '../utils/store';
-import {
-  saveAccount,
-  setCurrentAccountID,
-} from '../utils/store-utils';
+import { saveAccount, setCurrentAccountID } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 
 const HANDLE_SUFFIXES = [

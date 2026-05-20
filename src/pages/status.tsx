@@ -1366,10 +1366,7 @@ function StatusThread({
                       are not possible.
                     </Trans>
                   </p>
-                  <Link
-                    to="/login"
-                    className="button"
-                  >
+                  <Link to="/login" className="button">
                     <Trans>Log in</Trans>
                   </Link>
                 </div>

@@ -142,7 +142,13 @@ function getCurrentTimezoneOffset(): number {
   return new Date().getTimezoneOffset();
 }
 
-type FilterKey = 'all' | 'original' | 'replies' | 'quotes' | 'reposts' | 'media';
+type FilterKey =
+  | 'all'
+  | 'original'
+  | 'replies'
+  | 'quotes'
+  | 'reposts'
+  | 'media';
 
 const FILTER_KEYS: Record<FilterKey, string> = {
   all: 'All',

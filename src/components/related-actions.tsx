@@ -535,7 +535,9 @@ function RelatedActions({
                     >
                       <Icon icon="rocket" />
                       <span>
-                        {showingReposts ? t`Disable reposts` : t`Enable reposts`}
+                        {showingReposts
+                          ? t`Disable reposts`
+                          : t`Enable reposts`}
                       </span>
                     </MenuItem>
                   </>

@@ -2,11 +2,11 @@ import './welcome.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 
-import repostsCarouselUrl from '../assets/features/reposts-carousel.jpg';
 import catchupUrl from '../assets/features/catch-up.png';
 import multiColumnUrl from '../assets/features/multi-column.jpg';
 import multiHashtagTimelineUrl from '../assets/features/multi-hashtag-timeline.jpg';
 import nestedCommentsThreadUrl from '../assets/features/nested-comments-thread.jpg';
+import repostsCarouselUrl from '../assets/features/reposts-carousel.jpg';
 import logo from '../assets/logo.svg';
 import homeMobileDark from '../assets/screenshots/home-mobile-dark@2x.png';
 import homeMobileLight from '../assets/screenshots/home-mobile-light@2x.png';

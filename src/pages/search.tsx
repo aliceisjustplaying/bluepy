@@ -286,14 +286,7 @@ function Search({ columnMode, ...props }: SearchProps) {
         }
       })();
     },
-    [
-      q,
-      type,
-      authenticated,
-      masto,
-      loadRelationships,
-      setResultsForType,
-    ],
+    [q, type, authenticated, masto, loadRelationships, setResultsForType],
   );
 
   const lastHiddenTime = useRef<number | undefined>(undefined);

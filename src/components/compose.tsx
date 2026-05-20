@@ -542,9 +542,7 @@ function Compose({
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
   const supportsQuoteApprovalPolicy = false;
   const canShowLinkPreview =
-    !editStatus &&
-    !currentQuoteStatus?.id &&
-    mediaAttachments.length === 0;
+    !editStatus && !currentQuoteStatus?.id && mediaAttachments.length === 0;
 
   const updateLinkPreview = (text: string): void => {
     if (linkPreviewRef.current.timeout) {

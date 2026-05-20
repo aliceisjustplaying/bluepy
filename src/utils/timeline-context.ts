@@ -50,7 +50,9 @@ export function canonicalTimelineContextId(
   return item.repost?.id || item.id;
 }
 
-function canonicalTimelineContextAccountId(item: TimelineContextStatus): string {
+function canonicalTimelineContextAccountId(
+  item: TimelineContextStatus,
+): string {
   return item.repost?.account.id || item.account.id;
 }
 

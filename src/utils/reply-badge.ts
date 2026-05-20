@@ -5,11 +5,7 @@ interface ShouldShowReplyBadgeOptions {
 }
 
 function shouldShowReplyBadge(options: ShouldShowReplyBadgeOptions): boolean {
-  const {
-    inReplyToId,
-    inReplyToAccount,
-    isReplyParentUnavailable,
-  } = options;
+  const { inReplyToId, inReplyToAccount, isReplyParentUnavailable } = options;
 
   return (
     Boolean(inReplyToId) &&
