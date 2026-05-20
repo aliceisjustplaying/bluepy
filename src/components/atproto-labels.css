@@ -13,9 +13,9 @@
   max-width: 100%;
   border: 1px solid var(--outline-color);
   border-radius: 999px;
-  background-color: var(--bg-faded-color);
+  background-color: var(--bg-color);
   color: var(--text-insignificant-color);
-  padding: 2px 7px;
+  padding: 2px;
   font-size: 0.78em;
   font-weight: 600;
 }
@@ -32,12 +32,10 @@
 
 .atproto-label-alert {
   border-color: color-mix(in srgb, var(--red-color), transparent 45%);
-  background-color: color-mix(in srgb, var(--red-color), transparent 88%);
   color: var(--red-color);
 }
 
 .atproto-label-inform {
   border-color: color-mix(in srgb, var(--link-color), transparent 48%);
-  background-color: color-mix(in srgb, var(--link-color), transparent 90%);
   color: var(--link-color);
 }
