@@ -1,11 +1,22 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2026-05-20 20:07+0000\n"
+"POT-Creation-Date: 2025-05-03 21:08+0800\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: fa-IR\n"
+"Language: fa\n"
+"Project-Id-Version: phanpy\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-16 15:50\n"
+"Last-Translator: \n"
+"Language-Team: Persian\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: phanpy\n"
+"X-Crowdin-Project-ID: 703337\n"
+"X-Crowdin-Language: fa\n"
+"X-Crowdin-File: /main/src/locales/en.po\n"
+"X-Crowdin-File-ID: 18\n"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments:"
@@ -13,7 +24,7 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Unblock <0>@{username}</0>"
-msgstr ""
+msgstr "نامسدود کردن <0>@{username}</0>"
 
 #: src/utils/show-compose.ts
 msgid "A draft post is currently minimized. Post or discard it before creating a new one."
@@ -27,9 +38,19 @@ msgstr ""
 msgid "Removes all UI animations, transitions, and smooth scrolling. Useful if motion is distracting."
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Whole word"
+#~ msgstr "تمام واژه"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Go to my server (<0>{currentInstance}</0>)"
+#~ msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Muted {username}"
-msgstr ""
+msgstr "خموشیده {username}"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -40,27 +61,31 @@ msgstr ""
 #: src/pages/notifications.tsx
 #: src/pages/trending.tsx
 msgid "Mentions"
-msgstr ""
+msgstr "اشاره‌ها"
 
 #: src/pages/account-statuses.tsx
 msgid "Account posts"
-msgstr ""
+msgstr "فرسته‌های حساب کاربری"
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external GIF search service, powered by <0>GIPHY</0>. G-rated (suitable for viewing by all ages), tracking parameters are stripped, referrer information is omitted from requests, but search queries and IP address information will still reach their servers."
-msgstr ""
+msgstr "نکته: این قابلیت از یک خدمت خراجی جستجوی جیف، قدرت‌گرفته از <0>جیفی</0>، استفاده میکند. رده‌بندی سنی عمومی (مناسب برای مشاهدهٔ همهٔ سنین)، ویژگی‌های دنبال‌کننده سلب شده‌اند، اطلاعات درخواست‌کننده از درخواست‌ها حذف شده‌اند، ولی درخواست جستجو و نشانی آی‌پی همچنان به کارساز آنها خواهند رسید."
 
 #: src/components/compose.tsx
 msgid "Downloading GIF…"
-msgstr ""
+msgstr "بارگیری جیف…"
 
 #: src/pages/catchup.tsx
 msgid "Show all authors"
-msgstr ""
+msgstr "نمایش همهٔ نویسنده‌ها"
+
+#: src/components/compose.tsx
+#~ msgid "Ask a question"
+#~ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Other"
-msgstr ""
+msgstr "دیگر"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -73,11 +98,15 @@ msgstr ""
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "No lists."
-msgstr ""
+msgstr "سیاهه‌ای نیست."
 
 #: src/components/math-block.tsx
 msgid "Math expressions found."
 msgstr ""
+
+#: src/pages/login.jsx
+#~ msgid "e.g. “mastodon.social”"
+#~ msgstr "مثلا \"mastodon.social\""
 
 #. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
@@ -86,24 +115,32 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
-msgstr ""
+msgstr "این پیش‌نویس را حذف میکنید؟"
 
 #: src/components/notification-service.tsx
 msgid "View all notifications"
-msgstr ""
+msgstr "نمایش همهٔ آگاهی‌ها"
 
 #: src/components/quotes-modal.tsx
 msgid "No quotes yet"
 msgstr ""
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled post deleted"
+#~ msgstr ""
 
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Switch to Side Peek view"
 msgstr ""
 
+#: src/components/modals.tsx
+#~ msgid "Reply scheduled"
+#~ msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Unable to report post"
-msgstr ""
+msgstr "ناتوان در گزارش دادن فرسته"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
@@ -124,29 +161,44 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>c</1>"
-msgstr ""
+msgstr "<0>تبدیل</0> + <1>ز</1>"
+
+#: src/components/compose-button.tsx
+#: src/components/nav-menu.tsx
+#: src/pages/scheduled-posts.tsx
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled Posts"
+#~ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Muted"
-msgstr ""
+msgstr "خموشانده"
 
 #: src/pages/account-statuses.tsx
 msgid "Nothing to see here yet."
-msgstr ""
+msgstr "اینجا چیزی برای دیدن نیست."
 
 #: src/components/list-add-edit.tsx
 msgid "Delete this list?"
-msgstr ""
+msgstr "این سیاهه را حذف میکنید؟"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcut settings copied"
-msgstr ""
+msgstr "میانبرهای تنظیمات رونوشت شدند"
+
+#: src/components/related-actions.tsx
+#~ msgid "Edit notes"
+#~ msgstr ""
+
+#: src/pages/settings.tsx
+#~ msgid "anyone"
+#~ msgstr "هرکس"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Posts"
-msgstr ""
+msgstr "فرسته"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've blocked {domain}."
@@ -156,13 +208,18 @@ msgstr ""
 msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
 msgstr ""
 
+#: src/components/status-activity-menu.tsx
+#: src/components/status-activity-menu.tsx
+#~ msgid "Boosted/Liked by…"
+#~ msgstr "تقویت‌شده/برگزیده‌شده توسط…"
+
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle}"
-msgstr ""
+msgstr "{hashtagTitle}"
 
 #: src/pages/mentions.tsx
 msgid "No one mentioned you :("
-msgstr ""
+msgstr "کسی به شما اشاره نکرده :("
 
 #: src/components/filtered-status.tsx
 #: src/components/filtered-status.tsx
@@ -172,28 +229,36 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered"
-msgstr ""
+msgstr "پالایش‌شده"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/compose.tsx
 msgid "Replying to @{0}"
-msgstr ""
+msgstr "درحال پاسخ دادن به @{0}"
 
 #: src/components/qr-scanner-modal.tsx
 msgid "Unable to access camera. Please check permissions."
 msgstr ""
 
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Delete scheduled post?"
+#~ msgstr ""
+
 #: src/components/related-actions.tsx
 msgid " Notifications disabled for @{username}'s posts."
 msgstr ""
 
+#: src/pages/login.jsx
+#~ msgid "server domain"
+#~ msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Error deleting drafts! Please try again."
-msgstr ""
+msgstr "خطا در حذف پیش‌نویس‌ها! لطفا دوباره تلاش کنید."
 
 #: src/pages/settings.tsx
 msgid "Auto refresh timeline posts"
-msgstr ""
+msgstr "بارگذاری مجدد خودکار فرسته‌های خط زمانی"
 
 #: src/components/import-accounts-selection.tsx
 msgid "{selectedCount, plural, one {Import # account} other {Import # accounts}}"
@@ -201,7 +266,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Back to top"
-msgstr ""
+msgstr "برگشتن به بالا"
 
 #: src/components/status-helpers.ts
 msgid "Private posts cannot be quoted"
@@ -213,7 +278,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Post translation"
-msgstr ""
+msgstr "ترجمهٔ فرسته"
 
 #: src/components/related-actions.tsx
 msgid "Unable to unblock @{username}"
@@ -221,11 +286,15 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Density"
-msgstr ""
+msgstr "تراکم"
+
+#: src/pages/settings.tsx
+#~ msgid "⚠️⚠️⚠️ Very experimental.<0/>Stored in your own profile’s notes. Profile (private) notes are mainly used for other profiles, and hidden for own profile."
+#~ msgstr "⚠️⚠️⚠️ بسیار آزمایشی.<0/>در یادداشت‌های نمایهٔ خود شما ذخیره میشود. یادداشت‌های (خصوصی) نمایه در اصل برای بقیهٔ نمایه‌ها استفاده میشوند، و برای نمایهٔ خود پنهان هستند."
 
 #: src/pages/notifications.tsx
 msgid "Only mentions"
-msgstr ""
+msgstr "فقط اشاره‌ها"
 
 #. placeholder {0}: announcements.length
 #: src/pages/notifications.tsx
@@ -237,18 +306,31 @@ msgstr ""
 msgid "Showing posts in {0}"
 msgstr ""
 
+#: src/components/related-actions.tsx
+#~ msgid "Boosts from @{username} enabled."
+#~ msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Notifications"
 msgstr ""
 
 #: src/components/generic-accounts.tsx
 msgid "Nothing to show"
-msgstr ""
+msgstr "چیزی برای نمایش نیست"
+
+#: src/pages/catchup.tsx
+#~ msgid "Note: your server might only show a maximum of 800 posts in the Home timeline regardless of the time range. Could be less or more."
+#~ msgstr ""
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Bookmarked"
 msgstr ""
+
+#: src/components/private-note-sheet.tsx
+#: src/components/related-actions.tsx
+#~ msgid "Notes"
+#~ msgstr ""
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
@@ -263,6 +345,10 @@ msgstr ""
 msgid "Login required to see posts from Bluesky."
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "{0, plural, one {# keyword} other {# keywords}}"
+#~ msgstr ""
+
 #: src/pages/welcome.tsx
 msgid "A separate timeline for followings. Email-inspired interface to sort and filter posts."
 msgstr ""
@@ -274,23 +360,31 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Light"
-msgstr ""
+msgstr "روشن"
 
 #: src/pages/catchup.tsx
 msgid "last 4 hours"
-msgstr ""
+msgstr "۴ ساعت گذشته"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Send post"
-msgstr ""
+msgstr "ارسال فرسته"
 
 #: src/pages/notifications.tsx
 msgid "Dismiss"
-msgstr ""
+msgstr "رد کردن"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Specific list is optional. For multi-column mode, list is required, else the column will not be shown."
+#~ msgstr "سیاههٔ مخصوص پیشنهادی است. برای حالت چندستونه، سیاهه ضروری است، در غیر این صورت این ستون میتواند نمایش داده نشود."
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
 msgstr ""
+
+#: src/components/follow-request-buttons.tsx
+#~ msgid "Reject"
+#~ msgstr "رد کردن"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open"
@@ -303,12 +397,12 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Ended"
-msgstr ""
+msgstr "پایان‌یافته"
 
 #: src/components/nav-menu.tsx
 #: src/components/text-expander.tsx
 msgid "More…"
-msgstr ""
+msgstr "بیشتر…"
 
 #: src/pages/status.tsx
 msgid "{years, plural, one {# year later} other {# years later}}"
@@ -323,9 +417,17 @@ msgstr ""
 msgid "Go to Bookmarks"
 msgstr ""
 
+#: src/pages/followed-hashtags.tsx
+#~ msgid "Unable to load followed hashtags."
+#~ msgstr "ناتوان در بارگذاری برچسب‌های پی‌گرفته."
+
+#: src/pages/mentions.tsx
+#~ msgid "Private mentions"
+#~ msgstr "اشاره‌های خصوصی"
+
 #: src/components/shortcuts-settings.tsx
 msgid "List"
-msgstr ""
+msgstr "سیاهه"
 
 #: src/components/status-placeholders.tsx
 #: src/components/status-quotes.tsx
@@ -353,7 +455,7 @@ msgstr ""
 #: src/components/timeline2.tsx
 #: src/pages/search.tsx
 msgid "The end."
-msgstr ""
+msgstr "آخر."
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media-attachment.tsx
@@ -370,7 +472,7 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/status.tsx
 msgid "More"
-msgstr ""
+msgstr "بیشتر"
 
 #: src/pages/welcome.tsx
 msgid "Reposts Carousel"
@@ -382,7 +484,7 @@ msgstr ""
 
 #: src/pages/status.tsx
 msgid "Switch to Full view"
-msgstr ""
+msgstr "تعویض به حالت نمایش کامل"
 
 #: src/components/drafts.tsx
 msgid "Error fetching quoted status!"
@@ -392,17 +494,25 @@ msgstr ""
 msgid "Feedback sent"
 msgstr ""
 
+#: src/pages/followed-hashtags.tsx
+#~ msgid "{0, plural, one {# hashtag} other {# hashtags}}"
+#~ msgstr "{0, plural, one {# برچسب} other {# برچسب‌ها}}"
+
 #: src/components/report-modal.tsx
 msgid "Pending review"
 msgstr ""
 
+#: src/pages/login.jsx
+#~ msgid "Continue with {selectedInstanceText}"
+#~ msgstr "ادامه دادن با {selectedInstanceText}"
+
 #: src/components/timeline.tsx
 msgid "New posts"
-msgstr ""
+msgstr "فرسته‌های جدید"
 
 #: src/components/related-actions.tsx
 msgid "Blocked"
-msgstr ""
+msgstr "مسدودشده"
 
 #: src/components/atproto-labels.tsx
 msgid "Explicit sexual images."
@@ -414,16 +524,20 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Delete all drafts?"
-msgstr ""
+msgstr "حذف کل پیش‌نویس‌ها؟"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move down"
-msgstr ""
+msgstr "حرکت به پایین"
 
 #: src/components/related-actions.tsx
 msgid "Mention <0>@{username}</0>"
-msgstr ""
+msgstr "اشاره به <0>@{username}</0>"
+
+#: src/pages/filters.tsx
+#~ msgid "Edit filter"
+#~ msgstr "ویرایش پالایه"
 
 #: src/components/related-actions.tsx
 msgid "Enable reposts"
@@ -433,6 +547,10 @@ msgstr ""
 #: src/pages/account-statuses.tsx
 msgid "Switch to account's PDS {0}"
 msgstr ""
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unable to unfeature on profile"
+#~ msgstr ""
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
@@ -445,11 +563,11 @@ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Switch to this account"
-msgstr ""
+msgstr "تعویض کردن به این حساب کاربری"
 
 #: src/components/compose.tsx
 msgid "Minimize"
-msgstr ""
+msgstr "کوچک‌کردن"
 
 #: src/components/quotes-modal.tsx
 msgid "Error loading quotes"
@@ -457,38 +575,46 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Uploaded"
-msgstr ""
+msgstr "بارگذاری شد"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "No columns yet. Tap on the Add column button."
+#~ msgstr "هنوز ستونی وجود ندارد. روی دکمهٔ افزودن ستون بزنید."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add more than one shortcut/column to make this work."
-msgstr ""
+msgstr "یک میانبر/ستون دیگر اضافه کنید تا این کار کند."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/trending.tsx
 msgid "Trending"
-msgstr ""
+msgstr "داغ"
 
 #: src/components/embed-modal.tsx
 msgid "Open in new window"
-msgstr ""
+msgstr "باز کردن در پنجره‌ای جدید"
 
 #: src/pages/notifications.tsx
 msgid "Notifications settings updated"
-msgstr ""
+msgstr "تنظیمات آگاهی‌ها بارگذاری شدند"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled post rescheduled"
+#~ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "View profile…"
-msgstr ""
+msgstr "نمایش نمایه…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Expand content warning or<0/>toggle expanded/collapsed thread"
-msgstr ""
+msgstr "گسترش دادن هشدار محتوا یا<0/>تغییر حالت رشتهٔ گسترده/بسته"
 
 #: src/components/account-info.tsx
 msgid "Unable to load account."
-msgstr ""
+msgstr "ناتوان در بارگذاری حساب کاربری."
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -497,15 +623,30 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "{query} <0>‒ accounts, hashtags & posts</0>"
-msgstr ""
+msgstr "{query} <0>‒ حساب‌های کاربری، برچسب‌ها و فرسته‌ها</0>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Content"
-msgstr ""
+msgstr "محتوا"
 
 #: src/components/report-modal.tsx
 msgid "Send Report"
-msgstr ""
+msgstr "ارسال کردن گزارش"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Enter a new server e.g. \"mastodon.social\""
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to delete filter."
+#~ msgstr ""
+
+#: src/components/nav-menu.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Federated"
+#~ msgstr "خودگردان"
 
 #. More from [Author]
 #: src/components/byline.tsx
@@ -514,7 +655,7 @@ msgstr ""
 
 #: src/pages/search.tsx
 msgid "No hashtags found."
-msgstr ""
+msgstr "برچسبی پیدا نشد."
 
 #: src/components/recent-searches.tsx
 #: src/components/search-form.tsx
@@ -529,6 +670,10 @@ msgstr ""
 msgid "Default visibility updated"
 msgstr ""
 
+#: src/components/status-reply-menu.tsx
+#~ msgid "{0, plural, other {<0>@{1}</0> first, # others below}}"
+#~ msgstr ""
+
 #. placeholder {0}: feeds.length
 #: src/pages/lists.tsx
 msgid "{0, plural, one {# feed} other {# feeds}}"
@@ -536,7 +681,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Poll"
-msgstr ""
+msgstr "نظرسنجی"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Profile picture"
@@ -544,20 +689,28 @@ msgstr ""
 
 #: src/components/notification-service.tsx
 msgid "Notification"
-msgstr ""
+msgstr "آگاهی"
 
 #: src/pages/accounts.tsx
 msgid "Note: <0>Default</0> account will always be used for first load. Switched accounts will persist during the session."
 msgstr ""
 
+#: src/pages/settings.tsx
+#~ msgid "\"Cloud\" import/export for shortcuts settings"
+#~ msgstr "ورود/صدور «ابری» برای تنظیمات میانبرها"
+
 #: src/components/status-quotes.tsx
 msgid "Post removed by author"
 msgstr ""
 
+#: src/pages/account-statuses.jsx
+#~ msgid "+ Replies"
+#~ msgstr "+ پاسخ‌ها"
+
 #: src/components/media-alt-modal.tsx
 #: src/components/media.tsx
 msgid "Media description"
-msgstr ""
+msgstr "شرح رسانه"
 
 #: src/pages/home.tsx
 msgid "Unable to fetch notifications."
@@ -565,11 +718,15 @@ msgstr ""
 
 #: src/components/media-modal.tsx
 msgid "Open original media in new window"
-msgstr ""
+msgstr "باز کردن رسانهٔ اصلی در پنجرهٔ جدید"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Download shortcuts from server"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not available in current view mode"
-msgstr ""
+msgstr "غیرقابل دسترسی در حالت نمایش کنونی"
 
 #: src/components/import-accounts-selection.tsx
 msgid "Existing"
@@ -577,24 +734,53 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Ended <0/>"
-msgstr ""
+msgstr "پایان یافته <0/>"
+
+#: src/components/notification.tsx
+#~ msgid "View #Wrapstodon"
+#~ msgstr ""
 
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "{0, plural, one {# filter} other {# filters}}"
+#~ msgstr "{0, plural,one {# پالایه} other {# پالایه‌ها}}"
+
 #: src/pages/settings.tsx
 msgid "Reposts carousel"
 msgstr ""
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Shortcuts saved"
+#~ msgstr "میانبرها ذخیره شدند"
+
+#: src/components/status-reply-menu.tsx
+#: src/components/status-reply-menu.tsx
+#~ msgid "Reply all"
+#~ msgstr ""
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Hiding boosts"
+#~ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "We read every message even when we cannot reply."
 msgstr ""
 
+#: src/pages/settings.tsx
+#~ msgid "Follow requests"
+#~ msgstr "درخواست‌های پی‌گیری"
+
 #. placeholder {0}: groupBy ?? ''
 #: src/pages/catchup.tsx
 msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} reposts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} repostsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
 msgstr ""
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Switch to account's server {0}"
+#~ msgstr ""
 
 #: src/pages/trending.tsx
 msgid "No trending posts."
@@ -603,12 +789,16 @@ msgstr ""
 #. placeholder {0}: !__FAKE_COMMIT_HASH__ && ( <span className="ib insignificant"> ( <a href={`https://github.com/cheeaun/phanpy/commit/${__COMMIT_HASH__}`} target="_blank" rel="noopener noreferrer" > <RelativeTime datetime={new Date(__BUILD_TIME__)} /> </a> ) </span> )
 #: src/pages/settings.tsx
 msgid "<0>Version:</0> <1/> {0}"
-msgstr ""
+msgstr "<0>نگارش:</0> <1/> {0}"
 
 #: src/components/status-media-embeds.tsx
 #: src/components/status-post-body.tsx
 msgid "Show less"
 msgstr ""
+
+#: src/pages/settings.tsx
+#~ msgid "Push notifications are blocked. Please enable them in your browser settings."
+#~ msgstr "آگاهی‌های ارسالی مسدود شده‌اند. لطفا آنها را در تنظیمات مرورگر خود فعال کنید."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -621,23 +811,27 @@ msgstr ""
 msgid "Undo repost"
 msgstr ""
 
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Phanpy home timeline on tablet device"
+#~ msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Previous post"
-msgstr ""
+msgstr "فرستهٔ پیشین"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Posts)"
-msgstr ""
+msgstr "جستجو: {q} (فرسته‌ها)"
 
 #: src/components/media-modal.tsx
 msgid "Describe image…"
-msgstr ""
+msgstr "شرح دادن تصویر…"
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
 msgid "Name"
-msgstr ""
+msgstr "نام"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Override current shortcuts?"
@@ -651,16 +845,25 @@ msgstr ""
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "میانبرهای صفحه کلید"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Public"
-msgstr ""
+msgstr "همگانی"
+
+#: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Optional, e.g. mastodon.social"
+#~ msgstr "پیشنهادی، مثلا mastodon.social"
+
+#: src/pages/notifications.tsx
+#~ msgid "{0, plural, one {# follow request} other {# follow requests}}"
+#~ msgstr "{0, plural, one {# درخواست پی‌گیری} other {# درخواست پیگیری}}"
 
 #: src/components/nav-menu.tsx
 msgid "Accounts…"
-msgstr ""
+msgstr "حساب‌ها…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -668,11 +871,11 @@ msgstr ""
 #: src/pages/bookmarks.tsx
 #: src/pages/bookmarks.tsx
 msgid "Bookmarks"
-msgstr ""
+msgstr "نشانک‌گذاری‌ها"
 
 #: src/components/media-post.tsx
 msgid "Filtered: {filterTitleStr}"
-msgstr ""
+msgstr "پالایش‌شده: {filterTitleStr}"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -692,45 +895,45 @@ msgstr ""
 
 #: src/components/account-block.tsx
 msgid "Mutual"
-msgstr ""
+msgstr "متقابل"
 
 #: src/components/status-account-menu.tsx
 msgid "Report post…"
-msgstr ""
+msgstr "گزارش دادن فرسته…"
 
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 #: src/pages/list.tsx
 msgid "Unable to load posts."
-msgstr ""
+msgstr "ناتوان در بارگذاری فرسته‌ها."
 
 #: src/pages/settings.tsx
 msgid "Text size"
-msgstr ""
+msgstr "اندازهٔ نوشته"
 
 #: src/pages/catchup.tsx
 msgid "last 11 hours"
-msgstr ""
+msgstr "۱۱ ساعت گذشته"
 
 #: src/components/account-info.tsx
 msgid "View profile image"
-msgstr ""
+msgstr "نمایش تصویر نمایه"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Home / Following"
-msgstr ""
+msgstr "خانه/پی‌گرفته"
 
 #: src/pages/catchup.tsx
 msgid "last 3 hours"
-msgstr ""
+msgstr "۳ ساعت گذشته"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>l</0> or <1>f</1>"
-msgstr ""
+msgstr "<0>م</0> یا <1>ب</1>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Label"
-msgstr ""
+msgstr "برچسب"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-inline-controls.tsx
@@ -738,23 +941,35 @@ msgstr ""
 msgid "Liked"
 msgstr ""
 
+#: src/pages/settings.tsx
+#~ msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
+#~ msgstr "اجازهٔ ارسال از زمان آخرین ورود شما داده نشده. شما باید دوباره <0><1>وارد شوید</1> و اجازهٔ ارسال را بدهید</0>."
+
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
 #: src/components/status-helpers.ts
 msgid "Read more →"
-msgstr ""
+msgstr "بیشتر خوانید ←"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} ({monthYear})"
+#~ msgstr "{accountDisplay} ({monthYear})"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Custom emojis"
+#~ msgstr "شکلک‌های شخصی‌سازی‌شده"
 
 #: src/components/drafts.tsx
 msgid "No drafts found."
-msgstr ""
+msgstr "پیش‌نویسی یافت نشد."
 
 #: src/pages/bookmarks.tsx
 msgid "No bookmarks yet. Go bookmark something!"
-msgstr ""
+msgstr "هنوز نشانکی نیست. برو چیزهایی را نشانک‌گذاری کن!"
 
 #: src/components/nav-menu.tsx
 msgid "Shortcuts / Columns…"
-msgstr ""
+msgstr "میانبرها / ستون‌ها…"
 
 #. placeholder {0}: username || acct
 #: src/components/status-utility-menu.tsx
@@ -768,15 +983,15 @@ msgstr ""
 #. placeholder {0}: userLists.length
 #: src/pages/lists.tsx
 msgid "{0, plural, one {# list} other {# lists}}"
-msgstr ""
+msgstr "{0, plural, one {# سیاهه} other {# سیاهه‌ها}}"
 
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
-msgstr ""
+msgstr "نمایش همهٔ محتوای حساس"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
-msgstr ""
+msgstr "ناتوان در خموشاندن گفتگو"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
@@ -785,11 +1000,11 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generating description. Please wait…"
-msgstr ""
+msgstr "تولید شرح. لطفا صبر کنید…"
 
 #: src/components/nav-menu.tsx
 msgid "New update available…"
-msgstr ""
+msgstr "بروزرسانی جدید در دسترس است…"
 
 #. index/total posts in a thread
 #: src/components/thread-badge.tsx
@@ -798,11 +1013,15 @@ msgstr ""
 
 #: src/components/translated-bio-sheet.tsx
 msgid "Translated Bio"
-msgstr ""
+msgstr "شرح حال ترجمه شد"
+
+#: src/pages/status.tsx
+#~ msgid "Unable to switch"
+#~ msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
-msgstr ""
+msgstr "برای جستجوی جیف‌ها بنویسید"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
@@ -815,11 +1034,15 @@ msgstr ""
 msgid "Open file"
 msgstr ""
 
+#: src/pages/catchup.tsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
+
 #: src/components/account-info.tsx
 #: src/components/edit-profile-sheet.tsx
 #: src/components/related-actions.tsx
 msgid "Edit profile"
-msgstr ""
+msgstr "ویرایش نمایه"
 
 #: src/pages/accounts.tsx
 msgid "Remove account…"
@@ -833,15 +1056,20 @@ msgstr ""
 msgid "Image description generator"
 msgstr ""
 
+#: src/pages/hashtag.tsx
+#: src/pages/hashtag.tsx
+#~ msgid "Featured on profile"
+#~ msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut…"
-msgstr ""
+msgstr "افزودن میانبر…"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/atproto-labels.tsx
 msgid "Automated"
-msgstr ""
+msgstr "خودکارشده"
 
 #: src/pages/trending.tsx
 msgid "Trending News"
@@ -857,12 +1085,16 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Forever"
-msgstr ""
+msgstr "برای همیشه"
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications settings"
-msgstr ""
+msgstr "تنظیمات آگهی‌ها"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (- Boosts)"
+#~ msgstr ""
 
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/{total}"
@@ -870,7 +1102,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "beta"
-msgstr ""
+msgstr "بتا"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/nav-menu.tsx
@@ -880,19 +1112,23 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Search"
-msgstr ""
+msgstr "جستجو"
+
+#: src/pages/accounts.jsx
+#~ msgid "Log out and remove <0>@{0}</0>"
+#~ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Post updated. Check it out."
-msgstr ""
+msgstr "فرسته بروزرسانی شد. آن را ببینید."
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unpin post"
-msgstr ""
+msgstr "ناتوان در برداشتن سنجاق فرسته"
 
 #: src/components/shortcuts-settings.tsx
 msgid "e.g. PixelArt (Max 5, space-separated)"
-msgstr ""
+msgstr "مثلا PixelArt (حداکثر ۵، جدا شده با فاصله)"
 
 #. placeholder {0}: accounts.length
 #: src/components/import-export-accounts.tsx
@@ -901,11 +1137,15 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to account page"
-msgstr ""
+msgstr "برو به صفحهٔ حساب کاربری"
 
 #: src/pages/settings.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "ظاهر"
+
+#: src/pages/settings.tsx
+#~ msgid "Follows"
+#~ msgstr ""
 
 #. By [Author]
 #. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
@@ -915,31 +1155,44 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
-msgstr ""
+msgstr "انگار شما در حال حاضر یک زمینهٔ نوشتن در پنجرهٔ مادر دارید. وارد شدن به این پنجره تغییراتی که در پنجرهٔ مادر انجام داده‌اید را رها میکند. ادامه میدهید؟"
 
 #: src/components/report-modal.tsx
 msgid "Report @{username}"
-msgstr ""
+msgstr "گزارش دادن @{username}"
 
 #: src/components/media-modal.tsx
 msgid "Open original media"
-msgstr ""
+msgstr "باز کردن رسانهٔ اصلی"
 
 #: src/components/post-embed-modal.tsx
 msgid "Account Emojis:"
 msgstr ""
 
+#. Scheduled [in 1 day] ([Thu, Feb 27, 6:30:00 PM])
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled <0><1/></0> <2>({0})</2>"
+#~ msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Account"
-msgstr ""
+msgstr "حساب کاربری"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>?"
-msgstr ""
+msgstr "<0>@{username}</0> را مسدود میکنید؟"
 
 #: src/components/related-actions.tsx
 msgid "@{username} removed from followers"
 msgstr ""
+
+#: src/components/endorsements.tsx
+#~ msgid "No featured profiles."
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Expiry"
+#~ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Overlaps with your last catch-up"
@@ -947,7 +1200,7 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post"
-msgstr ""
+msgstr "نوشتن فرستهٔ جدید"
 
 #. Action to switch from rendered math back to raw (LaTeX) markup
 #: src/components/math-block.tsx
@@ -957,7 +1210,7 @@ msgstr ""
 #. placeholder {0}: shortenNumber(statusesCount)
 #: src/components/account-block.tsx
 msgid "Posts: {0}"
-msgstr ""
+msgstr "فرسته‌ها: {0}"
 
 #: src/pages/accounts.tsx
 msgid "Log out and remove <0>@{acct}</0>"
@@ -972,22 +1225,34 @@ msgstr ""
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Failed to delete scheduled post"
+#~ msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Looks like you have unsent drafts. Let's continue where you left off."
-msgstr ""
+msgstr "انگار پیش‌نویس‌های ارسال‌نشده دارید. بیایید از جایی که رها کرده‌اید ادامه دهیم."
+
+#: src/pages/hashtag.tsx
+#~ msgid "Login required to see posts from this server."
+#~ msgstr ""
 
 #: src/components/generic-accounts.tsx
 #: src/components/mention-modal.tsx
 msgid "Error loading accounts"
-msgstr ""
+msgstr "خطا در بارگذاری حساب‌ها"
 
 #: src/components/modals.tsx
 msgid "Post published. Check it out."
-msgstr ""
+msgstr "فرسته منتشر شد. آن را ببینید."
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Hashtags)"
-msgstr ""
+msgstr "جستجو: {q} (برچسب‌ها)"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Unable to save shortcuts"
+#~ msgstr "ناتوان در ذخیره کردن میانبرها"
 
 #: src/components/status-repost.tsx
 msgid "<0/> <1>reposted</1>"
@@ -997,9 +1262,17 @@ msgstr ""
 msgid "Show anyway"
 msgstr ""
 
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Zoom in"
+#~ msgstr ""
+
 #: src/components/status-helpers.ts
 msgid "Request to quote"
 msgstr ""
+
+#: src/pages/settings.jsx
+#~ msgid "<0>Built</0> by <1>@cheeaun</1>"
+#~ msgstr "<0>ساخته‌شده</0> توسط <1>@cheeaun</1>"
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
@@ -1021,6 +1294,11 @@ msgstr ""
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
+#~ msgid "Boosted"
+#~ msgstr ""
+
+#: src/components/status-inline-controls.tsx
+#: src/components/status-large-footer.tsx
 msgid "Reposted"
 msgstr ""
 
@@ -1034,6 +1312,10 @@ msgstr ""
 msgid "Unable to copy handle"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Change expiry"
+#~ msgstr ""
+
 #: src/components/import-export-accounts.tsx
 msgid "Import failed"
 msgstr ""
@@ -1041,12 +1323,12 @@ msgstr ""
 #. placeholder {0}: sharers.map((s) => { const { id: sharerId, avatarStatic, displayName, } = s; return ( <button key={sharerId} type="button" className="plain" style={{ padding: 0, }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); // Reset and filter to author setSelectedAuthor(sharerId); setSelectedFilterCategory('all'); }} > <Avatar url={avatarStatic} size="s" alt={displayName} /> </button> ); })
 #: src/pages/catchup.tsx
 msgid "Shared by {0}"
-msgstr ""
+msgstr "همرسانی‌شده توسط {0}"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Import/export"
-msgstr ""
+msgstr "ورود/صدور"
 
 #: src/pages/account-statuses.tsx
 msgid "Hiding replies"
@@ -1060,18 +1342,40 @@ msgstr ""
 msgid "Quote chain"
 msgstr ""
 
+#: src/components/nav-menu.jsx
+#: src/components/shortcuts.jsx
+#: src/pages/list.jsx
+#~ msgid "All Lists"
+#~ msgstr "همهٔ سیاهه‌ها"
+
+#: src/pages/public.tsx
+#~ msgid "No one has posted anything yet."
+#~ msgstr "هنوز کسی چیزی ارسال نکرده است."
+
 #: src/components/post-embed-modal.tsx
 msgid "HTML code copied"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Filtered post will be…"
+#~ msgstr ""
+
 #: src/pages/search.tsx
 msgid "See more accounts"
-msgstr ""
+msgstr "حساب‌های کاربری بیشتری را ببینید"
 
 #: src/components/related-actions.tsx
 #: src/pages/account-statuses.tsx
 msgid "Search my posts"
 msgstr ""
+
+#: src/components/status-content.tsx
+#~ msgid "Unboosted @{0}'s post"
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Delete this filter?"
+#~ msgstr "این پالایه را حذف میکنید؟"
 
 #: src/components/generic-accounts.tsx
 #: src/components/notification.tsx
@@ -1079,22 +1383,34 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Accounts"
-msgstr ""
+msgstr "حساب‌های کاربری"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've muted @{name}."
 msgstr ""
+
+#: src/pages/status.tsx
+#~ msgid "This post is from another server (<0>{instance}</0>). Interactions (reply, boost, etc) are not possible."
+#~ msgstr ""
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/components/account-info.tsx
 msgid "This user has chosen to not make this information available."
-msgstr ""
+msgstr "این کاربر انتخاب کرده که این اطلاعات در دسترس نباشد."
+
+#: src/pages/welcome.jsx
+#~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
+#~ msgstr "<0>ساخته‌شده</0> توسط <1>@cheeaun</1>. <2>حریم خصوصی</2>."
 
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
-msgstr ""
+msgstr "پیمایش به بالا"
+
+#: src/pages/filters.tsx
+#~ msgid "Home and lists"
+#~ msgstr "خانه و سیاهه‌ها"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1102,16 +1418,16 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to original profile page"
-msgstr ""
+msgstr "برو به صفحهٔ اصلی نمایه"
 
 #. placeholder {0}: detectedLang ?? '…'
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
-msgstr ""
+msgstr "خودکار ({0})"
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
-msgstr ""
+msgstr "قبول شده"
 
 #: src/components/feedback-modal.tsx
 msgid "Leave this field blank"
@@ -1124,7 +1440,7 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Help"
-msgstr ""
+msgstr "راهنما"
 
 #. placeholder {0}: shortenNumber(statusesCount)
 #. placeholder {1}: shortenNumber(statusesCount)
@@ -1143,11 +1459,11 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unmute conversation"
-msgstr ""
+msgstr "ناتوان در ناخموشاندن گفتگو"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Toggle Cloak mode"
-msgstr ""
+msgstr "تغییر وضعیت حالت پوشش"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import & append…"
@@ -1160,7 +1476,7 @@ msgstr ""
 #. placeholder {0}: snapStates.settings.contentTranslationHideLanguages .length
 #: src/pages/settings.tsx
 msgid "{0, plural, =0 {Hide \"Translate\" button for:} other {Hide \"Translate\" button for (#):}}"
-msgstr ""
+msgstr "{0, plural, =0 {مخفی کردن دکمهٔ «ترجمه» برای:} other {مخفی کردن دکمهٔ «ترجمه» برای (#):}}"
 
 #: src/components/error-fallback.tsx
 msgid "Report a bug"
@@ -1168,7 +1484,11 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Accounts with <0>{query}</0>"
-msgstr ""
+msgstr "حساب‌های کاربری با <0>{query}</0>"
+
+#: src/components/compose-poll.tsx
+#~ msgid "Remove poll"
+#~ msgstr "حذف نظرسنجی"
 
 #: src/pages/catchup.tsx
 msgid "Preview of Catch-up UI"
@@ -1176,11 +1496,15 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Display language"
-msgstr ""
+msgstr "نمایش زبان"
 
 #: src/pages/settings.tsx
 msgid "Paginated timeline (beta)"
 msgstr ""
+
+#: src/pages/public.tsx
+#~ msgid "Federated timeline"
+#~ msgstr "خط زمانی نامتمرکز"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of nested comments thread"
@@ -1192,15 +1516,19 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specify a list of shortcuts that'll appear as:"
-msgstr ""
+msgstr "تعیین کردن سیاهه‌ای از میانبرهایی که به عنوان ظاهر میشوند:"
+
+#: src/components/account-info.tsx
+#~ msgid "{0} original posts, {1} replies, {2} quotes, {3} boosts"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Timeline"
-msgstr ""
+msgstr "خط زمانی"
 
 #: src/pages/hashtag.tsx
 msgid "No one has posted anything with this tag yet."
-msgstr ""
+msgstr "هنوز کسی با این برچسب چیزی نفرستاده است."
 
 #: src/components/feedback-modal.tsx
 msgid "Thanks, got it."
@@ -1208,16 +1536,20 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Sort: Density"
-msgstr ""
+msgstr "مرتب‌سازی: تراکم"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Like (favourite)"
-msgstr ""
+msgstr "پسندیدن (مورد علاقه)"
+
+#: src/pages/settings.tsx
+#~ msgid "Synced to your server's settings. <0>Go to your server ({instance}) for more settings.</0>"
+#~ msgstr ""
 
 #: src/pages/account-statuses.tsx
 #: src/pages/hashtag.tsx
 msgid "Filters"
-msgstr ""
+msgstr "پالایه‌ها"
 
 #: src/components/report-modal.tsx
 msgid "Malicious links, fake engagement, or repetitive replies"
@@ -1227,28 +1559,44 @@ msgstr ""
 #: src/components/compose.tsx
 #: src/components/file-picker-input.tsx
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
-msgstr ""
+msgstr "{maxMediaAttachments, plural, one {فقط میتوانید تا ۱ پرونده الصاق کنید.} other {فقط میتوانید تا # پرونده الصاق کنید.}}"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfollow #{hashtag}?"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 msgid "Shortcuts"
-msgstr ""
+msgstr "میانبرها"
+
+#: src/pages/filters.tsx
+#~ msgid "No filters yet."
+#~ msgstr "هنوز پالایه‌ای نیست."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts copied"
-msgstr ""
+msgstr "میانبرها رونوشت شدند"
 
 #: src/pages/accounts.tsx
 msgid "Log out…"
-msgstr ""
+msgstr "خروج…"
 
 #: src/pages/catchup.tsx
 msgid "What is this?"
-msgstr ""
+msgstr "اين چيست؟"
 
 #: src/pages/hashtag.tsx
 msgid "Add hashtag"
-msgstr ""
+msgstr "افزودن برچسب"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Import/export settings from/to server (Very experimental)"
+#~ msgstr ""
+
+#: src/components/related-actions.tsx
+#~ msgid "Boosts from @{username} disabled."
+#~ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Nested comments thread"
@@ -1256,23 +1604,27 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Forward to <0>{domain}</0>"
-msgstr ""
+msgstr "هدایت کرد نبه <0>{domain}</0>"
+
+#: src/components/compose.tsx
+#~ msgid "Add poll"
+#~ msgstr "افزودن نظرسنجی"
 
 #: src/pages/notifications.tsx
 msgid "You don't follow"
-msgstr ""
+msgstr "شما پی نمیگیرید"
 
 #: src/compose.tsx
 msgid "Login required."
-msgstr ""
+msgstr "نیاز به ورود."
 
 #: src/utils/visibility-text.ts
 msgid "Local"
-msgstr ""
+msgstr "محلی"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
-msgstr ""
+msgstr "انتخاب‌کنندهٔ جیف برای نویسنده"
 
 #. placeholder {0}: prettyBytes( imageSize, )
 #. placeholder {0}: prettyBytes( videoSize, )
@@ -1280,7 +1632,7 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
-msgstr ""
+msgstr "اندازهٔ پرونده خیلی بزرگ است. بارگذاری ممکن است با مشکل مواجه شود. کم کردن اندازهٔ پرونده از {0} به {1} یا پایین‌تر را امتحان کنید."
 
 #: src/pages/catchup.tsx
 msgid "Remove this catch-up?"
@@ -1289,7 +1641,11 @@ msgstr ""
 #. placeholder {0}: rtf.format(-statusMonthsAgo, 'month')
 #: src/components/status-menu-state.tsx
 msgid "Old post (<0>{0}</0>)"
-msgstr ""
+msgstr "فرستهٔ قدیمی (<0>{0}</0>)"
+
+#: src/components/status-content.tsx
+#~ msgid "Boosted @{0}'s post"
+#~ msgstr ""
 
 #. placeholder {0}: dtf.format(new Date(lastCatchupEndAt))
 #: src/pages/catchup.tsx
@@ -1303,7 +1659,7 @@ msgstr ""
 #: src/components/open-link-sheet.tsx
 #: src/components/quote-suggestion.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "لغو"
 
 #: src/pages/status.tsx
 msgid "This post is from another PDS (<0>{instance}</0>). Interactions (reply, repost, etc) are not possible."
@@ -1318,7 +1674,7 @@ msgstr ""
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Previous"
-msgstr ""
+msgstr "پیشین"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts in {monthYear} by {accountDisplay}"
@@ -1326,7 +1682,11 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Reload page now to update?"
-msgstr ""
+msgstr "صفحه را برای بروزرسانی بارگذاری مجدد میکنید؟"
+
+#: src/components/status-reblog.tsx
+#~ msgid "<0/> <1>boosted</1>"
+#~ msgstr "<0/> <1>تقویت کرد</1>"
 
 #: src/components/status-helpers.ts
 msgid "You are not allowed to quote this post"
@@ -1336,9 +1696,17 @@ msgstr ""
 msgid "Search term"
 msgstr ""
 
+#: src/components/shortcuts-settings.jsx
+#~ msgid "For multi-column mode, search term is required, else the column will not be shown."
+#~ msgstr ""
+
 #: src/pages/status.tsx
 msgid "Error: {e}"
 msgstr ""
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfollowed #{hashtag}"
+#~ msgstr "#{hashtag} ناپی‌گرفته شد"
 
 #. placeholder {0}: replies.length
 #. placeholder {1}: shortenNumber(replies.length)
@@ -1353,23 +1721,27 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Done"
-msgstr ""
+msgstr "اتمام"
 
 #: src/pages/catchup.tsx
 msgid "Authors"
-msgstr ""
+msgstr "نویسنده‌ها"
 
 #: src/pages/status.tsx
 msgid "{months, plural, one {# month later} other {# months later}}"
 msgstr ""
 
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus column in multi-column mode"
+#~ msgstr "ستون متمرکز در حالت چندستونه"
+
 #: src/components/status-utility-menu.tsx
 msgid "Edited: {editedDateText}"
-msgstr ""
+msgstr "ویرایش‌شده: {editedDateText}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List ID"
-msgstr ""
+msgstr "شناسهٔ سیاهه"
 
 #. placeholder {0}: i18n.number( width as number, )
 #. placeholder {1}: i18n.number(height as number)
@@ -1383,11 +1755,15 @@ msgstr ""
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post"
-msgstr ""
+msgstr "درحال پاسخ دادن به فرستهٔ @{0}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import shortcuts?"
 msgstr ""
+
+#: src/pages/public.tsx
+#~ msgid "Switch to Federated"
+#~ msgstr "تعویض کردن به نامتمرکز"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to next post"
@@ -1395,11 +1771,11 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "last 5 hours"
-msgstr ""
+msgstr "۵ ساعت گذشته"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Bio"
-msgstr ""
+msgstr "شرح حال"
 
 #: src/pages/welcome.tsx
 msgid "Sign up"
@@ -1414,36 +1790,52 @@ msgstr ""
 msgid "Auto-translated from {0}"
 msgstr ""
 
+#: src/pages/welcome.tsx
+#~ msgid "Visually separate original posts and re-shared posts (boosted posts)."
+#~ msgstr ""
+
 #: src/pages/notifications.tsx
 msgid "Who are limited by Bluesky moderators"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Raw Shortcuts JSON"
-msgstr ""
+msgstr "جیسون خالص میانبرها"
 
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/pages/catchup.tsx
 msgid "Thread"
-msgstr ""
+msgstr "رشته"
+
+#: src/components/report-modal.tsx
+#~ msgid "Violates the law of your or the server's country"
+#~ msgstr ""
+
+#: src/components/related-actions.tsx
+#~ msgid "Withdraw follow request?"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multiple hashtags are supported. Space-separated."
-msgstr ""
+msgstr "چندبرچسب پشتیبانی میشود. جداشده با فاصله."
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Failed to load history"
 msgstr ""
 
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Search emoji"
+#~ msgstr ""
+
 #: src/pages/notifications.tsx
 msgid "Today"
-msgstr ""
+msgstr "امروز"
 
 #: src/components/report-modal.tsx
 msgid "Additional info"
-msgstr ""
+msgstr "اطلاعات اضافی"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
@@ -1452,21 +1844,29 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "None"
-msgstr ""
+msgstr "هیچ‌کدام"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Link copied"
-msgstr ""
+msgstr "پیوند رونوشت شد"
 
 #: src/components/mention-modal.tsx
 msgid "Search accounts"
 msgstr ""
 
+#: src/components/notification.tsx
+#~ msgid "{account} requested to follow you."
+#~ msgstr "{account} درخواست کرد شما را پی‌گیری کند."
+
 #: src/components/list-add-edit.tsx
 msgid "Show replies to list members"
-msgstr ""
+msgstr "نمایش پاسخ‌ها به سیاههٔ اعضا"
+
+#: src/components/compose.tsx
+#~ msgid "Attachment #{i} failed"
+#~ msgstr "پیوست #{i} شکست خورد"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
@@ -1476,11 +1876,15 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/hashtag.tsx
 msgid "Media only"
-msgstr ""
+msgstr "فقط رسانه"
+
+#: src/components/follow-request-buttons.tsx
+#~ msgid "Rejected"
+#~ msgstr "رد شده"
 
 #: src/components/compose.tsx
 msgid "Update"
-msgstr ""
+msgstr "بروزرسانی"
 
 #: src/components/status-account-menu.tsx
 #: src/pages/settings.tsx
@@ -1489,7 +1893,11 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
-msgstr ""
+msgstr "{account} {targetAccount} را گزارش کرد"
+
+#: src/pages/filters.tsx
+#~ msgid "Conversations"
+#~ msgstr "گفتگوها"
 
 #. placeholder {0}: err?.message ? `: ${err.message}` : ''
 #: src/components/media-attachment.tsx
@@ -1499,19 +1907,19 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/list.tsx
 msgid "Edit"
-msgstr ""
+msgstr "ویرایش"
 
 #: src/pages/catchup.tsx
 msgid "You don't have to read everything."
-msgstr ""
+msgstr "نیازی نیست همه چیز را بخوانید."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Max {SHORTCUTS_LIMIT} shortcuts"
-msgstr ""
+msgstr "بیشترین {SHORTCUTS_LIMIT} میانبر"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Esc</0> or <1>Backspace</1>"
-msgstr ""
+msgstr "<0>فرار</0> یا <1>پس‌بر</1>"
 
 #: src/components/account-info.tsx
 #: src/components/quotes-modal.tsx
@@ -1530,24 +1938,24 @@ msgstr ""
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/related-actions.tsx
 msgid "Last post: <0>{0}</0>"
-msgstr ""
+msgstr "آخرین فرسته: <0>{0}</0>"
 
 #: src/pages/catchup.tsx
 msgid "Next author"
-msgstr ""
+msgstr "نویسندهٔ پسین"
 
 #: src/pages/catchup.tsx
 msgid "Sort"
-msgstr ""
+msgstr "مرتب‌سازی"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/account-block.tsx
 msgid "Last posted: {0}"
-msgstr ""
+msgstr "آخرین فرسته‌ها: {0}"
 
 #: src/pages/settings.tsx
 msgid "Only for new images while composing new posts."
-msgstr ""
+msgstr "فقط برای تصاویر جدید در زمان نوشتن فرسته‌های جدید."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -1556,15 +1964,15 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Delete this post?"
-msgstr ""
+msgstr "این فرسته را حذف میکنید؟"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>k</1>"
-msgstr ""
+msgstr "<0>تبدیل</0> + <1>ن</1>"
 
 #: src/pages/settings.tsx
 msgid "Volunteer translations"
-msgstr ""
+msgstr "ترجمه‌های داوطلبانه"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
@@ -1573,7 +1981,7 @@ msgstr ""
 
 #: src/pages/search.tsx
 msgid "Enter your search term or paste a URL above to get started."
-msgstr ""
+msgstr "مورد جستجوی خود را وارد کنید یا "
 
 #: src/pages/catchup.tsx
 msgid "Links shared by followings, sorted by shared counts, reposts and likes."
@@ -1588,11 +1996,15 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
-msgstr ""
+msgstr "نکته: این قابلیت از یک خدمت هوش مصنوعی خارجی، قدرت گرفته از <0>img-alt-api</0>، استفاده میکند. شاید خوب کار نکند. فقط برای تصاویر و به زبان انگلیسی است."
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Zoom out"
+#~ msgstr ""
 
 #: src/components/media-post.tsx
 msgid "Sensitive media"
-msgstr ""
+msgstr "رسانهٔ حساس"
 
 #: src/components/compose.tsx
 msgid "Add GIF"
@@ -1602,6 +2014,10 @@ msgstr ""
 #: src/components/status-account-menu.tsx
 msgid "Remove my post from <0>@{0}</0>'s post?"
 msgstr ""
+
+#: src/pages/welcome.tsx
+#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
+#~ msgstr ""
 
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
@@ -1627,11 +2043,27 @@ msgstr ""
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Accounts)"
-msgstr ""
+msgstr "جستجو: {q} (حساب‌های کاربری)"
+
+#: src/components/report-modal.tsx
+#~ msgid "Breaks specific server rules"
+#~ msgstr "قوانین خاص کارساز را نقض میکند"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not sure what to add?<0/>Try adding <1>Home / Following and Notifications</1> first."
-msgstr ""
+msgstr "هنوز مطمئن نیستید چه چیزی اضافه کنید؟ اول<0/>اضافه کردن <1>خانه/پی‌گرفته و آگاهی‌ها</1> را امتحان کنید."
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to create filter"
+#~ msgstr "ناتوان در ایحاد پالایه"
+
+#: src/pages/welcome.jsx
+#~ msgid "Connect your existing Mastodon/Fediverse account.<0/>Your credentials are not stored on this server."
+#~ msgstr ""
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Saving shortcuts to server…"
+#~ msgstr ""
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
@@ -1644,19 +2076,23 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
-msgstr ""
+msgstr "حساب کاربری شما تعلیق شده است."
 
 #: src/components/account-block.tsx
 msgid "Locked"
-msgstr ""
+msgstr "قفل شده"
 
 #: src/pages/notifications.tsx
 msgid "Accept"
-msgstr ""
+msgstr "قبول کردن"
 
 #: src/pages/notifications.tsx
 msgid "Ignore"
-msgstr ""
+msgstr "نادیده گرفتن"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Unable to download shortcuts"
+#~ msgstr "ناتوان در بارگیری میانبرها"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
@@ -1667,11 +2103,19 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Unable to copy version string"
-msgstr ""
+msgstr "ناتوان در رونوشت رشتهٔ نگارش"
 
 #: src/components/search-form.tsx
 msgid "Look up <0>{query}</0>"
-msgstr ""
+msgstr "بررسی کردن <0>{query}</0>"
+
+#: src/components/compose.tsx
+#~ msgid "Add custom emoji"
+#~ msgstr "افزودن شکلک شخصی‌سازی‌شده"
+
+#: src/pages/filters.tsx
+#~ msgid "obscured (media only)"
+#~ msgstr ""
 
 #: src/components/open-link-sheet.tsx
 msgid "Open link?"
@@ -1679,62 +2123,82 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Unable to load notifications"
-msgstr ""
+msgstr "ناتوان در بارگذاری آگاهی‌ها"
 
 #: src/components/post-embed-modal.tsx
 msgid "HTML Code"
 msgstr ""
+
+#: src/components/compose.tsx
+#~ msgid "Posting on <0/>"
+#~ msgstr ""
 
 #: src/components/timeline.tsx
 msgid "Pinned posts"
 msgstr ""
 
 #: src/components/compose.tsx
+#~ msgid "Schedule"
+#~ msgstr ""
+
+#: src/components/compose.tsx
 msgctxt "Submit button in composer"
 msgid "Post"
-msgstr ""
+msgstr "ارسال"
 
 #: src/components/status-post-body.tsx
 #: src/components/timeline.tsx
 msgid "Content warning"
-msgstr ""
+msgstr "هشدار محتوا"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Hashtag"
-msgstr ""
+msgstr "برچسب"
+
+#: src/components/related-actions.tsx
+#~ msgid "Add notes"
+#~ msgstr ""
 
 #. js-lingui-explicit-id
 #: src/pages/catchup.tsx
 msgid "group.filter"
 msgstr ""
 
+#: src/components/related-actions.tsx
+#~ msgid "Disable boosts"
+#~ msgstr ""
+
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Export"
-msgstr ""
+msgstr "صادر کردن"
 
 #: src/components/search-form.tsx
 #: src/pages/home.tsx
 msgid "See all"
-msgstr ""
+msgstr "دیدن همه"
 
 #: src/pages/settings.tsx
 msgid "Auto inline translation"
-msgstr ""
+msgstr "ترجمهٔ خودکار درخط"
 
 #: src/pages/catchup.tsx
 msgid "Note: the Home timeline might only show a limited number of posts regardless of the time range."
 msgstr ""
 
+#: src/pages/catchup.tsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Next post"
-msgstr ""
+msgstr "فرستهٔ پسین"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
 msgid "View notifications from <0>@{0}</0>"
-msgstr ""
+msgstr "نمایش آگاهی‌ها از <0>@{0}</0>"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1742,7 +2206,7 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
 msgid "Lists"
-msgstr ""
+msgstr "سیاهه‌ها"
 
 #: src/pages/mentions.tsx
 msgid "Only followings"
@@ -1750,25 +2214,29 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Allow"
-msgstr ""
+msgstr "اجازه دادن"
 
 #. placeholder {0}: account?.username
 #: src/pages/account-statuses.tsx
 msgid "Search @{0}'s posts"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Unable to edit filter"
+#~ msgstr "ناتوان در ویرایش پالایه"
+
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText}"
-msgstr ""
+msgstr "ترجمه از {sourceLangText}"
 
 #: src/pages/account-statuses.tsx
 msgid "Month"
-msgstr ""
+msgstr "ماه"
 
 #: src/pages/list.tsx
 #: src/pages/list.tsx
 msgid "Manage members"
-msgstr ""
+msgstr "مدیریت کردن اعضا"
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
@@ -1787,7 +2255,7 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Copy"
-msgstr ""
+msgstr "رونوشت"
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
@@ -1802,26 +2270,34 @@ msgstr ""
 msgid "Cleared recent searches"
 msgstr ""
 
+#: src/pages/status.tsx
+#~ msgid "Switch to post's PDS ({0})"
+#~ msgstr ""
+
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
-msgstr ""
+msgstr "{hashtagTitle} (فقط رسانه)"
 
 #. placeholder {0}: authorCountsList.length
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# author} other {# authors}}"
-msgstr ""
+msgstr "{0, plural,one {# نویسنده} other {# نویسنده‌ها}}"
 
 #: src/components/related-actions.tsx
 msgid "Unfollow…"
-msgstr ""
+msgstr "پی نگرفتن…"
 
 #: src/components/drafts.tsx
 msgid "Delete all…"
-msgstr ""
+msgstr "حذف همه…"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Following…"
+#~ msgstr "درحال پی‌گیری…"
 
 #: src/pages/accounts.tsx
 msgid "Current"
-msgstr ""
+msgstr "کنونی"
 
 #: src/pages/status.tsx
 msgid "Unable to load replies."
@@ -1829,7 +2305,11 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "You have unsaved changes. Discard this post?"
-msgstr ""
+msgstr "شما تغییرات ذخیره‌نشده دارید. این فرسته را رها میکنید؟"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (+ Replies)"
+#~ msgstr "{accountDisplay} (+ پاسخ‌ها)"
 
 #: src/components/edit-history-controls.tsx
 msgid "Edit History Snapshots"
@@ -1839,26 +2319,26 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Original"
-msgstr ""
+msgstr "اصلی"
 
 #: src/components/edit-history-controls.tsx
 #: src/components/gif-picker-modal.tsx
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Next"
-msgstr ""
+msgstr "پسین"
 
 #: src/components/list-add-edit.tsx
 msgid "Create"
-msgstr ""
+msgstr "ایجاد"
 
 #: src/pages/search.tsx
 msgid "No posts found."
-msgstr ""
+msgstr "فرسته‌ای پیدا نشد."
 
 #: src/pages/hashtag.tsx
 msgid "Add to Shortcuts"
-msgstr ""
+msgstr "افزودن به میانبرها"
 
 #: src/components/columns.tsx
 #: src/components/nav-menu.tsx
@@ -1870,15 +2350,20 @@ msgstr ""
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
 msgid "Home"
-msgstr ""
+msgstr "خانه"
 
 #: src/components/status-account-menu.tsx
 msgid "Unmute conversation"
-msgstr ""
+msgstr "ناخموشاندن گفتگو"
 
 #: src/components/notification.tsx
 msgid "{account} reacted to your post with {emojiObject}"
-msgstr ""
+msgstr "{account} روی فرستهٔ شما با {emojiObject} بازخورد داد"
+
+#: src/pages/settings.tsx
+#: src/pages/settings.tsx
+#~ msgid "Failed to update subscription. Please try again."
+#~ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
@@ -1888,11 +2373,15 @@ msgstr ""
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
 msgid "Reset filters"
-msgstr ""
+msgstr "تنظیم مجدد پالایه‌ها"
 
 #: src/pages/catchup.tsx
 msgid "last 8 hours"
-msgstr ""
+msgstr "۸ ساعت گذشته"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "{0} more…"
+#~ msgstr "{0} بیشتر…"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
@@ -1901,11 +2390,11 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Who unsolicitedly private mention you"
-msgstr ""
+msgstr "کسی که بصورت ناخواسته به شما اشارهٔ خصوصی کرده"
 
 #: src/components/notification.tsx
 msgid "{account} published a post."
-msgstr ""
+msgstr "{account} یک فرسته منتشر کرد."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1916,19 +2405,19 @@ msgstr ""
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "آگاهی‌ها"
 
 #: src/components/poll.tsx
 msgid "Voted"
-msgstr ""
+msgstr "رأی داده شده"
 
 #: src/components/media-attachment.tsx
 msgid "Audio description"
-msgstr ""
+msgstr "شرح صدا"
 
 #: src/components/notification.tsx
 msgid "Followed by…"
-msgstr ""
+msgstr "پی‌گرفته‌شده توسط…"
 
 #: src/pages/status.tsx
 msgid "Back"
@@ -1940,7 +2429,7 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} on {instance}"
-msgstr ""
+msgstr "{hashtagTitle} در {instance}"
 
 #: src/components/compose.tsx
 #: src/components/keyboard-shortcuts-help.tsx
@@ -1949,7 +2438,11 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
-msgstr ""
+msgstr "پاسخ دادن"
+
+#: src/components/notification.tsx
+#~ msgid "Your {year} #Wrapstodon is here!"
+#~ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
@@ -1962,23 +2455,31 @@ msgstr ""
 #. placeholder {0}: shortcutsStr.length
 #: src/components/shortcuts-settings.tsx
 msgid "{0, plural, one {# character} other {# characters}}"
-msgstr ""
+msgstr "{0, plural,one {# نویسه} other {# نویسه‌ها}}"
+
+#: src/pages/settings.tsx
+#~ msgid "Note: This feature uses currently-logged-in server API."
+#~ msgstr ""
 
 #: src/components/status-utility-menu.tsx
 msgid "Copy post text"
 msgstr ""
 
+#: src/components/modals.tsx
+#~ msgid "Post scheduled"
+#~ msgstr ""
+
 #: src/pages/accounts.tsx
 msgid "Add an existing account"
-msgstr ""
+msgstr "افزودن یک حساب کاربری موجود"
 
 #: src/components/media-modal.tsx
 msgid "View post"
-msgstr ""
+msgstr "نمایش فرسته"
 
 #: src/components/nav-menu.tsx
 msgid "New"
-msgstr ""
+msgstr "جدید"
 
 #: src/components/status-utility-menu.tsx
 msgid "Post text copied"
@@ -1991,21 +2492,25 @@ msgstr ""
 #: src/components/status-header.tsx
 #: src/utils/visibility-text.ts
 msgid "Private mention"
-msgstr ""
+msgstr "اشارهٔ خصوصی"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
-msgstr ""
+msgstr "آزمایش‌ها"
+
+#: src/pages/lists.jsx
+#~ msgid "No lists yet."
+#~ msgstr "هنوز سیاهه‌ای نیست."
 
 #: src/compose.tsx
 #: src/pages/http-route.tsx
 #: src/pages/login.tsx
 msgid "Go home"
-msgstr ""
+msgstr "رفتن به خانه"
 
 #: src/components/background-service.tsx
 msgid "Cloak mode enabled"
-msgstr ""
+msgstr "حالت پوشش فعال شد"
 
 #. placeholder {0}: fItems.length
 #: src/components/timeline.tsx
@@ -2014,27 +2519,27 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Note: This preview is lightly styled."
-msgstr ""
+msgstr "نکته: این پیش‌نمایش بصورت طراحی سبک است."
 
 #. placeholder {0}: account.username
 #: src/pages/list.tsx
 msgid "Remove <0>@{0}</0> from list?"
-msgstr ""
+msgstr "<0>@{0}</0> را از سیاهه حذف میکنید؟"
 
 #: src/pages/notifications.tsx
 msgid "Dismissed"
-msgstr ""
+msgstr "رد شد"
 
 #. Preview of one character, in largest size
 #. Preview of one character, in smallest size
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "A"
-msgstr ""
+msgstr "الف"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Close post or dialogs"
-msgstr ""
+msgstr "بستن فرسته یا پنجره"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Reposts Carousel"
@@ -2044,18 +2549,30 @@ msgstr ""
 #: src/components/list-add-edit.tsx
 #: src/components/status-account-menu.tsx
 msgid "Delete…"
-msgstr ""
+msgstr "حذف…"
+
+#: src/pages/filters.tsx
+#~ msgid "minimized"
+#~ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Embed post"
-msgstr ""
+msgstr "فرستهٔ جاسازی‌شده"
+
+#: src/components/compose.tsx
+#~ msgid "Mark media as sensitive"
+#~ msgstr "علامت‌گذاری رسانه به عنوان حساس"
 
 #. placeholder {0}: shortenNumber(votersCount)
 #. placeholder {1}: shortenNumber(votersCount)
 #: src/components/poll.tsx
 msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
 msgstr ""
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Downloading saved shortcuts from server…"
+#~ msgstr ""
 
 #: src/components/atproto-labels.tsx
 msgid "Does not include nudity."
@@ -2064,6 +2581,10 @@ msgstr ""
 #: src/components/import-accounts-selection.tsx
 msgid "Select accounts to import"
 msgstr ""
+
+#: src/components/notification.tsx
+#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted your reply.} other {{account} boosted your post.}}} other {{account} boosted {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted your reply.} other {<2><3>{1}</3> people</2> boosted your post.}}}}"
+#~ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Notifications enabled for @{username}'s posts."
@@ -2079,30 +2600,38 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "System language ({systemTargetLanguageText})"
-msgstr ""
+msgstr "زبان سامانه ({systemTargetLanguageText})"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>…"
-msgstr ""
+msgstr "مسدود کردن <0>@{username}</0>…"
+
+#: src/components/status-header.tsx
+#~ msgid "{timeRepliesCount, plural, one {# reply} other {# replies}}"
+#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Open post details"
-msgstr ""
+msgstr "باز کردن اطلاعات فرسته"
 
 #: src/components/compose.tsx
 msgid "Pop out"
 msgstr ""
 
+#: src/pages/status.tsx
+#~ msgid "Switch to my server to enable interactions"
+#~ msgstr ""
+
 #. placeholder {0}: postingStats.total
 #. placeholder {1}: postingStats.total
 #: src/components/account-info.tsx
 msgid "{0, plural, one {Last 1 post in the past year(s)} other {Last {1} posts in the past year(s)}}"
-msgstr ""
+msgstr "{0, plural, one {۱ فرستهٔ آخر در سال گذشته} other {{1} فرستهٔ آخر در سال گذشته}}"
 
 #: src/components/notification.tsx
 msgid "Your account has been disabled."
-msgstr ""
+msgstr "حساب کاربری شما غیرفعال شده است."
 
 #: src/pages/status.tsx
 msgid "Unable to load post"
@@ -2110,7 +2639,7 @@ msgstr ""
 
 #: src/components/list-add-edit.tsx
 msgid "Hide posts on this list from Home/Following"
-msgstr ""
+msgstr "پنهان کردن فرسته‌ها در این سیاهه از خانه/پی‌گرفته"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2123,6 +2652,14 @@ msgstr ""
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
 msgstr ""
+
+#: src/pages/settings.tsx
+#~ msgid "Post edits"
+#~ msgstr ""
+
+#: src/pages/accounts.jsx
+#~ msgid "Log out <0>@{0}</0>?"
+#~ msgstr "از <0>@{0}</0> خارج میشوید؟"
 
 #: src/components/related-actions.tsx
 msgid "Disable reposts"
@@ -2147,7 +2684,7 @@ msgstr ""
 
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
-msgstr ""
+msgstr "این آگاهی از حساب دیگر شماست."
 
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
@@ -2157,7 +2694,13 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Try again"
-msgstr ""
+msgstr "تلاش مجدد"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Go to another server…"
+#~ msgstr ""
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2171,7 +2714,7 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "This shortcut already exists"
-msgstr ""
+msgstr "این میانبر درحال حاضر موجود است"
 
 #: src/components/atproto-labels.tsx
 msgid "Non-sexual Nudity"
@@ -2179,19 +2722,19 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Reply (new window)"
-msgstr ""
+msgstr "پاسخ دادن (پنجرهٔ جدید)"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only) on {instance}"
-msgstr ""
+msgstr "{hashtagTitle} (فقط رسانه) در {instance}"
 
 #: src/pages/favourites.tsx
 msgid "Unable to load likes."
-msgstr ""
+msgstr "ناتوان در بارگذاری برگزیده‌ها."
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in or created has ended."
-msgstr ""
+msgstr "یک نظرسنجی که در آن رأی داده‌اید یا آن را ایجاد کرده‌اید پایان یافته است."
 
 #: src/components/status-account-menu.tsx
 msgid "Post deleted"
@@ -2203,62 +2746,76 @@ msgstr ""
 
 #: src/pages/list.tsx
 msgid "Nothing yet."
-msgstr ""
+msgstr "هنوز چیزی نیست."
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
-msgstr ""
+msgstr "ویرایش کردن شرح صدا"
 
 #: src/components/status-inline-controls.tsx
 msgid "Pinned"
 msgstr ""
 
+#: src/components/report-modal.tsx
+#~ msgid "Server rule violation"
+#~ msgstr ""
+
 #: src/components/notification.tsx
 msgid "A poll you have created has ended."
-msgstr ""
+msgstr "یک نظرسنجی که شما ایجاد کرده‌اید پایان یافته است."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to create list."
-msgstr ""
+msgstr "ناتوان در ایجاد سیاهه."
 
 #: src/components/drafts.tsx
 #: src/pages/settings.tsx
 msgid "Unsent drafts"
-msgstr ""
+msgstr "پیش‌نویس‌های ارسال‌نشده"
 
 #: src/pages/notifications.tsx
 msgid "You're all caught up."
 msgstr ""
 
+#: src/components/keyboard-shortcuts-help.tsx
+#: src/components/status-large-footer.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost"
+#~ msgstr "تقویت"
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr ""
 
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Error loading custom emojis"
+#~ msgstr "خطا در بارگذاری شکلک‌های شخصی‌سازی‌شده"
+
 #. placeholder {0}: tag.name
 #: src/pages/account-statuses.tsx
 msgid "Showing posts tagged with #{0}"
-msgstr ""
+msgstr "نمایش فرسته‌هایی که با #{0} برچسب‌گذاری شده‌اند"
 
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Import"
-msgstr ""
+msgstr "ورود"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/status-repost.tsx
 msgid "Group"
-msgstr ""
+msgstr "گروه"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Hide results"
-msgstr ""
+msgstr "پنهان کردن نتایج"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
-msgstr ""
+msgstr "مشکل این فرسته چیست؟"
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
@@ -2270,29 +2827,49 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "بارگذاری مجدد"
+
+#: src/pages/catchup.tsx
+#~ msgid "Followed tags"
+#~ msgstr "برچسب‌های پی‌گرفته‌شده"
+
+#: src/pages/login.jsx
+#~ msgid "Don't have an account? Create one!"
+#~ msgstr "حساب کاربری ندارید؟ یکی بسازید!"
 
 #: src/components/related-actions.tsx
 msgid "Search <0>@{username}</0>'s posts"
 msgstr ""
 
+#: src/components/compose-poll.tsx
+#~ msgid "Choice {0}"
+#~ msgstr ""
+
 #: src/components/status-account-menu.tsx
 msgid "Pin to profile"
-msgstr ""
+msgstr "سنجاق کردن به نمایه"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Share…"
-msgstr ""
+msgstr "همرسانی…"
 
 #: src/components/media-attachment.tsx
 msgid "Image description"
-msgstr ""
+msgstr "شرح تصویر"
+
+#: src/components/compose-poll.tsx
+#~ msgid "Duration"
+#~ msgstr "طول"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Optional"
 msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
 
 #. placeholder {0}: options.length
 #: src/components/poll.tsx
@@ -2303,7 +2880,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "last 6 hours"
-msgstr ""
+msgstr "۶ ساعت گذشته"
 
 #: src/components/import-export-accounts.tsx
 msgid "Export failed"
@@ -2315,19 +2892,23 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Liked by…"
-msgstr ""
+msgstr "برگزیده‌شده توسط…"
 
 #: src/components/poll.tsx
 msgid "Vote"
-msgstr ""
+msgstr "رأی دادن"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut"
-msgstr ""
+msgstr "افزودن میانبر"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Catch-up"
 msgstr ""
+
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Phanpy home timeline on mobile device"
+#~ msgstr ""
 
 #: src/components/compose-button.tsx
 msgid "Add to thread"
@@ -2340,7 +2921,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Cloak mode <0>(<1>Text</1> → <2>████</2>)</0>"
-msgstr ""
+msgstr "حالت پوشش<0>(<1>متن</1> ← <2>████</2>)</0>"
 
 #: src/pages/settings.tsx
 msgid "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
@@ -2348,7 +2929,7 @@ msgstr ""
 
 #: src/pages/search.tsx
 msgid "See more posts"
-msgstr ""
+msgstr "دیدن فرسته‌های بیشتر"
 
 #: src/pages/account-statuses.tsx
 msgid "Media posts tagged #{tagged} by {accountDisplay}"
@@ -2356,19 +2937,27 @@ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Reply posted. Check it out."
-msgstr ""
+msgstr "پاسخ ارسال شد. آن را ببینید."
 
 #. placeholder {0}: localeCode2Text(lang)
 #: src/components/media-attachment.tsx
 msgid "({0}) <0>— experimental</0>"
-msgstr ""
+msgstr "({0}) <0>— آزمایشگاهی</0>"
+
+#: src/pages/filters.tsx
+#~ msgid "* Not implemented yet"
+#~ msgstr ""
 
 #: src/components/compose.tsx
 #: src/components/mention-modal.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/list.tsx
 msgid "Add"
-msgstr ""
+msgstr "افزودن"
+
+#: src/pages/filters.tsx
+#~ msgid "Expired"
+#~ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Unable to vote in poll"
@@ -2376,15 +2965,15 @@ msgstr ""
 
 #: src/components/translation-block.tsx
 msgid "Failed to translate"
-msgstr ""
+msgstr "شکست در ترجمه"
 
 #: src/components/status-menu-state.tsx
 msgid "Some media have no descriptions."
-msgstr ""
+msgstr "بعضی از رسانه‌ها شرح ندارند."
 
 #: src/compose.tsx
 msgid "You may close this page now."
-msgstr ""
+msgstr "احتمالا باید این صفحه را الآن ببندید."
 
 #: src/components/search-form.tsx
 msgid "Posts tagged with <0>{hashtag}</0>"
@@ -2394,14 +2983,18 @@ msgstr ""
 msgid "Add media"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Title"
+#~ msgstr "عنوان"
+
 #: src/pages/hashtag.tsx
 msgid "Hashtag shortcut added"
-msgstr ""
+msgstr "میانبر برچسب اضافه شد"
 
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Follow"
-msgstr ""
+msgstr "پی گرفتن"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-large-footer.tsx
@@ -2412,28 +3005,32 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has been limited."
-msgstr ""
+msgstr "حساب کاربری شما محدود شده است."
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "Reply…"
+#~ msgstr ""
 
 #: src/components/account-block.tsx
 msgid "{followersCount, plural, one {# follower} other {# followers}}"
-msgstr ""
+msgstr "{followersCount, plural,one {# پی‌گرفته} other {# پی‌گرفته‌ها}}"
 
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Video description"
-msgstr ""
+msgstr "شرح ویدئو"
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in has ended."
-msgstr ""
+msgstr "یک نظرسنجی که شما در آن رأی داده‌اید پایان یافته است."
 
 #: src/components/compose.tsx
 msgid "Some media have no descriptions. Continue?"
-msgstr ""
+msgstr "بعضی از رسانه‌ها شرح ندارند. ادامه میدهید؟"
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to people I follow"
-msgstr ""
+msgstr "نمایش پاسخ‌ها به افرادی که پی میگیرم"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -2446,16 +3043,16 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Report Post"
-msgstr ""
+msgstr "گزارش دادن فرسته"
 
 #: src/pages/list.tsx
 msgid "Remove…"
-msgstr ""
+msgstr "حذف کردن…"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from <0>@{0}</0>"
-msgstr ""
+msgstr "آگاهی‌ها از <0>@{0}</0>"
 
 #: src/pages/accounts.tsx
 msgid "Logged out"
@@ -2463,35 +3060,43 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Date"
-msgstr ""
+msgstr "تاریخ"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>j</1>"
-msgstr ""
+msgstr "<0>تبدیل</0> + <1>ت</1>"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "No scheduled posts."
+#~ msgstr ""
 
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy post text"
 msgstr ""
 
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost/Quote…"
+#~ msgstr ""
+
 #: src/components/nav-menu.tsx
 msgid "Muted users…"
-msgstr ""
+msgstr "کاربران خموشیده‌شده…"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Synced"
-msgstr ""
+msgstr "همگام‌سازی شد"
 
 #. placeholder {0}: notificationsPolicy.summary?.pendingRequestsCount ?? 0
 #: src/pages/notifications.tsx
 msgid "{0, plural, one {Filtered notifications from # person} other {Filtered notifications from # people}}"
-msgstr ""
+msgstr "{0, plural, one {آگاهی‌های پالایش‌شده از شخص #} other {آگاهی‌های پالایش‌شده از شخص #}}"
 
 #: src/pages/catchup.tsx
 #: src/pages/search.tsx
 msgid "All"
-msgstr ""
+msgstr "همه"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List may not work if it's from a different account."
@@ -2507,15 +3112,15 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
-msgstr ""
+msgstr "پاسخ‌ها"
 
 #: src/pages/settings.tsx
 msgid "Default visibility"
-msgstr ""
+msgstr "دید پیش‌گزیده"
 
 #: src/pages/search.tsx
 msgid "See more hashtags"
-msgstr ""
+msgstr "دیدن برچسب‌های بیشتر"
 
 #: src/components/quote-suggestion.tsx
 msgid "Keep as link"
@@ -2533,6 +3138,10 @@ msgstr ""
 msgid "Donate"
 msgstr ""
 
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "<0>1</0> to <1>9</1>"
+#~ msgstr "<0>۱</0> تا <1>۹</1>"
+
 #: src/components/quote-chain-modal.tsx
 msgid "Failed to unwrap quote chain"
 msgstr ""
@@ -2540,11 +3149,11 @@ msgstr ""
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 msgid "Nothing to see here."
-msgstr ""
+msgstr "اینجا چیزی برای دیدن وجود ندارد."
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users"
-msgstr ""
+msgstr "کاربران مسدودشده"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Only shortcuts that don’t exist in current shortcuts will be appended."
@@ -2552,18 +3161,26 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "until the max"
-msgstr ""
+msgstr "تا بیشترین"
 
 #. Relative time in seconds, as short as possible
 #. placeholder {0}: seconds < 1 ? 1 : Math.floor(seconds)
 #: src/components/relative-time.tsx
 msgid "{0}s"
-msgstr ""
+msgstr "{0}ث"
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
 msgid "{index}/X"
 msgstr ""
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (Media)"
+#~ msgstr "{accountDisplay} (رسانه)"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus previous column in multi-column mode"
+#~ msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Switch to my PDS (<0>{currentInstance}</0>)"
@@ -2577,23 +3194,39 @@ msgstr ""
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
 msgid "{0}h"
-msgstr ""
+msgstr "{0}س"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments can be images, videos, audios or any file types."
 msgstr ""
 
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Others"
+#~ msgstr ""
+
+#: src/components/notification.tsx
+#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted & liked your reply.} other {{account} boosted & liked your post.}}} other {{account} boosted & liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted & liked your reply.} other {<2><3>{1}</3> people</2> boosted & liked your post.}}}}"
+#~ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} پاسختان را تقویت کرد و پسندید.} other {{account} فرسته‌تان را تقویت کرد و پسندید.}}} other {{account} {postsCount} فرسته از فرسته‌هایتان را تقویت کرد و پسندید.}}} other {{postType, select,reply {<0><1>{0}</1> نفر</0> پاسختان را تقویت کردند و پسندیدند.} other {<2><3>{1}</3> نفر</2> فرسته‌تان را تقویت کردند و پسندیدند.}}}}"
+
+#: src/components/timeline.tsx
+#~ msgid "{0, plural, one {# Boost} other {# Boosts}}"
+#~ msgstr ""
+
 #: src/pages/accounts.tsx
 msgid "Remove <0>@{acct}</0>?"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Never expires"
+#~ msgstr "هرگز منقضی نمیشود"
+
 #: src/components/search-form.tsx
 msgid "Posts with <0>{query}</0>"
-msgstr ""
+msgstr "فرسته‌هایی با <0>{query}</0>"
 
 #: src/components/poll.tsx
 msgid "Ending"
-msgstr ""
+msgstr "در حال اتمام"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2609,7 +3242,7 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generate description…"
-msgstr ""
+msgstr "تولید شرح…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "No new shortcuts to import"
@@ -2621,33 +3254,53 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Filter"
-msgstr ""
+msgstr "پالایش کردن"
 
 #: src/pages/notifications.tsx
 msgid "Who don't follow you"
-msgstr ""
+msgstr "کسی که شما را دنبال نمیکند"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unlike"
-msgstr ""
+msgstr "نابرگزیدن"
+
+#: src/components/notification.jsx
+#~ msgid "[Unknown notification type: {type}]"
+#~ msgstr "[نوع ناشناختهٔ آگاهی: {type}]"
+
+#: src/pages/home.tsx
+#~ msgid "<0>New</0> <1>Follow Requests</1>"
+#~ msgstr "<0>جدید</0> <1>درخواست‌های پی‌گیری</1>"
 
 #: src/components/report-modal.tsx
 msgid "Unable to report profile"
-msgstr ""
+msgstr "ناتوان در گزارش دادن نمایه"
+
+#: src/pages/welcome.jsx
+#~ msgid "A minimalistic opinionated Mastodon web client."
+#~ msgstr ""
 
 #: src/components/background-service.tsx
 msgid "Cloak mode disabled"
-msgstr ""
+msgstr "حالت پوشش غیرفعال شد"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Local only"
+#~ msgstr "فقط محلی"
 
 #: src/pages/hashtag.tsx
 msgid "Remove hashtag"
-msgstr ""
+msgstr "حذف کردن برچسب"
 
 #: src/components/status-account-menu.tsx
 msgid "Mute conversation"
-msgstr ""
+msgstr "خموشاندن گفتگو"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Sync to server"
+#~ msgstr ""
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Edit History"
@@ -2655,39 +3308,60 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Edit image description"
-msgstr ""
+msgstr "ویرایش کردن شرح تصویر"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import/Export <0>Shortcuts</0>"
-msgstr ""
+msgstr "ورود/صدور <0>میانبرها</0>"
 
 #: src/pages/catchup.tsx
 msgid "Show me all posts from…"
-msgstr ""
+msgstr "تمام فرسته‌های… را به من نشان بده"
 
 #: src/components/poll.tsx
 msgid "Ending <0/>"
-msgstr ""
+msgstr "در حال اتمام <0/>"
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
 msgstr ""
 
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Custom emojis are not available on this server."
+#~ msgstr ""
+
+#. Scheduled [in 1 day]
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled <0><1/></0>"
+#~ msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Disable notifications"
 msgstr ""
 
+#: src/components/private-note-sheet.tsx
+#~ msgid "Unable to update private note."
+#~ msgstr ""
+
+#: src/pages/hashtag.tsx
+#~ msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
+#~ msgstr "{TOTAL_TAGS_LIMIT, plural, other {بیشترین # برچسب‌ها}}"
+
 #: src/pages/catchup.tsx
 msgid "last 1 hour"
-msgstr ""
+msgstr "۱ ساعت گذشته"
 
 #: src/pages/accounts.tsx
 msgid "Default"
-msgstr ""
+msgstr "پیش‌گزیده"
 
 #: src/components/compose.tsx
 msgid "What are you doing?"
-msgstr ""
+msgstr "چکار میکنید؟"
+
+#: src/components/related-actions.tsx
+#~ msgid "Unable to feature @{username} on your profile."
+#~ msgstr ""
 
 #. placeholder {0}: String(type)
 #: src/components/notification.tsx
@@ -2703,28 +3377,32 @@ msgstr ""
 #. placeholder {6}: postingStats.daysSinceLastPost
 #: src/components/account-info.tsx
 msgid "{0, plural, one {{1, plural, one {Last 1 post in the past 1 day} other {Last 1 post in the past {2} days}}} other {{3, plural, one {Last {4} posts in the past 1 day} other {Last {5} posts in the past {6} days}}}}"
-msgstr ""
+msgstr "{0, plural, one {{1, plural, one {۱ فرستهٔ آخر در ۱ روز گذشته} other {۱ فرستهٔ آخر در {2} روز گذشته}}} other {{3, plural, one {{4} فرستهٔ آخر در ۱ روز گذشته} other {{5} فرستهٔ آخر در {6} روز گذشته}}}}"
 
 #: src/components/account-block.tsx
 #: src/components/related-actions.tsx
 msgid "Follows you"
-msgstr ""
+msgstr "شما را پی میگیرد"
 
 #: src/components/related-actions.tsx
 msgid "Unable to block @{username}"
 msgstr ""
 
+#: src/pages/settings.tsx
+#~ msgid "followers"
+#~ msgstr ""
+
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
-msgstr ""
+msgstr "خطا در بارگذاری جیف‌ها"
 
 #: src/pages/settings.tsx
 msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
-msgstr ""
+msgstr "بصورت خودکار ترجمه را برای فرسته‌ها در خط زمانی نمایش میدهد. فقط برای فرسته‌های <0>کوتاه</0> بدون هشدار محتوا، رسانه یا نظرسنجی کار میکند."
 
 #: src/pages/catchup.tsx
 msgid "last 9 hours"
-msgstr ""
+msgstr "۹ ساعت گذشته"
 
 #: src/pages/welcome.tsx
 msgid "Effortlessly follow conversations. Semi-collapsible replies."
@@ -2735,15 +3413,15 @@ msgstr ""
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Joined <0>{0}</0>"
-msgstr ""
+msgstr "عضو شده<0>{0}</0>"
 
 #: src/pages/settings.tsx
 msgid "Posting"
-msgstr ""
+msgstr "درحال ارسال"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
-msgstr ""
+msgstr "ویرایش میانبر"
 
 #: src/pages/welcome.tsx
 msgid "Single or multi-column"
@@ -2752,11 +3430,15 @@ msgstr ""
 #. placeholder {0}: WEBSITE.replace(/https?:\/\//g, '').replace(/\/$/, '')
 #: src/pages/settings.tsx
 msgid "<0>Site:</0> {0}"
-msgstr ""
+msgstr "<0>وبگاه:</0> {0}"
 
 #: src/components/atproto-labels.tsx
 msgid "E.g. artistic nudes."
 msgstr ""
+
+#: src/pages/public.tsx
+#~ msgid "Federated timeline ({instance})"
+#~ msgstr "خط زمانی نامتمرکز ({instance})"
 
 #: src/pages/favourites.tsx
 msgid "No likes yet. Go like something!"
@@ -2766,20 +3448,36 @@ msgstr ""
 msgid "Violates local law"
 msgstr ""
 
+#: src/components/notification.tsx
+#~ msgid "Boosted by…"
+#~ msgstr "تقویت‌شده توسط…"
+
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
 #: src/components/status-utility-menu.tsx
 #: src/components/translation-block.tsx
 msgid "Translate"
-msgstr ""
+msgstr "ترجمه"
 
 #: src/pages/settings.tsx
 msgid "Version string copied"
-msgstr ""
+msgstr "رشتهٔ نگارش رونوشت شد"
+
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost…"
+#~ msgstr "تقویت…"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "Showing post with replies"
+#~ msgstr "نمایش فرسته با پاسخ‌ها"
 
 #: src/components/account-info.tsx
 msgid "View post stats"
-msgstr ""
+msgstr "نمایش اطلاعات فرسته"
+
+#: src/pages/public.tsx
+#~ msgid "Local timeline"
+#~ msgstr "خط زمانی محلی"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post you have quoted."
@@ -2787,11 +3485,11 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation unmuted"
-msgstr ""
+msgstr "گفتگو ناخموشیده شد"
 
 #: src/components/list-add-edit.tsx
 msgid "Don't show replies"
-msgstr ""
+msgstr "پاسخ‌ها را نمایش نده"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
@@ -2805,7 +3503,7 @@ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Set as default"
-msgstr ""
+msgstr "تنظیم به عنوان پیش‌گزیده"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
@@ -2826,7 +3524,7 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "In Memoriam"
-msgstr ""
+msgstr "در یادبود"
 
 #: src/pages/welcome.tsx
 msgid "A minimalistic opinionated Atmosphere web client."
@@ -2836,10 +3534,22 @@ msgstr ""
 msgid "Post pending"
 msgstr ""
 
+#: src/components/account-info.tsx
+#: src/pages/account-statuses.tsx
+#: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#~ msgid "Boosts"
+#~ msgstr "تقویت‌ها"
+
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
-msgstr ""
+msgstr "تاریک"
+
+#: src/components/related-actions.tsx
+#~ msgid "@{username} is no longer featured on your profile."
+#~ msgstr ""
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Loading…"
@@ -2847,7 +3557,7 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Ctrl</0> + <1>Enter</1> or <2>⌘</2> + <3>Enter</3>"
-msgstr ""
+msgstr "<0>مهار</0> + <1>ورود</1> یا <2>⌘</2> + <3>ورود</3>"
 
 #: src/pages/accounts.tsx
 msgid "Switch in new tab/window"
@@ -2858,7 +3568,7 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Bookmark"
-msgstr ""
+msgstr "نشانک‌گذاری"
 
 #: src/components/related-actions.tsx
 msgid "Unmute <0>@{username}</0>"
@@ -2868,20 +3578,38 @@ msgstr ""
 #. placeholder {1}: rtf.format(-replyToStatusMonthsAgo, 'month')
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post (<0>{1}</0>)"
-msgstr ""
+msgstr "درحال پاسخ دادن به فرستهٔ @{0} (<0>{1}</0>)"
+
+#: src/pages/settings.tsx
+#~ msgid "Failed to remove subscription. Please try again."
+#~ msgstr ""
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "یک مدیر از <0>{from}</0> <1>{targetName}</1> را مسدود کرده است. پی‌گیرنده‌های تأثیرپذیرفته: {followersCount}، پی‌گرفته‌های تأثیرپذیرفته: {followingCount}."
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Invalid server"
+#~ msgstr ""
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unbookmark"
-msgstr ""
+msgstr "نانشانک‌گذاری"
 
 #: src/pages/catchup.tsx
 msgid "This might take a while."
-msgstr ""
+msgstr "این کمی زمانبر است."
+
+#: src/pages/hashtag.tsx
+#~ msgid "This timeline is disabled on this server."
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to load filters."
+#~ msgstr "ناتوان در بارگذاری پالایه‌ها."
 
 #: src/components/error-fallback.tsx
 msgid ""
@@ -2890,10 +3618,14 @@ msgid ""
 ""
 msgstr ""
 
+#: src/pages/account-statuses.jsx
+#~ msgid "Showing posts without boosts"
+#~ msgstr "نمایش فرسته‌ها بدون تقویت‌ها"
+
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Verified"
-msgstr ""
+msgstr "تاییدشده"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>{key1}</0> then <1>{key2}</1>"
@@ -2901,15 +3633,19 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Looks like you closed the parent window."
-msgstr ""
+msgstr "انگار شما پنجرهٔ اصلی را بستید."
 
 #: src/components/status-utility-menu.tsx
 msgid "Show Edit History"
-msgstr ""
+msgstr "نمایش تاریخچهٔ ویرایش"
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
 msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Add keyword"
+#~ msgstr "افزودن کلیدواژه"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -2919,7 +3655,24 @@ msgstr ""
 #: src/components/compose-button.tsx
 #: src/compose.tsx
 msgid "Compose"
-msgstr ""
+msgstr "ترکیب"
+
+#: src/components/related-actions.tsx
+#: src/components/related-actions.tsx
+#~ msgid "Show featured profiles"
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Never"
+#~ msgstr "هرگز"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (#{tagged})"
+#~ msgstr "{accountDisplay} (#{tagged})"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Reschedule"
+#~ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Connect to Atmosphere"
@@ -2932,7 +3685,7 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Report <0>@{username}</0>…"
-msgstr ""
+msgstr "گزارش دادن <0>@{username}</0>…"
 
 #: src/pages/settings.tsx
 msgid "Disable all animations"
@@ -2940,12 +3693,16 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Floating button"
-msgstr ""
+msgstr "دکمهٔ شناور"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move up"
-msgstr ""
+msgstr "حرکت به بالا"
+
+#: src/pages/settings.tsx
+#~ msgid "Allow from <0>{0}</0>"
+#~ msgstr "اجازه دادن از <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -2954,7 +3711,12 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Edit your post"
-msgstr ""
+msgstr "فرسته‌تان را ویرایش کنید"
+
+#: src/components/status-large-footer.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Unboost"
+#~ msgstr "ناتقویت"
 
 #: src/components/import-export-accounts.tsx
 msgid "No login information or account access details are stored in the exported files. You will need to log in again for each account after importing."
@@ -2966,19 +3728,19 @@ msgstr ""
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText} (auto-detected)"
-msgstr ""
+msgstr "ترجمه از {sourceLangText} (تشخیص خودکار)"
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users…"
-msgstr ""
+msgstr "کاربران مسدودشده…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Post could be edited or deleted later."
-msgstr ""
+msgstr "فرسته بعدا میتواند ویرایش یا حذف شود."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to edit list."
-msgstr ""
+msgstr "ناتوان در ویرایش سیاهه."
 
 #. placeholder {0}: ancestors.length
 #: src/pages/status.tsx
@@ -2987,24 +3749,28 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Translate bio"
-msgstr ""
+msgstr "ترجمهٔ شرح حال"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Followed #{hashtag}"
+#~ msgstr "#{hashtag} پی‌گرفته شد"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Auto"
-msgstr ""
+msgstr "خودکار"
 
 #: src/components/report-modal.tsx
 msgid "Profile reported"
-msgstr ""
+msgstr "نمایه گزارش شد"
 
 #: src/pages/catchup.tsx
 msgid "last 7 hours"
-msgstr ""
+msgstr "۷ ساعت گذشته"
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been deleted."
-msgstr ""
+msgstr "بعضی از فرسته‌های شما حذف شده‌اند."
 
 #: src/pages/catchup.tsx
 msgid "Fetching posts…"
@@ -3012,7 +3778,7 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Preview"
-msgstr ""
+msgstr "پیش‌نمایش"
 
 #: src/components/status-helpers.ts
 msgid "Author will manually review"
@@ -3020,19 +3786,23 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Error deleting draft! Please try again."
-msgstr ""
+msgstr "خطا در حذف پیش‌نویس! لطفا دوباره تلاش کنید."
 
 #: src/compose.tsx
 msgid "Close window"
-msgstr ""
+msgstr "بستن پنجره"
+
+#: src/pages/welcome.tsx
+#~ msgid "Log in with Bluesky"
+#~ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "That's all."
-msgstr ""
+msgstr "کافیست."
 
 #: src/pages/catchup.tsx
 msgid "Previous author"
-msgstr ""
+msgstr "نویسندهٔ پیشین"
 
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
@@ -3045,7 +3815,11 @@ msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Showing posts with media"
-msgstr ""
+msgstr "نمایش فرسته‌های دارای رسانه"
+
+#: src/pages/filters.tsx
+#~ msgid "Public timelines"
+#~ msgstr "خط زمانی همگانی"
 
 #: src/components/feedback-modal.tsx
 #: src/pages/welcome.tsx
@@ -3061,29 +3835,49 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "You have blocked <0>{targetName}</0>. Removed followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "شما <0>{targetName}</0> را مسدود کرده‌اید. پی‌گیرنده حذف‌شده: {followersCount}، پی‌گرفته‌های حذف‌شده: {followingCount}."
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} liked your reply.} other {{account} liked your post.}}} other {{account} liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> liked your reply.} other {<2><3>{1}</3> people</2> liked your post.}}}}"
-msgstr ""
+msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} پاسختان را پسندید.} other {{account} فرسته‌تان را پسندید.}}} other {{account} {postsCount} فرسته از فرسته‌هایتان را پسندید.}}} other {{postType, select, reply {<0><1>{0}</1> نفر</0> پاسختان را پسندیدند.} other {<2><3>{1}</3> نفر</2> فرسته‌تان را پسندیدند.}}}}"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Max {SHORTCUTS_LIMIT} columns"
+#~ msgstr "بیشترین {SHORTCUTS_LIMIT} ستون"
 
 #: src/pages/status.tsx
 msgid "Experimental"
-msgstr ""
+msgstr "آزمایشی"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this profile?"
-msgstr ""
+msgstr "مشکل این نمایه چیست؟"
 
 #: src/pages/http-route.tsx
 msgid "Resolving…"
 msgstr ""
 
+#: src/components/status-reply-menu.tsx
+#~ msgid "{mentionsCount, plural, other {# mentions}}"
+#~ msgstr ""
+
+#: src/pages/status.tsx
+#~ msgid "Switch to post's server"
+#~ msgstr ""
+
 #: src/components/status-header.tsx
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
 msgstr ""
+
+#: src/pages/settings.tsx
+#~ msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and boosts carousel will not work when this is enabled."
+#~ msgstr ""
+
+#: src/components/account-handle-info.tsx
+#~ msgid "server domain name"
+#~ msgstr "سامانهٔ نام دامنه"
 
 #: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
@@ -3092,11 +3886,15 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Frame rate too high. Uploading might encounter issues."
-msgstr ""
+msgstr "ترخ نوسازی بسیار زیاد است. بارگذاری ممکن است با مشکل موجه شود."
 
 #: src/pages/notifications.tsx
 msgid "Unable to dismiss notification request"
-msgstr ""
+msgstr "ناتوان در رد کردن درخواست آگاهی"
+
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Boosts Carousel"
+#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to previous post"
@@ -3104,22 +3902,26 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Post pinned to profile"
-msgstr ""
+msgstr "فرسته به نمایه سنجاق شد"
 
 #. placeholder {0}: pc.count
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# post} other {# posts}}"
-msgstr ""
+msgstr "{0, plural,one {# فرسته} other {# فرسته‌ها}}"
 
 #: src/pages/notifications.tsx
 msgid "Unable to accept notification request"
-msgstr ""
+msgstr "ناتوان در قبول کردن درخواست آگاهی"
+
+#: src/components/related-actions.tsx
+#~ msgid "Don't feature on profile"
+#~ msgstr ""
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/list-add-edit.tsx
 #: src/pages/lists.tsx
 msgid "New list"
-msgstr ""
+msgstr "سیاهه جدید"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
@@ -3128,11 +3930,11 @@ msgstr ""
 #: src/pages/account-statuses.tsx
 #: src/pages/trending.tsx
 msgid "Unable to load posts"
-msgstr ""
+msgstr "ناتوان در بارگذاری فرسته‌ها"
 
 #: src/pages/catchup.tsx
 msgid "Group: Authors"
-msgstr ""
+msgstr "گروه: نویسندگان"
 
 #: src/components/import-export-accounts.tsx
 msgid "Select file…"
@@ -3148,40 +3950,49 @@ msgstr ""
 msgid "{followingCount, plural, other {<0>{0}</0> Following}}"
 msgstr ""
 
+#: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Server"
+#~ msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Unblocked @{username}"
 msgstr ""
 
+#: src/pages/account-statuses.tsx
+#~ msgid "Switch to my server (<0>{currentInstance}</0>)"
+#~ msgstr ""
+
 #: src/components/account-handle-info.tsx
 msgid "username"
-msgstr ""
+msgstr "نام کاربری"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Add/Remove from Lists"
-msgstr ""
+msgstr "افزودن/حذف کردن از سیاهه‌ها"
 
 #: src/components/compose.tsx
 msgid "Post your reply"
-msgstr ""
+msgstr "پاسختان را بفرستید"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import…"
-msgstr ""
+msgstr "وارد کردن…"
 
 #: src/components/media-attachment.tsx
 #: src/compose.tsx
 msgid "Error"
-msgstr ""
+msgstr "خطا"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post (new window)"
-msgstr ""
+msgstr "نوشتن فرستهٔ جدید (پنجرهٔ جدید)"
 
 #: src/components/nav-menu.tsx
 msgid "Muted users"
-msgstr ""
+msgstr "کاربران خموشیده‌شده"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -3202,7 +4013,7 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/welcome.tsx
 msgid "Log in"
-msgstr ""
+msgstr "ورود"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -3214,7 +4025,7 @@ msgstr ""
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
 msgid "<0>Filtered</0>: <1>{0}</1>"
-msgstr ""
+msgstr "<0>پالایش‌شده</0>: <1>{0}</1>"
 
 #: src/pages/account-statuses.tsx
 msgid "Showing reposts"
@@ -3222,7 +4033,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Posts are grouped by authors, sorted by posts count per author."
-msgstr ""
+msgstr "فرسته‌ها طبق نویسنده‌ها دسته‌بندی شده‌اند، طبق فرسته بر حسب نویسنده مرتب شده‌اند."
 
 #: src/pages/settings.tsx
 msgid "<0>Bluepy</0><1/>Forked for ATProto by <2>@alice.mosphere.at</2> and <3>@quillmatiq.com</3>"
@@ -3230,23 +4041,35 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "With a new account"
-msgstr ""
+msgstr "با یک حساب کاربری جدید"
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Save & close"
+#~ msgstr "ذخیره و بستن"
 
 #. placeholder {0}: filterInfo.titlesStr
 #. placeholder {0}: filterInfoMaybe?.titlesStr
 #: src/components/status-media-embeds.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered: {0}"
-msgstr ""
+msgstr "پالایش‌شده: {0}"
+
+#: src/components/compose.tsx
+#~ msgid "Schedule post"
+#~ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Note: Only max 3 will be stored. The rest will be automatically removed."
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "No keywords. Add one."
+#~ msgstr "کلیدواژهای نیست. یکی اضافه کنید."
+
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
-msgstr ""
+msgstr "فرستهٔ @{0} نابرگزیده شد"
 
 #: src/pages/settings.tsx
 msgid "Replace text as blocks, useful when taking screenshots, for privacy reasons."
@@ -3256,15 +4079,19 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 msgid "Remove"
-msgstr ""
+msgstr "حذف کردن"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Profile"
 msgstr ""
 
+#: src/pages/public.tsx
+#~ msgid "Switch to Local"
+#~ msgstr "تعویض کردن به محلی"
+
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
-msgstr ""
+msgstr "مورد اضافی"
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
@@ -3282,6 +4109,10 @@ msgstr ""
 msgid "Showing replies"
 msgstr ""
 
+#: src/components/status-interactions.ts
+#~ msgid "Sorry, your current logged-in server can't interact with this post from another server."
+#~ msgstr ""
+
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to add to list."
 msgstr ""
@@ -3289,11 +4120,11 @@ msgstr ""
 #. placeholder {0}: niceDateTime(updatedAtDate)
 #: src/pages/notifications.tsx
 msgid "Updated <0>{0}</0>"
-msgstr ""
+msgstr "بروزشده <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Paste shortcuts here"
-msgstr ""
+msgstr "چسباندن میانبرها اینجا"
 
 #: src/components/compose.tsx
 msgid "Take photo or video"
@@ -3312,11 +4143,11 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/notifications.tsx
 msgid "Save"
-msgstr ""
+msgstr "ذخیره"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcut settings"
-msgstr ""
+msgstr "ناتوان در رونویسی از میانبرهای تنظیمات"
 
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
@@ -3332,33 +4163,61 @@ msgstr ""
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to delete list."
-msgstr ""
+msgstr "ناتوان در حذف سیاهه."
 
 #: src/pages/welcome.tsx
 msgid "Up to 5 hashtags combined into a single timeline."
 msgstr ""
 
+#: src/pages/settings.tsx
+#~ msgid "Boosts carousel"
+#~ msgstr ""
+
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Sharing doesn't seem to work."
-msgstr ""
+msgstr "انگار همرسانی کار نمیکند."
+
+#: src/pages/welcome.tsx
+#~ msgid "Boosts Carousel"
+#~ msgstr ""
 
 #: src/components/list-add-edit.tsx
 msgid "Edit list"
-msgstr ""
+msgstr "ویرایش سیاهه"
 
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
-msgstr ""
+msgstr "۲ ساعت گذشته"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Public (Local / Federated)"
+#~ msgstr "همگانی (محلی/نامتمرکز)"
 
 #: src/compose.tsx
 msgid "Editing source status"
-msgstr ""
+msgstr "ویرایش وضعیت منبع"
 
 #: src/pages/settings.tsx
 msgid "Settings"
-msgstr ""
+msgstr "تنظیمات"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "Clear filters"
+#~ msgstr "پاک کردن پالایه‌ها"
+
+#: src/pages/public.tsx
+#~ msgid "Local timeline ({instance})"
+#~ msgstr "خط زمانی محلی ({instance})"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Recently used"
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Status: <0><1/></0>"
+#~ msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -3368,54 +4227,87 @@ msgstr ""
 msgid "Unable to resolve URL"
 msgstr ""
 
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Optional, unless for multi-column mode"
+#~ msgstr ""
+
+#: src/components/endorsements.tsx
+#~ msgid "Profiles featured by @{0}"
+#~ msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "or override…"
-msgstr ""
+msgstr "بازنویسی کردن…"
 
 #: src/components/status-account-menu.tsx
 msgid "Remove quote…"
 msgstr ""
 
+#: src/components/related-actions.tsx
+#: src/pages/hashtag.tsx
+#~ msgid "Feature on profile"
+#~ msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Keyboard shortcuts help"
-msgstr ""
+msgstr "راهنمای میانبرهای صفحه کلید"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Home"
 msgstr ""
 
+#: src/components/compose.tsx
+#~ msgid "Some poll choices are empty"
+#~ msgstr "بعضی گزینه‌های نظرسنجی خالی هستند"
+
 #: src/components/related-actions.tsx
 msgid "Remove <0>@{username}</0> from followers?"
-msgstr ""
+msgstr "<0>@{username}</0> را از پی‌گرفتگان حذف میکنید؟"
 
 #: src/pages/bookmarks.tsx
 msgid "Unable to load bookmarks."
-msgstr ""
+msgstr "ناتوان در بارگذاری نشانک‌ها."
+
+#: src/pages/filters.tsx
+#~ msgid "Filter from…"
+#~ msgstr ""
 
 #: src/components/quote-chain-modal.tsx
 msgid "Continue unwrapping…"
 msgstr ""
 
+#: src/components/related-actions.tsx
+#~ msgid "Enable boosts"
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Expiring <0/>"
+#~ msgstr ""
+
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has suspended <1>{targetName}</1>, which means you can no longer receive updates from them or interact with them."
-msgstr ""
+msgstr "یک مدیر از <0>{from}</0> <1>{targetName}</1> را تعلیق کرده است، معنی‌اش این است که شما دیگر نمیتوانید بروزرسانی‌هایی از آنها دریافت کنید یا با آنها تعامل کنید."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on mobile device"
 msgstr ""
 
+#: src/pages/account-statuses.jsx
+#~ msgid "- Boosts"
+#~ msgstr ""
+
 #: src/pages/catchup.tsx
 msgid "Posts are sorted by information density or depth. Shorter posts are \"lighter\" while longer posts are \"heavier\". Posts with photos are \"heavier\" than posts without photos."
-msgstr ""
+msgstr "فرسته‌ها با تراکم یا عمق اطلاعات مرتب‌شده‌اند. فرسته‌های کوتاه‌تر «سبک‌تر» هستند درحالیکه فرسته‌های طولانی‌تر «سنگین‌تر» هستند. فرسته‌هایی با تصاویر از فرسته‌های بدون تصویر «سنگین‌تر» هستند."
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
 msgid "Settings…"
-msgstr ""
+msgstr "تنظیمات…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multi-column"
-msgstr ""
+msgstr "چندستونه"
 
 #: src/components/quote-settings-sheet.tsx
 msgid "Quote settings for this post"
@@ -3423,7 +4315,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Tab/Menu bar"
-msgstr ""
+msgstr "نوار برگه/فهرست"
 
 #: src/components/generic-accounts.tsx
 #: src/components/quotes-modal.tsx
@@ -3433,7 +4325,7 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/status.tsx
 msgid "Show more…"
-msgstr ""
+msgstr "نمایش بیشتر…"
 
 #: src/components/related-actions.tsx
 msgid "Blocked @{username}"
@@ -3445,7 +4337,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "About"
-msgstr ""
+msgstr "درباره"
 
 #: src/components/quote-suggestion.tsx
 msgid "Replace current quote"
@@ -3453,12 +4345,12 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "A post you interacted with has been edited."
-msgstr ""
+msgstr "یک فرسته که شما با آن تعامل داشته‌اید تغییر یافته است."
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/pages/lists.tsx
 msgid "Unable to load lists."
-msgstr ""
+msgstr "ناتوانی در بارگذاری سیاهه‌ها."
 
 #: src/components/report-modal.tsx
 msgid "Unable to mute {username}"
@@ -3468,7 +4360,7 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "See more"
-msgstr ""
+msgstr "بیشتر ببینید"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
@@ -3477,29 +4369,37 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
-msgstr ""
+msgstr "<0>تبدیل</0> + <1>دگرساز</1> + <2>ن</2>"
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
-msgstr ""
+msgstr "بعضی از فرسته‌های شما به عنوان حساس نشانه‌گذاری شده‌اند."
 
 #: src/components/status-large-footer.tsx
 msgid "Comments"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Add filter"
+#~ msgstr "اصافه کردن پالایه"
+
+#: src/pages/status.tsx
+#~ msgid "Switch to post's PDS"
+#~ msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
-msgstr ""
+msgstr "حذف کردن پی‌گرفته…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Profile"
-msgstr ""
+msgstr "نمایه"
 
 #: src/components/media-modal.tsx
 msgid "Attempting to describe image. Please wait…"
-msgstr ""
+msgstr "تلاش برای شرح دادن تصویر. لطفا صبر کنید…"
 
 #: src/components/account-handle-info.tsx
 msgid "handle domain name"
@@ -3512,19 +4412,31 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to pin post"
-msgstr ""
+msgstr "ناتوان در سنجاق کردن فرسته"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfeatured on profile"
+#~ msgstr ""
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Add column…"
+#~ msgstr "افزودن ستون…"
 
 #: src/components/compose.tsx
 msgid "Failed to download GIF"
-msgstr ""
+msgstr "بارگیری جیف ناموفق بود"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Load new posts"
-msgstr ""
+msgstr "بارگذاری فرسته‌های جدید"
+
+#: src/pages/followed-hashtags.tsx
+#~ msgid "No hashtags followed yet."
+#~ msgstr "هنوز برچسبی پی‌گرفته نشده."
 
 #: src/components/account-info.tsx
 msgid "Post stats unavailable."
-msgstr ""
+msgstr "اطلاعات فرسته غیرقابل دسترسی."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
@@ -3532,7 +4444,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
-msgstr ""
+msgstr "هنوز میانبری وجود ندارد. روی دکمهٔ افزودن میانبر بزنید."
 
 #: src/pages/trending.tsx
 msgid "Trending posts"
@@ -3546,9 +4458,13 @@ msgstr ""
 msgid "beyond 12 hours"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Profiles"
+#~ msgstr "نمایه‌ها"
+
 #: src/pages/catchup.tsx
 msgid "last 12 hours"
-msgstr ""
+msgstr "۱۲ ساعت گذشته"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn into quote"
@@ -3565,7 +4481,11 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Hashtags"
-msgstr ""
+msgstr "برچسب‌ها"
+
+#: src/pages/status.tsx
+#~ msgid "You're not logged in. Interactions (reply, boost, etc) are not possible."
+#~ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to remove quote"
@@ -3579,11 +4499,11 @@ msgstr ""
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy link"
-msgstr ""
+msgstr "ناتوان در رونوشت برداشتن از پیوند"
 
 #: src/components/notification.tsx
 msgid "Your posts will be marked as sensitive from now on."
-msgstr ""
+msgstr "از این به بعد فرسته‌های شما به عنوان حساس نشانه‌گذاری خواهند شد."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on tablet device"
@@ -3595,7 +4515,11 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Like"
-msgstr ""
+msgstr "برگزیدن"
+
+#: src/pages/welcome.tsx
+#~ msgid "A minimalistic opinionated Bluesky web client."
+#~ msgstr ""
 
 #: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
@@ -3610,25 +4534,45 @@ msgstr ""
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
 msgstr ""
 
+#: src/components/account-info.tsx
+#~ msgid "{0} original posts, {1} replies, {2} boosts"
+#~ msgstr "{0} فرسته‌های اصلی، {1} پاسخ‌ها، {2} تقویت‌ها"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Showing boosts"
+#~ msgstr ""
+
 #: src/components/compose.tsx
 msgid "Editing source post"
-msgstr ""
+msgstr "ویرایش فرستهٔ منبع"
+
+#: src/pages/settings.tsx
+#~ msgid "Polls"
+#~ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
 msgstr ""
 
+#: src/pages/settings.tsx
+#~ msgid "Synced to your Bluesky account settings. <0>Open Bluesky settings ({instance}).</0>"
+#~ msgstr ""
+
 #: src/pages/search.tsx
 msgid "Search: {q}"
-msgstr ""
+msgstr "جستجو: {q}"
 
 #: src/pages/notifications.tsx
 msgid "Filter out notifications from people:"
-msgstr ""
+msgstr "پالایش کردن آگاهی‌ها از افراد:"
+
+#: src/pages/settings.tsx
+#~ msgid "Push Notifications (beta)"
+#~ msgstr "آگاهی ارسالی (بتا)"
 
 #: src/pages/catchup.tsx
 msgid "last 10 hours"
-msgstr ""
+msgstr "۱۰ ساعت گذشته"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Search GIFs"
@@ -3655,14 +4599,22 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Edit video description"
-msgstr ""
+msgstr "ویرایش کردن شرح ویدئو"
+
+#: src/components/compose.tsx
+#~ msgid "Add content warning"
+#~ msgstr ""
+
+#: src/pages/settings.tsx
+#~ msgid "people I follow"
+#~ msgstr ""
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Followers"
-msgstr ""
+msgstr "پی‌گیرنده"
 
 #: src/components/notification.tsx
 msgid "Reposted by…"
@@ -3674,20 +4626,42 @@ msgstr ""
 
 #: src/components/recent-searches.tsx
 msgid "Clear"
-msgstr ""
+msgstr "پاک کردن"
 
 #: src/components/qr-code-modal.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Scan QR code"
 msgstr ""
 
+#: src/pages/login.jsx
+#~ msgid "Continue"
+#~ msgstr "ادامه"
+
+#: src/components/related-actions.tsx
+#~ msgid "@{username} is now featured on your profile."
+#~ msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Mute <0>@{username}</0>…"
-msgstr ""
+msgstr "خموشاندن <0>@{username}</0>…"
+
+#: src/components/related-actions.tsx
+#~ msgid "Unable to unfeature @{username} on your profile."
+#~ msgstr ""
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Only visible to you"
+#~ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description"
-msgstr ""
+msgstr "شکست در تولید شرح"
+
+#: src/components/nav-menu.tsx
+#: src/pages/followed-hashtags.tsx
+#: src/pages/followed-hashtags.tsx
+#~ msgid "Followed Hashtags"
+#~ msgstr "برچسب‌های پی‌گرفته‌شده"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
@@ -3699,9 +4673,17 @@ msgstr ""
 msgid "Removing Catch-up {0}"
 msgstr ""
 
+#: src/pages/catchup.jsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies}}} density {{sortOrder, select, asc {least dense} desc {most dense}}}} first{groupBy, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
+
 #: src/components/notification.tsx
 msgid "Lost connections with <0>{name}</0>."
-msgstr ""
+msgstr "اتصال از دست رفته با <0>{name}</0>."
+
+#: src/pages/notifications.tsx
+#~ msgid "Who are limited by server moderators"
+#~ msgstr "کسی که توسط ناظم‌های کارساز محدود شده است"
 
 #: src/pages/hashtag.tsx
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
@@ -3709,11 +4691,11 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
-msgstr ""
+msgstr "<0>تبدیل</0> + <1>ق</1>"
 
 #: src/components/status-account-menu.tsx
 msgid "Unpin from profile"
-msgstr ""
+msgstr "برداشتن سنجاق "
 
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
@@ -3728,11 +4710,11 @@ msgstr ""
 #: src/components/drafts.tsx
 #: src/pages/account-statuses.tsx
 msgid "Media"
-msgstr ""
+msgstr "رسانه"
 
 #: src/pages/notifications.tsx
 msgid "Yesterday"
-msgstr ""
+msgstr "دیروز"
 
 #: src/components/feedback-modal.tsx
 msgid "What happened?"
@@ -3744,16 +4726,24 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Post reported"
-msgstr ""
+msgstr "فرسته گزارش شد"
 
 #: src/components/account-block.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
-msgstr ""
+msgstr "پی‌گرفته"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to delete post"
 msgstr ""
+
+#: src/pages/login.jsx
+#~ msgid "Failed to log in. Please try again or try another server."
+#~ msgstr ""
+
+#: src/pages/welcome.tsx
+#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored on this server."
+#~ msgstr ""
 
 #: src/components/edit-history-controls.tsx
 msgid "Exit"
@@ -3761,7 +4751,12 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Previously…"
-msgstr ""
+msgstr "قبلا…"
+
+#: src/pages/filters.tsx
+#: src/pages/filters.tsx
+#~ msgid "New filter"
+#~ msgstr "پالایهٔ جدید"
 
 #: src/components/status-account-menu.tsx
 msgid "Quote removed"
@@ -3772,23 +4767,31 @@ msgstr ""
 msgid "Quote with link"
 msgstr ""
 
+#: src/pages/status.tsx
+#~ msgid "Switch to post's server ({0})"
+#~ msgstr ""
+
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Speak"
-msgstr ""
+msgstr "حرف زدن"
 
 #: src/pages/hashtag.tsx
 msgid "Unable to load posts with this tag"
-msgstr ""
+msgstr "ناتوان در بارگذاری فرسته‌ها با این برچسب"
 
 #: src/components/notification.tsx
 #: src/components/notification.tsx
 msgid "Learn more <0/>"
-msgstr ""
+msgstr "بیشتر بدانید <0/>"
 
 #: src/pages/hashtag.tsx
 msgid "This timeline is disabled on Bluesky."
 msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "Links shared by followings, sorted by shared counts, boosts and likes."
+#~ msgstr "پیوندهایی که توسط پی‌گرفته‌ها همرسانی شده‌اند، مرتب‌شده طبق شمارش همرسانی‌شده، تقویت‌ها و برگزیده‌ها."
 
 #: src/pages/catchup.tsx
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
@@ -3803,13 +4806,21 @@ msgstr ""
 msgid "Moderation warning"
 msgstr ""
 
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus next column in multi-column mode"
+#~ msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>b</1>"
-msgstr ""
+msgstr "<0>تبدیل</0> + <1>ذ</1>"
 
 #: src/pages/settings.tsx
 msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
 msgstr ""
+
+#: src/components/related-actions.tsx
+#~ msgid "Withdraw…"
+#~ msgstr "برگرداندن…"
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -3818,23 +4829,27 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcuts"
-msgstr ""
+msgstr "ناتوان در رونویسی از میانبرها"
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation muted"
-msgstr ""
+msgstr "گفتگو خموشیده شد"
 
 #: src/components/account-block.tsx
 msgid "Requested"
-msgstr ""
+msgstr "درخواست‌شده"
 
 #: src/components/status-account-menu.tsx
 msgid "Post unpinned from profile"
-msgstr ""
+msgstr "سنجاق فرسته از نمایه برداشته شد"
 
 #: src/pages/search.tsx
 msgid "No accounts found."
-msgstr ""
+msgstr "حسابی یافت نشد."
+
+#: src/pages/accounts.jsx
+#~ msgid "Remove <0>@{0}</0>?"
+#~ msgstr ""
 
 #: src/components/recent-searches.tsx
 msgid "Clear all"
@@ -3881,30 +4896,46 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/status.tsx
 msgid "Close"
-msgstr ""
+msgstr "بستن"
+
+#: src/components/compose.tsx
+#~ msgid "Quotes can't be embedded in private mentions."
+#~ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
-msgstr ""
+msgstr "انگار شما در حال حاضر یک زمینهٔ نوشتن در پنجرهٔ مادر دارید که در حال حاضر درحال انتشار است. لطفا صبر کنید تا تمام شود و بعدا دوباره تلاش کنید."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
-msgstr ""
+msgstr "همرسانی"
+
+#: src/pages/settings.tsx
+#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
+#~ msgstr "نکته: آگاهی‌های ارسالی فقط برای <0>یک حساب کاربری</0> کار میکنند."
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Show results"
-msgstr ""
+msgstr "نمایش نتایج"
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "Only <0>@{0}</0>"
+#~ msgstr ""
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-quote-policy.ts
 msgid "Quote"
-msgstr ""
+msgstr "نقل قول"
 
 #: src/pages/catchup.tsx
 msgid "Groups"
-msgstr ""
+msgstr "گروه‌ها"
+
+#: src/components/compose.tsx
+#~ msgid "Poll must have at least 2 options"
+#~ msgstr "نظرسنجی حداقل باید ۲ گزینه داشته باشد"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
@@ -3915,17 +4946,39 @@ msgstr ""
 msgid "Handle copied"
 msgstr ""
 
+#. [Name] [Visibility icon] boosted
+#: src/components/filtered-status.tsx
+#~ msgid "<0/> <1/> boosted"
+#~ msgstr "<0/> <1/> تقویت‌شده"
+
+#: src/pages/welcome.jsx
+#~ msgid "Log in with Mastodon"
+#~ msgstr ""
+
 #: src/pages/status.tsx
 msgid "View post with its replies"
 msgstr ""
 
 #: src/components/media-modal.tsx
 msgid "Failed to describe image"
-msgstr ""
+msgstr "شکست در شرح دادن تصویر"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Failed to reschedule post"
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "hidden"
+#~ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "View profile header"
-msgstr ""
+msgstr "نمایش سرآیند نمایه"
+
+#: src/pages/login.tsx
+#: src/pages/login.tsx
+#~ msgid "Failed to register application"
+#~ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
@@ -3940,16 +4993,24 @@ msgstr ""
 #. placeholder {0}: Math.floor(seconds / minute)
 #: src/components/relative-time.tsx
 msgid "{0}m"
-msgstr ""
+msgstr "{0}د"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from @{0} will not be filtered from now on."
-msgstr ""
+msgstr "آگاهی‌ها از @{0} از الآن پالایش نخواهند شد."
 
 #: src/components/nav-menu.tsx
 msgid "Menu"
-msgstr ""
+msgstr "فهرست"
+
+#: src/components/translation-block.jsx
+#~ msgid "Auto-translated from {sourceLangText}"
+#~ msgstr "ترجمهٔ خودکار از {sourceLangText}"
+
+#: src/pages/mentions.tsx
+#~ msgid "Private"
+#~ msgstr "خصوصی"
 
 #: src/pages/settings.tsx
 msgid "Translate to "
@@ -3957,11 +5018,15 @@ msgstr ""
 
 #: src/components/translation-block.tsx
 msgid "Translating…"
-msgstr ""
+msgstr "درحال ترجمه…"
 
 #: src/components/atproto-labels.tsx
 msgid "This account has marked itself as automated."
 msgstr ""
+
+#: src/components/compose-poll.tsx
+#~ msgid "Multiple choice"
+#~ msgstr ""
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -3971,4 +5036,4 @@ msgstr ""
 #: src/pages/favourites.tsx
 #: src/pages/favourites.tsx
 msgid "Likes"
-msgstr ""
+msgstr "برگزیده‌ها"
