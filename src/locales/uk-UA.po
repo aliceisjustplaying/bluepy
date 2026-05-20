@@ -1,35 +1,56 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2026-05-20 20:13+0000\n"
+"POT-Creation-Date: 2025-05-03 21:08+0800\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: uk-UA\n"
+"Language: uk\n"
+"Project-Id-Version: phanpy\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-16 15:50\n"
+"Last-Translator: \n"
+"Language-Team: Ukrainian\n"
+"Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
+"X-Crowdin-Project: phanpy\n"
+"X-Crowdin-Project-ID: 703337\n"
+"X-Crowdin-Language: uk\n"
+"X-Crowdin-File: /main/src/locales/en.po\n"
+"X-Crowdin-File-ID: 18\n"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments:"
-msgstr ""
+msgstr "Медіа вкладення:"
 
 #: src/components/related-actions.tsx
 msgid "Unblock <0>@{username}</0>"
-msgstr ""
+msgstr "Розблокувати <0>@{username}</0>"
 
 #: src/utils/show-compose.ts
 msgid "A draft post is currently minimized. Post or discard it before creating a new one."
-msgstr ""
+msgstr "Чернетка допису наразі мінімізована. Опублікуйте або видаліть його перед створенням нового."
 
 #: src/components/compose.tsx
 msgid "Pop in"
-msgstr ""
+msgstr "Повернути в батьківське вікно"
 
 #: src/pages/settings.tsx
 msgid "Removes all UI animations, transitions, and smooth scrolling. Useful if motion is distracting."
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Whole word"
+#~ msgstr "Ціле слово"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Go to my server (<0>{currentInstance}</0>)"
+#~ msgstr "Перейти до мого серверу (<0>{currentInstance}</0>)"
+
 #: src/components/report-modal.tsx
 msgid "Muted {username}"
-msgstr ""
+msgstr "{username} заглушено"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -41,27 +62,31 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/trending.tsx
 msgid "Mentions"
-msgstr ""
+msgstr "Згадки"
 
 #: src/pages/account-statuses.tsx
 msgid "Account posts"
-msgstr ""
+msgstr "Дописи облікового запису"
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external GIF search service, powered by <0>GIPHY</0>. G-rated (suitable for viewing by all ages), tracking parameters are stripped, referrer information is omitted from requests, but search queries and IP address information will still reach their servers."
-msgstr ""
+msgstr "Примітка: Ця функція використовує зовнішній сервіс пошуку GIF від <0>GIPHY</0>. G-рейтинг (підходить для перегляду будь-якому віку), параметри відстеження та інформація про джерело будуть прибрані, але пошукові запити та дані IP-адреси все одно будуть передаватися на їхній сервер."
 
 #: src/components/compose.tsx
 msgid "Downloading GIF…"
-msgstr ""
+msgstr "Завантаження GIF…"
 
 #: src/pages/catchup.tsx
 msgid "Show all authors"
-msgstr ""
+msgstr "Показати всіх авторів"
+
+#: src/components/compose.tsx
+#~ msgid "Ask a question"
+#~ msgstr "Поставте запитання"
 
 #: src/components/report-modal.tsx
 msgid "Other"
-msgstr ""
+msgstr "Інше"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -70,106 +95,134 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Unable to copy HTML code"
-msgstr ""
+msgstr "Не вдалося скопіювати HTML-код"
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "No lists."
-msgstr ""
+msgstr "Списки відсутні."
 
 #: src/components/math-block.tsx
 msgid "Math expressions found."
-msgstr ""
+msgstr "Формулу знайдено."
+
+#: src/pages/login.jsx
+#~ msgid "e.g. “mastodon.social”"
+#~ msgstr "напр. \"twiukraine.com\""
 
 #. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
 msgid "Muted @{username} for {0}"
-msgstr ""
+msgstr "Заглушено @{username} на {0}"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
-msgstr ""
+msgstr "Видалити цю чернетку?"
 
 #: src/components/notification-service.tsx
 msgid "View all notifications"
-msgstr ""
+msgstr "Переглянути всі сповіщення"
 
 #: src/components/quotes-modal.tsx
 msgid "No quotes yet"
-msgstr ""
+msgstr "Ще немає цитувань"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled post deleted"
+#~ msgstr "Запланована публікація видалена"
 
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Switch to Side Peek view"
-msgstr ""
+msgstr "Перемкнутися на вигляд з Боковою Панеллю"
+
+#: src/components/modals.tsx
+#~ msgid "Reply scheduled"
+#~ msgstr "Відповідь заплановано"
 
 #: src/components/report-modal.tsx
 msgid "Unable to report post"
-msgstr ""
+msgstr "Не вдалося поскаржитися на допис"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{account} followed you.} other {<0><1>{0}</1> people</0> followed you.}}"
-msgstr ""
+msgstr "{count, plural, =1 {{account} підписа(вся/лась) на вас.} few {<0><1>{0}</1> користувачі</0> підписалися на вас.} other {<0><1>{0}</1> користувачів</0> підписалися на вас.}}"
 
 #. placeholder {0}: niceDateTime(account.createdAt)
 #: src/pages/accounts.tsx
 msgid "Connected on {0} (<0/>)"
-msgstr ""
+msgstr "Під’єднано до {0} (<0/>)"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Only you can quote"
-msgstr ""
+msgstr "Тільки ви можете цитувати"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>c</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>c</1>"
+
+#: src/components/compose-button.tsx
+#: src/components/nav-menu.tsx
+#: src/pages/scheduled-posts.tsx
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled Posts"
+#~ msgstr "Заплановані пости"
 
 #: src/components/muted-status.tsx
 #: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
-msgstr ""
+msgstr "Заглушений(-а)"
 
 #: src/pages/account-statuses.tsx
 msgid "Nothing to see here yet."
-msgstr ""
+msgstr "Поки що тут нічого нема."
 
 #: src/components/list-add-edit.tsx
 msgid "Delete this list?"
-msgstr ""
+msgstr "Видалити цей список?"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcut settings copied"
-msgstr ""
+msgstr "Налаштування ярлика скопійовано"
+
+#: src/components/related-actions.tsx
+#~ msgid "Edit notes"
+#~ msgstr "Редагувати примітки"
 
 #: src/pages/settings.tsx
 msgid "anyone"
-msgstr ""
+msgstr "будь-кого"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Posts"
-msgstr ""
+msgstr "Дописів"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've blocked {domain}."
-msgstr ""
+msgstr "Допис приховано, оскільки ви заблокували {domain}."
 
 #: src/components/poll.tsx
 msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
-msgstr ""
+msgstr "{optionVotesCount, plural, one {# голос} few { # голоси} other {# голосів}}"
+
+#: src/components/status-activity-menu.tsx
+#: src/components/status-activity-menu.tsx
+#~ msgid "Boosted/Liked by…"
+#~ msgstr "Поширили/Вподобали…"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle}"
-msgstr ""
+msgstr "{hashtagTitle}"
 
 #: src/pages/mentions.tsx
 msgid "No one mentioned you :("
-msgstr ""
+msgstr "Ніхто не згадував вас :("
 
 #: src/components/filtered-status.tsx
 #: src/components/filtered-status.tsx
@@ -179,88 +232,113 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered"
-msgstr ""
+msgstr "Відфільтровано"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/compose.tsx
 msgid "Replying to @{0}"
-msgstr ""
+msgstr "Відповісти @{0}"
 
 #: src/components/qr-scanner-modal.tsx
 msgid "Unable to access camera. Please check permissions."
-msgstr ""
+msgstr "Неможливо отримати доступ до камери. Будь ласка, перевірте дозволи."
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Delete scheduled post?"
+#~ msgstr "Видалити заплановану публікацію?"
 
 #: src/components/related-actions.tsx
 msgid " Notifications disabled for @{username}'s posts."
-msgstr ""
+msgstr " Сповіщення для постів @{username} вимкнено."
+
+#: src/pages/login.jsx
+#~ msgid "server domain"
+#~ msgstr "домен сервера"
 
 #: src/components/drafts.tsx
 msgid "Error deleting drafts! Please try again."
-msgstr ""
+msgstr "Помилка видалення чернеток! Будь ласка, спробуйте ще раз."
 
 #: src/pages/settings.tsx
 msgid "Auto refresh timeline posts"
-msgstr ""
+msgstr "Автоматично оновлювати дописи стрічки"
 
 #: src/components/import-accounts-selection.tsx
 msgid "{selectedCount, plural, one {Import # account} other {Import # accounts}}"
-msgstr ""
+msgstr "{selectedCount, plural, one {Імпортувати # обліковий запис} few {Імпортувати # облікові записи} other {Імпортувати # облікових записів}}"
 
 #: src/pages/catchup.tsx
 msgid "Back to top"
-msgstr ""
+msgstr "На початок"
 
 #: src/components/status-helpers.ts
 msgid "Private posts cannot be quoted"
-msgstr ""
+msgstr "Приватні повідомлення не можна цитувати"
 
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
-msgstr ""
+msgstr "Це статичне, не стилізоване та без сценаріїв. Можливо, варто застосувати власні стилі та відредагувати як треба."
 
 #: src/pages/settings.tsx
 msgid "Post translation"
-msgstr ""
+msgstr "Переклад допису"
 
 #: src/components/related-actions.tsx
 msgid "Unable to unblock @{username}"
-msgstr ""
+msgstr "Не вдалося розблокувати @{username}"
 
 #: src/pages/catchup.tsx
 msgid "Density"
-msgstr ""
+msgstr "Наповнення"
+
+#: src/pages/settings.tsx
+#~ msgid "⚠️⚠️⚠️ Very experimental.<0/>Stored in your own profile’s notes. Profile (private) notes are mainly used for other profiles, and hidden for own profile."
+#~ msgstr "⚠️⚠️⚠️ Занадто експериментально.<0/>Зберігається в нотатках вашого профілю. (Приватні) нотатки профілю зазвичай використовуються для інших профілів і приховані для власного профілю."
 
 #: src/pages/notifications.tsx
 msgid "Only mentions"
-msgstr ""
+msgstr "Лише згадки"
 
 #. placeholder {0}: announcements.length
 #: src/pages/notifications.tsx
 msgid "{0, plural, one {Announcement} other {Announcements}}"
-msgstr ""
+msgstr "{0, plural, one {Оголошення} few {Оголошення} other {Оголошень}}"
 
 #. placeholder {0}: date.toLocaleString( i18n.locale, { month: 'long', year: 'numeric', }, )
 #: src/pages/account-statuses.tsx
 msgid "Showing posts in {0}"
-msgstr ""
+msgstr "Показ дописів в {0}"
+
+#: src/components/related-actions.tsx
+#~ msgid "Boosts from @{username} enabled."
+#~ msgstr "Поширення від @{username} увімкнено."
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Notifications"
-msgstr ""
+msgstr "Відкрити сповіщення"
 
 #: src/components/generic-accounts.tsx
 msgid "Nothing to show"
-msgstr ""
+msgstr "Нічого показати"
+
+#: src/pages/catchup.tsx
+#~ msgid "Note: your server might only show a maximum of 800 posts in the Home timeline regardless of the time range. Could be less or more."
+#~ msgstr "Примітка: ваш сервер може показати не більше 800 дописів в Домашній стрічці незалежно від часового діапазону. Може бути менше або більше."
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Bookmarked"
-msgstr ""
+msgstr "Додано в закладки"
+
+#: src/components/private-note-sheet.tsx
+#: src/components/related-actions.tsx
+#~ msgid "Notes"
+#~ msgstr "Примітки"
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
 msgid "Catch-up {0} removed"
-msgstr ""
+msgstr "Ретроспективу {0} видалено"
 
 #: src/components/report-modal.tsx
 msgid "Breaks specific Bluesky rules"
@@ -270,9 +348,13 @@ msgstr ""
 msgid "Login required to see posts from Bluesky."
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "{0, plural, one {# keyword} other {# keywords}}"
+#~ msgstr "{0, plural, one {# ключове слово} few {# ключових слова} other {# ключових слів}}"
+
 #: src/pages/welcome.tsx
 msgid "A separate timeline for followings. Email-inspired interface to sort and filter posts."
-msgstr ""
+msgstr "Окрема стрічка для підписок. Інтерфейс сортування і фільтрування дописів, натхненний email."
 
 #: src/components/feedback-modal.tsx
 msgid "Tell us what happened first."
@@ -281,27 +363,35 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Light"
-msgstr ""
+msgstr "Світла"
 
 #: src/pages/catchup.tsx
 msgid "last 4 hours"
-msgstr ""
+msgstr "останні 4 години"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Send post"
-msgstr ""
+msgstr "Опублікувати допис"
 
 #: src/pages/notifications.tsx
 msgid "Dismiss"
-msgstr ""
+msgstr "Відхилити"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Specific list is optional. For multi-column mode, list is required, else the column will not be shown."
+#~ msgstr "Вказаний список не є обов'язковим. Для режиму з кількома стовпцями список необхідний, інакше стовпець не буде показано."
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
-msgstr ""
+msgstr "Нумо переглянемо дописи з ваших підписок."
+
+#: src/components/follow-request-buttons.tsx
+#~ msgid "Reject"
+#~ msgstr "Відхилити"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open"
-msgstr ""
+msgstr "Відкрити"
 
 #. placeholder {0}: mediaAttachments[index]?.fileName || index + 1
 #: src/components/compose.tsx
@@ -310,36 +400,44 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Ended"
-msgstr ""
+msgstr "Завершено"
 
 #: src/components/nav-menu.tsx
 #: src/components/text-expander.tsx
 msgid "More…"
-msgstr ""
+msgstr "Більше…"
 
 #: src/pages/status.tsx
 msgid "{years, plural, one {# year later} other {# years later}}"
-msgstr ""
+msgstr "{years, plural, one {# рік потому} few {# роки потому} other {# років потому}}"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Copy handle"
-msgstr ""
+msgstr "Скопіювати ідентифікатор"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Bookmarks"
-msgstr ""
+msgstr "Відкрити закладки"
+
+#: src/pages/followed-hashtags.tsx
+#~ msgid "Unable to load followed hashtags."
+#~ msgstr "Не вдалося завантажити хештеґи, що відстежуються."
+
+#: src/pages/mentions.tsx
+#~ msgid "Private mentions"
+#~ msgstr "Особисті згадки"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List"
-msgstr ""
+msgstr "Список"
 
 #: src/components/status-placeholders.tsx
 #: src/components/status-quotes.tsx
 #: src/components/status-quotes.tsx
 #: src/components/status-quotes.tsx
 msgid "Post unavailable"
-msgstr ""
+msgstr "Допис недоступний"
 
 #: src/components/report-modal.tsx
 msgid "Bluesky rule violation"
@@ -360,7 +458,7 @@ msgstr ""
 #: src/components/timeline2.tsx
 #: src/pages/search.tsx
 msgid "The end."
-msgstr ""
+msgstr "Кінець."
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media-attachment.tsx
@@ -377,7 +475,7 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/status.tsx
 msgid "More"
-msgstr ""
+msgstr "Більше"
 
 #: src/pages/welcome.tsx
 msgid "Reposts Carousel"
@@ -385,32 +483,40 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up"
-msgstr ""
+msgstr "Зрозуміло, до роботи"
 
 #: src/pages/status.tsx
 msgid "Switch to Full view"
-msgstr ""
+msgstr "Перемкнутися на Повний вигляд"
 
 #: src/components/drafts.tsx
 msgid "Error fetching quoted status!"
-msgstr ""
+msgstr "Не вдалося отримати цитований допис!"
 
 #: src/components/feedback-modal.tsx
 msgid "Feedback sent"
 msgstr ""
 
+#: src/pages/followed-hashtags.tsx
+#~ msgid "{0, plural, one {# hashtag} other {# hashtags}}"
+#~ msgstr "{0, plural,one {# хештеґ} few {# хештеґи} other {# хештеґів}}"
+
 #: src/components/report-modal.tsx
 msgid "Pending review"
-msgstr ""
+msgstr "Очікує перевірки"
+
+#: src/pages/login.jsx
+#~ msgid "Continue with {selectedInstanceText}"
+#~ msgstr "Продовжити з {selectedInstanceText}"
 
 #: src/components/timeline.tsx
 #: src/pages/settings.tsx
 msgid "New posts"
-msgstr ""
+msgstr "Нові дописи"
 
 #: src/components/related-actions.tsx
 msgid "Blocked"
-msgstr ""
+msgstr "Заблокований(-а)"
 
 #: src/components/atproto-labels.tsx
 msgid "Explicit sexual images."
@@ -418,20 +524,24 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "What's new"
-msgstr ""
+msgstr "Що нового"
 
 #: src/components/drafts.tsx
 msgid "Delete all drafts?"
-msgstr ""
+msgstr "Видалити всі чернетки?"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move down"
-msgstr ""
+msgstr "Пересунути вниз"
 
 #: src/components/related-actions.tsx
 msgid "Mention <0>@{username}</0>"
-msgstr ""
+msgstr "Згадати <0>@{username}</0>"
+
+#: src/pages/filters.tsx
+#~ msgid "Edit filter"
+#~ msgstr "Редагувати фільтр"
 
 #: src/components/related-actions.tsx
 msgid "Enable reposts"
@@ -442,10 +552,14 @@ msgstr ""
 msgid "Switch to account's PDS {0}"
 msgstr ""
 
+#: src/pages/hashtag.tsx
+#~ msgid "Unable to unfeature on profile"
+#~ msgstr "Не вдалося скасувати рекомендацію в профілі"
+
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
 msgid "Quote settings updated"
-msgstr ""
+msgstr "Налаштування цитування оновлено"
 
 #: src/pages/year-in-posts.tsx
 msgid "Year"
@@ -453,50 +567,58 @@ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Switch to this account"
-msgstr ""
+msgstr "Перемкнутися на цю обліківку"
 
 #: src/components/compose.tsx
 msgid "Minimize"
-msgstr ""
+msgstr "Згорнути"
 
 #: src/components/quotes-modal.tsx
 msgid "Error loading quotes"
-msgstr ""
+msgstr "Помилка завантаження цитат"
 
 #: src/components/media-attachment.tsx
 msgid "Uploaded"
-msgstr ""
+msgstr "Вивантажено"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "No columns yet. Tap on the Add column button."
+#~ msgstr "Ще немає стовпців. Натисніть кнопку Додати стовпчик."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add more than one shortcut/column to make this work."
-msgstr ""
+msgstr "Додайте кілька ярликів/стовпців, щоб це працювало."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/trending.tsx
 msgid "Trending"
-msgstr ""
+msgstr "Популярне"
 
 #: src/components/embed-modal.tsx
 msgid "Open in new window"
-msgstr ""
+msgstr "Відкрити у новому вікні"
 
 #: src/pages/notifications.tsx
 msgid "Notifications settings updated"
-msgstr ""
+msgstr "Налаштування сповіщень оновлено"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled post rescheduled"
+#~ msgstr "Запланована публікація змінена"
 
 #: src/pages/accounts.tsx
 msgid "View profile…"
-msgstr ""
+msgstr "Переглянути профіль…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Expand content warning or<0/>toggle expanded/collapsed thread"
-msgstr ""
+msgstr "Розгорнути попередження про вміст або<0/>перемкнути розгорнуту/згорнуту нитку"
 
 #: src/components/account-info.tsx
 msgid "Unable to load account."
-msgstr ""
+msgstr "Не вдалося завантажити обліковий запис."
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -505,37 +627,56 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "{query} <0>‒ accounts, hashtags & posts</0>"
-msgstr ""
+msgstr "{query} <0>‒ обліківки, хештеґи та дописи</0>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Content"
-msgstr ""
+msgstr "Вміст"
 
 #: src/components/report-modal.tsx
 msgid "Send Report"
-msgstr ""
+msgstr "Надіслати скаргу"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Enter a new server e.g. \"mastodon.social\""
+#~ msgstr "Введіть новий сервер, напр. \"twiukraine.com\""
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to delete filter."
+#~ msgstr "Не вдалося видалити фільтр."
+
+#: src/components/nav-menu.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Federated"
+#~ msgstr "Федеративна"
 
 #. More from [Author]
 #: src/components/byline.tsx
 msgid "More from <0/>"
-msgstr ""
+msgstr "Більше від <0/>"
 
 #: src/pages/search.tsx
 msgid "No hashtags found."
-msgstr ""
+msgstr "Хештеґи не знайдено."
 
 #: src/components/recent-searches.tsx
 #: src/components/search-form.tsx
 msgid "Recent searches"
-msgstr ""
+msgstr "Нещодавні пошукові запити"
 
 #: src/utils/open-compose.ts
 msgid "Looks like your browser is blocking popups."
-msgstr ""
+msgstr "Схоже, ваш браузер блокує вікна, що спливають."
 
 #: src/pages/settings.tsx
 msgid "Default visibility updated"
-msgstr ""
+msgstr "Видимість за замовчуванням оновлено"
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "{0, plural, other {<0>@{1}</0> first, # others below}}"
+#~ msgstr "{0, plural, one {<0>@{1}</0> спочатку, інший нижче} few {<0>@{1}</0> спочатку, # інші нижче} other {<0>@{1}</0> спочатку, # інших нижче}}"
 
 #. placeholder {0}: feeds.length
 #: src/pages/lists.tsx
@@ -544,48 +685,64 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Poll"
-msgstr ""
+msgstr "Опитування"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Profile picture"
-msgstr ""
+msgstr "Зображення профілю"
 
 #: src/components/notification-service.tsx
 msgid "Notification"
-msgstr ""
+msgstr "Сповіщення"
 
 #: src/pages/accounts.tsx
 msgid "Note: <0>Default</0> account will always be used for first load. Switched accounts will persist during the session."
-msgstr ""
+msgstr "Примітка: При першому завантаженні буде використано обліковий запис <0>за замовчуванням</0>. Перемикання між обліківками буде зберігатися протягом сесії."
+
+#: src/pages/settings.tsx
+#~ msgid "\"Cloud\" import/export for shortcuts settings"
+#~ msgstr "\"Хмарний\" імпорт/експорт для налаштувань ярликів"
 
 #: src/components/status-quotes.tsx
 msgid "Post removed by author"
-msgstr ""
+msgstr "Автор видалив допис"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "+ Replies"
+#~ msgstr "+ Відповіді"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media.tsx
 msgid "Media description"
-msgstr ""
+msgstr "Опис медіа"
 
 #: src/pages/home.tsx
 msgid "Unable to fetch notifications."
-msgstr ""
+msgstr "Не вдалося отримати сповіщення."
 
 #: src/components/media-modal.tsx
 msgid "Open original media in new window"
-msgstr ""
+msgstr "Відкрити оригінальне медіа у новому вікні"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Download shortcuts from server"
+#~ msgstr "Завантажити ярлики з сервера"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not available in current view mode"
-msgstr ""
+msgstr "Недоступно в поточному режимі перегляду"
 
 #: src/components/import-accounts-selection.tsx
 msgid "Existing"
-msgstr ""
+msgstr "Наявні"
 
 #: src/components/poll.tsx
 msgid "Ended <0/>"
-msgstr ""
+msgstr "Завершено <0/>"
+
+#: src/components/notification.tsx
+#~ msgid "View #Wrapstodon"
+#~ msgstr "Переглянути #Wrapstodon"
 
 #: src/components/muted-status.tsx
 msgid "Post from muted account"
@@ -593,11 +750,28 @@ msgstr ""
 
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
-msgstr ""
+msgstr "Переглянути цитати"
+
+#: src/pages/filters.tsx
+#~ msgid "{0, plural, one {# filter} other {# filters}}"
+#~ msgstr "{0, plural, one {# фільтр} few {# фільтри} other {# фільтрів}}"
 
 #: src/pages/settings.tsx
 msgid "Reposts carousel"
 msgstr ""
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Shortcuts saved"
+#~ msgstr "Ярлики збережено"
+
+#: src/components/status-reply-menu.tsx
+#: src/components/status-reply-menu.tsx
+#~ msgid "Reply all"
+#~ msgstr "Відповісти всім"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Hiding boosts"
+#~ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "We read every message even when we cannot reply."
@@ -605,29 +779,33 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Follow requests"
-msgstr ""
+msgstr "Запити на підписку"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Switch to account's server {0}"
+#~ msgstr "Перемкнутися на сервер обліковки {0} "
 
 #: src/pages/trending.tsx
 msgid "No trending posts."
-msgstr ""
+msgstr "Немає популярних дописів."
 
 #. placeholder {0}: !__FAKE_COMMIT_HASH__ && ( <span className="ib insignificant"> ( <a href={`https://github.com/cheeaun/phanpy/commit/${__COMMIT_HASH__}`} target="_blank" rel="noopener noreferrer" > <RelativeTime datetime={new Date(__BUILD_TIME__)} /> </a> ) </span> )
 #: src/pages/settings.tsx
 msgid "<0>Version:</0> <1/> {0}"
-msgstr ""
+msgstr "<0>Версія:</0> <1/> {0}"
 
 #: src/components/status-media-embeds.tsx
 #: src/components/status-post-body.tsx
 msgid "Show less"
-msgstr ""
+msgstr "Згорнути"
 
 #: src/pages/settings.tsx
 msgid "Push notifications are blocked. Please enable them in your browser settings."
-msgstr ""
+msgstr "Push-сповіщення заблоковані. Будь ласка, увімкніть їх у налаштуваннях свого браузеру."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
-msgstr ""
+msgstr "Додати до поточних ярликів?"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
@@ -636,46 +814,59 @@ msgstr ""
 msgid "Undo repost"
 msgstr ""
 
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Phanpy home timeline on tablet device"
+#~ msgstr "Скриншот Домашньої стрічки Phanpy на планшеті"
+
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Previous post"
-msgstr ""
+msgstr "Попередній допис"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Posts)"
-msgstr ""
+msgstr "Пошук: {q} (Дописи)"
 
 #: src/components/media-modal.tsx
 msgid "Describe image…"
-msgstr ""
+msgstr "Опишіть зображення…"
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
 msgid "Name"
-msgstr ""
+msgstr "Назва"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Override current shortcuts?"
-msgstr ""
+msgstr "Замінити поточні ярлики?"
 
 #: src/components/account-info.tsx
 msgid "View profile"
-msgstr ""
+msgstr "Переглянути профіль"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Комбінації клавіш"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Public"
-msgstr ""
+msgstr "Для всіх"
+
+#: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Optional, e.g. mastodon.social"
+#~ msgstr "Необов'язково, напр. \"twiukraine.com\""
+
+#: src/pages/notifications.tsx
+#~ msgid "{0, plural, one {# follow request} other {# follow requests}}"
+#~ msgstr "{0, plural, one {# запит} few {# запити} other {# запитів}} на підписку"
 
 #: src/components/nav-menu.tsx
 msgid "Accounts…"
-msgstr ""
+msgstr "Облікові записи…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -683,11 +874,11 @@ msgstr ""
 #: src/pages/bookmarks.tsx
 #: src/pages/bookmarks.tsx
 msgid "Bookmarks"
-msgstr ""
+msgstr "Закладки"
 
 #: src/components/media-post.tsx
 msgid "Filtered: {filterTitleStr}"
-msgstr ""
+msgstr "Відфільтровано: {filterTitleStr}"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -699,11 +890,11 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external translation services, powered by <0>{TRANSLATION_API_NAME}</0>."
-msgstr ""
+msgstr "Примітка: Ця функція використовує сервіси зовнішніх перекладів від <0>{TRANSLATION_API_NAME}</0>."
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to remove from list."
-msgstr ""
+msgstr "Не вдалося видалити зі списку."
 
 #: src/pages/settings.tsx
 msgid "Show normally"
@@ -711,78 +902,86 @@ msgstr ""
 
 #: src/components/account-block.tsx
 msgid "Mutual"
-msgstr ""
+msgstr "Взаємно"
 
 #: src/components/status-account-menu.tsx
 msgid "Report post…"
-msgstr ""
+msgstr "Поскаржитися на допис…"
 
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 #: src/pages/list.tsx
 msgid "Unable to load posts."
-msgstr ""
+msgstr "Не вдалося завантажити дописи."
 
 #: src/pages/settings.tsx
 msgid "Text size"
-msgstr ""
+msgstr "Розмір тексту"
 
 #: src/pages/catchup.tsx
 msgid "last 11 hours"
-msgstr ""
+msgstr "останні 11 годин"
 
 #: src/components/account-info.tsx
 msgid "View profile image"
-msgstr ""
+msgstr "Переглянути зображення профілю"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Home / Following"
-msgstr ""
+msgstr "Домашня / Підписки"
 
 #: src/pages/catchup.tsx
 msgid "last 3 hours"
-msgstr ""
+msgstr "останні 3 години"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>l</0> or <1>f</1>"
-msgstr ""
+msgstr "<0>l</0> або<1>f</1>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Label"
-msgstr ""
+msgstr "Заголовок"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Liked"
-msgstr ""
+msgstr "Вподобано"
 
 #: src/pages/settings.tsx
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-msgstr ""
+msgstr "Дозвіл на push-сповіщення не було надано з моменту останнього входу. Вам потрібно <0><1>увійти в систему</1> знову, щоб надати дозвіл."
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
 #: src/components/status-helpers.ts
 msgid "Read more →"
-msgstr ""
+msgstr "Читати більше →"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} ({monthYear})"
+#~ msgstr "{accountDisplay} ({monthYear})"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Custom emojis"
+#~ msgstr "Користувацькі емодзі"
 
 #: src/components/drafts.tsx
 msgid "No drafts found."
-msgstr ""
+msgstr "Поки що жодної чернетки"
 
 #: src/pages/bookmarks.tsx
 msgid "No bookmarks yet. Go bookmark something!"
-msgstr ""
+msgstr "Жодної закладки. Додаймо якусь!"
 
 #: src/components/nav-menu.tsx
 msgid "Shortcuts / Columns…"
-msgstr ""
+msgstr "Ярлики / Стовпці…"
 
 #. placeholder {0}: username || acct
 #: src/components/status-utility-menu.tsx
 msgid "View post by <0>@{0}</0>"
-msgstr ""
+msgstr "Переглянути допис від <0>@{0}</0>"
 
 #: src/pages/welcome.tsx
 msgid "Connect your existing Bluesky or Blacksky account.<0/>Your credentials are not stored by Bluepy."
@@ -791,15 +990,15 @@ msgstr ""
 #. placeholder {0}: userLists.length
 #: src/pages/lists.tsx
 msgid "{0, plural, one {# list} other {# lists}}"
-msgstr ""
+msgstr "{0, plural, one {# список} few {# списки} other {# списків}}"
 
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
-msgstr ""
+msgstr "Показати весь чутливий вміст"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
-msgstr ""
+msgstr "Не вдалося заглушити бесіду"
 
 #: src/components/muted-status.tsx
 msgid "Show"
@@ -812,39 +1011,39 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generating description. Please wait…"
-msgstr ""
+msgstr "Генерується опис. Будь ласка, зачекайте…"
 
 #: src/components/nav-menu.tsx
 msgid "New update available…"
-msgstr ""
+msgstr "Доступне нове оновлення…"
 
 #. index/total posts in a thread
 #: src/components/thread-badge.tsx
 msgid "{index}/{total}"
-msgstr ""
+msgstr "{index}/{total}"
 
 #: src/components/translated-bio-sheet.tsx
 msgid "Translated Bio"
-msgstr ""
+msgstr "Перекладена біографія"
 
 #: src/pages/status.tsx
 msgid "Unable to switch"
-msgstr ""
+msgstr "Не вдалося перемкнутися"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
-msgstr ""
+msgstr "Почніть набирати для пошуку GIF-ок"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Your followers can quote"
-msgstr ""
+msgstr "Ваші підписники можуть цитувати"
 
 #: src/components/media.tsx
 msgid "Open file"
-msgstr ""
+msgstr "Відкрити файл"
 
 #. placeholder {0}: groupBy ?? ''
 #: src/pages/catchup.tsx
@@ -855,7 +1054,7 @@ msgstr ""
 #: src/components/edit-profile-sheet.tsx
 #: src/components/related-actions.tsx
 msgid "Edit profile"
-msgstr ""
+msgstr "Редагувати профіль"
 
 #: src/pages/accounts.tsx
 msgid "Remove account…"
@@ -863,50 +1062,59 @@ msgstr ""
 
 #: src/pages/trending.tsx
 msgid "Back to showing trending posts"
-msgstr ""
+msgstr "Назад до популярних дописів"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
-msgstr ""
+msgstr "Генератор опису зображення"
+
+#: src/pages/hashtag.tsx
+#: src/pages/hashtag.tsx
+#~ msgid "Featured on profile"
+#~ msgstr "Рекомендовано в профілі"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut…"
-msgstr ""
+msgstr "Додати ярлик…"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/atproto-labels.tsx
 msgid "Automated"
-msgstr ""
+msgstr "Автоматизовано"
 
 #: src/pages/trending.tsx
 msgid "Trending News"
-msgstr ""
+msgstr "Популярні Новини"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
-msgstr ""
+msgstr "Відкрити медіа або деталі допису"
 
 #: src/components/status-media-embeds.tsx
 msgid "Show media"
-msgstr ""
+msgstr "Показати медіа"
 
 #: src/components/related-actions.tsx
 msgid "Forever"
-msgstr ""
+msgstr "Назавжди"
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications settings"
-msgstr ""
+msgstr "Налаштування сповіщень"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (- Boosts)"
+#~ msgstr ""
 
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/{total}"
-msgstr ""
+msgstr "Нитка {index}/{total}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "beta"
-msgstr ""
+msgstr "бета"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/nav-menu.tsx
@@ -916,88 +1124,105 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Search"
-msgstr ""
+msgstr "Пошук"
+
+#: src/pages/accounts.jsx
+#~ msgid "Log out and remove <0>@{0}</0>"
+#~ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Post updated. Check it out."
-msgstr ""
+msgstr "Допис оновлено. Перевірте це."
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unpin post"
-msgstr ""
+msgstr "Не вдалося відкріпити допис"
 
 #: src/components/shortcuts-settings.tsx
 msgid "e.g. PixelArt (Max 5, space-separated)"
-msgstr ""
+msgstr "напр. PixelArt (Макс 5, розділені пробілом)"
 
 #. placeholder {0}: accounts.length
 #: src/components/import-export-accounts.tsx
 msgid "{0, plural, one {# account} other {# accounts}}"
-msgstr ""
+msgstr "{0, plural, one {# обліковий запис} few {# облікові записи} other {# облікових записів}}"
 
 #: src/components/account-info.tsx
 msgid "Go to account page"
-msgstr ""
+msgstr "Перейти на сторінку облікового запису"
 
 #: src/pages/settings.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "Тема"
 
 #: src/pages/settings.tsx
 msgid "Follows"
-msgstr ""
+msgstr "Підписки"
 
 #. By [Author]
 #. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
 msgid "By {0}"
-msgstr ""
+msgstr "Від {0}"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
-msgstr ""
+msgstr "Здається, ви вже друкуєте або редагуєте допис в батьківському вікні. Повернення в це вікно скасує зміни, що зроблені в батьківському вікні. Продовжити?"
 
 #: src/components/report-modal.tsx
 msgid "Report @{username}"
-msgstr ""
+msgstr "Поскаржитися на @{username}"
 
 #: src/components/media-modal.tsx
 msgid "Open original media"
-msgstr ""
+msgstr "Відкрити оригінальне медіа"
 
 #: src/components/post-embed-modal.tsx
 msgid "Account Emojis:"
-msgstr ""
+msgstr "Емодзі обліківки:"
+
+#. Scheduled [in 1 day] ([Thu, Feb 27, 6:30:00 PM])
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled <0><1/></0> <2>({0})</2>"
+#~ msgstr "Заплановано <0><1/></0> <2>({0})</2>"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Account"
-msgstr ""
+msgstr "Обліковий запис"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>?"
-msgstr ""
+msgstr "Заблокувати <0>@{username}</0>?"
 
 #: src/components/related-actions.tsx
 msgid "@{username} removed from followers"
-msgstr ""
+msgstr "@{username} видалено з підписників"
+
+#: src/components/endorsements.tsx
+#~ msgid "No featured profiles."
+#~ msgstr "Немає рекомендованих профілів."
+
+#: src/pages/filters.tsx
+#~ msgid "Expiry"
+#~ msgstr "Термін дії"
 
 #: src/pages/catchup.tsx
 msgid "Overlaps with your last catch-up"
-msgstr ""
+msgstr "Перетинається з вашою останньою ретроспективою"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post"
-msgstr ""
+msgstr "Створити новий допис"
 
 #. Action to switch from rendered math back to raw (LaTeX) markup
 #: src/components/math-block.tsx
 msgid "Show markup"
-msgstr ""
+msgstr "Показати розмітку"
 
 #. placeholder {0}: shortenNumber(statusesCount)
 #: src/components/account-block.tsx
 msgid "Posts: {0}"
-msgstr ""
+msgstr "Дописи: {0}"
 
 #: src/pages/accounts.tsx
 msgid "Log out and remove <0>@{acct}</0>"
@@ -1005,29 +1230,41 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've blocked @{name}."
-msgstr ""
+msgstr "Допис приховано, оскільки ви заблокували @{name}."
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Failed to delete scheduled post"
+#~ msgstr "Не вдалося видалити заплановану публікацію"
+
 #: src/components/drafts.tsx
 msgid "Looks like you have unsent drafts. Let's continue where you left off."
-msgstr ""
+msgstr "Схоже, у вас є невідправлені чернетки. Ви можете відновити роботу з ними."
+
+#: src/pages/hashtag.tsx
+#~ msgid "Login required to see posts from this server."
+#~ msgstr ""
 
 #: src/components/generic-accounts.tsx
 #: src/components/mention-modal.tsx
 msgid "Error loading accounts"
-msgstr ""
+msgstr "Помилка завантаження облікових записів"
 
 #: src/components/modals.tsx
 msgid "Post published. Check it out."
-msgstr ""
+msgstr "Допис опубліковано. Перевірте це."
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Hashtags)"
-msgstr ""
+msgstr "Пошук: {q} (Хештеґи)"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Unable to save shortcuts"
+#~ msgstr "Не вдалося зберегти ярлики"
 
 #: src/components/status-reblog.tsx
 msgid "<0/> <1>reposted</1>"
@@ -1035,11 +1272,19 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Show anyway"
-msgstr ""
+msgstr "Все одно показати"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Zoom in"
+#~ msgstr "Наблизити"
 
 #: src/components/status-helpers.ts
 msgid "Request to quote"
-msgstr ""
+msgstr "Попросити дозвіл цитувати"
+
+#: src/pages/settings.jsx
+#~ msgid "<0>Built</0> by <1>@cheeaun</1>"
+#~ msgstr "<0>Створено</0> <1>@cheeaun</1>"
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
@@ -1049,7 +1294,7 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Polls are not interactive, becomes a list with vote counts."
-msgstr ""
+msgstr "Опитування не інтерактивні, вони являють собою список з підрахованими голосами."
 
 #: src/components/atproto-labels.tsx
 msgid "Sexually Suggestive"
@@ -1057,7 +1302,12 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Unmuted @{username}"
-msgstr ""
+msgstr "@{username} більше не глушиться"
+
+#: src/components/status-inline-controls.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Boosted"
+#~ msgstr "Поширено"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
@@ -1067,26 +1317,30 @@ msgstr ""
 #. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
 msgid "Showing posts mentioning <0>{0}</0>"
-msgstr ""
+msgstr "Показ дописів зі згадкою <0>{0}</0>"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Unable to copy handle"
-msgstr ""
+msgstr "Не вдалося скопіювати ідентифікатор"
+
+#: src/pages/filters.tsx
+#~ msgid "Change expiry"
+#~ msgstr "Змінити термін дії"
 
 #: src/components/import-export-accounts.tsx
 msgid "Import failed"
-msgstr ""
+msgstr "Помилка імпорту"
 
 #. placeholder {0}: sharers.map((s) => { const { id: sharerId, avatarStatic, displayName, } = s; return ( <button key={sharerId} type="button" className="plain" style={{ padding: 0, }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); // Reset and filter to author setSelectedAuthor(sharerId); setSelectedFilterCategory('all'); }} > <Avatar url={avatarStatic} size="s" alt={displayName} /> </button> ); })
 #: src/pages/catchup.tsx
 msgid "Shared by {0}"
-msgstr ""
+msgstr "Поширили {0}"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Import/export"
-msgstr ""
+msgstr "Імпорт/Експорт"
 
 #: src/pages/account-statuses.tsx
 msgid "Hiding replies"
@@ -1098,24 +1352,46 @@ msgstr ""
 
 #: src/components/quote-chain-modal.tsx
 msgid "Quote chain"
-msgstr ""
+msgstr "Ланцюжок цитувань"
+
+#: src/components/nav-menu.jsx
+#: src/components/shortcuts.jsx
+#: src/pages/list.jsx
+#~ msgid "All Lists"
+#~ msgstr "Всі списки"
 
 #: src/pages/settings.tsx
 msgid "Collapse with reveal"
 msgstr ""
 
+#: src/pages/public.tsx
+#~ msgid "No one has posted anything yet."
+#~ msgstr "Ще ніхто нічого не опублікував."
+
 #: src/components/post-embed-modal.tsx
 msgid "HTML code copied"
-msgstr ""
+msgstr "HTML-код скопійовано"
+
+#: src/pages/filters.tsx
+#~ msgid "Filtered post will be…"
+#~ msgstr "Відфільтрований допис буде…"
 
 #: src/pages/search.tsx
 msgid "See more accounts"
-msgstr ""
+msgstr "Переглянути більше облікових записів"
 
 #: src/components/related-actions.tsx
 #: src/pages/account-statuses.tsx
 msgid "Search my posts"
-msgstr ""
+msgstr "Шукати мої дописи"
+
+#: src/components/status-content.tsx
+#~ msgid "Unboosted @{0}'s post"
+#~ msgstr "Допис @{0} більше не поширюється"
+
+#: src/pages/filters.tsx
+#~ msgid "Delete this filter?"
+#~ msgstr "Видалити цей фільтр?"
 
 #: src/components/generic-accounts.tsx
 #: src/components/notification.tsx
@@ -1123,22 +1399,34 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Accounts"
-msgstr ""
+msgstr "Облікові записи"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've muted @{name}."
-msgstr ""
+msgstr "Допис приховано, оскільки ви заглушили @{name}."
+
+#: src/pages/status.tsx
+#~ msgid "This post is from another server (<0>{instance}</0>). Interactions (reply, boost, etc) are not possible."
+#~ msgstr "Цей допис з іншого серверу (<0>{instance}</0>). Взаємодія (відповідь, поширення тощо) неможлива."
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/components/account-info.tsx
 msgid "This user has chosen to not make this information available."
-msgstr ""
+msgstr "Цей користувач вирішив не розкривати цю інформацію."
+
+#: src/pages/welcome.jsx
+#~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
+#~ msgstr "<0>Створений</0> <1>@cheeaun</1>. <2>Політика Конфіденційності</2>."
 
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
-msgstr ""
+msgstr "Прокрутити догори"
+
+#: src/pages/filters.tsx
+#~ msgid "Home and lists"
+#~ msgstr "Домашня та Списки"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1146,16 +1434,16 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to original profile page"
-msgstr ""
+msgstr "Перейти на сторінку на сервері"
 
 #. placeholder {0}: detectedLang ?? '…'
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
-msgstr ""
+msgstr "Авто ({0})"
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
-msgstr ""
+msgstr "Погоджено"
 
 #: src/components/feedback-modal.tsx
 msgid "Leave this field blank"
@@ -1163,48 +1451,48 @@ msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Powered by GIPHY"
-msgstr ""
+msgstr "На базі GIPHY"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Help"
-msgstr ""
+msgstr "Довідка"
 
 #. placeholder {0}: shortenNumber(statusesCount)
 #. placeholder {1}: shortenNumber(statusesCount)
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{statusesCount, plural, one {<0>{0}</0> Post} other {<1>{1}</1> Posts}}"
-msgstr ""
+msgstr "{statusesCount, plural, one {<0>{0}</0> Допис} few {<1>{1}</1> Дописи} other {<1>{1}</1> Дописів}}"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Header picture"
-msgstr ""
+msgstr "Зображення шапки"
 
 #: src/components/account-info.tsx
 msgid "<0>{displayName}</0> has indicated that their new account is now:"
-msgstr ""
+msgstr "<0>{displayName}</0> вказав(-ла), що новий обліковий запис зараз:"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unmute conversation"
-msgstr ""
+msgstr "Не вдалося розглушити бесіду"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Toggle Cloak mode"
-msgstr ""
+msgstr "Перемкнути режим маскування"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import & append…"
-msgstr ""
+msgstr "Імпортувати й додати…"
 
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Mute profile</0>"
-msgstr ""
+msgstr "Надіслати скаргу <0>+ Заглушити користувача</0>"
 
 #. placeholder {0}: snapStates.settings.contentTranslationHideLanguages .length
 #: src/pages/settings.tsx
 msgid "{0, plural, =0 {Hide \"Translate\" button for:} other {Hide \"Translate\" button for (#):}}"
-msgstr ""
+msgstr "{0, plural, =0 {Приховати кнопку \"Перекласти\" для:} other {Приховати кнопку \"Перекласти\" для (#):}}"
 
 #: src/components/error-fallback.tsx
 msgid "Report a bug"
@@ -1212,39 +1500,51 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Accounts with <0>{query}</0>"
-msgstr ""
+msgstr "Облікові записи з <0>{query}</0>"
+
+#: src/components/compose-poll.tsx
+#~ msgid "Remove poll"
+#~ msgstr "Прибрати опитування"
 
 #: src/pages/catchup.tsx
 msgid "Preview of Catch-up UI"
-msgstr ""
+msgstr "Попередній перегляд інтерфейсу Ретроспективи"
 
 #: src/pages/settings.tsx
 msgid "Display language"
-msgstr ""
+msgstr "Мова інтерфейсу"
 
 #: src/pages/settings.tsx
 msgid "Paginated timeline (beta)"
 msgstr ""
 
+#: src/pages/public.tsx
+#~ msgid "Federated timeline"
+#~ msgstr "Федеративна стрічка"
+
 #: src/pages/welcome.tsx
 msgid "Screenshot of nested comments thread"
-msgstr ""
+msgstr "Скриншот вкладених коментарів нитки"
 
 #: src/pages/trending.tsx
 msgid "Trending ({instance})"
-msgstr ""
+msgstr "Популярне ({instance})"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specify a list of shortcuts that'll appear as:"
-msgstr ""
+msgstr "Вкажіть список ярликів, які будуть виглядати як:"
+
+#: src/components/account-info.tsx
+#~ msgid "{0} original posts, {1} replies, {2} quotes, {3} boosts"
+#~ msgstr "{0} оригінальних дописів, {1} відповідей, {2} цитувань, {3} поширень"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Timeline"
-msgstr ""
+msgstr "Стрічка"
 
 #: src/pages/hashtag.tsx
 msgid "No one has posted anything with this tag yet."
-msgstr ""
+msgstr "Жодного допису із цим хештеґом."
 
 #: src/components/feedback-modal.tsx
 msgid "Thanks, got it."
@@ -1252,71 +1552,95 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Sort: Density"
-msgstr ""
+msgstr "Сортування: Наповнення"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Like (favourite)"
-msgstr ""
+msgstr "Вподобати (обране)"
+
+#: src/pages/settings.tsx
+#~ msgid "Synced to your server's settings. <0>Go to your server ({instance}) for more settings.</0>"
+#~ msgstr "Синхронізовано з налаштуваннями на вашому сервері.<0> Перейдіть на сайт вашого серверу ({instance}) для детальних налаштувань.</0>"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/hashtag.tsx
 msgid "Filters"
-msgstr ""
+msgstr "Фільтри"
 
 #: src/components/report-modal.tsx
 msgid "Malicious links, fake engagement, or repetitive replies"
-msgstr ""
+msgstr "Шкідливі посилання, фальшиві взаємодії, або відповіді, що повторюються"
 
 #: src/components/compose.tsx
 #: src/components/compose.tsx
 #: src/components/file-picker-input.tsx
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
-msgstr ""
+msgstr "{maxMediaAttachments, plural, one {Ви можете прикріпити до 1 файлу.} other {Ви можете прикріпити до # файлів.}}"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfollow #{hashtag}?"
+#~ msgstr "Не відстежувати #{hashtag}?"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 msgid "Shortcuts"
-msgstr ""
+msgstr "Ярлики"
+
+#: src/pages/filters.tsx
+#~ msgid "No filters yet."
+#~ msgstr "Немає жодного фільтра."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts copied"
-msgstr ""
+msgstr "Ярлики скопійовано"
 
 #: src/pages/accounts.tsx
 msgid "Log out…"
-msgstr ""
+msgstr "Вийти з…"
 
 #: src/pages/catchup.tsx
 msgid "What is this?"
-msgstr ""
+msgstr "Що це?"
 
 #: src/pages/hashtag.tsx
 msgid "Add hashtag"
-msgstr ""
+msgstr "Додати хештеґ"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Import/export settings from/to server (Very experimental)"
+#~ msgstr "Імпорт/експорт налаштувань з/на сервер (Дуже експериментально)"
+
+#: src/components/related-actions.tsx
+#~ msgid "Boosts from @{username} disabled."
+#~ msgstr "Поширення від @{username} вимкнено."
 
 #: src/pages/welcome.tsx
 msgid "Nested comments thread"
-msgstr ""
+msgstr "Вкладені коментарі нитки"
 
 #: src/components/report-modal.tsx
 msgid "Forward to <0>{domain}</0>"
-msgstr ""
+msgstr "Переслати до <0>{domain}</0>"
+
+#: src/components/compose.tsx
+#~ msgid "Add poll"
+#~ msgstr "Додати опитування"
 
 #: src/pages/notifications.tsx
 msgid "You don't follow"
-msgstr ""
+msgstr "На кого ви не підписані"
 
 #: src/compose.tsx
 msgid "Login required."
-msgstr ""
+msgstr "Необхідно ввійти."
 
 #: src/utils/visibility-text.ts
 msgid "Local"
-msgstr ""
+msgstr "Локальна"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
-msgstr ""
+msgstr "Пошук GIF в редакторі"
 
 #. placeholder {0}: prettyBytes( imageSize, )
 #. placeholder {0}: prettyBytes( videoSize, )
@@ -1324,21 +1648,25 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
-msgstr ""
+msgstr "Розмір файлу завеликий. Можуть виникнути проблеми з вивантаженням файлу. Спробуйте зменшити його розмір з {0} до {1} або менше."
 
 #: src/pages/catchup.tsx
 msgid "Remove this catch-up?"
-msgstr ""
+msgstr "Видалити цю ретроспективу?"
 
 #. placeholder {0}: rtf.format(-statusMonthsAgo, 'month')
 #: src/components/status-menu-state.tsx
 msgid "Old post (<0>{0}</0>)"
-msgstr ""
+msgstr "Старий допис (<0>{0}</0>)"
+
+#: src/components/status-content.tsx
+#~ msgid "Boosted @{0}'s post"
+#~ msgstr "Допис @{0} поширено"
 
 #. placeholder {0}: dtf.format(new Date(lastCatchupEndAt))
 #: src/pages/catchup.tsx
 msgid "Until the last catch-up ({0})"
-msgstr ""
+msgstr "До останньої ретроспективи ({0})"
 
 #: src/components/compose.tsx
 #: src/components/edit-profile-sheet.tsx
@@ -1347,7 +1675,7 @@ msgstr ""
 #: src/components/open-link-sheet.tsx
 #: src/components/quote-suggestion.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "Скасувати"
 
 #: src/pages/status.tsx
 msgid "This post is from another PDS (<0>{instance}</0>). Interactions (reply, repost, etc) are not possible."
@@ -1362,7 +1690,7 @@ msgstr ""
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Previous"
-msgstr ""
+msgstr "Попередні"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts in {monthYear} by {accountDisplay}"
@@ -1370,50 +1698,66 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Reload page now to update?"
-msgstr ""
+msgstr "Перезавантажити сторінку для оновлення?"
+
+#: src/components/status-reblog.tsx
+#~ msgid "<0/> <1>boosted</1>"
+#~ msgstr "<0/> <1>пошири(в/ла)</1>"
 
 #: src/components/status-helpers.ts
 msgid "You are not allowed to quote this post"
-msgstr ""
+msgstr "Вам не можна цитувати цей допис"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Search term"
-msgstr ""
+msgstr "Пошуковий запит"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "For multi-column mode, search term is required, else the column will not be shown."
+#~ msgstr "Для режиму з кількома стовпцями пошуковий запит необхідний, інакше стовпець не буде показано."
 
 #: src/pages/status.tsx
 msgid "Error: {e}"
-msgstr ""
+msgstr "Помилка: {e}"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfollowed #{hashtag}"
+#~ msgstr "#{hashtag} не відстежується"
 
 #. placeholder {0}: replies.length
 #. placeholder {1}: shortenNumber(replies.length)
 #: src/pages/status.tsx
 msgid "{0, plural, one {# reply} other {<0>{1}</0> replies}}"
-msgstr ""
+msgstr "{0, plural, one {# відповідь} few {<0>{1}</0> відповіді} other {<0>{1}</0> відповідей}}"
 
 #. Action to render math expressions from raw (LaTeX) markup
 #: src/components/math-block.tsx
 msgid "Format math"
-msgstr ""
+msgstr "Форматувати формулу"
 
 #: src/components/media-attachment.tsx
 msgid "Done"
-msgstr ""
+msgstr "Готово"
 
 #: src/pages/catchup.tsx
 msgid "Authors"
-msgstr ""
+msgstr "За авторами"
 
 #: src/pages/status.tsx
 msgid "{months, plural, one {# month later} other {# months later}}"
-msgstr ""
+msgstr "{months, plural, one {# місяць потому} few {# місяці потому} other {# місяців потому}}"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus column in multi-column mode"
+#~ msgstr "Фокус стовпця в режимі декількох стовпців"
 
 #: src/components/status-utility-menu.tsx
 msgid "Edited: {editedDateText}"
-msgstr ""
+msgstr "Відредаговано: {editedDateText}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List ID"
-msgstr ""
+msgstr "ID списку"
 
 #. placeholder {0}: i18n.number( width as number, )
 #. placeholder {1}: i18n.number(height as number)
@@ -1422,41 +1766,49 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Dimension too large. Uploading might encounter issues. Try reduce dimension from {0}×{1}px to {2}×{3}px."
-msgstr ""
+msgstr "Розмір зображення завеликий. Можуть виникнути проблеми. Спробуйте зменшити зображення з {0}×{1}px до {2}×{3}px."
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post"
-msgstr ""
+msgstr "Відповідаємо на допис @{0}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import shortcuts?"
-msgstr ""
+msgstr "Імпортувати ярлики?"
+
+#: src/pages/public.tsx
+#~ msgid "Switch to Federated"
+#~ msgstr "Перемкнути на Федеративну"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to next post"
-msgstr ""
+msgstr "Наступний допис (пропустити карусель)"
 
 #: src/pages/catchup.tsx
 msgid "last 5 hours"
-msgstr ""
+msgstr "останні 5 годин"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Bio"
-msgstr ""
+msgstr "Біографія"
 
 #: src/pages/welcome.tsx
 msgid "Sign up"
-msgstr ""
+msgstr "Зареєструватися"
 
 #: src/components/status-activity-menu.tsx
 msgid "Unwrap quote chain"
-msgstr ""
+msgstr "Розгорнути ланцюжок цитувань"
 
 #. placeholder {0}: sourceLangText ?? ''
 #: src/components/translation-block.tsx
 msgid "Auto-translated from {0}"
 msgstr ""
+
+#: src/pages/welcome.tsx
+#~ msgid "Visually separate original posts and re-shared posts (boosted posts)."
+#~ msgstr "Візуально розділяє оригінальні та повторно поширені дописи."
 
 #: src/pages/notifications.tsx
 msgid "Who are limited by Bluesky moderators"
@@ -1464,99 +1816,127 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Raw Shortcuts JSON"
-msgstr ""
+msgstr "Вихідний JSON Ярликів"
 
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/pages/catchup.tsx
 msgid "Thread"
-msgstr ""
+msgstr "Нитка"
+
+#: src/components/report-modal.tsx
+#~ msgid "Violates the law of your or the server's country"
+#~ msgstr "Порушує закон вашої країни чи країни серверу"
+
+#: src/components/related-actions.tsx
+#~ msgid "Withdraw follow request?"
+#~ msgstr "Відкликати запит на підписку?"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multiple hashtags are supported. Space-separated."
-msgstr ""
+msgstr "Підтримуються декілька гештеґів. Розділені пробілами."
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Failed to load history"
-msgstr ""
+msgstr "Не вдалося завантажити історію"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Search emoji"
+#~ msgstr "Пошук емодзі"
 
 #: src/pages/notifications.tsx
 msgid "Today"
-msgstr ""
+msgstr "Сьогодні"
 
 #: src/components/report-modal.tsx
 msgid "Additional info"
-msgstr ""
+msgstr "Додаткова інформація"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{account} signed up.} other {<0><1>{0}</1> people</0> signed up.}}"
-msgstr ""
+msgstr "{count, plural, =1 {{account} зареєструвався.} few {<0><1>{0}</1> користувачі</0> зареєструвалися.} other {<0><1>{0}</1> користувачів</0> зареєструвалося.}}"
 
 #: src/pages/catchup.tsx
 msgid "None"
-msgstr ""
+msgstr "Не групувати"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Link copied"
-msgstr ""
+msgstr "Посилання скопійовано"
 
 #: src/components/mention-modal.tsx
 msgid "Search accounts"
-msgstr ""
+msgstr "Шукати облікові записи"
+
+#: src/components/notification.tsx
+#~ msgid "{account} requested to follow you."
+#~ msgstr "{account} подав запит на підписку."
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to list members"
-msgstr ""
+msgstr "Показувати відповіді учасникам списку"
+
+#: src/components/compose.tsx
+#~ msgid "Attachment #{i} failed"
+#~ msgstr "Помилка вкладення #{i}"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Top links"
-msgstr ""
+msgstr "Найпопулярніші посилання"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/hashtag.tsx
 msgid "Media only"
-msgstr ""
+msgstr "Лише медіа"
+
+#: src/components/follow-request-buttons.tsx
+#~ msgid "Rejected"
+#~ msgstr "Відхилено"
 
 #: src/components/compose.tsx
 msgid "Update"
-msgstr ""
+msgstr "Оновити"
 
 #: src/components/status-account-menu.tsx
 #: src/pages/settings.tsx
 msgid "Quote settings"
-msgstr ""
+msgstr "Налаштування цитування"
 
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
-msgstr ""
+msgstr "{account} поскаржився(-лась) на {targetAccount}"
+
+#: src/pages/filters.tsx
+#~ msgid "Conversations"
+#~ msgstr "Бесіди"
 
 #. placeholder {0}: err?.message ? `: ${err.message}` : ''
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description{0}"
-msgstr ""
+msgstr "Помилка генерації опису{0}"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Редагувати"
 
 #: src/pages/catchup.tsx
 msgid "You don't have to read everything."
-msgstr ""
+msgstr "Ви не мусите читати все."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Max {SHORTCUTS_LIMIT} shortcuts"
-msgstr ""
+msgstr "Максимум {SHORTCUTS_LIMIT} ярликів"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Esc</0> or <1>Backspace</1>"
-msgstr ""
+msgstr "<0>Esc</0> або <1>Backspace</1>"
 
 #: src/components/account-info.tsx
 #: src/components/quotes-modal.tsx
@@ -1565,60 +1945,60 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Quotes"
-msgstr ""
+msgstr "Цитати"
 
 #. placeholder {0}: info.acct || info.username
 #: src/components/related-actions.tsx
 msgid "Unfollow @{0}?"
-msgstr ""
+msgstr "Відписатися від @{0}?"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/related-actions.tsx
 msgid "Last post: <0>{0}</0>"
-msgstr ""
+msgstr "Останній допис: <0>{0}</0>"
 
 #: src/pages/catchup.tsx
 msgid "Next author"
-msgstr ""
+msgstr "Наступний автор"
 
 #: src/pages/catchup.tsx
 msgid "Sort"
-msgstr ""
+msgstr "Сортування"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/account-block.tsx
 msgid "Last posted: {0}"
-msgstr ""
+msgstr "Останній допис: {0}"
 
 #: src/pages/settings.tsx
 msgid "Only for new images while composing new posts."
-msgstr ""
+msgstr "Лише для нових зображень при створенні нових дописів."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Bookmarked @{0}'s post"
-msgstr ""
+msgstr "Допис @{0} додано в закладки"
 
 #: src/components/status-account-menu.tsx
 msgid "Delete this post?"
-msgstr ""
+msgstr "Видалити цей допис?"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>k</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>k</1>"
 
 #: src/pages/settings.tsx
 msgid "Volunteer translations"
-msgstr ""
+msgstr "Допомогти з перекладом"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 msgid "Unable to fetch account info"
-msgstr ""
+msgstr "Не вдалося отримати інформацію про обліковий запис"
 
 #: src/pages/search.tsx
 msgid "Enter your search term or paste a URL above to get started."
-msgstr ""
+msgstr "Введіть пошуковий запит або вставте посилання вище, щоб розпочати."
 
 #: src/pages/catchup.tsx
 msgid "Links shared by followings, sorted by shared counts, reposts and likes."
@@ -1633,32 +2013,40 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
-msgstr ""
+msgstr "Примітка: Ця функціональність використовує зовнішній сервіс AI, що базується на <0>img-alt-api</0>. Може не працювати добре. Тільки для зображень та англійською мовою."
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Zoom out"
+#~ msgstr "Віддалити"
 
 #: src/components/media-post.tsx
 msgid "Sensitive media"
-msgstr ""
+msgstr "Чутливе медіа"
 
 #: src/components/compose.tsx
 msgid "Add GIF"
-msgstr ""
+msgstr "Додати GIF"
 
 #. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
 msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr ""
+msgstr "Вилучити мій допис з допису <0>@{0}</0>?"
+
+#: src/pages/welcome.tsx
+#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
+#~ msgstr ""
 
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
 msgid "Posts on this list are hidden from Home/Following"
-msgstr ""
+msgstr "Дописи в цьому списку приховано зі стрічки Домашня/Підписки"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "following.stats"
-msgstr ""
+msgstr "Підписок"
 
 #. js-lingui-explicit-id
 #: src/components/nav-menu.tsx
@@ -1668,118 +2056,166 @@ msgstr ""
 #: src/pages/following2.tsx
 #: src/pages/following2.tsx
 msgid "following.title"
-msgstr ""
+msgstr "Підписки"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Accounts)"
-msgstr ""
+msgstr "Пошук: {q} (Облікові записи)"
+
+#: src/components/report-modal.tsx
+#~ msgid "Breaks specific server rules"
+#~ msgstr "Порушує певні правила серверу"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not sure what to add?<0/>Try adding <1>Home / Following and Notifications</1> first."
-msgstr ""
+msgstr "Не знаєте що додати?<0/> Радимо почати з <1>Домашня та Сповіщення</1>."
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to create filter"
+#~ msgstr "Не вдалося створити фільтр"
+
+#: src/pages/welcome.jsx
+#~ msgid "Connect your existing Mastodon/Fediverse account.<0/>Your credentials are not stored on this server."
+#~ msgstr "Під'єднайте ваш обліковий запис Федиверсу (Mastodon, Pleroma тощо).<0/>Ваші облікові дані не зберігаються на цьому сервері."
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Saving shortcuts to server…"
+#~ msgstr "Збереження ярликів до сервера…"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
-msgstr ""
+msgstr "Не вдалося оновити профіль."
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/X"
-msgstr ""
+msgstr "Нитка {index}/X"
 
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
-msgstr ""
+msgstr "Ваш обліковий запис було призупинено."
 
 #: src/components/account-block.tsx
 msgid "Locked"
-msgstr ""
+msgstr "Закритий профіль"
 
 #: src/pages/notifications.tsx
 msgid "Accept"
-msgstr ""
+msgstr "Погодитись"
 
 #: src/pages/notifications.tsx
 msgid "Ignore"
-msgstr ""
+msgstr "Ігнорувати"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Unable to download shortcuts"
+#~ msgstr "Не вдалося завантажити ярлики"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "QR code"
-msgstr ""
+msgstr "QR-код"
 
 #: src/pages/settings.tsx
 msgid "Unable to copy version string"
-msgstr ""
+msgstr "Не вдалося скопіювати версію"
 
 #: src/components/search-form.tsx
 msgid "Look up <0>{query}</0>"
-msgstr ""
+msgstr "Переглянути <0>{query}</0>"
+
+#: src/components/compose.tsx
+#~ msgid "Add custom emoji"
+#~ msgstr "Додати користувацькі емодзі"
+
+#: src/pages/filters.tsx
+#~ msgid "obscured (media only)"
+#~ msgstr "прикрито (лише медіа)"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open link?"
-msgstr ""
+msgstr "Відкрити посилання?"
 
 #: src/pages/notifications.tsx
 msgid "Unable to load notifications"
-msgstr ""
+msgstr "Не вдалося завантажити сповіщення"
 
 #: src/components/post-embed-modal.tsx
 msgid "HTML Code"
-msgstr ""
+msgstr "HTML-код"
+
+#: src/components/compose.tsx
+#~ msgid "Posting on <0/>"
+#~ msgstr "Публікація на <0/>"
 
 #: src/components/timeline.tsx
 msgid "Pinned posts"
-msgstr ""
+msgstr "Закріплені дописи"
+
+#: src/components/compose.tsx
+#~ msgid "Schedule"
+#~ msgstr "Запланувати"
 
 #: src/components/compose.tsx
 msgctxt "Submit button in composer"
 msgid "Post"
-msgstr ""
+msgstr "Опублікувати"
 
 #: src/components/status-post-body.tsx
 #: src/components/timeline.tsx
 msgid "Content warning"
-msgstr ""
+msgstr "Попередження про вміст"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Hashtag"
-msgstr ""
+msgstr "Хештеґ"
+
+#: src/components/related-actions.tsx
+#~ msgid "Add notes"
+#~ msgstr "Додати примітку"
 
 #. js-lingui-explicit-id
 #: src/pages/catchup.tsx
 msgid "group.filter"
-msgstr ""
+msgstr "Групування"
+
+#: src/components/related-actions.tsx
+#~ msgid "Disable boosts"
+#~ msgstr "Вимкнути поширення"
 
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Export"
-msgstr ""
+msgstr "Експорт"
 
 #: src/components/search-form.tsx
 #: src/pages/home.tsx
 msgid "See all"
-msgstr ""
+msgstr "Переглянути всі"
 
 #: src/pages/settings.tsx
 msgid "Auto inline translation"
-msgstr ""
+msgstr "Автоматичний вбудований переклад"
 
 #: src/pages/catchup.tsx
 msgid "Note: the Home timeline might only show a limited number of posts regardless of the time range."
 msgstr ""
 
+#: src/pages/catchup.tsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Next post"
-msgstr ""
+msgstr "Наступний допис"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
 msgid "View notifications from <0>@{0}</0>"
-msgstr ""
+msgstr "Переглянути сповіщення від <0>@{0}</0>"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1787,7 +2223,7 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
 msgid "Lists"
-msgstr ""
+msgstr "Списки"
 
 #: src/pages/mentions.tsx
 msgid "Only followings"
@@ -1795,36 +2231,40 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Allow"
-msgstr ""
+msgstr "Дозволити"
 
 #. placeholder {0}: account?.username
 #: src/pages/account-statuses.tsx
 msgid "Search @{0}'s posts"
-msgstr ""
+msgstr "Шукати дописи @{0}"
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to edit filter"
+#~ msgstr "Не вдалося редагувати фільтр"
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText}"
-msgstr ""
+msgstr "Перекласти з {sourceLangText}"
 
 #: src/pages/account-statuses.tsx
 msgid "Month"
-msgstr ""
+msgstr "Місяць"
 
 #: src/pages/list.tsx
 #: src/pages/list.tsx
 msgid "Manage members"
-msgstr ""
+msgstr "Керувати учасниками"
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
-msgstr ""
+msgstr "Неможливо відформатувати формулу"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Anyone can quote"
-msgstr ""
+msgstr "Будь-хто може цитувати"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/post-embed-modal.tsx
@@ -1832,20 +2272,20 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Copy"
-msgstr ""
+msgstr "Скопіювати"
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
 msgid "Failed to update quote settings"
-msgstr ""
+msgstr "Не вдалося оновити налаштування цитування"
 
 #: src/pages/settings.tsx
 msgid "Failed to update default visibility"
-msgstr ""
+msgstr "Не вдалося оновити видимість за замовчуванням"
 
 #: src/components/recent-searches.tsx
 msgid "Cleared recent searches"
-msgstr ""
+msgstr "Нещодавні пошукові запити очищено"
 
 #. placeholder {0}: toUnicode(postInstance)
 #: src/pages/status.tsx
@@ -1854,61 +2294,69 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
-msgstr ""
+msgstr "{hashtagTitle} (Лише медіа)"
 
 #. placeholder {0}: authorCountsList.length
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# author} other {# authors}}"
-msgstr ""
+msgstr "{0, plural, one {# автор} few {# автори} other {# авторів}}"
 
 #: src/components/related-actions.tsx
 msgid "Unfollow…"
-msgstr ""
+msgstr "Відписатися…"
 
 #: src/components/drafts.tsx
 msgid "Delete all…"
-msgstr ""
+msgstr "Видалити всі…"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Following…"
+#~ msgstr "Відстежуємо…"
 
 #: src/pages/accounts.tsx
 msgid "Current"
-msgstr ""
+msgstr "Поточний"
 
 #: src/pages/status.tsx
 msgid "Unable to load replies."
-msgstr ""
+msgstr "Не вдалося завантажити відповіді."
 
 #: src/components/compose.tsx
 msgid "You have unsaved changes. Discard this post?"
-msgstr ""
+msgstr "Є незбережені зміни. Скасувати цей допис?"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (+ Replies)"
+#~ msgstr "{accountDisplay} (+ Відповіді)"
 
 #: src/components/edit-history-controls.tsx
 msgid "Edit History Snapshots"
-msgstr ""
+msgstr "Редагувати історію знімків"
 
 #: src/components/account-info.tsx
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Original"
-msgstr ""
+msgstr "Оригінал"
 
 #: src/components/edit-history-controls.tsx
 #: src/components/gif-picker-modal.tsx
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Next"
-msgstr ""
+msgstr "Наступні"
 
 #: src/components/list-add-edit.tsx
 msgid "Create"
-msgstr ""
+msgstr "Створити"
 
 #: src/pages/search.tsx
 msgid "No posts found."
-msgstr ""
+msgstr "Жодного допису не знайдено."
 
 #: src/pages/hashtag.tsx
 msgid "Add to Shortcuts"
-msgstr ""
+msgstr "Додати в Ярлики"
 
 #: src/components/columns.tsx
 #: src/components/nav-menu.tsx
@@ -1920,47 +2368,51 @@ msgstr ""
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
 msgid "Home"
-msgstr ""
+msgstr "Домашня"
 
 #: src/components/status-account-menu.tsx
 msgid "Unmute conversation"
-msgstr ""
+msgstr "Розглушити бесіду"
 
 #: src/components/notification.tsx
 msgid "{account} reacted to your post with {emojiObject}"
-msgstr ""
+msgstr "{account} відреагував {emojiObject} на ваш допис "
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
-msgstr ""
+msgstr "Не вдалося оновити підписку. Будь ласка, спробуйте ще раз."
 
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
-msgstr ""
+msgstr "Увімкнути сповіщення"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
 msgid "Reset filters"
-msgstr ""
+msgstr "Скинути фільтри"
 
 #: src/pages/catchup.tsx
 msgid "last 8 hours"
-msgstr ""
+msgstr "останні 8 годин"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "{0} more…"
+#~ msgstr "{0} більше…"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from @{0} will not show up in Filtered notifications from now on."
-msgstr ""
+msgstr "Відтепер сповіщення від @{0} не показуватимуться у відфільтрованих сповіщеннях."
 
 #: src/pages/notifications.tsx
 msgid "Who unsolicitedly private mention you"
-msgstr ""
+msgstr "Хто небажано згадав вас"
 
 #: src/components/notification.tsx
 msgid "{account} published a post."
-msgstr ""
+msgstr "{account} опублікував допис"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1971,31 +2423,31 @@ msgstr ""
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "Сповіщення"
 
 #: src/components/poll.tsx
 msgid "Voted"
-msgstr ""
+msgstr "Проголосував(-ла)"
 
 #: src/components/media-attachment.tsx
 msgid "Audio description"
-msgstr ""
+msgstr "Опис аудіо"
 
 #: src/components/notification.tsx
 msgid "Followed by…"
-msgstr ""
+msgstr "Підписалися…"
 
 #: src/pages/status.tsx
 msgid "Back"
-msgstr ""
+msgstr "Назад"
 
 #: src/components/report-modal.tsx
 msgid "Illegal"
-msgstr ""
+msgstr "Нелегал"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} on {instance}"
-msgstr ""
+msgstr "{hashtagTitle} на {instance}"
 
 #: src/components/compose.tsx
 #: src/components/keyboard-shortcuts-help.tsx
@@ -2004,7 +2456,11 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
-msgstr ""
+msgstr "Відповісти"
+
+#: src/components/notification.tsx
+#~ msgid "Your {year} #Wrapstodon is here!"
+#~ msgstr "Ваш {year} #Wrapstodon тут!"
 
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
@@ -2012,55 +2468,67 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has received a moderation warning."
-msgstr ""
+msgstr "Ваш обліковий запис отримав попередження про модерацію."
 
 #. placeholder {0}: shortcutsStr.length
 #: src/components/shortcuts-settings.tsx
 msgid "{0, plural, one {# character} other {# characters}}"
-msgstr ""
+msgstr "{0, plural, one {# символ} few {# символи} other {# символів}}"
+
+#: src/pages/settings.tsx
+#~ msgid "Note: This feature uses currently-logged-in server API."
+#~ msgstr "Примітка: Ця функціональність використовує API поточно-авторизованого сервера."
 
 #: src/components/status-utility-menu.tsx
 msgid "Copy post text"
-msgstr ""
+msgstr "Копіювати текст допису"
+
+#: src/components/modals.tsx
+#~ msgid "Post scheduled"
+#~ msgstr "Допис заплановано"
 
 #: src/pages/accounts.tsx
 msgid "Add an existing account"
-msgstr ""
+msgstr "Додати існуючий обліковий запис"
 
 #: src/components/media-modal.tsx
 msgid "View post"
-msgstr ""
+msgstr "Переглянути допис"
 
 #: src/components/nav-menu.tsx
 msgid "New"
-msgstr ""
+msgstr "Нове"
 
 #: src/components/status-utility-menu.tsx
 msgid "Post text copied"
-msgstr ""
+msgstr "Текст допису скопійовано"
 
 #: src/components/report-modal.tsx
 msgid "Violation"
-msgstr ""
+msgstr "Порушення"
 
 #: src/components/status-header.tsx
 #: src/utils/visibility-text.ts
 msgid "Private mention"
-msgstr ""
+msgstr "Лише згадані"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
-msgstr ""
+msgstr "Експериментальні опції"
+
+#: src/pages/lists.jsx
+#~ msgid "No lists yet."
+#~ msgstr "Списків поки немає."
 
 #: src/compose.tsx
 #: src/pages/http-route.tsx
 #: src/pages/login.tsx
 msgid "Go home"
-msgstr ""
+msgstr "На головну"
 
 #: src/components/background-service.tsx
 msgid "Cloak mode enabled"
-msgstr ""
+msgstr "Режим маскування увімкнено"
 
 #. placeholder {0}: fItems.length
 #: src/components/timeline.tsx
@@ -2069,27 +2537,27 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Note: This preview is lightly styled."
-msgstr ""
+msgstr "Примітка: Цей попередній перегляд трохи стилізовано."
 
 #. placeholder {0}: account.username
 #: src/pages/list.tsx
 msgid "Remove <0>@{0}</0> from list?"
-msgstr ""
+msgstr "Вилучити <0>@{0}</0> зі списку?"
 
 #: src/pages/notifications.tsx
 msgid "Dismissed"
-msgstr ""
+msgstr "Відхилено"
 
 #. Preview of one character, in largest size
 #. Preview of one character, in smallest size
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "A"
-msgstr ""
+msgstr "А"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Close post or dialogs"
-msgstr ""
+msgstr "Закрити допис або діалоги"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Reposts Carousel"
@@ -2099,18 +2567,30 @@ msgstr ""
 #: src/components/list-add-edit.tsx
 #: src/components/status-account-menu.tsx
 msgid "Delete…"
-msgstr ""
+msgstr "Видалити…"
+
+#: src/pages/filters.tsx
+#~ msgid "minimized"
+#~ msgstr "згорнуто"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Embed post"
-msgstr ""
+msgstr "Вбудувати допис"
+
+#: src/components/compose.tsx
+#~ msgid "Mark media as sensitive"
+#~ msgstr "Позначити медіа як чутливе"
 
 #. placeholder {0}: shortenNumber(votersCount)
 #. placeholder {1}: shortenNumber(votersCount)
 #: src/components/poll.tsx
 msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
-msgstr ""
+msgstr "{votersCount, plural, one {<0>{0}</0> учасник} few {<1>{1}</1> учасники} other {<1>{1}</1> учасників}} опитування"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Downloading saved shortcuts from server…"
+#~ msgstr "Завантаження збережених ярликів з сервера…"
 
 #: src/components/atproto-labels.tsx
 msgid "Does not include nudity."
@@ -2118,11 +2598,15 @@ msgstr ""
 
 #: src/components/import-accounts-selection.tsx
 msgid "Select accounts to import"
-msgstr ""
+msgstr "Оберіть облікові записи для імпорту"
+
+#: src/components/notification.tsx
+#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted your reply.} other {{account} boosted your post.}}} other {{account} boosted {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted your reply.} other {<2><3>{1}</3> people</2> boosted your post.}}}}"
+#~ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} пошири(в/ла) вашу відповідь.} other {{account} пошири(в/ла) ваш допис.}}} few {{postType, select, reply {{account} пошири(в/ла) {postsCount} ваші відповіді.} other {{account} пошири(в/ла) {postsCount} ваші дописи.}}} other {{postType, select, reply {{account} пошири(в/ла) {postsCount} ваших відповідей.} other {{account} пошири(в/ла) {postsCount} ваших дописів.}}}}} few {{postsCount, plural, =1 {{postType, select, reply {<0><1>{0}</1> користувачі</0> поширили вашу відповідь.} other {<0><1>{0}</1> користувачі</0> поширили ваш допис.}}} few {{postType, select, reply {<0><1>{0}</1> користувачі</0> поширили {postsCount} ваші відповіді.} other {<0><1>{0}</1> користувачі</0> поширили {postsCount} ваші дописи.}}} other {{postType, select, reply {<0><1>{0}</1> користувачі</0> поширили {postsCount} ваших відповідей.} other {<0><1>{0}</1> користувачі</0> поширили {postsCount} ваших дописів.}}}}} other {{postsCount, plural, =1 {{postType, select, reply {<0><1>{0}</1> користувачів</0> поширили вашу відповідь.} other {<0><1>{0}</1> користувачів</0> поширили ваш допис.}}} few {{postType, select, reply {<0><1>{0}</1> користувачів</0> поширили {postsCount} ваші відповіді.} other {<0><1>{0}</1> користувачів</0> поширили {postsCount} ваші дописи.}}} other {{postType, select, reply {<0><1>{0}</1> користувачів</0> поширили {postsCount} ваших відповідей.} other {<0><1>{0}</1> користувачів</0> поширили {postsCount} ваших дописів.}}}}}}"
 
 #: src/components/related-actions.tsx
 msgid "Notifications enabled for @{username}'s posts."
-msgstr ""
+msgstr "Сповіщення для постів @{username} увімкнено."
 
 #: src/components/feedback-modal.tsx
 msgid "Send"
@@ -2134,54 +2618,66 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "System language ({systemTargetLanguageText})"
-msgstr ""
+msgstr "Мова системи ({systemTargetLanguageText})"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>…"
-msgstr ""
+msgstr "Заблокувати <0>@{username}</0>…"
+
+#: src/components/status-header.tsx
+#~ msgid "{timeRepliesCount, plural, one {# reply} other {# replies}}"
+#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Open post details"
-msgstr ""
+msgstr "Відкрити подробиці допису"
 
 #: src/components/compose.tsx
 msgid "Pop out"
-msgstr ""
+msgstr "В окремому вікні"
+
+#: src/pages/status.tsx
+#~ msgid "Switch to my server to enable interactions"
+#~ msgstr "Перемкнутися на мій сервер задля взаємодії"
 
 #. placeholder {0}: postingStats.total
 #. placeholder {1}: postingStats.total
 #: src/components/account-info.tsx
 msgid "{0, plural, one {Last 1 post in the past year(s)} other {Last {1} posts in the past year(s)}}"
-msgstr ""
+msgstr "{0, plural, one {{1}  допис} few {{1} дописи} many {{1} дописів} other {{1} дописи}} за останній рік чи роки"
 
 #: src/components/notification.tsx
 msgid "Your account has been disabled."
-msgstr ""
+msgstr "Ваш обліковий запис було вимкнено."
 
 #: src/pages/status.tsx
 msgid "Unable to load post"
-msgstr ""
+msgstr "Не вдалося завантажити дописи"
 
 #: src/components/list-add-edit.tsx
 msgid "Hide posts on this list from Home/Following"
-msgstr ""
+msgstr "Приховати дописи цього списку з Головної/Підписок"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
-msgstr ""
+msgstr "Нові сповіщення"
 
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Block profile</0>"
-msgstr ""
+msgstr "Надіслати скаргу <0>+ Заблокувати користувача</0>"
 
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
-msgstr ""
+msgstr "Емодзі:"
 
 #: src/pages/settings.tsx
 msgid "Post edits"
-msgstr ""
+msgstr "Редагування дописів"
+
+#: src/pages/accounts.jsx
+#~ msgid "Log out <0>@{0}</0>?"
+#~ msgstr "Вийти з <0>@{0}</0>?"
 
 #: src/components/related-actions.tsx
 msgid "Disable reposts"
@@ -2189,13 +2685,13 @@ msgstr ""
 
 #: src/components/import-export-accounts.tsx
 msgid "Import/Export <0>Accounts</0>"
-msgstr ""
+msgstr "Імпорт/Експорт <0>Облікових засобів</0>"
 
 #. placeholder {0}: shortenNumber(votesCount)
 #. placeholder {1}: shortenNumber(votesCount)
 #: src/components/poll.tsx
 msgid "{votesCount, plural, one {<0>{0}</0> vote} other {<1>{1}</1> votes}}"
-msgstr ""
+msgstr "{votesCount, plural, one {<0>{0}</0> проголосува(в/ла)} other {<1>{1}</1> проголосували}}"
 
 #. placeholder {0}: username || acct
 #. placeholder {0}: usernameValue || acctValue
@@ -2206,7 +2702,7 @@ msgstr ""
 
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
-msgstr ""
+msgstr "Це сповіщення з вашого іншого облікового запису."
 
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
@@ -2216,7 +2712,13 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Try again"
-msgstr ""
+msgstr "Спробувати знову"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Go to another server…"
+#~ msgstr "Перейти на інший сервер…"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2230,7 +2732,7 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "This shortcut already exists"
-msgstr ""
+msgstr "Цей ярлик вже існує"
 
 #: src/components/atproto-labels.tsx
 msgid "Non-sexual Nudity"
@@ -2238,168 +2740,206 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Reply (new window)"
-msgstr ""
+msgstr "Відповісти (нове вікно)"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only) on {instance}"
-msgstr ""
+msgstr "{hashtagTitle} (Лише медіа) на {instance}"
 
 #: src/pages/favourites.tsx
 msgid "Unable to load likes."
-msgstr ""
+msgstr "Не вдалося завантажити вподобання."
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in or created has ended."
-msgstr ""
+msgstr "Опитування, в якому ви проголосували або яке створили, закінчилося."
 
 #: src/components/status-account-menu.tsx
 msgid "Post deleted"
-msgstr ""
+msgstr "Допис видалено"
 
 #: src/components/report-modal.tsx
 msgid "Blocked {username}"
-msgstr ""
+msgstr "{username} заблоковано"
 
 #: src/pages/list.tsx
 msgid "Nothing yet."
-msgstr ""
+msgstr "Поки нічого."
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
-msgstr ""
+msgstr "Редагувати опис аудіо"
 
 #: src/components/status-inline-controls.tsx
 msgid "Pinned"
-msgstr ""
+msgstr "Закріплено"
+
+#: src/components/report-modal.tsx
+#~ msgid "Server rule violation"
+#~ msgstr "Порушення правил серверу"
 
 #: src/components/notification.tsx
 msgid "A poll you have created has ended."
-msgstr ""
+msgstr "Опитування, яке ви створили, завершено."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to create list."
-msgstr ""
+msgstr "Не вдалося створити список."
 
 #: src/components/drafts.tsx
 #: src/pages/settings.tsx
 msgid "Unsent drafts"
-msgstr ""
+msgstr "Невідправлені чернетки"
 
 #: src/pages/notifications.tsx
 msgid "You're all caught up."
-msgstr ""
+msgstr "Ви наздогнали все."
+
+#: src/components/keyboard-shortcuts-help.tsx
+#: src/components/status-large-footer.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost"
+#~ msgstr "Поширити"
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
-msgstr ""
+msgstr "Проблема не відповідає іншим категоріям"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Error loading custom emojis"
+#~ msgstr "Помилка завантаження емодзі"
 
 #. placeholder {0}: tag.name
 #: src/pages/account-statuses.tsx
 msgid "Showing posts tagged with #{0}"
-msgstr ""
+msgstr "Показ дописів з теґом #{0}"
 
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Import"
-msgstr ""
+msgstr "Імпорт"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/status-reblog.tsx
 msgid "Group"
-msgstr ""
+msgstr "Група"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Hide results"
-msgstr ""
+msgstr "Приховати результати"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
-msgstr ""
+msgstr "Яка проблема з цим дописом?"
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
 msgid "Privacy Policy"
-msgstr ""
+msgstr "Політика конфіденційності"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "Оновити"
+
+#: src/pages/catchup.tsx
+#~ msgid "Followed tags"
+#~ msgstr "Відстежувані теґи"
+
+#: src/pages/login.jsx
+#~ msgid "Don't have an account? Create one!"
+#~ msgstr "У вас ще немає облікового запису? Створіть його!"
 
 #: src/components/related-actions.tsx
 msgid "Search <0>@{username}</0>'s posts"
-msgstr ""
+msgstr "Шукати дописи <0>@{username}</0>"
+
+#: src/components/compose-poll.tsx
+#~ msgid "Choice {0}"
+#~ msgstr "Варіант {0}"
 
 #: src/components/status-account-menu.tsx
 msgid "Pin to profile"
-msgstr ""
+msgstr "Закріпити в профілі"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Share…"
-msgstr ""
+msgstr "Поширити…"
 
 #: src/components/media-attachment.tsx
 msgid "Image description"
-msgstr ""
+msgstr "Опис зображення"
+
+#: src/components/compose-poll.tsx
+#~ msgid "Duration"
+#~ msgstr "Тривалість"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Optional"
 msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
 
 #. placeholder {0}: options.length
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "{0, plural, one {# choice} other {# choices}}"
-msgstr ""
+msgstr "{0, plural, one {# вибір} few { # вибори} other {# виборів}}"
 
 #: src/pages/catchup.tsx
 msgid "last 6 hours"
-msgstr ""
+msgstr "останні 6 годин"
 
 #: src/components/import-export-accounts.tsx
 msgid "Export failed"
-msgstr ""
+msgstr "Помилка експорту"
 
 #: src/components/status-post-body.tsx
 msgid "Show content"
-msgstr ""
+msgstr "Показати вміст"
 
 #: src/components/notification.tsx
 msgid "Liked by…"
-msgstr ""
+msgstr "Вподобали…"
 
 #: src/components/poll.tsx
 msgid "Vote"
-msgstr ""
+msgstr "Проголосувати"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut"
-msgstr ""
+msgstr "Додати ярлик"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Catch-up"
-msgstr ""
+msgstr "Скриншот Ретроспективи"
+
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Phanpy home timeline on mobile device"
+#~ msgstr "Скриншот Домашньої стрічки Phanpy на мобільному пристрої"
 
 #: src/components/compose-button.tsx
 msgid "Add to thread"
-msgstr ""
+msgstr "Додати в нитку"
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unbookmarked @{0}'s post"
-msgstr ""
+msgstr "Допис @{0} прибрано із закладок"
 
 #: src/pages/settings.tsx
 msgid "Cloak mode <0>(<1>Text</1> → <2>████</2>)</0>"
-msgstr ""
+msgstr "Режим маскування <0>(<1>Текст</1> → <2>████</2>)</0>"
 
 #: src/pages/settings.tsx
 msgid "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
@@ -2407,7 +2947,7 @@ msgstr ""
 
 #: src/pages/search.tsx
 msgid "See more posts"
-msgstr ""
+msgstr "Показати більше повідомлень"
 
 #: src/pages/account-statuses.tsx
 msgid "Media posts tagged #{tagged} by {accountDisplay}"
@@ -2415,52 +2955,64 @@ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Reply posted. Check it out."
-msgstr ""
+msgstr "Відповідь опубліковано. Перевірте це."
 
 #. placeholder {0}: localeCode2Text(lang)
 #: src/components/media-attachment.tsx
 msgid "({0}) <0>— experimental</0>"
-msgstr ""
+msgstr "({0}) <0>— експериментально</0>"
+
+#: src/pages/filters.tsx
+#~ msgid "* Not implemented yet"
+#~ msgstr "* Ще не реалізовано"
 
 #: src/components/compose.tsx
 #: src/components/mention-modal.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/list.tsx
 msgid "Add"
-msgstr ""
+msgstr "Додати"
+
+#: src/pages/filters.tsx
+#~ msgid "Expired"
+#~ msgstr "Прострочений"
 
 #: src/components/poll.tsx
 msgid "Unable to vote in poll"
-msgstr ""
+msgstr "Неможливо проголосувати в опитуванні"
 
 #: src/components/translation-block.tsx
 msgid "Failed to translate"
-msgstr ""
+msgstr "Не вдалося перекласти"
 
 #: src/components/status-menu-state.tsx
 msgid "Some media have no descriptions."
-msgstr ""
+msgstr "Деякі медіа не мають альтернативного тексту."
 
 #: src/compose.tsx
 msgid "You may close this page now."
-msgstr ""
+msgstr "Тепер ви можете закрити сторінку."
 
 #: src/components/search-form.tsx
 msgid "Posts tagged with <0>{hashtag}</0>"
-msgstr ""
+msgstr "Дописи, що помічені <0>{hashtag}</0>"
 
 #: src/components/compose.tsx
 msgid "Add media"
-msgstr ""
+msgstr "Додати медіа"
+
+#: src/pages/filters.tsx
+#~ msgid "Title"
+#~ msgstr "Заголовок"
 
 #: src/pages/hashtag.tsx
 msgid "Hashtag shortcut added"
-msgstr ""
+msgstr "Ярлик хештеґу додано"
 
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Follow"
-msgstr ""
+msgstr "Підписатися"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-large-footer.tsx
@@ -2471,90 +3023,102 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has been limited."
-msgstr ""
+msgstr "Ваш обліковий запис було обмежено."
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "Reply…"
+#~ msgstr "Відповісти…"
 
 #: src/components/account-block.tsx
 msgid "{followersCount, plural, one {# follower} other {# followers}}"
-msgstr ""
+msgstr "{followersCount, plural, one {# підписник} many {# підписників} other {# підписники}}"
 
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Video description"
-msgstr ""
+msgstr "Опис відео"
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in has ended."
-msgstr ""
+msgstr "Опитування, в якому ви проголосували, закінчилося"
 
 #: src/components/compose.tsx
 msgid "Some media have no descriptions. Continue?"
-msgstr ""
+msgstr "Деякі медіа не мають альтернативного тексту. Продовжити?"
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to people I follow"
-msgstr ""
+msgstr "Показувати відповіді на людей, на яких я підписан(ий/а)"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
 msgid "Edited"
-msgstr ""
+msgstr "Відредаговано"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Settings"
-msgstr ""
+msgstr "Відкрити налаштування"
 
 #: src/components/report-modal.tsx
 msgid "Report Post"
-msgstr ""
+msgstr "Поскаржитися на допис"
 
 #: src/pages/list.tsx
 msgid "Remove…"
-msgstr ""
+msgstr "Вилучити…"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from <0>@{0}</0>"
-msgstr ""
+msgstr "Сповіщення від <0>@{0}</0>"
 
 #: src/pages/accounts.tsx
 msgid "Logged out"
-msgstr ""
+msgstr "Ви вийшли"
 
 #: src/pages/catchup.tsx
 msgid "Date"
-msgstr ""
+msgstr "Дата"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>j</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>j</1>"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "No scheduled posts."
+#~ msgstr "Немає запланованих публікацій."
 
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy post text"
-msgstr ""
+msgstr "Не вдалося скопіювати текст допису"
+
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost/Quote…"
+#~ msgstr "Поширити/Цитувати…"
 
 #: src/components/nav-menu.tsx
 msgid "Muted users…"
-msgstr ""
+msgstr "Заглушені користувачі…"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Synced"
-msgstr ""
+msgstr "Синхронізовано"
 
 #. placeholder {0}: notificationsPolicy.summary?.pendingRequestsCount ?? 0
 #: src/pages/notifications.tsx
 msgid "{0, plural, one {Filtered notifications from # person} other {Filtered notifications from # people}}"
-msgstr ""
+msgstr "Відфільтровані сповіщення від {0, plural, one {# користувача} other {# користувачів}}"
 
 #: src/pages/catchup.tsx
 #: src/pages/search.tsx
 msgid "All"
-msgstr ""
+msgstr "Усе"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List may not work if it's from a different account."
-msgstr ""
+msgstr "Список може не працювати, якщо він з іншого облікового запису."
 
 #: src/components/account-info.tsx
 #: src/components/status-post-body.tsx
@@ -2566,23 +3130,23 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
-msgstr ""
+msgstr "Відповіді"
 
 #: src/pages/settings.tsx
 msgid "Default visibility"
-msgstr ""
+msgstr "Видимість допису за замовчуванням"
 
 #: src/pages/search.tsx
 msgid "See more hashtags"
-msgstr ""
+msgstr "Переглянути більше хештеґів"
 
 #: src/components/quote-suggestion.tsx
 msgid "Keep as link"
-msgstr ""
+msgstr "Зберегти посилання"
 
 #: src/pages/status.tsx
 msgid "Go to main post"
-msgstr ""
+msgstr "Перейти до головного запису"
 
 #: src/pages/accounts.tsx
 msgid "Log out <0>@{acct}</0>?"
@@ -2590,39 +3154,51 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Donate"
-msgstr ""
+msgstr "Підтримати"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "<0>1</0> to <1>9</1>"
+#~ msgstr "<0>1</0> по <1>9</1>"
 
 #: src/components/quote-chain-modal.tsx
 msgid "Failed to unwrap quote chain"
-msgstr ""
+msgstr "Не вдалося розгорнути ланцюжок цитувань"
 
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 msgid "Nothing to see here."
-msgstr ""
+msgstr "Немає на що дивитись."
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users"
-msgstr ""
+msgstr "Заблоковані користувачі"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Only shortcuts that don’t exist in current shortcuts will be appended."
-msgstr ""
+msgstr "Будуть додані лише ті ярлики, яких немає серед поточних ярликів."
 
 #: src/pages/catchup.tsx
 msgid "until the max"
-msgstr ""
+msgstr "до максимуму"
 
 #. Relative time in seconds, as short as possible
 #. placeholder {0}: seconds < 1 ? 1 : Math.floor(seconds)
 #: src/components/relative-time.tsx
 msgid "{0}s"
-msgstr ""
+msgstr "{0}с"
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
 msgid "{index}/X"
-msgstr ""
+msgstr "{index}/X"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (Media)"
+#~ msgstr "{accountDisplay} (Медіа)"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus previous column in multi-column mode"
+#~ msgstr "Перемістити фокус на попередній стовпець в режимі декількох стовпців"
 
 #: src/pages/account-statuses.tsx
 msgid "Switch to my PDS (<0>{currentInstance}</0>)"
@@ -2630,7 +3206,7 @@ msgstr ""
 
 #: src/components/status-helpers.ts
 msgid "Only followers can quote this post"
-msgstr ""
+msgstr "Тільки підписники можуть цитувати цей допис"
 
 #: src/pages/settings.tsx
 msgid "Notifications from muted accounts are always hidden."
@@ -2640,23 +3216,39 @@ msgstr ""
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
 msgid "{0}h"
-msgstr ""
+msgstr "{0}г"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments can be images, videos, audios or any file types."
-msgstr ""
+msgstr "Вкладені медіа можуть бути зображеннями, відео, аудіо чи будь-якими іншими типами файлів."
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Others"
+#~ msgstr "Інші"
+
+#: src/components/notification.tsx
+#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted & liked your reply.} other {{account} boosted & liked your post.}}} other {{account} boosted & liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted & liked your reply.} other {<2><3>{1}</3> people</2> boosted & liked your post.}}}}"
+#~ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} пошири(в/ла) і вподоба(в/ла) вашу відповідь.} other {{account} пошири(в/ла) і вподоба(в/ла) ваш допис.}}} few {{postType, select, reply {{account} пошири(в/ла) і вподоба(в/ла) {postsCount} ваші відповіді.} other {{account} пошири(в/ла) і вподоба(в/ла) {postsCount} ваші дописи.}}} other {{postType, select, reply {{account} пошири(в/ла) і вподоба(в/ла) {postsCount} ваших відповідей.} other {{account} пошири(в/ла) і вподоба(в/ла) {postsCount} ваших дописів.}}}}} few {{postsCount, plural, =1 {{postType, select, reply {<0><1>{0}</1> користувачі</0> поширили і вподобали вашу відповідь.} other {<0><1>{0}</1> користувачі</0> поширили і вподобали ваш допис.}}} few {{postType, select, reply {<0><1>{0}</1> користувачі</0> поширили і вподобали {postsCount} ваші відповіді.} other {<0><1>{0}</1> користувачі</0> поширили і вподобали {postsCount} ваші дописи.}}} other {{postType, select, reply {<0><1>{0}</1> користувачі</0> поширили і вподобали {postsCount} ваших відповідей.} other {<0><1>{0}</1> користувачі</0> поширили і вподобали {postsCount} ваших дописів.}}}}} other {{postsCount, plural, =1 {{postType, select, reply {<0><1>{0}</1> користувачів</0> поширили і вподобали вашу відповідь.} other {<0><1>{0}</1> користувачів</0> поширили і вподобали ваш допис.}}} few {{postType, select, reply {<0><1>{0}</1> користувачів</0> поширили і вподобали {postsCount} ваші відповіді.} other {<0><1>{0}</1> користувачів</0> поширили і вподобали {postsCount} ваші дописи.}}} other {{postType, select, reply {<0><1>{0}</1> користувачів</0> поширили і вподобали {postsCount} ваших відповідей.} other {<0><1>{0}</1> користувачів</0> поширили і вподобали {postsCount} ваших дописів.}}}}}}"
+
+#: src/components/timeline.tsx
+#~ msgid "{0, plural, one {# Boost} other {# Boosts}}"
+#~ msgstr "{0, plural, one {# Поширення} few {# Поширення} other{# Поширень}}"
 
 #: src/pages/accounts.tsx
 msgid "Remove <0>@{acct}</0>?"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Never expires"
+#~ msgstr "Необмежений термін дії"
+
 #: src/components/search-form.tsx
 msgid "Posts with <0>{query}</0>"
-msgstr ""
+msgstr "Дописи з <0>{query}</0>"
 
 #: src/components/poll.tsx
 msgid "Ending"
-msgstr ""
+msgstr "Завершення"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2666,71 +3258,91 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Sponsor"
-msgstr ""
+msgstr "Спонсорувати"
 
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generate description…"
-msgstr ""
+msgstr "Згенерувати опис…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "No new shortcuts to import"
-msgstr ""
+msgstr "Немає нових ярликів для імпорту"
 
 #: src/components/shortcuts-settings.tsx
 msgid "* Exists in current shortcuts"
-msgstr ""
+msgstr "* Існує в поточних ярликах"
 
 #: src/pages/notifications.tsx
 msgid "Filter"
-msgstr ""
+msgstr "Фільтрувати"
 
 #: src/pages/notifications.tsx
 msgid "Who don't follow you"
-msgstr ""
+msgstr "Хто не підписаний на вас"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unlike"
-msgstr ""
+msgstr "Не вподобати"
+
+#: src/components/notification.jsx
+#~ msgid "[Unknown notification type: {type}]"
+#~ msgstr "[Невідомий тип сповіщення: {type}]"
+
+#: src/pages/home.tsx
+#~ msgid "<0>New</0> <1>Follow Requests</1>"
+#~ msgstr "<0>Нові</0> <1>Запити на Підписку</1>"
 
 #: src/components/report-modal.tsx
 msgid "Unable to report profile"
-msgstr ""
+msgstr "Не вдалося поскаржитися на обліковий запис"
+
+#: src/pages/welcome.jsx
+#~ msgid "A minimalistic opinionated Mastodon web client."
+#~ msgstr "Мінімалістичний вдумливий клієнт для багатьох платформ Федиверсу."
 
 #: src/components/background-service.tsx
 msgid "Cloak mode disabled"
-msgstr ""
+msgstr "Режим маскування вимкнено"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Local only"
+#~ msgstr "Лише локальна"
 
 #: src/pages/hashtag.tsx
 msgid "Remove hashtag"
-msgstr ""
+msgstr "Видалити хештеґ"
 
 #: src/components/status-account-menu.tsx
 msgid "Mute conversation"
-msgstr ""
+msgstr "Заглушити бесіду"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Sync to server"
+#~ msgstr "Синхронізація з сервером"
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Edit History"
-msgstr ""
+msgstr "Історія Змін"
 
 #: src/components/media-attachment.tsx
 msgid "Edit image description"
-msgstr ""
+msgstr "Редагувати опис зображення"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import/Export <0>Shortcuts</0>"
-msgstr ""
+msgstr "Імпорт/Експорт <0>Ярликів</0>"
 
 #: src/pages/catchup.tsx
 msgid "Show me all posts from…"
-msgstr ""
+msgstr "Показати мені всі дописи з…"
 
 #: src/components/poll.tsx
 msgid "Ending <0/>"
-msgstr ""
+msgstr "Завершення <0/>"
 
 #: src/components/muted-status.tsx
 msgid "Show muted post"
@@ -2742,27 +3354,44 @@ msgstr ""
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
-msgstr ""
+msgstr "Переглянути редагування історії знімків"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Custom emojis are not available on this server."
+#~ msgstr "Користувацькі емодзі не доступні на цьому сервері."
+
+#. Scheduled [in 1 day]
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled <0><1/></0>"
+#~ msgstr "Заплановано <0><1/></0>"
 
 #: src/components/related-actions.tsx
 msgid "Disable notifications"
-msgstr ""
+msgstr "Вимкнути сповіщення"
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Unable to update private note."
+#~ msgstr "Не вдалося оновити приватну нотатку."
 
 #: src/pages/hashtag.tsx
 msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
-msgstr ""
+msgstr "{TOTAL_TAGS_LIMIT, plural, few {Макс. # теґи} other {Макс. # теґів}}"
 
 #: src/pages/catchup.tsx
 msgid "last 1 hour"
-msgstr ""
+msgstr "остання година"
 
 #: src/pages/accounts.tsx
 msgid "Default"
-msgstr ""
+msgstr "За замовчуванням"
 
 #: src/components/compose.tsx
 msgid "What are you doing?"
-msgstr ""
+msgstr "Що ви робите?"
+
+#: src/components/related-actions.tsx
+#~ msgid "Unable to feature @{username} on your profile."
+#~ msgstr "Не вдалося порекомендувати @{username} у вашому профілі."
 
 #. placeholder {0}: String(type)
 #: src/components/notification.tsx
@@ -2778,118 +3407,138 @@ msgstr ""
 #. placeholder {6}: postingStats.daysSinceLastPost
 #: src/components/account-info.tsx
 msgid "{0, plural, one {{1, plural, one {Last 1 post in the past 1 day} other {Last 1 post in the past {2} days}}} other {{3, plural, one {Last {4} posts in the past 1 day} other {Last {5} posts in the past {6} days}}}}"
-msgstr ""
+msgstr "{0, plural, one {{1, plural, one {1 останній допис за 1 останній день} other {1 останній допис за {2} останніх днів}}} other {{3, plural, one {Останні {4} дописів за 1 останній день} other {Останні {5} дописів за {6} останніх днів}}}}"
 
 #: src/components/account-block.tsx
 #: src/components/related-actions.tsx
 msgid "Follows you"
-msgstr ""
+msgstr "Підписаний(-на) на вас"
 
 #: src/components/related-actions.tsx
 msgid "Unable to block @{username}"
-msgstr ""
+msgstr "Не вдалося заблокувати @{username}"
 
 #: src/pages/settings.tsx
 msgid "followers"
-msgstr ""
+msgstr "підписників"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
-msgstr ""
+msgstr "Помилка завантаження GIF-ок"
 
 #: src/pages/settings.tsx
 msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
-msgstr ""
+msgstr "Автоматично показувати переклад постів в стрічці. Працює лише для <0>коротких</0> дописів без чутливого контенту, медіа та опитування."
 
 #: src/pages/catchup.tsx
 msgid "last 9 hours"
-msgstr ""
+msgstr "останні 9 годин"
 
 #: src/pages/welcome.tsx
 msgid "Effortlessly follow conversations. Semi-collapsible replies."
-msgstr ""
+msgstr "Легке відстежування бесід. Відповіді, що напів згортаються."
 
 #. placeholder {0}: niceDateTime(createdAt, { hideTime: true, })
 #. placeholder {0}: niceDateTime(createdAt, { hideTime: true, })
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Joined <0>{0}</0>"
-msgstr ""
+msgstr "Приєднав(-ла)ся <0>{0}</0>"
 
 #: src/pages/settings.tsx
 msgid "Posting"
-msgstr ""
+msgstr "Публікація"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
-msgstr ""
+msgstr "Редагувати ярлик"
 
 #: src/pages/welcome.tsx
 msgid "Single or multi-column"
-msgstr ""
+msgstr "Один або декілька стовпців"
 
 #. placeholder {0}: WEBSITE.replace(/https?:\/\//g, '').replace(/\/$/, '')
 #: src/pages/settings.tsx
 msgid "<0>Site:</0> {0}"
-msgstr ""
+msgstr "<0>Адреса клієнта:</0> {0}"
 
 #: src/components/atproto-labels.tsx
 msgid "E.g. artistic nudes."
 msgstr ""
 
+#: src/pages/public.tsx
+#~ msgid "Federated timeline ({instance})"
+#~ msgstr "Федеративна стрічка ({instance})"
+
 #: src/pages/favourites.tsx
 msgid "No likes yet. Go like something!"
-msgstr ""
+msgstr "Жодного вподобання. Нумо вподобайте щось!"
 
 #: src/components/report-modal.tsx
 msgid "Violates local law"
 msgstr ""
+
+#: src/components/notification.tsx
+#~ msgid "Boosted by…"
+#~ msgstr "Поширили…"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
 #: src/components/status-utility-menu.tsx
 #: src/components/translation-block.tsx
 msgid "Translate"
-msgstr ""
+msgstr "Перекласти"
 
 #: src/pages/settings.tsx
 msgid "Version string copied"
-msgstr ""
+msgstr "Версію скопійовано"
+
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost…"
+#~ msgstr "Поширити…"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "Showing post with replies"
+#~ msgstr "Показ дописів з відповідями"
 
 #: src/components/account-info.tsx
 msgid "View post stats"
-msgstr ""
+msgstr "Переглянути статистику дописів"
+
+#: src/pages/public.tsx
+#~ msgid "Local timeline"
+#~ msgstr "Локальна стрічка"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post you have quoted."
-msgstr ""
+msgstr "{account} відредагував допис, який ви зацитували."
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation unmuted"
-msgstr ""
+msgstr "Бесіда більше не глушиться"
 
 #: src/components/list-add-edit.tsx
 msgid "Don't show replies"
-msgstr ""
+msgstr "Не показувати відповіді"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
-msgstr ""
+msgstr "Не вдалося заблокувати {username}"
 
 #. js-lingui-explicit-id
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "post.title"
-msgstr ""
+msgstr "Допис"
 
 #: src/pages/accounts.tsx
 msgid "Set as default"
-msgstr ""
+msgstr "Встановити за замовчуванням"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Quiet public"
-msgstr ""
+msgstr "Непублічно"
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -2897,7 +3546,7 @@ msgstr ""
 
 #: src/pages/mentions.tsx
 msgid "Unable to load mentions."
-msgstr ""
+msgstr "Не вдалося завантажити згадки."
 
 #: src/components/timeline.tsx
 msgid "View Full Thread"
@@ -2905,7 +3554,7 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "In Memoriam"
-msgstr ""
+msgstr "Вічна пам'ять"
 
 #: src/pages/welcome.tsx
 msgid "A minimalistic opinionated Atmosphere web client."
@@ -2913,58 +3562,84 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Post pending"
-msgstr ""
+msgstr "Допис в очікуванні"
+
+#: src/components/account-info.tsx
+#: src/pages/account-statuses.tsx
+#: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#~ msgid "Boosts"
+#~ msgstr "Поширення"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
-msgstr ""
+msgstr "Темна"
+
+#: src/components/related-actions.tsx
+#~ msgid "@{username} is no longer featured on your profile."
+#~ msgstr "@{username} більше не рекомендується у вашому профілі."
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Loading…"
-msgstr ""
+msgstr "Завантаження…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Ctrl</0> + <1>Enter</1> or <2>⌘</2> + <3>Enter</3>"
-msgstr ""
+msgstr "<0>Ctrl</0> + <1>Enter</1> або<2>⌘</2> + <3>Enter</3>"
 
 #: src/pages/accounts.tsx
 msgid "Switch in new tab/window"
-msgstr ""
+msgstr "Перемкнутися в новій вкладці/вікні"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Bookmark"
-msgstr ""
+msgstr "Додати в закладки"
 
 #: src/components/related-actions.tsx
 msgid "Unmute <0>@{username}</0>"
-msgstr ""
+msgstr "Не глушити <0>@{username}</0>"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #. placeholder {1}: rtf.format(-replyToStatusMonthsAgo, 'month')
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post (<0>{1}</0>)"
-msgstr ""
+msgstr "Відповідаємо на допис @{0} (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
 msgid "Failed to remove subscription. Please try again."
-msgstr ""
+msgstr "Не вдалося скасувати підписку. Будь ласка, спробуйте ще раз."
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "Адміністратор з <0>{from}</0> заблокував <1>{targetName}</1>. Торкнулося підписників: {followersCount}, підписки: {followingCount}."
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Invalid server"
+#~ msgstr "Недійсний сервер"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unbookmark"
-msgstr ""
+msgstr "Вилучити з закладок"
 
 #: src/pages/catchup.tsx
 msgid "This might take a while."
-msgstr ""
+msgstr "Це може зайняти деякий час."
+
+#: src/pages/hashtag.tsx
+#~ msgid "This timeline is disabled on this server."
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to load filters."
+#~ msgstr "Не вдалося завантажити фільтри."
 
 #: src/components/error-fallback.tsx
 msgid ""
@@ -2973,36 +3648,61 @@ msgid ""
 ""
 msgstr ""
 
+#: src/pages/account-statuses.jsx
+#~ msgid "Showing posts without boosts"
+#~ msgstr "Показ дописів без поширень"
+
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Verified"
-msgstr ""
+msgstr "Верифіковано"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>{key1}</0> then <1>{key2}</1>"
-msgstr ""
+msgstr "<0>{key1}</0> та <1>{key2}</1> (послідовно)"
 
 #: src/components/compose.tsx
 msgid "Looks like you closed the parent window."
-msgstr ""
+msgstr "Здається, ви закрили батьківське вікно."
 
 #: src/components/status-utility-menu.tsx
 msgid "Show Edit History"
-msgstr ""
+msgstr "Показати Історію Змін"
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Add keyword"
+#~ msgstr "Додати ключове слово"
+
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
-msgstr ""
+msgstr "Ярлики імпортовано"
 
 #: src/components/compose-button.tsx
 #: src/compose.tsx
 msgid "Compose"
-msgstr ""
+msgstr "Написати"
+
+#: src/components/related-actions.tsx
+#: src/components/related-actions.tsx
+#~ msgid "Show featured profiles"
+#~ msgstr "Показати рекомендовані профілі"
+
+#: src/pages/filters.tsx
+#~ msgid "Never"
+#~ msgstr "Ніколи"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (#{tagged})"
+#~ msgstr "{accountDisplay} (#{tagged})"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Reschedule"
+#~ msgstr "Перепланувати"
 
 #: src/pages/welcome.tsx
 msgid "Connect to Atmosphere"
@@ -3011,11 +3711,11 @@ msgstr ""
 #. placeholder {0}: shortenNumber(totalComments)
 #: src/pages/status.tsx
 msgid "{totalComments, plural, one {# comment} other {<0>{0}</0> comments}}"
-msgstr ""
+msgstr "{totalComments, plural, one {# коментар} few {<0>{0}</0> коментарі} other {<0>{0}</0> коментарів}}"
 
 #: src/components/related-actions.tsx
 msgid "Report <0>@{username}</0>…"
-msgstr ""
+msgstr "Поскаржитися на <0>@{username}</0>…"
 
 #: src/pages/settings.tsx
 msgid "Disable all animations"
@@ -3023,17 +3723,17 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Floating button"
-msgstr ""
+msgstr "Кнопка, що плаває"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move up"
-msgstr ""
+msgstr "Перемістити вгору"
 
 #. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
 msgid "Allow from <0>{0}</0>"
-msgstr ""
+msgstr "Дозволити від <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -3042,85 +3742,98 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Edit your post"
-msgstr ""
+msgstr "Редагувати допис"
+
+#: src/components/status-large-footer.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Unboost"
+#~ msgstr "Не поширювати"
 
 #: src/components/import-export-accounts.tsx
 msgid "No login information or account access details are stored in the exported files. You will need to log in again for each account after importing."
-msgstr ""
+msgstr "Жодної інформації про авторизацію або доступ до облікового запису не зберігається в експортованих файлах. Вам необхідно буде заново авторизуватися у кожен обліковий запис після імпорту."
 
 #: src/pages/catchup.tsx
 msgid "Catch up"
-msgstr ""
+msgstr "Наздогнати"
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText} (auto-detected)"
-msgstr ""
+msgstr "Перекласти з {sourceLangText} (автовизначення)"
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users…"
-msgstr ""
+msgstr "Заблоковані користувачі…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Post could be edited or deleted later."
-msgstr ""
+msgstr "Допис можна відредагувати або видалити пізніше."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to edit list."
-msgstr ""
+msgstr "Не вдалось відредагувати список."
 
 #. placeholder {0}: ancestors.length
 #: src/pages/status.tsx
 msgid "{0} posts above ‒ Go to top"
-msgstr ""
+msgstr "{0} дописів вище ‒ Перейти вгору"
 
 #: src/components/related-actions.tsx
 msgid "Translate bio"
-msgstr ""
+msgstr "Перекласти біографію"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Followed #{hashtag}"
+#~ msgstr "#{hashtag} відстежується"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Auto"
-msgstr ""
+msgstr "Автоматична"
 
 #: src/components/report-modal.tsx
 msgid "Profile reported"
-msgstr ""
+msgstr "Скарга на обліковий запис відправлена"
 
 #: src/pages/catchup.tsx
 msgid "last 7 hours"
-msgstr ""
+msgstr "останні 7 годин"
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been deleted."
-msgstr ""
+msgstr "Деякі з ваших дописів було видалено."
 
 #: src/pages/catchup.tsx
 msgid "Fetching posts…"
-msgstr ""
+msgstr "Отримання дописів…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Preview"
-msgstr ""
+msgstr "Попередній перегляд"
 
 #: src/components/status-helpers.ts
 msgid "Author will manually review"
-msgstr ""
+msgstr "Автор схвалить вручну"
 
 #: src/components/drafts.tsx
 msgid "Error deleting draft! Please try again."
-msgstr ""
+msgstr "Помилка видалення чернетки! Будь ласка, спробуйте ще раз."
 
 #: src/compose.tsx
 msgid "Close window"
-msgstr ""
+msgstr "Закрити вікно"
+
+#: src/pages/welcome.tsx
+#~ msgid "Log in with Bluesky"
+#~ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "That's all."
-msgstr ""
+msgstr "На цьому все."
 
 #: src/pages/catchup.tsx
 msgid "Previous author"
-msgstr ""
+msgstr "Попередній автор"
 
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
@@ -3134,7 +3847,11 @@ msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Showing posts with media"
-msgstr ""
+msgstr "Показ дописів з медіа"
+
+#: src/pages/filters.tsx
+#~ msgid "Public timelines"
+#~ msgstr "Публічна стрічка"
 
 #: src/components/feedback-modal.tsx
 #: src/pages/welcome.tsx
@@ -3146,33 +3863,53 @@ msgstr ""
 #. placeholder {2}: lf.format( unsupportedFiles.map((f) => f.name), )
 #: src/components/compose.tsx
 msgid "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
-msgstr ""
+msgstr "{0, plural, one {Файл {1} не підтримується.} other {Файли {2} не підтримуються.}}"
 
 #: src/components/notification.tsx
 msgid "You have blocked <0>{targetName}</0>. Removed followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "Ви заблокували <0>{targetName}</0>. Видалені підписники: {followersCount}, підписки: {followingCount}."
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} liked your reply.} other {{account} liked your post.}}} other {{account} liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> liked your reply.} other {<2><3>{1}</3> people</2> liked your post.}}}}"
-msgstr ""
+msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} вподоба(в/ла) вашу відповідь.} other {{account} вподоба(в/ла) ваш допис.}}} few {{postType, select, reply {{account} вподоба(в/ла) {postsCount} ваші відповіді.} other {{account} вподоба(в/ла) {postsCount} ваші дописи.}}} other {{postType, select, reply {{account} вподоба(в/ла) {postsCount} ваших відповідей.} other {{account} вподоба(в/ла) {postsCount} ваших дописів.}}}}} few {{postsCount, plural, =1 {{postType, select, reply {<0><1>{0}</1> користувачі</0> вподобали вашу відповідь.} other {<0><1>{0}</1> користувачі</0> вподобали ваш допис.}}} few {{postType, select, reply {<0><1>{0}</1> користувачі</0> вподобали {postsCount} ваші відповіді.} other {<0><1>{0}</1> користувачі</0> вподобали {postsCount} ваші дописи.}}} other {{postType, select, reply {<0><1>{0}</1> користувачі</0> вподобали {postsCount} ваших відповідей.} other {<0><1>{0}</1> користувачі</0> вподобали {postsCount} ваших дописів.}}}}} other {{postsCount, plural, =1 {{postType, select, reply {<0><1>{0}</1> користувачів</0> вподобали вашу відповідь.} other {<0><1>{0}</1> користувачів</0> вподобали ваш допис.}}} few {{postType, select, reply {<0><1>{0}</1> користувачів</0> вподобали {postsCount} ваші відповіді.} other {<0><1>{0}</1> користувачів</0> вподобали {postsCount} ваші дописи.}}} other {{postType, select, reply {<0><1>{0}</1> користувачів</0> вподобали {postsCount} ваших відповідей.} other {<0><1>{0}</1> користувачів</0> вподобали {postsCount} ваших дописів.}}}}}}"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Max {SHORTCUTS_LIMIT} columns"
+#~ msgstr "Максимум {SHORTCUTS_LIMIT} стовпців"
 
 #: src/pages/status.tsx
 msgid "Experimental"
-msgstr ""
+msgstr "Експериментальне"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this profile?"
-msgstr ""
+msgstr "Яка проблема з цим обліковим записом?"
 
 #: src/pages/http-route.tsx
 msgid "Resolving…"
-msgstr ""
+msgstr "Визначається…"
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "{mentionsCount, plural, other {# mentions}}"
+#~ msgstr "{mentionsCount, plural, one {# згадка} few {# згадки} other {# згадок}}"
+
+#: src/pages/status.tsx
+#~ msgid "Switch to post's server"
+#~ msgstr "Перемкнутися на сервер допису"
 
 #: src/components/status-header.tsx
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
-msgstr ""
+msgstr "{repliesCount, plural, one {# відповідь} few {# відповіді} other {# відповідей}}"
+
+#: src/pages/settings.tsx
+#~ msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and boosts carousel will not work when this is enabled."
+#~ msgstr ""
+
+#: src/components/account-handle-info.tsx
+#~ msgid "server domain name"
+#~ msgstr "доменне ім'я сервера"
 
 #: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
@@ -3181,51 +3918,59 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Frame rate too high. Uploading might encounter issues."
-msgstr ""
+msgstr "Частота кадрів зависока. Можуть виникнути проблеми із вивантаженням. "
 
 #: src/pages/notifications.tsx
 msgid "Unable to dismiss notification request"
-msgstr ""
+msgstr "Не вдалося відхилити запит на сповіщення"
+
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Boosts Carousel"
+#~ msgstr "Скриншот Каруселі Поширень"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to previous post"
-msgstr ""
+msgstr "Попередній допис (пропустити карусель)"
 
 #: src/components/status-account-menu.tsx
 msgid "Post pinned to profile"
-msgstr ""
+msgstr "Допис закріплено в профілі"
 
 #. placeholder {0}: pc.count
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# post} other {# posts}}"
-msgstr ""
+msgstr "{0, plural, one {# допис} few {# дописи} other {# дописів}}"
 
 #: src/pages/notifications.tsx
 msgid "Unable to accept notification request"
-msgstr ""
+msgstr "Не вдалося прийняти запит на сповіщення"
+
+#: src/components/related-actions.tsx
+#~ msgid "Don't feature on profile"
+#~ msgstr "Не рекомендувати в профілі"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/list-add-edit.tsx
 #: src/pages/lists.tsx
 msgid "New list"
-msgstr ""
+msgstr "Новий список"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
-msgstr ""
+msgstr "Ярлики імпортовано. Перевищено ліміт {SHORTCUTS_LIMIT}, тому інші не імпортуються."
 
 #: src/pages/account-statuses.tsx
 #: src/pages/trending.tsx
 msgid "Unable to load posts"
-msgstr ""
+msgstr "Не вдалося завантажити дописи"
 
 #: src/pages/catchup.tsx
 msgid "Group: Authors"
-msgstr ""
+msgstr "Групування: За авторами"
 
 #: src/components/import-export-accounts.tsx
 msgid "Select file…"
-msgstr ""
+msgstr "Вибрати файл…"
 
 #: src/pages/account-statuses.tsx
 msgid "Hiding reposts"
@@ -3235,42 +3980,51 @@ msgstr ""
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{followingCount, plural, other {<0>{0}</0> Following}}"
-msgstr ""
+msgstr "{followingCount, plural, one {<0>{0}</0> Підписка} few {<0>{0}</0> Підписки} other {<0>{0}</0> Підписок}}"
+
+#: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Server"
+#~ msgstr "Сервер"
 
 #: src/components/related-actions.tsx
 msgid "Unblocked @{username}"
-msgstr ""
+msgstr "Розблоковано @{username}"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Switch to my server (<0>{currentInstance}</0>)"
+#~ msgstr "Перемкнутися на мій сервер (<0>{currentInstance}</0>)"
 
 #: src/components/account-handle-info.tsx
 msgid "username"
-msgstr ""
+msgstr "ім'я користувача"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Add/Remove from Lists"
-msgstr ""
+msgstr "Додати/видалити зі Списків"
 
 #: src/components/compose.tsx
 msgid "Post your reply"
-msgstr ""
+msgstr "Опублікувати відповідь"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import…"
-msgstr ""
+msgstr "Імпортувати…"
 
 #: src/components/media-attachment.tsx
 #: src/compose.tsx
 msgid "Error"
-msgstr ""
+msgstr "Помилка"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post (new window)"
-msgstr ""
+msgstr "Створити новий допис (нове вікно)"
 
 #: src/components/nav-menu.tsx
 msgid "Muted users"
-msgstr ""
+msgstr "Заглушені користувачі"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -3291,7 +4045,7 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/welcome.tsx
 msgid "Log in"
-msgstr ""
+msgstr "Увійти"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -3303,7 +4057,7 @@ msgstr ""
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
 msgid "<0>Filtered</0>: <1>{0}</1>"
-msgstr ""
+msgstr "<0>Відфільтровано</0>: <1>{0}</1>"
 
 #: src/pages/account-statuses.tsx
 msgid "Showing reposts"
@@ -3311,53 +4065,69 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Posts are grouped by authors, sorted by posts count per author."
-msgstr ""
+msgstr "Дописи згруповані за авторами, відсортовані за кількістю дописів на автора."
 
 #: src/pages/notifications.tsx
 msgid "With a new account"
-msgstr ""
+msgstr "З новим обліковим записом"
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Save & close"
+#~ msgstr "Зберегти і закрити"
 
 #. placeholder {0}: filterInfo.titlesStr
 #. placeholder {0}: filterInfoMaybe?.titlesStr
 #: src/components/status-media-embeds.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered: {0}"
-msgstr ""
+msgstr "Відфільтровано: {0}"
+
+#: src/components/compose.tsx
+#~ msgid "Schedule post"
+#~ msgstr "Запланувати публікацію"
 
 #: src/pages/catchup.tsx
 msgid "Note: Only max 3 will be stored. The rest will be automatically removed."
-msgstr ""
+msgstr "Примітка: Буде збережено не більше 3 останніх ретроспектив."
+
+#: src/pages/filters.tsx
+#~ msgid "No keywords. Add one."
+#~ msgstr "Немає ключових слів. Додайте одне."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
-msgstr ""
+msgstr "Не вподобано допис @{0}"
 
 #: src/pages/settings.tsx
 msgid "Replace text as blocks, useful when taking screenshots, for privacy reasons."
-msgstr ""
+msgstr "Замінює текст блоками. Корисно при створенні скриншотів (з міркувань конфіденційності)."
 
 #: src/components/media-attachment.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 msgid "Remove"
-msgstr ""
+msgstr "Вилучити"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Profile"
-msgstr ""
+msgstr "Відкрити сторінку профілю"
+
+#: src/pages/public.tsx
+#~ msgid "Switch to Local"
+#~ msgstr "Перемкнути на Локальну"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
-msgstr ""
+msgstr "Додаткові поля"
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
-msgstr ""
+msgstr "За замовченням, один стовпець - для шукачів сконцентрованого перегляду. Декілька стовпців - для просунутих користувачів."
 
 #: src/components/report-modal.tsx
 msgid "Spam"
-msgstr ""
+msgstr "Спам"
 
 #: src/pages/status.tsx
 msgid "Switch to my PDS to enable interactions"
@@ -3367,29 +4137,33 @@ msgstr ""
 msgid "Showing replies"
 msgstr ""
 
+#: src/components/status-interactions.ts
+#~ msgid "Sorry, your current logged-in server can't interact with this post from another server."
+#~ msgstr "На жаль, ваш поточний сервер не може взаємодіяти з цим дописом з іншого серверу."
+
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to add to list."
-msgstr ""
+msgstr "Не вдалося додати до списку."
 
 #. placeholder {0}: niceDateTime(updatedAtDate)
 #: src/pages/notifications.tsx
 msgid "Updated <0>{0}</0>"
-msgstr ""
+msgstr "Оновлено <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Paste shortcuts here"
-msgstr ""
+msgstr "Вставити ярлики сюди"
 
 #: src/components/compose.tsx
 msgid "Take photo or video"
-msgstr ""
+msgstr "Зробити фото чи відео"
 
 #. placeholder {0}: shortenNumber(followersCount)
 #. placeholder {1}: shortenNumber(followersCount)
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{followersCount, plural, one {<0>{0}</0> Follower} other {<1>{1}</1> Followers}}"
-msgstr ""
+msgstr "{followersCount, plural, one {<0>{0}</0> Підписник} few {<1>{1}</1> Підписники} other {<1>{1}</1> Підписників}}"
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
@@ -3397,19 +4171,19 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/notifications.tsx
 msgid "Save"
-msgstr ""
+msgstr "Зберегти"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcut settings"
-msgstr ""
+msgstr "Не вдалося скопіювати налаштування ярлику"
 
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
-msgstr ""
+msgstr "Не вдалося отримати допис для відповіді"
 
 #: src/components/post-embed-modal.tsx
 msgid "Notes:"
-msgstr ""
+msgstr "Нотатки:"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} enabled."
@@ -3417,98 +4191,159 @@ msgstr ""
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to delete list."
-msgstr ""
+msgstr "Не вдалося видалити список."
 
 #: src/pages/welcome.tsx
 msgid "Up to 5 hashtags combined into a single timeline."
-msgstr ""
+msgstr "До 5 хештеґів, об'єднаних в одну стрічку"
+
+#: src/pages/settings.tsx
+#~ msgid "Boosts carousel"
+#~ msgstr "Карусель поширень"
 
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Sharing doesn't seem to work."
-msgstr ""
+msgstr "Здається, поширення не працює."
+
+#: src/pages/welcome.tsx
+#~ msgid "Boosts Carousel"
+#~ msgstr "Карусель Поширень"
 
 #: src/components/list-add-edit.tsx
 msgid "Edit list"
-msgstr ""
+msgstr "Редагувати список"
 
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
-msgstr ""
+msgstr "останні 2 години"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Public (Local / Federated)"
+#~ msgstr "Публічна (Локальна / Федеративна)"
 
 #: src/compose.tsx
 msgid "Editing source status"
-msgstr ""
+msgstr "Редагування вихідного статусу"
 
 #: src/pages/settings.tsx
 msgid "Settings"
-msgstr ""
+msgstr "Налаштування"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "Clear filters"
+#~ msgstr "Скинути фільтри"
+
+#: src/pages/public.tsx
+#~ msgid "Local timeline ({instance})"
+#~ msgstr "Локальна стрічка ({instance})"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Recently used"
+#~ msgstr "Нещодавно використані"
+
+#: src/pages/filters.tsx
+#~ msgid "Status: <0><1/></0>"
+#~ msgstr "Статус: <0><1/></0>"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
-msgstr ""
+msgstr "Перетворити посилання в цитату?"
 
 #: src/pages/http-route.tsx
 msgid "Unable to resolve URL"
-msgstr ""
+msgstr "Не вдалося визначити URL"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Optional, unless for multi-column mode"
+#~ msgstr "Необов'язково для режиму з одним стовпцем"
+
+#: src/components/endorsements.tsx
+#~ msgid "Profiles featured by @{0}"
+#~ msgstr "Профілі, рекомендовані @{0}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "or override…"
-msgstr ""
+msgstr "або замінити…"
 
 #: src/components/status-account-menu.tsx
 msgid "Remove quote…"
-msgstr ""
+msgstr "Вилучити цитату…"
+
+#: src/components/related-actions.tsx
+#: src/pages/hashtag.tsx
+#~ msgid "Feature on profile"
+#~ msgstr "Рекомендувати в профілі"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Keyboard shortcuts help"
-msgstr ""
+msgstr "Довідка з комбінацій клавіш"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Home"
-msgstr ""
+msgstr "Відкрити домашню сторінку"
+
+#: src/components/compose.tsx
+#~ msgid "Some poll choices are empty"
+#~ msgstr "Деякі варіанти опитування порожні"
 
 #: src/components/related-actions.tsx
 msgid "Remove <0>@{username}</0> from followers?"
-msgstr ""
+msgstr "Відписати <0>@{username}</0>?"
 
 #: src/pages/bookmarks.tsx
 msgid "Unable to load bookmarks."
-msgstr ""
+msgstr "Не вдалося завантажити закладки."
+
+#: src/pages/filters.tsx
+#~ msgid "Filter from…"
+#~ msgstr "Фільтрувати з…"
 
 #: src/components/quote-chain-modal.tsx
 msgid "Continue unwrapping…"
-msgstr ""
+msgstr "Розгортання…"
+
+#: src/components/related-actions.tsx
+#~ msgid "Enable boosts"
+#~ msgstr "Увімкнути поширення"
+
+#: src/pages/filters.tsx
+#~ msgid "Expiring <0/>"
+#~ msgstr "Минає <0/>"
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has suspended <1>{targetName}</1>, which means you can no longer receive updates from them or interact with them."
-msgstr ""
+msgstr "Адміністратор з <0>{from}</0> призупинив <1>{targetName}</1>, що означає, що ви більше не зможете отримувати оновлення від них або взаємодіяти з ними."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on mobile device"
 msgstr ""
 
+#: src/pages/account-statuses.jsx
+#~ msgid "- Boosts"
+#~ msgstr ""
+
 #: src/pages/catchup.tsx
 msgid "Posts are sorted by information density or depth. Shorter posts are \"lighter\" while longer posts are \"heavier\". Posts with photos are \"heavier\" than posts without photos."
-msgstr ""
+msgstr "Дописи відсортовані за наповненням або розміром інформації. Короткі дописи - \"легші\", коли як довші пости - \"важче\". Дописи із зображенням \"важче\", аніж дописи без зображень."
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
 msgid "Settings…"
-msgstr ""
+msgstr "Налаштування…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multi-column"
-msgstr ""
+msgstr "Декілька стовпців"
 
 #: src/components/quote-settings-sheet.tsx
 msgid "Quote settings for this post"
-msgstr ""
+msgstr "Налаштування цитування цього допису"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Tab/Menu bar"
-msgstr ""
+msgstr "Панель Вкладки/Меню"
 
 #: src/components/generic-accounts.tsx
 #: src/components/quotes-modal.tsx
@@ -3518,11 +4353,11 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/status.tsx
 msgid "Show more…"
-msgstr ""
+msgstr "Показати більше…"
 
 #: src/components/related-actions.tsx
 msgid "Blocked @{username}"
-msgstr ""
+msgstr "Заблоковано @{username}"
 
 #: src/components/status-interactions.ts
 msgid "Sorry, your current PDS can't interact with this post from another PDS."
@@ -3530,30 +4365,30 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "About"
-msgstr ""
+msgstr "Про застосунок"
 
 #: src/components/quote-suggestion.tsx
 msgid "Replace current quote"
-msgstr ""
+msgstr "Замінити поточну цитату"
 
 #: src/components/notification.tsx
 msgid "A post you interacted with has been edited."
-msgstr ""
+msgstr "Допис, з яким ви взаємодіяли, був відредагований."
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/pages/lists.tsx
 msgid "Unable to load lists."
-msgstr ""
+msgstr "Не вдалося завантажити список"
 
 #: src/components/report-modal.tsx
 msgid "Unable to mute {username}"
-msgstr ""
+msgstr "Неможливо заглушити {username}"
 
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "See more"
-msgstr ""
+msgstr "Показати більше"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
@@ -3562,15 +4397,19 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
-msgstr ""
+msgstr "Деякі з ваших дописів було позначено як чутливі."
 
 #: src/components/status-large-footer.tsx
 msgid "Comments"
-msgstr ""
+msgstr "Коментарі"
+
+#: src/pages/filters.tsx
+#~ msgid "Add filter"
+#~ msgstr "Додати фільтр"
 
 #: src/pages/status.tsx
 msgid "Switch to post's PDS"
@@ -3578,17 +4417,17 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
-msgstr ""
+msgstr "Відписати…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Profile"
-msgstr ""
+msgstr "Профіль"
 
 #: src/components/media-modal.tsx
 msgid "Attempting to describe image. Please wait…"
-msgstr ""
+msgstr "Пробуємо описати зображення. Будь ласка, зачекайте…"
 
 #: src/components/account-handle-info.tsx
 msgid "handle domain name"
@@ -3597,31 +4436,43 @@ msgstr ""
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
 msgid "Deleted"
-msgstr ""
+msgstr "Видалено"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to pin post"
-msgstr ""
+msgstr "Не вдалося закріпити допис"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfeatured on profile"
+#~ msgstr "Не рекомендовано в профілі"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Add column…"
+#~ msgstr "Додати стовпець…"
 
 #: src/components/compose.tsx
 msgid "Failed to download GIF"
-msgstr ""
+msgstr "Не вдалося завантажити GIF"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Load new posts"
-msgstr ""
+msgstr "Завантажити нові дописи"
+
+#: src/pages/followed-hashtags.tsx
+#~ msgid "No hashtags followed yet."
+#~ msgstr "Жодного хештеґу не відстежується."
 
 #: src/components/account-info.tsx
 msgid "Post stats unavailable."
-msgstr ""
+msgstr "Статистика дописів недоступна."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
-msgstr ""
+msgstr "Скриншот інтерфейсу з кількома стовпцями"
 
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
-msgstr ""
+msgstr "Ще немає ярликів. Натисніть кнопку Додати ярлик."
 
 #: src/components/muted-status.tsx
 msgid "Hide"
@@ -3629,54 +4480,62 @@ msgstr ""
 
 #: src/pages/trending.tsx
 msgid "Trending posts"
-msgstr ""
+msgstr "Популярні дописи"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
-msgstr ""
+msgstr "Встановити {CLIENT_NAME}"
 
 #: src/pages/catchup.tsx
 msgid "beyond 12 hours"
-msgstr ""
+msgstr "більше 12 годин"
+
+#: src/pages/filters.tsx
+#~ msgid "Profiles"
+#~ msgstr "Профілі"
 
 #: src/pages/catchup.tsx
 msgid "last 12 hours"
-msgstr ""
+msgstr "останні 12 годин"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn into quote"
-msgstr ""
+msgstr "Перетворити у цитату"
 
 #: src/utils/show-compose.ts
 msgid "A post is currently open. Post or discard it before creating a new one."
-msgstr ""
+msgstr "Допис наразі відкрито. Опублікуйте або видаліть його перед створенням нового."
 
 #: src/components/related-actions.tsx
 msgid "Unable to mute @{username}"
-msgstr ""
+msgstr "Не вдалося заглушити @{username}"
 
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Hashtags"
-msgstr ""
+msgstr "Хештеґи"
+
+#: src/pages/status.tsx
+#~ msgid "You're not logged in. Interactions (reply, boost, etc) are not possible."
+#~ msgstr "Ви не увійшли в систему. Взаємодія (відповідь, поширення тощо) неможлива."
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to remove quote"
-msgstr ""
+msgstr "Не вдалося видалити цитату"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
-msgstr ""
+msgstr "{account} відредагував допис."
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy link"
-msgstr ""
+msgstr "Не вдалося скопіювати посилання"
 
 #: src/components/notification.tsx
 msgid "Your posts will be marked as sensitive from now on."
-msgstr ""
+msgstr "Відтепер ваші дописи будуть позначатися як чутливі."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on tablet device"
@@ -3688,62 +4547,78 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Like"
-msgstr ""
+msgstr "Вподобати"
+
+#: src/pages/welcome.tsx
+#~ msgid "A minimalistic opinionated Bluesky web client."
+#~ msgstr ""
 
 #: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
-msgstr ""
+msgstr "Вибрати все"
 
 #: src/pages/welcome.tsx
 msgid "Multi-hashtag timeline"
-msgstr ""
+msgstr "Стрічка з кількома хештеґами"
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
 msgstr ""
 
+#: src/components/account-info.tsx
+#~ msgid "{0} original posts, {1} replies, {2} boosts"
+#~ msgstr "{0} дописи, {1} відповіді, {2} поширення"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Showing boosts"
+#~ msgstr ""
+
 #: src/components/compose.tsx
 msgid "Editing source post"
-msgstr ""
+msgstr "Редагування вихідного допису"
 
 #: src/pages/settings.tsx
 msgid "Polls"
-msgstr ""
+msgstr "Опитування"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
-msgstr ""
+msgstr "Скриншот стрічки з кількома хештеґами з формою для додавання хештеґів"
+
+#: src/pages/settings.tsx
+#~ msgid "Synced to your Bluesky account settings. <0>Open Bluesky settings ({instance}).</0>"
+#~ msgstr ""
 
 #: src/pages/search.tsx
 msgid "Search: {q}"
-msgstr ""
+msgstr "Пошук: {q}"
 
 #: src/pages/notifications.tsx
 msgid "Filter out notifications from people:"
-msgstr ""
+msgstr "Відфільтрувати сповіщення від користувачів:"
 
 #: src/pages/settings.tsx
 msgid "Push Notifications (beta)"
-msgstr ""
+msgstr "Push-сповіщення (бета)"
 
 #: src/pages/catchup.tsx
 msgid "last 10 hours"
-msgstr ""
+msgstr "останні 10 годин"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Search GIFs"
-msgstr ""
+msgstr "Пошук GIF-ок"
 
 #. placeholder {0}: err.message
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description: {0}"
-msgstr ""
+msgstr "Помилка генерації опису: {0}"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Catch-up <0>beta</0>"
-msgstr ""
+msgstr "Ретроспектива <0>бета</0>"
 
 #: src/pages/status.tsx
 msgid "You're not logged in. Interactions (reply, repost, etc) are not possible."
@@ -3756,18 +4631,22 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Edit video description"
-msgstr ""
+msgstr "Редагувати опис відео"
+
+#: src/components/compose.tsx
+#~ msgid "Add content warning"
+#~ msgstr "Додати попередження про вміст"
 
 #: src/pages/settings.tsx
 msgid "people I follow"
-msgstr ""
+msgstr "моїх підписок"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Followers"
-msgstr ""
+msgstr "Підписники"
 
 #: src/components/notification.tsx
 msgid "Reposted by…"
@@ -3775,56 +4654,86 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden by your filters"
-msgstr ""
+msgstr "Допис приховано вашими фільтрами"
 
 #: src/components/recent-searches.tsx
 msgid "Clear"
-msgstr ""
+msgstr "Очистити"
 
 #: src/components/qr-code-modal.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Scan QR code"
-msgstr ""
+msgstr "Сканувати QR-код"
+
+#: src/pages/login.jsx
+#~ msgid "Continue"
+#~ msgstr "Продовжити"
+
+#: src/components/related-actions.tsx
+#~ msgid "@{username} is now featured on your profile."
+#~ msgstr "Тепер @{username} рекомендується у вашому профілі."
 
 #: src/components/related-actions.tsx
 msgid "Mute <0>@{username}</0>…"
-msgstr ""
+msgstr "Заглушити <0>@{username}</0>"
+
+#: src/components/related-actions.tsx
+#~ msgid "Unable to unfeature @{username} on your profile."
+#~ msgstr "Не вдалося скасувати рекомендацію @{username} у вашому профілі."
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Only visible to you"
+#~ msgstr "Видно лише вам"
 
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description"
-msgstr ""
+msgstr "Помилка генерації опису"
+
+#: src/components/nav-menu.tsx
+#: src/pages/followed-hashtags.tsx
+#: src/pages/followed-hashtags.tsx
+#~ msgid "Followed Hashtags"
+#~ msgstr "Відстежувані хештеґи"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
 msgid "static URL"
-msgstr ""
+msgstr "статичний URL"
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
 msgid "Removing Catch-up {0}"
-msgstr ""
+msgstr "Видалення ретроспективи {0}"
+
+#: src/pages/catchup.jsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies}}} density {{sortOrder, select, asc {least dense} desc {most dense}}}} first{groupBy, select, account {, grouped by authors} other {}}"
+#~ msgstr "Показуються {selectedFilterCategory, select, all {усі дописи} original {оригінальні дописи} replies {відповіді} boosts {поширення} quotes {цитування} followedTags {відстежувані теґи} groups {групи} filtered {відфільтровані дописи}}, {sortBy, select, createdAt {{sortOrder, select, asc {найстаріші} desc {найновіші}}} reblogsCount {{sortOrder, select, asc {найменш поширені} desc {найпоширеніші}}} favouritesCount {{sortOrder, select, asc {найменш вподобані} desc {найвподобаніші}}} repliesCount {{sortOrder, select, asc {найменше відповідей} desc {найбільше відповідей}}} density {{sortOrder, select, asc {найменш наповнені} desc {найбільш наповнені}}}} перші{groupBy, select, account {, згруповані за авторами} other {}}"
 
 #: src/components/notification.tsx
 msgid "Lost connections with <0>{name}</0>."
-msgstr ""
+msgstr "Втрачено з'єднання з <0>{name}</0>."
+
+#: src/pages/notifications.tsx
+#~ msgid "Who are limited by server moderators"
+#~ msgstr "Хто обмежений модераторами сервера"
 
 #: src/pages/hashtag.tsx
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
-msgstr ""
+msgstr "Досягнуто ліміт в {SHORTCUTS_LIMIT, plural, one {# ярлик.} few {# ярлики.} other {# ярликів.}} Не вдалося додати ярлик."
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>r</1>"
 
 #: src/components/status-account-menu.tsx
 msgid "Unpin from profile"
-msgstr ""
+msgstr "Відкріпити від профілю"
 
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 #: src/pages/welcome.tsx
 msgid "Catch-up"
-msgstr ""
+msgstr "Ретроспектива"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specific list is optional."
@@ -3833,11 +4742,11 @@ msgstr ""
 #: src/components/drafts.tsx
 #: src/pages/account-statuses.tsx
 msgid "Media"
-msgstr ""
+msgstr "Медіа"
 
 #: src/pages/notifications.tsx
 msgid "Yesterday"
-msgstr ""
+msgstr "Вчора"
 
 #: src/components/feedback-modal.tsx
 msgid "What happened?"
@@ -3849,55 +4758,76 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Post reported"
-msgstr ""
+msgstr "Скарга на допис відправлена"
 
 #: src/components/account-block.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
-msgstr ""
+msgstr "Ви підписані"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to delete post"
-msgstr ""
+msgstr "Не вдалося видалити допис"
+
+#: src/pages/login.jsx
+#~ msgid "Failed to log in. Please try again or try another server."
+#~ msgstr "Не вдалося увійти. Будь ласка, повторіть спробу або спробуйте інший сервер."
+
+#: src/pages/welcome.tsx
+#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored on this server."
+#~ msgstr ""
 
 #: src/components/edit-history-controls.tsx
 msgid "Exit"
-msgstr ""
+msgstr "Вийти"
 
 #: src/pages/catchup.tsx
 msgid "Previously…"
-msgstr ""
+msgstr "Раніше…"
+
+#: src/pages/filters.tsx
+#: src/pages/filters.tsx
+#~ msgid "New filter"
+#~ msgstr "Новий фільтр"
 
 #: src/components/status-account-menu.tsx
 msgid "Quote removed"
-msgstr ""
+msgstr "Цитату видалено"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Quote with link"
-msgstr ""
+msgstr "Цитувати з посиланням"
+
+#: src/pages/status.tsx
+#~ msgid "Switch to post's server ({0})"
+#~ msgstr "Перемкнутися на сервер допису ({0})"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Speak"
-msgstr ""
+msgstr "Вимовити"
 
 #: src/pages/hashtag.tsx
 msgid "Unable to load posts with this tag"
-msgstr ""
+msgstr "Не вдалося завантажити дописи із цим хештеґом."
 
 #: src/components/notification.tsx
 #: src/components/notification.tsx
 msgid "Learn more <0/>"
-msgstr ""
+msgstr "Дізнайтеся більше <0/>"
 
 #: src/pages/hashtag.tsx
 msgid "This timeline is disabled on Bluesky."
 msgstr ""
 
 #: src/pages/catchup.tsx
+#~ msgid "Links shared by followings, sorted by shared counts, boosts and likes."
+#~ msgstr "Посилання, поширені підписками, відсортовані за кількістю взаємодій, поширень і вподобань."
+
+#: src/pages/catchup.tsx
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
-msgstr ""
+msgstr "Ретроспектива (Cath-Up) - це окрема стрічка ваших підписок, що пропонує їх високорівневий перегляд з простим, натхненний email-ом інтерфейсом для багатофункціонального і легкого сортування і фільтру дописів."
 
 #. [Name] [Visibility icon] reposted
 #: src/components/filtered-status.tsx
@@ -3906,44 +4836,56 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Moderation warning"
-msgstr ""
+msgstr "Попередження про модерацію"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus next column in multi-column mode"
+#~ msgstr "Перемістити фокус на наступний стовпець в режимі декількох стовпців"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>b</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>b</1>"
 
 #: src/pages/settings.tsx
 msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
 msgstr ""
 
+#: src/components/related-actions.tsx
+#~ msgid "Withdraw…"
+#~ msgstr "Відкликати…"
+
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Liked @{0}'s post"
-msgstr ""
+msgstr "Вподобано допис @{0}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcuts"
-msgstr ""
+msgstr "Не вдалося скопіювати ярлики"
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation muted"
-msgstr ""
+msgstr "Бесіда заглушена"
 
 #: src/components/account-block.tsx
 msgid "Requested"
-msgstr ""
+msgstr "Зроблено запит"
 
 #: src/components/status-account-menu.tsx
 msgid "Post unpinned from profile"
-msgstr ""
+msgstr "Допис відкріплено від профілю"
 
 #: src/pages/search.tsx
 msgid "No accounts found."
-msgstr ""
+msgstr "Жодного облікового запису не знайдено."
+
+#: src/pages/accounts.jsx
+#~ msgid "Remove <0>@{0}</0>?"
+#~ msgstr ""
 
 #: src/components/recent-searches.tsx
 msgid "Clear all"
-msgstr ""
+msgstr "Очистити все"
 
 #: src/components/account-sheet.tsx
 #: src/components/add-remove-lists-sheet.tsx
@@ -3986,60 +4928,89 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/status.tsx
 msgid "Close"
-msgstr ""
+msgstr "Закрити"
+
+#: src/components/compose.tsx
+#~ msgid "Quotes can't be embedded in private mentions."
+#~ msgstr "Цитати не можна вбудовувати в приватні згадки."
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
-msgstr ""
+msgstr "Здається, ви вже публікуєте допис в батьківському вікні. Дочекайтеся публікації та повторіть спробу."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
-msgstr ""
+msgstr "Поширити"
 
 #: src/pages/settings.tsx
 msgid "NOTE: Push notifications only work for <0>one account</0>."
-msgstr ""
+msgstr "ПРИМІТКА: Push-сповіщення працюють лише для <0>одного облікового запису</0>."
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Show results"
-msgstr ""
+msgstr "Показати результати"
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "Only <0>@{0}</0>"
+#~ msgstr "Лише <0>@{0}</0>"
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-quote-policy.ts
 msgid "Quote"
-msgstr ""
+msgstr "Цитувати"
 
 #: src/pages/catchup.tsx
 msgid "Groups"
-msgstr ""
+msgstr "Групи"
+
+#: src/components/compose.tsx
+#~ msgid "Poll must have at least 2 options"
+#~ msgstr "Опитування повинно мати не більше 2 опцій"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
-msgstr ""
+msgstr "Неприпустимий формат налаштувань"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Handle copied"
-msgstr ""
+msgstr "Ідентифікатор скопійовано"
+
+#. [Name] [Visibility icon] boosted
+#: src/components/filtered-status.tsx
+#~ msgid "<0/> <1/> boosted"
+#~ msgstr "<0/> <1/> поширили"
+
+#: src/pages/welcome.jsx
+#~ msgid "Log in with Mastodon"
+#~ msgstr "Увійти через Федиверс"
 
 #: src/pages/status.tsx
 msgid "View post with its replies"
-msgstr ""
+msgstr "Переглянути допис і відповіді на нього"
 
 #: src/components/media-modal.tsx
 msgid "Failed to describe image"
-msgstr ""
+msgstr "Не вдалося описати зображення"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Failed to reschedule post"
+#~ msgstr "Не вдалося перепланувати публікацію"
+
+#: src/pages/filters.tsx
+#~ msgid "hidden"
+#~ msgstr "приховано"
 
 #: src/components/account-info.tsx
 msgid "View profile header"
-msgstr ""
+msgstr "Переглянути шапку профілю"
 
 #: src/pages/login.tsx
 #: src/pages/login.tsx
 msgid "Failed to register application"
-msgstr ""
+msgstr "Не вдалося зареєструвати застосунок"
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
@@ -4054,16 +5025,24 @@ msgstr ""
 #. placeholder {0}: Math.floor(seconds / minute)
 #: src/components/relative-time.tsx
 msgid "{0}m"
-msgstr ""
+msgstr "{0}хв"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from @{0} will not be filtered from now on."
-msgstr ""
+msgstr "Відтепер сповіщення від @{0} не будуть відфільтровані."
 
 #: src/components/nav-menu.tsx
 msgid "Menu"
-msgstr ""
+msgstr "Меню"
+
+#: src/components/translation-block.jsx
+#~ msgid "Auto-translated from {sourceLangText}"
+#~ msgstr "Автопереклад з {sourceLangText}"
+
+#: src/pages/mentions.tsx
+#~ msgid "Private"
+#~ msgstr "Приватне"
 
 #: src/pages/settings.tsx
 msgid "Muted posts"
@@ -4071,15 +5050,19 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Translate to "
-msgstr ""
+msgstr "Перекласти на "
 
 #: src/components/translation-block.tsx
 msgid "Translating…"
-msgstr ""
+msgstr "Перекладаємо…"
 
 #: src/components/atproto-labels.tsx
 msgid "This account has marked itself as automated."
 msgstr ""
+
+#: src/components/compose-poll.tsx
+#~ msgid "Multiple choice"
+#~ msgstr "Кілька варіантів"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -4090,4 +5073,4 @@ msgstr ""
 #: src/pages/favourites.tsx
 #: src/pages/settings.tsx
 msgid "Likes"
-msgstr ""
+msgstr "Вподобане"

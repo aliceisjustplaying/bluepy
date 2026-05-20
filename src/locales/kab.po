@@ -1,35 +1,56 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2026-05-20 20:13+0000\n"
+"POT-Creation-Date: 2025-05-03 21:08+0800\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: kab\n"
+"Project-Id-Version: phanpy\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-16 15:50\n"
+"Last-Translator: \n"
+"Language-Team: Kabyle\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: phanpy\n"
+"X-Crowdin-Project-ID: 703337\n"
+"X-Crowdin-Language: kab\n"
+"X-Crowdin-File: /main/src/locales/en.po\n"
+"X-Crowdin-File-ID: 18\n"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments:"
-msgstr ""
+msgstr "Imeddayen n umidya:"
 
 #: src/components/related-actions.tsx
 msgid "Unblock <0>@{username}</0>"
-msgstr ""
+msgstr "Kkes asewḥel <0>@{username}</0>"
 
 #: src/utils/show-compose.ts
 msgid "A draft post is currently minimized. Post or discard it before creating a new one."
-msgstr ""
+msgstr "Tasuffaɣt tarewwayt tettwasemẓẓi akka tura. Suffeɣ neɣ sefsex-itt send timerna n yiwet n tmaynut."
 
 #: src/components/compose.tsx
 msgid "Pop in"
-msgstr ""
+msgstr "Err-d seg usfaylu agejdan"
 
 #: src/pages/settings.tsx
 msgid "Removes all UI animations, transitions, and smooth scrolling. Useful if motion is distracting."
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Whole word"
+#~ msgstr "Awal ummid"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Go to my server (<0>{currentInstance}</0>)"
+#~ msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Muted {username}"
-msgstr ""
+msgstr "Yettwasgugem {username}"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -41,27 +62,31 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/trending.tsx
 msgid "Mentions"
-msgstr ""
+msgstr "Ibdaren"
 
 #: src/pages/account-statuses.tsx
 msgid "Account posts"
-msgstr ""
+msgstr "Tisuffaɣ n umiḍan"
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external GIF search service, powered by <0>GIPHY</0>. G-rated (suitable for viewing by all ages), tracking parameters are stripped, referrer information is omitted from requests, but search queries and IP address information will still reach their servers."
-msgstr ""
+msgstr "Tamawt: Tamahilt-a tesseqdac ameẓlu n unadi n GIF azɣaray, s ttawil n <0>GIPHY</0>. Asesmel G (yemmezg akked meṛṛa iwtayen), iɣewwaren n uḍfar ttwakksen, talɣut n temselɣut tettwasfeḍ seg yissutar, maca issutar n unadi d telɣut n tansa IP ad wwḍen yal tikkelt ɣer yiqeddacen-nsen."
 
 #: src/components/compose.tsx
 msgid "Downloading GIF…"
-msgstr ""
+msgstr "Asader n GIF…"
 
 #: src/pages/catchup.tsx
 msgid "Show all authors"
-msgstr ""
+msgstr "Wali akk imeskaren"
+
+#: src/components/compose.tsx
+#~ msgid "Ask a question"
+#~ msgstr "Efk-d asteqsi"
 
 #: src/components/report-modal.tsx
 msgid "Other"
-msgstr ""
+msgstr "Ayen nniḍen"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -70,51 +95,63 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Unable to copy HTML code"
-msgstr ""
+msgstr "D awezɣi anɣal n tengalt HTML"
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "No lists."
-msgstr ""
+msgstr "Ulac tibdarin."
 
 #: src/components/math-block.tsx
 msgid "Math expressions found."
 msgstr ""
 
+#: src/pages/login.jsx
+#~ msgid "e.g. “mastodon.social”"
+#~ msgstr "amedya \"mastodon.social\""
+
 #. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
 msgid "Muted @{username} for {0}"
-msgstr ""
+msgstr "Sgugem @{username} i {0}"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
-msgstr ""
+msgstr "Kkes arewway-a?"
 
 #: src/components/notification-service.tsx
 msgid "View all notifications"
-msgstr ""
+msgstr "Wali akk ulɣuten"
 
 #: src/components/quotes-modal.tsx
 msgid "No quotes yet"
 msgstr ""
 
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled post deleted"
+#~ msgstr ""
+
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Switch to Side Peek view"
-msgstr ""
+msgstr "Ddu ɣer yidis n uskan Peek"
+
+#: src/components/modals.tsx
+#~ msgid "Reply scheduled"
+#~ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Unable to report post"
-msgstr ""
+msgstr "D awezɣi tummla n tsuffeɣt"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{account} followed you.} other {<0><1>{0}</1> people</0> followed you.}}"
-msgstr ""
+msgstr "{count, plural, one {}=1 {{account} yeṭṭafar-ik.} other {<0><1>{0}</1> imdanen</0> ṭṭafaren-k.}}"
 
 #. placeholder {0}: niceDateTime(account.createdAt)
 #: src/pages/accounts.tsx
 msgid "Connected on {0} (<0/>)"
-msgstr ""
+msgstr "D uqqin ɣef {0} (<0/>)"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
@@ -125,35 +162,46 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>c</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>c</1>"
+
+#: src/components/compose-button.tsx
+#: src/components/nav-menu.tsx
+#: src/pages/scheduled-posts.tsx
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled Posts"
+#~ msgstr "Tisuffaɣ yettwasɣawsen"
 
 #: src/components/muted-status.tsx
 #: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
-msgstr ""
+msgstr "Yettwasgugem"
 
 #: src/pages/account-statuses.tsx
 msgid "Nothing to see here yet."
-msgstr ""
+msgstr "Ulac acu ara twaliḍ dagi akka ar tura."
 
 #: src/components/list-add-edit.tsx
 msgid "Delete this list?"
-msgstr ""
+msgstr "Kkes tabdart-a?"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcut settings copied"
-msgstr ""
+msgstr "Iɣewwaren n unegzum ttwaneɣlen"
+
+#: src/components/related-actions.tsx
+#~ msgid "Edit notes"
+#~ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "anyone"
-msgstr ""
+msgstr "yal yiwen"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Posts"
-msgstr ""
+msgstr "Tisuffaɣ"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've blocked {domain}."
@@ -163,13 +211,18 @@ msgstr ""
 msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
 msgstr ""
 
+#: src/components/status-activity-menu.tsx
+#: src/components/status-activity-menu.tsx
+#~ msgid "Boosted/Liked by…"
+#~ msgstr "Izuzer-it/Iḥemmel-it…"
+
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle}"
-msgstr ""
+msgstr "{hashtagTitle}"
 
 #: src/pages/mentions.tsx
 msgid "No one mentioned you :("
-msgstr ""
+msgstr "Ulac win k-id-ibedren :("
 
 #: src/components/filtered-status.tsx
 #: src/components/filtered-status.tsx
@@ -179,28 +232,36 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered"
-msgstr ""
+msgstr "Tettwasizdeg"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/compose.tsx
 msgid "Replying to @{0}"
-msgstr ""
+msgstr "Tiririt i @{0}"
 
 #: src/components/qr-scanner-modal.tsx
 msgid "Unable to access camera. Please check permissions."
 msgstr ""
 
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Delete scheduled post?"
+#~ msgstr ""
+
 #: src/components/related-actions.tsx
 msgid " Notifications disabled for @{username}'s posts."
 msgstr ""
 
+#: src/pages/login.jsx
+#~ msgid "server domain"
+#~ msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Error deleting drafts! Please try again."
-msgstr ""
+msgstr "Tuccḍa deg tukksa n yirewwayen! Ttxil εreḍ tikkelt niḍen."
 
 #: src/pages/settings.tsx
 msgid "Auto refresh timeline posts"
-msgstr ""
+msgstr "Asmiren awurman n tsuffaɣ n tesnimirt"
 
 #: src/components/import-accounts-selection.tsx
 msgid "{selectedCount, plural, one {Import # account} other {Import # accounts}}"
@@ -208,7 +269,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Back to top"
-msgstr ""
+msgstr "Uɣal ar tqacuct"
 
 #: src/components/status-helpers.ts
 msgid "Private posts cannot be quoted"
@@ -216,33 +277,41 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
-msgstr ""
+msgstr "Tidaddanin-a war talɣa, war tira. Ahat yessefk ad tesnaseḍ talɣiwin-ik, ad ten-tbeddleḍ melmi i tebɣiḍ."
 
 #: src/pages/settings.tsx
 msgid "Post translation"
-msgstr ""
+msgstr "Asuqqel n tsuffeɣt"
 
 #: src/components/related-actions.tsx
 msgid "Unable to unblock @{username}"
-msgstr ""
+msgstr "D awezɣi tukksa n usewḥel ɣef @{username}"
 
 #: src/pages/catchup.tsx
 msgid "Density"
-msgstr ""
+msgstr "Taneẓẓi"
+
+#: src/pages/settings.tsx
+#~ msgid "⚠️⚠️⚠️ Very experimental.<0/>Stored in your own profile’s notes. Profile (private) notes are mainly used for other profiles, and hidden for own profile."
+#~ msgstr "⚠️⚠️⚠️ D armitan ugar.<0/>Yettwasekles deg tezmilin n umaɣnu-k. Tizmilin-a n umaɣnu (tusligin) ttuseqdacent s umata ɣef yimuɣna niḍen, ffrent ɣef umaɣnu-k."
 
 #: src/pages/notifications.tsx
 msgid "Only mentions"
-msgstr ""
+msgstr "Ibdaren kan"
 
 #. placeholder {0}: announcements.length
 #: src/pages/notifications.tsx
 msgid "{0, plural, one {Announcement} other {Announcements}}"
-msgstr ""
+msgstr "{0, plural, one {Alɣu} other {Alɣuten}}"
 
 #. placeholder {0}: date.toLocaleString( i18n.locale, { month: 'long', year: 'numeric', }, )
 #: src/pages/account-statuses.tsx
 msgid "Showing posts in {0}"
 msgstr ""
+
+#: src/components/related-actions.tsx
+#~ msgid "Boosts from @{username} enabled."
+#~ msgstr "Izuzar s-ɣur @{username} ttwaremden."
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Notifications"
@@ -250,12 +319,21 @@ msgstr ""
 
 #: src/components/generic-accounts.tsx
 msgid "Nothing to show"
-msgstr ""
+msgstr "Ulac ara yettwaskanen"
+
+#: src/pages/catchup.tsx
+#~ msgid "Note: your server might only show a maximum of 800 posts in the Home timeline regardless of the time range. Could be less or more."
+#~ msgstr ""
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Bookmarked"
-msgstr ""
+msgstr "Yettwacreḍ"
+
+#: src/components/private-note-sheet.tsx
+#: src/components/related-actions.tsx
+#~ msgid "Notes"
+#~ msgstr ""
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
@@ -270,6 +348,10 @@ msgstr ""
 msgid "Login required to see posts from Bluesky."
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "{0, plural, one {# keyword} other {# keywords}}"
+#~ msgstr "{0, plural, one {# awal n tsarut} other {# awalen n tsura}}"
+
 #: src/pages/welcome.tsx
 msgid "A separate timeline for followings. Email-inspired interface to sort and filter posts."
 msgstr ""
@@ -281,27 +363,35 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Light"
-msgstr ""
+msgstr "Aceɛlal"
 
 #: src/pages/catchup.tsx
 msgid "last 4 hours"
-msgstr ""
+msgstr "4 yisragen ineggura"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Send post"
-msgstr ""
+msgstr "Azen tasuffeɣt"
 
 #: src/pages/notifications.tsx
 msgid "Dismiss"
-msgstr ""
+msgstr "Zgel"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Specific list is optional. For multi-column mode, list is required, else the column will not be shown."
+#~ msgstr "Tabdart tuzzigt d tafrayant. I uskar s waṭas n tgejda, tabdart tettwasra, ma ulac tigejdit ad teffer."
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
-msgstr ""
+msgstr "Lukem tisuffaɣ n yineḍfaren-ik."
+
+#: src/components/follow-request-buttons.tsx
+#~ msgid "Reject"
+#~ msgstr "Agi"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open"
-msgstr ""
+msgstr "Ldi"
 
 #. placeholder {0}: mediaAttachments[index]?.fileName || index + 1
 #: src/components/compose.tsx
@@ -310,12 +400,12 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Ended"
-msgstr ""
+msgstr "Ifukk"
 
 #: src/components/nav-menu.tsx
 #: src/components/text-expander.tsx
 msgid "More…"
-msgstr ""
+msgstr "Ugar…"
 
 #: src/pages/status.tsx
 msgid "{years, plural, one {# year later} other {# years later}}"
@@ -324,15 +414,23 @@ msgstr ""
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Copy handle"
-msgstr ""
+msgstr "Nɣel isem n useqdac"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Bookmarks"
 msgstr ""
 
+#: src/pages/followed-hashtags.tsx
+#~ msgid "Unable to load followed hashtags."
+#~ msgstr "D awezɣi asali n yihacṭagen i yettwaḍfaren."
+
+#: src/pages/mentions.tsx
+#~ msgid "Private mentions"
+#~ msgstr "Tabdarin tusligin"
+
 #: src/components/shortcuts-settings.tsx
 msgid "List"
-msgstr ""
+msgstr "Tabdart"
 
 #: src/components/status-placeholders.tsx
 #: src/components/status-quotes.tsx
@@ -360,7 +458,7 @@ msgstr ""
 #: src/components/timeline2.tsx
 #: src/pages/search.tsx
 msgid "The end."
-msgstr ""
+msgstr "Taggara."
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media-attachment.tsx
@@ -377,7 +475,7 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/status.tsx
 msgid "More"
-msgstr ""
+msgstr "Ugar"
 
 #: src/pages/welcome.tsx
 msgid "Reposts Carousel"
@@ -385,11 +483,11 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up"
-msgstr ""
+msgstr "Yebda"
 
 #: src/pages/status.tsx
 msgid "Switch to Full view"
-msgstr ""
+msgstr "Uɣal s uskan ummid"
 
 #: src/components/drafts.tsx
 msgid "Error fetching quoted status!"
@@ -399,18 +497,26 @@ msgstr ""
 msgid "Feedback sent"
 msgstr ""
 
+#: src/pages/followed-hashtags.tsx
+#~ msgid "{0, plural, one {# hashtag} other {# hashtags}}"
+#~ msgstr "{0, plural, one {# ahacṭag} other {# ihacṭagen}}"
+
 #: src/components/report-modal.tsx
 msgid "Pending review"
-msgstr ""
+msgstr "Ittraǧu acegger"
+
+#: src/pages/login.jsx
+#~ msgid "Continue with {selectedInstanceText}"
+#~ msgstr "Kemmel s {selectedInstanceText}"
 
 #: src/components/timeline.tsx
 #: src/pages/settings.tsx
 msgid "New posts"
-msgstr ""
+msgstr "Tisuffaɣ timaynutin"
 
 #: src/components/related-actions.tsx
 msgid "Blocked"
-msgstr ""
+msgstr "Yettusewḥel"
 
 #: src/components/atproto-labels.tsx
 msgid "Explicit sexual images."
@@ -418,20 +524,24 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "What's new"
-msgstr ""
+msgstr "D acu i yellan d amaynut"
 
 #: src/components/drafts.tsx
 msgid "Delete all drafts?"
-msgstr ""
+msgstr "Kkes akk irewwayen?"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move down"
-msgstr ""
+msgstr "Nkez d akessar"
 
 #: src/components/related-actions.tsx
 msgid "Mention <0>@{username}</0>"
-msgstr ""
+msgstr "Bder <0>@{username}</0>"
+
+#: src/pages/filters.tsx
+#~ msgid "Edit filter"
+#~ msgstr "Ẓreg amsizdeg"
 
 #: src/components/related-actions.tsx
 msgid "Enable reposts"
@@ -441,6 +551,10 @@ msgstr ""
 #: src/pages/account-statuses.tsx
 msgid "Switch to account's PDS {0}"
 msgstr ""
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unable to unfeature on profile"
+#~ msgstr "D awezɣi tukksa seg umaɣnu"
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
@@ -453,11 +567,11 @@ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Switch to this account"
-msgstr ""
+msgstr "Uɣal ɣer umiḍan-a"
 
 #: src/components/compose.tsx
 msgid "Minimize"
-msgstr ""
+msgstr "Semẓẓi"
 
 #: src/components/quotes-modal.tsx
 msgid "Error loading quotes"
@@ -465,38 +579,46 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Uploaded"
-msgstr ""
+msgstr "Yuli-d"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "No columns yet. Tap on the Add column button."
+#~ msgstr "Ulac tigejdit akka tura. Sit ɣef tqeffalt \"Rnu tigejdit\"."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add more than one shortcut/column to make this work."
-msgstr ""
+msgstr "Rnu ugar n unegzum/tgejdit i wakken ad yekker."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/trending.tsx
 msgid "Trending"
-msgstr ""
+msgstr "Inezzaɣ"
 
 #: src/components/embed-modal.tsx
 msgid "Open in new window"
-msgstr ""
+msgstr "Ldi deg usfaylu amaynut"
 
 #: src/pages/notifications.tsx
 msgid "Notifications settings updated"
-msgstr ""
+msgstr "Iɣewwaṛen n wulɣu ttwaleqqmen"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled post rescheduled"
+#~ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "View profile…"
-msgstr ""
+msgstr "Wali amaɣnu…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Expand content warning or<0/>toggle expanded/collapsed thread"
-msgstr ""
+msgstr "Alɣu ɣef usumɣer n ugbur neɣ <0/>abeddel n usqerdec semɣer/semẓẓi"
 
 #: src/components/account-info.tsx
 msgid "Unable to load account."
-msgstr ""
+msgstr "Yegguma ad d-yali umiḍan."
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -505,37 +627,56 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "{query} <0>‒ accounts, hashtags & posts</0>"
-msgstr ""
+msgstr "{query} <0>‒ imiḍanen, ihacṭagen & tisuffaɣ</0>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Content"
-msgstr ""
+msgstr "Agbur"
 
 #: src/components/report-modal.tsx
 msgid "Send Report"
-msgstr ""
+msgstr "Azen aneqqis"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Enter a new server e.g. \"mastodon.social\""
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to delete filter."
+#~ msgstr "D awezɣi tukksa n yimsizdeg."
+
+#: src/components/nav-menu.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Federated"
+#~ msgstr "Asedduklan"
 
 #. More from [Author]
 #: src/components/byline.tsx
 msgid "More from <0/>"
-msgstr ""
+msgstr "Ugar sɣur <0/>"
 
 #: src/pages/search.tsx
 msgid "No hashtags found."
-msgstr ""
+msgstr "Ulac ihacṭagen i yettwafen."
 
 #: src/components/recent-searches.tsx
 #: src/components/search-form.tsx
 msgid "Recent searches"
-msgstr ""
+msgstr "Inadiyen n melmi kan"
 
 #: src/utils/open-compose.ts
 msgid "Looks like your browser is blocking popups."
-msgstr ""
+msgstr "Yettban-d iminig-ik yessewḥal isfuyla udhimen."
 
 #: src/pages/settings.tsx
 msgid "Default visibility updated"
 msgstr ""
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "{0, plural, other {<0>@{1}</0> first, # others below}}"
+#~ msgstr ""
 
 #. placeholder {0}: feeds.length
 #: src/pages/lists.tsx
@@ -544,40 +685,52 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Poll"
-msgstr ""
+msgstr "Asisten"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Profile picture"
-msgstr ""
+msgstr "Tugna n umaɣnu"
 
 #: src/components/notification-service.tsx
 msgid "Notification"
-msgstr ""
+msgstr "Ulɣu"
 
 #: src/pages/accounts.tsx
 msgid "Note: <0>Default</0> account will always be used for first load. Switched accounts will persist during the session."
-msgstr ""
+msgstr "Tamawt: Amiḍan <0>amezwer</0> ad yezg yettwaseqdac deg usali amezwaru. Imiḍanen yettwasneflen ad qqimen ɣef teɣzi n tɣimit."
+
+#: src/pages/settings.tsx
+#~ msgid "\"Cloud\" import/export for shortcuts settings"
+#~ msgstr "Aktar/asifeḍ n \"Asigna\" i yiɣewwaren n yinegzumen"
 
 #: src/components/status-quotes.tsx
 msgid "Post removed by author"
 msgstr ""
 
+#: src/pages/account-statuses.jsx
+#~ msgid "+ Replies"
+#~ msgstr "ugar n tririyin"
+
 #: src/components/media-alt-modal.tsx
 #: src/components/media.tsx
 msgid "Media description"
-msgstr ""
+msgstr "Aglam n umidya"
 
 #: src/pages/home.tsx
 msgid "Unable to fetch notifications."
-msgstr ""
+msgstr "D awazeɣi asali n yilɣa."
 
 #: src/components/media-modal.tsx
 msgid "Open original media in new window"
-msgstr ""
+msgstr "Ldi amidya aɣbalu deg usfaylu amaynut"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Download shortcuts from server"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not available in current view mode"
-msgstr ""
+msgstr "Ulac deg uskar n uskan amiran"
 
 #: src/components/import-accounts-selection.tsx
 msgid "Existing"
@@ -585,7 +738,11 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Ended <0/>"
-msgstr ""
+msgstr "Ifukk <0/>"
+
+#: src/components/notification.tsx
+#~ msgid "View #Wrapstodon"
+#~ msgstr "Wali #Wrapstodon"
 
 #: src/components/muted-status.tsx
 msgid "Post from muted account"
@@ -595,9 +752,26 @@ msgstr ""
 msgid "View Quotes"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "{0, plural, one {# filter} other {# filters}}"
+#~ msgstr "{0, plural, one {# imsizdeg} other {# imsizedgen}}"
+
 #: src/pages/settings.tsx
 msgid "Reposts carousel"
 msgstr ""
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Shortcuts saved"
+#~ msgstr "Inegzumen ttwaskelsen"
+
+#: src/components/status-reply-menu.tsx
+#: src/components/status-reply-menu.tsx
+#~ msgid "Reply all"
+#~ msgstr ""
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Hiding boosts"
+#~ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "We read every message even when we cannot reply."
@@ -605,29 +779,33 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Follow requests"
-msgstr ""
+msgstr "Issutar n uḍfar"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Switch to account's server {0}"
+#~ msgstr ""
 
 #: src/pages/trending.tsx
 msgid "No trending posts."
-msgstr ""
+msgstr "Ulac tisuffaɣ tinezzaɣ."
 
 #. placeholder {0}: !__FAKE_COMMIT_HASH__ && ( <span className="ib insignificant"> ( <a href={`https://github.com/cheeaun/phanpy/commit/${__COMMIT_HASH__}`} target="_blank" rel="noopener noreferrer" > <RelativeTime datetime={new Date(__BUILD_TIME__)} /> </a> ) </span> )
 #: src/pages/settings.tsx
 msgid "<0>Version:</0> <1/> {0}"
-msgstr ""
+msgstr "<0>Lqem:</0> <1/> {0}"
 
 #: src/components/status-media-embeds.tsx
 #: src/components/status-post-body.tsx
 msgid "Show less"
-msgstr ""
+msgstr "Ssken cwiṭ"
 
 #: src/pages/settings.tsx
 msgid "Push notifications are blocked. Please enable them in your browser settings."
-msgstr ""
+msgstr "Ilɣa Push ttusweḥlen. Ttxil-k rmed-iten deg yiɣewwaren n yiminig."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
-msgstr ""
+msgstr "Semselsi inegzumen imiranen?"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
@@ -636,27 +814,31 @@ msgstr ""
 msgid "Undo repost"
 msgstr ""
 
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Phanpy home timeline on tablet device"
+#~ msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Previous post"
-msgstr ""
+msgstr "Tasuffeɣt iɛeddan"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Posts)"
-msgstr ""
+msgstr "Nadi: {q} (Tisuffaɣ)"
 
 #: src/components/media-modal.tsx
 msgid "Describe image…"
-msgstr ""
+msgstr "Glem tugna…"
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
 msgid "Name"
-msgstr ""
+msgstr "Isem"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Override current shortcuts?"
-msgstr ""
+msgstr "Zgel inegzumen imiranen?"
 
 #: src/components/account-info.tsx
 msgid "View profile"
@@ -666,16 +848,25 @@ msgstr ""
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Inegzumen n unasiw"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Public"
-msgstr ""
+msgstr "Azayaz"
+
+#: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Optional, e.g. mastodon.social"
+#~ msgstr "Afrayan, am. mastodon.social"
+
+#: src/pages/notifications.tsx
+#~ msgid "{0, plural, one {# follow request} other {# follow requests}}"
+#~ msgstr "{0, plural, one {# ḍfer assuter} other {# ḍfer issutar}}"
 
 #: src/components/nav-menu.tsx
 msgid "Accounts…"
-msgstr ""
+msgstr "Imiḍanen…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -683,11 +874,11 @@ msgstr ""
 #: src/pages/bookmarks.tsx
 #: src/pages/bookmarks.tsx
 msgid "Bookmarks"
-msgstr ""
+msgstr "Ticraḍ n yisebtar"
 
 #: src/components/media-post.tsx
 msgid "Filtered: {filterTitleStr}"
-msgstr ""
+msgstr "Yettwasizdeg: {filterTitleStr}"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -699,11 +890,11 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external translation services, powered by <0>{TRANSLATION_API_NAME}</0>."
-msgstr ""
+msgstr "Tamawt: Tamahilt-a tesseqdac imeẓla n usuqqel azɣaray, tella s lmendad n <0>{TRANSLATION_API_NAME}</0>."
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to remove from list."
-msgstr ""
+msgstr "D awezɣi ad yettwakkes seg tebdart."
 
 #: src/pages/settings.tsx
 msgid "Show normally"
@@ -711,78 +902,86 @@ msgstr ""
 
 #: src/components/account-block.tsx
 msgid "Mutual"
-msgstr ""
+msgstr "Temṭafaṛem"
 
 #: src/components/status-account-menu.tsx
 msgid "Report post…"
-msgstr ""
+msgstr "Mmel tasuffeɣt…"
 
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 #: src/pages/list.tsx
 msgid "Unable to load posts."
-msgstr ""
+msgstr "D awezɣi alluy n tsuffaɣ."
 
 #: src/pages/settings.tsx
 msgid "Text size"
-msgstr ""
+msgstr "Teɣzi n uḍris"
 
 #: src/pages/catchup.tsx
 msgid "last 11 hours"
-msgstr ""
+msgstr "11 yisragen ineggura"
 
 #: src/components/account-info.tsx
 msgid "View profile image"
-msgstr ""
+msgstr "Wali tugna n umaɣnu"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Home / Following"
-msgstr ""
+msgstr "Agejdan / Aḍfar"
 
 #: src/pages/catchup.tsx
 msgid "last 3 hours"
-msgstr ""
+msgstr "3 yisragen ineggura"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>l</0> or <1>f</1>"
-msgstr ""
+msgstr "<0>l</0> or <1>f</1>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Label"
-msgstr ""
+msgstr "Tabzimt"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Liked"
-msgstr ""
+msgstr "Iḥemmel"
 
 #: src/pages/settings.tsx
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-msgstr ""
+msgstr "Tisirag Push ur ttwamuddent ara seg unekcum aneggaru. Tesriḍ <0><1>ad teqqneḍ</1> tikkelt niḍen i wakken ad tmuddeḍ tisirag push</0>."
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
 #: src/components/status-helpers.ts
 msgid "Read more →"
-msgstr ""
+msgstr "Γer ugar →"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} ({monthYear})"
+#~ msgstr "{accountDisplay} ({monthYear})"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Custom emojis"
+#~ msgstr "Imujiten udmawanen"
 
 #: src/components/drafts.tsx
 msgid "No drafts found."
-msgstr ""
+msgstr "Ulac irewwayen i yettwafen."
 
 #: src/pages/bookmarks.tsx
 msgid "No bookmarks yet. Go bookmark something!"
-msgstr ""
+msgstr "Werɛad ur tesɛiḍ ara ticraḍ. Ddu ad d-tcerḍeḍ kra!"
 
 #: src/components/nav-menu.tsx
 msgid "Shortcuts / Columns…"
-msgstr ""
+msgstr "Inegzumen / Ijga…"
 
 #. placeholder {0}: username || acct
 #: src/components/status-utility-menu.tsx
 msgid "View post by <0>@{0}</0>"
-msgstr ""
+msgstr "Wali tasuffeɣt sɣur <0>@{0}</0>"
 
 #: src/pages/welcome.tsx
 msgid "Connect your existing Bluesky or Blacksky account.<0/>Your credentials are not stored by Bluepy."
@@ -791,15 +990,15 @@ msgstr ""
 #. placeholder {0}: userLists.length
 #: src/pages/lists.tsx
 msgid "{0, plural, one {# list} other {# lists}}"
-msgstr ""
+msgstr "{0, plural, one {# tabdart} other {# tibdarin}}"
 
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
-msgstr ""
+msgstr "Sken akk agbur amḥulfu"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
-msgstr ""
+msgstr "D awezɣi asgugem n udiwenni"
 
 #: src/components/muted-status.tsx
 msgid "Show"
@@ -812,28 +1011,28 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generating description. Please wait…"
-msgstr ""
+msgstr "Asirew n uglam. Ttxil-k ṛǧu…"
 
 #: src/components/nav-menu.tsx
 msgid "New update available…"
-msgstr ""
+msgstr "Yella lqem amaynut…"
 
 #. index/total posts in a thread
 #: src/components/thread-badge.tsx
 msgid "{index}/{total}"
-msgstr ""
+msgstr "{index}/{total}"
 
 #: src/components/translated-bio-sheet.tsx
 msgid "Translated Bio"
-msgstr ""
+msgstr "Tettwasuqqel tudert"
 
 #: src/pages/status.tsx
 msgid "Unable to switch"
-msgstr ""
+msgstr "D awezɣi abeddel"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
-msgstr ""
+msgstr "Aru i unadi n GIFs"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
@@ -844,7 +1043,7 @@ msgstr ""
 
 #: src/components/media.tsx
 msgid "Open file"
-msgstr ""
+msgstr "Ldi afaylu"
 
 #. placeholder {0}: groupBy ?? ''
 #: src/pages/catchup.tsx
@@ -855,7 +1054,7 @@ msgstr ""
 #: src/components/edit-profile-sheet.tsx
 #: src/components/related-actions.tsx
 msgid "Edit profile"
-msgstr ""
+msgstr "Ẓreg amaɣnu"
 
 #: src/pages/accounts.tsx
 msgid "Remove account…"
@@ -863,25 +1062,30 @@ msgstr ""
 
 #: src/pages/trending.tsx
 msgid "Back to showing trending posts"
-msgstr ""
+msgstr "Uɣal ɣer uskan n tsuffaɣ tinessaɣ"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
-msgstr ""
+msgstr "Asaraw n uglam n tugna"
+
+#: src/pages/hashtag.tsx
+#: src/pages/hashtag.tsx
+#~ msgid "Featured on profile"
+#~ msgstr "Yella ɣef umaɣnu-k"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut…"
-msgstr ""
+msgstr "Rnu anegzum…"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/atproto-labels.tsx
 msgid "Automated"
-msgstr ""
+msgstr "Awurman"
 
 #: src/pages/trending.tsx
 msgid "Trending News"
-msgstr ""
+msgstr "Isallen inezzaɣ"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -889,24 +1093,28 @@ msgstr ""
 
 #: src/components/status-media-embeds.tsx
 msgid "Show media"
-msgstr ""
+msgstr "Sken amidya"
 
 #: src/components/related-actions.tsx
 msgid "Forever"
-msgstr ""
+msgstr "I lebda"
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications settings"
-msgstr ""
+msgstr "Iɣewwaṛen n wulɣu"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (- Boosts)"
+#~ msgstr ""
 
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/{total}"
-msgstr ""
+msgstr "Asqerdec {index}/{total}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "beta"
-msgstr ""
+msgstr "beta"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/nav-menu.tsx
@@ -916,19 +1124,23 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Search"
-msgstr ""
+msgstr "Nadi"
+
+#: src/pages/accounts.jsx
+#~ msgid "Log out and remove <0>@{0}</0>"
+#~ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Post updated. Check it out."
-msgstr ""
+msgstr "Yettwalqam yizen-nni. Mmuqel-it."
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unpin post"
-msgstr ""
+msgstr "D awezɣi aserreḥ n tsuffeɣt"
 
 #: src/components/shortcuts-settings.tsx
 msgid "e.g. PixelArt (Max 5, space-separated)"
-msgstr ""
+msgstr "e.g. PixelArt (ugar n 5, ferqen s tallunt)"
 
 #. placeholder {0}: accounts.length
 #: src/components/import-export-accounts.tsx
@@ -937,57 +1149,70 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to account page"
-msgstr ""
+msgstr "Ddu ɣer usebter n umiḍan"
 
 #: src/pages/settings.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "Udem"
 
 #: src/pages/settings.tsx
 msgid "Follows"
-msgstr ""
+msgstr "T·Yeṭafaṛ"
 
 #. By [Author]
 #. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
 msgid "By {0}"
-msgstr ""
+msgstr "Sɣur {0}"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
-msgstr ""
+msgstr "Yettban tesεiḍ yakan urti ideg turiḍ yeldi deg usfaylu amaraw. Tiririt n usfaylu-a ad issefsex tira n tsuffeɣt deg usfaylu-a war asekles. Kemmel?"
 
 #: src/components/report-modal.tsx
 msgid "Report @{username}"
-msgstr ""
+msgstr "Mmel @{username}"
 
 #: src/components/media-modal.tsx
 msgid "Open original media"
-msgstr ""
+msgstr "Ldi amidya aɣbalu"
 
 #: src/components/post-embed-modal.tsx
 msgid "Account Emojis:"
-msgstr ""
+msgstr "Imujiṭen n umiḍan:"
+
+#. Scheduled [in 1 day] ([Thu, Feb 27, 6:30:00 PM])
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled <0><1/></0> <2>({0})</2>"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Account"
-msgstr ""
+msgstr "Amiḍan"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>?"
-msgstr ""
+msgstr "Sewḥel <0>@{username}</0>?"
 
 #: src/components/related-actions.tsx
 msgid "@{username} removed from followers"
-msgstr ""
+msgstr "@{username} yettwakkes seg yineḍfaren"
+
+#: src/components/endorsements.tsx
+#~ msgid "No featured profiles."
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Expiry"
+#~ msgstr "Keffu"
 
 #: src/pages/catchup.tsx
 msgid "Overlaps with your last catch-up"
-msgstr ""
+msgstr "Yemyikcam akked ulukem-ik aneggaru"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post"
-msgstr ""
+msgstr "Aru Tasuffeɣt tamaynut"
 
 #. Action to switch from rendered math back to raw (LaTeX) markup
 #: src/components/math-block.tsx
@@ -997,7 +1222,7 @@ msgstr ""
 #. placeholder {0}: shortenNumber(statusesCount)
 #: src/components/account-block.tsx
 msgid "Posts: {0}"
-msgstr ""
+msgstr "Tisuffaɣ: {0}"
 
 #: src/pages/accounts.tsx
 msgid "Log out and remove <0>@{acct}</0>"
@@ -1012,22 +1237,34 @@ msgstr ""
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Failed to delete scheduled post"
+#~ msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Looks like you have unsent drafts. Let's continue where you left off."
-msgstr ""
+msgstr "Yettban ɣur-k irewwayen ur yettwaznen ara. Kemmel ansi i ten-teǧǧiḍ."
+
+#: src/pages/hashtag.tsx
+#~ msgid "Login required to see posts from this server."
+#~ msgstr ""
 
 #: src/components/generic-accounts.tsx
 #: src/components/mention-modal.tsx
 msgid "Error loading accounts"
-msgstr ""
+msgstr "Tuccḍa deg usali n imiḍanen"
 
 #: src/components/modals.tsx
 msgid "Post published. Check it out."
-msgstr ""
+msgstr "Yeffeɣ-d yizen-nni. Mmuqqel-it."
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Hashtags)"
-msgstr ""
+msgstr "Nadi: {q} (Ihacṭagen)"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Unable to save shortcuts"
+#~ msgstr "D awezɣi asekles n yinegzumen"
 
 #: src/components/status-reblog.tsx
 msgid "<0/> <1>reposted</1>"
@@ -1037,9 +1274,17 @@ msgstr ""
 msgid "Show anyway"
 msgstr ""
 
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Zoom in"
+#~ msgstr "Simɣeṛ"
+
 #: src/components/status-helpers.ts
 msgid "Request to quote"
-msgstr ""
+msgstr "Suter tanebdurt"
+
+#: src/pages/settings.jsx
+#~ msgid "<0>Built</0> by <1>@cheeaun</1>"
+#~ msgstr "<0>Built</0> sɣur <1>@cheeaun</1>"
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
@@ -1049,7 +1294,7 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Polls are not interactive, becomes a list with vote counts."
-msgstr ""
+msgstr "Isestanen ur myigawen ara, ttuɣalen d tabdart s umḍan n ufran."
 
 #: src/components/atproto-labels.tsx
 msgid "Sexually Suggestive"
@@ -1057,7 +1302,12 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Unmuted @{username}"
-msgstr ""
+msgstr "Yettwakkes usgugem ɣef @{username}"
+
+#: src/components/status-inline-controls.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Boosted"
+#~ msgstr "Tettwazuzer"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
@@ -1067,12 +1317,16 @@ msgstr ""
 #. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
 msgid "Showing posts mentioning <0>{0}</0>"
-msgstr ""
+msgstr "Askan n tsuffaɣ i d-ibedren <0>{0}</0>"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Unable to copy handle"
-msgstr ""
+msgstr "D awezɣi anɣal n yisem n useqdac"
+
+#: src/pages/filters.tsx
+#~ msgid "Change expiry"
+#~ msgstr "Senfel taggara"
 
 #: src/components/import-export-accounts.tsx
 msgid "Import failed"
@@ -1081,12 +1335,12 @@ msgstr ""
 #. placeholder {0}: sharers.map((s) => { const { id: sharerId, avatarStatic, displayName, } = s; return ( <button key={sharerId} type="button" className="plain" style={{ padding: 0, }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); // Reset and filter to author setSelectedAuthor(sharerId); setSelectedFilterCategory('all'); }} > <Avatar url={avatarStatic} size="s" alt={displayName} /> </button> ); })
 #: src/pages/catchup.tsx
 msgid "Shared by {0}"
-msgstr ""
+msgstr "Yebḍa-tt {0}"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Import/export"
-msgstr ""
+msgstr "Kter/sifeḍ"
 
 #: src/pages/account-statuses.tsx
 msgid "Hiding replies"
@@ -1100,22 +1354,44 @@ msgstr ""
 msgid "Quote chain"
 msgstr ""
 
+#: src/components/nav-menu.jsx
+#: src/components/shortcuts.jsx
+#: src/pages/list.jsx
+#~ msgid "All Lists"
+#~ msgstr "Akk tibdarin"
+
 #: src/pages/settings.tsx
 msgid "Collapse with reveal"
 msgstr ""
 
+#: src/pages/public.tsx
+#~ msgid "No one has posted anything yet."
+#~ msgstr "Ulac win i d-isuffɣen kra akka ar tura."
+
 #: src/components/post-embed-modal.tsx
 msgid "HTML code copied"
-msgstr ""
+msgstr "Tangalt HTML tettwanɣal"
+
+#: src/pages/filters.tsx
+#~ msgid "Filtered post will be…"
+#~ msgstr "Tisuffaɣ yettwasezdgen ad…"
 
 #: src/pages/search.tsx
 msgid "See more accounts"
-msgstr ""
+msgstr "Wali ugar n imiḍanen"
 
 #: src/components/related-actions.tsx
 #: src/pages/account-statuses.tsx
 msgid "Search my posts"
 msgstr ""
+
+#: src/components/status-content.tsx
+#~ msgid "Unboosted @{0}'s post"
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Delete this filter?"
+#~ msgstr "Kkes imsizdeg-a?"
 
 #: src/components/generic-accounts.tsx
 #: src/components/notification.tsx
@@ -1123,22 +1399,34 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Accounts"
-msgstr ""
+msgstr "Imiḍanen"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've muted @{name}."
 msgstr ""
+
+#: src/pages/status.tsx
+#~ msgid "This post is from another server (<0>{instance}</0>). Interactions (reply, boost, etc) are not possible."
+#~ msgstr ""
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/components/account-info.tsx
 msgid "This user has chosen to not make this information available."
-msgstr ""
+msgstr "Aseqdac-a yefren ur tettili ara telɣut-a."
+
+#: src/pages/welcome.jsx
+#~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
+#~ msgstr "<0>Yettwabna</0> sɣur <1>@cheeaun</1>. <2>Tasertit n tbaḍnit</2>."
 
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
-msgstr ""
+msgstr "Ali d asawen"
+
+#: src/pages/filters.tsx
+#~ msgid "Home and lists"
+#~ msgstr "Agejdan akked tebdarin"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1146,16 +1434,16 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to original profile page"
-msgstr ""
+msgstr "Ddu ɣer usebter n umaɣnu"
 
 #. placeholder {0}: detectedLang ?? '…'
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
-msgstr ""
+msgstr "Awurman ({0})"
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
-msgstr ""
+msgstr "Yettwaqbal"
 
 #: src/components/feedback-modal.tsx
 msgid "Leave this field blank"
@@ -1163,48 +1451,48 @@ msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Powered by GIPHY"
-msgstr ""
+msgstr "S lmendad n GIPHY"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Help"
-msgstr ""
+msgstr "Tallelt"
 
 #. placeholder {0}: shortenNumber(statusesCount)
 #. placeholder {1}: shortenNumber(statusesCount)
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{statusesCount, plural, one {<0>{0}</0> Post} other {<1>{1}</1> Posts}}"
-msgstr ""
+msgstr "{statusesCount, plural, one {<0>{0}</0> n tsuffeɣt} other {<1>{1}</1> n tsuffaɣ}}"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Header picture"
-msgstr ""
+msgstr "Tugna n tqacuct"
 
 #: src/components/account-info.tsx
 msgid "<0>{displayName}</0> has indicated that their new account is now:"
-msgstr ""
+msgstr "<0>{displayName}</0> ɣur-s tura amiḍan-a amaynut:"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unmute conversation"
-msgstr ""
+msgstr "D awezɣi tukksa n usgugem i udiwenni"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Toggle Cloak mode"
-msgstr ""
+msgstr "Rmed/Sens askar uffir"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import & append…"
-msgstr ""
+msgstr "Kter & semselsi…"
 
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Mute profile</0>"
-msgstr ""
+msgstr "Azen aneqqis <0>+ Sgugem amaɣnu</0>"
 
 #. placeholder {0}: snapStates.settings.contentTranslationHideLanguages .length
 #: src/pages/settings.tsx
 msgid "{0, plural, =0 {Hide \"Translate\" button for:} other {Hide \"Translate\" button for (#):}}"
-msgstr ""
+msgstr "{0, plural, one {}=0 {Ffer taqeffalt \"Suqqel\" i:} other {Ffer taqeffalt \"Suqqel\" i (#):}}"
 
 #: src/components/error-fallback.tsx
 msgid "Report a bug"
@@ -1212,39 +1500,51 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Accounts with <0>{query}</0>"
-msgstr ""
+msgstr "Imiḍanen yesɛan <0>{query}</0>"
+
+#: src/components/compose-poll.tsx
+#~ msgid "Remove poll"
+#~ msgstr "Kkes afmiḍi"
 
 #: src/pages/catchup.tsx
 msgid "Preview of Catch-up UI"
-msgstr ""
+msgstr "Taskant n ugrudem n ulukem"
 
 #: src/pages/settings.tsx
 msgid "Display language"
-msgstr ""
+msgstr "Tutlayt n uskan"
 
 #: src/pages/settings.tsx
 msgid "Paginated timeline (beta)"
 msgstr ""
 
+#: src/pages/public.tsx
+#~ msgid "Federated timeline"
+#~ msgstr "Tasnimirt tazayazt tamatut"
+
 #: src/pages/welcome.tsx
 msgid "Screenshot of nested comments thread"
-msgstr ""
+msgstr "Tuṭṭfa n ugdil n yiwenniten yimyikcamen"
 
 #: src/pages/trending.tsx
 msgid "Trending ({instance})"
-msgstr ""
+msgstr "Inezzaɣ ({instance})"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specify a list of shortcuts that'll appear as:"
-msgstr ""
+msgstr "Suzzeg tabdart n yinegzumen ara d-ibanen  am:"
+
+#: src/components/account-info.tsx
+#~ msgid "{0} original posts, {1} replies, {2} quotes, {3} boosts"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Timeline"
-msgstr ""
+msgstr "Tasnimirt"
 
 #: src/pages/hashtag.tsx
 msgid "No one has posted anything with this tag yet."
-msgstr ""
+msgstr "Ulac win i d-isuffɣen kra s tebzimt-a akka ar tura."
 
 #: src/components/feedback-modal.tsx
 msgid "Thanks, got it."
@@ -1252,71 +1552,95 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Sort: Density"
-msgstr ""
+msgstr "Semyizwer: Taneẓẓi"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Like (favourite)"
-msgstr ""
+msgstr "Ḥemmel (asmenyaf)"
+
+#: src/pages/settings.tsx
+#~ msgid "Synced to your server's settings. <0>Go to your server ({instance}) for more settings.</0>"
+#~ msgstr ""
 
 #: src/pages/account-statuses.tsx
 #: src/pages/hashtag.tsx
 msgid "Filters"
-msgstr ""
+msgstr "Imzizdigen"
 
 #: src/components/report-modal.tsx
 msgid "Malicious links, fake engagement, or repetitive replies"
-msgstr ""
+msgstr "Yir iseɣwan, yir agman d tririyin i d-yettuɣalen"
 
 #: src/components/compose.tsx
 #: src/components/compose.tsx
 #: src/components/file-picker-input.tsx
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
-msgstr ""
+msgstr "{maxMediaAttachments, plural, one {Tzemreḍ ad tsedduḍ 1 ufaylu kan.} other {Tzemreḍ ad tsedduḍ # yifuyla.}}"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfollow #{hashtag}?"
+#~ msgstr "Ur ṭṭafar ara #{hashtag}?"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 msgid "Shortcuts"
-msgstr ""
+msgstr "Inegzumen"
+
+#: src/pages/filters.tsx
+#~ msgid "No filters yet."
+#~ msgstr "Ulac imsizdeg akka tura."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts copied"
-msgstr ""
+msgstr "Inegzumen ttwaneɣlen"
 
 #: src/pages/accounts.tsx
 msgid "Log out…"
-msgstr ""
+msgstr "Ffeɣ…"
 
 #: src/pages/catchup.tsx
 msgid "What is this?"
-msgstr ""
+msgstr "D acu-t wa?"
 
 #: src/pages/hashtag.tsx
 msgid "Add hashtag"
-msgstr ""
+msgstr "Rnu ahacṭag"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Import/export settings from/to server (Very experimental)"
+#~ msgstr ""
+
+#: src/components/related-actions.tsx
+#~ msgid "Boosts from @{username} disabled."
+#~ msgstr "Izuzar s-ɣur @{username} ttwasensen."
 
 #: src/pages/welcome.tsx
 msgid "Nested comments thread"
-msgstr ""
+msgstr "Azrar n yiwenniten yemyikcamen"
 
 #: src/components/report-modal.tsx
 msgid "Forward to <0>{domain}</0>"
-msgstr ""
+msgstr "Welleh ɣer <0>{domain}</0>"
+
+#: src/components/compose.tsx
+#~ msgid "Add poll"
+#~ msgstr "Rnu asisten"
 
 #: src/pages/notifications.tsx
 msgid "You don't follow"
-msgstr ""
+msgstr "Ur teṭtafareḍ ara"
 
 #: src/compose.tsx
 msgid "Login required."
-msgstr ""
+msgstr "Tuqqna tettwasra."
 
 #: src/utils/visibility-text.ts
 msgid "Local"
-msgstr ""
+msgstr "Adigan"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
-msgstr ""
+msgstr "Amefran n GIF i umsuddes"
 
 #. placeholder {0}: prettyBytes( imageSize, )
 #. placeholder {0}: prettyBytes( videoSize, )
@@ -1324,21 +1648,25 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
-msgstr ""
+msgstr "Teɣzi n ufaylu meqqret aṭas. asali-ines yezmer ad yesεu uguren. Ԑreḍ ad tesneqseḍ deg teɣzi seg {0} ɣer {1} neɣ ugar."
 
 #: src/pages/catchup.tsx
 msgid "Remove this catch-up?"
-msgstr ""
+msgstr "Kkes alukem-a?"
 
 #. placeholder {0}: rtf.format(-statusMonthsAgo, 'month')
 #: src/components/status-menu-state.tsx
 msgid "Old post (<0>{0}</0>)"
-msgstr ""
+msgstr "Tasuffeɣt taqburt (<0>{0}</0>)"
+
+#: src/components/status-content.tsx
+#~ msgid "Boosted @{0}'s post"
+#~ msgstr ""
 
 #. placeholder {0}: dtf.format(new Date(lastCatchupEndAt))
 #: src/pages/catchup.tsx
 msgid "Until the last catch-up ({0})"
-msgstr ""
+msgstr "Alamma d alukem aneggaru ({0})"
 
 #: src/components/compose.tsx
 #: src/components/edit-profile-sheet.tsx
@@ -1347,7 +1675,7 @@ msgstr ""
 #: src/components/open-link-sheet.tsx
 #: src/components/quote-suggestion.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "Sefsex"
 
 #: src/pages/status.tsx
 msgid "This post is from another PDS (<0>{instance}</0>). Interactions (reply, repost, etc) are not possible."
@@ -1362,7 +1690,7 @@ msgstr ""
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Previous"
-msgstr ""
+msgstr "Uzwir"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts in {monthYear} by {accountDisplay}"
@@ -1370,7 +1698,11 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Reload page now to update?"
-msgstr ""
+msgstr "Ales asali n usebter tura i uleqqem?"
+
+#: src/components/status-reblog.tsx
+#~ msgid "<0/> <1>boosted</1>"
+#~ msgstr "<0/><1>izuzer-it</1>"
 
 #: src/components/status-helpers.ts
 msgid "You are not allowed to quote this post"
@@ -1378,17 +1710,25 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Search term"
-msgstr ""
+msgstr "Nadi awal"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "For multi-column mode, search term is required, else the column will not be shown."
+#~ msgstr "I uskar s waṭas n tgejda, awal n unadi yettwasra, ma ulac tigejdit ad teffer."
 
 #: src/pages/status.tsx
 msgid "Error: {e}"
-msgstr ""
+msgstr "Tuccḍa: {e}"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfollowed #{hashtag}"
+#~ msgstr "Ur yettwaḍfar ara #{hashtag}"
 
 #. placeholder {0}: replies.length
 #. placeholder {1}: shortenNumber(replies.length)
 #: src/pages/status.tsx
 msgid "{0, plural, one {# reply} other {<0>{1}</0> replies}}"
-msgstr ""
+msgstr "{0, plural, one {# tiririt} other {<0>{1}</0> tiririyin}}"
 
 #. Action to render math expressions from raw (LaTeX) markup
 #: src/components/math-block.tsx
@@ -1397,23 +1737,27 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Done"
-msgstr ""
+msgstr "Yemmed"
 
 #: src/pages/catchup.tsx
 msgid "Authors"
-msgstr ""
+msgstr "Imeskaren"
 
 #: src/pages/status.tsx
 msgid "{months, plural, one {# month later} other {# months later}}"
 msgstr ""
 
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus column in multi-column mode"
+#~ msgstr "Tigejdit Focus deg uskar n waṭas n tgejda"
+
 #: src/components/status-utility-menu.tsx
 msgid "Edited: {editedDateText}"
-msgstr ""
+msgstr "Yettwaẓreg: {editedDateText}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List ID"
-msgstr ""
+msgstr "Asulay n tebdart"
 
 #. placeholder {0}: i18n.number( width as number, )
 #. placeholder {1}: i18n.number(height as number)
@@ -1427,27 +1771,31 @@ msgstr ""
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post"
-msgstr ""
+msgstr "Tiririt ɣef tsuffeɣt n @{0}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import shortcuts?"
-msgstr ""
+msgstr "Kter inegzumen?"
+
+#: src/pages/public.tsx
+#~ msgid "Switch to Federated"
+#~ msgstr "Bren ɣer tesdduklant"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to next post"
-msgstr ""
+msgstr "Zgel akarusel ɣer tsuffeɣt tuḍfirt"
 
 #: src/pages/catchup.tsx
 msgid "last 5 hours"
-msgstr ""
+msgstr "5 yisragen ineggura"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Bio"
-msgstr ""
+msgstr "Tameddurt"
 
 #: src/pages/welcome.tsx
 msgid "Sign up"
-msgstr ""
+msgstr "Jerred"
 
 #: src/components/status-activity-menu.tsx
 msgid "Unwrap quote chain"
@@ -1458,36 +1806,52 @@ msgstr ""
 msgid "Auto-translated from {0}"
 msgstr ""
 
+#: src/pages/welcome.tsx
+#~ msgid "Visually separate original posts and re-shared posts (boosted posts)."
+#~ msgstr "Freq s tmuɣli tisuffaɣ tiɣbula akked tsufaɣ yettwalsen beṭṭu (tisuffaɣ yettwazuzren)."
+
 #: src/pages/notifications.tsx
 msgid "Who are limited by Bluesky moderators"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Raw Shortcuts JSON"
-msgstr ""
+msgstr "Inegzumen n yizirig JSON"
 
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/pages/catchup.tsx
 msgid "Thread"
-msgstr ""
+msgstr "Asqerdec"
+
+#: src/components/report-modal.tsx
+#~ msgid "Violates the law of your or the server's country"
+#~ msgstr "Ur iquder ara asaḍuf n tmurt-ik neɣ asaḍuf n uqeddac"
+
+#: src/components/related-actions.tsx
+#~ msgid "Withdraw follow request?"
+#~ msgstr "Aggwi assuter n uḍfar?"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multiple hashtags are supported. Space-separated."
-msgstr ""
+msgstr "Aṭas ihacṭagen ttwasefraken. Ferqen s tallunt."
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Failed to load history"
-msgstr ""
+msgstr "Yecceḍ usali n uzray"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Search emoji"
+#~ msgstr "Nadi imujiten"
 
 #: src/pages/notifications.tsx
 msgid "Today"
-msgstr ""
+msgstr "Ass-a"
 
 #: src/components/report-modal.tsx
 msgid "Additional info"
-msgstr ""
+msgstr "Talɣut niḍen"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
@@ -1496,44 +1860,60 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "None"
-msgstr ""
+msgstr "Ula yiwen"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Link copied"
-msgstr ""
+msgstr "Yettwanɣel wasaɣ"
 
 #: src/components/mention-modal.tsx
 msgid "Search accounts"
-msgstr ""
+msgstr "Nadi imiḍanen"
+
+#: src/components/notification.tsx
+#~ msgid "{account} requested to follow you."
+#~ msgstr "{account} yessuter ad k-yeḍfer."
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to list members"
-msgstr ""
+msgstr "Sken tiririyin i yiεeggalen n tebdart"
+
+#: src/components/compose.tsx
+#~ msgid "Attachment #{i} failed"
+#~ msgstr "Amedday #{i} yecceḍ"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Top links"
-msgstr ""
+msgstr "Iseɣwan ufrinen"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/hashtag.tsx
 msgid "Media only"
-msgstr ""
+msgstr "Amidya kan"
+
+#: src/components/follow-request-buttons.tsx
+#~ msgid "Rejected"
+#~ msgstr "Yettwagi"
 
 #: src/components/compose.tsx
 msgid "Update"
-msgstr ""
+msgstr "Leqqem"
 
 #: src/components/status-account-menu.tsx
 #: src/pages/settings.tsx
 msgid "Quote settings"
-msgstr ""
+msgstr "Iɣewwaren n tnebdurt"
 
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
-msgstr ""
+msgstr "{account} yettwasmater {targetAccount}"
+
+#: src/pages/filters.tsx
+#~ msgid "Conversations"
+#~ msgstr "Idiwenniyen"
 
 #. placeholder {0}: err?.message ? `: ${err.message}` : ''
 #: src/components/media-attachment.tsx
@@ -1544,19 +1924,19 @@ msgstr ""
 #: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Ẓreg"
 
 #: src/pages/catchup.tsx
 msgid "You don't have to read everything."
-msgstr ""
+msgstr "Fiḥel ad teɣreḍ kullec."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Max {SHORTCUTS_LIMIT} shortcuts"
-msgstr ""
+msgstr "Ugar n {SHORTCUTS_LIMIT} yinegzumen"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Esc</0> or <1>Backspace</1>"
-msgstr ""
+msgstr "<0>Esc</0> neɣ <1>Backspace</1>"
 
 #: src/components/account-info.tsx
 #: src/components/quotes-modal.tsx
@@ -1570,29 +1950,29 @@ msgstr ""
 #. placeholder {0}: info.acct || info.username
 #: src/components/related-actions.tsx
 msgid "Unfollow @{0}?"
-msgstr ""
+msgstr "Ur ṭṭafar ara @{0}?"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/related-actions.tsx
 msgid "Last post: <0>{0}</0>"
-msgstr ""
+msgstr "Tasuffeɣt taneggarut: <0>{0}</0>"
 
 #: src/pages/catchup.tsx
 msgid "Next author"
-msgstr ""
+msgstr "Ameskar uḍfir"
 
 #: src/pages/catchup.tsx
 msgid "Sort"
-msgstr ""
+msgstr "Semyizwer"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/account-block.tsx
 msgid "Last posted: {0}"
-msgstr ""
+msgstr "Tasuffeɣt taneggarut: {0}"
 
 #: src/pages/settings.tsx
 msgid "Only for new images while composing new posts."
-msgstr ""
+msgstr "I tugniwin timaynutin kan mi ara taruḍ tisuffaɣ timaynutin."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -1601,24 +1981,24 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Delete this post?"
-msgstr ""
+msgstr "Kkes tasuffeɣt-a?"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>k</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>k</1>"
 
 #: src/pages/settings.tsx
 msgid "Volunteer translations"
-msgstr ""
+msgstr "Iwaziwen n tsuqilin"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 msgid "Unable to fetch account info"
-msgstr ""
+msgstr "D awezɣi tiririt n telɣut n umiḍan"
 
 #: src/pages/search.tsx
 msgid "Enter your search term or paste a URL above to get started."
-msgstr ""
+msgstr "Sekcem awal-ik·im n unadi neɣ senteḍ URL nnig i wakken ad tebduḍ."
 
 #: src/pages/catchup.tsx
 msgid "Links shared by followings, sorted by shared counts, reposts and likes."
@@ -1633,20 +2013,28 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
-msgstr ""
+msgstr "Tamawt: Tamahilt-a tesseqdac ameẓlu AI azɣaray, s ttawil n <0>img-alt-api</0>. YEzmer ur iteddu ara. Slid i tugniwin yerna s Teglizit."
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Zoom out"
+#~ msgstr "Simẓi"
 
 #: src/components/media-post.tsx
 msgid "Sensitive media"
-msgstr ""
+msgstr "Amidya amḥulfu"
 
 #: src/components/compose.tsx
 msgid "Add GIF"
-msgstr ""
+msgstr "Rnu tugna GIF"
 
 #. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
 msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr ""
+msgstr "Tukksa n tsuffeɣt-iw seg tsuffeɣt n <0>@{0}</0>?"
+
+#: src/pages/welcome.tsx
+#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
+#~ msgstr ""
 
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
@@ -1668,40 +2056,60 @@ msgstr ""
 #: src/pages/following2.tsx
 #: src/pages/following2.tsx
 msgid "following.title"
-msgstr ""
+msgstr "yettwaḍeffren"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Accounts)"
-msgstr ""
+msgstr "Nadi: {q} (Imiḍanen)"
+
+#: src/components/report-modal.tsx
+#~ msgid "Breaks specific server rules"
+#~ msgstr "Yerẓa ilugan uzzigen n uqeddac"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not sure what to add?<0/>Try adding <1>Home / Following and Notifications</1> first."
-msgstr ""
+msgstr "Ur tt-tefriḍ ara ɣef wacu ara ternuḍ?<0/>Ԑreḍ timerna<1>n ugejdan / Aḍfar akked ilɣa</1> d imezwura."
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to create filter"
+#~ msgstr "D awezɣi timerna n yimsizdeg"
+
+#: src/pages/welcome.jsx
+#~ msgid "Connect your existing Mastodon/Fediverse account.<0/>Your credentials are not stored on this server."
+#~ msgstr "Qqen amiḍan-ik Mastodon/Fedivers i yellan.<0/>Inekcam-ik ur ttwaskelsen ara ɣef uqeddac-a."
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Saving shortcuts to server…"
+#~ msgstr ""
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
-msgstr ""
+msgstr "D awezɣi aleqqem n umaɣnu."
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/X"
-msgstr ""
+msgstr "Asqerdec {index}/X"
 
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
-msgstr ""
+msgstr "Yettwaseḥbes umiḍan-ik."
 
 #: src/components/account-block.tsx
 msgid "Locked"
-msgstr ""
+msgstr "Isekkeṛ"
 
 #: src/pages/notifications.tsx
 msgid "Accept"
-msgstr ""
+msgstr "Qbel"
 
 #: src/pages/notifications.tsx
 msgid "Ignore"
-msgstr ""
+msgstr "Anef"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Unable to download shortcuts"
+#~ msgstr "D awezɣi asader n yinegzumen"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
@@ -1712,74 +2120,102 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Unable to copy version string"
-msgstr ""
+msgstr "D awezɣi anɣal n uzrir n lqem"
 
 #: src/components/search-form.tsx
 msgid "Look up <0>{query}</0>"
-msgstr ""
+msgstr "Wali <0>{query}</0>"
+
+#: src/components/compose.tsx
+#~ msgid "Add custom emoji"
+#~ msgstr "Timerna n imuji udmawan"
+
+#: src/pages/filters.tsx
+#~ msgid "obscured (media only)"
+#~ msgstr ""
 
 #: src/components/open-link-sheet.tsx
 msgid "Open link?"
-msgstr ""
+msgstr "Ad teldiḍ aseɣwen-a?"
 
 #: src/pages/notifications.tsx
 msgid "Unable to load notifications"
-msgstr ""
+msgstr "D awezɣi ad d-alin ilɣa"
 
 #: src/components/post-embed-modal.tsx
 msgid "HTML Code"
-msgstr ""
+msgstr "Tangalt HTML"
+
+#: src/components/compose.tsx
+#~ msgid "Posting on <0/>"
+#~ msgstr "Teffɣed ass n <0/>"
 
 #: src/components/timeline.tsx
 msgid "Pinned posts"
-msgstr ""
+msgstr "Tisuffaɣ yettwasenṭḍen"
+
+#: src/components/compose.tsx
+#~ msgid "Schedule"
+#~ msgstr "Sɣiwes"
 
 #: src/components/compose.tsx
 msgctxt "Submit button in composer"
 msgid "Post"
-msgstr ""
+msgstr "Suffeɣ"
 
 #: src/components/status-post-body.tsx
 #: src/components/timeline.tsx
 msgid "Content warning"
-msgstr ""
+msgstr "Yir agbur"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Hashtag"
-msgstr ""
+msgstr "Ahacṭag"
+
+#: src/components/related-actions.tsx
+#~ msgid "Add notes"
+#~ msgstr ""
 
 #. js-lingui-explicit-id
 #: src/pages/catchup.tsx
 msgid "group.filter"
 msgstr ""
 
+#: src/components/related-actions.tsx
+#~ msgid "Disable boosts"
+#~ msgstr "Sens izuzar"
+
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Export"
-msgstr ""
+msgstr "Sifeḍ"
 
 #: src/components/search-form.tsx
 #: src/pages/home.tsx
 msgid "See all"
-msgstr ""
+msgstr "Wali-ten akk"
 
 #: src/pages/settings.tsx
 msgid "Auto inline translation"
-msgstr ""
+msgstr "Tasuqilt tawurmant srid"
 
 #: src/pages/catchup.tsx
 msgid "Note: the Home timeline might only show a limited number of posts regardless of the time range."
 msgstr ""
 
+#: src/pages/catchup.tsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Next post"
-msgstr ""
+msgstr "Tasuffeɣt tuḍfirt"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
 msgid "View notifications from <0>@{0}</0>"
-msgstr ""
+msgstr "Wali ilɣa seg <0>@{0}</0>"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1787,7 +2223,7 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
 msgid "Lists"
-msgstr ""
+msgstr "Tibdarin"
 
 #: src/pages/mentions.tsx
 msgid "Only followings"
@@ -1795,25 +2231,29 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Allow"
-msgstr ""
+msgstr "Sireg"
 
 #. placeholder {0}: account?.username
 #: src/pages/account-statuses.tsx
 msgid "Search @{0}'s posts"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Unable to edit filter"
+#~ msgstr "D awezɣi asiẓreg n yimsizdeg"
+
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText}"
-msgstr ""
+msgstr "Ssuqel seg {sourceLangText}"
 
 #: src/pages/account-statuses.tsx
 msgid "Month"
-msgstr ""
+msgstr "Ayyur"
 
 #: src/pages/list.tsx
 #: src/pages/list.tsx
 msgid "Manage members"
-msgstr ""
+msgstr "Sefrek imttekkiyen"
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
@@ -1832,7 +2272,7 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Copy"
-msgstr ""
+msgstr "Nɣel"
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
@@ -1854,32 +2294,40 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
-msgstr ""
+msgstr "{hashtagTitle} (Amidya kan)"
 
 #. placeholder {0}: authorCountsList.length
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# author} other {# authors}}"
-msgstr ""
+msgstr "{0, plural, one {# ameskar} other {# imeskaren}}"
 
 #: src/components/related-actions.tsx
 msgid "Unfollow…"
-msgstr ""
+msgstr "Ur ṭṭafar ara…"
 
 #: src/components/drafts.tsx
 msgid "Delete all…"
-msgstr ""
+msgstr "Kkes-iten akk…"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Following…"
+#~ msgstr "Yeṭṭafar…"
 
 #: src/pages/accounts.tsx
 msgid "Current"
-msgstr ""
+msgstr "Melmi kan"
 
 #: src/pages/status.tsx
 msgid "Unable to load replies."
-msgstr ""
+msgstr "D awezɣi ad d-alint tririyin."
 
 #: src/components/compose.tsx
 msgid "You have unsaved changes. Discard this post?"
-msgstr ""
+msgstr "Ɣur-k isenfal ur yettwaskelsen ara. Sefsex tasuffeɣt-a?"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (+ Replies)"
+#~ msgstr "{accountDisplay} (+ tririyin)"
 
 #: src/components/edit-history-controls.tsx
 msgid "Edit History Snapshots"
@@ -1889,26 +2337,26 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Original"
-msgstr ""
+msgstr "Aɣbalu"
 
 #: src/components/edit-history-controls.tsx
 #: src/components/gif-picker-modal.tsx
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Next"
-msgstr ""
+msgstr "Uḍfir"
 
 #: src/components/list-add-edit.tsx
 msgid "Create"
-msgstr ""
+msgstr "Snulfu-d"
 
 #: src/pages/search.tsx
 msgid "No posts found."
-msgstr ""
+msgstr "Ulac tisuffaɣ i yettwafen."
 
 #: src/pages/hashtag.tsx
 msgid "Add to Shortcuts"
-msgstr ""
+msgstr "Rnu ɣer inezgumen"
 
 #: src/components/columns.tsx
 #: src/components/nav-menu.tsx
@@ -1920,34 +2368,38 @@ msgstr ""
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
 msgid "Home"
-msgstr ""
+msgstr "Agejdan"
 
 #: src/components/status-account-menu.tsx
 msgid "Unmute conversation"
-msgstr ""
+msgstr "Kkes asgugem n udiwenni"
 
 #: src/components/notification.tsx
 msgid "{account} reacted to your post with {emojiObject}"
-msgstr ""
+msgstr "{account} yerra-d ɣef tsuffeɣt-ik s {emojiObject}"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
-msgstr ""
+msgstr "Yecceḍ uleqqem n uglam. Ttxil-k, εreḍ tikkelt niḍen."
 
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
-msgstr ""
+msgstr "Rmed ulɣuten"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
 msgid "Reset filters"
-msgstr ""
+msgstr "Wennez imsizedgen"
 
 #: src/pages/catchup.tsx
 msgid "last 8 hours"
-msgstr ""
+msgstr "8 yisragen ineggura"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "{0} more…"
+#~ msgstr "{0} d wugar…"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
@@ -1956,11 +2408,11 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Who unsolicitedly private mention you"
-msgstr ""
+msgstr "D anwa i k-id-ibedren s wudem uslig war ma yessuter-ak-d"
 
 #: src/components/notification.tsx
 msgid "{account} published a post."
-msgstr ""
+msgstr "Y·Tesuffeɣ-d {account} tasuffeɣt."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1971,31 +2423,31 @@ msgstr ""
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "Alɣu"
 
 #: src/components/poll.tsx
 msgid "Voted"
-msgstr ""
+msgstr "Yefren"
 
 #: src/components/media-attachment.tsx
 msgid "Audio description"
-msgstr ""
+msgstr "Aglam n useklas ameslaw"
 
 #: src/components/notification.tsx
 msgid "Followed by…"
-msgstr ""
+msgstr "Iḍfer-it…"
 
 #: src/pages/status.tsx
 msgid "Back"
-msgstr ""
+msgstr "Tuɣalin"
 
 #: src/components/report-modal.tsx
 msgid "Illegal"
-msgstr ""
+msgstr "Arusḍif"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} on {instance}"
-msgstr ""
+msgstr "{hashtagTitle} ɣef {instance}"
 
 #: src/components/compose.tsx
 #: src/components/keyboard-shortcuts-help.tsx
@@ -2004,7 +2456,11 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
-msgstr ""
+msgstr "Err"
+
+#: src/components/notification.tsx
+#~ msgid "Your {year} #Wrapstodon is here!"
+#~ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
@@ -2012,55 +2468,67 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has received a moderation warning."
-msgstr ""
+msgstr "Amiḍan-ik yeṭṭef-d alɣu n uqeεεed."
 
 #. placeholder {0}: shortcutsStr.length
 #: src/components/shortcuts-settings.tsx
 msgid "{0, plural, one {# character} other {# characters}}"
-msgstr ""
+msgstr "{0, plural, one {# asekkil} other {# isekkilen}}"
+
+#: src/pages/settings.tsx
+#~ msgid "Note: This feature uses currently-logged-in server API."
+#~ msgstr ""
 
 #: src/components/status-utility-menu.tsx
 msgid "Copy post text"
-msgstr ""
+msgstr "Nɣel aḍris n tsuffeɣt"
+
+#: src/components/modals.tsx
+#~ msgid "Post scheduled"
+#~ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Add an existing account"
-msgstr ""
+msgstr "Rnu amiḍan yellan yakan"
 
 #: src/components/media-modal.tsx
 msgid "View post"
-msgstr ""
+msgstr "Wali tasuffeɣt"
 
 #: src/components/nav-menu.tsx
 msgid "New"
-msgstr ""
+msgstr "Amaynut"
 
 #: src/components/status-utility-menu.tsx
 msgid "Post text copied"
-msgstr ""
+msgstr "Aḍris n tsuffeɣt yettwanɣel"
 
 #: src/components/report-modal.tsx
 msgid "Violation"
-msgstr ""
+msgstr "Takriṭ"
 
 #: src/components/status-header.tsx
 #: src/utils/visibility-text.ts
 msgid "Private mention"
-msgstr ""
+msgstr "Abdar uslig"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
-msgstr ""
+msgstr "Tirmatin"
+
+#: src/pages/lists.jsx
+#~ msgid "No lists yet."
+#~ msgstr "Ulac tibdarinakka tura."
 
 #: src/compose.tsx
 #: src/pages/http-route.tsx
 #: src/pages/login.tsx
 msgid "Go home"
-msgstr ""
+msgstr "Uɣal ɣer ugejdan"
 
 #: src/components/background-service.tsx
 msgid "Cloak mode enabled"
-msgstr ""
+msgstr "Askar uffir yermed"
 
 #. placeholder {0}: fItems.length
 #: src/components/timeline.tsx
@@ -2069,27 +2537,27 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Note: This preview is lightly styled."
-msgstr ""
+msgstr "Tamawt: Taskant-a tettufeṣṣel s wudem afessas."
 
 #. placeholder {0}: account.username
 #: src/pages/list.tsx
 msgid "Remove <0>@{0}</0> from list?"
-msgstr ""
+msgstr "Kkes <0>@{0}</0> seg tebdart?"
 
 #: src/pages/notifications.tsx
 msgid "Dismissed"
-msgstr ""
+msgstr "Yettwazgel"
 
 #. Preview of one character, in largest size
 #. Preview of one character, in smallest size
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "A"
-msgstr ""
+msgstr "A"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Close post or dialogs"
-msgstr ""
+msgstr "Mdel tasuffeɣt neɣ idiwenniyen"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Reposts Carousel"
@@ -2099,18 +2567,30 @@ msgstr ""
 #: src/components/list-add-edit.tsx
 #: src/components/status-account-menu.tsx
 msgid "Delete…"
-msgstr ""
+msgstr "Kkes…"
+
+#: src/pages/filters.tsx
+#~ msgid "minimized"
+#~ msgstr "yettwasemẓẓin"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Embed post"
-msgstr ""
+msgstr "Sidef tasuffeɣt"
+
+#: src/components/compose.tsx
+#~ msgid "Mark media as sensitive"
+#~ msgstr "Creḍ allal n teywalt d anafri"
 
 #. placeholder {0}: shortenNumber(votersCount)
 #. placeholder {1}: shortenNumber(votersCount)
 #: src/components/poll.tsx
 msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
-msgstr ""
+msgstr "{votersCount, plural, one {<0>{0}</0> amefran} other {<1>{1}</1> imefranen}}"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Downloading saved shortcuts from server…"
+#~ msgstr ""
 
 #: src/components/atproto-labels.tsx
 msgid "Does not include nudity."
@@ -2119,6 +2599,10 @@ msgstr ""
 #: src/components/import-accounts-selection.tsx
 msgid "Select accounts to import"
 msgstr ""
+
+#: src/components/notification.tsx
+#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted your reply.} other {{account} boosted your post.}}} other {{account} boosted {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted your reply.} other {<2><3>{1}</3> people</2> boosted your post.}}}}"
+#~ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} yesnerna tiririt-ik·im.} other {{account} yesnerna tasuffeɣt-ik·im.}}} other {{account} yesnerna {postsCount} n tsuffaɣ-ik.}}} other {{postType, select, reply {<0><1>{0}</1> imdanen</0> snernan tiririt-ik·im.} other {<2><3>{1}</3> imdanen</2> zuzren tasuffeɣt-ik·im.}}}}"
 
 #: src/components/related-actions.tsx
 msgid "Notifications enabled for @{username}'s posts."
@@ -2134,54 +2618,66 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "System language ({systemTargetLanguageText})"
-msgstr ""
+msgstr "Tutlayt n unagraw ({systemTargetLanguageText})"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>…"
-msgstr ""
+msgstr "Sewḥel <0>@{username}</0>…"
+
+#: src/components/status-header.tsx
+#~ msgid "{timeRepliesCount, plural, one {# reply} other {# replies}}"
+#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Open post details"
-msgstr ""
+msgstr "Ldi talqayt n tsuffeɣt"
 
 #: src/components/compose.tsx
 msgid "Pop out"
-msgstr ""
+msgstr "Ldi deg ufaylu udhim"
+
+#: src/pages/status.tsx
+#~ msgid "Switch to my server to enable interactions"
+#~ msgstr ""
 
 #. placeholder {0}: postingStats.total
 #. placeholder {1}: postingStats.total
 #: src/components/account-info.tsx
 msgid "{0, plural, one {Last 1 post in the past year(s)} other {Last {1} posts in the past year(s)}}"
-msgstr ""
+msgstr "{0, plural, one {1 tsuffeɣt taneggarut deg yiseggasen-a ineggura} other {{1} tsuffaɣ deg yiseggasen-a ineggura}}"
 
 #: src/components/notification.tsx
 msgid "Your account has been disabled."
-msgstr ""
+msgstr "Amiḍan-ik yensa."
 
 #: src/pages/status.tsx
 msgid "Unable to load post"
-msgstr ""
+msgstr "D awezɣi alluy n tsuffeɣt"
 
 #: src/components/list-add-edit.tsx
 msgid "Hide posts on this list from Home/Following"
-msgstr ""
+msgstr "Ffer tisuffaɣ deg tebdart-a seg ugejdan/Aḍfar"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
-msgstr ""
+msgstr "Ulɣuten imaynuten"
 
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Block profile</0>"
-msgstr ""
+msgstr "Azen aneqqis <0>+ Sewḥel amaɣnu</0>"
 
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
-msgstr ""
+msgstr "Imujiten:"
 
 #: src/pages/settings.tsx
 msgid "Post edits"
-msgstr ""
+msgstr "Ibeddilen n tsuffeɣt"
+
+#: src/pages/accounts.jsx
+#~ msgid "Log out <0>@{0}</0>?"
+#~ msgstr "Ffeɣ <0>@{0}</0>?"
 
 #: src/components/related-actions.tsx
 msgid "Disable reposts"
@@ -2195,7 +2691,7 @@ msgstr ""
 #. placeholder {1}: shortenNumber(votesCount)
 #: src/components/poll.tsx
 msgid "{votesCount, plural, one {<0>{0}</0> vote} other {<1>{1}</1> votes}}"
-msgstr ""
+msgstr "{votesCount, plural, one {<0>{0}</0> afran} other {<1>{1}</1> ifranen}}"
 
 #. placeholder {0}: username || acct
 #. placeholder {0}: usernameValue || acctValue
@@ -2206,7 +2702,7 @@ msgstr ""
 
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
-msgstr ""
+msgstr "Talɣut-a seg umiḍan-ik niḍen."
 
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
@@ -2216,7 +2712,13 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Try again"
-msgstr ""
+msgstr "Ɛreḍ tikkelt-nniḍen"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Go to another server…"
+#~ msgstr ""
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2230,7 +2732,7 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "This shortcut already exists"
-msgstr ""
+msgstr "Anegzum-a yella yakan"
 
 #: src/components/atproto-labels.tsx
 msgid "Non-sexual Nudity"
@@ -2238,120 +2740,154 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Reply (new window)"
-msgstr ""
+msgstr "Err (asfaylu amaynut)"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only) on {instance}"
-msgstr ""
+msgstr "{hashtagTitle} (Amidya kan) ɣef {instance}"
 
 #: src/pages/favourites.tsx
 msgid "Unable to load likes."
-msgstr ""
+msgstr "D awezɣi asali n yismenyafen."
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in or created has ended."
-msgstr ""
+msgstr "Asisten i tferneḍ neɣ i terniḍ ifukk."
 
 #: src/components/status-account-menu.tsx
 msgid "Post deleted"
-msgstr ""
+msgstr "Tasuffeɣt tettwakkes"
 
 #: src/components/report-modal.tsx
 msgid "Blocked {username}"
-msgstr ""
+msgstr "Yettusewḥel {username}"
 
 #: src/pages/list.tsx
 msgid "Nothing yet."
-msgstr ""
+msgstr "Ulac i yellan akka tura."
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
-msgstr ""
+msgstr "Ẓreg aglam n useklas ameslaw"
 
 #: src/components/status-inline-controls.tsx
 msgid "Pinned"
-msgstr ""
+msgstr "Yettwasenteḍ"
+
+#: src/components/report-modal.tsx
+#~ msgid "Server rule violation"
+#~ msgstr "Takriṭ n ulugen n uqeddac"
 
 #: src/components/notification.tsx
 msgid "A poll you have created has ended."
-msgstr ""
+msgstr "Asisten i terniḍ ifukk."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to create list."
-msgstr ""
+msgstr "D awezɣi timerna n tebdart."
 
 #: src/components/drafts.tsx
 #: src/pages/settings.tsx
 msgid "Unsent drafts"
-msgstr ""
+msgstr "Ur ttazen ara irewwayen"
 
 #: src/pages/notifications.tsx
 msgid "You're all caught up."
-msgstr ""
+msgstr "Tessawḍeḍ kullec."
+
+#: src/components/keyboard-shortcuts-help.tsx
+#: src/components/status-large-footer.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost"
+#~ msgstr "Zuzer"
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
-msgstr ""
+msgstr "Ugur ur yemmezg ara d taggayin niḍen"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Error loading custom emojis"
+#~ msgstr "Tuccḍa deg usali n yimujiten udmawanen"
 
 #. placeholder {0}: tag.name
 #: src/pages/account-statuses.tsx
 msgid "Showing posts tagged with #{0}"
-msgstr ""
+msgstr "Askan n tsuffaɣ yettwabdaren s #{0}"
 
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Import"
-msgstr ""
+msgstr "Kter"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/status-reblog.tsx
 msgid "Group"
-msgstr ""
+msgstr "Agraw"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Hide results"
-msgstr ""
+msgstr "Ffer igmaḍ"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
-msgstr ""
+msgstr "D acu i d ugur deg tsuffeɣt-a?"
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
 msgid "Privacy Policy"
-msgstr ""
+msgstr "Tasertit tabaḍnit"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "Smiren"
+
+#: src/pages/catchup.tsx
+#~ msgid "Followed tags"
+#~ msgstr "Tibzimin yettwaḍefren"
+
+#: src/pages/login.jsx
+#~ msgid "Don't have an account? Create one!"
+#~ msgstr "Ur tesεiḍ ara amiḍan? Snulfu-d yiwen!"
 
 #: src/components/related-actions.tsx
 msgid "Search <0>@{username}</0>'s posts"
 msgstr ""
 
+#: src/components/compose-poll.tsx
+#~ msgid "Choice {0}"
+#~ msgstr "Afran {0}"
+
 #: src/components/status-account-menu.tsx
 msgid "Pin to profile"
-msgstr ""
+msgstr "Senteḍ ɣef umaɣnu"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Share…"
-msgstr ""
+msgstr "Bḍu…"
 
 #: src/components/media-attachment.tsx
 msgid "Image description"
-msgstr ""
+msgstr "Aglam n tugna"
+
+#: src/components/compose-poll.tsx
+#~ msgid "Duration"
+#~ msgstr "Tanzagt"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Optional"
 msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
 
 #. placeholder {0}: options.length
 #: src/components/poll.tsx
@@ -2362,7 +2898,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "last 6 hours"
-msgstr ""
+msgstr "6 yisragen ineggura"
 
 #: src/components/import-export-accounts.tsx
 msgid "Export failed"
@@ -2370,27 +2906,31 @@ msgstr ""
 
 #: src/components/status-post-body.tsx
 msgid "Show content"
-msgstr ""
+msgstr "Sken agbur"
 
 #: src/components/notification.tsx
 msgid "Liked by…"
-msgstr ""
+msgstr "Iεǧeb-as i…"
 
 #: src/components/poll.tsx
 msgid "Vote"
-msgstr ""
+msgstr "Fren"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut"
-msgstr ""
+msgstr "Rnu anegzum"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Catch-up"
 msgstr ""
 
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Phanpy home timeline on mobile device"
+#~ msgstr ""
+
 #: src/components/compose-button.tsx
 msgid "Add to thread"
-msgstr ""
+msgstr "Rnu ar usqerdec"
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -2399,7 +2939,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Cloak mode <0>(<1>Text</1> → <2>████</2>)</0>"
-msgstr ""
+msgstr "Askar uffir <0>(<1>Aḍris</1> → <2>████</2>)</0>"
 
 #: src/pages/settings.tsx
 msgid "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
@@ -2407,7 +2947,7 @@ msgstr ""
 
 #: src/pages/search.tsx
 msgid "See more posts"
-msgstr ""
+msgstr "Wali ugar n tsuffaɣ"
 
 #: src/pages/account-statuses.tsx
 msgid "Media posts tagged #{tagged} by {accountDisplay}"
@@ -2415,19 +2955,27 @@ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Reply posted. Check it out."
-msgstr ""
+msgstr "Tiririt ɣef tsuffeɣt. Senqed-itt."
 
 #. placeholder {0}: localeCode2Text(lang)
 #: src/components/media-attachment.tsx
 msgid "({0}) <0>— experimental</0>"
-msgstr ""
+msgstr "({0}) <0>— armitan</0>"
+
+#: src/pages/filters.tsx
+#~ msgid "* Not implemented yet"
+#~ msgstr "* Mazal ur yebdid ara ar tura"
 
 #: src/components/compose.tsx
 #: src/components/mention-modal.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/list.tsx
 msgid "Add"
-msgstr ""
+msgstr "Rnu"
+
+#: src/pages/filters.tsx
+#~ msgid "Expired"
+#~ msgstr "Ad yekfu"
 
 #: src/components/poll.tsx
 msgid "Unable to vote in poll"
@@ -2435,15 +2983,15 @@ msgstr ""
 
 #: src/components/translation-block.tsx
 msgid "Failed to translate"
-msgstr ""
+msgstr "Tuccḍa deg tsuqilt"
 
 #: src/components/status-menu-state.tsx
 msgid "Some media have no descriptions."
-msgstr ""
+msgstr "Kra yimidyaten ulac ɣer-sen aglam."
 
 #: src/compose.tsx
 msgid "You may close this page now."
-msgstr ""
+msgstr "Tzemreḍ ad tmedleḍ asebtar tura."
 
 #: src/components/search-form.tsx
 msgid "Posts tagged with <0>{hashtag}</0>"
@@ -2451,16 +2999,20 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Add media"
-msgstr ""
+msgstr "Rnu amidya"
+
+#: src/pages/filters.tsx
+#~ msgid "Title"
+#~ msgstr "Azwel"
 
 #: src/pages/hashtag.tsx
 msgid "Hashtag shortcut added"
-msgstr ""
+msgstr "Anegzum n uhacṭag yettwarna"
 
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Follow"
-msgstr ""
+msgstr "Ḍfeṛ"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-large-footer.tsx
@@ -2471,33 +3023,37 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has been limited."
-msgstr ""
+msgstr "Amiḍan-ik yesεa tilas."
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "Reply…"
+#~ msgstr ""
 
 #: src/components/account-block.tsx
 msgid "{followersCount, plural, one {# follower} other {# followers}}"
-msgstr ""
+msgstr "{followersCount, plural, one {# aneḍfar} other {# ineḍfaren}}"
 
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Video description"
-msgstr ""
+msgstr "Aglam n tvidyutt"
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in has ended."
-msgstr ""
+msgstr "Ifukk usisten ideg tettekkaḍ."
 
 #: src/components/compose.tsx
 msgid "Some media have no descriptions. Continue?"
-msgstr ""
+msgstr "Kra yimidyaten ulac ɣer-sen aglam. Kemmel?"
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to people I follow"
-msgstr ""
+msgstr "Sken tiririyin i yimdanen i ṭṭafareɣ"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
 msgid "Edited"
-msgstr ""
+msgstr "Yettwaẓrag"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Settings"
@@ -2505,16 +3061,16 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Report Post"
-msgstr ""
+msgstr "Mmel tasuffeɣt"
 
 #: src/pages/list.tsx
 msgid "Remove…"
-msgstr ""
+msgstr "Kkes…"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from <0>@{0}</0>"
-msgstr ""
+msgstr "Ilɣa sɣur <0>@{0}</0>"
 
 #: src/pages/accounts.tsx
 msgid "Logged out"
@@ -2522,39 +3078,47 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Date"
-msgstr ""
+msgstr "Azemz"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>j</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>j</1>"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "No scheduled posts."
+#~ msgstr ""
 
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy post text"
 msgstr ""
 
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost/Quote…"
+#~ msgstr ""
+
 #: src/components/nav-menu.tsx
 msgid "Muted users…"
-msgstr ""
+msgstr "Iseqdacen yettwasgugmen…"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Synced"
-msgstr ""
+msgstr "Yemtawa"
 
 #. placeholder {0}: notificationsPolicy.summary?.pendingRequestsCount ?? 0
 #: src/pages/notifications.tsx
 msgid "{0, plural, one {Filtered notifications from # person} other {Filtered notifications from # people}}"
-msgstr ""
+msgstr "{0, plural, one {Ttwasezdgen yilɣa sɣur # amdan} other {Ttwasezdgen yilɣa sɣur # imdanen}}"
 
 #: src/pages/catchup.tsx
 #: src/pages/search.tsx
 msgid "All"
-msgstr ""
+msgstr "Akk"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List may not work if it's from a different account."
-msgstr ""
+msgstr "Tabdart yezmer ur tetteddu ara ma yella tekka-d seg umiḍan niḍen."
 
 #: src/components/account-info.tsx
 #: src/components/status-post-body.tsx
@@ -2566,15 +3130,15 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
-msgstr ""
+msgstr "Tiririt"
 
 #: src/pages/settings.tsx
 msgid "Default visibility"
-msgstr ""
+msgstr "Abani amezwer"
 
 #: src/pages/search.tsx
 msgid "See more hashtags"
-msgstr ""
+msgstr "Wali ugar n ihacṭagen"
 
 #: src/components/quote-suggestion.tsx
 msgid "Keep as link"
@@ -2582,7 +3146,7 @@ msgstr ""
 
 #: src/pages/status.tsx
 msgid "Go to main post"
-msgstr ""
+msgstr "Ddu ɣer tsuffeɣt tagejdant"
 
 #: src/pages/accounts.tsx
 msgid "Log out <0>@{acct}</0>?"
@@ -2590,7 +3154,11 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Donate"
-msgstr ""
+msgstr "Mudd tawsa"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "<0>1</0> to <1>9</1>"
+#~ msgstr "<0>1</0> ɣer <1>9</1>"
 
 #: src/components/quote-chain-modal.tsx
 msgid "Failed to unwrap quote chain"
@@ -2599,30 +3167,38 @@ msgstr ""
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 msgid "Nothing to see here."
-msgstr ""
+msgstr "Ulac acu ara twaliḍ dagi."
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users"
-msgstr ""
+msgstr "Imiḍanen yettusḥebsen"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Only shortcuts that don’t exist in current shortcuts will be appended."
-msgstr ""
+msgstr "Slid inegzumen i yulac deg yinegzumen imiranen ara yettwarnun."
 
 #: src/pages/catchup.tsx
 msgid "until the max"
-msgstr ""
+msgstr "alamma dayen"
 
 #. Relative time in seconds, as short as possible
 #. placeholder {0}: seconds < 1 ? 1 : Math.floor(seconds)
 #: src/components/relative-time.tsx
 msgid "{0}s"
-msgstr ""
+msgstr "{0}tsn"
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
 msgid "{index}/X"
-msgstr ""
+msgstr "{index}/X"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (Media)"
+#~ msgstr "{accountDisplay} (Amidya)"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus previous column in multi-column mode"
+#~ msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Switch to my PDS (<0>{currentInstance}</0>)"
@@ -2640,23 +3216,39 @@ msgstr ""
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
 msgid "{0}h"
-msgstr ""
+msgstr "{0}srg"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments can be images, videos, audios or any file types."
-msgstr ""
+msgstr "Imeddayen n umidya zemren ad ilin d tugniwin, d tividyutin, d iseklasen imeslawen neɣ kra n wawan n ufaylu."
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Others"
+#~ msgstr "Wiyyaḍ"
+
+#: src/components/notification.tsx
+#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted & liked your reply.} other {{account} boosted & liked your post.}}} other {{account} boosted & liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted & liked your reply.} other {<2><3>{1}</3> people</2> boosted & liked your post.}}}}"
+#~ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} izuzer & teεǧeb-as tririt-ik·im.} other {{account} izuzer & teεǧeb-as tsuffeɣt-ik·im.}}} other {{account} izuzer & εeǧbent-as {postsCount} n tsuffaɣ-ik·im.}}} other {{postType, select, reply {<0><1>{0}</1> imdanen</0> zuzren & teεǧeb-asen·t tririt-ik·im.} other {<2><3>{1}</3> imdanen</2> zuzren & teεǧeb-asen·t tsuffeɣt-ik·im.}}}}"
+
+#: src/components/timeline.tsx
+#~ msgid "{0, plural, one {# Boost} other {# Boosts}}"
+#~ msgstr "{0, plural, one {# n uzuzer} other {# n yizurar}}"
 
 #: src/pages/accounts.tsx
 msgid "Remove <0>@{acct}</0>?"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Never expires"
+#~ msgstr "Ur ikeffu ara"
+
 #: src/components/search-form.tsx
 msgid "Posts with <0>{query}</0>"
-msgstr ""
+msgstr "Tisuffaɣ yesɛan <0>{query}</0>"
 
 #: src/components/poll.tsx
 msgid "Ending"
-msgstr ""
+msgstr "Yettfakk"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2666,71 +3258,91 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Sponsor"
-msgstr ""
+msgstr "S lmendad"
 
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generate description…"
-msgstr ""
+msgstr "Sirew aglam…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "No new shortcuts to import"
-msgstr ""
+msgstr "Ulac inegzumen imaynuten i uktar"
 
 #: src/components/shortcuts-settings.tsx
 msgid "* Exists in current shortcuts"
-msgstr ""
+msgstr "* Yella deg yinegzumen imiranen"
 
 #: src/pages/notifications.tsx
 msgid "Filter"
-msgstr ""
+msgstr "Imsizdeg"
 
 #: src/pages/notifications.tsx
 msgid "Who don't follow you"
-msgstr ""
+msgstr "Anwa ur k-neṭṭafar ara"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unlike"
-msgstr ""
+msgstr "Kkes aεǧab"
+
+#: src/components/notification.jsx
+#~ msgid "[Unknown notification type: {type}]"
+#~ msgstr "[Anaw n wulɣu d arussin: {type}]"
+
+#: src/pages/home.tsx
+#~ msgid "<0>New</0> <1>Follow Requests</1>"
+#~ msgstr "<0>Amaynut</0> <1>Ḍfer issutar</1>"
 
 #: src/components/report-modal.tsx
 msgid "Unable to report profile"
-msgstr ""
+msgstr "D awezɣi tummla n umaɣnu"
+
+#: src/pages/welcome.jsx
+#~ msgid "A minimalistic opinionated Mastodon web client."
+#~ msgstr "Amsaɣ n Mastodon yella yettwali-t s tmuɣli taḥeqqart."
 
 #: src/components/background-service.tsx
 msgid "Cloak mode disabled"
-msgstr ""
+msgstr "Askar uffir yensa"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Local only"
+#~ msgstr "Adigan kan"
 
 #: src/pages/hashtag.tsx
 msgid "Remove hashtag"
-msgstr ""
+msgstr "Kkes ahacṭag"
 
 #: src/components/status-account-menu.tsx
 msgid "Mute conversation"
-msgstr ""
+msgstr "Sgugem adiwenni"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Sync to server"
+#~ msgstr ""
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Edit History"
-msgstr ""
+msgstr "Azray n teẓrigin"
 
 #: src/components/media-attachment.tsx
 msgid "Edit image description"
-msgstr ""
+msgstr "Ẓreg aglam n tugna"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import/Export <0>Shortcuts</0>"
-msgstr ""
+msgstr "Kter/Sifeḍ<0>Inegzumen</0>"
 
 #: src/pages/catchup.tsx
 msgid "Show me all posts from…"
-msgstr ""
+msgstr "Sken-iyi-d akk tisuffaɣ sɣur…"
 
 #: src/components/poll.tsx
 msgid "Ending <0/>"
-msgstr ""
+msgstr "Yettfakk <0/>"
 
 #: src/components/muted-status.tsx
 msgid "Show muted post"
@@ -2744,25 +3356,42 @@ msgstr ""
 msgid "View Edit History Snapshots"
 msgstr ""
 
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Custom emojis are not available on this server."
+#~ msgstr ""
+
+#. Scheduled [in 1 day]
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled <0><1/></0>"
+#~ msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Disable notifications"
-msgstr ""
+msgstr "Sens ulɣuten"
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Unable to update private note."
+#~ msgstr "D awezɣi aleqqem n tezmilt tusligt."
 
 #: src/pages/hashtag.tsx
 msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
-msgstr ""
+msgstr "{TOTAL_TAGS_LIMIT, plural, one {}other {Ugar # tibzimin}}"
 
 #: src/pages/catchup.tsx
 msgid "last 1 hour"
-msgstr ""
+msgstr "1 usrag aneggaru"
 
 #: src/pages/accounts.tsx
 msgid "Default"
-msgstr ""
+msgstr "Amezwer"
 
 #: src/components/compose.tsx
 msgid "What are you doing?"
-msgstr ""
+msgstr "Acu i txeddmeḍ?"
+
+#: src/components/related-actions.tsx
+#~ msgid "Unable to feature @{username} on your profile."
+#~ msgstr ""
 
 #. placeholder {0}: String(type)
 #: src/components/notification.tsx
@@ -2778,64 +3407,68 @@ msgstr ""
 #. placeholder {6}: postingStats.daysSinceLastPost
 #: src/components/account-info.tsx
 msgid "{0, plural, one {{1, plural, one {Last 1 post in the past 1 day} other {Last 1 post in the past {2} days}}} other {{3, plural, one {Last {4} posts in the past 1 day} other {Last {5} posts in the past {6} days}}}}"
-msgstr ""
+msgstr "{0, plural, one {{1, plural, one {Tasuffeɣt taneggurt i wass-a} other {Tasuffeɣt taneggarut deg {2} wussan-a yezrin}}} other {{3, plural, one {{4} tsuffaɣ tineggura i wass-a} other {{5} tsuffaɣ tineggura deg {6} wussan-a yezrin}}}}"
 
 #: src/components/account-block.tsx
 #: src/components/related-actions.tsx
 msgid "Follows you"
-msgstr ""
+msgstr "Yeṭṭafaṛ-ik·ikem"
 
 #: src/components/related-actions.tsx
 msgid "Unable to block @{username}"
-msgstr ""
+msgstr "D awezɣi asewḥel n @{username}"
 
 #: src/pages/settings.tsx
 msgid "followers"
-msgstr ""
+msgstr "imeḍfaṛen"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
-msgstr ""
+msgstr "Tuccḍa deg usali GIFs"
 
 #: src/pages/settings.tsx
 msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
-msgstr ""
+msgstr "Sken tisuqilin s wudem awurman i tsuffaɣ deg tesnimirt. Tetteddu kan i tsuffaɣ <0>timeẓẓyanin</0> war alɣu n ugbur, amidya akked usisten."
 
 #: src/pages/catchup.tsx
 msgid "last 9 hours"
-msgstr ""
+msgstr "9 yisragen ineggura"
 
 #: src/pages/welcome.tsx
 msgid "Effortlessly follow conversations. Semi-collapsible replies."
-msgstr ""
+msgstr "Ḍfer idiwenniyen war ussis. Tiririt s uzgen-afnaẓ."
 
 #. placeholder {0}: niceDateTime(createdAt, { hideTime: true, })
 #. placeholder {0}: niceDateTime(createdAt, { hideTime: true, })
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Joined <0>{0}</0>"
-msgstr ""
+msgstr "Yerna-d ass <0>{0}</0>"
 
 #: src/pages/settings.tsx
 msgid "Posting"
-msgstr ""
+msgstr "Asuffeɣ"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
-msgstr ""
+msgstr "Ẓreg anegzum"
 
 #: src/pages/welcome.tsx
 msgid "Single or multi-column"
-msgstr ""
+msgstr "Yiwet neɣ aṭas n tgejdiyin"
 
 #. placeholder {0}: WEBSITE.replace(/https?:\/\//g, '').replace(/\/$/, '')
 #: src/pages/settings.tsx
 msgid "<0>Site:</0> {0}"
-msgstr ""
+msgstr "<0>Asmel:</0> {0}"
 
 #: src/components/atproto-labels.tsx
 msgid "E.g. artistic nudes."
 msgstr ""
+
+#: src/pages/public.tsx
+#~ msgid "Federated timeline ({instance})"
+#~ msgstr "Tasuddemt tasedduklant ({instance})"
 
 #: src/pages/favourites.tsx
 msgid "No likes yet. Go like something!"
@@ -2845,20 +3478,36 @@ msgstr ""
 msgid "Violates local law"
 msgstr ""
 
+#: src/components/notification.tsx
+#~ msgid "Boosted by…"
+#~ msgstr "Izuzer-it…"
+
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
 #: src/components/status-utility-menu.tsx
 #: src/components/translation-block.tsx
 msgid "Translate"
-msgstr ""
+msgstr "Suqel"
 
 #: src/pages/settings.tsx
 msgid "Version string copied"
-msgstr ""
+msgstr "Azrir n lqem yettwanɣel"
+
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost…"
+#~ msgstr "Zuzer…"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "Showing post with replies"
+#~ msgstr "Askan n tsuffeɣt s tririyin"
 
 #: src/components/account-info.tsx
 msgid "View post stats"
-msgstr ""
+msgstr "Wali tidaddanin n tsuffeɣt"
+
+#: src/pages/public.tsx
+#~ msgid "Local timeline"
+#~ msgstr "Tasuddemt tadigant"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post you have quoted."
@@ -2866,30 +3515,30 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation unmuted"
-msgstr ""
+msgstr "Yettwafsi usgugem ɣef udiwenni"
 
 #: src/components/list-add-edit.tsx
 msgid "Don't show replies"
-msgstr ""
+msgstr "Ur skan ara tiririyin"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
-msgstr ""
+msgstr "D awezɣi asewḥel i {username}"
 
 #. js-lingui-explicit-id
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "post.title"
-msgstr ""
+msgstr "Tasuffeɣt"
 
 #: src/pages/accounts.tsx
 msgid "Set as default"
-msgstr ""
+msgstr "Sbadu-t d amezwer"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Quiet public"
-msgstr ""
+msgstr "Azayez asusam"
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -2897,7 +3546,7 @@ msgstr ""
 
 #: src/pages/mentions.tsx
 msgid "Unable to load mentions."
-msgstr ""
+msgstr "D awezɣi ad d-alin ibdaren."
 
 #: src/components/timeline.tsx
 msgid "View Full Thread"
@@ -2905,7 +3554,7 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "In Memoriam"
-msgstr ""
+msgstr "In Memoriam"
 
 #: src/pages/welcome.tsx
 msgid "A minimalistic opinionated Atmosphere web client."
@@ -2915,56 +3564,82 @@ msgstr ""
 msgid "Post pending"
 msgstr ""
 
+#: src/components/account-info.tsx
+#: src/pages/account-statuses.tsx
+#: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#~ msgid "Boosts"
+#~ msgstr "Izuzar"
+
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
-msgstr ""
+msgstr "Ubrik"
+
+#: src/components/related-actions.tsx
+#~ msgid "@{username} is no longer featured on your profile."
+#~ msgstr ""
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Loading…"
-msgstr ""
+msgstr "Yessalay-d…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Ctrl</0> + <1>Enter</1> or <2>⌘</2> + <3>Enter</3>"
-msgstr ""
+msgstr "<0>Ctrl</0> + <1>Enter</1> neɣ <2>⌘</2> + <3>Enter</3>"
 
 #: src/pages/accounts.tsx
 msgid "Switch in new tab/window"
-msgstr ""
+msgstr "Uɣal ɣer yiccer/usfaylu amaynut"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Bookmark"
-msgstr ""
+msgstr "Ticreḍt n usebtar"
 
 #: src/components/related-actions.tsx
 msgid "Unmute <0>@{username}</0>"
-msgstr ""
+msgstr "Kkes asgugem ɣef <0>@{username}</0>"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #. placeholder {1}: rtf.format(-replyToStatusMonthsAgo, 'month')
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post (<0>{1}</0>)"
-msgstr ""
+msgstr "Tiririt ɣef tsuffeɣt n @{0} (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
 msgid "Failed to remove subscription. Please try again."
-msgstr ""
+msgstr "Yecceḍ tukksa n uglam. Ttxil-k, εreḍ tikkelt niḍen."
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "Anedbal seg <0>{from}</0> yettusewḥel <1>{targetName}</1>. Ineḍfaren yettwaḥuzan: {followersCount}, ineḍfaren: {followingCount}."
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Invalid server"
+#~ msgstr ""
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unbookmark"
-msgstr ""
+msgstr "Kkes-as ticreḍt"
 
 #: src/pages/catchup.tsx
 msgid "This might take a while."
-msgstr ""
+msgstr "Aya yezmer ad yeṭṭef kra n wakud."
+
+#: src/pages/hashtag.tsx
+#~ msgid "This timeline is disabled on this server."
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to load filters."
+#~ msgstr "D awezɣi ad d-alin imsizedgen."
 
 #: src/components/error-fallback.tsx
 msgid ""
@@ -2973,10 +3648,14 @@ msgid ""
 ""
 msgstr ""
 
+#: src/pages/account-statuses.jsx
+#~ msgid "Showing posts without boosts"
+#~ msgstr "Sken tisuffaɣ war azuzer"
+
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Verified"
-msgstr ""
+msgstr "Yettwasenqed"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>{key1}</0> then <1>{key2}</1>"
@@ -2984,25 +3663,46 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Looks like you closed the parent window."
-msgstr ""
+msgstr "Waqil tmedleḍ asfaylu amaraw."
 
 #: src/components/status-utility-menu.tsx
 msgid "Show Edit History"
-msgstr ""
+msgstr "Sken azray n teẓrigin"
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Add keyword"
+#~ msgstr "Rnu awal tasarut"
+
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
-msgstr ""
+msgstr "Inegzumen ttwaketren"
 
 #: src/components/compose-button.tsx
 #: src/compose.tsx
 msgid "Compose"
-msgstr ""
+msgstr "Suddes"
+
+#: src/components/related-actions.tsx
+#: src/components/related-actions.tsx
+#~ msgid "Show featured profiles"
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "Never"
+#~ msgstr "Werǧin"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (#{tagged})"
+#~ msgstr "{accountDisplay} (#{tagged})"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Reschedule"
+#~ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Connect to Atmosphere"
@@ -3011,11 +3711,11 @@ msgstr ""
 #. placeholder {0}: shortenNumber(totalComments)
 #: src/pages/status.tsx
 msgid "{totalComments, plural, one {# comment} other {<0>{0}</0> comments}}"
-msgstr ""
+msgstr "{totalComments, plural, one {# awennit} other {<0>{0}</0> iwenniten}}"
 
 #: src/components/related-actions.tsx
 msgid "Report <0>@{username}</0>…"
-msgstr ""
+msgstr "Cetki ɣef <0>@{username}</0>…"
 
 #: src/pages/settings.tsx
 msgid "Disable all animations"
@@ -3023,17 +3723,17 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Floating button"
-msgstr ""
+msgstr "Tiqeffilt yettifliwen"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move up"
-msgstr ""
+msgstr "Nkez d asawen"
 
 #. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
 msgid "Allow from <0>{0}</0>"
-msgstr ""
+msgstr "Sireg seg <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -3042,7 +3742,12 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Edit your post"
-msgstr ""
+msgstr "Ẓreg tasuffeɣt-ik·im"
+
+#: src/components/status-large-footer.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Unboost"
+#~ msgstr "Sefsex azuzer"
 
 #: src/components/import-export-accounts.tsx
 msgid "No login information or account access details are stored in the exported files. You will need to log in again for each account after importing."
@@ -3050,57 +3755,61 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Catch up"
-msgstr ""
+msgstr "Alukem"
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText} (auto-detected)"
-msgstr ""
+msgstr "Suqel seg {sourceLangText} (tifin tawurmant)"
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users…"
-msgstr ""
+msgstr "Imiḍanen yettusḥebsen…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Post could be edited or deleted later."
-msgstr ""
+msgstr "Tasuffeɣt tezmer ad tettwaẓrag neɣ ad tettwakkes ticki."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to edit list."
-msgstr ""
+msgstr "D awezɣi ad tettwaẓrag tebdart."
 
 #. placeholder {0}: ancestors.length
 #: src/pages/status.tsx
 msgid "{0} posts above ‒ Go to top"
-msgstr ""
+msgstr "{0} n tsuffaɣ nnig - Ali d asawen"
 
 #: src/components/related-actions.tsx
 msgid "Translate bio"
-msgstr ""
+msgstr "Suqel tudert"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Followed #{hashtag}"
+#~ msgstr "Yettwaḍfar #{hashtag}"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Auto"
-msgstr ""
+msgstr "Awurman"
 
 #: src/components/report-modal.tsx
 msgid "Profile reported"
-msgstr ""
+msgstr "Amaɣnu yettwammel"
 
 #: src/pages/catchup.tsx
 msgid "last 7 hours"
-msgstr ""
+msgstr "7 yisragen ineggura"
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been deleted."
-msgstr ""
+msgstr "Kra seg tsuffaɣ-ik ttwakksent."
 
 #: src/pages/catchup.tsx
 msgid "Fetching posts…"
-msgstr ""
+msgstr "Asali n tsuffaɣ…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Preview"
-msgstr ""
+msgstr "Askan"
 
 #: src/components/status-helpers.ts
 msgid "Author will manually review"
@@ -3108,19 +3817,23 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Error deleting draft! Please try again."
-msgstr ""
+msgstr "Tuccḍa deg tukksa n urewway! Ttxil εreḍ tikkelt niḍen."
 
 #: src/compose.tsx
 msgid "Close window"
-msgstr ""
+msgstr "Mdel asfaylu"
+
+#: src/pages/welcome.tsx
+#~ msgid "Log in with Bluesky"
+#~ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "That's all."
-msgstr ""
+msgstr "D ayen kan."
 
 #: src/pages/catchup.tsx
 msgid "Previous author"
-msgstr ""
+msgstr "Ameskar udfir"
 
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
@@ -3134,7 +3847,11 @@ msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Showing posts with media"
-msgstr ""
+msgstr "Askan n tisuffaɣ s umidya"
+
+#: src/pages/filters.tsx
+#~ msgid "Public timelines"
+#~ msgstr "Tisnimirin tizayazin"
 
 #: src/components/feedback-modal.tsx
 #: src/pages/welcome.tsx
@@ -3150,29 +3867,49 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "You have blocked <0>{targetName}</0>. Removed followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "Tesweḥleḍ <0>{targetName}</0>. Ineḍfaren yettwakksen: {followersCount}, ineḍfaren: {followingCount}."
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} liked your reply.} other {{account} liked your post.}}} other {{account} liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> liked your reply.} other {<2><3>{1}</3> people</2> liked your post.}}}}"
-msgstr ""
+msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} teεǧeb-as tririt-ik·im.} other {{account} teεǧeb-as tsuffeɣt-ik·im.}}} other {{account} εeǧbent-as {postsCount} tsuffaɣ-ik·im.}}} other {{postType, select, reply {<0><1>{0}</1> imdanen</0> teεǧeb-asen·t tririt-ik·im.} other {<2><3>{1}</3> imdanen</2> teεǧeb-asen·t tsuffeɣt-ik·im.}}}}"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Max {SHORTCUTS_LIMIT} columns"
+#~ msgstr "Ugar n tgejda {SHORTCUTS_LIMIT}"
 
 #: src/pages/status.tsx
 msgid "Experimental"
-msgstr ""
+msgstr "Armitan"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this profile?"
-msgstr ""
+msgstr "D acu i d ugur deg umaɣnu-a?"
 
 #: src/pages/http-route.tsx
 msgid "Resolving…"
-msgstr ""
+msgstr "Iferru…"
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "{mentionsCount, plural, other {# mentions}}"
+#~ msgstr ""
+
+#: src/pages/status.tsx
+#~ msgid "Switch to post's server"
+#~ msgstr ""
 
 #: src/components/status-header.tsx
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
-msgstr ""
+msgstr "{repliesCount, plural, one {# tiririt} other {# tiririyin}}"
+
+#: src/pages/settings.tsx
+#~ msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and boosts carousel will not work when this is enabled."
+#~ msgstr ""
+
+#: src/components/account-handle-info.tsx
+#~ msgid "server domain name"
+#~ msgstr "isem n taɣult n uqeddac"
 
 #: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
@@ -3181,47 +3918,55 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Frame rate too high. Uploading might encounter issues."
-msgstr ""
+msgstr "Afmiḍi meqqer aṭas. Asali-s yezmer ad d-yeglu s wuguren."
 
 #: src/pages/notifications.tsx
 msgid "Unable to dismiss notification request"
-msgstr ""
+msgstr "D awezεi tigtin n ussuter n wulɣu"
+
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Boosts Carousel"
+#~ msgstr "Tuṭṭfa n ugdil n kaṛusel n yizuzar"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to previous post"
-msgstr ""
+msgstr "Zgel akarusel ɣer tsuffeɣt tudfirt"
 
 #: src/components/status-account-menu.tsx
 msgid "Post pinned to profile"
-msgstr ""
+msgstr "Tasuffeɣt tettwasenteḍ ɣer umaɣnu"
 
 #. placeholder {0}: pc.count
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# post} other {# posts}}"
-msgstr ""
+msgstr "{0, plural, one {# tasuffeɣt} other {# tisuffaɣ}}"
 
 #: src/pages/notifications.tsx
 msgid "Unable to accept notification request"
-msgstr ""
+msgstr "D awezεi aqbal n ussuter n wulɣu"
+
+#: src/components/related-actions.tsx
+#~ msgid "Don't feature on profile"
+#~ msgstr ""
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/list-add-edit.tsx
 #: src/pages/lists.tsx
 msgid "New list"
-msgstr ""
+msgstr "Tabdart tamaynutt"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
-msgstr ""
+msgstr "Inegzumen ttwaktaren-d. Ԑeddan talast n {SHORTCUTS_LIMIT}, ɣef waya llan wid ur d-yettwaktaren ara."
 
 #: src/pages/account-statuses.tsx
 #: src/pages/trending.tsx
 msgid "Unable to load posts"
-msgstr ""
+msgstr "D awezɣi alluy n tsuffaɣ"
 
 #: src/pages/catchup.tsx
 msgid "Group: Authors"
-msgstr ""
+msgstr "Agraw: Imeskaren"
 
 #: src/components/import-export-accounts.tsx
 msgid "Select file…"
@@ -3237,40 +3982,49 @@ msgstr ""
 msgid "{followingCount, plural, other {<0>{0}</0> Following}}"
 msgstr ""
 
+#: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Server"
+#~ msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Unblocked @{username}"
-msgstr ""
+msgstr "Yettwakkes usewḥel ɣef @{username}"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Switch to my server (<0>{currentInstance}</0>)"
+#~ msgstr ""
 
 #: src/components/account-handle-info.tsx
 msgid "username"
-msgstr ""
+msgstr "isem n useqdac"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Add/Remove from Lists"
-msgstr ""
+msgstr "Rnu/Kkes seg tebdarin"
 
 #: src/components/compose.tsx
 msgid "Post your reply"
-msgstr ""
+msgstr "Suffeɣ tiririt-ik·im"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import…"
-msgstr ""
+msgstr "Kter…"
 
 #: src/components/media-attachment.tsx
 #: src/compose.tsx
 msgid "Error"
-msgstr ""
+msgstr "Tuccḍa"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post (new window)"
-msgstr ""
+msgstr "Aru tasuffeɣt tamaynut (asfaylu amaynut)"
 
 #: src/components/nav-menu.tsx
 msgid "Muted users"
-msgstr ""
+msgstr "Iseqdacen yettwasgugmen"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -3291,7 +4045,7 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/welcome.tsx
 msgid "Log in"
-msgstr ""
+msgstr "Qqen"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -3303,7 +4057,7 @@ msgstr ""
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
 msgid "<0>Filtered</0>: <1>{0}</1>"
-msgstr ""
+msgstr "<0>Yettwasizdeg</0>: <1>{0}</1>"
 
 #: src/pages/account-statuses.tsx
 msgid "Showing reposts"
@@ -3311,53 +4065,69 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Posts are grouped by authors, sorted by posts count per author."
-msgstr ""
+msgstr "Tisuffaɣ ttusgarwent almend n yimeskar, myizwarent almend n umḍan n tsuffaɣ i umeskar."
 
 #: src/pages/notifications.tsx
 msgid "With a new account"
-msgstr ""
+msgstr "S umiḍan amaynut"
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Save & close"
+#~ msgstr "Sekles sakkin mdel"
 
 #. placeholder {0}: filterInfo.titlesStr
 #. placeholder {0}: filterInfoMaybe?.titlesStr
 #: src/components/status-media-embeds.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered: {0}"
-msgstr ""
+msgstr "Yettwasizdeg: {0}"
+
+#: src/components/compose.tsx
+#~ msgid "Schedule post"
+#~ msgstr "Sɣiwes tasuffeɣt"
 
 #: src/pages/catchup.tsx
 msgid "Note: Only max 3 will be stored. The rest will be automatically removed."
-msgstr ""
+msgstr "Tamawt: Ugar kan n 3 ad d-ttwarrent. Ayen d-yeqqimen ad ttwakksent s wudem awurman."
+
+#: src/pages/filters.tsx
+#~ msgid "No keywords. Add one."
+#~ msgstr "Ulaw awalen n tsura. Rnu yiwen."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
-msgstr ""
+msgstr "Yekkes-as uεǧab i tsuffeɣt n @{0}"
 
 #: src/pages/settings.tsx
 msgid "Replace text as blocks, useful when taking screenshots, for privacy reasons."
-msgstr ""
+msgstr "Semselsi aḍris s yiḥedren, lhan i tuṭṭfiwin n ugdil, i tiɣẓinin n tbaḍnit."
 
 #: src/components/media-attachment.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 msgid "Remove"
-msgstr ""
+msgstr "Kkes"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Profile"
 msgstr ""
 
+#: src/pages/public.tsx
+#~ msgid "Switch to Local"
+#~ msgstr "Uɣal ɣer udigan"
+
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
-msgstr ""
+msgstr "Urtiyen niḍen"
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
-msgstr ""
+msgstr "S wudem amezwer, tigejdit tasuft i i umnadi n uskar Zen. Aṭas n tgejda ttwasestabent i yiseqdacen n tsaraɣt."
 
 #: src/components/report-modal.tsx
 msgid "Spam"
-msgstr ""
+msgstr "D aspam"
 
 #: src/pages/status.tsx
 msgid "Switch to my PDS to enable interactions"
@@ -3367,22 +4137,26 @@ msgstr ""
 msgid "Showing replies"
 msgstr ""
 
+#: src/components/status-interactions.ts
+#~ msgid "Sorry, your current logged-in server can't interact with this post from another server."
+#~ msgstr ""
+
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to add to list."
-msgstr ""
+msgstr "D awezɣi ad yettwarnu ɣer tebdart."
 
 #. placeholder {0}: niceDateTime(updatedAtDate)
 #: src/pages/notifications.tsx
 msgid "Updated <0>{0}</0>"
-msgstr ""
+msgstr "Yettwaleqqem <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Paste shortcuts here"
-msgstr ""
+msgstr "Senṭeḍ inegzumen da"
 
 #: src/components/compose.tsx
 msgid "Take photo or video"
-msgstr ""
+msgstr "Ṭṭef tawlaft neɣ tavidyut"
 
 #. placeholder {0}: shortenNumber(followersCount)
 #. placeholder {1}: shortenNumber(followersCount)
@@ -3397,19 +4171,19 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/notifications.tsx
 msgid "Save"
-msgstr ""
+msgstr "Sekles"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcut settings"
-msgstr ""
+msgstr "D awezɣi anɣal n yiɣewwaren n yinegzumen"
 
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
-msgstr ""
+msgstr "Tuccḍa deg tririt n waddad n tririt!"
 
 #: src/components/post-embed-modal.tsx
 msgid "Notes:"
-msgstr ""
+msgstr "Tizmilin:"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} enabled."
@@ -3417,33 +4191,61 @@ msgstr ""
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to delete list."
-msgstr ""
+msgstr "D awezɣi tukksa n tebdart."
 
 #: src/pages/welcome.tsx
 msgid "Up to 5 hashtags combined into a single timeline."
-msgstr ""
+msgstr "Ugar n 5 yihacṭagen ttwasdukklen deg yiwet n tesnimirt."
+
+#: src/pages/settings.tsx
+#~ msgid "Boosts carousel"
+#~ msgstr "Kaṛusel n yizuzar"
 
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Sharing doesn't seem to work."
-msgstr ""
+msgstr "Beṭṭu yettban ur yeddi ara."
+
+#: src/pages/welcome.tsx
+#~ msgid "Boosts Carousel"
+#~ msgstr "Kaṛusel n yizuzar"
 
 #: src/components/list-add-edit.tsx
 msgid "Edit list"
-msgstr ""
+msgstr "Ẓreg tabdart"
 
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
-msgstr ""
+msgstr "2 yisragen ineggura"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Public (Local / Federated)"
+#~ msgstr "Azayez (Adigan / Asedduklan)"
 
 #: src/compose.tsx
 msgid "Editing source status"
-msgstr ""
+msgstr "Aẓrag n waddad n uɣbalu"
 
 #: src/pages/settings.tsx
 msgid "Settings"
-msgstr ""
+msgstr "Iɣewwaṛen"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "Clear filters"
+#~ msgstr "Sfeḍ imsizedgen"
+
+#: src/pages/public.tsx
+#~ msgid "Local timeline ({instance})"
+#~ msgstr "Tasuddemt tadigant ({instance})"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Recently used"
+#~ msgstr "Wid yettwasqdacen melmi kan"
+
+#: src/pages/filters.tsx
+#~ msgid "Status: <0><1/></0>"
+#~ msgstr "Addad: <0><1/></0>"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -3451,56 +4253,89 @@ msgstr ""
 
 #: src/pages/http-route.tsx
 msgid "Unable to resolve URL"
-msgstr ""
+msgstr "D awezɣi ferru n URL"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Optional, unless for multi-column mode"
+#~ msgstr "Afrayan, slid i uskar n waṭas n tgejda"
+
+#: src/components/endorsements.tsx
+#~ msgid "Profiles featured by @{0}"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "or override…"
-msgstr ""
+msgstr "neɣ zgel…"
 
 #: src/components/status-account-menu.tsx
 msgid "Remove quote…"
 msgstr ""
 
+#: src/components/related-actions.tsx
+#: src/pages/hashtag.tsx
+#~ msgid "Feature on profile"
+#~ msgstr "Welleh fell-as deg umaɣnu-k"
+
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Keyboard shortcuts help"
-msgstr ""
+msgstr "Tallelt n yinegzumen n unasiw"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Home"
 msgstr ""
 
+#: src/components/compose.tsx
+#~ msgid "Some poll choices are empty"
+#~ msgstr "Kra n yifranen n usisten d ilmawen"
+
 #: src/components/related-actions.tsx
 msgid "Remove <0>@{username}</0> from followers?"
-msgstr ""
+msgstr "Kkes <0>@{username}</0> seg yineḍfaren?"
 
 #: src/pages/bookmarks.tsx
 msgid "Unable to load bookmarks."
-msgstr ""
+msgstr "D awezɣi ad d-alint tecraḍ n yisebtar."
+
+#: src/pages/filters.tsx
+#~ msgid "Filter from…"
+#~ msgstr "Sizdeg seg…"
 
 #: src/components/quote-chain-modal.tsx
 msgid "Continue unwrapping…"
 msgstr ""
 
+#: src/components/related-actions.tsx
+#~ msgid "Enable boosts"
+#~ msgstr "Sermed izuzar"
+
+#: src/pages/filters.tsx
+#~ msgid "Expiring <0/>"
+#~ msgstr "Ad yekfu <0/>"
+
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has suspended <1>{targetName}</1>, which means you can no longer receive updates from them or interact with them."
-msgstr ""
+msgstr "Anedbal seg <0>{from}</0> yettwaḥbes <1>{targetName}</1>, dayen ulac ileqman ara d-yawḍen sɣur-s neɣ amyigew yid-s."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on mobile device"
 msgstr ""
 
+#: src/pages/account-statuses.jsx
+#~ msgid "- Boosts"
+#~ msgstr ""
+
 #: src/pages/catchup.tsx
 msgid "Posts are sorted by information density or depth. Shorter posts are \"lighter\" while longer posts are \"heavier\". Posts with photos are \"heavier\" than posts without photos."
-msgstr ""
+msgstr "Tisuffaɣ myezwarent almend n tneẓẓit n telɣut neɣ s telqayt. Tisuffaɣ timeẓẓyanin \"fessusit\" ma yella d tisuffaɣ tiɣezzfanin \"ẓẓayit\". Tisuffaɣ s tewlafin \"ẓẓayit\" ɣef tsuffaɣ war tiwlafin."
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
 msgid "Settings…"
-msgstr ""
+msgstr "Iɣewwaṛen…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multi-column"
-msgstr ""
+msgstr "Aṭas n tgejdiyin"
 
 #: src/components/quote-settings-sheet.tsx
 msgid "Quote settings for this post"
@@ -3508,7 +4343,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Tab/Menu bar"
-msgstr ""
+msgstr "Iccer/Afeggag n wumuɣ"
 
 #: src/components/generic-accounts.tsx
 #: src/components/quotes-modal.tsx
@@ -3518,11 +4353,11 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/status.tsx
 msgid "Show more…"
-msgstr ""
+msgstr "Sken-d ugar…"
 
 #: src/components/related-actions.tsx
 msgid "Blocked @{username}"
-msgstr ""
+msgstr "Yettusewḥel @{username}"
 
 #: src/components/status-interactions.ts
 msgid "Sorry, your current PDS can't interact with this post from another PDS."
@@ -3530,7 +4365,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "About"
-msgstr ""
+msgstr "Ɣef"
 
 #: src/components/quote-suggestion.tsx
 msgid "Replace current quote"
@@ -3538,22 +4373,22 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "A post you interacted with has been edited."
-msgstr ""
+msgstr "Tasuffeɣt iɣef twennteḍ tettwaẓreg."
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/pages/lists.tsx
 msgid "Unable to load lists."
-msgstr ""
+msgstr "D awezɣi ad d-alint tebdarin."
 
 #: src/components/report-modal.tsx
 msgid "Unable to mute {username}"
-msgstr ""
+msgstr "D awezɣi asgugem n {username}"
 
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "See more"
-msgstr ""
+msgstr "Wali ugar"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
@@ -3562,15 +4397,19 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
-msgstr ""
+msgstr "Kra seg tsuffaɣ-ik ttwacerḍent d timḥulfa."
 
 #: src/components/status-large-footer.tsx
 msgid "Comments"
-msgstr ""
+msgstr "Iwenniten"
+
+#: src/pages/filters.tsx
+#~ msgid "Add filter"
+#~ msgstr "Rnu imsizdeg"
 
 #: src/pages/status.tsx
 msgid "Switch to post's PDS"
@@ -3578,17 +4417,17 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
-msgstr ""
+msgstr "Kkes aneḍfar…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Profile"
-msgstr ""
+msgstr "Amaɣnu"
 
 #: src/components/media-modal.tsx
 msgid "Attempting to describe image. Please wait…"
-msgstr ""
+msgstr "Aneεruḍ n uglam n tugna. Ttxil-k rǧu…"
 
 #: src/components/account-handle-info.tsx
 msgid "handle domain name"
@@ -3597,31 +4436,43 @@ msgstr ""
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
 msgid "Deleted"
-msgstr ""
+msgstr "Yettwakkes"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to pin post"
-msgstr ""
+msgstr "D awezɣi asenteḍ n tsuffeɣt"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfeatured on profile"
+#~ msgstr "Yettwakkes seg umaɣnu"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Add column…"
+#~ msgstr "Rnu ajgu…"
 
 #: src/components/compose.tsx
 msgid "Failed to download GIF"
-msgstr ""
+msgstr "Yecceḍ usader n GIF"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Load new posts"
-msgstr ""
+msgstr "Sali-d tisuffaɣ timaynutin"
+
+#: src/pages/followed-hashtags.tsx
+#~ msgid "No hashtags followed yet."
+#~ msgstr "Ulac ihacṭagen i yettwaḍfaren akka ar tura."
 
 #: src/components/account-info.tsx
 msgid "Post stats unavailable."
-msgstr ""
+msgstr "Tidaddanin n yizen-a ulac-itent."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
-msgstr ""
+msgstr "Tuṭṭfa n ugdil n ugrudem n waṭas n tgejda"
 
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
-msgstr ""
+msgstr "Ulac inegzumen akka tura. Sit ɣef tqeffalt \"Rnu anegzum\"."
 
 #: src/components/muted-status.tsx
 msgid "Hide"
@@ -3629,7 +4480,7 @@ msgstr ""
 
 #: src/pages/trending.tsx
 msgid "Trending posts"
-msgstr ""
+msgstr "Tisuffaɣ tinezzaɣ"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
@@ -3637,11 +4488,15 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "beyond 12 hours"
-msgstr ""
+msgstr "ugar n 12 yisragen"
+
+#: src/pages/filters.tsx
+#~ msgid "Profiles"
+#~ msgstr "Imuɣna"
 
 #: src/pages/catchup.tsx
 msgid "last 12 hours"
-msgstr ""
+msgstr "12 yisragen ineggura"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn into quote"
@@ -3649,16 +4504,20 @@ msgstr ""
 
 #: src/utils/show-compose.ts
 msgid "A post is currently open. Post or discard it before creating a new one."
-msgstr ""
+msgstr "Tasuffaɣt teldi akka tura. Suffeɣ neɣ sefsex-itt send timerna n yiwet n tmaynut."
 
 #: src/components/related-actions.tsx
 msgid "Unable to mute @{username}"
-msgstr ""
+msgstr "D awezɣi asgugem n @{username}"
 
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Hashtags"
-msgstr ""
+msgstr "Ihacṭagen"
+
+#: src/pages/status.tsx
+#~ msgid "You're not logged in. Interactions (reply, boost, etc) are not possible."
+#~ msgstr "Ur teqqineḍ ara. Amiyigew (tiririt, azuzer, rtg) ur teddun ara."
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to remove quote"
@@ -3672,11 +4531,11 @@ msgstr ""
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy link"
-msgstr ""
+msgstr "D awezɣi ad d-yenɣel useɣwen"
 
 #: src/components/notification.tsx
 msgid "Your posts will be marked as sensitive from now on."
-msgstr ""
+msgstr "Tisuffaɣ-ik ad ttwacerḍent d tisuffaɣ timṣulfa sya d asawen."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on tablet device"
@@ -3688,7 +4547,11 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Like"
-msgstr ""
+msgstr "Ḥemmel"
+
+#: src/pages/welcome.tsx
+#~ msgid "A minimalistic opinionated Bluesky web client."
+#~ msgstr ""
 
 #: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
@@ -3697,43 +4560,55 @@ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Multi-hashtag timeline"
-msgstr ""
+msgstr "Tasnimirt n waṭas yihacṭagen"
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
 msgstr ""
 
+#: src/components/account-info.tsx
+#~ msgid "{0} original posts, {1} replies, {2} boosts"
+#~ msgstr "{0} tisuffaɣ tiɣbula, {1} tiririyin, {2} izuzar"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Showing boosts"
+#~ msgstr ""
+
 #: src/components/compose.tsx
 msgid "Editing source post"
-msgstr ""
+msgstr "Aẓrag n tsuffeɣt n uɣbalu"
 
 #: src/pages/settings.tsx
 msgid "Polls"
-msgstr ""
+msgstr "Isestanen"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
-msgstr ""
+msgstr "Tuṭṭfa n ugdil n tesnimirt n yihacṭagen s tferkit i tmerna n wugar ihacṭagen"
+
+#: src/pages/settings.tsx
+#~ msgid "Synced to your Bluesky account settings. <0>Open Bluesky settings ({instance}).</0>"
+#~ msgstr ""
 
 #: src/pages/search.tsx
 msgid "Search: {q}"
-msgstr ""
+msgstr "Nadi: {q}"
 
 #: src/pages/notifications.tsx
 msgid "Filter out notifications from people:"
-msgstr ""
+msgstr "Sizdeg ilɣa n yimdanen:"
 
 #: src/pages/settings.tsx
 msgid "Push Notifications (beta)"
-msgstr ""
+msgstr "Ilɣa Push (beta)"
 
 #: src/pages/catchup.tsx
 msgid "last 10 hours"
-msgstr ""
+msgstr "10 yisragen ineggura"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Search GIFs"
-msgstr ""
+msgstr "Nadi tugniwin GIF"
 
 #. placeholder {0}: err.message
 #: src/components/media-attachment.tsx
@@ -3743,7 +4618,7 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Catch-up <0>beta</0>"
-msgstr ""
+msgstr "Alukem <0>beta</0>"
 
 #: src/pages/status.tsx
 msgid "You're not logged in. Interactions (reply, repost, etc) are not possible."
@@ -3756,18 +4631,22 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Edit video description"
-msgstr ""
+msgstr "Ẓreg aglam n tvidyut"
+
+#: src/components/compose.tsx
+#~ msgid "Add content warning"
+#~ msgstr "Rnu alɣu ɣef ugbur"
 
 #: src/pages/settings.tsx
 msgid "people I follow"
-msgstr ""
+msgstr "imdanen I aneḍfar"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Followers"
-msgstr ""
+msgstr "Imeḍfaṛen"
 
 #: src/components/notification.tsx
 msgid "Reposted by…"
@@ -3779,52 +4658,82 @@ msgstr ""
 
 #: src/components/recent-searches.tsx
 msgid "Clear"
-msgstr ""
+msgstr "Sfeḍ"
 
 #: src/components/qr-code-modal.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Scan QR code"
 msgstr ""
 
+#: src/pages/login.jsx
+#~ msgid "Continue"
+#~ msgstr "Kemmel"
+
+#: src/components/related-actions.tsx
+#~ msgid "@{username} is now featured on your profile."
+#~ msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Mute <0>@{username}</0>…"
-msgstr ""
+msgstr "Sgugem <0>@{username}</0>…"
+
+#: src/components/related-actions.tsx
+#~ msgid "Unable to unfeature @{username} on your profile."
+#~ msgstr ""
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Only visible to you"
+#~ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description"
-msgstr ""
+msgstr "Yecceḍ usirew n uglam"
+
+#: src/components/nav-menu.tsx
+#: src/pages/followed-hashtags.tsx
+#: src/pages/followed-hashtags.tsx
+#~ msgid "Followed Hashtags"
+#~ msgstr "Ihacṭagen yettwaḍfaren"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
 msgid "static URL"
-msgstr ""
+msgstr "URL n tdaddanin"
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
 msgid "Removing Catch-up {0}"
 msgstr ""
 
+#: src/pages/catchup.jsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies}}} density {{sortOrder, select, asc {least dense} desc {most dense}}}} first{groupBy, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
+
 #: src/components/notification.tsx
 msgid "Lost connections with <0>{name}</0>."
-msgstr ""
+msgstr "Ruḥent tuqqniwin akked <0>{name}</0>."
+
+#: src/pages/notifications.tsx
+#~ msgid "Who are limited by server moderators"
+#~ msgstr "D anwi iwumi gan imḍebbren n uqeddac tilas"
 
 #: src/pages/hashtag.tsx
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
-msgstr ""
+msgstr "{SHORTCUTS_LIMIT, plural, one {Amḍan afellay n # unegzum yewweḍ. D awezɣi timerna n unegzum.} other {Amḍan afellay # yinegzumen yewweḍ. D awezɣi timerna n unegzum.}}"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>r</1>"
 
 #: src/components/status-account-menu.tsx
 msgid "Unpin from profile"
-msgstr ""
+msgstr "Kkes asenteḍ seg umaɣnu"
 
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 #: src/pages/welcome.tsx
 msgid "Catch-up"
-msgstr ""
+msgstr "Alukem"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specific list is optional."
@@ -3833,11 +4742,11 @@ msgstr ""
 #: src/components/drafts.tsx
 #: src/pages/account-statuses.tsx
 msgid "Media"
-msgstr ""
+msgstr "Amidya"
 
 #: src/pages/notifications.tsx
 msgid "Yesterday"
-msgstr ""
+msgstr "Iḍelli"
 
 #: src/components/feedback-modal.tsx
 msgid "What happened?"
@@ -3849,55 +4758,76 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Post reported"
-msgstr ""
+msgstr "Tasuffeɣt tattwammel"
 
 #: src/components/account-block.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
-msgstr ""
+msgstr "Yeṭṭafar"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to delete post"
-msgstr ""
+msgstr "D awezɣi tukksa n tsuffeɣt"
+
+#: src/pages/login.jsx
+#~ msgid "Failed to log in. Please try again or try another server."
+#~ msgstr ""
+
+#: src/pages/welcome.tsx
+#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored on this server."
+#~ msgstr ""
 
 #: src/components/edit-history-controls.tsx
 msgid "Exit"
-msgstr ""
+msgstr "Ffeɣ"
 
 #: src/pages/catchup.tsx
 msgid "Previously…"
-msgstr ""
+msgstr "Uqbel…"
+
+#: src/pages/filters.tsx
+#: src/pages/filters.tsx
+#~ msgid "New filter"
+#~ msgstr "Amsizdeg amaynut"
 
 #: src/components/status-account-menu.tsx
 msgid "Quote removed"
-msgstr ""
+msgstr "Tanebdurt tettwakkes"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Quote with link"
-msgstr ""
+msgstr "Tanebdurt s useɣwen"
+
+#: src/pages/status.tsx
+#~ msgid "Switch to post's server ({0})"
+#~ msgstr ""
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Speak"
-msgstr ""
+msgstr "Mmeslay"
 
 #: src/pages/hashtag.tsx
 msgid "Unable to load posts with this tag"
-msgstr ""
+msgstr "D awezɣi asali n tsuffaɣ s tebzimt-a"
 
 #: src/components/notification.tsx
 #: src/components/notification.tsx
 msgid "Learn more <0/>"
-msgstr ""
+msgstr "Issin ugar <0/>"
 
 #: src/pages/hashtag.tsx
 msgid "This timeline is disabled on Bluesky."
 msgstr ""
 
 #: src/pages/catchup.tsx
+#~ msgid "Links shared by followings, sorted by shared counts, boosts and likes."
+#~ msgstr "Iseɣwan yettwabḍan sɣur yineḍfaren, myezwaren almend n umḍan n beṭṭu, izuzar d yismenyifen."
+
+#: src/pages/catchup.tsx
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
-msgstr ""
+msgstr "Alukem d tasnimirt niḍen ii yineḍfaren-ik, i d-yettmuddun udem s uswir εlayen deg uṛmac n tiṭ, s ugrudem afessas igan am wudem n yimayl i ufran n tsuffaɣ d usizdeg-nsent."
 
 #. [Name] [Visibility icon] reposted
 #: src/components/filtered-status.tsx
@@ -3906,44 +4836,56 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Moderation warning"
-msgstr ""
+msgstr "Alɣu n uqeεεed"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus next column in multi-column mode"
+#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>b</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>b</1>"
 
 #: src/pages/settings.tsx
 msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
 msgstr ""
 
+#: src/components/related-actions.tsx
+#~ msgid "Withdraw…"
+#~ msgstr "Kkes…"
+
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Liked @{0}'s post"
-msgstr ""
+msgstr "Teεǧeb-as tsuffeɣt n @{0}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcuts"
-msgstr ""
+msgstr "D awezɣi anɣal n yinegzumen"
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation muted"
-msgstr ""
+msgstr "Yettwasgugem udiwenni"
 
 #: src/components/account-block.tsx
 msgid "Requested"
-msgstr ""
+msgstr "Yettwasra"
 
 #: src/components/status-account-menu.tsx
 msgid "Post unpinned from profile"
-msgstr ""
+msgstr "Tasuffeɣt tettwakkes seg umaɣnu"
 
 #: src/pages/search.tsx
 msgid "No accounts found."
-msgstr ""
+msgstr "Ulac imiḍanen yettwafen."
+
+#: src/pages/accounts.jsx
+#~ msgid "Remove <0>@{0}</0>?"
+#~ msgstr ""
 
 #: src/components/recent-searches.tsx
 msgid "Clear all"
-msgstr ""
+msgstr "Sfeḍ-iten akk"
 
 #: src/components/account-sheet.tsx
 #: src/components/add-remove-lists-sheet.tsx
@@ -3986,60 +4928,89 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/status.tsx
 msgid "Close"
-msgstr ""
+msgstr "Mdel"
+
+#: src/components/compose.tsx
+#~ msgid "Quotes can't be embedded in private mentions."
+#~ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
-msgstr ""
+msgstr "Yettban-d ɣur-k yakan urti ideg turiḍ yeldi deg usfaylu amaraw, ha-t-an ad t-id-tessuffɣeḍ. Ttxil-k, ṛǧu ad yemmed syen εreḍ ticki."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
-msgstr ""
+msgstr "Bḍu"
 
 #: src/pages/settings.tsx
 msgid "NOTE: Push notifications only work for <0>one account</0>."
-msgstr ""
+msgstr "Tamawt: Ilɣa Push teddun kan i <0>yiwen n umiḍan</0>."
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Show results"
-msgstr ""
+msgstr "Sken igmaḍ"
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "Only <0>@{0}</0>"
+#~ msgstr ""
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-quote-policy.ts
 msgid "Quote"
-msgstr ""
+msgstr "Tanebdurt"
 
 #: src/pages/catchup.tsx
 msgid "Groups"
-msgstr ""
+msgstr "Igrawen"
+
+#: src/components/compose.tsx
+#~ msgid "Poll must have at least 2 options"
+#~ msgstr "Asisten ilaq ad yesεu ma drus snat textiṛiyin"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
-msgstr ""
+msgstr "Amasal n yiɣewwaren d arameɣtu"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Handle copied"
-msgstr ""
+msgstr "Isem n useqdac yettwanɣel"
+
+#. [Name] [Visibility icon] boosted
+#: src/components/filtered-status.tsx
+#~ msgid "<0/> <1/> boosted"
+#~ msgstr "Izuzer-itt <0/><1/>"
+
+#: src/pages/welcome.jsx
+#~ msgid "Log in with Mastodon"
+#~ msgstr "Qqen s Mastodon"
 
 #: src/pages/status.tsx
 msgid "View post with its replies"
-msgstr ""
+msgstr "Wali tasuffeɣt s tririyin-is"
 
 #: src/components/media-modal.tsx
 msgid "Failed to describe image"
-msgstr ""
+msgstr "Yecceḍ uglam n tugna"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Failed to reschedule post"
+#~ msgstr ""
+
+#: src/pages/filters.tsx
+#~ msgid "hidden"
+#~ msgstr "yettwaffer"
 
 #: src/components/account-info.tsx
 msgid "View profile header"
-msgstr ""
+msgstr "Wali aqerru n umaɣnu"
 
 #: src/pages/login.tsx
 #: src/pages/login.tsx
 msgid "Failed to register application"
-msgstr ""
+msgstr "Ur yessaweḍ ara ad ijerred asnas-nni"
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
@@ -4054,16 +5025,24 @@ msgstr ""
 #. placeholder {0}: Math.floor(seconds / minute)
 #: src/components/relative-time.tsx
 msgid "{0}m"
-msgstr ""
+msgstr "{0}tsd"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from @{0} will not be filtered from now on."
-msgstr ""
+msgstr "Ilɣa sɣur @{0} ad uɣalen ad ffren sya ar sdat."
 
 #: src/components/nav-menu.tsx
 msgid "Menu"
-msgstr ""
+msgstr "Umuɣ"
+
+#: src/components/translation-block.jsx
+#~ msgid "Auto-translated from {sourceLangText}"
+#~ msgstr "Tasuqilt tawurmant seg {sourceLangText}"
+
+#: src/pages/mentions.tsx
+#~ msgid "Private"
+#~ msgstr "Usligen"
 
 #: src/pages/settings.tsx
 msgid "Muted posts"
@@ -4071,15 +5050,19 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Translate to "
-msgstr ""
+msgstr "Suqel ɣer "
 
 #: src/components/translation-block.tsx
 msgid "Translating…"
-msgstr ""
+msgstr "Yessuqul…"
 
 #: src/components/atproto-labels.tsx
 msgid "This account has marked itself as automated."
 msgstr ""
+
+#: src/components/compose-poll.tsx
+#~ msgid "Multiple choice"
+#~ msgstr ""
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -4090,4 +5073,4 @@ msgstr ""
 #: src/pages/favourites.tsx
 #: src/pages/settings.tsx
 msgid "Likes"
-msgstr ""
+msgstr "Iεǧeb-as"
