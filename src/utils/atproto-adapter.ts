@@ -1887,9 +1887,9 @@ async function createMediaUpload({
   }
 
   if (file.type?.startsWith('video/')) {
-    const url = URL.createObjectURL(file);
     const blob = await uploadVideoBlob(agent, file);
     const id = blobRefID(blob);
+    const url = URL.createObjectURL(file);
     const media: AdaptedUploadedMedia = {
       id,
       type: 'video',
