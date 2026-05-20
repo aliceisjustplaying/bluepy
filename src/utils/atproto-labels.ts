@@ -40,6 +40,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
 }
 
+function getString(value: unknown): string | undefined {
+  return typeof value === 'string' && value ? value : undefined;
+}
+
 function getOwn<T>(record: Record<string, T>, key: string): T | undefined {
   return Object.prototype.hasOwnProperty.call(record, key)
     ? record[key]
@@ -169,6 +173,40 @@ export function getAtprotoLabelerInfoMap(
   );
 }
 
+export function getAtprotoLabelerInfoFromSourceProfile(
+  profile: unknown,
+): AtprotoLabelerInfo | undefined {
+  if (!isRecord(profile)) return undefined;
+  const id = getString(profile.id);
+  const uri = getString(profile.uri);
+  const did = id?.startsWith('did:')
+    ? id
+    : uri?.startsWith('did:')
+      ? uri
+      : undefined;
+  if (!did) return undefined;
+  return {
+    did,
+    handle: getString(profile.acct) ?? getString(profile.username),
+    displayName: getString(profile.displayName),
+    avatar: getString(profile.avatarStatic) ?? getString(profile.avatar),
+  };
+}
+
+export function getAtprotoLabelerInfoFromView(
+  view: unknown,
+): AtprotoLabelerInfo | undefined {
+  if (!isRecord(view) || !isRecord(view.creator)) return undefined;
+  const did = getString(view.creator.did);
+  if (!did) return undefined;
+  return {
+    did,
+    handle: getString(view.creator.handle),
+    displayName: getString(view.creator.displayName),
+    avatar: getString(view.creator.avatar),
+  };
+}
+
 function getDefinitions(
   label: AtprotoLabel,
   labelDefs: AtprotoLabelDefinitionMap,
@@ -201,6 +239,12 @@ function getLocaleStrings(
 
 function normalizeSeverity(value: unknown): AtprotoLabelSeverity {
   return value === 'inform' || value === 'alert' ? value : 'none';
+}
+
+export function getAtprotoLabelClassName(
+  severity: AtprotoLabelSeverity,
+): string {
+  return `atproto-label atproto-label-${severity}`;
 }
 
 export function describeAtprotoLabel(

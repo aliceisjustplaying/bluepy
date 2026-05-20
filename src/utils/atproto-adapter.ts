@@ -959,7 +959,7 @@ function actorToAccount(actor: AtprotoActor = {}): AdaptedAccount {
   };
 }
 
-function getStoredAtprotoLabelerDids(agent: AtprotoAgent): string[] {
+export function getStoredAtprotoLabelerDids(agent: unknown): string[] {
   const preferences = store.account.get('preferences');
   if (!isRecord(preferences)) return [];
   const appLabelers = isAtprotoLabelersAgent(agent)
@@ -979,9 +979,9 @@ function getStoredAtprotoLabelerDids(agent: AtprotoAgent): string[] {
   return [];
 }
 
-function getAtprotoLabelerDids(
-  preferences: BskyPreferences,
-  agent: AtprotoAgent,
+export function getAtprotoLabelerDids(
+  preferences: { moderationPrefs: { labelers: unknown } },
+  agent: unknown,
 ): string[] {
   const appLabelers = isAtprotoLabelersAgent(agent)
     ? (agent.appLabelers ?? [])
@@ -1014,8 +1014,8 @@ function toAtprotoLabelerInfo(
   };
 }
 
-async function fetchAtprotoLabelerMetadata(
-  agent: AtprotoAgent,
+export async function fetchAtprotoLabelerMetadata(
+  agent: unknown,
   labelerDids: readonly string[],
 ): Promise<{
   labelDefs: AtprotoLabelDefinitionMap;

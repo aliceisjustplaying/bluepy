@@ -8,7 +8,10 @@ import type { InterpretedLabelValueDefinition } from '@atproto/api';
 import {
   dedupeAtprotoLabels,
   describeAtprotoLabel,
+  getAtprotoLabelClassName,
   getAtprotoLabelDefinitions,
+  getAtprotoLabelerInfoFromSourceProfile,
+  getAtprotoLabelerInfoFromView,
   getAtprotoLabelerInfoMap,
   getDisplayAtprotoLabels,
   normalizeAtprotoLabelerDids,
@@ -196,6 +199,30 @@ void test('custom label severity is clamped for CSS class names', () => {
   assert.equal(info.severity, 'none');
 });
 
+void test('getAtprotoLabelClassName uses normalized severities', () => {
+  assert.equal(
+    getAtprotoLabelClassName(
+      describeAtprotoLabel(label(), {
+        'did:plc:custom': [customLabelDef],
+      }).severity,
+    ),
+    'atproto-label atproto-label-inform',
+  );
+  assert.equal(
+    getAtprotoLabelClassName(
+      describeAtprotoLabel(label(), {
+        'did:plc:custom': [
+          {
+            ...customLabelDef,
+            severity: 'extra-class',
+          },
+        ],
+      }).severity,
+    ),
+    'atproto-label atproto-label-none',
+  );
+});
+
 void test('getAtprotoLabelDefinitions drops malformed cached entries', () => {
   assert.deepEqual(
     getAtprotoLabelDefinitions({
@@ -245,6 +272,66 @@ void test('getAtprotoLabelerInfoMap drops malformed cached entries', () => {
       },
     },
   );
+});
+
+void test('getAtprotoLabelerInfoFromSourceProfile derives DID and avatar', () => {
+  assert.deepEqual(
+    getAtprotoLabelerInfoFromSourceProfile({
+      id: 'did:plc:source',
+      uri: 'did:plc:ignored',
+      acct: 'labels.example.com',
+      username: 'ignored.example.com',
+      displayName: 'Source Labels',
+      avatar: 'https://example.com/avatar.jpg',
+      avatarStatic: 'https://example.com/avatar-static.jpg',
+    }),
+    {
+      did: 'did:plc:source',
+      handle: 'labels.example.com',
+      displayName: 'Source Labels',
+      avatar: 'https://example.com/avatar-static.jpg',
+    },
+  );
+  assert.deepEqual(
+    getAtprotoLabelerInfoFromSourceProfile({
+      uri: 'did:plc:from-uri',
+      username: 'uri.example.com',
+      avatar: 'https://example.com/uri.jpg',
+    }),
+    {
+      did: 'did:plc:from-uri',
+      handle: 'uri.example.com',
+      displayName: undefined,
+      avatar: 'https://example.com/uri.jpg',
+    },
+  );
+  assert.equal(
+    getAtprotoLabelerInfoFromSourceProfile({
+      id: 'not-a-did',
+      uri: 'https://example.com',
+    }),
+    undefined,
+  );
+});
+
+void test('getAtprotoLabelerInfoFromView reads creator labeler profile', () => {
+  assert.deepEqual(
+    getAtprotoLabelerInfoFromView({
+      creator: {
+        did: 'did:plc:view',
+        handle: 'view.example.com',
+        displayName: 'View Labels',
+        avatar: 'https://example.com/view.jpg',
+      },
+    }),
+    {
+      did: 'did:plc:view',
+      handle: 'view.example.com',
+      displayName: 'View Labels',
+      avatar: 'https://example.com/view.jpg',
+    },
+  );
+  assert.equal(getAtprotoLabelerInfoFromView({ creator: {} }), undefined);
 });
 
 void test('normalizeAtprotoLabelerDids handles cached strings and pref objects', () => {

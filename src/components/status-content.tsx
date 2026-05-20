@@ -178,9 +178,11 @@ export default function StatusContent({
   } = account || {};
   const mediaAttachments = (statusMediaAttachments ||
     EMPTY_MEDIA_ATTACHMENTS) as StatusContentMediaAttachment[];
-  const atprotoLabels = mergeAtprotoLabels(
-    getAccountAtprotoLabels(account),
-    status._atproto?.labels,
+  const accountAtprotoLabels = getAccountAtprotoLabels(account);
+  const statusAtprotoLabels = status._atproto?.labels;
+  const atprotoLabels = useMemo(
+    () => mergeAtprotoLabels(accountAtprotoLabels, statusAtprotoLabels),
+    [accountAtprotoLabels, statusAtprotoLabels],
   );
 
   // if (!mediaAttachments?.length) mediaFirst = false;

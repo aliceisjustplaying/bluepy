@@ -16,11 +16,13 @@ import {
 } from '../utils/atproto-labeler-cache';
 import {
   type AtprotoGlobalLabelStrings,
-  type AtprotoLabelerInfo,
   type AtprotoLabelerInfoMap,
   describeAtprotoLabel,
+  getAtprotoLabelClassName,
   getDisplayAtprotoLabels,
   getAtprotoLabelDefinitions,
+  getAtprotoLabelerInfoFromSourceProfile,
+  getAtprotoLabelerInfoFromView,
   getAtprotoLabelerInfoMap,
 } from '../utils/atproto-labels';
 
@@ -35,10 +37,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
 }
 
-function getString(value: unknown): string | undefined {
-  return typeof value === 'string' && value ? value : undefined;
-}
-
 function getOwn<T>(record: Record<string, T>, key: string): T | undefined {
   return Object.prototype.hasOwnProperty.call(record, key)
     ? record[key]
@@ -51,45 +49,13 @@ function uniqueStrings(values: readonly string[]): string[] {
 
 const sharedLabelerCache = createAtprotoLabelerInfoCache();
 
-function getSourceProfileInfo(
-  profile: unknown,
-): AtprotoLabelerInfo | undefined {
-  if (!isRecord(profile)) return undefined;
-  const id = getString(profile.id);
-  const uri = getString(profile.uri);
-  const did = id?.startsWith('did:')
-    ? id
-    : uri?.startsWith('did:')
-      ? uri
-      : undefined;
-  if (!did) return undefined;
-  return {
-    did,
-    handle: getString(profile.acct) ?? getString(profile.username),
-    displayName: getString(profile.displayName),
-    avatar: getString(profile.avatarStatic) ?? getString(profile.avatar),
-  };
-}
-
-function getLabelerInfoFromView(view: unknown): AtprotoLabelerInfo | undefined {
-  if (!isRecord(view) || !isRecord(view.creator)) return undefined;
-  const did = getString(view.creator.did);
-  if (!did) return undefined;
-  return {
-    did,
-    handle: getString(view.creator.handle),
-    displayName: getString(view.creator.displayName),
-    avatar: getString(view.creator.avatar),
-  };
-}
-
 function getSourceProfileMap(sourceProfiles: unknown): AtprotoLabelerInfoMap {
   const profiles = Array.isArray(sourceProfiles)
     ? sourceProfiles
     : [sourceProfiles];
   return Object.fromEntries(
     profiles.flatMap((profile) => {
-      const info = getSourceProfileInfo(profile);
+      const info = getAtprotoLabelerInfoFromSourceProfile(profile);
       return info ? [[info.did, info]] : [];
     }),
   );
@@ -111,7 +77,7 @@ async function fetchPublicLabelerInfo(
   if (!isRecord(json) || !Array.isArray(json.views)) return {};
   return Object.fromEntries(
     json.views.flatMap((view) => {
-      const info = getLabelerInfoFromView(view);
+      const info = getAtprotoLabelerInfoFromView(view);
       return info ? [[info.did, info]] : [];
     }),
   );
@@ -242,7 +208,7 @@ export default function AtprotoLabels({
         );
         return (
           <span
-            className={`atproto-label atproto-label-${info.severity}`}
+            className={getAtprotoLabelClassName(info.severity)}
             key={`${label.src}:${label.val}:${label.uri}`}
             title={info.description}
           >
