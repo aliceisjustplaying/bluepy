@@ -305,8 +305,11 @@ export default function StatusContent({
   const createdDateText = createdAt && niceDateTime(createdAtDate);
   const editedDateText = editedAt && niceDateTime(editedAtDate);
 
-  // On Bluesky/Bluepy, all posts are public, so they are always shareable and boostable if authenticated.
-  const canBoost = authenticated;
+  const isPublic = ['public', 'unlisted'].includes(visibility);
+  let canBoost = authenticated && isPublic;
+  if (visibility === 'private' && isSelf) {
+    canBoost = true;
+  }
 
   const {
     quoteDisabled,
@@ -399,7 +402,7 @@ export default function StatusContent({
     editedAt,
     setShowEdited,
     editedDateText,
-    isPublic: true,
+    isPublic,
     authenticated,
     isSelf,
     mentionSelf,

@@ -1493,6 +1493,7 @@ function Compose({
                         status: textareaRef.current?.value ?? '',
                         language,
                         mediaAttachments,
+                        quoteApprovalPolicy,
                         threadgate,
                         threadgateRules,
                         threadgateList,
@@ -1590,6 +1591,7 @@ function Compose({
                           status: textareaRef.current?.value ?? '',
                           language,
                           mediaAttachments,
+                          quoteApprovalPolicy,
                           threadgate,
                           threadgateRules,
                           threadgateList,
@@ -1717,6 +1719,7 @@ function Compose({
 
             if (
               isAtprotoCompose &&
+              !editStatus &&
               !replyToStatus &&
               threadgate === 'custom' &&
               threadgateRules.includes('list') &&
@@ -1841,7 +1844,7 @@ function Compose({
                     params.card_url = linkPreview.url;
                   }
                 }
-                if (isAtprotoCompose && !replyToStatus) {
+                if (isAtprotoCompose && !editStatus && !replyToStatus) {
                   params.disableQuotes = disableQuotes;
                   if (threadgate === 'nobody') {
                     params.threadgate = [{ type: 'nobody' }];
@@ -2095,7 +2098,7 @@ function Compose({
               setQuoteSuggestion(null);
             }}
           />
-          {isAtprotoCompose && !replyToStatus && (
+          {isAtprotoCompose && !editStatus && !replyToStatus && (
             <details className="atproto-interaction-settings">
               <summary className="atproto-interaction-settings-summary">
                 <span className="atproto-interaction-settings-title">

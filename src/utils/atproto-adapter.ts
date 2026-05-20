@@ -38,7 +38,7 @@ import {
 } from './atproto-labels';
 import { BSKY_PDS, resolveAtprotoLoginService } from './atproto-login-service';
 import { createAtprotoOAuthAgent } from './atproto-oauth';
-import { encodeAtprotoID } from './atproto-route';
+import { encodeAtprotoID, isAtprotoListURI } from './atproto-route';
 import { createAtprotoExternalEmbed, getFirstPostURL } from './atproto-unfurl';
 import store from './store';
 
@@ -722,6 +722,18 @@ export function assertAtprotoPostParamsSupported(
     params.quote_approval_policy || params.quoteApprovalPolicy;
   if (quoteApprovalPolicy && quoteApprovalPolicy !== 'public') {
     throw new Error('Bluesky quote approval settings are not supported');
+  }
+  if (
+    params.threadgate?.some((rule) => rule.type === 'list' && !rule.list.trim())
+  ) {
+    throw new Error('Bluesky list reply control requires a selected list');
+  }
+  if (
+    params.threadgate?.some(
+      (rule) => rule.type === 'list' && !isAtprotoListURI(rule.list),
+    )
+  ) {
+    throw new Error('Bluesky list reply control requires a native list AT URI');
   }
 }
 

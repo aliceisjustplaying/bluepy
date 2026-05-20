@@ -3,6 +3,7 @@ import type { mastodon } from 'masto';
 import type { ReactNode } from 'react';
 
 import RTF from '../utils/relative-time-format';
+import supports from '../utils/supports';
 
 import Icon from './icon';
 import useStatusMenuParts from './status-menu';
@@ -147,7 +148,9 @@ export default function useStatusMenuState({
   const isQuotingMyPost =
     quoteAny?.state === 'accepted' &&
     quoteAny?.quotedStatus?.account?.id === currentAccount;
-  const isPinnable = false;
+  const isPinnable =
+    supports('@mastodon/pinned-posts') &&
+    ['public', 'unlisted', 'private'].includes(visibility);
   const menuFooter: ReactNode =
     mediaNoDesc && !reblogged ? (
       <div className="footer">
