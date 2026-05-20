@@ -17,6 +17,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './app';
 import { IconSpriteProvider } from './components/icon-sprite-manager';
+import { applyAppviewTheme } from './utils/atproto-adapter';
 import { initActivateLang } from './utils/lang';
 import {
   importLegacyOriginStorage,
@@ -77,6 +78,7 @@ if (!redirectLegacyOrigin()) {
     } finally {
       initActivateLang();
       initPWAViewport();
+      applyAppviewTheme();
 
       if (import.meta.env.DEV && 'serviceWorker' in navigator) {
         void (async () => {

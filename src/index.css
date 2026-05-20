@@ -1,8 +1,15 @@
 /* Can't use this yet because custom-media doesn't propagate to other CSS files yet, in Vite */
 @custom-media --viewport-medium (min-width: 40em);
 
+@property --blue-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #1085fe;
+}
+
 :root {
   interpolate-size: allow-keywords;
+  transition: --blue-color 0.4s ease;
 
   --sai-top: env(safe-area-inset-top);
   --sai-right: env(safe-area-inset-right);
@@ -70,9 +77,9 @@
   --text-color: #0f1419;
   --text-insignificant-color: #536471;
   --link-color: var(--blue-color);
-  --link-bg-color: #1085fe22;
-  --link-light-color: #1085fe99;
-  --link-faded-color: #1085fe55;
+  --link-bg-color: color-mix(in srgb, var(--blue-color) 13%, transparent);
+  --link-light-color: color-mix(in srgb, var(--blue-color) 60%, transparent);
+  --link-faded-color: color-mix(in srgb, var(--blue-color) 33%, transparent);
   --link-bg-hover-color: var(--status-bg-hover-color);
   --link-visited-color: mediumslateblue;
   --link-text-color: color-mix(
@@ -82,7 +89,7 @@
   );
   --focus-ring-color: var(--link-color);
   --button-bg-color: var(--blue-color);
-  --button-bg-blur-color: #1085feaa;
+  --button-bg-blur-color: color-mix(in srgb, var(--blue-color) 67%, transparent);
   --button-text-color: white;
   --button-plain-bg-hover-color: rgba(128, 128, 128, 0.1);
   --reblog-color: var(--blue-color);
@@ -278,8 +285,8 @@
     );
     --text-color: #f7fbff;
     --text-insignificant-color: #aebbc9;
-    --link-light-color: #59b9ff99;
-    --link-faded-color: #59b9ff88;
+    --link-light-color: color-mix(in srgb, var(--blue-color) 60%, transparent);
+    --link-faded-color: color-mix(in srgb, var(--blue-color) 53%, transparent);
     --link-bg-hover-color: var(--status-bg-hover-color);
     --link-visited-color: color-mix(
       in lch,
@@ -310,6 +317,17 @@
     --close-button-bg-active-color: rgba(255, 255, 255, 0.15);
     --close-button-color: rgba(255, 255, 255, 0.5);
     --close-button-hover-color: rgba(255, 255, 255, 1);
+  }
+}
+
+/* Blacksky appview theme — replaces Bluesky blue with rgb(96,96,233) */
+[data-appview="blacksky"] {
+  --blue-color: #6060e9;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-appview="blacksky"] {
+    --blue-color: #9898f0;
   }
 }
 

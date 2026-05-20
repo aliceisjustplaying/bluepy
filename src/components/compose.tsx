@@ -1323,7 +1323,7 @@ function Compose({
             // />
             <AccountBlock
               account={currentAccountInfo}
-              accountInstance={currentAccount?.instanceURL}
+              accountInstance={currentAccount?.atproto ? undefined : currentAccount?.instanceURL}
               hideDisplayName
               useAvatarStatic
             />

@@ -29,7 +29,7 @@ msgstr ""
 msgid "Pop in"
 msgstr "Pop in"
 
-#: src/pages/settings.tsx:788
+#: src/pages/settings.tsx:798
 msgid "Removes all UI animations, transitions, and smooth scrolling. Useful if motion is distracting."
 msgstr "Removes all UI animations, transitions, and smooth scrolling. Useful if motion is distracting."
 
@@ -44,7 +44,7 @@ msgstr ""
 #: src/pages/mentions.tsx:60
 #: src/pages/mentions.tsx:195
 #: src/pages/notifications.tsx:1063
-#: src/pages/settings.tsx:1464
+#: src/pages/settings.tsx:1474
 #: src/pages/trending.tsx:492
 msgid "Mentions"
 msgstr ""
@@ -53,7 +53,7 @@ msgstr ""
 msgid "Account posts"
 msgstr ""
 
-#: src/pages/settings.tsx:693
+#: src/pages/settings.tsx:703
 msgid "Note: This feature uses external GIF search service, powered by <0>GIPHY</0>. G-rated (suitable for viewing by all ages), tracking parameters are stripped, referrer information is omitted from requests, but search queries and IP address information will still reach their servers."
 msgstr ""
 
@@ -61,7 +61,7 @@ msgstr ""
 msgid "Downloading GIF…"
 msgstr "Downloading GIF…"
 
-#: src/pages/catchup.tsx:1976
+#: src/pages/catchup.tsx:1998
 msgid "Show all authors"
 msgstr ""
 
@@ -120,7 +120,7 @@ msgstr "Connected on {0} (<0/>)"
 #: src/components/compose.tsx:2095
 #: src/components/quote-settings-sheet.tsx:154
 #: src/components/status-helpers.ts:288
-#: src/pages/settings.tsx:433
+#: src/pages/settings.tsx:434
 msgid "Only you can quote"
 msgstr "Only you can quote"
 
@@ -144,7 +144,7 @@ msgstr ""
 msgid "Shortcut settings copied"
 msgstr ""
 
-#: src/pages/settings.tsx:1433
+#: src/pages/settings.tsx:1443
 msgid "anyone"
 msgstr ""
 
@@ -180,8 +180,8 @@ msgstr ""
 #: src/components/media-post.tsx:160
 #: src/components/status-compact.tsx:103
 #: src/components/timeline.tsx:1485
-#: src/pages/catchup.tsx:223
-#: src/pages/catchup.tsx:2410
+#: src/pages/catchup.tsx:225
+#: src/pages/catchup.tsx:2386
 msgid "Filtered"
 msgstr ""
 
@@ -202,7 +202,7 @@ msgstr " Notifications disabled for @{username}'s posts."
 msgid "Error deleting drafts! Please try again."
 msgstr ""
 
-#: src/pages/settings.tsx:471
+#: src/pages/settings.tsx:481
 msgid "Auto refresh timeline posts"
 msgstr ""
 
@@ -210,7 +210,7 @@ msgstr ""
 msgid "{selectedCount, plural, one {Import # account} other {Import # accounts}}"
 msgstr "{selectedCount, plural, one {Import # account} other {Import # accounts}}"
 
-#: src/pages/catchup.tsx:2038
+#: src/pages/catchup.tsx:2060
 msgid "Back to top"
 msgstr ""
 
@@ -222,7 +222,7 @@ msgstr "Private posts cannot be quoted"
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
 msgstr ""
 
-#: src/pages/settings.tsx:500
+#: src/pages/settings.tsx:510
 msgid "Post translation"
 msgstr ""
 
@@ -230,7 +230,7 @@ msgstr ""
 msgid "Unable to unblock @{username}"
 msgstr "Unable to unblock @{username}"
 
-#: src/pages/catchup.tsx:1917
+#: src/pages/catchup.tsx:1939
 msgid "Density"
 msgstr "Density"
 
@@ -260,7 +260,7 @@ msgstr "Go to Notifications"
 msgid "Nothing to show"
 msgstr ""
 
-#: src/pages/catchup.tsx:1484
+#: src/pages/catchup.tsx:1506
 msgid "Note: your server might only show a maximum of 800 posts in the Home timeline regardless of the time range. Could be less or more."
 msgstr "Note: your server might only show a maximum of 800 posts in the Home timeline regardless of the time range. Could be less or more."
 
@@ -270,7 +270,7 @@ msgid "Bookmarked"
 msgstr ""
 
 #. placeholder {0}: pc.id
-#: src/pages/catchup.tsx:1530
+#: src/pages/catchup.tsx:1552
 msgid "Catch-up {0} removed"
 msgstr "Catch-up {0} removed"
 
@@ -278,12 +278,12 @@ msgstr "Catch-up {0} removed"
 msgid "A separate timeline for followings. Email-inspired interface to sort and filter posts."
 msgstr "A separate timeline for followings. Email-inspired interface to sort and filter posts."
 
-#: src/pages/settings.tsx:248
-#: src/pages/settings.tsx:252
+#: src/pages/settings.tsx:249
+#: src/pages/settings.tsx:253
 msgid "Light"
 msgstr ""
 
-#: src/pages/catchup.tsx:205
+#: src/pages/catchup.tsx:207
 msgid "last 4 hours"
 msgstr ""
 
@@ -295,7 +295,7 @@ msgstr ""
 msgid "Dismiss"
 msgstr ""
 
-#: src/pages/catchup.tsx:1395
+#: src/pages/catchup.tsx:1417
 msgid "Let's catch up on the posts from your followings."
 msgstr ""
 
@@ -379,7 +379,7 @@ msgstr ""
 msgid "Reposts Carousel"
 msgstr "Reposts Carousel"
 
-#: src/pages/catchup.tsx:1390
+#: src/pages/catchup.tsx:1412
 msgid "Let's catch up"
 msgstr ""
 
@@ -396,7 +396,7 @@ msgid "Pending review"
 msgstr ""
 
 #: src/components/timeline.tsx:878
-#: src/pages/settings.tsx:1492
+#: src/pages/settings.tsx:1502
 msgid "New posts"
 msgstr ""
 
@@ -404,7 +404,7 @@ msgstr ""
 msgid "Blocked"
 msgstr ""
 
-#: src/pages/settings.tsx:931
+#: src/pages/settings.tsx:941
 msgid "What's new"
 msgstr "What's new"
 
@@ -422,7 +422,7 @@ msgid "Mention <0>@{username}</0>"
 msgstr ""
 
 #: src/components/quote-settings-sheet.tsx:91
-#: src/pages/settings.tsx:418
+#: src/pages/settings.tsx:419
 msgid "Quote settings updated"
 msgstr "Quote settings updated"
 
@@ -507,7 +507,7 @@ msgstr "Recent searches"
 msgid "Looks like your browser is blocking popups."
 msgstr ""
 
-#: src/pages/settings.tsx:361
+#: src/pages/settings.tsx:362
 msgid "Default visibility updated"
 msgstr "Default visibility updated"
 
@@ -516,7 +516,7 @@ msgstr "Default visibility updated"
 msgid "{0, plural, one {# feed} other {# feeds}}"
 msgstr "{0, plural, one {# feed} other {# feeds}}"
 
-#: src/pages/catchup.tsx:2464
+#: src/pages/catchup.tsx:2440
 msgid "Poll"
 msgstr ""
 
@@ -565,7 +565,7 @@ msgstr "Ended <0/>"
 msgid "View Quotes"
 msgstr "View Quotes"
 
-#: src/pages/settings.tsx:483
+#: src/pages/settings.tsx:493
 msgid "Reposts carousel"
 msgstr "Reposts carousel"
 
@@ -573,7 +573,7 @@ msgstr "Reposts carousel"
 msgid "Hiding boosts"
 msgstr "Hiding boosts"
 
-#: src/pages/settings.tsx:1480
+#: src/pages/settings.tsx:1490
 msgid "Follow requests"
 msgstr ""
 
@@ -587,7 +587,7 @@ msgid "No trending posts."
 msgstr ""
 
 #. placeholder {0}: !__FAKE_COMMIT_HASH__ && ( <span className="ib insignificant"> ( <a href={`https://github.com/cheeaun/phanpy/commit/${__COMMIT_HASH__}`} target="_blank" rel="noopener noreferrer" > <RelativeTime datetime={new Date(__BUILD_TIME__)} /> </a> ) </span> )
-#: src/pages/settings.tsx:953
+#: src/pages/settings.tsx:963
 msgid "<0>Version:</0> <1/> {0}"
 msgstr ""
 
@@ -596,7 +596,7 @@ msgstr ""
 msgid "Show less"
 msgstr ""
 
-#: src/pages/settings.tsx:1414
+#: src/pages/settings.tsx:1424
 msgid "Push notifications are blocked. Please enable them in your browser settings."
 msgstr ""
 
@@ -610,7 +610,7 @@ msgid "Undo repost"
 msgstr "Undo repost"
 
 #: src/components/keyboard-shortcuts-help.tsx:75
-#: src/pages/catchup.tsx:2133
+#: src/pages/catchup.tsx:2155
 msgid "Previous post"
 msgstr ""
 
@@ -637,11 +637,11 @@ msgstr "View profile"
 
 #: src/components/keyboard-shortcuts-help.tsx:58
 #: src/components/nav-menu.tsx:355
-#: src/pages/catchup.tsx:2100
+#: src/pages/catchup.tsx:2122
 msgid "Keyboard shortcuts"
 msgstr ""
 
-#: src/pages/settings.tsx:370
+#: src/pages/settings.tsx:371
 #: src/utils/visibility-text.ts:7
 msgid "Public"
 msgstr ""
@@ -667,7 +667,7 @@ msgstr ""
 msgid "Filtered: {filterTitleStr}"
 msgstr ""
 
-#: src/pages/settings.tsx:605
+#: src/pages/settings.tsx:615
 msgid "Note: This feature uses external translation services, powered by <0>{TRANSLATION_API_NAME}</0>."
 msgstr "Note: This feature uses external translation services, powered by <0>{TRANSLATION_API_NAME}</0>."
 
@@ -689,11 +689,11 @@ msgstr ""
 msgid "Unable to load posts."
 msgstr ""
 
-#: src/pages/settings.tsx:290
+#: src/pages/settings.tsx:291
 msgid "Text size"
 msgstr ""
 
-#: src/pages/catchup.tsx:212
+#: src/pages/catchup.tsx:214
 msgid "last 11 hours"
 msgstr ""
 
@@ -705,7 +705,7 @@ msgstr "View profile image"
 msgid "Home / Following"
 msgstr ""
 
-#: src/pages/catchup.tsx:204
+#: src/pages/catchup.tsx:206
 msgid "last 3 hours"
 msgstr ""
 
@@ -723,7 +723,7 @@ msgstr ""
 msgid "Liked"
 msgstr ""
 
-#: src/pages/settings.tsx:1509
+#: src/pages/settings.tsx:1519
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
 msgstr ""
 
@@ -749,6 +749,10 @@ msgstr "Shortcuts / Columns…"
 #: src/components/status-utility-menu.tsx:156
 msgid "View post by <0>@{0}</0>"
 msgstr ""
+
+#: src/pages/welcome.tsx:77
+msgid "Connect your existing Bluesky or Blacksky account.<0/>Your credentials are not stored by Bluepy."
+msgstr "Connect your existing Bluesky or Blacksky account.<0/>Your credentials are not stored by Bluepy."
 
 #. placeholder {0}: userLists.length
 #: src/pages/lists.tsx:155
@@ -796,7 +800,7 @@ msgstr ""
 #: src/components/compose.tsx:2092
 #: src/components/quote-settings-sheet.tsx:151
 #: src/components/status-helpers.ts:287
-#: src/pages/settings.tsx:430
+#: src/pages/settings.tsx:431
 msgid "Your followers can quote"
 msgstr "Your followers can quote"
 
@@ -818,7 +822,7 @@ msgstr "Remove account…"
 msgid "Back to showing trending posts"
 msgstr ""
 
-#: src/pages/settings.tsx:723
+#: src/pages/settings.tsx:733
 msgid "Image description generator"
 msgstr ""
 
@@ -891,11 +895,11 @@ msgstr "{0, plural, one {# account} other {# accounts}}"
 msgid "Go to account page"
 msgstr "Go to account page"
 
-#: src/pages/settings.tsx:164
+#: src/pages/settings.tsx:165
 msgid "Appearance"
 msgstr ""
 
-#: src/pages/settings.tsx:1476
+#: src/pages/settings.tsx:1486
 msgid "Follows"
 msgstr ""
 
@@ -933,7 +937,7 @@ msgstr ""
 msgid "@{username} removed from followers"
 msgstr "@{username} removed from followers"
 
-#: src/pages/catchup.tsx:1463
+#: src/pages/catchup.tsx:1485
 msgid "Overlaps with your last catch-up"
 msgstr ""
 
@@ -1024,7 +1028,7 @@ msgid "Import failed"
 msgstr "Import failed"
 
 #. placeholder {0}: sharers.map((s) => { const { id: sharerId, avatarStatic, displayName, } = s; return ( <button key={sharerId} type="button" className="plain" style={{ padding: 0, }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); // Reset and filter to author setSelectedAuthor(sharerId); setSelectedFilterCategory('all'); }} > <Avatar url={avatarStatic} size="s" alt={displayName} /> </button> ); })
-#: src/pages/catchup.tsx:1723
+#: src/pages/catchup.tsx:1745
 msgid "Shared by {0}"
 msgstr ""
 
@@ -1082,7 +1086,7 @@ msgstr "This post is from another server (<0>{instance}</0>). Interactions (repl
 msgid "This user has chosen to not make this information available."
 msgstr "This user has chosen to not make this information available."
 
-#: src/pages/catchup.tsx:2165
+#: src/pages/catchup.tsx:2187
 msgid "Scroll to top"
 msgstr ""
 
@@ -1103,8 +1107,8 @@ msgstr ""
 msgid "Powered by GIPHY"
 msgstr "Powered by GIPHY"
 
-#: src/pages/catchup.tsx:1347
-#: src/pages/catchup.tsx:2066
+#: src/pages/catchup.tsx:1369
+#: src/pages/catchup.tsx:2088
 msgid "Help"
 msgstr ""
 
@@ -1140,7 +1144,7 @@ msgid "Send Report <0>+ Mute profile</0>"
 msgstr ""
 
 #. placeholder {0}: snapStates.settings.contentTranslationHideLanguages .length
-#: src/pages/settings.tsx:548
+#: src/pages/settings.tsx:558
 msgid "{0, plural, =0 {Hide \"Translate\" button for:} other {Hide \"Translate\" button for (#):}}"
 msgstr ""
 
@@ -1148,15 +1152,15 @@ msgstr ""
 msgid "Accounts with <0>{query}</0>"
 msgstr ""
 
-#: src/pages/catchup.tsx:1377
+#: src/pages/catchup.tsx:1399
 msgid "Preview of Catch-up UI"
 msgstr "Preview of Catch-up UI"
 
-#: src/pages/settings.tsx:301
+#: src/pages/settings.tsx:302
 msgid "Display language"
 msgstr ""
 
-#: src/pages/settings.tsx:664
+#: src/pages/settings.tsx:674
 msgid "Paginated timeline (beta)"
 msgstr "Paginated timeline (beta)"
 
@@ -1188,7 +1192,7 @@ msgstr ""
 msgid "No one has posted anything with this tag yet."
 msgstr ""
 
-#: src/pages/catchup.tsx:2081
+#: src/pages/catchup.tsx:2103
 msgid "Sort: Density"
 msgstr ""
 
@@ -1224,7 +1228,7 @@ msgstr ""
 msgid "Log out…"
 msgstr ""
 
-#: src/pages/catchup.tsx:1363
+#: src/pages/catchup.tsx:1385
 msgid "What is this?"
 msgstr ""
 
@@ -1256,7 +1260,7 @@ msgstr "Login required."
 msgid "Local"
 msgstr ""
 
-#: src/pages/settings.tsx:689
+#: src/pages/settings.tsx:699
 msgid "GIF Picker for composer"
 msgstr ""
 
@@ -1268,7 +1272,7 @@ msgstr ""
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
 msgstr "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
 
-#: src/pages/catchup.tsx:1522
+#: src/pages/catchup.tsx:1544
 msgid "Remove this catch-up?"
 msgstr "Remove this catch-up?"
 
@@ -1283,7 +1287,7 @@ msgid "Boosted @{0}'s post"
 msgstr "Boosted @{0}'s post"
 
 #. placeholder {0}: dtf.format(new Date(lastCatchupEndAt))
-#: src/pages/catchup.tsx:1475
+#: src/pages/catchup.tsx:1497
 msgid "Until the last catch-up ({0})"
 msgstr ""
 
@@ -1345,7 +1349,7 @@ msgstr "Format math"
 msgid "Done"
 msgstr ""
 
-#: src/pages/catchup.tsx:1957
+#: src/pages/catchup.tsx:1979
 msgid "Authors"
 msgstr "Authors"
 
@@ -1383,7 +1387,7 @@ msgstr ""
 msgid "Skip carousel to next post"
 msgstr ""
 
-#: src/pages/catchup.tsx:206
+#: src/pages/catchup.tsx:208
 msgid "last 5 hours"
 msgstr ""
 
@@ -1411,7 +1415,7 @@ msgstr ""
 #: src/components/thread-badge.tsx:32
 #: src/components/thread-badge.tsx:47
 #: src/components/thread-badge.tsx:62
-#: src/pages/catchup.tsx:2425
+#: src/pages/catchup.tsx:2401
 msgid "Thread"
 msgstr ""
 
@@ -1440,7 +1444,7 @@ msgstr ""
 msgid "{count, plural, =1 {{account} signed up.} other {<0><1>{0}</1> people</0> signed up.}}"
 msgstr "{count, plural, =1 {{account} signed up.} other {<0><1>{0}</1> people</0> signed up.}}"
 
-#: src/pages/catchup.tsx:1960
+#: src/pages/catchup.tsx:1982
 msgid "None"
 msgstr "None"
 
@@ -1458,8 +1462,8 @@ msgstr "Search accounts"
 msgid "Show replies to list members"
 msgstr ""
 
-#: src/pages/catchup.tsx:1607
-#: src/pages/catchup.tsx:2072
+#: src/pages/catchup.tsx:1629
+#: src/pages/catchup.tsx:2094
 msgid "Top links"
 msgstr ""
 
@@ -1473,7 +1477,7 @@ msgid "Update"
 msgstr "Update"
 
 #: src/components/status-account-menu.tsx:171
-#: src/pages/settings.tsx:383
+#: src/pages/settings.tsx:384
 msgid "Quote settings"
 msgstr "Quote settings"
 
@@ -1492,7 +1496,7 @@ msgstr "Failed to generate description{0}"
 msgid "Edit"
 msgstr ""
 
-#: src/pages/catchup.tsx:2027
+#: src/pages/catchup.tsx:2049
 msgid "You don't have to read everything."
 msgstr "You don't have to read everything."
 
@@ -1507,8 +1511,8 @@ msgstr ""
 #: src/components/account-info.tsx:1275
 #: src/components/quotes-modal.tsx:122
 #: src/components/status-post-body.tsx:389
-#: src/pages/catchup.tsx:220
-#: src/pages/catchup.tsx:1916
+#: src/pages/catchup.tsx:222
+#: src/pages/catchup.tsx:1938
 #: src/pages/year-in-posts.tsx:1611
 msgid "Quotes"
 msgstr "Quotes"
@@ -1523,11 +1527,11 @@ msgstr "Unfollow @{0}?"
 msgid "Last post: <0>{0}</0>"
 msgstr ""
 
-#: src/pages/catchup.tsx:2141
+#: src/pages/catchup.tsx:2163
 msgid "Next author"
 msgstr ""
 
-#: src/pages/catchup.tsx:1882
+#: src/pages/catchup.tsx:1904
 msgid "Sort"
 msgstr ""
 
@@ -1536,7 +1540,7 @@ msgstr ""
 msgid "Last posted: {0}"
 msgstr ""
 
-#: src/pages/settings.tsx:728
+#: src/pages/settings.tsx:738
 msgid "Only for new images while composing new posts."
 msgstr ""
 
@@ -1553,7 +1557,7 @@ msgstr ""
 msgid "<0>Shift</0> + <1>k</1>"
 msgstr ""
 
-#: src/pages/settings.tsx:309
+#: src/pages/settings.tsx:310
 msgid "Volunteer translations"
 msgstr "Volunteer translations"
 
@@ -1571,7 +1575,7 @@ msgstr ""
 msgid "Removed repost of @{0}'s post"
 msgstr "Removed repost of @{0}'s post"
 
-#: src/pages/settings.tsx:735
+#: src/pages/settings.tsx:745
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
 msgstr ""
 
@@ -1587,10 +1591,6 @@ msgstr "Add GIF"
 #: src/components/status-account-menu.tsx:255
 msgid "Remove my post from <0>@{0}</0>'s post?"
 msgstr "Remove my post from <0>@{0}</0>'s post?"
-
-#: src/pages/welcome.tsx:77
-msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
-msgstr "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
 
 #: src/components/list-exclusive-badge.tsx:19
 #: src/pages/list.tsx:304
@@ -1658,7 +1658,7 @@ msgstr ""
 msgid "QR code"
 msgstr "QR code"
 
-#: src/pages/settings.tsx:972
+#: src/pages/settings.tsx:982
 msgid "Unable to copy version string"
 msgstr ""
 
@@ -1697,7 +1697,7 @@ msgid "Hashtag"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/pages/catchup.tsx:1940
+#: src/pages/catchup.tsx:1962
 msgid "group.filter"
 msgstr "Group"
 
@@ -1715,17 +1715,17 @@ msgstr ""
 msgid "See all"
 msgstr ""
 
-#: src/pages/settings.tsx:633
+#: src/pages/settings.tsx:643
 msgid "Auto inline translation"
 msgstr ""
 
 #. placeholder {0}: groupBy ?? ''
-#: src/pages/catchup.tsx:989
+#: src/pages/catchup.tsx:1011
 msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
 msgstr "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
 
 #: src/components/keyboard-shortcuts-help.tsx:71
-#: src/pages/catchup.tsx:2125
+#: src/pages/catchup.tsx:2147
 msgid "Next post"
 msgstr ""
 
@@ -1775,7 +1775,7 @@ msgstr "Unable to format math"
 #: src/components/compose.tsx:2089
 #: src/components/quote-settings-sheet.tsx:148
 #: src/components/status-helpers.ts:286
-#: src/pages/settings.tsx:427
+#: src/pages/settings.tsx:428
 msgid "Anyone can quote"
 msgstr "Anyone can quote"
 
@@ -1788,11 +1788,11 @@ msgid "Copy"
 msgstr ""
 
 #: src/components/quote-settings-sheet.tsx:105
-#: src/pages/settings.tsx:420
+#: src/pages/settings.tsx:421
 msgid "Failed to update quote settings"
 msgstr "Failed to update quote settings"
 
-#: src/pages/settings.tsx:363
+#: src/pages/settings.tsx:364
 msgid "Failed to update default visibility"
 msgstr "Failed to update default visibility"
 
@@ -1805,7 +1805,7 @@ msgid "{hashtagTitle} (Media only)"
 msgstr ""
 
 #. placeholder {0}: authorCountsList.length
-#: src/pages/catchup.tsx:1870
+#: src/pages/catchup.tsx:1892
 msgid "{0, plural, one {# author} other {# authors}}"
 msgstr ""
 
@@ -1834,7 +1834,7 @@ msgid "Edit History Snapshots"
 msgstr "Edit History Snapshots"
 
 #: src/components/account-info.tsx:1266
-#: src/pages/catchup.tsx:218
+#: src/pages/catchup.tsx:220
 #: src/pages/year-in-posts.tsx:1601
 msgid "Original"
 msgstr ""
@@ -1863,7 +1863,7 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx:196
 #: src/components/timeline.tsx:862
 #: src/components/timeline2.tsx:757
-#: src/pages/catchup.tsx:1327
+#: src/pages/catchup.tsx:1349
 #: src/pages/home.tsx:79
 #: src/pages/home.tsx:94
 #: src/pages/notifications.tsx:882
@@ -1878,8 +1878,8 @@ msgstr ""
 msgid "{account} reacted to your post with {emojiObject}"
 msgstr ""
 
-#: src/pages/settings.tsx:1364
-#: src/pages/settings.tsx:1373
+#: src/pages/settings.tsx:1374
+#: src/pages/settings.tsx:1383
 msgid "Failed to update subscription. Please try again."
 msgstr ""
 
@@ -1889,11 +1889,11 @@ msgstr "Enable notifications"
 
 #: src/pages/account-statuses.tsx:514
 #: src/pages/account-statuses.tsx:523
-#: src/pages/catchup.tsx:1597
+#: src/pages/catchup.tsx:1619
 msgid "Reset filters"
 msgstr ""
 
-#: src/pages/catchup.tsx:209
+#: src/pages/catchup.tsx:211
 msgid "last 8 hours"
 msgstr ""
 
@@ -1992,13 +1992,13 @@ msgstr ""
 msgid "Private mention"
 msgstr ""
 
-#: src/pages/settings.tsx:458
+#: src/pages/settings.tsx:468
 msgid "Experiments"
 msgstr ""
 
 #: src/compose.tsx:117
 #: src/pages/http-route.tsx:102
-#: src/pages/login.tsx:382
+#: src/pages/login.tsx:459
 msgid "Go home"
 msgstr ""
 
@@ -2021,8 +2021,8 @@ msgstr ""
 
 #. Preview of one character, in largest size
 #. Preview of one character, in smallest size
-#: src/pages/settings.tsx:1133
-#: src/pages/settings.tsx:1157
+#: src/pages/settings.tsx:1143
+#: src/pages/settings.tsx:1167
 msgid "A"
 msgstr ""
 
@@ -2063,7 +2063,7 @@ msgstr "Notifications enabled for @{username}'s posts."
 msgid "No lists or feeds yet."
 msgstr "No lists or feeds yet."
 
-#: src/pages/settings.tsx:522
+#: src/pages/settings.tsx:532
 msgid "System language ({systemTargetLanguageText})"
 msgstr ""
 
@@ -2072,7 +2072,7 @@ msgid "Block <0>@{username}</0>…"
 msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx:99
-#: src/pages/catchup.tsx:2157
+#: src/pages/catchup.tsx:2179
 msgid "Open post details"
 msgstr ""
 
@@ -2114,7 +2114,7 @@ msgstr ""
 msgid "Emojis:"
 msgstr ""
 
-#: src/pages/settings.tsx:1488
+#: src/pages/settings.tsx:1498
 msgid "Post edits"
 msgstr ""
 
@@ -2206,7 +2206,7 @@ msgid "Unable to create list."
 msgstr ""
 
 #: src/components/drafts.tsx:101
-#: src/pages/settings.tsx:805
+#: src/pages/settings.tsx:815
 msgid "Unsent drafts"
 msgstr ""
 
@@ -2250,7 +2250,7 @@ msgstr "Hide results"
 msgid "What's the issue with this post?"
 msgstr ""
 
-#: src/pages/settings.tsx:939
+#: src/pages/settings.tsx:949
 #: src/pages/welcome.tsx:269
 msgid "Privacy Policy"
 msgstr ""
@@ -2291,7 +2291,7 @@ msgstr "Optional"
 msgid "{0, plural, one {# choice} other {# choices}}"
 msgstr "{0, plural, one {# choice} other {# choices}}"
 
-#: src/pages/catchup.tsx:207
+#: src/pages/catchup.tsx:209
 msgid "last 6 hours"
 msgstr ""
 
@@ -2328,9 +2328,13 @@ msgstr "Add to thread"
 msgid "Unbookmarked @{0}'s post"
 msgstr "Unbookmarked @{0}'s post"
 
-#: src/pages/settings.tsx:759
+#: src/pages/settings.tsx:769
 msgid "Cloak mode <0>(<1>Text</1> → <2>████</2>)</0>"
 msgstr ""
+
+#: src/pages/settings.tsx:451
+msgid "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
+msgstr "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
 
 #: src/pages/search.tsx:721
 msgid "See more posts"
@@ -2444,7 +2448,7 @@ msgstr ""
 msgid "Logged out"
 msgstr "Logged out"
 
-#: src/pages/catchup.tsx:1912
+#: src/pages/catchup.tsx:1934
 msgid "Date"
 msgstr "Date"
 
@@ -2464,9 +2468,9 @@ msgstr "Boost/Quote…"
 msgid "Muted users…"
 msgstr ""
 
-#: src/pages/settings.tsx:329
-#: src/pages/settings.tsx:386
-#: src/pages/settings.tsx:441
+#: src/pages/settings.tsx:330
+#: src/pages/settings.tsx:387
+#: src/pages/settings.tsx:442
 msgid "Synced"
 msgstr ""
 
@@ -2475,7 +2479,7 @@ msgstr ""
 msgid "{0, plural, one {Filtered notifications from # person} other {Filtered notifications from # people}}"
 msgstr ""
 
-#: src/pages/catchup.tsx:1782
+#: src/pages/catchup.tsx:1804
 #: src/pages/search.tsx:520
 msgid "All"
 msgstr ""
@@ -2487,16 +2491,16 @@ msgstr ""
 #: src/components/account-info.tsx:1270
 #: src/components/status-post-body.tsx:384
 #: src/pages/account-statuses.tsx:548
-#: src/pages/catchup.tsx:219
-#: src/pages/catchup.tsx:1913
-#: src/pages/catchup.tsx:2626
+#: src/pages/catchup.tsx:221
+#: src/pages/catchup.tsx:1935
+#: src/pages/catchup.tsx:2602
 #: src/pages/status.tsx:1519
 #: src/pages/status.tsx:2325
 #: src/pages/year-in-posts.tsx:1605
 msgid "Replies"
 msgstr ""
 
-#: src/pages/settings.tsx:326
+#: src/pages/settings.tsx:327
 msgid "Default visibility"
 msgstr ""
 
@@ -2516,7 +2520,7 @@ msgstr ""
 msgid "Log out <0>@{acct}</0>?"
 msgstr "Log out <0>@{acct}</0>?"
 
-#: src/pages/settings.tsx:915
+#: src/pages/settings.tsx:925
 msgid "Donate"
 msgstr "Donate"
 
@@ -2537,7 +2541,7 @@ msgstr ""
 msgid "Only shortcuts that don’t exist in current shortcuts will be appended."
 msgstr ""
 
-#: src/pages/catchup.tsx:1424
+#: src/pages/catchup.tsx:1446
 msgid "until the max"
 msgstr "until the max"
 
@@ -2589,7 +2593,7 @@ msgstr "Ending"
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} reposted & liked your reply.} other {{account} reposted & liked your post.}}} other {{account} reposted & liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> reposted & liked your reply.} other {<2><3>{1}</3> people</2> reposted & liked your post.}}}}"
 msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} reposted & liked your reply.} other {{account} reposted & liked your post.}}} other {{account} reposted & liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> reposted & liked your reply.} other {<2><3>{1}</3> people</2> reposted & liked your post.}}}}"
 
-#: src/pages/settings.tsx:907
+#: src/pages/settings.tsx:917
 msgid "Sponsor"
 msgstr ""
 
@@ -2649,7 +2653,7 @@ msgstr "Edit image description"
 msgid "Import/Export <0>Shortcuts</0>"
 msgstr ""
 
-#: src/pages/catchup.tsx:1399
+#: src/pages/catchup.tsx:1421
 msgid "Show me all posts from…"
 msgstr ""
 
@@ -2669,7 +2673,7 @@ msgstr "Disable notifications"
 msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
 msgstr ""
 
-#: src/pages/catchup.tsx:202
+#: src/pages/catchup.tsx:204
 msgid "last 1 hour"
 msgstr ""
 
@@ -2706,7 +2710,7 @@ msgstr ""
 msgid "Unable to block @{username}"
 msgstr "Unable to block @{username}"
 
-#: src/pages/settings.tsx:1441
+#: src/pages/settings.tsx:1451
 msgid "followers"
 msgstr ""
 
@@ -2714,11 +2718,11 @@ msgstr ""
 msgid "Error loading GIFs"
 msgstr ""
 
-#: src/pages/settings.tsx:637
+#: src/pages/settings.tsx:647
 msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
 msgstr ""
 
-#: src/pages/catchup.tsx:210
+#: src/pages/catchup.tsx:212
 msgid "last 9 hours"
 msgstr ""
 
@@ -2733,7 +2737,7 @@ msgstr ""
 msgid "Joined <0>{0}</0>"
 msgstr ""
 
-#: src/pages/settings.tsx:320
+#: src/pages/settings.tsx:321
 msgid "Posting"
 msgstr ""
 
@@ -2746,7 +2750,7 @@ msgid "Single or multi-column"
 msgstr ""
 
 #. placeholder {0}: WEBSITE.replace(/https?:\/\//g, '').replace(/\/$/, '')
-#: src/pages/settings.tsx:946
+#: src/pages/settings.tsx:956
 msgid "<0>Site:</0> {0}"
 msgstr ""
 
@@ -2761,7 +2765,7 @@ msgstr "No likes yet. Go like something!"
 msgid "Translate"
 msgstr ""
 
-#: src/pages/settings.tsx:969
+#: src/pages/settings.tsx:979
 msgid "Version string copied"
 msgstr ""
 
@@ -2799,7 +2803,7 @@ msgstr "Post"
 msgid "Set as default"
 msgstr ""
 
-#: src/pages/settings.tsx:373
+#: src/pages/settings.tsx:374
 #: src/utils/visibility-text.ts:8
 msgid "Quiet public"
 msgstr "Quiet public"
@@ -2816,20 +2820,24 @@ msgstr "View Full Thread"
 msgid "In Memoriam"
 msgstr ""
 
+#: src/pages/welcome.tsx:53
+msgid "A minimalistic opinionated Atmosphere web client."
+msgstr "A minimalistic opinionated Atmosphere web client."
+
 #: src/components/status-quotes.tsx:104
 msgid "Post pending"
 msgstr "Post pending"
 
 #: src/components/account-info.tsx:1280
 #: src/pages/account-statuses.tsx:564
-#: src/pages/catchup.tsx:221
-#: src/pages/catchup.tsx:1915
-#: src/pages/catchup.tsx:2638
+#: src/pages/catchup.tsx:223
+#: src/pages/catchup.tsx:1937
+#: src/pages/catchup.tsx:2614
 msgid "Boosts"
 msgstr ""
 
-#: src/pages/settings.tsx:260
-#: src/pages/settings.tsx:264
+#: src/pages/settings.tsx:261
+#: src/pages/settings.tsx:265
 msgid "Dark"
 msgstr ""
 
@@ -2862,7 +2870,7 @@ msgstr "Unmute <0>@{username}</0>"
 msgid "Replying to @{0}’s post (<0>{1}</0>)"
 msgstr ""
 
-#: src/pages/settings.tsx:1383
+#: src/pages/settings.tsx:1393
 msgid "Failed to remove subscription. Please try again."
 msgstr ""
 
@@ -2875,7 +2883,7 @@ msgstr ""
 msgid "Unbookmark"
 msgstr ""
 
-#: src/pages/catchup.tsx:1562
+#: src/pages/catchup.tsx:1584
 msgid "This might take a while."
 msgstr ""
 
@@ -2910,6 +2918,10 @@ msgstr ""
 msgid "Compose"
 msgstr ""
 
+#: src/pages/welcome.tsx:64
+msgid "Connect to Atmosphere"
+msgstr "Connect to Atmosphere"
+
 #. placeholder {0}: shortenNumber(totalComments)
 #: src/pages/status.tsx:2271
 msgid "{totalComments, plural, one {# comment} other {<0>{0}</0> comments}}"
@@ -2919,7 +2931,7 @@ msgstr ""
 msgid "Report <0>@{username}</0>…"
 msgstr ""
 
-#: src/pages/settings.tsx:784
+#: src/pages/settings.tsx:794
 msgid "Disable all animations"
 msgstr "Disable all animations"
 
@@ -2933,7 +2945,7 @@ msgid "Move up"
 msgstr ""
 
 #. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
-#: src/pages/settings.tsx:1424
+#: src/pages/settings.tsx:1434
 msgid "Allow from <0>{0}</0>"
 msgstr ""
 
@@ -2950,7 +2962,7 @@ msgstr ""
 msgid "No login information or account access details are stored in the exported files. You will need to log in again for each account after importing."
 msgstr "No login information or account access details are stored in the exported files. You will need to log in again for each account after importing."
 
-#: src/pages/catchup.tsx:1457
+#: src/pages/catchup.tsx:1479
 msgid "Catch up"
 msgstr ""
 
@@ -2979,8 +2991,8 @@ msgstr ""
 msgid "Translate bio"
 msgstr ""
 
-#: src/pages/settings.tsx:272
-#: src/pages/settings.tsx:278
+#: src/pages/settings.tsx:273
+#: src/pages/settings.tsx:279
 msgid "Auto"
 msgstr ""
 
@@ -2988,7 +3000,7 @@ msgstr ""
 msgid "Profile reported"
 msgstr ""
 
-#: src/pages/catchup.tsx:208
+#: src/pages/catchup.tsx:210
 msgid "last 7 hours"
 msgstr ""
 
@@ -2996,7 +3008,7 @@ msgstr ""
 msgid "Some of your posts have been deleted."
 msgstr ""
 
-#: src/pages/catchup.tsx:1559
+#: src/pages/catchup.tsx:1581
 msgid "Fetching posts…"
 msgstr ""
 
@@ -3016,19 +3028,15 @@ msgstr ""
 msgid "Close window"
 msgstr ""
 
-#: src/pages/welcome.tsx:64
-msgid "Log in with Bluesky"
-msgstr "Log in with Bluesky"
-
-#: src/pages/catchup.tsx:2028
+#: src/pages/catchup.tsx:2050
 msgid "That's all."
 msgstr "That's all."
 
-#: src/pages/catchup.tsx:2149
+#: src/pages/catchup.tsx:2171
 msgid "Previous author"
 msgstr ""
 
-#: src/pages/settings.tsx:1472
+#: src/pages/settings.tsx:1482
 #: src/pages/year-in-posts.tsx:1617
 msgid "Reposts"
 msgstr "Reposts"
@@ -3095,7 +3103,7 @@ msgid "Post pinned to profile"
 msgstr ""
 
 #. placeholder {0}: pc.count
-#: src/pages/catchup.tsx:1512
+#: src/pages/catchup.tsx:1534
 msgid "{0, plural, one {# post} other {# posts}}"
 msgstr ""
 
@@ -3118,7 +3126,7 @@ msgstr ""
 msgid "Unable to load posts"
 msgstr ""
 
-#: src/pages/catchup.tsx:2091
+#: src/pages/catchup.tsx:2113
 msgid "Group: Authors"
 msgstr ""
 
@@ -3190,8 +3198,8 @@ msgid "Lists & Feeds"
 msgstr "Lists & Feeds"
 
 #: src/components/nav-menu.tsx:325
-#: src/pages/login.tsx:44
-#: src/pages/login.tsx:297
+#: src/pages/login.tsx:55
+#: src/pages/login.tsx:333
 #: src/pages/status.tsx:1395
 #: src/pages/welcome.tsx:64
 msgid "Log in"
@@ -3202,7 +3210,7 @@ msgstr ""
 msgid "<0>Filtered</0>: <1>{0}</1>"
 msgstr ""
 
-#: src/pages/catchup.tsx:2094
+#: src/pages/catchup.tsx:2116
 msgid "Posts are grouped by authors, sorted by posts count per author."
 msgstr ""
 
@@ -3213,11 +3221,11 @@ msgstr ""
 #. placeholder {0}: filterInfo.titlesStr
 #. placeholder {0}: filterInfoMaybe?.titlesStr
 #: src/components/status-media-embeds.tsx:99
-#: src/pages/catchup.tsx:2409
+#: src/pages/catchup.tsx:2385
 msgid "Filtered: {0}"
 msgstr "Filtered: {0}"
 
-#: src/pages/catchup.tsx:1544
+#: src/pages/catchup.tsx:1566
 msgid "Note: Only max 3 will be stored. The rest will be automatically removed."
 msgstr ""
 
@@ -3226,13 +3234,13 @@ msgstr ""
 msgid "Unliked @{0}'s post"
 msgstr ""
 
-#: src/pages/settings.tsx:768
+#: src/pages/settings.tsx:778
 msgid "Replace text as blocks, useful when taking screenshots, for privacy reasons."
 msgstr ""
 
 #: src/components/media-attachment.tsx:527
 #: src/components/shortcuts-settings.tsx:871
-#: src/pages/catchup.tsx:1535
+#: src/pages/catchup.tsx:1557
 msgid "Remove"
 msgstr ""
 
@@ -3322,7 +3330,7 @@ msgstr ""
 msgid "Edit list"
 msgstr ""
 
-#: src/pages/catchup.tsx:203
+#: src/pages/catchup.tsx:205
 msgid "last 2 hours"
 msgstr ""
 
@@ -3330,7 +3338,7 @@ msgstr ""
 msgid "Editing source status"
 msgstr ""
 
-#: src/pages/settings.tsx:151
+#: src/pages/settings.tsx:152
 msgid "Settings"
 msgstr ""
 
@@ -3382,7 +3390,7 @@ msgstr ""
 msgid "Screenshot of Bluepy home timeline on mobile device"
 msgstr "Screenshot of Bluepy home timeline on mobile device"
 
-#: src/pages/catchup.tsx:2084
+#: src/pages/catchup.tsx:2106
 msgid "Posts are sorted by information density or depth. Shorter posts are \"lighter\" while longer posts are \"heavier\". Posts with photos are \"heavier\" than posts without photos."
 msgstr ""
 
@@ -3417,7 +3425,7 @@ msgstr ""
 msgid "Blocked @{username}"
 msgstr "Blocked @{username}"
 
-#: src/pages/settings.tsx:825
+#: src/pages/settings.tsx:835
 msgid "About"
 msgstr ""
 
@@ -3507,15 +3515,15 @@ msgstr ""
 msgid "Trending posts"
 msgstr ""
 
-#: src/pages/settings.tsx:817
+#: src/pages/settings.tsx:827
 msgid "Install {CLIENT_NAME}"
 msgstr "Install {CLIENT_NAME}"
 
-#: src/pages/catchup.tsx:214
+#: src/pages/catchup.tsx:216
 msgid "beyond 12 hours"
 msgstr ""
 
-#: src/pages/catchup.tsx:213
+#: src/pages/catchup.tsx:215
 msgid "last 12 hours"
 msgstr ""
 
@@ -3570,10 +3578,6 @@ msgstr "Screenshot of Bluepy home timeline on tablet device"
 msgid "Like"
 msgstr ""
 
-#: src/pages/welcome.tsx:53
-msgid "A minimalistic opinionated Bluesky web client."
-msgstr "A minimalistic opinionated Bluesky web client."
-
 #: src/components/import-accounts-selection.tsx:117
 #: src/components/import-accounts-selection.tsx:141
 msgid "Select all"
@@ -3602,17 +3606,13 @@ msgstr "Showing boosts"
 msgid "Editing source post"
 msgstr ""
 
-#: src/pages/settings.tsx:1484
+#: src/pages/settings.tsx:1494
 msgid "Polls"
 msgstr ""
 
 #: src/pages/welcome.tsx:207
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
 msgstr ""
-
-#: src/pages/settings.tsx:443
-msgid "Synced to your Bluesky account settings. <0>Open Bluesky settings ({instance}).</0>"
-msgstr "Synced to your Bluesky account settings. <0>Open Bluesky settings ({instance}).</0>"
 
 #: src/pages/search.tsx:135
 msgid "Search: {q}"
@@ -3622,11 +3622,11 @@ msgstr ""
 msgid "Filter out notifications from people:"
 msgstr ""
 
-#: src/pages/settings.tsx:1391
+#: src/pages/settings.tsx:1401
 msgid "Push Notifications (beta)"
 msgstr ""
 
-#: src/pages/catchup.tsx:211
+#: src/pages/catchup.tsx:213
 msgid "last 10 hours"
 msgstr ""
 
@@ -3639,12 +3639,12 @@ msgstr "Search GIFs"
 msgid "Failed to generate description: {0}"
 msgstr "Failed to generate description: {0}"
 
-#: src/pages/catchup.tsx:1333
-#: src/pages/catchup.tsx:1357
+#: src/pages/catchup.tsx:1355
+#: src/pages/catchup.tsx:1379
 msgid "Catch-up <0>beta</0>"
 msgstr ""
 
-#: src/pages/login.tsx:373
+#: src/pages/login.tsx:450
 msgid "Failed to log in. Please check your handle and app password."
 msgstr "Failed to log in. Please check your handle and app password."
 
@@ -3653,13 +3653,13 @@ msgstr "Failed to log in. Please check your handle and app password."
 msgid "Edit video description"
 msgstr "Edit video description"
 
-#: src/pages/settings.tsx:1437
+#: src/pages/settings.tsx:1447
 msgid "people I follow"
 msgstr ""
 
 #: src/components/account-info-mini.tsx:78
 #: src/components/account-info.tsx:1004
-#: src/pages/settings.tsx:376
+#: src/pages/settings.tsx:377
 #: src/utils/visibility-text.ts:6
 msgid "Followers"
 msgstr "Followers"
@@ -3695,7 +3695,7 @@ msgid "static URL"
 msgstr ""
 
 #. placeholder {0}: pc.id
-#: src/pages/catchup.tsx:1526
+#: src/pages/catchup.tsx:1548
 msgid "Removing Catch-up {0}"
 msgstr "Removing Catch-up {0}"
 
@@ -3720,7 +3720,7 @@ msgid "Unpin from profile"
 msgstr ""
 
 #: src/components/nav-menu.tsx:219
-#: src/pages/catchup.tsx:1322
+#: src/pages/catchup.tsx:1344
 #: src/pages/welcome.tsx:155
 msgid "Catch-up"
 msgstr ""
@@ -3755,7 +3755,7 @@ msgstr ""
 msgid "Exit"
 msgstr "Exit"
 
-#: src/pages/catchup.tsx:1494
+#: src/pages/catchup.tsx:1516
 msgid "Previously…"
 msgstr ""
 
@@ -3787,11 +3787,11 @@ msgstr ""
 msgid "Learn more <0/>"
 msgstr ""
 
-#: src/pages/catchup.tsx:2075
+#: src/pages/catchup.tsx:2097
 msgid "Links shared by followings, sorted by shared counts, boosts and likes."
 msgstr ""
 
-#: src/pages/catchup.tsx:1366
+#: src/pages/catchup.tsx:1388
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
 msgstr ""
 
@@ -3803,7 +3803,7 @@ msgstr ""
 msgid "<0>Shift</0> + <1>b</1>"
 msgstr ""
 
-#: src/pages/settings.tsx:668
+#: src/pages/settings.tsx:678
 msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
 msgstr "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
 
@@ -3868,11 +3868,11 @@ msgstr "Clear all"
 #: src/components/status-edit-history-modal.tsx:53
 #: src/components/translated-bio-sheet.tsx:33
 #: src/pages/accounts.tsx:73
-#: src/pages/catchup.tsx:2062
+#: src/pages/catchup.tsx:2084
 #: src/pages/list.tsx:472
 #: src/pages/notifications.tsx:1216
 #: src/pages/notifications.tsx:1460
-#: src/pages/settings.tsx:146
+#: src/pages/settings.tsx:147
 #: src/pages/status.tsx:2017
 msgid "Close"
 msgstr ""
@@ -3885,7 +3885,7 @@ msgstr "Looks like you already have a compose field open in the parent window an
 msgid "Share"
 msgstr ""
 
-#: src/pages/settings.tsx:1525
+#: src/pages/settings.tsx:1535
 msgid "NOTE: Push notifications only work for <0>one account</0>."
 msgstr ""
 
@@ -3900,7 +3900,7 @@ msgstr "Show results"
 msgid "Quote"
 msgstr ""
 
-#: src/pages/catchup.tsx:222
+#: src/pages/catchup.tsx:224
 msgid "Groups"
 msgstr ""
 
@@ -3930,8 +3930,8 @@ msgstr ""
 msgid "View profile header"
 msgstr "View profile header"
 
-#: src/pages/login.tsx:144
-#: src/pages/login.tsx:156
+#: src/pages/login.tsx:176
+#: src/pages/login.tsx:188
 msgid "Failed to register application"
 msgstr "Failed to register application"
 
@@ -3950,7 +3950,7 @@ msgstr ""
 msgid "Menu"
 msgstr ""
 
-#: src/pages/settings.tsx:511
+#: src/pages/settings.tsx:521
 msgid "Translate to "
 msgstr "Translate to "
 
@@ -3961,10 +3961,10 @@ msgstr ""
 #: src/components/nav-menu.tsx:273
 #: src/components/shortcuts-settings.tsx:107
 #: src/components/shortcuts-settings.tsx:266
-#: src/pages/catchup.tsx:1914
-#: src/pages/catchup.tsx:2632
+#: src/pages/catchup.tsx:1936
+#: src/pages/catchup.tsx:2608
 #: src/pages/favourites.tsx:13
 #: src/pages/favourites.tsx:31
-#: src/pages/settings.tsx:1468
+#: src/pages/settings.tsx:1478
 msgid "Likes"
 msgstr ""
