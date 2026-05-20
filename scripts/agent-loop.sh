@@ -51,9 +51,34 @@ use_repo_ssh_remote() {
   git remote set-url origin "$(gh repo view "$repo" --json sshUrl --jq .sshUrl)"
 }
 
+ensure_agent_repo() {
+  local ssh_url
+  ssh_url="$(gh repo view "$repo" --json sshUrl --jq .sshUrl)"
+  if [[ -d "${agent_repo}/.git" ]]; then
+    git -C "$agent_repo" remote set-url origin "$ssh_url"
+  elif [[ -e "$agent_repo" ]]; then
+    if [[ ! -d "$agent_repo" || -n "$(find "$agent_repo" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+      printf 'agent repo path exists but is not a git repo: %s\n' "$agent_repo" >&2
+      return 3
+    fi
+    git clone --no-checkout "$ssh_url" "$agent_repo"
+  else
+    git clone --no-checkout "$ssh_url" "$agent_repo"
+  fi
+  git -C "$agent_repo" config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+  git -C "$agent_repo" worktree prune
+}
+
+remove_agent_worktree_path() {
+  local worktree="$1"
+  git -C "$agent_repo" worktree remove --force "$worktree" >/dev/null 2>&1 || true
+  rm -rf "$worktree"
+  git -C "$agent_repo" worktree prune
+}
+
 remote_branch_exists() {
   local branch="$1"
-  git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1
+  git -C "$agent_repo" ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1
 }
 
 worktree_is_dirty() {
@@ -69,8 +94,8 @@ prepare_issue_worktree() {
   local branch="$1"
   local worktree="$2"
 
-  use_repo_ssh_remote
-  git fetch origin "$base_branch"
+  ensure_agent_repo
+  git -C "$agent_repo" fetch origin "$base_branch"
   if [[ -d "$worktree" ]]; then
     if git -C "$worktree" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       cd "$worktree"
@@ -99,16 +124,16 @@ prepare_issue_worktree() {
       fi
       return 0
     fi
-    rm -rf "$worktree"
+    remove_agent_worktree_path "$worktree"
   fi
 
   if remote_branch_exists "$branch"; then
-    git fetch origin "$branch"
-    git worktree add -B "$branch" "$worktree" "origin/${branch}"
-  elif git show-ref --verify --quiet "refs/heads/${branch}"; then
-    git worktree add "$worktree" "$branch"
+    git -C "$agent_repo" fetch origin "$branch"
+    git -C "$agent_repo" worktree add -B "$branch" "$worktree" "origin/${branch}"
+  elif git -C "$agent_repo" show-ref --verify --quiet "refs/heads/${branch}"; then
+    git -C "$agent_repo" worktree add "$worktree" "$branch"
   else
-    git worktree add -b "$branch" "$worktree" "origin/${base_branch}"
+    git -C "$agent_repo" worktree add -b "$branch" "$worktree" "origin/${base_branch}"
   fi
   cd "$worktree"
   use_repo_ssh_remote
@@ -117,10 +142,10 @@ prepare_issue_worktree() {
 prepare_pr_worktree() {
   local branch="$1"
   local worktree="$2"
-  use_repo_ssh_remote
-  git fetch origin "$branch"
-  rm -rf "$worktree"
-  git worktree add --detach "$worktree" "origin/${branch}"
+  ensure_agent_repo
+  git -C "$agent_repo" fetch origin "$branch"
+  remove_agent_worktree_path "$worktree"
+  git -C "$agent_repo" worktree add --detach "$worktree" "origin/${branch}"
   cd "$worktree"
   use_repo_ssh_remote
 }
@@ -626,7 +651,7 @@ start_pr() {
   run_verification || true
   review_and_fix_loop "$pr" "$pr" "$branch" || status="$?"
   cd "$script_dir/.."
-  git worktree remove --force "$worktree" >/dev/null 2>&1 || rm -rf "$worktree"
+  remove_agent_worktree_path "$worktree"
   return "$status"
 }
 
