@@ -2,9 +2,8 @@ import type { mastodon } from 'masto';
 
 import { sorted } from './sorted';
 
-// Loose shapes for the inputs and outputs of these helpers. The runtime data
-// is `mastodon.v1.Notification` / `mastodon.v2.NotificationGroup` payloads,
-// but these helpers also mutate notifications and accounts in-place (adding
+// Loose shapes for the inputs and outputs of these helpers. These helpers
+// mutate notifications and accounts in-place (adding
 // `_types`, `_accounts`, `_statuses`, etc.) and accept partial / malformed
 // payloads. The masto entity unions are too strict for that pattern, so we
 // describe a wider local shape that mirrors what the JS original allowed.
@@ -98,14 +97,14 @@ const notificationTypeKeys: Record<string, string[]> = {
   mention: ['account', 'status'],
   quote: ['account', 'status'],
   status: ['account', 'status'],
-  reblog: ['account', 'status'],
+  repost: ['account', 'status'],
   follow: ['account'],
   favourite: ['account', 'status'],
   poll: ['status'],
   update: ['status'],
 };
 
-const GROUP_TYPES = new Set(['favourite', 'reblog', 'follow', 'admin.sign_up']);
+const GROUP_TYPES = new Set(['favourite', 'repost', 'follow', 'admin.sign_up']);
 const groupable = (type: string | undefined): boolean =>
   !!type && GROUP_TYPES.has(type);
 
@@ -181,8 +180,8 @@ export function groupNotifications2(
     },
   );
 
-  // Merge favourited and reblogged of same status into a single notification
-  // - new type: "favourite+reblog"
+  // Merge favourited and reposted of same status into a single notification
+  // - new type: "favourite+repost"
   // - sum numbers for `notificationsCount` and `sampleAccounts`
   const notificationsMap: Record<string, AugmentedNotificationGroup> = {};
   const newGroupNotifications1: NotificationGroupLike[] = [];
@@ -199,7 +198,7 @@ export function groupNotifications2(
     const date = createdAt ? new Date(createdAt).toLocaleDateString() : '';
     let virtualType = type;
     // const sameCount = notificationsCount > 0 && notificationsCount === sampleAccounts?.length;
-    // if (sameCount && (type === 'favourite' || type === 'reblog')) {
+    // if (sameCount && (type === 'favourite' || type === 'repost')) {
     // NOTE: The JS original compared `undefined > 0` etc., which is always
     // false. Use `as number` shims to keep that exact runtime behavior:
     // comparisons against undefined coerce to NaN-vs-number and yield false.
@@ -209,9 +208,9 @@ export function groupNotifications2(
       (notificationsCount as number) > (sampleAccounts?.length as number);
     if (
       !sampleCountDiffNotificationsCount &&
-      (type === 'favourite' || type === 'reblog')
+      (type === 'favourite' || type === 'repost')
     ) {
-      virtualType = 'favourite+reblog';
+      virtualType = 'favourite+repost';
     }
     // const key = `${status?.id}-${virtualType}-${date}-${sameCount ? 1 : 0}`;
     const key = `${status?.id}-${virtualType}-${date}`;
@@ -299,7 +298,7 @@ export function groupNotifications2(
   }
 
   // 2nd pass.
-  // - Group 1 account favourte/reblog multiple posts
+  // - Group 1 account favourte/repost multiple posts
   // - _statuses: [status, status, ...]
   const notificationsMap2: Record<string, AugmentedNotificationGroup2> = {};
   const newGroupNotifications2: NotificationGroupLike[] = [];
@@ -312,8 +311,8 @@ export function groupNotifications2(
       sampleAccounts?.length === 1 || _accounts?.length === 1;
     if (
       (type === 'favourite' ||
-        type === 'reblog' ||
-        type === 'favourite+reblog') &&
+        type === 'repost' ||
+        type === 'favourite+repost') &&
       hasOneAccount
     ) {
       const key = `${account?.id}-${type}-${date}`;
@@ -360,8 +359,8 @@ export default function groupNotifications(
     const { id, status, account, type, createdAt } = notification;
     const date = createdAt ? new Date(createdAt).toLocaleDateString() : '';
     let virtualType = type;
-    if (type === 'favourite' || type === 'reblog') {
-      virtualType = 'favourite+reblog';
+    if (type === 'favourite' || type === 'repost') {
+      virtualType = 'favourite+repost';
     }
     const key = `${status?.id}-${virtualType}-${date}`;
     const mappedNotification = notificationsMap[key];
@@ -401,10 +400,10 @@ export default function groupNotifications(
     }
   }
 
-  // 2nd pass to group "favourite+reblog"-type notifications by account if _accounts.length <= 1
-  // This means one acount has favourited and reblogged the multiple statuses
+  // 2nd pass to group "favourite+repost"-type notifications by account if _accounts.length <= 1
+  // This means one acount has favourited and reposted the multiple statuses
   // The grouped notification
-  // - type: "favourite+reblog+account"
+  // - type: "favourite+repost+account"
   // - _statuses: [status, status, ...]
   const notificationsMap2: Record<string, AugmentedNotification2> = {};
   const cleanNotifications2: NotificationLike[] = [];
@@ -412,10 +411,10 @@ export default function groupNotifications(
     const notification = cleanNotifications[i];
     const { id, account, _accounts, type, createdAt } = notification;
     const date = createdAt ? new Date(createdAt).toLocaleDateString() : '';
-    // Original JS uses `_accounts.length` directly; `type === 'favourite+reblog'`
+    // Original JS uses `_accounts.length` directly; `type === 'favourite+repost'`
     // is only set in the first-pass `else` branch which initializes `_accounts`,
     // so `_accounts` is always an array here.
-    if (type === 'favourite+reblog' && account && _accounts?.length === 1) {
+    if (type === 'favourite+repost' && account && _accounts?.length === 1) {
       const key = `${account?.id}-${type}-${date}`;
       const mappedNotification = notificationsMap2[key];
       if (mappedNotification) {

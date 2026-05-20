@@ -17,7 +17,6 @@ import { getLists, splitListsAndFeeds } from '../utils/lists';
 import safeBoundingBoxPadding from '../utils/safe-bounding-box-padding';
 import states from '../utils/states';
 import { getAccounts, getCurrentAccountID } from '../utils/store-utils';
-import supports from '../utils/supports';
 
 import Avatar from './avatar';
 import Icon from './icon';
@@ -418,11 +417,9 @@ function NavMenu(props: Record<string, unknown>) {
 }
 
 function ListMenu({ menuState }: { menuState: MenuStateValue }) {
-  const supportsLists = supports('@mastodon/lists');
   const [lists, setLists] = useState<Awaited<ReturnType<typeof getLists>>>([]);
   const { lists: userLists, feeds } = splitListsAndFeeds(lists);
   useEffect(() => {
-    if (!supportsLists) return;
     if (menuState === 'open') {
       void getLists()
         .then((value) => {
@@ -433,7 +430,7 @@ function ListMenu({ menuState }: { menuState: MenuStateValue }) {
           console.error(err);
         });
     }
-  }, [menuState, supportsLists]);
+  }, [menuState]);
 
   return lists.length > 0 ? (
     <SubMenu2
@@ -494,14 +491,12 @@ function ListMenu({ menuState }: { menuState: MenuStateValue }) {
       )}
     </SubMenu2>
   ) : (
-    supportsLists && (
-      <MenuLink to="/l">
-        <Icon icon="list" size="l" />
-        <span>
-          <Trans>Lists & Feeds</Trans>
-        </span>
-      </MenuLink>
-    )
+    <MenuLink to="/l">
+      <Icon icon="list" size="l" />
+      <span>
+        <Trans>Lists & Feeds</Trans>
+      </span>
+    </MenuLink>
   );
 }
 

@@ -15,7 +15,6 @@ import NameText, { type NameTextProps } from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import { getAccountProfileTarget } from '../utils/account-profile-target';
 import { api, getMastoV1Resource } from '../utils/api';
-import { revokeAccessToken } from '../utils/auth';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
 import { navigatePath } from '../utils/router';
@@ -33,8 +32,6 @@ type AccountsNameTextAccount = NonNullable<NameTextProps['account']>;
 
 type OAuthAccount = Omit<StoredAccount, 'accessToken' | 'info'> & {
   accessToken?: string;
-  clientId?: string;
-  clientSecret?: string;
   info: StoredAccount['info'] & AccountsNameTextAccount;
 };
 
@@ -95,15 +92,6 @@ function Accounts({ onClose }: AccountsProps) {
                     store.session.del('currentAccount');
                   }
                 } catch {}
-              };
-
-              const logOutAccount = async () => {
-                await revokeAccessToken({
-                  instanceURL: account.instanceURL,
-                  client_id: String(account.clientId),
-                  client_secret: String(account.clientSecret),
-                  token: String(account.accessToken),
-                });
               };
 
               const { acct, avatarStatic } = account.info;
@@ -284,7 +272,6 @@ function Accounts({ onClose }: AccountsProps) {
                           menuItemClassName="danger"
                           onClick={() => {
                             void (async () => {
-                              await logOutAccount();
                               delete (account as { accessToken?: string })
                                 .accessToken;
                               saveOAuthAccounts();
@@ -295,11 +282,8 @@ function Accounts({ onClose }: AccountsProps) {
                             <MenuItem
                               className="danger"
                               onClick={() => {
-                                void (async () => {
-                                  await logOutAccount();
-                                  removeAccount();
-                                  location.href = location.pathname || '/';
-                                })();
+                                removeAccount();
+                                location.href = location.pathname || '/';
                               }}
                             >
                               <Icon icon="x" />

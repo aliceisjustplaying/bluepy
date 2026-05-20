@@ -116,7 +116,6 @@ test.describe('ATProto OAuth', () => {
       )
       .toMatchObject({
         instanceURL: 'bsky.social',
-        atproto: true,
         info: {
           id: 'did:plc:oauthalice',
           username: 'oauthalice.test',
@@ -157,7 +156,6 @@ test.describe('ATProto OAuth', () => {
               type: 'atproto-oauth',
               sub: did,
             }),
-            atproto: true,
             info: {
               id: did,
               username: 'stale.test',

@@ -289,7 +289,7 @@ export default function GenericAccounts({
                             key={type}
                             icon={
                               {
-                                reblog: 'rocket',
+                                repost: 'rocket',
                                 favourite: 'heart',
                               }[type]
                             }

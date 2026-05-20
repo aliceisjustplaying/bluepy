@@ -1352,14 +1352,14 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   min-height: 160px;
   max-height: max(160px, 50vh);
 } */
-.status-carousel.boosts-carousel {
-  --carousel-color: var(--reblog-color);
-  --carousel-faded-color: var(--reblog-faded-color);
+.status-carousel.reposts-carousel {
+  --carousel-color: var(--repost-color);
+  --carousel-faded-color: var(--repost-faded-color);
 }
-.status-carousel.boosts-carousel .status-reblog {
+.status-carousel.reposts-carousel .status-repost {
   background-image: none;
 }
-.status-carousel.boosts-carousel > ul > li:before {
+.status-carousel.reposts-carousel > ul > li:before {
   content: counter(index);
   position: absolute;
   inset-inline-start: 0;
@@ -1368,7 +1368,7 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   padding: 6px;
 }
 
-.status-carousel.boosts-carousel .timeline-item-carousel-group {
+.status-carousel.reposts-carousel .timeline-item-carousel-group {
   flex-direction: column;
   gap: 8px;
 
@@ -1406,7 +1406,7 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
     border-start-end-radius: 8px;
   }
 
-  .status-carousel.boosts-carousel &:not(.timeline-item-carousel-group &) {
+  .status-carousel.reposts-carousel &:not(.timeline-item-carousel-group &) {
     border-start-start-radius: 8px;
   }
 }

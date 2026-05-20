@@ -17,7 +17,6 @@ import useThrottledResizeObserver from '../utils/useThrottledResizeObserver';
 
 import TextExpander, { type TextExpanderHandle } from './text-expander';
 
-// https://github.com/mastodon/mastodon/blob/c03bd2a238741a012aa4b98dc4902d6cf948ab63/app/models/account.rb#L69
 const USERNAME_RE = /[a-z0-9_]+([a-z0-9_.-]+[a-z0-9_]+)?/i;
 const MENTION_RE = new RegExp(
   `(^|[^=\\/\\w])([@＠]${USERNAME_RE.source}(?:@[\\p{L}\\w.-]+[\\w]+)?)`,

@@ -79,8 +79,8 @@
 .notification-type.notification-favourite {
   color: var(--favourite-color);
 }
-.notification-type.notification-reblog {
-  color: var(--reblog-color);
+.notification-type.notification-repost {
+  color: var(--repost-color);
 }
 .notification-type.notification-quote {
   color: var(--quote-color);
@@ -89,8 +89,8 @@
   color: var(--link-color);
 }
 
-.notification .reblog-icon {
-  color: var(--reblog-color);
+.notification .repost-icon {
+  color: var(--repost-color);
 }
 .notification .favourite-icon {
   color: var(--favourite-color);

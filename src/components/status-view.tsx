@@ -15,7 +15,7 @@ import { getCurrentAccID } from '../utils/store-utils';
 import FilteredStatus from './filtered-status';
 import StatusContent from './status-content';
 import { StatusGhost, StatusSkeleton } from './status-placeholders';
-import StatusReblog from './status-reblog';
+import StatusRepost from './status-repost';
 import type {
   AnyMediaAttachment,
   AnyStatus,
@@ -158,7 +158,7 @@ function StatusRouter({
     id,
     filtered,
     mediaAttachments: statusMediaAttachments,
-    reblog,
+    repost,
   } = status;
   const accountId = account?.id;
   const group = account?.group;
@@ -233,11 +233,11 @@ function StatusRouter({
     );
   }
 
-  if (reblog) {
+  if (repost) {
     return (
-      <StatusReblog
+      <StatusRepost
         wrapperStatus={status}
-        reblog={reblog}
+        repost={repost}
         statusID={statusID}
         stateKey={sKey}
         instance={instance}

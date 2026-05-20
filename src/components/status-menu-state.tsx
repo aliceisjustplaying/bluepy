@@ -10,7 +10,7 @@ import type { AnyStatus, StatusContentMasto } from './status-types';
 
 interface StatusMenuStateArgs {
   mediaNoDesc: boolean;
-  reblogged?: boolean | null;
+  reposted?: boolean | null;
   statusMonthsAgo: number;
   accountId?: string | null;
   mentions?: mastodon.v1.StatusMention[];
@@ -27,10 +27,10 @@ interface StatusMenuStateArgs {
   quoteMetaText?: string | null;
   quoteText?: string;
   url?: string | null;
-  canBoost?: boolean;
-  confirmBoostStatus: () => Promise<boolean>;
+  canRepost?: boolean;
+  confirmRepostStatus: () => Promise<boolean>;
   canQuote?: boolean;
-  reblogsCount?: number;
+  repostsCount?: number;
   quotesCount?: number;
   favouriteStatusNotify: () => Promise<void>;
   favourited?: boolean | null;
@@ -71,14 +71,14 @@ interface StatusMenuStateArgs {
   postQuoteApprovalPolicy?: string | null;
   visibility: Parameters<typeof useStatusMenuParts>[0]['visibility'];
   sKey: string;
-  fetchBoostedLikedByAccounts: Parameters<
+  fetchRepostedLikedByAccounts: Parameters<
     typeof useStatusMenuParts
-  >[0]['fetchBoostedLikedByAccounts'];
+  >[0]['fetchRepostedLikedByAccounts'];
 }
 
 export default function useStatusMenuState({
   mediaNoDesc,
-  reblogged,
+  reposted,
   statusMonthsAgo,
   accountId,
   mentions,
@@ -95,10 +95,10 @@ export default function useStatusMenuState({
   quoteMetaText,
   quoteText,
   url,
-  canBoost,
-  confirmBoostStatus,
+  canRepost,
+  confirmRepostStatus,
   canQuote,
-  reblogsCount,
+  repostsCount,
   quotesCount,
   favouriteStatusNotify,
   favourited,
@@ -134,7 +134,7 @@ export default function useStatusMenuState({
   postQuoteApprovalPolicy,
   visibility,
   sKey,
-  fetchBoostedLikedByAccounts,
+  fetchRepostedLikedByAccounts,
 }: StatusMenuStateArgs) {
   const { i18n } = useLingui();
   const rtf = RTF(i18n.locale);
@@ -149,7 +149,7 @@ export default function useStatusMenuState({
     quoteAny?.quotedStatus?.account?.id === currentAccount;
   const isPinnable = ['public', 'unlisted', 'private'].includes(visibility);
   const menuFooter: ReactNode =
-    mediaNoDesc && !reblogged ? (
+    mediaNoDesc && !reposted ? (
       <div className="footer">
         <Icon icon="alert" />
         <Trans>Some media have no descriptions.</Trans>
@@ -178,17 +178,17 @@ export default function useStatusMenuState({
     isSizeLarge,
     sameInstance,
     showActionsBar,
-    reblogged,
+    reposted,
     quoteDisabled,
     status,
     quoteMetaText,
     quoteText,
     url,
     menuFooter,
-    canBoost,
-    confirmBoostStatus,
+    canRepost,
+    confirmRepostStatus,
     canQuote,
-    reblogsCount,
+    repostsCount,
     quotesCount,
     favouriteStatusNotify,
     favourited,
@@ -226,7 +226,7 @@ export default function useStatusMenuState({
     visibility,
     isQuotingMyPost,
     sKey,
-    fetchBoostedLikedByAccounts,
+    fetchRepostedLikedByAccounts,
   });
 
   return { menuFooter, StatusMenuItems };

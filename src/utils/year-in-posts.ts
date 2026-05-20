@@ -45,7 +45,7 @@ export interface FetchYearPostsResult {
 interface AccountStatusesListParams {
   limit?: number;
   exclude_replies?: boolean;
-  exclude_reblogs?: boolean;
+  exclude_reposts?: boolean;
   max_id?: string;
   min_id?: string;
 }
@@ -143,7 +143,7 @@ export async function fetchYearPosts(
         .statuses.list({
           limit: 1,
           exclude_replies: false,
-          exclude_reblogs: false,
+          exclude_reposts: false,
         })
         .values();
       const latestResult = await latestPostIterator.next();
@@ -182,7 +182,7 @@ export async function fetchYearPosts(
     .statuses.list({
       limit: 40,
       exclude_replies: false,
-      exclude_reblogs: false,
+      exclude_reposts: false,
       max_id: maxId || undefined,
     })
     .values();
@@ -238,7 +238,7 @@ export async function fetchYearPosts(
           limit: 40,
           min_id: earliestId,
           exclude_replies: false,
-          exclude_reblogs: false,
+          exclude_reposts: false,
         })
         .values();
 

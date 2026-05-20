@@ -5,7 +5,7 @@ import Icon from './icon';
 import NameText from './name-text';
 import type { AnyStatus, StatusSize } from './status-types';
 
-interface RenderReblogStatusArgs {
+interface RenderRepostStatusArgs {
   statusID?: string | null;
   status?: AnyStatus | null;
   instance?: string;
@@ -16,9 +16,9 @@ interface RenderReblogStatusArgs {
   enableCommentHint?: boolean;
 }
 
-interface StatusReblogProps {
+interface StatusRepostProps {
   wrapperStatus: AnyStatus;
-  reblog: AnyStatus;
+  repost: AnyStatus;
   statusID?: string | null;
   stateKey: string;
   instance?: string;
@@ -28,12 +28,12 @@ interface StatusReblogProps {
   mediaFirst?: boolean;
   group?: boolean;
   onMouseEnter?: (e: React.MouseEvent) => void;
-  renderStatus: (args: RenderReblogStatusArgs) => ReactNode;
+  renderStatus: (args: RenderRepostStatusArgs) => ReactNode;
 }
 
-export default function StatusReblog({
+export default function StatusRepost({
   wrapperStatus,
-  reblog,
+  repost,
   statusID,
   stateKey,
   instance,
@@ -44,10 +44,10 @@ export default function StatusReblog({
   group,
   onMouseEnter,
   renderStatus,
-}: StatusReblogProps) {
+}: StatusRepostProps) {
   const { t } = useLingui();
-  const childStatus = statusID ? null : reblog;
-  const childStatusID = statusID ? reblog.id : null;
+  const childStatus = statusID ? null : repost;
+  const childStatusID = statusID ? repost.id : null;
 
   if (group) {
     return (
@@ -80,7 +80,7 @@ export default function StatusReblog({
   return (
     <div
       data-state-post-id={stateKey}
-      className="status-reblog"
+      className="status-repost"
       onMouseEnter={onMouseEnter}
     >
       <div className="status-pre-meta">

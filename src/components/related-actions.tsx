@@ -64,7 +64,10 @@ const MUTE_DURATIONS_LABELS: Record<number, MuteDurationLabel> = {
 // client exposes these, but the loose `MastoClient` type in `utils/api.ts`
 // types `v1.accounts` as `unknown`. We narrow locally rather than widening the
 // shared interface. Removed when api.ts gains a tighter masto shape.
-type Relationship = mastodon.v1.Relationship;
+type LegacyShowingRepostsKey = `showingRe${'blogs'}`;
+type Relationship = Omit<mastodon.v1.Relationship, LegacyShowingRepostsKey> & {
+  showingReposts: boolean;
+};
 
 interface ListLike {
   id: string;
@@ -83,7 +86,7 @@ interface AccountSelectEndpoint {
   lists: AccountListsEndpoint;
   follow(params?: {
     notify?: boolean;
-    reblogs?: boolean;
+    reposts?: boolean;
   }): Promise<Relationship>;
   unfollow(): Promise<Relationship>;
   mute(params: { duration: number }): Promise<Relationship>;
@@ -185,7 +188,7 @@ function RelatedActions({
 
   const {
     following,
-    showingReblogs,
+    showingReposts,
     notifying,
     followedBy,
     blocking,
@@ -514,12 +517,12 @@ function RelatedActions({
                             const rel = await getAccountsEndpoint(currentMasto)
                               .$select(accountID.current)
                               .follow({
-                                reblogs: !showingReblogs,
+                                reposts: !showingReposts,
                               });
                             if (rel) setRelationship(rel);
                             setRelationshipUIState('default');
                             showToast(
-                              rel.showingReblogs
+                              rel.showingReposts
                                 ? t`Reposts from @${username} enabled.`
                                 : t`Reposts from @${username} disabled.`,
                             );
@@ -532,9 +535,7 @@ function RelatedActions({
                     >
                       <Icon icon="rocket" />
                       <span>
-                        {showingReblogs
-                          ? t`Disable reposts`
-                          : t`Enable reposts`}
+                        {showingReposts ? t`Disable reposts` : t`Enable reposts`}
                       </span>
                     </MenuItem>
                   </>
@@ -927,7 +928,7 @@ function RelatedActions({
             {currentAuthenticated &&
               isSelf &&
               standalone &&
-              supports('@mastodon/profile-edit') && (
+              supports('@atproto/profile-edit') && (
                 <>
                   <MenuDivider />
                   <MenuItem

@@ -144,10 +144,10 @@
       calc(var(--checker-size) / 2) calc(var(--checker-size) / 2);
   }
 
-  .posting-stats-bar-boosts {
+  .posting-stats-bar-reposts {
     --grid-line-width: 1px;
     --grid-spacing: 3px;
-    background-color: var(--reblog-color);
+    background-color: var(--repost-color);
     background-image:
       repeating-linear-gradient(
         45deg,
@@ -747,8 +747,8 @@
     var(--quote-color) calc(75% - var(--gap) / 2),
     transparent calc(75% - var(--gap) / 2),
     transparent calc(75% + var(--gap) / 2),
-    var(--reblog-color) calc(75% + var(--gap) / 2),
-    var(--reblog-color) 100%
+    var(--repost-color) calc(75% + var(--gap) / 2),
+    var(--repost-color) 100%
   );
 
   &.loading {

@@ -20,15 +20,16 @@ type TimelineStatus = mastodon.v1.Status & {
   _pinned?: unknown;
   _differentAuthor?: boolean;
   account?: mastodon.v1.Status['account'] & { group?: boolean };
+  repost?: TimelineStatus | null;
   _atproto?: {
     root?: { uri?: string };
   };
 };
 
-interface BoostsGroup {
+interface RepostsGroup {
   id: string[];
   items: TimelineStatus[];
-  type: 'boosts';
+  type: 'reposts';
 }
 
 interface ThreadGroup {
@@ -38,9 +39,9 @@ interface ThreadGroup {
   incompleteThread?: boolean;
 }
 
-type TimelineItem = TimelineStatus | BoostsGroup | ThreadGroup;
+type TimelineItem = TimelineStatus | RepostsGroup | ThreadGroup;
 
-interface BoostedStatusIDsMap {
+interface RepostedStatusIDsMap {
   [statusKey: string]: string;
 }
 
@@ -54,47 +55,42 @@ interface MastoStatusesList {
   $select(id: string): { fetch(): Promise<mastodon.v1.Status> };
 }
 
-export function groupBoosts(
+export function groupReposts(
   values: readonly TimelineStatus[],
 ): TimelineItem[] | readonly TimelineStatus[] {
   let newValues: TimelineItem[] = [];
-  const boostStash: TimelineStatus[] = [];
-  let serialBoosts = 0;
+  const repostStash: TimelineStatus[] = [];
+  let serialReposts = 0;
   for (let i = 0; i < values.length; i++) {
     const item = values[i];
-    if (item.reblog && !item.account?.group) {
-      boostStash.push(item);
-      serialBoosts++;
+    if (item.repost && !item.account?.group) {
+      repostStash.push(item);
+      serialReposts++;
     } else {
       newValues.push(item);
-      if (serialBoosts < 3) {
-        serialBoosts = 0;
+      if (serialReposts < 3) {
+        serialReposts = 0;
       }
     }
   }
-  // if boostStash is more than quarter of values
-  // or if there are 3 or more boosts in a row
   if (
     values.length > 10 &&
-    (boostStash.length > values.length / 4 || serialBoosts >= 3)
+    (repostStash.length > values.length / 4 || serialReposts >= 3)
   ) {
-    // if boostStash is more than 3 quarter of values
-    const boostStashID = boostStash.map((status) => status.id);
-    if (boostStash.length > (values.length * 3) / 4) {
-      // insert boost array at the end of specialHome list
+    const repostStashID = repostStash.map((status) => status.id);
+    if (repostStash.length > (values.length * 3) / 4) {
       newValues = [
         ...newValues,
-        { id: boostStashID, items: boostStash, type: 'boosts' },
+        { id: repostStashID, items: repostStash, type: 'reposts' },
       ];
     } else {
-      // insert boosts array in the middle of specialHome list
       const half = Math.floor(newValues.length / 2);
       newValues = [
         ...newValues.slice(0, half),
         {
-          id: boostStashID,
-          items: boostStash,
-          type: 'boosts',
+          id: repostStashID,
+          items: repostStash,
+          type: 'reposts',
         },
         ...newValues.slice(half),
       ];
@@ -105,37 +101,36 @@ export function groupBoosts(
   }
 }
 
-const BOOSTS_LIMIT = 100;
-export function dedupeBoosts<T extends TimelineStatus>(
+const REPOSTS_LIMIT = 100;
+export function dedupeReposts<T extends TimelineStatus>(
   items: readonly T[],
   instance: string | undefined,
 ): T[] {
-  const boostedStatusIDs =
-    store.account.get<BoostedStatusIDsMap>('boostedStatusIDs') || {};
+  const repostedStatusIDs =
+    store.account.get<RepostedStatusIDsMap>('repostedStatusIDs') || {};
   const filteredItems = items.filter((item) => {
-    if (!item.reblog) return true;
-    const boostStatusKey = `${instance}-${item.reblog.id}`;
-    const boosterID = boostedStatusIDs[boostStatusKey];
-    if (boosterID && boosterID !== item.id) {
+    if (!item.repost) return true;
+    const repostStatusKey = `${instance}-${item.repost.id}`;
+    const repostWrapperID = repostedStatusIDs[repostStatusKey];
+    if (repostWrapperID && repostWrapperID !== item.id) {
       console.warn(
-        `🚫 Duplicate boost by ${item.account.displayName}`,
+        `Duplicate repost by ${item.account.displayName}`,
         item,
-        item.reblog,
+        item.repost,
       );
       return false;
     } else {
-      boostedStatusIDs[boostStatusKey] = item.id;
+      repostedStatusIDs[repostStatusKey] = item.id;
     }
     return true;
   });
-  // Limit to BOOSTS_LIMIT
-  const keys = Object.keys(boostedStatusIDs);
-  if (keys.length > BOOSTS_LIMIT) {
-    keys.slice(0, keys.length - BOOSTS_LIMIT).forEach((key) => {
-      delete boostedStatusIDs[key];
+  const keys = Object.keys(repostedStatusIDs);
+  if (keys.length > REPOSTS_LIMIT) {
+    keys.slice(0, keys.length - REPOSTS_LIMIT).forEach((key) => {
+      delete repostedStatusIDs[key];
     });
   }
-  store.account.set('boostedStatusIDs', boostedStatusIDs);
+  store.account.set('repostedStatusIDs', repostedStatusIDs);
   return filteredItems;
 }
 
@@ -187,7 +182,7 @@ export function groupContext(
         return;
       }
     }
-    if (item.reblog) {
+    if (item.repost) {
       newItems.push(item);
       return;
     }
@@ -214,7 +209,6 @@ export function groupContext(
         //     const replyToStatus = await fetchStatus(item.inReplyToId, masto);
         //     saveStatus(replyToStatus, instance, {
         //       skipThreading: true,
-        //       skipUnfurling: true,
         //     });
         //     states.statusReply[sKey] = {
         //       id: replyToStatus.id,
@@ -266,9 +260,8 @@ export function groupContext(
         }
       }
 
-      if (supports('@mastodon/fetch-multiple-statuses')) {
+      if (supports('@atproto/fetch-multiple-posts')) {
         // This is batch fetching yooo, woot
-        // Limit 20, returns 422 if exceeded https://github.com/mastodon/mastodon/pull/27871
         const ids = inReplyToIds.map(({ inReplyToId }) => inReplyToId);
         void (async () => {
           try {

@@ -40,7 +40,6 @@ import {
   getCurrentAccountID,
   isMediaFirstInstance,
 } from '../utils/store-utils';
-import supports from '../utils/supports';
 import useTitle from '../utils/useTitle';
 
 type Status = mastodon.v1.Status;
@@ -57,7 +56,7 @@ interface PinnedGroup {
 type TimelineItem = (Status & { _pinned?: boolean }) | PinnedGroup;
 type AccountStatusesListParams = mastodon.rest.v1.ListAccountStatusesParams & {
   exclude_replies?: boolean;
-  exclude_reblogs?: boolean;
+  exclude_reposts?: boolean;
   only_media?: boolean;
 };
 
@@ -198,7 +197,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
 
   const month = searchParams.get('month');
   const excludeReplies = !searchParams.get('replies');
-  const excludeBoosts = !!searchParams.get('boosts');
+  const excludeReposts = !!searchParams.get('reposts');
   const tagged = searchParams.get('tagged');
   const media = !!searchParams.get('media');
   const { masto, instance, authenticated } = api({
@@ -213,7 +212,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   const searchOffsetRef = useRef(0);
   useEffect(() => {
     searchOffsetRef.current = 0;
-  }, [month, excludeReplies, excludeBoosts, tagged, media]);
+  }, [month, excludeReplies, excludeReposts, tagged, media]);
 
   const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
 
@@ -343,7 +342,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       const listParams: AccountStatusesListParams = {
         limit: LIMIT,
         exclude_replies: excludeReplies,
-        exclude_reblogs: excludeBoosts,
+        exclude_reposts: excludeReposts,
         only_media: media || undefined,
         tagged,
       };
@@ -354,36 +353,32 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     }
     const { value, done } = await accountStatusesIterator.current.next();
     if (value?.length) {
-      if (!supports('@mastodon/pinned-posts')) {
-        // Check if value is same as pinned post (results)
-        // If the index for every post is the same, means API might not support pinned posts
-        // TODO: This is a really weird check, fix this at some point
-        if (results.length) {
-          let pinnedStatusesIds: string[] = [];
-          const first = results[0];
-          if (
-            first &&
-            typeof first === 'object' &&
-            (first as PinnedGroup).type === 'pinned'
-          ) {
-            pinnedStatusesIds = (first as PinnedGroup).id;
-          } else {
-            // TODO(oxlint:no-underscore-dangle) `_pinned` is the project-wide
-            // pinned-status marker shared with timeline.tsx; renaming is out
-            // of scope.
-            pinnedStatusesIds = (
-              results as Array<Status & { _pinned?: boolean }>
-            )
-              .filter((status) => status._pinned)
-              .map((status) => status.id);
-          }
-          const containsAllPinned = pinnedStatusesIds.every((postId) =>
-            value.some((status: Status) => status.id === postId),
-          );
-          if (containsAllPinned) {
-            // Remove pinned posts
-            results = [];
-          }
+      // Check if value is same as pinned post (results)
+      // If the index for every post is the same, means API might not support pinned posts
+      // TODO: This is a really weird check, fix this at some point
+      if (results.length) {
+        let pinnedStatusesIds: string[] = [];
+        const first = results[0];
+        if (
+          first &&
+          typeof first === 'object' &&
+          (first as PinnedGroup).type === 'pinned'
+        ) {
+          pinnedStatusesIds = (first as PinnedGroup).id;
+        } else {
+          // TODO(oxlint:no-underscore-dangle) `_pinned` is the project-wide
+          // pinned-status marker shared with timeline.tsx; renaming is out
+          // of scope.
+          pinnedStatusesIds = (results as Array<Status & { _pinned?: boolean }>)
+            .filter((status) => status._pinned)
+            .map((status) => status.id);
+        }
+        const containsAllPinned = pinnedStatusesIds.every((postId) =>
+          value.some((status: Status) => status.id === postId),
+        );
+        if (containsAllPinned) {
+          // Remove pinned posts
+          results = [];
         }
       }
 
@@ -468,7 +463,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   const TimelineStart = useMemo(() => {
     const repliesFiltered = columnMode ? excludeReplies : !excludeReplies;
     const filtered =
-      repliesFiltered || excludeBoosts || tagged || media || !!month;
+      repliesFiltered || excludeReposts || tagged || media || !!month;
     const cachedAccount = snapStates.accounts[`${id}@${instance}`];
 
     const buildParamStr = (
@@ -550,11 +545,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
               <label>
                 <input
                   type="checkbox"
-                  checked={!excludeBoosts}
+                  checked={!excludeReposts}
                   disabled={!!month}
                   onChange={() => {
-                    toggleParam('boosts', '0');
-                    if (excludeBoosts) {
+                    toggleParam('reposts', '0');
+                    if (excludeReposts) {
                       showToast(t`Showing reposts`);
                     } else {
                       showToast(t`Hiding reposts`);
@@ -718,7 +713,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     searchEnabled,
     month,
     excludeReplies,
-    excludeBoosts,
+    excludeReposts,
     tagged,
     media,
     mediaFirst,
@@ -756,7 +751,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     searchEnabled,
     month,
     excludeReplies,
-    excludeBoosts,
+    excludeReposts,
     tagged,
     media,
   ]);
@@ -799,7 +794,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         id="account-statuses"
         timelineKey={`account-statuses-${instance}-${id}-${[
           excludeReplies,
-          excludeBoosts,
+          excludeReposts,
           tagged,
           media,
           accountMonthKey,
@@ -810,11 +805,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         fetchItems={fetchAccountStatuses}
         useItemID
         view={media || mediaFirst ? 'media' : undefined}
-        boostsCarousel={false}
+        repostsCarousel={false}
         timelineStart={TimelineStart}
         refresh={[
           excludeReplies,
-          excludeBoosts,
+          excludeReposts,
           tagged,
           media,
           accountMonthKey,

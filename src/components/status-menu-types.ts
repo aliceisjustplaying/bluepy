@@ -21,17 +21,17 @@ export interface StatusMenuPartsArgs {
   isSizeLarge: boolean;
   sameInstance: boolean;
   showActionsBar?: boolean;
-  reblogged?: boolean | null;
+  reposted?: boolean | null;
   quoteDisabled?: boolean | null;
   status: AnyStatus;
   quoteMetaText?: string | null;
   quoteText?: string;
   url?: string | null;
   menuFooter: ReactNode;
-  canBoost?: boolean;
-  confirmBoostStatus: () => Promise<boolean>;
+  canRepost?: boolean;
+  confirmRepostStatus: () => Promise<boolean>;
   canQuote?: boolean;
-  reblogsCount?: number;
+  repostsCount?: number;
   quotesCount?: number;
   favouriteStatusNotify: () => Promise<void>;
   favourited?: boolean | null;
@@ -72,7 +72,7 @@ export interface StatusMenuPartsArgs {
   visibility: keyof typeof visibilityIconsMap;
   isQuotingMyPost?: boolean;
   sKey: string;
-  fetchBoostedLikedByAccounts: (
+  fetchRepostedLikedByAccounts: (
     firstLoad?: boolean,
   ) => Promise<{ value: unknown[]; done?: boolean }>;
 }

@@ -88,8 +88,8 @@
       color: var(--favourite-color);
     }
 
-    .reblog-icon {
-      color: var(--reblog-color);
+    .repost-icon {
+      color: var(--repost-color);
     }
 
     > .icon:only-child {

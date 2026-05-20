@@ -55,9 +55,9 @@ import useTitle from '../utils/useTitle';
 
 // Types -----------------------------------------------------------------
 
-// Mastodon's status type is augmented at runtime with bookkeeping flags the
-// catch-up pipeline attaches. Keep the surface open via index signatures so
-// downstream callers can still access the original Status fields.
+// Status values are augmented at runtime with bookkeeping flags the catch-up
+// pipeline attaches. Keep the surface open via index signatures so downstream
+// callers can still access the original status fields.
 type FilterInfo =
   | {
       action?: string;
@@ -68,7 +68,7 @@ type FilterInfo =
   | false
   | undefined;
 
-interface CatchupBooster {
+interface CatchupReposter {
   id: string;
   avatar?: string;
   avatarStatic?: string;
@@ -76,7 +76,7 @@ interface CatchupBooster {
   [key: string]: unknown;
 }
 
-type CatchupAccount = mastodon.v1.Account & NameTextAccount & CatchupBooster;
+type CatchupAccount = mastodon.v1.Account & NameTextAccount & CatchupReposter;
 type QuoteAccount = CatchupAccount | mastodon.v1.Status['account'];
 type QuoteStatusLike =
   | mastodon.v1.Status
@@ -106,12 +106,13 @@ interface QuoteLike {
 
 type CatchupPost = mastodon.v1.Status & {
   account: CatchupAccount;
-  reblog?: CatchupPost | null;
+  repost?: CatchupPost | null;
+  repostsCount: number;
   _filtered?: FilterInfo;
   _thread?: boolean;
   __FILTER?: string;
   __HIDDEN?: boolean;
-  __BOOSTERS?: Set<CatchupBooster>;
+  __BOOSTERS?: Set<CatchupReposter>;
   group?: unknown;
   quotesCount?: number;
   [key: string]: unknown;
@@ -163,7 +164,7 @@ interface LinkAggregate {
   shared: number;
   sharers: CatchupPost['account'][];
   likes: number;
-  boosts: number;
+  reposts: number;
   quotes?: number;
 }
 
@@ -172,7 +173,7 @@ type TopLink = LinkAggregate & { url: string };
 interface FilterCounts {
   filtered: number;
   groups: number;
-  boosts: number;
+  reposts: number;
   quotes: number;
   replies: number;
   original: number;
@@ -180,7 +181,7 @@ interface FilterCounts {
 }
 
 interface HomeTimelineParams {
-  include_reblogs?: boolean;
+  include_reposts?: boolean;
   [key: string]: unknown;
 }
 
@@ -220,7 +221,7 @@ const FILTER_KEYS: Record<string, MessageDescriptor> = {
   original: msg`Original`,
   replies: msg`Replies`,
   quotes: msg`Quotes`,
-  boosts: msg`Reposts`,
+  reposts: msg`Reposts`,
   groups: msg`Groups`,
   filtered: msg`Filtered`,
 };
@@ -228,10 +229,10 @@ const FILTER_SORTS: string[] = [
   'createdAt',
   'repliesCount',
   'favouritesCount',
-  'reblogsCount',
+  'repostsCount',
   // TODO: Add this later when there's enough usage
   // Sorting by quotes count seems not useful… yet?
-  // And we're combining it with boosts count, so that's even weirder…
+  // And we're combining it with reposts count, so that's even weirder…
   // 'quotesCount',
   'density',
 ];
@@ -350,7 +351,7 @@ function Catchup() {
     [currentAccount],
   );
 
-  const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
+  const supportsIncludeReposts = supports('@atproto/home-include-reposts');
 
   const fetchHome = useCallback(
     async ({
@@ -369,11 +370,11 @@ function Catchup() {
       const homeIterator = homeIterable.values();
       mainloop: while (true) {
         try {
-          if (supportsPixelfed && homeIterable.params) {
+          if (supportsIncludeReposts && homeIterable.params) {
             if (typeof homeIterable.params === 'string') {
-              homeIterable.params += '&include_reblogs=true';
+              homeIterable.params += '&include_reposts=true';
             } else {
-              homeIterable.params.include_reblogs = true;
+              homeIterable.params.include_reposts = true;
             }
           }
           const results = await homeIterator.next();
@@ -385,12 +386,12 @@ function Catchup() {
               if (!maxCreatedAt || createdAtTime >= maxCreatedAt) {
                 // Filtered
                 const selfPost = isSelf(
-                  item.reblog?.account?.id || item.account.id,
+                  item.repost?.account?.id || item.account.id,
                 );
                 const filterInfo =
                   !selfPost &&
                   isFiltered(
-                    item.reblog?.filtered || item.filtered,
+                    item.repost?.filtered || item.filtered,
                     FILTER_CONTEXT,
                   );
                 if (filterInfo && filterInfo.action === 'hide') continue;
@@ -435,7 +436,7 @@ function Catchup() {
 
       return allResults;
     },
-    [masto, supportsPixelfed, isSelf],
+    [masto, supportsIncludeReposts, isSelf],
   );
 
   const [posts, setPosts] = useState<CatchupPost[]>([]);
@@ -581,7 +582,7 @@ function Catchup() {
   const [filterCounts, links] = useMemo((): [FilterCounts, TopLink[]] => {
     let filtered = 0,
       groups = 0,
-      boosts = 0,
+      reposts = 0,
       quotes = 0,
       replies = 0,
       original = 0;
@@ -593,9 +594,9 @@ function Catchup() {
       } else if (post.group) {
         groups++;
         post.__FILTER = 'groups';
-      } else if (post.reblog) {
-        boosts++;
-        post.__FILTER = 'boosts';
+      } else if (post.repost) {
+        reposts++;
+        post.__FILTER = 'reposts';
       } else if (supportsNativeQuote() && hasQuote(post.quote)) {
         quotes++;
         post.__FILTER = 'quotes';
@@ -611,7 +612,7 @@ function Catchup() {
       }
 
       const thePost: CatchupPost =
-        (post.reblog as CatchupPost | null | undefined) || post;
+        (post.repost as CatchupPost | null | undefined) || post;
       const card = thePost.card as CardLike | null | undefined;
       if (
         post.__FILTER !== 'filtered' &&
@@ -619,7 +620,7 @@ function Catchup() {
         card?.image &&
         card?.type === 'link'
       ) {
-        const { favouritesCount, reblogsCount } = thePost;
+        const { favouritesCount, repostsCount } = thePost;
         let url = card.url.replace(/\/$/, '');
         if (!linksMap[url]) {
           linksMap[url] = {
@@ -628,7 +629,7 @@ function Catchup() {
             shared: 1,
             sharers: [post.account],
             likes: favouritesCount,
-            boosts: reblogsCount,
+            reposts: repostsCount,
           };
         } else {
           if (linksMap[url].sharers.find((a) => a?.id === post.account.id)) {
@@ -638,7 +639,7 @@ function Catchup() {
           linksMap[url].sharers.push(post.account);
           if (linksMap[url].postID !== thePost.id) {
             linksMap[url].likes += favouritesCount;
-            linksMap[url].boosts += reblogsCount;
+            linksMap[url].reposts += repostsCount;
           }
         }
       }
@@ -654,8 +655,8 @@ function Catchup() {
     topLinks.sort((a, b) => {
       if (a.shared > b.shared) return -1;
       if (a.shared < b.shared) return 1;
-      if (a.boosts > b.boosts) return -1;
-      if (a.boosts < b.boosts) return 1;
+      if (a.reposts > b.reposts) return -1;
+      if (a.reposts < b.reposts) return 1;
       if (a.likes > b.likes) return -1;
       if (a.likes < b.likes) return 1;
       if ((a.quotes ?? 0) > (b.quotes ?? 0)) return -1;
@@ -678,7 +679,7 @@ function Catchup() {
       {
         filtered,
         groups,
-        boosts,
+        reposts,
         quotes,
         replies,
         original,
@@ -770,12 +771,12 @@ function Catchup() {
       return postFilterMatches;
     });
 
-    // Deduplicate boosts
-    const boostedPosts: Record<string, CatchupPost> = {};
+    // Deduplicate reposts
+    const repostedPosts: Record<string, CatchupPost> = {};
     filtered.forEach((post) => {
-      if (post.reblog) {
-        if (boostedPosts[post.reblog.id]) {
-          const existing = boostedPosts[post.reblog.id];
+      if (post.repost) {
+        if (repostedPosts[post.repost.id]) {
+          const existing = repostedPosts[post.repost.id];
           if (existing.__BOOSTERS) {
             existing.__BOOSTERS.add(post.account);
           } else {
@@ -783,7 +784,7 @@ function Catchup() {
           }
           post.__HIDDEN = true;
         } else {
-          boostedPosts[post.reblog.id] = post;
+          repostedPosts[post.repost.id] = post;
         }
       }
     });
@@ -836,8 +837,8 @@ function Catchup() {
           }
         }
         if (sortBy !== 'createdAt') {
-          a = (a.reblog as CatchupPost | null | undefined) || a;
-          b = (b.reblog as CatchupPost | null | undefined) || b;
+          a = (a.repost as CatchupPost | null | undefined) || a;
+          b = (b.repost as CatchupPost | null | undefined) || b;
           if (sortBy !== 'density' && a[sortBy] === b[sortBy]) {
             return compareCreatedAt(a, b);
           }
@@ -871,9 +872,9 @@ function Catchup() {
     return sortedFilteredPosts.map((post) => {
       const baseKey = [
         post.id,
-        post.reblog?.id ?? '',
+        post.repost?.id ?? '',
         post.createdAt,
-        post.reblog?.createdAt ?? '',
+        post.repost?.createdAt ?? '',
         post.account.id,
       ].join('|');
       const keyCount = keyCounts.get(baseKey) ?? 0;
@@ -1012,7 +1013,7 @@ function Catchup() {
         all: 'all posts',
         original: 'original posts',
         replies: 'replies',
-        boosts: 'reposts',
+        reposts: 'reposts',
         quotes: 'quotes',
         groups: 'groups',
         filtered: 'filtered posts',
@@ -1023,7 +1024,7 @@ function Catchup() {
           desc: 'latest',
           other: '',
         }),
-        reblogsCount: select(sortOrder, {
+        repostsCount: select(sortOrder, {
           asc: 'fewest reposts',
           desc: 'most reposts',
           other: '',
@@ -1824,8 +1825,8 @@ function Catchup() {
                             }
                             onChange={() => {
                               setSelectedFilterCategory(key);
-                              if (key === 'boosts') {
-                                setSortBy('reblogsCount');
+                              if (key === 'reposts') {
+                                setSortBy('repostsCount');
                                 setSortOrder('desc');
                                 setGroupBy(null);
                               }
@@ -1922,7 +1923,7 @@ function Catchup() {
                           onChange={() => {
                             setSortBy(key);
                             const order =
-                              /(replies|favourites|reblogs|quotes)/.test(key)
+                              /(replies|favourites|reposts|quotes)/.test(key)
                                 ? 'desc'
                                 : 'asc';
                             setSortOrder(order);
@@ -1933,7 +1934,7 @@ function Catchup() {
                             createdAt: t`Date`,
                             repliesCount: t`Replies`,
                             favouritesCount: t`Likes`,
-                            reblogsCount: t`Reposts`,
+                            repostsCount: t`Reposts`,
                             quotesCount: t`Quotes`,
                             density: t`Density`,
                           }[key]
@@ -2017,7 +2018,7 @@ function Catchup() {
                 } ${groupBy ? `catchup-group-${groupBy}` : ''}`}
               >
                 {sortedFilteredPostRows.map(({ post, renderKey }, i) => {
-                  const postId = post.reblog?.id || post.id;
+                  const postId = post.repost?.id || post.id;
                   let showSeparator = false;
                   if (groupBy === 'account') {
                     if (
@@ -2044,7 +2045,7 @@ function Catchup() {
               <footer>
                 {filteredPosts.length > 5 && (
                   <p>
-                    {selectedFilterCategory === 'boosts'
+                    {selectedFilterCategory === 'reposts'
                       ? t`You don't have to read everything.`
                       : t`That's all.`}{' '}
                     <button
@@ -2210,7 +2211,7 @@ const PostLine = memo(
     const {
       account,
       group,
-      reblog,
+      repost,
       quote,
       inReplyToId,
       inReplyToAccountId,
@@ -2234,8 +2235,8 @@ const PostLine = memo(
         className={`post-line ${
           group
             ? 'group'
-            : reblog
-              ? 'reblog'
+            : repost
+              ? 'repost'
               : supportsNativeQuote() && hasQuote(quote)
                 ? 'quote'
                 : ''
@@ -2245,8 +2246,8 @@ const PostLine = memo(
         onMouseEnter={debugHover}
       >
         <span className="post-author">
-          {reblog ? (
-            <span className="post-reblog-avatar">
+          {repost ? (
+            <span className="post-repost-avatar">
               <Avatar
                 url={account.avatarStatic || account.avatar}
                 squircle={account.bot}
@@ -2262,10 +2263,10 @@ const PostLine = memo(
                 : ''}{' '}
               <Icon icon="rocket" />{' '}
               {/* <Avatar
-              url={reblog.account.avatarStatic || reblog.account.avatar}
-              squircle={reblog.account.bot}
+              url={repost.account.avatarStatic || repost.account.avatar}
+              squircle={repost.account.bot}
             /> */}
-              <NameText account={reblog.account} showAvatar />
+              <NameText account={repost.account} showAvatar />
             </span>
           ) : hasQuote(quote) ? (
             <span className="post-quote-avatar">
@@ -2281,15 +2282,15 @@ const PostLine = memo(
           )}
         </span>
         <PostPeek
-          post={(reblog as CatchupPost | null | undefined) || post}
+          post={(repost as CatchupPost | null | undefined) || post}
           filterInfo={filterInfo}
         />
         <span className="post-meta">
           <PostStats
-            post={(reblog as CatchupPost | null | undefined) || post}
+            post={(repost as CatchupPost | null | undefined) || post}
           />{' '}
           <RelativeTime
-            dateTime={new Date(reblog?.createdAt || post.createdAt)}
+            dateTime={new Date(repost?.createdAt || post.createdAt)}
             format="micro"
           />
         </span>
@@ -2592,7 +2593,7 @@ interface PostStatsProps {
 
 function PostStats({ post }: PostStatsProps) {
   const { t } = useLingui();
-  const { reblogsCount, repliesCount, favouritesCount, quotesCount } = post;
+  const { repostsCount, repliesCount, favouritesCount, quotesCount } = post;
   const safeQuotesCount = quotesCount ?? 0;
   return (
     <span className="post-stats">
@@ -2608,14 +2609,14 @@ function PostStats({ post }: PostStatsProps) {
           {shortenNumber(favouritesCount)}
         </span>
       )}
-      {reblogsCount > 0 || safeQuotesCount > 0 ? (
-        <span className="post-stat-boosts">
+      {repostsCount > 0 || safeQuotesCount > 0 ? (
+        <span className="post-stat-reposts">
           <Icon icon="rocket" size="s" alt={t`Reposts`} />{' '}
-          {reblogsCount > 0 || safeQuotesCount > 0
-            ? `${reblogsCount > 0 ? shortenNumber(reblogsCount) : ''}${
-                reblogsCount > 0 && safeQuotesCount > 0 ? '+' : ''
+          {repostsCount > 0 || safeQuotesCount > 0
+            ? `${repostsCount > 0 ? shortenNumber(repostsCount) : ''}${
+                repostsCount > 0 && safeQuotesCount > 0 ? '+' : ''
               }${safeQuotesCount > 0 ? shortenNumber(quotesCount) : ''}`
-            : shortenNumber(reblogsCount)}
+            : shortenNumber(repostsCount)}
         </span>
       ) : null}
     </span>

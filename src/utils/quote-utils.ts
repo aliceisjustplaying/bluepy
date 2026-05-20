@@ -1,8 +1,5 @@
-import { getAPIVersions, getCurrentInstance } from './store-utils';
-
 export function supportsNativeQuote(): boolean {
-  if (getCurrentInstance()?.domain === 'bsky.social') return true;
-  return ((getAPIVersions()?.mastodon as number | undefined) ?? 0) >= 7;
+  return true;
 }
 
 export function getPostQuoteApprovalPolicy(

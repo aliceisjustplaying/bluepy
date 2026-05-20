@@ -189,7 +189,7 @@ export default function QuoteChainModal({
                 }}
               >
                 {renderStatus({
-                  status: post as AnyStatus,
+                  status: post as unknown as AnyStatus,
                   instance,
                   size: 's',
                   readOnly: true,

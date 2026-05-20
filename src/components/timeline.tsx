@@ -34,7 +34,7 @@ import {
 } from '../utils/timeline-context';
 import {
   filterHiddenStatuses,
-  groupBoosts,
+  groupReposts,
   groupContext,
 } from '../utils/timeline-utils';
 import useInterval from '../utils/useInterval';
@@ -136,6 +136,7 @@ const InView: ComponentType<InViewProps> =
 type TimelineStatusEntry = mastodon.v1.Status & {
   _pinned?: unknown;
   _differentAuthor?: boolean;
+  repost?: TimelineStatusEntry | null;
 };
 
 type MediaPostProps = Omit<
@@ -170,7 +171,7 @@ interface StatusPeekPayload {
   } | null;
 }
 
-type TimelineGroupType = 'boosts' | 'thread' | 'conversation' | 'pinned';
+type TimelineGroupType = 'reposts' | 'thread' | 'conversation' | 'pinned';
 
 interface TimelineGroupEntry {
   id: string | string[];
@@ -433,7 +434,7 @@ interface TimelineProps {
   emptyText?: ReactNode;
   errorText?: string;
   useItemID?: boolean;
-  boostsCarousel?: boolean;
+  repostsCarousel?: boolean;
   fetchItems?: (firstLoad?: boolean) => Promise<FetchItemsResult>;
   checkForUpdates?: () => Promise<boolean> | boolean | undefined;
   checkForUpdatesInterval?: number;
@@ -456,7 +457,7 @@ function Timeline({
   emptyText,
   errorText,
   useItemID, // use statusID instead of status object, assuming it's already in states
-  boostsCarousel,
+  repostsCarousel,
   fetchItems = () => Promise.resolve({} as FetchItemsResult),
   checkForUpdates = () => undefined,
   checkForUpdatesInterval = 15_000, // 15 seconds
@@ -539,8 +540,8 @@ function Timeline({
               filterContext,
             ) as TimelineEntry[];
             if (allowGrouping) {
-              if (boostsCarousel) {
-                processed = groupBoosts(
+              if (repostsCarousel) {
+                processed = groupReposts(
                   processed as TimelineStatusEntry[],
                 ) as TimelineEntry[];
               }
@@ -1016,10 +1017,10 @@ export const TimelineItem = memo(
     );
     const groupView = hasItems(status);
     const statusID = (status as TimelineStatusEntry).id;
-    const reblog = (status as TimelineStatusEntry).reblog;
+    const repost = (status as TimelineStatusEntry).repost;
     const _pinned = status._pinned;
     if (_pinned) useItemID = false;
-    const actualStatusID = reblog?.id || statusID;
+    const actualStatusID = repost?.id || statusID;
     const url = instance
       ? `/${instance}/s/${actualStatusID}`
       : `/s/${actualStatusID}`;
@@ -1032,7 +1033,7 @@ export const TimelineItem = memo(
         filterContext,
       ) as TimelineItemEntry[];
       let title: string | ReactElement = '';
-      if (type === 'boosts') {
+      if (type === 'reposts') {
         title = plural(fItems.length, {
           one: '# Repost',
           other: '# Reposts',
@@ -1040,7 +1041,7 @@ export const TimelineItem = memo(
       } else if (type === 'pinned') {
         title = t`Pinned posts`;
       }
-      const isCarousel = type === 'boosts' || type === 'pinned';
+      const isCarousel = type === 'reposts' || type === 'pinned';
       if (isCarousel) {
         const filteredItemsIDs = new Set<string>();
         // Here, we don't hide filtered posts, but we sort them last
@@ -1107,9 +1108,9 @@ export const TimelineItem = memo(
                       {grouped.posts.map((inner) => {
                         const innerStatus = inner as TimelineStatusEntry;
                         const innerID = innerStatus.id;
-                        const innerReblog = innerStatus.reblog;
+                        const innerRepost = innerStatus.repost;
                         const innerPinned = innerStatus._pinned;
-                        const innerActualID = innerReblog?.id || innerID;
+                        const innerActualID = innerRepost?.id || innerID;
                         const innerURL = instance
                           ? `/${instance}/s/${innerActualID}`
                           : `/s/${innerActualID}`;
@@ -1142,9 +1143,9 @@ export const TimelineItem = memo(
 
                 const itemStatus = item as TimelineStatusEntry;
                 const itemID = itemStatus.id;
-                const itemReblog = itemStatus.reblog;
+                const itemRepost = itemStatus.repost;
                 const itemPinned = itemStatus._pinned;
-                const itemActualID = itemReblog?.id || itemID;
+                const itemActualID = itemRepost?.id || itemID;
                 const itemURL = instance
                   ? `/${instance}/s/${itemActualID}`
                   : `/s/${itemActualID}`;

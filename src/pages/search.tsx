@@ -44,7 +44,7 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
 };
 
 function Status(props: { status: mastodon.v1.Status }) {
-  return <StatusComponent {...(props as StatusComponentProps)} />;
+  return <StatusComponent {...(props as unknown as StatusComponentProps)} />;
 }
 type InViewProps = {
   onChange?: (inView: boolean) => void;
@@ -107,10 +107,9 @@ function Search({ columnMode, ...props }: SearchProps) {
   const routeParams = useParams() as { instance?: string };
   const [routeSearchParams] = useSearchParams();
   const params: { instance?: string } = columnMode ? {} : routeParams;
-  const { masto, instance, authenticated, client } = api({
+  const { masto, instance, authenticated } = api({
     instance: params.instance,
   });
-  const atproto = !!client?.atproto;
   const [uiState, setUIState] = useState('default');
   const searchParams = columnMode ? emptySearchParams : routeSearchParams;
   const searchFormRef = useRef<SearchFormHandle | null>(null);
@@ -138,10 +137,8 @@ function Search({ columnMode, ...props }: SearchProps) {
   useTitle(title, `/search`);
 
   const [showMore, setShowMore] = useState(false);
-  const offsetRef = useRef(0);
   const cursorRef = useRef<Record<string, string | undefined>>({});
   useEffect(() => {
-    offsetRef.current = 0;
     cursorRef.current = {};
   }, [q, type]);
 
@@ -222,15 +219,6 @@ function Search({ columnMode, ...props }: SearchProps) {
 
   const loadResults = useCallback(
     (firstLoad?: boolean) => {
-      if (firstLoad) {
-        offsetRef.current = 0;
-      }
-
-      if (!firstLoad && !authenticated && !atproto) {
-        // Search results pagination is only available to authenticated users
-        return;
-      }
-
       setUIState('loading');
       if (firstLoad && !type) {
         setStatusResults((prev) => prev.slice(0, SHORT_LIMIT));
@@ -247,17 +235,13 @@ function Search({ columnMode, ...props }: SearchProps) {
         if (type) {
           searchListParams.limit = LIMIT;
           searchListParams.type = type;
-          if (atproto) {
-            const cursor = cursorRef.current[type];
-            if (!firstLoad && !cursor) {
-              setShowMore(false);
-              setUIState('default');
-              return;
-            }
-            if (cursor) searchListParams.cursor = cursor;
-          } else if (authenticated) {
-            searchListParams.offset = offsetRef.current;
+          const cursor = cursorRef.current[type];
+          if (!firstLoad && !cursor) {
+            setShowMore(false);
+            setUIState('default');
+            return;
           }
+          if (cursor) searchListParams.cursor = cursor;
         }
 
         try {
@@ -273,11 +257,9 @@ function Search({ columnMode, ...props }: SearchProps) {
             ] as SearchResultsByType[typeof typeKey];
             if (firstLoad) {
               setResultsForType(typeKey, nextResults);
-              const length = nextResults?.length;
-              offsetRef.current = LIMIT;
               cursorRef.current[type] = nextCursor;
-              setShowMore(atproto ? !!nextCursor : !!length);
-            } else if (atproto) {
+              setShowMore(!!nextCursor);
+            } else {
               setResultsForType(
                 typeKey,
                 (prev) =>
@@ -288,37 +270,12 @@ function Search({ columnMode, ...props }: SearchProps) {
               );
               cursorRef.current[type] = nextCursor;
               setShowMore(!!nextCursor);
-            } else {
-              // If first item is the same, it means API doesn't support offset
-              // I know this is a very basic check, but it works for now
-              const currentList = nextResults as
-                | Array<{ id?: string }>
-                | undefined;
-              const existingList = typeResultsRef.current[typeKey] as
-                | Array<{ id?: string }>
-                | undefined;
-              if (currentList?.[0]?.id === existingList?.[0]?.id) {
-                setShowMore(false);
-              } else {
-                setResultsForType(
-                  typeKey,
-                  (prev) =>
-                    [
-                      ...prev,
-                      ...nextResults,
-                    ] as SearchResultsByType[typeof typeKey],
-                );
-                const length = nextResults?.length;
-                offsetRef.current = offsetRef.current + LIMIT;
-                setShowMore(!!length);
-              }
             }
           } else {
             const typedResults = results;
             setStatusResults(typedResults.statuses || []);
             setAccountResults(typedResults.accounts || []);
             setHashtagResults(typedResults.hashtags || []);
-            offsetRef.current = 0;
             setShowMore(false);
           }
           if (authenticated) void loadRelationships(results.accounts);
@@ -333,7 +290,6 @@ function Search({ columnMode, ...props }: SearchProps) {
     [
       q,
       type,
-      atproto,
       authenticated,
       masto,
       loadRelationships,

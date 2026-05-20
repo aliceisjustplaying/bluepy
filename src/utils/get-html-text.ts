@@ -9,8 +9,7 @@ interface GetHTMLTextOptions {
   readonly truncateLinks?: boolean;
 }
 
-function truncateMastodonLinks(content: DocumentFragment): void {
-  // MASTODON-SPECIFIC classes
+function truncateHiddenLinks(content: DocumentFragment): void {
   // Remove .invisible
   for (const invisibleElement of content.querySelectorAll('.invisible')) {
     invisibleElement.remove();
@@ -53,7 +52,7 @@ function getHTMLText(
   preProcess?.(content);
 
   if (truncateLinks) {
-    truncateMastodonLinks(content);
+    truncateHiddenLinks(content);
   }
 
   // Collect innerText from all child nodes since DocumentFragment doesn't have innerText

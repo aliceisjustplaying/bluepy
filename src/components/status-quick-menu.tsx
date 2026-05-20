@@ -7,7 +7,6 @@ import { supportsNativeQuote } from '../utils/quote-utils';
 import shortenNumber from '../utils/shorten-number';
 import showCompose from '../utils/show-compose';
 import showToast from '../utils/show-toast';
-import supports from '../utils/supports';
 
 import Icon from './icon';
 import MenuConfirm from './menu-confirm';
@@ -17,17 +16,17 @@ import type { LooseClickEvent } from './status-types';
 
 type StatusQuickMenuProps = Pick<
   StatusMenuPartsArgs,
-  | 'reblogged'
+  | 'reposted'
   | 'quoteDisabled'
   | 'status'
   | 'quoteMetaText'
   | 'quoteText'
   | 'url'
   | 'menuFooter'
-  | 'canBoost'
-  | 'confirmBoostStatus'
+  | 'canRepost'
+  | 'confirmRepostStatus'
   | 'canQuote'
-  | 'reblogsCount'
+  | 'repostsCount'
   | 'quotesCount'
   | 'favouriteStatusNotify'
   | 'favourited'
@@ -46,17 +45,17 @@ export default function StatusQuickMenu({
   ReplyMenuContent,
   isSizeLarge,
   replyStatus,
-  reblogged,
+  reposted,
   quoteDisabled,
   status,
   quoteMetaText,
   quoteText,
   url,
   menuFooter,
-  canBoost,
-  confirmBoostStatus,
+  canRepost,
+  confirmRepostStatus,
   canQuote,
-  reblogsCount = 0,
+  repostsCount = 0,
   quotesCount = 0,
   favouriteStatusNotify,
   favourited,
@@ -83,10 +82,10 @@ export default function StatusQuickMenu({
         confirmLabel={
           <>
             <Icon icon="rocket" />
-            <span>{reblogged ? t`Undo repost` : t`Repost`}</span>
+            <span>{reposted ? t`Undo repost` : t`Repost`}</span>
           </>
         }
-        className={`menu-reblog ${reblogged ? 'checked' : ''}`}
+        className={`menu-repost ${reposted ? 'checked' : ''}`}
         menuExtras={
           <>
             {supportsNativeQuote() && (
@@ -132,15 +131,15 @@ export default function StatusQuickMenu({
           </>
         }
         menuFooter={menuFooter}
-        disabled={!canBoost}
+        disabled={!canRepost}
         onClick={() => {
           void haptics.trigger('light');
           void (async () => {
             try {
-              const done = await confirmBoostStatus();
+              const done = await confirmRepostStatus();
               if (!isSizeLarge && done) {
                 showToast(
-                  reblogged
+                  reposted
                     ? t`Removed repost of @${username || acct}'s post`
                     : t`Reposted @${username || acct}'s post`,
                 );
@@ -160,11 +159,11 @@ export default function StatusQuickMenu({
           <Icon icon="rocket" />
         )}
         <span>
-          {reblogsCount > 0 || quotesCount > 0
-            ? `${reblogsCount > 0 ? shortenNumber(reblogsCount) : ''}${
-                reblogsCount > 0 && quotesCount > 0 ? '+' : ''
+          {repostsCount > 0 || quotesCount > 0
+            ? `${repostsCount > 0 ? shortenNumber(repostsCount) : ''}${
+                repostsCount > 0 && quotesCount > 0 ? '+' : ''
               }${quotesCount > 0 ? shortenNumber(quotesCount) : ''}`
-            : reblogged
+            : reposted
               ? t`Undo repost`
               : canQuote
                 ? t`Repost/Quote…`
@@ -186,17 +185,15 @@ export default function StatusQuickMenu({
               : t`Like`}
         </span>
       </MenuItem>
-      {supports('@mastodon/post-bookmark') && (
-        <MenuItem
-          onClick={() => {
-            void bookmarkStatusNotify();
-          }}
-          className={`menu-bookmark ${bookmarked ? 'checked' : ''}`}
-        >
-          <Icon icon="bookmark" />
-          <span>{bookmarked ? t`Unbookmark` : t`Bookmark`}</span>
-        </MenuItem>
-      )}
+      <MenuItem
+        onClick={() => {
+          void bookmarkStatusNotify();
+        }}
+        className={`menu-bookmark ${bookmarked ? 'checked' : ''}`}
+      >
+        <Icon icon="bookmark" />
+        <span>{bookmarked ? t`Unbookmark` : t`Bookmark`}</span>
+      </MenuItem>
     </div>
   );
 }

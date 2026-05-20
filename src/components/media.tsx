@@ -1082,10 +1082,10 @@ function Media({
         >
           {showOriginal ? (
             previewUrl ? (
-              // TODO(oxlint:jsx-a11y/media-has-caption): Mastodon's media
-              // model does not surface caption tracks; alt-text is exposed
-              // separately via the figcaption above. Inserting an empty
-              // <track src=""> would advertise a non-existent captions file.
+              // TODO(oxlint:jsx-a11y/media-has-caption): caption tracks are
+              // not available here; alt-text is exposed separately via the
+              // figcaption above. Inserting an empty <track src=""> would
+              // advertise a non-existent captions file.
               <video
                 src={remoteUrl || url ? `${remoteUrl || url}#t=0.1` : undefined}
                 width={width}

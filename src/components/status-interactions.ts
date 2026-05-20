@@ -7,7 +7,6 @@ import openCompose from '../utils/open-compose';
 import showCompose from '../utils/show-compose';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
-import supports from '../utils/supports';
 
 import { REACTIONS_LIMIT } from './status-helpers';
 import type { AnyAccount, AnyStatus, StatusContentMasto } from './status-types';
@@ -37,8 +36,8 @@ interface StatusInteractionsArgs {
   isSizeLarge: boolean;
   username?: string;
   acct?: string;
-  reblogged?: boolean | null;
-  reblogsCount?: number;
+  reposted?: boolean | null;
+  repostsCount?: number;
   favourited?: boolean | null;
   favouritesCount?: number;
   bookmarked?: boolean | null;
@@ -58,8 +57,8 @@ export default function useStatusInteractions({
   isSizeLarge,
   username,
   acct,
-  reblogged,
-  reblogsCount = 0,
+  reposted,
+  repostsCount = 0,
   favourited,
   favouritesCount = 0,
   bookmarked,
@@ -96,7 +95,7 @@ export default function useStatusInteractions({
     } as Parameters<typeof showCompose>[0]);
   };
 
-  const confirmBoostStatus = async () => {
+  const confirmRepostStatus = async () => {
     if (!sameInstance || !authenticated) {
       alert(unauthInteractionErrorMessage);
       return false;
@@ -104,14 +103,14 @@ export default function useStatusInteractions({
     try {
       states.statuses[sKey] = {
         ...status,
-        reblogged: !reblogged,
-        reblogsCount: reblogsCount + (reblogged ? -1 : 1),
+        reposted: !reposted,
+        repostsCount: repostsCount + (reposted ? -1 : 1),
       } as CachedStatus;
-      if (reblogged) {
-        const newStatus = await masto.v1.statuses.$select(id).unreblog();
+      if (reposted) {
+        const newStatus = await masto.v1.statuses.$select(id).unrepost();
         saveStatus(newStatus, instance);
       } else {
-        const newStatus = await masto.v1.statuses.$select(id).reblog();
+        const newStatus = await masto.v1.statuses.$select(id).repost();
         saveStatus(newStatus, instance);
       }
       return true;
@@ -165,7 +164,6 @@ export default function useStatusInteractions({
   };
 
   const bookmarkStatus = async (): Promise<boolean> => {
-    if (!supports('@mastodon/post-bookmark')) return false;
     if (!sameInstance || !authenticated) {
       alert(unauthInteractionErrorMessage);
       return false;
@@ -206,14 +204,14 @@ export default function useStatusInteractions({
     }
   };
 
-  const reblogIterator = useRef<ReactionIterator | null>(null);
+  const repostIterator = useRef<ReactionIterator | null>(null);
   const favouriteIterator = useRef<ReactionIterator | null>(null);
-  async function fetchBoostedLikedByAccounts(firstLoad?: boolean) {
+  async function fetchRepostedLikedByAccounts(firstLoad?: boolean) {
     if (firstLoad) {
       const stmtSel: StatusSelector = masto.v1.statuses.$select(
         statusID as string,
       );
-      reblogIterator.current = stmtSel.rebloggedBy
+      repostIterator.current = stmtSel.repostedBy
         .list({
           limit: REACTIONS_LIMIT,
         })
@@ -224,25 +222,25 @@ export default function useStatusInteractions({
         })
         .values();
     }
-    if (!reblogIterator.current || !favouriteIterator.current) {
+    if (!repostIterator.current || !favouriteIterator.current) {
       return { value: [], done: true };
     }
-    const [reblogResult, favouriteResult] = await Promise.allSettled([
-      reblogIterator.current.next(),
+    const [repostResult, favouriteResult] = await Promise.allSettled([
+      repostIterator.current.next(),
       favouriteIterator.current.next(),
     ]);
-    const reblogResults = (
-      reblogResult as PromiseFulfilledResult<IteratorResult>
+    const repostResults = (
+      repostResult as PromiseFulfilledResult<IteratorResult>
     ).value;
     const favouriteResults = (
       favouriteResult as PromiseFulfilledResult<IteratorResult>
     ).value;
-    if (reblogResults.value?.length || favouriteResults.value?.length) {
+    if (repostResults.value?.length || favouriteResults.value?.length) {
       const accounts: AnyAccount[] = [];
-      if (reblogResults.value?.length) {
+      if (repostResults.value?.length) {
         accounts.push(
-          ...reblogResults.value.map((a: AnyAccount) => {
-            a._types = ['reblog'];
+          ...repostResults.value.map((a: AnyAccount) => {
+            a._types = ['repost'];
             return a;
           }),
         );
@@ -257,7 +255,7 @@ export default function useStatusInteractions({
       }
       return {
         value: accounts,
-        done: reblogResults.done && favouriteResults.done,
+        done: repostResults.done && favouriteResults.done,
       };
     }
     return {
@@ -271,11 +269,11 @@ export default function useStatusInteractions({
     mediaNoDesc,
     statusMonthsAgo,
     replyStatus,
-    confirmBoostStatus,
+    confirmRepostStatus,
     favouriteStatus,
     favouriteStatusNotify,
     bookmarkStatus,
     bookmarkStatusNotify,
-    fetchBoostedLikedByAccounts,
+    fetchRepostedLikedByAccounts,
   };
 }

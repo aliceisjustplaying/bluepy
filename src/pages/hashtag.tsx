@@ -28,18 +28,12 @@ import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
 
-// Limit is 4 per "mode"
-// https://github.com/mastodon/mastodon/issues/15194
-// Hard-coded https://github.com/mastodon/mastodon/blob/19614ba2477f3d12468f5ec251ce1cc5f8c6210c/app/models/tag_feed.rb#L4
-const TAGS_LIMIT_PER_MODE = 4;
-const TOTAL_TAGS_LIMIT = TAGS_LIMIT_PER_MODE + 1;
-
 type HashtagStatus = mastodon.v1.Status;
 
 interface SaveStatusPayload extends Record<string, unknown> {
   id?: string;
   account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
+  repost?: SaveStatusPayload | null;
   quote?: SaveStatusPayload | null;
   state?: unknown;
   quotedStatus?: SaveStatusPayload | null;
@@ -216,8 +210,6 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
     }
   }
 
-  const reachLimit = hashtags.length >= TOTAL_TAGS_LIMIT;
-
   return (
     <>
       <Timeline
@@ -289,7 +281,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                 <MenuDivider />
               </>
             )}
-            <FocusableItem className="menu-field" disabled={reachLimit}>
+            <FocusableItem className="menu-field">
               {({ ref }: { ref: React.Ref<HTMLInputElement> }) => (
                 <form
                   onSubmit={(e: SyntheticEvent<HTMLFormElement>) => {
@@ -324,20 +316,13 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                   <input
                     ref={ref}
                     type="text"
-                    placeholder={
-                      reachLimit
-                        ? plural(TOTAL_TAGS_LIMIT, {
-                            other: 'Max # tags',
-                          })
-                        : t`Add hashtag`
-                    }
+                    placeholder={t`Add hashtag`}
                     required
                     autoCorrect="off"
                     autoCapitalize="off"
                     spellCheck={false}
                     // no spaces, no hashtags
                     pattern="[^#＃][^\s#＃]+[^#＃]"
-                    disabled={reachLimit}
                     dir="auto"
                     enterKeyHint="go"
                   />

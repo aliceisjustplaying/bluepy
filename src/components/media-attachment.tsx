@@ -10,7 +10,6 @@ import prettyBytes from '../utils/pretty-bytes';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import { getCurrentInstanceConfiguration } from '../utils/store-utils';
-import supports from '../utils/supports';
 
 import Icon from './icon';
 import Menu2 from './menu2';
@@ -130,8 +129,7 @@ function MediaAttachment({
 }: MediaAttachmentProps) {
   const { i18n, t } = useLingui();
   const [uiState, setUIState] = useState('default');
-  const supportsEdit =
-    supports('@mastodon') || supports('@gotosocial/edit-media-attributes');
+  const supportsEdit = false;
   const { type, id, fileData, fileName, file } = attachment;
   const fileSize = attachment.size ?? file?.size;
   const url = useMemo(() => {

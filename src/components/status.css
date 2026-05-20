@@ -1,4 +1,4 @@
-/* REBLOG + REPLY-TO */
+/* REPOST + REPLY-TO */
 
 :root {
   --post-gradient-angle: 160deg;
@@ -10,10 +10,10 @@
   --post-gradient-height: min(160px, 50%);
 }
 
-.status-reblog {
+.status-repost {
   background: linear-gradient(
     var(--post-gradient-angle),
-    var(--reblog-faded-color),
+    var(--repost-faded-color),
     transparent var(--post-gradient-height)
   );
 }
@@ -31,7 +31,7 @@
     transparent var(--post-gradient-height)
   );
 }
-:is(.status-reblog, .status-group) .status-reply-to {
+:is(.status-repost, .status-group) .status-reply-to {
   background: linear-gradient(
     var(--post-gradient-chip-angle),
     var(--reply-to-faded-color),
@@ -63,8 +63,8 @@
   overflow: hidden;
   margin-bottom: -8px;
 }
-.status-reblog .status-pre-meta .icon {
-  color: var(--reblog-color);
+.status-repost .status-pre-meta .icon {
+  color: var(--repost-color);
   margin-inline-end: 4px;
   vertical-align: text-bottom;
 }
@@ -938,10 +938,10 @@
   }
 }
 .timeline-deck
-  .status-reblog:not(.status-carousel .status-reblog)
+  .status-repost:not(.status-carousel .status-repost)
   .status
   .content {
-  /* Deprioritise long-form boosts */
+  /* Deprioritise long-form reposts */
   max-height: 40vh;
   max-height: 40dvh;
 }
@@ -2496,15 +2496,15 @@ a.card:is(:hover, :focus):visited {
     color: var(--link-color);
     background-color: var(--button-plain-bg-hover-color);
   }
-  .status .action > button.plain.reblog-button:not(:disabled):hover {
-    color: var(--reblog-color);
+  .status .action > button.plain.repost-button:not(:disabled):hover {
+    color: var(--repost-color);
   }
 }
-.status .action > button.plain.reblog-button.checked {
-  color: var(--reblog-color);
-  border-color: var(--reblog-color);
+.status .action > button.plain.repost-button.checked {
+  color: var(--repost-color);
+  border-color: var(--repost-color);
 }
-@keyframes reblogged {
+@keyframes reposted {
   5% {
     transform: translate(-2px, -2px);
   }
@@ -2519,8 +2519,8 @@ a.card:is(:hover, :focus):visited {
     opacity: 0;
   }
 }
-.status .action > button.plain.reblog-button.checked .icon {
-  animation: reblogged 1s ease-in-out;
+.status .action > button.plain.repost-button.checked .icon {
+  animation: reposted 1s ease-in-out;
 }
 @media (hover: hover) {
   .status .action > button.plain.favourite-button:hover {
@@ -2611,8 +2611,8 @@ a.card:is(:hover, :focus):visited {
     }
   }
 
-  .menu-reblog.checked {
-    --checked-color: var(--reblog-color);
+  .menu-repost.checked {
+    --checked-color: var(--repost-color);
   }
   .menu-favourite.checked {
     --checked-color: var(--favourite-color);
@@ -2688,9 +2688,9 @@ a.card:is(:hover, :focus):visited {
       box-shadow: inset 0 0 0 2px var(--bg-color);
     }
 
-    &.reblog-button.checked {
-      color: var(--reblog-color);
-      outline-color: var(--reblog-color);
+    &.repost-button.checked {
+      color: var(--repost-color);
+      outline-color: var(--repost-color);
     }
 
     &.favourite-button.checked {
@@ -2782,8 +2782,8 @@ a.card:is(:hover, :focus):visited {
 .status-badge .favourite {
   color: var(--favourite-color);
 }
-.status-badge .reblog {
-  color: var(--reblog-color);
+.status-badge .repost {
+  color: var(--repost-color);
 }
 .status-badge .bookmark {
   color: var(--link-color);
@@ -3115,8 +3115,8 @@ a.card:is(:hover, :focus):visited {
 #reactions-container .reactions-block .favourite-icon {
   color: var(--favourite-color);
 }
-#reactions-container .reactions-block .reblog-icon {
-  color: var(--reblog-color);
+#reactions-container .reactions-block .repost-icon {
+  color: var(--repost-color);
 }
 
 /* ALT BADGE */

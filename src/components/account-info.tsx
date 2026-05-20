@@ -51,10 +51,8 @@ import Modal from './modal';
 import RelatedActions from './related-actions';
 
 // Augmented Account shape used internally. Adds optional fields the app
-// reads but the masto.v1.Account base does not declare: `_atproto` cache
-// flag, `hideCollections` (Mastodon API extension surfaced by some forks),
-// `roles` (server-specific), and `avatarDescription` /
-// `headerDescription` (Mastodon 4.x media alt-text extensions).
+// reads but the imported account base does not declare: `_atproto` cache
+// flag, `hideCollections`, `roles`, and media alt-text extensions.
 export type AccountInfoShape = mastodon.v1.Account & {
   _atproto?: { hasProfileCounts?: boolean } & Record<string, unknown>;
   hideCollections?: boolean | null;
@@ -114,10 +112,8 @@ function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
   return masto.v1.accounts as AccountsEndpoint;
 }
 
-// Shim for EditProfileSheet: the peer declares its onClose result as
-// ProfileAccount (a deliberately loose local type), but the runtime value is
-// a real mastodon.v1.Account returned by masto.v1.accounts.updateCredentials.
-// This cast preserves that app-level knowledge.
+// Shim for EditProfileSheet: the peer declares its onClose result as a
+// deliberately loose local type, but the runtime value is the updated account.
 function EditProfileSheet(props: {
   onClose?: (arg?: { state?: string; account?: AccountInfoShape }) => void;
 }) {
@@ -130,7 +126,7 @@ interface PostingStats {
   total: number;
   originals: number;
   replies: number;
-  boosts: number;
+  reposts: number;
   quotes: number;
   daysSinceLastPost?: number;
 }
@@ -178,27 +174,27 @@ async function fetchPostingStats(
     total: statuses.length,
     originals: 0,
     replies: 0,
-    boosts: 0,
+    reposts: 0,
     quotes: 0,
   };
   // Categories statuses by type
   // - Original posts (not replies to others)
   // - Threads (self-replies + 1st original post)
-  // - Boosts (reblogs)
+  // - Reposts (reposts)
   // - Replies (not-self replies)
   // - Quotes
-  // Some Mastodon forks (and Bluepy's quote-utils helper) attach a
-  // non-standard `quote` field on Status. Narrow with a local shape rather
-  // than widening the masto type.
+  // Bluepy's quote-utils helper attaches a `quote` field on Status. Narrow
+  // with a local shape rather than widening the imported type.
   type StatusWithQuote = mastodon.v1.Status & {
+    repost?: StatusWithQuote | null;
     quote?: {
       id?: string;
       quotedStatus?: { id?: string } | null;
     } | null;
   };
   statuses.forEach((status: StatusWithQuote) => {
-    if (status.reblog) {
-      stats.boosts++;
+    if (status.repost) {
+      stats.reposts++;
     } else if (
       !!status.inReplyToId &&
       status.inReplyToAccountId !== status.account.id // Not self-reply
@@ -519,7 +515,7 @@ function AccountInfo({
       relationship,
       currentID,
     }: {
-      relationship: mastodon.v1.Relationship;
+      relationship: { following?: boolean };
       currentID: string;
     }) => {
       if (!relationship.following) {
@@ -889,7 +885,7 @@ function AccountInfo({
                     )}
                     {currentAuthenticated &&
                       isSelf &&
-                      supports('@mastodon/profile-edit') && (
+                      supports('@atproto/profile-edit') && (
                         <>
                           <MenuDivider />
                           <MenuItem
@@ -1172,7 +1168,7 @@ function AccountInfo({
                                   ).toLocaleString(i18n.locale || undefined, {
                                     style: 'percent',
                                   })} quotes, ${(
-                                    postingStats.boosts / postingStats.total
+                                    postingStats.reposts / postingStats.total
                                   ).toLocaleString(i18n.locale || undefined, {
                                     style: 'percent',
                                   })} reposts`
@@ -1185,7 +1181,7 @@ function AccountInfo({
                                   ).toLocaleString(i18n.locale || undefined, {
                                     style: 'percent',
                                   })} replies, ${(
-                                    postingStats.boosts / postingStats.total
+                                    postingStats.reposts / postingStats.total
                                   ).toLocaleString(i18n.locale || undefined, {
                                     style: 'percent',
                                   })} reposts`
@@ -1252,12 +1248,12 @@ function AccountInfo({
                                   }}
                                 />
                               )}
-                              {postingStats.boosts > 0 && (
+                              {postingStats.reposts > 0 && (
                                 <div
-                                  className="posting-stats-bar-section posting-stats-bar-boosts"
+                                  className="posting-stats-bar-section posting-stats-bar-reposts"
                                   style={{
                                     '--percentage': `${
-                                      (postingStats.boosts /
+                                      (postingStats.reposts /
                                         postingStats.total) *
                                       100
                                     }%`,
@@ -1281,7 +1277,7 @@ function AccountInfo({
                                 </span>
                               )}
                               <span className="ib">
-                                <span className="posting-stats-legend-item posting-stats-bar-boosts" />{' '}
+                                <span className="posting-stats-legend-item posting-stats-bar-reposts" />{' '}
                                 <Trans>Reposts</Trans>
                               </span>
                             </div>

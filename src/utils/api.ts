@@ -1,6 +1,3 @@
-import { compareVersions, satisfies, validate } from 'compare-versions';
-import { createRestAPIClient, createStreamingAPIClient } from 'masto';
-
 import {
   BSKY_INSTANCE,
   atprotoInstanceInfo,
@@ -13,7 +10,6 @@ import {
   restoreAtprotoOAuthSession,
 } from './atproto-oauth';
 import mem, { type MemoizedFunction } from './mem';
-import { sorted } from './sorted';
 import store from './store';
 import {
   getAccount,
@@ -94,7 +90,6 @@ type StreamingClient = unknown;
 interface ApiClient {
   streamingCallback?: ((streaming: StreamingClient) => void) | null;
   accessToken?: string | null;
-  atproto?: boolean;
   instance: string;
   masto: MastoClient;
   streaming?: StreamingClient;
@@ -116,16 +111,6 @@ interface ApiResult {
   readonly streaming?: StreamingClient;
 }
 
-interface NodeInfoLink {
-  readonly href: string;
-  readonly rel: string;
-}
-
-interface NodeInfoCandidate {
-  readonly href: string;
-  readonly version: string;
-}
-
 const readAtprotoOAuthToken = parseAtprotoOAuthAccessToken as (
   accessToken?: string | null,
 ) => AtprotoOAuthToken | null | undefined;
@@ -136,27 +121,16 @@ const readCachedAtprotoOAuthSession = getCachedAtprotoOAuthSession as (
   subject?: string,
 ) => unknown;
 
-// Default *fallback* instance
-const DEFAULT_INSTANCE = 'mastodon.social';
+const DEFAULT_INSTANCE = BSKY_INSTANCE;
 
-// Per-instance masto instance
-// Useful when only one account is logged in
-// I'm not sure if I'll ever allow multiple logged-in accounts but oh well...
-// E.g. apis['mastodon.social']
 const apis: Record<string, ApiClient | undefined> = {};
 
-// Per-account masto instance
-// Note: There can be many accounts per instance
-// Useful when multiple accounts are logged in or when certain actions require a specific account
-// Just in case if I need this one day.
-// E.g. accountApis['mastodon.social']['ACCESS_TOKEN']
 const accountApis: Record<
   string,
   Record<string, ApiClient | undefined> | undefined
 > = {};
 window.__ACCOUNT_APIS__ = accountApis;
 
-// Current account masto instance
 let currentAccountApi: ApiClient | undefined;
 
 function ensureAccountApis(
@@ -187,84 +161,49 @@ export function initClient({
   readonly accessToken?: string | null;
   readonly instance?: string | null;
 }): ApiClient {
-  let normalizedInstance = instance ?? DEFAULT_INSTANCE;
-  if (/^https?:\/\//.test(normalizedInstance)) {
-    normalizedInstance = normalizedInstance
-      .replace(/^https?:\/\//, '')
-      .replace(/\/+$/, '')
-      .toLowerCase();
-  }
+  const normalizedInstance = normalizeInstance(instance);
   const atprotoSession = parseAtprotoSession(accessToken);
   const atprotoOAuthSession = readAtprotoOAuthToken(accessToken);
   const oauthSession = readCachedAtprotoOAuthSession(atprotoOAuthSession?.sub);
-  if (
-    isAtprotoInstance(normalizedInstance) ||
-    atprotoSession ||
-    atprotoOAuthSession
-  ) {
-    normalizedInstance = BSKY_INSTANCE;
-    let client: ApiClient | undefined;
-    let persistedAccessToken = accessToken;
-    const persistSession = (_event: unknown, session: unknown) => {
-      if (!session || !persistedAccessToken) {
-        return;
-      }
-      const account = getAccountByAccessToken(persistedAccessToken);
-      if (!account) {
-        return;
-      }
-      const nextAccessToken = JSON.stringify({
-        service: atprotoSession?.service,
-        session,
-        type: 'atproto',
-      });
-      account.accessToken = nextAccessToken;
-      account.updatedAt = Date.now();
-      saveAccount(account);
-      const cachedAccountApis = accountApis[normalizedInstance];
-      if (cachedAccountApis?.[persistedAccessToken] !== undefined) {
-        delete cachedAccountApis[persistedAccessToken];
-      }
-      persistedAccessToken = nextAccessToken;
-      if (client) {
-        client.accessToken = nextAccessToken;
-        ensureAccountApis(normalizedInstance)[nextAccessToken] = client;
-      }
-    };
-    const masto = (
-      atprotoSession || atprotoOAuthSession
-        ? createAtprotoClient({
-            oauthSession,
-            persistSession,
-            service: atprotoSession?.service,
-            session: atprotoSession?.session,
-          })
-        : createPublicAtprotoClient()
-    ) as MastoClient;
-    client = {
-      accessToken,
-      atproto: true,
-      instance: normalizedInstance,
-      masto,
-      onStreamingReady(callback) {
-        this.streamingCallback = callback;
-      },
-    };
-    cacheClient(client);
-    return client;
-  }
-
-  const url = `https://${normalizedInstance}`;
-
-  const restMastoClient: unknown = createRestAPIClient({
-    accessToken: accessToken ?? undefined,
-    mediaTimeout: 10 * 60_000,
-    timeout: 2 * 60_000,
-    url,
-  });
-  const masto = restMastoClient as MastoClient;
-
-  const client: ApiClient = {
+  let client: ApiClient | undefined;
+  let persistedAccessToken = accessToken;
+  const persistSession = (_event: unknown, session: unknown) => {
+    if (!session || !persistedAccessToken) {
+      return;
+    }
+    const account = getAccountByAccessToken(persistedAccessToken);
+    if (!account) {
+      return;
+    }
+    const nextAccessToken = JSON.stringify({
+      service: atprotoSession?.service,
+      session,
+      type: 'atproto',
+    });
+    account.accessToken = nextAccessToken;
+    account.updatedAt = Date.now();
+    saveAccount(account);
+    const cachedAccountApis = accountApis[normalizedInstance];
+    if (cachedAccountApis?.[persistedAccessToken] !== undefined) {
+      delete cachedAccountApis[persistedAccessToken];
+    }
+    persistedAccessToken = nextAccessToken;
+    if (client) {
+      client.accessToken = nextAccessToken;
+      ensureAccountApis(normalizedInstance)[nextAccessToken] = client;
+    }
+  };
+  const masto = (
+    atprotoSession || atprotoOAuthSession
+      ? createAtprotoClient({
+          oauthSession,
+          persistSession,
+          service: atprotoSession?.service,
+          session: atprotoSession?.session,
+        })
+      : createPublicAtprotoClient()
+  ) as MastoClient;
+  client = {
     accessToken,
     instance: normalizedInstance,
     masto,
@@ -277,10 +216,8 @@ export function initClient({
   return client;
 }
 
-function isAtprotoInstance(instance?: string | null): boolean {
-  return (
-    instance === BSKY_INSTANCE || instance === 'atproto' || instance === 'bsky'
-  );
+function normalizeInstance(_instance?: string | null): string {
+  return BSKY_INSTANCE;
 }
 
 function parseAtprotoSession(
@@ -309,9 +246,7 @@ export async function hydrateAtprotoOAuthAccessToken(
 }
 
 export function hasInstance(instance: string): boolean {
-  const instances =
-    store.local.getJSON<Record<string, unknown>>('instances') ?? {};
-  return Boolean(instances[instance]);
+  return normalizeInstance(instance) === BSKY_INSTANCE;
 }
 
 export function getMastoV1Resource<T>(
@@ -345,135 +280,17 @@ export async function initInstance(
   instance: string,
 ): Promise<void> {
   console.log('INIT INSTANCE', client, instance);
-  if (client.atproto) {
-    const instances =
-      store.local.getJSON<Record<string, unknown>>('instances') ?? {};
-    instances[BSKY_INSTANCE] = atprotoInstanceInfo();
-    store.local.setJSON('instances', instances);
-    const nodeInfos =
-      store.local.getJSON<Record<string, unknown>>('nodeInfos') ?? {};
-    nodeInfos[BSKY_INSTANCE] = {
-      software: { name: 'mastodon', version: '4.4.0' },
-    };
-    store.local.setJSON('nodeInfos', nodeInfos);
-    return;
-  }
-  const { accessToken, masto } = client;
-  // Request v2, fallback to v1 if fail
-  let info: InstanceInfo | null | undefined;
-  __BENCHMARK.start('fetch-instance');
-  try {
-    info = await masto.v2.instance.fetch();
-  } catch {
-    // Fallback below.
-  }
-  if (!info) {
-    try {
-      info = await masto.v1.instance.fetch();
-    } catch {
-      // Missing instance info is handled by returning early.
-    }
-  }
-  __BENCHMARK.end('fetch-instance');
-  if (!info) {
-    return;
-  }
-  console.log(info);
-  const {
-    // V1
-    uri,
-    urls: { streamingApi } = {},
-    // V2
-    domain,
-    configuration: { urls: { streaming } = {} } = {},
-  } = info;
-
   const instances =
     store.local.getJSON<Record<string, unknown>>('instances') ?? {};
-  const canonicalInstance = domain ?? uri;
-  if (canonicalInstance) {
-    instances[
-      canonicalInstance
-        .replace(/^https?:\/\//, '')
-        .replace(/\/+$/, '')
-        .toLowerCase()
-    ] = info;
-  }
-  if (instance) {
-    instances[instance.toLowerCase()] = info;
-  }
+  instances[BSKY_INSTANCE] = atprotoInstanceInfo();
+  instances[normalizeInstance(instance)] = atprotoInstanceInfo();
   store.local.setJSON('instances', instances);
-
-  let nodeInfo: unknown;
-  // GoToSocial requires we get the NodeInfo to identify server type
-  // Spec: https://github.com/jhass/nodeinfo
-  try {
-    if (uri || domain) {
-      const urlBase = uri ?? `https://${domain}`;
-      const wellKnown = (await (
-        await fetch(`${urlBase}/.well-known/nodeinfo`)
-      ).json()) as { readonly links?: readonly NodeInfoLink[] };
-      if (Array.isArray(wellKnown?.links)) {
-        const schema = 'http://nodeinfo.diaspora.software/ns/schema/';
-        const nodeInfoUrl = sorted(
-          wellKnown.links
-            .filter(
-              (link) =>
-                typeof link.rel === 'string' &&
-                link.rel.startsWith(schema) &&
-                validate(link.rel.slice(schema.length)),
-            )
-            .map((link): NodeInfoCandidate => {
-              const version = link.rel.slice(schema.length);
-              return {
-                href: link.href,
-                version,
-              };
-            }),
-          (a, b) => -compareVersions(a.version, b.version),
-        ).find((candidate) => satisfies(candidate.version, '<=2'))?.href;
-        if (nodeInfoUrl) {
-          nodeInfo = await (await fetch(nodeInfoUrl)).json();
-        }
-      }
-    }
-  } catch {
-    // NodeInfo is opportunistic metadata.
-  }
   const nodeInfos =
     store.local.getJSON<Record<string, unknown>>('nodeInfos') ?? {};
-  if (nodeInfo) {
-    nodeInfos[instance.toLowerCase()] = nodeInfo;
-  }
+  nodeInfos[BSKY_INSTANCE] = {
+    software: { name: 'atproto', version: '1.0.0' },
+  };
   store.local.setJSON('nodeInfos', nodeInfos);
-
-  // This is a weird place to put this but here's updating the masto instance with the streaming API URL set in the configuration
-  // Reason: Streaming WebSocket URL may change, unlike the standard API REST URLs
-  const supportsWebSocket = 'WebSocket' in window;
-  const streamingApiUrl = streaming || streamingApi;
-  if (supportsWebSocket && streamingApiUrl) {
-    console.log('🎏 Streaming API URL:', streamingApiUrl);
-    // Masto.config.props.streamingApiUrl = streaming || streamingApi;
-    // Legacy masto.ws
-    const streamClient = createStreamingAPIClient({
-      accessToken: accessToken ?? undefined,
-      implementation: WebSocket,
-      streamingApiUrl,
-    }) as StreamingClient;
-    client.streaming = streamClient;
-    // Masto.ws = streamClient;
-    console.log('🎏 Streaming API client:', client);
-
-    if (client.streamingCallback) {
-      try {
-        client.streamingCallback(streamClient);
-      } catch (error) {
-        console.error('Error in streaming callback:', error);
-      }
-      client.streamingCallback = null;
-    }
-  }
-  __BENCHMARK.end('init-instance');
 }
 
 // Get the account information and store it
@@ -481,33 +298,14 @@ export async function initAccount(
   client: ApiClient,
   instance: string,
   accessToken: string,
-  vapidKey?: string | null,
 ): Promise<void> {
-  if (client.atproto) {
-    const atprotoAccount = await client.masto.v1.accounts.verifyCredentials();
-    setCurrentAccountID(atprotoAccount.id);
-    saveAccount({
-      accessToken,
-      atproto: true,
-      createdAt: Date.now(),
-      info: atprotoAccount,
-      instanceURL: BSKY_INSTANCE,
-      vapidKey,
-    });
-    return;
-  }
-  const { masto } = client;
-  const mastoAccount = await masto.v1.accounts.verifyCredentials();
-
-  console.log('CURRENTACCOUNT SET', mastoAccount.id);
-  setCurrentAccountID(mastoAccount.id);
-
+  const atprotoAccount = await client.masto.v1.accounts.verifyCredentials();
+  setCurrentAccountID(atprotoAccount.id);
   saveAccount({
     accessToken,
     createdAt: Date.now(),
-    info: mastoAccount,
-    instanceURL: instance.toLowerCase(),
-    vapidKey,
+    info: atprotoAccount,
+    instanceURL: normalizeInstance(instance),
   });
 }
 

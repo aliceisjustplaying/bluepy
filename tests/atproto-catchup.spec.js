@@ -66,7 +66,7 @@ function fakePost(index, overrides = {}) {
     card: null,
     poll: null,
     visibility: 'public',
-    reblogsCount: score,
+    repostsCount: score,
     favouritesCount: score,
     repliesCount: 0,
     quotesCount: 0,
@@ -157,7 +157,7 @@ base(
         createdAt: duplicateCreatedAt,
         content: 'duplicate low rank one',
         favouritesCount: 1,
-        reblogsCount: 0,
+        repostsCount: 0,
       }),
       fakePost(1, {
         id: 'duplicate-post-id',
@@ -165,13 +165,13 @@ base(
         createdAt: duplicateCreatedAt,
         content: 'duplicate low rank two',
         favouritesCount: 2,
-        reblogsCount: 0,
+        repostsCount: 0,
       }),
       fakePost(2, {
         id: 'highest-ranked-post',
         content: 'duplicate key top rank',
         favouritesCount: 100,
-        reblogsCount: 50,
+        repostsCount: 50,
       }),
     ];
     await page.goto('/');

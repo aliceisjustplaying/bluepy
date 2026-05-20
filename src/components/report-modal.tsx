@@ -27,8 +27,7 @@ function Status(props: {
   return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
-// NOTE: `dislike` hidden for now, it's actually not used for reporting
-// Mastodon shows another screen for unfollowing, muting or blocking instead of reporting
+// NOTE: `dislike` hidden for now, it's actually not used for reporting.
 
 type ReportCategory = 'spam' | 'legal' | 'violation' | 'other';
 

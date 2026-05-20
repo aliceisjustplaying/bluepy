@@ -44,12 +44,12 @@ export default function FilteredStatus({
 }: FilteredStatusProps) {
   const { t, i18n } = useLingui();
   const _ = i18n._.bind(i18n);
-  const { id: statusID, account, createdAt, visibility, reblog } = status;
+  const { id: statusID, account, createdAt, visibility, repost } = status;
   const { avatar, avatarStatic, bot, group } = account || {};
-  const isReblog = !!reblog;
+  const isRepost = !!repost;
   const filterTitleStr = filterInfo?.titlesStr || '';
   const createdAtDate = new Date(createdAt);
-  const statusPeekText = statusPeek(reblog || status);
+  const statusPeekText = statusPeek(repost || status);
 
   const [showPeek, setShowPeek] = useState(false);
   const bindLongPressPeek = useLongPress(
@@ -68,16 +68,22 @@ export default function FilteredStatus({
   const ssKey =
     statusKey(status.id, instance) +
     ' ' +
-    (statusKey(reblog?.id, instance) || '');
+    (statusKey(repost?.id, instance) || '');
 
-  const actualStatusID = reblog?.id || statusID;
+  const actualStatusID = repost?.id || statusID;
   const url = instance
     ? `/${instance}/s/${actualStatusID}`
     : `/s/${actualStatusID}`;
   return (
     <div
       className={`${
-        quoted ? '' : isReblog ? (group ? 'status-group' : 'status-reblog') : ''
+        quoted
+          ? ''
+          : isRepost
+            ? group
+              ? 'status-group'
+              : 'status-repost'
+            : ''
       } visibility-${visibility}`}
       {...containerProps}
       // title={statusPeekText}
@@ -109,7 +115,7 @@ export default function FilteredStatus({
         <Avatar url={avatarStatic || avatar} squircle={bot} />
         <span className="status-filtered-info">
           <span className="status-filtered-info-1">
-            {isReblog ? (
+            {isRepost ? (
               <Trans comment="[Name] [Visibility icon] reposted">
                 <NameText account={status.account} instance={instance} />{' '}
                 <Icon
@@ -132,10 +138,10 @@ export default function FilteredStatus({
             )}
           </span>
           <span className="status-filtered-info-2">
-            {isReblog && (
+            {isRepost && (
               <>
                 <Avatar
-                  url={reblog.account.avatarStatic || reblog.account.avatar}
+                  url={repost.account.avatarStatic || repost.account.avatar}
                   squircle={bot}
                 />{' '}
               </>

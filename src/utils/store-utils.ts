@@ -15,39 +15,29 @@ export interface AccountInfo {
 
 export interface StoredAccount {
   accessToken: string;
-  atproto?: boolean;
   createdAt?: number;
   info: AccountInfo;
   instanceURL: string;
   lastAccessedAt?: number;
   updatedAt?: number;
-  vapidKey?: string | null;
 }
 
 type InstanceConfiguration = JsonRecord & {
   polls?: JsonRecord;
   statuses?: JsonRecord;
-  vapid?: {
-    public_key?: string;
-    publicKey?: string;
-  };
 };
 
 type InstanceInfo = JsonRecord & {
-  apiVersions?: JsonRecord;
   configuration?: InstanceConfiguration;
   maxMediaAttachments?: unknown;
-  maxTootChars?: unknown;
+  maxPostChars?: unknown;
   pollLimits?: {
     maxExpiration?: unknown;
     maxOptionChars?: unknown;
     maxOptions?: unknown;
     minExpiration?: unknown;
   };
-  version?: string;
 };
-
-type CredentialApplication = JsonRecord;
 
 export function getAccounts(): StoredAccount[] {
   return store.local.getJSON<StoredAccount[]>('accounts') ?? [];
@@ -211,7 +201,6 @@ export function saveAccount(account: StoredAccount): void {
     acc.info = account.info;
     acc.instanceURL = account.instanceURL;
     acc.accessToken = account.accessToken;
-    acc.vapidKey = account.vapidKey;
     acc.updatedAt = Date.now();
   } else {
     accounts.push(account);
@@ -261,32 +250,10 @@ export function getCurrentInstance(): InstanceInfo {
   }
 }
 
-let currentNodeInfo: JsonRecord | null = null;
-export function getCurrentNodeInfo(): JsonRecord {
-  if (currentNodeInfo) {
-    return currentNodeInfo;
-  }
-  try {
-    const account = getCurrentAccount();
-    if (!account) {
-      return {};
-    }
-    const nodeInfos =
-      store.local.getJSON<Record<string, JsonRecord>>('nodeInfos') ?? {};
-    const instanceURL = account.instanceURL.toLowerCase();
-    return (currentNodeInfo = nodeInfos[instanceURL] ?? {});
-  } catch (error) {
-    console.error(error);
-    return {};
-  }
-}
-
-// Massage these instance configurations to match the Mastodon API
-// - Pleroma
 function getInstanceConfiguration(
   instance: InstanceInfo,
 ): InstanceConfiguration {
-  const { configuration, maxMediaAttachments, maxTootChars, pollLimits } =
+  const { configuration, maxMediaAttachments, maxPostChars, pollLimits } =
     instance;
 
   const statuses = configuration?.statuses ?? {};
@@ -294,8 +261,8 @@ function getInstanceConfiguration(
     statuses.maxMediaAttachments ??= maxMediaAttachments;
   }
 
-  if (maxTootChars) {
-    statuses.maxCharacters ??= maxTootChars;
+  if (maxPostChars) {
+    statuses.maxCharacters ??= maxPostChars;
   }
 
   const polls = configuration?.polls ?? {};
@@ -318,45 +285,6 @@ export function getCurrentInstanceConfiguration(): InstanceConfiguration {
   return getInstanceConfiguration(instance);
 }
 
-export function getAPIVersions(): JsonRecord {
-  const instance = getCurrentInstance();
-  return instance.apiVersions ?? {};
-}
-
-export function getVapidKey(instance?: InstanceInfo): unknown {
-  // Vapid key has moved from account to instance config
-  const config = instance
-    ? getInstanceConfiguration(instance)
-    : getCurrentInstanceConfiguration();
-  const vapidKey = config.vapid?.publicKey ?? config.vapid?.public_key;
-  return vapidKey ?? getCurrentAccount()?.vapidKey;
-}
-
 export function isMediaFirstInstance(): boolean {
-  const instance = getCurrentInstance();
-  return /pixelfed/i.test(instance.version ?? '');
-}
-
-const CREDENTIAL_APPLICATIONS_KEY = 'credentialApplications';
-
-export function storeCredentialApplication(
-  instanceURL: string,
-  credentialApplication: CredentialApplication,
-): void {
-  const stored =
-    store.local.getJSON<Record<string, CredentialApplication>>(
-      CREDENTIAL_APPLICATIONS_KEY,
-    ) ?? {};
-  stored[instanceURL] = credentialApplication;
-  store.local.setJSON(CREDENTIAL_APPLICATIONS_KEY, stored);
-}
-
-export function getCredentialApplication(
-  instanceURL: string,
-): CredentialApplication | null {
-  const stored =
-    store.local.getJSON<Record<string, CredentialApplication>>(
-      CREDENTIAL_APPLICATIONS_KEY,
-    ) ?? {};
-  return stored[instanceURL] ?? null;
+  return false;
 }

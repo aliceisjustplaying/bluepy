@@ -37,19 +37,17 @@ import StatusComponent, {
 import { api } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
 import FilterContext from '../utils/filter-context';
-import groupNotifications, {
+import {
   groupNotifications2,
   massageNotifications2,
 } from '../utils/group-notifications';
 import handleContentLinks from '../utils/handle-content-links';
 import haptics from '../utils/haptics';
-import mem from '../utils/mem';
 import niceDateTime from '../utils/nice-date-time';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
-import { getAPIVersions, getCurrentInstance } from '../utils/store-utils';
-import supports from '../utils/supports';
+import { getCurrentInstance } from '../utils/store-utils';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScroll from '../utils/useScroll';
 import useTitle from '../utils/useTitle';
@@ -100,11 +98,8 @@ interface NotificationRequestLike {
   [key: string]: unknown;
 }
 
-// `masto.v2.notifications` / `masto.v1.notifications` are typed as `unknown`
-// in the local masto shim. Describe just the surface used in this file.
-// NOTE: The JS original also reads `.nextParams` off the iterator returned
-// from `values()` for a Pixelfed pagination guard. Keep it optional so the
-// normal `undefined` read preserves the JS behavior.
+// The notification API surface is typed as `unknown` in the local client shim.
+// Describe just the surface used in this file.
 interface NotificationsIterator extends AsyncIterableIterator<unknown> {
   nextParams?: unknown;
 }
@@ -169,8 +164,7 @@ interface AnnouncementLike {
   published?: boolean;
   allDay?: boolean;
   publishedAt: string;
-  // `createdAt` is not part of Mastodon's public Announcement schema, but the
-  // JS original referenced it in the sort comparator (`b.updatedAt ||
+  // The JS original referenced this in the sort comparator (`b.updatedAt ||
   // b.createdAt`). Preserve the read so behavior is unchanged.
   createdAt?: string;
   updatedAt: string;
@@ -182,7 +176,6 @@ interface AnnouncementLike {
   reactions: AnnouncementReaction[];
 }
 
-const NOTIFICATIONS_LIMIT = 80;
 const NOTIFICATIONS_GROUPED_LIMIT = 20;
 const emptySearchParams = new URLSearchParams();
 
@@ -192,31 +185,15 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   behavior: 'instant',
 };
 
-const memSupportsGroupedNotifications = mem(
-  () => ((getAPIVersions()?.mastodon as number | undefined) ?? 0) >= 2,
-  {
-    expires: 1000 * 60 * 5, // 5 minutes
-  },
-);
-
 function mastoFetchNotificationsIterable(
   opts: Record<string, unknown> = {},
 ): MastoV2NotificationsListIterable {
   const { masto } = api();
-  if (memSupportsGroupedNotifications()) {
-    const v2Notifications = masto.v2.notifications as MastoV2NotificationsApi;
-    // https://github.com/mastodon/mastodon/pull/29889
-    return v2Notifications.list({
-      limit: NOTIFICATIONS_GROUPED_LIMIT,
-      ...opts,
-    });
-  } else {
-    const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
-    return v1Notifications.list({
-      limit: NOTIFICATIONS_LIMIT,
-      ...opts,
-    });
-  }
+  const v2Notifications = masto.v2.notifications as MastoV2NotificationsApi;
+  return v2Notifications.list({
+    limit: NOTIFICATIONS_GROUPED_LIMIT,
+    ...opts,
+  });
 }
 export function mastoFetchNotifications(opts: Record<string, unknown> = {}) {
   return mastoFetchNotificationsIterable(opts).values();
@@ -225,15 +202,9 @@ export function mastoFetchNotifications(opts: Record<string, unknown> = {}) {
 export function getGroupedNotifications(
   notifications: unknown,
 ): NotificationLike[] {
-  if (memSupportsGroupedNotifications()) {
-    return groupNotifications2(
-      notifications as Parameters<typeof groupNotifications2>[0],
-    ) as NotificationLike[];
-  } else {
-    return groupNotifications(
-      notifications as Parameters<typeof groupNotifications>[0],
-    ) as NotificationLike[];
-  }
+  return groupNotifications2(
+    notifications as Parameters<typeof groupNotifications2>[0],
+  ) as NotificationLike[];
 }
 
 type NotificationsPolicyKey =
@@ -315,8 +286,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     if (
       /max_id=($|&)/i.test(String(notificationsIterator.current?.nextParams))
     ) {
-      // Pixelfed returns next paginationed link with empty max_id
-      // I assume, it's done (end of list)
+      // Empty max_id means the end of the list.
       return {
         done: true,
       };
@@ -344,7 +314,7 @@ function Notifications({ columnMode }: NotificationsProps) {
       //   createdAt: '2024-03-22T19:20:08.316Z',
       //   event: {
       //     type: 'account_suspension',
-      //     targetName: 'mastodon.dev',
+      //     targetName: 'example.test',
       //     followersCount: 0,
       //     followingCount: 0,
       //   },
@@ -406,9 +376,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     }
   }
 
-  const supportsFilteredNotifications = supports(
-    '@mastodon/filtered-notifications',
-  );
+  const supportsFilteredNotifications = false;
   const [showNotificationsSettings, setShowNotificationsSettings] =
     useState(false);
   const [notificationsPolicy, setNotificationsPolicy] =

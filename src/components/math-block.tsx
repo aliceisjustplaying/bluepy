@@ -15,8 +15,7 @@ declare global {
   }
 }
 
-// Follow https://mathstodon.xyz/about
-// > You can use LaTeX in toots here! Use \( and \) for inline, and \[ and \] for display mode.
+// Supported inline and display math delimiters.
 const DELIMITERS_PATTERNS = [
   // '\\$\\$[\\s\\S]*?\\$\\$', // $$...$$
   '\\\\\\[[\\s\\S]*?\\\\\\]', // \[...\]

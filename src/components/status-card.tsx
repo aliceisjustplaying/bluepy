@@ -23,10 +23,8 @@ declare module 'react' {
 }
 
 import getDomain from '../utils/get-domain';
-import isMastodonLinkMaybe from '../utils/is-mastodon-link-maybe';
 import { canReadCardInline } from '../utils/standard-site';
 import states from '../utils/states';
-import unfurlMastodonLink from '../utils/unfurl-link';
 
 import Byline from './byline';
 import Icon from './icon';
@@ -70,7 +68,6 @@ interface StatusCardProps {
 
 // "Post": Quote post + card link preview combo
 // Assume all links from these domains are "posts"
-// Mastodon links are "posts" too but they are converted to real quote posts and there's too many domains to check
 // This is just "Progressive Enhancement"
 function isCardPost(domain: string | undefined): boolean {
   if (!domain) return false;
@@ -124,51 +121,7 @@ function StatusCard({
       : false;
   const size = isLandscape ? 'large' : '';
 
-  const [cardStatusURL, setCardStatusURL] = useState<string | null>(null);
-  // const [cardStatusID, setCardStatusID] = useState(null);
-  useEffect(() => {
-    if (
-      !hasText ||
-      !image ||
-      selfReferential ||
-      !url ||
-      !instance ||
-      !isMastodonLinkMaybe(url)
-    ) {
-      return undefined;
-    }
-
-    const abortController = new AbortController();
-    void (async () => {
-      const result = await unfurlMastodonLink(
-        instance,
-        url,
-        abortController.signal,
-      );
-      if (!result) return;
-      const { url: resultUrl } = result;
-      if (!resultUrl) return;
-      setCardStatusURL('#' + resultUrl);
-
-      // NOTE: This is for quote post
-      // (async () => {
-      //   const { masto } = api({ instance });
-      //   const status = await masto.v1.statuses.$select(id).fetch();
-      //   saveStatus(status, instance);
-      //   setCardStatusID(id);
-      // })();
-    })();
-
-    return () => {
-      abortController.abort();
-    };
-  }, [hasText, image, selfReferential, url, instance]);
-
-  // if (cardStatusID) {
-  //   return (
-  //     <Status statusID={cardStatusID} instance={instance} size="s" readOnly />
-  //   );
-  // }
+  const cardStatusURL = null;
 
   const hasIframeHTML = !!html && /<iframe/i.test(html);
   const canReadInline = canReadCardInline(card);

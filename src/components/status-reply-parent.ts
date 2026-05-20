@@ -1,10 +1,7 @@
 import type { mastodon } from 'masto';
-import { useEffect, useState } from 'react';
 
 import { shouldShowReplyBadge } from '../utils/reply-badge';
-import states from '../utils/states';
 
-import { memFetchAccount } from './status-helpers';
 import type { AnyAccount, MastoClientFromApi } from './status-types';
 
 type ReplyToAccount =
@@ -33,8 +30,6 @@ interface StatusReplyParentArgs {
 }
 
 export default function useStatusReplyParent({
-  instance,
-  withinContext,
   inReplyToId,
   inReplyToAccountId,
   currentAccount,
@@ -42,9 +37,7 @@ export default function useStatusReplyParent({
   username,
   displayName,
   statusID,
-  spoilerText,
   mentions,
-  masto,
   atproto,
 }: StatusReplyParentArgs) {
   let inReplyToAccountRef: ReplyToAccount =
@@ -55,41 +48,9 @@ export default function useStatusReplyParent({
   if (!inReplyToAccountRef && inReplyToAccountId === statusID) {
     inReplyToAccountRef = { url: accountURL, username, displayName };
   }
-  const isAtprotoReplyParentUnavailable =
-    instance === 'bsky.social' &&
-    !!inReplyToId &&
-    !!atproto?.replyParentUnavailable;
-  const [inReplyToAccount, setInReplyToAccount] =
-    useState<ReplyToAccount>(inReplyToAccountRef);
-  useEffect(() => {
-    if (instance === 'bsky.social') return undefined;
-    if (!withinContext && !inReplyToAccount && inReplyToAccountId) {
-      const cachedAccount = states.accounts[inReplyToAccountId] as
-        | AnyAccount
-        | undefined;
-      if (cachedAccount) {
-        setInReplyToAccount(cachedAccount);
-        return undefined;
-      }
-
-      const abortController = new AbortController();
-      memFetchAccount(inReplyToAccountId, masto, abortController.signal)
-        .then((fetchedAccount: unknown) => {
-          const acc = fetchedAccount as AnyAccount;
-          setInReplyToAccount(acc);
-          states.accounts[acc.id] = { ...acc };
-          return undefined;
-        })
-        .catch((_e: unknown) => {
-          // best-effort fetch; ignore errors
-        });
-
-      return () => {
-        abortController.abort();
-      };
-    }
-    return undefined;
-  }, [withinContext, inReplyToAccount, inReplyToAccountId, instance, masto]);
+  const isReplyParentUnavailable =
+    !!inReplyToId && !!atproto?.replyParentUnavailable;
+  const inReplyToAccount = inReplyToAccountRef;
   const mentionSelf =
     (inReplyToAccountId && inReplyToAccountId === currentAccount) ||
     mentions?.find(
@@ -98,11 +59,7 @@ export default function useStatusReplyParent({
   const showReplyBadge = shouldShowReplyBadge({
     inReplyToId,
     inReplyToAccount,
-    isReplyParentUnavailable: isAtprotoReplyParentUnavailable,
-    instance,
-    spoilerText,
-    mentions,
-    inReplyToAccountId,
+    isReplyParentUnavailable,
   });
 
   return {

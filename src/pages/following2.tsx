@@ -8,7 +8,7 @@ import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
 import supports from '../utils/supports';
-import { dedupeBoosts } from '../utils/timeline-utils';
+import { dedupeReposts } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
@@ -18,7 +18,7 @@ interface FetchOpts {
   max_id?: string;
   min_id?: string;
   since_id?: string;
-  include_reblogs?: boolean;
+  include_reposts?: boolean;
 }
 
 interface FetchResult {
@@ -58,7 +58,7 @@ interface Following2Props {
 interface SaveStatusInput {
   id?: string;
   account?: { id?: string } | null;
-  reblog?: SaveStatusInput | null;
+  repost?: SaveStatusInput | null;
   quote?: SaveStatusInput | null;
   state?: unknown;
   quotedStatus?: SaveStatusInput | null;
@@ -70,7 +70,7 @@ interface SaveStatusInput {
 interface SaveStatusPayload extends Record<string, unknown> {
   id?: string;
   account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
+  repost?: SaveStatusPayload | null;
   quote?: SaveStatusPayload | null;
   state?: unknown;
   quotedStatus?: SaveStatusPayload | null;
@@ -118,7 +118,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
   __BENCHMARK.end('time-to-following');
 
   console.debug('RENDER Following2', title, id);
-  const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
+  const supportsIncludeReposts = supports('@atproto/home-include-reposts');
 
   async function fetchHome({
     max_id,
@@ -131,8 +131,8 @@ function Following2({ title, path, id, ...props }: Following2Props) {
     };
     if (max_id) opts.max_id = max_id;
     if (min_id) opts.min_id = min_id;
-    if (supportsPixelfed) {
-      opts.include_reblogs = true;
+    if (supportsIncludeReposts) {
+      opts.include_reposts = true;
     }
 
     const homeResource = getMastoV1Resource<{ home: HomeTimelineResource }>(
@@ -148,7 +148,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
       value.forEach((item) => {
         saveStatus(toSaveStatus(item), instance);
       });
-      // value = dedupeBoosts(value, instance);
+      // value = dedupeReposts(value, instance);
 
       // ENFORCE sort by datetime (Latest first)
       value.sort((a, b) => {
@@ -174,8 +174,8 @@ function Following2({ title, path, id, ...props }: Following2Props) {
         limit: 5,
         since_id: minID ?? undefined,
       };
-      if (supportsPixelfed) {
-        opts.include_reblogs = true;
+      if (supportsIncludeReposts) {
+        opts.include_reposts = true;
       }
       const homeResource = getMastoV1Resource<{ home: HomeTimelineResource }>(
         masto,
@@ -186,7 +186,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
         value: mastodon.v1.Status[] | undefined;
       };
       if (value?.length) {
-        const deduped = dedupeBoosts(value, instance);
+        const deduped = dedupeReposts(value, instance);
         const filtered = filteredItems(deduped, 'home');
         return filtered.length > 0;
       }

@@ -31,9 +31,9 @@ interface StatusContextMenuArgs {
   replyStatus: (e?: React.KeyboardEvent | globalThis.KeyboardEvent) => void;
   favouriteStatusNotify: () => Promise<void>;
   bookmarkStatusNotify: () => Promise<void>;
-  confirmBoostStatus: () => Promise<boolean>;
-  canBoost?: boolean;
-  reblogged?: boolean | null;
+  confirmRepostStatus: () => Promise<boolean>;
+  canRepost?: boolean;
+  reposted?: boolean | null;
   username?: string;
   acct?: string;
   sameInstance: boolean;
@@ -43,8 +43,8 @@ interface StatusContextMenuArgs {
   quoteMetaText?: string | null;
   status: AnyStatus;
   url?: string | null;
-  boostToast: (
-    reblogged?: boolean | null,
+  repostToast: (
+    reposted?: boolean | null,
     username?: string,
     acct?: string,
   ) => string;
@@ -61,9 +61,9 @@ export default function useStatusContextMenu({
   replyStatus,
   favouriteStatusNotify,
   bookmarkStatusNotify,
-  confirmBoostStatus,
-  canBoost,
-  reblogged,
+  confirmRepostStatus,
+  canRepost,
+  reposted,
   username,
   acct,
   sameInstance,
@@ -73,7 +73,7 @@ export default function useStatusContextMenu({
   quoteMetaText,
   status,
   url,
-  boostToast,
+  repostToast,
 }: StatusContextMenuArgs) {
   const contextMenuRef = useRef<ContextMenuHandle | null>(null);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState<boolean | string>(
@@ -172,9 +172,9 @@ export default function useStatusContextMenu({
 
       void (async () => {
         try {
-          const done = await confirmBoostStatus();
+          const done = await confirmRepostStatus();
           if (!isSizeLarge && done) {
-            showToast(boostToast(reblogged, username, acct));
+            showToast(repostToast(reposted, username, acct));
           }
         } catch (e) {
           console.error(e);
@@ -182,7 +182,7 @@ export default function useStatusContextMenu({
       })();
     },
     {
-      enabled: hotkeysEnabled && canBoost,
+      enabled: hotkeysEnabled && canRepost,
       useKey: true,
       ignoreEventWhen: (e) =>
         e.metaKey || e.ctrlKey || e.altKey || e.key.toLowerCase() !== 'b',

@@ -10,7 +10,7 @@ import type { StatusMenuPartsArgs } from './status-menu-types';
 
 type StatusActivityMenuProps = Pick<
   StatusMenuPartsArgs,
-  | 'fetchBoostedLikedByAccounts'
+  | 'fetchRepostedLikedByAccounts'
   | 'instance'
   | 'sKey'
   | 'setShowQuotes'
@@ -19,7 +19,7 @@ type StatusActivityMenuProps = Pick<
 >;
 
 export default function StatusActivityMenu({
-  fetchBoostedLikedByAccounts,
+  fetchRepostedLikedByAccounts,
   instance,
   sKey,
   setShowQuotes,
@@ -34,7 +34,7 @@ export default function StatusActivityMenu({
         onClick={() => {
           states.showGenericAccounts = {
             heading: t`Reposted/Liked by…`,
-            fetchAccounts: fetchBoostedLikedByAccounts,
+            fetchAccounts: fetchRepostedLikedByAccounts,
             instance,
             showReactions: true,
             postID: sKey,

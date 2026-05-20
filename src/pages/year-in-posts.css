@@ -212,10 +212,10 @@
         var(--month-reply-start) + var(--month-reply-pct)
       );
       --month-quote-pct: calc(var(--month-quote-ratio) * 100%);
-      --month-boost-start: calc(
+      --month-repost-start: calc(
         var(--month-quote-start) + var(--month-quote-pct)
       );
-      --month-boost-pct: calc(var(--month-boost-ratio) * 100%);
+      --month-repost-pct: calc(var(--month-repost-ratio) * 100%);
 
       &::before {
         content: '';
@@ -228,8 +228,8 @@
           var(--link-color) 0% var(--month-reply-start),
           var(--reply-to-color) var(--month-reply-start)
             var(--month-quote-start),
-          var(--quote-color) var(--month-quote-start) var(--month-boost-start),
-          var(--reblog-color) var(--month-boost-start) 100%
+          var(--quote-color) var(--month-quote-start) var(--month-repost-start),
+          var(--repost-color) var(--month-repost-start) 100%
         );
         mask:
           linear-gradient(#fff 0 0) content-box,
@@ -353,8 +353,8 @@
         --reply-pct: calc(var(--reply-ratio) * 100%);
         --quote-start: calc(var(--reply-start) + var(--reply-pct));
         --quote-pct: calc(var(--quote-ratio) * 100%);
-        --boost-start: calc(var(--quote-start) + var(--quote-pct));
-        --boost-pct: calc(var(--boost-ratio) * 100%);
+        --repost-start: calc(var(--quote-start) + var(--quote-pct));
+        --repost-pct: calc(var(--repost-ratio) * 100%);
 
         background: conic-gradient(
           from 0deg,
@@ -363,7 +363,7 @@
             calc(var(--reply-start) + var(--reply-pct)),
           var(--quote-color) var(--quote-start)
             calc(var(--quote-start) + var(--quote-pct)),
-          var(--reblog-color) var(--boost-start) 100%
+          var(--repost-color) var(--repost-start) 100%
         );
 
         /*
@@ -642,8 +642,8 @@
     background-color: var(--quote-color);
   }
 
-  .calendar-bar-boost {
-    background-color: var(--reblog-color);
+  .calendar-bar-repost {
+    background-color: var(--repost-color);
   }
 
   .post-type-filters {

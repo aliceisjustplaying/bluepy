@@ -4,7 +4,6 @@ import { proxy, subscribe } from 'valtio';
 import { subscribeKey } from 'valtio/utils';
 
 import { api } from './api';
-import isMastodonLinkMaybe from './is-mastodon-link-maybe';
 import pmem from './pmem';
 import rateLimit from './ratelimit';
 import { shouldFetchThreadParent } from './reply-context';
@@ -15,10 +14,6 @@ import {
   restoreShortcutsViewMode,
 } from './settings-storage';
 import store from './store';
-// TODO(oxlint:import/no-cycle): states <-> unfurl-link cycle is structural;
-// breaking it requires extracting unfurled-link types into a separate module
-// shared by states.ts. Out of scope for the oxlint cleanup batch.
-import unfurlMastodonLink from './unfurl-link';
 
 // Intentionally loose typings — this hub is mutated by 60+ consumers and 139
 // direct writes. Narrower Status / Account shapes belong in later waves; doing
@@ -32,9 +27,8 @@ type Status = Record<string, unknown> & {
   inReplyToId?: string | null;
   inReplyToAccountId?: string | null;
   account?: { id?: string } & Record<string, unknown>;
-  reblog?: Status | null;
+  repost?: Status | null;
   quote?: Status | null;
-  // Native Mastodon quote shape: { state, quotedStatus }
   state?: unknown;
   quotedStatus?: Status | null;
   _pinned?: unknown;
@@ -57,7 +51,7 @@ interface StatesSettings {
   autoRefresh: boolean;
   shortcutsViewMode: string | null;
   shortcutsColumnsMode: boolean;
-  boostsCarousel: boolean;
+  repostsCarousel: boolean;
   contentTranslation: boolean;
   contentTranslationTargetLanguage: string | null;
   contentTranslationHideLanguages: string[];
@@ -203,7 +197,7 @@ const states = proxy<StateProxy>({
     autoRefresh: false,
     shortcutsViewMode: null,
     shortcutsColumnsMode: false,
-    boostsCarousel: true,
+    repostsCarousel: true,
     contentTranslation: true,
     contentTranslationTargetLanguage: null,
     contentTranslationHideLanguages: [],
@@ -242,8 +236,8 @@ export function initStates(): void {
     );
   }
   states.settings.shortcutsColumnsMode = shortcutsColumnsMode;
-  states.settings.boostsCarousel =
-    store.account.get<boolean>('settings-boostsCarousel') ?? true;
+  states.settings.repostsCarousel =
+    store.account.get<boolean>('settings-repostsCarousel') ?? true;
   states.settings.contentTranslation =
     store.account.get<boolean>('settings-contentTranslation') ?? true;
   states.settings.contentTranslationTargetLanguage =
@@ -282,8 +276,8 @@ subscribe(states, (changes) => {
     if (path.join('.') === 'settings.autoRefresh') {
       store.account.set('settings-autoRefresh', !!value);
     }
-    if (path.join('.') === 'settings.boostsCarousel') {
-      store.account.set('settings-boostsCarousel', !!value);
+    if (path.join('.') === 'settings.repostsCarousel') {
+      store.account.set('settings-repostsCarousel', !!value);
     }
     if (path.join('.') === 'settings.shortcutsViewMode') {
       store.account.set(
@@ -381,15 +375,15 @@ function saveStatusInternal(
   if (oldStatus?._pinned) status._pinned = oldStatus._pinned;
   // if (oldStatus?._filtered) status._filtered = oldStatus._filtered;
   states.statuses[key] = status;
-  if (status.reblog?.id) {
-    const srKey = statusKey(status.reblog.id, instance);
+  if (status.repost?.id) {
+    const srKey = statusKey(status.repost.id, instance);
     if (srKey) {
-      states.statuses[srKey] = status.reblog;
+      states.statuses[srKey] = status.repost;
       // Re-assign key to the actual status
       key = srKey;
     }
   }
-  const theQuote = status.reblog?.quote || status.quote;
+  const theQuote = status.repost?.quote || status.quote;
   if (theQuote?.id) {
     const { id } = theQuote;
     const sKey = statusKey(id, instance);
@@ -406,7 +400,6 @@ function saveStatusInternal(
       ];
     }
   }
-  // Mastodon native quotes
   if (theQuote?.state) {
     const { quotedStatus, state } = theQuote;
     if (quotedStatus?.id) {
@@ -470,7 +463,6 @@ function queueSaveStatus(
 interface SaveStatusOpts {
   override?: boolean;
   skipThreading?: boolean;
-  skipUnfurling?: boolean;
   sync?: boolean;
 }
 
@@ -490,7 +482,6 @@ export function saveStatus(
   const {
     override = true,
     skipThreading = false,
-    skipUnfurling = false,
     sync = false,
   } = resolvedOpts || {};
   if (!status) return;
@@ -509,17 +500,7 @@ export function saveStatus(
   if (!skipThreading) {
     setTimeout(() => {
       threadifyStatus(
-        statusForStorage.reblog || statusForStorage,
-        resolvedInstance,
-      );
-    }, 100);
-  }
-
-  // UNFURLER
-  if (!skipUnfurling) {
-    setTimeout(() => {
-      unfurlStatus(
-        statusForStorage.reblog || statusForStorage,
+        statusForStorage.repost || statusForStorage,
         resolvedInstance,
       );
     }, 100);
@@ -573,57 +554,6 @@ export const threadifyStatus = rateLimit(
   threadifyStatusInternal as (this: unknown, ...args: unknown[]) => void,
   100,
 ) as (status: Status, propInstance?: string | null) => void;
-
-const fauxDiv = document.createElement('div');
-export function unfurlStatus(
-  status: Status | null | undefined,
-  instance?: string | null,
-): void {
-  const { instance: currentInstance } = api();
-  const content = status?.content;
-  if (!content) return;
-  const hasLink = /<a/i.test(content);
-  if (hasLink) {
-    const sKey = statusKey(status?.id, instance);
-    fauxDiv.innerHTML = content;
-    const links = fauxDiv.querySelectorAll<HTMLAnchorElement>(
-      'a[href]:not(.u-url):not(.mention):not(.hashtag)',
-    );
-    [...links]
-      .filter((a) => {
-        const url = a.href;
-        const isPostItself = url === status?.url || url === status?.uri;
-        return !isPostItself && isMastodonLinkMaybe(url);
-      })
-      .forEach((a, i) => {
-        void unfurlMastodonLink(currentInstance, a.href)
-          .then((result) => {
-            if (!result) return undefined;
-            if (!sKey) return undefined;
-            if (result?.id === status?.id) {
-              // Unfurled post is the post itself???
-              // Scenario:
-              // 1. Post with [URL]
-              // 2. Unfurl [URL], API returns the same post that contains [URL]
-              // 3. 💥 Recursive quote posts 💥
-              // Note: Mastodon search doesn't return posts that contains [URL], it's actually used to *resolve* the URL
-              // But some non-Mastodon servers, their search API will eventually search posts that contains [URL] and return them
-              return undefined;
-            }
-            if (!Array.isArray(states.statusQuotes[sKey])) {
-              states.statusQuotes[sKey] = [];
-            }
-            if (!states.statusQuotes[sKey][i]) {
-              states.statusQuotes[sKey].splice(i, 0, result);
-            }
-            return undefined;
-          })
-          .catch((err: unknown) => {
-            console.error(err);
-          });
-      });
-  }
-}
 
 interface StatusesEndpoint {
   $select(id: string): { fetch(): Promise<Status> };

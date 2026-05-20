@@ -17,7 +17,6 @@ test.describe('ATProto mention autocomplete', () => {
         },
         instanceURL: 'bsky.social',
         accessToken: JSON.stringify({ type: 'atproto-oauth', sub: did }),
-        atproto: true,
         createdAt: Date.now(),
       };
       localStorage.setItem('accounts', JSON.stringify([account]));

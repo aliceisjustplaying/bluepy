@@ -609,8 +609,8 @@
       grid-template-areas: 'author content meta';
     }
 
-    &.reblog {
-      --post-bg-color: var(--reblog-faded-color);
+    &.repost {
+      --post-bg-color: var(--repost-faded-color);
     }
     &.group {
       --post-bg-color: var(--group-faded-color);
@@ -638,7 +638,7 @@
       background-image: var(--yellow-stripes);
     }
 
-    .post-reblog-avatar {
+    .post-repost-avatar {
       display: flex;
       gap: 4px;
       align-items: center;
@@ -654,7 +654,7 @@
       }
 
       > .icon {
-        color: var(--reblog-color);
+        color: var(--repost-color);
       }
 
       > .name-text {
@@ -739,7 +739,7 @@
   &.catchup-group-account:is(.catchup-filter-original, .catchup-filter-replies)
     > li {
     &:first-child ~ li {
-      .post-author:not(:has(.post-reblog-avatar)) {
+      .post-author:not(:has(.post-repost-avatar)) {
         opacity: 0.25;
 
         @media (min-width: 40em) {
@@ -1140,16 +1140,16 @@
       }
     }
   }
-  &.catchup-sort-reblogsCount {
+  &.catchup-sort-repostsCount {
     .post-stats {
       opacity: 1;
       transform: translateX(0);
 
-      .post-stat-boosts {
+      .post-stat-reposts {
         order: 2;
       }
 
-      > *:not(.post-stat-boosts) {
+      > *:not(.post-stat-reposts) {
         opacity: 0;
       }
     }

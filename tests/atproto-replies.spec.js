@@ -152,17 +152,6 @@ test.describe('ATProto reply mapping', () => {
         inReplyToAccountId: 'did:plc:parent',
       }),
     ).toBe(true);
-
-    expect(
-      shouldShowReplyBadge({
-        inReplyToId: encodeURIComponent(parentUri),
-        inReplyToAccount: { id: 'did:plc:parent' },
-        instance: 'mastodon.social',
-        spoilerText: '',
-        mentions: [{ id: 'did:plc:parent' }],
-        inReplyToAccountId: 'did:plc:parent',
-      }),
-    ).toBe(false);
   });
 
   test('shows stable generic Bluesky reply badges when parent actor is unavailable', () => {
@@ -752,7 +741,7 @@ test.describe('ATProto reply mapping', () => {
     ).toEqual([root, repostedReply]);
   });
 
-  test('groups reposted replies by canonical post while keeping boost metadata', () => {
+  test('groups reposted replies by canonical post while keeping repost metadata', () => {
     const root = {
       post: {
         ...feedReply().reply.parent,
@@ -784,7 +773,7 @@ test.describe('ATProto reply mapping', () => {
       incompleteThread: false,
     });
     expect(grouped[0].items).toHaveLength(2);
-    expect(grouped[0].items[1].reblog).toBeTruthy();
+    expect(grouped[0].items[1].repost).toBeTruthy();
     expect(grouped[0].items[1].account).toMatchObject({
       id: 'did:plc:reposter',
     });
@@ -818,7 +807,7 @@ test.describe('ATProto reply mapping', () => {
       Array.from(grouped[0].items, (status) => String(status.uri)),
     ).toEqual([parentUri, childUri]);
     expect(grouped[0].items[1].id).toContain('-repost-');
-    expect(grouped[0].items[1].reblog).toBeTruthy();
+    expect(grouped[0].items[1].repost).toBeTruthy();
     expect(grouped[0].items[1]._atproto?.root?.uri).toBe(parentUri);
   });
 
@@ -828,7 +817,7 @@ test.describe('ATProto reply mapping', () => {
       createdAt: '2026-05-08T00:01:00.000Z',
       inReplyToId: null,
       account: { id: 'did:plc:reposter' },
-      reblog: {
+      repost: {
         id: 'parent',
         createdAt: '2026-05-08T00:00:00.000Z',
         inReplyToId: null,
@@ -860,7 +849,7 @@ test.describe('ATProto reply mapping', () => {
       createdAt: '2026-05-08T00:03:00.000Z',
       inReplyToId: 'parent',
       account: { id: 'did:plc:reposter' },
-      reblog: {
+      repost: {
         id: 'child',
         createdAt: '2026-05-08T00:02:00.000Z',
         inReplyToId: 'parent',
@@ -882,7 +871,7 @@ test.describe('ATProto reply mapping', () => {
     expect(grouped).toHaveLength(1);
     expect(grouped[0].items).toHaveLength(2);
     expect(grouped[0].items[1].id).toBe('child-repost');
-    expect(grouped[0].items[1].reblog).toBeTruthy();
+    expect(grouped[0].items[1].repost).toBeTruthy();
     expect(grouped[0].items[1]._atproto?.root?.uri).toBe(parentUri);
   });
 
@@ -898,7 +887,7 @@ test.describe('ATProto reply mapping', () => {
       createdAt: '2026-05-08T00:03:00.000Z',
       inReplyToId: 'parent',
       account: { id: 'did:plc:reposter' },
-      reblog: {
+      repost: {
         id: 'child',
         createdAt: '2026-05-08T00:02:00.000Z',
         inReplyToId: 'parent',

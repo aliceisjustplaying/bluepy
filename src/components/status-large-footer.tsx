@@ -7,7 +7,6 @@ import haptics from '../utils/haptics';
 import { supportsNativeQuote } from '../utils/quote-utils';
 import shortenNumber from '../utils/shorten-number';
 import showCompose from '../utils/show-compose';
-import supports from '../utils/supports';
 import visibilityIconsMap from '../utils/visibility-icons-map';
 import visibilityText from '../utils/visibility-text';
 
@@ -37,11 +36,11 @@ interface StatusLargeFooterProps {
   repliesCount?: number;
   replyStatus: (e?: LooseClickEvent) => void;
   canQuote?: boolean;
-  reblogsCount?: number;
+  repostsCount?: number;
   quotesCount?: number;
-  canBoost?: boolean;
-  confirmBoostStatus: () => Promise<boolean>;
-  reblogged?: boolean | null;
+  canRepost?: boolean;
+  confirmRepostStatus: () => Promise<boolean>;
+  reposted?: boolean | null;
   quoteDisabled?: boolean | null;
   quoteText?: string;
   quoteMetaText?: string | null;
@@ -72,11 +71,11 @@ export default function StatusLargeFooter({
   repliesCount,
   replyStatus,
   canQuote,
-  reblogsCount = 0,
+  repostsCount = 0,
   quotesCount = 0,
-  canBoost,
-  confirmBoostStatus,
-  reblogged,
+  canRepost,
+  confirmRepostStatus,
+  reposted,
   quoteDisabled,
   quoteText,
   quoteMetaText,
@@ -220,27 +219,27 @@ export default function StatusLargeFooter({
         </div>
         <div
           className={`action ${
-            canQuote && reblogsCount > 0 && quotesCount > 0
+            canQuote && repostsCount > 0 && quotesCount > 0
               ? 'has-counts'
               : 'has-count'
           }`}
         >
           <MenuConfirm
-            disabled={!canBoost}
-            confirmItemProps={{ 'data-testid': 'status-boost-confirm' }}
+            disabled={!canRepost}
+            confirmItemProps={{ 'data-testid': 'status-repost-confirm' }}
             onClick={() => {
               void haptics.trigger('light');
-              void confirmBoostStatus();
+              void confirmRepostStatus();
             }}
             confirmLabel={
               <>
                 <Icon icon="rocket" />
                 <span className="menu-grow">
-                  {reblogged ? t`Undo repost` : t`Repost`}
+                  {reposted ? t`Undo repost` : t`Repost`}
                 </span>
-                {reblogsCount > 0 && (
+                {repostsCount > 0 && (
                   <small className="more-insignificant">
-                    {shortenNumber(reblogsCount)}
+                    {shortenNumber(repostsCount)}
                   </small>
                 )}
               </>
@@ -297,15 +296,15 @@ export default function StatusLargeFooter({
             menuFooter={menuFooter}
           >
             <StatusButton
-              checked={reblogged ?? undefined}
+              checked={reposted ?? undefined}
               title={[canQuote ? t`Repost/Quote…` : t`Repost…`, t`Undo repost`]}
               alt={[t`Repost`, t`Reposted`]}
-              className="reblog-button"
-              icon={reblogsCount <= 0 && quotesCount > 0 ? 'quote' : 'rocket'}
-              count={reblogsCount}
+              className="repost-button"
+              icon={repostsCount <= 0 && quotesCount > 0 ? 'quote' : 'rocket'}
+              count={repostsCount}
               extraCount={quotesCount}
-              disabled={!canBoost}
-              data-testid="status-boost-button"
+              disabled={!canRepost}
+              data-testid="status-repost-button"
             />
           </MenuConfirm>
         </div>
@@ -323,21 +322,19 @@ export default function StatusLargeFooter({
             }}
           />
         </div>
-        {supports('@mastodon/post-bookmark') && (
-          <div className="action">
-            <StatusButton
-              checked={bookmarked ?? undefined}
-              title={[t`Bookmark`, t`Unbookmark`]}
-              alt={[t`Bookmark`, t`Bookmarked`]}
-              className="bookmark-button"
-              icon="bookmark"
-              onClick={() => {
-                void haptics.trigger('light');
-                void bookmarkStatus();
-              }}
-            />
-          </div>
-        )}
+        <div className="action">
+          <StatusButton
+            checked={bookmarked ?? undefined}
+            title={[t`Bookmark`, t`Unbookmark`]}
+            alt={[t`Bookmark`, t`Bookmarked`]}
+            className="bookmark-button"
+            icon="bookmark"
+            onClick={() => {
+              void haptics.trigger('light');
+              void bookmarkStatus();
+            }}
+          />
+        </div>
         <Menu2
           portal={{
             target: document.querySelector('.status-deck') || document.body,

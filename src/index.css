@@ -96,8 +96,8 @@
   );
   --button-text-color: white;
   --button-plain-bg-hover-color: rgba(128, 128, 128, 0.1);
-  --reblog-color: var(--blue-color);
-  --reblog-faded-color: color-mix(in srgb, var(--blue-color) 14%, transparent);
+  --repost-color: var(--blue-color);
+  --repost-faded-color: color-mix(in srgb, var(--blue-color) 14%, transparent);
   --quote-color: var(--violet-red-color);
   --quote-faded-color: #c7158520;
   --group-color: var(--green-color);
@@ -302,7 +302,7 @@
       var(--blue-color) 80%,
       var(--bg-color) 20%
     );
-    --reblog-faded-color: color-mix(
+    --repost-faded-color: color-mix(
       in srgb,
       var(--blue-color) 22%,
       transparent

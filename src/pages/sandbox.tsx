@@ -94,11 +94,11 @@ interface MockStatus {
   visibility: string;
   createdAt: string;
   // The remaining fields are required when the status is built fresh from
-  // MOCK_STATUS, but the reblog-wrapper branch in <Sandbox/> creates a new
+  // MOCK_STATUS, but the repost-wrapper branch in <Sandbox/> creates a new
   // mockStatus with only a subset, so we keep them optional to preserve the
   // original JS shape without inventing fields.
   content?: string;
-  reblogsCount?: number;
+  repostsCount?: number;
   favouritesCount?: number;
   repliesCount?: number;
   emojis?: unknown[];
@@ -112,7 +112,7 @@ interface MockStatus {
   filtered?: UnknownRecord[];
   card?: UnknownRecord;
   _deleted?: boolean;
-  reblog?: MockStatus;
+  repost?: MockStatus;
   inReplyToId?: string;
   inReplyToAccountId?: string;
   [key: string]: unknown;
@@ -192,7 +192,7 @@ const MOCK_STATUS = ({
         : '',
     visibility: toggles.visibility || 'public',
     createdAt: new Date().toISOString(),
-    reblogsCount: 0,
+    repostsCount: 0,
     favouritesCount: 0,
     repliesCount: 5,
     emojis: [],
@@ -634,19 +634,19 @@ export default function Sandbox() {
     },
   });
 
-  if (toggleState.contextType === 'reblog') {
-    const rebloggedStatus = { ...mockStatus };
+  if (toggleState.contextType === 'repost') {
+    const repostedStatus = { ...mockStatus };
     mockStatus = {
-      id: 'reblog-' + mockStatus.id,
+      id: 'repost-' + mockStatus.id,
       account: mockStatus.account, // Same account for simplicity
-      reblog: rebloggedStatus,
+      repost: repostedStatus,
       visibility: mockStatus.visibility,
       createdAt: new Date().toISOString(),
     };
   } else if (toggleState.contextType === 'group') {
     const groupStatus = { ...mockStatus };
     mockStatus.account = { ...mockStatus.account, group: true };
-    mockStatus.reblog = groupStatus;
+    mockStatus.repost = groupStatus;
   } else if (toggleState.contextType === 'reply-to') {
     // Generate a unique ID
     const parentID = uid();
@@ -1925,9 +1925,9 @@ export default function Sandbox() {
                   <input
                     type="radio"
                     name="contextType"
-                    checked={toggleState.contextType === 'reblog'}
+                    checked={toggleState.contextType === 'repost'}
                     onChange={() => {
-                      updateToggles({ contextType: 'reblog' });
+                      updateToggles({ contextType: 'repost' });
                     }}
                   />
                   <span>Repost</span>

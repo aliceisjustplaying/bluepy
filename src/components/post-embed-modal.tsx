@@ -193,7 +193,7 @@ function generateHTMLCode(
       : '');
 
   const htmlCode = `
-    <blockquote lang="${language}" cite="${url}" data-source="fediverse">
+    <blockquote lang="${language}" cite="${url}" data-source="atproto">
       ${
         spoilerText
           ? `

@@ -427,7 +427,7 @@ test.describe('read flows', () => {
     await Promise.all(
       [
         'reply-button',
-        'reblog-button',
+        'repost-button',
         'favourite-button',
         'bookmark-button',
       ].flatMap((buttonClass) => {
@@ -815,38 +815,38 @@ test.describe('write flows', () => {
     ).toHaveCount(0, { timeout: 30_000 });
   });
 
-  test('boost + unboost (self-boost is supported on Bluesky)', async ({
+  test('repost + unrepost (self-repost is supported on Bluesky)', async ({
     page,
   }) => {
     test.setTimeout(120_000);
-    const body = `${RUN_TAG} boost ${Date.now()}`;
+    const body = `${RUN_TAG} repost ${Date.now()}`;
     await composeAndPublish(page, body);
     await openCreatedStatusDetail(page, body);
     const url = page.url();
 
-    const boostBtn = page.getByTestId('status-boost-button').first();
-    await boostBtn.waitFor({ timeout: 15_000 });
-    const initial = await getRequiredTitle(boostBtn, 'boost button');
-    await boostBtn.click();
-    // Bluepy shows a confirmation menu for boost/unboost.
-    const boostMutation = waitForCreateRecord(page, 'app.bsky.feed.repost');
-    await page.getByTestId('status-boost-confirm').click();
-    await boostMutation;
-    await expect(boostBtn).not.toHaveAttribute('title', initial, {
+    const repostBtn = page.getByTestId('status-repost-button').first();
+    await repostBtn.waitFor({ timeout: 15_000 });
+    const initial = await getRequiredTitle(repostBtn, 'repost button');
+    await repostBtn.click();
+    // Bluepy shows a confirmation menu for repost/unrepost.
+    const repostMutation = waitForCreateRecord(page, 'app.bsky.feed.repost');
+    await page.getByTestId('status-repost-confirm').click();
+    await repostMutation;
+    await expect(repostBtn).not.toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
 
     // Reload + revert.
     await page.goto(url);
-    const reloaded = page.getByTestId('status-boost-button').first();
+    const reloaded = page.getByTestId('status-repost-button').first();
     await reloaded.waitFor({ timeout: 15_000 });
     await expect(reloaded).not.toHaveAttribute('title', initial, {
       timeout: 15_000,
     });
     await reloaded.click();
-    const unboostMutation = waitForDeleteRecord(page, 'app.bsky.feed.repost');
-    await page.getByTestId('status-boost-confirm').click();
-    await unboostMutation;
+    const unrepostMutation = waitForDeleteRecord(page, 'app.bsky.feed.repost');
+    await page.getByTestId('status-repost-confirm').click();
+    await unrepostMutation;
     await expect(reloaded).toHaveAttribute('title', initial, {
       timeout: 15_000,
     });

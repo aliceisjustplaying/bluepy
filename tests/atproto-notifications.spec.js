@@ -44,7 +44,7 @@ test.describe('ATProto notifications', () => {
       },
     };
 
-    expect(notificationType(notification.reason)).toBe('reblog');
+    expect(notificationType(notification.reason)).toBe('repost');
     expect(notificationStatusURI(notification)).toBe(
       'at://did:plc:test/app.bsky.feed.post/post-record-key',
     );

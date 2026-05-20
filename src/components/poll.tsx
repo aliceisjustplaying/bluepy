@@ -17,9 +17,8 @@ import RelativeTime from './relative-time';
 const POLL_OPTIONS_BATCH_SIZE = 40;
 
 interface PollProps {
-  // The `mastodon.v1.Poll` type asserts `votesCount` is a `number`, but at
-  // runtime older servers (and some federated payloads) can omit it. Override
-  // to keep the defensive `votesCount = 0` default below valid.
+  // The imported poll type asserts `votesCount` is a `number`, but runtime
+  // payloads can omit it. Override to keep the defensive default below valid.
   poll: Omit<mastodon.v1.Poll, 'votesCount'> & {
     emojis?: mastodon.v1.CustomEmoji[];
     votesCount?: number;

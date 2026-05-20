@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import { addListStore, deleteListStore, updateListStore } from '../utils/lists';
-import supports from '../utils/supports';
 
 import Icon from './icon';
 import ListExclusiveBadge from './list-exclusive-badge';
@@ -82,9 +81,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
       }
     }
   }, [editMode, list]);
-  const supportsExclusive =
-    supports('@mastodon/list-exclusive') ||
-    supports('@gotosocial/list-exclusive');
+  const supportsExclusive = false;
 
   return (
     <div className="sheet">

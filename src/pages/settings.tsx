@@ -29,13 +29,6 @@ import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import store from '../utils/store';
-import { getVapidKey } from '../utils/store-utils';
-import {
-  initSubscription,
-  isPushSupported,
-  removeSubscription,
-  updateSubscription,
-} from '../utils/web-push-subscriptions';
 
 // `button-install` is a custom element registered in
 // `../components/button-install`. Declare its JSX shape so the wrapper below
@@ -487,9 +480,9 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <label>
                 <input
                   type="checkbox"
-                  checked={snapStates.settings.boostsCarousel}
+                  checked={snapStates.settings.repostsCarousel}
                   onChange={(e) => {
-                    states.settings.boostsCarousel = e.currentTarget.checked;
+                    states.settings.repostsCarousel = e.currentTarget.checked;
                   }}
                 />{' '}
                 <Trans>Reposts carousel</Trans>
@@ -832,7 +825,6 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             </li>
           </ul>
         </section>
-        {authenticated && <PushNotificationsSection onClose={onClose} />}
         <h3>
           <Trans>About</Trans>
         </h3>
@@ -860,39 +852,9 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               }}
             />
             <div>
-              <b>Bluepy</b>{' '}
-              <a
-                href="https://hachyderm.io/@phanpy"
-                // target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  states.showAccount = 'phanpy@hachyderm.io';
-                }}
-              >
-                @phanpy
-              </a>
+              <b>Bluepy</b>
               <br />
-              <a
-                href="https://github.com/cheeaun/phanpy"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Built
-              </a>{' '}
-              by{' '}
-              <a
-                href="https://mastodon.social/@cheeaun"
-                // target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  states.showAccount = 'cheeaun@mastodon.social';
-                }}
-              >
-                @cheeaun
-              </a>
-              , forked for ATProto by{' '}
+              Forked for ATProto by{' '}
               <a
                 href="https://bsky.app/profile/alice.mosphere.at"
                 target="_blank"
@@ -1015,10 +977,6 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               </Link>
             </p>
             <p>Debugging</p>
-            <p>
-              <b>Vapid key</b>:{' '}
-              {getVapidKey() as string | number | null | undefined}
-            </p>
             {(window.__BENCH_RESULTS?.size ?? 0) > 0 && (
               <ul>
                 {Array.from(window.__BENCH_RESULTS?.entries() ?? []).map(
@@ -1230,317 +1188,6 @@ function clearCacheKey(key: string): Promise<boolean> {
 async function clearCaches(): Promise<void> {
   const keys = await caches.keys();
   await Promise.all(keys.map((key) => caches.delete(key)));
-}
-
-interface PushNotificationsSectionProps {
-  onClose?: () => void;
-}
-
-interface BackendPushSubscriptionShape {
-  alerts: Record<string, unknown>;
-  policy: string;
-  [key: string]: unknown;
-}
-
-function PushNotificationsSection({
-  onClose,
-}: PushNotificationsSectionProps): ReactElement | null {
-  const { t } = useLingui();
-  const pushSupported = isPushSupported();
-  const { instance } = api();
-  const [uiState, setUIState] = useState<string>('default');
-  const pushFormRef = useRef<HTMLFormElement | null>(null);
-  const [allowNotifications, setAllowNotifications] = useState<boolean>(false);
-  const [needRelogin, setNeedRelogin] = useState<boolean>(false);
-  const previousPolicyRef = useRef<string | undefined>(undefined);
-  useEffect(() => {
-    if (!pushSupported) return;
-    void (async () => {
-      setUIState('loading');
-      try {
-        const result = await initSubscription();
-        const backendSubscription =
-          (result?.backendSubscription as BackendPushSubscriptionShape | null) ??
-          null;
-        if (
-          backendSubscription?.policy &&
-          backendSubscription.policy !== 'none'
-        ) {
-          setAllowNotifications(true);
-          const { alerts, policy } = backendSubscription;
-          console.log('backendSubscription', backendSubscription);
-          previousPolicyRef.current = policy;
-          const form = pushFormRef.current;
-          if (form) {
-            const { elements } = form;
-            const policyEl = elements.namedItem('policy') as
-              | (HTMLElement & { value: string })
-              | null;
-            if (policyEl) policyEl.value = policy;
-            // alerts is {}, iterate it
-            Object.entries(alerts).forEach(([alert, value]) => {
-              const el = elements.namedItem(alert) as HTMLInputElement | null;
-              if (el?.type === 'checkbox') {
-                el.checked = !!value;
-              }
-            });
-          }
-        }
-        setUIState('default');
-      } catch (err) {
-        console.warn(err);
-        const message = err instanceof Error ? err.message : String(err);
-        if (/outside.*authorized/i.test(message)) {
-          setNeedRelogin(true);
-        } else {
-          alert(message);
-        }
-        setUIState('error');
-      }
-    })();
-  }, [pushSupported]);
-
-  const isLoading = uiState === 'loading';
-
-  if (!pushSupported) return null;
-
-  return (
-    <form
-      ref={pushFormRef}
-      onChange={() => {
-        setTimeout(() => {
-          const form = pushFormRef.current;
-          if (!form) return;
-          const values = Object.fromEntries(new FormData(form)) as Record<
-            string,
-            FormDataEntryValue
-          >;
-          const allowNext = !!values['policy-allow'];
-          // NOTE: original JS nested `policy` under `data` and did not pass a
-          // top-level `policy` argument to `updateSubscription`. The util
-          // destructures `policy` only at the top level, so the original code
-          // effectively sent `policy: undefined` to the backend update helper.
-          // Preserving that exact shape here; fixing the bug is out of scope
-          // for this TS migration batch.
-          const params: {
-            data: {
-              policy: string;
-              alerts: Record<string, boolean>;
-            };
-            policy: undefined;
-          } = {
-            data: {
-              policy: values.policy as string,
-              alerts: {
-                mention: !!values.mention,
-                favourite: !!values.favourite,
-                reblog: !!values.reblog,
-                follow: !!values.follow,
-                follow_request: !!values.followRequest,
-                poll: !!values.poll,
-                update: !!values.update,
-                status: !!values.status,
-              },
-            },
-            policy: undefined,
-          };
-
-          let alertsCount = 0;
-          // Remove false values from data.alerts
-          // API defaults to false anyway
-          Object.keys(params.data.alerts).forEach((key) => {
-            if (!params.data.alerts[key]) {
-              delete params.data.alerts[key];
-            } else {
-              alertsCount++;
-            }
-          });
-          const policyChanged =
-            previousPolicyRef.current !== params.data.policy;
-
-          console.log('PN Form', {
-            values,
-            allowNotifications: allowNext,
-            params,
-          });
-
-          if (allowNext && alertsCount > 0) {
-            if (policyChanged) {
-              console.debug('Policy changed.');
-              void (async () => {
-                try {
-                  await removeSubscription();
-                  await updateSubscription(params);
-                } catch (err) {
-                  console.warn(err);
-                  alert(t`Failed to update subscription. Please try again.`);
-                }
-              })();
-            } else {
-              void (async () => {
-                try {
-                  await updateSubscription(params);
-                } catch (err) {
-                  console.warn(err);
-                  alert(t`Failed to update subscription. Please try again.`);
-                }
-              })();
-            }
-          } else {
-            void (async () => {
-              try {
-                await removeSubscription();
-              } catch (err) {
-                console.warn(err);
-                alert(t`Failed to remove subscription. Please try again.`);
-              }
-            })();
-          }
-        }, 100);
-      }}
-    >
-      <h3>
-        <Trans>Push Notifications (beta)</Trans>
-      </h3>
-      <section>
-        <ul>
-          <li>
-            <label>
-              <input
-                type="checkbox"
-                disabled={isLoading || needRelogin}
-                name="policy-allow"
-                checked={allowNotifications}
-                onChange={(e) => {
-                  const { checked } = e.currentTarget;
-                  if (checked) {
-                    // Request permission
-                    void (async () => {
-                      const permission = await Notification.requestPermission();
-                      if (permission === 'granted') {
-                        setAllowNotifications(true);
-                      } else {
-                        setAllowNotifications(false);
-                        if (permission === 'denied') {
-                          alert(
-                            t`Push notifications are blocked. Please enable them in your browser settings.`,
-                          );
-                        }
-                      }
-                    })();
-                  } else {
-                    setAllowNotifications(false);
-                  }
-                }}
-              />{' '}
-              <Trans>
-                Allow from{' '}
-                <select
-                  name="policy"
-                  disabled={isLoading || needRelogin || !allowNotifications}
-                >
-                  {[
-                    {
-                      value: 'all',
-                      label: t`anyone`,
-                    },
-                    {
-                      value: 'followed',
-                      label: t`people I follow`,
-                    },
-                    {
-                      value: 'follower',
-                      label: t`followers`,
-                    },
-                  ].map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </Trans>
-            </label>
-            <div
-              className="shazam-container no-animation"
-              style={{
-                width: '100%',
-              }}
-              hidden={!allowNotifications}
-            >
-              <div className="shazam-container-inner">
-                <div className="sub-section">
-                  <ul>
-                    {[
-                      {
-                        value: 'mention',
-                        label: t`Mentions`,
-                      },
-                      {
-                        value: 'favourite',
-                        label: t`Likes`,
-                      },
-                      {
-                        value: 'reblog',
-                        label: t`Reposts`,
-                      },
-                      {
-                        value: 'follow',
-                        label: t`Follows`,
-                      },
-                      {
-                        value: 'followRequest',
-                        label: t`Follow requests`,
-                      },
-                      {
-                        value: 'poll',
-                        label: t`Polls`,
-                      },
-                      {
-                        value: 'update',
-                        label: t`Post edits`,
-                      },
-                      {
-                        value: 'status',
-                        label: t`New posts`,
-                      },
-                    ].map((alert) => (
-                      <li key={alert.value}>
-                        <label>
-                          <input type="checkbox" name={alert.value} />{' '}
-                          {alert.label}
-                        </label>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-            {needRelogin && (
-              <div className="sub-section">
-                <p>
-                  <Trans>
-                    Push permission was not granted since your last login.
-                    You'll need to{' '}
-                    <Link to={`/login?instance=${instance}`} onClick={onClose}>
-                      <b>log in</b> again to grant push permission
-                    </Link>
-                    .
-                  </Trans>
-                </p>
-              </div>
-            )}
-          </li>
-        </ul>
-      </section>
-      <p className="section-postnote">
-        <small>
-          <Trans>
-            NOTE: Push notifications only work for <b>one account</b>.
-          </Trans>
-        </small>
-      </p>
-    </form>
-  );
 }
 
 export default Settings;

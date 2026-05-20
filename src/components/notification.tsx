@@ -79,10 +79,10 @@ interface MastoV2Notifications {
   $select(groupKey: string): MastoV2NotificationSelector;
 }
 
-// Input shape for this component. Mirrors `mastodon.v1.Notification` /
-// `mastodon.v2.NotificationGroup` plus client-side grouping fields injected
-// by `group-notifications.ts`. The masto entity unions are too strict to
-// describe the full superset, so we keep a wide local interface.
+// Input shape for this component. Mirrors notification payloads plus
+// client-side grouping fields injected by `group-notifications.ts`. The
+// imported entity unions are too strict to describe the full superset, so we
+// keep a wide local interface.
 interface EmojiUrlObject {
   url?: string;
   staticUrl?: string;
@@ -169,7 +169,7 @@ type ContentTextRenderer = (args: ContentTextArgs) => JSX.Element | string;
 const NOTIFICATION_ICONS: Record<string, string> = {
   mention: 'comment',
   status: 'notification',
-  reblog: 'rocket',
+  repost: 'rocket',
   follow: 'follow',
   favourite: 'heart',
   poll: 'poll',
@@ -180,7 +180,6 @@ const NOTIFICATION_ICONS: Record<string, string> = {
   moderation_warning: 'alert',
   emoji_reaction: 'emoji2',
   reaction: 'emoji2',
-  'pleroma:emoji_reaction': 'emoji2',
   quote: 'quote',
   quoted_update: 'pencil',
 };
@@ -190,7 +189,7 @@ Notification types
 ==================
 mention = Someone mentioned you in their status
 status = Someone you enabled notifications for has posted a status
-reblog = Someone reposted one of your statuses
+repost = Someone reposted one of your statuses
 follow = Someone followed you
 favourite = Someone liked one of your statuses
 poll = A poll you have voted in or created has ended
@@ -226,7 +225,7 @@ function emojiText({ account, emoji, emojiURL }: ContentTextArgs): JSX.Element {
 
 const contentText: Record<string, ContentTextRenderer> = {
   status: ({ account }) => <Trans>{account} published a post.</Trans>,
-  reblog: (args) => {
+  repost: (args) => {
     // Unwrap with locals so the Lingui macro sees plain identifiers and
     // keeps named placeholders (`{count}`) instead of switching to positional
     // (`{0}`). The JS original used implicit `any`; runtime semantics are
@@ -362,7 +361,7 @@ const contentText: Record<string, ContentTextRenderer> = {
     ) : (
       t`A post you interacted with has been edited.`
     ),
-  'favourite+reblog': (args) => {
+  'favourite+repost': (args) => {
     const { account, components } = args;
     const count = args.count as number;
     const postsCount = args.postsCount as number;
@@ -453,7 +452,6 @@ const contentText: Record<string, ContentTextRenderer> = {
   ),
   emoji_reaction: emojiText,
   reaction: emojiText,
-  'pleroma:emoji_reaction': emojiText,
 };
 
 interface SeveredRelationshipArgs {
@@ -538,8 +536,10 @@ function Notification({
     return null;
   }
 
-  // status = Attached when type of the notification is favourite, reblog, status, mention, poll, or update
-  const actualStatus = status?.reblog || status;
+  // status = Attached when type of the notification is favourite, repost, status, mention, poll, or update
+  const actualStatus =
+    (status as (typeof status & { repost?: typeof status }) | undefined)
+      ?.repost || status;
   const actualStatusID = actualStatus?.id;
 
   const currentAccount = getCurrentAccountID();
@@ -551,20 +551,20 @@ function Notification({
     status?.account?.id === currentAccount;
 
   let favsCount = 0;
-  let reblogsCount = 0;
-  if (type === 'favourite+reblog') {
+  let repostsCount = 0;
+  if (type === 'favourite+repost') {
     if (_accounts) {
       for (const acct of _accounts) {
         if (acct._types?.includes('favourite')) {
           favsCount++;
         }
-        if (acct._types?.includes('reblog')) {
-          reblogsCount++;
+        if (acct._types?.includes('repost')) {
+          repostsCount++;
         }
       }
     }
-    if (!reblogsCount && favsCount) type = 'favourite';
-    if (!favsCount && reblogsCount) type = 'reblog';
+    if (!repostsCount && favsCount) type = 'favourite';
+    if (!favsCount && repostsCount) type = 'repost';
   }
 
   let text: ContentTextRenderer | JSX.Element | string | undefined;
@@ -573,7 +573,7 @@ function Notification({
   } else if (type && contentText[type]) {
     text = contentText[type];
   } else {
-    // Anticipate unhandled notification types, possibly from Mastodon forks or non-Mastodon instances
+    // Anticipate unhandled notification types and surface them to the user.
     // This surfaces the error to the user, hoping that users will report it
     // Preserve JS behavior: undefined `type` interpolates as the string
     // "undefined". The `t` macro placeholder type rejects `undefined`, so
@@ -609,7 +609,7 @@ function Notification({
   if (typeof text === 'function') {
     const renderer = text;
     const count =
-      (type === 'favourite' || type === 'reblog' || type === 'admin.sign_up') &&
+      (type === 'favourite' || type === 'repost' || type === 'admin.sign_up') &&
       notificationsCount
         ? diffCount
           ? notificationsCount
@@ -629,10 +629,7 @@ function Notification({
       if (targetName) {
         text = renderer({ name: targetName });
       }
-    } else if (
-      (type === 'emoji_reaction' || type === 'pleroma:emoji_reaction') &&
-      notification.emoji
-    ) {
+    } else if (type === 'emoji_reaction' && notification.emoji) {
       const emojiShortcode = notification.emoji
         .replace(/^:/, '')
         .replace(/:$/, '');
@@ -666,17 +663,17 @@ function Notification({
     (type !== undefined &&
       (
         {
-          'favourite+reblog': t`Reposted/Liked by…`,
+          'favourite+repost': t`Reposted/Liked by…`,
           favourite: t`Liked by…`,
-          reblog: t`Reposted by…`,
+          repost: t`Reposted by…`,
           follow: t`Followed by…`,
         } as Record<string, string>
       )[type]) ||
     t`Accounts`;
   const showRemoteAccounts =
-    (type === 'favourite+reblog' ||
+    (type === 'favourite+repost' ||
       type === 'favourite' ||
-      type === 'reblog' ||
+      type === 'repost' ||
       type === 'admin.sign_up') &&
     expandAccounts === 'remote';
   const handleOpenGenericAccounts = () => {
@@ -719,8 +716,8 @@ function Notification({
             ).value;
             const reactionType = key.startsWith('favourite')
               ? 'favourite'
-              : key.startsWith('reblog')
-                ? 'reblog'
+              : key.startsWith('repost')
+                ? 'repost'
                 : null;
             // if (!reactionType) continue;
             // JS original iterated `_accounts` directly; an exhausted iterator
@@ -741,14 +738,14 @@ function Notification({
             value: accounts,
           };
         },
-        showReactions: type === 'favourite+reblog',
+        showReactions: type === 'favourite+repost',
         postID: statusKey(actualStatusID, instance),
       };
     } else {
       states.showGenericAccounts = {
         heading: genericAccountsHeading,
         accounts: _accounts,
-        showReactions: type === 'favourite+reblog',
+        showReactions: type === 'favourite+repost',
         excludeRelationshipAttrs: type === 'follow' ? ['followedBy'] : [],
         postID: statusKey(actualStatusID, instance),
       };
@@ -791,9 +788,9 @@ function Notification({
         className={`notification-type notification-${type}`}
         title={formattedCreatedAt || undefined}
       >
-        {type === 'favourite+reblog' ? (
+        {type === 'favourite+repost' ? (
           <>
-            <Icon icon="rocket" size="xl" alt={type} className="reblog-icon" />
+            <Icon icon="rocket" size="xl" alt={type} className="repost-icon" />
             <Icon
               icon="heart"
               size="xl"
@@ -820,9 +817,9 @@ function Notification({
         )}
       </div>
       <div className="notification-content">
-        {/* {(type === 'favourite+reblog' ||
+        {/* {(type === 'favourite+repost' ||
           type === 'favourite' ||
-          type === 'reblog') && (
+          type === 'repost') && (
           <>
             💥 {type} {expandAccounts}{' '}
             <mark>
@@ -920,7 +917,7 @@ function Notification({
                     alt={`${acct.displayName} @${acct.acct}`}
                     squircle={acct?.bot}
                   />
-                  {type === 'favourite+reblog' && (
+                  {type === 'favourite+repost' && (
                     <div className="account-sub-icons">
                       {/* JS original accessed `_types` directly without a
                           guard. Preserve crash-on-missing behavior. */}
@@ -946,7 +943,7 @@ function Notification({
               >
                 +
                 {(type === 'favourite' ||
-                  type === 'reblog' ||
+                  type === 'repost' ||
                   type === 'admin.sign_up') &&
                   (notificationsCount as number) - _accounts.length}
                 <Icon icon="chevron-down" />
@@ -990,7 +987,7 @@ function Notification({
                     alt={`${acct.displayName} @${acct.acct}`}
                     squircle={acct?.bot}
                   />
-                  {/* {type === 'favourite+reblog' && (
+                  {/* {type === 'favourite+repost' && (
                     <div className="account-sub-icons">
                       {account._types.map((type) => (
                         <Icon

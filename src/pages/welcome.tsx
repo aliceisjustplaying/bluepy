@@ -2,7 +2,7 @@ import './welcome.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 
-import boostsCarouselUrl from '../assets/features/boosts-carousel.jpg';
+import repostsCarouselUrl from '../assets/features/reposts-carousel.jpg';
 import catchupUrl from '../assets/features/catch-up.png';
 import multiColumnUrl from '../assets/features/multi-column.jpg';
 import multiHashtagTimelineUrl from '../assets/features/multi-hashtag-timeline.jpg';
@@ -129,7 +129,7 @@ function Welcome() {
         <div className="sections">
           <section>
             <img
-              src={boostsCarouselUrl}
+              src={repostsCarouselUrl}
               alt={t`Screenshot of Reposts Carousel`}
               width="400"
               height="303"

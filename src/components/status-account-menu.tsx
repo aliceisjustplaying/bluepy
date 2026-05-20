@@ -4,10 +4,8 @@ import type { mastodon } from 'masto';
 
 import haptics from '../utils/haptics';
 import { supportsNativeQuote } from '../utils/quote-utils';
-import showCompose from '../utils/show-compose';
 import showToast from '../utils/show-toast';
 import states, { getStatus, saveStatus } from '../utils/states';
-import supports from '../utils/supports';
 
 import Icon from './icon';
 import MenuConfirm from './menu-confirm';
@@ -181,23 +179,6 @@ export default function StatusAccountMenu({
               </MenuItem>
             )}
           <div className="menu-horizontal">
-            {supports('@mastodon/post-edit') && (
-              <MenuItem
-                onClick={() => {
-                  showCompose({
-                    editStatus: status,
-                    quoteStatus: (
-                      status.quote as mastodon.v1.Quote | null | undefined
-                    )?.quotedStatus,
-                  } as Parameters<typeof showCompose>[0]);
-                }}
-              >
-                <Icon icon="pencil" />
-                <span>
-                  <Trans>Edit</Trans>
-                </span>
-              </MenuItem>
-            )}
             {isSizeLarge && (
               <MenuConfirm
                 subMenu

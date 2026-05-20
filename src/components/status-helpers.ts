@@ -196,7 +196,7 @@ export const detectLang = pmem(
     text = text?.trim();
 
     // Ref: https://github.com/komodojp/tinyld/blob/develop/docs/benchmark.md
-    // 500 should be enough for now, also the default max chars for Mastodon
+    // 500 is enough for reliable language detection here.
     if ((text?.length ?? 0) > 500) {
       return null;
     }

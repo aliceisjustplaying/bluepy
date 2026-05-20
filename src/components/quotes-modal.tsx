@@ -148,7 +148,7 @@ export default function QuotesModal({
                     }}
                   >
                     {renderStatus({
-                      status: post as AnyStatus,
+                      status: post as unknown as AnyStatus,
                       instance,
                       size: 's',
                       readOnly: true,

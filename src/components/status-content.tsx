@@ -130,8 +130,8 @@ export default function StatusContent({
     account,
     id,
     repliesCount,
-    reblogged,
-    reblogsCount,
+    reposted,
+    repostsCount,
     favourited,
     favouritesCount,
     quotesCount,
@@ -162,7 +162,7 @@ export default function StatusContent({
     _deleted,
     _pinned,
     // _filtered,
-    // Non-Mastodon
+    // Client-only props
     emojiReactions,
   } = status;
   const {
@@ -305,14 +305,14 @@ export default function StatusContent({
   const createdDateText = createdAt && niceDateTime(createdAtDate);
   const editedDateText = editedAt && niceDateTime(editedAtDate);
 
-  // Can boost if:
+  // Can repost if:
   // - authenticated AND
   // - visibility != direct OR
   // - visibility = private AND isSelf
   const isPublic = ['public', 'unlisted'].includes(visibility);
-  let canBoost = authenticated && isPublic;
+  let canRepost = authenticated && isPublic;
   if (visibility === 'private' && isSelf) {
-    canBoost = true;
+    canRepost = true;
   }
 
   const {
@@ -334,12 +334,12 @@ export default function StatusContent({
     mediaNoDesc,
     statusMonthsAgo,
     replyStatus,
-    confirmBoostStatus,
+    confirmRepostStatus,
     favouriteStatus,
     favouriteStatusNotify,
     bookmarkStatus,
     bookmarkStatusNotify,
-    fetchBoostedLikedByAccounts,
+    fetchRepostedLikedByAccounts,
   } = useStatusInteractions({
     statusID,
     status,
@@ -352,8 +352,8 @@ export default function StatusContent({
     isSizeLarge,
     username,
     acct,
-    reblogged,
-    reblogsCount,
+    reposted,
+    repostsCount,
     favourited,
     favouritesCount,
     bookmarked,
@@ -362,66 +362,67 @@ export default function StatusContent({
   });
 
   const actionsRef = useRef<HTMLDivElement | null>(null);
-  const { menuFooter, StatusMenuItems } = useStatusMenuState({
-    mediaNoDesc,
-    statusMonthsAgo,
-    accountId,
-    mentions,
-    currentAccount,
-    repliesCount,
-    username,
-    acct,
-    replyStatus,
-    isSizeLarge,
-    sameInstance,
-    showActionsBar,
-    reblogged,
-    quoteDisabled,
-    status,
-    quoteMetaText,
-    quoteText,
-    url: permalink,
-    canBoost,
-    confirmBoostStatus,
-    canQuote,
-    reblogsCount,
-    quotesCount,
-    favouriteStatusNotify,
-    favourited,
-    favouritesCount,
-    bookmarked,
-    bookmarkStatusNotify,
-    setShowQuotes,
-    quote,
-    setShowQuoteChain,
-    setShowEmbed,
-    setShowQuoteSettings,
-    mediaFirst,
-    enableTranslate,
-    language,
-    differentLanguage,
-    forceTranslate,
-    setForceTranslate,
-    instance,
-    id,
-    onStatusLinkClick,
-    createdDateText,
-    editedAt,
-    setShowEdited,
-    editedDateText,
-    isPublic,
-    authenticated,
-    isSelf,
-    mentionSelf,
-    masto,
-    muted,
-    pinned,
-    quoteApprovalPolicyMessages,
-    postQuoteApprovalPolicy,
-    visibility,
-    sKey,
-    fetchBoostedLikedByAccounts,
-  });
+  const { menuFooter, StatusMenuItems } =
+    useStatusMenuState({
+      mediaNoDesc,
+      statusMonthsAgo,
+      accountId,
+      mentions,
+      currentAccount,
+      repliesCount,
+      username,
+      acct,
+      replyStatus,
+      isSizeLarge,
+      sameInstance,
+      showActionsBar,
+      reposted,
+      quoteDisabled,
+      status,
+      quoteMetaText,
+      quoteText,
+      url: permalink,
+      canRepost,
+      confirmRepostStatus,
+      canQuote,
+      repostsCount,
+      quotesCount,
+      favouriteStatusNotify,
+      favourited,
+      favouritesCount,
+      bookmarked,
+      bookmarkStatusNotify,
+      setShowQuotes,
+      quote,
+      setShowQuoteChain,
+      setShowEmbed,
+      setShowQuoteSettings,
+      mediaFirst,
+      enableTranslate,
+      language,
+      differentLanguage,
+      forceTranslate,
+      setForceTranslate,
+      instance,
+      id,
+      onStatusLinkClick,
+      createdDateText,
+      editedAt,
+      setShowEdited,
+      editedDateText,
+      isPublic,
+      authenticated,
+      isSelf,
+      mentionSelf,
+      masto,
+      muted,
+      pinned,
+      quoteApprovalPolicyMessages,
+      postQuoteApprovalPolicy,
+      visibility,
+      sKey,
+      fetchRepostedLikedByAccounts,
+    });
 
   const {
     contextMenuRef,
@@ -443,9 +444,9 @@ export default function StatusContent({
     replyStatus,
     favouriteStatusNotify,
     bookmarkStatusNotify,
-    confirmBoostStatus,
-    canBoost,
-    reblogged,
+    confirmRepostStatus,
+    canRepost,
+    reposted,
     username,
     acct,
     sameInstance,
@@ -455,8 +456,8 @@ export default function StatusContent({
     quoteMetaText,
     status,
     url: permalink,
-    boostToast: (rebloggedValue, usernameValue, acctValue) =>
-      rebloggedValue
+    repostToast: (repostedValue, usernameValue, acctValue) =>
+      repostedValue
         ? t`Removed repost of @${usernameValue || acctValue}'s post`
         : t`Reposted @${usernameValue || acctValue}'s post`,
   });
@@ -605,7 +606,7 @@ export default function StatusContent({
           favourited={favourited}
           favouritesCount={favouritesCount}
           favouriteStatusNotify={favouriteStatusNotify}
-          reblogged={reblogged}
+          reposted={reposted}
           bookmarked={bookmarked}
           pinned={_pinned}
         />
@@ -741,11 +742,11 @@ export default function StatusContent({
               repliesCount={repliesCount}
               replyStatus={replyStatus}
               canQuote={canQuote}
-              reblogsCount={reblogsCount}
+              repostsCount={repostsCount}
               quotesCount={quotesCount}
-              canBoost={canBoost}
-              confirmBoostStatus={confirmBoostStatus}
-              reblogged={reblogged}
+              canRepost={canRepost}
+              confirmRepostStatus={confirmRepostStatus}
+              reposted={reposted}
               quoteDisabled={quoteDisabled}
               quoteText={quoteText}
               quoteMetaText={quoteMetaText}

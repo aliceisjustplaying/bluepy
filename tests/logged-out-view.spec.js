@@ -879,38 +879,6 @@ test('does not fetch Bluesky media for Blacksky profiles that only lack a banner
   ).toHaveAttribute('src', AT_PROFILE_AVATAR);
   expect(blueskyProfileRequests).toBe(0);
 });
-
-test('keeps titles working on legacy account routes', async ({ page }) => {
-  const account = {
-    id: '12345',
-    username: 'legacyuser',
-    acct: 'legacyuser@mastodon.social',
-    display_name: 'Legacy Account',
-    avatar: '',
-    avatar_static: '',
-    header: '',
-    header_static: '',
-    followers_count: 0,
-    following_count: 0,
-    statuses_count: 0,
-    bot: false,
-    locked: false,
-    emojis: [],
-  };
-  await page.route('**/api/v1/accounts/12345', async (route) => {
-    await route.fulfill({ json: account });
-  });
-  await page.route('**/api/v1/accounts/12345/statuses*', async (route) => {
-    await route.fulfill({ json: [] });
-  });
-
-  await page.goto('/mastodon.social/a/12345', {
-    waitUntil: 'domcontentloaded',
-  });
-  await expect(page).toHaveURL(pathRegex('/mastodon.social/a/12345'));
-  await expect(page).toHaveTitle(/Legacy Account/);
-});
-
 test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
   await routeAtprotoRecords(page);
 

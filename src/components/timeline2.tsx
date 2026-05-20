@@ -18,7 +18,7 @@ import states, { saveStatus, statusKey } from '../utils/states';
 import store from '../utils/store';
 import { dedupeTimelineContextItems } from '../utils/timeline-context';
 import {
-  dedupeBoosts,
+  dedupeReposts,
   filterHiddenStatuses,
   groupContext,
 } from '../utils/timeline-utils';
@@ -38,7 +38,7 @@ import {
   useOHotkeys,
 } from './timeline';
 
-// Batch size (Mastodon API limit is around 20-40)
+// Batch size for status lookups.
 const BATCH_SIZE = 20;
 const TIMELINE_LIMIT = 50;
 const CACHE_AGE = 1000 * 60 * 15; // 15 minutes
@@ -54,7 +54,7 @@ type TimelineStatusEntry = mastodon.v1.Status & {
 interface SaveStatusInput {
   id?: string;
   account?: { id?: string } | null;
-  reblog?: SaveStatusInput | null;
+  repost?: SaveStatusInput | null;
   quote?: SaveStatusInput | null;
   state?: unknown;
   quotedStatus?: SaveStatusInput | null;
@@ -66,7 +66,7 @@ interface SaveStatusInput {
 interface SaveStatusPayload extends Record<string, unknown> {
   id?: string;
   account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
+  repost?: SaveStatusPayload | null;
   quote?: SaveStatusPayload | null;
   state?: unknown;
   quotedStatus?: SaveStatusPayload | null;
@@ -84,7 +84,7 @@ function toSaveStatus(
 interface TimelineGroupEntry {
   id: string | string[];
   items: TimelineStatusEntry[];
-  type: 'boosts' | 'thread' | 'conversation' | 'pinned';
+  type: 'reposts' | 'thread' | 'conversation' | 'pinned';
   incompleteThread?: boolean;
 }
 
@@ -200,7 +200,7 @@ interface Timeline2Props {
   refresh?: unknown;
   filterContext?: string;
   showReplyParent?: boolean;
-  dedupeBoosts?: boolean;
+  dedupeReposts?: boolean;
   // clearWhenRefresh?: boolean;
 }
 
@@ -222,7 +222,7 @@ function Timeline2({
   refresh,
   filterContext,
   showReplyParent,
-  dedupeBoosts: shouldDedupeBoosts,
+  dedupeReposts: shouldDedupeReposts,
   // clearWhenRefresh,
 }: Timeline2Props) {
   const { t } = useLingui();
@@ -441,8 +441,8 @@ function Timeline2({
           console.log('🔍 loadItems result', result);
 
           if (value?.length) {
-            if (shouldDedupeBoosts) {
-              value = dedupeBoosts(value, instance);
+            if (shouldDedupeReposts) {
+              value = dedupeReposts(value, instance);
             }
             value = filterHiddenStatuses(
               value,

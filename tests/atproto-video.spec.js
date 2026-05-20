@@ -141,7 +141,7 @@ test.describe('ATProto video mapping', () => {
       },
     ]);
     expect(status.quote.quotedStatus.repliesCount).toBe(4);
-    expect(status.quote.quotedStatus.reblogsCount).toBe(3);
+    expect(status.quote.quotedStatus.repostsCount).toBe(3);
     expect(status.quote.quotedStatus.favouritesCount).toBe(2);
     expect(status.quote.quotedStatus.quotesCount).toBe(1);
   });

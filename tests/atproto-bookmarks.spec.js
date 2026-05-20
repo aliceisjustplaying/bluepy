@@ -70,7 +70,7 @@ test.describe('ATProto bookmarks', () => {
         content: 'bookmarked post',
         bookmarked: true,
         repliesCount: 1,
-        reblogsCount: 2,
+        repostsCount: 2,
         favouritesCount: 3,
         quotesCount: 4,
       });

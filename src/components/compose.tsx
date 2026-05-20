@@ -56,8 +56,6 @@ import {
   getCurrentInstanceConfiguration,
 } from '../utils/store-utils';
 import stringLength from '../utils/string-length';
-import supports from '../utils/supports';
-import unfurlMastodonLink from '../utils/unfurl-link';
 import urlRegexObj from '../utils/url-regex';
 import useCloseWatcher from '../utils/useCloseWatcher';
 import useInterval from '../utils/useInterval';
@@ -102,7 +100,7 @@ interface AccountInfoLike {
   [key: string]: unknown;
 }
 
-interface MastodonMention {
+interface MentionLike {
   acct: string;
   [key: string]: unknown;
 }
@@ -123,7 +121,7 @@ interface MediaAttachmentLike {
 interface StatusLike {
   id?: string;
   account?: AccountInfoLike;
-  mentions?: MastodonMention[];
+  mentions?: MentionLike[];
   visibility?: string;
   language?: string | null;
   mediaAttachments?: MediaAttachmentLike[];
@@ -332,7 +330,6 @@ const DEFAULT_LANG: string =
     'en',
   ) || 'en';
 
-// https://github.com/mastodon/mastodon/blob/c4a429ed47e85a6bbf0d470a41cc2f64cf120c19/app/javascript/mastodon/features/compose/util/counter.js
 const usernameRegex = /(^|[^/\w])[@＠](([a-z0-9_]+)@[a-z0-9.-]+[a-z0-9]+)/gi;
 const urlPlaceholder = '$2xxxxxxxxxxxxxxxxxxxxxxx';
 function countableText(inputText: string): string {
@@ -543,12 +540,8 @@ function Compose({
   };
 
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
-  const isAtprotoCompose =
-    !!currentAccount?.atproto || currentAccount?.instanceURL === 'bsky.social';
-  const supportsQuoteApprovalPolicy =
-    supportsNativeQuote() && !isAtprotoCompose;
+  const supportsQuoteApprovalPolicy = false;
   const canShowLinkPreview =
-    currentAccount?.atproto &&
     !editStatus &&
     !currentQuoteStatus?.id &&
     mediaAttachments.length === 0;
@@ -663,9 +656,7 @@ function Compose({
       }
       return Promise.all(
         allowedFiles.map(async (file) => {
-          const uploadFile = supports('@atproto')
-            ? await compressAtprotoImageIfNeeded(file)
-            : file;
+          const uploadFile = await compressAtprotoImageIfNeeded(file);
           return {
             fileData: await uploadFile.arrayBuffer(),
             fileName: uploadFile.name,
@@ -683,52 +674,7 @@ function Compose({
   };
 
   const handlePastedLink = async (url: string): Promise<void> => {
-    // Handle QP links
-    if (supportsNativeQuote()) {
-      // Quotes cannot coexist with media attachments
-      if (mediaAttachments.length > 0) {
-        return;
-      }
-
-      // Cannot add/remove/replace current quote when editing
-      if (editStatus) {
-        return;
-      }
-
-      try {
-        // unfurl-link.ts exposes a snapshot type without `id`/`instance`/
-        // `originalURL` keys publicly; the runtime data does carry them on
-        // resolved hits, so narrow here for the keys we read.
-        const unfurledData = (await unfurlMastodonLink(instance, url)) as
-          | {
-              id?: string;
-              instance?: string;
-              originalURL?: string;
-              [key: string]: unknown;
-            }
-          | null
-          | undefined;
-        if (unfurledData?.id) {
-          const status = (
-            states.statuses as Record<string, StatusLike | undefined>
-          )[`${unfurledData.instance}/${unfurledData.id}`];
-          if (status && checkQuoteEligibility(status)) {
-            // Don't show suggestion if it's the same as current quote
-            if (currentQuoteStatus?.id === status.id) {
-              return;
-            }
-
-            setQuoteSuggestion({
-              status,
-              instance: unfurledData.instance,
-              url: unfurledData.originalURL ?? url,
-            });
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
+    void url;
   };
 
   useEffect(() => {
@@ -1323,11 +1269,7 @@ function Compose({
             // />
             <AccountBlock
               account={currentAccountInfo}
-              accountInstance={
-                currentAccount?.atproto
-                  ? undefined
-                  : currentAccount?.instanceURL
-              }
+              accountInstance={undefined}
               hideDisplayName
               useAvatarStatic
             />
@@ -1659,21 +1601,6 @@ function Compose({
                 if (editStatus) {
                   if (supportsQuoteApprovalPolicy) {
                     params.quote_approval_policy = quoteApprovalPolicy;
-                  }
-                  if (
-                    supports('@mastodon') ||
-                    supports('@gotosocial/edit-media-attributes')
-                  ) {
-                    params.media_attributes = submitMediaAttachments.map(
-                      (attachment) => {
-                        return {
-                          id: attachment.id,
-                          description: attachment.description,
-                          // focus
-                          // thumbnail
-                        };
-                      },
-                    );
                   }
                 } else {
                   if (supportsQuoteApprovalPolicy) {

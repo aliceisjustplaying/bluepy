@@ -532,10 +532,10 @@ interface AdaptedStatusBase {
   spoilerText: string;
   language?: string;
   repliesCount: number;
-  reblogsCount: number;
+  repostsCount: number;
   favouritesCount: number;
   quotesCount: number;
-  reblogged: boolean;
+  reposted: boolean;
   favourited: boolean;
   bookmarked: boolean;
   muted: boolean;
@@ -558,7 +558,7 @@ interface AdaptedStatusBase {
 }
 
 interface AdaptedStatus extends AdaptedStatusBase {
-  reblog?: AdaptedStatusBase;
+  repost?: AdaptedStatusBase;
 }
 
 interface AdaptedList {
@@ -582,7 +582,7 @@ interface AdaptedRelationshipAtproto {
 interface AdaptedRelationship {
   id?: string;
   following: boolean;
-  showingReblogs: boolean;
+  showingReposts: boolean;
   notifying: boolean;
   followedBy: boolean;
   blocking: boolean;
@@ -596,7 +596,7 @@ interface AdaptedRelationship {
 
 type AdaptedNotificationType =
   | 'favourite'
-  | 'reblog'
+  | 'repost'
   | 'quote'
   | 'mention'
   | 'follow'
@@ -604,7 +604,7 @@ type AdaptedNotificationType =
 
 const notificationReasonsByType: Record<AdaptedNotificationType, string[]> = {
   favourite: ['like', 'like-via-repost'],
-  reblog: ['repost', 'repost-via-repost'],
+  repost: ['repost', 'repost-via-repost'],
   quote: ['quote'],
   mention: ['mention', 'reply'],
   follow: ['follow'],
@@ -1823,10 +1823,10 @@ export function postToStatus(
     spoilerText: '',
     language: record.langs?.[0],
     repliesCount: post.replyCount || 0,
-    reblogsCount: post.repostCount || 0,
+    repostsCount: post.repostCount || 0,
     favouritesCount: post.likeCount || 0,
     quotesCount: post.quoteCount || 0,
-    reblogged: !!post.viewer?.repost,
+    reposted: !!post.viewer?.repost,
     favourited: !!post.viewer?.like,
     bookmarked: !!post.viewer?.bookmarked,
     muted: false,
@@ -1874,7 +1874,7 @@ export function postToStatus(
       id: `${id}-repost-${reason.indexedAt}`,
       createdAt: reason.indexedAt,
       account: actorToAccount(reason.by),
-      reblog: status,
+      repost: status,
     };
   }
 
@@ -1916,7 +1916,7 @@ function relationshipFor(id: string | undefined): AdaptedRelationship {
   return {
     id,
     following: false,
-    showingReblogs: true,
+    showingReposts: true,
     notifying: false,
     followedBy: false,
     blocking: false,
@@ -1956,7 +1956,7 @@ export function notificationType(
       return 'favourite';
     case 'repost':
     case 'repost-via-repost':
-      return 'reblog';
+      return 'repost';
     case 'quote':
       return 'quote';
     case 'reply':
@@ -2276,7 +2276,7 @@ export function createAtprotoClient({
           ];
         },
       },
-      rebloggedBy: {
+      repostedBy: {
         list({ limit = 80 }: { limit?: number } = {}) {
           return makeCollection<AdaptedAccount[]>(async (cursor) => {
             const res = await agent.app.bsky.feed.getRepostedBy({
@@ -2358,7 +2358,7 @@ export function createAtprotoClient({
           favouritesCount: Math.max(0, current.favouritesCount - 1),
         };
       },
-      async reblog(): Promise<AdaptedStatus> {
+      async repost(): Promise<AdaptedStatus> {
         const current = await this.fetch();
         const repost = await agent.repost(
           current.uri ?? '',
@@ -2366,19 +2366,19 @@ export function createAtprotoClient({
         );
         return {
           ...current,
-          reblogged: true,
-          reblogsCount: current.reblogsCount + 1,
+          reposted: true,
+          repostsCount: current.repostsCount + 1,
           _atproto: { ...current._atproto, repost: repost.uri },
         };
       },
-      async unreblog(): Promise<AdaptedStatus> {
+      async unrepost(): Promise<AdaptedStatus> {
         const current = await this.fetch();
         if (current._atproto.repost)
           await agent.deleteRepost(current._atproto.repost);
         return {
           ...current,
-          reblogged: false,
-          reblogsCount: Math.max(0, current.reblogsCount - 1),
+          reposted: false,
+          repostsCount: Math.max(0, current.repostsCount - 1),
         };
       },
       async bookmark(): Promise<AdaptedStatus> {
@@ -2447,14 +2447,14 @@ export function createAtprotoClient({
       list({
         limit = 20,
         exclude_replies: excludeReplies,
-        exclude_reblogs: excludeReposts,
+        exclude_reposts: excludeReposts,
         only_media: onlyMedia,
         tagged,
         pinned,
       }: {
         limit?: number;
         exclude_replies?: boolean;
-        exclude_reblogs?: boolean;
+        exclude_reposts?: boolean;
         only_media?: boolean;
         tagged?: string;
         pinned?: boolean;
@@ -2480,7 +2480,7 @@ export function createAtprotoClient({
             filter,
           );
           let items = feedToProfileStatuses(feed, agent);
-          if (excludeReposts) items = items.filter((item) => !item.reblog);
+          if (excludeReposts) items = items.filter((item) => !item.repost);
           if (onlyMedia) {
             items = items.filter((item) => item.mediaAttachments?.length);
           }
@@ -2808,7 +2808,7 @@ export function createAtprotoClient({
     );
     const statusRequiredTypes = new Set<AdaptedNotificationType>([
       'favourite',
-      'reblog',
+      'repost',
       'status',
       'mention',
       'quote',
@@ -3010,8 +3010,12 @@ export function createAtprotoClient({
                   .map((value) => `#${value.replace(/^#/, '')}`)
                   .join(' ');
                 return makeCollection<AdaptedStatus[]>(async (cursor) => {
+                  const tags = [tag, ...any]
+                    .filter(Boolean)
+                    .map((value) => value.replace(/^#/, ''));
                   const res = await agent.app.bsky.feed.searchPosts({
                     q,
+                    tag: tags,
                     limit,
                     cursor,
                   });
@@ -3706,7 +3710,6 @@ export function atprotoInstanceInfo() {
         maxOptions: 0,
       },
     },
-    apiVersions: { mastodon: 7 },
   };
 }
 

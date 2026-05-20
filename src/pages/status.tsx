@@ -5,7 +5,6 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import debounce from 'just-debounce-it';
 import pRetry from 'p-retry';
-import { toUnicode } from 'punycode/';
 import type {
   ReactNode,
   ComponentType,
@@ -58,8 +57,6 @@ import { getCurrentAccount } from '../utils/store-utils';
 import { ThreadCountContext } from '../utils/thread-count-context';
 import useTitle from '../utils/useTitle';
 
-import getInstanceStatusURL from './../utils/get-instance-status-url';
-
 // `react-intersection-observer`'s `InView` ships without working JSX
 // component typings under our React component types. Re-type as a React
 // component with the props this file actually uses.
@@ -73,10 +70,6 @@ type InViewProps = {
 };
 const InView: ComponentType<InViewProps> =
   InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
-
-const { PHANPY_DEFAULT_INSTANCE: DEFAULT_INSTANCE } = import.meta.env as {
-  PHANPY_DEFAULT_INSTANCE?: string;
-};
 
 const LIMIT = 40;
 const SUBCOMMENTS_OPEN_ALL_LIMIT = 10;
@@ -1072,17 +1065,6 @@ function StatusThread({
     ['/:instance?/s/:id', '/s/:id', '/:scheme://*', '/:atUri'],
   );
 
-  const postInstance = useMemo<string | undefined>(() => {
-    if (!heroStatus) return undefined;
-    const { url } = heroStatus;
-    if (!url) return undefined;
-    return URL.parse(url)?.hostname;
-  }, [heroStatus]);
-  const postSameInstance = useMemo<boolean | undefined>(() => {
-    if (!postInstance) return undefined;
-    return postInstance === instance;
-  }, [postInstance, instance]);
-
   const [limit, setLimit] = useState(LIMIT);
   const showMore = useMemo(() => {
     // return number of statuses to show
@@ -1385,11 +1367,7 @@ function StatusThread({
                     </Trans>
                   </p>
                   <Link
-                    to={
-                      DEFAULT_INSTANCE
-                        ? `/login?instance=${DEFAULT_INSTANCE}&submit=1`
-                        : '/login'
-                    }
+                    to="/login"
                     className="button"
                   >
                     <Trans>Log in</Trans>
@@ -1978,26 +1956,6 @@ function StatusThread({
                 <MenuHeader className="plain">
                   <Trans>Experimental</Trans>
                 </MenuHeader>
-                <MenuItem
-                  disabled={!postInstance || postSameInstance}
-                  onClick={() => {
-                    const statusURL = getInstanceStatusURL(
-                      heroStatus?.url ?? '',
-                    );
-                    if (statusURL) {
-                      navigatePath(statusURL);
-                    } else {
-                      alert(t`Unable to switch`);
-                    }
-                  }}
-                >
-                  <Icon icon="transfer" />
-                  <small className="menu-double-lines">
-                    {postInstance
-                      ? t`Switch to post's PDS (${toUnicode(postInstance)})`
-                      : t`Switch to post's PDS`}
-                  </small>
-                </MenuItem>
                 <MenuItem
                   disabled={
                     !sameInstance ||

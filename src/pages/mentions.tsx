@@ -27,7 +27,7 @@ type StatusLike = mastodon.v1.Status;
 interface SaveStatusPayload extends Record<string, unknown> {
   id?: string;
   account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
+  repost?: SaveStatusPayload | null;
   quote?: SaveStatusPayload | null;
   state?: unknown;
   quotedStatus?: SaveStatusPayload | null;

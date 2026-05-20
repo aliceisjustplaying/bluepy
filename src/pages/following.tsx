@@ -9,7 +9,7 @@ import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
 import supports from '../utils/supports';
-import { dedupeBoosts } from '../utils/timeline-utils';
+import { dedupeReposts } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
 type StreamingEntry = {
@@ -35,7 +35,7 @@ interface FollowingProps {
 }
 
 interface HomeTimelineParams {
-  include_reblogs?: boolean;
+  include_reposts?: boolean;
   [key: string]: unknown;
 }
 
@@ -51,7 +51,7 @@ interface HomeTimelineResource {
 interface SaveStatusInput {
   id?: string;
   account?: { id?: string } | null;
-  reblog?: SaveStatusInput | null;
+  repost?: SaveStatusInput | null;
   quote?: SaveStatusInput | null;
   state?: unknown;
   quotedStatus?: SaveStatusInput | null;
@@ -63,7 +63,7 @@ interface SaveStatusInput {
 interface SaveStatusPayload extends Record<string, unknown> {
   id?: string;
   account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
+  repost?: SaveStatusPayload | null;
   quote?: SaveStatusPayload | null;
   state?: unknown;
   quotedStatus?: SaveStatusPayload | null;
@@ -118,7 +118,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
   __BENCHMARK.end('time-to-following');
 
   console.debug('RENDER Following', title, id);
-  const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
+  const supportsIncludeReposts = supports('@atproto/home-include-reposts');
 
   async function fetchHome(
     firstLoad?: boolean,
@@ -134,11 +134,11 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       });
       homeIterator.current = homeIterable.current.values();
     }
-    if (supportsPixelfed && homeIterable.current?.params) {
+    if (supportsIncludeReposts && homeIterable.current?.params) {
       if (typeof homeIterable.current.params === 'string') {
-        homeIterable.current.params += '&include_reblogs=true';
+        homeIterable.current.params += '&include_reposts=true';
       } else {
-        homeIterable.current.params.include_reblogs = true;
+        homeIterable.current.params.include_reposts = true;
       }
     }
     const results = await homeIterator.current.next();
@@ -155,7 +155,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       value.forEach((item: mastodon.v1.Status) => {
         saveStatus(toSaveStatus(item), instance);
       });
-      value = dedupeBoosts(value, instance);
+      value = dedupeReposts(value, instance);
 
       // ENFORCE sort by datetime (Latest first)
       value.sort((a: mastodon.v1.Status, b: mastodon.v1.Status) => {
@@ -174,13 +174,13 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       const opts: {
         limit: number;
         since_id?: string;
-        include_reblogs?: boolean;
+        include_reposts?: boolean;
       } = {
         limit: 5,
         since_id: latestItem.current,
       };
-      if (supportsPixelfed) {
-        opts.include_reblogs = true;
+      if (supportsIncludeReposts) {
+        opts.include_reposts = true;
       }
       const homeTimeline = getMastoV1Resource<{
         home: {
@@ -195,9 +195,13 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       const valueContainsLatestItem = value?.[0]?.id === latestItem.current; // since_id might not be supported
       if (value?.length && !valueContainsLatestItem) {
         latestItem.current = value[0].id;
-        value = dedupeBoosts(value, instance);
+        value = dedupeReposts(value, instance);
         value = filteredItems(value, 'home');
-        if (value.some((item: mastodon.v1.Status) => !item.reblog)) {
+        if (
+          value.some(
+            (item: mastodon.v1.Status & { repost?: unknown }) => !item.repost,
+          )
+        ) {
           return true;
         }
       }
@@ -249,7 +253,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       fetchItems={fetchHome}
       checkForUpdates={checkForUpdates}
       useItemID
-      boostsCarousel={snapStates.settings.boostsCarousel}
+      repostsCarousel={snapStates.settings.repostsCarousel}
       {...props}
       // allowFilters
       filterContext="home"

@@ -46,7 +46,10 @@ import {
   type YearInPostsRecord,
 } from '../utils/year-in-posts';
 
-type MastoStatus = mastodon.v1.Status;
+type MastoStatus = mastodon.v1.Status & {
+  repost?: MastoStatus | null;
+  repostsCount?: number;
+};
 
 type StatusWithExtras = MastoStatus & {
   quote?: { id?: string; quotedStatus?: { id?: string } } | null;
@@ -61,7 +64,7 @@ interface DayCounts {
   original: number;
   reply: number;
   quote: number;
-  boost: number;
+  repost: number;
 }
 
 interface HeatmapDay {
@@ -71,7 +74,7 @@ interface HeatmapDay {
   original: number;
   reply: number;
   quote: number;
-  boost: number;
+  repost: number;
 }
 
 interface MediaGridCell {
@@ -85,7 +88,7 @@ interface MonthTypeCounts {
   original: number;
   reply: number;
   quote: number;
-  boost: number;
+  repost: number;
 }
 
 interface MonthWithPosts {
@@ -96,7 +99,7 @@ interface MonthWithPosts {
   original: number;
   reply: number;
   quote: number;
-  boost: number;
+  repost: number;
 }
 
 function Status(props: {
@@ -139,14 +142,14 @@ function getCurrentTimezoneOffset(): number {
   return new Date().getTimezoneOffset();
 }
 
-type FilterKey = 'all' | 'original' | 'replies' | 'quotes' | 'boosts' | 'media';
+type FilterKey = 'all' | 'original' | 'replies' | 'quotes' | 'reposts' | 'media';
 
 const FILTER_KEYS: Record<FilterKey, string> = {
   all: 'All',
   original: 'Original',
   replies: 'Replies',
   quotes: 'Quotes',
-  boosts: 'Reposts',
+  reposts: 'Reposts',
   media: 'Media',
 };
 
@@ -155,7 +158,7 @@ type SortKey =
   | 'createdAt'
   | 'repliesCount'
   | 'favouritesCount'
-  | 'reblogsCount';
+  | 'repostsCount';
 
 interface SortOption {
   key: SortKey;
@@ -167,7 +170,7 @@ const SORT_OPTIONS: SortOption[] = [
   { key: 'createdAt' },
   { key: 'repliesCount' },
   { key: 'favouritesCount' },
-  { key: 'reblogsCount' },
+  { key: 'repostsCount' },
 ];
 
 function getMonthName(
@@ -393,7 +396,7 @@ function YearInPosts() {
           original: 0,
           reply: 0,
           quote: 0,
-          boost: 0,
+          repost: 0,
         };
       }
 
@@ -402,8 +405,8 @@ function YearInPosts() {
       dayData.total++;
 
       const p = post as StatusWithExtras;
-      if (p.reblog) {
-        dayData.boost++;
+      if (p.repost) {
+        dayData.repost++;
       } else if (
         supportsNativeQuote() &&
         (p.quote?.id || p.quote?.quotedStatus?.id)
@@ -434,7 +437,7 @@ function YearInPosts() {
           original: 0,
           reply: 0,
           quote: 0,
-          boost: 0,
+          repost: 0,
         });
       }
 
@@ -449,7 +452,7 @@ function YearInPosts() {
           original: dayData?.original || 0,
           reply: dayData?.reply || 0,
           quote: dayData?.quote || 0,
-          boost: dayData?.boost || 0,
+          repost: dayData?.repost || 0,
         });
       }
 
@@ -489,9 +492,9 @@ function YearInPosts() {
         let hasMedia = false;
         if (dayPosts.length > 0) {
           const postsWithMedia = dayPosts.filter((post) => {
-            const actualPost = post.reblog || post;
+            const actualPost = post.repost || post;
             return (
-              !post.reblog &&
+              !post.repost &&
               actualPost.mediaAttachments?.some(
                 (media) =>
                   media.previewUrl ||
@@ -508,13 +511,13 @@ function YearInPosts() {
                 const actualPost = post as StatusWithQuotes;
                 const totalCount =
                   (actualPost.favouritesCount || 0) +
-                  (actualPost.reblogsCount || 0) +
+                  (actualPost.repostsCount || 0) +
                   (actualPost.repliesCount || 0) +
                   (actualPost.quotesCount || 0);
 
                 const topTotalCount = topPost
                   ? ((topPost as StatusWithQuotes).favouritesCount || 0) +
-                    ((topPost as StatusWithQuotes).reblogsCount || 0) +
+                    ((topPost as StatusWithQuotes).repostsCount || 0) +
                     ((topPost as StatusWithQuotes).repliesCount || 0) +
                     ((topPost as StatusWithQuotes).quotesCount || 0)
                   : -1;
@@ -549,13 +552,13 @@ function YearInPosts() {
           original: 0,
           reply: 0,
           quote: 0,
-          boost: 0,
+          repost: 0,
         };
       }
 
       const p = post as StatusWithExtras;
-      if (p.reblog) {
-        monthTypes[m].boost++;
+      if (p.repost) {
+        monthTypes[m].repost++;
       } else if (
         supportsNativeQuote() &&
         (p.quote?.id || p.quote?.quotedStatus?.id)
@@ -578,7 +581,7 @@ function YearInPosts() {
           original: types.original,
           reply: types.reply,
           quote: types.quote,
-          boost: types.boost,
+          repost: types.repost,
         };
       }),
       (a, b) => a.month - b.month,
@@ -604,7 +607,7 @@ function YearInPosts() {
         },
       }) as FlexSearchDocument;
       posts.forEach((p) => {
-        const status = p.reblog || p;
+        const status = p.repost || p;
         const pollText = status.poll?.options?.map((o) => o.title).join(' ');
         const mediaText = status.mediaAttachments
           ?.map((m) => m.description)
@@ -672,14 +675,14 @@ function YearInPosts() {
       original: 0,
       replies: 0,
       quotes: 0,
-      boosts: 0,
+      reposts: 0,
       media: 0,
     };
 
     monthFilteredPosts.forEach((post) => {
       const p = post as StatusWithExtras;
-      if (p.reblog) {
-        counts.boosts++;
+      if (p.repost) {
+        counts.reposts++;
       } else if (
         supportsNativeQuote() &&
         (p.quote?.id || p.quote?.quotedStatus?.id)
@@ -691,8 +694,8 @@ function YearInPosts() {
         counts.original++;
       }
 
-      const status = p.reblog || p;
-      if (!p.reblog && (status.mediaAttachments?.length ?? 0) > 0) {
+      const status = p.repost || p;
+      if (!p.repost && (status.mediaAttachments?.length ?? 0) > 0) {
         counts.media++;
       }
     });
@@ -703,11 +706,11 @@ function YearInPosts() {
   const [filteredPosts, hasMore] = useMemo<[MastoStatus[], boolean]>(() => {
     const filtered = monthPosts.filter((post) => {
       const p = post as StatusWithExtras;
-      if (postType === 'boosts') {
-        return !!p.reblog;
+      if (postType === 'reposts') {
+        return !!p.repost;
       } else if (postType === 'media') {
-        const status = p.reblog || p;
-        return !p.reblog && (status.mediaAttachments?.length ?? 0) > 0;
+        const status = p.repost || p;
+        return !p.repost && (status.mediaAttachments?.length ?? 0) > 0;
       } else if (postType === 'quotes') {
         return (
           supportsNativeQuote() && !!(p.quote?.id || p.quote?.quotedStatus?.id)
@@ -716,7 +719,7 @@ function YearInPosts() {
         return !!p.inReplyToId;
       } else if (postType === 'original') {
         return (
-          !p.reblog &&
+          !p.repost &&
           !(
             supportsNativeQuote() &&
             (p.quote?.id || p.quote?.quotedStatus?.id)
@@ -732,8 +735,8 @@ function YearInPosts() {
     let sorted = filtered;
     if (sortBy !== 'relevance') {
       sorted = sortArray(filtered, (a, b) => {
-        const postA = a.reblog || a;
-        const postB = b.reblog || b;
+        const postA = a.repost || a;
+        const postB = b.repost || b;
         let valueA: number | Date;
         let valueB: number | Date;
 
@@ -1225,7 +1228,7 @@ function YearInPosts() {
                           checked={sortBy === key}
                           onChange={() => {
                             setSortBy(key);
-                            const order = /(replies|favourites|reblogs)/.test(
+                            const order = /(replies|favourites|reposts)/.test(
                               key,
                             )
                               ? 'desc'
@@ -1239,7 +1242,7 @@ function YearInPosts() {
                             createdAt: `Date`,
                             repliesCount: `Replies`,
                             favouritesCount: `Likes`,
-                            reblogsCount: `Reposts`,
+                            repostsCount: `Reposts`,
                           }[key]
                         }
                         {sortBy === key &&
@@ -1305,8 +1308,8 @@ function YearInPosts() {
                                 <Link
                                   className="status-link timeline-item"
                                   to={
-                                    post.reblog
-                                      ? `/${instance}/s/${post.reblog.id}`
+                                    post.repost
+                                      ? `/${instance}/s/${post.repost.id}`
                                       : `/${instance}/s/${post.id}`
                                   }
                                 >
@@ -1427,7 +1430,7 @@ const IntersectionPostItem = ({
     };
   }, [defaultShow, root]);
 
-  const statusId = post.reblog?.id || post.id;
+  const statusId = post.repost?.id || post.id;
 
   return (
     <li
@@ -1483,12 +1486,12 @@ function CalendarBar({
           original,
           reply,
           quote,
-          boost,
+          repost,
         }) => {
           const originalRatio = count > 0 ? original / count : 0;
           const replyRatio = count > 0 ? reply / count : 0;
           const quoteRatio = count > 0 ? quote / count : 0;
-          const boostRatio = count > 0 ? boost / count : 0;
+          const repostRatio = count > 0 ? repost / count : 0;
 
           return (
             <Link
@@ -1501,7 +1504,7 @@ function CalendarBar({
                 '--month-original-ratio': originalRatio,
                 '--month-reply-ratio': replyRatio,
                 '--month-quote-ratio': quoteRatio,
-                '--month-boost-ratio': boostRatio,
+                '--month-repost-ratio': repostRatio,
               }}
               data-month={m}
             >
@@ -1560,8 +1563,8 @@ function CalendarBar({
                           total > 0 ? dayData.reply / total : 0;
                         const dayQuoteRatio =
                           total > 0 ? dayData.quote / total : 0;
-                        const dayBoostRatio =
-                          total > 0 ? dayData.boost / total : 0;
+                        const dayRepostRatio =
+                          total > 0 ? dayData.repost / total : 0;
 
                         return (
                           <span
@@ -1573,7 +1576,7 @@ function CalendarBar({
                               '--original-ratio': dayOriginalRatio,
                               '--reply-ratio': dayReplyRatio,
                               '--quote-ratio': dayQuoteRatio,
-                              '--boost-ratio': dayBoostRatio,
+                              '--repost-ratio': dayRepostRatio,
                             }}
                           />
                         );
@@ -1612,7 +1615,7 @@ function CalendarLegend() {
         </>
       )}
       <span className="ib">
-        <span className="calendar-bar-legend-item calendar-bar-boost" />{' '}
+        <span className="calendar-bar-legend-item calendar-bar-repost" />{' '}
         <Trans>Reposts</Trans>
       </span>
     </div>

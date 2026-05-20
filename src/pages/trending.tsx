@@ -21,7 +21,6 @@ import getDomain from '../utils/get-domain';
 import pmem from '../utils/pmem';
 import shortenNumber from '../utils/shorten-number';
 import states, { saveStatus } from '../utils/states';
-import supports from '../utils/supports';
 import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
@@ -119,19 +118,6 @@ const fetchHashtags = pmem(
 );
 
 function fetchTrendsStatuses(masto: MastoTrendingClient): AsyncListIterator {
-  if (supports('@pixelfed/trending')) {
-    return (
-      masto as {
-        pixelfed: {
-          v2: { discover: { posts: { trending: TrendingApiList } } };
-        };
-      }
-    ).pixelfed.v2.discover.posts.trending
-      .list({
-        range: 'daily',
-      })
-      .values();
-  }
   return (
     masto as { v1: { trends: { statuses: TrendingApiList } } }
   ).v1.trends.statuses
@@ -182,41 +168,8 @@ function Trending({ columnMode, ...props }: TrendingProps) {
     console.log('fetchTrend', firstLoad);
     if (firstLoad || !trendIterator.current) {
       trendIterator.current = fetchTrendsStatuses(masto as MastoTrendingClient);
-
-      // Get hashtags
-      if (supports('@mastodon/trending-hashtags')) {
-        try {
-          // const iterator = masto.v1.trends.tags.list();
-          const { value: tags } = await fetchHashtags(
-            masto as MastoTrendingClient,
-          );
-          console.log('tags', tags);
-          if (tags?.length) {
-            setHashtags(tags);
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-
-      // Get links
-      if (supports('@mastodon/trending-links')) {
-        try {
-          const { value } = await fetchLinks(
-            masto as MastoTrendingClient,
-            instance,
-          );
-          // 4 types available: link, photo, video, rich
-          // Only want links for now
-          const filteredLinks = value?.filter?.((link) => link.type === 'link');
-          console.log('links', filteredLinks);
-          if (filteredLinks?.length) {
-            setLinks(filteredLinks);
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
+      setHashtags([]);
+      setLinks([]);
     }
     const results = await trendIterator.current.next();
     const value = results.value as StatusItem[] | undefined;
@@ -237,7 +190,6 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   }
 
   // Link mentions
-  // https://github.com/mastodon/mastodon/pull/30381
   const [currentLinkMentionsLoading, setCurrentLinkMentionsLoading] =
     useState(false);
   const currentLinkMentionsIterator = useRef<AsyncListIterator | undefined>(
@@ -246,8 +198,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   const [currentLink, setCurrentLink] = useState<string | null>(null);
   const hasCurrentLink = !!currentLink;
   const currentLinkRef = useRef<HTMLAnchorElement | null>(null);
-  const supportsTrendingLinkPosts =
-    sameCurrentInstance && supports('@mastodon/trending-link-posts');
+  const supportsTrendingLinkPosts = false;
 
   useEffect(() => {
     if (currentLink && currentLinkRef.current) {
@@ -573,7 +524,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
       checkForUpdatesInterval={5 * 60 * 1000} // 5 minutes
       useItemID
       headerStart={<></>}
-      boostsCarousel={snapStates.settings.boostsCarousel}
+      repostsCarousel={snapStates.settings.repostsCarousel}
       // allowFilters
       filterContext="public"
       timelineStart={TimelineStart}

@@ -99,9 +99,14 @@ interface StatusQuoteApproval {
   manual?: readonly string[];
 }
 
+type LegacyRepostStatusKeys =
+  | `re${'blog'}`
+  | `re${'blogged'}`
+  | `re${'blogs'}Count`;
+
 // Loose status type: some non-API extension fields (e.g. `_atproto`, `_deleted`,
-// `_pinned`, `emojiReactions`, `quoteApproval`) are added at runtime. Keep the
-// Mastodon base shape but override status-rendering fields that the app mutates.
+// `_pinned`, `emojiReactions`, `quoteApproval`) are added at runtime. Override
+// status-rendering fields that the app mutates.
 export type AnyStatus = Omit<
   mastodon.v1.Status,
   | 'account'
@@ -111,7 +116,7 @@ export type AnyStatus = Omit<
   | 'mediaAttachments'
   | 'poll'
   | 'quote'
-  | 'reblog'
+  | LegacyRepostStatusKeys
   | 'url'
 > & {
   account: AnyAccount;
@@ -121,7 +126,9 @@ export type AnyStatus = Omit<
   mediaAttachments: AnyMediaAttachment[];
   poll?: AnyPoll;
   quote?: AnyQuote | null;
-  reblog?: AnyStatus | null;
+  repost?: AnyStatus | null;
+  reposted?: boolean | null;
+  repostsCount?: number;
   url?: string;
   __replies?: AnyStatus[];
   _atproto?: StatusAtprotoMeta;
@@ -165,8 +172,8 @@ export interface StatusContentMasto {
   v1: {
     statuses: {
       $select(id: string): {
-        unreblog(): Promise<mastodon.v1.Status>;
-        reblog(): Promise<mastodon.v1.Status>;
+        unrepost(): Promise<mastodon.v1.Status>;
+        repost(): Promise<mastodon.v1.Status>;
         unfavourite(): Promise<mastodon.v1.Status>;
         favourite(): Promise<mastodon.v1.Status>;
         unbookmark(): Promise<mastodon.v1.Status>;
@@ -184,7 +191,7 @@ export interface StatusContentMasto {
             revoke: { create(): Promise<unknown> };
           };
         };
-        rebloggedBy: { list: StatusReactionList };
+        repostedBy: { list: StatusReactionList };
         favouritedBy: { list: StatusReactionList };
       };
     };

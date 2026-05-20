@@ -13,7 +13,7 @@ export interface TimelineContextStatus {
   createdAt: string;
   inReplyToId?: string | null;
   account: TimelineContextAccount;
-  reblog?: TimelineContextStatus | null;
+  repost?: TimelineContextStatus | null;
   _pinned?: unknown;
   _differentAuthor?: boolean;
   _atproto?: {
@@ -47,13 +47,11 @@ function atprotoRootId(item: TimelineContextStatus): string | undefined {
 export function canonicalTimelineContextId(
   item: TimelineContextStatus,
 ): string {
-  return item.reblog?.id || item.id;
+  return item.repost?.id || item.id;
 }
 
-function canonicalTimelineContextAccountId(
-  item: TimelineContextStatus,
-): string {
-  return item.reblog?.account.id || item.account.id;
+function canonicalTimelineContextAccountId(item: TimelineContextStatus): string {
+  return item.repost?.account.id || item.account.id;
 }
 
 function isThreadContextEntry<T extends TimelineContextStatus>(
@@ -130,9 +128,9 @@ function addUnique<T extends TimelineContextStatus>(context: T[], item: T) {
   );
   if (existingIndex === -1) {
     context.push(item);
-  } else if (item.reblog && !context[existingIndex].reblog) {
+  } else if (item.repost && !context[existingIndex].repost) {
     // ATProto reposts have synthetic wrapper IDs. Group by the original post
-    // ID, but keep the wrapper object so the boost reason can render once.
+    // ID, but keep the wrapper object so the repost reason can render once.
     const existing = context[existingIndex];
     context[existingIndex] = {
       ...existing,
@@ -142,7 +140,7 @@ function addUnique<T extends TimelineContextStatus>(context: T[], item: T) {
           ? { ...existing._atproto, ...item._atproto }
           : undefined,
     };
-  } else if (!item.reblog && context[existingIndex].reblog) {
+  } else if (!item.repost && context[existingIndex].repost) {
     const existing = context[existingIndex];
     context[existingIndex] = {
       ...item,
@@ -152,8 +150,8 @@ function addUnique<T extends TimelineContextStatus>(context: T[], item: T) {
           ? { ...item._atproto, ...existing._atproto }
           : undefined,
     };
-  } else if (item.reblog) {
-    // Match social-app's one-reason-per-slice shape: the first boost wrapper
+  } else if (item.repost) {
+    // Match social-app's one-reason-per-slice shape: the first repost wrapper
     // for a canonical post wins if multiple reposts land in the same batch.
   }
 }

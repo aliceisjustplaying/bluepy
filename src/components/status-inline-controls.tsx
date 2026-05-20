@@ -22,7 +22,7 @@ interface StatusInlineControlsProps {
   favourited?: boolean | null;
   favouritesCount?: number;
   favouriteStatusNotify: () => Promise<void>;
-  reblogged?: boolean | null;
+  reposted?: boolean | null;
   bookmarked?: boolean | null;
   pinned?: boolean;
 }
@@ -41,7 +41,7 @@ export default function StatusInlineControls({
   favourited,
   favouritesCount,
   favouriteStatusNotify,
-  reblogged,
+  reposted,
   bookmarked,
   pinned,
 }: StatusInlineControlsProps) {
@@ -110,8 +110,8 @@ export default function StatusInlineControls({
         )}
       {size !== 'l' && (
         <div className="status-badge">
-          {reblogged && (
-            <Icon className="reblog" icon="rocket" size="s" alt={t`Reposted`} />
+          {reposted && (
+            <Icon className="repost" icon="rocket" size="s" alt={t`Reposted`} />
           )}
           {favourited && (
             <Icon className="favourite" icon="heart" size="s" alt={t`Liked`} />

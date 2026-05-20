@@ -33,7 +33,7 @@ interface AccountStatusesEndpoint {
       list(params: {
         limit: number;
         exclude_replies: boolean;
-        exclude_reblogs: boolean;
+        exclude_reposts: boolean;
       }): {
         values(): AsyncIterator<mastodon.v1.Status[]>;
       };
@@ -66,7 +66,7 @@ const fetchLatestPostsMemoized = pmem(
       .statuses.list({
         limit: 3,
         exclude_replies: true,
-        exclude_reblogs: true,
+        exclude_reposts: true,
       })
       .values();
     const { value } = await statusesIterator.next();
