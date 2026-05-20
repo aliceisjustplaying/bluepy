@@ -254,6 +254,7 @@ test('loads native AT URI post URLs', async ({ page }) => {
 
   await page.goto(`/${atUri}`);
   await expect(page.locator('text=Native AT URI post')).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
   await expect(page).toHaveURL(
     new RegExp(
       `/at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app\\.bsky\\.feed\\.post/3mlvekixsll23$`,
@@ -781,6 +782,7 @@ test('loads and reloads canonical AT profile URLs', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: /Alice Profile/ }),
   ).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
   await expect(page).toHaveTitle(/Alice Profile/);
 
   await page.reload();
@@ -790,6 +792,32 @@ test('loads and reloads canonical AT profile URLs', async ({ page }) => {
   ).toBeVisible();
   await expect(page).toHaveTitle(/Alice Profile/);
   expect(noRouteWarnings).toEqual([]);
+});
+
+test('returns to a logged-out AT profile after opening one of its posts', async ({
+  page,
+}) => {
+  await routeAtprotoRecords(page);
+
+  await page.goto(AT_PROFILE_PATH);
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+
+  await page.locator(`.status-link-native[href="${AT_POST_PATH}"]`).click();
+  await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
+  await expect(page.locator('text=AT route post')).toBeVisible();
+  await expect(page.locator('.deck-close')).toHaveAttribute(
+    'href',
+    AT_PROFILE_PATH,
+  );
+
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(AT_PROFILE_PATH));
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
 });
 
 test('backfills canonical AT profile media when Blacksky omits it', async ({
@@ -916,6 +944,7 @@ test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
 
   await page.goto(AT_LIST_PATH, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
   await expect(page.locator('text=AT list timeline post')).toBeVisible();
   await expect(page).toHaveTitle(/AT List/);
   await page.reload();
@@ -933,6 +962,7 @@ test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
 
   await page.goto(AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
   await expect(page.locator('text=AT feed timeline post')).toBeVisible();
   await expect(page).toHaveTitle(/AT Feed/);
   await page.reload();

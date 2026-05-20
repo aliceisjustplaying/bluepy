@@ -5,6 +5,7 @@ import type { KeyboardEvent, MouseEvent, ReactNode, RefObject } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
 import { use } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
 import FilterContext from '../utils/filter-context';
@@ -58,6 +59,12 @@ function StatusCardLink({
   children: ReactNode;
 }) {
   const href = canonicalizeAppPath(to);
+  const routerLocation = useLocation();
+  const navigateFromCurrentLocation = () => {
+    states.prevLocation = { ...routerLocation };
+    navigatePath(href);
+  };
+
   return (
     <div
       className={className}
@@ -68,12 +75,12 @@ function StatusCardLink({
       onClick={(e: MouseEvent<HTMLDivElement>) => {
         if (shouldLetStatusCardTargetHandleEvent(e.target)) return;
         if (isModifiedClick(e)) return;
-        navigatePath(href);
+        navigateFromCurrentLocation();
       }}
       onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        navigatePath(href);
+        navigateFromCurrentLocation();
       }}
     >
       <a
@@ -84,7 +91,7 @@ function StatusCardLink({
         onClick={(e: MouseEvent<HTMLAnchorElement>) => {
           if (isModifiedClick(e)) return;
           e.preventDefault();
-          navigatePath(href);
+          navigateFromCurrentLocation();
         }}
       />
       {children}
