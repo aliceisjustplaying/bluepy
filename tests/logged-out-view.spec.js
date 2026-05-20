@@ -6,17 +6,26 @@ test('has welcome page', async ({ page }) => {
   await expect(page.locator('#welcome')).toBeVisible();
 });
 
-test('login page appview switcher updates data-appview on html element', async ({ page }) => {
+test('login page appview switcher updates data-appview on html element', async ({
+  page,
+}) => {
   await page.goto('/login');
   // Default should be bluesky
   await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
 
   // Switch to Blacksky
-  await page.getByRole('combobox', { name: /appview/i }).selectOption('blacksky');
-  await expect(page.locator('html')).toHaveAttribute('data-appview', 'blacksky');
+  await page
+    .getByRole('combobox', { name: /appview/i })
+    .selectOption('blacksky');
+  await expect(page.locator('html')).toHaveAttribute(
+    'data-appview',
+    'blacksky',
+  );
 
   // Switch back
-  await page.getByRole('combobox', { name: /appview/i }).selectOption('bluesky');
+  await page
+    .getByRole('combobox', { name: /appview/i })
+    .selectOption('bluesky');
   await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
 });
 
@@ -285,6 +294,19 @@ function pathRegex(path) {
   return new RegExp(`${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
 }
 
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+function collectNoRouteWarnings(page) {
+  /** @type {string[]} */
+  const warnings = [];
+  page.on('console', (message) => {
+    const text = message.text();
+    if (text.includes('No routes matched location')) warnings.push(text);
+  });
+  return warnings;
+}
+
 function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
   return {
     $type: 'app.bsky.feed.defs#postView',
@@ -519,7 +541,11 @@ test('canonicalizes legacy AT record routes on direct load', async ({
 });
 
 test('loads and reloads canonical AT profile URLs', async ({ page }) => {
+  const noRouteWarnings = collectNoRouteWarnings(page);
   await routeAtprotoRecords(page);
+
+  await page.goto('/');
+  await expect(page.locator('#welcome')).toBeVisible();
 
   await page.goto(AT_PROFILE_PATH);
   await expect(page).toHaveURL(pathRegex(AT_PROFILE_PATH));
@@ -534,6 +560,7 @@ test('loads and reloads canonical AT profile URLs', async ({ page }) => {
     page.getByRole('heading', { name: /Alice Profile/ }),
   ).toBeVisible();
   await expect(page).toHaveTitle(/Alice Profile/);
+  expect(noRouteWarnings).toEqual([]);
 });
 
 test('keeps titles working on legacy account routes', async ({ page }) => {
