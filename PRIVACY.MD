@@ -12,7 +12,7 @@ Phanpy uses [TransLang API](https://github.com/cheeaun/translang-api) for transl
 
 ## ATProto AppViews
 
-Bluepy sends ATProto requests to the AppView selected on the login screen. If a non-Bluesky AppView omits a profile avatar, Bluepy may request that public profile from the Bluesky public AppView to render the missing avatar. This sends the viewed account DID to `public.api.bsky.app`.
+Bluepy, this ATProto deployment of Phanpy, sends ATProto requests to the AppView selected on the login screen. If a non-Bluesky AppView omits profile avatars, Bluepy may request public profiles from the Bluesky public AppView to render the missing avatars. This can send one or more account DIDs to `public.api.bsky.app`, including notification authors' DIDs when opening notifications, even when those profiles are not directly viewed.
 
 ## Error logging
 

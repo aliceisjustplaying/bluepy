@@ -103,7 +103,11 @@ test.describe('ATProto notifications', () => {
         });
       }
 
-      return Response.json({});
+      const method =
+        typeof input === 'object' && input && 'method' in input
+          ? input.method
+          : 'GET';
+      throw new Error(`Unexpected fetch in test: ${method} ${url}`);
     };
 
     try {
@@ -192,7 +196,11 @@ test.describe('ATProto notifications', () => {
         });
       }
 
-      return Response.json({});
+      const method =
+        typeof input === 'object' && input && 'method' in input
+          ? input.method
+          : 'GET';
+      throw new Error(`Unexpected fetch in test: ${method} ${url}`);
     };
 
     try {

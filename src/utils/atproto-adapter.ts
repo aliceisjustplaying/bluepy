@@ -977,11 +977,11 @@ async function fetchBlueskyProfileFallback(
 }
 
 async function hydrateMissingProfilePresentation(
-  actor: AtprotoActor,
+  actor: AtprotoActor | null | undefined,
   shouldHydrate: boolean,
 ): Promise<AtprotoActor> {
-  if (!shouldHydrate || actor.avatar) {
-    return actor;
+  if (!actor || !shouldHydrate || actor.avatar) {
+    return actor ?? {};
   }
   const fallback = await fetchBlueskyProfileFallback(actor);
   if (!fallback) return actor;
