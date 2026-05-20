@@ -2,10 +2,8 @@
   #followings-option {
     position: relative;
     z-index: 2;
-    float: right;
-    &:dir(rtl) {
-      float: left;
-    }
+    display: flex;
+    justify-content: flex-end;
     margin-top: 0.5em;
   }
   #followings-option label {

@@ -24,7 +24,7 @@ function AccountHandleInfo({ acct, instance }: AccountHandleInfoProps) {
         </span>{' '}
         <span className="ib">
           <span className="handle-legend-icon server" />{' '}
-          <Trans>server domain name</Trans>
+          <Trans>handle domain name</Trans>
         </span>
       </div>
     </div>

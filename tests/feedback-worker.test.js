@@ -173,6 +173,28 @@ void test('feedback endpoint rejects method, size, and missing config before sen
   assert.equal(calls.length, 0);
 });
 
+void test('feedback endpoint proxies when email config is missing and proxy is configured', async () => {
+  const calls = [];
+  spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+    calls.push([input, init]);
+    return new Response(null, { status: 204 });
+  });
+
+  const response = await postFeedback(
+    { message: 'hello' },
+    createEnv({
+      BLUEPY_FEEDBACK_PROXY_URL: 'https://dev.bluepy.social/api/feedback',
+      RESEND_API_KEY: undefined,
+    }),
+  );
+
+  assert.equal(response.status, 204);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0][0].url, 'https://dev.bluepy.social/api/feedback');
+  assert.equal(calls[0][0].method, 'POST');
+  assert.deepEqual(await calls[0][0].json(), { message: 'hello' });
+});
+
 void test('feedback endpoint refunds rate limit when Resend fails', async () => {
   let calls = 0;
   spyOn(globalThis, 'fetch').mockImplementation(async () => {

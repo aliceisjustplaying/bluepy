@@ -169,7 +169,7 @@ export default memo(function KeyboardShortcutsHelp() {
                       ),
                     },
                     {
-                      action: t`Boost`,
+                      action: t`Repost`,
                       keys: (
                         <Trans>
                           <kbd>Shift</kbd> + <kbd>b</kbd>

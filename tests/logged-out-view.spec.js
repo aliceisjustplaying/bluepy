@@ -6,17 +6,26 @@ test('has welcome page', async ({ page }) => {
   await expect(page.locator('#welcome')).toBeVisible();
 });
 
-test('login page appview switcher updates data-appview on html element', async ({ page }) => {
+test('login page appview switcher updates data-appview on html element', async ({
+  page,
+}) => {
   await page.goto('/login');
   // Default should be bluesky
   await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
 
   // Switch to Blacksky
-  await page.getByRole('combobox', { name: /appview/i }).selectOption('blacksky');
-  await expect(page.locator('html')).toHaveAttribute('data-appview', 'blacksky');
+  await page
+    .getByRole('combobox', { name: /appview/i })
+    .selectOption('blacksky');
+  await expect(page.locator('html')).toHaveAttribute(
+    'data-appview',
+    'blacksky',
+  );
 
   // Switch back
-  await page.getByRole('combobox', { name: /appview/i }).selectOption('bluesky');
+  await page
+    .getByRole('combobox', { name: /appview/i })
+    .selectOption('bluesky');
   await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
 });
 
@@ -70,15 +79,7 @@ test('uses cache-busting reloads when the app script never mounts', async ({
     'Safari did not run the app script',
     { timeout: 7_000 },
   );
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () =>
-          JSON.parse(sessionStorage.getItem('bluepy:boot-reload-state') || '{}')
-            .attempts,
-      ),
-    )
-    .toBe(3);
+  await expect.poll(() => page.evaluate(getBootReloadAttempts)).toBe(3);
   expect(new URL(page.url()).searchParams.has('__bluepy_boot_retry')).toBe(
     true,
   );
@@ -99,15 +100,7 @@ test('uses cache-busting reloads when the app script fails to load', async ({
   await page.goto('/');
 
   await expect.poll(() => appScriptRequests, { timeout: 10_000 }).toBe(4);
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () =>
-          JSON.parse(sessionStorage.getItem('bluepy:boot-reload-state') || '{}')
-            .attempts,
-      ),
-    )
-    .toBe(3);
+  await expect.poll(() => page.evaluate(getBootReloadAttempts)).toBe(3);
   expect(new URL(page.url()).searchParams.has('__bluepy_boot_retry')).toBe(
     true,
   );
@@ -277,12 +270,44 @@ const AT_FEED_URI = `at://${AT_REPO}/app.bsky.feed.generator/whats-hot`;
 const AT_FEED_PATH = `/${AT_FEED_URI}`;
 const AT_POST_URI = `at://${AT_REPO}/app.bsky.feed.post/post123`;
 const AT_POST_PATH = `/${AT_POST_URI}`;
+const AT_PROFILE_AVATAR =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+const AT_PROFILE_BANNER =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 
 /**
  * @param {string} path
  */
 function pathRegex(path) {
   return new RegExp(`${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+function collectNoRouteWarnings(page) {
+  /** @type {string[]} */
+  const warnings = [];
+  page.on('console', (message) => {
+    const text = message.text();
+    if (text.includes('No routes matched location')) warnings.push(text);
+  });
+  return warnings;
+}
+
+/**
+ * @returns {number | null}
+ */
+function getBootReloadAttempts() {
+  /** @type {unknown} */
+  const parsed = JSON.parse(
+    sessionStorage.getItem('bluepy:boot-reload-state') || '{}',
+  );
+  if (!parsed || typeof parsed !== 'object' || !('attempts' in parsed)) {
+    return null;
+  }
+  const { attempts } = parsed;
+  return typeof attempts === 'number' ? attempts : null;
 }
 
 function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
@@ -313,8 +338,22 @@ function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
 
 /**
  * @param {import('@playwright/test').Page} page
+ * @param {{
+ *   blackskyOmitBanner?: boolean;
+ *   blackskyOmitPresentation?: boolean;
+ *   blueskyOmitPresentation?: boolean;
+ *   fallbackFails?: boolean;
+ *   onBlueskyProfile?: () => void;
+ * }} [options]
  */
-async function routeAtprotoRecords(page) {
+async function routeAtprotoRecords(page, options = {}) {
+  const {
+    blackskyOmitBanner = false,
+    blackskyOmitPresentation = false,
+    blueskyOmitPresentation = false,
+    fallbackFails = false,
+    onBlueskyProfile,
+  } = options;
   const post = makeAtprotoPost();
   const listPost = makeAtprotoPost(
     `at://${AT_REPO}/app.bsky.feed.post/listpost`,
@@ -331,6 +370,8 @@ async function routeAtprotoRecords(page) {
     handle: 'alice.test',
     displayName: 'Alice Profile',
     description: 'Profile loaded through an AT URI',
+    avatar: AT_PROFILE_AVATAR,
+    banner: AT_PROFILE_BANNER,
     followersCount: 1,
     followsCount: 2,
     postsCount: 3,
@@ -369,7 +410,35 @@ async function routeAtprotoRecords(page) {
       const url = new URL(route.request().url());
       const endpoint = url.pathname.replace('/xrpc/', '');
       if (endpoint === 'app.bsky.actor.getProfile') {
-        await route.fulfill({ headers, json: profile });
+        const isBlacksky = url.hostname === 'api.blacksky.community';
+        if (!isBlacksky) onBlueskyProfile?.();
+        if (!isBlacksky && fallbackFails) {
+          await route.fulfill({
+            headers,
+            status: 500,
+            json: { error: 'FallbackUnavailable' },
+          });
+          return;
+        }
+        const omitPresentation = isBlacksky
+          ? blackskyOmitPresentation
+          : blueskyOmitPresentation;
+        await route.fulfill({
+          headers,
+          json: omitPresentation
+            ? {
+                ...profile,
+                displayName: undefined,
+                description: undefined,
+                avatar: undefined,
+                banner: undefined,
+              }
+            : {
+                ...profile,
+                banner:
+                  isBlacksky && blackskyOmitBanner ? undefined : profile.banner,
+              },
+        });
         return;
       }
       if (endpoint === 'app.bsky.feed.getAuthorFeed') {
@@ -519,7 +588,11 @@ test('canonicalizes legacy AT record routes on direct load', async ({
 });
 
 test('loads and reloads canonical AT profile URLs', async ({ page }) => {
+  const noRouteWarnings = collectNoRouteWarnings(page);
   await routeAtprotoRecords(page);
+
+  await page.goto('/');
+  await expect(page.locator('#welcome')).toBeVisible();
 
   await page.goto(AT_PROFILE_PATH);
   await expect(page).toHaveURL(pathRegex(AT_PROFILE_PATH));
@@ -534,6 +607,95 @@ test('loads and reloads canonical AT profile URLs', async ({ page }) => {
     page.getByRole('heading', { name: /Alice Profile/ }),
   ).toBeVisible();
   await expect(page).toHaveTitle(/Alice Profile/);
+  expect(noRouteWarnings).toEqual([]);
+});
+
+test('backfills canonical AT profile media when Blacksky omits it', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('settings-appview', 'blacksky');
+  });
+  await routeAtprotoRecords(page, { blackskyOmitPresentation: true });
+
+  await page.goto(AT_PROFILE_PATH);
+
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+  await expect(
+    page.locator('.account-container .avatar img').first(),
+  ).toHaveAttribute('src', AT_PROFILE_AVATAR);
+  await expect(
+    page.locator('.account-container .header-banner'),
+  ).toHaveAttribute('src', AT_PROFILE_BANNER);
+});
+
+test('keeps missing profile media local on the Bluesky AppView', async ({
+  page,
+}) => {
+  let blueskyProfileRequests = 0;
+  await routeAtprotoRecords(page, {
+    blueskyOmitPresentation: true,
+    onBlueskyProfile: () => {
+      blueskyProfileRequests += 1;
+    },
+  });
+
+  await page.goto(AT_PROFILE_PATH);
+
+  await expect(
+    page.getByRole('heading', { name: /alice\.test/ }),
+  ).toBeVisible();
+  expect(blueskyProfileRequests).toBe(1);
+});
+
+test('keeps Blacksky profile data when the media fallback fails', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('settings-appview', 'blacksky');
+  });
+  let blueskyProfileRequests = 0;
+  await routeAtprotoRecords(page, {
+    blackskyOmitPresentation: true,
+    fallbackFails: true,
+    onBlueskyProfile: () => {
+      blueskyProfileRequests += 1;
+    },
+  });
+
+  await page.goto(AT_PROFILE_PATH);
+
+  await expect(
+    page.getByRole('heading', { name: /alice\.test/ }),
+  ).toBeVisible();
+  expect(blueskyProfileRequests).toBe(1);
+});
+
+test('does not fetch Bluesky media for Blacksky profiles that only lack a banner', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('settings-appview', 'blacksky');
+  });
+  let blueskyProfileRequests = 0;
+  await routeAtprotoRecords(page, {
+    blackskyOmitBanner: true,
+    onBlueskyProfile: () => {
+      blueskyProfileRequests += 1;
+    },
+  });
+
+  await page.goto(AT_PROFILE_PATH);
+
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+  await expect(
+    page.locator('.account-container .avatar img').first(),
+  ).toHaveAttribute('src', AT_PROFILE_AVATAR);
+  expect(blueskyProfileRequests).toBe(0);
 });
 
 test('keeps titles working on legacy account routes', async ({ page }) => {

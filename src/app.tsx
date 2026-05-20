@@ -837,6 +837,7 @@ function App() {
         <Route path="/:scheme://*" element={<AtprotoRoute />} />
         <Route path="/:atUri" element={<AtprotoRoute />} />
         <Route path="/:instance?/s/:id" element={<StatusRoute />} />
+        <Route path="*" element={null} />
       </Routes>
       {isLoggedIn && <ComposeButton />}
       {isLoggedIn && <Shortcuts />}
@@ -1070,7 +1071,7 @@ function SecondaryRoutes() {
       <Route path="/:instance?/a/:id" element={<AccountStatuses />} />
       <Route path="/:instance?/trending" element={<Trending />} />
       <Route path="/:instance?/search" element={<Search />} />
-      {/* <Route path="/:anything" element={<NotFound />} /> */}
+      <Route path="*" element={null} />
     </Routes>
   );
 }

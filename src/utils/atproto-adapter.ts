@@ -67,7 +67,7 @@ export const APPVIEW_OPTIONS: Record<
 };
 
 export function getActiveAppview(): string {
-  return (store.local.get('settings-appview') as string) || 'bluesky';
+  return store.local.get('settings-appview') || 'bluesky';
 }
 
 export function applyAppviewTheme(appview?: string): void {
@@ -157,10 +157,22 @@ function toAtpSessionData(value: unknown): AtpSessionData | null {
   ) {
     return null;
   }
-  return {
-    ...value,
+  const sessionData: AtpSessionData = {
+    refreshJwt: value.refreshJwt,
+    accessJwt: value.accessJwt,
+    handle: value.handle,
+    did: value.did,
     active: typeof value.active === 'boolean' ? value.active : true,
-  } as AtpSessionData;
+  };
+  if (typeof value.email === 'string') sessionData.email = value.email;
+  if (typeof value.emailConfirmed === 'boolean') {
+    sessionData.emailConfirmed = value.emailConfirmed;
+  }
+  if (typeof value.emailAuthFactor === 'boolean') {
+    sessionData.emailAuthFactor = value.emailAuthFactor;
+  }
+  if (typeof value.status === 'string') sessionData.status = value.status;
+  return sessionData;
 }
 
 function isAgentSessionManager(
@@ -1060,6 +1072,63 @@ function configureAgentLabelers(
 ): void {
   if (!isAtprotoLabelersAgent(agent)) return;
   agent.configureLabelers?.(labelerDids);
+}
+
+const BSKY_PROFILE_FALLBACK_TTL = 5 * 60 * 1_000;
+const blueskyProfileFallbacks = new Map<
+  string,
+  { expiresAt: number; promise: Promise<AtprotoActor | null> }
+>();
+
+async function fetchBlueskyProfileFallback(
+  actor: AtprotoActor,
+): Promise<AtprotoActor | null> {
+  const did = actor.did;
+  if (!did) return null;
+  const cached = blueskyProfileFallbacks.get(did);
+  const now = Date.now();
+  blueskyProfileFallbacks.forEach((entry, profileDid) => {
+    if (entry.expiresAt <= now) blueskyProfileFallbacks.delete(profileDid);
+  });
+  if (cached && cached.expiresAt > now) return cached.promise;
+  const promise = (async () => {
+    try {
+      const res = await new AtpAgent({ service: BSKY_APPVIEW }).getProfile({
+        actor: did,
+      });
+      return res.data;
+    } catch {
+      blueskyProfileFallbacks.delete(did);
+      return null;
+    }
+  })();
+  blueskyProfileFallbacks.set(did, {
+    expiresAt: now + BSKY_PROFILE_FALLBACK_TTL,
+    promise,
+  });
+  const profile = await promise;
+  if (!profile) {
+    blueskyProfileFallbacks.delete(did);
+  }
+  return profile;
+}
+
+async function hydrateMissingProfilePresentation(
+  actor: AtprotoActor | null | undefined,
+  shouldHydrate: boolean,
+): Promise<AtprotoActor> {
+  if (!actor || !shouldHydrate || actor.avatar) {
+    return actor ?? {};
+  }
+  const fallback = await fetchBlueskyProfileFallback(actor);
+  if (!fallback) return actor;
+  return {
+    ...actor,
+    avatar: actor.avatar || fallback.avatar,
+    banner: actor.banner || fallback.banner,
+    displayName: actor.displayName || fallback.displayName,
+    description: actor.description || fallback.description,
+  };
 }
 
 interface EmbedParts {
@@ -2113,6 +2182,9 @@ export function createAtprotoClient({
   if (sessionData && agentLoose.sessionManager) {
     agentLoose.sessionManager.session = sessionData;
   }
+  const shouldHydrateProfilePresentation =
+    getActiveAppviewConfig().url !== BSKY_APPVIEW ||
+    service === BLACKSKY_APPVIEW;
   const uploadedMedia = new Map<string, AdaptedUploadedMedia>();
 
   const statusAPI = (id: string) => {
@@ -2365,7 +2437,11 @@ export function createAtprotoClient({
   const accountAPI = (id: string) => ({
     async fetch(): Promise<AdaptedAccount> {
       const res = await agent.getProfile({ actor: normalizeActor(id) ?? '' });
-      return actorToAccount(res.data);
+      const profile = await hydrateMissingProfilePresentation(
+        res.data,
+        shouldHydrateProfilePresentation,
+      );
+      return actorToAccount(profile);
     },
     statuses: {
       list({
@@ -2714,16 +2790,22 @@ export function createAtprotoClient({
       if (post.uri) map[post.uri] = postToStatus(post, agent);
       return map;
     }, {});
-    const items: AdaptedNotification[] = notifications.map((notification) => {
-      const statusURI = notificationStatusURI(notification);
-      return {
-        id: `${notification.uri}-${notification.indexedAt}`,
-        type: notificationType(notification.reason),
-        createdAt: notification.indexedAt,
-        account: actorToAccount(notification.author),
-        status: statusURI ? postMap[statusURI] : undefined,
-      };
-    });
+    const items: AdaptedNotification[] = await Promise.all(
+      notifications.map(async (notification) => {
+        const statusURI = notificationStatusURI(notification);
+        const author = await hydrateMissingProfilePresentation(
+          notification.author,
+          shouldHydrateProfilePresentation,
+        );
+        return {
+          id: `${notification.uri}-${notification.indexedAt}`,
+          type: notificationType(notification.reason),
+          createdAt: notification.indexedAt,
+          account: actorToAccount(author),
+          status: statusURI ? postMap[statusURI] : undefined,
+        };
+      }),
+    );
     const statusRequiredTypes = new Set<AdaptedNotificationType>([
       'favourite',
       'reblog',
@@ -2747,7 +2829,11 @@ export function createAtprotoClient({
           const profile = await agent.getProfile({
             actor: agentLoose.did ?? '',
           });
-          return actorToAccount(profile.data);
+          const hydratedProfile = await hydrateMissingProfilePresentation(
+            profile.data,
+            shouldHydrateProfilePresentation,
+          );
+          return actorToAccount(hydratedProfile);
         },
         async updateCredentials({
           avatar,
@@ -2798,7 +2884,11 @@ export function createAtprotoClient({
           const profile = await agent.getProfile({
             actor: normalizeActor(acct) ?? '',
           });
-          return actorToAccount(profile.data);
+          const hydratedProfile = await hydrateMissingProfilePresentation(
+            profile.data,
+            shouldHydrateProfilePresentation,
+          );
+          return actorToAccount(hydratedProfile);
         },
         $select: accountAPI,
         relationships: {

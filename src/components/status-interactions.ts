@@ -67,7 +67,7 @@ export default function useStatusInteractions({
   createdAt,
 }: StatusInteractionsArgs) {
   const { t } = useLingui();
-  const unauthInteractionErrorMessage = t`Sorry, your current logged-in server can't interact with this post from another server.`;
+  const unauthInteractionErrorMessage = t`Sorry, your current PDS can't interact with this post from another PDS.`;
   const mediaNoDesc = useMemo(() => {
     return mediaAttachments.some(
       (attachment: mastodon.v1.MediaAttachment) =>

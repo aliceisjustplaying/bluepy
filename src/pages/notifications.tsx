@@ -258,7 +258,7 @@ const NOTIFICATIONS_POLICIES_TEXT: Record<
   forNotFollowers: msg`Who don't follow you`,
   forNewAccounts: msg`With a new account`,
   forPrivateMentions: msg`Who unsolicitedly private mention you`,
-  forLimitedAccounts: msg`Who are limited by server moderators`,
+  forLimitedAccounts: msg`Who are limited by Bluesky moderators`,
 };
 
 interface NotificationsProps {

@@ -1380,7 +1380,7 @@ function StatusThread({
                 <div className="post-status-banner">
                   <p>
                     <Trans>
-                      You're not logged in. Interactions (reply, boost, etc) are
+                      You're not logged in. Interactions (reply, repost, etc) are
                       not possible.
                     </Trans>
                   </p>
@@ -1400,8 +1400,8 @@ function StatusThread({
                   <div className="post-status-banner">
                     <p>
                       <Trans>
-                        This post is from another server (<b>{instance}</b>).
-                        Interactions (reply, boost, etc) are not possible.
+                        This post is from another PDS (<b>{instance}</b>).
+                        Interactions (reply, repost, etc) are not possible.
                       </Trans>
                     </p>
                     <button
@@ -1452,7 +1452,7 @@ function StatusThread({
                       }}
                     >
                       <Icon icon="transfer" />{' '}
-                      <Trans>Switch to my server to enable interactions</Trans>
+                      <Trans>Switch to my PDS to enable interactions</Trans>
                     </button>
                   </div>
                 )
@@ -1994,8 +1994,8 @@ function StatusThread({
                   <Icon icon="transfer" />
                   <small className="menu-double-lines">
                     {postInstance
-                      ? t`Switch to post's server (${toUnicode(postInstance)})`
-                      : t`Switch to post's server`}
+                      ? t`Switch to post's PDS (${toUnicode(postInstance)})`
+                      : t`Switch to post's PDS`}
                   </small>
                 </MenuItem>
                 <MenuItem

@@ -120,10 +120,10 @@ const TYPE_PARAMS: Record<string, TypeParam[]> = {
   ],
   trending: [
     {
-      text: msg`Server`,
+      text: msg`PDS`,
       name: 'instance',
       type: 'text',
-      placeholder: msg`Optional, e.g. mastodon.social`,
+      placeholder: msg`Optional, e.g. bsky.social`,
       notRequired: true,
     },
   ],
@@ -141,7 +141,7 @@ const TYPE_PARAMS: Record<string, TypeParam[]> = {
       text: '@',
       name: 'id',
       type: 'text',
-      placeholder: 'cheeaun@mastodon.social',
+      placeholder: 'alice.bsky.social',
     },
   ],
   hashtag: [
@@ -158,10 +158,10 @@ const TYPE_PARAMS: Record<string, TypeParam[]> = {
       type: 'checkbox',
     },
     {
-      text: msg`Server`,
+      text: msg`PDS`,
       name: 'instance',
       type: 'text',
-      placeholder: msg`Optional, e.g. mastodon.social`,
+      placeholder: msg`Optional, e.g. bsky.social`,
       notRequired: true,
     },
   ],

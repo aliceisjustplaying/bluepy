@@ -458,8 +458,8 @@ export default function StatusContent({
     url: permalink,
     boostToast: (rebloggedValue, usernameValue, acctValue) =>
       rebloggedValue
-        ? t`Unboosted @${usernameValue || acctValue}'s post`
-        : t`Boosted @${usernameValue || acctValue}'s post`,
+        ? t`Removed repost of @${usernameValue || acctValue}'s post`
+        : t`Reposted @${usernameValue || acctValue}'s post`,
   });
 
   const {
