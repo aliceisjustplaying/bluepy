@@ -66,6 +66,11 @@ import {
   createAtprotoOAuthAccessToken,
   initAtprotoOAuthClient,
 } from './utils/atproto-oauth';
+import {
+  getAtprotoURIFromPathname,
+  isAtprotoPostPath,
+  isAtprotoPostURI,
+} from './utils/atproto-route';
 import { getAccessToken } from './utils/auth';
 import {
   AUTH_CHANGED_EVENT,
@@ -833,6 +838,7 @@ function App() {
     <AuthProvider value={isLoggedIn}>
       <PrimaryRoutes />
       <SecondaryRoutes />
+      <AtprotoBackgroundRoutes />
       <Routes>
         <Route path="/:scheme://*" element={<AtprotoRoute />} />
         <Route path="/:atUri" element={<AtprotoRoute />} />
@@ -930,6 +936,40 @@ function AuthRoute({ children }: { children: ReactElement }) {
 function getPrevLocation() {
   return states.prevLocation || null;
 }
+
+function isStatusModalPath(pathname: string) {
+  if (
+    matchPath('/:instance/s/:id', pathname) ||
+    matchPath('/s/:id', pathname)
+  ) {
+    return true;
+  }
+  return isAtprotoPostPath(pathname);
+}
+
+function AtprotoBackgroundRoutes() {
+  const currentLocation = useLocation();
+  const backgroundLocation = useMemo(() => {
+    if (!isStatusModalPath(currentLocation.pathname)) return null;
+    const prevLocation = getPrevLocation();
+    const prevPathname = prevLocation?.pathname;
+    if (!prevPathname) return null;
+    const prevAtUri = getAtprotoURIFromPathname(prevPathname);
+    if (!prevAtUri || isAtprotoPostURI(prevAtUri)) return null;
+    return prevLocation;
+  }, [currentLocation.pathname]);
+
+  if (!backgroundLocation) return null;
+
+  return (
+    <Routes location={backgroundLocation}>
+      <Route path="/:scheme://*" element={<AtprotoRoute />} />
+      <Route path="/:atUri" element={<AtprotoRoute />} />
+      <Route path="*" element={null} />
+    </Routes>
+  );
+}
+
 function SecondaryRoutes() {
   // const snapStates = useSnapshot(states);
   const currentLocation = useLocation();
@@ -937,14 +977,7 @@ function SecondaryRoutes() {
   const backgroundLocation = useRef(getPrevLocation());
 
   const isModalPage = useMemo(() => {
-    const atUriParam = matchPath('/:atUri', currentLocation.pathname)?.params
-      .atUri;
-    return (
-      matchPath('/:instance/s/:id', currentLocation.pathname) ||
-      matchPath('/s/:id', currentLocation.pathname) ||
-      matchPath('/:scheme://*', currentLocation.pathname) ||
-      atUriParam?.toLowerCase().startsWith('at:')
-    );
+    return isStatusModalPath(currentLocation.pathname);
   }, [currentLocation.pathname]);
 
   // Persist prevLocation to sessionStorage while on a status/post page so it

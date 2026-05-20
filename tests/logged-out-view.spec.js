@@ -723,6 +723,10 @@ function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
       $type: 'app.bsky.feed.post',
       text,
       createdAt: '2024-01-01T12:00:00.000Z',
+      reply:
+        /** @type {{ root?: { uri: string, cid: string, author: object }, parent?: { uri: string, cid: string, author: object } } | undefined} */ (
+          undefined
+        ),
     },
     indexedAt: '2024-01-01T12:00:00.000Z',
     replyCount: 0,
@@ -732,6 +736,232 @@ function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
     labels: [],
     viewer: {},
   };
+}
+
+/**
+ * @typedef {ReturnType<typeof makeAtprotoPost>} AtprotoTestPost
+ * @typedef {{ uri: string, cid: string, author: AtprotoTestPost['author'] }} AtprotoReplyRef
+ * @typedef {{
+ *   $type: string,
+ *   post: AtprotoTestPost,
+ *   parent?: AtprotoThreadNode,
+ *   replies: AtprotoThreadNode[],
+ * }} AtprotoThreadNode
+ */
+
+/**
+ * @param {AtprotoTestPost} post
+ * @returns {AtprotoReplyRef}
+ */
+function atprotoReplyRef(post) {
+  return {
+    uri: post.uri,
+    cid: post.cid,
+    author: post.author,
+  };
+}
+
+/**
+ * @param {AtprotoTestPost} post
+ * @param {{
+ *   parent?: AtprotoThreadNode,
+ *   replies?: AtprotoThreadNode[],
+ * }} [options]
+ * @returns {AtprotoThreadNode}
+ */
+function makeAtprotoThreadNode(post, options = {}) {
+  return {
+    $type: 'app.bsky.feed.defs#threadViewPost',
+    post,
+    ...(options.parent ? { parent: options.parent } : {}),
+    replies: options.replies || [],
+  };
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+async function routeAtprotoThreadNavigation(page) {
+  const root = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-root`,
+    'Thread root post',
+  );
+  const middle = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-middle`,
+    'Thread middle post',
+  );
+  const child = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-child`,
+    'Thread child post',
+  );
+  const grandchild = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-grandchild`,
+    'Thread grandchild post',
+  );
+  const otherReply = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-other-reply`,
+    'Thread other reply post',
+  );
+  const directOtherReply = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-direct-other-reply`,
+    'Thread direct other reply post',
+  );
+  otherReply.author = {
+    $type: 'app.bsky.actor.defs#profileViewBasic',
+    did: 'did:plc:otherreplyauthor',
+    handle: 'other.test',
+    displayName: 'Other Reply',
+  };
+  directOtherReply.author = otherReply.author;
+  middle.record.reply = {
+    root: atprotoReplyRef(root),
+    parent: atprotoReplyRef(root),
+  };
+  child.record.reply = {
+    root: atprotoReplyRef(root),
+    parent: atprotoReplyRef(middle),
+  };
+  grandchild.record.reply = {
+    root: atprotoReplyRef(root),
+    parent: atprotoReplyRef(child),
+  };
+  otherReply.record.reply = {
+    root: atprotoReplyRef(root),
+    parent: atprotoReplyRef(child),
+  };
+  directOtherReply.record.reply = {
+    root: atprotoReplyRef(root),
+    parent: atprotoReplyRef(middle),
+  };
+  root.replyCount = 1;
+  middle.replyCount = 2;
+  child.replyCount = 2;
+  const posts = [root, middle, child, grandchild, otherReply, directOtherReply];
+  const profile = {
+    $type: 'app.bsky.actor.defs#profileView',
+    did: AT_REPO,
+    handle: 'alice.test',
+    displayName: 'Alice Profile',
+    description: '',
+    followersCount: 1,
+    followsCount: 2,
+    postsCount: 3,
+    labels: [],
+    viewer: {},
+  };
+  const feed = {
+    $type: 'app.bsky.feed.defs#generatorView',
+    uri: AT_FEED_URI,
+    cid: 'bafyreihltdmuzgj3iaoj5woin7jn3yfhftewnsijzf4b5gqsuxorrhw4qi',
+    did: AT_REPO,
+    displayName: 'AT Feed',
+    description: '',
+    creator: profile,
+    indexedAt: '2024-01-01T12:00:00.000Z',
+    likeCount: 0,
+    viewer: {},
+  };
+  const rootNode = () =>
+    makeAtprotoThreadNode(root, {
+      replies: [
+        makeAtprotoThreadNode(middle, {
+          replies: [
+            makeAtprotoThreadNode(child, {
+              replies: [
+                makeAtprotoThreadNode(grandchild),
+                makeAtprotoThreadNode(otherReply),
+              ],
+            }),
+            makeAtprotoThreadNode(directOtherReply),
+          ],
+        }),
+      ],
+    });
+  const middleNode = () =>
+    makeAtprotoThreadNode(middle, {
+      parent: makeAtprotoThreadNode(root),
+      replies: [
+        makeAtprotoThreadNode(child, {
+          replies: [
+            makeAtprotoThreadNode(grandchild),
+            makeAtprotoThreadNode(otherReply),
+          ],
+        }),
+        makeAtprotoThreadNode(directOtherReply),
+      ],
+    });
+  const childNode = () =>
+    makeAtprotoThreadNode(child, {
+      parent: makeAtprotoThreadNode(middle, {
+        parent: makeAtprotoThreadNode(root),
+      }),
+      replies: [
+        makeAtprotoThreadNode(grandchild),
+        makeAtprotoThreadNode(otherReply),
+      ],
+    });
+  const grandchildNode = () =>
+    makeAtprotoThreadNode(grandchild, {
+      parent: makeAtprotoThreadNode(child, {
+        parent: makeAtprotoThreadNode(middle, {
+          parent: makeAtprotoThreadNode(root),
+        }),
+      }),
+    });
+  const otherReplyNode = () =>
+    makeAtprotoThreadNode(otherReply, {
+      parent: makeAtprotoThreadNode(child, {
+        parent: makeAtprotoThreadNode(middle, {
+          parent: makeAtprotoThreadNode(root),
+        }),
+      }),
+    });
+  const directOtherReplyNode = () =>
+    makeAtprotoThreadNode(directOtherReply, {
+      parent: makeAtprotoThreadNode(middle, {
+        parent: makeAtprotoThreadNode(root),
+      }),
+    });
+  const threadByURI = new Map([
+    [root.uri, rootNode],
+    [middle.uri, middleNode],
+    [child.uri, childNode],
+    [grandchild.uri, grandchildNode],
+    [otherReply.uri, otherReplyNode],
+    [directOtherReply.uri, directOtherReplyNode],
+  ]);
+  const headers = { 'access-control-allow-origin': '*' };
+
+  await page.route('**/xrpc/**', async (route) => {
+    const url = new URL(route.request().url());
+    const endpoint = url.pathname.replace('/xrpc/', '');
+    if (endpoint === 'app.bsky.feed.getFeedGenerator') {
+      await route.fulfill({ headers, json: { view: feed, isOnline: true } });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getFeed') {
+      await route.fulfill({ headers, json: { feed: [{ post: middle }] } });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getPosts') {
+      const uris = url.searchParams.getAll('uris');
+      const selectedPosts = uris.length
+        ? posts.filter(({ uri }) => uris.includes(uri))
+        : posts;
+      await route.fulfill({ headers, json: { posts: selectedPosts } });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getPostThread') {
+      const thread = threadByURI.get(url.searchParams.get('uri') || '')?.();
+      await route.fulfill({ headers, json: { thread } });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.getProfile') {
+      await route.fulfill({ headers, json: profile });
+      return;
+    }
+    await route.fulfill({ headers, json: {} });
+  });
 }
 
 /**
@@ -1173,7 +1403,11 @@ test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
   await expect(page).toHaveURL(
     pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/listpost`),
   );
-  await expect(page.locator('text=AT list timeline post')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+  await expect(page.getByText('AT list timeline post').first()).toBeVisible();
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(AT_LIST_PATH));
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
 
   await page.goto(AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
@@ -1183,6 +1417,67 @@ test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
   await page.reload();
   await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
   await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+});
+
+test('keeps AT thread links navigable from a feed-backed post detail', async ({
+  page,
+}) => {
+  await routeAtprotoThreadNavigation(page);
+
+  await page.goto(AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Thread middle post')).toBeVisible();
+  await page
+    .locator(`.status-link-native[href$="/app.bsky.feed.post/thread-middle"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-middle`),
+  );
+
+  await page
+    .locator(
+      `.status-link[href$="/app.bsky.feed.post/thread-direct-other-reply"]`,
+    )
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-direct-other-reply`),
+  );
+  await page.goBack();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-middle`),
+  );
+
+  await page
+    .locator(`.status-link[href$="/app.bsky.feed.post/thread-other-reply"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-other-reply`),
+  );
+  await page.goBack();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-middle`),
+  );
+
+  await page
+    .locator(`.status-link[href$="/app.bsky.feed.post/thread-child"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-child`),
+  );
+
+  await page
+    .locator(`.status-link[href$="/app.bsky.feed.post/thread-grandchild"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-grandchild`),
+  );
+  await expect(page.getByText('Thread middle post').first()).toBeVisible();
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
 });
 
 test('keeps app-local routes outside the AT URI schema', async ({ page }) => {

@@ -41,8 +41,9 @@ import Status from '../components/status';
 import type { AnyStatus } from '../components/status-types';
 import { api, getMastoV2Resource } from '../utils/api';
 import {
+  getAtprotoURIFromPathname,
+  isAtprotoPostPath,
   isAtprotoPostURI,
-  maybeDecodeAtprotoURI,
 } from '../utils/atproto-route';
 import {
   EditHistoryProvider,
@@ -90,14 +91,6 @@ const LIMIT = 40;
 const SUBCOMMENTS_OPEN_ALL_LIMIT = 10;
 const MAX_WEIGHT = 5;
 const COMMENTS_AUTO_EXPAND_LIMIT = 20;
-
-function getAtprotoURIFromPathname(pathname: string) {
-  const schemeMatch = matchPath('/:scheme://*', pathname);
-  if (schemeMatch?.params.scheme?.toLowerCase() === 'at') {
-    return `at://${(schemeMatch.params['*'] || '').replace(/^\/+/, '')}`;
-  }
-  return maybeDecodeAtprotoURI(matchPath('/:atUri', pathname)?.params.atUri);
-}
 
 // The status records this page works with originate from Masto's API but
 // also pick up internal mutations from `states.ts` (e.g. `__replies`,
@@ -187,6 +180,10 @@ const STATUSES_SELECTOR =
   '.status-link:not(details:not([open]) > summary ~ *, details:not([open]) > summary ~ * *), .status-focus:not(details:not([open]) > summary ~ *, details:not([open]) > summary ~ * *)';
 
 const STATUS_URL_REGEX = /\/s\//i;
+
+function isStatusPath(pathname: string): boolean {
+  return STATUS_URL_REGEX.test(pathname) || isAtprotoPostPath(pathname);
+}
 
 const postViewState = (): 'large' | 'small' =>
   window.matchMedia('(min-width: calc(40em + 350px))').matches
@@ -510,7 +507,13 @@ interface StatusParentProps {
 function StatusParent(props: StatusParentProps) {
   const { linkable, to, onClick, ...restProps } = props;
   return linkable ? (
-    <Link className="status-link" to={to} onClick={onClick} {...restProps} />
+    <Link
+      className="status-link"
+      to={to}
+      onClick={onClick}
+      preservePrevLocation
+      {...restProps}
+    />
   ) : (
     <div className="status-focus" tabIndex={-1} role="article" {...restProps} />
   );
@@ -1336,7 +1339,10 @@ function StatusThread({
         level,
       } = status;
       const isHero = statusID === id;
-      const isLinkable = !!(!ghost && (isThread || ancestor));
+      const isLinkable = !!(
+        !ghost &&
+        (isThread || ancestor || descendant || thread)
+      );
 
       return (
         <li
@@ -1598,10 +1604,10 @@ function StatusThread({
       const prevEntry =
         navigation.entries()[(navigation.currentEntry?.index ?? 0) - 1];
       if (prevEntry?.url) {
-        return STATUS_URL_REGEX.test(prevEntry.url);
+        return isStatusPath(URL.parse(prevEntry.url)?.pathname ?? '');
       }
     }
-    return STATUS_URL_REGEX.test(states.prevLocation?.pathname ?? '');
+    return isStatusPath(states.prevLocation?.pathname ?? '');
   })();
 
   interface StatusKeyish {
@@ -2172,6 +2178,13 @@ function SubComments({
     [setSearchParams],
   );
 
+  const handleStatusLinkClick = useCallback(
+    (_e: MouseEvent | globalThis.KeyboardEvent, status: AnyStatus) => {
+      resetScrollPosition(status.id);
+    },
+    [],
+  );
+
   // The Container element is either `div` or `details` depending on `open`.
   // Use a permissive ref type to satisfy both branches of the JSX union.
   const detailsRef = useRef<HTMLElement | null>(null);
@@ -2283,6 +2296,7 @@ function SubComments({
               className="replies-parent-link"
               to={parentLink.to}
               onClick={parentLink.onClick}
+              preservePrevLocation
               title={t`View post with its replies`}
             >
               &raquo;
@@ -2294,14 +2308,13 @@ function SubComments({
         <ul>
           {replies.map((r) => (
             <li key={r.id}>
-              {/* <Link
-              className="status-link"
-              to={instance ? `/${instance}/s/${r.id}` : `/s/${r.id}`}
-              onClick={() => {
-                resetScrollPosition(r.id);
-              }}
-            > */}
-              <div className="status-focus" tabIndex={-1} role="article">
+              <StatusParent
+                linkable
+                to={instance ? `/${instance}/s/${r.id}` : `/s/${r.id}`}
+                onClick={() => {
+                  resetScrollPosition(r.id);
+                }}
+              >
                 <Status
                   statusID={r.id}
                   instance={instance}
@@ -2309,6 +2322,7 @@ function SubComments({
                   size="s"
                   enableTranslate
                   onMediaClick={handleMediaClick}
+                  onStatusLinkClick={handleStatusLinkClick}
                   showActionsBar
                 />
                 {!r.replies?.length &&
@@ -2321,8 +2335,7 @@ function SubComments({
                       </span>
                     </div>
                   )}
-              </div>
-              {/* </Link> */}
+              </StatusParent>
               {!!r.replies?.length && (
                 <SubComments
                   instance={instance}
