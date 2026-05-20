@@ -24,6 +24,7 @@ const { SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT } = loadEnv(
   process.cwd(),
   ['SENTRY_'],
 );
+const { ROLLBAR_ENABLED } = loadEnv('production', process.cwd(), ['ROLLBAR_']);
 const {
   PHANPY_WEBSITE: WEBSITE,
   PHANPY_CLIENT_NAME: CLIENT_NAME,
@@ -36,6 +37,8 @@ const hasSentrySourcemapUpload =
   !!SENTRY_AUTH_TOKEN && !!SENTRY_ORG && !!SENTRY_PROJECT;
 const shouldAnalyzeBundle = process.env.ANALYZE === '1';
 const shouldExtractMessages = process.env.LINGUI_EXTRACT === '1';
+// Keep legacy Rollbar wiring available, but disabled until explicitly re-enabled.
+const shouldInjectRollbar = ROLLBAR_ENABLED === '1' && !!ERROR_LOGGING;
 const productionOrigin = (WEBSITE || 'https://bluepy.social').replace(
   /\/$/,
   '',
@@ -97,8 +100,14 @@ try {
   fakeCommitHash = true;
 }
 
-let rollbarCode = fs.readFileSync(resolve(__dirname, './rollbar.js'), 'utf-8');
-rollbarCode = rollbarCode.replace('__PHANPY_COMMIT_HASH__', `'${commitHash}'`);
+let rollbarCode = '';
+if (shouldInjectRollbar) {
+  rollbarCode = fs.readFileSync(resolve(__dirname, './rollbar.js'), 'utf-8');
+  rollbarCode = rollbarCode.replace(
+    '__PHANPY_COMMIT_HASH__',
+    `'${commitHash}'`,
+  );
+}
 
 // https://github.com/vitejs/vite/issues/9597#issuecomment-1209305107
 const excludedPostCSSWarnings = [
@@ -328,7 +337,7 @@ export default defineConfig({
             ]
           : []),
       ],
-      headScripts: ERROR_LOGGING ? [rollbarCode] : [],
+      headScripts: shouldInjectRollbar ? [rollbarCode] : [],
       links: WEBSITE
         ? [
             {
