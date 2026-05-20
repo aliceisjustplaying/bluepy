@@ -1225,15 +1225,17 @@
 
 /* Compact select lists dropdown below */
 .reply-list-dropdown-container-compact {
-  margin-top: 2px;
+  margin-top: -2px;
   animation: slide-down 0.15s ease-out;
 }
 
 .rule-list-select-bluepy-compact {
-  width: auto;
-  max-width: 100%;
-  padding: 4px 8px;
-  border-radius: 6px;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 8px;
+  border-radius: 8px;
   border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.12));
   background-color: var(--bg-color, #fff);
   color: var(--text-color);
