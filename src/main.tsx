@@ -16,6 +16,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './app';
+import ErrorFallback from './components/error-fallback';
 import { IconSpriteProvider } from './components/icon-sprite-manager';
 import { applyAppviewTheme } from './utils/atproto-adapter';
 import { initActivateLang } from './utils/lang';
@@ -108,7 +109,7 @@ if (!redirectLegacyOrigin()) {
         <I18nProvider i18n={i18n}>
           <BrowserRouter>
             <IconSpriteProvider>
-              <SentryErrorBoundary fallback={<p>Something went wrong.</p>}>
+              <SentryErrorBoundary fallback={<ErrorFallback />}>
                 <App />
               </SentryErrorBoundary>
             </IconSpriteProvider>
