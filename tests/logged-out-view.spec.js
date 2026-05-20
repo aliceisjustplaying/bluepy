@@ -12,11 +12,11 @@ test('login page appview switcher updates data-appview on html element', async (
   await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
 
   // Switch to Blacksky
-  await page.getByRole('combobox').selectOption('blacksky');
+  await page.getByRole('combobox', { name: /appview/i }).selectOption('blacksky');
   await expect(page.locator('html')).toHaveAttribute('data-appview', 'blacksky');
 
   // Switch back
-  await page.getByRole('combobox').selectOption('bluesky');
+  await page.getByRole('combobox', { name: /appview/i }).selectOption('bluesky');
   await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
 });
 

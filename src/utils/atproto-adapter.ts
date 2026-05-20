@@ -1919,10 +1919,20 @@ async function uploadProfileImage(
   return res.data.blob;
 }
 
+const KNOWN_APPVIEW_HOSTNAMES = new Set(
+  Object.values(APPVIEW_OPTIONS).flatMap(({ url }) => {
+    try {
+      return [new URL(url).hostname];
+    } catch {
+      return [];
+    }
+  }),
+);
+
 function isBskyAppViewService(service: string): boolean {
   try {
     const { hostname } = new URL(service);
-    return hostname === 'public.api.bsky.app' || hostname === 'api.bsky.app';
+    return KNOWN_APPVIEW_HOSTNAMES.has(hostname);
   } catch {
     return false;
   }

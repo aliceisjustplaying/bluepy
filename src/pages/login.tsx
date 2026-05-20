@@ -45,6 +45,11 @@ interface CredentialApplicationShape extends Record<string, unknown> {
   client_secret?: string;
 }
 
+const HANDLE_SUFFIXES = [
+  '.bsky.social', '.blacksky.app', '.eurosky.social', '.pckt.cafe', '.com',
+  '.tngl.sh', '.myatproto.social', '.margin.cafe', '.selfhosted.social', '.npmx.social',
+];
+
 function Login() {
   const { t } = useLingui();
   useTitle(t`Log in`, '/login');
@@ -57,10 +62,6 @@ function Login() {
   const [bskyService, setBskyService] = useState('');
   const [appview, setAppview] = useState(getActiveAppview());
   useEffect(() => { applyAppviewTheme(appview); }, [appview]);
-  const HANDLE_SUFFIXES = [
-    '.bsky.social', '.blacksky.app', '.eurosky.social', '.pckt.cafe', '.com',
-    '.tngl.sh', '.myatproto.social', '.margin.cafe', '.selfhosted.social', '.npmx.social',
-  ];
   const remainingSuffixes = useRef<string[]>([]);
   const [currentSuffix, setCurrentSuffix] = useState(HANDLE_SUFFIXES[0]);
   const [suffixFading, setSuffixFading] = useState(false);
@@ -71,7 +72,7 @@ function Login() {
       setTimeout(() => {
         setCurrentSuffix((prev: string) => {
           if (remainingSuffixes.current.length === 0) {
-            remainingSuffixes.current = HANDLE_SUFFIXES.filter((s) => s !== prev).sort(() => Math.random() - 0.5);
+            remainingSuffixes.current = HANDLE_SUFFIXES.filter((s) => s !== prev).toSorted(() => Math.random() - 0.5);
           }
           return remainingSuffixes.current.pop()!;
         });
@@ -338,6 +339,7 @@ function Login() {
                 value={bskyIdentifier}
                 type="text"
                 className="large"
+                aria-label="Handle or PDS URL"
                 disabled={uiState === 'loading'}
                 autoCorrect="off"
                 autoCapitalize="off"
@@ -379,8 +381,8 @@ function Login() {
               )}
             </div>
           </label>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5em', marginTop: '1em' }}>
-            <label>AppView: </label>
+          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5em', marginTop: '1em' }}>
+            AppView:{' '}
             <select
               value={appview}
               onChange={(e) => setAppview((e.target as HTMLSelectElement).value)}
@@ -389,7 +391,7 @@ function Login() {
                 <option key={key} value={key}>{label}</option>
               ))}
             </select>
-          </div>
+          </label>
           <div style={{ marginTop: '1em' }}>
             <button
               type="button"

@@ -1998,7 +1998,7 @@ msgstr ""
 
 #: src/compose.tsx:117
 #: src/pages/http-route.tsx:102
-#: src/pages/login.tsx:457
+#: src/pages/login.tsx:459
 msgid "Go home"
 msgstr ""
 
@@ -3198,8 +3198,8 @@ msgid "Lists & Feeds"
 msgstr "Lists & Feeds"
 
 #: src/components/nav-menu.tsx:325
-#: src/pages/login.tsx:50
-#: src/pages/login.tsx:332
+#: src/pages/login.tsx:55
+#: src/pages/login.tsx:333
 #: src/pages/status.tsx:1395
 #: src/pages/welcome.tsx:64
 msgid "Log in"
@@ -3644,7 +3644,7 @@ msgstr "Failed to generate description: {0}"
 msgid "Catch-up <0>beta</0>"
 msgstr ""
 
-#: src/pages/login.tsx:448
+#: src/pages/login.tsx:450
 msgid "Failed to log in. Please check your handle and app password."
 msgstr "Failed to log in. Please check your handle and app password."
 
@@ -3930,8 +3930,8 @@ msgstr ""
 msgid "View profile header"
 msgstr "View profile header"
 
-#: src/pages/login.tsx:175
-#: src/pages/login.tsx:187
+#: src/pages/login.tsx:176
+#: src/pages/login.tsx:188
 msgid "Failed to register application"
 msgstr "Failed to register application"
 

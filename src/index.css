@@ -285,8 +285,8 @@
     );
     --text-color: #f7fbff;
     --text-insignificant-color: #aebbc9;
-    --link-light-color: #59b9ff99;
-    --link-faded-color: #59b9ff88;
+    --link-light-color: color-mix(in srgb, var(--blue-color) 60%, transparent);
+    --link-faded-color: color-mix(in srgb, var(--blue-color) 53%, transparent);
     --link-bg-hover-color: var(--status-bg-hover-color);
     --link-visited-color: color-mix(
       in lch,
