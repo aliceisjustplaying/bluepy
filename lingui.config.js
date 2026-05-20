@@ -1,12 +1,14 @@
+import { formatter } from '@lingui/format-po';
+
 import { ALL_LOCALES } from './src/locales';
 
 const config = {
   locales: ALL_LOCALES,
   sourceLocale: 'en',
-  formatOptions: {
+  format: formatter({
     origins: true,
     lineNumbers: false,
-  },
+  }),
   pseudoLocale: 'pseudo-LOCALE',
   fallbackLocales: {
     default: 'en',

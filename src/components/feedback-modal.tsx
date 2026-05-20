@@ -1,7 +1,6 @@
 import './feedback-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import * as Sentry from '@sentry/react';
 import { useEffect, useRef, useState } from 'react';
 
 import showToast from '../utils/show-toast';
@@ -55,6 +54,7 @@ function buildFeedbackPayload(
   message: string,
   contact: string,
   hp: string,
+  sentryEventId?: string,
 ): FeedbackPayload {
   const page = window.location.href;
   const account = currentAccountLabel();
@@ -68,7 +68,7 @@ function buildFeedbackPayload(
     account,
     pds: optionalString(getCurrentFeedbackAccount()?.instanceURL),
     build,
-    sentryEventId: Sentry.lastEventId() || undefined,
+    sentryEventId,
     viewport: `${window.innerWidth}x${window.innerHeight}`,
     userAgent: window.navigator.userAgent,
   };
@@ -111,11 +111,21 @@ export default function FeedbackModal({
     setErrorMessage(null);
 
     try {
+      const sentryEventId = import.meta.env.VITE_SENTRY_DSN
+        ? await import('@sentry/react')
+            .then((Sentry) => Sentry.lastEventId() || undefined)
+            .catch(() => undefined)
+        : undefined;
       const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
-          buildFeedbackPayload(trimmedMessage, trimmedContact, hp),
+          buildFeedbackPayload(
+            trimmedMessage,
+            trimmedContact,
+            hp,
+            sentryEventId,
+          ),
         ),
       });
       if (!response.ok) {
@@ -169,6 +179,7 @@ export default function FeedbackModal({
               <input
                 id="feedback-company"
                 name="company"
+                aria-label={t`Leave this field blank`}
                 value={hp}
                 tabIndex={-1}
                 autoComplete="off"
@@ -184,6 +195,7 @@ export default function FeedbackModal({
               <textarea
                 id="feedback-message"
                 ref={messageRef}
+                aria-label={t`What happened?`}
                 required
                 rows={7}
                 value={message}
@@ -200,6 +212,7 @@ export default function FeedbackModal({
               </label>
               <input
                 id="feedback-contact"
+                aria-label={t`Contact, optional`}
                 value={contact}
                 maxLength={MAX_CONTACT_LENGTH}
                 autoComplete="email"
