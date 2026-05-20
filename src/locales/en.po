@@ -1089,7 +1089,7 @@ msgid "Search my posts"
 msgstr "Search my posts"
 
 #. placeholder {0}: usernameValue || acctValue
-#: src/components/status-content.tsx:461
+#: src/components/status-content.tsx:438
 msgid "Unboosted @{0}'s post"
 msgstr "Unboosted @{0}'s post"
 
@@ -1324,7 +1324,7 @@ msgid "Old post (<0>{0}</0>)"
 msgstr ""
 
 #. placeholder {0}: usernameValue || acctValue
-#: src/components/status-content.tsx:462
+#: src/components/status-content.tsx:439
 msgid "Boosted @{0}'s post"
 msgstr "Boosted @{0}'s post"
 
