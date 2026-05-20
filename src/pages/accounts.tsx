@@ -13,6 +13,7 @@ import MenuLink from '../components/menu-link';
 import Menu2 from '../components/menu2';
 import NameText, { type NameTextProps } from '../components/name-text';
 import RelativeTime from '../components/relative-time';
+import { getAccountProfileTarget } from '../utils/account-profile-target';
 import { api, getMastoV1Resource } from '../utils/api';
 import { revokeAccessToken } from '../utils/auth';
 import haptics from '../utils/haptics';
@@ -37,7 +38,7 @@ type OAuthAccount = Omit<StoredAccount, 'accessToken' | 'info'> & {
   info: StoredAccount['info'] & AccountsNameTextAccount;
 };
 
-interface MastoAccountsSelect {
+interface AccountsSelectResource {
   $select(id: string): {
     fetch(): Promise<unknown>;
   };
@@ -51,7 +52,7 @@ const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
 function Accounts({ onClose }: AccountsProps) {
   const { t } = useLingui();
-  const { masto } = api();
+  const client = api().masto;
   // Accounts
   const accounts = getAccounts() as OAuthAccount[];
   const currentAccount = getCurrentAccountID();
@@ -105,7 +106,7 @@ function Accounts({ onClose }: AccountsProps) {
                 });
               };
 
-              const { acct, avatarStatic, username } = account.info;
+              const { acct, avatarStatic } = account.info;
 
               return (
                 <li key={account.info.id}>
@@ -124,8 +125,8 @@ function Accounts({ onClose }: AccountsProps) {
                         if (isCurrent) {
                           try {
                             const accountsApi =
-                              getMastoV1Resource<MastoAccountsSelect>(
-                                masto,
+                              getMastoV1Resource<AccountsSelectResource>(
+                                client,
                                 'accounts',
                               );
                             const info = await accountsApi
@@ -140,16 +141,7 @@ function Accounts({ onClose }: AccountsProps) {
                       }}
                     />
                     <NameText
-                      account={
-                        moreThanOneAccount
-                          ? {
-                              ...account.info,
-                              acct: /@/.test(acct)
-                                ? acct
-                                : `${acct}@${account.instanceURL}`,
-                            }
-                          : account.info
-                      }
+                      account={account.info}
                       showAcct
                       onClick={() => {
                         void haptics.trigger('medium');
@@ -159,7 +151,7 @@ function Accounts({ onClose }: AccountsProps) {
                           );
                           onClose?.();
                         } else if (isCurrent) {
-                          states.showAccount = `${username}@${account.instanceURL}`;
+                          states.showAccount = getAccountProfileTarget(account);
                         } else {
                           setCurrentAccountID(account.info.id);
                           location.reload();
@@ -216,7 +208,7 @@ function Accounts({ onClose }: AccountsProps) {
                       )}
                       <MenuItem
                         onClick={() => {
-                          states.showAccount = `${username}@${account.instanceURL}`;
+                          states.showAccount = getAccountProfileTarget(account);
                         }}
                       >
                         <Icon icon="user" />
