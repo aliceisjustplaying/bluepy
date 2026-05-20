@@ -5,6 +5,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { getPreferences } from '../utils/api';
 import {
+  createAtprotoLabelerInfoCache,
+  fetchCachedAtprotoLabelerInfo,
+} from '../utils/atproto-labeler-cache';
+import {
   type AtprotoGlobalLabelStrings,
   type AtprotoLabelerInfo,
   type AtprotoLabelerInfoMap,
@@ -39,11 +43,7 @@ function uniqueStrings(values: readonly string[]): string[] {
   return Array.from(new Set(values));
 }
 
-const sharedFetchedLabelers: AtprotoLabelerInfoMap = {};
-const sharedInflightLabelers = new Map<
-  string,
-  Promise<AtprotoLabelerInfoMap>
->();
+const sharedLabelerCache = createAtprotoLabelerInfoCache();
 
 function getSourceProfileInfo(
   profile: unknown,
@@ -100,7 +100,7 @@ async function fetchPublicLabelerInfo(
   const res = await fetch(
     `https://public.api.bsky.app/xrpc/app.bsky.labeler.getServices?${params}`,
   );
-  if (!res.ok) return {};
+  if (!res.ok) throw new Error('Failed to fetch labeler info');
   const json: unknown = await res.json();
   if (!isRecord(json) || !Array.isArray(json.views)) return {};
   return Object.fromEntries(
@@ -114,31 +114,10 @@ async function fetchPublicLabelerInfo(
 async function fetchPublicLabelerInfoCached(
   dids: readonly string[],
 ): Promise<AtprotoLabelerInfoMap> {
-  const uniqueDids = uniqueStrings(dids);
-  const missingDids = uniqueDids.filter(
-    (did) => !getOwn(sharedFetchedLabelers, did),
-  );
-  if (missingDids.length) {
-    const key = [...missingDids].sort().join(',');
-    let request = sharedInflightLabelers.get(key);
-    if (!request) {
-      request = fetchPublicLabelerInfo(missingDids)
-        .then((nextLabelers) => {
-          Object.assign(sharedFetchedLabelers, nextLabelers);
-          return nextLabelers;
-        })
-        .finally(() => {
-          sharedInflightLabelers.delete(key);
-        });
-      sharedInflightLabelers.set(key, request);
-    }
-    await request;
-  }
-  return Object.fromEntries(
-    uniqueDids.flatMap((did) => {
-      const info = getOwn(sharedFetchedLabelers, did);
-      return info ? [[did, info]] : [];
-    }),
+  return fetchCachedAtprotoLabelerInfo(
+    dids,
+    sharedLabelerCache,
+    fetchPublicLabelerInfo,
   );
 }
 
@@ -148,7 +127,7 @@ export default function AtprotoLabels({
 }: AtprotoLabelsProps) {
   const { i18n, t } = useLingui();
   const [fetchedLabelers, setFetchedLabelers] = useState<AtprotoLabelerInfoMap>(
-    () => ({ ...sharedFetchedLabelers }),
+    () => ({ ...sharedLabelerCache.fetchedLabelers }),
   );
   const mounted = useRef(true);
   const globalLabelStrings = useMemo<AtprotoGlobalLabelStrings>(

@@ -201,6 +201,12 @@ void test('getAtprotoLabelDefinitions drops malformed cached entries', () => {
     getAtprotoLabelDefinitions({
       atprotoLabelDefs: {
         'did:plc:custom': [customLabelDef, { identifier: 'bad' }],
+        'did:plc:malformed-locale': [
+          {
+            ...customLabelDef,
+            locales: [{ lang: 'en' }],
+          },
+        ],
         'did:plc:broken': null,
       },
     }),

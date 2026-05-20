@@ -118,7 +118,14 @@ function isLabelDefinition(
     typeof value.severity === 'string' &&
     typeof value.blurs === 'string' &&
     typeof value.defaultSetting === 'string' &&
-    Array.isArray(value.locales)
+    Array.isArray(value.locales) &&
+    value.locales.every(
+      (locale) =>
+        isRecord(locale) &&
+        typeof locale.lang === 'string' &&
+        typeof locale.name === 'string' &&
+        typeof locale.description === 'string',
+    )
   );
 }
 
@@ -142,7 +149,8 @@ export function getAtprotoLabelDefinitions(
   return Object.fromEntries(
     Object.entries(defs).flatMap(([did, didDefs]) => {
       if (!Array.isArray(didDefs)) return [];
-      return [[did, didDefs.filter(isLabelDefinition)]];
+      const validDefs = didDefs.filter(isLabelDefinition);
+      return validDefs.length ? [[did, validDefs]] : [];
     }),
   );
 }
