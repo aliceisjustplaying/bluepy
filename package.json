@@ -50,6 +50,7 @@
     "flexsearch": "~0.8.212",
     "fuse.js": "~7.3.0",
     "gifuct-js": "~2.1.2",
+    "hls.js": "^1.6.16",
     "html-prettify": "~1.0.7",
     "idb-keyval": "~6.2.2",
     "intl-locale-textinfo-polyfill": "~3.0.0",

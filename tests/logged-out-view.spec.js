@@ -261,6 +261,188 @@ test('loads native AT URI post URLs', async ({ page }) => {
   );
 });
 
+const HLS_AT_URI =
+  'at://did:plc:xgvzy7ni6ig6ievcbls5jaxe/app.bsky.feed.post/hlsvideo';
+const HLS_VIDEO_PLAYLIST =
+  'https://video.bsky.app/watch/did%3Aplc%3Axgvzy7ni6ig6ievcbls5jaxe/bafkreid6nmhqqqmmbsahgfpahxxbatxykbs62palibnw5ujmm3tjtitd6a/playlist.m3u8';
+const HLS_VIDEO_THUMBNAIL =
+  'https://video.bsky.app/watch/did%3Aplc%3Axgvzy7ni6ig6ievcbls5jaxe/bafkreid6nmhqqqmmbsahgfpahxxbatxykbs62palibnw5ujmm3tjtitd6a/thumbnail.jpg';
+const BLACKSKY_HLS_VIDEO_PLAYLIST =
+  'https://video.blacksky.community/stream/did%3Aplc%3Axgvzy7ni6ig6ievcbls5jaxe/bafkreid6nmhqqqmmbsahgfpahxxbatxykbs62palibnw5ujmm3tjtitd6a/playlist.m3u8';
+const BLACKSKY_HLS_VIDEO_THUMBNAIL =
+  'https://video.blacksky.community/stream/did%3Aplc%3Axgvzy7ni6ig6ievcbls5jaxe/bafkreid6nmhqqqmmbsahgfpahxxbatxykbs62palibnw5ujmm3tjtitd6a/thumbnail.jpg';
+
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {{ playlist?: string; thumbnail?: string }} [options]
+ */
+async function routeHlsVideoPost(page, options = {}) {
+  const { playlist = HLS_VIDEO_PLAYLIST, thumbnail = HLS_VIDEO_THUMBNAIL } =
+    options;
+  const post = {
+    uri: HLS_AT_URI,
+    cid: 'bafyreiezmfwjn5hfru62w2ot4hwvfcaeu6qkgimjgg36n4n4tnmzjy7eda',
+    author: {
+      did: 'did:plc:xgvzy7ni6ig6ievcbls5jaxe',
+      handle: 'quillmatiq.com',
+      displayName: 'Anuj Ahooja',
+    },
+    record: {
+      $type: 'app.bsky.feed.post',
+      text: 'Native AT URI HLS video post',
+      createdAt: '2026-05-20T12:48:00.000Z',
+    },
+    embed: {
+      $type: 'app.bsky.embed.video#view',
+      cid: 'bafkreid6nmhqqqmmbsahgfpahxxbatxykbs62palibnw5ujmm3tjtitd6a',
+      playlist,
+      thumbnail,
+      alt: 'Bluepy AppView picker demo',
+      aspectRatio: { width: 1080, height: 1920 },
+    },
+    indexedAt: '2026-05-20T12:48:00.000Z',
+    replyCount: 0,
+    repostCount: 0,
+    likeCount: 0,
+    quoteCount: 0,
+    labels: [],
+    viewer: {},
+  };
+
+  await page.route('**/xrpc/app.bsky.feed.getPosts*', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: { posts: [post] },
+    });
+  });
+  await page.route('**/xrpc/app.bsky.feed.getPostThread*', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: {
+        thread: {
+          $type: 'app.bsky.feed.defs#threadViewPost',
+          post,
+          replies: [],
+        },
+      },
+    });
+  });
+  await page.route('https://video.bsky.app/**', async (route) => {
+    const { pathname } = new URL(route.request().url());
+    if (pathname.endsWith('/playlist.m3u8')) {
+      await route.fulfill({
+        contentType: 'application/vnd.apple.mpegurl',
+        body: '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-ENDLIST\n',
+      });
+      return;
+    }
+    await route.fulfill({ status: 204 });
+  });
+}
+
+test('loads Bluesky HLS video embeds with hls.js on native AT URI post URLs', async ({
+  page,
+}) => {
+  await routeHlsVideoPost(page);
+  let hlsModuleRequested = false;
+  page.on('request', (request) => {
+    const url = request.url();
+    if (/hls(?:__js|-).*\.js/.test(url)) hlsModuleRequested = true;
+  });
+  await page.addInitScript(() => {
+    const nativeVideo = document.createElement('video');
+    const nativeCanPlayType = nativeVideo.canPlayType.bind(nativeVideo);
+    HTMLMediaElement.prototype.canPlayType = function (type) {
+      if (/mpegurl/i.test(type)) return '';
+      return nativeCanPlayType(type);
+    };
+  });
+
+  await page.goto(`/${HLS_AT_URI}?media=1`);
+  await expect(page.locator('video[controls]').first()).toBeVisible();
+  await expect.poll(() => hlsModuleRequested).toBe(true);
+});
+
+test('loads Bluesky HLS video embeds with native HLS when supported', async ({
+  page,
+}) => {
+  await routeHlsVideoPost(page);
+  let hlsModuleRequested = false;
+  page.on('request', (request) => {
+    const url = request.url();
+    if (/hls(?:__js|-).*\.js/.test(url)) hlsModuleRequested = true;
+  });
+  await page.addInitScript(() => {
+    HTMLMediaElement.prototype.canPlayType = function (type) {
+      return /mpegurl/i.test(type) ? 'probably' : '';
+    };
+  });
+
+  await page.goto(`/${HLS_AT_URI}?media=1`);
+  const video = page.locator('video[controls]').first();
+  await expect(video).toBeVisible();
+  await expect(video).toHaveJSProperty('src', HLS_VIDEO_PLAYLIST);
+  expect(hlsModuleRequested).toBe(false);
+});
+
+test('falls back from failing Blacksky HLS URLs to Bluesky video service URLs', async ({
+  page,
+}) => {
+  await routeHlsVideoPost(page, {
+    playlist: BLACKSKY_HLS_VIDEO_PLAYLIST,
+    thumbnail: BLACKSKY_HLS_VIDEO_THUMBNAIL,
+  });
+  let blackskyHlsRequested = false;
+  let blackskyVariantRequested = false;
+  let blueskyHlsRequested = false;
+  let hlsModuleRequested = false;
+  page.on('request', (request) => {
+    const url = request.url();
+    if (/hls(?:__js|-).*\.js/.test(url)) hlsModuleRequested = true;
+    if (url === HLS_VIDEO_PLAYLIST) blueskyHlsRequested = true;
+  });
+  await page.route('https://video.blacksky.community/**', async (route) => {
+    const url = route.request().url();
+    const { pathname } = new URL(url);
+    if (pathname.endsWith('/playlist.m3u8')) {
+      blackskyHlsRequested = true;
+      await route.fulfill({
+        contentType: 'application/vnd.apple.mpegurl',
+        body: [
+          '#EXTM3U',
+          '#EXT-X-VERSION:3',
+          '#EXT-X-STREAM-INF:PROGRAM-ID=0,BANDWIDTH=655600,CODECS="avc1.64001e,mp4a.40.2",RESOLUTION=360x640',
+          '360p/video.m3u8?session_id=broken',
+          '',
+        ].join('\n'),
+      });
+      return;
+    }
+    if (pathname.endsWith('/360p/video.m3u8')) {
+      blackskyVariantRequested = true;
+      await route.fulfill({ status: 404 });
+      return;
+    }
+    await route.fulfill({ status: 204 });
+  });
+  await page.addInitScript(() => {
+    const nativeVideo = document.createElement('video');
+    const nativeCanPlayType = nativeVideo.canPlayType.bind(nativeVideo);
+    HTMLMediaElement.prototype.canPlayType = function (type) {
+      if (/mpegurl/i.test(type)) return '';
+      return nativeCanPlayType(type);
+    };
+  });
+
+  await page.goto(`/${HLS_AT_URI}?media=1`);
+  const video = page.locator('video[controls]').first();
+  await expect(video).toBeVisible();
+  await expect.poll(() => hlsModuleRequested).toBe(true);
+  await expect.poll(() => blackskyHlsRequested).toBe(true);
+  await expect.poll(() => blackskyVariantRequested).toBe(true);
+  await expect.poll(() => blueskyHlsRequested).toBe(true);
+});
+
 const AT_REPO = 'did:plc:by3jhwdqgbtrcc7q4tkkv3cf';
 const AT_PROFILE_URI = `at://${AT_REPO}/app.bsky.actor.profile/self`;
 const AT_PROFILE_PATH = `/${AT_PROFILE_URI}`;
