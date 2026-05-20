@@ -109,10 +109,9 @@ msgstr "Найдены математические выражения."
 #~ msgid "e.g. “mastodon.social”"
 #~ msgstr "например “mastodon.social”"
 
-#. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
-msgid "Muted @{username} for {0}"
-msgstr "@{username} добавлен(а) в список игнорируемых на {0}"
+#~ msgid "Muted @{username} for {0}"
+#~ msgstr "@{username} добавлен(а) в список игнорируемых на {0}"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
@@ -171,6 +170,8 @@ msgstr "<0>Shift</0> + <1>c</1>"
 #~ msgid "Scheduled Posts"
 #~ msgstr "Отложенные посты"
 
+#: src/components/muted-status.tsx
+#: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "Игнорируется"
@@ -742,6 +743,10 @@ msgstr "Завершено <0/>"
 #~ msgid "View #Wrapstodon"
 #~ msgstr "Посмотреть #Wrapstodon"
 
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr ""
+
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr "Просмотр цитирований"
@@ -890,6 +895,10 @@ msgstr "Примечание: Эта функция использует вне�
 msgid "Unable to remove from list."
 msgstr "Не удалось убрать из списка."
 
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr ""
+
 #: src/components/account-block.tsx
 msgid "Mutual"
 msgstr "Взаимная подписка"
@@ -990,6 +999,10 @@ msgstr "Показать весь деликатный контент"
 msgid "Unable to mute conversation"
 msgstr "Не удалось игнорировать обсуждение"
 
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr ""
+
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
 msgstr ""
@@ -1082,8 +1095,8 @@ msgid "Show media"
 msgstr "Показать медиа"
 
 #: src/components/related-actions.tsx
-msgid "Forever"
-msgstr "Навсегда"
+#~ msgid "Forever"
+#~ msgstr "Навсегда"
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
@@ -1345,6 +1358,10 @@ msgstr "Цепочка цитат"
 #: src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Все списки"
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr ""
 
 #: src/pages/public.tsx
 #~ msgid "No one has posted anything yet."
@@ -2783,6 +2800,10 @@ msgstr "Вы уловили всё."
 #~ msgid "Boost"
 #~ msgstr "Продвинуть"
 
+#: src/components/related-actions.tsx
+msgid "Muted @{username}"
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "Проблема не соответствует другим категориям"
@@ -3190,6 +3211,10 @@ msgstr ""
 msgid "Only followers can quote this post"
 msgstr "Только подписчики могут цитировать этот пост"
 
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr ""
+
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
@@ -3321,6 +3346,14 @@ msgstr "Покажи мне все посты…"
 #: src/components/poll.tsx
 msgid "Ending <0/>"
 msgstr "Завершение <0/>"
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr ""
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
@@ -4444,6 +4477,10 @@ msgstr "Скриншот многоколоночного интерфейса"
 msgid "No shortcuts yet. Tap on the Add shortcut button."
 msgstr "Пока нет ярлыков. Нажмите на кнопку Добавить ярлык."
 
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr ""
+
 #: src/pages/trending.tsx
 msgid "Trending posts"
 msgstr "Популярные посты"
@@ -4640,8 +4677,8 @@ msgstr "Сканировать QR-код"
 #~ msgstr "@{username} теперь отображается в вашем профиле."
 
 #: src/components/related-actions.tsx
-msgid "Mute <0>@{username}</0>…"
-msgstr "Игнорировать <0>@{username}</0>…"
+#~ msgid "Mute <0>@{username}</0>…"
+#~ msgstr "Игнорировать <0>@{username}</0>…"
 
 #: src/components/related-actions.tsx
 #~ msgid "Unable to unfeature @{username} on your profile."
@@ -4965,6 +5002,10 @@ msgstr "Не удалось описать изображение"
 #~ msgid "Failed to reschedule post"
 #~ msgstr "Не удалось перенести пост"
 
+#: src/components/related-actions.tsx
+msgid "Mute <0>@{username}</0>"
+msgstr ""
+
 #: src/pages/filters.tsx
 #~ msgid "hidden"
 #~ msgstr "скрыто"
@@ -5011,6 +5052,10 @@ msgstr "Меню"
 #~ msgstr "Личные"
 
 #: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr ""
+
+#: src/pages/settings.tsx
 msgid "Translate to "
 msgstr "Перевести на "
 
@@ -5036,39 +5081,3 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "Нравится"
-
-#: src/components/muted-status.tsx
-msgid "Post from muted account"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Show normally"
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Show"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Collapse with reveal"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Notifications from muted accounts are always hidden."
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Show muted post"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Hide entirely"
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Hide"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Muted posts"
-msgstr ""

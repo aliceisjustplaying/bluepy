@@ -109,10 +109,9 @@ msgstr "检测到数学公式。"
 #~ msgid "e.g. “mastodon.social”"
 #~ msgstr "例如：“mastodon.social”"
 
-#. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
-msgid "Muted @{username} for {0}"
-msgstr "已静音 @{username} {0}"
+#~ msgid "Muted @{username} for {0}"
+#~ msgstr "已静音 @{username} {0}"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
@@ -171,6 +170,8 @@ msgstr "<0>Shift</0> + <1>c</1>"
 #~ msgid "Scheduled Posts"
 #~ msgstr "定时嘟文"
 
+#: src/components/muted-status.tsx
+#: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "已静音"
@@ -742,6 +743,10 @@ msgstr "结束于 <0/>"
 #~ msgid "View #Wrapstodon"
 #~ msgstr "查看 #Wrapstodon 年度回顾"
 
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr ""
+
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr "查看引用"
@@ -890,6 +895,10 @@ msgstr "注意: 此功能使用外部翻译服务，翻译服务由 <0>{TRANSLAT
 msgid "Unable to remove from list."
 msgstr "无法从列表中移除。"
 
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr ""
+
 #: src/components/account-block.tsx
 msgid "Mutual"
 msgstr "互相关注"
@@ -990,6 +999,10 @@ msgstr "显示所有敏感内容"
 msgid "Unable to mute conversation"
 msgstr "无法静音该对话"
 
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr ""
+
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
 msgstr ""
@@ -1082,8 +1095,8 @@ msgid "Show media"
 msgstr "显示媒体"
 
 #: src/components/related-actions.tsx
-msgid "Forever"
-msgstr "永久"
+#~ msgid "Forever"
+#~ msgstr "永久"
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
@@ -1345,6 +1358,10 @@ msgstr "引用链"
 #: src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "全部列表"
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr ""
 
 #: src/pages/public.tsx
 #~ msgid "No one has posted anything yet."
@@ -2783,6 +2800,10 @@ msgstr "你已经全读完了。"
 #~ msgid "Boost"
 #~ msgstr "转嘟"
 
+#: src/components/related-actions.tsx
+msgid "Muted @{username}"
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "问题不适合其它的类别"
@@ -3190,6 +3211,10 @@ msgstr ""
 msgid "Only followers can quote this post"
 msgstr "只有粉丝才能引用这条嘟文"
 
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr ""
+
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
@@ -3321,6 +3346,14 @@ msgstr "选择要显示的嘟文的时间范围…"
 #: src/components/poll.tsx
 msgid "Ending <0/>"
 msgstr "<0/> 结束"
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr ""
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
@@ -4444,6 +4477,10 @@ msgstr "多栏界面的效果图"
 msgid "No shortcuts yet. Tap on the Add shortcut button."
 msgstr "尚未添加任何快捷方式。点击以添加快捷方式。"
 
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr ""
+
 #: src/pages/trending.tsx
 msgid "Trending posts"
 msgstr "热门嘟文"
@@ -4640,8 +4677,8 @@ msgstr "扫描二维码"
 #~ msgstr "@{username} 已被加入你的账户页中的精选账户列表。"
 
 #: src/components/related-actions.tsx
-msgid "Mute <0>@{username}</0>…"
-msgstr "静音 <0>@{username}</0>…"
+#~ msgid "Mute <0>@{username}</0>…"
+#~ msgstr "静音 <0>@{username}</0>…"
 
 #: src/components/related-actions.tsx
 #~ msgid "Unable to unfeature @{username} on your profile."
@@ -4965,6 +5002,10 @@ msgstr "描述图像失败"
 #~ msgid "Failed to reschedule post"
 #~ msgstr "修改发布时间失败"
 
+#: src/components/related-actions.tsx
+msgid "Mute <0>@{username}</0>"
+msgstr ""
+
 #: src/pages/filters.tsx
 #~ msgid "hidden"
 #~ msgstr "隐藏"
@@ -5011,6 +5052,10 @@ msgstr "菜单"
 #~ msgstr "私信"
 
 #: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr ""
+
+#: src/pages/settings.tsx
 msgid "Translate to "
 msgstr "翻译为 "
 
@@ -5036,39 +5081,3 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "点赞列表"
-
-#: src/components/muted-status.tsx
-msgid "Post from muted account"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Show normally"
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Show"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Collapse with reveal"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Notifications from muted accounts are always hidden."
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Show muted post"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Hide entirely"
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Hide"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Muted posts"
-msgstr ""

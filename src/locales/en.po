@@ -86,10 +86,9 @@ msgstr ""
 msgid "Math expressions found."
 msgstr "Math expressions found."
 
-#. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
-msgid "Muted @{username} for {0}"
-msgstr "Muted @{username} for {0}"
+#~ msgid "Muted @{username} for {0}"
+#~ msgstr "Muted @{username} for {0}"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
@@ -133,6 +132,8 @@ msgstr "Only you can quote"
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr ""
 
+#: src/components/muted-status.tsx
+#: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr ""
@@ -604,6 +605,10 @@ msgstr "Existing"
 msgid "Ended <0/>"
 msgstr "Ended <0/>"
 
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr "Post from muted account"
+
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr "View Quotes"
@@ -731,6 +736,10 @@ msgstr "Note: This feature uses external translation services, powered by <0>{TR
 msgid "Unable to remove from list."
 msgstr "Unable to remove from list."
 
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr "Show normally"
+
 #: src/components/account-block.tsx
 msgid "Mutual"
 msgstr ""
@@ -823,6 +832,10 @@ msgstr ""
 msgid "Unable to mute conversation"
 msgstr ""
 
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr "Show"
+
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
 msgstr "Posts tagged #{tagged} by {accountDisplay}"
@@ -910,8 +923,8 @@ msgid "Show media"
 msgstr ""
 
 #: src/components/related-actions.tsx
-msgid "Forever"
-msgstr ""
+#~ msgid "Forever"
+#~ msgstr ""
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
@@ -1126,6 +1139,10 @@ msgstr "Feedback could not be sent."
 #: src/components/quote-chain-modal.tsx
 msgid "Quote chain"
 msgstr "Quote chain"
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr "Collapse with reveal"
 
 #: src/components/post-embed-modal.tsx
 msgid "HTML code copied"
@@ -2366,6 +2383,10 @@ msgstr ""
 #~ msgid "Boost"
 #~ msgstr ""
 
+#: src/components/related-actions.tsx
+msgid "Muted @{username}"
+msgstr "Muted @{username}"
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr ""
@@ -2713,6 +2734,10 @@ msgstr "Switch to my PDS (<0>{currentInstance}</0>)"
 msgid "Only followers can quote this post"
 msgstr "Only followers can quote this post"
 
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr "Notifications from muted accounts are always hidden."
+
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
@@ -2812,6 +2837,14 @@ msgstr ""
 #: src/components/poll.tsx
 msgid "Ending <0/>"
 msgstr "Ending <0/>"
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr "Show muted post"
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr "Hide entirely"
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
@@ -3745,6 +3778,10 @@ msgstr ""
 msgid "No shortcuts yet. Tap on the Add shortcut button."
 msgstr ""
 
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr "Hide"
+
 #: src/pages/trending.tsx
 msgid "Trending posts"
 msgstr ""
@@ -3917,8 +3954,8 @@ msgid "Scan QR code"
 msgstr "Scan QR code"
 
 #: src/components/related-actions.tsx
-msgid "Mute <0>@{username}</0>…"
-msgstr ""
+#~ msgid "Mute <0>@{username}</0>…"
+#~ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description"
@@ -4179,6 +4216,10 @@ msgstr ""
 msgid "Failed to describe image"
 msgstr ""
 
+#: src/components/related-actions.tsx
+msgid "Mute <0>@{username}</0>"
+msgstr "Mute <0>@{username}</0>"
+
 #: src/components/account-info.tsx
 msgid "View profile header"
 msgstr "View profile header"
@@ -4213,6 +4254,10 @@ msgid "Menu"
 msgstr ""
 
 #: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr "Muted posts"
+
+#: src/pages/settings.tsx
 msgid "Translate to "
 msgstr "Translate to "
 
@@ -4234,39 +4279,3 @@ msgstr "This account has marked itself as automated."
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Post from muted account"
-msgstr "Post from muted account"
-
-#: src/pages/settings.tsx
-msgid "Show normally"
-msgstr "Show normally"
-
-#: src/components/muted-status.tsx
-msgid "Show"
-msgstr "Show"
-
-#: src/pages/settings.tsx
-msgid "Collapse with reveal"
-msgstr "Collapse with reveal"
-
-#: src/pages/settings.tsx
-msgid "Notifications from muted accounts are always hidden."
-msgstr "Notifications from muted accounts are always hidden."
-
-#: src/components/muted-status.tsx
-msgid "Show muted post"
-msgstr "Show muted post"
-
-#: src/pages/settings.tsx
-msgid "Hide entirely"
-msgstr "Hide entirely"
-
-#: src/components/muted-status.tsx
-msgid "Hide"
-msgstr "Hide"
-
-#: src/pages/settings.tsx
-msgid "Muted posts"
-msgstr "Muted posts"

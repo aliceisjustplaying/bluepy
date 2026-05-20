@@ -109,10 +109,9 @@ msgstr ""
 #~ msgid "e.g. “mastodon.social”"
 #~ msgstr "ekz. “mastodon.social”"
 
-#. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
-msgid "Muted @{username} for {0}"
-msgstr "Silentigita @{username} dum {0}"
+#~ msgid "Muted @{username} for {0}"
+#~ msgstr "Silentigita @{username} dum {0}"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
@@ -171,6 +170,8 @@ msgstr "<0>Ŝovo</0> + <1>c</1>"
 #~ msgid "Scheduled Posts"
 #~ msgstr "Planitaj afiŝoj"
 
+#: src/components/muted-status.tsx
+#: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "Silentigita"
@@ -742,6 +743,10 @@ msgstr "Finita <0/>"
 #~ msgid "View #Wrapstodon"
 #~ msgstr "Vidu #Wrapstodon"
 
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr ""
+
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr ""
@@ -890,6 +895,10 @@ msgstr "Noto: Ĉi tiu funkcio uzas eksterajn tradukservojn, funkciigitajn de <0>
 msgid "Unable to remove from list."
 msgstr "Ne eblas forigi el listo."
 
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr ""
+
 #: src/components/account-block.tsx
 msgid "Mutual"
 msgstr "Reciproka"
@@ -990,6 +999,10 @@ msgstr "Montri ĉiujn sentemajn enhavojn"
 msgid "Unable to mute conversation"
 msgstr "Ne eblas silentigi konversacion"
 
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr ""
+
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
 msgstr ""
@@ -1082,8 +1095,8 @@ msgid "Show media"
 msgstr "Montri plurmedion"
 
 #: src/components/related-actions.tsx
-msgid "Forever"
-msgstr "Por ĉiam"
+#~ msgid "Forever"
+#~ msgstr "Por ĉiam"
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
@@ -1345,6 +1358,10 @@ msgstr ""
 #: src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Ĉiuj listoj"
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr ""
 
 #: src/pages/public.tsx
 #~ msgid "No one has posted anything yet."
@@ -2783,6 +2800,10 @@ msgstr "Vi estas aktualiĝa."
 #~ msgid "Boost"
 #~ msgstr "Diskonigi"
 
+#: src/components/related-actions.tsx
+msgid "Muted @{username}"
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "La problemo ne taŭgas en aliaj kategorioj"
@@ -3190,6 +3211,10 @@ msgstr ""
 msgid "Only followers can quote this post"
 msgstr "Nur sekvantoj rajtas citi tiun ĉi afiŝon"
 
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr ""
+
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
@@ -3321,6 +3346,14 @@ msgstr "Montri al mi ĉiujn afiŝojn de…"
 #: src/components/poll.tsx
 msgid "Ending <0/>"
 msgstr "Finante <0/>"
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr ""
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
@@ -4444,6 +4477,10 @@ msgstr "Ekrankopio de plurkolumna uzantinterfaco"
 msgid "No shortcuts yet. Tap on the Add shortcut button."
 msgstr "Ankoraŭ neniuj ŝparvojoj. Alklaku la butonon Aldoni ŝparvojon."
 
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr ""
+
 #: src/pages/trending.tsx
 msgid "Trending posts"
 msgstr "Popularaj afiŝoj"
@@ -4640,8 +4677,8 @@ msgstr ""
 #~ msgstr "@{username} nun estas elstarigita en via profilo."
 
 #: src/components/related-actions.tsx
-msgid "Mute <0>@{username}</0>…"
-msgstr "Silentigi <0>@{username}</0>…"
+#~ msgid "Mute <0>@{username}</0>…"
+#~ msgstr "Silentigi <0>@{username}</0>…"
 
 #: src/components/related-actions.tsx
 #~ msgid "Unable to unfeature @{username} on your profile."
@@ -4965,6 +5002,10 @@ msgstr "Malsukcesis priskribi la bildon"
 #~ msgid "Failed to reschedule post"
 #~ msgstr "Malsukcesis replani afiŝon"
 
+#: src/components/related-actions.tsx
+msgid "Mute <0>@{username}</0>"
+msgstr ""
+
 #: src/pages/filters.tsx
 #~ msgid "hidden"
 #~ msgstr "kaŝita"
@@ -5011,6 +5052,10 @@ msgstr "Menuo"
 #~ msgstr "Privata"
 
 #: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr ""
+
+#: src/pages/settings.tsx
 msgid "Translate to "
 msgstr "Traduki al "
 
@@ -5036,39 +5081,3 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "Stemuloj"
-
-#: src/components/muted-status.tsx
-msgid "Post from muted account"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Show normally"
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Show"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Collapse with reveal"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Notifications from muted accounts are always hidden."
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Show muted post"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Hide entirely"
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Hide"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Muted posts"
-msgstr ""

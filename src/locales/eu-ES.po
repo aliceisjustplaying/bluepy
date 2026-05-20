@@ -109,10 +109,9 @@ msgstr "Adierazpen matematikoak aurkitu dira."
 #~ msgid "e.g. “mastodon.social”"
 #~ msgstr "adib. \"mastodon.eus\""
 
-#. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
-msgid "Muted @{username} for {0}"
-msgstr "@{username} {0}rako mututu da"
+#~ msgid "Muted @{username} for {0}"
+#~ msgstr "@{username} {0}rako mututu da"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
@@ -171,6 +170,8 @@ msgstr "<0>Shift</0> + <1>c</1>"
 #~ msgid "Scheduled Posts"
 #~ msgstr "Programatutako bidalketak"
 
+#: src/components/muted-status.tsx
+#: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "Mutututa"
@@ -742,6 +743,10 @@ msgstr "<0/> amaitu da"
 #~ msgid "View #Wrapstodon"
 #~ msgstr "Ikusi #Wrapstodon"
 
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr ""
+
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr "Ikusi iruzkinak"
@@ -890,6 +895,10 @@ msgstr "Oharra: ezaugarri honek hirugarrenen itzulpen-zerbitzuak darabiltza, <0>
 msgid "Unable to remove from list."
 msgstr "Ezin da zerrendatik kendu."
 
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr ""
+
 #: src/components/account-block.tsx
 msgid "Mutual"
 msgstr "Batak bestea"
@@ -990,6 +999,10 @@ msgstr "Erakutsi eduki hunkigarri guztia"
 msgid "Unable to mute conversation"
 msgstr "Ezin da elkarrizketa mututu"
 
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr ""
+
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
 msgstr ""
@@ -1082,8 +1095,8 @@ msgid "Show media"
 msgstr "Erakutsi multimedia fitxategiak"
 
 #: src/components/related-actions.tsx
-msgid "Forever"
-msgstr "Betiko"
+#~ msgid "Forever"
+#~ msgstr "Betiko"
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
@@ -1345,6 +1358,10 @@ msgstr "Aipuen katea"
 #: src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Zerrenda guztiak"
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr ""
 
 #: src/pages/public.tsx
 #~ msgid "No one has posted anything yet."
@@ -2783,6 +2800,10 @@ msgstr "Zaharrak berri."
 #~ msgid "Boost"
 #~ msgstr "Bultzatu"
 
+#: src/components/related-actions.tsx
+msgid "Muted @{username}"
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "Arazoa ez dator bat beste kategoriekin"
@@ -3190,6 +3211,10 @@ msgstr ""
 msgid "Only followers can quote this post"
 msgstr "Jarraitzaileek soilik iruzkindu dezakete bidalketa hau"
 
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr ""
+
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
@@ -3321,6 +3346,14 @@ msgstr "Erakutsidazu…"
 #: src/components/poll.tsx
 msgid "Ending <0/>"
 msgstr "<0/> amaituko da"
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr ""
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
@@ -4444,6 +4477,10 @@ msgstr "Zutabe anitzeko interfazearen pantaila-argazkia"
 msgid "No shortcuts yet. Tap on the Add shortcut button."
 msgstr "Oraindik ez dago lasterbiderik. Egin tap Gehitu lasterbidea botoian."
 
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr ""
+
 #: src/pages/trending.tsx
 msgid "Trending posts"
 msgstr "Bogan dauden bidalketak"
@@ -4640,8 +4677,8 @@ msgstr "Eskaneatu QR kodea"
 #~ msgstr "@{username} zure profilean nabarmenduta dago."
 
 #: src/components/related-actions.tsx
-msgid "Mute <0>@{username}</0>…"
-msgstr "Mututu <0>@{username}</0>…"
+#~ msgid "Mute <0>@{username}</0>…"
+#~ msgstr "Mututu <0>@{username}</0>…"
 
 #: src/components/related-actions.tsx
 #~ msgid "Unable to unfeature @{username} on your profile."
@@ -4965,6 +5002,10 @@ msgstr "Ezin da irudia deskribatu"
 #~ msgid "Failed to reschedule post"
 #~ msgstr "Huts egin du bidalketa programatzeak"
 
+#: src/components/related-actions.tsx
+msgid "Mute <0>@{username}</0>"
+msgstr ""
+
 #: src/pages/filters.tsx
 #~ msgid "hidden"
 #~ msgstr "ezkutatuko dira"
@@ -5011,6 +5052,10 @@ msgstr "Menua"
 #~ msgstr "Pribatua"
 
 #: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr ""
+
+#: src/pages/settings.tsx
 msgid "Translate to "
 msgstr "Itzuli… "
 
@@ -5036,39 +5081,3 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "Gogokoak"
-
-#: src/components/muted-status.tsx
-msgid "Post from muted account"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Show normally"
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Show"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Collapse with reveal"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Notifications from muted accounts are always hidden."
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Show muted post"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Hide entirely"
-msgstr ""
-
-#: src/components/muted-status.tsx
-msgid "Hide"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Muted posts"
-msgstr ""
