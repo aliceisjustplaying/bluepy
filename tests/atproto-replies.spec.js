@@ -11,7 +11,10 @@ import {
   shouldFetchReplyContextForInstance,
   shouldFetchThreadParent,
 } from '../src/utils/reply-context.js';
-import { appendThreadDescendant } from '../src/utils/thread-structure.js';
+import {
+  appendThreadDescendant,
+  clearThreadDescendantReplies,
+} from '../src/utils/thread-structure.js';
 import {
   dedupeTimelineContextItems,
   groupContextItems,
@@ -1041,6 +1044,23 @@ test.describe('ATProto reply mapping', () => {
     }
 
     expect(topLevel.map((status) => status.id)).toEqual(['direct-reply']);
+    expect(directReply.__replies?.map((status) => status.id)).toEqual([
+      'nested-alice-reply',
+    ]);
+    expect(nestedAliceReply.__replies?.map((status) => status.id)).toEqual([
+      'same-author-child',
+    ]);
+
+    clearThreadDescendantReplies(descendants);
+    /** @type {ThreadStatus[]} */
+    const rebuiltTopLevel = [];
+    for (const descendant of descendants) {
+      appendThreadDescendant(descendant, hero, descendants, rebuiltTopLevel);
+    }
+
+    expect(rebuiltTopLevel.map((status) => status.id)).toEqual([
+      'direct-reply',
+    ]);
     expect(directReply.__replies?.map((status) => status.id)).toEqual([
       'nested-alice-reply',
     ]);

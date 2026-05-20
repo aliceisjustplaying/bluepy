@@ -56,7 +56,10 @@ import states, {
 import statusPeek from '../utils/status-peek';
 import { getCurrentAccount } from '../utils/store-utils';
 import { ThreadCountContext } from '../utils/thread-count-context';
-import { appendThreadDescendant } from '../utils/thread-structure';
+import {
+  appendThreadDescendant,
+  clearThreadDescendantReplies,
+} from '../utils/thread-structure';
 import useTitle from '../utils/useTitle';
 
 import getInstanceStatusURL from './../utils/get-instance-status-url';
@@ -681,6 +684,7 @@ function StatusThread({
       (s) => isGhostStatus(s) || s.account?.id === heroStatus.account?.id,
     );
     const nestedDescendants: RawStatus[] = [];
+    clearThreadDescendantReplies(descendants);
     descendants.forEach((status) => {
       saveRawStatus(status, instance, {
         // skipThreading: true,

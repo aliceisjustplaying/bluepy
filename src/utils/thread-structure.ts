@@ -14,6 +14,14 @@ function appendReply(parent: ThreadStatus, status: ThreadStatus): void {
   parent.__replies.push(status);
 }
 
+export function clearThreadDescendantReplies(
+  descendants: ThreadStatus[],
+): void {
+  for (const descendant of descendants) {
+    delete descendant.__replies;
+  }
+}
+
 export function appendThreadDescendant(
   status: ThreadStatus,
   heroStatus: ThreadStatus,
