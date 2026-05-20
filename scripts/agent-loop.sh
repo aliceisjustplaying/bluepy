@@ -641,7 +641,7 @@ start_pr() {
   run_verification || true
   review_and_fix_loop "$pr" "$pr" "$branch" || status="$?"
   cd "$script_dir/.."
-  git worktree remove --force "$worktree" >/dev/null 2>&1 || rm -rf "$worktree"
+  remove_agent_worktree_path "$worktree"
   return "$status"
 }
 
