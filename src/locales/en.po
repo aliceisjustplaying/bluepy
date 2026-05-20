@@ -1159,6 +1159,10 @@ msgstr "Go to original profile page"
 msgid "Auto ({0})"
 msgstr "Auto ({0})"
 
+#: src/components/compose.tsx
+msgid "Allowed:"
+msgstr "Allowed:"
+
 #: src/pages/notifications.tsx
 msgid "Accepted"
 msgstr "Accepted"
@@ -4085,6 +4089,10 @@ msgstr "NOTE: Push notifications only work for <0>one account</0>."
 #: src/components/poll.tsx
 msgid "Show results"
 msgstr "Show results"
+
+#: src/components/compose.tsx
+msgid "Some"
+msgstr "Some"
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx

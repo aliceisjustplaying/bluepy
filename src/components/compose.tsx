@@ -2134,6 +2134,30 @@ function Compose({
                       </span>
                     </button>
 
+                    <button
+                      type="button"
+                      className={`reply-pill-btn ${threadgate === 'custom' ? 'active' : ''}`}
+                      onClick={() => {
+                        const nextRules =
+                          threadgateRules.length > 0
+                            ? threadgateRules
+                            : ['following', 'mention'];
+                        setThreadgate('custom');
+                        setThreadgateRules(nextRules);
+                        store.session.set('currentThreadgate', 'custom');
+                        store.session.set(
+                          'currentThreadgateRules',
+                          JSON.stringify(nextRules),
+                        );
+                      }}
+                      disabled={uiState === 'loading'}
+                    >
+                      <Icon icon="group" size="s" />
+                      <span>
+                        <Trans>Some</Trans>
+                      </span>
+                    </button>
+
                     {/* Nobody Button */}
                     <button
                       type="button"
@@ -2154,201 +2178,208 @@ function Compose({
                         <Trans>Nobody</Trans>
                       </span>
                     </button>
-
-                    {/* Your followers */}
-                    <button
-                      type="button"
-                      className={`reply-pill-btn ${threadgateRules.includes('followers') ? 'active' : ''}`}
-                      onClick={() => {
-                        const isChecked = threadgateRules.includes('followers');
-                        const nextRules = isChecked
-                          ? threadgateRules.filter((r) => r !== 'followers')
-                          : [...threadgateRules, 'followers'];
-                        setThreadgateRules(nextRules);
-                        setThreadgate(
-                          nextRules.length > 0 ? 'custom' : 'everybody',
-                        );
-                        store.session.set(
-                          'currentThreadgate',
-                          nextRules.length > 0 ? 'custom' : 'everybody',
-                        );
-                        store.session.set(
-                          'currentThreadgateRules',
-                          JSON.stringify(nextRules),
-                        );
-                      }}
-                      disabled={
-                        uiState === 'loading' || threadgate === 'nobody'
-                      }
-                    >
-                      <Icon icon="lock" size="s" />
-                      <span>
-                        <Trans>Followers</Trans>
-                      </span>
-                    </button>
-
-                    {/* People you follow */}
-                    <button
-                      type="button"
-                      className={`reply-pill-btn ${threadgateRules.includes('following') ? 'active' : ''}`}
-                      onClick={() => {
-                        const isChecked = threadgateRules.includes('following');
-                        const nextRules = isChecked
-                          ? threadgateRules.filter((r) => r !== 'following')
-                          : [...threadgateRules, 'following'];
-                        setThreadgateRules(nextRules);
-                        setThreadgate(
-                          nextRules.length > 0 ? 'custom' : 'everybody',
-                        );
-                        store.session.set(
-                          'currentThreadgate',
-                          nextRules.length > 0 ? 'custom' : 'everybody',
-                        );
-                        store.session.set(
-                          'currentThreadgateRules',
-                          JSON.stringify(nextRules),
-                        );
-                      }}
-                      disabled={
-                        uiState === 'loading' || threadgate === 'nobody'
-                      }
-                    >
-                      <Icon icon="group" size="s" />
-                      <span>
-                        <Trans>Following</Trans>
-                      </span>
-                    </button>
-
-                    {/* People you mention */}
-                    <button
-                      type="button"
-                      className={`reply-pill-btn ${threadgateRules.includes('mention') ? 'active' : ''}`}
-                      onClick={() => {
-                        const isChecked = threadgateRules.includes('mention');
-                        const nextRules = isChecked
-                          ? threadgateRules.filter((r) => r !== 'mention')
-                          : [...threadgateRules, 'mention'];
-                        setThreadgateRules(nextRules);
-                        setThreadgate(
-                          nextRules.length > 0 ? 'custom' : 'everybody',
-                        );
-                        store.session.set(
-                          'currentThreadgate',
-                          nextRules.length > 0 ? 'custom' : 'everybody',
-                        );
-                        store.session.set(
-                          'currentThreadgateRules',
-                          JSON.stringify(nextRules),
-                        );
-                      }}
-                      disabled={
-                        uiState === 'loading' || threadgate === 'nobody'
-                      }
-                    >
-                      <Icon icon="message" size="s" />
-                      <span>
-                        <Trans>Mentioned</Trans>
-                      </span>
-                    </button>
-
-                    {/* People from list */}
-                    <button
-                      type="button"
-                      className={`reply-pill-btn ${threadgateRules.includes('list') ? 'active' : ''}`}
-                      onClick={() => {
-                        const isChecked = threadgateRules.includes('list');
-                        if (
-                          !isChecked &&
-                          !threadgateList &&
-                          userLists.length === 0
-                        ) {
-                          alert(t`No user lists found.`);
-                          return;
-                        }
-                        const nextRules = isChecked
-                          ? threadgateRules.filter((r) => r !== 'list')
-                          : [...threadgateRules, 'list'];
-                        setThreadgateRules(nextRules);
-                        setThreadgate(
-                          nextRules.length > 0 ? 'custom' : 'everybody',
-                        );
-                        store.session.set(
-                          'currentThreadgate',
-                          nextRules.length > 0 ? 'custom' : 'everybody',
-                        );
-                        store.session.set(
-                          'currentThreadgateRules',
-                          JSON.stringify(nextRules),
-                        );
-                        if (
-                          !isChecked &&
-                          !threadgateList &&
-                          userLists.length > 0
-                        ) {
-                          const firstList = userLists[0];
-                          const uri =
-                            firstList._atproto?.uri ||
-                            decodeURIComponent(firstList.id);
-                          setThreadgateList(uri);
-                          setThreadgateListName(firstList.title || '');
-                          store.session.set('currentThreadgateList', uri);
-                          store.session.set(
-                            'currentThreadgateListName',
-                            firstList.title || '',
-                          );
-                        }
-                      }}
-                      disabled={
-                        uiState === 'loading' || threadgate === 'nobody'
-                      }
-                    >
-                      <Icon icon="building" size="s" />
-                      <span>
-                        <Trans>From List</Trans>
-                      </span>
-                    </button>
                   </div>
                 </div>
 
-                {threadgateRules.includes('list') && (
-                  <div className="reply-list-dropdown-container-compact">
-                    {userLists.length > 0 ? (
-                      <select
-                        className="rule-list-select-bluepy-compact"
-                        value={threadgateList}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setThreadgateList(value);
-                          store.session.set('currentThreadgateList', value);
-                          const matched = userLists.find(
-                            (l) =>
-                              (l._atproto?.uri || decodeURIComponent(l.id)) ===
-                              value,
+                {threadgate === 'custom' && (
+                  <div className="reply-detail-pills-container">
+                    <span className="reply-pills-label">
+                      <Trans>Allowed:</Trans>
+                    </span>
+                    <div className="reply-pills-list">
+                      {/* Your followers */}
+                      <button
+                        type="button"
+                        className={`reply-pill-btn ${threadgateRules.includes('followers') ? 'active' : ''}`}
+                        onClick={() => {
+                          const isChecked =
+                            threadgateRules.includes('followers');
+                          const nextRules = isChecked
+                            ? threadgateRules.filter((r) => r !== 'followers')
+                            : [...threadgateRules, 'followers'];
+                          setThreadgateRules(nextRules);
+                          setThreadgate(
+                            nextRules.length > 0 ? 'custom' : 'everybody',
                           );
-                          const name = matched?.title || '';
-                          setThreadgateListName(name);
-                          store.session.set('currentThreadgateListName', name);
+                          store.session.set(
+                            'currentThreadgate',
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgateRules',
+                            JSON.stringify(nextRules),
+                          );
                         }}
                         disabled={uiState === 'loading'}
-                        dir="auto"
                       >
-                        <option value="" disabled>
-                          <Trans>Select a list...</Trans>
-                        </option>
-                        {userLists.map((list) => {
-                          const uri =
-                            list._atproto?.uri || decodeURIComponent(list.id);
-                          return (
-                            <option value={uri} key={uri}>
-                              {list.title}
-                            </option>
+                        <Icon icon="lock" size="s" />
+                        <span>
+                          <Trans>Followers</Trans>
+                        </span>
+                      </button>
+
+                      {/* People you follow */}
+                      <button
+                        type="button"
+                        className={`reply-pill-btn ${threadgateRules.includes('following') ? 'active' : ''}`}
+                        onClick={() => {
+                          const isChecked =
+                            threadgateRules.includes('following');
+                          const nextRules = isChecked
+                            ? threadgateRules.filter((r) => r !== 'following')
+                            : [...threadgateRules, 'following'];
+                          setThreadgateRules(nextRules);
+                          setThreadgate(
+                            nextRules.length > 0 ? 'custom' : 'everybody',
                           );
-                        })}
-                      </select>
-                    ) : (
-                      <span className="no-lists-warning-compact">
-                        <Trans>(No user lists found)</Trans>
-                      </span>
+                          store.session.set(
+                            'currentThreadgate',
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgateRules',
+                            JSON.stringify(nextRules),
+                          );
+                        }}
+                        disabled={uiState === 'loading'}
+                      >
+                        <Icon icon="group" size="s" />
+                        <span>
+                          <Trans>Following</Trans>
+                        </span>
+                      </button>
+
+                      {/* People you mention */}
+                      <button
+                        type="button"
+                        className={`reply-pill-btn ${threadgateRules.includes('mention') ? 'active' : ''}`}
+                        onClick={() => {
+                          const isChecked = threadgateRules.includes('mention');
+                          const nextRules = isChecked
+                            ? threadgateRules.filter((r) => r !== 'mention')
+                            : [...threadgateRules, 'mention'];
+                          setThreadgateRules(nextRules);
+                          setThreadgate(
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgate',
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgateRules',
+                            JSON.stringify(nextRules),
+                          );
+                        }}
+                        disabled={uiState === 'loading'}
+                      >
+                        <Icon icon="message" size="s" />
+                        <span>
+                          <Trans>Mentioned</Trans>
+                        </span>
+                      </button>
+
+                      {/* People from list */}
+                      <button
+                        type="button"
+                        className={`reply-pill-btn ${threadgateRules.includes('list') ? 'active' : ''}`}
+                        onClick={() => {
+                          const isChecked = threadgateRules.includes('list');
+                          if (
+                            !isChecked &&
+                            !threadgateList &&
+                            userLists.length === 0
+                          ) {
+                            alert(t`No user lists found.`);
+                            return;
+                          }
+                          const nextRules = isChecked
+                            ? threadgateRules.filter((r) => r !== 'list')
+                            : [...threadgateRules, 'list'];
+                          setThreadgateRules(nextRules);
+                          setThreadgate(
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgate',
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgateRules',
+                            JSON.stringify(nextRules),
+                          );
+                          if (
+                            !isChecked &&
+                            !threadgateList &&
+                            userLists.length > 0
+                          ) {
+                            const firstList = userLists[0];
+                            const uri =
+                              firstList._atproto?.uri ||
+                              decodeURIComponent(firstList.id);
+                            setThreadgateList(uri);
+                            setThreadgateListName(firstList.title || '');
+                            store.session.set('currentThreadgateList', uri);
+                            store.session.set(
+                              'currentThreadgateListName',
+                              firstList.title || '',
+                            );
+                          }
+                        }}
+                        disabled={uiState === 'loading'}
+                      >
+                        <Icon icon="building" size="s" />
+                        <span>
+                          <Trans>From List</Trans>
+                        </span>
+                      </button>
+                    </div>
+
+                    {threadgateRules.includes('list') && (
+                      <div className="reply-list-dropdown-container-compact">
+                        {userLists.length > 0 ? (
+                          <select
+                            className="rule-list-select-bluepy-compact"
+                            value={threadgateList}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setThreadgateList(value);
+                              store.session.set('currentThreadgateList', value);
+                              const matched = userLists.find(
+                                (l) =>
+                                  (l._atproto?.uri ||
+                                    decodeURIComponent(l.id)) === value,
+                              );
+                              const name = matched?.title || '';
+                              setThreadgateListName(name);
+                              store.session.set(
+                                'currentThreadgateListName',
+                                name,
+                              );
+                            }}
+                            disabled={uiState === 'loading'}
+                            dir="auto"
+                          >
+                            <option value="" disabled>
+                              <Trans>Select a list...</Trans>
+                            </option>
+                            {userLists.map((list) => {
+                              const uri =
+                                list._atproto?.uri ||
+                                decodeURIComponent(list.id);
+                              return (
+                                <option value={uri} key={uri}>
+                                  {list.title}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        ) : (
+                          <span className="no-lists-warning-compact">
+                            <Trans>(No user lists found)</Trans>
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}

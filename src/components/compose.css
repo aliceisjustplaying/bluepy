@@ -1160,6 +1160,14 @@
   gap: 6px;
 }
 
+.reply-detail-pills-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 8px;
+  border-left: 2px solid var(--outline-color, rgba(0, 0, 0, 0.12));
+}
+
 .reply-pills-label {
   font-size: 0.78em;
   font-weight: 700;
