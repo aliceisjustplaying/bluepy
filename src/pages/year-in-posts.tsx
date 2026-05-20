@@ -49,7 +49,7 @@ import {
 type MastoStatus = mastodon.v1.Status;
 
 type StatusWithExtras = MastoStatus & {
-  quote?: { id?: string; quotedStatus?: { id?: string } } | null;
+  quote?: { id?: string; quotedStatus?: { id?: string } | null } | null;
 };
 
 type StatusWithQuotes = MastoStatus & {
@@ -176,22 +176,30 @@ function getMonthName(
   format: Intl.DateTimeFormatOptions['month'] = 'short',
 ): string {
   const date = new Date(2000, month, 1);
-  return DateTimeFormat(locale as string, { month: format }).format(date);
+  return DateTimeFormat(locale || '', { month: format }).format(date);
 }
 
 function getYear(year: string | number | null | undefined): number | null {
-  const parsed = parseInt(year as string, 10);
+  const parsed = parseInt(String(year ?? ''), 10);
   return parsed >= MIN_YEAR && parsed <= new Date().getFullYear()
     ? parsed
     : null;
 }
 
 function getMonth(month: string | number | null | undefined): number | null {
-  const parsed = parseInt(month as string, 10);
+  const parsed = parseInt(String(month ?? ''), 10);
   return parsed >= 0 && parsed <= 11 ? parsed : null;
 }
 
 const SEARCH_RESULT_PAGE_SIZE = 30;
+const FILTER_ENTRIES: [FilterKey, string][] = [
+  ['all', FILTER_KEYS.all],
+  ['original', FILTER_KEYS.original],
+  ['replies', FILTER_KEYS.replies],
+  ['quotes', FILTER_KEYS.quotes],
+  ['boosts', FILTER_KEYS.boosts],
+  ['media', FILTER_KEYS.media],
+];
 
 type UIState =
   | 'default'
@@ -232,6 +240,7 @@ function YearInPosts() {
 
   const { instance } = api();
   const [uiState, setUIState] = useState<UIState>('default');
+  const uiStateName: string = uiState;
   const [posts, setPosts] = useState<MastoStatus[]>([]);
   const [availableYears, setAvailableYears] = useState<AvailableYear[]>([]);
   const [searchEnabled] = useState<boolean>(true);
@@ -267,7 +276,7 @@ function YearInPosts() {
       preventDefault: true,
       ignoreEventWhen: (e) => {
         const hasModal = !!document.querySelector('#modal-container > *');
-        const target = e.target as HTMLElement | null;
+        const target = e.target instanceof HTMLElement ? e.target : null;
         const isInput = ['INPUT', 'TEXTAREA'].includes(target?.tagName ?? '');
         // Allow '/' even with Shift (e.g. German keyboards)
         if (e.key === '/') return false;
@@ -305,9 +314,9 @@ function YearInPosts() {
     loadYears();
   }, [year]);
 
-  const handleGenerate = async (e: React.SyntheticEvent) => {
+  const handleGenerate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
+    const form = e.currentTarget;
     const yearInput = form.elements.namedItem('year');
     if (!(yearInput instanceof HTMLInputElement)) return;
     const generateYear = getYear(yearInput.value);
@@ -401,7 +410,7 @@ function YearInPosts() {
       const dayData = heatmaps[m][day];
       dayData.total++;
 
-      const p = post as StatusWithExtras;
+      const p: StatusWithExtras = post;
       if (p.reblog) {
         dayData.boost++;
       } else if (
@@ -553,7 +562,7 @@ function YearInPosts() {
         };
       }
 
-      const p = post as StatusWithExtras;
+      const p: StatusWithExtras = post;
       if (p.reblog) {
         monthTypes[m].boost++;
       } else if (
@@ -681,7 +690,7 @@ function YearInPosts() {
     };
 
     monthFilteredPosts.forEach((post) => {
-      const p = post as StatusWithExtras;
+      const p: StatusWithExtras = post;
       if (p.reblog) {
         counts.boosts++;
       } else if (
@@ -706,7 +715,7 @@ function YearInPosts() {
 
   const [filteredPosts, hasMore] = useMemo<[MastoStatus[], boolean]>(() => {
     const filtered = monthPosts.filter((post) => {
-      const p = post as StatusWithExtras;
+      const p: StatusWithExtras = post;
       if (postType === 'boosts') {
         return !!p.reblog;
       } else if (postType === 'media') {
@@ -848,7 +857,10 @@ function YearInPosts() {
           className={uiState === 'loading' ? 'loading' : ''}
           role="presentation"
           onClick={(e) => {
-            if (!(e.target as HTMLElement).closest('a, button')) {
+            if (
+              e.target instanceof HTMLElement &&
+              !e.target.closest('a, button')
+            ) {
               scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }}
@@ -992,10 +1004,10 @@ function YearInPosts() {
                       <button
                         type="button"
                         onClick={(e) => {
-                          const details = (e.target as HTMLElement).closest(
-                            'details',
-                          ) as HTMLDetailsElement;
-                          details.open = false;
+                          const details = e.currentTarget.closest('details');
+                          if (details instanceof HTMLDetailsElement) {
+                            details.open = false;
+                          }
                         }}
                       >
                         Let's explore my posts
@@ -1019,12 +1031,12 @@ function YearInPosts() {
                         max={new Date().getFullYear()}
                         name="year"
                         defaultValue={getDefaultYear()}
-                        disabled={(uiState as string) === 'generating'}
+                        disabled={uiStateName === 'generating'}
                       />
                     </label>
                     <button
                       type="submit"
-                      disabled={(uiState as string) === 'generating'}
+                      disabled={uiStateName === 'generating'}
                     >
                       <Icon icon="arrow-right" alt="Generate" size="l" />
                     </button>
@@ -1184,7 +1196,7 @@ function YearInPosts() {
 
               {(month !== null || searchQuery) && (
                 <div className="post-type-filters">
-                  {(Object.entries(FILTER_KEYS) as [FilterKey, string][]).map(
+                  {FILTER_ENTRIES.map(
                     ([key, label]) =>
                       filterCounts[key] > 0 && (
                         <button
@@ -1522,29 +1534,28 @@ function CalendarBar({
                           return (
                             <span key={i} className="media-day no-media" />
                           );
-                        const status = item.post as MastoStatus;
-                        // hasMedia guarantees mediaAttachments[0] exists.
-                        const media = (status.mediaAttachments ?? [])[0] as {
-                          previewUrl?: string | null;
-                          url?: string | null;
-                          previewRemoteUrl?: string | null;
-                          remoteUrl?: string | null;
-                        };
+                        const status = item.post;
+                        if (!status) return null;
+                        const media = status.mediaAttachments?.[0];
+                        if (!media) return null;
+                        const mediaSrc = media.previewUrl || media.url;
+                        const fallbackSrc =
+                          media.previewRemoteUrl || media.remoteUrl;
+                        if (!mediaSrc) return null;
                         return (
                           <span key={i} className="media-day">
                             <img
-                              src={(media.previewUrl || media.url) as string}
+                              src={mediaSrc}
                               loading="lazy"
                               decoding="async"
                               onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                const { src } = target;
+                                const target = e.currentTarget;
+                                const currentSrc = target.src;
                                 if (
-                                  src === media.previewUrl ||
-                                  src === media.url
+                                  currentSrc === media.previewUrl ||
+                                  currentSrc === media.url
                                 ) {
-                                  target.src = (media.previewRemoteUrl ||
-                                    media.remoteUrl) as string;
+                                  if (fallbackSrc) target.src = fallbackSrc;
                                 } else {
                                   target.remove();
                                 }
@@ -1647,8 +1658,7 @@ function SearchField({
       searchInputRef.current?.focus();
     },
     setValue: (val: string) => {
-      // Original JS dereferenced without null-check; preserve.
-      (searchInputRef.current as HTMLInputElement).value = val;
+      if (searchInputRef.current) searchInputRef.current.value = val;
     },
     isFocused: () => {
       return document.activeElement === searchInputRef.current;
@@ -1662,7 +1672,7 @@ function SearchField({
       className="search-field"
       onSubmit={(e) => {
         e.preventDefault();
-        const q = (searchInputRef.current as HTMLInputElement).value.trim();
+        const q = searchInputRef.current?.value.trim() ?? '';
         throttledSearch?.cancel();
         throttledSearch(q);
       }}
@@ -1681,13 +1691,13 @@ function SearchField({
         spellCheck={false}
         enterKeyHint="search"
         onInput={(e) => {
-          const val = (e.target as HTMLInputElement).value;
+          const val = e.currentTarget.value;
           throttledSearch(val);
         }}
         onKeyDown={(e) => {
           if (
             e.key === 'Escape' &&
-            !(e.target as HTMLInputElement).value.trim()
+            !e.currentTarget.value.trim()
           ) {
             onEscape?.();
           }

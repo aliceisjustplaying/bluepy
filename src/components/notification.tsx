@@ -186,6 +186,14 @@ interface ContentTextArgs {
 
 type ContentTextRenderer = (args: ContentTextArgs) => JSX.Element | string;
 
+function contentNumber(value: unknown): number {
+  return typeof value === 'number' ? value : 0;
+}
+
+function contentPostType(value: unknown): 'reply' | 'post' {
+  return value === 'reply' ? 'reply' : 'post';
+}
+
 const NOTIFICATION_ICONS: Record<string, string> = {
   mention: 'comment',
   status: 'notification',
@@ -252,9 +260,9 @@ const contentText: Record<string, ContentTextRenderer> = {
     // (`{0}`). The JS original used implicit `any`; runtime semantics are
     // identical.
     const { account, components } = args;
-    const count = args.count as number;
-    const postsCount = args.postsCount as number;
-    const postType = args.postType as 'reply' | 'post';
+    const count = contentNumber(args.count);
+    const postsCount = contentNumber(args.postsCount);
+    const postType = contentPostType(args.postType);
     const Subject = components?.Subject ?? SubjectFallback;
     return (
       <Plural
@@ -304,7 +312,7 @@ const contentText: Record<string, ContentTextRenderer> = {
   },
   follow: (args) => {
     const { account, components } = args;
-    const count = args.count as number;
+    const count = contentNumber(args.count);
     const Subject = components?.Subject ?? SubjectFallback;
     return (
       <Plural
@@ -323,9 +331,9 @@ const contentText: Record<string, ContentTextRenderer> = {
   },
   favourite: (args) => {
     const { account, components } = args;
-    const count = args.count as number;
-    const postsCount = args.postsCount as number;
-    const postType = args.postType as 'reply' | 'post';
+    const count = contentNumber(args.count);
+    const postsCount = contentNumber(args.postsCount);
+    const postType = contentPostType(args.postType);
     const Subject = components?.Subject ?? SubjectFallback;
     return (
       <Plural
@@ -384,9 +392,9 @@ const contentText: Record<string, ContentTextRenderer> = {
     ),
   'favourite+reblog': (args) => {
     const { account, components } = args;
-    const count = args.count as number;
-    const postsCount = args.postsCount as number;
-    const postType = args.postType as 'reply' | 'post';
+    const count = contentNumber(args.count);
+    const postsCount = contentNumber(args.postsCount);
+    const postType = contentPostType(args.postType);
     const Subject = components?.Subject ?? SubjectFallback;
     return (
       <Plural
@@ -439,7 +447,7 @@ const contentText: Record<string, ContentTextRenderer> = {
   ),
   'admin.sign_up': (args) => {
     const { account, components } = args;
-    const count = args.count as number;
+    const count = contentNumber(args.count);
     const Subject = components?.Subject ?? SubjectFallback;
     return (
       <Plural
@@ -608,8 +616,9 @@ function Notification({
   // TS lets undefined flow through (instead of defaulting to 0, which would
   // change behavior).
   const diffCount =
-    (notificationsCount as number) > 0 &&
-    (notificationsCount as number) > (sampleAccounts?.length as number);
+    typeof notificationsCount === 'number' &&
+    notificationsCount > 0 &&
+    notificationsCount > (sampleAccounts?.length ?? Number.NaN);
   const expandAccounts: 'remote' | 'local' = diffCount ? 'remote' : 'local';
 
   if (typeof text === 'function') {
