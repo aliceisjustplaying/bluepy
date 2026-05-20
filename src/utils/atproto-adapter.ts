@@ -25,12 +25,12 @@ import {
 } from '@atproto/api';
 import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
 
+import { prepareAtprotoImageUpload } from './atproto-image-compression';
 import { BSKY_PDS, resolveAtprotoLoginService } from './atproto-login-service';
-import store from './store';
-import { compressAtprotoImageIfNeeded } from './atproto-image-compression';
 import { createAtprotoOAuthAgent } from './atproto-oauth';
 import { encodeAtprotoID } from './atproto-route';
 import { createAtprotoExternalEmbed, getFirstPostURL } from './atproto-unfurl';
+import store from './store';
 
 const BSKY_APPVIEW = 'https://public.api.bsky.app';
 const BSKY_APPVIEW_DID = 'did:web:api.bsky.app';
@@ -40,7 +40,10 @@ const BLACKSKY_APPVIEW = 'https://api.blacksky.community';
 const BLACKSKY_APPVIEW_DID = 'did:web:api.blacksky.community';
 const BLACKSKY_APPVIEW_PROXY = `${BLACKSKY_APPVIEW_DID}#bsky_appview`;
 
-export const APPVIEW_OPTIONS: Record<string, { label: string; url: string; proxy: string }> = {
+export const APPVIEW_OPTIONS: Record<
+  string,
+  { label: string; url: string; proxy: string }
+> = {
   bluesky: {
     label: 'Bluesky',
     url: BSKY_APPVIEW,
@@ -587,6 +590,7 @@ interface AdaptedUploadedMedia {
   previewUrl: string;
   description?: string;
   blob: BlobRefLike;
+  aspectRatio?: { width: number; height: number };
 }
 
 interface CollectionPage<T> {
@@ -1862,7 +1866,8 @@ async function createMediaUpload({
   const url = URL.createObjectURL(file);
 
   if (file.type?.startsWith('image/')) {
-    const uploadFile = await compressAtprotoImageIfNeeded(file);
+    const { file: uploadFile, dimensions } =
+      await prepareAtprotoImageUpload(file);
     const res = await agent.uploadBlob(uploadFile, {
       encoding: uploadFile.type,
     });
@@ -1876,6 +1881,7 @@ async function createMediaUpload({
       previewUrl: mediaUrl,
       description,
       blob,
+      aspectRatio: dimensions,
     };
     uploadedMedia.set(id, media);
     return media;
@@ -3150,10 +3156,14 @@ export function createAtprotoClient({
             const videos = media.filter((item) => item.type === 'video');
             const images: AppBskyEmbedImages.Image[] = media
               .filter((item) => item.type === 'image')
-              .map((item) => ({
-                image: item.blob,
-                alt: item.description || '',
-              }));
+              .map((item) => {
+                const image: AppBskyEmbedImages.Image = {
+                  image: item.blob,
+                  alt: item.description || '',
+                };
+                if (item.aspectRatio) image.aspectRatio = item.aspectRatio;
+                return image;
+              });
             if (videos.length && images.length) {
               throw new Error('Bluesky posts cannot mix images and video');
             }
