@@ -11,10 +11,15 @@ import {
   shouldFetchReplyContextForInstance,
   shouldFetchThreadParent,
 } from '../src/utils/reply-context.js';
+import { appendThreadDescendant } from '../src/utils/thread-structure.js';
 import {
   dedupeTimelineContextItems,
   groupContextItems,
 } from '../src/utils/timeline-context.js';
+
+/**
+ * @typedef {import('../src/utils/thread-structure.js').ThreadStatus} ThreadStatus
+ */
 
 const parentUri = 'at://did:plc:parent/app.bsky.feed.post/root';
 const childUri = 'at://did:plc:child/app.bsky.feed.post/reply';
@@ -997,5 +1002,50 @@ test.describe('ATProto reply mapping', () => {
           : item.uri,
       ),
     ).toEqual([[parentUri, middleUri, latestUri]]);
+  });
+
+  test('keeps same-author replies nested when their parent is nested', () => {
+    /** @type {ThreadStatus} */
+    const hero = {
+      id: 'root',
+      account: { id: 'did:plc:alice' },
+    };
+    /** @type {ThreadStatus} */
+    const directReply = {
+      id: 'direct-reply',
+      inReplyToId: 'root',
+      inReplyToAccountId: 'did:plc:alice',
+      account: { id: 'did:plc:bob' },
+    };
+    /** @type {ThreadStatus} */
+    const nestedAliceReply = {
+      id: 'nested-alice-reply',
+      inReplyToId: 'direct-reply',
+      inReplyToAccountId: 'did:plc:bob',
+      account: { id: 'did:plc:alice' },
+    };
+    /** @type {ThreadStatus} */
+    const sameAuthorChild = {
+      id: 'same-author-child',
+      inReplyToId: 'nested-alice-reply',
+      inReplyToAccountId: 'did:plc:alice',
+      account: { id: 'did:plc:alice' },
+    };
+    /** @type {ThreadStatus[]} */
+    const descendants = [directReply, nestedAliceReply, sameAuthorChild];
+    /** @type {ThreadStatus[]} */
+    const topLevel = [];
+
+    for (const descendant of descendants) {
+      appendThreadDescendant(descendant, hero, descendants, topLevel);
+    }
+
+    expect(topLevel.map((status) => status.id)).toEqual(['direct-reply']);
+    expect(directReply.__replies?.map((status) => status.id)).toEqual([
+      'nested-alice-reply',
+    ]);
+    expect(nestedAliceReply.__replies?.map((status) => status.id)).toEqual([
+      'same-author-child',
+    ]);
   });
 });

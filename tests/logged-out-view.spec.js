@@ -1,6 +1,95 @@
 // @ts-check
 import { expect, test } from '@playwright/test';
 
+/**
+ * @typedef {{ did: string; handle: string; displayName: string }} AtprotoTestActor
+ * @typedef {{
+ *   uri: string;
+ *   cid: string;
+ *   author: AtprotoTestActor;
+ *   record: {
+ *     $type: 'app.bsky.feed.post';
+ *     text: string;
+ *     createdAt: string;
+ *     reply?: {
+ *       root: { uri: string; cid: string };
+ *       parent: { uri: string; cid: string };
+ *     };
+ *   };
+ *   indexedAt: string;
+ *   replyCount: number;
+ *   repostCount: number;
+ *   likeCount: number;
+ *   quoteCount: number;
+ *   labels: unknown[];
+ *   viewer: Record<string, unknown>;
+ * }} AtprotoTestPost
+ */
+
+/**
+ * @param {string} did
+ * @param {string} handle
+ * @param {string} displayName
+ * @returns {AtprotoTestActor}
+ */
+function makeAtprotoTestActor(did, handle, displayName) {
+  return { did, handle, displayName };
+}
+
+/**
+ * @param {string} uri
+ * @param {AtprotoTestActor} author
+ * @param {string} text
+ * @param {{ uri: string; cid: string } | null} parent
+ * @param {string} createdAt
+ * @returns {AtprotoTestPost}
+ */
+function makeAtprotoTestPost(uri, author, text, parent, createdAt) {
+  const cid = THREAD_CIDS[uri];
+  return {
+    uri,
+    cid,
+    author,
+    record: {
+      $type: 'app.bsky.feed.post',
+      text,
+      createdAt,
+      ...(parent
+        ? {
+            reply: {
+              root: { uri: THREAD_ROOT_URI, cid: THREAD_ROOT_CID },
+              parent,
+            },
+          }
+        : {}),
+    },
+    indexedAt: createdAt,
+    replyCount: 0,
+    repostCount: 0,
+    likeCount: 0,
+    quoteCount: 0,
+    labels: [],
+    viewer: {},
+  };
+}
+
+const THREAD_ROOT_URI =
+  'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/threadroot';
+const THREAD_ROOT_CID =
+  'bafyreifpzxifkolbqfuez5mhvx6axkld7aynq2bjxkqivd375k2iobqfcq';
+/** @type {Record<string, string>} */
+const THREAD_CIDS = {
+  [THREAD_ROOT_URI]: THREAD_ROOT_CID,
+  'at://did:plc:p2cp5gopk7mgjegy6wadk3ep/app.bsky.feed.post/directreply':
+    'bafyreieuuxftpeth2jakt425iwn7on5or7ydni47uai2k4c4a7jxcrswsi',
+  'at://did:plc:vc7f4oafdgxsihk4cry2xpze/app.bsky.feed.post/nestedreply':
+    'bafyreic3pxdls7ilzck5xoyhfu66ijkeoqvxbhptksupex2xdjkdb4nia4',
+  'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/parentpost':
+    'bafyreigobhwuxqo4jevkyjuesxg4jhnsbbrx2lcwz2voe5ur5hapn4zhp4',
+  'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/childreply':
+    'bafyreid6oyjebcjmlq2h7omcm5mj6zq3yhmvn5nrkpe7gdq5j4i6ygc65m',
+};
+
 test('has welcome page', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#welcome')).toBeVisible();
@@ -258,6 +347,132 @@ test('loads native AT URI post URLs', async ({ page }) => {
     new RegExp(
       `/at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app\\.bsky\\.feed\\.post/3mlvekixsll23$`,
     ),
+  );
+});
+
+test('keeps nested same-author thread replies under their parent', async ({
+  page,
+}) => {
+  const directUri =
+    'at://did:plc:p2cp5gopk7mgjegy6wadk3ep/app.bsky.feed.post/directreply';
+  const nestedUri =
+    'at://did:plc:vc7f4oafdgxsihk4cry2xpze/app.bsky.feed.post/nestedreply';
+  const parentUri =
+    'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/parentpost';
+  const childUri =
+    'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/childreply';
+  const alice = makeAtprotoTestActor(
+    'did:plc:by3jhwdqgbtrcc7q4tkkv3cf',
+    'alice.mosphere.at',
+    'Alice',
+  );
+  const bob = makeAtprotoTestActor(
+    'did:plc:p2cp5gopk7mgjegy6wadk3ep',
+    'samuel.fm',
+    'Samuel',
+  );
+  const jerry = makeAtprotoTestActor(
+    'did:plc:vc7f4oafdgxsihk4cry2xpze',
+    'jcsalterego.bsky.social',
+    'Jerry',
+  );
+  const root = makeAtprotoTestPost(
+    THREAD_ROOT_URI,
+    alice,
+    'Thread root post',
+    null,
+    '2026-05-20T13:00:00.000Z',
+  );
+  const direct = makeAtprotoTestPost(
+    directUri,
+    bob,
+    'Direct reply',
+    { uri: THREAD_ROOT_URI, cid: THREAD_ROOT_CID },
+    '2026-05-20T13:01:00.000Z',
+  );
+  const nested = makeAtprotoTestPost(
+    nestedUri,
+    jerry,
+    'Nested reply',
+    { uri: directUri, cid: direct.cid },
+    '2026-05-20T13:02:00.000Z',
+  );
+  const parent = makeAtprotoTestPost(
+    parentUri,
+    alice,
+    'Parent in nested chain',
+    { uri: nestedUri, cid: nested.cid },
+    '2026-05-20T13:03:00.000Z',
+  );
+  const child = makeAtprotoTestPost(
+    childUri,
+    alice,
+    'Same author child reply',
+    { uri: parentUri, cid: parent.cid },
+    '2026-05-20T13:04:00.000Z',
+  );
+
+  await page.route('**/xrpc/app.bsky.feed.getPosts*', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: { posts: [root] },
+    });
+  });
+  await page.route('**/xrpc/app.bsky.feed.getPostThread*', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: {
+        thread: {
+          $type: 'app.bsky.feed.defs#threadViewPost',
+          post: root,
+          replies: [
+            {
+              $type: 'app.bsky.feed.defs#threadViewPost',
+              post: direct,
+              replies: [
+                {
+                  $type: 'app.bsky.feed.defs#threadViewPost',
+                  post: nested,
+                  replies: [
+                    {
+                      $type: 'app.bsky.feed.defs#threadViewPost',
+                      post: parent,
+                      replies: [
+                        {
+                          $type: 'app.bsky.feed.defs#threadViewPost',
+                          post: child,
+                          replies: [],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  await page.goto(`/${THREAD_ROOT_URI}`);
+  await expect(page.locator('text=Parent in nested chain')).toBeVisible();
+  await expect(page.locator('text=Same author child reply')).toBeVisible();
+
+  const childIsNestedUnderParent = await page.evaluate(() => {
+    const statuses = Array.from(document.querySelectorAll('.status'));
+    const parentStatus = statuses.find((status) =>
+      status.textContent?.includes('Parent in nested chain'),
+    );
+    const childStatus = statuses.find((status) =>
+      status.textContent?.includes('Same author child reply'),
+    );
+    return !!parentStatus?.closest('li')?.contains(childStatus || null);
+  });
+  const visibleText = await page.locator('body').innerText();
+  expect(childIsNestedUnderParent).toBe(true);
+  expect(visibleText.indexOf('Parent in nested chain')).toBeLessThan(
+    visibleText.indexOf('Same author child reply'),
   );
 });
 

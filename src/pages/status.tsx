@@ -56,6 +56,7 @@ import states, {
 import statusPeek from '../utils/status-peek';
 import { getCurrentAccount } from '../utils/store-utils';
 import { ThreadCountContext } from '../utils/thread-count-context';
+import { appendThreadDescendant } from '../utils/thread-structure';
 import useTitle from '../utils/useTitle';
 
 import getInstanceStatusURL from './../utils/get-instance-status-url';
@@ -693,36 +694,12 @@ function StatusThread({
         missingStatuses.add(status.inReplyToId);
       }
 
-      if (status.inReplyToAccountId === status.account?.id) {
-        // If replying to self, it's part of the thread, level 1
-        nestedDescendants.push(status);
-      } else if (status.inReplyToId === heroStatus.id) {
-        // If replying to the hero status, it's a reply, level 1
-        nestedDescendants.push(status);
-      } else if (
-        !status.inReplyToAccountId &&
-        nestedDescendants.find(
-          (s) =>
-            s.id === status.inReplyToId &&
-            s.account?.id === heroStatus.account?.id,
-        ) &&
-        status.account?.id === heroStatus.account?.id
-      ) {
-        // If replying to hero's own statuses, it's part of the thread, level 1
-        nestedDescendants.push(status);
-      } else {
-        // If replying to someone else, it's a reply to a reply, level 2
-        const parent = descendants.find((s) => s.id === status.inReplyToId);
-        if (parent) {
-          if (!parent.__replies) {
-            parent.__replies = [];
-          }
-          parent.__replies.push(status);
-        } else {
-          // If no parent, something is wrong
-          console.warn('No parent found for', status);
-        }
-      }
+      appendThreadDescendant(
+        status,
+        heroStatus,
+        descendants,
+        nestedDescendants,
+      );
     });
 
     // sort hero author to top
