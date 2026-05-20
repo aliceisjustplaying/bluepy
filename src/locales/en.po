@@ -72,6 +72,11 @@ msgstr "Other"
 msgid "Send feedback…"
 msgstr "Send feedback…"
 
+#: src/components/nav-menu.tsx
+#: src/components/nav-menu.tsx
+msgid "Send feedback…"
+msgstr "Send feedback…"
+
 #: src/components/post-embed-modal.tsx
 msgid "Unable to copy HTML code"
 msgstr "Unable to copy HTML code"
@@ -597,6 +602,10 @@ msgstr "View Quotes"
 #: src/pages/settings.tsx
 msgid "Reposts carousel"
 msgstr "Reposts carousel"
+
+#: src/components/feedback-modal.tsx
+msgid "We read every message even when we cannot reply."
+msgstr "We read every message even when we cannot reply."
 
 #: src/components/feedback-modal.tsx
 msgid "We read every message even when we cannot reply."
@@ -1171,6 +1180,10 @@ msgstr "Accepted"
 msgid "Leave this field blank"
 msgstr "Leave this field blank"
 
+#: src/components/feedback-modal.tsx
+msgid "Leave this field blank"
+msgstr "Leave this field blank"
+
 #: src/components/gif-picker-modal.tsx
 msgid "Powered by GIPHY"
 msgstr "Powered by GIPHY"
@@ -1220,6 +1233,10 @@ msgstr "{0, plural, =0 {Hide \"Translate\" button for:} other {Hide \"Translate\
 msgid "Report a bug"
 msgstr "Report a bug"
 
+#: src/components/error-fallback.tsx
+msgid "Report a bug"
+msgstr "Report a bug"
+
 #: src/components/search-form.tsx
 msgid "Accounts with <0>{query}</0>"
 msgstr "Accounts with <0>{query}</0>"
@@ -1255,6 +1272,10 @@ msgstr "Timeline"
 #: src/pages/hashtag.tsx
 msgid "No one has posted anything with this tag yet."
 msgstr "No one has posted anything with this tag yet."
+
+#: src/components/feedback-modal.tsx
+msgid "Thanks, got it."
+msgstr "Thanks, got it."
 
 #: src/components/feedback-modal.tsx
 msgid "Thanks, got it."
@@ -3007,6 +3028,16 @@ msgstr ""
 "\n"
 ""
 
+#: src/components/error-fallback.tsx
+msgid ""
+"Something went wrong while using Bluepy.\n"
+"\n"
+""
+msgstr ""
+"Something went wrong while using Bluepy.\n"
+"\n"
+""
+
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Verified"
@@ -3918,6 +3949,14 @@ msgstr "Media"
 #: src/pages/notifications.tsx
 msgid "Yesterday"
 msgstr "Yesterday"
+
+#: src/components/feedback-modal.tsx
+msgid "What happened?"
+msgstr "What happened?"
+
+#: src/components/feedback-modal.tsx
+msgid "email or Bluesky handle"
+msgstr "email or Bluesky handle"
 
 #: src/components/feedback-modal.tsx
 msgid "What happened?"
