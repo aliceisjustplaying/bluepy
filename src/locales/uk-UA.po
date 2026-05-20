@@ -3224,6 +3224,10 @@ msgstr ""
 msgid "Posts are grouped by authors, sorted by posts count per author."
 msgstr ""
 
+#: src/pages/settings.tsx
+msgid "<0>Bluepy</0><1/>Forked for ATProto by <2>@alice.mosphere.at</2> and <3>@quillmatiq.com</3>"
+msgstr ""
+
 #: src/pages/notifications.tsx
 msgid "With a new account"
 msgstr ""

@@ -367,16 +367,18 @@ function Catchup() {
         };
       }>(masto, 'timelines');
       const homeIterable = timelines.home.list({ limit: 40 });
+      if (supportsIncludeReposts && homeIterable.params) {
+        if (typeof homeIterable.params === 'string') {
+          const params = new URLSearchParams(homeIterable.params);
+          params.set('include_reposts', 'true');
+          homeIterable.params = params.toString();
+        } else {
+          homeIterable.params.include_reposts = true;
+        }
+      }
       const homeIterator = homeIterable.values();
       mainloop: while (true) {
         try {
-          if (supportsIncludeReposts && homeIterable.params) {
-            if (typeof homeIterable.params === 'string') {
-              homeIterable.params += '&include_reposts=true';
-            } else {
-              homeIterable.params.include_reposts = true;
-            }
-          }
           const results = await homeIterator.next();
           const { value } = results as { value: CatchupPost[] | undefined };
           if (value?.length) {

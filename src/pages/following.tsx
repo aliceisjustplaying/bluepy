@@ -136,7 +136,9 @@ function Following({ title, path, id, ...props }: FollowingProps) {
     }
     if (supportsIncludeReposts && homeIterable.current?.params) {
       if (typeof homeIterable.current.params === 'string') {
-        homeIterable.current.params += '&include_reposts=true';
+        const params = new URLSearchParams(homeIterable.current.params);
+        params.set('include_reposts', 'true');
+        homeIterable.current.params = params.toString();
       } else {
         homeIterable.current.params.include_reposts = true;
       }

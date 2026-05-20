@@ -153,6 +153,10 @@ const FILTER_KEYS: Record<FilterKey, string> = {
   media: 'Media',
 };
 
+function getFilterKey(value: string | null | undefined): FilterKey {
+  return value && value in FILTER_KEYS ? (value as FilterKey) : 'all';
+}
+
 type SortKey =
   | 'relevance'
   | 'createdAt'
@@ -217,10 +221,16 @@ function YearInPosts() {
   const [searchParams, setSearchParams] = useSearchParams();
   const yearParam = searchParams.get('year');
   const monthParam = searchParams.get('month');
-  const [postType, setPostType] = useState<FilterKey>('all');
+  const postTypeParam = searchParams.get('postType');
+  const [postType, setPostType] = useState<FilterKey>(
+    getFilterKey(postTypeParam),
+  );
   const [searchQuery, setSearchQuery] = useState<string>('');
   const year = getYear(yearParam);
   const month = getMonth(monthParam);
+  useEffect(() => {
+    setPostType(getFilterKey(postTypeParam));
+  }, [postTypeParam]);
 
   useTitle(
     searchQuery

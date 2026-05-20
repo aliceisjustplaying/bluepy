@@ -824,7 +824,10 @@ test.describe('write flows', () => {
     await openCreatedStatusDetail(page, body);
     const url = page.url();
 
-    const repostBtn = page.getByTestId('status-repost-button').first();
+    const repostBtn = statusDetailButton(
+      page,
+      'button[title="Repost"], button[title="Unrepost"]',
+    );
     await repostBtn.waitFor({ timeout: 15_000 });
     const initial = await getRequiredTitle(repostBtn, 'repost button');
     await repostBtn.click();

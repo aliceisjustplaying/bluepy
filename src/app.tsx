@@ -557,22 +557,30 @@ function App() {
       }
 
       window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
-      const searchAccount = decodeURIComponent(
-        (window.location.search.match(/account=([^&]+)/) || [
-          undefined,
-          '',
-        ])[1] ?? '',
-      );
+      const rawSearchAccount =
+        (window.location.search.match(/account=([^&]+)/) || [undefined, ''])[1] ??
+        '';
+      let searchAccount = '';
+      try {
+        searchAccount = rawSearchAccount
+          ? decodeURIComponent(rawSearchAccount)
+          : '';
+      } catch {
+        searchAccount = '';
+      }
       let account;
       if (searchAccount) {
         account = getAccount(searchAccount);
-        console.log('searchAccount', searchAccount, account);
+        console.log('searchAccount', searchAccount, !!account);
         if (account) {
           setCurrentAccountID(account.info.id);
+          const searchParams = new URLSearchParams(window.location.search);
+          searchParams.delete('account');
+          const nextSearch = searchParams.toString();
           window.history.replaceState(
             {},
             document.title,
-            window.location.pathname || '/',
+            `${window.location.pathname || '/'}${nextSearch ? `?${nextSearch}` : ''}`,
           );
         }
       }

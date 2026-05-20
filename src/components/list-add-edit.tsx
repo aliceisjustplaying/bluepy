@@ -108,7 +108,9 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
             const formData = new FormData(e.target as HTMLFormElement);
             const title = formData.get('title');
             const repliesPolicy = formData.get('replies_policy');
-            const exclusive = formData.get('exclusive') === 'on';
+            const exclusive = supportsExclusive
+              ? formData.get('exclusive') === 'on'
+              : !!list?.exclusive;
             console.log({
               title,
               repliesPolicy,

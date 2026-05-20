@@ -237,6 +237,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
       fetchItems={fetchHome}
       checkForUpdates={checkForUpdates}
       useItemID
+      dedupeReposts
       {...props}
       filterContext="home"
       showReplyParent

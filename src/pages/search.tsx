@@ -252,9 +252,8 @@ function Search({ columnMode, ...props }: SearchProps) {
             const typedResults = results;
             const typeKey = type as ResultsTypeKey;
             const nextCursor = typedResults._pagination?.[type];
-            const nextResults = typedResults[
-              typeKey
-            ] as SearchResultsByType[typeof typeKey];
+            const nextResults = (typedResults[typeKey] ??
+              []) as SearchResultsByType[typeof typeKey];
             if (firstLoad) {
               setResultsForType(typeKey, nextResults);
               cursorRef.current[type] = nextCursor;

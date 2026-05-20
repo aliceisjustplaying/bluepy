@@ -37,7 +37,7 @@ type OAuthAccount = Omit<StoredAccount, 'accessToken' | 'info'> & {
 
 interface AccountsSelectResource {
   $select(id: string): {
-    fetch(): Promise<unknown>;
+    fetch(): Promise<OAuthAccount['info']>;
   };
 }
 
@@ -121,7 +121,7 @@ function Accounts({ onClose }: AccountsProps) {
                               .$select(account.info.id)
                               .fetch();
                             console.log('fetched account info', info);
-                            (account as { info: unknown }).info = info;
+                            account.info = info;
                             saveOAuthAccounts();
                             reload();
                           } catch {}

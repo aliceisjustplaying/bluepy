@@ -14,28 +14,41 @@ export default function HttpRoute() {
   const [uiState, setUIState] = useState<'loading' | 'error'>('loading');
 
   useLayoutEffect(() => {
+    let active = true;
     setUIState('loading');
     void (async () => {
-      const { masto: currentMasto, instance: currentInstance } = api();
-      const searchResource = getMastoV2Resource<mastodon.rest.v2.SearchResource>(
-        currentMasto,
-        'search',
-      );
-      const result = await searchResource.list({
-        q: url,
-        limit: 1,
-        resolve: true,
-      });
-      if (result.statuses.length) {
-        const status = result.statuses[0];
-        navigatePath(`/${currentInstance}/s/${status.id}?view=full`);
-      } else if (result.accounts.length) {
-        const account = result.accounts[0];
-        navigatePath(`/${currentInstance}/a/${account.id}`);
-      } else {
-        setUIState('error');
+      try {
+        const { masto: currentMasto, instance: currentInstance } = api();
+        const searchResource =
+          getMastoV2Resource<mastodon.rest.v2.SearchResource>(
+            currentMasto,
+            'search',
+          );
+        const result = await searchResource.list({
+          q: url,
+          limit: 1,
+          resolve: true,
+        });
+        if (!active) return;
+        if (result.statuses?.length) {
+          const status = result.statuses[0];
+          navigatePath(`/${currentInstance}/s/${status.id}?view=full`);
+        } else if (result.accounts?.length) {
+          const account = result.accounts[0];
+          navigatePath(`/${currentInstance}/a/${account.id}`);
+        } else {
+          setUIState('error');
+        }
+      } catch (error) {
+        console.error(error);
+        if (active) {
+          setUIState('error');
+        }
       }
     })();
+    return () => {
+      active = false;
+    };
   }, [url]);
 
   return (

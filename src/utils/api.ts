@@ -216,8 +216,12 @@ export function initClient({
   return client;
 }
 
-function normalizeInstance(_instance?: string | null): string {
-  return BSKY_INSTANCE;
+function normalizeInstance(instance?: string | null): string {
+  const normalized = (instance ?? DEFAULT_INSTANCE)
+    .replace(/^https?:\/\//, '')
+    .replace(/\/+$/, '')
+    .toLowerCase();
+  return normalized || BSKY_INSTANCE;
 }
 
 function parseAtprotoSession(

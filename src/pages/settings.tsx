@@ -852,24 +852,26 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               }}
             />
             <div>
-              <b>Bluepy</b>
-              <br />
-              Forked for ATProto by{' '}
-              <a
-                href="https://bsky.app/profile/alice.mosphere.at"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                @alice.mosphere.at
-              </a>{' '}
-              and{' '}
-              <a
-                href="https://bsky.app/profile/quillmatiq.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                @quillmatiq.com
-              </a>
+              <Trans>
+                <b>Bluepy</b>
+                <br />
+                Forked for ATProto by{' '}
+                <a
+                  href="https://bsky.app/profile/alice.mosphere.at"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  @alice.mosphere.at
+                </a>{' '}
+                and{' '}
+                <a
+                  href="https://bsky.app/profile/quillmatiq.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  @quillmatiq.com
+                </a>
+              </Trans>
             </div>
           </div>
           <p>

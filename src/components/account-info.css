@@ -147,6 +147,7 @@
   .posting-stats-bar-reposts {
     --grid-line-width: 1px;
     --grid-spacing: 3px;
+
     background-color: var(--repost-color);
     background-image:
       repeating-linear-gradient(
