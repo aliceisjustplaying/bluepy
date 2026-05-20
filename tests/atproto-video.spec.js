@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import {
+  getVideoUploadServiceAuthAud,
   getVideoJobStatus,
   postToStatus,
 } from '../src/utils/atproto-adapter.js';
@@ -221,5 +222,93 @@ test.describe('ATProto video mapping', () => {
         message: 'transcode failed',
       }),
     ).toThrow('transcode failed');
+  });
+
+  test('uses the agent PDS dispatch URL for video upload service auth', async () => {
+    const aud = await getVideoUploadServiceAuthAud({
+      dispatchUrl: 'https://pds.example.com',
+      sessionManager: {},
+      com: {
+        atproto: {
+          server: {
+            getSession: async () => {
+              throw new Error('unexpected session lookup');
+            },
+          },
+        },
+      },
+    });
+
+    expect(aud).toBe('did:web:pds.example.com');
+  });
+
+  test('accepts a DID audience from the session token for video upload auth', async () => {
+    const aud = await getVideoUploadServiceAuthAud({
+      dispatchUrl: 'https://public.api.bsky.app',
+      sessionManager: {
+        getTokenInfo: async () => ({ aud: 'did:web:pds.example.com' }),
+      },
+      com: {
+        atproto: {
+          server: {
+            getSession: async () => {
+              throw new Error('unexpected session lookup');
+            },
+          },
+        },
+      },
+    });
+
+    expect(aud).toBe('did:web:pds.example.com');
+  });
+
+  test('falls back to the PDS DID document when dispatch goes through appview', async () => {
+    const clearedProxies = [];
+    /** @type {{ pdsUrl?: URL }} */
+    const sessionManager = {};
+    const aud = await getVideoUploadServiceAuthAud({
+      dispatchUrl: 'https://public.api.bsky.app',
+      sessionManager,
+      clone: () => ({
+        configureProxy: (proxy) => {
+          clearedProxies.push(proxy);
+        },
+        com: {
+          atproto: {
+            server: {
+              getSession: async () => ({
+                data: {
+                  didDoc: {
+                    '@context': ['https://www.w3.org/ns/did/v1'],
+                    id: 'did:plc:alice',
+                    service: [
+                      {
+                        id: '#atproto_pds',
+                        type: 'AtprotoPersonalDataServer',
+                        serviceEndpoint: 'https://pds.example.com',
+                      },
+                    ],
+                  },
+                },
+              }),
+            },
+          },
+        },
+      }),
+      configureProxy: () => {},
+      com: {
+        atproto: {
+          server: {
+            getSession: async () => {
+              throw new Error('expected cloned PDS-facing agent');
+            },
+          },
+        },
+      },
+    });
+
+    expect(aud).toBe('did:web:pds.example.com');
+    expect(sessionManager.pdsUrl.href).toBe('https://pds.example.com/');
+    expect(clearedProxies).toEqual([null]);
   });
 });
