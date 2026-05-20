@@ -94,7 +94,6 @@ function QuoteSettingsSheet({
       // Update the status with new quote policy
       saveStatus(toSaveStatus(newStatus), post.instance, {
         skipThreading: true,
-        skipUnfurling: true,
       });
     } catch (err) {
       console.error(err);
