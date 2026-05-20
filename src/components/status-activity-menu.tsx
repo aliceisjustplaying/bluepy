@@ -33,7 +33,7 @@ export default function StatusActivityMenu({
       <MenuItem
         onClick={() => {
           states.showGenericAccounts = {
-            heading: t`Boosted/Liked by…`,
+            heading: t`Reposted/Liked by…`,
             fetchAccounts: fetchBoostedLikedByAccounts,
             instance,
             showReactions: true,
@@ -43,7 +43,7 @@ export default function StatusActivityMenu({
       >
         <Icon icon="react" />
         <span>
-          <Trans>Boosted/Liked by…</Trans>
+          <Trans>Reposted/Liked by…</Trans>
         </span>
       </MenuItem>
       {supportsNativeQuote() && (

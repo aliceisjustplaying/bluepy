@@ -555,13 +555,13 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                   onChange={() => {
                     toggleParam('boosts', '0');
                     if (excludeBoosts) {
-                      showToast(t`Showing boosts`);
+                      showToast(t`Showing reposts`);
                     } else {
-                      showToast(t`Hiding boosts`);
+                      showToast(t`Hiding reposts`);
                     }
                   }}
                 />
-                <Trans>Boosts</Trans>
+                <Trans>Reposts</Trans>
               </label>
             </div>
             <Link
@@ -860,7 +860,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
               <Icon icon="transfer" />{' '}
               <small className="menu-double-lines">
                 <Trans>
-                  Switch to account's server{' '}
+                  Switch to account's PDS{' '}
                   {accountInstance ? (
                     <>
                       {' '}
@@ -895,7 +895,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                 <Icon icon="transfer" />{' '}
                 <small className="menu-double-lines">
                   <Trans>
-                    Switch to my server (<b>{currentInstance}</b>)
+                    Switch to my PDS (<b>{currentInstance}</b>)
                   </Trans>
                 </small>
               </MenuItem>

@@ -220,7 +220,7 @@ const FILTER_KEYS: Record<string, MessageDescriptor> = {
   original: msg`Original`,
   replies: msg`Replies`,
   quotes: msg`Quotes`,
-  boosts: msg`Boosts`,
+  boosts: msg`Reposts`,
   groups: msg`Groups`,
   filtered: msg`Filtered`,
 };
@@ -1012,7 +1012,7 @@ function Catchup() {
         all: 'all posts',
         original: 'original posts',
         replies: 'replies',
-        boosts: 'boosts',
+        boosts: 'reposts',
         quotes: 'quotes',
         groups: 'groups',
         filtered: 'filtered posts',
@@ -1024,8 +1024,8 @@ function Catchup() {
           other: '',
         }),
         reblogsCount: select(sortOrder, {
-          asc: 'fewest boosts',
-          desc: 'most boosts',
+          asc: 'fewest reposts',
+          desc: 'most reposts',
           other: '',
         }),
         favouritesCount: select(sortOrder, {
@@ -1504,9 +1504,8 @@ function Catchup() {
               <p className="insignificant">
                 <small>
                   <Trans>
-                    Note: your server might only show a maximum of 800 posts in
-                    the Home timeline regardless of the time range. Could be
-                    less or more.
+                    Note: the Home timeline might only show a limited number of
+                    posts regardless of the time range.
                   </Trans>
                 </small>
               </p>
@@ -1934,7 +1933,7 @@ function Catchup() {
                             createdAt: t`Date`,
                             repliesCount: t`Replies`,
                             favouritesCount: t`Likes`,
-                            reblogsCount: t`Boosts`,
+                            reblogsCount: t`Reposts`,
                             quotesCount: t`Quotes`,
                             density: t`Density`,
                           }[key]
@@ -2095,7 +2094,7 @@ function Catchup() {
                 </dt>
                 <dd>
                   <Trans>
-                    Links shared by followings, sorted by shared counts, boosts
+                    Links shared by followings, sorted by shared counts, reposts
                     and likes.
                   </Trans>
                 </dd>
@@ -2611,7 +2610,7 @@ function PostStats({ post }: PostStatsProps) {
       )}
       {reblogsCount > 0 || safeQuotesCount > 0 ? (
         <span className="post-stat-boosts">
-          <Icon icon="rocket" size="s" alt={t`Boosts`} />{' '}
+          <Icon icon="rocket" size="s" alt={t`Reposts`} />{' '}
           {reblogsCount > 0 || safeQuotesCount > 0
             ? `${reblogsCount > 0 ? shortenNumber(reblogsCount) : ''}${
                 reblogsCount > 0 && safeQuotesCount > 0 ? '+' : ''

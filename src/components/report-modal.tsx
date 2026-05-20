@@ -58,11 +58,11 @@ const CATEGORIES_INFO: Record<ReportCategory, CategoryInfo> = {
   },
   legal: {
     label: msg`Illegal`,
-    description: msg`Violates the law of your or the server's country`,
+    description: msg`Violates local law`,
   },
   violation: {
-    label: msg`Server rule violation`,
-    description: msg`Breaks specific server rules`,
+    label: msg`Bluesky rule violation`,
+    description: msg`Breaks specific Bluesky rules`,
     stampLabel: msg`Violation`,
   },
   other: {

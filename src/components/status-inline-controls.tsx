@@ -107,7 +107,7 @@ export default function StatusInlineControls({
       {size !== 'l' && (
         <div className="status-badge">
           {reblogged && (
-            <Icon className="reblog" icon="rocket" size="s" alt={t`Boosted`} />
+            <Icon className="reblog" icon="rocket" size="s" alt={t`Reposted`} />
           )}
           {favourited && (
             <Icon className="favourite" icon="heart" size="s" alt={t`Liked`} />

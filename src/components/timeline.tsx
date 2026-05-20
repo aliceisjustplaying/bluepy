@@ -1034,8 +1034,8 @@ export const TimelineItem = memo(
       let title: string | ReactElement = '';
       if (type === 'boosts') {
         title = plural(fItems.length, {
-          one: '# Boost',
-          other: '# Boosts',
+          one: '# Repost',
+          other: '# Reposts',
         });
       } else if (type === 'pinned') {
         title = t`Pinned posts`;

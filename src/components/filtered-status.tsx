@@ -116,14 +116,14 @@ export default function FilteredStatus({
         <span className="status-filtered-info">
           <span className="status-filtered-info-1">
             {isReblog ? (
-              <Trans comment="[Name] [Visibility icon] boosted">
+              <Trans comment="[Name] [Visibility icon] reposted">
                 <NameText account={status.account} instance={instance} />{' '}
                 <Icon
                   icon={visibilityIconsMap[visibility]}
                   alt={_(visibilityText[visibility])}
                   size="s"
                 />{' '}
-                boosted
+                reposted
               </Trans>
             ) : (
               <>
