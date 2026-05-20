@@ -13,6 +13,7 @@ import { memo } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
+import { useLocation } from 'react-router-dom';
 import { useDebouncedCallback } from 'use-debounce';
 import { useSnapshot } from 'valtio';
 
@@ -83,6 +84,11 @@ function TimelineStatusLink({
   className = 'status-link timeline-item',
 }: TimelineStatusLinkProps) {
   const href = canonicalizeAppPath(to);
+  const routerLocation = useLocation();
+  const navigateFromCurrentLocation = () => {
+    states.prevLocation = { ...routerLocation };
+    navigatePath(href);
+  };
 
   return (
     <div
@@ -93,12 +99,12 @@ function TimelineStatusLink({
       onClick={(e: MouseEvent<HTMLDivElement>) => {
         if (shouldLetStatusLinkTargetHandleEvent(e.target)) return;
         if (isModifiedClick(e)) return;
-        navigatePath(href);
+        navigateFromCurrentLocation();
       }}
       onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        navigatePath(href);
+        navigateFromCurrentLocation();
       }}
     >
       <a
@@ -109,7 +115,7 @@ function TimelineStatusLink({
         onClick={(e: MouseEvent<HTMLAnchorElement>) => {
           if (isModifiedClick(e)) return;
           e.preventDefault();
-          navigatePath(href);
+          navigateFromCurrentLocation();
         }}
       />
       {children}

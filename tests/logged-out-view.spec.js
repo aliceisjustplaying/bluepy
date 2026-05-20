@@ -794,6 +794,32 @@ test('loads and reloads canonical AT profile URLs', async ({ page }) => {
   expect(noRouteWarnings).toEqual([]);
 });
 
+test('returns to a logged-out AT profile after opening one of its posts', async ({
+  page,
+}) => {
+  await routeAtprotoRecords(page);
+
+  await page.goto(AT_PROFILE_PATH);
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+
+  await page.locator(`.status-link-native[href="${AT_POST_PATH}"]`).click();
+  await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
+  await expect(page.locator('text=AT route post')).toBeVisible();
+  await expect(page.locator('.deck-close')).toHaveAttribute(
+    'href',
+    AT_PROFILE_PATH,
+  );
+
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(AT_PROFILE_PATH));
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
+});
+
 test('backfills canonical AT profile media when Blacksky omits it', async ({
   page,
 }) => {

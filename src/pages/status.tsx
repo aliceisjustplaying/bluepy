@@ -41,6 +41,10 @@ import Status from '../components/status';
 import type { AnyStatus } from '../components/status-types';
 import { api, getMastoV2Resource } from '../utils/api';
 import {
+  isAtprotoPostURI,
+  maybeDecodeAtprotoURI,
+} from '../utils/atproto-route';
+import {
   EditHistoryProvider,
   useEditHistory,
 } from '../utils/edit-history-context';
@@ -82,6 +86,14 @@ const LIMIT = 40;
 const SUBCOMMENTS_OPEN_ALL_LIMIT = 10;
 const MAX_WEIGHT = 5;
 const COMMENTS_AUTO_EXPAND_LIMIT = 20;
+
+function getAtprotoURIFromPathname(pathname: string) {
+  const schemeMatch = matchPath('/:scheme://*', pathname);
+  if (schemeMatch?.params.scheme?.toLowerCase() === 'at') {
+    return `at://${(schemeMatch.params['*'] || '').replace(/^\/+/, '')}`;
+  }
+  return maybeDecodeAtprotoURI(matchPath('/:atUri', pathname)?.params.atUri);
+}
 
 // The status records this page works with originate from Masto's API but
 // also pick up internal mutations from `states.ts` (e.g. `__replies`,
@@ -264,15 +276,15 @@ function StatusPage(params: StatusPageParams) {
 
   const closeLink = useMemo(() => {
     const { prevLocation } = states;
+    const prevPathname = prevLocation?.pathname || '';
     const prevSearch = prevLocation?.search;
     const prevSearchStr = typeof prevSearch === 'string' ? prevSearch : '';
-    const pathname = (prevLocation?.pathname || '') + prevSearchStr;
-    const atUriParam = matchPath('/:atUri', pathname)?.params.atUri;
+    const pathname = prevPathname + prevSearchStr;
+    const atprotoURI = getAtprotoURIFromPathname(prevPathname);
     const matchStatusPath =
-      matchPath('/:instance/s/:id', pathname) ||
-      matchPath('/s/:id', pathname) ||
-      matchPath('/:scheme://*', pathname) ||
-      atUriParam?.toLowerCase().startsWith('at%3a');
+      matchPath('/:instance/s/:id', prevPathname) ||
+      matchPath('/s/:id', prevPathname) ||
+      isAtprotoPostURI(atprotoURI);
     if (!pathname || matchStatusPath) {
       return '/';
     }
