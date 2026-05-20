@@ -839,30 +839,25 @@ async function uploadVideoBlob(
     aud: BSKY_VIDEO_SERVICE_DID,
     lxm: 'app.bsky.video.getJobStatus',
   });
-  const pollJobStatus = async (
-    status: ReturnType<typeof getVideoJobStatus>,
-    remainingChecks: number,
-  ): Promise<BlobRefLike> => {
-    if (status.state === 'JOB_STATE_COMPLETED' && status.blob) {
-      return status.blob;
+  for (let i = 0; i < 60; i++) {
+    if (jobStatus.state === 'JOB_STATE_COMPLETED' && jobStatus.blob) {
+      return jobStatus.blob;
     }
-    if (status.state === 'JOB_STATE_FAILED') {
-      throw new Error(status.message || status.error || 'Video upload failed');
+    if (jobStatus.state === 'JOB_STATE_FAILED') {
+      throw new Error(
+        jobStatus.message || jobStatus.error || 'Video upload failed',
+      );
     }
-    if (remainingChecks <= 1) {
-      throw new Error('Timed out waiting for Bluesky video processing');
-    }
-    await wait(1_000);
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 1_000);
+    });
     const statusRes = await videoAgent.app.bsky.video.getJobStatus(
-      { jobId: status.jobId },
+      { jobId: jobStatus.jobId },
       { headers: { authorization: `Bearer ${statusToken}` } },
     );
-    return pollJobStatus(
-      getVideoJobStatus(statusRes.data),
-      remainingChecks - 1,
-    );
-  };
-  return pollJobStatus(jobStatus, 60);
+    jobStatus = getVideoJobStatus(statusRes.data);
+  }
+  throw new Error('Timed out waiting for Bluesky video processing');
 }
 
 // Coerce non-string runtime values (some ATProto fields arrive as unknown).
@@ -1401,17 +1396,12 @@ export async function hydrateFeedReplyContext(
   });
   if (!hasSamePageContext && !missingURIs.length) return feed;
 
-  const fetchMissingPosts = async (
-    index: number,
-    hydratedPosts: AtprotoPost[] = [],
-  ): Promise<AtprotoPost[]> => {
-    if (index >= missingURIs.length) return hydratedPosts;
-    const uris = missingURIs.slice(index, index + BSKY_GET_POSTS_LIMIT);
+  const hydratedPosts: AtprotoPost[] = [];
+  for (let i = 0; i < missingURIs.length; i += BSKY_GET_POSTS_LIMIT) {
+    const uris = missingURIs.slice(i, i + BSKY_GET_POSTS_LIMIT);
     const res = await agent.getPosts({ uris });
     hydratedPosts.push(...(res.data.posts || []));
-    return fetchMissingPosts(index + BSKY_GET_POSTS_LIMIT, hydratedPosts);
-  };
-  const hydratedPosts = await fetchMissingPosts(0);
+  }
   const postsByURI: Record<string, AtprotoPost> = { ...feedPostsByURI };
   hydratedPosts.forEach((post) => {
     if (post.uri) postsByURI[post.uri] = post;
@@ -2507,7 +2497,8 @@ export function createAtprotoClient({
           throw new Error('Feed generators are not removable here');
         }
         const listitemURIs: string[] = [];
-        const collectListitemURIs = async (cursor?: string): Promise<void> => {
+        let cursor: string | undefined;
+        do {
           const res = await agent.app.bsky.graph.listitem.list({
             repo: agentLoose.did ?? '',
             cursor,
@@ -2521,9 +2512,8 @@ export function createAtprotoClient({
               )
               .map((record) => record.uri),
           );
-          if (res.cursor) await collectListitemURIs(res.cursor);
-        };
-        await collectListitemURIs();
+          cursor = res.cursor;
+        } while (cursor);
 
         const deleteWrite = (
           recordURI: string,
@@ -2535,15 +2525,12 @@ export function createAtprotoClient({
           rkey: atprotoRkey(recordURI) ?? '',
         });
         const writes = [...listitemURIs.map(deleteWrite), deleteWrite(uri)];
-        const applyWritesBatch = async (index: number): Promise<void> => {
-          if (index >= writes.length) return;
+        for (let i = 0; i < writes.length; i += 10) {
           await agent.com.atproto.repo.applyWrites({
             repo: agentLoose.did ?? '',
-            writes: writes.slice(index, index + 10),
+            writes: writes.slice(i, i + 10),
           });
-          await applyWritesBatch(index + 10);
-        };
-        await applyWritesBatch(0);
+        }
         return {};
       },
       accounts: {
@@ -2584,7 +2571,8 @@ export function createAtprotoClient({
           }
           const ids = new Set(accountIds);
           const removals: Array<{ uri: string }> = [];
-          const collectRemovals = async (cursor?: string): Promise<void> => {
+          let cursor: string | undefined;
+          do {
             const res = await agent.app.bsky.graph.listitem.list({
               repo: agentLoose.did ?? '',
               cursor,
@@ -2598,9 +2586,8 @@ export function createAtprotoClient({
                 return value?.list === uri && ids.has(value?.subject ?? '');
               }),
             );
-            if (res.cursor) await collectRemovals(res.cursor);
-          };
-          await collectRemovals();
+            cursor = res.cursor;
+          } while (cursor);
           await Promise.all(
             removals.map((record) =>
               agent.app.bsky.graph.listitem.delete({
@@ -2945,7 +2932,8 @@ export function createAtprotoClient({
       lists: {
         async list(): Promise<AdaptedList[]> {
           const lists: AdaptedList[] = [];
-          const collectLists = async (cursor?: string): Promise<void> => {
+          let cursor: string | undefined;
+          do {
             const res = await agent.app.bsky.graph.getLists({
               actor: agentLoose.did ?? '',
               limit: 50,
@@ -2958,9 +2946,8 @@ export function createAtprotoClient({
                 )
                 .map(listToPhanpyList),
             );
-            if (res.data.cursor) await collectLists(res.data.cursor);
-          };
-          await collectLists();
+            cursor = res.data.cursor;
+          } while (cursor);
           const preferences = await agent.getPreferences().catch(() => null);
           const savedFeeds = preferences?.savedFeeds || [];
           const savedFeedURIs = [
@@ -3121,19 +3108,14 @@ export function createAtprotoClient({
         $select(id: string) {
           return {
             async fetch(): Promise<AdaptedNotification> {
-              const findNotification = async (
-                cursor: string | undefined,
-                remainingPages: number,
-              ): Promise<AdaptedNotification | null> => {
-                if (remainingPages <= 0) return null;
+              let cursor: string | undefined;
+              for (let page = 0; page < 5; page++) {
                 const res = await fetchNotifications({ limit: 80 }, cursor);
                 const notification = res.items.find((item) => item.id === id);
                 if (notification) return notification;
-                if (!res.cursor) return null;
-                return findNotification(res.cursor, remainingPages - 1);
-              };
-              const notification = await findNotification(undefined, 5);
-              if (notification) return notification;
+                if (!res.cursor) break;
+                cursor = res.cursor;
+              }
               throw new Error('Notification not found');
             },
           };
@@ -3317,19 +3299,13 @@ export function createAtprotoClient({
           }
           const res = await agent.post(record);
           const id = encodeAtprotoID(res.uri);
-          const fetchCreatedStatus = async (
-            remainingAttempts: number,
-          ): Promise<AdaptedStatus | null> => {
-            if (remainingAttempts <= 0) return null;
+          for (let i = 0; i < 10; i++) {
             try {
               return await statusAPI(id).fetch();
             } catch {
               await wait(500);
-              return fetchCreatedStatus(remainingAttempts - 1);
             }
-          };
-          const createdStatus = await fetchCreatedStatus(10);
-          if (createdStatus) return createdStatus;
+          }
           const profile = await agent.getProfile({
             actor: agentLoose.did ?? '',
           });
@@ -3448,10 +3424,9 @@ export function createAtprotoClient({
             excludeTypes?: AdaptedNotificationType[];
           } = {},
         ) {
-          return makeCollection<GroupedNotificationsItems>(async (cursor) => {
-            const notifications = await fetchNotifications(opts, cursor);
-            return toGroupedNotificationsPage(notifications);
-          });
+          return makeCollection<GroupedNotificationsItems>((cursor) =>
+            fetchNotifications(opts, cursor).then(toGroupedNotificationsPage),
+          );
         },
         policy: {
           async fetch(): Promise<Record<string, never>> {
