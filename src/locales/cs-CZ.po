@@ -5036,3 +5036,39 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "Líbí se mi"
+
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr ""

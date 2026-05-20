@@ -4234,3 +4234,39 @@ msgstr "This account has marked itself as automated."
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr "Post from muted account"
+
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr "Show normally"
+
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr "Show"
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr "Collapse with reveal"
+
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr "Notifications from muted accounts are always hidden."
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr "Show muted post"
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr "Hide entirely"
+
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr "Hide"
+
+#: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr "Muted posts"

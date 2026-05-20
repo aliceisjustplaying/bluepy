@@ -2,6 +2,10 @@ import type { mastodon } from 'masto';
 
 import { api } from './api';
 import { isFiltered } from './filters';
+import {
+  getMutedPostVisibility,
+  shouldHideMutedStatus,
+} from './muted-post-visibility';
 import pmem from './pmem';
 import { shouldFetchReplyContextForInstance } from './reply-context';
 import states, { saveStatus, statusKey } from './states';
@@ -143,9 +147,21 @@ export function filterHiddenStatuses<T extends TimelineStatus>(
   items: readonly T[],
   filterContext: string | null | undefined,
 ): readonly T[] {
-  if (!filterContext) return items;
   const currentAccount = getCurrentAccountID();
+  const mutedPostVisibility = getMutedPostVisibility(states.settings);
   return items.filter((item) => {
+    // Muted-account visibility is a timeline preference, not a Mastodon filter
+    // context. Keep applying it when content filters are disabled.
+    if (
+      shouldHideMutedStatus({
+        status: item,
+        currentAccountID: currentAccount,
+        visibility: mutedPostVisibility,
+      })
+    ) {
+      return false;
+    }
+    if (!filterContext) return true;
     if (!item?.filtered) return true;
     const isOwnPost = item?.account?.id === currentAccount;
     const filterInfo = isFiltered(item.filtered, filterContext);

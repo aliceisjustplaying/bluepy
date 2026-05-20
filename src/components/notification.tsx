@@ -8,6 +8,7 @@ import { memo } from 'react';
 
 import { api, getMastoV2Resource } from '../utils/api';
 import { isFiltered } from '../utils/filters';
+import { hasMutedAuthor } from '../utils/muted-post-visibility';
 import shortenNumber from '../utils/shorten-number';
 import states, { statusKey } from '../utils/states';
 import { getCurrentAccountID } from '../utils/store-utils';
@@ -60,6 +61,7 @@ interface StatusComponentProps {
   allowContextMenu?: boolean;
   allowFilters?: boolean;
   hideReplyBadge?: boolean;
+  forceShowMuted?: boolean;
 }
 function Status(props: StatusComponentProps) {
   return <StatusComponent {...(props as StatusViewProps)} />;
@@ -758,12 +760,15 @@ function Notification({
   console.debug('RENDER Notification', notification.id);
 
   // If there's a status and filter action is 'hide', then the notification is hidden
+  const isOwnPost = status?.account?.id === currentAccount;
   if (status?.filtered) {
-    const isOwnPost = status?.account?.id === currentAccount;
     const filterInfo = isFiltered(status.filtered, 'notifications');
     if (!isSelf && !isOwnPost && filterInfo && filterInfo.action === 'hide') {
       return null;
     }
+  }
+  if (!isSelf && !isOwnPost && status && hasMutedAuthor(status)) {
+    return null;
   }
 
   const debugHover = (e: React.MouseEvent<HTMLDivElement>) => {
