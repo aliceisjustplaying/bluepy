@@ -9,7 +9,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 
-import { getPreferences, subscribePreferences } from '../utils/api';
+import { getPreferenceSnapshot, subscribePreferences } from '../utils/api';
 import {
   createAtprotoLabelerInfoCache,
   fetchCachedAtprotoLabelerInfo,
@@ -137,8 +137,8 @@ export default function AtprotoLabels({
   );
   const preferences = useSyncExternalStore(
     subscribePreferences,
-    getPreferences,
-    getPreferences,
+    getPreferenceSnapshot,
+    getPreferenceSnapshot,
   );
   const mounted = useRef(true);
   const globalLabelStrings = useMemo<AtprotoGlobalLabelStrings>(

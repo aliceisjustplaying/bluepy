@@ -519,6 +519,12 @@ export const getPreferences = mem(
 ) as MemoizedFunction<readonly [], JsonRecord>;
 
 const preferenceListeners = new Set<() => void>();
+let preferenceSnapshot: JsonRecord | undefined;
+
+export function getPreferenceSnapshot(): JsonRecord {
+  preferenceSnapshot ??= getPreferences();
+  return preferenceSnapshot;
+}
 
 export function subscribePreferences(listener: () => void): () => void {
   preferenceListeners.add(listener);
@@ -530,6 +536,7 @@ export function subscribePreferences(listener: () => void): () => void {
 export function setPreferences(preferences: JsonRecord): void {
   getPreferences.cache.clear(); // Clear memo cache
   store.account.set('preferences', preferences);
+  preferenceSnapshot = preferences;
   preferenceListeners.forEach((listener) => {
     listener();
   });

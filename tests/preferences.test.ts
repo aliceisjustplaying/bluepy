@@ -66,15 +66,22 @@ void test('preference subscribers receive fresh values and can unsubscribe', asy
   });
   setCurrentAccountID('did:plc:account');
 
-  const { getPreferences, setPreferences, subscribePreferences } =
-    await import('../src/utils/api');
+  const {
+    getPreferences,
+    getPreferenceSnapshot,
+    setPreferences,
+    subscribePreferences,
+  } = await import('../src/utils/api');
   const seen: unknown[] = [];
   const unsubscribe = subscribePreferences(() => {
-    seen.push(getPreferences());
+    seen.push(getPreferenceSnapshot());
   });
 
   setPreferences({ atprotoLabelerDids: ['did:plc:labeler'] });
   assert.deepEqual(seen, [{ atprotoLabelerDids: ['did:plc:labeler'] }]);
+  const snapshot = getPreferenceSnapshot();
+  getPreferences.cache.clear();
+  assert.equal(getPreferenceSnapshot(), snapshot);
 
   unsubscribe();
   setPreferences({ atprotoLabelerDids: ['did:plc:other'] });
