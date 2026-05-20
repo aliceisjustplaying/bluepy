@@ -94,11 +94,7 @@ const createDateTimeFormat = (
       : null;
 
   const matchedLocale = localeMatchWithNullableRequested(
-    [
-      userRegionLocale,
-      locale,
-      locale?.replace(/-[a-z]+$/i, ''),
-    ],
+    [userRegionLocale, locale, locale?.replace(/-[a-z]+$/i, '')],
     locales,
     locale,
   );

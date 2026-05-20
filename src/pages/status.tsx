@@ -1380,8 +1380,8 @@ function StatusThread({
                 <div className="post-status-banner">
                   <p>
                     <Trans>
-                      You're not logged in. Interactions (reply, repost, etc) are
-                      not possible.
+                      You're not logged in. Interactions (reply, repost, etc)
+                      are not possible.
                     </Trans>
                   </p>
                   <Link

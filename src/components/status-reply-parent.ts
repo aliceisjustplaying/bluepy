@@ -73,11 +73,7 @@ export default function useStatusReplyParent({
       }
 
       const abortController = new AbortController();
-      memFetchAccount(
-        inReplyToAccountId,
-        masto,
-        abortController.signal,
-      )
+      memFetchAccount(inReplyToAccountId, masto, abortController.signal)
         .then((fetchedAccount: unknown) => {
           const acc = fetchedAccount as AnyAccount;
           setInReplyToAccount(acc);
@@ -93,13 +89,7 @@ export default function useStatusReplyParent({
       };
     }
     return undefined;
-  }, [
-    withinContext,
-    inReplyToAccount,
-    inReplyToAccountId,
-    instance,
-    masto,
-  ]);
+  }, [withinContext, inReplyToAccount, inReplyToAccountId, instance, masto]);
   const mentionSelf =
     (inReplyToAccountId && inReplyToAccountId === currentAccount) ||
     mentions?.find(

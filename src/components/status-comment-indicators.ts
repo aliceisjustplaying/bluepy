@@ -48,12 +48,7 @@ export default function useStatusCommentIndicators({
       (!!inReplyToId && inReplyToAccountId === statusAccountId) ||
       !!statusThreadNumber
     );
-  }, [
-    inReplyToId,
-    inReplyToAccountId,
-    statusAccountId,
-    statusThreadNumber,
-  ]);
+  }, [inReplyToId, inReplyToAccountId, statusAccountId, statusThreadNumber]);
 
   const showCommentHint = useMemo(() => {
     return (

@@ -1,7 +1,7 @@
 import './qr-code.css';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { encodeQR } from 'qr';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface QrCodeProps {
   text?: string;

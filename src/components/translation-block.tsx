@@ -388,7 +388,11 @@ function TranslationBlock({
           ) : (
             !!translatedContent && (
               <>
-                <output className="translated-content" lang={targetLang} dir="auto">
+                <output
+                  className="translated-content"
+                  lang={targetLang}
+                  dir="auto"
+                >
                   {translatedContent}
                 </output>
                 {!!pronunciationContent && (

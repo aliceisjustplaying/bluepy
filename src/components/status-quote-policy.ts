@@ -5,10 +5,7 @@ import {
   supportsNativeQuote,
 } from '../utils/quote-utils';
 
-import {
-  quoteApprovalPolicyMessages,
-  quoteMessages,
-} from './status-helpers';
+import { quoteApprovalPolicyMessages, quoteMessages } from './status-helpers';
 
 interface QuoteApprovalShape {
   currentUser?: string;

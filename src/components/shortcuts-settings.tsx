@@ -662,7 +662,6 @@ function ShortcutForm({
         setUIState('error');
       }
     })();
-
   }, [currentType]);
 
   const formRef = useRef<HTMLFormElement | null>(null);

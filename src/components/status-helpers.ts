@@ -9,11 +9,7 @@ import localeMatchDefault from '../utils/locale-match';
 import mem from '../utils/mem';
 import pmem from '../utils/pmem';
 
-import type {
-  AnyPoll,
-  AnyStatus,
-  MastoClientFromApi,
-} from './status-types';
+import type { AnyPoll, AnyStatus, MastoClientFromApi } from './status-types';
 
 export const SHOW_COMMENT_COUNT_LIMIT = 280;
 export const INLINE_TRANSLATE_LIMIT = 140;
@@ -80,10 +76,7 @@ interface GetPostTextOpts {
   htmlTextOpts?: Record<string, unknown>;
 }
 
-export function getPostText(
-  status: AnyStatus,
-  opts?: GetPostTextOpts,
-): string {
+export function getPostText(status: AnyStatus, opts?: GetPostTextOpts): string {
   const {
     maskCustomEmojis,
     maskURLs,

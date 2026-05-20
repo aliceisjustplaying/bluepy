@@ -6,8 +6,7 @@ import {
   notificationType,
 } from '../src/utils/atproto-adapter.js';
 
-const TEST_CID =
-  'bafyreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku';
+const TEST_CID = 'bafyreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku';
 
 /**
  * @param {string} uri
@@ -53,8 +52,7 @@ test.describe('ATProto notifications', () => {
 
   test('requests Bluesky mention and reply reasons for mention notifications', async () => {
     const originalFetch = globalThis.fetch;
-    const mentionPostUri =
-      'at://did:plc:alice/app.bsky.feed.post/mention-post';
+    const mentionPostUri = 'at://did:plc:alice/app.bsky.feed.post/mention-post';
     const replyPostUri = 'at://did:plc:bob/app.bsky.feed.post/reply-post';
     const requestedReasons = [];
 

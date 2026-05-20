@@ -46,8 +46,16 @@ interface CredentialApplicationShape extends Record<string, unknown> {
 }
 
 const HANDLE_SUFFIXES = [
-  '.bsky.social', '.blacksky.app', '.eurosky.social', '.pckt.cafe', '.com',
-  '.tngl.sh', '.myatproto.social', '.margin.cafe', '.selfhosted.social', '.npmx.social',
+  '.bsky.social',
+  '.blacksky.app',
+  '.eurosky.social',
+  '.pckt.cafe',
+  '.com',
+  '.tngl.sh',
+  '.myatproto.social',
+  '.margin.cafe',
+  '.selfhosted.social',
+  '.npmx.social',
 ];
 
 function Login() {
@@ -61,7 +69,9 @@ function Login() {
   const [bskyPassword, setBskyPassword] = useState('');
   const [bskyService, setBskyService] = useState('');
   const [appview, setAppview] = useState(getActiveAppview());
-  useEffect(() => { applyAppviewTheme(appview); }, [appview]);
+  useEffect(() => {
+    applyAppviewTheme(appview);
+  }, [appview]);
   const remainingSuffixes = useRef<string[]>([]);
   const [currentSuffix, setCurrentSuffix] = useState(HANDLE_SUFFIXES[0]);
   const [suffixFading, setSuffixFading] = useState(false);
@@ -72,7 +82,9 @@ function Login() {
       setTimeout(() => {
         setCurrentSuffix((prev: string) => {
           if (remainingSuffixes.current.length === 0) {
-            remainingSuffixes.current = HANDLE_SUFFIXES.filter((s) => s !== prev).toSorted(() => Math.random() - 0.5);
+            remainingSuffixes.current = HANDLE_SUFFIXES.filter(
+              (s) => s !== prev,
+            ).toSorted(() => Math.random() - 0.5);
           }
           return remainingSuffixes.current.pop()!;
         });
@@ -334,7 +346,13 @@ function Login() {
         </h1>
         <section className="bsky-login">
           <label>
-            <div style={{ position: 'relative', display: 'inline-block', width: '100%' }}>
+            <div
+              style={{
+                position: 'relative',
+                display: 'inline-block',
+                width: '100%',
+              }}
+            >
               <input
                 value={bskyIdentifier}
                 type="text"
@@ -371,7 +389,9 @@ function Login() {
                     style={{
                       display: 'inline-block',
                       opacity: suffixFading ? 0 : 1,
-                      transform: suffixFading ? 'translateY(-4px)' : 'translateY(0)',
+                      transform: suffixFading
+                        ? 'translateY(-4px)'
+                        : 'translateY(0)',
                       transition: 'opacity 0.25s ease, transform 0.25s ease',
                     }}
                   >
@@ -381,14 +401,26 @@ function Login() {
               )}
             </div>
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5em', marginTop: '1em' }}>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5em',
+              marginTop: '1em',
+            }}
+          >
             AppView:{' '}
             <select
               value={appview}
-              onChange={(e) => setAppview((e.target as HTMLSelectElement).value)}
+              onChange={(e) =>
+                setAppview((e.target as HTMLSelectElement).value)
+              }
             >
               {Object.entries(APPVIEW_OPTIONS).map(([key, { label }]) => (
-                <option key={key} value={key}>{label}</option>
+                <option key={key} value={key}>
+                  {label}
+                </option>
               ))}
             </select>
           </label>

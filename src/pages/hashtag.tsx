@@ -364,7 +364,11 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                     );
                   }}
                 >
-                  <Icon icon="x" alt={t`Remove hashtag`} className="danger-icon" />
+                  <Icon
+                    icon="x"
+                    alt={t`Remove hashtag`}
+                    className="danger-icon"
+                  />
                   <span className="bidi-isolate">
                     <span className="more-insignificant">#</span>
                     {tag}

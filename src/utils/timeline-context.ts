@@ -50,7 +50,9 @@ export function canonicalTimelineContextId(
   return item.reblog?.id || item.id;
 }
 
-function canonicalTimelineContextAccountId(item: TimelineContextStatus): string {
+function canonicalTimelineContextAccountId(
+  item: TimelineContextStatus,
+): string {
   return item.reblog?.account.id || item.account.id;
 }
 
@@ -177,18 +179,17 @@ export function groupContextItems<T extends TimelineContextStatus>(
 
   items.forEach((item) => {
     const relatedItems: T[] = [];
-    [
-      findItemById(item.inReplyToId),
-      findItemById(atprotoRootId(item)),
-    ].forEach((relatedItem) => {
-      if (
-        relatedItem &&
-        canonicalTimelineContextId(relatedItem) !==
-          canonicalTimelineContextId(item)
-      ) {
-        addUnique(relatedItems, relatedItem);
-      }
-    });
+    [findItemById(item.inReplyToId), findItemById(atprotoRootId(item))].forEach(
+      (relatedItem) => {
+        if (
+          relatedItem &&
+          canonicalTimelineContextId(relatedItem) !==
+            canonicalTimelineContextId(item)
+        ) {
+          addUnique(relatedItems, relatedItem);
+        }
+      },
+    );
     for (let i = 0; i < contexts.length; i++) {
       if (
         contexts[i].find(
@@ -279,7 +280,8 @@ export function groupContextItems<T extends TimelineContextStatus>(
       id: context.map((item) => item.id),
       items: context,
       type: context.every(
-        (item) => canonicalTimelineContextAccountId(item) === firstItemAccountID,
+        (item) =>
+          canonicalTimelineContextAccountId(item) === firstItemAccountID,
       )
         ? 'thread'
         : 'conversation',

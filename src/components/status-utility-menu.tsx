@@ -64,9 +64,13 @@ export default function StatusUtilityMenu({
 }: StatusUtilityMenuProps) {
   const { t, i18n } = useLingui();
   const _ = i18n._.bind(i18n);
-  const canTranslate = !mediaFirst && (enableTranslate || !language || differentLanguage);
+  const canTranslate =
+    !mediaFirst && (enableTranslate || !language || differentLanguage);
   const showViewDivider =
-    (!isSizeLarge && sameInstance) || enableTranslate || !language || differentLanguage;
+    (!isSizeLarge && sameInstance) ||
+    enableTranslate ||
+    !language ||
+    differentLanguage;
 
   return (
     <>
@@ -154,7 +158,8 @@ export default function StatusUtilityMenu({
           <Icon icon="arrows-right" />
           <small>
             <Trans>
-              View post by <span className="bidi-isolate">@{username || acct}</span>
+              View post by{' '}
+              <span className="bidi-isolate">@{username || acct}</span>
             </Trans>
             <br />
             <span className="more-insignificant">

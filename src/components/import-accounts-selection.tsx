@@ -3,13 +3,13 @@ import './import-accounts-selection.css';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { useMemo, useState } from 'react';
 
+import { sorted } from '../utils/sorted';
 import states from '../utils/states';
 import {
   getAccounts,
   saveAccounts,
   type StoredAccount,
 } from '../utils/store-utils';
-import { sorted } from '../utils/sorted';
 
 import Avatar from './avatar';
 import Icon from './icon';
@@ -170,12 +170,14 @@ function ImportAccountsSelection({
                     />
                     <div className="account-info">
                       <NameText
-                        account={{
-                          ...account.info,
-                          acct: /@/.test(account.info.acct as string)
-                            ? (account.info.acct as string)
-                            : `${account.info.acct as string}@${account.instanceURL}`,
-                        } as NameTextProps['account']}
+                        account={
+                          {
+                            ...account.info,
+                            acct: /@/.test(account.info.acct as string)
+                              ? (account.info.acct as string)
+                              : `${account.info.acct as string}@${account.instanceURL}`,
+                          } as NameTextProps['account']
+                        }
                         showAcct
                       />
                     </div>

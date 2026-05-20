@@ -205,7 +205,10 @@ function AccountBlock({
               </>
             )}
             {hasRelationship && (
-              <div key={relationship?.id} className="shazam-container-horizontal">
+              <div
+                key={relationship?.id}
+                className="shazam-container-horizontal"
+              >
                 <div className="shazam-container-inner">
                   {excludedRelationship.following &&
                   excludedRelationship.followedBy ? (

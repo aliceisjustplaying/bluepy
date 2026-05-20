@@ -2,12 +2,13 @@ import type { MessageDescriptor } from '@lingui/core';
 import type { mastodon } from 'masto';
 import type { ReactNode } from 'react';
 
+import visibilityIconsMap from '../utils/visibility-icons-map';
+
 import type {
   AnyStatus,
   LooseClickEvent,
   StatusContentMasto,
 } from './status-types';
-import visibilityIconsMap from '../utils/visibility-icons-map';
 
 export interface StatusMenuPartsArgs {
   accountId?: string | null;
@@ -50,7 +51,10 @@ export interface StatusMenuPartsArgs {
   setForceTranslate: (value: boolean) => void;
   instance: string;
   id: string;
-  onStatusLinkClick: (e: React.MouseEvent | KeyboardEvent, status: AnyStatus) => void;
+  onStatusLinkClick: (
+    e: React.MouseEvent | KeyboardEvent,
+    status: AnyStatus,
+  ) => void;
   createdDateText?: string | false | null;
   editedAt?: string | null;
   setShowEdited: (value: string | false) => void;

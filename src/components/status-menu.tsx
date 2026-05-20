@@ -2,9 +2,9 @@ import { MenuDivider } from '@szhsin/react-menu';
 
 import StatusAccountMenu from './status-account-menu';
 import StatusActivityMenu from './status-activity-menu';
+import type { StatusMenuPartsArgs } from './status-menu-types';
 import StatusQuickMenu from './status-quick-menu';
 import useStatusReplyMenu from './status-reply-menu';
-import type { StatusMenuPartsArgs } from './status-menu-types';
 import StatusUtilityMenu from './status-utility-menu';
 
 export default function useStatusMenuParts({

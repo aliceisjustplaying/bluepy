@@ -89,7 +89,11 @@
   );
   --focus-ring-color: var(--link-color);
   --button-bg-color: var(--blue-color);
-  --button-bg-blur-color: color-mix(in srgb, var(--blue-color) 67%, transparent);
+  --button-bg-blur-color: color-mix(
+    in srgb,
+    var(--blue-color) 67%,
+    transparent
+  );
   --button-text-color: white;
   --button-plain-bg-hover-color: rgba(128, 128, 128, 0.1);
   --reblog-color: var(--blue-color);
@@ -321,12 +325,12 @@
 }
 
 /* Blacksky appview theme — replaces Bluesky blue with rgb(96,96,233) */
-[data-appview="blacksky"] {
+[data-appview='blacksky'] {
   --blue-color: #6060e9;
 }
 
 @media (prefers-color-scheme: dark) {
-  [data-appview="blacksky"] {
+  [data-appview='blacksky'] {
     --blue-color: #9898f0;
   }
 }

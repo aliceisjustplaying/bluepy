@@ -1092,49 +1092,48 @@ function Notifications({ columnMode }: NotificationsProps) {
         {visibleNotifications.length ? (
           <FilterContext.Provider value="notifications">
             {visibleNotifications.map((notification) => {
-                if (onlyMentions && notification.type !== 'mention') {
-                  return null;
-                }
-                const notificationDay = new Date(
-                  notification.createdAt as string,
-                );
-                const differentDay =
-                  notificationDay.toDateString() !== currentDay.toDateString();
-                if (differentDay) {
-                  currentDay = notificationDay;
-                }
-                // if notificationDay is yesterday, show "Yesterday"
-                // if notificationDay is before yesterday, show date
-                const heading =
-                  notificationDay.toDateString() ===
-                  yesterdayDate.toDateString()
-                    ? t`Yesterday`
-                    : niceDateTime(currentDay, {
-                        hideTime: true,
-                      });
-                const subHeading = niceDateTime(currentDay, {
-                  forceOpts: {
-                    weekday: 'long',
-                  },
-                });
-                return (
-                  <Fragment key={notification._ids || notification.id}>
-                    {differentDay && (
-                      <h2 className="timeline-header">
-                        <span>{heading}</span>{' '}
-                        <small className="insignificant bidi-isolate">
-                          {subHeading}
-                        </small>
-                      </h2>
-                    )}
-                    <Notification
-                      instance={instance}
-                      notification={notification}
-                      key={notification._ids || notification.id}
-                    />
-                  </Fragment>
-                );
-              })}
+              if (onlyMentions && notification.type !== 'mention') {
+                return null;
+              }
+              const notificationDay = new Date(
+                notification.createdAt as string,
+              );
+              const differentDay =
+                notificationDay.toDateString() !== currentDay.toDateString();
+              if (differentDay) {
+                currentDay = notificationDay;
+              }
+              // if notificationDay is yesterday, show "Yesterday"
+              // if notificationDay is before yesterday, show date
+              const heading =
+                notificationDay.toDateString() === yesterdayDate.toDateString()
+                  ? t`Yesterday`
+                  : niceDateTime(currentDay, {
+                      hideTime: true,
+                    });
+              const subHeading = niceDateTime(currentDay, {
+                forceOpts: {
+                  weekday: 'long',
+                },
+              });
+              return (
+                <Fragment key={notification._ids || notification.id}>
+                  {differentDay && (
+                    <h2 className="timeline-header">
+                      <span>{heading}</span>{' '}
+                      <small className="insignificant bidi-isolate">
+                        {subHeading}
+                      </small>
+                    </h2>
+                  )}
+                  <Notification
+                    instance={instance}
+                    notification={notification}
+                    key={notification._ids || notification.id}
+                  />
+                </Fragment>
+              );
+            })}
           </FilterContext.Provider>
         ) : (
           <>

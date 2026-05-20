@@ -20,7 +20,8 @@ function AccountHandleInfo({ acct, instance }: AccountHandleInfoProps) {
       </span>
       <div className="handle-legend">
         <span className="ib">
-          <span className="handle-legend-icon username" /> <Trans>username</Trans>
+          <span className="handle-legend-icon username" />{' '}
+          <Trans>username</Trans>
         </span>{' '}
         <span className="ib">
           <span className="handle-legend-icon server" />{' '}

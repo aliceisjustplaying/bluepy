@@ -334,10 +334,7 @@ export default defineConfig({
         const cssFiles = Object.keys(bundle).filter((file) =>
           file.endsWith('.css'),
         );
-        const lines = [
-          '/*',
-          '  Cache-Control: no-store',
-        ];
+        const lines = ['/*', '  Cache-Control: no-store'];
         if (cssFiles.length > 0) {
           lines.push(
             '/',

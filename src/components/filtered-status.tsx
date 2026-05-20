@@ -77,13 +77,7 @@ export default function FilteredStatus({
   return (
     <div
       className={`${
-        quoted
-          ? ''
-          : isReblog
-            ? group
-              ? 'status-group'
-              : 'status-reblog'
-            : ''
+        quoted ? '' : isReblog ? (group ? 'status-group' : 'status-reblog') : ''
       } visibility-${visibility}`}
       {...containerProps}
       // title={statusPeekText}

@@ -4,10 +4,7 @@ import type { ReactNode } from 'react';
 import Icon from './icon';
 import NameText, { type NameTextProps } from './name-text';
 
-function BylineNameText(props: {
-  account: unknown;
-  showAvatar?: boolean;
-}) {
+function BylineNameText(props: { account: unknown; showAvatar?: boolean }) {
   return <NameText {...(props as NameTextProps)} />;
 }
 

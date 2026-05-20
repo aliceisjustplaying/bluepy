@@ -55,10 +55,8 @@ export default function QuotesModal({
   // identity tied to the (stable) `masto` client.
   const statusesSelect = useMemo(
     () =>
-      getMastoV1Resource<{ $select: StatusesSelectFn }>(
-        masto,
-        'statuses',
-      ).$select,
+      getMastoV1Resource<{ $select: StatusesSelectFn }>(masto, 'statuses')
+        .$select,
     [masto],
   );
 

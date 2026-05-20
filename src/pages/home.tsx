@@ -170,65 +170,60 @@ function NotificationsMenu({
     'default',
   );
 
-  const loadNotifications = useCallback(
-    () => {
-      setUIState('loading');
-      void (async () => {
-        try {
-          const notificationsIterator =
-            mastoFetchNotifications() as AsyncIterator<unknown[]>;
-          const allNotifications = await notificationsIterator.next();
-          const notifications = massageNotifications2(
-            allNotifications.value as Parameters<
-              typeof massageNotifications2
-            >[0],
-          ) as NotificationItem[] | undefined;
+  const loadNotifications = useCallback(() => {
+    setUIState('loading');
+    void (async () => {
+      try {
+        const notificationsIterator =
+          mastoFetchNotifications() as AsyncIterator<unknown[]>;
+        const allNotifications = await notificationsIterator.next();
+        const notifications = massageNotifications2(
+          allNotifications.value as Parameters<typeof massageNotifications2>[0],
+        ) as NotificationItem[] | undefined;
 
-          if (notifications?.length) {
-            notifications.forEach((notification) => {
-              saveStatus(
-                notification.status as Parameters<typeof saveStatus>[0],
-                instance,
-                {
-                  skipThreading: true,
-                },
-              );
-            });
+        if (notifications?.length) {
+          notifications.forEach((notification) => {
+            saveStatus(
+              notification.status as Parameters<typeof saveStatus>[0],
+              instance,
+              {
+                skipThreading: true,
+              },
+            );
+          });
 
-            const groupedNotifications = getGroupedNotifications(
-              notifications,
-            ) as NotificationItem[];
+          const groupedNotifications = getGroupedNotifications(
+            notifications,
+          ) as NotificationItem[];
 
-            states.notificationsLast = groupedNotifications[0];
-            states.notifications = groupedNotifications;
+          states.notificationsLast = groupedNotifications[0];
+          states.notifications = groupedNotifications;
 
-            // Update last read marker
-            (
-              masto.v1.markers as {
-                create(options: {
-                  notifications: { lastReadId: string };
-                }): Promise<unknown>;
-              }
-            )
-              .create({
-                notifications: {
-                  lastReadId: groupedNotifications[0].id,
-                },
-              })
-              .catch(() => {});
-          }
-
-          states.notificationsShowNew = false;
-          states.notificationsLastFetchTime = Date.now();
-
-          setUIState('default');
-        } catch {
-          setUIState('error');
+          // Update last read marker
+          (
+            masto.v1.markers as {
+              create(options: {
+                notifications: { lastReadId: string };
+              }): Promise<unknown>;
+            }
+          )
+            .create({
+              notifications: {
+                lastReadId: groupedNotifications[0].id,
+              },
+            })
+            .catch(() => {});
         }
-      })();
-    },
-    [masto, instance],
-  );
+
+        states.notificationsShowNew = false;
+        states.notificationsLastFetchTime = Date.now();
+
+        setUIState('default');
+      } catch {
+        setUIState('error');
+      }
+    })();
+  }, [masto, instance]);
 
   const menuRef = useRef<ControlledMenuRef | null>(null);
   const headerHeight = 52;

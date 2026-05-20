@@ -1041,9 +1041,8 @@ function YearInPosts() {
                   {!searchEnabled && (
                     <p className="insignificant">
                       <small>
-                        ⚠️ Advanced search is unavailable, so this
-                        will make more requests to Bluesky and take much
-                        longer time.
+                        ⚠️ Advanced search is unavailable, so this will make
+                        more requests to Bluesky and take much longer time.
                       </small>
                     </p>
                   )}

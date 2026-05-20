@@ -914,10 +914,8 @@ test.describe('ATProto reply mapping', () => {
   });
 
   test('dedupes thread contexts loaded across timeline pages', () => {
-    const middleUri =
-      'at://did:plc:parent/app.bsky.feed.post/middle-reply';
-    const latestUri =
-      'at://did:plc:parent/app.bsky.feed.post/latest-reply';
+    const middleUri = 'at://did:plc:parent/app.bsky.feed.post/middle-reply';
+    const latestUri = 'at://did:plc:parent/app.bsky.feed.post/latest-reply';
     const rootPost = {
       ...feedReply().reply.parent,
       uri: parentUri,
@@ -994,7 +992,9 @@ test.describe('ATProto reply mapping', () => {
 
     expect(
       Array.from(deduped, (item) =>
-        Array.isArray(item.items) ? item.items.map((inner) => inner.uri) : item.uri,
+        Array.isArray(item.items)
+          ? item.items.map((inner) => inner.uri)
+          : item.uri,
       ),
     ).toEqual([[parentUri, middleUri, latestUri]]);
   });

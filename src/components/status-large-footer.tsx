@@ -16,11 +16,9 @@ import Icon from './icon';
 import MenuConfirm from './menu-confirm';
 import Menu2 from './menu2';
 import RelativeTime from './relative-time';
-import {
-  DEV,
-} from './status-helpers';
-import type { AnyStatus, LooseClickEvent } from './status-types';
 import StatusButton from './status-button';
+import { DEV } from './status-helpers';
+import type { AnyStatus, LooseClickEvent } from './status-types';
 
 interface StatusLargeFooterProps {
   deleted?: boolean;
@@ -108,7 +106,8 @@ export default function StatusLargeFooter({
             <a href={url ?? undefined} target="_blank" rel="noopener">
               {Date.now() - createdAtDate.getTime() < 86400000 && (
                 <>
-                  <RelativeTime datetime={createdAtDate} format="micro" /> ‒{' '}
+                  <RelativeTime datetime={createdAtDate} format="micro" />{' '}
+                  ‒{' '}
                 </>
               )}
               {!!createdAt && (

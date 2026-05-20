@@ -30,7 +30,10 @@ interface StatusHeaderProps {
   readOnly?: boolean;
   quoted?: boolean | number;
   id: string;
-  onStatusLinkClick: (e: React.MouseEvent | KeyboardEvent, status: AnyStatus) => void;
+  onStatusLinkClick: (
+    e: React.MouseEvent | KeyboardEvent,
+    status: AnyStatus,
+  ) => void;
   setContextMenuProps: (props: ContextMenuPropsShape) => void;
   setIsContextMenuOpen: (value: boolean | string) => void;
   isContextMenuOpen: boolean | string;
@@ -177,7 +180,9 @@ export default function StatusHeader({
                   setIsContextMenuOpen(true);
                 }}
                 className={`time ${
-                  isContextMenuOpen && contextMenuProps?.anchorRef ? 'is-open' : ''
+                  isContextMenuOpen && contextMenuProps?.anchorRef
+                    ? 'is-open'
+                    : ''
                 }`}
               >
                 <StatusTimeIcon

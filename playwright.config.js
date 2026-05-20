@@ -16,12 +16,11 @@ const AGENT_CHROMIUM_ARGS = [
   '--no-sandbox',
   '--single-process',
 ];
-const CHROMIUM_ARGS = (
+const CHROMIUM_ARGS =
   process.env.BLUEPY_CHROMIUM_ARGS?.split(/\s+/).filter(Boolean) ??
   (process.env.BLUEPY_AGENT_BROWSER || process.env.CI
     ? AGENT_CHROMIUM_ARGS
-    : [])
-);
+    : []);
 
 /**
  * Read environment variables from file.

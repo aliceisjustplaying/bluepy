@@ -46,7 +46,9 @@ export function StatusGhost({
           )}
           {ghostAccount && (
             <NameText
-              account={ghostAccount as Parameters<typeof NameText>[0]['account']}
+              account={
+                ghostAccount as Parameters<typeof NameText>[0]['account']
+              }
               showAvatar={false}
             />
           )}

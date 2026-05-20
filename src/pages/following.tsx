@@ -189,10 +189,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
           };
         };
       }>(masto, 'timelines').home;
-      const results = await homeTimeline
-        .list(opts)
-        .values()
-        .next();
+      const results = await homeTimeline.list(opts).values().next();
       let { value } = results;
       console.log('checkForUpdates', latestItem.current, value);
       const valueContainsLatestItem = value?.[0]?.id === latestItem.current; // since_id might not be supported

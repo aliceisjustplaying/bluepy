@@ -108,29 +108,27 @@ export default function StatusMediaEmbeds({
         (mediaAttachments.length > 1 &&
         (isSizeLarge || (withinContext && size === 'm')) ? (
           <div className="media-large-container">
-            {mediaAttachments.map(
-              (media: AnyMediaAttachment, i: number) => (
-                <div key={media.id} className={`media-container media-eq1`}>
-                  <Media
-                    media={media}
-                    autoAnimate
-                    showCaption
-                    allowLongerCaption={!content || isSizeLarge}
-                    lang={language ?? undefined}
-                    to={`/${instance}/s/${id}?${
-                      withinContext ? 'media' : 'media-only'
-                    }=${i + 1}`}
-                    onClick={
-                      onMediaClick
-                        ? (e: React.MouseEvent) => {
-                            onMediaClick(e, i, media, status);
-                          }
-                        : undefined
-                    }
-                  />
-                </div>
-              ),
-            )}
+            {mediaAttachments.map((media: AnyMediaAttachment, i: number) => (
+              <div key={media.id} className={`media-container media-eq1`}>
+                <Media
+                  media={media}
+                  autoAnimate
+                  showCaption
+                  allowLongerCaption={!content || isSizeLarge}
+                  lang={language ?? undefined}
+                  to={`/${instance}/s/${id}?${
+                    withinContext ? 'media' : 'media-only'
+                  }=${i + 1}`}
+                  onClick={
+                    onMediaClick
+                      ? (e: React.MouseEvent) => {
+                          onMediaClick(e, i, media, status);
+                        }
+                      : undefined
+                  }
+                />
+              </div>
+            ))}
           </div>
         ) : (
           <MultipleMediaFigure
@@ -151,7 +149,9 @@ export default function StatusMediaEmbeds({
                     media={media}
                     autoAnimate={isSizeLarge}
                     showCaption={mediaAttachments.length === 1}
-                    allowLongerCaption={!content && mediaAttachments.length === 1}
+                    allowLongerCaption={
+                      !content && mediaAttachments.length === 1
+                    }
                     lang={language ?? undefined}
                     altIndex={
                       showMultipleMediaCaptions && !!media.description

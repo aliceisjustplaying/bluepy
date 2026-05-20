@@ -5,8 +5,8 @@ import haptics from '../utils/haptics';
 
 import Icon from './icon';
 import StatusButton from './status-button';
-import type { LooseClickEvent } from './status-types';
 import type { ContextMenuPropsShape } from './status-context-menu';
+import type { LooseClickEvent } from './status-types';
 
 interface StatusInlineControlsProps {
   showActionsBar?: boolean;
@@ -49,61 +49,65 @@ export default function StatusInlineControls({
 
   return (
     <>
-      {showActionsBar && size !== 'l' && !previewMode && !readOnly && !deleted && (
-        <div
-          className={`status-actions ${
-            isContextMenuOpen === 'actions-bar' ? 'open' : ''
-          }`}
-          ref={actionsRef as RefObject<HTMLDivElement>}
-        >
-          <StatusButton
-            size="s"
-            title={t`Reply`}
-            alt={t`Reply`}
-            className="reply-button"
-            icon="comment"
-            iconSize="m"
-            onClick={(e: LooseClickEvent) => {
-              void haptics.trigger('light');
-              replyStatus(e);
-            }}
-          />
-          <StatusButton
-            size="s"
-            checked={favourited ?? undefined}
-            title={[t`Like`, t`Unlike`]}
-            alt={[t`Like`, t`Liked`]}
-            className="favourite-button"
-            icon="heart"
-            iconSize="m"
-            count={favouritesCount}
-            onClick={() => {
-              void favouriteStatusNotify();
-            }}
-          />
-          <button
-            type="button"
-            title={t`More`}
-            className="plain more-button"
-            onClick={(e: React.MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setContextMenuProps({
-                anchorRef: {
-                  current: e.currentTarget as Element,
-                },
-                align: 'start',
-                direction: 'left',
-                gap: 0,
-                shift: -8,
-              });
-              setIsContextMenuOpen('actions-bar');
-            }}
+      {showActionsBar &&
+        size !== 'l' &&
+        !previewMode &&
+        !readOnly &&
+        !deleted && (
+          <div
+            className={`status-actions ${
+              isContextMenuOpen === 'actions-bar' ? 'open' : ''
+            }`}
+            ref={actionsRef as RefObject<HTMLDivElement>}
           >
-            <Icon icon="more2" size="m" alt={t`More`} />
-          </button>
-        </div>
-      )}
+            <StatusButton
+              size="s"
+              title={t`Reply`}
+              alt={t`Reply`}
+              className="reply-button"
+              icon="comment"
+              iconSize="m"
+              onClick={(e: LooseClickEvent) => {
+                void haptics.trigger('light');
+                replyStatus(e);
+              }}
+            />
+            <StatusButton
+              size="s"
+              checked={favourited ?? undefined}
+              title={[t`Like`, t`Unlike`]}
+              alt={[t`Like`, t`Liked`]}
+              className="favourite-button"
+              icon="heart"
+              iconSize="m"
+              count={favouritesCount}
+              onClick={() => {
+                void favouriteStatusNotify();
+              }}
+            />
+            <button
+              type="button"
+              title={t`More`}
+              className="plain more-button"
+              onClick={(e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setContextMenuProps({
+                  anchorRef: {
+                    current: e.currentTarget as Element,
+                  },
+                  align: 'start',
+                  direction: 'left',
+                  gap: 0,
+                  shift: -8,
+                });
+                setIsContextMenuOpen('actions-bar');
+              }}
+            >
+              <Icon icon="more2" size="m" alt={t`More`} />
+            </button>
+          </div>
+        )}
       {size !== 'l' && (
         <div className="status-badge">
           {reblogged && (
@@ -113,9 +117,16 @@ export default function StatusInlineControls({
             <Icon className="favourite" icon="heart" size="s" alt={t`Liked`} />
           )}
           {bookmarked && (
-            <Icon className="bookmark" icon="bookmark" size="s" alt={t`Bookmarked`} />
+            <Icon
+              className="bookmark"
+              icon="bookmark"
+              size="s"
+              alt={t`Bookmarked`}
+            />
           )}
-          {pinned && <Icon className="pin" icon="pin" size="s" alt={t`Pinned`} />}
+          {pinned && (
+            <Icon className="pin" icon="pin" size="s" alt={t`Pinned`} />
+          )}
         </div>
       )}
     </>

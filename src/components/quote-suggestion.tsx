@@ -2,6 +2,7 @@ import './quote-suggestion.css';
 
 import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
+
 import StatusComponent, { type StatusComponentProps } from './status';
 
 interface StatusProps {

@@ -92,14 +92,10 @@ function QuoteSettingsSheet({
       setUIState('default');
 
       // Update the status with new quote policy
-      saveStatus(
-        toSaveStatus(newStatus),
-        post.instance,
-        {
-          skipThreading: true,
-          skipUnfurling: true,
-        },
-      );
+      saveStatus(toSaveStatus(newStatus), post.instance, {
+        skipThreading: true,
+        skipUnfurling: true,
+      });
     } catch (err) {
       console.error(err);
       showToast(t`Failed to update quote settings`);

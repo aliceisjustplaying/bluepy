@@ -532,7 +532,9 @@ function RelatedActions({
                     >
                       <Icon icon="rocket" />
                       <span>
-                        {showingReblogs ? t`Disable reposts` : t`Enable reposts`}
+                        {showingReblogs
+                          ? t`Disable reposts`
+                          : t`Enable reposts`}
                       </span>
                     </MenuItem>
                   </>
@@ -948,9 +950,7 @@ function RelatedActions({
             <MenuConfirm
               confirm={following}
               confirmLabel={
-                <span>
-                  {t`Unfollow @${info.acct || info.username}?`}
-                </span>
+                <span>{t`Unfollow @${info.acct || info.username}?`}</span>
               }
               menuItemClassName="danger"
               align="end"

@@ -32,9 +32,8 @@ test.describe('ATProto compose safety', () => {
   test('keeps shortened link text escaped', async ({ page }) => {
     await page.goto('/');
     const html = await page.evaluate(async () => {
-      const { default: enhanceContent } = await import(
-        '/src/utils/enhance-content.ts'
-      );
+      const { default: enhanceContent } =
+        await import('/src/utils/enhance-content.ts');
       return enhanceContent(
         '<p><a href="https://example.com">https://example.com/&lt;img src=x onerror=alert(1)&gt;</a></p>',
       );

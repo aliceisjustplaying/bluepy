@@ -21,13 +21,13 @@ import {
   getPreferences,
   setPreferences,
 } from '../utils/api';
+import { APPVIEW_OPTIONS, getActiveAppview } from '../utils/atproto-adapter';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import localeCode2Text from '../utils/localeCode2Text';
 import prettyBytes from '../utils/pretty-bytes';
 import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
-import { APPVIEW_OPTIONS, getActiveAppview } from '../utils/atproto-adapter';
 import store from '../utils/store';
 import { getVapidKey } from '../utils/store-utils';
 import {
@@ -443,10 +443,12 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <small>
                 {(() => {
                   const activeAppview = getActiveAppview();
-                  const appviewLabel = APPVIEW_OPTIONS[activeAppview]?.label ?? 'Bluesky';
-                  const settingsURL = activeAppview === 'blacksky'
-                    ? 'https://blacksky.community/settings'
-                    : 'https://bsky.app/settings';
+                  const appviewLabel =
+                    APPVIEW_OPTIONS[activeAppview]?.label ?? 'Bluesky';
+                  const settingsURL =
+                    activeAppview === 'blacksky'
+                      ? 'https://blacksky.community/settings'
+                      : 'https://bsky.app/settings';
                   return (
                     <Trans>
                       Synced to your {appviewLabel} account settings.{' '}

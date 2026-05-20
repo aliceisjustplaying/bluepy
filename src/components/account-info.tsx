@@ -931,7 +931,10 @@ function AccountInfo({
                     <Icon icon="group" /> <Trans>Group</Trans>
                   </span>
                 )}
-                <AtprotoLabels labels={info._atproto?.labels} sourceProfiles={info} />
+                <AtprotoLabels
+                  labels={info._atproto?.labels}
+                  sourceProfiles={info}
+                />
                 {/* {roles?.map((role) => (
                   <span className="tag">
                     {role.name}

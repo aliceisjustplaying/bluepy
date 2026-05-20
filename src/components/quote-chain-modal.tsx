@@ -62,10 +62,8 @@ export default function QuoteChainModal({
   // is tied to the stable `masto` client, not to per-render proxy access.
   const statusesSelect = useMemo(
     () =>
-      getMastoV1Resource<{ $select: StatusesSelectFn }>(
-        masto,
-        'statuses',
-      ).$select,
+      getMastoV1Resource<{ $select: StatusesSelectFn }>(masto, 'statuses')
+        .$select,
     [masto],
   );
 

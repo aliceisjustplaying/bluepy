@@ -72,7 +72,10 @@ let cleanupAgentPromise = null;
 /** @param {string | undefined} service */
 function normalizeService(service) {
   if (!service) return null;
-  const normalized = service.trim().replace(/^at:\/\//, '').replace(/\/+$/, '');
+  const normalized = service
+    .trim()
+    .replace(/^at:\/\//, '')
+    .replace(/\/+$/, '');
   if (!normalized) return null;
   return /^https?:\/\//.test(normalized) ? normalized : `https://${normalized}`;
 }
@@ -710,7 +713,10 @@ test.describe('write flows', () => {
     const replyBody = `${RUN_TAG} reply ${Date.now()}`;
     await textarea.fill(replyBody);
     const replyMutation = waitForCreateRecord(page, 'app.bsky.feed.post');
-    await page.getByRole('button', { name: /^Reply$/ }).first().click();
+    await page
+      .getByRole('button', { name: /^Reply$/ })
+      .first()
+      .click();
     const replyResponse = await replyMutation;
     /** @type {CreateRecordPayload} */
     const createRecordPayload = JSON.parse(

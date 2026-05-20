@@ -50,7 +50,10 @@ interface StatusMenuStateArgs {
   setForceTranslate: (value: boolean) => void;
   instance: string;
   id: string;
-  onStatusLinkClick: (e: React.MouseEvent | KeyboardEvent, status: AnyStatus) => void;
+  onStatusLinkClick: (
+    e: React.MouseEvent | KeyboardEvent,
+    status: AnyStatus,
+  ) => void;
   createdDateText?: string | false | null;
   editedAt?: string | null;
   setShowEdited: (value: string | false) => void;
@@ -62,11 +65,15 @@ interface StatusMenuStateArgs {
   masto: StatusContentMasto;
   muted?: boolean | null;
   pinned?: boolean | null;
-  quoteApprovalPolicyMessages: Parameters<typeof useStatusMenuParts>[0]['quoteApprovalPolicyMessages'];
+  quoteApprovalPolicyMessages: Parameters<
+    typeof useStatusMenuParts
+  >[0]['quoteApprovalPolicyMessages'];
   postQuoteApprovalPolicy?: string | null;
   visibility: Parameters<typeof useStatusMenuParts>[0]['visibility'];
   sKey: string;
-  fetchBoostedLikedByAccounts: Parameters<typeof useStatusMenuParts>[0]['fetchBoostedLikedByAccounts'];
+  fetchBoostedLikedByAccounts: Parameters<
+    typeof useStatusMenuParts
+  >[0]['fetchBoostedLikedByAccounts'];
 }
 
 export default function useStatusMenuState({
