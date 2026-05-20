@@ -10,6 +10,10 @@ Phanpy is hosted on [Cloudflare Pages](https://pages.cloudflare.com/) as a stati
 
 Phanpy uses [TransLang API](https://github.com/cheeaun/translang-api) for translating post content, profile bio and media description. Read more about [TransLang API's privacy policy](https://github.com/cheeaun/translang-api/blob/main/PRIVACY.md).
 
+## ATProto AppViews
+
+Bluepy sends ATProto requests to the AppView selected on the login screen. If a non-Bluesky AppView omits a profile avatar, Bluepy may request that public profile from the Bluesky public AppView to render the missing avatar. This sends the viewed account DID to `public.api.bsky.app`.
+
 ## Error logging
 
 Phanpy dev site (*dev.phanpy.social*) uses [Rollbar](https://rollbar.com/) to log errors for debugging purposes. Read more about [Rollbar's privacy policy](https://rollbar.com/privacy/). The production site (*phanpy.social*) does not use error logging.
