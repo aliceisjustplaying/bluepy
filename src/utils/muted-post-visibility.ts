@@ -27,11 +27,6 @@ export function getMutedPostVisibility(
     : DEFAULT_MUTED_POST_VISIBILITY;
 }
 
-function childStatus(value: unknown): unknown {
-  if (!isRecord(value)) return undefined;
-  return value.quotedStatus;
-}
-
 function accountID(status: unknown): string | undefined {
   if (!isRecord(status)) return undefined;
   const account = status.account;
@@ -43,11 +38,10 @@ export function hasMutedAuthor(status: unknown): boolean {
   if (!isRecord(status)) return false;
   const atproto = status._atproto;
   const reblog = status.reblog;
-  const quote = status.quote;
   if (isRecord(atproto) && atproto.mutedAuthor) {
     return true;
   }
-  return hasMutedAuthor(reblog) || hasMutedAuthor(childStatus(quote));
+  return hasMutedAuthor(reblog);
 }
 
 function isCurrentAccountStatus(

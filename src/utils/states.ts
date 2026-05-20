@@ -7,6 +7,7 @@ import { api } from './api';
 import isMastodonLinkMaybe from './is-mastodon-link-maybe';
 import {
   DEFAULT_MUTED_POST_VISIBILITY,
+  getMutedPostVisibility,
   type MutedPostVisibility,
 } from './muted-post-visibility';
 import pmem from './pmem';
@@ -271,9 +272,11 @@ export function initStates(): void {
     store.account.get<boolean>('settings-cloakMode') ?? false;
   states.settings.noAnimations =
     store.account.get<boolean>('settings-noAnimations') ?? false;
-  states.settings.mutedPostVisibility =
-    store.account.get<MutedPostVisibility>('settings-mutedPostVisibility') ??
-    DEFAULT_MUTED_POST_VISIBILITY;
+  states.settings.mutedPostVisibility = getMutedPostVisibility({
+    mutedPostVisibility: store.account.get<MutedPostVisibility>(
+      'settings-mutedPostVisibility',
+    ),
+  });
   // Apply persisted body classes on init (subscribe handlers only fire on change)
   if (typeof document !== 'undefined' && document.body) {
     document.body.classList.toggle(

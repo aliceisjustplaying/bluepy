@@ -33,19 +33,19 @@ void test('muted post visibility validates persisted values', () => {
   assert.equal(isMutedPostVisibility('invalid'), false);
 });
 
-void test('muted author detection recurses through reposts and quotes', () => {
+void test('muted author detection applies to reposts but not third-party quotes', () => {
   assert.equal(hasMutedAuthor(mutedStatus), true);
   assert.equal(hasMutedAuthor({ reblog: mutedStatus }), true);
-  assert.equal(hasMutedAuthor({ quote: { quotedStatus: mutedStatus } }), true);
+  assert.equal(hasMutedAuthor({ quote: { quotedStatus: mutedStatus } }), false);
   assert.equal(
     hasMutedAuthor({
       quote: {
         quotedStatus: {
-          quote: { quotedStatus: mutedStatus },
+          reblog: mutedStatus,
         },
       },
     }),
-    true,
+    false,
   );
   assert.equal(hasMutedAuthor({ _atproto: { mutedAuthor: false } }), false);
 });
@@ -72,6 +72,17 @@ void test('hide mode drops muted statuses except direct context and current acco
     shouldHideMutedStatus({
       status: mutedStatus,
       currentAccountID: 'did:plc:author',
+      visibility: 'hide',
+    }),
+    false,
+  );
+  assert.equal(
+    shouldHideMutedStatus({
+      status: {
+        account: { id: 'did:plc:other' },
+        quote: { quotedStatus: mutedStatus },
+      },
+      currentAccountID: 'did:plc:current',
       visibility: 'hide',
     }),
     false,
