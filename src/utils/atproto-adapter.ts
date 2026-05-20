@@ -12,6 +12,7 @@ import {
   type AppBskyNotificationListNotifications,
   AppBskyVideoDefs,
   AppBskyRichtextFacet,
+  type BskyPreferences,
   AtpAgent,
   type AtpAgentOptions,
   type AtpPersistSessionHandler,
@@ -31,6 +32,12 @@ import { compressAtprotoImageIfNeeded } from './atproto-image-compression';
 import { createAtprotoOAuthAgent } from './atproto-oauth';
 import { encodeAtprotoID } from './atproto-route';
 import { createAtprotoExternalEmbed, getFirstPostURL } from './atproto-unfurl';
+import {
+  type AtprotoLabel,
+  type AtprotoLabelDefinitionMap,
+  normalizeAtprotoLabelerDids,
+  normalizeAtprotoLabels,
+} from './atproto-labels';
 
 const BSKY_APPVIEW = 'https://public.api.bsky.app';
 const BSKY_APPVIEW_DID = 'did:web:api.bsky.app';
@@ -118,6 +125,14 @@ interface AtprotoProxyAgent {
   configureProxy: (proxy: string) => void;
 }
 
+interface AtprotoLabelersAgent {
+  appLabelers?: readonly string[];
+  configureLabelers?: (labelerDids: readonly string[]) => void;
+  getLabelDefinitions?: (
+    prefs: BskyPreferences | readonly string[],
+  ) => Promise<AtprotoLabelDefinitionMap>;
+}
+
 type AtprotoOAuthAgentSession = NonNullable<
   Parameters<typeof createAtprotoOAuthAgent>[0]
 >;
@@ -166,6 +181,14 @@ function isAtprotoAgentInternals(
 
 function isAtprotoProxyAgent(value: unknown): value is AtprotoProxyAgent {
   return isRecord(value) && typeof value.configureProxy === 'function';
+}
+
+function isAtprotoLabelersAgent(value: unknown): value is AtprotoLabelersAgent {
+  return (
+    isRecord(value) &&
+    (typeof value.configureLabelers === 'function' ||
+      typeof value.getLabelDefinitions === 'function')
+  );
 }
 
 function isAtprotoOAuthAgentSession(
@@ -415,6 +438,7 @@ interface AdaptedQuote {
 
 interface AdaptedAccountAtproto {
   hasProfileCounts: boolean;
+  labels: AtprotoLabel[];
 }
 
 interface AdaptedAccount {
@@ -470,6 +494,7 @@ interface AdaptedStatusAtproto {
   like?: string;
   repost?: string;
   text: string;
+  labels: AtprotoLabel[];
 }
 
 interface AdaptedStatusBase {
@@ -917,8 +942,46 @@ function actorToAccount(actor: AtprotoActor = {}): AdaptedAccount {
     group: false,
     _atproto: {
       hasProfileCounts,
+      labels: normalizeAtprotoLabels(actor.labels),
     },
   };
+}
+
+function getStoredAtprotoLabelerDids(agent: AtprotoAgent): string[] {
+  const preferences = store.account.get('preferences');
+  if (!isRecord(preferences)) return [];
+  const appLabelers = isAtprotoLabelersAgent(agent) ? (agent.appLabelers ?? []) : [];
+  const storedDids = normalizeAtprotoLabelerDids(
+    preferences.atprotoLabelerDids,
+    appLabelers,
+  );
+  if (storedDids.length) return storedDids;
+  if (isRecord(preferences.moderationPrefs)) {
+    return normalizeAtprotoLabelerDids(
+      preferences.moderationPrefs.labelers,
+      appLabelers,
+    );
+  }
+  return [];
+}
+
+function getAtprotoLabelerDids(
+  preferences: BskyPreferences,
+  agent: AtprotoAgent,
+): string[] {
+  const appLabelers = isAtprotoLabelersAgent(agent) ? (agent.appLabelers ?? []) : [];
+  return normalizeAtprotoLabelerDids(
+    preferences.moderationPrefs.labelers,
+    appLabelers,
+  );
+}
+
+function configureAgentLabelers(
+  agent: AtprotoAgent,
+  labelerDids: readonly string[],
+): void {
+  if (!isAtprotoLabelersAgent(agent)) return;
+  agent.configureLabelers?.(labelerDids);
 }
 
 interface EmbedParts {
@@ -1648,6 +1711,7 @@ export function postToStatus(
       like: post.viewer?.like,
       repost: post.viewer?.repost,
       text: record.text || '',
+      labels: normalizeAtprotoLabels(post.labels),
     },
     quoteApproval: {
       currentUser: 'automatic',
@@ -1961,6 +2025,7 @@ export function createAtprotoClient({
   if (!isBskyAppViewService(service) && isAtprotoProxyAgent(agent)) {
     agent.configureProxy(getActiveAppviewConfig().proxy);
   }
+  configureAgentLabelers(agent, getStoredAtprotoLabelerDids(agent));
   const agentLoose: AtprotoAgentInternals = isAtprotoAgentInternals(agent)
     ? agent
     : {};
@@ -3262,8 +3327,19 @@ export function createAtprotoClient({
         },
       },
       preferences: {
-        async fetch(): Promise<Record<string, never>> {
-          return {};
+        async fetch(): Promise<Record<string, unknown>> {
+          const preferences = await agent.getPreferences().catch(() => null);
+          if (!preferences) return {};
+          const labelerDids = getAtprotoLabelerDids(preferences, agent);
+          configureAgentLabelers(agent, labelerDids);
+          const labelDefs =
+            isAtprotoLabelersAgent(agent) && agent.getLabelDefinitions
+              ? await agent.getLabelDefinitions(preferences).catch(() => ({}))
+              : {};
+          return {
+            atprotoLabelerDids: labelerDids,
+            atprotoLabelDefs: labelDefs,
+          };
         },
       },
       reports: {

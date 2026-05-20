@@ -18,6 +18,7 @@ import states from '../utils/states';
 import { getCurrentAccID } from '../utils/store-utils';
 import useTruncated from '../utils/useTruncated';
 
+import AtprotoLabels from './atproto-labels';
 import Avatar from './avatar';
 import useStatusCommentIndicators from './status-comment-indicators';
 import StatusCompact from './status-compact';
@@ -641,6 +642,7 @@ export default function StatusContent({
             inReplyToAccount={inReplyToAccount as AnyStatus['account'] | null}
             showReplyBadge={showReplyBadge && !hideReplyBadge}
           />
+          <AtprotoLabels labels={status._atproto?.labels} />
           <StatusPostBody
             mediaFirst={mediaFirst}
             hasMediaAttachments={hasMediaAttachments}
