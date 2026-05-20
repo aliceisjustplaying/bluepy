@@ -171,8 +171,6 @@ msgstr "<0>Shift</0> + <1>c</1>"
 #~ msgid "Scheduled Posts"
 #~ msgstr ""
 
-#: src/components/muted-status.tsx
-#: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "뮤트됨"
@@ -744,10 +742,6 @@ msgstr "<0/>에 마감"
 #~ msgid "View #Wrapstodon"
 #~ msgstr ""
 
-#: src/components/muted-status.tsx
-msgid "Post from muted account"
-msgstr ""
-
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr ""
@@ -896,10 +890,6 @@ msgstr ""
 msgid "Unable to remove from list."
 msgstr ""
 
-#: src/pages/settings.tsx
-msgid "Show normally"
-msgstr ""
-
 #: src/components/account-block.tsx
 msgid "Mutual"
 msgstr "맞팔"
@@ -999,10 +989,6 @@ msgstr "모든 민감한 내용 보기"
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
 msgstr "대화를 뮤트할 수 없음"
-
-#: src/components/muted-status.tsx
-msgid "Show"
-msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
@@ -1359,10 +1345,6 @@ msgstr ""
 #: src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "모든 리스트"
-
-#: src/pages/settings.tsx
-msgid "Collapse with reveal"
-msgstr ""
 
 #: src/pages/public.tsx
 #~ msgid "No one has posted anything yet."
@@ -3208,10 +3190,6 @@ msgstr ""
 msgid "Only followers can quote this post"
 msgstr ""
 
-#: src/pages/settings.tsx
-msgid "Notifications from muted accounts are always hidden."
-msgstr ""
-
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
@@ -3343,14 +3321,6 @@ msgstr "다음 기간의 모든 게시물을 봅니다:"
 #: src/components/poll.tsx
 msgid "Ending <0/>"
 msgstr "<0/> 내 마감"
-
-#: src/components/muted-status.tsx
-msgid "Show muted post"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Hide entirely"
-msgstr ""
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
@@ -4474,10 +4444,6 @@ msgstr "멀티 칼럼 UI 스크린샷"
 msgid "No shortcuts yet. Tap on the Add shortcut button."
 msgstr "아직 아무 바로 가기도 없습니다. 바로 가기 추가 버튼을 눌러 보세요."
 
-#: src/components/muted-status.tsx
-msgid "Hide"
-msgstr ""
-
 #: src/pages/trending.tsx
 msgid "Trending posts"
 msgstr "인기 게시물"
@@ -5045,10 +5011,6 @@ msgstr "메뉴"
 #~ msgstr "쪽지"
 
 #: src/pages/settings.tsx
-msgid "Muted posts"
-msgstr ""
-
-#: src/pages/settings.tsx
 msgid "Translate to "
 msgstr ""
 
@@ -5074,3 +5036,39 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "좋아요"
+
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr ""

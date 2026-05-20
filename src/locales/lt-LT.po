@@ -171,8 +171,6 @@ msgstr "<0>Lyg2 (Shift)</0> + <1>c</1>"
 #~ msgid "Scheduled Posts"
 #~ msgstr "Suplanuoti įrašai"
 
-#: src/components/muted-status.tsx
-#: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "Nutildyta"
@@ -744,10 +742,6 @@ msgstr "Baigėsi <0/>"
 #~ msgid "View #Wrapstodon"
 #~ msgstr "Peržiūrėti #Wrapstodon"
 
-#: src/components/muted-status.tsx
-msgid "Post from muted account"
-msgstr ""
-
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr ""
@@ -896,10 +890,6 @@ msgstr "Pastaba: ši funkcija naudoja išorines vertimo paslaugas, veikiančias 
 msgid "Unable to remove from list."
 msgstr "Nepavyksta pašalinti iš sąrašo."
 
-#: src/pages/settings.tsx
-msgid "Show normally"
-msgstr ""
-
 #: src/components/account-block.tsx
 msgid "Mutual"
 msgstr "Bendri"
@@ -999,10 +989,6 @@ msgstr "Rodyti visą jautrų turinį"
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
 msgstr "Nepavyksta nutildyti pokalbio."
-
-#: src/components/muted-status.tsx
-msgid "Show"
-msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
@@ -1359,10 +1345,6 @@ msgstr ""
 #: src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Visi sąrašai"
-
-#: src/pages/settings.tsx
-msgid "Collapse with reveal"
-msgstr ""
 
 #: src/pages/public.tsx
 #~ msgid "No one has posted anything yet."
@@ -3208,10 +3190,6 @@ msgstr ""
 msgid "Only followers can quote this post"
 msgstr ""
 
-#: src/pages/settings.tsx
-msgid "Notifications from muted accounts are always hidden."
-msgstr ""
-
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
@@ -3343,14 +3321,6 @@ msgstr "Rodyti visus įrašus nuo…"
 #: src/components/poll.tsx
 msgid "Ending <0/>"
 msgstr "Baigsis <0/>"
-
-#: src/components/muted-status.tsx
-msgid "Show muted post"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Hide entirely"
-msgstr ""
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
@@ -4474,10 +4444,6 @@ msgstr "Daugiastulpelių naudotojo sąsajos ekrano kopija"
 msgid "No shortcuts yet. Tap on the Add shortcut button."
 msgstr "Kol kas nėra trumpųjų nuorodų. Paliesk mygtuką Pridėti trumpąją nuorodą."
 
-#: src/components/muted-status.tsx
-msgid "Hide"
-msgstr ""
-
 #: src/pages/trending.tsx
 msgid "Trending posts"
 msgstr "Tendencingi įrašai"
@@ -5045,10 +5011,6 @@ msgstr "Meniu"
 #~ msgstr "Privati"
 
 #: src/pages/settings.tsx
-msgid "Muted posts"
-msgstr ""
-
-#: src/pages/settings.tsx
 msgid "Translate to "
 msgstr "Versti į "
 
@@ -5074,3 +5036,39 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "Patiktukų"
+
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr ""

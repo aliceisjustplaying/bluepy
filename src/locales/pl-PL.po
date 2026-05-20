@@ -171,8 +171,6 @@ msgstr "<0>Shift</0> + <1>c</1>"
 #~ msgid "Scheduled Posts"
 #~ msgstr "Zaplanowane wpisy"
 
-#: src/components/muted-status.tsx
-#: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "Wyciszono"
@@ -744,10 +742,6 @@ msgstr "Zakończone <0/>"
 #~ msgid "View #Wrapstodon"
 #~ msgstr "Wyświetl #Wrapstodon"
 
-#: src/components/muted-status.tsx
-msgid "Post from muted account"
-msgstr ""
-
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr "Zobacz cytowania"
@@ -896,10 +890,6 @@ msgstr "Uwaga: Ta funkcja używa zewnętrznych tłumaczeń, wykorzystując <0>{T
 msgid "Unable to remove from list."
 msgstr "Nie udało się usunąć z listy."
 
-#: src/pages/settings.tsx
-msgid "Show normally"
-msgstr ""
-
 #: src/components/account-block.tsx
 msgid "Mutual"
 msgstr "Znajomi"
@@ -999,10 +989,6 @@ msgstr "Pokaż wszystkie wrażliwe treści"
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
 msgstr "Nie udało się wyciszyć konwersacji"
-
-#: src/components/muted-status.tsx
-msgid "Show"
-msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
@@ -1359,10 +1345,6 @@ msgstr "Ciąg cytatów"
 #: src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Wszystkie listy"
-
-#: src/pages/settings.tsx
-msgid "Collapse with reveal"
-msgstr ""
 
 #: src/pages/public.tsx
 #~ msgid "No one has posted anything yet."
@@ -3208,10 +3190,6 @@ msgstr ""
 msgid "Only followers can quote this post"
 msgstr "Tylko obserwujący mogą cytować ten wpis"
 
-#: src/pages/settings.tsx
-msgid "Notifications from muted accounts are always hidden."
-msgstr ""
-
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
@@ -3343,14 +3321,6 @@ msgstr "Pokaż mi wszystkie wpisy opublikowane nie wcześniej niż…"
 #: src/components/poll.tsx
 msgid "Ending <0/>"
 msgstr "Koniec <0/>"
-
-#: src/components/muted-status.tsx
-msgid "Show muted post"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Hide entirely"
-msgstr ""
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
@@ -4474,10 +4444,6 @@ msgstr "Zrzut ekranu wielokolumnowego interfejsu użytkownika"
 msgid "No shortcuts yet. Tap on the Add shortcut button."
 msgstr "Nie ma jeszcze żadnych skrótów. Kliknij przycisk Dodaj skrót."
 
-#: src/components/muted-status.tsx
-msgid "Hide"
-msgstr ""
-
 #: src/pages/trending.tsx
 msgid "Trending posts"
 msgstr "Popularne wpisy"
@@ -5045,10 +5011,6 @@ msgstr "Menu"
 #~ msgstr "Prywatne"
 
 #: src/pages/settings.tsx
-msgid "Muted posts"
-msgstr ""
-
-#: src/pages/settings.tsx
 msgid "Translate to "
 msgstr "Przetłumacz na "
 
@@ -5074,3 +5036,39 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "Polubienia"
+
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr ""
+
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr ""
