@@ -1,35 +1,56 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2026-05-20 20:12+0000\n"
+"POT-Creation-Date: 2025-05-03 21:08+0800\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: ca-ES\n"
+"Language: ca\n"
+"Project-Id-Version: phanpy\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-17 01:38\n"
+"Last-Translator: \n"
+"Language-Team: Catalan\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: phanpy\n"
+"X-Crowdin-Project-ID: 703337\n"
+"X-Crowdin-Language: ca\n"
+"X-Crowdin-File: /main/src/locales/en.po\n"
+"X-Crowdin-File-ID: 18\n"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments:"
-msgstr ""
+msgstr "Adjunts multimèdia:"
 
 #: src/components/related-actions.tsx
 msgid "Unblock <0>@{username}</0>"
-msgstr ""
+msgstr "Deixa de blocar a <0>@{username}</0>"
 
 #: src/utils/show-compose.ts
 msgid "A draft post is currently minimized. Post or discard it before creating a new one."
-msgstr ""
+msgstr "Actualment hi ha un esborrany minimitzat. Publiqueu-lo o descarteu-lo abans de crear-ne un de nou."
 
 #: src/components/compose.tsx
 msgid "Pop in"
-msgstr ""
+msgstr "Mostra"
 
 #: src/pages/settings.tsx
 msgid "Removes all UI animations, transitions, and smooth scrolling. Useful if motion is distracting."
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Whole word"
+#~ msgstr "Paraula sencera"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Go to my server (<0>{currentInstance}</0>)"
+#~ msgstr "Ves al meu servidor (<0>{currentInstance}</0>)"
+
 #: src/components/report-modal.tsx
 msgid "Muted {username}"
-msgstr ""
+msgstr "Silencia a @{username}"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -41,27 +62,31 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/trending.tsx
 msgid "Mentions"
-msgstr ""
+msgstr "Mencions"
 
 #: src/pages/account-statuses.tsx
 msgid "Account posts"
-msgstr ""
+msgstr "Publicacions del compte"
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external GIF search service, powered by <0>GIPHY</0>. G-rated (suitable for viewing by all ages), tracking parameters are stripped, referrer information is omitted from requests, but search queries and IP address information will still reach their servers."
-msgstr ""
+msgstr "Nota: aquesta funcionalitat utilitza un servei de cerca GIF extern, impulsat per <0>GIPHY</0>. Classificació G (apte per a la visualització per a totes les edats), els paràmetres de seguiment s'eliminen, la informació de referència s'omet de les sol·licituds, però les consultes de cerca i la informació de l'adreça IP encara arribaran als seus servidors."
 
 #: src/components/compose.tsx
 msgid "Downloading GIF…"
-msgstr ""
+msgstr "S'està baixant el GIF…"
 
 #: src/pages/catchup.tsx
 msgid "Show all authors"
-msgstr ""
+msgstr "Mostra tots els autors"
+
+#: src/components/compose.tsx
+#~ msgid "Ask a question"
+#~ msgstr "Fes una pregunta"
 
 #: src/components/report-modal.tsx
 msgid "Other"
-msgstr ""
+msgstr "Altres"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -70,104 +95,132 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Unable to copy HTML code"
-msgstr ""
+msgstr "No s'ha pogut copiar el codi HTML"
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "No lists."
-msgstr ""
+msgstr "No hi ha cap llista."
 
 #: src/components/math-block.tsx
 msgid "Math expressions found."
-msgstr ""
+msgstr "Expressions matemàtiques trobades."
+
+#: src/pages/login.jsx
+#~ msgid "e.g. “mastodon.social”"
+#~ msgstr "p. ex. \"mastodont.cat\""
 
 #. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
 msgid "Muted @{username} for {0}"
-msgstr ""
+msgstr "@{username} silenciat durant {0}"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
-msgstr ""
+msgstr "Voleu suprimir aquesta esborrany?"
 
 #: src/components/notification-service.tsx
 msgid "View all notifications"
-msgstr ""
+msgstr "Mostra totes les notificacions"
 
 #: src/components/quotes-modal.tsx
 msgid "No quotes yet"
-msgstr ""
+msgstr "Encara no teniu cap citació"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled post deleted"
+#~ msgstr "S'ha suprimit la publicació programada"
 
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Switch to Side Peek view"
-msgstr ""
+msgstr "Canvia a vista lateral"
+
+#: src/components/modals.tsx
+#~ msgid "Reply scheduled"
+#~ msgstr "Resposta programada"
 
 #: src/components/report-modal.tsx
 msgid "Unable to report post"
-msgstr ""
+msgstr "No ha estat possible denunciar la publicació"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{account} followed you.} other {<0><1>{0}</1> people</0> followed you.}}"
-msgstr ""
+msgstr "{count, plural, one {}=1 {{account} et segueix.} other {<0><1>{0}</1> persones</0> et segueixen.}}"
 
 #. placeholder {0}: niceDateTime(account.createdAt)
 #: src/pages/accounts.tsx
 msgid "Connected on {0} (<0/>)"
-msgstr ""
+msgstr "Connectat a {0} (<0/>)"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Only you can quote"
-msgstr ""
+msgstr "Només vosaltres podeu citar-vos"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>c</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>c</1>"
+
+#: src/components/compose-button.tsx
+#: src/components/nav-menu.tsx
+#: src/pages/scheduled-posts.tsx
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled Posts"
+#~ msgstr "Publicacions programades"
 
 #: src/components/related-actions.tsx
 msgid "Muted"
-msgstr ""
+msgstr "Usuaris silenciats"
 
 #: src/pages/account-statuses.tsx
 msgid "Nothing to see here yet."
-msgstr ""
+msgstr "No hi ha res a veure encara."
 
 #: src/components/list-add-edit.tsx
 msgid "Delete this list?"
-msgstr ""
+msgstr "Voleu suprimir aquesta llista?"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcut settings copied"
-msgstr ""
+msgstr "S'ha copiat la configuració de la drecera"
+
+#: src/components/related-actions.tsx
+#~ msgid "Edit notes"
+#~ msgstr "Edita les notes"
 
 #: src/pages/settings.tsx
 msgid "anyone"
-msgstr ""
+msgstr "qualsevol"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Posts"
-msgstr ""
+msgstr "Publicacions"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've blocked {domain}."
-msgstr ""
+msgstr "Publicació amagada perquè heu bloquejat a {domain}."
 
 #: src/components/poll.tsx
 msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
-msgstr ""
+msgstr "{optionVotesCount, plural, one {# vot} other {# vots}}"
+
+#: src/components/status-activity-menu.tsx
+#: src/components/status-activity-menu.tsx
+#~ msgid "Boosted/Liked by…"
+#~ msgstr "Impulsat/Afavorit per…"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle}"
-msgstr ""
+msgstr "{hashtagTitle}"
 
 #: src/pages/mentions.tsx
 msgid "No one mentioned you :("
-msgstr ""
+msgstr "Ningú us ha esmentat :("
 
 #: src/components/filtered-status.tsx
 #: src/components/filtered-status.tsx
@@ -177,88 +230,113 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered"
-msgstr ""
+msgstr "Filtrat"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/compose.tsx
 msgid "Replying to @{0}"
-msgstr ""
+msgstr "En resposta a @{0}"
 
 #: src/components/qr-scanner-modal.tsx
 msgid "Unable to access camera. Please check permissions."
-msgstr ""
+msgstr "No es pot accedir a la càmera. Si us plau, comproveu els permisos."
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Delete scheduled post?"
+#~ msgstr "Voleu suprimir la publicació programada?"
 
 #: src/components/related-actions.tsx
 msgid " Notifications disabled for @{username}'s posts."
-msgstr ""
+msgstr " S'han desactivat les notificacions per a les publicacions de @{username}."
+
+#: src/pages/login.jsx
+#~ msgid "server domain"
+#~ msgstr "domini del servidor"
 
 #: src/components/drafts.tsx
 msgid "Error deleting drafts! Please try again."
-msgstr ""
+msgstr "S'ha produït un error en suprimir els esborranys! Si us plau, torna-ho a provar."
 
 #: src/pages/settings.tsx
 msgid "Auto refresh timeline posts"
-msgstr ""
+msgstr "Actualitza automàticament les publicacions de la línia de temps"
 
 #: src/components/import-accounts-selection.tsx
 msgid "{selectedCount, plural, one {Import # account} other {Import # accounts}}"
-msgstr ""
+msgstr "{selectedCount, plural, one {Importa # compte} other {Importa # comptes}}"
 
 #: src/pages/catchup.tsx
 msgid "Back to top"
-msgstr ""
+msgstr "Torna a dalt"
 
 #: src/components/status-helpers.ts
 msgid "Private posts cannot be quoted"
-msgstr ""
+msgstr "No es poden citar les publicacions privades"
 
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
-msgstr ""
+msgstr "Això és estàtic, sense estil i sense guió. És possible que hàgiu d'aplicar els vostres propis estils i editar-los segons sigui necessari."
 
 #: src/pages/settings.tsx
 msgid "Post translation"
-msgstr ""
+msgstr "Traducció de les publicacions"
 
 #: src/components/related-actions.tsx
 msgid "Unable to unblock @{username}"
-msgstr ""
+msgstr "No ha estat possible desblocar @{username}"
 
 #: src/pages/catchup.tsx
 msgid "Density"
-msgstr ""
+msgstr "Densitat"
+
+#: src/pages/settings.tsx
+#~ msgid "⚠️⚠️⚠️ Very experimental.<0/>Stored in your own profile’s notes. Profile (private) notes are mainly used for other profiles, and hidden for own profile."
+#~ msgstr "⚠️⚠️⚠️ Funcionalitat experimental.<0/>S'emmagatzemen en les notes del perfil propi. Les notes del perfil (privades) s'utilitzen principalment per altres perfils i estan amagades del perfil propi."
 
 #: src/pages/notifications.tsx
 msgid "Only mentions"
-msgstr ""
+msgstr "Només mencions"
 
 #. placeholder {0}: announcements.length
 #: src/pages/notifications.tsx
 msgid "{0, plural, one {Announcement} other {Announcements}}"
-msgstr ""
+msgstr "{0, plural, one {Anunci} other {Anuncis}}"
 
 #. placeholder {0}: date.toLocaleString( i18n.locale, { month: 'long', year: 'numeric', }, )
 #: src/pages/account-statuses.tsx
 msgid "Showing posts in {0}"
-msgstr ""
+msgstr "Es mostren publicacions a {0}"
+
+#: src/components/related-actions.tsx
+#~ msgid "Boosts from @{username} enabled."
+#~ msgstr "Impulsos de @{username} permesos."
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Notifications"
-msgstr ""
+msgstr "Ves a les Notificacions"
 
 #: src/components/generic-accounts.tsx
 msgid "Nothing to show"
-msgstr ""
+msgstr "Res a mostrar"
+
+#: src/pages/catchup.tsx
+#~ msgid "Note: your server might only show a maximum of 800 posts in the Home timeline regardless of the time range. Could be less or more."
+#~ msgstr "Nota: el vostre servidor només pot mostrar un màxim de 800 publicacions a la línia de temps d'inici, independentment de l'interval de temps. Aquest valor podria variar."
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Bookmarked"
-msgstr ""
+msgstr "Afegit a marcadors"
+
+#: src/components/private-note-sheet.tsx
+#: src/components/related-actions.tsx
+#~ msgid "Notes"
+#~ msgstr "Notes"
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
 msgid "Catch-up {0} removed"
-msgstr ""
+msgstr "S'ha eliminat la Posada al dia {0}"
 
 #: src/components/report-modal.tsx
 msgid "Breaks specific Bluesky rules"
@@ -268,9 +346,13 @@ msgstr ""
 msgid "Login required to see posts from Bluesky."
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "{0, plural, one {# keyword} other {# keywords}}"
+#~ msgstr "{0, plural, one {# paraula clau} other {# paraules clau}}"
+
 #: src/pages/welcome.tsx
 msgid "A separate timeline for followings. Email-inspired interface to sort and filter posts."
-msgstr ""
+msgstr "Una línia de temps separada per als seguiments. Interfície inspirada en el correu electrònic per ordenar i filtrar publicacions."
 
 #: src/components/feedback-modal.tsx
 msgid "Tell us what happened first."
@@ -279,27 +361,35 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Light"
-msgstr ""
+msgstr "Clar"
 
 #: src/pages/catchup.tsx
 msgid "last 4 hours"
-msgstr ""
+msgstr "les últimes 4 hores"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Send post"
-msgstr ""
+msgstr "Envia la publicació"
 
 #: src/pages/notifications.tsx
 msgid "Dismiss"
-msgstr ""
+msgstr "Ometre"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Specific list is optional. For multi-column mode, list is required, else the column will not be shown."
+#~ msgstr "La llista específica és opcional. Per al mode de múltiples columnes, la llista és necessària, en cas contrari la columna no es mostrarà."
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
-msgstr ""
+msgstr "Poseu-vos al dia amb les publicacions de les persones que seguiu."
+
+#: src/components/follow-request-buttons.tsx
+#~ msgid "Reject"
+#~ msgstr "Rebutja"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open"
-msgstr ""
+msgstr "Obre"
 
 #. placeholder {0}: mediaAttachments[index]?.fileName || index + 1
 #: src/components/compose.tsx
@@ -308,36 +398,44 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Ended"
-msgstr ""
+msgstr "Finalitzada"
 
 #: src/components/nav-menu.tsx
 #: src/components/text-expander.tsx
 msgid "More…"
-msgstr ""
+msgstr "Més…"
 
 #: src/pages/status.tsx
 msgid "{years, plural, one {# year later} other {# years later}}"
-msgstr ""
+msgstr "{years, plural, one {# any enrere} other {# anys enrere}}"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Copy handle"
-msgstr ""
+msgstr "Copia l'identificador d'usuari"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Bookmarks"
-msgstr ""
+msgstr "Ves als marcadors"
+
+#: src/pages/followed-hashtags.tsx
+#~ msgid "Unable to load followed hashtags."
+#~ msgstr "No ha estat possible carregar les etiquetes seguides."
+
+#: src/pages/mentions.tsx
+#~ msgid "Private mentions"
+#~ msgstr "Mencions privades"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List"
-msgstr ""
+msgstr "Llista"
 
 #: src/components/status-placeholders.tsx
 #: src/components/status-quotes.tsx
 #: src/components/status-quotes.tsx
 #: src/components/status-quotes.tsx
 msgid "Post unavailable"
-msgstr ""
+msgstr "Publicació no disponible"
 
 #: src/components/report-modal.tsx
 msgid "Bluesky rule violation"
@@ -358,7 +456,7 @@ msgstr ""
 #: src/components/timeline2.tsx
 #: src/pages/search.tsx
 msgid "The end."
-msgstr ""
+msgstr "Final."
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media-attachment.tsx
@@ -375,7 +473,7 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/status.tsx
 msgid "More"
-msgstr ""
+msgstr "Més"
 
 #: src/pages/welcome.tsx
 msgid "Reposts Carousel"
@@ -383,32 +481,40 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up"
-msgstr ""
+msgstr "Posem-nos al dia"
 
 #: src/pages/status.tsx
 msgid "Switch to Full view"
-msgstr ""
+msgstr "Canvia a vista completa"
 
 #: src/components/drafts.tsx
 msgid "Error fetching quoted status!"
-msgstr ""
+msgstr "S'ha produït un error en obtenir l'estat de la publicació citada!"
 
 #: src/components/feedback-modal.tsx
 msgid "Feedback sent"
 msgstr ""
 
+#: src/pages/followed-hashtags.tsx
+#~ msgid "{0, plural, one {# hashtag} other {# hashtags}}"
+#~ msgstr "{0, plural, one {# etiqueta} other {# etiquetes}}"
+
 #: src/components/report-modal.tsx
 msgid "Pending review"
-msgstr ""
+msgstr "Pendent de revisió"
+
+#: src/pages/login.jsx
+#~ msgid "Continue with {selectedInstanceText}"
+#~ msgstr "Continueu amb {selectedInstanceText}"
 
 #: src/components/timeline.tsx
 #: src/pages/settings.tsx
 msgid "New posts"
-msgstr ""
+msgstr "Publicacions noves"
 
 #: src/components/related-actions.tsx
 msgid "Blocked"
-msgstr ""
+msgstr "Usuaris blocats"
 
 #: src/components/atproto-labels.tsx
 msgid "Explicit sexual images."
@@ -416,20 +522,24 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "What's new"
-msgstr ""
+msgstr "Registre de canvis"
 
 #: src/components/drafts.tsx
 msgid "Delete all drafts?"
-msgstr ""
+msgstr "Voleu suprimir tots els esborranys?"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move down"
-msgstr ""
+msgstr "Mou cap avall"
 
 #: src/components/related-actions.tsx
 msgid "Mention <0>@{username}</0>"
-msgstr ""
+msgstr "Menciona a <0>@{username}</0>"
+
+#: src/pages/filters.tsx
+#~ msgid "Edit filter"
+#~ msgstr "Edita el filtre"
 
 #: src/components/related-actions.tsx
 msgid "Enable reposts"
@@ -440,10 +550,14 @@ msgstr ""
 msgid "Switch to account's PDS {0}"
 msgstr ""
 
+#: src/pages/hashtag.tsx
+#~ msgid "Unable to unfeature on profile"
+#~ msgstr "No s'ha eliminat dels elements destacats del perfil"
+
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
 msgid "Quote settings updated"
-msgstr ""
+msgstr "S'ha actualitzat la configuració de les cites"
 
 #: src/pages/year-in-posts.tsx
 msgid "Year"
@@ -451,50 +565,58 @@ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Switch to this account"
-msgstr ""
+msgstr "Canvia a aquest compte"
 
 #: src/components/compose.tsx
 msgid "Minimize"
-msgstr ""
+msgstr "Minimitza"
 
 #: src/components/quotes-modal.tsx
 msgid "Error loading quotes"
-msgstr ""
+msgstr "S'ha produït un error en carregar les cites"
 
 #: src/components/media-attachment.tsx
 msgid "Uploaded"
-msgstr ""
+msgstr "Pujat"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "No columns yet. Tap on the Add column button."
+#~ msgstr "No hi ha columnes encara. Toqueu el botó Afegeix columna."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add more than one shortcut/column to make this work."
-msgstr ""
+msgstr "Afegiu més d'una drecera/columna perquè funcioni."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/trending.tsx
 msgid "Trending"
-msgstr ""
+msgstr "Tendències"
 
 #: src/components/embed-modal.tsx
 msgid "Open in new window"
-msgstr ""
+msgstr "Obre en una finestra nova"
 
 #: src/pages/notifications.tsx
 msgid "Notifications settings updated"
-msgstr ""
+msgstr "S’ha actualitzat la configuració de notificacions"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled post rescheduled"
+#~ msgstr "Publicació programada reprogramada"
 
 #: src/pages/accounts.tsx
 msgid "View profile…"
-msgstr ""
+msgstr "Veure el perfil…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Expand content warning or<0/>toggle expanded/collapsed thread"
-msgstr ""
+msgstr "Amplieu l'avís de contingut o<0/>canvia al fil ampliat/replegat"
 
 #: src/components/account-info.tsx
 msgid "Unable to load account."
-msgstr ""
+msgstr "No es pot carregar el compte."
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -503,37 +625,56 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "{query} <0>‒ accounts, hashtags & posts</0>"
-msgstr ""
+msgstr "{query} <0>‒ comptes, etiquetes i publicacions</0>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Content"
-msgstr ""
+msgstr "Contingut"
 
 #: src/components/report-modal.tsx
 msgid "Send Report"
-msgstr ""
+msgstr "Envia informe"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Enter a new server e.g. \"mastodon.social\""
+#~ msgstr "Introduïu un nou servidor, p. ex. \"mastodont.cat\""
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to delete filter."
+#~ msgstr "No ha estat possible esborrar el filtre."
+
+#: src/components/nav-menu.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Federated"
+#~ msgstr "Federada"
 
 #. More from [Author]
 #: src/components/byline.tsx
 msgid "More from <0/>"
-msgstr ""
+msgstr "Més de <0/>"
 
 #: src/pages/search.tsx
 msgid "No hashtags found."
-msgstr ""
+msgstr "No s'ha trobat cap etiqueta."
 
 #: src/components/recent-searches.tsx
 #: src/components/search-form.tsx
 msgid "Recent searches"
-msgstr ""
+msgstr "Cerques recents"
 
 #: src/utils/open-compose.ts
 msgid "Looks like your browser is blocking popups."
-msgstr ""
+msgstr "Sembla que el vostre navegador bloca les finestres emergents."
 
 #: src/pages/settings.tsx
 msgid "Default visibility updated"
-msgstr ""
+msgstr "Actualitzada la visibilitat per defecte"
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "{0, plural, other {<0>@{1}</0> first, # others below}}"
+#~ msgstr "{0, plural, one {}other {<0>@{1}</0> primera, # altres a sota}}"
 
 #. placeholder {0}: feeds.length
 #: src/pages/lists.tsx
@@ -542,52 +683,89 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Poll"
-msgstr ""
+msgstr "Enquesta"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Profile picture"
-msgstr ""
+msgstr "Foto de perfil"
 
 #: src/components/notification-service.tsx
 msgid "Notification"
-msgstr ""
+msgstr "Notificació"
 
 #: src/pages/accounts.tsx
 msgid "Note: <0>Default</0> account will always be used for first load. Switched accounts will persist during the session."
-msgstr ""
+msgstr "Nota: el compte <0>Per defecte</0> sempre s'utilitzarà per a la primera càrrega. Si canvieu de compte, aquest es mantindrà obert durant la sessió."
+
+#: src/pages/settings.tsx
+#~ msgid "\"Cloud\" import/export for shortcuts settings"
+#~ msgstr "Sincronitza la configuració al núvol"
 
 #: src/components/status-quotes.tsx
 msgid "Post removed by author"
-msgstr ""
+msgstr "Publicació eliminada per l'autor o l'autora"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "+ Replies"
+#~ msgstr "+ Respostes"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media.tsx
 msgid "Media description"
-msgstr ""
+msgstr "Descripció dels mitjans"
 
 #: src/pages/home.tsx
 msgid "Unable to fetch notifications."
-msgstr ""
+msgstr "No s'han pogut recuperar les notificacions."
 
 #: src/components/media-modal.tsx
 msgid "Open original media in new window"
-msgstr ""
+msgstr "Obre el fitxer original en una finestra nova"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Download shortcuts from server"
+#~ msgstr "Baixa les dreceres des del servidor"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not available in current view mode"
-msgstr ""
+msgstr "No disponible en el mode de visualització actual"
 
 #: src/components/import-accounts-selection.tsx
 msgid "Existing"
-msgstr ""
+msgstr "Existent"
 
 #: src/components/poll.tsx
 msgid "Ended <0/>"
-msgstr ""
+msgstr "Finalitzada<0/>"
+
+#: src/components/notification.tsx
+#~ msgid "View #Wrapstodon"
+#~ msgstr "Visualitzeu el #Wrapstodon"
 
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
-msgstr ""
+msgstr "Veure les cites"
+
+#: src/pages/filters.tsx
+#~ msgid "{0, plural, one {# filter} other {# filters}}"
+#~ msgstr "{0 , plural, one {# filtre} other {# filtres}}"
+
+#: src/pages/settings.tsx
+#~ msgid "Reposts carousel"
+#~ msgstr ""
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Shortcuts saved"
+#~ msgstr "S'han desat les dreceres"
+
+#: src/components/status-reply-menu.tsx
+#: src/components/status-reply-menu.tsx
+#~ msgid "Reply all"
+#~ msgstr "Respon a tothom"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Hiding boosts"
+#~ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "We read every message even when we cannot reply."
@@ -595,29 +773,33 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Follow requests"
-msgstr ""
+msgstr "Sol·licituds de seguiment"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Switch to account's server {0}"
+#~ msgstr "Canvia al servidor del compte {0}"
 
 #: src/pages/trending.tsx
 msgid "No trending posts."
-msgstr ""
+msgstr "No hi ha publicacions influents."
 
 #. placeholder {0}: !__FAKE_COMMIT_HASH__ && ( <span className="ib insignificant"> ( <a href={`https://github.com/cheeaun/phanpy/commit/${__COMMIT_HASH__}`} target="_blank" rel="noopener noreferrer" > <RelativeTime datetime={new Date(__BUILD_TIME__)} /> </a> ) </span> )
 #: src/pages/settings.tsx
 msgid "<0>Version:</0> <1/> {0}"
-msgstr ""
+msgstr "<0>Versió:</0> <1/> {0}"
 
 #: src/components/status-media-embeds.tsx
 #: src/components/status-post-body.tsx
 msgid "Show less"
-msgstr ""
+msgstr "Mostra'n menys"
 
 #: src/pages/settings.tsx
 msgid "Push notifications are blocked. Please enable them in your browser settings."
-msgstr ""
+msgstr "Les notificacions estan bloquejades. Si us plau, activeu-les al vostre navegador."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
-msgstr ""
+msgstr "Voleu afegir-hi les dreceres actuals?"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
@@ -626,46 +808,59 @@ msgstr ""
 msgid "Undo repost"
 msgstr ""
 
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Phanpy home timeline on tablet device"
+#~ msgstr "Captura de pantalla de la cronologia de la pàgina d'inici de Phanpy en una tauleta"
+
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Previous post"
-msgstr ""
+msgstr "Publicació anterior"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Posts)"
-msgstr ""
+msgstr "Cerca: {q} (publicacions)"
 
 #: src/components/media-modal.tsx
 msgid "Describe image…"
-msgstr ""
+msgstr "Descriu la imatge…"
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Override current shortcuts?"
-msgstr ""
+msgstr "Voleu reemplaçar les dreceres actuals?"
 
 #: src/components/account-info.tsx
 msgid "View profile"
-msgstr ""
+msgstr "Veure el perfil"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Dreceres de teclat"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Public"
-msgstr ""
+msgstr "Públic"
+
+#: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Optional, e.g. mastodon.social"
+#~ msgstr "Opcional, p. ex. mastodont.cat"
+
+#: src/pages/notifications.tsx
+#~ msgid "{0, plural, one {# follow request} other {# follow requests}}"
+#~ msgstr "{0, plural, one {# petició de seguiment} other {# peticions de seguiment}}"
 
 #: src/components/nav-menu.tsx
 msgid "Accounts…"
-msgstr ""
+msgstr "Comptes…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -673,11 +868,11 @@ msgstr ""
 #: src/pages/bookmarks.tsx
 #: src/pages/bookmarks.tsx
 msgid "Bookmarks"
-msgstr ""
+msgstr "Marcadors"
 
 #: src/components/media-post.tsx
 msgid "Filtered: {filterTitleStr}"
-msgstr ""
+msgstr "Filtrat: {filterTitleStr}"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -689,86 +884,94 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external translation services, powered by <0>{TRANSLATION_API_NAME}</0>."
-msgstr ""
+msgstr "NOTA: Aquesta funció utilitza serveis de traducció externs, impulsat per <0>{TRANSLATION_API_NAME}</0>."
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to remove from list."
-msgstr ""
+msgstr "No s'ha pogut eliminar de la llista."
 
 #: src/components/account-block.tsx
 msgid "Mutual"
-msgstr ""
+msgstr "Mutu"
 
 #: src/components/status-account-menu.tsx
 msgid "Report post…"
-msgstr ""
+msgstr "Denuncia la publicació…"
 
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 #: src/pages/list.tsx
 msgid "Unable to load posts."
-msgstr ""
+msgstr "No ha estat possible carregar les publicacions."
 
 #: src/pages/settings.tsx
 msgid "Text size"
-msgstr ""
+msgstr "Mida del text"
 
 #: src/pages/catchup.tsx
 msgid "last 11 hours"
-msgstr ""
+msgstr "les últimes 11 hores"
 
 #: src/components/account-info.tsx
 msgid "View profile image"
-msgstr ""
+msgstr "Veure imatge de perfil"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Home / Following"
-msgstr ""
+msgstr "Inici / Seguint"
 
 #: src/pages/catchup.tsx
 msgid "last 3 hours"
-msgstr ""
+msgstr "les últimes 3 hores"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>l</0> or <1>f</1>"
-msgstr ""
+msgstr "<0>l</0> o <1>f</1>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Label"
-msgstr ""
+msgstr "Etiqueta"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Liked"
-msgstr ""
+msgstr "M'ha agradat"
 
 #: src/pages/settings.tsx
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-msgstr ""
+msgstr "No s'ha concedit el permís d'enviar notificacions des del darrer inici de sessió. Haureu d'<0><1>iniciar la sessió</1> de nou per concedir aquest permís</0>."
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
 #: src/components/status-helpers.ts
 msgid "Read more →"
-msgstr ""
+msgstr "Llegiu més →"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} ({monthYear})"
+#~ msgstr "{accountDisplay} ({monthYear})"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Custom emojis"
+#~ msgstr "Emojis personalitzats"
 
 #: src/components/drafts.tsx
 msgid "No drafts found."
-msgstr ""
+msgstr "No s'han trobat esborranys."
 
 #: src/pages/bookmarks.tsx
 msgid "No bookmarks yet. Go bookmark something!"
-msgstr ""
+msgstr "No teniu marcadors. Cerqueu alguna cosa per guardar!"
 
 #: src/components/nav-menu.tsx
 msgid "Shortcuts / Columns…"
-msgstr ""
+msgstr "Dreceres / Columnes…"
 
 #. placeholder {0}: username || acct
 #: src/components/status-utility-menu.tsx
 msgid "View post by <0>@{0}</0>"
-msgstr ""
+msgstr "Mostra la publicació de <0>@{0}</0>"
 
 #: src/pages/welcome.tsx
 msgid "Connect your existing Bluesky or Blacksky account.<0/>Your credentials are not stored by Bluepy."
@@ -777,15 +980,15 @@ msgstr ""
 #. placeholder {0}: userLists.length
 #: src/pages/lists.tsx
 msgid "{0, plural, one {# list} other {# lists}}"
-msgstr ""
+msgstr "{0, plural, one {# llista} other {# llistes}}"
 
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
-msgstr ""
+msgstr "Mostra tot el contingut sensitiu"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
-msgstr ""
+msgstr "No ha estat possible silenciar la conversa"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
@@ -794,39 +997,39 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generating description. Please wait…"
-msgstr ""
+msgstr "Generant descripció. Si us plau, espereu…"
 
 #: src/components/nav-menu.tsx
 msgid "New update available…"
-msgstr ""
+msgstr "Nova actualització disponible…"
 
 #. index/total posts in a thread
 #: src/components/thread-badge.tsx
 msgid "{index}/{total}"
-msgstr ""
+msgstr "{index}/{total}"
 
 #: src/components/translated-bio-sheet.tsx
 msgid "Translated Bio"
-msgstr ""
+msgstr "Biografia traduïda"
 
 #: src/pages/status.tsx
 msgid "Unable to switch"
-msgstr ""
+msgstr "No s'ha pogut canviar"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
-msgstr ""
+msgstr "Escriviu per cercar un GIF"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Your followers can quote"
-msgstr ""
+msgstr "Els vostres seguidors poden citar-vos"
 
 #: src/components/media.tsx
 msgid "Open file"
-msgstr ""
+msgstr "Obre el fitxer"
 
 #. placeholder {0}: groupBy ?? ''
 #: src/pages/catchup.tsx
@@ -837,58 +1040,67 @@ msgstr ""
 #: src/components/edit-profile-sheet.tsx
 #: src/components/related-actions.tsx
 msgid "Edit profile"
-msgstr ""
+msgstr "Edita el perfil"
 
 #: src/pages/accounts.tsx
 msgid "Remove account…"
-msgstr ""
+msgstr "Elimina el compte…"
 
 #: src/pages/trending.tsx
 msgid "Back to showing trending posts"
-msgstr ""
+msgstr "Torna a les publicacions en tendència"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
-msgstr ""
+msgstr "Generador de descripcions d'imatges"
+
+#: src/pages/hashtag.tsx
+#: src/pages/hashtag.tsx
+#~ msgid "Featured on profile"
+#~ msgstr "Destacades al perfil"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut…"
-msgstr ""
+msgstr "Afegeix una drecera…"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/atproto-labels.tsx
 msgid "Automated"
-msgstr ""
+msgstr "Automatitzat"
 
 #: src/pages/trending.tsx
 msgid "Trending News"
-msgstr ""
+msgstr "Ara és tendència"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
-msgstr ""
+msgstr "Obre els detalls del contingut multimèdia o de la publicació"
 
 #: src/components/status-media-embeds.tsx
 msgid "Show media"
-msgstr ""
+msgstr "Mostra els mèdia"
 
 #: src/components/related-actions.tsx
 msgid "Forever"
-msgstr ""
+msgstr "Per sempre"
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications settings"
-msgstr ""
+msgstr "Configuració de les notificacions"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (- Boosts)"
+#~ msgstr "{accountDisplay} (- Impulsos)"
 
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/{total}"
-msgstr ""
+msgstr "Fil {index}/{total}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "beta"
-msgstr ""
+msgstr "beta"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/nav-menu.tsx
@@ -898,88 +1110,105 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Search"
-msgstr ""
+msgstr "Cerca"
+
+#: src/pages/accounts.jsx
+#~ msgid "Log out and remove <0>@{0}</0>"
+#~ msgstr "Tanca la sessió i elimina <0>@{0}</0>"
 
 #: src/components/modals.tsx
 msgid "Post updated. Check it out."
-msgstr ""
+msgstr "Publicació actualitzada. Comproveu-la."
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unpin post"
-msgstr ""
+msgstr "No s'ha pogut desenganxar la publicació"
 
 #: src/components/shortcuts-settings.tsx
 msgid "e.g. PixelArt (Max 5, space-separated)"
-msgstr ""
+msgstr "p. ex. PixelArt (màx. 5, separats per espais)"
 
 #. placeholder {0}: accounts.length
 #: src/components/import-export-accounts.tsx
 msgid "{0, plural, one {# account} other {# accounts}}"
-msgstr ""
+msgstr "{0, plural, one {# compte} other {# comptes}}"
 
 #: src/components/account-info.tsx
 msgid "Go to account page"
-msgstr ""
+msgstr "Ves a la pàgina del compte"
 
 #: src/pages/settings.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "Aparença"
 
 #: src/pages/settings.tsx
 msgid "Follows"
-msgstr ""
+msgstr "Seguiments"
 
 #. By [Author]
 #. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
 msgid "By {0}"
-msgstr ""
+msgstr "Per {0}"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
-msgstr ""
+msgstr "Sembla que ja teniu un camp d'edició obert a la finestra principal. Si l'utilitzeu en aquesta finestra, es descartaran els canvis que heu fet a la finestra principal. Voleu continuar?"
 
 #: src/components/report-modal.tsx
 msgid "Report @{username}"
-msgstr ""
+msgstr "Informar sobre @{username}"
 
 #: src/components/media-modal.tsx
 msgid "Open original media"
-msgstr ""
+msgstr "Obre el fitxer original"
 
 #: src/components/post-embed-modal.tsx
 msgid "Account Emojis:"
-msgstr ""
+msgstr "Emojis d'aquest compte:"
+
+#. Scheduled [in 1 day] ([Thu, Feb 27, 6:30:00 PM])
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled <0><1/></0> <2>({0})</2>"
+#~ msgstr "Programada el <0><1/></0> <2>({0})</2>"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Account"
-msgstr ""
+msgstr "Compte"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>?"
-msgstr ""
+msgstr "Voleu blocar a <0>@{username}</0>?"
 
 #: src/components/related-actions.tsx
 msgid "@{username} removed from followers"
-msgstr ""
+msgstr "S'ha eliminat @{username} de la llista de seguidors"
+
+#: src/components/endorsements.tsx
+#~ msgid "No featured profiles."
+#~ msgstr "No hi ha perfils destacats."
+
+#: src/pages/filters.tsx
+#~ msgid "Expiry"
+#~ msgstr "Caducitat"
 
 #: src/pages/catchup.tsx
 msgid "Overlaps with your last catch-up"
-msgstr ""
+msgstr "Superposa amb la darrera posada al dia"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post"
-msgstr ""
+msgstr "Redacta una publicació nova"
 
 #. Action to switch from rendered math back to raw (LaTeX) markup
 #: src/components/math-block.tsx
 msgid "Show markup"
-msgstr ""
+msgstr "Mostra el marcatge"
 
 #. placeholder {0}: shortenNumber(statusesCount)
 #: src/components/account-block.tsx
 msgid "Posts: {0}"
-msgstr ""
+msgstr "Publicacions: {0}"
 
 #: src/pages/accounts.tsx
 msgid "Log out and remove <0>@{acct}</0>"
@@ -987,29 +1216,41 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've blocked @{name}."
-msgstr ""
+msgstr "Publicació amagada perquè heu bloquejat a @{name}."
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Failed to delete scheduled post"
+#~ msgstr "No s'ha pogut suprimir la publicació programada"
+
 #: src/components/drafts.tsx
 msgid "Looks like you have unsent drafts. Let's continue where you left off."
-msgstr ""
+msgstr "Sembla que hi ha esborranys sense enviar. Continuarem on ho vau deixar."
+
+#: src/pages/hashtag.tsx
+#~ msgid "Login required to see posts from this server."
+#~ msgstr "Cal iniciar sessió per veure les publicacions d'aquest servidor."
 
 #: src/components/generic-accounts.tsx
 #: src/components/mention-modal.tsx
 msgid "Error loading accounts"
-msgstr ""
+msgstr "S'ha produït un error en carregar els comptes"
 
 #: src/components/modals.tsx
 msgid "Post published. Check it out."
-msgstr ""
+msgstr "Publicació enviada. Comproveu-la."
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Hashtags)"
-msgstr ""
+msgstr "Cerca: {q} (etiquetes)"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Unable to save shortcuts"
+#~ msgstr "No es poden desar les dreceres"
 
 #: src/components/status-reblog.tsx
 msgid "<0/> <1>reposted</1>"
@@ -1017,15 +1258,23 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Show anyway"
-msgstr ""
+msgstr "Mostra-ho de totes maneres"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Zoom in"
+#~ msgstr "Amplia"
 
 #: src/components/status-helpers.ts
 msgid "Request to quote"
-msgstr ""
+msgstr "Sol·licitud per a citar"
 
 #: src/pages/settings.tsx
 msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
 msgstr ""
+
+#: src/pages/settings.jsx
+#~ msgid "<0>Built</0> by <1>@cheeaun</1>"
+#~ msgstr "<0>Creat</0> per <1>@cheeaun</1>"
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
@@ -1035,7 +1284,7 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Polls are not interactive, becomes a list with vote counts."
-msgstr ""
+msgstr "Les enquestes no són interactives, es converteixen en una llista amb recompte de vots."
 
 #: src/components/atproto-labels.tsx
 msgid "Sexually Suggestive"
@@ -1043,7 +1292,12 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Unmuted @{username}"
-msgstr ""
+msgstr "@{username} s'ha deixat de silenciar"
+
+#: src/components/status-inline-controls.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Boosted"
+#~ msgstr "Millorats"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
@@ -1053,26 +1307,30 @@ msgstr ""
 #. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
 msgid "Showing posts mentioning <0>{0}</0>"
-msgstr ""
+msgstr "Mostra publicacions mencionant <0>{0}</0>"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Unable to copy handle"
-msgstr ""
+msgstr "No s'ha pogut copiar l'identificador d'usuari"
+
+#: src/pages/filters.tsx
+#~ msgid "Change expiry"
+#~ msgstr "Canvia la caducitat"
 
 #: src/components/import-export-accounts.tsx
 msgid "Import failed"
-msgstr ""
+msgstr "S'ha produït un error en la importació"
 
 #. placeholder {0}: sharers.map((s) => { const { id: sharerId, avatarStatic, displayName, } = s; return ( <button key={sharerId} type="button" className="plain" style={{ padding: 0, }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); // Reset and filter to author setSelectedAuthor(sharerId); setSelectedFilterCategory('all'); }} > <Avatar url={avatarStatic} size="s" alt={displayName} /> </button> ); })
 #: src/pages/catchup.tsx
 msgid "Shared by {0}"
-msgstr ""
+msgstr "Compartit per {0}"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Import/export"
-msgstr ""
+msgstr "Importa/exporta"
 
 #: src/pages/account-statuses.tsx
 msgid "Hiding replies"
@@ -1084,20 +1342,42 @@ msgstr ""
 
 #: src/components/quote-chain-modal.tsx
 msgid "Quote chain"
-msgstr ""
+msgstr "Cadena de cites"
+
+#: src/components/nav-menu.jsx
+#: src/components/shortcuts.jsx
+#: src/pages/list.jsx
+#~ msgid "All Lists"
+#~ msgstr "Totes les llistes"
+
+#: src/pages/public.tsx
+#~ msgid "No one has posted anything yet."
+#~ msgstr "Ningú ha publicat res encara."
 
 #: src/components/post-embed-modal.tsx
 msgid "HTML code copied"
-msgstr ""
+msgstr "Codi HTML copiat"
+
+#: src/pages/filters.tsx
+#~ msgid "Filtered post will be…"
+#~ msgstr "La publicació filtrada serà…"
 
 #: src/pages/search.tsx
 msgid "See more accounts"
-msgstr ""
+msgstr "Veure més comptes"
 
 #: src/components/related-actions.tsx
 #: src/pages/account-statuses.tsx
 msgid "Search my posts"
-msgstr ""
+msgstr "Cerca a les meves publicacions"
+
+#: src/components/status-content.tsx
+#~ msgid "Unboosted @{0}'s post"
+#~ msgstr "S'ha eliminat l'impuls de la publicació de @{0}"
+
+#: src/pages/filters.tsx
+#~ msgid "Delete this filter?"
+#~ msgstr "Voleu suprimir aquest filtre?"
 
 #: src/components/generic-accounts.tsx
 #: src/components/notification.tsx
@@ -1105,22 +1385,34 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Accounts"
-msgstr ""
+msgstr "Comptes"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've muted @{name}."
-msgstr ""
+msgstr "Publicació amagada perquè heu silenciat a @{name}."
+
+#: src/pages/status.tsx
+#~ msgid "This post is from another server (<0>{instance}</0>). Interactions (reply, boost, etc) are not possible."
+#~ msgstr "Aquesta publicació és d'un altre servidor (<0>{instance}</0>). Les interaccions (resposta, impuls, etc.) no són possibles."
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/components/account-info.tsx
 msgid "This user has chosen to not make this information available."
-msgstr ""
+msgstr "Aquest usuari ha decidit no mostrar aquesta informació."
+
+#: src/pages/welcome.jsx
+#~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
+#~ msgstr "<0>Creat</0> per <1>@cheeaun</1>. <2>Política de Privadesa</2>."
 
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
-msgstr ""
+msgstr "Torna a dalt"
+
+#: src/pages/filters.tsx
+#~ msgid "Home and lists"
+#~ msgstr "Inici i llistes"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1128,16 +1420,16 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to original profile page"
-msgstr ""
+msgstr "Ves a la pàgina del perfil original"
 
 #. placeholder {0}: detectedLang ?? '…'
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
-msgstr ""
+msgstr "Automàtic ({0})"
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
-msgstr ""
+msgstr "Acceptat"
 
 #: src/components/feedback-modal.tsx
 msgid "Leave this field blank"
@@ -1145,48 +1437,48 @@ msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Powered by GIPHY"
-msgstr ""
+msgstr "Desenvolupat per GIPHY"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Help"
-msgstr ""
+msgstr "Ajuda"
 
 #. placeholder {0}: shortenNumber(statusesCount)
 #. placeholder {1}: shortenNumber(statusesCount)
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{statusesCount, plural, one {<0>{0}</0> Post} other {<1>{1}</1> Posts}}"
-msgstr ""
+msgstr "{statusesCount, plural, one {<0>{0}</0> Publicació} other {<1>{1}</1> Publicacions}}"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Header picture"
-msgstr ""
+msgstr "Imatge de capçalera"
 
 #: src/components/account-info.tsx
 msgid "<0>{displayName}</0> has indicated that their new account is now:"
-msgstr ""
+msgstr "<0>{displayName}</0> ha indicat que té un nou compte:"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unmute conversation"
-msgstr ""
+msgstr "No s'ha pogut reactivar la conversa"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Toggle Cloak mode"
-msgstr ""
+msgstr "Alterna el mode ocult"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import & append…"
-msgstr ""
+msgstr "Importa i annexa…"
 
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Mute profile</0>"
-msgstr ""
+msgstr "Envia l'informe <0>+ Silencia el perfil</0>"
 
 #. placeholder {0}: snapStates.settings.contentTranslationHideLanguages .length
 #: src/pages/settings.tsx
 msgid "{0, plural, =0 {Hide \"Translate\" button for:} other {Hide \"Translate\" button for (#):}}"
-msgstr ""
+msgstr "{0, plural, =0 {Amaga el botó \"Tradueix\" per a:} other {Amaga el botó \"Tradueix\" per a (#):}}"
 
 #: src/components/error-fallback.tsx
 msgid "Report a bug"
@@ -1194,39 +1486,51 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Accounts with <0>{query}</0>"
-msgstr ""
+msgstr "Comptes amb <0>{query}</0>"
+
+#: src/components/compose-poll.tsx
+#~ msgid "Remove poll"
+#~ msgstr "Elimina l'enquesta"
 
 #: src/pages/catchup.tsx
 msgid "Preview of Catch-up UI"
-msgstr ""
+msgstr "Vista prèvia de la interfície de Posada al dia"
 
 #: src/pages/settings.tsx
 msgid "Display language"
-msgstr ""
+msgstr "Llengua de visualització"
 
 #: src/pages/settings.tsx
 msgid "Paginated timeline (beta)"
-msgstr ""
+msgstr "Cronologia paginada (beta)"
+
+#: src/pages/public.tsx
+#~ msgid "Federated timeline"
+#~ msgstr "Línia de temps federada"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of nested comments thread"
-msgstr ""
+msgstr "Captura de fil de comentaris imbricats"
 
 #: src/pages/trending.tsx
 msgid "Trending ({instance})"
-msgstr ""
+msgstr "En tendència ({instance})"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specify a list of shortcuts that'll appear as:"
-msgstr ""
+msgstr "Especifiqueu una llista de dreceres que apareixeran com a:"
+
+#: src/components/account-info.tsx
+#~ msgid "{0} original posts, {1} replies, {2} quotes, {3} boosts"
+#~ msgstr "{0} publicacions originals, {1} respostes, {2} cites, {3} impulsos"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Timeline"
-msgstr ""
+msgstr "Línia de temps"
 
 #: src/pages/hashtag.tsx
 msgid "No one has posted anything with this tag yet."
-msgstr ""
+msgstr "Ningú ha publicat res encara amb aquesta etiqueta."
 
 #: src/components/feedback-modal.tsx
 msgid "Thanks, got it."
@@ -1234,71 +1538,97 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Sort: Density"
-msgstr ""
+msgstr "Ordre: Densitat"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Like (favourite)"
-msgstr ""
+msgstr "M'agrada (favorit)"
+
+#: src/pages/settings.tsx
+#~ msgid "Synced to your server's settings. <0>Go to your server ({instance}) for more settings.</0>"
+#~ msgstr ""
+#~ "Sincronitzat amb la configuració del servidor. \n"
+#~ "<0>Aneu al vostre servidor ({instance}) per realitzar més canvis en la configuració.</0>"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/hashtag.tsx
 msgid "Filters"
-msgstr ""
+msgstr "Filtres"
 
 #: src/components/report-modal.tsx
 msgid "Malicious links, fake engagement, or repetitive replies"
-msgstr ""
+msgstr "Enllaços maliciosos, interacció falsa o respostes repetitives"
 
 #: src/components/compose.tsx
 #: src/components/compose.tsx
 #: src/components/file-picker-input.tsx
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
-msgstr ""
+msgstr "{maxMediaAttachments, plural, one {Només podeu adjuntar com a màxim 1 fitxer.} other {Només podeu adjuntar un màxim de # fitxers.}}"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfollow #{hashtag}?"
+#~ msgstr "Voleu deixar de seguir #{hashtag}?"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 msgid "Shortcuts"
-msgstr ""
+msgstr "Dreceres"
+
+#: src/pages/filters.tsx
+#~ msgid "No filters yet."
+#~ msgstr "Encara no hi ha cap filtre."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts copied"
-msgstr ""
+msgstr "S'han copiat les dreceres"
 
 #: src/pages/accounts.tsx
 msgid "Log out…"
-msgstr ""
+msgstr "Tanca la sessió…"
 
 #: src/pages/catchup.tsx
 msgid "What is this?"
-msgstr ""
+msgstr "Què és això?"
 
 #: src/pages/hashtag.tsx
 msgid "Add hashtag"
-msgstr ""
+msgstr "Afegeix etiqueta"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Import/export settings from/to server (Very experimental)"
+#~ msgstr "Importació o exportació de la configuració des de o cap al servidor (molt experimental)"
+
+#: src/components/related-actions.tsx
+#~ msgid "Boosts from @{username} disabled."
+#~ msgstr "Impulsos de @{username} inhabilitats."
 
 #: src/pages/welcome.tsx
 msgid "Nested comments thread"
-msgstr ""
+msgstr "Fil de comentaris imbricats"
 
 #: src/components/report-modal.tsx
 msgid "Forward to <0>{domain}</0>"
-msgstr ""
+msgstr "Reenvia a <0>{domain}</0>"
+
+#: src/components/compose.tsx
+#~ msgid "Add poll"
+#~ msgstr "Afegeix una enquesta"
 
 #: src/pages/notifications.tsx
 msgid "You don't follow"
-msgstr ""
+msgstr "No segueixes"
 
 #: src/compose.tsx
 msgid "Login required."
-msgstr ""
+msgstr "Cal iniciar la sessió."
 
 #: src/utils/visibility-text.ts
 msgid "Local"
-msgstr ""
+msgstr "Local"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
-msgstr ""
+msgstr "Selector de GIF per a compositor"
 
 #. placeholder {0}: prettyBytes( imageSize, )
 #. placeholder {0}: prettyBytes( videoSize, )
@@ -1306,21 +1636,25 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
-msgstr ""
+msgstr "La mida del fitxer és massa gran. La càrrega pot tenir problemes. Proveu de reduir la mida del fitxer de {0} a {1} o inferior."
 
 #: src/pages/catchup.tsx
 msgid "Remove this catch-up?"
-msgstr ""
+msgstr "Voleu eliminar aquesta posada al dia?"
 
 #. placeholder {0}: rtf.format(-statusMonthsAgo, 'month')
 #: src/components/status-menu-state.tsx
 msgid "Old post (<0>{0}</0>)"
-msgstr ""
+msgstr "Publicacions antigues (<0>{0}</0>)"
+
+#: src/components/status-content.tsx
+#~ msgid "Boosted @{0}'s post"
+#~ msgstr "Heu impulsat la publicació de @{0}"
 
 #. placeholder {0}: dtf.format(new Date(lastCatchupEndAt))
 #: src/pages/catchup.tsx
 msgid "Until the last catch-up ({0})"
-msgstr ""
+msgstr "Fins a l'última posada al dia ({0})"
 
 #: src/components/compose.tsx
 #: src/components/edit-profile-sheet.tsx
@@ -1329,7 +1663,7 @@ msgstr ""
 #: src/components/open-link-sheet.tsx
 #: src/components/quote-suggestion.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "Cancel·la"
 
 #: src/pages/status.tsx
 msgid "This post is from another PDS (<0>{instance}</0>). Interactions (reply, repost, etc) are not possible."
@@ -1344,7 +1678,7 @@ msgstr ""
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Previous"
-msgstr ""
+msgstr "Anterior"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts in {monthYear} by {accountDisplay}"
@@ -1352,50 +1686,66 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Reload page now to update?"
-msgstr ""
+msgstr "Voleu tornar a carregar la pàgina per actualitzar-la?"
+
+#: src/components/status-reblog.tsx
+#~ msgid "<0/> <1>boosted</1>"
+#~ msgstr "<0/> <1>ha impulsat</1>"
 
 #: src/components/status-helpers.ts
 msgid "You are not allowed to quote this post"
-msgstr ""
+msgstr "No se us permet citar aquesta publicació"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Search term"
-msgstr ""
+msgstr "Cerca terme"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "For multi-column mode, search term is required, else the column will not be shown."
+#~ msgstr "Per al mode de múltiples columnes, cal un terme de cerca, en cas contrari la columna no es mostrarà."
 
 #: src/pages/status.tsx
 msgid "Error: {e}"
-msgstr ""
+msgstr "Error: {e}"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfollowed #{hashtag}"
+#~ msgstr "Deixa de seguir l'etiqueta #{hashtag}"
 
 #. placeholder {0}: replies.length
 #. placeholder {1}: shortenNumber(replies.length)
 #: src/pages/status.tsx
 msgid "{0, plural, one {# reply} other {<0>{1}</0> replies}}"
-msgstr ""
+msgstr "{0, plural, one {# resposta} other {<0>{1}</0> respostes}}"
 
 #. Action to render math expressions from raw (LaTeX) markup
 #: src/components/math-block.tsx
 msgid "Format math"
-msgstr ""
+msgstr "Dona format matemàtic"
 
 #: src/components/media-attachment.tsx
 msgid "Done"
-msgstr ""
+msgstr "Fet"
 
 #: src/pages/catchup.tsx
 msgid "Authors"
-msgstr ""
+msgstr "Autors"
 
 #: src/pages/status.tsx
 msgid "{months, plural, one {# month later} other {# months later}}"
-msgstr ""
+msgstr "{months, plural, one {# mes enrere} other {# mesos enrere}}"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus column in multi-column mode"
+#~ msgstr "Centra la columna en mode de múltiples columnes"
 
 #: src/components/status-utility-menu.tsx
 msgid "Edited: {editedDateText}"
-msgstr ""
+msgstr "Editat: {editedDateText}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List ID"
-msgstr ""
+msgstr "ID de llista"
 
 #. placeholder {0}: i18n.number( width as number, )
 #. placeholder {1}: i18n.number(height as number)
@@ -1404,41 +1754,49 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Dimension too large. Uploading might encounter issues. Try reduce dimension from {0}×{1}px to {2}×{3}px."
-msgstr ""
+msgstr "La resolució del fitxer és massa gran. La càrrega pot tenir problemes. Proveu de reduir la resolució de {0}×{1}px a {2}×{3}px."
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post"
-msgstr ""
+msgstr "En resposta a la publicació de @{0}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import shortcuts?"
-msgstr ""
+msgstr "Voleu importar les dreceres?"
+
+#: src/pages/public.tsx
+#~ msgid "Switch to Federated"
+#~ msgstr "Canvia a federada"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to next post"
-msgstr ""
+msgstr "Omet el carrusel a la següent publicació"
 
 #: src/pages/catchup.tsx
 msgid "last 5 hours"
-msgstr ""
+msgstr "les últimes 5 hores"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Bio"
-msgstr ""
+msgstr "Biografia"
 
 #: src/pages/welcome.tsx
 msgid "Sign up"
-msgstr ""
+msgstr "Registreu-vos"
 
 #: src/components/status-activity-menu.tsx
 msgid "Unwrap quote chain"
-msgstr ""
+msgstr "Desembolica la cadena de cites"
 
 #. placeholder {0}: sourceLangText ?? ''
 #: src/components/translation-block.tsx
 msgid "Auto-translated from {0}"
 msgstr ""
+
+#: src/pages/welcome.tsx
+#~ msgid "Visually separate original posts and re-shared posts (boosted posts)."
+#~ msgstr "Separeu visualment les publicacions originals de les compartides (impulsos)."
 
 #: src/pages/notifications.tsx
 msgid "Who are limited by Bluesky moderators"
@@ -1446,99 +1804,127 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Raw Shortcuts JSON"
-msgstr ""
+msgstr "Dreceres JSON en brut"
 
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/pages/catchup.tsx
 msgid "Thread"
-msgstr ""
+msgstr "Fil"
+
+#: src/components/report-modal.tsx
+#~ msgid "Violates the law of your or the server's country"
+#~ msgstr "Viola la llei del vostre país o del país on és el servidor"
+
+#: src/components/related-actions.tsx
+#~ msgid "Withdraw follow request?"
+#~ msgstr "Voleu retirar la sol·licitud de seguiment?"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multiple hashtags are supported. Space-separated."
-msgstr ""
+msgstr "S'admeten diverses etiquetes. Separades per espais."
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Failed to load history"
-msgstr ""
+msgstr "No s'ha pogut carregar l'historial"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Search emoji"
+#~ msgstr "Cerca un emoji"
 
 #: src/pages/notifications.tsx
 msgid "Today"
-msgstr ""
+msgstr "Avui"
 
 #: src/components/report-modal.tsx
 msgid "Additional info"
-msgstr ""
+msgstr "Informació addicional"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{account} signed up.} other {<0><1>{0}</1> people</0> signed up.}}"
-msgstr ""
+msgstr "{count, plural, =1 {{account} registrat.} other {<0><1>{0}</1> persones</0> registrades.}}"
 
 #: src/pages/catchup.tsx
 msgid "None"
-msgstr ""
+msgstr "Cap"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Link copied"
-msgstr ""
+msgstr "Enllaç copiat"
 
 #: src/components/mention-modal.tsx
 msgid "Search accounts"
-msgstr ""
+msgstr "Cerca comptes"
+
+#: src/components/notification.tsx
+#~ msgid "{account} requested to follow you."
+#~ msgstr "{account} ha enviat una sol·licitud de seguiment."
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to list members"
-msgstr ""
+msgstr "Mostra les respostes dels membres de la llista"
+
+#: src/components/compose.tsx
+#~ msgid "Attachment #{i} failed"
+#~ msgstr "El fitxer adjunt #{i} ha fallat"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Top links"
-msgstr ""
+msgstr "Enllaços populars"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/hashtag.tsx
 msgid "Media only"
-msgstr ""
+msgstr "Només mèdia"
+
+#: src/components/follow-request-buttons.tsx
+#~ msgid "Rejected"
+#~ msgstr "Rebutjat"
 
 #: src/components/compose.tsx
 msgid "Update"
-msgstr ""
+msgstr "Actualitza"
 
 #: src/components/status-account-menu.tsx
 #: src/pages/settings.tsx
 msgid "Quote settings"
-msgstr ""
+msgstr "Configuració de les cites"
 
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
-msgstr ""
+msgstr "{account} ha denunciat a {targetAccount}"
+
+#: src/pages/filters.tsx
+#~ msgid "Conversations"
+#~ msgstr "Converses"
 
 #. placeholder {0}: err?.message ? `: ${err.message}` : ''
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description{0}"
-msgstr ""
+msgstr "No s'ha pogut generar la descripció{0}"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Edita"
 
 #: src/pages/catchup.tsx
 msgid "You don't have to read everything."
-msgstr ""
+msgstr "No cal que ho llegiu tot."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Max {SHORTCUTS_LIMIT} shortcuts"
-msgstr ""
+msgstr "Màxim {SHORTCUTS_LIMIT} dreceres"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Esc</0> or <1>Backspace</1>"
-msgstr ""
+msgstr "<0>Esc</0> o <1>Retrocés</1>"
 
 #: src/components/account-info.tsx
 #: src/components/quotes-modal.tsx
@@ -1547,60 +1933,60 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Quotes"
-msgstr ""
+msgstr "Cites"
 
 #. placeholder {0}: info.acct || info.username
 #: src/components/related-actions.tsx
 msgid "Unfollow @{0}?"
-msgstr ""
+msgstr "Voleu deixar de seguir @{0}?"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/related-actions.tsx
 msgid "Last post: <0>{0}</0>"
-msgstr ""
+msgstr "Última publicació: <0>{0}</0>"
 
 #: src/pages/catchup.tsx
 msgid "Next author"
-msgstr ""
+msgstr "Actor següent"
 
 #: src/pages/catchup.tsx
 msgid "Sort"
-msgstr ""
+msgstr "Ordre"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/account-block.tsx
 msgid "Last posted: {0}"
-msgstr ""
+msgstr "Última publicació: {0}"
 
 #: src/pages/settings.tsx
 msgid "Only for new images while composing new posts."
-msgstr ""
+msgstr "Només per a imatges noves mentre es redacten publicacions noves."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Bookmarked @{0}'s post"
-msgstr ""
+msgstr "La publicació de @{0} s'ha afegit als marcadors"
 
 #: src/components/status-account-menu.tsx
 msgid "Delete this post?"
-msgstr ""
+msgstr "Voleu suprimir aquesta publicació?"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>k</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>k</1>"
 
 #: src/pages/settings.tsx
 msgid "Volunteer translations"
-msgstr ""
+msgstr "Ajudeu a traduir"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 msgid "Unable to fetch account info"
-msgstr ""
+msgstr "No ha estat possible la informació del compte"
 
 #: src/pages/search.tsx
 msgid "Enter your search term or paste a URL above to get started."
-msgstr ""
+msgstr "Introduïu el vostre terme de cerca o enganxeu un URL a dalt per començar."
 
 #: src/pages/catchup.tsx
 msgid "Links shared by followings, sorted by shared counts, reposts and likes."
@@ -1615,32 +2001,40 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
-msgstr ""
+msgstr "Nota: aquesta funcionalitat utilitza un servei d'IA extern, impulsat per <0>img-alt-api</0>. Pot ser que no funcioni bé. Només per a imatges i en anglès."
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Zoom out"
+#~ msgstr "Redueix"
 
 #: src/components/media-post.tsx
 msgid "Sensitive media"
-msgstr ""
+msgstr "Contingut sensible"
 
 #: src/components/compose.tsx
 msgid "Add GIF"
-msgstr ""
+msgstr "Afegeix un GIF"
 
 #. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
 msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr ""
+msgstr "Voleu eliminar la vostra publicació de la publicació de <0>@{0}</0>?"
+
+#: src/pages/welcome.tsx
+#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
+#~ msgstr ""
 
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
 msgid "Posts on this list are hidden from Home/Following"
-msgstr ""
+msgstr "Les publicacions d'aquesta llista estan ocultes a Inici/Seguint"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "following.stats"
-msgstr ""
+msgstr "Seguint-ne"
 
 #. js-lingui-explicit-id
 #: src/components/nav-menu.tsx
@@ -1650,118 +2044,166 @@ msgstr ""
 #: src/pages/following2.tsx
 #: src/pages/following2.tsx
 msgid "following.title"
-msgstr ""
+msgstr "Seguint-ne"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Accounts)"
-msgstr ""
+msgstr "Cerca: {q} (comptes)"
+
+#: src/components/report-modal.tsx
+#~ msgid "Breaks specific server rules"
+#~ msgstr "Viola regles específiques del servidor"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not sure what to add?<0/>Try adding <1>Home / Following and Notifications</1> first."
-msgstr ""
+msgstr "No saps què afegir?<0/>Prova d'afegir primer <1>Pàgina d'Inici / Seguint i notificacions</1>."
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to create filter"
+#~ msgstr "No ha estat possible crear el filtre"
+
+#: src/pages/welcome.jsx
+#~ msgid "Connect your existing Mastodon/Fediverse account.<0/>Your credentials are not stored on this server."
+#~ msgstr "Connecteu el vostre compte de Mastodon/Fedivers.<0/>Les vostres credencials no s'emmagatzemaran en aquest servidor."
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Saving shortcuts to server…"
+#~ msgstr "S'estan desant les dreceres al servidor…"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
-msgstr ""
+msgstr "No ha estat possible actualitzar el perfil."
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/X"
-msgstr ""
+msgstr "Fil {index}/X"
 
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
-msgstr ""
+msgstr "El vostre compte ha estat suspès."
 
 #: src/components/account-block.tsx
 msgid "Locked"
-msgstr ""
+msgstr "Blocada"
 
 #: src/pages/notifications.tsx
 msgid "Accept"
-msgstr ""
+msgstr "Accepta"
 
 #: src/pages/notifications.tsx
 msgid "Ignore"
-msgstr ""
+msgstr "Ignora"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Unable to download shortcuts"
+#~ msgstr "No es poden baixar les dreceres"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "QR code"
-msgstr ""
+msgstr "Codi QR"
 
 #: src/pages/settings.tsx
 msgid "Unable to copy version string"
-msgstr ""
+msgstr "No s'ha pogut copiar la versió"
 
 #: src/components/search-form.tsx
 msgid "Look up <0>{query}</0>"
-msgstr ""
+msgstr "Cerca <0>{query}</0>"
+
+#: src/components/compose.tsx
+#~ msgid "Add custom emoji"
+#~ msgstr "Afegeix emoji personalitzat"
+
+#: src/pages/filters.tsx
+#~ msgid "obscured (media only)"
+#~ msgstr "enfosquit (només mèdia)"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open link?"
-msgstr ""
+msgstr "Voleu obrir l'enllaç?"
 
 #: src/pages/notifications.tsx
 msgid "Unable to load notifications"
-msgstr ""
+msgstr "No s'han carregat les notificacions"
 
 #: src/components/post-embed-modal.tsx
 msgid "HTML Code"
-msgstr ""
+msgstr "Codi HTML"
+
+#: src/components/compose.tsx
+#~ msgid "Posting on <0/>"
+#~ msgstr "Data de la publicació: <0/>"
 
 #: src/components/timeline.tsx
 msgid "Pinned posts"
-msgstr ""
+msgstr "Publicacions fixades"
+
+#: src/components/compose.tsx
+#~ msgid "Schedule"
+#~ msgstr "Programa"
 
 #: src/components/compose.tsx
 msgctxt "Submit button in composer"
 msgid "Post"
-msgstr ""
+msgstr "Publica"
 
 #: src/components/status-post-body.tsx
 #: src/components/timeline.tsx
 msgid "Content warning"
-msgstr ""
+msgstr "Avís de contingut"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Hashtag"
-msgstr ""
+msgstr "Etiqueta"
+
+#: src/components/related-actions.tsx
+#~ msgid "Add notes"
+#~ msgstr "Afegeix una nota"
 
 #. js-lingui-explicit-id
 #: src/pages/catchup.tsx
 msgid "group.filter"
-msgstr ""
+msgstr "Filtra"
+
+#: src/components/related-actions.tsx
+#~ msgid "Disable boosts"
+#~ msgstr "Desactiva els impulsos"
 
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Export"
-msgstr ""
+msgstr "Exporta"
 
 #: src/components/search-form.tsx
 #: src/pages/home.tsx
 msgid "See all"
-msgstr ""
+msgstr "Veure-ho tot"
 
 #: src/pages/settings.tsx
 msgid "Auto inline translation"
-msgstr ""
+msgstr "Traducció automàtica en línia"
 
 #: src/pages/catchup.tsx
 msgid "Note: the Home timeline might only show a limited number of posts regardless of the time range."
 msgstr ""
 
+#: src/pages/catchup.tsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Next post"
-msgstr ""
+msgstr "Publicació següent"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
 msgid "View notifications from <0>@{0}</0>"
-msgstr ""
+msgstr "Consulteu les notificacions de <0>@{0}</0>"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1769,44 +2211,48 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
 msgid "Lists"
-msgstr ""
+msgstr "Llistes"
 
 #: src/pages/mentions.tsx
 msgid "Only followings"
-msgstr ""
+msgstr "Només seguidors"
 
 #: src/pages/notifications.tsx
 msgid "Allow"
-msgstr ""
+msgstr "Permet"
 
 #. placeholder {0}: account?.username
 #: src/pages/account-statuses.tsx
 msgid "Search @{0}'s posts"
-msgstr ""
+msgstr "Cerca a les publicacions de @{0}"
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to edit filter"
+#~ msgstr "No ha estat possible editar el filtre"
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText}"
-msgstr ""
+msgstr "Tradueix des del {sourceLangText}"
 
 #: src/pages/account-statuses.tsx
 msgid "Month"
-msgstr ""
+msgstr "Mes"
 
 #: src/pages/list.tsx
 #: src/pages/list.tsx
 msgid "Manage members"
-msgstr ""
+msgstr "Gestiona els membres"
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
-msgstr ""
+msgstr "No s'ha pogut donar format matemàtic"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Anyone can quote"
-msgstr ""
+msgstr "Qualsevol pot citar-vos"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/post-embed-modal.tsx
@@ -1814,20 +2260,20 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Copy"
-msgstr ""
+msgstr "Copia"
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
 msgid "Failed to update quote settings"
-msgstr ""
+msgstr "No s'ha pogut actualitzar la configuració de les cites"
 
 #: src/pages/settings.tsx
 msgid "Failed to update default visibility"
-msgstr ""
+msgstr "No s'ha pogut actualitzar la visibilitat per defecte"
 
 #: src/components/recent-searches.tsx
 msgid "Cleared recent searches"
-msgstr ""
+msgstr "Cerques recents esborrades"
 
 #. placeholder {0}: toUnicode(postInstance)
 #: src/pages/status.tsx
@@ -1836,61 +2282,69 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
-msgstr ""
+msgstr "{hashtagTitle} (només multimèdia)"
 
 #. placeholder {0}: authorCountsList.length
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# author} other {# authors}}"
-msgstr ""
+msgstr "{0 , plural, one {# autor} other {# autors}}"
 
 #: src/components/related-actions.tsx
 msgid "Unfollow…"
-msgstr ""
+msgstr "Deixa de seguir…"
 
 #: src/components/drafts.tsx
 msgid "Delete all…"
-msgstr ""
+msgstr "Elimina-ho tot…"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Following…"
+#~ msgstr "Seguint…"
 
 #: src/pages/accounts.tsx
 msgid "Current"
-msgstr ""
+msgstr "Actual"
 
 #: src/pages/status.tsx
 msgid "Unable to load replies."
-msgstr ""
+msgstr "No s'han pogut obtenir les respostes."
 
 #: src/components/compose.tsx
 msgid "You have unsaved changes. Discard this post?"
-msgstr ""
+msgstr "Hi ha canvis sense desar. Voleu descartar la publicació?"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (+ Replies)"
+#~ msgstr "{accountDisplay} (+ Respostes)"
 
 #: src/components/edit-history-controls.tsx
 msgid "Edit History Snapshots"
-msgstr ""
+msgstr "Edita l'historial d'instantànies"
 
 #: src/components/account-info.tsx
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Original"
-msgstr ""
+msgstr "Original"
 
 #: src/components/edit-history-controls.tsx
 #: src/components/gif-picker-modal.tsx
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Next"
-msgstr ""
+msgstr "Següent"
 
 #: src/components/list-add-edit.tsx
 msgid "Create"
-msgstr ""
+msgstr "Crea"
 
 #: src/pages/search.tsx
 msgid "No posts found."
-msgstr ""
+msgstr "No s'ha trobat cap publicació."
 
 #: src/pages/hashtag.tsx
 msgid "Add to Shortcuts"
-msgstr ""
+msgstr "Afegeix a les dreceres"
 
 #: src/components/columns.tsx
 #: src/components/nav-menu.tsx
@@ -1902,47 +2356,53 @@ msgstr ""
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
 msgid "Home"
-msgstr ""
+msgstr "Inici"
 
 #: src/components/status-account-menu.tsx
 msgid "Unmute conversation"
-msgstr ""
+msgstr "Deixa de silenciar la conversa"
 
 #: src/components/notification.tsx
 msgid "{account} reacted to your post with {emojiObject}"
 msgstr ""
+"{account} ha reaccionat a la vostra publicació \n"
+"amb {emojiObject}"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
-msgstr ""
+msgstr "No s'ha actualitzat la subscripció. Si us plau, intenta-ho de nou."
 
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
-msgstr ""
+msgstr "Activa les notificacions"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
 msgid "Reset filters"
-msgstr ""
+msgstr "Restableix els filtres"
 
 #: src/pages/catchup.tsx
 msgid "last 8 hours"
-msgstr ""
+msgstr "les últimes 8 hores"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "{0} more…"
+#~ msgstr "{0} més…"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from @{0} will not show up in Filtered notifications from now on."
-msgstr ""
+msgstr "Les notificacions de @{0} no es mostraran a les notificacions filtrades a partir d'ara."
 
 #: src/pages/notifications.tsx
 msgid "Who unsolicitedly private mention you"
-msgstr ""
+msgstr "Amb menció privada no sol·licitada"
 
 #: src/components/notification.tsx
 msgid "{account} published a post."
-msgstr ""
+msgstr "{account} ha compartit una publicació."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1953,31 +2413,31 @@ msgstr ""
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "Notificacions"
 
 #: src/components/poll.tsx
 msgid "Voted"
-msgstr ""
+msgstr "Votat"
 
 #: src/components/media-attachment.tsx
 msgid "Audio description"
-msgstr ""
+msgstr "Descripció de l'àudio"
 
 #: src/components/notification.tsx
 msgid "Followed by…"
-msgstr ""
+msgstr "Seguit per…"
 
 #: src/pages/status.tsx
 msgid "Back"
-msgstr ""
+msgstr "Enrere"
 
 #: src/components/report-modal.tsx
 msgid "Illegal"
-msgstr ""
+msgstr "Il·legal"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} on {instance}"
-msgstr ""
+msgstr "{hashtagTitle} a {instance}"
 
 #: src/components/compose.tsx
 #: src/components/keyboard-shortcuts-help.tsx
@@ -1986,7 +2446,11 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
-msgstr ""
+msgstr "Respon"
+
+#: src/components/notification.tsx
+#~ msgid "Your {year} #Wrapstodon is here!"
+#~ msgstr "Ja teniu aquí el vostre #Wrapstodon {year}!"
 
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
@@ -1994,55 +2458,67 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has received a moderation warning."
-msgstr ""
+msgstr "El vostre compte ha rebut un avís de moderació."
 
 #. placeholder {0}: shortcutsStr.length
 #: src/components/shortcuts-settings.tsx
 msgid "{0, plural, one {# character} other {# characters}}"
-msgstr ""
+msgstr "{0 , plural, one {# caràcter} other {# caràcters}}"
+
+#: src/pages/settings.tsx
+#~ msgid "Note: This feature uses currently-logged-in server API."
+#~ msgstr "Nota: Aquesta funcionalitat utilitza l'API del servidor on l'usuari ha iniciat la sessió."
 
 #: src/components/status-utility-menu.tsx
 msgid "Copy post text"
-msgstr ""
+msgstr "Copia el text de la publicació"
+
+#: src/components/modals.tsx
+#~ msgid "Post scheduled"
+#~ msgstr "Publicació programada"
 
 #: src/pages/accounts.tsx
 msgid "Add an existing account"
-msgstr ""
+msgstr "Afegeix un compte existent"
 
 #: src/components/media-modal.tsx
 msgid "View post"
-msgstr ""
+msgstr "Mostra la publicació"
 
 #: src/components/nav-menu.tsx
 msgid "New"
-msgstr ""
+msgstr "Nou"
 
 #: src/components/status-utility-menu.tsx
 msgid "Post text copied"
-msgstr ""
+msgstr "Publica el text copiat"
 
 #: src/components/report-modal.tsx
 msgid "Violation"
-msgstr ""
+msgstr "Violació"
 
 #: src/components/status-header.tsx
 #: src/utils/visibility-text.ts
 msgid "Private mention"
-msgstr ""
+msgstr "Menció privada"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
-msgstr ""
+msgstr "Funcions experimentals"
+
+#: src/pages/lists.jsx
+#~ msgid "No lists yet."
+#~ msgstr "Encara no hi ha cap llista."
 
 #: src/compose.tsx
 #: src/pages/http-route.tsx
 #: src/pages/login.tsx
 msgid "Go home"
-msgstr ""
+msgstr "Ves a la pàgina d'inici"
 
 #: src/components/background-service.tsx
 msgid "Cloak mode enabled"
-msgstr ""
+msgstr "Mode ocult activat"
 
 #. placeholder {0}: fItems.length
 #: src/components/timeline.tsx
@@ -2051,27 +2527,27 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Note: This preview is lightly styled."
-msgstr ""
+msgstr "Nota: a aquesta vista prèvia se li ha aplicat cert estil."
 
 #. placeholder {0}: account.username
 #: src/pages/list.tsx
 msgid "Remove <0>@{0}</0> from list?"
-msgstr ""
+msgstr "Voleu suprimir a <0>@{0}</0> de la llista?"
 
 #: src/pages/notifications.tsx
 msgid "Dismissed"
-msgstr ""
+msgstr "Omeses"
 
 #. Preview of one character, in largest size
 #. Preview of one character, in smallest size
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "A"
-msgstr ""
+msgstr "A"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Close post or dialogs"
-msgstr ""
+msgstr "Tanca la publicació o els diàlegs"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Reposts Carousel"
@@ -2081,18 +2557,30 @@ msgstr ""
 #: src/components/list-add-edit.tsx
 #: src/components/status-account-menu.tsx
 msgid "Delete…"
-msgstr ""
+msgstr "Esborra…"
+
+#: src/pages/filters.tsx
+#~ msgid "minimized"
+#~ msgstr "minimitzada"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Embed post"
-msgstr ""
+msgstr "Insereix la publicació"
+
+#: src/components/compose.tsx
+#~ msgid "Mark media as sensitive"
+#~ msgstr "Marca els mitjans com a sensibles"
 
 #. placeholder {0}: shortenNumber(votersCount)
 #. placeholder {1}: shortenNumber(votersCount)
 #: src/components/poll.tsx
 msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
-msgstr ""
+msgstr "{votersCount, plural, one {<0>{0}</0> votant} other {<1>{1}</1> votants}}"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Downloading saved shortcuts from server…"
+#~ msgstr "S'estan baixant les dreceres desades al servidor…"
 
 #: src/components/atproto-labels.tsx
 msgid "Does not include nudity."
@@ -2100,11 +2588,15 @@ msgstr ""
 
 #: src/components/import-accounts-selection.tsx
 msgid "Select accounts to import"
-msgstr ""
+msgstr "Seleccioneu els comptes per importar"
+
+#: src/components/notification.tsx
+#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted your reply.} other {{account} boosted your post.}}} other {{account} boosted {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted your reply.} other {<2><3>{1}</3> people</2> boosted your post.}}}}"
+#~ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} ha impulsat la teva resposta.} other {{account} ha impulsat la teva publicació.}}} other {{account} ha impulsat {postsCount} de les teves publicacions.}}} other {{postType, select, reply {<0><1>{0}</1> persones</0> han impulsat la teva resposta.} other {<2><3>{1}</3> persones</2> han impulsat la teva publicació.}}}}"
 
 #: src/components/related-actions.tsx
 msgid "Notifications enabled for @{username}'s posts."
-msgstr ""
+msgstr "S'han activat les notificacions per a les publicacions de @{username}."
 
 #: src/components/feedback-modal.tsx
 msgid "Send"
@@ -2116,54 +2608,66 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "System language ({systemTargetLanguageText})"
-msgstr ""
+msgstr "Llengua del sistema ({systemTargetLanguageText})"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>…"
-msgstr ""
+msgstr "Bloca a <0>@{username}</0>…"
+
+#: src/components/status-header.tsx
+#~ msgid "{timeRepliesCount, plural, one {# reply} other {# replies}}"
+#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Open post details"
-msgstr ""
+msgstr "Obre els detalls de la publicació"
 
 #: src/components/compose.tsx
 msgid "Pop out"
-msgstr ""
+msgstr "Finestra emergent"
+
+#: src/pages/status.tsx
+#~ msgid "Switch to my server to enable interactions"
+#~ msgstr "Canvia al meu servidor per permetre interaccions"
 
 #. placeholder {0}: postingStats.total
 #. placeholder {1}: postingStats.total
 #: src/components/account-info.tsx
 msgid "{0, plural, one {Last 1 post in the past year(s)} other {Last {1} posts in the past year(s)}}"
-msgstr ""
+msgstr "{0, plural, one {Última publicació en el darrer any(s)} other {Últimes {1} publicacions en el darrer any(s)}}"
 
 #: src/components/notification.tsx
 msgid "Your account has been disabled."
-msgstr ""
+msgstr "S'ha desactivat el vostre compte."
 
 #: src/pages/status.tsx
 msgid "Unable to load post"
-msgstr ""
+msgstr "No ha estat possible carregar la publicació"
 
 #: src/components/list-add-edit.tsx
 msgid "Hide posts on this list from Home/Following"
-msgstr ""
+msgstr "Amaga les publicacions d'inici/seguint en aquesta llista"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
-msgstr ""
+msgstr "Notificacions noves"
 
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Block profile</0>"
-msgstr ""
+msgstr "Envia l'informe <0>+ Bloca el perfil</0>"
 
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
-msgstr ""
+msgstr "Emojis:"
 
 #: src/pages/settings.tsx
 msgid "Post edits"
-msgstr ""
+msgstr "Edició de publicacions"
+
+#: src/pages/accounts.jsx
+#~ msgid "Log out <0>@{0}</0>?"
+#~ msgstr "Voleu tancar la sessió de <0>@{0}</0>?"
 
 #: src/components/related-actions.tsx
 msgid "Disable reposts"
@@ -2171,13 +2675,13 @@ msgstr ""
 
 #: src/components/import-export-accounts.tsx
 msgid "Import/Export <0>Accounts</0>"
-msgstr ""
+msgstr "Importa/Exporta <0>Comptes</0>"
 
 #. placeholder {0}: shortenNumber(votesCount)
 #. placeholder {1}: shortenNumber(votesCount)
 #: src/components/poll.tsx
 msgid "{votesCount, plural, one {<0>{0}</0> vote} other {<1>{1}</1> votes}}"
-msgstr ""
+msgstr "{votesCount, plural, one {<0>{0}</0> vot} other {<1>{1}</1> vots}}"
 
 #. placeholder {0}: username || acct
 #. placeholder {0}: usernameValue || acctValue
@@ -2188,7 +2692,7 @@ msgstr ""
 
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
-msgstr ""
+msgstr "Aquesta notificació és d'un altre compte vostre."
 
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
@@ -2198,7 +2702,13 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Try again"
-msgstr ""
+msgstr "Torna-ho a provar"
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Go to another server…"
+#~ msgstr "Ves a un altre servidor…"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2212,7 +2722,7 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "This shortcut already exists"
-msgstr ""
+msgstr "Aquesta drecera ja existeix"
 
 #: src/components/atproto-labels.tsx
 msgid "Non-sexual Nudity"
@@ -2220,168 +2730,206 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Reply (new window)"
-msgstr ""
+msgstr "Respon (en una altra finestra)"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only) on {instance}"
-msgstr ""
+msgstr "{hashtagTitle} (només multimèdia) a {instance}"
 
 #: src/pages/favourites.tsx
 msgid "Unable to load likes."
-msgstr ""
+msgstr "No ha estat possible carregar els favorits."
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in or created has ended."
-msgstr ""
+msgstr "Ha finalitzat una enquesta vostra o en la qual heu participat."
 
 #: src/components/status-account-menu.tsx
 msgid "Post deleted"
-msgstr ""
+msgstr "Publicació esborrada"
 
 #: src/components/report-modal.tsx
 msgid "Blocked {username}"
-msgstr ""
+msgstr "Bloca a {username}"
 
 #: src/pages/list.tsx
 msgid "Nothing yet."
-msgstr ""
+msgstr "Encara res."
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
-msgstr ""
+msgstr "Edita la descripció de l'àudio"
 
 #: src/components/status-inline-controls.tsx
 msgid "Pinned"
-msgstr ""
+msgstr "Fixat"
+
+#: src/components/report-modal.tsx
+#~ msgid "Server rule violation"
+#~ msgstr "Incompliment d'alguna regla del servidor"
 
 #: src/components/notification.tsx
 msgid "A poll you have created has ended."
-msgstr ""
+msgstr "Ha finalitzat una enquesta vostra."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to create list."
-msgstr ""
+msgstr "No s'ha pogut crear la llista."
 
 #: src/components/drafts.tsx
 #: src/pages/settings.tsx
 msgid "Unsent drafts"
-msgstr ""
+msgstr "Esborranys no enviats"
 
 #: src/pages/notifications.tsx
 msgid "You're all caught up."
-msgstr ""
+msgstr "Ja les heu vist totes."
+
+#: src/components/keyboard-shortcuts-help.tsx
+#: src/components/status-large-footer.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost"
+#~ msgstr "Impulsa"
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
-msgstr ""
+msgstr "El problema no encaixa en altres categories"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Error loading custom emojis"
+#~ msgstr "S'ha produït un error en carregar els emojis personalitzats"
 
 #. placeholder {0}: tag.name
 #: src/pages/account-statuses.tsx
 msgid "Showing posts tagged with #{0}"
-msgstr ""
+msgstr "Es mostren les publicacions etiquetades amb #{0}"
 
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Import"
-msgstr ""
+msgstr "Importa"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/status-reblog.tsx
 msgid "Group"
-msgstr ""
+msgstr "Grup"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Hide results"
-msgstr ""
+msgstr "Amaga els resultats"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
-msgstr ""
+msgstr "Quin és el problema amb aquesta publicació?"
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
 msgid "Privacy Policy"
-msgstr ""
+msgstr "Política de privadesa"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "Actualitza"
+
+#: src/pages/catchup.tsx
+#~ msgid "Followed tags"
+#~ msgstr "Etiquetes seguides"
+
+#: src/pages/login.jsx
+#~ msgid "Don't have an account? Create one!"
+#~ msgstr "No hi teniu compte? Creeu-n'hi un!"
 
 #: src/components/related-actions.tsx
 msgid "Search <0>@{username}</0>'s posts"
-msgstr ""
+msgstr "Cerca les publicacions de <0>@{username}</0>"
+
+#: src/components/compose-poll.tsx
+#~ msgid "Choice {0}"
+#~ msgstr "Opció {0}"
 
 #: src/components/status-account-menu.tsx
 msgid "Pin to profile"
-msgstr ""
+msgstr "Fixa al perfil"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Share…"
-msgstr ""
+msgstr "Comparteix…"
 
 #: src/components/media-attachment.tsx
 msgid "Image description"
-msgstr ""
+msgstr "Descripció de la imatge"
+
+#: src/components/compose-poll.tsx
+#~ msgid "Duration"
+#~ msgstr "Durada"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Optional"
 msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+#~ msgstr ""
 
 #. placeholder {0}: options.length
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "{0, plural, one {# choice} other {# choices}}"
-msgstr ""
+msgstr "{0, plural, one {# opció} other {# opcions}}"
 
 #: src/pages/catchup.tsx
 msgid "last 6 hours"
-msgstr ""
+msgstr "les últimes 6 hores"
 
 #: src/components/import-export-accounts.tsx
 msgid "Export failed"
-msgstr ""
+msgstr "S'ha produït un error en l'exportació"
 
 #: src/components/status-post-body.tsx
 msgid "Show content"
-msgstr ""
+msgstr "Mostra el contingut"
 
 #: src/components/notification.tsx
 msgid "Liked by…"
-msgstr ""
+msgstr "Li agrada a…"
 
 #: src/components/poll.tsx
 msgid "Vote"
-msgstr ""
+msgstr "Vota"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut"
-msgstr ""
+msgstr "Afegeix una drecera"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Catch-up"
-msgstr ""
+msgstr "Captura de pantalla de la posada al dia"
+
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Phanpy home timeline on mobile device"
+#~ msgstr "Captura de pantalla de la cronologia de la pàgina d'inici de Phanpy en un dispositiu mòbil"
 
 #: src/components/compose-button.tsx
 msgid "Add to thread"
-msgstr ""
+msgstr "Afegeix al fil"
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unbookmarked @{0}'s post"
-msgstr ""
+msgstr "La publicació de @{0} s'ha eliminat dels marcadors"
 
 #: src/pages/settings.tsx
 msgid "Cloak mode <0>(<1>Text</1> → <2>████</2>)</0>"
-msgstr ""
+msgstr "Mode ocult <0>(<1>Text</1> → <2>████</2>)</0>"
 
 #: src/pages/settings.tsx
 msgid "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
@@ -2389,7 +2937,7 @@ msgstr ""
 
 #: src/pages/search.tsx
 msgid "See more posts"
-msgstr ""
+msgstr "Veure més publicacions"
 
 #: src/pages/account-statuses.tsx
 msgid "Media posts tagged #{tagged} by {accountDisplay}"
@@ -2397,52 +2945,64 @@ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Reply posted. Check it out."
-msgstr ""
+msgstr "Resposta enviada. Comproveu-la."
 
 #. placeholder {0}: localeCode2Text(lang)
 #: src/components/media-attachment.tsx
 msgid "({0}) <0>— experimental</0>"
-msgstr ""
+msgstr "({0}) <0>— experimental</0>"
+
+#: src/pages/filters.tsx
+#~ msgid "* Not implemented yet"
+#~ msgstr "* Encara no s'ha implementat"
 
 #: src/components/compose.tsx
 #: src/components/mention-modal.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/list.tsx
 msgid "Add"
-msgstr ""
+msgstr "Afegeix"
+
+#: src/pages/filters.tsx
+#~ msgid "Expired"
+#~ msgstr "Ha vençut"
 
 #: src/components/poll.tsx
 msgid "Unable to vote in poll"
-msgstr ""
+msgstr "No es pot votar a l'enquesta"
 
 #: src/components/translation-block.tsx
 msgid "Failed to translate"
-msgstr ""
+msgstr "No s'ha pogut traduir"
 
 #: src/components/status-menu-state.tsx
 msgid "Some media have no descriptions."
-msgstr ""
+msgstr "No tots els mèdia tenen descripció."
 
 #: src/compose.tsx
 msgid "You may close this page now."
-msgstr ""
+msgstr "Podeu tancar aquesta pàgina ara."
 
 #: src/components/search-form.tsx
 msgid "Posts tagged with <0>{hashtag}</0>"
-msgstr ""
+msgstr "Publicacions etiquetades amb <0>{hashtag}</0>"
 
 #: src/components/compose.tsx
 msgid "Add media"
-msgstr ""
+msgstr "Afegeix un mitjà"
+
+#: src/pages/filters.tsx
+#~ msgid "Title"
+#~ msgstr "Títol"
 
 #: src/pages/hashtag.tsx
 msgid "Hashtag shortcut added"
-msgstr ""
+msgstr "S'ha afegit una drecera a l'etiqueta"
 
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Follow"
-msgstr ""
+msgstr "Segueix"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-large-footer.tsx
@@ -2453,90 +3013,102 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has been limited."
-msgstr ""
+msgstr "S'ha limitat el vostre compte."
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "Reply…"
+#~ msgstr "Respon…"
 
 #: src/components/account-block.tsx
 msgid "{followersCount, plural, one {# follower} other {# followers}}"
-msgstr ""
+msgstr "{followersCount , plural, one {# seguidor} other {# seguidors}}"
 
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Video description"
-msgstr ""
+msgstr "Descripció del vídeo"
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in has ended."
-msgstr ""
+msgstr "Ha finalitzat una enquesta en què heu votat."
 
 #: src/components/compose.tsx
 msgid "Some media have no descriptions. Continue?"
-msgstr ""
+msgstr "Alguns mitjans no tenen descripcions. Voleu continuar?"
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to people I follow"
-msgstr ""
+msgstr "Mostra les respostes de gent que segueixo"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
 msgid "Edited"
-msgstr ""
+msgstr "Editat"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Settings"
-msgstr ""
+msgstr "Ves a la configuració"
 
 #: src/components/report-modal.tsx
 msgid "Report Post"
-msgstr ""
+msgstr "Denuncia la publicació"
 
 #: src/pages/list.tsx
 msgid "Remove…"
-msgstr ""
+msgstr "Suprimeix…"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from <0>@{0}</0>"
-msgstr ""
+msgstr "Notificacions de <0>@{0}</0>"
 
 #: src/pages/accounts.tsx
 msgid "Logged out"
-msgstr ""
+msgstr "Sessió tancada"
 
 #: src/pages/catchup.tsx
 msgid "Date"
-msgstr ""
+msgstr "Data"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>j</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>j</1>"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "No scheduled posts."
+#~ msgstr "No hi ha publicacions programades."
 
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy post text"
-msgstr ""
+msgstr "No es pot copiar el text de la publicació"
+
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost/Quote…"
+#~ msgstr "Impuls/Cita…"
 
 #: src/components/nav-menu.tsx
 msgid "Muted users…"
-msgstr ""
+msgstr "Usuaris silenciats…"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Synced"
-msgstr ""
+msgstr "S'ha sincronitzat"
 
 #. placeholder {0}: notificationsPolicy.summary?.pendingRequestsCount ?? 0
 #: src/pages/notifications.tsx
 msgid "{0, plural, one {Filtered notifications from # person} other {Filtered notifications from # people}}"
-msgstr ""
+msgstr "{0, plural, one {Notificacions filtrades d'# persona} other {Notificacions filtrades de # persones}}"
 
 #: src/pages/catchup.tsx
 #: src/pages/search.tsx
 msgid "All"
-msgstr ""
+msgstr "Totes"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List may not work if it's from a different account."
-msgstr ""
+msgstr "És possible que la llista no funcioni si prové d'un compte diferent."
 
 #: src/components/account-info.tsx
 #: src/components/status-post-body.tsx
@@ -2548,23 +3120,23 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
-msgstr ""
+msgstr "Respostes"
 
 #: src/pages/settings.tsx
 msgid "Default visibility"
-msgstr ""
+msgstr "Visibilitat per defecte"
 
 #: src/pages/search.tsx
 msgid "See more hashtags"
-msgstr ""
+msgstr "Veure més etiquetes"
 
 #: src/components/quote-suggestion.tsx
 msgid "Keep as link"
-msgstr ""
+msgstr "Manté com un enllaç"
 
 #: src/pages/status.tsx
 msgid "Go to main post"
-msgstr ""
+msgstr "Ves a la publicació principal"
 
 #: src/pages/accounts.tsx
 msgid "Log out <0>@{acct}</0>?"
@@ -2572,39 +3144,51 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Donate"
-msgstr ""
+msgstr "Donacions"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "<0>1</0> to <1>9</1>"
+#~ msgstr "<0>1</0> a <1>9</1>"
 
 #: src/components/quote-chain-modal.tsx
 msgid "Failed to unwrap quote chain"
-msgstr ""
+msgstr "No s'ha pogut desembolicar la cadena de cites"
 
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 msgid "Nothing to see here."
-msgstr ""
+msgstr "No hi ha res a veure ací."
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users"
-msgstr ""
+msgstr "Usuaris blocats"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Only shortcuts that don’t exist in current shortcuts will be appended."
-msgstr ""
+msgstr "Només s'afegiran les dreceres que no existeixen a les dreceres actuals."
 
 #: src/pages/catchup.tsx
 msgid "until the max"
-msgstr ""
+msgstr "fins al màxim"
 
 #. Relative time in seconds, as short as possible
 #. placeholder {0}: seconds < 1 ? 1 : Math.floor(seconds)
 #: src/components/relative-time.tsx
 msgid "{0}s"
-msgstr ""
+msgstr "{0}s"
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
 msgid "{index}/X"
-msgstr ""
+msgstr "{index}/X"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (Media)"
+#~ msgstr "{accountDisplay} (Mèdia)"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus previous column in multi-column mode"
+#~ msgstr "Centra la columna anterior en mode de múltiples columnes"
 
 #: src/pages/account-statuses.tsx
 msgid "Switch to my PDS (<0>{currentInstance}</0>)"
@@ -2612,29 +3196,45 @@ msgstr ""
 
 #: src/components/status-helpers.ts
 msgid "Only followers can quote this post"
-msgstr ""
+msgstr "Només els seguidors poden citar aquesta publicació"
 
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
 msgid "{0}h"
-msgstr ""
+msgstr "{0}h"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments can be images, videos, audios or any file types."
-msgstr ""
+msgstr "Els mèdia adjunts poden ser imatges, vídeos, àudios o qualsevol altre tipus de fitxer."
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Others"
+#~ msgstr "Altres"
+
+#: src/components/notification.tsx
+#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted & liked your reply.} other {{account} boosted & liked your post.}}} other {{account} boosted & liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted & liked your reply.} other {<2><3>{1}</3> people</2> boosted & liked your post.}}}}"
+#~ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} ha impulsat i li agrada la teva resposta.} other {{account} ha impulsat i li agrada la teva publicació.}}} other {{account} ha impulsat i li agrada {postsCount} de les teves publicacions.}}} other {{postType, select, reply {<0><1>{0}</1> persones</0> han impulsat i els agrada la teva resposta.} other {<2><3>{1}</3> persones</2> han impulsat i els agrada la teva publicació.}}}}"
+
+#: src/components/timeline.tsx
+#~ msgid "{0, plural, one {# Boost} other {# Boosts}}"
+#~ msgstr "{0, plural, one {# impuls} other {# impulsos}}"
 
 #: src/pages/accounts.tsx
 msgid "Remove <0>@{acct}</0>?"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Never expires"
+#~ msgstr "No caduca mai"
+
 #: src/components/search-form.tsx
 msgid "Posts with <0>{query}</0>"
-msgstr ""
+msgstr "Publicacions amb <0>{query}</0>"
 
 #: src/components/poll.tsx
 msgid "Ending"
-msgstr ""
+msgstr "Finalitza"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2644,95 +3244,132 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Sponsor"
-msgstr ""
+msgstr "Patrocinadors"
 
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generate description…"
-msgstr ""
+msgstr "Genera una descripció…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "No new shortcuts to import"
-msgstr ""
+msgstr "No hi ha dreceres noves per importar"
 
 #: src/components/shortcuts-settings.tsx
 msgid "* Exists in current shortcuts"
-msgstr ""
+msgstr "*Ja existeix a les dreceres actuals"
 
 #: src/pages/notifications.tsx
 msgid "Filter"
-msgstr ""
+msgstr "Filtra"
 
 #: src/pages/notifications.tsx
 msgid "Who don't follow you"
-msgstr ""
+msgstr "Qui no et segueix"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unlike"
-msgstr ""
+msgstr "Ja no m'agrada"
+
+#: src/components/notification.jsx
+#~ msgid "[Unknown notification type: {type}]"
+#~ msgstr "[Tipus de notificació desconeguda: {type}]"
+
+#: src/pages/home.tsx
+#~ msgid "<0>New</0> <1>Follow Requests</1>"
+#~ msgstr "<0>Noves</0> <1>sol·licituds de seguiment</1>"
 
 #: src/components/report-modal.tsx
 msgid "Unable to report profile"
-msgstr ""
+msgstr "No ha estat possible denunciar el perfil"
+
+#: src/pages/welcome.jsx
+#~ msgid "A minimalistic opinionated Mastodon web client."
+#~ msgstr "Un client web per a Mastodon minimalista i original."
 
 #: src/components/background-service.tsx
 msgid "Cloak mode disabled"
-msgstr ""
+msgstr "Mode ocult desactivat"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Local only"
+#~ msgstr "Només local"
 
 #: src/pages/hashtag.tsx
 msgid "Remove hashtag"
-msgstr ""
+msgstr "Elimina etiqueta"
 
 #: src/components/status-account-menu.tsx
 msgid "Mute conversation"
-msgstr ""
+msgstr "Silencia la conversa"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Sync to server"
+#~ msgstr "Sincronitza amb el servidor"
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Edit History"
-msgstr ""
+msgstr "Edita l'Historial"
 
 #: src/components/media-attachment.tsx
 msgid "Edit image description"
-msgstr ""
+msgstr "Edita la descripció de la imatge"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import/Export <0>Shortcuts</0>"
-msgstr ""
+msgstr "Importar/exportar <0>dreceres</0>"
 
 #: src/pages/catchup.tsx
 msgid "Show me all posts from…"
-msgstr ""
+msgstr "Mostra'm totes les publicacions de…"
 
 #: src/components/poll.tsx
 msgid "Ending <0/>"
-msgstr ""
+msgstr "Finalitza <0/>"
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
-msgstr ""
+msgstr "Veure l'historial d'instantànies"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Custom emojis are not available on this server."
+#~ msgstr "Els emojis personalitzats no estan disponibles en aquest servidor."
+
+#. Scheduled [in 1 day]
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Scheduled <0><1/></0>"
+#~ msgstr "Programada <0><1/></0>"
 
 #: src/components/related-actions.tsx
 msgid "Disable notifications"
-msgstr ""
+msgstr "Desactiva les notificacions"
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Unable to update private note."
+#~ msgstr "No ha estat possible actualitzar la nota privada."
 
 #: src/pages/hashtag.tsx
 msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
-msgstr ""
+msgstr "{TOTAL_TAGS_LIMIT, plural, one {}other {Màxim de # etiquetes}}"
 
 #: src/pages/catchup.tsx
 msgid "last 1 hour"
-msgstr ""
+msgstr "l'última hora"
 
 #: src/pages/accounts.tsx
 msgid "Default"
-msgstr ""
+msgstr "Per defecte"
 
 #: src/components/compose.tsx
 msgid "What are you doing?"
-msgstr ""
+msgstr "Què feu ara?"
+
+#: src/components/related-actions.tsx
+#~ msgid "Unable to feature @{username} on your profile."
+#~ msgstr "No es pot afegir @{username} al teu perfil."
 
 #. placeholder {0}: String(type)
 #: src/components/notification.tsx
@@ -2748,118 +3385,138 @@ msgstr ""
 #. placeholder {6}: postingStats.daysSinceLastPost
 #: src/components/account-info.tsx
 msgid "{0, plural, one {{1, plural, one {Last 1 post in the past 1 day} other {Last 1 post in the past {2} days}}} other {{3, plural, one {Last {4} posts in the past 1 day} other {Last {5} posts in the past {6} days}}}}"
-msgstr ""
+msgstr "{0, plural, one {{1, plural, one {Última publicació en el darrer dia} other {Última publicació en els darrers {2} dies}}} other {{3, plural, one {Últimes {4} publicacions en el darrer dia} other {Últimes {5} publicacions en els darrers {6} dies}}}}"
 
 #: src/components/account-block.tsx
 #: src/components/related-actions.tsx
 msgid "Follows you"
-msgstr ""
+msgstr "Et segueix"
 
 #: src/components/related-actions.tsx
 msgid "Unable to block @{username}"
-msgstr ""
+msgstr "No ha estat possible blocar @{username}"
 
 #: src/pages/settings.tsx
 msgid "followers"
-msgstr ""
+msgstr "seguidors"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
-msgstr ""
+msgstr "S'ha produït un error en carregar els GIF"
 
 #: src/pages/settings.tsx
 msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
-msgstr ""
+msgstr "Mostra automàticament la traducció de les publicacions a la línia de temps. Només funciona per a publicacions <0>breus</0> sense advertència de contingut, contingut multimèdia o enquesta."
 
 #: src/pages/catchup.tsx
 msgid "last 9 hours"
-msgstr ""
+msgstr "de les últimes 9 hores"
 
 #: src/pages/welcome.tsx
 msgid "Effortlessly follow conversations. Semi-collapsible replies."
-msgstr ""
+msgstr "Seguiu les converses sense esforç. Respostes minimitzades."
 
 #. placeholder {0}: niceDateTime(createdAt, { hideTime: true, })
 #. placeholder {0}: niceDateTime(createdAt, { hideTime: true, })
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Joined <0>{0}</0>"
-msgstr ""
+msgstr "S'hi va unir el <0>{0}</0>"
 
 #: src/pages/settings.tsx
 msgid "Posting"
-msgstr ""
+msgstr "Publicacions"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
-msgstr ""
+msgstr "Edita la drecera"
 
 #: src/pages/welcome.tsx
 msgid "Single or multi-column"
-msgstr ""
+msgstr "Única o múltiples columnes"
 
 #. placeholder {0}: WEBSITE.replace(/https?:\/\//g, '').replace(/\/$/, '')
 #: src/pages/settings.tsx
 msgid "<0>Site:</0> {0}"
-msgstr ""
+msgstr "<0>Lloc web:</0> {0}"
 
 #: src/components/atproto-labels.tsx
 msgid "E.g. artistic nudes."
 msgstr ""
 
+#: src/pages/public.tsx
+#~ msgid "Federated timeline ({instance})"
+#~ msgstr "Línia de temps federada ({instance})"
+
 #: src/pages/favourites.tsx
 msgid "No likes yet. Go like something!"
-msgstr ""
+msgstr "No teniu favorits. Cerqueu alguna cosa que us agradi!"
 
 #: src/components/report-modal.tsx
 msgid "Violates local law"
 msgstr ""
+
+#: src/components/notification.tsx
+#~ msgid "Boosted by…"
+#~ msgstr "Impulsat per…"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
 #: src/components/status-utility-menu.tsx
 #: src/components/translation-block.tsx
 msgid "Translate"
-msgstr ""
+msgstr "Tradueix"
 
 #: src/pages/settings.tsx
 msgid "Version string copied"
-msgstr ""
+msgstr "Informació de la versió copiada"
+
+#: src/components/status-large-footer.tsx
+#~ msgid "Boost…"
+#~ msgstr "Impulsa…"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "Showing post with replies"
+#~ msgstr "Es mostren les publicacions amb respostes"
 
 #: src/components/account-info.tsx
 msgid "View post stats"
-msgstr ""
+msgstr "Veure estadístiques de les publicacions"
+
+#: src/pages/public.tsx
+#~ msgid "Local timeline"
+#~ msgstr "Línia de temps local"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post you have quoted."
-msgstr ""
+msgstr "{account} ha editat una publicació que heu citat."
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation unmuted"
-msgstr ""
+msgstr "La conversa ha deixat d'estar silenciada"
 
 #: src/components/list-add-edit.tsx
 msgid "Don't show replies"
-msgstr ""
+msgstr "No mostris les respostes"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
-msgstr ""
+msgstr "No ha estat possible blocar a {username}"
 
 #. js-lingui-explicit-id
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "post.title"
-msgstr ""
+msgstr "Publicació"
 
 #: src/pages/accounts.tsx
 msgid "Set as default"
-msgstr ""
+msgstr "Estableix com a predeterminat"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Quiet public"
-msgstr ""
+msgstr "Públic limitat"
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -2867,7 +3524,7 @@ msgstr ""
 
 #: src/pages/mentions.tsx
 msgid "Unable to load mentions."
-msgstr ""
+msgstr "No ha estat possible carregar les mencions."
 
 #: src/components/timeline.tsx
 msgid "View Full Thread"
@@ -2875,7 +3532,7 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "In Memoriam"
-msgstr ""
+msgstr "En Memòria"
 
 #: src/pages/welcome.tsx
 msgid "A minimalistic opinionated Atmosphere web client."
@@ -2883,58 +3540,84 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Post pending"
-msgstr ""
+msgstr "Publicació pendent"
+
+#: src/components/account-info.tsx
+#: src/pages/account-statuses.tsx
+#: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#~ msgid "Boosts"
+#~ msgstr "Impulsos"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
-msgstr ""
+msgstr "Fosc"
+
+#: src/components/related-actions.tsx
+#~ msgid "@{username} is no longer featured on your profile."
+#~ msgstr "@{username} ja no està destacat al teu perfil."
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Loading…"
-msgstr ""
+msgstr "Carregant…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Ctrl</0> + <1>Enter</1> or <2>⌘</2> + <3>Enter</3>"
-msgstr ""
+msgstr "<0>Ctrl</0> + <1>Enter</1> o <2>⌘</2> + <3>Enter</3>"
 
 #: src/pages/accounts.tsx
 msgid "Switch in new tab/window"
-msgstr ""
+msgstr "Canvia a una pestanya/finestra nova"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Bookmark"
-msgstr ""
+msgstr "Afegeix als marcadors"
 
 #: src/components/related-actions.tsx
 msgid "Unmute <0>@{username}</0>"
-msgstr ""
+msgstr "Deixa de silenciar a <0>@{username}</0>"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #. placeholder {1}: rtf.format(-replyToStatusMonthsAgo, 'month')
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post (<0>{1}</0>)"
-msgstr ""
+msgstr "Contestant la publicació de @{0} (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
 msgid "Failed to remove subscription. Please try again."
-msgstr ""
+msgstr "No s'ha eliminat la subscripció. Si us plau, intenta-ho de nou."
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "Un administrador de <0>{from}</0> ha blocat <1>{targetName}</1>. Seguidors afectats: {followersCount}, seguiments: {followingCount}."
+
+#: src/pages/hashtag.tsx
+#: src/pages/public.tsx
+#: src/pages/trending.tsx
+#~ msgid "Invalid server"
+#~ msgstr "Servidor no vàlid"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unbookmark"
-msgstr ""
+msgstr "Suprimeix l'adreça d'interès"
 
 #: src/pages/catchup.tsx
 msgid "This might take a while."
-msgstr ""
+msgstr "Això pot trigar una estona."
+
+#: src/pages/hashtag.tsx
+#~ msgid "This timeline is disabled on this server."
+#~ msgstr "Aquesta línia de temps està desactivada en aquest servidor."
+
+#: src/pages/filters.tsx
+#~ msgid "Unable to load filters."
+#~ msgstr "No ha estat possible carregar els filtres."
 
 #: src/components/error-fallback.tsx
 msgid ""
@@ -2943,36 +3626,61 @@ msgid ""
 ""
 msgstr ""
 
+#: src/pages/account-statuses.jsx
+#~ msgid "Showing posts without boosts"
+#~ msgstr "Es mostren publicacions sense impulsos"
+
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Verified"
-msgstr ""
+msgstr "Verificat"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>{key1}</0> then <1>{key2}</1>"
-msgstr ""
+msgstr "<0>{key1}</0> més <1>{key2}</1>"
 
 #: src/components/compose.tsx
 msgid "Looks like you closed the parent window."
-msgstr ""
+msgstr "Sembla que heu tancat la finestra principal."
 
 #: src/components/status-utility-menu.tsx
 msgid "Show Edit History"
-msgstr ""
+msgstr "Mostra l'historial d'edició"
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
 msgstr ""
 
+#: src/pages/filters.tsx
+#~ msgid "Add keyword"
+#~ msgstr "Afegeix una paraula clau"
+
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
-msgstr ""
+msgstr "Dreceres importades"
 
 #: src/components/compose-button.tsx
 #: src/compose.tsx
 msgid "Compose"
-msgstr ""
+msgstr "Redacta"
+
+#: src/components/related-actions.tsx
+#: src/components/related-actions.tsx
+#~ msgid "Show featured profiles"
+#~ msgstr "Mostra els perfils destacats"
+
+#: src/pages/filters.tsx
+#~ msgid "Never"
+#~ msgstr "Mai"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "{accountDisplay} (#{tagged})"
+#~ msgstr "{accountDisplay} (#{tagged})"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Reschedule"
+#~ msgstr "Reprograma"
 
 #: src/pages/welcome.tsx
 msgid "Connect to Atmosphere"
@@ -2981,11 +3689,11 @@ msgstr ""
 #. placeholder {0}: shortenNumber(totalComments)
 #: src/pages/status.tsx
 msgid "{totalComments, plural, one {# comment} other {<0>{0}</0> comments}}"
-msgstr ""
+msgstr "{totalComments, plural, one {# comentari} other {<0>{0}</0> comentaris}}"
 
 #: src/components/related-actions.tsx
 msgid "Report <0>@{username}</0>…"
-msgstr ""
+msgstr "Denúncia a <0>@{username}</0>…"
 
 #: src/pages/settings.tsx
 msgid "Disable all animations"
@@ -2993,17 +3701,17 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Floating button"
-msgstr ""
+msgstr "Botó flotant"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move up"
-msgstr ""
+msgstr "Mou cap amunt"
 
 #. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
 msgid "Allow from <0>{0}</0>"
-msgstr ""
+msgstr "Permet-les de <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -3012,85 +3720,98 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Edit your post"
-msgstr ""
+msgstr "Edita la publicació"
+
+#: src/components/status-large-footer.tsx
+#: src/components/status-large-footer.tsx
+#~ msgid "Unboost"
+#~ msgstr "Desfés l'impuls"
 
 #: src/components/import-export-accounts.tsx
 msgid "No login information or account access details are stored in the exported files. You will need to log in again for each account after importing."
-msgstr ""
+msgstr "No s'emmagatzemen dades d'inici de sessió ni detalls d'accés al compte als fitxers exportats. Haureu de tornar a iniciar la sessió per a cada compte després de la importació."
 
 #: src/pages/catchup.tsx
 msgid "Catch up"
-msgstr ""
+msgstr "Posada al dia"
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText} (auto-detected)"
-msgstr ""
+msgstr "Tradueix des del {sourceLangText} (autodetectat)"
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users…"
-msgstr ""
+msgstr "Usuaris blocats…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Post could be edited or deleted later."
-msgstr ""
+msgstr "La publicació pot ser editada o eliminada després."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to edit list."
-msgstr ""
+msgstr "No s'ha pogut editar la llista."
 
 #. placeholder {0}: ancestors.length
 #: src/pages/status.tsx
 msgid "{0} posts above ‒ Go to top"
-msgstr ""
+msgstr "{0} publicacions més amunt ‒ Ves a la part superior"
 
 #: src/components/related-actions.tsx
 msgid "Translate bio"
-msgstr ""
+msgstr "Tradueix la biografia"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Followed #{hashtag}"
+#~ msgstr "Etiquetes seguides #{hashtag}"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Auto"
-msgstr ""
+msgstr "Automàtic"
 
 #: src/components/report-modal.tsx
 msgid "Profile reported"
-msgstr ""
+msgstr "Perfil denunciat"
 
 #: src/pages/catchup.tsx
 msgid "last 7 hours"
-msgstr ""
+msgstr "les últimes 7 hores"
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been deleted."
-msgstr ""
+msgstr "S'han eliminat algunes de les vostres publicacions."
 
 #: src/pages/catchup.tsx
 msgid "Fetching posts…"
-msgstr ""
+msgstr "Recuperant publicacions…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Preview"
-msgstr ""
+msgstr "Vista prèvia"
 
 #: src/components/status-helpers.ts
 msgid "Author will manually review"
-msgstr ""
+msgstr "Serà revisat manualment"
 
 #: src/components/drafts.tsx
 msgid "Error deleting draft! Please try again."
-msgstr ""
+msgstr "Error quan desava l'esborrany. Torneu a intentar-ho."
 
 #: src/compose.tsx
 msgid "Close window"
-msgstr ""
+msgstr "Tanca la finestra"
+
+#: src/pages/welcome.tsx
+#~ msgid "Log in with Bluesky"
+#~ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "That's all."
-msgstr ""
+msgstr "Això és tot."
 
 #: src/pages/catchup.tsx
 msgid "Previous author"
-msgstr ""
+msgstr "Autor anterior"
 
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
@@ -3103,7 +3824,11 @@ msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Showing posts with media"
-msgstr ""
+msgstr "Es mostren les publicacions amb mèdia"
+
+#: src/pages/filters.tsx
+#~ msgid "Public timelines"
+#~ msgstr "Línies de temps públiques"
 
 #: src/components/feedback-modal.tsx
 #: src/pages/welcome.tsx
@@ -3115,33 +3840,53 @@ msgstr ""
 #. placeholder {2}: lf.format( unsupportedFiles.map((f) => f.name), )
 #: src/components/compose.tsx
 msgid "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
-msgstr ""
+msgstr "{0, plural, one {{1} fitxer no és compatible.} other {{2} fitxers no són compatibles.}}"
 
 #: src/components/notification.tsx
 msgid "You have blocked <0>{targetName}</0>. Removed followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "Heu bloquejat a <0>{targetName}</0>. Seguidors eliminats: {followersCount}, seguidors: {followingCount}."
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} liked your reply.} other {{account} liked your post.}}} other {{account} liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> liked your reply.} other {<2><3>{1}</3> people</2> liked your post.}}}}"
-msgstr ""
+msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} li agrada la teva resposta.} other {{account} li agrada la teva publicació.}}} other {{account} li agrada {postsCount} de les teves publicacions.}}} other {{postType, select, reply {<0><1>{0}</1> persones</0> els agrada la teva resposta.} other {<2><3>{1}</3> persones</2> els agrada la teva publicació.}}}}"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Max {SHORTCUTS_LIMIT} columns"
+#~ msgstr "Màxim {SHORTCUTS_LIMIT} columnes"
 
 #: src/pages/status.tsx
 msgid "Experimental"
-msgstr ""
+msgstr "Experimental"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this profile?"
-msgstr ""
+msgstr "Quin és el problema amb aquest perfil?"
 
 #: src/pages/http-route.tsx
 msgid "Resolving…"
-msgstr ""
+msgstr "S'està resolent…"
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "{mentionsCount, plural, other {# mentions}}"
+#~ msgstr "{mentionsCount, plural, one {}other {# mencions}}"
+
+#: src/pages/status.tsx
+#~ msgid "Switch to post's server"
+#~ msgstr "Canvia al servidor del compte"
 
 #: src/components/status-header.tsx
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
-msgstr ""
+msgstr "{repliesCount, plural, one {# resposta} other {# respostes}}"
+
+#: src/pages/settings.tsx
+#~ msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and boosts carousel will not work when this is enabled."
+#~ msgstr "Paginació manual de les publicacions de la cronologia en lloc de desplaçament infinit. De moment, només funciona per a la cronologia Inici/Seguint. L'actualització automàtica i el carrusel de publicacions destacades no funcionaran quan això estigui habilitat."
+
+#: src/components/account-handle-info.tsx
+#~ msgid "server domain name"
+#~ msgstr "nom de domini del servidor"
 
 #: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
@@ -3150,51 +3895,59 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Frame rate too high. Uploading might encounter issues."
-msgstr ""
+msgstr "La velocitat de fotogrames és massa alta. La càrrega pot tenir problemes."
 
 #: src/pages/notifications.tsx
 msgid "Unable to dismiss notification request"
-msgstr ""
+msgstr "No s'ha pogut descartar la sol·licitud de notificació"
+
+#: src/pages/welcome.tsx
+#~ msgid "Screenshot of Boosts Carousel"
+#~ msgstr "Captura del Carrusel d'impulsos"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to previous post"
-msgstr ""
+msgstr "Omet el carrusel a l'anterior publicació"
 
 #: src/components/status-account-menu.tsx
 msgid "Post pinned to profile"
-msgstr ""
+msgstr "La publicació s'ha fixat al perfil"
 
 #. placeholder {0}: pc.count
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# post} other {# posts}}"
-msgstr ""
+msgstr "{0, plural, one {# publicació} other {# publicacions}}"
 
 #: src/pages/notifications.tsx
 msgid "Unable to accept notification request"
-msgstr ""
+msgstr "No es pot acceptar la sol·licitud de notificació"
+
+#: src/components/related-actions.tsx
+#~ msgid "Don't feature on profile"
+#~ msgstr "No incloure al perfil"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/list-add-edit.tsx
 #: src/pages/lists.tsx
 msgid "New list"
-msgstr ""
+msgstr "Llista nova"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
-msgstr ""
+msgstr "Dreceres importades. S'ha superat el màxim de {SHORTCUTS_LIMIT}, de manera que la resta no s'importaran."
 
 #: src/pages/account-statuses.tsx
 #: src/pages/trending.tsx
 msgid "Unable to load posts"
-msgstr ""
+msgstr "No ha estat possible carregar les publicacions"
 
 #: src/pages/catchup.tsx
 msgid "Group: Authors"
-msgstr ""
+msgstr "Grup: Autors"
 
 #: src/components/import-export-accounts.tsx
 msgid "Select file…"
-msgstr ""
+msgstr "Seleccioneu un fitxer…"
 
 #: src/pages/account-statuses.tsx
 msgid "Hiding reposts"
@@ -3204,42 +3957,51 @@ msgstr ""
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{followingCount, plural, other {<0>{0}</0> Following}}"
-msgstr ""
+msgstr "{followingCount, plural, one {}other {<0>{0}</0> Seguiments}}"
+
+#: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Server"
+#~ msgstr "Servidor"
 
 #: src/components/related-actions.tsx
 msgid "Unblocked @{username}"
-msgstr ""
+msgstr "S'ha desblocat a @{username}"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Switch to my server (<0>{currentInstance}</0>)"
+#~ msgstr "Canvia al meu servidor (<0>{currentInstance}</0>)"
 
 #: src/components/account-handle-info.tsx
 msgid "username"
-msgstr ""
+msgstr "nom d’usuari"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Add/Remove from Lists"
-msgstr ""
+msgstr "Afegeix/elimina de les llistes"
 
 #: src/components/compose.tsx
 msgid "Post your reply"
-msgstr ""
+msgstr "Publica la resposta"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import…"
-msgstr ""
+msgstr "Importa…"
 
 #: src/components/media-attachment.tsx
 #: src/compose.tsx
 msgid "Error"
-msgstr ""
+msgstr "Error"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post (new window)"
-msgstr ""
+msgstr "Redacta una publicació nova (en una altra finestra)"
 
 #: src/components/nav-menu.tsx
 msgid "Muted users"
-msgstr ""
+msgstr "Usuaris silenciats"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -3260,7 +4022,7 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/welcome.tsx
 msgid "Log in"
-msgstr ""
+msgstr "Inicieu la sessió"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -3272,7 +4034,7 @@ msgstr ""
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
 msgid "<0>Filtered</0>: <1>{0}</1>"
-msgstr ""
+msgstr "<0>Filtrat</0>: <1>{0}</1>"
 
 #: src/pages/account-statuses.tsx
 msgid "Showing reposts"
@@ -3280,53 +4042,69 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Posts are grouped by authors, sorted by posts count per author."
-msgstr ""
+msgstr "Les publicacions s'agrupen per autors, ordenades pel nombre de publicacions per autor."
 
 #: src/pages/notifications.tsx
 msgid "With a new account"
-msgstr ""
+msgstr "Amb un compte nou"
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Save & close"
+#~ msgstr "Desa i tanca"
 
 #. placeholder {0}: filterInfo.titlesStr
 #. placeholder {0}: filterInfoMaybe?.titlesStr
 #: src/components/status-media-embeds.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered: {0}"
-msgstr ""
+msgstr "Filtrat: {0}"
+
+#: src/components/compose.tsx
+#~ msgid "Schedule post"
+#~ msgstr "Programa una publicació"
 
 #: src/pages/catchup.tsx
 msgid "Note: Only max 3 will be stored. The rest will be automatically removed."
-msgstr ""
+msgstr "Nota: només s'emmagatzemaran un màxim de 3. La resta s'eliminarà automàticament."
+
+#: src/pages/filters.tsx
+#~ msgid "No keywords. Add one."
+#~ msgstr "No hi ha paraules clau. Afegiu-ne una."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
-msgstr ""
+msgstr "La publicació de @{0} s'ha eliminat dels favorits"
 
 #: src/pages/settings.tsx
 msgid "Replace text as blocks, useful when taking screenshots, for privacy reasons."
-msgstr ""
+msgstr "Substitueix el text per blocs, útil per prendre captures de pantalla per raons de privacitat."
 
 #: src/components/media-attachment.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 msgid "Remove"
-msgstr ""
+msgstr "Suprimeix"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Profile"
-msgstr ""
+msgstr "Ves al perfil"
+
+#: src/pages/public.tsx
+#~ msgid "Switch to Local"
+#~ msgstr "Canvia a local"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
-msgstr ""
+msgstr "Camps addicionals"
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
-msgstr ""
+msgstr "Per defecte, una única columna per qui busca tranquil·litat. Múltiples columnes configurables per a usuaris avançats."
 
 #: src/components/report-modal.tsx
 msgid "Spam"
-msgstr ""
+msgstr "Contingut brossa"
 
 #: src/pages/status.tsx
 msgid "Switch to my PDS to enable interactions"
@@ -3336,29 +4114,33 @@ msgstr ""
 msgid "Showing replies"
 msgstr ""
 
+#: src/components/status-interactions.ts
+#~ msgid "Sorry, your current logged-in server can't interact with this post from another server."
+#~ msgstr "Ho sentim, el servidor en què heu iniciat la sessió actual no pot interactuar amb aquesta publicació des d'un altre servidor."
+
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to add to list."
-msgstr ""
+msgstr "No s'ha pogut afegir a la llista."
 
 #. placeholder {0}: niceDateTime(updatedAtDate)
 #: src/pages/notifications.tsx
 msgid "Updated <0>{0}</0>"
-msgstr ""
+msgstr "Actualitzat <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Paste shortcuts here"
-msgstr ""
+msgstr "Enganxeu dreceres aquí"
 
 #: src/components/compose.tsx
 msgid "Take photo or video"
-msgstr ""
+msgstr "Fes una foto o un vídeo"
 
 #. placeholder {0}: shortenNumber(followersCount)
 #. placeholder {1}: shortenNumber(followersCount)
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{followersCount, plural, one {<0>{0}</0> Follower} other {<1>{1}</1> Followers}}"
-msgstr ""
+msgstr "{followersCount, plural, one {<0>{0}</0> Seguidor} other {<1>{1}</1> Seguidors}}"
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
@@ -3366,19 +4148,19 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/notifications.tsx
 msgid "Save"
-msgstr ""
+msgstr "Desa"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcut settings"
-msgstr ""
+msgstr "No es pot copiar la configuració de la drecera"
 
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
-msgstr ""
+msgstr "S'ha produït un error en obtenir l'estat de resposta!"
 
 #: src/components/post-embed-modal.tsx
 msgid "Notes:"
-msgstr ""
+msgstr "Notes:"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} enabled."
@@ -3386,98 +4168,159 @@ msgstr ""
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to delete list."
-msgstr ""
+msgstr "No s'ha pogut esborrar la llista."
 
 #: src/pages/welcome.tsx
 msgid "Up to 5 hashtags combined into a single timeline."
-msgstr ""
+msgstr "Fins a 5 etiquetes combinades en una única línia de temps."
+
+#: src/pages/settings.tsx
+#~ msgid "Boosts carousel"
+#~ msgstr "Carrusel d'impulsos"
 
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Sharing doesn't seem to work."
-msgstr ""
+msgstr "Sembla que la compartició no funciona."
+
+#: src/pages/welcome.tsx
+#~ msgid "Boosts Carousel"
+#~ msgstr "Carrusel d'impulsos"
 
 #: src/components/list-add-edit.tsx
 msgid "Edit list"
-msgstr ""
+msgstr "Edita la llista"
 
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
-msgstr ""
+msgstr "les últimes 2 hores"
+
+#: src/components/shortcuts-settings.tsx
+#~ msgid "Public (Local / Federated)"
+#~ msgstr "Públic (Local / Federat)"
 
 #: src/compose.tsx
 msgid "Editing source status"
-msgstr ""
+msgstr "S'està editant la publicació original"
 
 #: src/pages/settings.tsx
 msgid "Settings"
-msgstr ""
+msgstr "Configuració"
+
+#: src/pages/account-statuses.jsx
+#~ msgid "Clear filters"
+#~ msgstr "Neteja els filtres"
+
+#: src/pages/public.tsx
+#~ msgid "Local timeline ({instance})"
+#~ msgstr "Línia de temps local ({instance})"
+
+#: src/components/custom-emojis-modal.tsx
+#~ msgid "Recently used"
+#~ msgstr "Usats recentment"
+
+#: src/pages/filters.tsx
+#~ msgid "Status: <0><1/></0>"
+#~ msgstr "Status: <0><1/></0>"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
-msgstr ""
+msgstr "Voleu convertir l'enllaç en una cita?"
 
 #: src/pages/http-route.tsx
 msgid "Unable to resolve URL"
-msgstr ""
+msgstr "No es pot resoldre l'URL"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Optional, unless for multi-column mode"
+#~ msgstr "Opcional, tret que sigui per al mode de múltiples columnes"
+
+#: src/components/endorsements.tsx
+#~ msgid "Profiles featured by @{0}"
+#~ msgstr "Perfils destacats per @{0}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "or override…"
-msgstr ""
+msgstr "o reemplaçar-les…"
 
 #: src/components/status-account-menu.tsx
 msgid "Remove quote…"
-msgstr ""
+msgstr "Elimina la cita…"
+
+#: src/components/related-actions.tsx
+#: src/pages/hashtag.tsx
+#~ msgid "Feature on profile"
+#~ msgstr "Destaca al perfil"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Keyboard shortcuts help"
-msgstr ""
+msgstr "Ajuda sobre dreceres de teclat"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Home"
-msgstr ""
+msgstr "Ves a l'inici"
+
+#: src/components/compose.tsx
+#~ msgid "Some poll choices are empty"
+#~ msgstr "Alguna opció de l'enquesta és buida"
 
 #: src/components/related-actions.tsx
 msgid "Remove <0>@{username}</0> from followers?"
-msgstr ""
+msgstr "Voleu suprimir a <0>@{username}</0> dels seguidors?"
 
 #: src/pages/bookmarks.tsx
 msgid "Unable to load bookmarks."
-msgstr ""
+msgstr "No es poden carregar les adreces d'interès."
+
+#: src/pages/filters.tsx
+#~ msgid "Filter from…"
+#~ msgstr "Filtra des de…"
 
 #: src/components/quote-chain-modal.tsx
 msgid "Continue unwrapping…"
-msgstr ""
+msgstr "Continua desembolicant…"
+
+#: src/components/related-actions.tsx
+#~ msgid "Enable boosts"
+#~ msgstr "Activa els impulsos"
+
+#: src/pages/filters.tsx
+#~ msgid "Expiring <0/>"
+#~ msgstr "Finalitza en <0/>"
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has suspended <1>{targetName}</1>, which means you can no longer receive updates from them or interact with them."
-msgstr ""
+msgstr "Un administrador de <0>{from}</0> ha suspès <1>{targetName}</1>; això vol dir que ja no en podreu rebre actualitzacions o interactuar-hi."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on mobile device"
 msgstr ""
 
+#: src/pages/account-statuses.jsx
+#~ msgid "- Boosts"
+#~ msgstr "- Impulsos"
+
 #: src/pages/catchup.tsx
 msgid "Posts are sorted by information density or depth. Shorter posts are \"lighter\" while longer posts are \"heavier\". Posts with photos are \"heavier\" than posts without photos."
-msgstr ""
+msgstr "Les publicacions s'ordenen per densitat o quantitat d'informació. Les publicacions més curtes són \"més lleugeres\" mentre que les publicacions més llargues són \"més pesades\". Les publicacions amb fotos són \"més pesades\" que les publicacions sense fotos."
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
 msgid "Settings…"
-msgstr ""
+msgstr "Configuració…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multi-column"
-msgstr ""
+msgstr "Múltiples columnes"
 
 #: src/components/quote-settings-sheet.tsx
 msgid "Quote settings for this post"
-msgstr ""
+msgstr "Configuració de cites per a aquesta publicació"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Tab/Menu bar"
-msgstr ""
+msgstr "Pestanya/Barra de menú"
 
 #: src/components/generic-accounts.tsx
 #: src/components/quotes-modal.tsx
@@ -3487,11 +4330,11 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/status.tsx
 msgid "Show more…"
-msgstr ""
+msgstr "Mostra'n més…"
 
 #: src/components/related-actions.tsx
 msgid "Blocked @{username}"
-msgstr ""
+msgstr "S'ha blocat a @{username}"
 
 #: src/components/status-interactions.ts
 msgid "Sorry, your current PDS can't interact with this post from another PDS."
@@ -3499,30 +4342,30 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "About"
-msgstr ""
+msgstr "Quant a"
 
 #: src/components/quote-suggestion.tsx
 msgid "Replace current quote"
-msgstr ""
+msgstr "Substitueix la cita actual"
 
 #: src/components/notification.tsx
 msgid "A post you interacted with has been edited."
-msgstr ""
+msgstr "Una publicació amb què heu interactuat ha estat editada."
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/pages/lists.tsx
 msgid "Unable to load lists."
-msgstr ""
+msgstr "No s'ha pogut carregar les llistes."
 
 #: src/components/report-modal.tsx
 msgid "Unable to mute {username}"
-msgstr ""
+msgstr "No ha estat possible silenciar a {username}"
 
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "See more"
-msgstr ""
+msgstr "Mostra'n més"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
@@ -3531,15 +4374,19 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
-msgstr ""
+msgstr "S'ha marcat com a sensibles algunes de les vostres publicacions."
 
 #: src/components/status-large-footer.tsx
 msgid "Comments"
-msgstr ""
+msgstr "Comentaris"
+
+#: src/pages/filters.tsx
+#~ msgid "Add filter"
+#~ msgstr "Afegeix un filtre"
 
 #: src/pages/status.tsx
 msgid "Switch to post's PDS"
@@ -3547,17 +4394,17 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
-msgstr ""
+msgstr "Suprimeix seguidor…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Profile"
-msgstr ""
+msgstr "Perfil"
 
 #: src/components/media-modal.tsx
 msgid "Attempting to describe image. Please wait…"
-msgstr ""
+msgstr "Intentant descriure la imatge. Si us plau, espereu…"
 
 #: src/components/account-handle-info.tsx
 msgid "handle domain name"
@@ -3566,82 +4413,102 @@ msgstr ""
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
 msgid "Deleted"
-msgstr ""
+msgstr "Eliminat"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to pin post"
-msgstr ""
+msgstr "No s'ha pogut desenganxar la publicació"
+
+#: src/pages/hashtag.tsx
+#~ msgid "Unfeatured on profile"
+#~ msgstr "No es mostra al perfil"
+
+#: src/components/shortcuts-settings.jsx
+#~ msgid "Add column…"
+#~ msgstr "Afegeix una columna…"
 
 #: src/components/compose.tsx
 msgid "Failed to download GIF"
-msgstr ""
+msgstr "Ha fallat la descàrrega del GIF"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Load new posts"
-msgstr ""
+msgstr "Carrega publicacions noves"
+
+#: src/pages/followed-hashtags.tsx
+#~ msgid "No hashtags followed yet."
+#~ msgstr "Encara no seguiu cap etiqueta."
 
 #: src/components/account-info.tsx
 msgid "Post stats unavailable."
-msgstr ""
+msgstr "Les estadístiques de les publicacions no estan disponibles."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
-msgstr ""
+msgstr "Captura de la interfície d'usuari del mode de múltiples columnes"
 
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
-msgstr ""
+msgstr "No hi ha dreceres encara. Toqueu el botó Afegeix drecera."
 
 #: src/pages/trending.tsx
 msgid "Trending posts"
-msgstr ""
+msgstr "Publicacions influents"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
-msgstr ""
+msgstr "Instal·la {CLIENT_NAME}"
 
 #: src/pages/catchup.tsx
 msgid "beyond 12 hours"
-msgstr ""
+msgstr "més de 12 hores"
+
+#: src/pages/filters.tsx
+#~ msgid "Profiles"
+#~ msgstr "Perfils"
 
 #: src/pages/catchup.tsx
 msgid "last 12 hours"
-msgstr ""
+msgstr "les últimes 12 hores"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn into quote"
-msgstr ""
+msgstr "Converteix en cita"
 
 #: src/utils/show-compose.ts
 msgid "A post is currently open. Post or discard it before creating a new one."
-msgstr ""
+msgstr "Actualment hi ha una publicació oberta. Publiqueu-la o descarteu-la abans de crear-ne una de nova."
 
 #: src/components/related-actions.tsx
 msgid "Unable to mute @{username}"
-msgstr ""
+msgstr "No ha estat possible silenciar @{username}"
 
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Hashtags"
-msgstr ""
+msgstr "Etiquetes"
+
+#: src/pages/status.tsx
+#~ msgid "You're not logged in. Interactions (reply, boost, etc) are not possible."
+#~ msgstr "No heu iniciat la sessió. Les interaccions (resposta, impuls, etc.) no són possibles."
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to remove quote"
-msgstr ""
+msgstr "No s'ha pogut eliminar la cita"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
-msgstr ""
+msgstr "{account} ha editat una publicació."
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy link"
-msgstr ""
+msgstr "No s'ha pogut copiar l'enllaç"
 
 #: src/components/notification.tsx
 msgid "Your posts will be marked as sensitive from now on."
-msgstr ""
+msgstr "A partir d'ara les vostres publicacions es marcaran com sensibles."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on tablet device"
@@ -3653,62 +4520,78 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Like"
-msgstr ""
+msgstr "M'agrada"
+
+#: src/pages/welcome.tsx
+#~ msgid "A minimalistic opinionated Bluesky web client."
+#~ msgstr ""
 
 #: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
-msgstr ""
+msgstr "Selecciona-los tots"
 
 #: src/pages/welcome.tsx
 msgid "Multi-hashtag timeline"
-msgstr ""
+msgstr "Línia de temps de diverses etiquetes"
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
 msgstr ""
 
+#: src/components/account-info.tsx
+#~ msgid "{0} original posts, {1} replies, {2} boosts"
+#~ msgstr "{0} publicacions originals, {1} respostes, {2} impulsos"
+
+#: src/pages/account-statuses.tsx
+#~ msgid "Showing boosts"
+#~ msgstr ""
+
 #: src/components/compose.tsx
 msgid "Editing source post"
-msgstr ""
+msgstr "Editant la publicació original"
 
 #: src/pages/settings.tsx
 msgid "Polls"
-msgstr ""
+msgstr "Enquestes"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
-msgstr ""
+msgstr "Captura de la línia de temps de diverses etiquetes amb un formulari per afegir més etiquetes"
+
+#: src/pages/settings.tsx
+#~ msgid "Synced to your Bluesky account settings. <0>Open Bluesky settings ({instance}).</0>"
+#~ msgstr ""
 
 #: src/pages/search.tsx
 msgid "Search: {q}"
-msgstr ""
+msgstr "Cerca: {q}"
 
 #: src/pages/notifications.tsx
 msgid "Filter out notifications from people:"
-msgstr ""
+msgstr "Exclou les notificacions de:"
 
 #: src/pages/settings.tsx
 msgid "Push Notifications (beta)"
-msgstr ""
+msgstr "Notificacions (beta)"
 
 #: src/pages/catchup.tsx
 msgid "last 10 hours"
-msgstr ""
+msgstr "les últimes 10 hores"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Search GIFs"
-msgstr ""
+msgstr "Cerca GIF"
 
 #. placeholder {0}: err.message
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description: {0}"
-msgstr ""
+msgstr "No s'ha pogut generar la descripció: {0}"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Catch-up <0>beta</0>"
-msgstr ""
+msgstr "Posada al dia <0>beta</0>"
 
 #: src/pages/status.tsx
 msgid "You're not logged in. Interactions (reply, repost, etc) are not possible."
@@ -3721,18 +4604,22 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Edit video description"
-msgstr ""
+msgstr "Edita la descripció del vídeo"
+
+#: src/components/compose.tsx
+#~ msgid "Add content warning"
+#~ msgstr "Afegeix un avís de contingut"
 
 #: src/pages/settings.tsx
 msgid "people I follow"
-msgstr ""
+msgstr "persones que segueixo"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Followers"
-msgstr ""
+msgstr "Seguidors"
 
 #: src/components/notification.tsx
 msgid "Reposted by…"
@@ -3740,56 +4627,86 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden by your filters"
-msgstr ""
+msgstr "Publicació amagada pels filtres"
 
 #: src/components/recent-searches.tsx
 msgid "Clear"
-msgstr ""
+msgstr "Neteja"
 
 #: src/components/qr-code-modal.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Scan QR code"
-msgstr ""
+msgstr "Escaneja un codi QR"
+
+#: src/pages/login.jsx
+#~ msgid "Continue"
+#~ msgstr "Continua"
+
+#: src/components/related-actions.tsx
+#~ msgid "@{username} is now featured on your profile."
+#~ msgstr "@{username} està destacat al teu perfil."
 
 #: src/components/related-actions.tsx
 msgid "Mute <0>@{username}</0>…"
-msgstr ""
+msgstr "Silencia a <0>@{username}</0>…"
+
+#: src/components/related-actions.tsx
+#~ msgid "Unable to unfeature @{username} on your profile."
+#~ msgstr "No es pot eliminar @{username} del teu perfil."
+
+#: src/components/private-note-sheet.tsx
+#~ msgid "Only visible to you"
+#~ msgstr "Només visible per a vosaltres"
 
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description"
-msgstr ""
+msgstr "No s'ha pogut generar la descripció"
+
+#: src/components/nav-menu.tsx
+#: src/pages/followed-hashtags.tsx
+#: src/pages/followed-hashtags.tsx
+#~ msgid "Followed Hashtags"
+#~ msgstr "Etiquetes seguides"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
 msgid "static URL"
-msgstr ""
+msgstr "URL estàtic"
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
 msgid "Removing Catch-up {0}"
-msgstr ""
+msgstr "S'està eliminant la Posada al dia {0}"
+
+#: src/pages/catchup.jsx
+#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies}}} density {{sortOrder, select, asc {least dense} desc {most dense}}}} first{groupBy, select, account {, grouped by authors} other {}}"
+#~ msgstr "Es mostren {selectedFilterCategory, select, all {totes les publicacions} original {publicacions originals} replies {respostes} boosts {impulsos} quotes {cites} followedTags {etiquetes seguides} groups {grups} filtered {publicacions filtrades}}, {sortBy, select, createdAt {{sortOrder, select, asc {més antiga} desc {més recent}}} reblogsCount {{sortOrder, select, asc {amb menys impulsos} desc {amb més impulsos}}} favouritesCount {{sortOrder, select, asc {amb menys favorits} desc {amb més favorits}}} repliesCount {{sortOrder, select, asc {amb menys respostes} desc {amb més respostes}}} density {{sortOrder, select, asc {amb menys densitat} desc {amb més densitat}}}} primer{groupBy, select, account {, agrupat per autors} other {}}"
 
 #: src/components/notification.tsx
 msgid "Lost connections with <0>{name}</0>."
-msgstr ""
+msgstr "S'han perdut les connexions amb <0>{name}</0>."
+
+#: src/pages/notifications.tsx
+#~ msgid "Who are limited by server moderators"
+#~ msgstr "Qui està limitat per la moderació del servidor"
 
 #: src/pages/hashtag.tsx
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
-msgstr ""
+msgstr "{SHORTCUTS_LIMIT, plural, one {S'ha arribat al màxim de # drecera. No es pot afegir un altra.} other {S'ha arribat al màxim de # dreceres. No es pot afegir un altra.}}"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>r</1>"
 
 #: src/components/status-account-menu.tsx
 msgid "Unpin from profile"
-msgstr ""
+msgstr "Desfixa del perfil"
 
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 #: src/pages/welcome.tsx
 msgid "Catch-up"
-msgstr ""
+msgstr "Posada al dia"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specific list is optional."
@@ -3798,11 +4715,11 @@ msgstr ""
 #: src/components/drafts.tsx
 #: src/pages/account-statuses.tsx
 msgid "Media"
-msgstr ""
+msgstr "Multimèdia"
 
 #: src/pages/notifications.tsx
 msgid "Yesterday"
-msgstr ""
+msgstr "Ahir"
 
 #: src/components/feedback-modal.tsx
 msgid "What happened?"
@@ -3814,55 +4731,76 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Post reported"
-msgstr ""
+msgstr "Publicació denunciada"
 
 #: src/components/account-block.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
-msgstr ""
+msgstr "Seguint-ne"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to delete post"
-msgstr ""
+msgstr "No ha estat possible esborrar la publicació"
+
+#: src/pages/login.jsx
+#~ msgid "Failed to log in. Please try again or try another server."
+#~ msgstr "No s'ha pogut iniciar la sessió. Torneu-ho a provar o canvieu de servidor."
+
+#: src/pages/welcome.tsx
+#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored on this server."
+#~ msgstr ""
 
 #: src/components/edit-history-controls.tsx
 msgid "Exit"
-msgstr ""
+msgstr "Surt"
 
 #: src/pages/catchup.tsx
 msgid "Previously…"
-msgstr ""
+msgstr "Anteriorment…"
+
+#: src/pages/filters.tsx
+#: src/pages/filters.tsx
+#~ msgid "New filter"
+#~ msgstr "Filtre nou"
 
 #: src/components/status-account-menu.tsx
 msgid "Quote removed"
-msgstr ""
+msgstr "S'ha eliminat la cita"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Quote with link"
-msgstr ""
+msgstr "Cita amb enllaç"
+
+#: src/pages/status.tsx
+#~ msgid "Switch to post's server ({0})"
+#~ msgstr "Canvia al servidor del compte ({0})"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Speak"
-msgstr ""
+msgstr "Pronuncia"
 
 #: src/pages/hashtag.tsx
 msgid "Unable to load posts with this tag"
-msgstr ""
+msgstr "No ha estat possible carregar les publicacions amb aquesta etiqueta"
 
 #: src/components/notification.tsx
 #: src/components/notification.tsx
 msgid "Learn more <0/>"
-msgstr ""
+msgstr "Saber-ne més <0/>"
 
 #: src/pages/hashtag.tsx
 msgid "This timeline is disabled on Bluesky."
 msgstr ""
 
 #: src/pages/catchup.tsx
+#~ msgid "Links shared by followings, sorted by shared counts, boosts and likes."
+#~ msgstr "Enllaços compartits pels vostres seguits, ordenats per recomptes de compartits, impulsos i M'agrada."
+
+#: src/pages/catchup.tsx
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
-msgstr ""
+msgstr "Posada al dia és una línia de temps independent per als vostres seguiments, que ofereix una visió ràpida i precisa, amb una interfície senzilla inspirada en el correu electrònic que permet ordenar i filtrar les publicacions sense esforç."
 
 #. [Name] [Visibility icon] reposted
 #: src/components/filtered-status.tsx
@@ -3871,40 +4809,56 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Moderation warning"
-msgstr ""
+msgstr "Avís de moderació"
+
+#: src/components/keyboard-shortcuts-help.jsx
+#~ msgid "Focus next column in multi-column mode"
+#~ msgstr "Centra la columna següent en mode de múltiples columnes"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>b</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>b</1>"
+
+#: src/pages/settings.tsx
+#~ msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
+#~ msgstr ""
+
+#: src/components/related-actions.tsx
+#~ msgid "Withdraw…"
+#~ msgstr "Descarta…"
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Liked @{0}'s post"
-msgstr ""
+msgstr "La publicació de @{0} s'ha afegit als favorits"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcuts"
-msgstr ""
+msgstr "No s'han pogut copiar les dreceres"
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation muted"
-msgstr ""
+msgstr "Conversa silenciada"
 
 #: src/components/account-block.tsx
 msgid "Requested"
-msgstr ""
+msgstr "Sol·licitat per"
 
 #: src/components/status-account-menu.tsx
 msgid "Post unpinned from profile"
-msgstr ""
+msgstr "La publicació ja no està fixada al perfil"
 
 #: src/pages/search.tsx
 msgid "No accounts found."
-msgstr ""
+msgstr "No s'ha trobat cap compte."
+
+#: src/pages/accounts.jsx
+#~ msgid "Remove <0>@{0}</0>?"
+#~ msgstr "Voleu eliminar <0>@{0}</0>?"
 
 #: src/components/recent-searches.tsx
 msgid "Clear all"
-msgstr ""
+msgstr "Esborra-ho tot"
 
 #: src/components/account-sheet.tsx
 #: src/components/add-remove-lists-sheet.tsx
@@ -3947,60 +4901,89 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/status.tsx
 msgid "Close"
-msgstr ""
+msgstr "Tanca"
+
+#: src/components/compose.tsx
+#~ msgid "Quotes can't be embedded in private mentions."
+#~ msgstr "No es poden inserir cites en mencions privades."
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
-msgstr ""
+msgstr "Sembla que ja teniu un camp d'edició obert a la finestra principal i que esteu publicant. Espereu que es publiqui i torneu-ho a provar més tard."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
-msgstr ""
+msgstr "Comparteix"
 
 #: src/pages/settings.tsx
 msgid "NOTE: Push notifications only work for <0>one account</0>."
-msgstr ""
+msgstr "NOTA: les notificacions només funcionen per a <0>un compte</0>."
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Show results"
-msgstr ""
+msgstr "Mostra els resultats"
+
+#: src/components/status-reply-menu.tsx
+#~ msgid "Only <0>@{0}</0>"
+#~ msgstr "Només <0>@{0}</0>"
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-quote-policy.ts
 msgid "Quote"
-msgstr ""
+msgstr "Cita"
 
 #: src/pages/catchup.tsx
 msgid "Groups"
-msgstr ""
+msgstr "Grups"
+
+#: src/components/compose.tsx
+#~ msgid "Poll must have at least 2 options"
+#~ msgstr "L'enquesta ha de tenir si més no 2 opcions"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
-msgstr ""
+msgstr "Format de configuració no vàlid"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Handle copied"
-msgstr ""
+msgstr "Identificador copiat"
+
+#. [Name] [Visibility icon] boosted
+#: src/components/filtered-status.tsx
+#~ msgid "<0/> <1/> boosted"
+#~ msgstr "<0/> <1/> ha impulsat"
+
+#: src/pages/welcome.jsx
+#~ msgid "Log in with Mastodon"
+#~ msgstr "Inicieu la sessió amb Mastodon"
 
 #: src/pages/status.tsx
 msgid "View post with its replies"
-msgstr ""
+msgstr "Mostra la publicació amb respostes"
 
 #: src/components/media-modal.tsx
 msgid "Failed to describe image"
-msgstr ""
+msgstr "No s'ha pogut descriure la imatge"
+
+#: src/pages/scheduled-posts.tsx
+#~ msgid "Failed to reschedule post"
+#~ msgstr "No s'ha pogut reprogramar la publicació"
+
+#: src/pages/filters.tsx
+#~ msgid "hidden"
+#~ msgstr "oculta"
 
 #: src/components/account-info.tsx
 msgid "View profile header"
-msgstr ""
+msgstr "Veure imatge de la capçalera"
 
 #: src/pages/login.tsx
 #: src/pages/login.tsx
 msgid "Failed to register application"
-msgstr ""
+msgstr "No s'ha pogut registrar l'aplicació"
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
@@ -4015,28 +4998,40 @@ msgstr ""
 #. placeholder {0}: Math.floor(seconds / minute)
 #: src/components/relative-time.tsx
 msgid "{0}m"
-msgstr ""
+msgstr "{0}m"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from @{0} will not be filtered from now on."
-msgstr ""
+msgstr "Les notificacions de @{0} no es filtraran a partir d'ara."
 
 #: src/components/nav-menu.tsx
 msgid "Menu"
-msgstr ""
+msgstr "Menú"
+
+#: src/components/translation-block.jsx
+#~ msgid "Auto-translated from {sourceLangText}"
+#~ msgstr "Traducció automàtica des del {sourceLangText}"
+
+#: src/pages/mentions.tsx
+#~ msgid "Private"
+#~ msgstr "Privat"
 
 #: src/pages/settings.tsx
 msgid "Translate to "
-msgstr ""
+msgstr "Tradueix a "
 
 #: src/components/translation-block.tsx
 msgid "Translating…"
-msgstr ""
+msgstr "Traducció en procés…"
 
 #: src/components/atproto-labels.tsx
 msgid "This account has marked itself as automated."
 msgstr ""
+
+#: src/components/compose-poll.tsx
+#~ msgid "Multiple choice"
+#~ msgstr "Elecció múltiple"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -4047,4 +5042,4 @@ msgstr ""
 #: src/pages/favourites.tsx
 #: src/pages/settings.tsx
 msgid "Likes"
-msgstr ""
+msgstr "\"M'agrada\""
