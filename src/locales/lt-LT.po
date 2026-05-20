@@ -38,16 +38,6 @@ msgstr "Suskleisti"
 msgid "Removes all UI animations, transitions, and smooth scrolling. Useful if motion is distracting."
 msgstr ""
 
-#: src/pages/filters.tsx
-#~ msgid "Whole word"
-#~ msgstr "Visas žodis"
-
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
-#~ msgid "Go to my server (<0>{currentInstance}</0>)"
-#~ msgstr ""
-
 #: src/components/report-modal.tsx
 msgid "Muted {username}"
 msgstr "Nutildytas {username}"
@@ -80,10 +70,6 @@ msgstr "Atsisiunčiama GIF…"
 msgid "Show all authors"
 msgstr "Rodyti visus autorius"
 
-#: src/components/compose.tsx
-#~ msgid "Ask a question"
-#~ msgstr ""
-
 #: src/components/report-modal.tsx
 msgid "Other"
 msgstr "Kita"
@@ -105,10 +91,6 @@ msgstr "Nėra sąrašų."
 msgid "Math expressions found."
 msgstr "Matematiniai išraiškos rasti."
 
-#: src/pages/login.jsx
-#~ msgid "e.g. “mastodon.social”"
-#~ msgstr "pvz., mastodon.social"
-
 #. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
 msgid "Muted @{username} for {0}"
@@ -126,18 +108,10 @@ msgstr "Peržiūrėti visus pranešimus"
 msgid "No quotes yet"
 msgstr ""
 
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Scheduled post deleted"
-#~ msgstr "Suplanuotas įrašas ištrintas"
-
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Switch to Side Peek view"
 msgstr "Perjungti į šoninio žvilgsnio rodymą"
-
-#: src/components/modals.tsx
-#~ msgid "Reply scheduled"
-#~ msgstr "Atsakymas suplanuotas"
 
 #: src/components/report-modal.tsx
 msgid "Unable to report post"
@@ -164,13 +138,6 @@ msgstr ""
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr "<0>Lyg2 (Shift)</0> + <1>c</1>"
 
-#: src/components/compose-button.tsx
-#: src/components/nav-menu.tsx
-#: src/pages/scheduled-posts.tsx
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Scheduled Posts"
-#~ msgstr "Suplanuoti įrašai"
-
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "Nutildyta"
@@ -186,10 +153,6 @@ msgstr "Ištrinti šį sąrašą?"
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcut settings copied"
 msgstr "Nukopijuoti trumpųjų nuorodų nustatymai"
-
-#: src/components/related-actions.tsx
-#~ msgid "Edit notes"
-#~ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "anyone"
@@ -208,11 +171,6 @@ msgstr ""
 #: src/components/poll.tsx
 msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
 msgstr "{optionVotesCount, plural, one {# balsas} few {# balsai} many {# balso} other {# balsų}}"
-
-#: src/components/status-activity-menu.tsx
-#: src/components/status-activity-menu.tsx
-#~ msgid "Boosted/Liked by…"
-#~ msgstr "Pasidalino / patiko…"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle}"
@@ -241,17 +199,9 @@ msgstr "Atsakant į @{0}"
 msgid "Unable to access camera. Please check permissions."
 msgstr ""
 
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Delete scheduled post?"
-#~ msgstr "Ištrinti suplanuotą įrašą?"
-
 #: src/components/related-actions.tsx
 msgid " Notifications disabled for @{username}'s posts."
 msgstr " Išjungti pranešimai apie @{username} įrašus."
-
-#: src/pages/login.jsx
-#~ msgid "server domain"
-#~ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Error deleting drafts! Please try again."
@@ -289,10 +239,6 @@ msgstr "Nepavyksta atblokuoti @{username}."
 msgid "Density"
 msgstr "Tankumas"
 
-#: src/pages/settings.tsx
-#~ msgid "⚠️⚠️⚠️ Very experimental.<0/>Stored in your own profile’s notes. Profile (private) notes are mainly used for other profiles, and hidden for own profile."
-#~ msgstr "⚠️⚠️⚠️ Labai eksperimentinis.<0/>Įrašyta jūsų profilio pastabose. Profilio (privačios) pastabos daugiausia naudojamos kitiems profiliams, o savo profilyje yra paslėptos."
-
 #: src/pages/notifications.tsx
 msgid "Only mentions"
 msgstr "Tik paminėjimus"
@@ -307,10 +253,6 @@ msgstr "{0, plural, one {Skelbimas} few {Skelbimai} many {Skelbimo} other {Skelb
 msgid "Showing posts in {0}"
 msgstr "Rodomi įrašai rikiavime {0}"
 
-#: src/components/related-actions.tsx
-#~ msgid "Boosts from @{username} enabled."
-#~ msgstr "Įjungti pasidalinimai iš @{username}."
-
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Notifications"
 msgstr ""
@@ -319,19 +261,10 @@ msgstr ""
 msgid "Nothing to show"
 msgstr "Nėra ką rodyti."
 
-#: src/pages/catchup.tsx
-#~ msgid "Note: your server might only show a maximum of 800 posts in the Home timeline regardless of the time range. Could be less or more."
-#~ msgstr ""
-
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Bookmarked"
 msgstr "Pridėta"
-
-#: src/components/private-note-sheet.tsx
-#: src/components/related-actions.tsx
-#~ msgid "Notes"
-#~ msgstr ""
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
@@ -345,10 +278,6 @@ msgstr ""
 #: src/pages/hashtag.tsx
 msgid "Login required to see posts from Bluesky."
 msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "{0, plural, one {# keyword} other {# keywords}}"
-#~ msgstr "{0, plural, one {# raktažodis} few {# raktažodžiai} many {# raktažodžio} other {# raktažodžių}}"
 
 #: src/pages/welcome.tsx
 msgid "A separate timeline for followings. Email-inspired interface to sort and filter posts."
@@ -375,17 +304,9 @@ msgstr "Siųsti įrašą"
 msgid "Dismiss"
 msgstr "Atmesti"
 
-#: src/components/shortcuts-settings.jsx
-#~ msgid "Specific list is optional. For multi-column mode, list is required, else the column will not be shown."
-#~ msgstr "Konkretus sąrašas neprivalomas. Daugiastulpelių režime sąrašas yra privalomas, kitaip stulpelis nebus rodomas."
-
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
 msgstr "Pasivykime tavo sekimų įrašus."
-
-#: src/components/follow-request-buttons.tsx
-#~ msgid "Reject"
-#~ msgstr "Atmesti"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open"
@@ -417,14 +338,6 @@ msgstr "Kopijuoti socialinės medijos vardą"
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Bookmarks"
 msgstr ""
-
-#: src/pages/followed-hashtags.tsx
-#~ msgid "Unable to load followed hashtags."
-#~ msgstr "Nepavyksta įkelti sekamų saitažodžių."
-
-#: src/pages/mentions.tsx
-#~ msgid "Private mentions"
-#~ msgstr "Privatūs paminėjimai"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List"
@@ -495,17 +408,9 @@ msgstr ""
 msgid "Feedback sent"
 msgstr ""
 
-#: src/pages/followed-hashtags.tsx
-#~ msgid "{0, plural, one {# hashtag} other {# hashtags}}"
-#~ msgstr "{0, plural, one {# saitažodis} few {# saitažodžiai} many {# saitažodžio} other {# saitažodžių}}"
-
 #: src/components/report-modal.tsx
 msgid "Pending review"
 msgstr "Laukiama apžvalgos"
-
-#: src/pages/login.jsx
-#~ msgid "Continue with {selectedInstanceText}"
-#~ msgstr "Tęsti su {selectedInstanceText}"
 
 #: src/components/timeline.tsx
 #: src/pages/settings.tsx
@@ -537,10 +442,6 @@ msgstr "Perkelti žemyn"
 msgid "Mention <0>@{username}</0>"
 msgstr "Paminėti <0>@{username}</0>"
 
-#: src/pages/filters.tsx
-#~ msgid "Edit filter"
-#~ msgstr "Redaguoti filtrą"
-
 #: src/components/related-actions.tsx
 msgid "Enable reposts"
 msgstr ""
@@ -549,10 +450,6 @@ msgstr ""
 #: src/pages/account-statuses.tsx
 msgid "Switch to account's PDS {0}"
 msgstr ""
-
-#: src/pages/hashtag.tsx
-#~ msgid "Unable to unfeature on profile"
-#~ msgstr "Nepavyksta neberodyti profilyje."
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
@@ -579,10 +476,6 @@ msgstr ""
 msgid "Uploaded"
 msgstr "Įkelta"
 
-#: src/components/shortcuts-settings.jsx
-#~ msgid "No columns yet. Tap on the Add column button."
-#~ msgstr "Kol kas nėra stulpelių. Paliesk mygtuką Pridėti stulpelį."
-
 #: src/components/shortcuts-settings.tsx
 msgid "Add more than one shortcut/column to make this work."
 msgstr "Pridėk daugiau nei vieną trumpąją nuorodą / stulpelį, kad tai veiktų."
@@ -601,10 +494,6 @@ msgstr "Atidaryti naujame lange"
 #: src/pages/notifications.tsx
 msgid "Notifications settings updated"
 msgstr "Atnaujinti pranešimų nustatymai"
-
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Scheduled post rescheduled"
-#~ msgstr "Suplanuotas įrašas iš naujo"
 
 #: src/pages/accounts.tsx
 msgid "View profile…"
@@ -635,21 +524,6 @@ msgstr "Turinys"
 msgid "Send Report"
 msgstr "Siųsti ataskaitą"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
-#~ msgid "Enter a new server e.g. \"mastodon.social\""
-#~ msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Unable to delete filter."
-#~ msgstr "Nepavyksta ištrinti filtro."
-
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Federated"
-#~ msgstr "Federacinis"
-
 #. More from [Author]
 #: src/components/byline.tsx
 msgid "More from <0/>"
@@ -672,10 +546,6 @@ msgstr "Atrodo, kad jūsų naršyklė blokuoja iškylančiuosius langus."
 msgid "Default visibility updated"
 msgstr ""
 
-#: src/components/status-reply-menu.tsx
-#~ msgid "{0, plural, other {<0>@{1}</0> first, # others below}}"
-#~ msgstr ""
-
 #. placeholder {0}: feeds.length
 #: src/pages/lists.tsx
 msgid "{0, plural, one {# feed} other {# feeds}}"
@@ -697,17 +567,9 @@ msgstr "Pranešimas"
 msgid "Note: <0>Default</0> account will always be used for first load. Switched accounts will persist during the session."
 msgstr "Pastaba: <0>Numatytoji</0> paskyra visada bus naudojama pirmajam įkėlimui. Perjungtos paskyros išliks seanso metu."
 
-#: src/pages/settings.tsx
-#~ msgid "\"Cloud\" import/export for shortcuts settings"
-#~ msgstr "„Debesis“ importuoti / eksportuoti trumpųjų nuorodų nustatymus"
-
 #: src/components/status-quotes.tsx
 msgid "Post removed by author"
 msgstr ""
-
-#: src/pages/account-statuses.jsx
-#~ msgid "+ Replies"
-#~ msgstr "+ atsakymai"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media.tsx
@@ -723,10 +585,6 @@ msgid "Open original media in new window"
 msgstr "Atidaryti originalią mediją naujame lange"
 
 #: src/components/shortcuts-settings.tsx
-#~ msgid "Download shortcuts from server"
-#~ msgstr ""
-
-#: src/components/shortcuts-settings.tsx
 msgid "Not available in current view mode"
 msgstr "Nepasiekiama dabartiniame rodinio režime."
 
@@ -738,34 +596,9 @@ msgstr ""
 msgid "Ended <0/>"
 msgstr "Baigėsi <0/>"
 
-#: src/components/notification.tsx
-#~ msgid "View #Wrapstodon"
-#~ msgstr "Peržiūrėti #Wrapstodon"
-
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "{0, plural, one {# filter} other {# filters}}"
-#~ msgstr "{0, plural, one {# filtras} few {# filtrai} many {# filtro} other {# filtrų}}"
-
-#: src/pages/settings.tsx
-msgid "Reposts carousel"
-msgstr ""
-
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Shortcuts saved"
-#~ msgstr "Išsaugotos trumposios nuorodos"
-
-#: src/components/status-reply-menu.tsx
-#: src/components/status-reply-menu.tsx
-#~ msgid "Reply all"
-#~ msgstr ""
-
-#: src/pages/account-statuses.tsx
-#~ msgid "Hiding boosts"
-#~ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "We read every message even when we cannot reply."
@@ -774,10 +607,6 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Follow requests"
 msgstr "Sekimo prašymai"
-
-#: src/pages/account-statuses.tsx
-#~ msgid "Switch to account's server {0}"
-#~ msgstr ""
 
 #: src/pages/trending.tsx
 msgid "No trending posts."
@@ -807,10 +636,6 @@ msgstr "Pridėti prie esamų trumpųjų nuorodų?"
 #: src/components/status-quick-menu.tsx
 msgid "Undo repost"
 msgstr ""
-
-#: src/pages/welcome.tsx
-#~ msgid "Screenshot of Phanpy home timeline on tablet device"
-#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
@@ -848,15 +673,6 @@ msgstr "Spartieji klaviatūros klavišai"
 #: src/utils/visibility-text.ts
 msgid "Public"
 msgstr "Vieša"
-
-#: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Optional, e.g. mastodon.social"
-#~ msgstr "Pasirinktinis, pvz., mastodon.social"
-
-#: src/pages/notifications.tsx
-#~ msgid "{0, plural, one {# follow request} other {# follow requests}}"
-#~ msgstr "{0, plural, one {# sekimo prašymai} few {# sekimo prašymai} many {# sekimo prašymo} other {# sekimo prašymų}}"
 
 #: src/components/nav-menu.tsx
 msgid "Accounts…"
@@ -947,14 +763,6 @@ msgstr "Nuo paskutinio prisijungimo nebuvo suteiktas tiesioginis leidimas. Turė
 #: src/components/status-helpers.ts
 msgid "Read more →"
 msgstr "Skaityti daugiau →"
-
-#: src/pages/account-statuses.jsx
-#~ msgid "{accountDisplay} ({monthYear})"
-#~ msgstr "{accountDisplay} ({monthYear})"
-
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Custom emojis"
-#~ msgstr "Pasirinktiniai jaustukai"
 
 #: src/components/drafts.tsx
 msgid "No drafts found."
@@ -1054,11 +862,6 @@ msgstr "Atgal į tendencingų įrašų rodymą"
 msgid "Image description generator"
 msgstr "Vaizdų aprašymo generatorius"
 
-#: src/pages/hashtag.tsx
-#: src/pages/hashtag.tsx
-#~ msgid "Featured on profile"
-#~ msgstr "Rodoma profilyje"
-
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut…"
 msgstr "Pridėti trumpąją nuorodą…"
@@ -1090,10 +893,6 @@ msgstr "Visam laikui"
 msgid "Notifications settings"
 msgstr "Pranešimų nustatymai"
 
-#: src/pages/account-statuses.jsx
-#~ msgid "{accountDisplay} (- Boosts)"
-#~ msgstr ""
-
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/{total}"
 msgstr ""
@@ -1111,10 +910,6 @@ msgstr "beta versija"
 #: src/pages/search.tsx
 msgid "Search"
 msgstr "Paieška"
-
-#: src/pages/accounts.jsx
-#~ msgid "Log out and remove <0>@{0}</0>"
-#~ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Post updated. Check it out."
@@ -1167,11 +962,6 @@ msgstr "Atidaryti originalią mediją"
 msgid "Account Emojis:"
 msgstr "Paskyros jaustukai:"
 
-#. Scheduled [in 1 day] ([Thu, Feb 27, 6:30:00 PM])
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Scheduled <0><1/></0> <2>({0})</2>"
-#~ msgstr "Suplanuota <0><1/></0> <2>({0})</2>"
-
 #: src/components/shortcuts-settings.tsx
 msgid "Account"
 msgstr "Paskyra"
@@ -1183,14 +973,6 @@ msgstr "Bluokuoti <0>@{username}</0>?"
 #: src/components/related-actions.tsx
 msgid "@{username} removed from followers"
 msgstr "@{username} pašalintas iš sekėjų"
-
-#: src/components/endorsements.tsx
-#~ msgid "No featured profiles."
-#~ msgstr "Nėra rodomų profilių."
-
-#: src/pages/filters.tsx
-#~ msgid "Expiry"
-#~ msgstr "Galiojimo laikas"
 
 #: src/pages/catchup.tsx
 msgid "Overlaps with your last catch-up"
@@ -1223,17 +1005,9 @@ msgstr ""
 msgid "Repost/Quote…"
 msgstr ""
 
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Failed to delete scheduled post"
-#~ msgstr "Nepavyko ištrinti suplanuoto įrašo."
-
 #: src/components/drafts.tsx
 msgid "Looks like you have unsent drafts. Let's continue where you left off."
 msgstr "Atrodo, kad turi neišsiųstų juodraščių. Tęskime nuo ten, kur baigei."
-
-#: src/pages/hashtag.tsx
-#~ msgid "Login required to see posts from this server."
-#~ msgstr ""
 
 #: src/components/generic-accounts.tsx
 #: src/components/mention-modal.tsx
@@ -1248,10 +1022,6 @@ msgstr "Įrašas paskelbtas. Peržiūrėk."
 msgid "Search: {q} (Hashtags)"
 msgstr "Paieška: {q} (saitažodžiai)"
 
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Unable to save shortcuts"
-#~ msgstr "Nepavyksta išsaugoti trumpųjų nuorodų."
-
 #: src/components/status-reblog.tsx
 msgid "<0/> <1>reposted</1>"
 msgstr ""
@@ -1260,17 +1030,13 @@ msgstr ""
 msgid "Show anyway"
 msgstr ""
 
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Zoom in"
-#~ msgstr ""
-
 #: src/components/status-helpers.ts
 msgid "Request to quote"
 msgstr ""
 
-#: src/pages/settings.jsx
-#~ msgid "<0>Built</0> by <1>@cheeaun</1>"
-#~ msgstr "<0>Sukūrė</0> <1>@cheeaun</1>"
+#: src/pages/settings.tsx
+msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
+msgstr ""
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
@@ -1292,11 +1058,6 @@ msgstr ""
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
-#~ msgid "Boosted"
-#~ msgstr "Pasidalinta"
-
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
 msgid "Reposted"
 msgstr ""
 
@@ -1309,10 +1070,6 @@ msgstr "Rodomi įrašai, kuriuose paminimas <0>{0}</0>"
 #: src/components/related-actions.tsx
 msgid "Unable to copy handle"
 msgstr "Nepavyksta nukopijuoti socialinės medijos vardo."
-
-#: src/pages/filters.tsx
-#~ msgid "Change expiry"
-#~ msgstr "Keisti galiojimo laiką"
 
 #: src/components/import-export-accounts.tsx
 msgid "Import failed"
@@ -1340,23 +1097,9 @@ msgstr ""
 msgid "Quote chain"
 msgstr ""
 
-#: src/components/nav-menu.jsx
-#: src/components/shortcuts.jsx
-#: src/pages/list.jsx
-#~ msgid "All Lists"
-#~ msgstr "Visi sąrašai"
-
-#: src/pages/public.tsx
-#~ msgid "No one has posted anything yet."
-#~ msgstr "Kol kas niekas nieko nepaskelbė."
-
 #: src/components/post-embed-modal.tsx
 msgid "HTML code copied"
 msgstr "Nukopijuotas HTML kodas"
-
-#: src/pages/filters.tsx
-#~ msgid "Filtered post will be…"
-#~ msgstr "Filtruotas įrašas bus…"
 
 #: src/pages/search.tsx
 msgid "See more accounts"
@@ -1366,14 +1109,6 @@ msgstr "Žiūrėti daugiau paskyrų"
 #: src/pages/account-statuses.tsx
 msgid "Search my posts"
 msgstr ""
-
-#: src/components/status-content.tsx
-#~ msgid "Unboosted @{0}'s post"
-#~ msgstr "Panaikintas @{0} įrašo pasidalinimas"
-
-#: src/pages/filters.tsx
-#~ msgid "Delete this filter?"
-#~ msgstr "Ištrinti šį filtrą?"
 
 #: src/components/generic-accounts.tsx
 #: src/components/notification.tsx
@@ -1387,10 +1122,6 @@ msgstr "Paskyros"
 msgid "Post hidden because you've muted @{name}."
 msgstr ""
 
-#: src/pages/status.tsx
-#~ msgid "This post is from another server (<0>{instance}</0>). Interactions (reply, boost, etc) are not possible."
-#~ msgstr ""
-
 #: src/components/account-info-mini.tsx
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -1398,17 +1129,9 @@ msgstr ""
 msgid "This user has chosen to not make this information available."
 msgstr "Šis naudotojas pasirinko nepadaryti šią informaciją prieinamą."
 
-#: src/pages/welcome.jsx
-#~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
-#~ msgstr "<0>Sukūrė</0> <1>@cheeaun</1>. <2>Privatumo politika</2>."
-
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
 msgstr "Slinkti į viršų"
-
-#: src/pages/filters.tsx
-#~ msgid "Home and lists"
-#~ msgstr "Pagrindinis ir sąrašai"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1484,10 +1207,6 @@ msgstr ""
 msgid "Accounts with <0>{query}</0>"
 msgstr "Paskyros su <0>{query}</0>"
 
-#: src/components/compose-poll.tsx
-#~ msgid "Remove poll"
-#~ msgstr "Šalinti apklausą"
-
 #: src/pages/catchup.tsx
 msgid "Preview of Catch-up UI"
 msgstr "Pasivijimo naudotojo sąsajos peržiūra"
@@ -1500,10 +1219,6 @@ msgstr "Rodymo kalba"
 msgid "Paginated timeline (beta)"
 msgstr ""
 
-#: src/pages/public.tsx
-#~ msgid "Federated timeline"
-#~ msgstr "Federacinė laiko skalė"
-
 #: src/pages/welcome.tsx
 msgid "Screenshot of nested comments thread"
 msgstr "Įterptų komentarų gijos ekrano kopija"
@@ -1515,10 +1230,6 @@ msgstr "Tendencinga ({instance})"
 #: src/components/shortcuts-settings.tsx
 msgid "Specify a list of shortcuts that'll appear as:"
 msgstr "Nurodyk trumpųjų nuorodų sąrašą, kuris bus rodomas kaip:"
-
-#: src/components/account-info.tsx
-#~ msgid "{0} original posts, {1} replies, {2} quotes, {3} boosts"
-#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Timeline"
@@ -1540,10 +1251,6 @@ msgstr "Rikiuoti: tankumas"
 msgid "Like (favourite)"
 msgstr "Patinka (pamėgti)"
 
-#: src/pages/settings.tsx
-#~ msgid "Synced to your server's settings. <0>Go to your server ({instance}) for more settings.</0>"
-#~ msgstr ""
-
 #: src/pages/account-statuses.tsx
 #: src/pages/hashtag.tsx
 msgid "Filters"
@@ -1559,18 +1266,10 @@ msgstr "Kenkėjiškos nuorodos, netikras įsitraukimas arba pasikartojantys atsa
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
 msgstr "{maxMediaAttachments, plural, one {Galite pridėti tik iki # failo.} few {Galite pridėti tik iki # failų.} many {Galite pridėti tik iki # failo.} other {Galite pridėti tik iki # failų.}}"
 
-#: src/pages/hashtag.tsx
-#~ msgid "Unfollow #{hashtag}?"
-#~ msgstr "Nebesekti #{hashtag}?"
-
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 msgid "Shortcuts"
 msgstr "Trumposios nuorodos"
-
-#: src/pages/filters.tsx
-#~ msgid "No filters yet."
-#~ msgstr "Kol kas nėra filtrų."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts copied"
@@ -1588,14 +1287,6 @@ msgstr "Kas tai?"
 msgid "Add hashtag"
 msgstr "Pridėti saitažodį"
 
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Import/export settings from/to server (Very experimental)"
-#~ msgstr ""
-
-#: src/components/related-actions.tsx
-#~ msgid "Boosts from @{username} disabled."
-#~ msgstr "Išjungti pasidalinimai iš @{username}."
-
 #: src/pages/welcome.tsx
 msgid "Nested comments thread"
 msgstr "Įterptų komentarų gija"
@@ -1603,10 +1294,6 @@ msgstr "Įterptų komentarų gija"
 #: src/components/report-modal.tsx
 msgid "Forward to <0>{domain}</0>"
 msgstr "Persiųsti į <0>{domain}</0>"
-
-#: src/components/compose.tsx
-#~ msgid "Add poll"
-#~ msgstr "Pridėti apklausą"
 
 #: src/pages/notifications.tsx
 msgid "You don't follow"
@@ -1640,10 +1327,6 @@ msgstr "Šalinti šį pasivijimą?"
 #: src/components/status-menu-state.tsx
 msgid "Old post (<0>{0}</0>)"
 msgstr "Senasis įrašas (<0>{0}</0>)"
-
-#: src/components/status-content.tsx
-#~ msgid "Boosted @{0}'s post"
-#~ msgstr "Pasidalintas @{0} įrašas"
 
 #. placeholder {0}: dtf.format(new Date(lastCatchupEndAt))
 #: src/pages/catchup.tsx
@@ -1682,10 +1365,6 @@ msgstr ""
 msgid "Reload page now to update?"
 msgstr "Perkrauti puslapį dabar, kad atnaujinti?"
 
-#: src/components/status-reblog.tsx
-#~ msgid "<0/> <1>boosted</1>"
-#~ msgstr "<0/> <1>pasidalino</1>"
-
 #: src/components/status-helpers.ts
 msgid "You are not allowed to quote this post"
 msgstr ""
@@ -1694,17 +1373,9 @@ msgstr ""
 msgid "Search term"
 msgstr "Paieškos terminas"
 
-#: src/components/shortcuts-settings.jsx
-#~ msgid "For multi-column mode, search term is required, else the column will not be shown."
-#~ msgstr "Daugiastulpelių režime privaloma nurodyti paieškos terminą, kitaip stulpelis nebus rodomas."
-
 #: src/pages/status.tsx
 msgid "Error: {e}"
 msgstr "Klaida: {e}"
-
-#: src/pages/hashtag.tsx
-#~ msgid "Unfollowed #{hashtag}"
-#~ msgstr "Nebesekama #{hashtag}"
 
 #. placeholder {0}: replies.length
 #. placeholder {1}: shortenNumber(replies.length)
@@ -1728,10 +1399,6 @@ msgstr "Autoriai"
 #: src/pages/status.tsx
 msgid "{months, plural, one {# month later} other {# months later}}"
 msgstr ""
-
-#: src/components/keyboard-shortcuts-help.jsx
-#~ msgid "Focus column in multi-column mode"
-#~ msgstr "Fokusuoti stulpelį daugiastulpelių režime"
 
 #: src/components/status-utility-menu.tsx
 msgid "Edited: {editedDateText}"
@@ -1759,10 +1426,6 @@ msgstr "Atsakant į @{0} įrašą"
 msgid "Import shortcuts?"
 msgstr "Importuoti trumpąsias nuorodas?"
 
-#: src/pages/public.tsx
-#~ msgid "Switch to Federated"
-#~ msgstr "Perjungti į federacinę"
-
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to next post"
 msgstr "Praleisti karuselę į kitą įrašą"
@@ -1788,10 +1451,6 @@ msgstr ""
 msgid "Auto-translated from {0}"
 msgstr ""
 
-#: src/pages/welcome.tsx
-#~ msgid "Visually separate original posts and re-shared posts (boosted posts)."
-#~ msgstr "Vizualiai atskirkite originalius įrašus ir pakartotinai bendrinamus įrašus (pasidalintus įrašus)."
-
 #: src/pages/notifications.tsx
 msgid "Who are limited by Bluesky moderators"
 msgstr ""
@@ -1807,14 +1466,6 @@ msgstr "Neapdorotos trumposios nuorodos JSON"
 msgid "Thread"
 msgstr "Gija"
 
-#: src/components/report-modal.tsx
-#~ msgid "Violates the law of your or the server's country"
-#~ msgstr "Pažeidžia tavo arba serverio šalies įstatymus"
-
-#: src/components/related-actions.tsx
-#~ msgid "Withdraw follow request?"
-#~ msgstr "Atšaukti sekimo prašymą?"
-
 #: src/components/shortcuts-settings.tsx
 msgid "Multiple hashtags are supported. Space-separated."
 msgstr "Palaikomi keli saitažodžiai. Atskirti tarpais."
@@ -1822,10 +1473,6 @@ msgstr "Palaikomi keli saitažodžiai. Atskirti tarpais."
 #: src/components/status-edit-history-modal.tsx
 msgid "Failed to load history"
 msgstr "Nepavyko įkelti istorijos."
-
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Search emoji"
-#~ msgstr "Ieškoti jaustukų"
 
 #: src/pages/notifications.tsx
 msgid "Today"
@@ -1854,17 +1501,9 @@ msgstr "Nukopijuota nuorada"
 msgid "Search accounts"
 msgstr "Ieškoti paskyrų"
 
-#: src/components/notification.tsx
-#~ msgid "{account} requested to follow you."
-#~ msgstr "{account} paprašė tave sekti."
-
 #: src/components/list-add-edit.tsx
 msgid "Show replies to list members"
 msgstr "Rodyti atsakymus sąrašo nariams"
-
-#: src/components/compose.tsx
-#~ msgid "Attachment #{i} failed"
-#~ msgstr "Nepavyko #{i} priedas."
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
@@ -1875,10 +1514,6 @@ msgstr "Populiariausios nuorodos"
 #: src/pages/hashtag.tsx
 msgid "Media only"
 msgstr "Tik medija"
-
-#: src/components/follow-request-buttons.tsx
-#~ msgid "Rejected"
-#~ msgstr "Atmesta"
 
 #: src/components/compose.tsx
 msgid "Update"
@@ -1892,10 +1527,6 @@ msgstr ""
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
 msgstr "{account} pranešė apie {targetAccount}"
-
-#: src/pages/filters.tsx
-#~ msgid "Conversations"
-#~ msgstr "Pokalbiai"
 
 #. placeholder {0}: err?.message ? `: ${err.message}` : ''
 #: src/components/media-attachment.tsx
@@ -1997,10 +1628,6 @@ msgstr ""
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
 msgstr "Pastaba: ši funkcija naudoja išorinę DI paslaugą, veikiančią su <0>„img-alt-api“</0>. Gali veikti netinkamai. Tik vaizdams ir anglų kalba."
 
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Zoom out"
-#~ msgstr ""
-
 #: src/components/media-post.tsx
 msgid "Sensitive media"
 msgstr "Jautri medija"
@@ -2013,10 +1640,6 @@ msgstr "Pridėti GIF"
 #: src/components/status-account-menu.tsx
 msgid "Remove my post from <0>@{0}</0>'s post?"
 msgstr ""
-
-#: src/pages/welcome.tsx
-#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
-#~ msgstr ""
 
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
@@ -2044,25 +1667,9 @@ msgstr "Sekimai"
 msgid "Search: {q} (Accounts)"
 msgstr "Paieška: {q} (paskyros)"
 
-#: src/components/report-modal.tsx
-#~ msgid "Breaks specific server rules"
-#~ msgstr "Pažeidžia konkrečias serverio taisykles"
-
 #: src/components/shortcuts-settings.tsx
 msgid "Not sure what to add?<0/>Try adding <1>Home / Following and Notifications</1> first."
 msgstr "Nežinai, ką pridėti?<0/>Pirmiausia pabandyk pridėti <1>Pagrindinis / sekimai ir pranešimai</1>."
-
-#: src/pages/filters.tsx
-#~ msgid "Unable to create filter"
-#~ msgstr "Nepavyksta sukurti filtro."
-
-#: src/pages/welcome.jsx
-#~ msgid "Connect your existing Mastodon/Fediverse account.<0/>Your credentials are not stored on this server."
-#~ msgstr "Prijunkite esamą „Mastodon“ / fediverso paskyrą.<0/>Jūsų kredencialai šiame serveryje nėra saugomi."
-
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Saving shortcuts to server…"
-#~ msgstr ""
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
@@ -2089,10 +1696,6 @@ msgstr "Priimti"
 msgid "Ignore"
 msgstr "Ignoruoti"
 
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Unable to download shortcuts"
-#~ msgstr "Nepavyksta atsisiųsti trumpųjų nuorodų."
-
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
@@ -2108,14 +1711,6 @@ msgstr "Nepavyksta nukopijuoti versijos eilutės."
 msgid "Look up <0>{query}</0>"
 msgstr "Ieškoti <0>{query}</0>"
 
-#: src/components/compose.tsx
-#~ msgid "Add custom emoji"
-#~ msgstr "Pridėti pasirinktinį jaustuką"
-
-#: src/pages/filters.tsx
-#~ msgid "obscured (media only)"
-#~ msgstr "uždengta (tik medija)"
-
 #: src/components/open-link-sheet.tsx
 msgid "Open link?"
 msgstr ""
@@ -2128,17 +1723,9 @@ msgstr "Nepavyksta įkelti pranešimų."
 msgid "HTML Code"
 msgstr "HTML kodas"
 
-#: src/components/compose.tsx
-#~ msgid "Posting on <0/>"
-#~ msgstr "Skelbimiama <0/>"
-
 #: src/components/timeline.tsx
 msgid "Pinned posts"
 msgstr "Prisegti įrašai"
-
-#: src/components/compose.tsx
-#~ msgid "Schedule"
-#~ msgstr "Planuoti"
 
 #: src/components/compose.tsx
 msgctxt "Submit button in composer"
@@ -2154,18 +1741,10 @@ msgstr "Turinio įspėjimas"
 msgid "Hashtag"
 msgstr "Saitažodis"
 
-#: src/components/related-actions.tsx
-#~ msgid "Add notes"
-#~ msgstr ""
-
 #. js-lingui-explicit-id
 #: src/pages/catchup.tsx
 msgid "group.filter"
 msgstr "Filtruoti"
-
-#: src/components/related-actions.tsx
-#~ msgid "Disable boosts"
-#~ msgstr "Išjungti pasidalinimus"
 
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
@@ -2184,10 +1763,6 @@ msgstr "Automatinis įterptinis vertimas"
 #: src/pages/catchup.tsx
 msgid "Note: the Home timeline might only show a limited number of posts regardless of the time range."
 msgstr ""
-
-#: src/pages/catchup.tsx
-#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
@@ -2219,10 +1794,6 @@ msgstr "Leisti"
 #: src/pages/account-statuses.tsx
 msgid "Search @{0}'s posts"
 msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Unable to edit filter"
-#~ msgstr "Nepavyksta redaguoti filtro."
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText}"
@@ -2291,10 +1862,6 @@ msgstr "Nebesekti…"
 msgid "Delete all…"
 msgstr "Ištrinti visus…"
 
-#: src/pages/hashtag.tsx
-#~ msgid "Following…"
-#~ msgstr "Sekama…"
-
 #: src/pages/accounts.tsx
 msgid "Current"
 msgstr "Dabartinė"
@@ -2306,10 +1873,6 @@ msgstr "Nepavyksta įkelti atsakymų."
 #: src/components/compose.tsx
 msgid "You have unsaved changes. Discard this post?"
 msgstr "Turite neišsaugotų pakeitimų. Atmesti šią įrašą?"
-
-#: src/pages/account-statuses.jsx
-#~ msgid "{accountDisplay} (+ Replies)"
-#~ msgstr "{accountDisplay} (+ atsakymai)"
 
 #: src/components/edit-history-controls.tsx
 msgid "Edit History Snapshots"
@@ -2379,10 +1942,6 @@ msgstr "Atkurti filtrus"
 msgid "last 8 hours"
 msgstr "paskutinių 8 valandų"
 
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "{0} more…"
-#~ msgstr "{0} daugiau…"
-
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from @{0} will not show up in Filtered notifications from now on."
@@ -2440,10 +1999,6 @@ msgstr "{hashtagTitle} serveryje {instance}"
 msgid "Reply"
 msgstr "Atsakyti"
 
-#: src/components/notification.tsx
-#~ msgid "Your {year} #Wrapstodon is here!"
-#~ msgstr "Jūsų #Wrapstodon {year} jau čia!"
-
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
 msgstr ""
@@ -2457,17 +2012,9 @@ msgstr "Tavo paskyra gavo prižiūrėjimo įspėjimą."
 msgid "{0, plural, one {# character} other {# characters}}"
 msgstr "{0, plural, one {# simbolis} few {# simboliai} many {# simbolio} other {# simbolių}}"
 
-#: src/pages/settings.tsx
-#~ msgid "Note: This feature uses currently-logged-in server API."
-#~ msgstr ""
-
 #: src/components/status-utility-menu.tsx
 msgid "Copy post text"
 msgstr "Kopijuoti įrašo tekstą"
-
-#: src/components/modals.tsx
-#~ msgid "Post scheduled"
-#~ msgstr "Įrašas suplanuotas"
 
 #: src/pages/accounts.tsx
 msgid "Add an existing account"
@@ -2497,10 +2044,6 @@ msgstr "Privatus paminėjimas"
 #: src/pages/settings.tsx
 msgid "Experiments"
 msgstr "Eksperimentai"
-
-#: src/pages/lists.jsx
-#~ msgid "No lists yet."
-#~ msgstr "Kol kas nėra sąrašų."
 
 #: src/compose.tsx
 #: src/pages/http-route.tsx
@@ -2551,28 +2094,16 @@ msgstr ""
 msgid "Delete…"
 msgstr "Ištrinti…"
 
-#: src/pages/filters.tsx
-#~ msgid "minimized"
-#~ msgstr "sumažintas"
-
 #: src/components/post-embed-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Embed post"
 msgstr "Įterptas įrašas"
-
-#: src/components/compose.tsx
-#~ msgid "Mark media as sensitive"
-#~ msgstr "Žymėti mediją kaip jautrią"
 
 #. placeholder {0}: shortenNumber(votersCount)
 #. placeholder {1}: shortenNumber(votersCount)
 #: src/components/poll.tsx
 msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
 msgstr "{votersCount, plural, one {<0>{0}</0> balsuotojas} few {<1>{1}</1> balsuotojai} many {<1>{1}</1> balsuotojo} other {<1>{1}</1> balsuotojų}}"
-
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Downloading saved shortcuts from server…"
-#~ msgstr ""
 
 #: src/components/atproto-labels.tsx
 msgid "Does not include nudity."
@@ -2581,10 +2112,6 @@ msgstr ""
 #: src/components/import-accounts-selection.tsx
 msgid "Select accounts to import"
 msgstr ""
-
-#: src/components/notification.tsx
-#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted your reply.} other {{account} boosted your post.}}} other {{account} boosted {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted your reply.} other {<2><3>{1}</3> people</2> boosted your post.}}}}"
-#~ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Notifications enabled for @{username}'s posts."
@@ -2606,10 +2133,6 @@ msgstr "Sistemos kalbą ({systemTargetLanguageText})"
 msgid "Block <0>@{username}</0>…"
 msgstr "Bluokuoti <0>@{username}</0>…"
 
-#: src/components/status-header.tsx
-#~ msgid "{timeRepliesCount, plural, one {# reply} other {# replies}}"
-#~ msgstr ""
-
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Open post details"
@@ -2618,10 +2141,6 @@ msgstr "Atidaryti įrašo informaciją"
 #: src/components/compose.tsx
 msgid "Pop out"
 msgstr "Išskleisti"
-
-#: src/pages/status.tsx
-#~ msgid "Switch to my server to enable interactions"
-#~ msgstr ""
 
 #. placeholder {0}: postingStats.total
 #. placeholder {1}: postingStats.total
@@ -2657,10 +2176,6 @@ msgstr "Jaustukai:"
 msgid "Post edits"
 msgstr "Įrašų redagavimai"
 
-#: src/pages/accounts.jsx
-#~ msgid "Log out <0>@{0}</0>?"
-#~ msgstr "Atsijungti iš <0>@{0}</0>?"
-
 #: src/components/related-actions.tsx
 msgid "Disable reposts"
 msgstr ""
@@ -2695,12 +2210,6 @@ msgstr "Šis pranešimas yra iš kitos tavo paskyros."
 #: src/pages/status.tsx
 msgid "Try again"
 msgstr "Bandyti dar kartą"
-
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
-#~ msgid "Go to another server…"
-#~ msgstr ""
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2756,10 +2265,6 @@ msgstr "Redaguoti garso įrašo aprašymą"
 msgid "Pinned"
 msgstr "Prisegta"
 
-#: src/components/report-modal.tsx
-#~ msgid "Server rule violation"
-#~ msgstr "Serverio taisyklių pažeidimas"
-
 #: src/components/notification.tsx
 msgid "A poll you have created has ended."
 msgstr "Baigėsi apklausa, kurią sukūrei."
@@ -2777,19 +2282,9 @@ msgstr "Neišsiųsti juodraščiai"
 msgid "You're all caught up."
 msgstr "Viską peržiūrėjai."
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
-#: src/components/status-large-footer.tsx
-#~ msgid "Boost"
-#~ msgstr "Pasidalinti"
-
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "Problema netinka kitoms kategorijoms"
-
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Error loading custom emojis"
-#~ msgstr "Klaida įkeliant pasirinktinius jaustukus."
 
 #. placeholder {0}: tag.name
 #: src/pages/account-statuses.tsx
@@ -2829,21 +2324,9 @@ msgstr "Privatumo politika"
 msgid "Refresh"
 msgstr "Atnaujinti"
 
-#: src/pages/catchup.tsx
-#~ msgid "Followed tags"
-#~ msgstr "Sekamos žymės"
-
-#: src/pages/login.jsx
-#~ msgid "Don't have an account? Create one!"
-#~ msgstr "Neturi paskyros? Susikurk vieną!"
-
 #: src/components/related-actions.tsx
 msgid "Search <0>@{username}</0>'s posts"
 msgstr ""
-
-#: src/components/compose-poll.tsx
-#~ msgid "Choice {0}"
-#~ msgstr "{0} pasirinkimas"
 
 #: src/components/status-account-menu.tsx
 msgid "Pin to profile"
@@ -2859,17 +2342,9 @@ msgstr "Bendrinti…"
 msgid "Image description"
 msgstr "Vaizdo aprašymas"
 
-#: src/components/compose-poll.tsx
-#~ msgid "Duration"
-#~ msgstr "Trukmė"
-
 #: src/components/shortcuts-settings.tsx
 msgid "Optional"
 msgstr ""
-
-#: src/pages/catchup.tsx
-#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-#~ msgstr ""
 
 #. placeholder {0}: options.length
 #: src/components/poll.tsx
@@ -2906,10 +2381,6 @@ msgstr "Pridėti trumpąją nuorodą"
 msgid "Screenshot of Catch-up"
 msgstr ""
 
-#: src/pages/welcome.tsx
-#~ msgid "Screenshot of Phanpy home timeline on mobile device"
-#~ msgstr ""
-
 #: src/components/compose-button.tsx
 msgid "Add to thread"
 msgstr "Pridėti prie gijos"
@@ -2944,20 +2415,12 @@ msgstr "Atsakymas paskelbtas. Peržiūrėk."
 msgid "({0}) <0>— experimental</0>"
 msgstr "({0}) <0>– eksperimentinė</0>"
 
-#: src/pages/filters.tsx
-#~ msgid "* Not implemented yet"
-#~ msgstr "* Kol kas nepadaryta"
-
 #: src/components/compose.tsx
 #: src/components/mention-modal.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/list.tsx
 msgid "Add"
 msgstr "Pridėti"
-
-#: src/pages/filters.tsx
-#~ msgid "Expired"
-#~ msgstr "Nebegalioja"
 
 #: src/components/poll.tsx
 msgid "Unable to vote in poll"
@@ -2983,10 +2446,6 @@ msgstr ""
 msgid "Add media"
 msgstr "Pridėti mediją"
 
-#: src/pages/filters.tsx
-#~ msgid "Title"
-#~ msgstr "Pavadinimas"
-
 #: src/pages/hashtag.tsx
 msgid "Hashtag shortcut added"
 msgstr "Pridėtas trumpasis nuorodos saitažodis"
@@ -3006,10 +2465,6 @@ msgstr ""
 #: src/components/notification.tsx
 msgid "Your account has been limited."
 msgstr "Tavo paskyra buvo apribota."
-
-#: src/components/status-reply-menu.tsx
-#~ msgid "Reply…"
-#~ msgstr ""
 
 #: src/components/account-block.tsx
 msgid "{followersCount, plural, one {# follower} other {# followers}}"
@@ -3066,17 +2521,9 @@ msgstr "Data"
 msgid "<0>Shift</0> + <1>j</1>"
 msgstr "<0>Lyg2 (Shift)</0> + <1>j</1>"
 
-#: src/pages/scheduled-posts.tsx
-#~ msgid "No scheduled posts."
-#~ msgstr "Nėra suplanuotų įrašų."
-
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy post text"
 msgstr "Nepavyksta nukopijuoti įrašo teksto."
-
-#: src/components/status-large-footer.tsx
-#~ msgid "Boost/Quote…"
-#~ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Muted users…"
@@ -3138,10 +2585,6 @@ msgstr ""
 msgid "Donate"
 msgstr "Aukoti"
 
-#: src/components/keyboard-shortcuts-help.jsx
-#~ msgid "<0>1</0> to <1>9</1>"
-#~ msgstr "<0>1</0> iki <1>9</1>"
-
 #: src/components/quote-chain-modal.tsx
 msgid "Failed to unwrap quote chain"
 msgstr ""
@@ -3174,14 +2617,6 @@ msgstr "{0} sek."
 msgid "{index}/X"
 msgstr ""
 
-#: src/pages/account-statuses.jsx
-#~ msgid "{accountDisplay} (Media)"
-#~ msgstr "{accountDisplay} (medija)"
-
-#: src/components/keyboard-shortcuts-help.jsx
-#~ msgid "Focus previous column in multi-column mode"
-#~ msgstr "Fokusuoti ankstesnį stulpelį daugiastulpelių režime"
-
 #: src/pages/account-statuses.tsx
 msgid "Switch to my PDS (<0>{currentInstance}</0>)"
 msgstr ""
@@ -3200,25 +2635,9 @@ msgstr "{0} val."
 msgid "Media attachments can be images, videos, audios or any file types."
 msgstr "Medijos priedai gali būti vaizdai, vaizdo įrašai, garso įrašai arba bet kokio tipo failai."
 
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Others"
-#~ msgstr "Kiti"
-
-#: src/components/notification.tsx
-#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted & liked your reply.} other {{account} boosted & liked your post.}}} other {{account} boosted & liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted & liked your reply.} other {<2><3>{1}</3> people</2> boosted & liked your post.}}}}"
-#~ msgstr ""
-
-#: src/components/timeline.tsx
-#~ msgid "{0, plural, one {# Boost} other {# Boosts}}"
-#~ msgstr "{0, plural, one {# pasidalinimas} few {# pasidalinimai} many {# pasidalinimo} other {# pasidalinimų}}"
-
 #: src/pages/accounts.tsx
 msgid "Remove <0>@{acct}</0>?"
 msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Never expires"
-#~ msgstr "Niekada nesibaigia"
 
 #: src/components/search-form.tsx
 msgid "Posts with <0>{query}</0>"
@@ -3266,29 +2685,13 @@ msgstr "Kurie tavęs neseka"
 msgid "Unlike"
 msgstr "Nebepatinka"
 
-#: src/components/notification.jsx
-#~ msgid "[Unknown notification type: {type}]"
-#~ msgstr "[Nežinomas pranešimo tipas: {type}]"
-
-#: src/pages/home.tsx
-#~ msgid "<0>New</0> <1>Follow Requests</1>"
-#~ msgstr "<0>Nauji</0> <1>sekimo prašymai</1>"
-
 #: src/components/report-modal.tsx
 msgid "Unable to report profile"
 msgstr "Nepavyksta pranešti apie profilį"
 
-#: src/pages/welcome.jsx
-#~ msgid "A minimalistic opinionated Mastodon web client."
-#~ msgstr "Minimalistinė „Mastodon“ interneto kliento programa."
-
 #: src/components/background-service.tsx
 msgid "Cloak mode disabled"
 msgstr "Išjungtas slėpimo režimas"
-
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Local only"
-#~ msgstr "Tik vietinė"
 
 #: src/pages/hashtag.tsx
 msgid "Remove hashtag"
@@ -3297,10 +2700,6 @@ msgstr "Šalinti saitažodį"
 #: src/components/status-account-menu.tsx
 msgid "Mute conversation"
 msgstr "Nutildyti pokalbį"
-
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Sync to server"
-#~ msgstr ""
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Edit History"
@@ -3326,22 +2725,9 @@ msgstr "Baigsis <0/>"
 msgid "View Edit History Snapshots"
 msgstr ""
 
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Custom emojis are not available on this server."
-#~ msgstr ""
-
-#. Scheduled [in 1 day]
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Scheduled <0><1/></0>"
-#~ msgstr "Suplanuota <0><1/></0>"
-
 #: src/components/related-actions.tsx
 msgid "Disable notifications"
 msgstr "Išjungti pranešimus"
-
-#: src/components/private-note-sheet.tsx
-#~ msgid "Unable to update private note."
-#~ msgstr "Nepavyksta atnaujinti privačios pastabos."
 
 #: src/pages/hashtag.tsx
 msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
@@ -3358,10 +2744,6 @@ msgstr "Numatyta"
 #: src/components/compose.tsx
 msgid "What are you doing?"
 msgstr "Ką tu darai?"
-
-#: src/components/related-actions.tsx
-#~ msgid "Unable to feature @{username} on your profile."
-#~ msgstr "Nepavyksta rodyti @{username} jūsų profilyje."
 
 #. placeholder {0}: String(type)
 #: src/components/notification.tsx
@@ -3436,10 +2818,6 @@ msgstr "<0>Svetainė:</0> {0}"
 msgid "E.g. artistic nudes."
 msgstr ""
 
-#: src/pages/public.tsx
-#~ msgid "Federated timeline ({instance})"
-#~ msgstr "Federacinė laiko skalė ({instance})"
-
 #: src/pages/favourites.tsx
 msgid "No likes yet. Go like something!"
 msgstr "Kol kas nėra patiktukų. Eik kažką pamėgti!"
@@ -3447,10 +2825,6 @@ msgstr "Kol kas nėra patiktukų. Eik kažką pamėgti!"
 #: src/components/report-modal.tsx
 msgid "Violates local law"
 msgstr ""
-
-#: src/components/notification.tsx
-#~ msgid "Boosted by…"
-#~ msgstr "Pasidalino…"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
@@ -3463,21 +2837,9 @@ msgstr "Versti"
 msgid "Version string copied"
 msgstr "Nukopijuota versijos eilutė"
 
-#: src/components/status-large-footer.tsx
-#~ msgid "Boost…"
-#~ msgstr "Pasidalinti…"
-
-#: src/pages/account-statuses.jsx
-#~ msgid "Showing post with replies"
-#~ msgstr "Rodomas įrašas su atsakymais"
-
 #: src/components/account-info.tsx
 msgid "View post stats"
 msgstr "Peržiūrėti įrašų statistiką"
-
-#: src/pages/public.tsx
-#~ msgid "Local timeline"
-#~ msgstr "Vietinė laiko skalė"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post you have quoted."
@@ -3534,22 +2896,10 @@ msgstr ""
 msgid "Post pending"
 msgstr ""
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#~ msgid "Boosts"
-#~ msgstr "Pasidalinimai"
-
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
 msgstr "Tamsi"
-
-#: src/components/related-actions.tsx
-#~ msgid "@{username} is no longer featured on your profile."
-#~ msgstr "@{username} neberodomas jūsų profilyje."
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Loading…"
@@ -3588,12 +2938,6 @@ msgstr "Nepavyko pašalinti prenumeratos. Bandykite dar kartą."
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
 msgstr "Administratorius iš <0>{from}</0> užblokavo <1>{targetName}</1>. Paveikti sekėjai: {followersCount}, sekimai: {followingCount}."
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
-#~ msgid "Invalid server"
-#~ msgstr ""
-
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unbookmark"
@@ -3603,24 +2947,12 @@ msgstr "Pašalinti iš žymių"
 msgid "This might take a while."
 msgstr "Tai gali šiek tiek užtrukti."
 
-#: src/pages/hashtag.tsx
-#~ msgid "This timeline is disabled on this server."
-#~ msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Unable to load filters."
-#~ msgstr "Nepavyksta įkelti filtrų."
-
 #: src/components/error-fallback.tsx
 msgid ""
 "Something went wrong while using Bluepy.\n"
 "\n"
 ""
 msgstr ""
-
-#: src/pages/account-statuses.jsx
-#~ msgid "Showing posts without boosts"
-#~ msgstr "Rodomi įrašai be pasidalinimų"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
@@ -3643,10 +2975,6 @@ msgstr "Rodyti redagavimo istoriją"
 msgid "Adult Content"
 msgstr ""
 
-#: src/pages/filters.tsx
-#~ msgid "Add keyword"
-#~ msgstr "Pridėti raktažodį"
-
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
@@ -3656,23 +2984,6 @@ msgstr "Importuotos trumposios nuorodos"
 #: src/compose.tsx
 msgid "Compose"
 msgstr "Sukurti"
-
-#: src/components/related-actions.tsx
-#: src/components/related-actions.tsx
-#~ msgid "Show featured profiles"
-#~ msgstr "Rodyti rodomus profilius"
-
-#: src/pages/filters.tsx
-#~ msgid "Never"
-#~ msgstr "Niekada"
-
-#: src/pages/account-statuses.jsx
-#~ msgid "{accountDisplay} (#{tagged})"
-#~ msgstr "{accountDisplay} (#{tagged})"
-
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Reschedule"
-#~ msgstr "Suplanuoti iš naujo"
 
 #: src/pages/welcome.tsx
 msgid "Connect to Atmosphere"
@@ -3714,11 +3025,6 @@ msgstr ""
 msgid "Edit your post"
 msgstr "Redaguoti savo įrašą"
 
-#: src/components/status-large-footer.tsx
-#: src/components/status-large-footer.tsx
-#~ msgid "Unboost"
-#~ msgstr "Nebepasidalinti"
-
 #: src/components/import-export-accounts.tsx
 msgid "No login information or account access details are stored in the exported files. You will need to log in again for each account after importing."
 msgstr ""
@@ -3751,10 +3057,6 @@ msgstr "{0} įrašų aukščiau – eiti į viršų"
 #: src/components/related-actions.tsx
 msgid "Translate bio"
 msgstr "Versti biografiją"
-
-#: src/pages/hashtag.tsx
-#~ msgid "Followed #{hashtag}"
-#~ msgstr "Sekama #{hashtag}"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
@@ -3793,10 +3095,6 @@ msgstr "Klaida ištrinant juodraštį. Bandyk dar kartą."
 msgid "Close window"
 msgstr "Uždaryti langą"
 
-#: src/pages/welcome.tsx
-#~ msgid "Log in with Bluesky"
-#~ msgstr ""
-
 #: src/pages/catchup.tsx
 msgid "That's all."
 msgstr "Tai viskas."
@@ -3810,7 +3108,6 @@ msgstr "Ankstesnis autorius"
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
-#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -3818,10 +3115,6 @@ msgstr ""
 #: src/pages/account-statuses.tsx
 msgid "Showing posts with media"
 msgstr "Rodomi įrašai su medija"
-
-#: src/pages/filters.tsx
-#~ msgid "Public timelines"
-#~ msgstr "Viešieji laiko skalės"
 
 #: src/components/feedback-modal.tsx
 #: src/pages/welcome.tsx
@@ -3845,10 +3138,6 @@ msgstr "Užblokavote <0>{targetName}</0>. Pašalinti sekėjai: {followersCount},
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} liked your reply.} other {{account} liked your post.}}} other {{account} liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> liked your reply.} other {<2><3>{1}</3> people</2> liked your post.}}}}"
 msgstr ""
 
-#: src/components/shortcuts-settings.jsx
-#~ msgid "Max {SHORTCUTS_LIMIT} columns"
-#~ msgstr "Didžiausias {SHORTCUTS_LIMIT} stulpelių skaičius"
-
 #: src/pages/status.tsx
 msgid "Experimental"
 msgstr "Eksperimentinis"
@@ -3861,25 +3150,9 @@ msgstr "Kokia problema su šiuo profiliu?"
 msgid "Resolving…"
 msgstr "Sprendžiama…"
 
-#: src/components/status-reply-menu.tsx
-#~ msgid "{mentionsCount, plural, other {# mentions}}"
-#~ msgstr ""
-
-#: src/pages/status.tsx
-#~ msgid "Switch to post's server"
-#~ msgstr ""
-
 #: src/components/status-header.tsx
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
 msgstr "{repliesCount, plural, one {# atsakymas} few {# atsakymai} many {# atsakymo} other {# atsakymų}}"
-
-#: src/pages/settings.tsx
-#~ msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and boosts carousel will not work when this is enabled."
-#~ msgstr ""
-
-#: src/components/account-handle-info.tsx
-#~ msgid "server domain name"
-#~ msgstr "serverio domeno vardas"
 
 #: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
@@ -3893,10 +3166,6 @@ msgstr "Per didelis kadrų dažnis. Įkeliant gali kilti problemų."
 #: src/pages/notifications.tsx
 msgid "Unable to dismiss notification request"
 msgstr "Nepavyksta atmesti pranešimo prašymo."
-
-#: src/pages/welcome.tsx
-#~ msgid "Screenshot of Boosts Carousel"
-#~ msgstr "Pasidalinimų karuselės ekrano kopija"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to previous post"
@@ -3914,10 +3183,6 @@ msgstr "{0, plural, one {# įrašas} few {# įrašai} many {# įrašo} other {# 
 #: src/pages/notifications.tsx
 msgid "Unable to accept notification request"
 msgstr "Nepavyksta priimti pranešimo prašymo."
-
-#: src/components/related-actions.tsx
-#~ msgid "Don't feature on profile"
-#~ msgstr "Nerodyti profilyje"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/list-add-edit.tsx
@@ -3952,18 +3217,9 @@ msgstr ""
 msgid "{followingCount, plural, other {<0>{0}</0> Following}}"
 msgstr ""
 
-#: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Server"
-#~ msgstr ""
-
 #: src/components/related-actions.tsx
 msgid "Unblocked @{username}"
 msgstr "Atblokuotas @{username}"
-
-#: src/pages/account-statuses.tsx
-#~ msgid "Switch to my server (<0>{currentInstance}</0>)"
-#~ msgstr ""
 
 #: src/components/account-handle-info.tsx
 msgid "username"
@@ -4041,10 +3297,6 @@ msgstr "Įrašai sugrupuoti pagal autorius, surikiuoti pagal kiekvieno autoriaus
 msgid "With a new account"
 msgstr "Su nauja paskyra"
 
-#: src/components/private-note-sheet.tsx
-#~ msgid "Save & close"
-#~ msgstr "Išsaugoti ir uždaryti"
-
 #. placeholder {0}: filterInfo.titlesStr
 #. placeholder {0}: filterInfoMaybe?.titlesStr
 #: src/components/status-media-embeds.tsx
@@ -4052,17 +3304,9 @@ msgstr "Su nauja paskyra"
 msgid "Filtered: {0}"
 msgstr "Filtruota: {0}"
 
-#: src/components/compose.tsx
-#~ msgid "Schedule post"
-#~ msgstr "Planuoti įrašą"
-
 #: src/pages/catchup.tsx
 msgid "Note: Only max 3 will be stored. The rest will be automatically removed."
 msgstr "Pastaba: bus išsaugota tik ne daugiau kaip 3. Likusios bus automatiškai pašalintos."
-
-#: src/pages/filters.tsx
-#~ msgid "No keywords. Add one."
-#~ msgstr "Nėra raktažodžių. Pridėk vieną."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -4083,10 +3327,6 @@ msgstr "Šalinti"
 msgid "Go to Profile"
 msgstr ""
 
-#: src/pages/public.tsx
-#~ msgid "Switch to Local"
-#~ msgstr "Perjungti į vietinį"
-
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
 msgstr "Papildomi laukai"
@@ -4106,10 +3346,6 @@ msgstr ""
 #: src/pages/account-statuses.tsx
 msgid "Showing replies"
 msgstr ""
-
-#: src/components/status-interactions.ts
-#~ msgid "Sorry, your current logged-in server can't interact with this post from another server."
-#~ msgstr ""
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to add to list."
@@ -4167,19 +3403,11 @@ msgstr "Nepavyksta ištrinti sąrašo."
 msgid "Up to 5 hashtags combined into a single timeline."
 msgstr "Iki 5 saitažodžių, sujungtų į vieną laiko skalę."
 
-#: src/pages/settings.tsx
-#~ msgid "Boosts carousel"
-#~ msgstr "Pasidalinimų karuselė"
-
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Sharing doesn't seem to work."
 msgstr "Atrodo, kad bendrinimas neveikia."
-
-#: src/pages/welcome.tsx
-#~ msgid "Boosts Carousel"
-#~ msgstr "Pasidalinimų karuselė"
 
 #: src/components/list-add-edit.tsx
 msgid "Edit list"
@@ -4189,10 +3417,6 @@ msgstr "Redaguoti sąrašą"
 msgid "last 2 hours"
 msgstr "paskutinių 2 valandų"
 
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Public (Local / Federated)"
-#~ msgstr "Viešieji (vietiniai / federaciniai)"
-
 #: src/compose.tsx
 msgid "Editing source status"
 msgstr "Šaltinio būsenos redagavimas"
@@ -4200,22 +3424,6 @@ msgstr "Šaltinio būsenos redagavimas"
 #: src/pages/settings.tsx
 msgid "Settings"
 msgstr "Nustatymai"
-
-#: src/pages/account-statuses.jsx
-#~ msgid "Clear filters"
-#~ msgstr "Valyti filtrus"
-
-#: src/pages/public.tsx
-#~ msgid "Local timeline ({instance})"
-#~ msgstr "Vietinė laiko skalė ({instance})"
-
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Recently used"
-#~ msgstr "Neseniai naudoti"
-
-#: src/pages/filters.tsx
-#~ msgid "Status: <0><1/></0>"
-#~ msgstr "Būsena: <0><1/></0>"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -4225,14 +3433,6 @@ msgstr ""
 msgid "Unable to resolve URL"
 msgstr "Nepavyksta išspręsti URL."
 
-#: src/components/shortcuts-settings.jsx
-#~ msgid "Optional, unless for multi-column mode"
-#~ msgstr "Pasirinktinis, nebent naudojamas daugiastulpelių režimas"
-
-#: src/components/endorsements.tsx
-#~ msgid "Profiles featured by @{0}"
-#~ msgstr "Profilius, kuriuos rodė @{0}"
-
 #: src/components/shortcuts-settings.tsx
 msgid "or override…"
 msgstr "arba perrašyti…"
@@ -4240,11 +3440,6 @@ msgstr "arba perrašyti…"
 #: src/components/status-account-menu.tsx
 msgid "Remove quote…"
 msgstr ""
-
-#: src/components/related-actions.tsx
-#: src/pages/hashtag.tsx
-#~ msgid "Feature on profile"
-#~ msgstr "Rodyti profilyje"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Keyboard shortcuts help"
@@ -4254,10 +3449,6 @@ msgstr "Spartieji klaviatūros klavišos žinynas"
 msgid "Go to Home"
 msgstr ""
 
-#: src/components/compose.tsx
-#~ msgid "Some poll choices are empty"
-#~ msgstr "Kai kurie apklausos pasirinkimai yra tušti."
-
 #: src/components/related-actions.tsx
 msgid "Remove <0>@{username}</0> from followers?"
 msgstr "Pašalinti <0>@{username}</0> iš sekėjų?"
@@ -4266,21 +3457,9 @@ msgstr "Pašalinti <0>@{username}</0> iš sekėjų?"
 msgid "Unable to load bookmarks."
 msgstr "Nepavyksta įkelti žymių."
 
-#: src/pages/filters.tsx
-#~ msgid "Filter from…"
-#~ msgstr "Filtruoti iš…"
-
 #: src/components/quote-chain-modal.tsx
 msgid "Continue unwrapping…"
 msgstr ""
-
-#: src/components/related-actions.tsx
-#~ msgid "Enable boosts"
-#~ msgstr "Įjungti pasidalinimus"
-
-#: src/pages/filters.tsx
-#~ msgid "Expiring <0/>"
-#~ msgstr "Baigiasi <0/>"
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has suspended <1>{targetName}</1>, which means you can no longer receive updates from them or interact with them."
@@ -4289,10 +3468,6 @@ msgstr "Administratorius (-ė) iš <0>{from}</0> pristabdė <1>{targetName}</1>,
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on mobile device"
 msgstr ""
-
-#: src/pages/account-statuses.jsx
-#~ msgid "- Boosts"
-#~ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Posts are sorted by information density or depth. Shorter posts are \"lighter\" while longer posts are \"heavier\". Posts with photos are \"heavier\" than posts without photos."
@@ -4377,10 +3552,6 @@ msgstr "Kai kurie tavo įrašai buvo pažymėtos kaip jautrios."
 msgid "Comments"
 msgstr "Komentarai"
 
-#: src/pages/filters.tsx
-#~ msgid "Add filter"
-#~ msgstr "Pridėti filtrą"
-
 #: src/pages/status.tsx
 msgid "Switch to post's PDS"
 msgstr ""
@@ -4412,14 +3583,6 @@ msgstr "Ištrinta"
 msgid "Unable to pin post"
 msgstr "Nepavyksta atsegti įrašo."
 
-#: src/pages/hashtag.tsx
-#~ msgid "Unfeatured on profile"
-#~ msgstr "Neberodoma profilyje"
-
-#: src/components/shortcuts-settings.jsx
-#~ msgid "Add column…"
-#~ msgstr "Pridėti stulpelį…"
-
 #: src/components/compose.tsx
 msgid "Failed to download GIF"
 msgstr "Nepavyko atsisiųsti GIF."
@@ -4427,10 +3590,6 @@ msgstr "Nepavyko atsisiųsti GIF."
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Load new posts"
 msgstr "Įkelti naujų įrašų"
-
-#: src/pages/followed-hashtags.tsx
-#~ msgid "No hashtags followed yet."
-#~ msgstr "Kol kas nėra sekamų saitažodžių."
 
 #: src/components/account-info.tsx
 msgid "Post stats unavailable."
@@ -4456,10 +3615,6 @@ msgstr ""
 msgid "beyond 12 hours"
 msgstr "po 12 valandų"
 
-#: src/pages/filters.tsx
-#~ msgid "Profiles"
-#~ msgstr "Profiliai"
-
 #: src/pages/catchup.tsx
 msgid "last 12 hours"
 msgstr "paskutinių 12 valandų"
@@ -4480,10 +3635,6 @@ msgstr "Nepavyksta nutildyti @{username}."
 #: src/pages/search.tsx
 msgid "Hashtags"
 msgstr "Saitažodžiai"
-
-#: src/pages/status.tsx
-#~ msgid "You're not logged in. Interactions (reply, boost, etc) are not possible."
-#~ msgstr "Nesate prisijungę. Sąveikos (atsakyti, pasidalinti ir t. t.) negalimos."
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to remove quote"
@@ -4515,10 +3666,6 @@ msgstr ""
 msgid "Like"
 msgstr "Patinka"
 
-#: src/pages/welcome.tsx
-#~ msgid "A minimalistic opinionated Bluesky web client."
-#~ msgstr ""
-
 #: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
@@ -4532,14 +3679,6 @@ msgstr "Daugiasaitažodžių laiko skalė"
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
 msgstr ""
 
-#: src/components/account-info.tsx
-#~ msgid "{0} original posts, {1} replies, {2} boosts"
-#~ msgstr "{0} originalūs įrašai, {1} atsakymai, {2} pasidalinimai"
-
-#: src/pages/account-statuses.tsx
-#~ msgid "Showing boosts"
-#~ msgstr ""
-
 #: src/components/compose.tsx
 msgid "Editing source post"
 msgstr "Redaguojamas šaltinio įrašas"
@@ -4551,10 +3690,6 @@ msgstr "Apklausos"
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
 msgstr "Daugiasaitažodžių laiko skalės ekrano kopija su forma, kuria galima pridėti daugiau saitažodžių"
-
-#: src/pages/settings.tsx
-#~ msgid "Synced to your Bluesky account settings. <0>Open Bluesky settings ({instance}).</0>"
-#~ msgstr ""
 
 #: src/pages/search.tsx
 msgid "Search: {q}"
@@ -4599,10 +3734,6 @@ msgstr ""
 msgid "Edit video description"
 msgstr "Redaguoti vaizdo įrašo aprašymą"
 
-#: src/components/compose.tsx
-#~ msgid "Add content warning"
-#~ msgstr ""
-
 #: src/pages/settings.tsx
 msgid "people I follow"
 msgstr "žmonių, kuriuos seku"
@@ -4631,35 +3762,13 @@ msgstr "Valyti"
 msgid "Scan QR code"
 msgstr ""
 
-#: src/pages/login.jsx
-#~ msgid "Continue"
-#~ msgstr "Tęsti"
-
-#: src/components/related-actions.tsx
-#~ msgid "@{username} is now featured on your profile."
-#~ msgstr "@{username} dabar rodomas jūsų profilyje."
-
 #: src/components/related-actions.tsx
 msgid "Mute <0>@{username}</0>…"
 msgstr "Nutildyti <0>@{username}</0>…"
 
-#: src/components/related-actions.tsx
-#~ msgid "Unable to unfeature @{username} on your profile."
-#~ msgstr "Nepavyksta neberodyti @{username} jūsų profilyje."
-
-#: src/components/private-note-sheet.tsx
-#~ msgid "Only visible to you"
-#~ msgstr ""
-
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description"
 msgstr "Nepavyko sugeneruoti aprašymo."
-
-#: src/components/nav-menu.tsx
-#: src/pages/followed-hashtags.tsx
-#: src/pages/followed-hashtags.tsx
-#~ msgid "Followed Hashtags"
-#~ msgstr "Sekami saitažodžiai"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
@@ -4671,17 +3780,9 @@ msgstr "statinis URL"
 msgid "Removing Catch-up {0}"
 msgstr "Pašalinima {0} pasivijimas"
 
-#: src/pages/catchup.jsx
-#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies}}} density {{sortOrder, select, asc {least dense} desc {most dense}}}} first{groupBy, select, account {, grouped by authors} other {}}"
-#~ msgstr ""
-
 #: src/components/notification.tsx
 msgid "Lost connections with <0>{name}</0>."
 msgstr "Prarasti sąryšiai su <0>{name}</0>."
-
-#: src/pages/notifications.tsx
-#~ msgid "Who are limited by server moderators"
-#~ msgstr "Kurie yra ribojami serverio prižiūrėtojų"
 
 #: src/pages/hashtag.tsx
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
@@ -4735,14 +3836,6 @@ msgstr "Sekama"
 msgid "Unable to delete post"
 msgstr "Nepavyksta ištrinti įrašo."
 
-#: src/pages/login.jsx
-#~ msgid "Failed to log in. Please try again or try another server."
-#~ msgstr ""
-
-#: src/pages/welcome.tsx
-#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored on this server."
-#~ msgstr ""
-
 #: src/components/edit-history-controls.tsx
 msgid "Exit"
 msgstr ""
@@ -4750,11 +3843,6 @@ msgstr ""
 #: src/pages/catchup.tsx
 msgid "Previously…"
 msgstr "Anksčiau…"
-
-#: src/pages/filters.tsx
-#: src/pages/filters.tsx
-#~ msgid "New filter"
-#~ msgstr "Naujas filtras"
 
 #: src/components/status-account-menu.tsx
 msgid "Quote removed"
@@ -4764,10 +3852,6 @@ msgstr ""
 #: src/components/status-quick-menu.tsx
 msgid "Quote with link"
 msgstr ""
-
-#: src/pages/status.tsx
-#~ msgid "Switch to post's server ({0})"
-#~ msgstr ""
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
@@ -4788,10 +3872,6 @@ msgid "This timeline is disabled on Bluesky."
 msgstr ""
 
 #: src/pages/catchup.tsx
-#~ msgid "Links shared by followings, sorted by shared counts, boosts and likes."
-#~ msgstr "Nuorodos bendrinamos pagal sekimus, surikiuotos pagal bendrinamų nuorodų skaičių, pasidalinimus ir patiktukus."
-
-#: src/pages/catchup.tsx
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
 msgstr "Pasivijimo informacija – tai atskira sekimu laiko skalė, suteikianti aukšto lygio peržiūrą iš pirmo žvilgsnio, su paprasta, el. pašto įkvėpta sąsaja, kad būtų galima lengvai rikiuoti ir filtruoti įrašus."
 
@@ -4804,21 +3884,9 @@ msgstr ""
 msgid "Moderation warning"
 msgstr "Prižiūrėjimo įspėjimas"
 
-#: src/components/keyboard-shortcuts-help.jsx
-#~ msgid "Focus next column in multi-column mode"
-#~ msgstr "Fokusuoti sekantį stulpelį daugiastulpelių režime"
-
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>b</1>"
 msgstr "<0>Lyg2 (Shift)</0> + <1>b</1>"
-
-#: src/pages/settings.tsx
-msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
-msgstr ""
-
-#: src/components/related-actions.tsx
-#~ msgid "Withdraw…"
-#~ msgstr "Atšaukti…"
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -4844,10 +3912,6 @@ msgstr "Įrašas atsegtas iš profilio"
 #: src/pages/search.tsx
 msgid "No accounts found."
 msgstr "Paskyrų nerasta."
-
-#: src/pages/accounts.jsx
-#~ msgid "Remove <0>@{0}</0>?"
-#~ msgstr ""
 
 #: src/components/recent-searches.tsx
 msgid "Clear all"
@@ -4897,10 +3961,6 @@ msgid "Close"
 msgstr "Uždaryti"
 
 #: src/components/compose.tsx
-#~ msgid "Quotes can't be embedded in private mentions."
-#~ msgstr ""
-
-#: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 msgstr "Atrodo, kad pirminiame lange jau atidarytas sukūrimo laukas ir šiuo metu skelbiamas. Palauk, kol jis bus baigtas, ir pabandyk dar kartą vėliau."
 
@@ -4917,10 +3977,6 @@ msgstr "Pastaba: tiesioginiai pranešimai veikia tik <0>vienai paskyrai</0>."
 msgid "Show results"
 msgstr "Rodyti rezultatus"
 
-#: src/components/status-reply-menu.tsx
-#~ msgid "Only <0>@{0}</0>"
-#~ msgstr ""
-
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-quote-policy.ts
@@ -4931,10 +3987,6 @@ msgstr "Cituoti"
 msgid "Groups"
 msgstr "Grupės"
 
-#: src/components/compose.tsx
-#~ msgid "Poll must have at least 2 options"
-#~ msgstr "Apklausa turi turėti bent 2 parinktis."
-
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
 msgstr "Netinkamas nustatymų formatas"
@@ -4944,15 +3996,6 @@ msgstr "Netinkamas nustatymų formatas"
 msgid "Handle copied"
 msgstr "Nukopijuotas socialinis medijos vardas"
 
-#. [Name] [Visibility icon] boosted
-#: src/components/filtered-status.tsx
-#~ msgid "<0/> <1/> boosted"
-#~ msgstr "<0/> <1/> pasidalino"
-
-#: src/pages/welcome.jsx
-#~ msgid "Log in with Mastodon"
-#~ msgstr "Prisijungti su „Mastodon“"
-
 #: src/pages/status.tsx
 msgid "View post with its replies"
 msgstr "Peržiūrėti įrašą su jo atsakymais"
@@ -4960,14 +4003,6 @@ msgstr "Peržiūrėti įrašą su jo atsakymais"
 #: src/components/media-modal.tsx
 msgid "Failed to describe image"
 msgstr "Nepavyko apibūdinti vaizdo."
-
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Failed to reschedule post"
-#~ msgstr "Nepavyko suplanuoti įrašo iš naujo."
-
-#: src/pages/filters.tsx
-#~ msgid "hidden"
-#~ msgstr "paslėptas"
 
 #: src/components/account-info.tsx
 msgid "View profile header"
@@ -5002,14 +4037,6 @@ msgstr "Pranešimai iš @{0} nuo šiol nebus filtruojami."
 msgid "Menu"
 msgstr "Meniu"
 
-#: src/components/translation-block.jsx
-#~ msgid "Auto-translated from {sourceLangText}"
-#~ msgstr "Automatiškai išversta iš {sourceLangText}"
-
-#: src/pages/mentions.tsx
-#~ msgid "Private"
-#~ msgstr "Privati"
-
 #: src/pages/settings.tsx
 msgid "Translate to "
 msgstr "Versti į "
@@ -5022,10 +4049,6 @@ msgstr "Verčiama…"
 msgid "This account has marked itself as automated."
 msgstr ""
 
-#: src/components/compose-poll.tsx
-#~ msgid "Multiple choice"
-#~ msgstr ""
-
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -5036,7 +4059,3 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "Patiktukų"
-
-#: src/pages/settings.tsx
-msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
-msgstr ""

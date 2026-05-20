@@ -38,16 +38,6 @@ msgstr "Ukázat v"
 msgid "Removes all UI animations, transitions, and smooth scrolling. Useful if motion is distracting."
 msgstr ""
 
-#: src/pages/filters.tsx
-#~ msgid "Whole word"
-#~ msgstr "Celé slovo"
-
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
-#~ msgid "Go to my server (<0>{currentInstance}</0>)"
-#~ msgstr ""
-
 #: src/components/report-modal.tsx
 msgid "Muted {username}"
 msgstr "Ztlumit {username}"
@@ -80,10 +70,6 @@ msgstr "Stahování GIFu…"
 msgid "Show all authors"
 msgstr "Zobrazit všechny autory"
 
-#: src/components/compose.tsx
-#~ msgid "Ask a question"
-#~ msgstr ""
-
 #: src/components/report-modal.tsx
 msgid "Other"
 msgstr "Ostatní"
@@ -105,10 +91,6 @@ msgstr "Žádné seznamy."
 msgid "Math expressions found."
 msgstr ""
 
-#: src/pages/login.jsx
-#~ msgid "e.g. “mastodon.social”"
-#~ msgstr "např. “mastodon.social”"
-
 #. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
 msgid "Muted @{username} for {0}"
@@ -126,18 +108,10 @@ msgstr "Zobrazit všechna oznámení"
 msgid "No quotes yet"
 msgstr ""
 
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Scheduled post deleted"
-#~ msgstr ""
-
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Switch to Side Peek view"
 msgstr ""
-
-#: src/components/modals.tsx
-#~ msgid "Reply scheduled"
-#~ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Unable to report post"
@@ -164,13 +138,6 @@ msgstr ""
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr "<0>Shift</0> + <1>c</1>"
 
-#: src/components/compose-button.tsx
-#: src/components/nav-menu.tsx
-#: src/pages/scheduled-posts.tsx
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Scheduled Posts"
-#~ msgstr ""
-
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "Ztlumeno"
@@ -186,10 +153,6 @@ msgstr "Smazat tento seznam?"
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcut settings copied"
 msgstr "Nastavení zkratky zkopírováno"
-
-#: src/components/related-actions.tsx
-#~ msgid "Edit notes"
-#~ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "anyone"
@@ -208,11 +171,6 @@ msgstr ""
 #: src/components/poll.tsx
 msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
 msgstr ""
-
-#: src/components/status-activity-menu.tsx
-#: src/components/status-activity-menu.tsx
-#~ msgid "Boosted/Liked by…"
-#~ msgstr "Boost/Líbilo se mi…"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle}"
@@ -241,17 +199,9 @@ msgstr "Odpověď @{0}"
 msgid "Unable to access camera. Please check permissions."
 msgstr ""
 
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Delete scheduled post?"
-#~ msgstr ""
-
 #: src/components/related-actions.tsx
 msgid " Notifications disabled for @{username}'s posts."
 msgstr " Upozornění pro příspěvky od @{username} zakázána."
-
-#: src/pages/login.jsx
-#~ msgid "server domain"
-#~ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Error deleting drafts! Please try again."
@@ -289,10 +239,6 @@ msgstr "Nelze odblokovat uživatele @{username}"
 msgid "Density"
 msgstr "Hustota"
 
-#: src/pages/settings.tsx
-#~ msgid "⚠️⚠️⚠️ Very experimental.<0/>Stored in your own profile’s notes. Profile (private) notes are mainly used for other profiles, and hidden for own profile."
-#~ msgstr ""
-
 #: src/pages/notifications.tsx
 msgid "Only mentions"
 msgstr "Pouze @zmínky"
@@ -307,10 +253,6 @@ msgstr ""
 msgid "Showing posts in {0}"
 msgstr ""
 
-#: src/components/related-actions.tsx
-#~ msgid "Boosts from @{username} enabled."
-#~ msgstr "Boosty od @{username} povoleny."
-
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Notifications"
 msgstr ""
@@ -319,19 +261,10 @@ msgstr ""
 msgid "Nothing to show"
 msgstr "Nic k zobrazení"
 
-#: src/pages/catchup.tsx
-#~ msgid "Note: your server might only show a maximum of 800 posts in the Home timeline regardless of the time range. Could be less or more."
-#~ msgstr ""
-
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Bookmarked"
 msgstr "Záložky"
-
-#: src/components/private-note-sheet.tsx
-#: src/components/related-actions.tsx
-#~ msgid "Notes"
-#~ msgstr ""
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
@@ -345,10 +278,6 @@ msgstr ""
 #: src/pages/hashtag.tsx
 msgid "Login required to see posts from Bluesky."
 msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "{0, plural, one {# keyword} other {# keywords}}"
-#~ msgstr "{0, plural, one {# klíčové slovo} few {# klíčová slova} many {# klíčových slov} other {# klíčových slov}}"
 
 #: src/pages/welcome.tsx
 msgid "A separate timeline for followings. Email-inspired interface to sort and filter posts."
@@ -375,17 +304,9 @@ msgstr "Odeslat příspěvek"
 msgid "Dismiss"
 msgstr "Odmítnout"
 
-#: src/components/shortcuts-settings.jsx
-#~ msgid "Specific list is optional. For multi-column mode, list is required, else the column will not be shown."
-#~ msgstr "Specifický seznam je volitelný. Pro režim více sloupců je seznam povinný, jinak se sloupec nezobrazí."
-
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
 msgstr "Rekapitulace příspěvků od těch, které sledujete."
-
-#: src/components/follow-request-buttons.tsx
-#~ msgid "Reject"
-#~ msgstr "Odmítnout"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open"
@@ -417,14 +338,6 @@ msgstr "Zkopírovat uživatelské jméno"
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Bookmarks"
 msgstr ""
-
-#: src/pages/followed-hashtags.tsx
-#~ msgid "Unable to load followed hashtags."
-#~ msgstr "Nepodařilo se načíst sledované hashtagy."
-
-#: src/pages/mentions.tsx
-#~ msgid "Private mentions"
-#~ msgstr "Soukromé zmínky"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List"
@@ -495,17 +408,9 @@ msgstr ""
 msgid "Feedback sent"
 msgstr ""
 
-#: src/pages/followed-hashtags.tsx
-#~ msgid "{0, plural, one {# hashtag} other {# hashtags}}"
-#~ msgstr ""
-
 #: src/components/report-modal.tsx
 msgid "Pending review"
 msgstr "Čeká na posouzení"
-
-#: src/pages/login.jsx
-#~ msgid "Continue with {selectedInstanceText}"
-#~ msgstr ""
 
 #: src/components/timeline.tsx
 #: src/pages/settings.tsx
@@ -537,10 +442,6 @@ msgstr "Dolů"
 msgid "Mention <0>@{username}</0>"
 msgstr "Zmínit <0>@{username}</0>"
 
-#: src/pages/filters.tsx
-#~ msgid "Edit filter"
-#~ msgstr "Upravit filtr"
-
 #: src/components/related-actions.tsx
 msgid "Enable reposts"
 msgstr ""
@@ -549,10 +450,6 @@ msgstr ""
 #: src/pages/account-statuses.tsx
 msgid "Switch to account's PDS {0}"
 msgstr ""
-
-#: src/pages/hashtag.tsx
-#~ msgid "Unable to unfeature on profile"
-#~ msgstr "Nepodařilo se odebrat z profilu"
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
@@ -579,10 +476,6 @@ msgstr ""
 msgid "Uploaded"
 msgstr "Odesláno"
 
-#: src/components/shortcuts-settings.jsx
-#~ msgid "No columns yet. Tap on the Add column button."
-#~ msgstr "Zatím žádné sloupce. Klikněte na tlačítko Přidat sloupec."
-
 #: src/components/shortcuts-settings.tsx
 msgid "Add more than one shortcut/column to make this work."
 msgstr "Přidejte více než jednu zkratku/sloupec, aby to fungovalo."
@@ -601,10 +494,6 @@ msgstr "Otevřít v novém okně"
 #: src/pages/notifications.tsx
 msgid "Notifications settings updated"
 msgstr "Nastavení oznámení aktualizováno"
-
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Scheduled post rescheduled"
-#~ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "View profile…"
@@ -635,21 +524,6 @@ msgstr "Obsah"
 msgid "Send Report"
 msgstr "Odeslat hlášení"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
-#~ msgid "Enter a new server e.g. \"mastodon.social\""
-#~ msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Unable to delete filter."
-#~ msgstr "Nepodařilo se odstranit filtr."
-
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Federated"
-#~ msgstr "Federovaná"
-
 #. More from [Author]
 #: src/components/byline.tsx
 msgid "More from <0/>"
@@ -672,10 +546,6 @@ msgstr ""
 msgid "Default visibility updated"
 msgstr ""
 
-#: src/components/status-reply-menu.tsx
-#~ msgid "{0, plural, other {<0>@{1}</0> first, # others below}}"
-#~ msgstr ""
-
 #. placeholder {0}: feeds.length
 #: src/pages/lists.tsx
 msgid "{0, plural, one {# feed} other {# feeds}}"
@@ -697,17 +567,9 @@ msgstr "Oznámení"
 msgid "Note: <0>Default</0> account will always be used for first load. Switched accounts will persist during the session."
 msgstr "Poznámka: <0>Výchozí</0> účet bude vždy použit pro první načtení. Přepnuté účty budou přetrvávat i během relace."
 
-#: src/pages/settings.tsx
-#~ msgid "\"Cloud\" import/export for shortcuts settings"
-#~ msgstr ""
-
 #: src/components/status-quotes.tsx
 msgid "Post removed by author"
 msgstr ""
-
-#: src/pages/account-statuses.jsx
-#~ msgid "+ Replies"
-#~ msgstr "+ Odpovědi"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media.tsx
@@ -723,10 +585,6 @@ msgid "Open original media in new window"
 msgstr "Otevřít originální média v novém okně"
 
 #: src/components/shortcuts-settings.tsx
-#~ msgid "Download shortcuts from server"
-#~ msgstr ""
-
-#: src/components/shortcuts-settings.tsx
 msgid "Not available in current view mode"
 msgstr "Není k dispozici v aktuálním režimu zobrazení"
 
@@ -738,34 +596,9 @@ msgstr ""
 msgid "Ended <0/>"
 msgstr "Skončilo <0/>"
 
-#: src/components/notification.tsx
-#~ msgid "View #Wrapstodon"
-#~ msgstr "Zobrazit #Wrapstodon"
-
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
 msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "{0, plural, one {# filter} other {# filters}}"
-#~ msgstr "{0, plural, one {# filtr} few {# filtry} many {# filtrů} other {# filtrů}}"
-
-#: src/pages/settings.tsx
-msgid "Reposts carousel"
-msgstr ""
-
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Shortcuts saved"
-#~ msgstr "Zkratky uloženy"
-
-#: src/components/status-reply-menu.tsx
-#: src/components/status-reply-menu.tsx
-#~ msgid "Reply all"
-#~ msgstr ""
-
-#: src/pages/account-statuses.tsx
-#~ msgid "Hiding boosts"
-#~ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "We read every message even when we cannot reply."
@@ -774,10 +607,6 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Follow requests"
 msgstr ""
-
-#: src/pages/account-statuses.tsx
-#~ msgid "Switch to account's server {0}"
-#~ msgstr ""
 
 #: src/pages/trending.tsx
 msgid "No trending posts."
@@ -807,10 +636,6 @@ msgstr "Existuje v aktuálních zkratkách?"
 #: src/components/status-quick-menu.tsx
 msgid "Undo repost"
 msgstr ""
-
-#: src/pages/welcome.tsx
-#~ msgid "Screenshot of Phanpy home timeline on tablet device"
-#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
@@ -848,15 +673,6 @@ msgstr "Klávesové zkratky"
 #: src/utils/visibility-text.ts
 msgid "Public"
 msgstr "Veřejný"
-
-#: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Optional, e.g. mastodon.social"
-#~ msgstr "Nepovinné, např. mastodon.social"
-
-#: src/pages/notifications.tsx
-#~ msgid "{0, plural, one {# follow request} other {# follow requests}}"
-#~ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Accounts…"
@@ -947,14 +763,6 @@ msgstr ""
 #: src/components/status-helpers.ts
 msgid "Read more →"
 msgstr "Přečti si více →"
-
-#: src/pages/account-statuses.jsx
-#~ msgid "{accountDisplay} ({monthYear})"
-#~ msgstr "{accountDisplay} ({monthYear})"
-
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Custom emojis"
-#~ msgstr "Vlastní emoji"
 
 #: src/components/drafts.tsx
 msgid "No drafts found."
@@ -1054,11 +862,6 @@ msgstr ""
 msgid "Image description generator"
 msgstr "Generátor popisu obrázků"
 
-#: src/pages/hashtag.tsx
-#: src/pages/hashtag.tsx
-#~ msgid "Featured on profile"
-#~ msgstr "Zmíněno v profilu"
-
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut…"
 msgstr "Přidat zkratku…"
@@ -1090,10 +893,6 @@ msgstr "Navždy"
 msgid "Notifications settings"
 msgstr "Nastavení oznámení"
 
-#: src/pages/account-statuses.jsx
-#~ msgid "{accountDisplay} (- Boosts)"
-#~ msgstr ""
-
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/{total}"
 msgstr ""
@@ -1111,10 +910,6 @@ msgstr "beta"
 #: src/pages/search.tsx
 msgid "Search"
 msgstr "Hledat"
-
-#: src/pages/accounts.jsx
-#~ msgid "Log out and remove <0>@{0}</0>"
-#~ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Post updated. Check it out."
@@ -1167,11 +962,6 @@ msgstr "Otevřít původní média"
 msgid "Account Emojis:"
 msgstr "Emoji účtu:"
 
-#. Scheduled [in 1 day] ([Thu, Feb 27, 6:30:00 PM])
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Scheduled <0><1/></0> <2>({0})</2>"
-#~ msgstr ""
-
 #: src/components/shortcuts-settings.tsx
 msgid "Account"
 msgstr "Účet"
@@ -1183,14 +973,6 @@ msgstr "Blokovat <0>@{username}</0>?"
 #: src/components/related-actions.tsx
 msgid "@{username} removed from followers"
 msgstr "@{username} odebrán/a ze sledujících"
-
-#: src/components/endorsements.tsx
-#~ msgid "No featured profiles."
-#~ msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Expiry"
-#~ msgstr "Vypršení platnosti"
 
 #: src/pages/catchup.tsx
 msgid "Overlaps with your last catch-up"
@@ -1223,17 +1005,9 @@ msgstr ""
 msgid "Repost/Quote…"
 msgstr ""
 
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Failed to delete scheduled post"
-#~ msgstr ""
-
 #: src/components/drafts.tsx
 msgid "Looks like you have unsent drafts. Let's continue where you left off."
 msgstr "Vypadá to, že máte neodeslané koncepty. Pojďme pokračovat tam, kde jste skončili."
-
-#: src/pages/hashtag.tsx
-#~ msgid "Login required to see posts from this server."
-#~ msgstr ""
 
 #: src/components/generic-accounts.tsx
 #: src/components/mention-modal.tsx
@@ -1248,10 +1022,6 @@ msgstr "Příspěvek zveřejněn. Podívejte se na něj."
 msgid "Search: {q} (Hashtags)"
 msgstr ""
 
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Unable to save shortcuts"
-#~ msgstr "Zkratky nelze uložit"
-
 #: src/components/status-reblog.tsx
 msgid "<0/> <1>reposted</1>"
 msgstr ""
@@ -1260,17 +1030,13 @@ msgstr ""
 msgid "Show anyway"
 msgstr ""
 
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Zoom in"
-#~ msgstr ""
-
 #: src/components/status-helpers.ts
 msgid "Request to quote"
 msgstr ""
 
-#: src/pages/settings.jsx
-#~ msgid "<0>Built</0> by <1>@cheeaun</1>"
-#~ msgstr ""
+#: src/pages/settings.tsx
+msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
+msgstr ""
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
@@ -1292,11 +1058,6 @@ msgstr ""
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
-#~ msgid "Boosted"
-#~ msgstr "Boosty"
-
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
 msgid "Reposted"
 msgstr ""
 
@@ -1309,10 +1070,6 @@ msgstr ""
 #: src/components/related-actions.tsx
 msgid "Unable to copy handle"
 msgstr "Nepodařilo se zkopírovat uživatelské jméno"
-
-#: src/pages/filters.tsx
-#~ msgid "Change expiry"
-#~ msgstr "Změnit vypršení platnosti"
 
 #: src/components/import-export-accounts.tsx
 msgid "Import failed"
@@ -1340,23 +1097,9 @@ msgstr ""
 msgid "Quote chain"
 msgstr ""
 
-#: src/components/nav-menu.jsx
-#: src/components/shortcuts.jsx
-#: src/pages/list.jsx
-#~ msgid "All Lists"
-#~ msgstr "Všechny seznamy"
-
-#: src/pages/public.tsx
-#~ msgid "No one has posted anything yet."
-#~ msgstr ""
-
 #: src/components/post-embed-modal.tsx
 msgid "HTML code copied"
 msgstr "HTML kód zkopírován"
-
-#: src/pages/filters.tsx
-#~ msgid "Filtered post will be…"
-#~ msgstr "Filtrovaný příspěvek bude…"
 
 #: src/pages/search.tsx
 msgid "See more accounts"
@@ -1366,14 +1109,6 @@ msgstr "Zobrazit další účty"
 #: src/pages/account-statuses.tsx
 msgid "Search my posts"
 msgstr ""
-
-#: src/components/status-content.tsx
-#~ msgid "Unboosted @{0}'s post"
-#~ msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Delete this filter?"
-#~ msgstr "Smazat tento filtr?"
 
 #: src/components/generic-accounts.tsx
 #: src/components/notification.tsx
@@ -1387,10 +1122,6 @@ msgstr "Účty"
 msgid "Post hidden because you've muted @{name}."
 msgstr ""
 
-#: src/pages/status.tsx
-#~ msgid "This post is from another server (<0>{instance}</0>). Interactions (reply, boost, etc) are not possible."
-#~ msgstr ""
-
 #: src/components/account-info-mini.tsx
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -1398,17 +1129,9 @@ msgstr ""
 msgid "This user has chosen to not make this information available."
 msgstr "Tento uživatel se rozhodl nezpřístupnit tyto informace."
 
-#: src/pages/welcome.jsx
-#~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
-#~ msgstr ""
-
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
 msgstr "Přejít na začátek"
-
-#: src/pages/filters.tsx
-#~ msgid "Home and lists"
-#~ msgstr "Domovská časová osa a seznamy"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1484,10 +1207,6 @@ msgstr ""
 msgid "Accounts with <0>{query}</0>"
 msgstr "Účty s <0>{query}</0>"
 
-#: src/components/compose-poll.tsx
-#~ msgid "Remove poll"
-#~ msgstr "Odstranit anketu"
-
 #: src/pages/catchup.tsx
 msgid "Preview of Catch-up UI"
 msgstr "Náhled rozhraní Catch-up"
@@ -1500,10 +1219,6 @@ msgstr ""
 msgid "Paginated timeline (beta)"
 msgstr ""
 
-#: src/pages/public.tsx
-#~ msgid "Federated timeline"
-#~ msgstr "Federovaná časová osa"
-
 #: src/pages/welcome.tsx
 msgid "Screenshot of nested comments thread"
 msgstr ""
@@ -1515,10 +1230,6 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 msgid "Specify a list of shortcuts that'll appear as:"
 msgstr "Zadejte seznam zkratek, které se zobrazí jako:"
-
-#: src/components/account-info.tsx
-#~ msgid "{0} original posts, {1} replies, {2} quotes, {3} boosts"
-#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Timeline"
@@ -1540,10 +1251,6 @@ msgstr "Třídit: Hustota"
 msgid "Like (favourite)"
 msgstr "Líbí se mi (oblíbené)"
 
-#: src/pages/settings.tsx
-#~ msgid "Synced to your server's settings. <0>Go to your server ({instance}) for more settings.</0>"
-#~ msgstr ""
-
 #: src/pages/account-statuses.tsx
 #: src/pages/hashtag.tsx
 msgid "Filters"
@@ -1559,18 +1266,10 @@ msgstr "Škodlivé odkazy, falešné interakce nebo opakované odpovědi"
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
 msgstr "{maxMediaAttachments, plural, one {Můžete připojit pouze 1 soubor.} few {Můžete připojit pouze # souborů.} many {Můžete připojit pouze # souborů.} other {Můžete připojit pouze # souborů.}}"
 
-#: src/pages/hashtag.tsx
-#~ msgid "Unfollow #{hashtag}?"
-#~ msgstr "Přestat sledovat #{hashtag}?"
-
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 msgid "Shortcuts"
 msgstr "Zkratky"
-
-#: src/pages/filters.tsx
-#~ msgid "No filters yet."
-#~ msgstr "Zatím žádné filtry."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts copied"
@@ -1588,14 +1287,6 @@ msgstr "Co je tohle?"
 msgid "Add hashtag"
 msgstr "Přidat hashtag"
 
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Import/export settings from/to server (Very experimental)"
-#~ msgstr ""
-
-#: src/components/related-actions.tsx
-#~ msgid "Boosts from @{username} disabled."
-#~ msgstr "Boosty od @{username} zakázány."
-
 #: src/pages/welcome.tsx
 msgid "Nested comments thread"
 msgstr ""
@@ -1603,10 +1294,6 @@ msgstr ""
 #: src/components/report-modal.tsx
 msgid "Forward to <0>{domain}</0>"
 msgstr "Přeposlat na <0>{domain}</0>"
-
-#: src/components/compose.tsx
-#~ msgid "Add poll"
-#~ msgstr "Přidat anketu"
 
 #: src/pages/notifications.tsx
 msgid "You don't follow"
@@ -1640,10 +1327,6 @@ msgstr "Odstranit tuto rekapitulaci?"
 #: src/components/status-menu-state.tsx
 msgid "Old post (<0>{0}</0>)"
 msgstr "Starý příspěvek (<0>{0}</0>)"
-
-#: src/components/status-content.tsx
-#~ msgid "Boosted @{0}'s post"
-#~ msgstr ""
 
 #. placeholder {0}: dtf.format(new Date(lastCatchupEndAt))
 #: src/pages/catchup.tsx
@@ -1682,10 +1365,6 @@ msgstr ""
 msgid "Reload page now to update?"
 msgstr "Znovu načíst stránku a aktualizovat?"
 
-#: src/components/status-reblog.tsx
-#~ msgid "<0/> <1>boosted</1>"
-#~ msgstr "<0/> <1>boostnul</1>"
-
 #: src/components/status-helpers.ts
 msgid "You are not allowed to quote this post"
 msgstr ""
@@ -1694,17 +1373,9 @@ msgstr ""
 msgid "Search term"
 msgstr "Hledaný výraz"
 
-#: src/components/shortcuts-settings.jsx
-#~ msgid "For multi-column mode, search term is required, else the column will not be shown."
-#~ msgstr "Pro režim více sloupců je vyžadován hledaný výraz, jinak nebude sloupec zobrazen."
-
 #: src/pages/status.tsx
 msgid "Error: {e}"
 msgstr "Chyba: {e}"
-
-#: src/pages/hashtag.tsx
-#~ msgid "Unfollowed #{hashtag}"
-#~ msgstr "#{hashtag} již není sledován"
 
 #. placeholder {0}: replies.length
 #. placeholder {1}: shortenNumber(replies.length)
@@ -1728,10 +1399,6 @@ msgstr "Autoři"
 #: src/pages/status.tsx
 msgid "{months, plural, one {# month later} other {# months later}}"
 msgstr ""
-
-#: src/components/keyboard-shortcuts-help.jsx
-#~ msgid "Focus column in multi-column mode"
-#~ msgstr "Zaměřit se na sloupec v režimu více sloupců"
 
 #: src/components/status-utility-menu.tsx
 msgid "Edited: {editedDateText}"
@@ -1759,10 +1426,6 @@ msgstr "Odpovídám na příspěvek uživatele @{0}"
 msgid "Import shortcuts?"
 msgstr "Importovat zkratky?"
 
-#: src/pages/public.tsx
-#~ msgid "Switch to Federated"
-#~ msgstr ""
-
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to next post"
 msgstr "Přeskočit carousel na další příspěvek"
@@ -1788,10 +1451,6 @@ msgstr ""
 msgid "Auto-translated from {0}"
 msgstr ""
 
-#: src/pages/welcome.tsx
-#~ msgid "Visually separate original posts and re-shared posts (boosted posts)."
-#~ msgstr ""
-
 #: src/pages/notifications.tsx
 msgid "Who are limited by Bluesky moderators"
 msgstr ""
@@ -1807,14 +1466,6 @@ msgstr "Nezpracované zkratky JSON"
 msgid "Thread"
 msgstr "Vlákno"
 
-#: src/components/report-modal.tsx
-#~ msgid "Violates the law of your or the server's country"
-#~ msgstr "Porušuje zákon vaší nebo země serveru"
-
-#: src/components/related-actions.tsx
-#~ msgid "Withdraw follow request?"
-#~ msgstr "Zrušit žádost o sledování?"
-
 #: src/components/shortcuts-settings.tsx
 msgid "Multiple hashtags are supported. Space-separated."
 msgstr "Podporováno je více hashtagů. Oddělené mezerami."
@@ -1822,10 +1473,6 @@ msgstr "Podporováno je více hashtagů. Oddělené mezerami."
 #: src/components/status-edit-history-modal.tsx
 msgid "Failed to load history"
 msgstr "Nepodařilo se načíst historii"
-
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Search emoji"
-#~ msgstr "Hledat emoji"
 
 #: src/pages/notifications.tsx
 msgid "Today"
@@ -1854,17 +1501,9 @@ msgstr "Odkaz zkopírován"
 msgid "Search accounts"
 msgstr "Hledat účty"
 
-#: src/components/notification.tsx
-#~ msgid "{account} requested to follow you."
-#~ msgstr "{account} vás požádal o sledování."
-
 #: src/components/list-add-edit.tsx
 msgid "Show replies to list members"
 msgstr "Zobrazit odpovědi členům seznamu"
-
-#: src/components/compose.tsx
-#~ msgid "Attachment #{i} failed"
-#~ msgstr "Příloha #{i} selhala"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
@@ -1875,10 +1514,6 @@ msgstr "Nejlepší odkazy"
 #: src/pages/hashtag.tsx
 msgid "Media only"
 msgstr "Pouze média"
-
-#: src/components/follow-request-buttons.tsx
-#~ msgid "Rejected"
-#~ msgstr "Odmítnuto"
 
 #: src/components/compose.tsx
 msgid "Update"
@@ -1892,10 +1527,6 @@ msgstr ""
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
 msgstr "{account} nahlásil {targetAccount}"
-
-#: src/pages/filters.tsx
-#~ msgid "Conversations"
-#~ msgstr "Konverzace"
 
 #. placeholder {0}: err?.message ? `: ${err.message}` : ''
 #: src/components/media-attachment.tsx
@@ -1997,10 +1628,6 @@ msgstr ""
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
 msgstr ""
 
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Zoom out"
-#~ msgstr ""
-
 #: src/components/media-post.tsx
 msgid "Sensitive media"
 msgstr "Citlivá média"
@@ -2013,10 +1640,6 @@ msgstr "Přidat GIF"
 #: src/components/status-account-menu.tsx
 msgid "Remove my post from <0>@{0}</0>'s post?"
 msgstr ""
-
-#: src/pages/welcome.tsx
-#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
-#~ msgstr ""
 
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
@@ -2044,25 +1667,9 @@ msgstr ""
 msgid "Search: {q} (Accounts)"
 msgstr ""
 
-#: src/components/report-modal.tsx
-#~ msgid "Breaks specific server rules"
-#~ msgstr "Porušuje specifická pravidla serveru"
-
 #: src/components/shortcuts-settings.tsx
 msgid "Not sure what to add?<0/>Try adding <1>Home / Following and Notifications</1> first."
 msgstr "Nejste si jisti, co přidat?<0/>Zkuste nejdříve přidat <1>Domů / Sledování a oznámení</1>."
-
-#: src/pages/filters.tsx
-#~ msgid "Unable to create filter"
-#~ msgstr "Nelze vytvořit filtr"
-
-#: src/pages/welcome.jsx
-#~ msgid "Connect your existing Mastodon/Fediverse account.<0/>Your credentials are not stored on this server."
-#~ msgstr "Připojte svůj existující Mastodon/Fediverse účet.<0/>Vaše přihlašovací údaje nejsou uloženy na tomto serveru."
-
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Saving shortcuts to server…"
-#~ msgstr ""
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
@@ -2089,10 +1696,6 @@ msgstr "Přijmout"
 msgid "Ignore"
 msgstr "Ignorovat"
 
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Unable to download shortcuts"
-#~ msgstr "Zkratky nelze stáhnout"
-
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
@@ -2108,14 +1711,6 @@ msgstr ""
 msgid "Look up <0>{query}</0>"
 msgstr "Vyhledat <0>{query}</0>"
 
-#: src/components/compose.tsx
-#~ msgid "Add custom emoji"
-#~ msgstr "Přidat vlastní emoji"
-
-#: src/pages/filters.tsx
-#~ msgid "obscured (media only)"
-#~ msgstr ""
-
 #: src/components/open-link-sheet.tsx
 msgid "Open link?"
 msgstr ""
@@ -2128,17 +1723,9 @@ msgstr "Nelze načíst oznámení"
 msgid "HTML Code"
 msgstr "HTML kód"
 
-#: src/components/compose.tsx
-#~ msgid "Posting on <0/>"
-#~ msgstr ""
-
 #: src/components/timeline.tsx
 msgid "Pinned posts"
 msgstr "Připnuté příspěvky"
-
-#: src/components/compose.tsx
-#~ msgid "Schedule"
-#~ msgstr ""
 
 #: src/components/compose.tsx
 msgctxt "Submit button in composer"
@@ -2154,18 +1741,10 @@ msgstr "Varování o obsahu"
 msgid "Hashtag"
 msgstr "Hashtag"
 
-#: src/components/related-actions.tsx
-#~ msgid "Add notes"
-#~ msgstr ""
-
 #. js-lingui-explicit-id
 #: src/pages/catchup.tsx
 msgid "group.filter"
 msgstr ""
-
-#: src/components/related-actions.tsx
-#~ msgid "Disable boosts"
-#~ msgstr "Zakázat boosty"
 
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
@@ -2184,10 +1763,6 @@ msgstr ""
 #: src/pages/catchup.tsx
 msgid "Note: the Home timeline might only show a limited number of posts regardless of the time range."
 msgstr ""
-
-#: src/pages/catchup.tsx
-#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
@@ -2219,10 +1794,6 @@ msgstr "Povolit"
 #: src/pages/account-statuses.tsx
 msgid "Search @{0}'s posts"
 msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Unable to edit filter"
-#~ msgstr "Nepodařilo se upravit filtr"
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText}"
@@ -2291,10 +1862,6 @@ msgstr "Přestat sledovat…"
 msgid "Delete all…"
 msgstr "Smazat vše…"
 
-#: src/pages/hashtag.tsx
-#~ msgid "Following…"
-#~ msgstr "Sleduji…"
-
 #: src/pages/accounts.tsx
 msgid "Current"
 msgstr "Současný"
@@ -2306,10 +1873,6 @@ msgstr "Nepodařilo se načíst odpovědi."
 #: src/components/compose.tsx
 msgid "You have unsaved changes. Discard this post?"
 msgstr "Máte neuložené změny. Zrušit tento příspěvek?"
-
-#: src/pages/account-statuses.jsx
-#~ msgid "{accountDisplay} (+ Replies)"
-#~ msgstr "{accountDisplay} (+ Odpovědi)"
 
 #: src/components/edit-history-controls.tsx
 msgid "Edit History Snapshots"
@@ -2379,10 +1942,6 @@ msgstr "Obnovit filtry"
 msgid "last 8 hours"
 msgstr "posledních 8 hodin"
 
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "{0} more…"
-#~ msgstr "{0} další…"
-
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from @{0} will not show up in Filtered notifications from now on."
@@ -2440,10 +1999,6 @@ msgstr "{hashtagTitle} na {instance}"
 msgid "Reply"
 msgstr "Odpovědět"
 
-#: src/components/notification.tsx
-#~ msgid "Your {year} #Wrapstodon is here!"
-#~ msgstr "Tvůj {year} #Wrapstodon je tady!"
-
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
 msgstr ""
@@ -2457,17 +2012,9 @@ msgstr "Váš účet obdržel upozornění na moderování."
 msgid "{0, plural, one {# character} other {# characters}}"
 msgstr "{0,plural, one{# znak} few {# znaky} many {# znaků} other{# znaků}}"
 
-#: src/pages/settings.tsx
-#~ msgid "Note: This feature uses currently-logged-in server API."
-#~ msgstr ""
-
 #: src/components/status-utility-menu.tsx
 msgid "Copy post text"
 msgstr ""
-
-#: src/components/modals.tsx
-#~ msgid "Post scheduled"
-#~ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Add an existing account"
@@ -2497,10 +2044,6 @@ msgstr "Soukromá zmínka"
 #: src/pages/settings.tsx
 msgid "Experiments"
 msgstr ""
-
-#: src/pages/lists.jsx
-#~ msgid "No lists yet."
-#~ msgstr "Nemáte žádné seznamy."
 
 #: src/compose.tsx
 #: src/pages/http-route.tsx
@@ -2551,28 +2094,16 @@ msgstr ""
 msgid "Delete…"
 msgstr "Smazat…"
 
-#: src/pages/filters.tsx
-#~ msgid "minimized"
-#~ msgstr "minimalizovat"
-
 #: src/components/post-embed-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Embed post"
 msgstr "Vložit příspěvek"
-
-#: src/components/compose.tsx
-#~ msgid "Mark media as sensitive"
-#~ msgstr "Označit média jako citlivá"
 
 #. placeholder {0}: shortenNumber(votersCount)
 #. placeholder {1}: shortenNumber(votersCount)
 #: src/components/poll.tsx
 msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
 msgstr "{votersCount, plural, one {<0>{0}</0> volič} few {<1>{1}</1> voliči} other {<1>{1}</1> voličů}}"
-
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Downloading saved shortcuts from server…"
-#~ msgstr ""
 
 #: src/components/atproto-labels.tsx
 msgid "Does not include nudity."
@@ -2581,10 +2112,6 @@ msgstr ""
 #: src/components/import-accounts-selection.tsx
 msgid "Select accounts to import"
 msgstr ""
-
-#: src/components/notification.tsx
-#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted your reply.} other {{account} boosted your post.}}} other {{account} boosted {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted your reply.} other {<2><3>{1}</3> people</2> boosted your post.}}}}"
-#~ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Notifications enabled for @{username}'s posts."
@@ -2606,10 +2133,6 @@ msgstr ""
 msgid "Block <0>@{username}</0>…"
 msgstr "Blok <0>@{username}</0>…"
 
-#: src/components/status-header.tsx
-#~ msgid "{timeRepliesCount, plural, one {# reply} other {# replies}}"
-#~ msgstr ""
-
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Open post details"
@@ -2618,10 +2141,6 @@ msgstr "Otevře detaily příspěvku"
 #: src/components/compose.tsx
 msgid "Pop out"
 msgstr "Vyskakovací okno"
-
-#: src/pages/status.tsx
-#~ msgid "Switch to my server to enable interactions"
-#~ msgstr ""
 
 #. placeholder {0}: postingStats.total
 #. placeholder {1}: postingStats.total
@@ -2657,10 +2176,6 @@ msgstr "Emoji:"
 msgid "Post edits"
 msgstr ""
 
-#: src/pages/accounts.jsx
-#~ msgid "Log out <0>@{0}</0>?"
-#~ msgstr "Odhlásit se <0>@{0}</0>?"
-
 #: src/components/related-actions.tsx
 msgid "Disable reposts"
 msgstr ""
@@ -2695,12 +2210,6 @@ msgstr "Toto oznámení pochází z vašeho dalšího účtu."
 #: src/pages/status.tsx
 msgid "Try again"
 msgstr "Zkuste to znovu"
-
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
-#~ msgid "Go to another server…"
-#~ msgstr ""
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2756,10 +2265,6 @@ msgstr "Upravit popis audia"
 msgid "Pinned"
 msgstr "Připnuto"
 
-#: src/components/report-modal.tsx
-#~ msgid "Server rule violation"
-#~ msgstr "Porušení pravidla serveru"
-
 #: src/components/notification.tsx
 msgid "A poll you have created has ended."
 msgstr "Anketa, kterou jste vytvořili, skončila."
@@ -2777,19 +2282,9 @@ msgstr "Neodeslané koncepty"
 msgid "You're all caught up."
 msgstr "Přečetli jste všechny komentáře."
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
-#: src/components/status-large-footer.tsx
-#~ msgid "Boost"
-#~ msgstr "Boost"
-
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "Problém neodpovídá ostatním kategoriím"
-
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Error loading custom emojis"
-#~ msgstr "Chyba při načítání vlastních emoji"
 
 #. placeholder {0}: tag.name
 #: src/pages/account-statuses.tsx
@@ -2829,21 +2324,9 @@ msgstr "Ochrana osobních údajů"
 msgid "Refresh"
 msgstr "Obnovit"
 
-#: src/pages/catchup.tsx
-#~ msgid "Followed tags"
-#~ msgstr "Sledované štítky"
-
-#: src/pages/login.jsx
-#~ msgid "Don't have an account? Create one!"
-#~ msgstr "Nemáte účet? Vytvořte si účet!"
-
 #: src/components/related-actions.tsx
 msgid "Search <0>@{username}</0>'s posts"
 msgstr ""
-
-#: src/components/compose-poll.tsx
-#~ msgid "Choice {0}"
-#~ msgstr "Volba {0}"
 
 #: src/components/status-account-menu.tsx
 msgid "Pin to profile"
@@ -2859,17 +2342,9 @@ msgstr "Sdílet…"
 msgid "Image description"
 msgstr "Popis obrázku"
 
-#: src/components/compose-poll.tsx
-#~ msgid "Duration"
-#~ msgstr "Trvání"
-
 #: src/components/shortcuts-settings.tsx
 msgid "Optional"
 msgstr ""
-
-#: src/pages/catchup.tsx
-#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-#~ msgstr ""
 
 #. placeholder {0}: options.length
 #: src/components/poll.tsx
@@ -2906,10 +2381,6 @@ msgstr "Přidat zkratku"
 msgid "Screenshot of Catch-up"
 msgstr ""
 
-#: src/pages/welcome.tsx
-#~ msgid "Screenshot of Phanpy home timeline on mobile device"
-#~ msgstr ""
-
 #: src/components/compose-button.tsx
 msgid "Add to thread"
 msgstr ""
@@ -2944,20 +2415,12 @@ msgstr "Odpověď odeslána. Podívejte se na ni."
 msgid "({0}) <0>— experimental</0>"
 msgstr "({0}) <0>– experimentální</0>"
 
-#: src/pages/filters.tsx
-#~ msgid "* Not implemented yet"
-#~ msgstr "* Zatím není implementováno"
-
 #: src/components/compose.tsx
 #: src/components/mention-modal.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/list.tsx
 msgid "Add"
 msgstr "Přidat"
-
-#: src/pages/filters.tsx
-#~ msgid "Expired"
-#~ msgstr "Vypršelo"
 
 #: src/components/poll.tsx
 msgid "Unable to vote in poll"
@@ -2983,10 +2446,6 @@ msgstr ""
 msgid "Add media"
 msgstr "Přidat média"
 
-#: src/pages/filters.tsx
-#~ msgid "Title"
-#~ msgstr "Název"
-
 #: src/pages/hashtag.tsx
 msgid "Hashtag shortcut added"
 msgstr ""
@@ -3006,10 +2465,6 @@ msgstr ""
 #: src/components/notification.tsx
 msgid "Your account has been limited."
 msgstr "Váš účet byl omezen."
-
-#: src/components/status-reply-menu.tsx
-#~ msgid "Reply…"
-#~ msgstr ""
 
 #: src/components/account-block.tsx
 msgid "{followersCount, plural, one {# follower} other {# followers}}"
@@ -3066,17 +2521,9 @@ msgstr "Datum"
 msgid "<0>Shift</0> + <1>j</1>"
 msgstr "<0>Shift</0>+ <1>j</1>"
 
-#: src/pages/scheduled-posts.tsx
-#~ msgid "No scheduled posts."
-#~ msgstr ""
-
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy post text"
 msgstr ""
-
-#: src/components/status-large-footer.tsx
-#~ msgid "Boost/Quote…"
-#~ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Muted users…"
@@ -3138,10 +2585,6 @@ msgstr ""
 msgid "Donate"
 msgstr "Přispět"
 
-#: src/components/keyboard-shortcuts-help.jsx
-#~ msgid "<0>1</0> to <1>9</1>"
-#~ msgstr "<0>1</0> do <1>9</1>"
-
 #: src/components/quote-chain-modal.tsx
 msgid "Failed to unwrap quote chain"
 msgstr ""
@@ -3174,14 +2617,6 @@ msgstr "{0}s"
 msgid "{index}/X"
 msgstr ""
 
-#: src/pages/account-statuses.jsx
-#~ msgid "{accountDisplay} (Media)"
-#~ msgstr "{accountDisplay} (Média)"
-
-#: src/components/keyboard-shortcuts-help.jsx
-#~ msgid "Focus previous column in multi-column mode"
-#~ msgstr "Zaměřit se na předchozí sloupec v režimu více sloupců"
-
 #: src/pages/account-statuses.tsx
 msgid "Switch to my PDS (<0>{currentInstance}</0>)"
 msgstr ""
@@ -3200,25 +2635,9 @@ msgstr "{0}h"
 msgid "Media attachments can be images, videos, audios or any file types."
 msgstr "Mediální přílohy mohou být obrázky, videa, audio nebo jakékoli typy souborů."
 
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Others"
-#~ msgstr "Ostatní"
-
-#: src/components/notification.tsx
-#~ msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} boosted & liked your reply.} other {{account} boosted & liked your post.}}} other {{account} boosted & liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> boosted & liked your reply.} other {<2><3>{1}</3> people</2> boosted & liked your post.}}}}"
-#~ msgstr ""
-
-#: src/components/timeline.tsx
-#~ msgid "{0, plural, one {# Boost} other {# Boosts}}"
-#~ msgstr "{0, plural, one {# Boostnutí} other {# Boostnutí}}"
-
 #: src/pages/accounts.tsx
 msgid "Remove <0>@{acct}</0>?"
 msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Never expires"
-#~ msgstr "Nikdy nevyprší"
 
 #: src/components/search-form.tsx
 msgid "Posts with <0>{query}</0>"
@@ -3266,29 +2685,13 @@ msgstr "Kdo tě nesleduje"
 msgid "Unlike"
 msgstr "Nelíbí se mi"
 
-#: src/components/notification.jsx
-#~ msgid "[Unknown notification type: {type}]"
-#~ msgstr "[Neznámý typ oznámení: {type}]"
-
-#: src/pages/home.tsx
-#~ msgid "<0>New</0> <1>Follow Requests</1>"
-#~ msgstr "<0>Nové</0> <1>Žádosti o sledování</1>"
-
 #: src/components/report-modal.tsx
 msgid "Unable to report profile"
 msgstr "Profil nelze nahlásit"
 
-#: src/pages/welcome.jsx
-#~ msgid "A minimalistic opinionated Mastodon web client."
-#~ msgstr ""
-
 #: src/components/background-service.tsx
 msgid "Cloak mode disabled"
 msgstr "Režim zavření zakázán"
-
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Local only"
-#~ msgstr "Pouze místní"
 
 #: src/pages/hashtag.tsx
 msgid "Remove hashtag"
@@ -3297,10 +2700,6 @@ msgstr "Odstranit hashtag"
 #: src/components/status-account-menu.tsx
 msgid "Mute conversation"
 msgstr "Ztlumit konverzaci"
-
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Sync to server"
-#~ msgstr ""
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Edit History"
@@ -3326,22 +2725,9 @@ msgstr "Konec <0/>"
 msgid "View Edit History Snapshots"
 msgstr ""
 
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Custom emojis are not available on this server."
-#~ msgstr ""
-
-#. Scheduled [in 1 day]
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Scheduled <0><1/></0>"
-#~ msgstr ""
-
 #: src/components/related-actions.tsx
 msgid "Disable notifications"
 msgstr "Vypnout upozornění"
-
-#: src/components/private-note-sheet.tsx
-#~ msgid "Unable to update private note."
-#~ msgstr "Nelze aktualizovat soukromou poznámku."
 
 #: src/pages/hashtag.tsx
 msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
@@ -3358,10 +2744,6 @@ msgstr "Výchozí"
 #: src/components/compose.tsx
 msgid "What are you doing?"
 msgstr "Co děláte??"
-
-#: src/components/related-actions.tsx
-#~ msgid "Unable to feature @{username} on your profile."
-#~ msgstr ""
 
 #. placeholder {0}: String(type)
 #: src/components/notification.tsx
@@ -3436,10 +2818,6 @@ msgstr ""
 msgid "E.g. artistic nudes."
 msgstr ""
 
-#: src/pages/public.tsx
-#~ msgid "Federated timeline ({instance})"
-#~ msgstr "Federovaná časová osa ({instance})"
-
 #: src/pages/favourites.tsx
 msgid "No likes yet. Go like something!"
 msgstr "Neudělili jste žádné \"líbí se mi\". Označte něco, co se vám líbí!"
@@ -3447,10 +2825,6 @@ msgstr "Neudělili jste žádné \"líbí se mi\". Označte něco, co se vám l�
 #: src/components/report-modal.tsx
 msgid "Violates local law"
 msgstr ""
-
-#: src/components/notification.tsx
-#~ msgid "Boosted by…"
-#~ msgstr "Boostováno…"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
@@ -3463,21 +2837,9 @@ msgstr "Přeložit"
 msgid "Version string copied"
 msgstr ""
 
-#: src/components/status-large-footer.tsx
-#~ msgid "Boost…"
-#~ msgstr "Boostnout…"
-
-#: src/pages/account-statuses.jsx
-#~ msgid "Showing post with replies"
-#~ msgstr "Zobrazení příspěvku s odpovědmi"
-
 #: src/components/account-info.tsx
 msgid "View post stats"
 msgstr "Zobrazit statistiky příspěvku"
-
-#: src/pages/public.tsx
-#~ msgid "Local timeline"
-#~ msgstr "Místní časová osa"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post you have quoted."
@@ -3534,22 +2896,10 @@ msgstr ""
 msgid "Post pending"
 msgstr ""
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#~ msgid "Boosts"
-#~ msgstr "Boosty"
-
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
 msgstr "Tmavý"
-
-#: src/components/related-actions.tsx
-#~ msgid "@{username} is no longer featured on your profile."
-#~ msgstr ""
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Loading…"
@@ -3588,12 +2938,6 @@ msgstr ""
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
 msgstr "Admin z <0>{from}</0> zablokoval <1>{targetName}</1>. Počet ovlivněných sledujících: {followersCount}, sledovaných: {followingCount}."
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
-#~ msgid "Invalid server"
-#~ msgstr ""
-
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unbookmark"
@@ -3603,24 +2947,12 @@ msgstr "Odebrat záložku"
 msgid "This might take a while."
 msgstr "To může chvíli trvat."
 
-#: src/pages/hashtag.tsx
-#~ msgid "This timeline is disabled on this server."
-#~ msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Unable to load filters."
-#~ msgstr "Nepodařilo se načíst filtry."
-
 #: src/components/error-fallback.tsx
 msgid ""
 "Something went wrong while using Bluepy.\n"
 "\n"
 ""
 msgstr ""
-
-#: src/pages/account-statuses.jsx
-#~ msgid "Showing posts without boosts"
-#~ msgstr "Zobrazení příspěvků bez boostů"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
@@ -3643,10 +2975,6 @@ msgstr "Ukázat historii úprav"
 msgid "Adult Content"
 msgstr ""
 
-#: src/pages/filters.tsx
-#~ msgid "Add keyword"
-#~ msgstr "Přidat klíčové slovo"
-
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
@@ -3656,23 +2984,6 @@ msgstr "Zkratky importovány"
 #: src/compose.tsx
 msgid "Compose"
 msgstr "Vytvořit"
-
-#: src/components/related-actions.tsx
-#: src/components/related-actions.tsx
-#~ msgid "Show featured profiles"
-#~ msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "Never"
-#~ msgstr "Nikdy"
-
-#: src/pages/account-statuses.jsx
-#~ msgid "{accountDisplay} (#{tagged})"
-#~ msgstr "{accountDisplay} (#{tagged})"
-
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Reschedule"
-#~ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Connect to Atmosphere"
@@ -3714,11 +3025,6 @@ msgstr ""
 msgid "Edit your post"
 msgstr "Upravit příspěvek"
 
-#: src/components/status-large-footer.tsx
-#: src/components/status-large-footer.tsx
-#~ msgid "Unboost"
-#~ msgstr "Zrušit boostnutí"
-
 #: src/components/import-export-accounts.tsx
 msgid "No login information or account access details are stored in the exported files. You will need to log in again for each account after importing."
 msgstr ""
@@ -3751,10 +3057,6 @@ msgstr ""
 #: src/components/related-actions.tsx
 msgid "Translate bio"
 msgstr "Přeložit bio"
-
-#: src/pages/hashtag.tsx
-#~ msgid "Followed #{hashtag}"
-#~ msgstr "Sledován #{hashtag}"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
@@ -3793,10 +3095,6 @@ msgstr "Chyba při mazání konceptu. Zkuste to prosím znovu."
 msgid "Close window"
 msgstr "Zavřít okno"
 
-#: src/pages/welcome.tsx
-#~ msgid "Log in with Bluesky"
-#~ msgstr ""
-
 #: src/pages/catchup.tsx
 msgid "That's all."
 msgstr "To je vše."
@@ -3810,7 +3108,6 @@ msgstr "Předchozí autor"
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
-#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -3818,10 +3115,6 @@ msgstr ""
 #: src/pages/account-statuses.tsx
 msgid "Showing posts with media"
 msgstr "Zobrazování příspěvků s médii"
-
-#: src/pages/filters.tsx
-#~ msgid "Public timelines"
-#~ msgstr "Veřejná časová osa"
 
 #: src/components/feedback-modal.tsx
 #: src/pages/welcome.tsx
@@ -3845,10 +3138,6 @@ msgstr "Zablokovali jste <0>{targetName}</0>. Odstranění sledujících: {follo
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} liked your reply.} other {{account} liked your post.}}} other {{account} liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> liked your reply.} other {<2><3>{1}</3> people</2> liked your post.}}}}"
 msgstr ""
 
-#: src/components/shortcuts-settings.jsx
-#~ msgid "Max {SHORTCUTS_LIMIT} columns"
-#~ msgstr "Max {SHORTCUTS_LIMIT} sloupců"
-
 #: src/pages/status.tsx
 msgid "Experimental"
 msgstr ""
@@ -3861,25 +3150,9 @@ msgstr "Jaký je s tímto účtem problém?"
 msgid "Resolving…"
 msgstr "Připojování…"
 
-#: src/components/status-reply-menu.tsx
-#~ msgid "{mentionsCount, plural, other {# mentions}}"
-#~ msgstr ""
-
-#: src/pages/status.tsx
-#~ msgid "Switch to post's server"
-#~ msgstr ""
-
 #: src/components/status-header.tsx
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
 msgstr "{repliesCount, plural, one {# odpověď} few {# odpovědi} many {# odpovědi} other {# odpovědi}}"
-
-#: src/pages/settings.tsx
-#~ msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and boosts carousel will not work when this is enabled."
-#~ msgstr ""
-
-#: src/components/account-handle-info.tsx
-#~ msgid "server domain name"
-#~ msgstr "jméno domény serveru"
 
 #: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
@@ -3893,10 +3166,6 @@ msgstr "Snímková frekvence je příliš vysoká. Při nahrávání mohou vznik
 #: src/pages/notifications.tsx
 msgid "Unable to dismiss notification request"
 msgstr ""
-
-#: src/pages/welcome.tsx
-#~ msgid "Screenshot of Boosts Carousel"
-#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to previous post"
@@ -3914,10 +3183,6 @@ msgstr "{0, plural, one {# příspěvek} few {# příspěvky} many {# příspěv
 #: src/pages/notifications.tsx
 msgid "Unable to accept notification request"
 msgstr ""
-
-#: src/components/related-actions.tsx
-#~ msgid "Don't feature on profile"
-#~ msgstr ""
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/list-add-edit.tsx
@@ -3952,18 +3217,9 @@ msgstr ""
 msgid "{followingCount, plural, other {<0>{0}</0> Following}}"
 msgstr ""
 
-#: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Server"
-#~ msgstr ""
-
 #: src/components/related-actions.tsx
 msgid "Unblocked @{username}"
 msgstr "Odblokován @{username}"
-
-#: src/pages/account-statuses.tsx
-#~ msgid "Switch to my server (<0>{currentInstance}</0>)"
-#~ msgstr ""
 
 #: src/components/account-handle-info.tsx
 msgid "username"
@@ -4041,10 +3297,6 @@ msgstr "Příspěvky jsou seskupeny podle autorů a seřazeny podle počtu pří
 msgid "With a new account"
 msgstr "S novým účtem"
 
-#: src/components/private-note-sheet.tsx
-#~ msgid "Save & close"
-#~ msgstr "Uložit a zavřít"
-
 #. placeholder {0}: filterInfo.titlesStr
 #. placeholder {0}: filterInfoMaybe?.titlesStr
 #: src/components/status-media-embeds.tsx
@@ -4052,17 +3304,9 @@ msgstr "S novým účtem"
 msgid "Filtered: {0}"
 msgstr "Filtrováno: {0}"
 
-#: src/components/compose.tsx
-#~ msgid "Schedule post"
-#~ msgstr ""
-
 #: src/pages/catchup.tsx
 msgid "Note: Only max 3 will be stored. The rest will be automatically removed."
 msgstr "Poznámka: Budou uloženy pouze maximálně 3. Zbytek bude automaticky odstraněn."
-
-#: src/pages/filters.tsx
-#~ msgid "No keywords. Add one."
-#~ msgstr "Žádná klíčová slova. Přidejte jedno."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -4083,10 +3327,6 @@ msgstr "Odstranit"
 msgid "Go to Profile"
 msgstr ""
 
-#: src/pages/public.tsx
-#~ msgid "Switch to Local"
-#~ msgstr ""
-
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
 msgstr "Extra pole"
@@ -4106,10 +3346,6 @@ msgstr ""
 #: src/pages/account-statuses.tsx
 msgid "Showing replies"
 msgstr ""
-
-#: src/components/status-interactions.ts
-#~ msgid "Sorry, your current logged-in server can't interact with this post from another server."
-#~ msgstr ""
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to add to list."
@@ -4167,19 +3403,11 @@ msgstr "Seznam nelze smazat."
 msgid "Up to 5 hashtags combined into a single timeline."
 msgstr ""
 
-#: src/pages/settings.tsx
-#~ msgid "Boosts carousel"
-#~ msgstr ""
-
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Sharing doesn't seem to work."
 msgstr "Sdílení zřejmě nefunguje."
-
-#: src/pages/welcome.tsx
-#~ msgid "Boosts Carousel"
-#~ msgstr ""
 
 #: src/components/list-add-edit.tsx
 msgid "Edit list"
@@ -4189,10 +3417,6 @@ msgstr "Upravit seznam"
 msgid "last 2 hours"
 msgstr "poslední 2 hodiny"
 
-#: src/components/shortcuts-settings.tsx
-#~ msgid "Public (Local / Federated)"
-#~ msgstr "Veřejná (Lokální/Federovaná)"
-
 #: src/compose.tsx
 msgid "Editing source status"
 msgstr ""
@@ -4200,22 +3424,6 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Settings"
 msgstr "Nastavení"
-
-#: src/pages/account-statuses.jsx
-#~ msgid "Clear filters"
-#~ msgstr "Vymazat filtry"
-
-#: src/pages/public.tsx
-#~ msgid "Local timeline ({instance})"
-#~ msgstr "Místní časová osa ({instance})"
-
-#: src/components/custom-emojis-modal.tsx
-#~ msgid "Recently used"
-#~ msgstr "Nedávno použité"
-
-#: src/pages/filters.tsx
-#~ msgid "Status: <0><1/></0>"
-#~ msgstr "Stav: <0><1/></0>"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -4225,14 +3433,6 @@ msgstr ""
 msgid "Unable to resolve URL"
 msgstr "Nelze najít URL adresu"
 
-#: src/components/shortcuts-settings.jsx
-#~ msgid "Optional, unless for multi-column mode"
-#~ msgstr "Volitelné, pokud není pro více sloupců"
-
-#: src/components/endorsements.tsx
-#~ msgid "Profiles featured by @{0}"
-#~ msgstr ""
-
 #: src/components/shortcuts-settings.tsx
 msgid "or override…"
 msgstr "nebo přepsat…"
@@ -4240,11 +3440,6 @@ msgstr "nebo přepsat…"
 #: src/components/status-account-menu.tsx
 msgid "Remove quote…"
 msgstr ""
-
-#: src/components/related-actions.tsx
-#: src/pages/hashtag.tsx
-#~ msgid "Feature on profile"
-#~ msgstr "Zmínit v profilu"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Keyboard shortcuts help"
@@ -4254,10 +3449,6 @@ msgstr "Nápověda pro klávesové zkratky"
 msgid "Go to Home"
 msgstr ""
 
-#: src/components/compose.tsx
-#~ msgid "Some poll choices are empty"
-#~ msgstr "Některé volby anket jsou prázdné"
-
 #: src/components/related-actions.tsx
 msgid "Remove <0>@{username}</0> from followers?"
 msgstr "Odstranit <0>@{username}</0> ze sledujících?"
@@ -4266,21 +3457,9 @@ msgstr "Odstranit <0>@{username}</0> ze sledujících?"
 msgid "Unable to load bookmarks."
 msgstr "Nelze načíst záložky."
 
-#: src/pages/filters.tsx
-#~ msgid "Filter from…"
-#~ msgstr "Filtrovat od…"
-
 #: src/components/quote-chain-modal.tsx
 msgid "Continue unwrapping…"
 msgstr ""
-
-#: src/components/related-actions.tsx
-#~ msgid "Enable boosts"
-#~ msgstr "Povolit boosty"
-
-#: src/pages/filters.tsx
-#~ msgid "Expiring <0/>"
-#~ msgstr "Vyprší <0/>"
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has suspended <1>{targetName}</1>, which means you can no longer receive updates from them or interact with them."
@@ -4289,10 +3468,6 @@ msgstr "Admin z <0>{from}</0> pozastavil účet <1>{targetName}</1>, což znamen
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on mobile device"
 msgstr ""
-
-#: src/pages/account-statuses.jsx
-#~ msgid "- Boosts"
-#~ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Posts are sorted by information density or depth. Shorter posts are \"lighter\" while longer posts are \"heavier\". Posts with photos are \"heavier\" than posts without photos."
@@ -4377,10 +3552,6 @@ msgstr "Některé z vašich příspěvků byly označeny jako citlivé."
 msgid "Comments"
 msgstr "Komentáře"
 
-#: src/pages/filters.tsx
-#~ msgid "Add filter"
-#~ msgstr "Přidat filtr"
-
 #: src/pages/status.tsx
 msgid "Switch to post's PDS"
 msgstr ""
@@ -4412,14 +3583,6 @@ msgstr "Smazat"
 msgid "Unable to pin post"
 msgstr "Příspěvek nelze připnout"
 
-#: src/pages/hashtag.tsx
-#~ msgid "Unfeatured on profile"
-#~ msgstr "Odebráno z profilu"
-
-#: src/components/shortcuts-settings.jsx
-#~ msgid "Add column…"
-#~ msgstr "Přidat sloupec…"
-
 #: src/components/compose.tsx
 msgid "Failed to download GIF"
 msgstr "Nepodařilo se stáhnout GIF"
@@ -4427,10 +3590,6 @@ msgstr "Nepodařilo se stáhnout GIF"
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Load new posts"
 msgstr "Načíst nové příspěvky"
-
-#: src/pages/followed-hashtags.tsx
-#~ msgid "No hashtags followed yet."
-#~ msgstr "Zatím nesledujete žádné hashtagy."
 
 #: src/components/account-info.tsx
 msgid "Post stats unavailable."
@@ -4456,10 +3615,6 @@ msgstr ""
 msgid "beyond 12 hours"
 msgstr "starší než 12 hodin"
 
-#: src/pages/filters.tsx
-#~ msgid "Profiles"
-#~ msgstr "Profily"
-
 #: src/pages/catchup.tsx
 msgid "last 12 hours"
 msgstr "posledních 12 hodin"
@@ -4480,10 +3635,6 @@ msgstr "Nelze ztlumit @{username}"
 #: src/pages/search.tsx
 msgid "Hashtags"
 msgstr "Hashtagy"
-
-#: src/pages/status.tsx
-#~ msgid "You're not logged in. Interactions (reply, boost, etc) are not possible."
-#~ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to remove quote"
@@ -4515,10 +3666,6 @@ msgstr ""
 msgid "Like"
 msgstr "Líbí se mi"
 
-#: src/pages/welcome.tsx
-#~ msgid "A minimalistic opinionated Bluesky web client."
-#~ msgstr ""
-
 #: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
@@ -4532,14 +3679,6 @@ msgstr ""
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
 msgstr ""
 
-#: src/components/account-info.tsx
-#~ msgid "{0} original posts, {1} replies, {2} boosts"
-#~ msgstr "{0} původní příspěvky, {1} odpovědi, {2} zvyšuje"
-
-#: src/pages/account-statuses.tsx
-#~ msgid "Showing boosts"
-#~ msgstr ""
-
 #: src/components/compose.tsx
 msgid "Editing source post"
 msgstr "Editace zdrojového příspěvku"
@@ -4551,10 +3690,6 @@ msgstr "Ankety"
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
 msgstr ""
-
-#: src/pages/settings.tsx
-#~ msgid "Synced to your Bluesky account settings. <0>Open Bluesky settings ({instance}).</0>"
-#~ msgstr ""
 
 #: src/pages/search.tsx
 msgid "Search: {q}"
@@ -4599,10 +3734,6 @@ msgstr ""
 msgid "Edit video description"
 msgstr "Upravit popis videa"
 
-#: src/components/compose.tsx
-#~ msgid "Add content warning"
-#~ msgstr ""
-
 #: src/pages/settings.tsx
 msgid "people I follow"
 msgstr ""
@@ -4631,35 +3762,13 @@ msgstr "Vyčistit"
 msgid "Scan QR code"
 msgstr ""
 
-#: src/pages/login.jsx
-#~ msgid "Continue"
-#~ msgstr "Pokračovat"
-
-#: src/components/related-actions.tsx
-#~ msgid "@{username} is now featured on your profile."
-#~ msgstr ""
-
 #: src/components/related-actions.tsx
 msgid "Mute <0>@{username}</0>…"
 msgstr "Ztišit <0>@{username}</0>…"
 
-#: src/components/related-actions.tsx
-#~ msgid "Unable to unfeature @{username} on your profile."
-#~ msgstr ""
-
-#: src/components/private-note-sheet.tsx
-#~ msgid "Only visible to you"
-#~ msgstr ""
-
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description"
 msgstr "Nepodařilo se vytvořit popis"
-
-#: src/components/nav-menu.tsx
-#: src/pages/followed-hashtags.tsx
-#: src/pages/followed-hashtags.tsx
-#~ msgid "Followed Hashtags"
-#~ msgstr "Sledované hashtagy"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
@@ -4671,17 +3780,9 @@ msgstr "statická URL"
 msgid "Removing Catch-up {0}"
 msgstr ""
 
-#: src/pages/catchup.jsx
-#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies}}} density {{sortOrder, select, asc {least dense} desc {most dense}}}} first{groupBy, select, account {, grouped by authors} other {}}"
-#~ msgstr ""
-
 #: src/components/notification.tsx
 msgid "Lost connections with <0>{name}</0>."
 msgstr "Ztraceno spojení s <0>{name}</0>."
-
-#: src/pages/notifications.tsx
-#~ msgid "Who are limited by server moderators"
-#~ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
@@ -4735,14 +3836,6 @@ msgstr "Sleduji"
 msgid "Unable to delete post"
 msgstr "Příspěvek nelze odstranit"
 
-#: src/pages/login.jsx
-#~ msgid "Failed to log in. Please try again or try another server."
-#~ msgstr ""
-
-#: src/pages/welcome.tsx
-#~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored on this server."
-#~ msgstr ""
-
 #: src/components/edit-history-controls.tsx
 msgid "Exit"
 msgstr ""
@@ -4750,11 +3843,6 @@ msgstr ""
 #: src/pages/catchup.tsx
 msgid "Previously…"
 msgstr "Předchozí…"
-
-#: src/pages/filters.tsx
-#: src/pages/filters.tsx
-#~ msgid "New filter"
-#~ msgstr "Nový filtr"
 
 #: src/components/status-account-menu.tsx
 msgid "Quote removed"
@@ -4764,10 +3852,6 @@ msgstr ""
 #: src/components/status-quick-menu.tsx
 msgid "Quote with link"
 msgstr ""
-
-#: src/pages/status.tsx
-#~ msgid "Switch to post's server ({0})"
-#~ msgstr ""
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
@@ -4788,10 +3872,6 @@ msgid "This timeline is disabled on Bluesky."
 msgstr ""
 
 #: src/pages/catchup.tsx
-#~ msgid "Links shared by followings, sorted by shared counts, boosts and likes."
-#~ msgstr "Odkazy sdílené lidmi, které sledujete, seřazené podle počtu sdílení, boostů a lajků."
-
-#: src/pages/catchup.tsx
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
 msgstr "Catch-up je samostatná časová osa pro sledované uživatele, která nabízí přehledný pohled na příspěvky s jednoduchým rozhraním inspirovaným e-mailem, což umožňuje snadné třídění a filtrování obsahu."
 
@@ -4804,21 +3884,9 @@ msgstr ""
 msgid "Moderation warning"
 msgstr "Upozornění na moderování"
 
-#: src/components/keyboard-shortcuts-help.jsx
-#~ msgid "Focus next column in multi-column mode"
-#~ msgstr "Zaměřit se na další sloupec v režimu více sloupců"
-
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>b</1>"
 msgstr "<0>Shift</0> + <1>b</1>"
-
-#: src/pages/settings.tsx
-msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
-msgstr ""
-
-#: src/components/related-actions.tsx
-#~ msgid "Withdraw…"
-#~ msgstr "Vybrat…"
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -4844,10 +3912,6 @@ msgstr "Příspěvek odepnut z profilu"
 #: src/pages/search.tsx
 msgid "No accounts found."
 msgstr ""
-
-#: src/pages/accounts.jsx
-#~ msgid "Remove <0>@{0}</0>?"
-#~ msgstr ""
 
 #: src/components/recent-searches.tsx
 msgid "Clear all"
@@ -4897,10 +3961,6 @@ msgid "Close"
 msgstr "Zavřít"
 
 #: src/components/compose.tsx
-#~ msgid "Quotes can't be embedded in private mentions."
-#~ msgstr ""
-
-#: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 msgstr "Vypadá to, že již máte složené pole otevřené v nadřazeném okně a aktuálně publikované. Počkejte prosím, než se to udělá a zkuste to znovu později."
 
@@ -4917,10 +3977,6 @@ msgstr ""
 msgid "Show results"
 msgstr "Zobrazit výsledky"
 
-#: src/components/status-reply-menu.tsx
-#~ msgid "Only <0>@{0}</0>"
-#~ msgstr ""
-
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-quote-policy.ts
@@ -4931,10 +3987,6 @@ msgstr "Citace"
 msgid "Groups"
 msgstr "Skupiny"
 
-#: src/components/compose.tsx
-#~ msgid "Poll must have at least 2 options"
-#~ msgstr "Anketa musí mít alespoň dvě možnosti"
-
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
 msgstr "Neplatný formát nastavení"
@@ -4944,15 +3996,6 @@ msgstr "Neplatný formát nastavení"
 msgid "Handle copied"
 msgstr "Uživatelské jméno X zkopírováno"
 
-#. [Name] [Visibility icon] boosted
-#: src/components/filtered-status.tsx
-#~ msgid "<0/> <1/> boosted"
-#~ msgstr "<0/><1/> boostnuto"
-
-#: src/pages/welcome.jsx
-#~ msgid "Log in with Mastodon"
-#~ msgstr "Přihlásit účtem Mastodon"
-
 #: src/pages/status.tsx
 msgid "View post with its replies"
 msgstr ""
@@ -4960,14 +4003,6 @@ msgstr ""
 #: src/components/media-modal.tsx
 msgid "Failed to describe image"
 msgstr "Nepodařilo se popsat obrázek"
-
-#: src/pages/scheduled-posts.tsx
-#~ msgid "Failed to reschedule post"
-#~ msgstr ""
-
-#: src/pages/filters.tsx
-#~ msgid "hidden"
-#~ msgstr "skrytý"
 
 #: src/components/account-info.tsx
 msgid "View profile header"
@@ -5002,14 +4037,6 @@ msgstr ""
 msgid "Menu"
 msgstr "Menu"
 
-#: src/components/translation-block.jsx
-#~ msgid "Auto-translated from {sourceLangText}"
-#~ msgstr "Automaticky přeloženo z {sourceLangText}"
-
-#: src/pages/mentions.tsx
-#~ msgid "Private"
-#~ msgstr "Soukromý"
-
 #: src/pages/settings.tsx
 msgid "Translate to "
 msgstr "Přeložit do "
@@ -5022,10 +4049,6 @@ msgstr "Překlad…"
 msgid "This account has marked itself as automated."
 msgstr ""
 
-#: src/components/compose-poll.tsx
-#~ msgid "Multiple choice"
-#~ msgstr ""
-
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -5036,7 +4059,3 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "Líbí se mi"
-
-#: src/pages/settings.tsx
-msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
-msgstr ""
