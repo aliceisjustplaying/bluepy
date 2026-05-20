@@ -11,7 +11,6 @@
   align-items: center;
   gap: 4px;
   max-width: 100%;
-  border: 1px solid var(--outline-color);
   border-radius: 999px;
   background-color: var(--bg-color);
   color: var(--text-insignificant-color);
@@ -31,11 +30,9 @@
 }
 
 .atproto-label-alert {
-  border-color: color-mix(in srgb, var(--red-color), transparent 45%);
   color: var(--red-color);
 }
 
 .atproto-label-inform {
-  border-color: color-mix(in srgb, var(--link-color), transparent 48%);
   color: var(--link-color);
 }
