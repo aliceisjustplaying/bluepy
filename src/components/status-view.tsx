@@ -174,13 +174,14 @@ function StatusRouter({
   const mediaAttachments = statusMediaAttachments || EMPTY_MEDIA_ATTACHMENTS;
 
   // if (!mediaAttachments?.length) mediaFirst = false;
+  const requestedSize = size;
   const hasMediaAttachments = !!mediaAttachments?.length;
   if (mediaFirst && hasMediaAttachments) size = 's';
 
   const currentAccount = getCurrentAccID();
   const isSelf = currentAccount && currentAccount == accountId;
   const mutedPostVisibility = getMutedPostVisibility(snapStates.settings);
-  const directContext = withinContext || size === 'l';
+  const directContext = withinContext || requestedSize === 'l';
 
   const filterContext = use(FilterContext);
   // The short-circuited `&&` chain narrows to `false | FilterState`; in
