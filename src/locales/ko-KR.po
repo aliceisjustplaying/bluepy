@@ -751,8 +751,8 @@ msgstr ""
 #~ msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "Reposts carousel"
-#~ msgstr ""
+msgid "Reposts carousel"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Shortcuts saved"
@@ -1266,10 +1266,6 @@ msgstr ""
 
 #: src/components/status-helpers.ts
 msgid "Request to quote"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
 msgstr ""
 
 #: src/pages/settings.jsx
@@ -3814,6 +3810,7 @@ msgstr "이전 글쓴이"
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4816,8 +4813,8 @@ msgid "<0>Shift</0> + <1>b</1>"
 msgstr "<0>Shift</0> + <1>b</1>"
 
 #: src/pages/settings.tsx
-#~ msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
-#~ msgstr ""
+msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
+msgstr ""
 
 #: src/components/related-actions.tsx
 #~ msgid "Withdraw…"
@@ -5039,3 +5036,7 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "좋아요"
+
+#: src/pages/settings.tsx
+msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
+msgstr ""

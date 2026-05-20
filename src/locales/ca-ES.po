@@ -751,8 +751,8 @@ msgstr "Veure les cites"
 #~ msgstr "{0 , plural, one {# filtre} other {# filtres}}"
 
 #: src/pages/settings.tsx
-#~ msgid "Reposts carousel"
-#~ msgstr ""
+msgid "Reposts carousel"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Shortcuts saved"
@@ -1267,10 +1267,6 @@ msgstr "Mostra-ho de totes maneres"
 #: src/components/status-helpers.ts
 msgid "Request to quote"
 msgstr "Sol·licitud per a citar"
-
-#: src/pages/settings.tsx
-msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
-msgstr ""
 
 #: src/pages/settings.jsx
 #~ msgid "<0>Built</0> by <1>@cheeaun</1>"
@@ -3818,6 +3814,7 @@ msgstr "Autor anterior"
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4820,8 +4817,8 @@ msgid "<0>Shift</0> + <1>b</1>"
 msgstr "<0>Shift</0> + <1>b</1>"
 
 #: src/pages/settings.tsx
-#~ msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
-#~ msgstr ""
+msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
+msgstr ""
 
 #: src/components/related-actions.tsx
 #~ msgid "Withdraw…"
@@ -5043,3 +5040,7 @@ msgstr ""
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "\"M'agrada\""
+
+#: src/pages/settings.tsx
+msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
+msgstr ""

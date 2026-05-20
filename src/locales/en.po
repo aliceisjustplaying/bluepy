@@ -609,8 +609,8 @@ msgid "View Quotes"
 msgstr "View Quotes"
 
 #: src/pages/settings.tsx
-#~ msgid "Reposts carousel"
-#~ msgstr "Reposts carousel"
+msgid "Reposts carousel"
+msgstr "Reposts carousel"
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Hiding boosts"
@@ -1062,10 +1062,6 @@ msgstr "Show anyway"
 #: src/components/status-helpers.ts
 msgid "Request to quote"
 msgstr "Request to quote"
-
-#: src/pages/settings.tsx
-msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
-msgstr "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
@@ -3228,6 +3224,7 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr "Reposts"
@@ -4058,8 +4055,8 @@ msgid "<0>Shift</0> + <1>b</1>"
 msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
-#~ msgstr "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
+msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
+msgstr "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -4237,3 +4234,7 @@ msgstr "This account has marked itself as automated."
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
+msgstr "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and repost grouping will not work when this is enabled."
