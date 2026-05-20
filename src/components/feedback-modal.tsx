@@ -188,7 +188,7 @@ export default function FeedbackModal({
                 rows={7}
                 value={message}
                 maxLength={MAX_MESSAGE_LENGTH}
-                placeholder={t`Bug, confusing behavior, missing feature, anything.`}
+                placeholder={t`Bugs, confusing behavior, missing features, or anything else.`}
                 onChange={(event) => {
                   setMessage(event.currentTarget.value);
                 }}

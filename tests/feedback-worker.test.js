@@ -1,9 +1,13 @@
 /// <reference types="node" />
 
+import { afterEach, mock, spyOn, test } from 'bun:test';
 import assert from 'node:assert/strict';
-import test from 'node:test';
 
 import worker, { FeedbackRateLimiter } from '../workers/assets.js';
+
+afterEach(() => {
+  mock.restore();
+});
 
 class MemoryDurableObjectStorage {
   constructor() {
@@ -76,206 +80,200 @@ function postFeedback(body, env = createEnv(), headers = {}) {
 
 void test('feedback endpoint sends Resend email with Linear target and diagnostics', async () => {
   const calls = [];
-  const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (input, init) => {
+  spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     calls.push([input, init]);
     return new Response('{}', { status: 200 });
-  };
+  });
 
-  try {
-    const response = await postFeedback({
-      message: 'Timeline failed to load',
-      contact: 'alice@example.com',
-      page: 'https://bluepy.social/following',
-      account: 'alice.test / did:plc:alice',
-      pds: 'bsky.social',
-      build: 'abc123',
-      sentryEventId: 'event-1',
-      viewport: '390x844',
-      userAgent: 'Test Browser',
-    });
+  const response = await postFeedback({
+    message: 'Timeline failed to load',
+    contact: 'alice@example.com',
+    page: 'https://bluepy.social/following',
+    account: 'alice.test / did:plc:alice',
+    pds: 'bsky.social',
+    build: 'abc123',
+    sentryEventId: 'event-1',
+    viewport: '390x844',
+    userAgent: 'Test Browser',
+  });
 
-    assert.equal(response.status, 204);
-    assert.equal(calls.length, 1);
-    const [url, init] = calls[0];
-    assert.equal(url, 'https://api.resend.com/emails');
-    assert.equal(init.headers.Authorization, 'Bearer test-key');
-    const payload = JSON.parse(init.body);
-    assert.deepEqual(payload.to, ['linear-intake@example.com']);
-    assert.equal(payload.reply_to, 'alice@example.com');
-    assert.match(payload.text, /Timeline failed to load/);
-    assert.match(payload.text, /Page: https:\/\/bluepy\.social\/following/);
-    assert.match(payload.text, /Account: alice\.test \/ did:plc:alice/);
-    assert.match(payload.text, /Sentry event: event-1/);
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+  assert.equal(response.status, 204);
+  assert.equal(calls.length, 1);
+  const [url, init] = calls[0];
+  assert.equal(url, 'https://api.resend.com/emails');
+  assert.equal(init.headers.Authorization, 'Bearer test-key');
+  const payload = JSON.parse(init.body);
+  assert.deepEqual(payload.to, ['linear-intake@example.com']);
+  assert.equal(payload.reply_to, 'alice@example.com');
+  assert.match(payload.text, /Timeline failed to load/);
+  assert.match(payload.text, /Page: https:\/\/bluepy\.social\/following/);
+  assert.match(payload.text, /Account: alice\.test \/ did:plc:alice/);
+  assert.match(payload.text, /Sentry event: event-1/);
 });
 
 void test('feedback endpoint rejects invalid and abusive requests before sending', async () => {
   const calls = [];
-  const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (input, init) => {
+  spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     calls.push([input, init]);
     return new Response('{}', { status: 200 });
-  };
+  });
 
-  try {
-    assert.equal((await postFeedback({})).status, 400);
-    assert.equal((await postFeedback('{bad json')).status, 400);
-    assert.equal(
-      (
-        await postFeedback({ message: 'hi' }, createEnv(), {
-          'content-type': 'text/plain',
-        })
-      ).status,
-      415,
-    );
-    assert.equal(
-      (await postFeedback({ message: 'hi', hp: 'filled' })).status,
-      204,
-    );
-    assert.equal(calls.length, 0);
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+  assert.equal((await postFeedback({})).status, 400);
+  assert.equal((await postFeedback('{bad json')).status, 400);
+  assert.equal(
+    (
+      await postFeedback({ message: 'hi' }, createEnv(), {
+        'content-type': 'text/plain',
+      })
+    ).status,
+    415,
+  );
+  assert.equal(
+    (await postFeedback({ message: 'hi', hp: 'filled' })).status,
+    204,
+  );
+  assert.equal(calls.length, 0);
 });
 
 void test('feedback endpoint rejects method, size, and missing config before sending', async () => {
   const calls = [];
-  const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (input, init) => {
+  spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     calls.push([input, init]);
     return new Response('{}', { status: 200 });
-  };
+  });
 
-  try {
-    assert.equal(
-      (
-        await worker.fetch(
-          new Request('https://bluepy.social/api/feedback', {
-            method: 'GET',
-          }),
-          createEnv(),
-        )
-      ).status,
-      405,
-    );
-    assert.equal(
-      (
-        await postFeedback({
-          message: 'x'.repeat(17_000),
-        })
-      ).status,
-      413,
-    );
-    assert.equal(
-      (
-        await postFeedback(
-          { message: 'hello' },
-          createEnv({ RESEND_API_KEY: undefined }),
-        )
-      ).status,
-      503,
-    );
-    assert.equal(calls.length, 0);
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+  assert.equal(
+    (
+      await worker.fetch(
+        new Request('https://bluepy.social/api/feedback', {
+          method: 'GET',
+        }),
+        createEnv(),
+      )
+    ).status,
+    405,
+  );
+  assert.equal(
+    (
+      await postFeedback({
+        message: 'x'.repeat(17_000),
+      })
+    ).status,
+    413,
+  );
+  assert.equal(
+    (
+      await postFeedback(
+        { message: 'hello' },
+        createEnv({ RESEND_API_KEY: undefined }),
+      )
+    ).status,
+    503,
+  );
+  assert.equal(calls.length, 0);
 });
 
 void test('feedback endpoint refunds rate limit when Resend fails', async () => {
   let calls = 0;
-  const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () => {
+  spyOn(globalThis, 'fetch').mockImplementation(async () => {
     calls += 1;
     return new Response('{}', { status: calls === 1 ? 500 : 200 });
-  };
+  });
 
-  try {
-    const env = createEnv();
-    const headers = { 'CF-Connecting-IP': '203.0.113.10' };
-    const responses = [
-      await postFeedback({ message: 'first' }, env, headers),
-      await postFeedback({ message: 'second' }, env, headers),
-      await postFeedback({ message: 'third' }, env, headers),
-      await postFeedback({ message: 'fourth' }, env, headers),
-    ];
+  const env = createEnv();
+  const headers = { 'CF-Connecting-IP': '203.0.113.10' };
+  const responses = [
+    await postFeedback({ message: 'first' }, env, headers),
+    await postFeedback({ message: 'second' }, env, headers),
+    await postFeedback({ message: 'third' }, env, headers),
+    await postFeedback({ message: 'fourth' }, env, headers),
+  ];
 
-    assert.deepEqual(
-      responses.map((response) => response.status),
-      [502, 204, 204, 429],
-    );
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+  assert.deepEqual(
+    responses.map((response) => response.status),
+    [502, 204, 204, 429],
+  );
+});
+
+void test('feedback endpoint refunds rate limit when Resend throws', async () => {
+  let calls = 0;
+  spyOn(globalThis, 'fetch').mockImplementation(async () => {
+    calls += 1;
+    if (calls === 1) throw new Error('network failed');
+    return new Response('{}', { status: 200 });
+  });
+
+  const env = createEnv();
+  const headers = { 'CF-Connecting-IP': '203.0.113.10' };
+  const responses = [
+    await postFeedback({ message: 'first' }, env, headers),
+    await postFeedback({ message: 'second' }, env, headers),
+    await postFeedback({ message: 'third' }, env, headers),
+    await postFeedback({ message: 'fourth' }, env, headers),
+  ];
+
+  assert.deepEqual(
+    responses.map((response) => response.status),
+    [502, 204, 204, 429],
+  );
 });
 
 void test('feedback endpoint rate limits repeated submissions', async () => {
-  const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () => new Response('{}', { status: 200 });
+  spyOn(globalThis, 'fetch').mockImplementation(
+    async () => new Response('{}', { status: 200 }),
+  );
 
-  try {
-    const env = createEnv();
-    const headers = { 'CF-Connecting-IP': '203.0.113.10' };
-    const responses = [
-      await postFeedback({ message: 'one' }, env, headers),
-      await postFeedback({ message: 'two' }, env, headers),
-      await postFeedback({ message: 'three' }, env, headers),
-    ];
+  const env = createEnv();
+  const headers = { 'CF-Connecting-IP': '203.0.113.10' };
+  const responses = [
+    await postFeedback({ message: 'one' }, env, headers),
+    await postFeedback({ message: 'two' }, env, headers),
+    await postFeedback({ message: 'three' }, env, headers),
+  ];
 
-    assert.deepEqual(
-      responses.map((response) => response.status),
-      [204, 204, 429],
-    );
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+  assert.deepEqual(
+    responses.map((response) => response.status),
+    [204, 204, 429],
+  );
 });
 
 void test('feedback endpoint rate limit contact bucket is scoped to client address', async () => {
-  const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () => new Response('{}', { status: 200 });
+  spyOn(globalThis, 'fetch').mockImplementation(
+    async () => new Response('{}', { status: 200 }),
+  );
 
-  try {
-    const env = createEnv();
-    const body = { message: 'same bug', contact: 'alice@example.com' };
-    const responses = [
-      await postFeedback(body, env, { 'CF-Connecting-IP': '203.0.113.10' }),
-      await postFeedback(body, env, { 'CF-Connecting-IP': '203.0.113.10' }),
-      await postFeedback(body, env, { 'CF-Connecting-IP': '203.0.113.11' }),
-    ];
+  const env = createEnv();
+  const body = { message: 'same bug', contact: 'alice@example.com' };
+  const responses = [
+    await postFeedback(body, env, { 'CF-Connecting-IP': '203.0.113.10' }),
+    await postFeedback(body, env, { 'CF-Connecting-IP': '203.0.113.10' }),
+    await postFeedback(body, env, { 'CF-Connecting-IP': '203.0.113.11' }),
+  ];
 
-    assert.deepEqual(
-      responses.map((response) => response.status),
-      [204, 204, 204],
-    );
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+  assert.deepEqual(
+    responses.map((response) => response.status),
+    [204, 204, 204],
+  );
 });
 
 void test('feedback endpoint returns unavailable when rate limiter fails', async () => {
-  const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () => new Response('{}', { status: 200 });
+  spyOn(globalThis, 'fetch').mockImplementation(
+    async () => new Response('{}', { status: 200 }),
+  );
 
-  try {
-    const response = await postFeedback(
-      { message: 'hello' },
-      createEnv({
-        FEEDBACK_RATE_LIMITER: {
-          idFromName: (name) => name,
-          get: () => ({
-            fetch: async () => new Response('oops', { status: 500 }),
-          }),
-        },
-      }),
-    );
+  const response = await postFeedback(
+    { message: 'hello' },
+    createEnv({
+      FEEDBACK_RATE_LIMITER: {
+        idFromName: (name) => name,
+        get: () => ({
+          fetch: async () => new Response('oops', { status: 500 }),
+        }),
+      },
+    }),
+  );
 
-    assert.equal(response.status, 503);
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+  assert.equal(response.status, 503);
 });
 
 void test('feedback rate limiter clears storage on alarm', async () => {

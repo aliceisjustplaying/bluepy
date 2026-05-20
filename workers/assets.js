@@ -264,14 +264,21 @@ async function handleFeedback(request, env) {
   };
   if (replyTo) resendBody.reply_to = replyTo;
 
-  const resendResponse = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(resendBody),
-  });
+  let resendResponse;
+  try {
+    resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(resendBody),
+    });
+  } catch (err) {
+    await refundFeedbackRateLimit(request, env, message, contact);
+    console.error('Resend send threw', err);
+    return new Response('Could not send feedback.', { status: 502 });
+  }
 
   if (!resendResponse.ok) {
     await refundFeedbackRateLimit(request, env, message, contact);
