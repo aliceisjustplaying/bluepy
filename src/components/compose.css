@@ -1208,6 +1208,13 @@
   font-weight: 600;
 }
 
+.reply-pill-btn.active:hover:not(:disabled),
+.reply-pill-btn.active:focus-visible {
+  border-color: var(--accent-color, var(--blue-color, #0085ff));
+  background-color: var(--accent-faded-color, rgba(0, 133, 255, 0.08));
+  color: var(--accent-color, var(--blue-color, #0085ff));
+}
+
 /* Compact select lists dropdown below */
 .reply-list-dropdown-container-compact {
   margin-top: 2px;
