@@ -474,7 +474,7 @@
   tab-size: 2;
   text-wrap: pretty;
 }
-.announcements .announcement-reactions:not(:hidden) {
+.announcements .announcement-reactions:not([hidden]) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;

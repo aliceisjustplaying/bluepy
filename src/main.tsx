@@ -1,14 +1,12 @@
 import './index.css';
 import './cloak-mode.css';
 
-import './instrument';
-
 import './polyfills';
+import './instrument';
 
 import { i18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
 import * as Sentry from '@sentry/react';
-import type { ComponentType, ReactElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 // Polyfill needed for Firefox < 122
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1423593
@@ -31,20 +29,11 @@ import {
 } from './utils/router';
 import states from './utils/states';
 
-function reactComponent<P>(component: unknown): ComponentType<P> {
-  return component as ComponentType<P>;
-}
-
 const bluepyReactRoot = Symbol.for('bluepy.reactRoot');
 
 type RootContainer = HTMLElement & {
   [bluepyReactRoot]?: Root;
 };
-
-const SentryErrorBoundary = reactComponent<{
-  fallback?: ReactElement;
-  children?: unknown;
-}>(Sentry.ErrorBoundary);
 
 interface ShareData {
   title?: string;
@@ -109,9 +98,9 @@ if (!redirectLegacyOrigin()) {
         <I18nProvider i18n={i18n}>
           <BrowserRouter>
             <IconSpriteProvider>
-              <SentryErrorBoundary fallback={<ErrorFallback />}>
+              <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
                 <App />
-              </SentryErrorBoundary>
+              </Sentry.ErrorBoundary>
             </IconSpriteProvider>
           </BrowserRouter>
         </I18nProvider>,

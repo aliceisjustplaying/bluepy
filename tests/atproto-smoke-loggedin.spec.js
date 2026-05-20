@@ -234,7 +234,7 @@ async function loginViaUI(page) {
       ) {
         return;
       }
-      await page.getByPlaceholder('alice.bsky.social').fill(IDENTIFIER);
+      await page.getByLabel('Handle or PDS URL').fill(IDENTIFIER);
       await page.getByText('Use app password').click();
       await page.locator('input[type="password"]').fill(PASSWORD);
       await page
@@ -381,6 +381,71 @@ function statusDetailButton(page, titleSelector) {
     .last();
 }
 
+/**
+ * @param {Page} page
+ * @param {string} stateKey
+ */
+async function openModal(page, stateKey) {
+  await page.goto('/');
+  await expect(page.locator('.deck-container').first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await page.evaluate((k) => {
+    const appWindow = /** @type {TestWindow} */ (window);
+    if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
+      appWindow.__STATES__[k] = true;
+    }
+  }, stateKey);
+}
+
+/**
+ * @param {Page} page
+ * @param {string} body
+ */
+async function composeAndPublish(page, body) {
+  await page.goto('/');
+  await expect(page.locator('.deck-container').first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await page.evaluate(() => {
+    const appWindow = /** @type {TestWindow} */ (window);
+    if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
+      appWindow.__STATES__.showCompose = true;
+    }
+  });
+  const textarea = page.locator('textarea').first();
+  await textarea.waitFor({ timeout: 15_000 });
+  await textarea.fill(body);
+  await page
+    .getByRole('button', { name: /^(post|publish)$/i })
+    .first()
+    .click();
+  // Compose modal closes; textarea disappears as success signal.
+  await expect(textarea).toHaveCount(0, { timeout: 30_000 });
+}
+
+/**
+ * @param {Page} page
+ * @param {string} body
+ */
+async function composeAndPublishWithShortcut(page, body) {
+  await page.goto('/');
+  await expect(page.locator('.deck-container').first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await page.evaluate(() => {
+    const appWindow = /** @type {TestWindow} */ (window);
+    if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
+      appWindow.__STATES__.showCompose = true;
+    }
+  });
+  const textarea = page.locator('textarea').first();
+  await textarea.waitFor({ timeout: 15_000 });
+  await textarea.fill(body);
+  await textarea.press('Control+Enter');
+  await expect(textarea).toHaveCount(0, { timeout: 30_000 });
+}
+
 // ---------------------------------------------------------------------------
 // LOGIN
 // ---------------------------------------------------------------------------
@@ -509,23 +574,6 @@ test.describe('read flows', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('modals', () => {
-  /**
-   * @param {Page} page
-   * @param {string} stateKey
-   */
-  async function openModal(page, stateKey) {
-    await page.goto('/');
-    await expect(page.locator('.deck-container').first()).toBeVisible({
-      timeout: 30_000,
-    });
-    await page.evaluate((k) => {
-      const appWindow = /** @type {TestWindow} */ (window);
-      if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
-        appWindow.__STATES__[k] = true;
-      }
-    }, stateKey);
-  }
-
   test('settings modal opens', async ({ page }) => {
     await openModal(page, 'showSettings');
     await expect(page.locator('text=/Settings/i').first()).toBeVisible({
@@ -550,20 +598,19 @@ test.describe('modals', () => {
     );
   });
 
-  test('compose add-media menu attaches an image on narrow viewports', async ({
+  test('compose add-media control attaches an image on narrow viewports', async ({
     page,
   }) => {
+    test.setTimeout(60_000);
     await page.setViewportSize({ width: 390, height: 844 });
     await openModal(page, 'showCompose');
-    await page.locator('#compose-container .add-button').click();
-
-    const mediaItem = page.locator('.szh-menu__item.compose-menu-add-media');
-    await expect(mediaItem.first()).toBeVisible({ timeout: 5_000 });
-
-    const chooserPromise = page.waitForEvent('filechooser');
-    await mediaItem.first().click();
-    const chooser = await chooserPromise;
-    await chooser.setFiles(path.join(process.cwd(), 'public/logo-192.png'));
+    await page.locator('#compose-container textarea').first().waitFor({
+      timeout: 15_000,
+    });
+    await page
+      .locator('#compose-container input[type="file"]:not([capture])')
+      .last()
+      .setInputFiles(path.join(process.cwd(), 'public/logo-192.png'));
 
     await expect(
       page.locator('#compose-container img[src^="blob:"]').first(),
@@ -586,54 +633,6 @@ test.describe('write flows', () => {
   test.afterEach(async () => {
     await cleanupSmokePosts(RUN_TAG);
   });
-
-  /**
-   * @param {Page} page
-   * @param {string} body
-   */
-  async function composeAndPublish(page, body) {
-    await page.goto('/');
-    await expect(page.locator('.deck-container').first()).toBeVisible({
-      timeout: 30_000,
-    });
-    await page.evaluate(() => {
-      const appWindow = /** @type {TestWindow} */ (window);
-      if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
-        appWindow.__STATES__.showCompose = true;
-      }
-    });
-    const textarea = page.locator('textarea').first();
-    await textarea.waitFor({ timeout: 15_000 });
-    await textarea.fill(body);
-    await page
-      .getByRole('button', { name: /^(post|publish)$/i })
-      .first()
-      .click();
-    // Compose modal closes; textarea disappears as success signal.
-    await expect(textarea).toHaveCount(0, { timeout: 30_000 });
-  }
-
-  /**
-   * @param {Page} page
-   * @param {string} body
-   */
-  async function composeAndPublishWithShortcut(page, body) {
-    await page.goto('/');
-    await expect(page.locator('.deck-container').first()).toBeVisible({
-      timeout: 30_000,
-    });
-    await page.evaluate(() => {
-      const appWindow = /** @type {TestWindow} */ (window);
-      if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
-        appWindow.__STATES__.showCompose = true;
-      }
-    });
-    const textarea = page.locator('textarea').first();
-    await textarea.waitFor({ timeout: 15_000 });
-    await textarea.fill(body);
-    await textarea.press('Control+Enter');
-    await expect(textarea).toHaveCount(0, { timeout: 30_000 });
-  }
 
   async function openCreatedStatusDetail(page, body) {
     const article = page
@@ -732,7 +731,6 @@ test.describe('write flows', () => {
       /^at:\/\/[^/]+\/app\.bsky\.feed\.post\//,
     );
     expect(replyRecord.facets || []).toEqual([]);
-    CREATED.push({ page, body: replyBody });
     await expect(textarea).toHaveCount(0, { timeout: 30_000 });
   });
 

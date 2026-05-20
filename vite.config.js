@@ -24,6 +24,7 @@ const { SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT } = loadEnv(
   process.cwd(),
   ['SENTRY_'],
 );
+const { ROLLBAR_ENABLED } = loadEnv('production', process.cwd(), ['ROLLBAR_']);
 const {
   PHANPY_WEBSITE: WEBSITE,
   PHANPY_CLIENT_NAME: CLIENT_NAME,
@@ -35,6 +36,9 @@ const {
 const hasSentrySourcemapUpload =
   !!SENTRY_AUTH_TOKEN && !!SENTRY_ORG && !!SENTRY_PROJECT;
 const shouldAnalyzeBundle = process.env.ANALYZE === '1';
+const shouldExtractMessages = process.env.LINGUI_EXTRACT === '1';
+// Keep legacy Rollbar wiring available, but disabled until explicitly re-enabled.
+const shouldInjectRollbar = ROLLBAR_ENABLED === '1' && !!ERROR_LOGGING;
 const productionOrigin = (WEBSITE || 'https://bluepy.social').replace(
   /\/$/,
   '',
@@ -96,8 +100,14 @@ try {
   fakeCommitHash = true;
 }
 
-let rollbarCode = fs.readFileSync(resolve(__dirname, './rollbar.js'), 'utf-8');
-rollbarCode = rollbarCode.replace('__PHANPY_COMMIT_HASH__', `'${commitHash}'`);
+let rollbarCode = '';
+if (shouldInjectRollbar) {
+  rollbarCode = fs.readFileSync(resolve(__dirname, './rollbar.js'), 'utf-8');
+  rollbarCode = rollbarCode.replace(
+    '__PHANPY_COMMIT_HASH__',
+    `'${commitHash}'`,
+  );
+}
 
 // https://github.com/vitejs/vite/issues/9597#issuecomment-1209305107
 const excludedPostCSSWarnings = [
@@ -116,22 +126,20 @@ logger.warn = (msg, options) => {
   originalWarn(msg, options);
 };
 
+/** @param {string} filePath */
+function stripSourceMappingURL(filePath) {
+  const source = fs.readFileSync(filePath, 'utf-8');
+  const next = source.replace(/\n?\/\/# sourceMappingURL=.+\.map\s*$/u, '');
+  if (next !== source) {
+    fs.writeFileSync(filePath, next);
+  }
+}
+
 function removeUploadedSourcemaps() {
   return {
     name: 'remove-uploaded-sourcemaps',
     closeBundle() {
       const outputDir = resolve(__dirname, 'dist');
-      /** @param {string} filePath */
-      const stripSourceMappingURL = (filePath) => {
-        const source = fs.readFileSync(filePath, 'utf-8');
-        const next = source.replace(
-          /\n?\/\/# sourceMappingURL=.+\.map\s*$/u,
-          '',
-        );
-        if (next !== source) {
-          fs.writeFileSync(filePath, next);
-        }
-      };
       /** @param {string} dir */
       const visit = (dir) => {
         for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -182,6 +190,13 @@ export default defineConfig({
         // Example: '**/dist/**',
         // Example: '**/scripts/**',
       ],
+    },
+  },
+  resolve: {
+    alias: {
+      // Bluepy only needs the core HLS playback path; the light build omits
+      // optional subtitle/EME/alternate-audio controllers.
+      'hls.js': 'hls.js/light',
     },
   },
   css: {
@@ -270,21 +285,22 @@ export default defineConfig({
     }),
     react(),
     lingui(),
-    run({
-      silent: false,
-      input: [
-        {
-          name: 'messages:extract:clean',
-          run: ['bun', 'run', 'messages:extract:clean'],
-          pattern: 'src/**/*.{js,jsx,ts,tsx}',
-        },
-        // {
-        //   name: 'update-catalogs',
-        //   run: ['node', 'scripts/catalogs.js'],
-        //   pattern: 'src/locales/*.po',
-        // },
-      ],
-    }),
+    shouldExtractMessages &&
+      run({
+        silent: false,
+        input: [
+          {
+            name: 'messages:extract:clean',
+            run: ['bun', 'run', 'messages:extract:clean'],
+            pattern: 'src/**/*.{js,jsx,ts,tsx}',
+          },
+          // {
+          //   name: 'update-catalogs',
+          //   run: ['node', 'scripts/catalogs.js'],
+          //   pattern: 'src/locales/*.po',
+          // },
+        ],
+      }),
     removeConsole({
       includes: ['log', 'debug', 'info', 'warn', 'error'],
     }),
@@ -321,7 +337,7 @@ export default defineConfig({
             ]
           : []),
       ],
-      headScripts: ERROR_LOGGING ? [rollbarCode] : [],
+      headScripts: shouldInjectRollbar ? [rollbarCode] : [],
       links: WEBSITE
         ? [
             {
@@ -440,8 +456,8 @@ export default defineConfig({
         name: CLIENT_NAME,
         short_name: CLIENT_NAME,
         description: 'Minimalistic opinionated Bluesky web client',
-        // https://github.com/cheeaun/phanpy/issues/231
-        theme_color: undefined,
+        // Match the splash background and satisfy installable PWA checks.
+        theme_color: '#b7cdf9',
         background_color: '#b7cdf9', // background for splash
         icons: [
           {
@@ -536,33 +552,60 @@ export default defineConfig({
     sourcemap: hasSentrySourcemapUpload || shouldAnalyzeBundle,
     cssCodeSplit: false,
     rolldownOptions: {
-      treeshake: false,
+      // Rolldown's code-splitting groups rely on tree-shaking to avoid
+      // broken CommonJS helper cycles in the production browser build.
+      treeshake: true,
       external: ['@xmldom/xmldom'], // exifreader's optional dependency, not needed
       input: {
         main: resolve(__dirname, 'index.html'),
         compose: resolve(__dirname, 'compose/index.html'),
       },
       output: {
-        // NOTE: Comment this for now. This messes up async imports.
-        // Without SplitVendorChunkPlugin, pushing everything to vendor is not "smart" enough
-        // manualChunks: (id, { getModuleInfo }) => {
-        //   // if (id.includes('@formatjs/intl-segmenter/polyfill')) return 'intl-segmenter-polyfill';
-        //   if (/tiny.*light/.test(id)) return 'tinyld-light';
-
-        //   // Implement logic similar to splitVendorChunkPlugin
-        //   if (id.includes('node_modules')) {
-        //     // Check if this module is dynamically imported
-        //     const moduleInfo = getModuleInfo(id);
-        //     if (moduleInfo) {
-        //       // If it's imported dynamically, don't put in vendor
-        //       const isDynamicOnly =
-        //         moduleInfo.importers.length === 0 &&
-        //         moduleInfo.dynamicImporters.length > 0;
-        //       if (isDynamicOnly) return null;
-        //     }
-        //     return 'vendor';
-        //   }
-        // },
+        codeSplitting: {
+          includeDependenciesRecursively: false,
+          groups: [
+            {
+              name: 'react',
+              test: /node_modules[\\/](?:react|scheduler)[\\/]/,
+              priority: 50,
+            },
+            {
+              name: 'atproto-lexicons',
+              test: /node_modules[\\/]@atproto[\\/]api[\\/]dist[\\/]client[\\/]lexicons/,
+              priority: 40,
+            },
+            {
+              name: 'atproto-client',
+              test: /node_modules[\\/]@atproto[\\/]api[\\/]dist[\\/]client[\\/]index/,
+              priority: 35,
+            },
+            {
+              name: 'zod',
+              test: /node_modules[\\/]zod[\\/]/,
+              priority: 30,
+            },
+            {
+              name: 'react-dom',
+              test: /node_modules[\\/]react-dom[\\/]/,
+              priority: 25,
+            },
+            {
+              name: 'atproto',
+              test: /node_modules[\\/](?:@atproto|multiformats)[\\/]/,
+              priority: 20,
+            },
+            {
+              name: 'router',
+              test: /node_modules[\\/]react-router[\\/]/,
+              priority: 10,
+            },
+            {
+              name: 'sentry',
+              test: /node_modules[\\/]@sentry[\\/]/,
+              priority: 10,
+            },
+          ],
+        },
         chunkFileNames: (chunkInfo) => {
           const { facadeModuleId } = chunkInfo;
           if (facadeModuleId && facadeModuleId.includes('icon')) {
