@@ -1,57 +1,57 @@
-import './app.css';
+import "./app.css";
 
-import 'swiped-events';
+import "swiped-events";
 
-import { useLingui } from '@lingui/react';
-import debounce from 'just-debounce-it';
-import type { ReactElement } from 'react';
-import { lazy, memo, Suspense } from 'react';
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import { useLingui } from "@lingui/react";
+import debounce from "just-debounce-it";
+import type { ReactElement } from "react";
+import { lazy, memo, Suspense } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import {
   matchPath,
   Navigate,
   Route,
   Routes,
   useLocation,
-} from 'react-router-dom';
-import { subscribe } from 'valtio';
-import { unstable_enableOp } from 'valtio/vanilla';
+} from "react-router-dom";
+import { subscribe } from "valtio";
+import { unstable_enableOp } from "valtio/vanilla";
 
 // https://github.com/pmndrs/valtio/releases/tag/v2.3.0
 // Necessary for subscribe() to work properly
 unstable_enableOp(true);
 
-import './utils/toast-alert';
+import "./utils/toast-alert";
 
-import BackgroundService from './components/background-service';
-import ComposeButton from './components/compose-button';
-import { ICONS } from './components/ICONS';
-import KeyboardShortcutsHelp from './components/keyboard-shortcuts-help';
-import Loader from './components/loader';
-import Modals from './components/modals';
-import NavigationCommand from './components/navigation-command';
-import NotificationService from './components/notification-service';
-import SearchCommand from './components/search-command';
-import Shortcuts from './components/shortcuts';
-import AccountStatuses from './pages/account-statuses';
-import AtprotoRoute from './pages/atproto-route';
-import Bookmarks from './pages/bookmarks';
-import Catchup from './pages/catchup';
-import Favourites from './pages/favourites';
-import Following from './pages/following';
-import Following2 from './pages/following2';
-import Hashtag from './pages/hashtag';
-import Home from './pages/home';
-import HttpRoute from './pages/http-route';
-import List from './pages/list';
-import Lists from './pages/lists';
-import Login from './pages/login';
-import Mentions from './pages/mentions';
-import Notifications from './pages/notifications';
-import Search from './pages/search';
-import StatusRoute from './pages/status-route';
-import Trending from './pages/trending';
-import Welcome from './pages/welcome';
+import BackgroundService from "./components/background-service";
+import ComposeButton from "./components/compose-button";
+import { ICONS } from "./components/ICONS";
+import KeyboardShortcutsHelp from "./components/keyboard-shortcuts-help";
+import Loader from "./components/loader";
+import Modals from "./components/modals";
+import NavigationCommand from "./components/navigation-command";
+import NotificationService from "./components/notification-service";
+import SearchCommand from "./components/search-command";
+import Shortcuts from "./components/shortcuts";
+import AccountStatuses from "./pages/account-statuses";
+import AtprotoRoute from "./pages/atproto-route";
+import Bookmarks from "./pages/bookmarks";
+import Catchup from "./pages/catchup";
+import Favourites from "./pages/favourites";
+import Following from "./pages/following";
+import Following2 from "./pages/following2";
+import Hashtag from "./pages/hashtag";
+import Home from "./pages/home";
+import HttpRoute from "./pages/http-route";
+import List from "./pages/list";
+import Lists from "./pages/lists";
+import Login from "./pages/login";
+import Mentions from "./pages/mentions";
+import Notifications from "./pages/notifications";
+import Search from "./pages/search";
+import StatusRoute from "./pages/status-route";
+import Trending from "./pages/trending";
+import Welcome from "./pages/welcome";
 import {
   api,
   hasInstance,
@@ -61,21 +61,21 @@ import {
   initClient,
   initInstance,
   initPreferences,
-} from './utils/api';
+} from "./utils/api";
 import {
   createAtprotoOAuthAccessToken,
   initAtprotoOAuthClient,
-} from './utils/atproto-oauth';
-import { getAccessToken } from './utils/auth';
+} from "./utils/atproto-oauth";
+import { getAccessToken } from "./utils/auth";
 import {
   AUTH_CHANGED_EVENT,
   AuthProvider,
   useAuth,
-} from './utils/auth-context';
-import focusDeck from './utils/focus-deck';
-import { navigatePath } from './utils/router';
-import states, { hideAllModals, initStates, statusKey } from './utils/states';
-import store from './utils/store';
+} from "./utils/auth-context";
+import focusDeck from "./utils/focus-deck";
+import { navigatePath } from "./utils/router";
+import states, { hideAllModals, initStates, statusKey } from "./utils/states";
+import store from "./utils/store";
 import {
   getAccounts,
   getAccount,
@@ -84,19 +84,19 @@ import {
   getVapidKey,
   removeAccount,
   setCurrentAccountID,
-} from './utils/store-utils';
+} from "./utils/store-utils";
 
 // Lazy load Sandbox component only in development
 const Sandbox =
   import.meta.env.DEV || import.meta.env.PHANPY_DEV
-    ? lazy(() => import('./pages/sandbox'))
+    ? lazy(() => import("./pages/sandbox"))
     : () => null;
 
 // Lazy load MockHome component only in development (not PHANPY_DEV)
-const MockHome = lazy(() => import('./pages/mock-home'));
+const MockHome = lazy(() => import("./pages/mock-home"));
 
 // Lazy load YearInPosts component
-const YearInPosts = lazy(() => import('./pages/year-in-posts'));
+const YearInPosts = lazy(() => import("./pages/year-in-posts"));
 
 // QR Scan Test component for development
 function QrScanTest() {
@@ -104,26 +104,13 @@ function QrScanTest() {
     states.showQrScannerModal = {
       onClose: ({ text }: { text?: string } = {}) => {
         hideAllModals();
-        navigatePath(text ? `/${text}` : '/');
+        navigatePath(text ? `/${text}` : "/");
       },
     };
   }, []);
 
   return null;
 }
-
-interface AppWindow extends Window {
-  __STATES__?: typeof states;
-  __STATES_STATS__?: () => void;
-  __IDLE__?: boolean;
-  __IGNORE_GET_ACCOUNT_ERROR__?: boolean;
-  __BENCH_RESULTS?: Map<string, number>;
-  __BENCHMARK: {
-    start: (name: string) => void;
-    end: (name: string) => void;
-  };
-}
-const appWindow = window as AppWindow;
 
 interface NotificationWithStatus {
   status?: {
@@ -132,25 +119,58 @@ interface NotificationWithStatus {
 }
 
 type IconModuleLoader = () => Promise<unknown>;
+interface CredentialApplication {
+  client_id?: string;
+  client_secret?: string;
+  vapid_key?: string;
+}
+
+interface AccessTokenResponse {
+  access_token?: string;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === 'object';
+  return !!value && typeof value === "object";
+}
+
+function getOptionalString(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+function getOptionalBoolean(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function toCredentialApplication(value: unknown): CredentialApplication {
+  if (!isRecord(value)) return {};
+  return {
+    client_id: getOptionalString(value.client_id),
+    client_secret: getOptionalString(value.client_secret),
+    vapid_key: getOptionalString(value.vapid_key),
+  };
+}
+
+function toAccessTokenResponse(value: unknown): AccessTokenResponse {
+  if (!isRecord(value)) return {};
+  return {
+    access_token: getOptionalString(value.access_token),
+  };
 }
 
 function getNotificationStatus(
   notification: unknown,
-): NotificationWithStatus['status'] {
+): NotificationWithStatus["status"] {
   if (!isRecord(notification)) return undefined;
   const { status } = notification;
   if (!isRecord(status)) return undefined;
   const { id } = status;
   return {
-    id: typeof id === 'string' ? id : undefined,
+    id: typeof id === "string" ? id : undefined,
   };
 }
 
 function isIconModuleLoader(value: unknown): value is IconModuleLoader {
-  return typeof value === 'function';
+  return typeof value === "function";
 }
 
 function preloadIconEntry(entry: unknown) {
@@ -171,27 +191,33 @@ function getStoredVapidKey(instanceURL: string | null | undefined) {
   return getVapidKey(instanceURL ? { uri: instanceURL } : undefined);
 }
 
-appWindow.__STATES__ = states;
-appWindow.__STATES_STATS__ = () => {
+function setIdle() {
+  window.__IDLE__ = true;
+}
+
+Object.assign(window, { __STATES__: states });
+window.__STATES_STATS__ = () => {
   const keys = [
-    'statuses',
-    'accounts',
-    'spoilers',
-    'unfurledLinks',
-    'statusQuotes',
+    "statuses",
+    "accounts",
+    "spoilers",
+    "unfurledLinks",
+    "statusQuotes",
   ];
   const counts: Record<string, number> = {};
   keys.forEach((key) => {
-    counts[key] = Object.keys(states[key] as Record<string, unknown>).length;
+    const value = states[key as keyof typeof states];
+    counts[key] = isRecord(value) ? Object.keys(value).length : 0;
   });
-  console.warn('STATE stats', counts);
+  console.warn("STATE stats", counts);
 
   const { statuses } = states;
   const mountedKeys = new Set<string>();
   document
-    .querySelectorAll('[data-state-post-id], [data-state-post-ids]')
+    .querySelectorAll("[data-state-post-id], [data-state-post-ids]")
     .forEach(($post) => {
-      const el = $post as HTMLElement;
+      if (!($post instanceof HTMLElement)) return;
+      const el = $post;
       const id = el.dataset.statePostId?.trim?.();
       const ids = el.dataset.statePostIds?.trim?.();
       if (id) mountedKeys.add(id);
@@ -203,7 +229,7 @@ appWindow.__STATES_STATS__ = () => {
   const unmountedPosts = Object.keys(statuses).filter(
     (key) => !mountedKeys.has(key),
   );
-  console.warn('Unmounted posts', unmountedPosts.length, unmountedPosts);
+  console.warn("Unmounted posts", unmountedPosts.length, unmountedPosts);
 };
 
 // Experimental "garbage collection" for states
@@ -211,15 +237,16 @@ appWindow.__STATES_STATS__ = () => {
 // Only posts for now
 setInterval(
   () => {
-    if (!appWindow.__IDLE__) return;
+    if (!window.__IDLE__) return;
     const { statuses, unfurledLinks, notifications } = states;
     let keysCount = 0;
     const { instance } = api();
     const mountedKeys = new Set<string>();
     document
-      .querySelectorAll('[data-state-post-id], [data-state-post-ids]')
+      .querySelectorAll("[data-state-post-id], [data-state-post-ids]")
       .forEach(($post) => {
-        const el = $post as HTMLElement;
+        if (!($post instanceof HTMLElement)) return;
+        const el = $post;
         const id = el.dataset.statePostId;
         const ids = el.dataset.statePostIds;
         if (id) mountedKeys.add(id);
@@ -229,7 +256,7 @@ setInterval(
           });
       });
     for (const key in statuses) {
-      if (!appWindow.__IDLE__) break;
+      if (!window.__IDLE__) break;
       try {
         const postInNotifications = notifications.some(
           (notification) =>
@@ -240,11 +267,12 @@ setInterval(
           delete states.statuses[key];
           delete states.statusQuotes[key];
           for (const link in unfurledLinks) {
-            const unfurled = unfurledLinks[link] as {
-              id?: string;
-              instance?: string;
-            };
-            const sKey = statusKey(unfurled.id, unfurled.instance);
+            const unfurled = unfurledLinks[link];
+            if (!isRecord(unfurled)) continue;
+            const sKey = statusKey(
+              getOptionalString(unfurled.id),
+              getOptionalString(unfurled.instance),
+            );
             if (sKey === key) {
               delete states.unfurledLinks[link];
               break;
@@ -273,24 +301,21 @@ setTimeout(() => {
 }, 5000);
 
 (() => {
-  appWindow.__IDLE__ = true;
+  window.__IDLE__ = true;
   const nonIdleEvents = [
-    'mousemove',
-    'mousedown',
-    'resize',
-    'keydown',
-    'touchstart',
-    'pointerdown',
-    'pointermove',
-    'wheel',
+    "mousemove",
+    "mousedown",
+    "resize",
+    "keydown",
+    "touchstart",
+    "pointerdown",
+    "pointermove",
+    "wheel",
   ];
-  const setIdle = () => {
-    appWindow.__IDLE__ = true;
-  };
   const IDLE_TIME = 3_000; // 3 seconds
   const debouncedSetIdle = debounce(setIdle, IDLE_TIME);
   const onNonIdle = () => {
-    appWindow.__IDLE__ = false;
+    window.__IDLE__ = false;
     debouncedSetIdle();
   };
   nonIdleEvents.forEach((event) => {
@@ -299,12 +324,12 @@ setTimeout(() => {
       capture: true,
     });
   });
-  window.addEventListener('blur', setIdle, {
+  window.addEventListener("blur", setIdle, {
     passive: true,
   });
   // When cursor leaves the window, set idle
   document.documentElement.addEventListener(
-    'mouseleave',
+    "mouseleave",
     (e) => {
       if (
         !e.relatedTarget &&
@@ -334,15 +359,15 @@ setTimeout(() => {
 // It changes when loading web pages in "webview"
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 if (isIOS) {
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
       // Don't reset theme color if media modal is showing
       // Media modal will set its own theme color based on the media's color
       const showingMediaModal =
-        document.getElementsByClassName('media-modal-container').length > 0;
+        document.getElementsByClassName("media-modal-container").length > 0;
       if (showingMediaModal) return;
 
-      const theme = store.local.get('theme');
+      const theme = store.local.get("theme");
       let $meta: HTMLMetaElement | null;
       if (theme) {
         // Get current meta
@@ -350,32 +375,34 @@ if (isIOS) {
           `meta[name="theme-color"][data-theme-setting="manual"]`,
         );
         if ($meta) {
+          const meta = $meta;
           const color = $meta.content;
           const tempColor =
-            theme === 'light'
+            theme === "light"
               ? $meta.dataset.themeLightColorTemp
               : $meta.dataset.themeDarkColorTemp;
-          $meta.content = tempColor || '';
+          $meta.content = tempColor || "";
           setTimeout(() => {
-            ($meta as HTMLMetaElement).content = color;
+            meta.content = color;
           }, 10);
         }
       } else {
         // Get current color scheme
-        const colorScheme = window.matchMedia('(prefers-color-scheme: dark)')
+        const colorScheme = window.matchMedia("(prefers-color-scheme: dark)")
           .matches
-          ? 'dark'
-          : 'light';
+          ? "dark"
+          : "light";
         // Get current theme-color
         $meta = document.querySelector<HTMLMetaElement>(
           `meta[name="theme-color"][media*="${colorScheme}"]`,
         );
         if ($meta) {
+          const meta = $meta;
           const color = $meta.dataset.content;
           const tempColor = $meta.dataset.contentTemp;
-          $meta.content = tempColor || '';
+          $meta.content = tempColor || "";
           setTimeout(() => {
-            ($meta as HTMLMetaElement).content = color as string;
+            meta.content = color ?? "";
           }, 10);
         }
       }
@@ -384,71 +411,73 @@ if (isIOS) {
 }
 
 {
-  const theme = store.local.get('theme');
+  const theme = store.local.get("theme");
   // If there's a theme, it's NOT auto
   if (theme) {
     // dark | light
     document.documentElement.classList.add(`is-${theme}`);
-    (
-      document.querySelector('meta[name="color-scheme"]') as HTMLMetaElement
-    ).setAttribute('content', theme || 'light dark');
+    document
+      .querySelector<HTMLMetaElement>('meta[name="color-scheme"]')
+      ?.setAttribute("content", theme || "light dark");
 
     // Enable manual theme <meta>
     const $manualMeta = document.querySelector<HTMLMetaElement>(
       'meta[data-theme-setting="manual"]',
     );
     if ($manualMeta) {
-      $manualMeta.name = 'theme-color';
-      $manualMeta.content = (
-        theme === 'light'
+      $manualMeta.name = "theme-color";
+      $manualMeta.content =
+        (theme === "light"
           ? $manualMeta.dataset.themeLightColor
-          : $manualMeta.dataset.themeDarkColor
-      ) as string;
+          : $manualMeta.dataset.themeDarkColor) ?? "";
     }
     // Disable auto theme <meta>s
     const $autoMetas = document.querySelectorAll<HTMLMetaElement>(
       'meta[data-theme-setting="auto"]',
     );
     $autoMetas.forEach((m) => {
-      m.name = '';
+      m.name = "";
     });
   }
-  const textSize = store.local.get('textSize');
+  const textSize = store.local.get("textSize");
   if (textSize) {
-    document.documentElement.style.setProperty('--text-size', `${textSize}px`);
+    document.documentElement.style.setProperty("--text-size", `${textSize}px`);
   }
 }
 
 subscribe(states, (changes) => {
   for (const [, path, value] of changes) {
-    const pathString = Array.isArray(path) ? path.join('.') : String(path);
+    const pathString = Array.isArray(path) ? path.join(".") : String(path);
     // Change #app dataset based on settings.shortcutsViewMode
-    if (pathString === 'settings.shortcutsViewMode') {
-      const $app = document.getElementById('app');
+    if (pathString === "settings.shortcutsViewMode") {
+      const $app = document.getElementById("app");
       if ($app) {
         $app.dataset.shortcutsViewMode = states.shortcuts?.length
-          ? (value as string)
-          : '';
+          ? (getOptionalString(value) ?? "")
+          : "";
       }
     }
 
     // Add/Remove cloak class to body
-    if (pathString === 'settings.cloakMode') {
+    if (pathString === "settings.cloakMode") {
       const $body = document.body;
-      $body.classList.toggle('cloak', value as boolean);
+      $body.classList.toggle("cloak", getOptionalBoolean(value) ?? false);
     }
 
     // Add/Remove no-animations class to body
-    if (pathString === 'settings.noAnimations') {
+    if (pathString === "settings.noAnimations") {
       const $body = document.body;
-      $body.classList.toggle('no-animations', value as boolean);
+      $body.classList.toggle(
+        "no-animations",
+        getOptionalBoolean(value) ?? false,
+      );
     }
   }
 });
 
 const BENCHES = new Map<string, number>();
-appWindow.__BENCH_RESULTS = new Map<string, number>();
-const __BENCHMARK = (appWindow.__BENCHMARK = {
+window.__BENCH_RESULTS = new Map<string, unknown>();
+const __BENCHMARK = (window.__BENCHMARK = {
   start(name: string) {
     if (!import.meta.env.DEV && !import.meta.env.PHANPY_DEV) return;
     // If already started, ignore
@@ -462,7 +491,7 @@ const __BENCHMARK = (appWindow.__BENCHMARK = {
     if (start) {
       const end = performance.now();
       const duration = end - start;
-      appWindow.__BENCH_RESULTS?.set(name, duration);
+      window.__BENCH_RESULTS?.set(name, duration);
       BENCHES.delete(name);
     }
   },
@@ -470,14 +499,14 @@ const __BENCHMARK = (appWindow.__BENCHMARK = {
 
 if (import.meta.env.DEV) {
   // If press shift down, set --time-scale to 10 in root
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Shift') {
-      document.documentElement.classList.add('slow-mo');
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Shift") {
+      document.documentElement.classList.add("slow-mo");
     }
   });
-  document.addEventListener('keyup', (e) => {
-    if (e.key === 'Shift') {
-      document.documentElement.classList.remove('slow-mo');
+  document.addEventListener("keyup", (e) => {
+    if (e.key === "Shift") {
+      document.documentElement.classList.remove("slow-mo");
     }
   });
 }
@@ -486,14 +515,14 @@ if (import.meta.env.DEV) {
   // Temporary Experiments
   // May be removed in the future
   document.body.classList.toggle(
-    'exp-tab-bar-v2',
-    Boolean(store.local.get('experiments-tabBarV2') ?? false),
+    "exp-tab-bar-v2",
+    Boolean(store.local.get("experiments-tabBarV2") ?? false),
   );
 }
 
 // const isPWA = true; // testing
 const isPWA =
-  window.matchMedia('(display-mode: standalone)').matches ||
+  window.matchMedia("(display-mode: standalone)").matches ||
   (window.navigator as Navigator & { standalone?: boolean }).standalone ===
     true;
 const PATH_RESTORE_TIME_LIMIT = 1 * 60 * 60 * 1000; // 1 hour, should be good enough
@@ -503,11 +532,11 @@ function App() {
     const account = getCurrentAccount();
     return !!account;
   });
-  const [uiState, setUIState] = useState('loading');
-  __BENCHMARK.start('app-init');
-  __BENCHMARK.start('time-to-following');
-  __BENCHMARK.start('time-to-home');
-  __BENCHMARK.start('time-to-isLoggedIn');
+  const [uiState, setUIState] = useState("loading");
+  __BENCHMARK.start("app-init");
+  __BENCHMARK.start("time-to-following");
+  __BENCHMARK.start("time-to-home");
+  __BENCHMARK.start("time-to-isLoggedIn");
   useLingui();
 
   useEffect(() => {
@@ -530,7 +559,7 @@ function App() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const instanceURL = store.local.get('instanceURL');
+      const instanceURL = store.local.get("instanceURL");
       const isAtprotoOAuthCallback =
         !!window.location.search.match(/[?&]code=/) &&
         !!window.location.search.match(/[?&]iss=/);
@@ -541,25 +570,25 @@ function App() {
             const accessToken = createAtprotoOAuthAccessToken(
               result.session.sub,
             );
-            const client = initClient({ instance: 'bsky.social', accessToken });
-            await initAccount(client, 'bsky.social', accessToken);
+            const client = initClient({ instance: "bsky.social", accessToken });
+            await initAccount(client, "bsky.social", accessToken);
             await Promise.allSettled([
               initPreferences(client),
-              initInstance(client, 'bsky.social'),
+              initInstance(client, "bsky.social"),
             ]);
             initStates();
             window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
             if (cancelled) return;
             setIsLoggedIn(true);
-            setUIState('default');
-            const redirectPath = store.session.get('loginRedirect');
+            setUIState("default");
+            const redirectPath = store.session.get("loginRedirect");
             if (redirectPath) {
-              store.session.del('loginRedirect');
+              store.session.del("loginRedirect");
               navigatePath(redirectPath);
             } else if (isRootPath(window.location.pathname)) {
-              navigatePath('/', { replace: true });
+              navigatePath("/", { replace: true });
             }
-            __BENCHMARK.end('app-init');
+            __BENCHMARK.end("app-init");
             return;
           }
         } catch (e) {
@@ -568,8 +597,8 @@ function App() {
       }
 
       const code = decodeURIComponent(
-        (window.location.search.match(/code=([^&]+)/) || [undefined, ''])[1] ??
-          '',
+        (window.location.search.match(/code=([^&]+)/) || [undefined, ""])[1] ??
+          "",
       );
 
       if (code) {
@@ -581,7 +610,7 @@ function App() {
           try {
             window.opener.postMessage(
               {
-                type: 'oauth-callback',
+                type: "oauth-callback",
                 code: code,
               },
               window.location.origin,
@@ -590,7 +619,7 @@ function App() {
               window.close();
             }, 100);
           } catch (e) {
-            console.error('Failed to send message to parent window:', e);
+            console.error("Failed to send message to parent window:", e);
             window.close();
           }
           return;
@@ -600,81 +629,79 @@ function App() {
         window.history.replaceState(
           {},
           document.title,
-          window.location.pathname || '/',
+          window.location.pathname || "/",
         );
+        if (!instanceURL) {
+          setUIState("error");
+          return;
+        }
 
         const {
           client_id: clientID,
           client_secret: clientSecret,
           vapid_key,
-        } = (getCredentialApplication(instanceURL as string) || {}) as {
-          client_id?: string;
-          client_secret?: string;
-          vapid_key?: string;
-        };
-        const vapidKey = getStoredVapidKey(instanceURL) || vapid_key;
-        const verifier = store.sessionCookie.get('codeVerifier');
+        } = toCredentialApplication(getCredentialApplication(instanceURL));
+        const vapidKey =
+          getOptionalString(getStoredVapidKey(instanceURL)) || vapid_key;
+        const verifier = store.sessionCookie.get("codeVerifier");
 
         if (cancelled) return;
-        setUIState('loading');
-        const { access_token: accessToken } = (await getAccessToken({
-          instanceURL: instanceURL as string,
-          client_id: clientID as string,
-          client_secret: clientSecret,
-          code,
-          code_verifier: verifier || undefined,
-        })) as { access_token?: string };
+        setUIState("loading");
+        const { access_token: accessToken } = toAccessTokenResponse(
+          await getAccessToken({
+            instanceURL,
+            client_id: clientID ?? "",
+            client_secret: clientSecret,
+            code,
+            code_verifier: verifier || undefined,
+          }),
+        );
 
         if (accessToken) {
           const client = initClient({ instance: instanceURL, accessToken });
           await Promise.allSettled([
             initPreferences(client),
-            initInstance(client, instanceURL as string),
-            initAccount(
-              client,
-              instanceURL as string,
-              accessToken,
-              vapidKey as string | null | undefined,
-            ),
+            initInstance(client, instanceURL),
+            initAccount(client, instanceURL, accessToken, vapidKey),
           ]);
           initStates();
           window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
 
           if (cancelled) return;
           setIsLoggedIn(true);
-          setUIState('default');
+          setUIState("default");
 
           // Redirect after successful login
-          const redirectPath = store.session.get('loginRedirect');
+          const redirectPath = store.session.get("loginRedirect");
           if (redirectPath) {
-            store.session.del('loginRedirect');
+            store.session.del("loginRedirect");
             navigatePath(redirectPath);
           } else if (isRootPath(window.location.pathname)) {
-            navigatePath('/', { replace: true });
+            navigatePath("/", { replace: true });
           }
         } else {
           if (cancelled) return;
-          setUIState('error');
+          setUIState("error");
         }
-        __BENCHMARK.end('app-init');
+        __BENCHMARK.end("app-init");
       } else {
         window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
         const searchAccount = decodeURIComponent(
           (window.location.search.match(/account=([^&]+)/) || [
             undefined,
-            '',
-          ])[1] ?? '',
+            "",
+          ])[1] ?? "",
         );
         let account;
         if (searchAccount) {
           account = getAccount(searchAccount);
-          console.log('searchAccount', searchAccount, account);
+          console.log("searchAccount", searchAccount, account);
           if (account) {
             setCurrentAccountID(account.info.id);
             window.history.replaceState(
               {},
               document.title,
-              window.location.pathname || '/',
+              window.location.pathname || "/",
             );
           }
         }
@@ -700,7 +727,7 @@ function App() {
           // console.log('masto', masto);
           initStates();
           if (cancelled) return;
-          setUIState('loading');
+          setUIState("loading");
           try {
             if (hasPreferences() && hasInstance(instance)) {
               // Non-blocking
@@ -717,22 +744,22 @@ function App() {
           } finally {
             if (!cancelled) {
               setIsLoggedIn(true);
-              setUIState('default');
-              __BENCHMARK.end('app-init');
+              setUIState("default");
+              __BENCHMARK.end("app-init");
             }
           }
         } else {
           if (cancelled) return;
           setIsLoggedIn(false);
-          setUIState('default');
-          __BENCHMARK.end('app-init');
+          setUIState("default");
+          __BENCHMARK.end("app-init");
         }
       }
 
       // Cleanup
-      store.sessionCookie.del('clientID');
-      store.sessionCookie.del('clientSecret');
-      store.sessionCookie.del('codeVerifier');
+      store.sessionCookie.del("clientID");
+      store.sessionCookie.del("clientSecret");
+      store.sessionCookie.del("codeVerifier");
     })();
     return () => {
       cancelled = true;
@@ -749,7 +776,7 @@ function App() {
 
   // Save last page for PWA restoration
   const restoredRef = useRef(false);
-  const lastPathKey = 'pwaLastPath';
+  const lastPathKey = "pwaLastPath";
   useEffect(() => {
     if (!restoredRef.current) return;
     // console.log('currentLocation.pathname', currentLocation.pathname);
@@ -769,9 +796,9 @@ function App() {
   useEffect(() => {
     if (restoredRef.current) return undefined;
     const atRootPath =
-      !currentLocation.pathname || currentLocation.pathname === '/';
+      !currentLocation.pathname || currentLocation.pathname === "/";
     if (!atRootPath) return undefined;
-    if (isPWA && isLoggedIn && uiState === 'default') {
+    if (isPWA && isLoggedIn && uiState === "default") {
       const lastPath = store.local.getJSON<{
         path?: string;
         lastAccessed?: number;
@@ -798,23 +825,23 @@ function App() {
 
   // Signal to service worker that this client is ready to receive share data
   useEffect(() => {
-    if ('serviceWorker' in navigator && isPWA && uiState === 'default') {
+    if ("serviceWorker" in navigator && isPWA && uiState === "default") {
       void (async () => {
         try {
           const registration = await navigator.serviceWorker.getRegistration();
-          console.log('💪 Got SW registration', registration);
+          console.log("💪 Got SW registration", registration);
           const activeWorker = registration?.active;
           if (activeWorker) {
-            console.log('💪 Sending client-ready message to SW');
+            console.log("💪 Sending client-ready message to SW");
             // ServiceWorker.postMessage signature is (message, transfer?),
             // not (message, targetOrigin). Binding hides the call from
             // oxlint's require-post-message-target-origin rule which
             // assumes Window.postMessage semantics.
             const postToSW = activeWorker.postMessage.bind(activeWorker);
-            postToSW({ type: 'client-ready' });
+            postToSW({ type: "client-ready" });
           }
         } catch (err) {
-          console.error('Could not get registration', err);
+          console.error("Could not get registration", err);
         }
       })();
     }
@@ -824,7 +851,7 @@ function App() {
     return <HttpRoute />;
   }
 
-  if (uiState === 'loading') {
+  if (uiState === "loading") {
     return <Loader id="loader-root" />;
   }
 
@@ -857,7 +884,7 @@ function App() {
 function Root() {
   const isLoggedIn = useAuth();
   if (isLoggedIn) {
-    __BENCHMARK.end('time-to-isLoggedIn');
+    __BENCHMARK.end("time-to-isLoggedIn");
   }
   return isLoggedIn ? <Home /> : <Welcome />;
 }
@@ -867,7 +894,7 @@ function isRootPath(pathname: string) {
 }
 
 function isNativeAtprotoPath(pathname: string) {
-  return pathname.toLowerCase().startsWith('/at://');
+  return pathname.toLowerCase().startsWith("/at://");
 }
 
 const PrimaryRoutes = memo(() => {
@@ -877,8 +904,8 @@ const PrimaryRoutes = memo(() => {
     !isLoggedIn && isNativeAtprotoPath(location.pathname);
   const primaryLocation = useMemo(() => {
     const { pathname } = location;
-    if (pathname === '/' || isRootPath(pathname)) return location;
-    return { ...location, pathname: '/' };
+    if (pathname === "/" || isRootPath(pathname)) return location;
+    return { ...location, pathname: "/" };
   }, [location]);
 
   if (suppressPrimaryRoute) return null;
@@ -920,7 +947,7 @@ function AuthRoute({ children }: { children: ReactElement }) {
 
   if (!isLoggedIn) {
     const redirectPath = location.pathname + location.search;
-    store.session.set('loginRedirect', redirectPath);
+    store.session.set("loginRedirect", redirectPath);
     return <Navigate to="/login" replace />;
   }
   return children;
@@ -936,13 +963,13 @@ function SecondaryRoutes() {
   const backgroundLocation = useRef(getPrevLocation());
 
   const isModalPage = useMemo(() => {
-    const atUriParam = matchPath('/:atUri', currentLocation.pathname)?.params
+    const atUriParam = matchPath("/:atUri", currentLocation.pathname)?.params
       .atUri;
     return (
-      matchPath('/:instance/s/:id', currentLocation.pathname) ||
-      matchPath('/s/:id', currentLocation.pathname) ||
-      matchPath('/:scheme://*', currentLocation.pathname) ||
-      atUriParam?.toLowerCase().startsWith('at:')
+      matchPath("/:instance/s/:id", currentLocation.pathname) ||
+      matchPath("/s/:id", currentLocation.pathname) ||
+      matchPath("/:scheme://*", currentLocation.pathname) ||
+      atUriParam?.toLowerCase().startsWith("at:")
     );
   }, [currentLocation.pathname]);
 
@@ -951,7 +978,7 @@ function SecondaryRoutes() {
   const syncPrevLocation = useEffectEvent(() => {
     if (isModalPage) {
       if (states.prevLocation) {
-        store.session.setJSON('prevLocation', {
+        store.session.setJSON("prevLocation", {
           pathname: states.prevLocation.pathname,
           search: states.prevLocation.search,
         });
@@ -960,7 +987,7 @@ function SecondaryRoutes() {
       if (states.prevLocation) {
         states.prevLocation = null;
       }
-      store.session.del('prevLocation');
+      store.session.del("prevLocation");
     }
   });
   useEffect(() => {
