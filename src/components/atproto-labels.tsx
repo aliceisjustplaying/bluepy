@@ -1,7 +1,13 @@
 import './atproto-labels.css';
 
 import { useLingui } from '@lingui/react/macro';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { getPreferences, subscribePreferences } from '../utils/api';
 import {
@@ -129,7 +135,11 @@ export default function AtprotoLabels({
   const [fetchedLabelers, setFetchedLabelers] = useState<AtprotoLabelerInfoMap>(
     () => ({ ...sharedLabelerCache.fetchedLabelers }),
   );
-  const [preferences, setPreferenceState] = useState(() => getPreferences());
+  const preferences = useSyncExternalStore(
+    subscribePreferences,
+    getPreferences,
+    getPreferences,
+  );
   const mounted = useRef(true);
   const globalLabelStrings = useMemo<AtprotoGlobalLabelStrings>(
     () => ({
@@ -198,14 +208,6 @@ export default function AtprotoLabels({
       mounted.current = false;
     };
   }, []);
-
-  useEffect(
-    () =>
-      subscribePreferences(() => {
-        setPreferenceState(getPreferences());
-      }),
-    [],
-  );
 
   useEffect(() => {
     if (!missingLabelerDids.length) return undefined;
