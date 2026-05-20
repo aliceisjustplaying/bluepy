@@ -11,6 +11,11 @@ export interface ImageDimensions {
   height: number;
 }
 
+export interface PreparedAtprotoImageUpload {
+  file: File;
+  dimensions?: ImageDimensions;
+}
+
 interface LoadedImage extends ImageDimensions {
   source: CanvasImageSource;
   close: () => void;
@@ -41,8 +46,14 @@ export function shouldCompressAtprotoImage(
 }
 
 export async function compressAtprotoImageIfNeeded(file: File): Promise<File> {
+  return (await prepareAtprotoImageUpload(file)).file;
+}
+
+export async function prepareAtprotoImageUpload(
+  file: File,
+): Promise<PreparedAtprotoImageUpload> {
   if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
-    return file;
+    return { file };
   }
 
   const source = await loadImage(file);
@@ -53,18 +64,27 @@ export async function compressAtprotoImageIfNeeded(file: File): Promise<File> {
         height: source.height,
       })
     ) {
-      return file;
+      return {
+        file,
+        dimensions: {
+          width: source.width,
+          height: source.height,
+        },
+      };
     }
 
-    const blob = await findCompressedImage(
+    const compressed = await findCompressedImage(
       source.source,
       getContainedDimensions(source.width, source.height),
     );
-    if (blob) {
-      return new File([blob], toJpegFilename(file.name), {
-        type: 'image/jpeg',
-        lastModified: file.lastModified,
-      });
+    if (compressed) {
+      return {
+        file: new File([compressed.blob], toJpegFilename(file.name), {
+          type: 'image/jpeg',
+          lastModified: file.lastModified,
+        }),
+        dimensions: compressed.dimensions,
+      };
     }
   } finally {
     source.close();
@@ -77,11 +97,11 @@ async function findCompressedImage(
   image: CanvasImageSource,
   dimensions: ImageDimensions,
   attempt = 0,
-): Promise<Blob | null> {
+): Promise<PreparedCompressedImage | null> {
   if (attempt >= MAX_DIMENSION_ATTEMPTS) return null;
 
   const blob = await findCompressedAtQuality(image, dimensions);
-  if (blob) return blob;
+  if (blob) return { blob, dimensions };
 
   return await findCompressedImage(
     image,
@@ -97,6 +117,11 @@ async function findCompressedImage(
     },
     attempt + 1,
   );
+}
+
+interface PreparedCompressedImage {
+  blob: Blob;
+  dimensions: ImageDimensions;
 }
 
 async function findCompressedAtQuality(

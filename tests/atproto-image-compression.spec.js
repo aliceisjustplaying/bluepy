@@ -8,25 +8,60 @@ import {
 } from '../src/utils/atproto-image-compression.js';
 
 /**
+ * @typedef {{
+ *   sourceSize: number,
+ *   size: number,
+ *   type: string,
+ *   name: string,
+ *   width: number,
+ *   height: number,
+ *   preparedDimensionsMatch?: boolean,
+ * }} CompressionResult
+ */
+
+/**
  * @param {unknown} value
+ * @returns {CompressionResult}
  */
 function parseCompressionResult(value) {
   if (!value || typeof value !== 'object') {
     throw new Error('Missing compression result');
   }
   const result = value;
-  const { sourceSize, size, type, name, width, height } = result;
+  const {
+    sourceSize,
+    size,
+    type,
+    name,
+    width,
+    height,
+    preparedDimensionsMatch,
+  } = result;
   if (
     typeof sourceSize !== 'number' ||
     typeof size !== 'number' ||
     typeof type !== 'string' ||
     typeof name !== 'string' ||
     typeof width !== 'number' ||
-    typeof height !== 'number'
+    typeof height !== 'number' ||
+    (preparedDimensionsMatch !== undefined &&
+      typeof preparedDimensionsMatch !== 'boolean')
   ) {
     throw new Error('Invalid compression result');
   }
-  return { sourceSize, size, type, name, width, height };
+  const parsedPreparedDimensionsMatch =
+    typeof preparedDimensionsMatch === 'boolean'
+      ? preparedDimensionsMatch
+      : undefined;
+  return {
+    sourceSize,
+    size,
+    type,
+    name,
+    width,
+    height,
+    preparedDimensionsMatch: parsedPreparedDimensionsMatch,
+  };
 }
 
 test.describe('ATProto image compression helpers', () => {
@@ -69,8 +104,9 @@ test.describe('ATProto image compression helpers', () => {
   test('compresses oversized browser image files', async ({ page }) => {
     await page.goto('/');
 
-    const result = parseCompressionResult(await page.evaluate(`(async () => {
-      const { compressAtprotoImageIfNeeded } = await import(
+    const result = parseCompressionResult(
+      await page.evaluate(`(async () => {
+      const { prepareAtprotoImageUpload } = await import(
         '/src/utils/atproto-image-compression.ts'
       );
       const sourceCanvas = document.createElement('canvas');
@@ -102,7 +138,8 @@ test.describe('ATProto image compression helpers', () => {
       const sourceFile = new File([blob], 'oversized.png', {
         type: 'image/png',
       });
-      const compressed = await compressAtprotoImageIfNeeded(sourceFile);
+      const prepared = await prepareAtprotoImageUpload(sourceFile);
+      const compressed = prepared.file;
       const compressedBitmap = await createImageBitmap(compressed);
       const compressedResult = {
         sourceSize: sourceFile.size,
@@ -111,24 +148,76 @@ test.describe('ATProto image compression helpers', () => {
         name: compressed.name,
         width: compressedBitmap.width,
         height: compressedBitmap.height,
+        preparedDimensionsMatch:
+          prepared.dimensions?.width === compressedBitmap.width &&
+          prepared.dimensions?.height === compressedBitmap.height,
       };
       compressedBitmap.close();
       return compressedResult;
-    })()`));
+    })()`),
+    );
 
     expect(result.sourceSize).toBeGreaterThan(ATPROTO_IMAGE_MAX_BYTES);
     expect(result.size).toBeLessThanOrEqual(ATPROTO_IMAGE_MAX_BYTES);
     expect(result.type).toBe('image/jpeg');
     expect(result.name).toBe('oversized.jpg');
+    expect(result.preparedDimensionsMatch).toBe(true);
     expect(Math.max(result.width, result.height)).toBeLessThanOrEqual(
       ATPROTO_IMAGE_MAX_LONG_EDGE,
     );
   });
 
-  test('does not require createImageBitmap for compression', async ({ page }) => {
+  test('returns dimensions for image embed aspect ratios', async ({ page }) => {
     await page.goto('/');
 
-    const result = parseCompressionResult(await page.evaluate(`(async () => {
+    const result = await page.evaluate(`(async () => {
+      const { prepareAtprotoImageUpload } = await import(
+        '/src/utils/atproto-image-compression.ts'
+      );
+      const sourceCanvas = document.createElement('canvas');
+      sourceCanvas.width = 640;
+      sourceCanvas.height = 360;
+      const ctx = sourceCanvas.getContext('2d');
+      if (!ctx) throw new Error('missing canvas context');
+      ctx.fillStyle = '#58c';
+      ctx.fillRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+
+      const blob = await new Promise((resolve, reject) => {
+        sourceCanvas.toBlob((value) => {
+          if (!value) {
+            reject(new Error('missing png blob'));
+            return;
+          }
+          resolve(value);
+        }, 'image/png');
+      });
+
+      const sourceFile = new File([blob], 'photo.png', {
+        type: 'image/png',
+      });
+      const prepared = await prepareAtprotoImageUpload(sourceFile);
+      return {
+        sameFile: prepared.file === sourceFile,
+        dimensions: prepared.dimensions,
+      };
+    })()`);
+
+    expect(result).toEqual({
+      sameFile: true,
+      dimensions: {
+        width: 640,
+        height: 360,
+      },
+    });
+  });
+
+  test('does not require createImageBitmap for compression', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    const result = parseCompressionResult(
+      await page.evaluate(`(async () => {
       const { compressAtprotoImageIfNeeded } = await import(
         '/src/utils/atproto-image-compression.ts'
       );
@@ -176,7 +265,8 @@ test.describe('ATProto image compression helpers', () => {
       };
       URL.revokeObjectURL(imageUrl);
       return compressedResult;
-    })()`));
+    })()`),
+    );
 
     expect(result.size).toBeLessThanOrEqual(ATPROTO_IMAGE_MAX_BYTES);
     expect(result.type).toBe('image/jpeg');
