@@ -1158,14 +1158,21 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  align-items: center;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
 }
 
 .reply-detail-pills-container {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding-left: 8px;
-  border-left: 2px solid var(--outline-color, rgba(0, 0, 0, 0.12));
+  align-items: center;
+  box-sizing: border-box;
+  width: min(100%, 22rem);
+  margin-inline: auto;
 }
 
 .reply-pills-label {
@@ -1180,6 +1187,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  justify-content: center;
 }
 
 /* Pill style buttons */
@@ -1225,7 +1233,8 @@
 
 /* Compact select lists dropdown below */
 .reply-list-dropdown-container-compact {
-  margin-top: -2px;
+  width: min(100%, 22rem);
+  margin: -2px auto 0;
   animation: slide-down 0.15s ease-out;
 }
 
