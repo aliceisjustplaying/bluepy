@@ -1,6 +1,7 @@
 import './feedback-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
+import * as Sentry from '@sentry/react';
 import { useEffect, useRef, useState } from 'react';
 
 import showToast from '../utils/show-toast';
@@ -112,9 +113,7 @@ export default function FeedbackModal({
 
     try {
       const sentryEventId = import.meta.env.VITE_SENTRY_DSN
-        ? await import('@sentry/react')
-            .then((Sentry) => Sentry.lastEventId() || undefined)
-            .catch(() => undefined)
+        ? Sentry.lastEventId() || undefined
         : undefined;
       const response = await fetch('/api/feedback', {
         method: 'POST',

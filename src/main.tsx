@@ -2,15 +2,11 @@ import './index.css';
 import './cloak-mode.css';
 
 import './polyfills';
+import './instrument';
 
 import { i18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
-import {
-  Component,
-  type ErrorInfo,
-  type ReactElement,
-  type ReactNode,
-} from 'react';
+import * as Sentry from '@sentry/react';
 import { createRoot, type Root } from 'react-dom/client';
 // Polyfill needed for Firefox < 122
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1423593
@@ -38,53 +34,6 @@ const bluepyReactRoot = Symbol.for('bluepy.reactRoot');
 type RootContainer = HTMLElement & {
   [bluepyReactRoot]?: Root;
 };
-
-const sentryReady = import.meta.env.VITE_SENTRY_DSN
-  ? import('./instrument')
-  : Promise.resolve();
-void sentryReady;
-
-interface ErrorBoundaryProps {
-  fallback: ReactElement;
-  children: ReactNode;
-}
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-}
-
-async function captureSentryException(error: Error, errorInfo: ErrorInfo) {
-  if (!import.meta.env.VITE_SENTRY_DSN) return;
-
-  try {
-    await sentryReady;
-    const Sentry = await import('@sentry/react');
-    Sentry.withScope((scope) => {
-      scope.setContext('react', {
-        componentStack: errorInfo.componentStack,
-      });
-      Sentry.captureException(error);
-    });
-  } catch {
-    /* ignore */
-  }
-}
-
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false };
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    void captureSentryException(error, errorInfo);
-  }
-
-  render() {
-    return this.state.hasError ? this.props.fallback : this.props.children;
-  }
-}
 
 interface ShareData {
   title?: string;
@@ -149,9 +98,9 @@ if (!redirectLegacyOrigin()) {
         <I18nProvider i18n={i18n}>
           <BrowserRouter>
             <IconSpriteProvider>
-              <ErrorBoundary fallback={<ErrorFallback />}>
+              <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
                 <App />
-              </ErrorBoundary>
+              </Sentry.ErrorBoundary>
             </IconSpriteProvider>
           </BrowserRouter>
         </I18nProvider>,
