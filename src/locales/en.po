@@ -118,7 +118,7 @@ msgid "{count, plural, =1 {{account} followed you.} other {<0><1>{0}</1> people<
 msgstr ""
 
 #. placeholder {0}: niceDateTime(account.createdAt)
-#: src/pages/accounts.tsx:358
+#: src/pages/accounts.tsx:350
 msgid "Connected on {0} (<0/>)"
 msgstr "Connected on {0} (<0/>)"
 
@@ -377,7 +377,7 @@ msgstr ""
 #: src/components/status-large-footer.tsx:354
 #: src/components/status-large-footer.tsx:358
 #: src/pages/account-statuses.tsx:831
-#: src/pages/accounts.tsx:187
+#: src/pages/accounts.tsx:179
 #: src/pages/hashtag.tsx:263
 #: src/pages/list.tsx:296
 #: src/pages/status.tsx:1914
@@ -430,7 +430,7 @@ msgid "Delete all drafts?"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx:459
-#: src/pages/accounts.tsx:272
+#: src/pages/accounts.tsx:264
 msgid "Move down"
 msgstr ""
 
@@ -447,7 +447,7 @@ msgstr "Quote settings updated"
 msgid "Year"
 msgstr "Year"
 
-#: src/pages/accounts.tsx:201
+#: src/pages/accounts.tsx:193
 msgid "Switch to this account"
 msgstr "Switch to this account"
 
@@ -482,7 +482,7 @@ msgstr ""
 msgid "Notifications settings updated"
 msgstr ""
 
-#: src/pages/accounts.tsx:224
+#: src/pages/accounts.tsx:216
 msgid "View profile…"
 msgstr ""
 
@@ -545,7 +545,7 @@ msgstr "Profile picture"
 msgid "Notification"
 msgstr ""
 
-#: src/pages/accounts.tsx:382
+#: src/pages/accounts.tsx:374
 msgid "Note: <0>Default</0> account will always be used for first load. Switched accounts will persist during the session."
 msgstr ""
 
@@ -835,7 +835,7 @@ msgstr "Open file"
 msgid "Edit profile"
 msgstr ""
 
-#: src/pages/accounts.tsx:350
+#: src/pages/accounts.tsx:342
 msgid "Remove account…"
 msgstr "Remove account…"
 
@@ -977,7 +977,7 @@ msgstr "Show markup"
 msgid "Posts: {0}"
 msgstr ""
 
-#: src/pages/accounts.tsx:315
+#: src/pages/accounts.tsx:307
 msgid "Log out and remove <0>@{acct}</0>"
 msgstr "Log out and remove <0>@{acct}</0>"
 
@@ -1059,7 +1059,7 @@ msgid "Shared by {0}"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx:546
-#: src/pages/accounts.tsx:397
+#: src/pages/accounts.tsx:389
 msgid "Import/export"
 msgstr ""
 
@@ -1089,13 +1089,13 @@ msgid "Search my posts"
 msgstr "Search my posts"
 
 #. placeholder {0}: usernameValue || acctValue
-#: src/components/status-content.tsx:460
+#: src/components/status-content.tsx:461
 msgid "Unboosted @{0}'s post"
 msgstr "Unboosted @{0}'s post"
 
 #: src/components/generic-accounts.tsx:266
 #: src/components/notification.tsx:675
-#: src/pages/accounts.tsx:78
+#: src/pages/accounts.tsx:79
 #: src/pages/search.tsx:526
 #: src/pages/search.tsx:559
 msgid "Accounts"
@@ -1266,7 +1266,7 @@ msgstr ""
 msgid "Shortcuts copied"
 msgstr ""
 
-#: src/pages/accounts.tsx:325
+#: src/pages/accounts.tsx:317
 msgid "Log out…"
 msgstr ""
 
@@ -1324,7 +1324,7 @@ msgid "Old post (<0>{0}</0>)"
 msgstr ""
 
 #. placeholder {0}: usernameValue || acctValue
-#: src/components/status-content.tsx:461
+#: src/components/status-content.tsx:462
 msgid "Boosted @{0}'s post"
 msgstr "Boosted @{0}'s post"
 
@@ -1860,7 +1860,7 @@ msgstr ""
 msgid "Delete all…"
 msgstr ""
 
-#: src/pages/accounts.tsx:117
+#: src/pages/accounts.tsx:118
 msgid "Current"
 msgstr ""
 
@@ -2014,7 +2014,7 @@ msgstr ""
 msgid "Copy post text"
 msgstr "Copy post text"
 
-#: src/pages/accounts.tsx:375
+#: src/pages/accounts.tsx:367
 msgid "Add an existing account"
 msgstr ""
 
@@ -2507,7 +2507,7 @@ msgstr ""
 msgid "Notifications from <0>@{0}</0>"
 msgstr ""
 
-#: src/pages/accounts.tsx:173
+#: src/pages/accounts.tsx:165
 msgid "Logged out"
 msgstr "Logged out"
 
@@ -2579,7 +2579,7 @@ msgstr "Keep as link"
 msgid "Go to main post"
 msgstr ""
 
-#: src/pages/accounts.tsx:285
+#: src/pages/accounts.tsx:277
 msgid "Log out <0>@{acct}</0>?"
 msgstr "Log out <0>@{acct}</0>?"
 
@@ -2638,7 +2638,7 @@ msgstr ""
 msgid "{0, plural, one {# Boost} other {# Boosts}}"
 msgstr "{0, plural, one {# Boost} other {# Boosts}}"
 
-#: src/pages/accounts.tsx:335
+#: src/pages/accounts.tsx:327
 msgid "Remove <0>@{acct}</0>?"
 msgstr "Remove <0>@{acct}</0>?"
 
@@ -2740,7 +2740,7 @@ msgstr ""
 msgid "last 1 hour"
 msgstr ""
 
-#: src/pages/accounts.tsx:179
+#: src/pages/accounts.tsx:171
 msgid "Default"
 msgstr ""
 
@@ -2866,7 +2866,7 @@ msgstr ""
 msgid "post.title"
 msgstr "Post"
 
-#: src/pages/accounts.tsx:242
+#: src/pages/accounts.tsx:234
 msgid "Set as default"
 msgstr ""
 
@@ -2920,7 +2920,7 @@ msgstr ""
 msgid "<0>Ctrl</0> + <1>Enter</1> or <2>⌘</2> + <3>Enter</3>"
 msgstr ""
 
-#: src/pages/accounts.tsx:210
+#: src/pages/accounts.tsx:202
 msgid "Switch in new tab/window"
 msgstr "Switch in new tab/window"
 
@@ -3025,7 +3025,7 @@ msgid "Floating button"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx:443
-#: src/pages/accounts.tsx:257
+#: src/pages/accounts.tsx:249
 msgid "Move up"
 msgstr ""
 
@@ -3972,7 +3972,7 @@ msgstr "Clear all"
 #: src/components/shortcuts-settings.tsx:939
 #: src/components/status-edit-history-modal.tsx:53
 #: src/components/translated-bio-sheet.tsx:33
-#: src/pages/accounts.tsx:73
+#: src/pages/accounts.tsx:74
 #: src/pages/catchup.tsx:2084
 #: src/pages/list.tsx:472
 #: src/pages/notifications.tsx:1216
