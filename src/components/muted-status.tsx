@@ -47,6 +47,9 @@ export default function MutedStatus({
         ? 'status-group'
         : 'status-reblog'
       : '';
+  const mergedClassName = [className, containerProps.className]
+    .filter(Boolean)
+    .join(' ');
   const showPost = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -65,7 +68,7 @@ export default function MutedStatus({
   );
 
   return (
-    <div className={className} {...containerProps}>
+    <div {...containerProps} className={mergedClassName}>
       {!expanded ? (
         <article
           className={`status filtered muted ${quoted ? 'status-card' : ''}`}

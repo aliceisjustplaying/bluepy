@@ -38,7 +38,7 @@ export function hasMutedAuthor(status: unknown): boolean {
   if (!isRecord(status)) return false;
   const atproto = status._atproto;
   const reblog = status.reblog;
-  if (isRecord(atproto) && atproto.mutedAuthor) {
+  if (isRecord(atproto) && atproto.mutedAuthor === true) {
     return true;
   }
   return hasMutedAuthor(reblog);

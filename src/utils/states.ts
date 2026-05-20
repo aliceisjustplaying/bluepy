@@ -343,7 +343,10 @@ subscribe(states, (changes) => {
       store.account.set('settings-noAnimations', !!value);
     }
     if (path.join('.') === 'settings.mutedPostVisibility') {
-      store.account.set('settings-mutedPostVisibility', value);
+      store.account.set(
+        'settings-mutedPostVisibility',
+        getMutedPostVisibility({ mutedPostVisibility: value }),
+      );
     }
   }
 });

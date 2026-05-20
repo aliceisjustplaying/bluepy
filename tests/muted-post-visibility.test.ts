@@ -48,6 +48,8 @@ void test('muted author detection applies to reposts but not third-party quotes'
     false,
   );
   assert.equal(hasMutedAuthor({ _atproto: { mutedAuthor: false } }), false);
+  assert.equal(hasMutedAuthor({ _atproto: { mutedAuthor: 'true' } }), false);
+  assert.equal(hasMutedAuthor({ _atproto: { mutedAuthor: 1 } }), false);
 });
 
 void test('hide mode drops muted statuses except direct context and current account', () => {
