@@ -17,10 +17,18 @@ export interface AtprotoLabelInfo {
   severity: AtprotoLabelSeverity;
 }
 
+export interface AtprotoLabelerInfo {
+  did: string;
+  handle?: string;
+  displayName?: string;
+  avatar?: string;
+}
+
 export type AtprotoGlobalLabelStrings = Record<
   string,
   { name: string; description: string }
 >;
+export type AtprotoLabelerInfoMap = Record<string, AtprotoLabelerInfo>;
 export type AtprotoLabelSeverity = 'none' | 'inform' | 'alert';
 
 const LABELS_BY_VALUE: Record<string, InterpretedLabelValueDefinition | undefined> =
@@ -102,6 +110,16 @@ function isLabelDefinition(value: unknown): value is InterpretedLabelValueDefini
   );
 }
 
+function isLabelerInfo(value: unknown): value is AtprotoLabelerInfo {
+  return (
+    isRecord(value) &&
+    typeof value.did === 'string' &&
+    (value.handle === undefined || typeof value.handle === 'string') &&
+    (value.displayName === undefined || typeof value.displayName === 'string') &&
+    (value.avatar === undefined || typeof value.avatar === 'string')
+  );
+}
+
 export function getAtprotoLabelDefinitions(value: unknown): AtprotoLabelDefinitionMap {
   if (!isRecord(value)) return {};
   const defs = value.atprotoLabelDefs;
@@ -114,6 +132,18 @@ export function getAtprotoLabelDefinitions(value: unknown): AtprotoLabelDefiniti
   );
 }
 
+export function getAtprotoLabelerInfoMap(value: unknown): AtprotoLabelerInfoMap {
+  if (!isRecord(value)) return {};
+  const labelers = value.atprotoLabelers;
+  if (!isRecord(labelers)) return {};
+  return Object.fromEntries(
+    Object.entries(labelers).flatMap(([did, labeler]) => {
+      if (!isLabelerInfo(labeler) || labeler.did !== did) return [];
+      return [[did, labeler]];
+    }),
+  );
+}
+
 function getDefinitions(
   label: AtprotoLabel,
   labelDefs: AtprotoLabelDefinitionMap,
@@ -121,7 +151,7 @@ function getDefinitions(
   customDef?: InterpretedLabelValueDefinition;
   globalDef?: InterpretedLabelValueDefinition;
 } {
-  const customDef = labelDefs[label.src]?.find(
+  const customDef = getOwn(labelDefs, label.src)?.find(
     (def) => def.identifier === label.val && def.definedBy === label.src,
   );
   return {

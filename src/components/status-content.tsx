@@ -46,6 +46,23 @@ import type { StatusComponentProps, StatusRouterProps } from './status-view';
 const EMPTY_MEDIA_ATTACHMENTS: AnyMediaAttachment[] = [];
 Object.freeze(EMPTY_MEDIA_ATTACHMENTS);
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function isUnknownArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
+function getAccountAtprotoLabels(account: unknown): unknown {
+  if (!isRecord(account) || !isRecord(account._atproto)) return undefined;
+  return account._atproto.labels;
+}
+
+function mergeAtprotoLabels(...values: unknown[]): unknown[] {
+  return values.flatMap((value) => (isUnknownArray(value) ? value : []));
+}
+
 type StatusContentMediaAttachment = AnyMediaAttachment &
   mastodon.v1.MediaAttachment;
 
@@ -161,6 +178,10 @@ export default function StatusContent({
   } = account || {};
   const mediaAttachments = (statusMediaAttachments ||
     EMPTY_MEDIA_ATTACHMENTS) as StatusContentMediaAttachment[];
+  const atprotoLabels = mergeAtprotoLabels(
+    getAccountAtprotoLabels(account),
+    status._atproto?.labels,
+  );
 
   // if (!mediaAttachments?.length) mediaFirst = false;
   const hasMediaAttachments = !!mediaAttachments?.length;
@@ -642,7 +663,7 @@ export default function StatusContent({
             inReplyToAccount={inReplyToAccount as AnyStatus['account'] | null}
             showReplyBadge={showReplyBadge && !hideReplyBadge}
           />
-          <AtprotoLabels labels={status._atproto?.labels} />
+          <AtprotoLabels labels={atprotoLabels} sourceProfiles={account} />
           <StatusPostBody
             mediaFirst={mediaFirst}
             hasMediaAttachments={hasMediaAttachments}

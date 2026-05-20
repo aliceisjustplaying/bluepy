@@ -9,6 +9,7 @@
 .atproto-label {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   max-width: 100%;
   border: 1px solid var(--outline-color);
   border-radius: 999px;
@@ -17,6 +18,16 @@
   padding: 2px 7px;
   font-size: 0.78em;
   font-weight: 600;
+}
+
+.atproto-label-avatar {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.atproto-label-avatar > .avatar {
+  flex: 0 0 auto;
+  border-radius: 50%;
 }
 
 .atproto-label-alert {

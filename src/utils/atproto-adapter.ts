@@ -9,6 +9,7 @@ import {
   type AppBskyFeedDefs,
   type AppBskyFeedPost,
   type AppBskyGraphDefs,
+  type AppBskyLabelerDefs,
   type AppBskyNotificationListNotifications,
   AppBskyVideoDefs,
   AppBskyRichtextFacet,
@@ -21,6 +22,7 @@ import {
   type ComAtprotoModerationCreateReport,
   type ComAtprotoRepoApplyWrites,
   type ComAtprotoRepoStrongRef,
+  interpretLabelValueDefinitions,
   type $Typed,
   RichText,
 } from '@atproto/api';
@@ -35,6 +37,7 @@ import { createAtprotoExternalEmbed, getFirstPostURL } from './atproto-unfurl';
 import {
   type AtprotoLabel,
   type AtprotoLabelDefinitionMap,
+  type AtprotoLabelerInfoMap,
   normalizeAtprotoLabelerDids,
   normalizeAtprotoLabels,
 } from './atproto-labels';
@@ -128,6 +131,10 @@ interface AtprotoProxyAgent {
 interface AtprotoLabelersAgent {
   appLabelers?: readonly string[];
   configureLabelers?: (labelerDids: readonly string[]) => void;
+  getLabelers?: (params: {
+    dids: string[];
+    detailed?: boolean;
+  }) => Promise<{ data?: { views?: unknown[] } }>;
   getLabelDefinitions?: (
     prefs: BskyPreferences | readonly string[],
   ) => Promise<AtprotoLabelDefinitionMap>;
@@ -187,6 +194,7 @@ function isAtprotoLabelersAgent(value: unknown): value is AtprotoLabelersAgent {
   return (
     isRecord(value) &&
     (typeof value.configureLabelers === 'function' ||
+      typeof value.getLabelers === 'function' ||
       typeof value.getLabelDefinitions === 'function')
   );
 }
@@ -974,6 +982,63 @@ function getAtprotoLabelerDids(
     preferences.moderationPrefs.labelers,
     appLabelers,
   );
+}
+
+function isDetailedLabelerView(
+  value: unknown,
+): value is AppBskyLabelerDefs.LabelerViewDetailed {
+  return (
+    isRecord(value) &&
+    isRecord(value.creator) &&
+    typeof value.creator.did === 'string' &&
+    isRecord(value.policies)
+  );
+}
+
+function toAtprotoLabelerInfo(
+  labeler: AppBskyLabelerDefs.LabelerViewDetailed,
+): AtprotoLabelerInfoMap[string] {
+  return {
+    did: labeler.creator.did,
+    handle: labeler.creator.handle,
+    displayName: labeler.creator.displayName,
+    avatar: labeler.creator.avatar,
+  };
+}
+
+async function fetchAtprotoLabelerMetadata(
+  agent: AtprotoAgent,
+  labelerDids: readonly string[],
+): Promise<{
+  labelDefs: AtprotoLabelDefinitionMap;
+  labelers: AtprotoLabelerInfoMap;
+}> {
+  if (!isAtprotoLabelersAgent(agent)) {
+    return { labelDefs: {}, labelers: {} };
+  }
+  if (!agent.getLabelers) {
+    const labelDefs = agent.getLabelDefinitions
+      ? await agent.getLabelDefinitions(labelerDids).catch(() => ({}))
+      : {};
+    return { labelDefs, labelers: {} };
+  }
+  const dids = Array.from(new Set([...(agent.appLabelers ?? []), ...labelerDids]));
+  if (!dids.length) return { labelDefs: {}, labelers: {} };
+  const res = await agent
+    .getLabelers({ dids, detailed: true })
+    .catch((): { data?: { views?: unknown[] } } => ({}));
+  const views = (res.data?.views ?? []).filter(isDetailedLabelerView);
+  return {
+    labelDefs: Object.fromEntries(
+      views.map((labeler) => [
+        labeler.creator.did,
+        interpretLabelValueDefinitions(labeler),
+      ]),
+    ),
+    labelers: Object.fromEntries(
+      views.map((labeler) => [labeler.creator.did, toAtprotoLabelerInfo(labeler)]),
+    ),
+  };
 }
 
 function configureAgentLabelers(
@@ -3329,16 +3394,18 @@ export function createAtprotoClient({
       preferences: {
         async fetch(): Promise<Record<string, unknown>> {
           const preferences = await agent.getPreferences().catch(() => null);
-          if (!preferences) return {};
-          const labelerDids = getAtprotoLabelerDids(preferences, agent);
-          configureAgentLabelers(agent, labelerDids);
-          const labelDefs =
-            isAtprotoLabelersAgent(agent) && agent.getLabelDefinitions
-              ? await agent.getLabelDefinitions(preferences).catch(() => ({}))
-              : {};
+          const labelerDids = preferences
+            ? getAtprotoLabelerDids(preferences, agent)
+            : [];
+          if (preferences) configureAgentLabelers(agent, labelerDids);
+          const labelerMetadata = await fetchAtprotoLabelerMetadata(
+            agent,
+            labelerDids,
+          );
           return {
             atprotoLabelerDids: labelerDids,
-            atprotoLabelDefs: labelDefs,
+            atprotoLabelDefs: labelerMetadata.labelDefs,
+            atprotoLabelers: labelerMetadata.labelers,
           };
         },
       },

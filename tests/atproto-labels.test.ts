@@ -8,6 +8,7 @@ import {
   dedupeAtprotoLabels,
   describeAtprotoLabel,
   getAtprotoLabelDefinitions,
+  getAtprotoLabelerInfoMap,
   getDisplayAtprotoLabels,
   normalizeAtprotoLabelerDids,
   normalizeAtprotoLabels,
@@ -183,6 +184,37 @@ void test('getAtprotoLabelDefinitions drops malformed cached entries', () => {
     }),
     {
       'did:plc:custom': [customLabelDef],
+    },
+  );
+});
+
+void test('getAtprotoLabelerInfoMap drops malformed cached entries', () => {
+  assert.deepEqual(
+    getAtprotoLabelerInfoMap({
+      atprotoLabelers: {
+        'did:plc:custom': {
+          did: 'did:plc:custom',
+          handle: 'labels.example.com',
+          displayName: 'Custom Labels',
+          avatar: 'https://example.com/avatar.jpg',
+        },
+        'did:plc:mismatch': {
+          did: 'did:plc:other',
+          avatar: 'https://example.com/other.jpg',
+        },
+        'did:plc:broken': {
+          did: 'did:plc:broken',
+          avatar: 123,
+        },
+      },
+    }),
+    {
+      'did:plc:custom': {
+        did: 'did:plc:custom',
+        handle: 'labels.example.com',
+        displayName: 'Custom Labels',
+        avatar: 'https://example.com/avatar.jpg',
+      },
     },
   );
 });
