@@ -8,9 +8,10 @@
     "dev:tailscale": "node scripts/dev-tailscale.js",
     "build": "vite build",
     "build:sizes": "NO_COLOR=true vite build 2>&1 | grep '^dist/' | node scripts/bundle-sizes-to-md.js",
+    "deploy:dev": "wrangler deploy --env dev",
     "preview": "vite preview",
     "fetch-instances": "node scripts/fetch-instances-list.js",
-    "sourcemap": "bunx source-map-explorer dist/assets/*.js",
+    "sourcemap": "ANALYZE=1 vite build && bunx source-map-explorer dist/assets/*.js",
     "bundle-visualizer": "bunx vite-bundle-visualizer",
     "messages:extract": "lingui extract",
     "messages:extract:clean": "lingui extract --locale en --clean",
@@ -117,7 +118,8 @@
     "workbox-navigation-preload": "~7.4.0",
     "workbox-recipes": "~7.4.0",
     "workbox-routing": "~7.4.0",
-    "workbox-strategies": "~7.4.0"
+    "workbox-strategies": "~7.4.0",
+    "wrangler": "4.93.0"
   },
   "//notes": [
     "@emnapi/core and @emnapi/runtime are temporary fixes for https://github.com/napi-rs/napi-rs/issues/3174",
