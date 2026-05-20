@@ -59,6 +59,7 @@ msgstr "已静音 {username}"
 #: src/pages/mentions.tsx
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
+#: src/pages/settings.tsx
 #: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "提及"
@@ -191,8 +192,8 @@ msgstr "已复制快捷方式设置"
 #~ msgstr "编辑备注"
 
 #: src/pages/settings.tsx
-#~ msgid "anyone"
-#~ msgstr "任何人"
+msgid "anyone"
+msgstr "任何人"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
@@ -507,6 +508,7 @@ msgstr "等待审核"
 #~ msgstr "继续登录并使用 {selectedInstanceText}"
 
 #: src/components/timeline.tsx
+#: src/pages/settings.tsx
 msgid "New posts"
 msgstr "新嘟文"
 
@@ -770,13 +772,8 @@ msgid "We read every message even when we cannot reply."
 msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "Follow requests"
-#~ msgstr "关注请求"
-
-#. placeholder {0}: groupBy ?? ''
-#: src/pages/catchup.tsx
-msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} reposts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} repostsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-msgstr ""
+msgid "Follow requests"
+msgstr "关注请求"
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Switch to account's server {0}"
@@ -797,8 +794,8 @@ msgid "Show less"
 msgstr "折叠"
 
 #: src/pages/settings.tsx
-#~ msgid "Push notifications are blocked. Please enable them in your browser settings."
-#~ msgstr "通知推送已被阻止。请在你的浏览器设置中授予相关权限。"
+msgid "Push notifications are blocked. Please enable them in your browser settings."
+msgstr "通知推送已被阻止。请在你的浏览器设置中授予相关权限。"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -880,7 +877,7 @@ msgstr "已过滤: {filterTitleStr}"
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {2}: ( postingStats.quotes / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {3}: ( postingStats.reposts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
+#. placeholder {3}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
 msgid "{0} original posts, {1} replies, {2} quotes, {3} reposts"
 msgstr ""
@@ -942,8 +939,8 @@ msgid "Liked"
 msgstr "已点赞"
 
 #: src/pages/settings.tsx
-#~ msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-#~ msgstr "本次登录未授予通知推送权限。你需要<0>再次<1>登录</1>以授予推送权限</0>。"
+msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
+msgstr "本次登录未授予通知推送权限。你需要<0>再次<1>登录</1>以授予推送权限</0>。"
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
@@ -1016,8 +1013,8 @@ msgid "Translated Bio"
 msgstr "简介(已翻译)"
 
 #: src/pages/status.tsx
-#~ msgid "Unable to switch"
-#~ msgstr "无法切换"
+msgid "Unable to switch"
+msgstr "无法切换"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
@@ -1034,9 +1031,10 @@ msgstr "你的粉丝才能引用"
 msgid "Open file"
 msgstr "打开文件"
 
+#. placeholder {0}: groupBy ?? ''
 #: src/pages/catchup.tsx
-#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-#~ msgstr ""
+msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+msgstr ""
 
 #: src/components/account-info.tsx
 #: src/components/edit-profile-sheet.tsx
@@ -1144,8 +1142,8 @@ msgid "Appearance"
 msgstr "外观"
 
 #: src/pages/settings.tsx
-#~ msgid "Follows"
-#~ msgstr "关注"
+msgid "Follows"
+msgstr "关注"
 
 #. By [Author]
 #. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
@@ -1254,7 +1252,7 @@ msgstr "搜索: {q} (话题标签)"
 #~ msgid "Unable to save shortcuts"
 #~ msgstr "无法保存快捷方式"
 
-#: src/components/status-repost.tsx
+#: src/components/status-reblog.tsx
 msgid "<0/> <1>reposted</1>"
 msgstr ""
 
@@ -1905,6 +1903,7 @@ msgid "Failed to generate description{0}"
 msgstr "描述生成失败{0}"
 
 #: src/components/shortcuts-settings.tsx
+#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "编辑"
@@ -2270,9 +2269,10 @@ msgstr "默认可见性修改失败"
 msgid "Cleared recent searches"
 msgstr "搜索记录已清除"
 
+#. placeholder {0}: toUnicode(postInstance)
 #: src/pages/status.tsx
-#~ msgid "Switch to post's PDS ({0})"
-#~ msgstr ""
+msgid "Switch to post's PDS ({0})"
+msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
@@ -2362,8 +2362,8 @@ msgstr "{account} 对你的嘟文进行了 {emojiObject} 的回应"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
-#~ msgid "Failed to update subscription. Please try again."
-#~ msgstr "订阅更新失败。请重试。"
+msgid "Failed to update subscription. Please try again."
+msgstr "订阅更新失败。请重试。"
 
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
@@ -2654,8 +2654,8 @@ msgid "Emojis:"
 msgstr "表情:"
 
 #: src/pages/settings.tsx
-#~ msgid "Post edits"
-#~ msgstr "嘟文被编辑"
+msgid "Post edits"
+msgstr "嘟文被编辑"
 
 #: src/pages/accounts.jsx
 #~ msgid "Log out <0>@{0}</0>?"
@@ -2803,7 +2803,7 @@ msgstr "导入"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
-#: src/components/status-repost.tsx
+#: src/components/status-reblog.tsx
 msgid "Group"
 msgstr "群组"
 
@@ -3344,8 +3344,8 @@ msgstr "停用通知"
 #~ msgstr "无法更新私人备注。"
 
 #: src/pages/hashtag.tsx
-#~ msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
-#~ msgstr "{TOTAL_TAGS_LIMIT, plural, other {最多 # 个话题标签}}"
+msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
+msgstr "{TOTAL_TAGS_LIMIT, plural, other {最多 # 个话题标签}}"
 
 #: src/pages/catchup.tsx
 msgid "last 1 hour"
@@ -3389,8 +3389,8 @@ msgid "Unable to block @{username}"
 msgstr "无法屏蔽 @{username}"
 
 #: src/pages/settings.tsx
-#~ msgid "followers"
-#~ msgstr "粉丝"
+msgid "followers"
+msgstr "粉丝"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
@@ -3581,8 +3581,8 @@ msgid "Replying to @{0}’s post (<0>{1}</0>)"
 msgstr "正在回复 @{0} 的嘟文 (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
-#~ msgid "Failed to remove subscription. Please try again."
-#~ msgstr "订阅删除失败。请重试。"
+msgid "Failed to remove subscription. Please try again."
+msgstr "订阅删除失败。请重试。"
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
@@ -3700,9 +3700,10 @@ msgstr "悬浮按钮"
 msgid "Move up"
 msgstr "向上移动"
 
+#. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
-#~ msgid "Allow from <0>{0}</0>"
-#~ msgstr "推送范围 <0>{0}</0>"
+msgid "Allow from <0>{0}</0>"
+msgstr "推送范围 <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -3809,6 +3810,7 @@ msgstr "上一位作者"
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4017,7 +4019,7 @@ msgstr "登录"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.reposts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
+#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
 msgid "{0} original posts, {1} replies, {2} reposts"
 msgstr ""
@@ -4034,10 +4036,6 @@ msgstr ""
 #: src/pages/catchup.tsx
 msgid "Posts are grouped by authors, sorted by posts count per author."
 msgstr "嘟文按作者分组，按每位作者的嘟文数量排序。"
-
-#: src/pages/settings.tsx
-msgid "<0>Bluepy</0><1/>Forked for ATProto by <2>@alice.mosphere.at</2> and <3>@quillmatiq.com</3>"
-msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "With a new account"
@@ -4384,8 +4382,8 @@ msgstr "评论"
 #~ msgstr "添加过滤规则。"
 
 #: src/pages/status.tsx
-#~ msgid "Switch to post's PDS"
-#~ msgstr ""
+msgid "Switch to post's PDS"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
@@ -4547,8 +4545,8 @@ msgid "Editing source post"
 msgstr "编辑原嘟"
 
 #: src/pages/settings.tsx
-#~ msgid "Polls"
-#~ msgstr "投票"
+msgid "Polls"
+msgstr "投票"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
@@ -4567,8 +4565,8 @@ msgid "Filter out notifications from people:"
 msgstr "过滤来自这些人的通知:"
 
 #: src/pages/settings.tsx
-#~ msgid "Push Notifications (beta)"
-#~ msgstr "通知推送 (beta)"
+msgid "Push Notifications (beta)"
+msgstr "通知推送 (beta)"
 
 #: src/pages/catchup.tsx
 msgid "last 10 hours"
@@ -4606,8 +4604,8 @@ msgstr "编辑视频描述"
 #~ msgstr "添加内容警告"
 
 #: src/pages/settings.tsx
-#~ msgid "people I follow"
-#~ msgstr "我关注的人"
+msgid "people I follow"
+msgstr "我关注的人"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -4911,8 +4909,8 @@ msgid "Share"
 msgstr "分享"
 
 #: src/pages/settings.tsx
-#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
-#~ msgstr "注意: 只能推送 <0>一个账户</0> 的通知。"
+msgid "NOTE: Push notifications only work for <0>one account</0>."
+msgstr "注意: 只能推送 <0>一个账户</0> 的通知。"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
@@ -4977,8 +4975,8 @@ msgstr "查看横幅图片"
 
 #: src/pages/login.tsx
 #: src/pages/login.tsx
-#~ msgid "Failed to register application"
-#~ msgstr "注册应用失败"
+msgid "Failed to register application"
+msgstr "注册应用失败"
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
@@ -5035,5 +5033,15 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/favourites.tsx
 #: src/pages/favourites.tsx
+#: src/pages/settings.tsx
 msgid "Likes"
 msgstr "点赞列表"
+
+#. placeholder {0}: groupBy ?? ''
+#: src/pages/catchup.tsx
+msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} reposts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} repostsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "<0>Bluepy</0><1/>Forked for ATProto by <2>@alice.mosphere.at</2> and <3>@quillmatiq.com</3>"
+msgstr ""

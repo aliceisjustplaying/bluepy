@@ -59,6 +59,7 @@ msgstr "Silencia a @{username}"
 #: src/pages/mentions.tsx
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
+#: src/pages/settings.tsx
 #: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "Mencions"
@@ -191,8 +192,8 @@ msgstr "S'ha copiat la configuració de la drecera"
 #~ msgstr "Edita les notes"
 
 #: src/pages/settings.tsx
-#~ msgid "anyone"
-#~ msgstr "qualsevol"
+msgid "anyone"
+msgstr "qualsevol"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
@@ -507,6 +508,7 @@ msgstr "Pendent de revisió"
 #~ msgstr "Continueu amb {selectedInstanceText}"
 
 #: src/components/timeline.tsx
+#: src/pages/settings.tsx
 msgid "New posts"
 msgstr "Publicacions noves"
 
@@ -770,13 +772,8 @@ msgid "We read every message even when we cannot reply."
 msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "Follow requests"
-#~ msgstr "Sol·licituds de seguiment"
-
-#. placeholder {0}: groupBy ?? ''
-#: src/pages/catchup.tsx
-msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} reposts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} repostsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-msgstr ""
+msgid "Follow requests"
+msgstr "Sol·licituds de seguiment"
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Switch to account's server {0}"
@@ -797,8 +794,8 @@ msgid "Show less"
 msgstr "Mostra'n menys"
 
 #: src/pages/settings.tsx
-#~ msgid "Push notifications are blocked. Please enable them in your browser settings."
-#~ msgstr "Les notificacions estan bloquejades. Si us plau, activeu-les al vostre navegador."
+msgid "Push notifications are blocked. Please enable them in your browser settings."
+msgstr "Les notificacions estan bloquejades. Si us plau, activeu-les al vostre navegador."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -880,7 +877,7 @@ msgstr "Filtrat: {filterTitleStr}"
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {2}: ( postingStats.quotes / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {3}: ( postingStats.reposts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
+#. placeholder {3}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
 msgid "{0} original posts, {1} replies, {2} quotes, {3} reposts"
 msgstr ""
@@ -942,8 +939,8 @@ msgid "Liked"
 msgstr "M'ha agradat"
 
 #: src/pages/settings.tsx
-#~ msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-#~ msgstr "No s'ha concedit el permís d'enviar notificacions des del darrer inici de sessió. Haureu d'<0><1>iniciar la sessió</1> de nou per concedir aquest permís</0>."
+msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
+msgstr "No s'ha concedit el permís d'enviar notificacions des del darrer inici de sessió. Haureu d'<0><1>iniciar la sessió</1> de nou per concedir aquest permís</0>."
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
@@ -1016,8 +1013,8 @@ msgid "Translated Bio"
 msgstr "Biografia traduïda"
 
 #: src/pages/status.tsx
-#~ msgid "Unable to switch"
-#~ msgstr "No s'ha pogut canviar"
+msgid "Unable to switch"
+msgstr "No s'ha pogut canviar"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
@@ -1034,9 +1031,10 @@ msgstr "Els vostres seguidors poden citar-vos"
 msgid "Open file"
 msgstr "Obre el fitxer"
 
+#. placeholder {0}: groupBy ?? ''
 #: src/pages/catchup.tsx
-#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-#~ msgstr ""
+msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+msgstr ""
 
 #: src/components/account-info.tsx
 #: src/components/edit-profile-sheet.tsx
@@ -1144,8 +1142,8 @@ msgid "Appearance"
 msgstr "Aparença"
 
 #: src/pages/settings.tsx
-#~ msgid "Follows"
-#~ msgstr "Seguiments"
+msgid "Follows"
+msgstr "Seguiments"
 
 #. By [Author]
 #. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
@@ -1254,7 +1252,7 @@ msgstr "Cerca: {q} (etiquetes)"
 #~ msgid "Unable to save shortcuts"
 #~ msgstr "No es poden desar les dreceres"
 
-#: src/components/status-repost.tsx
+#: src/components/status-reblog.tsx
 msgid "<0/> <1>reposted</1>"
 msgstr ""
 
@@ -1907,6 +1905,7 @@ msgid "Failed to generate description{0}"
 msgstr "No s'ha pogut generar la descripció{0}"
 
 #: src/components/shortcuts-settings.tsx
+#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "Edita"
@@ -2272,9 +2271,10 @@ msgstr "No s'ha pogut actualitzar la visibilitat per defecte"
 msgid "Cleared recent searches"
 msgstr "Cerques recents esborrades"
 
+#. placeholder {0}: toUnicode(postInstance)
 #: src/pages/status.tsx
-#~ msgid "Switch to post's PDS ({0})"
-#~ msgstr ""
+msgid "Switch to post's PDS ({0})"
+msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
@@ -2366,8 +2366,8 @@ msgstr ""
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
-#~ msgid "Failed to update subscription. Please try again."
-#~ msgstr "No s'ha actualitzat la subscripció. Si us plau, intenta-ho de nou."
+msgid "Failed to update subscription. Please try again."
+msgstr "No s'ha actualitzat la subscripció. Si us plau, intenta-ho de nou."
 
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
@@ -2658,8 +2658,8 @@ msgid "Emojis:"
 msgstr "Emojis:"
 
 #: src/pages/settings.tsx
-#~ msgid "Post edits"
-#~ msgstr "Edició de publicacions"
+msgid "Post edits"
+msgstr "Edició de publicacions"
 
 #: src/pages/accounts.jsx
 #~ msgid "Log out <0>@{0}</0>?"
@@ -2807,7 +2807,7 @@ msgstr "Importa"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
-#: src/components/status-repost.tsx
+#: src/components/status-reblog.tsx
 msgid "Group"
 msgstr "Grup"
 
@@ -3348,8 +3348,8 @@ msgstr "Desactiva les notificacions"
 #~ msgstr "No ha estat possible actualitzar la nota privada."
 
 #: src/pages/hashtag.tsx
-#~ msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
-#~ msgstr "{TOTAL_TAGS_LIMIT, plural, one {}other {Màxim de # etiquetes}}"
+msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
+msgstr "{TOTAL_TAGS_LIMIT, plural, one {}other {Màxim de # etiquetes}}"
 
 #: src/pages/catchup.tsx
 msgid "last 1 hour"
@@ -3393,8 +3393,8 @@ msgid "Unable to block @{username}"
 msgstr "No ha estat possible blocar @{username}"
 
 #: src/pages/settings.tsx
-#~ msgid "followers"
-#~ msgstr "seguidors"
+msgid "followers"
+msgstr "seguidors"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
@@ -3585,8 +3585,8 @@ msgid "Replying to @{0}’s post (<0>{1}</0>)"
 msgstr "Contestant la publicació de @{0} (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
-#~ msgid "Failed to remove subscription. Please try again."
-#~ msgstr "No s'ha eliminat la subscripció. Si us plau, intenta-ho de nou."
+msgid "Failed to remove subscription. Please try again."
+msgstr "No s'ha eliminat la subscripció. Si us plau, intenta-ho de nou."
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
@@ -3704,9 +3704,10 @@ msgstr "Botó flotant"
 msgid "Move up"
 msgstr "Mou cap amunt"
 
+#. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
-#~ msgid "Allow from <0>{0}</0>"
-#~ msgstr "Permet-les de <0>{0}</0>"
+msgid "Allow from <0>{0}</0>"
+msgstr "Permet-les de <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -3813,6 +3814,7 @@ msgstr "Autor anterior"
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4021,7 +4023,7 @@ msgstr "Inicieu la sessió"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.reposts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
+#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
 msgid "{0} original posts, {1} replies, {2} reposts"
 msgstr ""
@@ -4038,10 +4040,6 @@ msgstr ""
 #: src/pages/catchup.tsx
 msgid "Posts are grouped by authors, sorted by posts count per author."
 msgstr "Les publicacions s'agrupen per autors, ordenades pel nombre de publicacions per autor."
-
-#: src/pages/settings.tsx
-msgid "<0>Bluepy</0><1/>Forked for ATProto by <2>@alice.mosphere.at</2> and <3>@quillmatiq.com</3>"
-msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "With a new account"
@@ -4388,8 +4386,8 @@ msgstr "Comentaris"
 #~ msgstr "Afegeix un filtre"
 
 #: src/pages/status.tsx
-#~ msgid "Switch to post's PDS"
-#~ msgstr ""
+msgid "Switch to post's PDS"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
@@ -4551,8 +4549,8 @@ msgid "Editing source post"
 msgstr "Editant la publicació original"
 
 #: src/pages/settings.tsx
-#~ msgid "Polls"
-#~ msgstr "Enquestes"
+msgid "Polls"
+msgstr "Enquestes"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
@@ -4571,8 +4569,8 @@ msgid "Filter out notifications from people:"
 msgstr "Exclou les notificacions de:"
 
 #: src/pages/settings.tsx
-#~ msgid "Push Notifications (beta)"
-#~ msgstr "Notificacions (beta)"
+msgid "Push Notifications (beta)"
+msgstr "Notificacions (beta)"
 
 #: src/pages/catchup.tsx
 msgid "last 10 hours"
@@ -4610,8 +4608,8 @@ msgstr "Edita la descripció del vídeo"
 #~ msgstr "Afegeix un avís de contingut"
 
 #: src/pages/settings.tsx
-#~ msgid "people I follow"
-#~ msgstr "persones que segueixo"
+msgid "people I follow"
+msgstr "persones que segueixo"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -4915,8 +4913,8 @@ msgid "Share"
 msgstr "Comparteix"
 
 #: src/pages/settings.tsx
-#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
-#~ msgstr "NOTA: les notificacions només funcionen per a <0>un compte</0>."
+msgid "NOTE: Push notifications only work for <0>one account</0>."
+msgstr "NOTA: les notificacions només funcionen per a <0>un compte</0>."
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
@@ -4981,8 +4979,8 @@ msgstr "Veure imatge de la capçalera"
 
 #: src/pages/login.tsx
 #: src/pages/login.tsx
-#~ msgid "Failed to register application"
-#~ msgstr "No s'ha pogut registrar l'aplicació"
+msgid "Failed to register application"
+msgstr "No s'ha pogut registrar l'aplicació"
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
@@ -5039,5 +5037,15 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/favourites.tsx
 #: src/pages/favourites.tsx
+#: src/pages/settings.tsx
 msgid "Likes"
 msgstr "\"M'agrada\""
+
+#. placeholder {0}: groupBy ?? ''
+#: src/pages/catchup.tsx
+msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} reposts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} repostsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "<0>Bluepy</0><1/>Forked for ATProto by <2>@alice.mosphere.at</2> and <3>@quillmatiq.com</3>"
+msgstr ""

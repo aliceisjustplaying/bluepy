@@ -59,6 +59,7 @@ msgstr "{username} 님 뮤트함"
 #: src/pages/mentions.tsx
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
+#: src/pages/settings.tsx
 #: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "언급"
@@ -191,8 +192,8 @@ msgstr "바로 가기 설정을 복사함"
 #~ msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "anyone"
-#~ msgstr "모두"
+msgid "anyone"
+msgstr "모두"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
@@ -507,6 +508,7 @@ msgstr "검토 대기중"
 #~ msgstr ""
 
 #: src/components/timeline.tsx
+#: src/pages/settings.tsx
 msgid "New posts"
 msgstr "새 게시물"
 
@@ -770,13 +772,8 @@ msgid "We read every message even when we cannot reply."
 msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "Follow requests"
-#~ msgstr "팔로 요청"
-
-#. placeholder {0}: groupBy ?? ''
-#: src/pages/catchup.tsx
-msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} reposts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} repostsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-msgstr ""
+msgid "Follow requests"
+msgstr "팔로 요청"
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Switch to account's server {0}"
@@ -797,8 +794,8 @@ msgid "Show less"
 msgstr "접기"
 
 #: src/pages/settings.tsx
-#~ msgid "Push notifications are blocked. Please enable them in your browser settings."
-#~ msgstr "푸시 알림이 차단되었습니다. 브라우저 설정에서 푸시 알림을 활성화하세요."
+msgid "Push notifications are blocked. Please enable them in your browser settings."
+msgstr "푸시 알림이 차단되었습니다. 브라우저 설정에서 푸시 알림을 활성화하세요."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -880,7 +877,7 @@ msgstr "필터됨: {filterTitleStr}"
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {2}: ( postingStats.quotes / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {3}: ( postingStats.reposts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
+#. placeholder {3}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
 msgid "{0} original posts, {1} replies, {2} quotes, {3} reposts"
 msgstr ""
@@ -942,8 +939,8 @@ msgid "Liked"
 msgstr "좋아함"
 
 #: src/pages/settings.tsx
-#~ msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-#~ msgstr "마지막 로그인 이후 푸시 권한이 부여되지 않았습니다. <0>푸시 권한을 다시 얻으려면<1>로그인</1>을</0>해야합니다."
+msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
+msgstr "마지막 로그인 이후 푸시 권한이 부여되지 않았습니다. <0>푸시 권한을 다시 얻으려면<1>로그인</1>을</0>해야합니다."
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
@@ -1016,8 +1013,8 @@ msgid "Translated Bio"
 msgstr "번역된 소개문"
 
 #: src/pages/status.tsx
-#~ msgid "Unable to switch"
-#~ msgstr "전환할 수 없음"
+msgid "Unable to switch"
+msgstr "전환할 수 없음"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
@@ -1034,9 +1031,10 @@ msgstr ""
 msgid "Open file"
 msgstr ""
 
+#. placeholder {0}: groupBy ?? ''
 #: src/pages/catchup.tsx
-#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-#~ msgstr ""
+msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+msgstr ""
 
 #: src/components/account-info.tsx
 #: src/components/edit-profile-sheet.tsx
@@ -1144,8 +1142,8 @@ msgid "Appearance"
 msgstr "외관"
 
 #: src/pages/settings.tsx
-#~ msgid "Follows"
-#~ msgstr "팔로"
+msgid "Follows"
+msgstr "팔로"
 
 #. By [Author]
 #. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
@@ -1254,7 +1252,7 @@ msgstr "검색: {q} (해시태그)"
 #~ msgid "Unable to save shortcuts"
 #~ msgstr "바로 가기를 저장할 수 없음"
 
-#: src/components/status-repost.tsx
+#: src/components/status-reblog.tsx
 msgid "<0/> <1>reposted</1>"
 msgstr ""
 
@@ -1905,6 +1903,7 @@ msgid "Failed to generate description{0}"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx
+#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "고치기"
@@ -2270,9 +2269,10 @@ msgstr ""
 msgid "Cleared recent searches"
 msgstr ""
 
+#. placeholder {0}: toUnicode(postInstance)
 #: src/pages/status.tsx
-#~ msgid "Switch to post's PDS ({0})"
-#~ msgstr ""
+msgid "Switch to post's PDS ({0})"
+msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
@@ -2362,8 +2362,8 @@ msgstr "{account} 님이 내 게시물에 {emojiObject} 반응을 남겼습니�
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
-#~ msgid "Failed to update subscription. Please try again."
-#~ msgstr "구독을 갱신하는 데 실패했습니다. 다시 시도해 보세요."
+msgid "Failed to update subscription. Please try again."
+msgstr "구독을 갱신하는 데 실패했습니다. 다시 시도해 보세요."
 
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
@@ -2654,8 +2654,8 @@ msgid "Emojis:"
 msgstr "에모지:"
 
 #: src/pages/settings.tsx
-#~ msgid "Post edits"
-#~ msgstr "게시물 수정"
+msgid "Post edits"
+msgstr "게시물 수정"
 
 #: src/pages/accounts.jsx
 #~ msgid "Log out <0>@{0}</0>?"
@@ -2803,7 +2803,7 @@ msgstr "가져오기"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
-#: src/components/status-repost.tsx
+#: src/components/status-reblog.tsx
 msgid "Group"
 msgstr "그룹"
 
@@ -3344,8 +3344,8 @@ msgstr ""
 #~ msgstr ""
 
 #: src/pages/hashtag.tsx
-#~ msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
-#~ msgstr ""
+msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
+msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "last 1 hour"
@@ -3389,8 +3389,8 @@ msgid "Unable to block @{username}"
 msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "followers"
-#~ msgstr "팔로워"
+msgid "followers"
+msgstr "팔로워"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
@@ -3581,8 +3581,8 @@ msgid "Replying to @{0}’s post (<0>{1}</0>)"
 msgstr "@{0} 님 게시물에 답글 달기(<0>{1}</0>)"
 
 #: src/pages/settings.tsx
-#~ msgid "Failed to remove subscription. Please try again."
-#~ msgstr "구독을 삭제하는 데 실패했습니다. 다시 시도하세요."
+msgid "Failed to remove subscription. Please try again."
+msgstr "구독을 삭제하는 데 실패했습니다. 다시 시도하세요."
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
@@ -3700,9 +3700,10 @@ msgstr "구석에 떠 있는 버튼"
 msgid "Move up"
 msgstr "위로 올리기"
 
+#. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
-#~ msgid "Allow from <0>{0}</0>"
-#~ msgstr "<0>{0}</0>에게서 알림 받기"
+msgid "Allow from <0>{0}</0>"
+msgstr "<0>{0}</0>에게서 알림 받기"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -3809,6 +3810,7 @@ msgstr "이전 글쓴이"
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4017,7 +4019,7 @@ msgstr "로그인"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.reposts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
+#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
 msgid "{0} original posts, {1} replies, {2} reposts"
 msgstr ""
@@ -4034,10 +4036,6 @@ msgstr ""
 #: src/pages/catchup.tsx
 msgid "Posts are grouped by authors, sorted by posts count per author."
 msgstr "글이 글쓴이에 따라 묶이며, 게시물이 많은 글쓴이가 앞에 나옵니다."
-
-#: src/pages/settings.tsx
-msgid "<0>Bluepy</0><1/>Forked for ATProto by <2>@alice.mosphere.at</2> and <3>@quillmatiq.com</3>"
-msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "With a new account"
@@ -4384,8 +4382,8 @@ msgstr "댓글들"
 #~ msgstr "필터 추가"
 
 #: src/pages/status.tsx
-#~ msgid "Switch to post's PDS"
-#~ msgstr ""
+msgid "Switch to post's PDS"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
@@ -4547,8 +4545,8 @@ msgid "Editing source post"
 msgstr "원본 게시물 고치기"
 
 #: src/pages/settings.tsx
-#~ msgid "Polls"
-#~ msgstr "설문 조사"
+msgid "Polls"
+msgstr "설문 조사"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
@@ -4567,8 +4565,8 @@ msgid "Filter out notifications from people:"
 msgstr "다음 사용자로부터 알림을 제외:"
 
 #: src/pages/settings.tsx
-#~ msgid "Push Notifications (beta)"
-#~ msgstr "푸시 알림 (베타)"
+msgid "Push Notifications (beta)"
+msgstr "푸시 알림 (베타)"
 
 #: src/pages/catchup.tsx
 msgid "last 10 hours"
@@ -4606,8 +4604,8 @@ msgstr "동영상 설명 고치기"
 #~ msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "people I follow"
-#~ msgstr "내가 팔로하는 사람들"
+msgid "people I follow"
+msgstr "내가 팔로하는 사람들"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -4911,8 +4909,8 @@ msgid "Share"
 msgstr "공유"
 
 #: src/pages/settings.tsx
-#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
-#~ msgstr "주의: 푸시 알림은 <0>단 하나의 계정</0>에만 작동합니다."
+msgid "NOTE: Push notifications only work for <0>one account</0>."
+msgstr "주의: 푸시 알림은 <0>단 하나의 계정</0>에만 작동합니다."
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
@@ -4977,8 +4975,8 @@ msgstr "프로필 헤더 보기"
 
 #: src/pages/login.tsx
 #: src/pages/login.tsx
-#~ msgid "Failed to register application"
-#~ msgstr "앱 등록에 실패함"
+msgid "Failed to register application"
+msgstr "앱 등록에 실패함"
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
@@ -5035,5 +5033,15 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/favourites.tsx
 #: src/pages/favourites.tsx
+#: src/pages/settings.tsx
 msgid "Likes"
 msgstr "좋아요"
+
+#. placeholder {0}: groupBy ?? ''
+#: src/pages/catchup.tsx
+msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} reposts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} repostsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "<0>Bluepy</0><1/>Forked for ATProto by <2>@alice.mosphere.at</2> and <3>@quillmatiq.com</3>"
+msgstr ""

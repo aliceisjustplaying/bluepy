@@ -59,6 +59,7 @@ msgstr "خموشیده {username}"
 #: src/pages/mentions.tsx
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
+#: src/pages/settings.tsx
 #: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "اشاره‌ها"
@@ -191,8 +192,8 @@ msgstr "میانبرهای تنظیمات رونوشت شدند"
 #~ msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "anyone"
-#~ msgstr "هرکس"
+msgid "anyone"
+msgstr "هرکس"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
@@ -507,6 +508,7 @@ msgstr ""
 #~ msgstr "ادامه دادن با {selectedInstanceText}"
 
 #: src/components/timeline.tsx
+#: src/pages/settings.tsx
 msgid "New posts"
 msgstr "فرسته‌های جدید"
 
@@ -770,13 +772,8 @@ msgid "We read every message even when we cannot reply."
 msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "Follow requests"
-#~ msgstr "درخواست‌های پی‌گیری"
-
-#. placeholder {0}: groupBy ?? ''
-#: src/pages/catchup.tsx
-msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} reposts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} repostsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-msgstr ""
+msgid "Follow requests"
+msgstr "درخواست‌های پی‌گیری"
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Switch to account's server {0}"
@@ -797,8 +794,8 @@ msgid "Show less"
 msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "Push notifications are blocked. Please enable them in your browser settings."
-#~ msgstr "آگاهی‌های ارسالی مسدود شده‌اند. لطفا آنها را در تنظیمات مرورگر خود فعال کنید."
+msgid "Push notifications are blocked. Please enable them in your browser settings."
+msgstr "آگاهی‌های ارسالی مسدود شده‌اند. لطفا آنها را در تنظیمات مرورگر خود فعال کنید."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -880,7 +877,7 @@ msgstr "پالایش‌شده: {filterTitleStr}"
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {2}: ( postingStats.quotes / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {3}: ( postingStats.reposts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
+#. placeholder {3}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
 msgid "{0} original posts, {1} replies, {2} quotes, {3} reposts"
 msgstr ""
@@ -942,8 +939,8 @@ msgid "Liked"
 msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-#~ msgstr "اجازهٔ ارسال از زمان آخرین ورود شما داده نشده. شما باید دوباره <0><1>وارد شوید</1> و اجازهٔ ارسال را بدهید</0>."
+msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
+msgstr "اجازهٔ ارسال از زمان آخرین ورود شما داده نشده. شما باید دوباره <0><1>وارد شوید</1> و اجازهٔ ارسال را بدهید</0>."
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
@@ -1016,8 +1013,8 @@ msgid "Translated Bio"
 msgstr "شرح حال ترجمه شد"
 
 #: src/pages/status.tsx
-#~ msgid "Unable to switch"
-#~ msgstr ""
+msgid "Unable to switch"
+msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
@@ -1034,9 +1031,10 @@ msgstr ""
 msgid "Open file"
 msgstr ""
 
+#. placeholder {0}: groupBy ?? ''
 #: src/pages/catchup.tsx
-#~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
-#~ msgstr ""
+msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+msgstr ""
 
 #: src/components/account-info.tsx
 #: src/components/edit-profile-sheet.tsx
@@ -1144,8 +1142,8 @@ msgid "Appearance"
 msgstr "ظاهر"
 
 #: src/pages/settings.tsx
-#~ msgid "Follows"
-#~ msgstr ""
+msgid "Follows"
+msgstr ""
 
 #. By [Author]
 #. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
@@ -1254,7 +1252,7 @@ msgstr "جستجو: {q} (برچسب‌ها)"
 #~ msgid "Unable to save shortcuts"
 #~ msgstr "ناتوان در ذخیره کردن میانبرها"
 
-#: src/components/status-repost.tsx
+#: src/components/status-reblog.tsx
 msgid "<0/> <1>reposted</1>"
 msgstr ""
 
@@ -1905,6 +1903,7 @@ msgid "Failed to generate description{0}"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx
+#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "ویرایش"
@@ -2270,9 +2269,10 @@ msgstr ""
 msgid "Cleared recent searches"
 msgstr ""
 
+#. placeholder {0}: toUnicode(postInstance)
 #: src/pages/status.tsx
-#~ msgid "Switch to post's PDS ({0})"
-#~ msgstr ""
+msgid "Switch to post's PDS ({0})"
+msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
@@ -2362,8 +2362,8 @@ msgstr "{account} روی فرستهٔ شما با {emojiObject} بازخورد �
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
-#~ msgid "Failed to update subscription. Please try again."
-#~ msgstr ""
+msgid "Failed to update subscription. Please try again."
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
@@ -2654,8 +2654,8 @@ msgid "Emojis:"
 msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "Post edits"
-#~ msgstr ""
+msgid "Post edits"
+msgstr ""
 
 #: src/pages/accounts.jsx
 #~ msgid "Log out <0>@{0}</0>?"
@@ -2803,7 +2803,7 @@ msgstr "ورود"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
-#: src/components/status-repost.tsx
+#: src/components/status-reblog.tsx
 msgid "Group"
 msgstr "گروه"
 
@@ -3344,8 +3344,8 @@ msgstr ""
 #~ msgstr ""
 
 #: src/pages/hashtag.tsx
-#~ msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
-#~ msgstr "{TOTAL_TAGS_LIMIT, plural, other {بیشترین # برچسب‌ها}}"
+msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
+msgstr "{TOTAL_TAGS_LIMIT, plural, other {بیشترین # برچسب‌ها}}"
 
 #: src/pages/catchup.tsx
 msgid "last 1 hour"
@@ -3389,8 +3389,8 @@ msgid "Unable to block @{username}"
 msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "followers"
-#~ msgstr ""
+msgid "followers"
+msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
@@ -3581,8 +3581,8 @@ msgid "Replying to @{0}’s post (<0>{1}</0>)"
 msgstr "درحال پاسخ دادن به فرستهٔ @{0} (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
-#~ msgid "Failed to remove subscription. Please try again."
-#~ msgstr ""
+msgid "Failed to remove subscription. Please try again."
+msgstr ""
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
@@ -3700,9 +3700,10 @@ msgstr "دکمهٔ شناور"
 msgid "Move up"
 msgstr "حرکت به بالا"
 
+#. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
-#~ msgid "Allow from <0>{0}</0>"
-#~ msgstr "اجازه دادن از <0>{0}</0>"
+msgid "Allow from <0>{0}</0>"
+msgstr "اجازه دادن از <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -3809,6 +3810,7 @@ msgstr "نویسندهٔ پیشین"
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4017,7 +4019,7 @@ msgstr "ورود"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.reposts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
+#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
 msgid "{0} original posts, {1} replies, {2} reposts"
 msgstr ""
@@ -4034,10 +4036,6 @@ msgstr ""
 #: src/pages/catchup.tsx
 msgid "Posts are grouped by authors, sorted by posts count per author."
 msgstr "فرسته‌ها طبق نویسنده‌ها دسته‌بندی شده‌اند، طبق فرسته بر حسب نویسنده مرتب شده‌اند."
-
-#: src/pages/settings.tsx
-msgid "<0>Bluepy</0><1/>Forked for ATProto by <2>@alice.mosphere.at</2> and <3>@quillmatiq.com</3>"
-msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "With a new account"
@@ -4384,8 +4382,8 @@ msgstr ""
 #~ msgstr "اصافه کردن پالایه"
 
 #: src/pages/status.tsx
-#~ msgid "Switch to post's PDS"
-#~ msgstr ""
+msgid "Switch to post's PDS"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
@@ -4547,8 +4545,8 @@ msgid "Editing source post"
 msgstr "ویرایش فرستهٔ منبع"
 
 #: src/pages/settings.tsx
-#~ msgid "Polls"
-#~ msgstr ""
+msgid "Polls"
+msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
@@ -4567,8 +4565,8 @@ msgid "Filter out notifications from people:"
 msgstr "پالایش کردن آگاهی‌ها از افراد:"
 
 #: src/pages/settings.tsx
-#~ msgid "Push Notifications (beta)"
-#~ msgstr "آگاهی ارسالی (بتا)"
+msgid "Push Notifications (beta)"
+msgstr "آگاهی ارسالی (بتا)"
 
 #: src/pages/catchup.tsx
 msgid "last 10 hours"
@@ -4606,8 +4604,8 @@ msgstr "ویرایش کردن شرح ویدئو"
 #~ msgstr ""
 
 #: src/pages/settings.tsx
-#~ msgid "people I follow"
-#~ msgstr ""
+msgid "people I follow"
+msgstr ""
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -4911,8 +4909,8 @@ msgid "Share"
 msgstr "همرسانی"
 
 #: src/pages/settings.tsx
-#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
-#~ msgstr "نکته: آگاهی‌های ارسالی فقط برای <0>یک حساب کاربری</0> کار میکنند."
+msgid "NOTE: Push notifications only work for <0>one account</0>."
+msgstr "نکته: آگاهی‌های ارسالی فقط برای <0>یک حساب کاربری</0> کار میکنند."
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
@@ -4977,8 +4975,8 @@ msgstr "نمایش سرآیند نمایه"
 
 #: src/pages/login.tsx
 #: src/pages/login.tsx
-#~ msgid "Failed to register application"
-#~ msgstr ""
+msgid "Failed to register application"
+msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
@@ -5035,5 +5033,15 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/favourites.tsx
 #: src/pages/favourites.tsx
+#: src/pages/settings.tsx
 msgid "Likes"
 msgstr "برگزیده‌ها"
+
+#. placeholder {0}: groupBy ?? ''
+#: src/pages/catchup.tsx
+msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} reposts {reposts} quotes {quotes} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} repostsCount {{sortOrder, select, asc {fewest reposts} desc {most reposts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "<0>Bluepy</0><1/>Forked for ATProto by <2>@alice.mosphere.at</2> and <3>@quillmatiq.com</3>"
+msgstr ""
