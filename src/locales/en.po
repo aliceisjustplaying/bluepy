@@ -2956,10 +2956,6 @@ msgstr ""
 msgid "Verified"
 msgstr ""
 
-#: src/components/feedback-modal.tsx:191
-msgid "Bug, confusing behavior, missing feature, anything."
-msgstr "Bug, confusing behavior, missing feature, anything."
-
 #: src/components/keyboard-shortcuts-help.tsx:17
 msgid "<0>{key1}</0> then <1>{key2}</1>"
 msgstr "<0>{key1}</0> then <1>{key2}</1>"
@@ -4013,6 +4009,10 @@ msgstr "View profile header"
 #: src/pages/login.tsx:188
 msgid "Failed to register application"
 msgstr "Failed to register application"
+
+#: src/components/feedback-modal.tsx:191
+msgid "Bugs, confusing behavior, missing features, or anything else."
+msgstr "Bugs, confusing behavior, missing features, or anything else."
 
 #. Relative time in minutes, as short as possible
 #. placeholder {0}: Math.floor(seconds / minute)
