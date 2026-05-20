@@ -1239,11 +1239,14 @@
 }
 
 .rule-list-select-bluepy-compact {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   box-sizing: border-box;
   width: 100%;
   min-height: 32px;
   padding: 5px 8px;
+  appearance: none;
   border-radius: 8px;
   border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.12));
   background-color: var(--bg-color, #fff);
@@ -1252,12 +1255,51 @@
   font-weight: 550;
   cursor: pointer;
   outline: none;
+  text-align: start;
   transition: all 0.15s ease;
 }
 
-.rule-list-select-bluepy-compact:focus {
+.rule-list-select-bluepy-compact:focus,
+.rule-list-select-bluepy-compact.active {
   border-color: var(--accent-color, var(--blue-color, #0085ff));
   box-shadow: 0 0 0 2px var(--accent-faded-color, rgba(0, 133, 255, 0.15));
+}
+
+.rule-list-select-bluepy-compact > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rule-list-select-bluepy-compact .icon {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  opacity: 0.65;
+}
+
+.threadgate-list-menu {
+  width: min(22rem, calc(100vw - 24px));
+  min-width: min(22rem, calc(100vw - 24px));
+  max-height: min(18rem, calc(100vh - 96px));
+  overflow-y: auto;
+}
+
+.threadgate-list-menu .szh-menu__item {
+  gap: 8px;
+  padding: 7px 10px !important;
+}
+
+.threadgate-list-menu-item.selected {
+  font-weight: 600;
+}
+
+.threadgate-list-menu-check {
+  display: flex;
+  flex: 0 0 16px;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-color, var(--blue-color, #0085ff));
 }
 
 .no-lists-warning-compact {

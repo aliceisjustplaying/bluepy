@@ -2338,42 +2338,69 @@ function Compose({
                     {threadgateRules.includes('list') && (
                       <div className="reply-list-dropdown-container-compact">
                         {userLists.length > 0 ? (
-                          <select
-                            className="rule-list-select-bluepy-compact"
-                            value={threadgateList}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setThreadgateList(value);
-                              store.session.set('currentThreadgateList', value);
-                              const matched = userLists.find(
-                                (l) =>
-                                  (l._atproto?.uri ||
-                                    decodeURIComponent(l.id)) === value,
-                              );
-                              const name = matched?.title || '';
-                              setThreadgateListName(name);
-                              store.session.set(
-                                'currentThreadgateListName',
-                                name,
-                              );
+                          <Menu2
+                            align="center"
+                            overflow="auto"
+                            menuClassName="threadgate-list-menu"
+                            portal={{ target: document.body }}
+                            containerProps={{
+                              style: {
+                                zIndex: 1001,
+                              },
                             }}
-                            disabled={uiState === 'loading'}
-                            dir="auto"
+                            menuButton={({ open }: { open: boolean }) => (
+                              <button
+                                type="button"
+                                className={`rule-list-select-bluepy-compact ${
+                                  open ? 'active' : ''
+                                }`}
+                                disabled={uiState === 'loading'}
+                                dir="auto"
+                              >
+                                <span>
+                                  {threadgateListName || (
+                                    <Trans>Select a list...</Trans>
+                                  )}
+                                </span>
+                                <Icon icon="chevron-down" size="s" />
+                              </button>
+                            )}
                           >
-                            <option value="" disabled>
-                              <Trans>Select a list...</Trans>
-                            </option>
                             {userLists.map((list) => {
                               const uri =
                                 list._atproto?.uri ||
                                 decodeURIComponent(list.id);
+                              const selected = uri === threadgateList;
                               return (
-                                <option value={uri} key={uri}>
-                                  {list.title}
-                                </option>
+                                <MenuItem
+                                  key={uri}
+                                  className={`threadgate-list-menu-item ${
+                                    selected ? 'selected' : ''
+                                  }`}
+                                  onClick={() => {
+                                    setThreadgateList(uri);
+                                    store.session.set(
+                                      'currentThreadgateList',
+                                      uri,
+                                    );
+                                    const name = list.title || '';
+                                    setThreadgateListName(name);
+                                    store.session.set(
+                                      'currentThreadgateListName',
+                                      name,
+                                    );
+                                  }}
+                                >
+                                  <span className="threadgate-list-menu-check">
+                                    {selected && (
+                                      <Icon icon="check-circle" size="s" />
+                                    )}
+                                  </span>
+                                  <span>{list.title}</span>
+                                </MenuItem>
                               );
                             })}
-                          </select>
+                          </Menu2>
                         ) : (
                           <span className="no-lists-warning-compact">
                             <Trans>(No user lists found)</Trans>
