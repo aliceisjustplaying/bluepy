@@ -9,7 +9,7 @@
 → **Secrets:** `source ~/.secrets/bluepy/source.env`.
 → **Build:** Bun only (`bun install`, `bun run …`, `bunx …`). Reuse `@atproto/*` types before defining new ones. "Type X" means convert X to TS, not patch JSDoc into `.js`. Runtime is browser / Cloudflare Workers.
 → **Verify** (apply the gates that match your change):
-  - i18n — after changing user-facing strings, `<Trans>`, `t``…```, or Lingui message IDs, run `bun run messages:extract` before typecheck/build. Do not rely on `bun run build` to extract catalogs.
+  - i18n — after changing user-facing strings, `<Trans>`, `t` macro calls, or Lingui message IDs, run `bun run messages:extract` before typecheck/build. Do not rely on `bun run build` to extract catalogs.
   - typecheck — always: `bun run typecheck`
   - test — when touching a module with Playwright coverage: `bun run test`
   - build — when changing bundling, routing, imports, assets, or packaging: `bun run build`
