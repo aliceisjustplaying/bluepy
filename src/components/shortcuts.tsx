@@ -157,11 +157,11 @@ function Shortcuts() {
   const tabBarRef = useRef<HTMLElement | null>(null);
 
   const hasLists = useRef(false);
-  const formattedShortcuts: FormattedShortcut[] = (shortcuts as ShortcutPin[])
-    .map((pin, i): FormattedShortcut | null => {
+  const formattedShortcuts: FormattedShortcut[] = [];
+  (shortcuts as ShortcutPin[]).forEach((pin, i) => {
       const { type, ...data } = pin;
       const meta = type ? SHORTCUTS_META[type] : undefined;
-      if (!type || !meta) return null;
+      if (!type || !meta) return;
       const shortcutData: ShortcutMetaInput = data;
       const pathData: ShortcutMetaInput = {
         ...data,
@@ -185,16 +185,15 @@ function Shortcuts() {
         hasLists.current = true;
       }
 
-      return {
+      formattedShortcuts.push({
         id,
         path,
         title,
         subtitle,
         icon,
         altIcon,
-      };
-    })
-    .filter((item): item is FormattedShortcut => item !== null);
+      });
+    });
 
   // Auto-scroll to active tab on first render
   useEffect(() => {
@@ -253,7 +252,9 @@ function Shortcuts() {
 
   useEffect(() => {
     if (listsMenuState === 'open') {
-      void getLists().then(setLists);
+      void (async () => {
+        setLists(await getLists());
+      })();
     }
   }, [listsMenuState]);
 
@@ -403,7 +404,9 @@ function Shortcuts() {
           position="anchor"
           onMenuChange={(e) => {
             if (e.open && hasLists.current) {
-              void getLists().then(setLists);
+              void (async () => {
+                setLists(await getLists());
+              })();
             }
           }}
           menuButton={

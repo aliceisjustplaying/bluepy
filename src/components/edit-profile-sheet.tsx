@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import states from '../utils/states';
@@ -59,6 +59,28 @@ export interface EditProfileSheetProps {
   onClose?: (result?: EditProfileSheetCloseResult) => void;
 }
 
+interface ProfileState {
+  uiState: string;
+  account: ProfileAccount | null;
+}
+
+type ProfileAction =
+  | { type: 'loaded'; account: ProfileAccount | null }
+  | { type: 'error' };
+
+function profileReducer(
+  state: ProfileState,
+  action: ProfileAction,
+): ProfileState {
+  switch (action.type) {
+    case 'loaded':
+      return { uiState: 'default', account: action.account };
+    case 'error':
+      return { ...state, uiState: 'error' };
+  }
+  return state;
+}
+
 function FieldsAttributesRow({
   name,
   value,
@@ -101,8 +123,10 @@ function FieldsAttributesRow({
 function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   const { t } = useLingui();
   const { masto } = api();
-  const [uiState, setUIState] = useState('loading');
-  const [account, setAccount] = useState<ProfileAccount | null>(null);
+  const [{ uiState, account }, dispatchProfile] = useReducer(profileReducer, {
+    uiState: 'loading',
+    account: null,
+  });
   const [headerPreview, setHeaderPreview] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
@@ -119,11 +143,10 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
     void (async () => {
       try {
         const acc = await accountsApi.verifyCredentials();
-        setAccount(acc ?? null);
-        setUIState('default');
+        dispatchProfile({ type: 'loaded', account: acc ?? null });
       } catch (err) {
         console.error(err);
-        setUIState('error');
+        dispatchProfile({ type: 'error' });
       }
     })();
   }, [accountsApi]);

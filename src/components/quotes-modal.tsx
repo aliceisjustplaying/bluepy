@@ -30,6 +30,25 @@ interface QuotesModalProps {
   renderStatus: RenderStatus;
 }
 
+function QuotedStatusPreview({
+  post,
+  instance,
+  renderStatus,
+}: {
+  post: mastodon.v1.Status;
+  instance?: string;
+  renderStatus: RenderStatus;
+}) {
+  return renderStatus({
+    status: post as AnyStatus,
+    instance,
+    size: 's',
+    readOnly: true,
+    showCommentCount: true,
+    showQuoteCount: true,
+  });
+}
+
 export default function QuotesModal({
   statusId,
   instance,
@@ -147,14 +166,11 @@ export default function QuotesModal({
                       }
                     }}
                   >
-                    {renderStatus({
-                      status: post as AnyStatus,
-                      instance,
-                      size: 's',
-                      readOnly: true,
-                      showCommentCount: true,
-                      showQuoteCount: true,
-                    })}
+                    <QuotedStatusPreview
+                      post={post}
+                      instance={instance}
+                      renderStatus={renderStatus}
+                    />
                   </Link>
                 </li>
               ))}

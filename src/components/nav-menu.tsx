@@ -424,14 +424,14 @@ function ListMenu({ menuState }: { menuState: MenuStateValue }) {
   useEffect(() => {
     if (!supportsLists) return;
     if (menuState === 'open') {
-      void getLists()
-        .then((value) => {
+      void (async () => {
+        try {
+          const value = await getLists();
           setLists(value);
-          return undefined;
-        })
-        .catch((err: unknown) => {
+        } catch (err) {
           console.error(err);
-        });
+        }
+      })();
     }
   }, [menuState, supportsLists]);
 

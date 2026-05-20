@@ -128,9 +128,11 @@ interface EmojiTextProps {
   resolverURL?: string;
 }
 
+const EMPTY_EMOJIS: readonly ResolvedEmoji[] = [];
+
 function EmojiText({
   text,
-  emojis = [],
+  emojis = EMPTY_EMOJIS,
   staticEmoji,
   resolverURL,
 }: EmojiTextProps): ReactNode {

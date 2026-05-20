@@ -2,7 +2,7 @@ import './drafts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { CSSProperties } from 'react';
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer } from 'react';
 
 import { api } from '../utils/api';
 import db from '../utils/db';
@@ -47,23 +47,52 @@ interface DraftsProps {
   onClose?: () => void;
 }
 
+interface DraftsState {
+  uiState: 'default' | 'loading' | 'error';
+  drafts: Draft[];
+}
+
+type DraftsAction =
+  | { type: 'loading' }
+  | { type: 'loaded'; drafts: Draft[] }
+  | { type: 'error' }
+  | { type: 'uiState'; uiState: DraftsState['uiState'] };
+
+function draftsReducer(state: DraftsState, action: DraftsAction): DraftsState {
+  switch (action.type) {
+    case 'loading':
+      return { ...state, uiState: 'loading' };
+    case 'loaded':
+      return { uiState: 'default', drafts: action.drafts };
+    case 'error':
+      return { ...state, uiState: 'error' };
+    case 'uiState':
+      return { ...state, uiState: action.uiState };
+  }
+  return state;
+}
+
 function Drafts({ onClose }: DraftsProps) {
   const { t } = useLingui();
   const { masto } = api();
-  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
-    'default',
-  );
-  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [{ uiState, drafts }, dispatchDrafts] = useReducer(draftsReducer, {
+    uiState: 'default',
+    drafts: [],
+  });
+  const setUIState = (nextUIState: DraftsState['uiState']) => {
+    dispatchDrafts({ type: 'uiState', uiState: nextUIState });
+  };
   const [reloadCount, reload] = useReducer(
     (c: number, _action?: undefined) => c + 1,
     0,
   );
 
   useEffect(() => {
-    setUIState('loading');
+    dispatchDrafts({ type: 'loading' });
     void (async () => {
       try {
         const keys = (await db.drafts.keys()) as string[];
+        let nextDrafts: Draft[] = [];
         if (keys.length) {
           const ns = getCurrentAccountNS();
           const ownKeys = keys.filter((key) => key.startsWith(ns));
@@ -72,17 +101,13 @@ function Drafts({ onClose }: DraftsProps) {
             ownDrafts.sort(
               (a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
             );
-            setDrafts(ownDrafts);
-          } else {
-            setDrafts([]);
+            nextDrafts = ownDrafts;
           }
-        } else {
-          setDrafts([]);
         }
-        setUIState('default');
+        dispatchDrafts({ type: 'loaded', drafts: nextDrafts });
       } catch (e) {
         console.error(e);
-        setUIState('error');
+        dispatchDrafts({ type: 'error' });
       }
     })();
   }, [reloadCount]);

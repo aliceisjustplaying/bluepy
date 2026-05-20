@@ -8,7 +8,11 @@ const hasBarcodeDetector = 'BarcodeDetector' in window;
 if (!hasBarcodeDetector) {
   // Prefetch qr/dom.js for caching
   setTimeout(() => {
-    import('qr/dom.js').catch(() => {});
+    void (async () => {
+      try {
+        await import('qr/dom.js');
+      } catch {}
+    })();
   }, 1000);
 }
 
@@ -85,12 +89,15 @@ class QRCamera {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices)
       throw new Error('Media Devices not supported');
     const devices = await navigator.mediaDevices.enumerateDevices();
-    return devices
-      .filter((device) => device.kind === 'videoinput')
-      .map((i) => ({
-        deviceId: i.deviceId,
-        label: i.label || `Camera ${i.deviceId}`,
-      }));
+    const videoDevices: Array<{ deviceId: string; label: string }> = [];
+    for (const device of devices) {
+      if (device.kind !== 'videoinput') continue;
+      videoDevices.push({
+        deviceId: device.deviceId,
+        label: device.label || `Camera ${device.deviceId}`,
+      });
+    }
+    return videoDevices;
   }
   async setDevice(deviceId: string) {
     this.stop();
@@ -372,30 +379,30 @@ function QrScannerModal({
               <path
                 d="M 25 10 L 15 10 Q 10 10 10 15 L 10 25"
                 stroke="currentColor"
-                stroke-width="2"
+                strokeWidth="2"
                 fill="none"
-                stroke-linecap="round"
+                strokeLinecap="round"
               />
               <path
                 d="M 75 10 L 85 10 Q 90 10 90 15 L 90 25"
                 stroke="currentColor"
-                stroke-width="2"
+                strokeWidth="2"
                 fill="none"
-                stroke-linecap="round"
+                strokeLinecap="round"
               />
               <path
                 d="M 25 90 L 15 90 Q 10 90 10 85 L 10 75"
                 stroke="currentColor"
-                stroke-width="2"
+                strokeWidth="2"
                 fill="none"
-                stroke-linecap="round"
+                strokeLinecap="round"
               />
               <path
                 d="M 75 90 L 85 90 Q 90 90 90 85 L 90 75"
                 stroke="currentColor"
-                stroke-width="2"
+                strokeWidth="2"
                 fill="none"
-                stroke-linecap="round"
+                strokeLinecap="round"
               />
             </svg>
           </div>

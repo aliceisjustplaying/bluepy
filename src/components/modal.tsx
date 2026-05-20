@@ -42,9 +42,9 @@ function Modal({
     let timer = setTimeout(() => {
       const focusElement = modalRef.current?.querySelector(
         '[tabIndex="-1"]',
-      ) as HTMLElement | null;
+      );
       if (focusElement) {
-        focusElement.focus();
+        if (focusElement instanceof HTMLElement) focusElement.focus();
       }
     }, 100);
     return () => {
@@ -88,9 +88,9 @@ function Modal({
       // Similar to focusDeck in focus-deck.jsx
       // Focus last deck
       const page = $deckContainers[$deckContainers.length - 1] as
-        | HTMLElement
+        | Element
         | undefined; // last one
-      if (page && page.tabIndex === -1) {
+      if (page instanceof HTMLElement && page.tabIndex === -1) {
         page.focus();
       }
     } else {
@@ -177,8 +177,8 @@ function Modal({
         modalRef.current = node;
         const inner = node?.querySelector?.(
           '[tabIndex="-1"]',
-        ) as HTMLElement | null;
-        (escRef as { current: HTMLElement | null }).current = inner || node;
+        );
+        escRef.current = inner instanceof HTMLElement ? inner : node;
       }}
       className={modalClassName}
       role="presentation"
@@ -195,11 +195,11 @@ function Modal({
           if (e.target === e.currentTarget) {
             const focusElement = modalRef.current?.querySelector(
               '[tabIndex="-1"]',
-            ) as HTMLElement | null;
+            );
             const isFocusable =
-              !!focusElement &&
+              focusElement instanceof HTMLElement &&
               getComputedStyle(focusElement)?.pointerEvents !== 'none';
-            if (focusElement && isFocusable) {
+            if (focusElement instanceof HTMLElement && isFocusable) {
               focusElement.focus();
             }
           }

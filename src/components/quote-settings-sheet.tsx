@@ -54,6 +54,20 @@ function toSaveStatus(
   return status as SaveStatusPayload | null | undefined;
 }
 
+function QuoteSettingsPreview({
+  post,
+  renderStatus,
+}: {
+  post: mastodon.v1.Status;
+  renderStatus: RenderStatus;
+}) {
+  return renderStatus({
+    status: post as AnyStatus,
+    size: 's',
+    readOnly: true,
+  });
+}
+
 function QuoteSettingsSheet({
   onClose,
   post,
@@ -123,11 +137,7 @@ function QuoteSettingsSheet({
       <main>
         {!!post && (
           <div className="post-preview">
-            {renderStatus({
-              status: post as AnyStatus,
-              size: 's',
-              readOnly: true,
-            })}
+            <QuoteSettingsPreview post={post} renderStatus={renderStatus} />
           </div>
         )}
         <form
@@ -139,6 +149,9 @@ function QuoteSettingsSheet({
             value={selectedPolicy}
             name="quoteApprovalPolicy"
             disabled={uiState === 'loading'}
+            onChange={(e) => {
+              setSelectedPolicy(e.currentTarget.value);
+            }}
           >
             <option value="public">
               <Trans>Anyone can quote</Trans>

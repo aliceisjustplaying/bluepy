@@ -212,7 +212,7 @@ export default function QrCode({
       className="qr-code"
       viewBox={`${-padding} ${-padding} ${viewBoxWidth} ${viewBoxHeight}`}
       xmlns="http://www.w3.org/2000/svg"
-      shape-rendering="geometricPrecision"
+      shapeRendering="geometricPrecision"
     >
       <defs>
         <g id="position-marker">
@@ -223,7 +223,7 @@ export default function QrCode({
             height="6"
             fill="none"
             stroke="currentColor"
-            stroke-width="1"
+            strokeWidth="1"
             rx={markerOuterRadius}
             ry={markerOuterRadius}
           />
@@ -245,7 +245,7 @@ export default function QrCode({
             height="6"
             fill="none"
             stroke="white"
-            stroke-width="1"
+            strokeWidth="1"
             rx={markerOuterRadius}
             ry={markerOuterRadius}
           />
@@ -275,9 +275,9 @@ export default function QrCode({
             <path
               fill="white"
               stroke="white"
-              stroke-width="1"
-              stroke-linejoin="round"
-              stroke-linecap="round"
+              strokeWidth="1"
+              strokeLinejoin="round"
+              strokeLinecap="round"
               d={pathData}
             />
             <g id="position-markers-mask">
@@ -313,9 +313,9 @@ export default function QrCode({
           id="qr-pattern"
           fill="currentColor"
           stroke="currentColor"
-          stroke-width="1"
-          stroke-linejoin="round"
-          stroke-linecap="round"
+          strokeWidth="1"
+          strokeLinejoin="round"
+          strokeLinecap="round"
           d={pathData}
         />
       </defs>
@@ -352,7 +352,7 @@ export default function QrCode({
           width={centerImageSize}
           height={centerImageSize}
           preserveAspectRatio="xMidYMid slice"
-          clip-path={
+          clipPath={
             effectiveArenaCircle
               ? `circle(${centerImageSize / 2}px at ${centerImageSize / 2}px ${centerImageSize / 2}px)`
               : undefined

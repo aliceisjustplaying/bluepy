@@ -250,12 +250,15 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
             let comment: string | undefined = entries.comment as string;
             if (!comment) comment = undefined;
             const forward = entries.forward === 'on' ? true : undefined;
-            const ruleIds =
-              category === 'violation'
-                ? Object.entries(entries)
-                    .filter(([key]) => key.startsWith('rule_ids'))
-                    .map(([, value]) => value as string)
-                : undefined;
+            let ruleIds: string[] | undefined;
+            if (category === 'violation') {
+              ruleIds = [];
+              for (const [key, value] of Object.entries(entries)) {
+                if (key.startsWith('rule_ids') && typeof value === 'string') {
+                  ruleIds.push(value);
+                }
+              }
+            }
 
             const params = {
               category,

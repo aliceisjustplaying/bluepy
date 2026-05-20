@@ -39,6 +39,8 @@ interface IconProps {
   style?: CSSProperties;
 }
 
+const EMPTY_ICON_STYLE: CSSProperties = {};
+
 function Icon({
   icon,
   size = 'm',
@@ -46,7 +48,7 @@ function Icon({
   title,
   class: classProp = '',
   className = classProp,
-  style = {},
+  style = EMPTY_ICON_STYLE,
 }: IconProps) {
   title = title || alt;
   const { loadIcon, isIconLoaded } = useIconSprite();

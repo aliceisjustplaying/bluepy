@@ -25,12 +25,14 @@ const DELIMITERS_PATTERNS = [
   // '\\\\(?:ref|eqref)\\{[^}]*\\}', // \ref{...}, \eqref{...}
 ];
 const DELIMITERS_REGEX = new RegExp(DELIMITERS_PATTERNS.join('|'), 'g');
+const START_DELIMITERS = ['\\\\\\[', '\\\\\\(']; // \[ and \(
+const startRegex = new RegExp(`(${START_DELIMITERS.join('|')})`);
+const END_DELIMITER_BY_START = new Map([
+  ['\\[', '\\]'],
+  ['\\(', '\\)'],
+]);
 
 function cleanDOMForTemml(dom: HTMLElement) {
-  // Define start and end delimiter patterns
-  const START_DELIMITERS = ['\\\\\\[', '\\\\\\(']; // \[ and \(
-  const startRegex = new RegExp(`(${START_DELIMITERS.join('|')})`);
-
   // Walk through all text nodes
   const walker = document.createTreeWalker(dom, NodeFilter.SHOW_TEXT);
   const textNodes: ChildNode[] = [];
@@ -47,7 +49,7 @@ function cleanDOMForTemml(dom: HTMLElement) {
 
     // Find the matching end delimiter
     const startDelimiter = startMatch[0];
-    const endDelimiter = startDelimiter === '\\[' ? '\\]' : '\\)';
+    const endDelimiter = END_DELIMITER_BY_START.get(startDelimiter) ?? '\\)';
 
     // Collect nodes from start delimiter until end delimiter
     const nodesToCombine = [textNode];

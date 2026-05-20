@@ -69,9 +69,11 @@ interface GenericAccountsProps {
   blankCopy?: string;
 }
 
+const EMPTY_EXCLUDED_RELATIONSHIP_ATTRS: readonly string[] = [];
+
 export default function GenericAccounts({
   instance,
-  excludeRelationshipAttrs = [],
+  excludeRelationshipAttrs = EMPTY_EXCLUDED_RELATIONSHIP_ATTRS,
   postID,
   onClose = () => {},
   blankCopy,
@@ -157,16 +159,16 @@ export default function GenericAccounts({
           if (Array.isArray(value)) {
             if (firstLoadFlag) {
               const merged: AccountWithTypes[] = [];
-              for (let i = 0; i < value.length; i++) {
-                const account = value[i];
-                const theAccount = merged.find(
-                  (a, j) => a.id === account.id && i !== j,
-                );
+              const mergedById = new Map<string, AccountWithTypes>();
+              for (const account of value) {
+                const theAccount = mergedById.get(account.id);
                 if (!theAccount) {
-                  merged.push({
+                  const mergedAccount = {
                     ...account,
                     _types: account._types ?? [],
-                  });
+                  };
+                  mergedById.set(account.id, mergedAccount);
+                  merged.push(mergedAccount);
                 } else {
                   theAccount._types.push(...(account._types as string[]));
                 }
@@ -177,12 +179,13 @@ export default function GenericAccounts({
               // Merge accounts by id and _types
               setAccounts((prev) => {
                 const newAccounts = prev;
+                const accountsById = new Map(newAccounts.map((a) => [a.id, a]));
                 for (const account of value) {
-                  const theAccount = newAccounts.find(
-                    (a) => a.id === account.id,
-                  );
+                  const theAccount = accountsById.get(account.id);
                   if (!theAccount) {
-                    newAccounts.push(account as AccountWithTypes);
+                    const newAccount = account as AccountWithTypes;
+                    accountsById.set(account.id, newAccount);
+                    newAccounts.push(newAccount);
                   } else {
                     theAccount._types.push(...(account._types as string[]));
                   }

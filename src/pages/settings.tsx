@@ -105,7 +105,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
   const currentTextSize: number =
     parseInt(storedTextSize as string, 10) || DEFAULT_TEXT_SIZE;
 
-  const [prefs, setPrefs] = useState<Preferences>(getPreferences());
+  const [prefs, setPrefs] = useState<Preferences>(() => getPreferences());
   const { masto, authenticated } = api();
 
   // Get preferences every time Settings is opened

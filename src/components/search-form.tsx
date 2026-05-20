@@ -304,7 +304,7 @@ function SearchForm(props: SearchFormProps) {
         autoCapitalize="off"
         spellCheck={false}
         enterKeyHint="search"
-        onInput={(e: SyntheticEvent<HTMLInputElement>) => {
+        onChange={(e: SyntheticEvent<HTMLInputElement>) => {
           setQuery(e.currentTarget.value);
           setSearchMenuOpen(true);
         }}

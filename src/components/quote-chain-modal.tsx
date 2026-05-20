@@ -41,6 +41,25 @@ interface QuoteChainModalProps {
   renderStatus: RenderStatus;
 }
 
+function QuoteChainStatus({
+  post,
+  instance,
+  renderStatus,
+}: {
+  post: QuotedStatus;
+  instance?: string;
+  renderStatus: RenderStatus;
+}) {
+  return renderStatus({
+    status: post as AnyStatus,
+    instance,
+    size: 's',
+    readOnly: true,
+    showCommentCount: true,
+    showQuoteCount: (c?: number) => (c ?? 0) > 1,
+  });
+}
+
 export default function QuoteChainModal({
   statusId,
   instance,
@@ -188,14 +207,11 @@ export default function QuoteChainModal({
                   }
                 }}
               >
-                {renderStatus({
-                  status: post as AnyStatus,
-                  instance,
-                  size: 's',
-                  readOnly: true,
-                  showCommentCount: true,
-                  showQuoteCount: (c?: number) => (c ?? 0) > 1,
-                })}
+                <QuoteChainStatus
+                  post={post}
+                  instance={instance}
+                  renderStatus={renderStatus}
+                />
               </TruncatedLink>
             </li>
           ))}

@@ -268,27 +268,26 @@ export default function StatusPostBody({
                 poll={poll}
                 readOnly={readOnly || !sameInstance || !authenticated}
                 refresh={() => {
-                  return masto.v1.polls
-                    .$select(poll.id)
-                    .fetch()
-                    .then((pollResponse) => {
+                  return (async () => {
+                    try {
+                      const pollResponse = await masto.v1.polls
+                        .$select(poll.id)
+                        .fetch();
                       (states.statuses[sKey] as Record<string, unknown>).poll =
                         pollResponse;
-                      return undefined;
-                    })
-                    .catch((_e: unknown) => {});
+                    } catch {}
+                  })();
                 }}
                 votePoll={(choices: number[]) => {
-                  return masto.v1.polls
-                    .$select(poll.id)
-                    .votes.create({
+                  return (async () => {
+                    const pollResponse = await masto.v1.polls
+                      .$select(poll.id)
+                      .votes.create({
                       choices,
-                    })
-                    .then((pollResponse) => {
-                      (states.statuses[sKey] as Record<string, unknown>).poll =
-                        pollResponse;
-                      return undefined;
                     });
+                    (states.statuses[sKey] as Record<string, unknown>).poll =
+                      pollResponse;
+                  })();
                 }}
               />
             )}

@@ -1785,7 +1785,7 @@ function Compose({
               {linkPreview.loading ? (
                 <div className="compose-link-preview-body">
                   <span className="compose-link-preview-title">
-                    Loading link preview...
+                    Loading link preview…
                   </span>
                   <small>{linkPreview.url}</small>
                 </div>

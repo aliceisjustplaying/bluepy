@@ -3,6 +3,7 @@ import { msg, t } from '@lingui/core/macro';
 import { Plural, Select, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { ReactNode, ComponentType, JSX, Ref, ReactElement } from 'react';
+import { createContext, useContext } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
 
@@ -151,6 +152,23 @@ interface SubjectProps {
 }
 type SubjectComponent = ComponentType<SubjectProps>;
 const SubjectFallback = ({ children }: SubjectProps) => <>{children}</>;
+const NotificationSubjectClickContext = createContext<(() => void) | null>(null);
+
+function NotificationSubject({ clickable, ...props }: SubjectProps) {
+  const handleOpenGenericAccounts = useContext(NotificationSubjectClickContext);
+  if (!clickable) return <b {...props} />;
+  const { className, ...buttonProps } = props as SubjectProps & {
+    className?: string;
+  };
+  return (
+    <button
+      type="button"
+      className={`notification-subject-button${className ? ` ${className}` : ''}`}
+      onClick={handleOpenGenericAccounts ?? undefined}
+      {...buttonProps}
+    />
+  );
+}
 
 interface ContentTextArgs {
   account?: ReactElement | null;
@@ -557,10 +575,11 @@ function Notification({
   if (type === 'favourite+reblog') {
     if (_accounts) {
       for (const acct of _accounts) {
-        if (acct._types?.includes('favourite')) {
+        const accountTypes = new Set(acct._types);
+        if (accountTypes.has('favourite')) {
           favsCount++;
         }
-        if (acct._types?.includes('reblog')) {
+        if (accountTypes.has('reblog')) {
           reblogsCount++;
         }
       }
@@ -582,21 +601,6 @@ function Notification({
     // coerce explicitly.
     text = t`[Unknown notification type: ${String(type)}]`;
   }
-
-  const Subject: SubjectComponent = ({ clickable, ...props }) => {
-    if (!clickable) return <b {...props} />;
-    const { className, ...buttonProps } = props as SubjectProps & {
-      className?: string;
-    };
-    return (
-      <button
-        type="button"
-        className={`notification-subject-button${className ? ` ${className}` : ''}`}
-        onClick={handleOpenGenericAccounts}
-        {...buttonProps}
-      />
-    );
-  };
 
   // JS original: `notificationsCount > 0 && notificationsCount > sampleAccounts?.length`.
   // When `sampleAccounts` is undefined the second comparison resolves to
@@ -656,7 +660,7 @@ function Notification({
         count,
         postsCount,
         postType: isReplyToOthers ? 'reply' : 'post',
-        components: { Subject },
+        components: { Subject: NotificationSubject },
       });
     }
   }
@@ -727,8 +731,9 @@ function Notification({
             // if (!reactionType) continue;
             // JS original iterated `_accounts` directly; an exhausted iterator
             // (undefined) would crash here. Cast preserves that contract.
+            const accountsById = new Map(accounts.map((a) => [a.id, a]));
             for (const acct of keyAccountsList as AccountWithBot[]) {
-              const theAccount = accounts.find((a) => a.id === acct.id);
+              const theAccount = accountsById.get(acct.id);
               if (theAccount && reactionType) {
                 theAccount._types ??= [];
                 theAccount._types.push(reactionType);
@@ -842,7 +847,11 @@ function Notification({
         )} */}
         {type !== 'mention' && type !== 'quote' && type !== 'mention+quote' && (
           <>
-            <p>{text as ReactNode}</p>
+            <NotificationSubjectClickContext.Provider
+              value={handleOpenGenericAccounts}
+            >
+              <p>{text as ReactNode}</p>
+            </NotificationSubjectClickContext.Provider>
             {type === 'severed_relationships' && (
               <div>
                 {/* JS original accessed `event.type` directly without a

@@ -16,7 +16,7 @@ import floatingButtonUrl from '../assets/floating-button.svg';
 import multiColumnUrl from '../assets/multi-column.svg';
 import tabMenuBarUrl from '../assets/tab-menu-bar.svg';
 
-import { api, type MastoClient } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { getLists, getListTitle, splitListsAndFeeds } from '../utils/lists';
 import pmem from '../utils/pmem';
 import showToast from '../utils/show-toast';
@@ -54,19 +54,10 @@ interface AccountSelectClient {
 interface MastoV1AccountsForShortcuts {
   $select(id: string): AccountSelectClient;
 }
-interface ShortcutsMastoClient extends MastoClient {
-  v1: {
-    accounts: MastoClient['v1']['accounts'] & MastoV1AccountsForShortcuts;
-  } & MastoClient['v1'];
-}
-
-function asShortcutsMasto(masto: MastoClient): ShortcutsMastoClient {
-  return masto as ShortcutsMastoClient;
-}
-
-function shortcutsMasto(): ShortcutsMastoClient {
-  return asShortcutsMasto(api().masto);
-}
+type ShortcutMetaResolver<T> = (
+  shortcut: ShortcutMetaInput,
+  index?: number,
+) => T;
 
 // Lingui macro returns `Omit<I18nContext, "_"> & { t }`. Other tsx call sites
 // use `i18n._(msg)` to translate MessageDescriptors; we follow that pattern.
@@ -168,7 +159,11 @@ const TYPE_PARAMS: Record<string, TypeParam[]> = {
 };
 const fetchAccountTitle = pmem(
   async ({ id }: { id: string }): Promise<string> => {
-    const account = await shortcutsMasto().v1.accounts.$select(id).fetch();
+    const accountsResource = getMastoV1Resource<MastoV1AccountsForShortcuts>(
+      api().masto,
+      'accounts',
+    );
+    const account = await accountsResource.$select(id).fetch();
     return account.username || account.acct || account.displayName || '';
   },
 );
@@ -177,7 +172,7 @@ const fetchAccountTitle = pmem(
 // strings/MessageDescriptors and some are functions of the shortcut entry.
 export type ShortcutMetaValue<T> =
   | T
-  | ((shortcut: ShortcutMetaInput, index?: number) => T);
+  | ShortcutMetaResolver<T>;
 export interface ShortcutMetaEntry {
   id: ShortcutMetaValue<string>;
   title: ShortcutMetaValue<string | MessageDescriptor | Promise<string>>;
@@ -239,12 +234,10 @@ export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
     icon: 'user',
     altIcon: () => {
       const account = getCurrentAccount();
-      const info = account?.info as
-        | { avatarStatic?: string; avatar?: string }
-        | undefined;
+      const info = account?.info;
       return {
         // Prefer static URL
-        url: info?.avatarStatic || info?.avatar,
+        url: info?.avatar_static || info?.avatar,
         type: 'avatar',
       };
     },
@@ -279,6 +272,40 @@ export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
   },
 };
 
+function resolveShortcutMeta<T>(
+  value: ShortcutMetaValue<T> | undefined,
+  shortcut: ShortcutEntry,
+  index: number,
+  fallback: T,
+): T {
+  if (value === undefined) return fallback;
+  return typeof value === 'function'
+    ? (value as ShortcutMetaResolver<T>)(shortcut, index)
+    : value;
+}
+
+function isShortcutEntry(value: unknown): value is ShortcutEntry {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'type' in value &&
+    typeof value.type === 'string'
+  );
+}
+
+function asShortcutEntries(value: unknown): readonly ShortcutEntry[] {
+  return Array.isArray(value) ? value.filter(isShortcutEntry) : [];
+}
+
+function getStringRecord(value: unknown): Record<string, string> {
+  if (value === null || typeof value !== 'object') return {};
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      (entry): entry is [string, string] => typeof entry[1] === 'string',
+    ),
+  );
+}
+
 interface ShortcutsSettingsProps {
   onClose?: () => void;
 }
@@ -292,7 +319,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
   const { i18n } = useLingui();
   const _: Translator = (descriptor) => i18n._(descriptor);
   const snapStates = useSnapshot(states);
-  const shortcuts = snapStates.shortcuts as readonly ShortcutEntry[];
+  const shortcuts = asShortcutEntries(snapStates.shortcuts);
   const [showForm, setShowForm] = useState<ShortcutFormState>(false);
   const [showImportExport, setShowImportExport] = useState(false);
 
@@ -353,9 +380,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                   value={value}
                   checked={checked}
                   onChange={(e) => {
-                    states.settings.shortcutsViewMode = (
-                      e.target as HTMLInputElement
-                    ).value;
+                    states.settings.shortcutsViewMode = e.currentTarget.value;
                   }}
                 />{' '}
                 <img src={imgURL} alt="" width="80" height="58" />{' '}
@@ -367,55 +392,56 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
         {shortcuts.length > 0 ? (
           <>
             <ol className="shortcuts-list" ref={shortcutsListParent}>
-              {shortcuts.filter(Boolean).map((shortcut, i) => {
+              {shortcuts.map((shortcut, i) => {
+                if (!shortcut) return null;
                 // const key = i + Object.values(shortcut);
                 const key = Object.values(shortcut).join('-');
                 const { type } = shortcut;
                 if (!SHORTCUTS_META[type]) return null;
                 const meta = SHORTCUTS_META[type];
-                let icon: unknown = meta.icon;
-                let title: unknown = meta.title;
-                let subtitle: unknown = meta.subtitle;
-                let excludeViewMode: unknown = meta.excludeViewMode;
-                if (typeof title === 'function') {
-                  title = (title as (s: ShortcutEntry, i: number) => unknown)(
-                    shortcut,
-                    i,
-                  );
-                } else {
-                  title = _(title as MessageDescriptor);
-                }
-                if (typeof subtitle === 'function') {
-                  subtitle = (
-                    subtitle as (s: ShortcutEntry, i: number) => unknown
-                  )(shortcut, i);
-                } else {
-                  subtitle = _(subtitle as MessageDescriptor);
-                }
-                if (typeof icon === 'function') {
-                  icon = (icon as (s: ShortcutEntry, i: number) => unknown)(
-                    shortcut,
-                    i,
-                  );
-                }
-                if (typeof excludeViewMode === 'function') {
-                  excludeViewMode = (
-                    excludeViewMode as (s: ShortcutEntry, i: number) => unknown
-                  )(shortcut, i);
-                }
-                const excludedViewMode = (
-                  excludeViewMode as string[] | undefined
-                )?.includes(snapStates.settings.shortcutsViewMode as string);
+                const icon = resolveShortcutMeta(
+                  meta.icon,
+                  shortcut,
+                  i,
+                  '',
+                );
+                const titleValue = resolveShortcutMeta(
+                  meta.title,
+                  shortcut,
+                  i,
+                  '',
+                );
+                const title =
+                  typeof titleValue === 'string' ||
+                  titleValue instanceof Promise
+                    ? titleValue
+                    : _(titleValue);
+                const subtitle = resolveShortcutMeta(
+                  meta.subtitle,
+                  shortcut,
+                  i,
+                  undefined,
+                );
+                const excludeViewMode = resolveShortcutMeta(
+                  meta.excludeViewMode,
+                  shortcut,
+                  i,
+                  undefined,
+                );
+                const currentViewMode = snapStates.settings.shortcutsViewMode;
+                const excludedViewMode =
+                  typeof currentViewMode === 'string' &&
+                  excludeViewMode?.includes(currentViewMode);
                 return (
                   <li key={key}>
-                    <Icon icon={icon as string | undefined} />
+                    <Icon icon={icon} />
                     <span className="shortcut-text">
-                      <AsyncText>{title as string | Promise<string>}</AsyncText>
+                      <AsyncText>{title}</AsyncText>
                       {!!subtitle && (
                         <>
                           {' '}
                           <small className="ib insignificant">
-                            {subtitle as string}
+                            {subtitle}
                           </small>
                         </>
                       )}
@@ -574,13 +600,9 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
             onSubmit={({ result, mode }) => {
               console.log('onSubmit', result);
               if (mode === 'edit') {
-                // `showForm` is set to `{ shortcut, shortcutIndex }` in edit
-                // mode (see Edit button onClick). In add mode `showForm` is
-                // `true`; the form never emits `mode === 'edit'` then. Cast
-                // to keep original write-through-`undefined-index` behavior
-                // if that ever changes.
-                const sf = showForm as { shortcutIndex: number };
-                states.shortcuts[sf.shortcutIndex] = result;
+                if (typeof showForm === 'object') {
+                  states.shortcuts[showForm.shortcutIndex] = result;
+                }
               } else {
                 states.shortcuts.push(result);
               }
@@ -703,14 +725,12 @@ function ShortcutForm({
           onSubmit={(e) => {
             // Construct a nice object from form
             e.preventDefault();
-            const formEl = e.target as HTMLFormElement;
+            const formEl = e.currentTarget;
             const data = new FormData(formEl);
             const result: Record<string, string> = {};
             data.forEach((value, key) => {
-              // Original JS: `value?.trim()`. FormData entries are
-              // `string | File`; this form only collects text/checkbox
-              // values (strings), so cast to preserve runtime behavior.
-              result[key] = (value as string)?.trim();
+              if (typeof value !== 'string') return;
+              result[key] = value.trim();
               if (key === 'instance') {
                 // Remove protocol and trailing slash
                 result[key] = result[key]
@@ -723,7 +743,7 @@ function ShortcutForm({
             console.log('result', result);
             if (!result.type) return;
             onSubmit({
-              result: result as ShortcutEntry,
+              result: { ...result, type: result.type },
               mode: editMode ? 'edit' : 'add',
             });
             // Reset
@@ -860,10 +880,9 @@ function ShortcutForm({
                 type="button"
                 className="light danger"
                 onClick={() => {
-                  // shortcutIndex is required in edit mode; cast retains the
-                  // original splice-with-undefined runtime behavior if it
-                  // were ever absent.
-                  states.shortcuts.splice(shortcutIndex as number, 1);
+                  if (shortcutIndex !== undefined) {
+                    states.shortcuts.splice(shortcutIndex, 1);
+                  }
                   onClose?.();
                 }}
               >
@@ -961,7 +980,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
               placeholder={t`Paste shortcuts here`}
               className="block"
               onInput={(e) => {
-                setImportShortcutStr((e.target as HTMLInputElement).value);
+                setImportShortcutStr(e.currentTarget.value);
               }}
               dir="auto"
             />
@@ -999,13 +1018,14 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                   </small>
                 </p>
                 <ol className="import-settings-list">
-                  {parsedImportShortcutStr.map((rawShortcut, idx) => {
+                  {parsedImportShortcutStr.map((rawShortcut) => {
                     // The JS original accesses fields directly without
                     // validating each entry. We treat each parsed element as
                     // a loose string-record to preserve that.
-                    const shortcut = rawShortcut as Record<string, string>;
+                    const shortcut = getStringRecord(rawShortcut);
+                    const shortcutKey = JSON.stringify(shortcut);
                     return (
-                      <li key={idx}>
+                      <li key={shortcutKey}>
                         <span
                           style={{
                             opacity: shortcuts.some((s: ShortcutEntry) =>
@@ -1097,11 +1117,10 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                     // The trigger button is disabled when parsedImportShortcutStr
                     // is null, so the assertion below matches the JS original
                     // — which would throw on `.filter` if null reached here.
-                    const parsed = parsedImportShortcutStr as unknown[];
-                    const currentShortcuts =
-                      states.shortcuts as ShortcutEntry[];
+                    const parsed = parsedImportShortcutStr ?? [];
+                    const currentShortcuts = asShortcutEntries(states.shortcuts);
                     const nonUniqueShortcuts = parsed.filter((rawShortcut) => {
-                      const shortcut = rawShortcut as Record<string, unknown>;
+                      const shortcut = getStringRecord(rawShortcut);
                       return !currentShortcuts.some((s) =>
                         // Compare all properties
                         Object.keys(s).every((key) => s[key] === shortcut[key]),
@@ -1120,7 +1139,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                       // If exceeded, trim it
                       newShortcuts = newShortcuts.slice(0, SHORTCUTS_LIMIT);
                     }
-                    states.shortcuts = newShortcuts;
+                    states.shortcuts = [...asShortcutEntries(newShortcuts)];
                     showToast(
                       exceededLimit
                         ? t`Shortcuts imported. Exceeded max ${SHORTCUTS_LIMIT}, so the rest are not imported.`
@@ -1151,7 +1170,9 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
                 // assertion below mirrors the original JS assignment which
                 // wrote `null` through to `states.shortcuts` if it ever
                 // reached this point.
-                states.shortcuts = parsedImportShortcutStr as unknown[];
+                states.shortcuts = [
+                  ...asShortcutEntries(parsedImportShortcutStr),
+                ];
                 showToast(t`Shortcuts imported`);
                 onClose?.();
               }}
@@ -1180,7 +1201,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
               value={shortcutsStr}
               readOnly
               onClick={(e) => {
-                const target = e.target as HTMLInputElement;
+                const target = e.currentTarget;
                 if (!target.value) return;
                 target.select();
                 // Copy url to clipboard

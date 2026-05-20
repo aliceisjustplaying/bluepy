@@ -33,6 +33,10 @@ export interface AccountBlockProps {
   excludeRelationshipAttrs?: readonly string[];
 }
 
+const EMPTY_RELATIONSHIP: Partial<mastodon.v1.Relationship> = {};
+const EMPTY_EXCLUDED_RELATIONSHIP_ATTRS: readonly string[] = [];
+const EMPTY_EXCLUDED_RELATIONSHIP_ATTRS_SET = new Set<string>();
+
 function AccountBlock({
   skeleton,
   account,
@@ -47,8 +51,8 @@ function AccountBlock({
   showStats = false,
   accountInstance,
   hideDisplayName = false,
-  relationship = {},
-  excludeRelationshipAttrs = [],
+  relationship = EMPTY_RELATIONSHIP,
+  excludeRelationshipAttrs = EMPTY_EXCLUDED_RELATIONSHIP_ATTRS,
 }: AccountBlockProps) {
   const { t } = useLingui();
   if (skeleton) {
@@ -96,10 +100,14 @@ function AccountBlock({
 
   const verifiedField = fields?.find((f) => !!f.verifiedAt && !!f.value);
 
+  const excludedRelationshipAttrsSet =
+    excludeRelationshipAttrs.length > 0
+      ? new Set(excludeRelationshipAttrs)
+      : EMPTY_EXCLUDED_RELATIONSHIP_ATTRS_SET;
   const excludedRelationship: Record<string, unknown> = {};
   const relationshipRecord = relationship as Record<string, unknown>;
   for (const r in relationshipRecord) {
-    if (!excludeRelationshipAttrs.includes(r)) {
+    if (!excludedRelationshipAttrsSet.has(r)) {
       excludedRelationship[r] = relationshipRecord[r];
     }
   }

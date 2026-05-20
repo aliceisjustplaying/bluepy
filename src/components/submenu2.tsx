@@ -9,8 +9,10 @@ export default function SubMenu2(props: SubMenuProps) {
   const menuRef = useRef<MenuInstance | null>(null);
   const itemRef = useRef<HTMLElement | null>(null);
   const { label, direction, shift, ...restProps } = props;
-  const [computedDirection, setComputedDirection] = useState(direction);
-  const [computedShift, setComputedShift] = useState(shift);
+  const [computedMenuProps, setComputedMenuProps] = useState({
+    direction,
+    shift,
+  });
 
   // If menu item width is >50% of viewport, use bottom direction
   useLayoutEffect(() => {
@@ -18,11 +20,9 @@ export default function SubMenu2(props: SubMenuProps) {
       const width = itemRef.current.offsetWidth;
       const viewportWidth = window.innerWidth;
       if (width > viewportWidth * 0.5) {
-        setComputedDirection('bottom');
-        setComputedShift(shift || 8);
+        setComputedMenuProps({ direction: 'bottom', shift: shift || 8 });
       } else {
-        setComputedDirection(direction);
-        setComputedShift(shift);
+        setComputedMenuProps({ direction, shift });
       }
     }
   }, [direction, shift]);
@@ -30,8 +30,8 @@ export default function SubMenu2(props: SubMenuProps) {
   return (
     <SubMenu
       {...restProps}
-      direction={computedDirection}
-      shift={computedShift}
+      direction={computedMenuProps.direction}
+      shift={computedMenuProps.shift}
       label={label}
       instanceRef={menuRef}
       // Test fix for bug; submenus not opening on Android

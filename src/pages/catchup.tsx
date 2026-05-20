@@ -248,6 +248,8 @@ const DTF = mem(
     }),
 );
 
+const SWITCH_INPUT_PROPS = { switch: true };
+
 function hasQuote(
   quote: QuoteLike | mastodon.v1.Status['quote'] | null | undefined,
 ): boolean {
@@ -309,6 +311,12 @@ function toStatusPeekInput(
         }
       : null,
   };
+}
+
+function getCardLike(value: unknown): CardLike | null {
+  return value && typeof value === 'object'
+    ? Object.fromEntries(Object.entries(value))
+    : null;
 }
 
 function nameTextAccount(
@@ -550,16 +558,15 @@ function Catchup() {
             queueMicrotask(() => {
               if (restCatchups && restCatchups.length) {
                 // delete them
-                db.catchup
-                  .delMany(restCatchups.map((c) => c.id))
-                  .then(() => {
+                void (async () => {
+                  try {
+                    await db.catchup.delMany(restCatchups.map((c) => c.id));
                     // GC time
                     restCatchups = null;
-                    return undefined;
-                  })
-                  .catch((e) => {
+                  } catch (e) {
                     console.error(e);
-                  });
+                  }
+                })();
               }
             });
 
@@ -610,9 +617,8 @@ function Catchup() {
         post.__FILTER = 'original';
       }
 
-      const thePost: CatchupPost =
-        (post.reblog as CatchupPost | null | undefined) || post;
-      const card = thePost.card as CardLike | null | undefined;
+      const thePost = post.reblog || post;
+      const card = getCardLike(thePost.card);
       if (
         post.__FILTER !== 'filtered' &&
         card?.url &&
@@ -631,7 +637,10 @@ function Catchup() {
             boosts: reblogsCount,
           };
         } else {
-          if (linksMap[url].sharers.find((a) => a?.id === post.account.id)) {
+          const existingSharerIds = new Set(
+            linksMap[url].sharers.map((a) => a?.id),
+          );
+          if (existingSharerIds.has(post.account.id)) {
             continue;
           }
           linksMap[url].shared++;
@@ -1288,11 +1297,10 @@ function Catchup() {
   );
 
   const handleArrowKeys = useCallback((e: React.KeyboardEvent) => {
-    const activeElement = document.activeElement as
-      | (HTMLElement & { type?: string })
-      | null;
+    const activeElement = document.activeElement;
     const isRadio =
-      activeElement?.tagName === 'INPUT' && activeElement.type === 'radio';
+      activeElement instanceof HTMLInputElement &&
+      activeElement.type === 'radio';
     const isArrowKeys =
       e.key === 'ArrowDown' ||
       e.key === 'ArrowUp' ||
@@ -1300,7 +1308,7 @@ function Catchup() {
       e.key === 'ArrowRight';
     if (isArrowKeys && isRadio) {
       // Note: page scroll won't trigger on first arrow key press due to this. Subsequent presses will.
-      activeElement?.blur();
+      activeElement.blur();
       return;
     }
   }, []);
@@ -1431,7 +1439,7 @@ function Catchup() {
                   step="1"
                   list="catchup-ranges"
                   onChange={(e) => {
-                    setRange(+(e.target as HTMLInputElement).value);
+                    setRange(+e.currentTarget.value);
                   }}
                 />{' '}
                 <span
@@ -1441,7 +1449,7 @@ function Catchup() {
                 >
                   {_(RANGES[range - 1].label)}
                   <br />
-                  <small className="insignificant">
+                  <small className="insignificant" suppressHydrationWarning>
                     {range == RANGES[RANGES.length - 1].value
                       ? t`until the max`
                       : niceDateTime(
@@ -1467,7 +1475,7 @@ function Catchup() {
                       const untilLastCatchup = catchupLastRef.current?.checked;
                       if (untilLastCatchup) {
                         // Until last catch-up's end time
-                        duration = Date.now() - (lastCatchupEndAt as number);
+                        duration = Date.now() - (lastCatchupEndAt ?? Date.now());
                       } else {
                         // Go beyond range until max, even after last catch-up's end time
                         // Don't need to set duration
@@ -1490,7 +1498,7 @@ function Catchup() {
                   <label>
                     <input
                       type="checkbox"
-                      {...({ switch: true } as { switch?: boolean })}
+                      {...SWITCH_INPUT_PROPS}
                       checked
                       ref={catchupLastRef}
                     />{' '}

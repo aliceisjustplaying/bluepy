@@ -3,7 +3,7 @@ import { plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { Ref } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 
 import haptics from '../utils/haptics';
 import shortenNumber from '../utils/shorten-number';
@@ -30,6 +30,34 @@ interface PollProps {
   votePoll?: (choices: number[]) => void | Promise<void>;
 }
 
+interface PollState {
+  uiState: 'default' | 'loading';
+  visibleOptionsCount: number;
+}
+
+type PollAction =
+  | { type: 'uiState'; uiState: PollState['uiState'] }
+  | { type: 'showMore'; total: number }
+  | { type: 'resetVisibleOptions' };
+
+function pollReducer(state: PollState, action: PollAction): PollState {
+  switch (action.type) {
+    case 'uiState':
+      return { ...state, uiState: action.uiState };
+    case 'showMore':
+      return {
+        ...state,
+        visibleOptionsCount: Math.min(
+          state.visibleOptionsCount + POLL_OPTIONS_BATCH_SIZE,
+          action.total,
+        ),
+      };
+    case 'resetVisibleOptions':
+      return { ...state, visibleOptionsCount: POLL_OPTIONS_BATCH_SIZE };
+  }
+  return state;
+}
+
 export default function Poll({
   poll,
   lang,
@@ -38,10 +66,16 @@ export default function Poll({
   votePoll = () => {},
 }: PollProps) {
   const { t } = useLingui();
-  const [uiState, setUIState] = useState<'default' | 'loading'>('default');
-  const [visibleOptionsCount, setVisibleOptionsCount] = useState(
-    POLL_OPTIONS_BATCH_SIZE,
+  const [{ uiState, visibleOptionsCount }, dispatchPoll] = useReducer(
+    pollReducer,
+    {
+      uiState: 'default',
+      visibleOptionsCount: POLL_OPTIONS_BATCH_SIZE,
+    },
   );
+  const setUIState = (nextUIState: PollState['uiState']) => {
+    dispatchPoll({ type: 'uiState', uiState: nextUIState });
+  };
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const {
     expired,
@@ -103,9 +137,7 @@ export default function Poll({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setVisibleOptionsCount((prev) =>
-            Math.min(prev + POLL_OPTIONS_BATCH_SIZE, options.length),
-          );
+          dispatchPoll({ type: 'showMore', total: options.length });
         }
       },
       { threshold: 0.1 },
@@ -119,7 +151,7 @@ export default function Poll({
   }, [visibleOptionsCount, options.length]);
 
   useEffect(() => {
-    setVisibleOptionsCount(POLL_OPTIONS_BATCH_SIZE);
+    dispatchPoll({ type: 'resetVisibleOptions' });
   }, [resultsView, options.length]);
 
   const voteOptionsSelectionCount = Array.isArray(selectedOptions)

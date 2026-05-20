@@ -45,10 +45,45 @@ interface StreamingLike {
   };
 }
 
-type BackgroundApi = ReturnType<typeof api> & {
-  masto: MastoLike;
-  streaming?: StreamingLike;
-};
+function hasNotificationId(value: unknown): value is { id: string } {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof value.id === 'string'
+  );
+}
+
+function isStreamingLike(value: unknown): value is StreamingLike {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'user' in value &&
+    value.user !== null &&
+    typeof value.user === 'object' &&
+    'notification' in value.user &&
+    value.user.notification !== null &&
+    typeof value.user.notification === 'object' &&
+    'subscribe' in value.user.notification &&
+    typeof value.user.notification.subscribe === 'function'
+  );
+}
+
+function isMastoLike(value: unknown): value is MastoLike {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'v1' in value &&
+    value.v1 !== null &&
+    typeof value.v1 === 'object' &&
+    'notifications' in value.v1 &&
+    'markers' in value.v1
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
 
 export default memo(function BackgroundService() {
   const isLoggedIn = useAuth();
@@ -76,11 +111,11 @@ export default memo(function BackgroundService() {
     instance: string,
     skipCheckMarkers?: boolean,
   ) => {
-    if (states.notificationsLast) {
+    if (hasNotificationId(states.notificationsLast)) {
       const notificationsIterator = masto.v1.notifications
         .list({
           limit: 1,
-          sinceId: (states.notificationsLast as { id: string }).id,
+          sinceId: states.notificationsLast.id,
         })
         .values();
       const { value: notifications } = await notificationsIterator.next();
@@ -110,19 +145,21 @@ export default memo(function BackgroundService() {
     let streamTimeout: ReturnType<typeof setTimeout> | undefined;
     let pollNotifications: ReturnType<typeof setInterval> | undefined;
     if (isLoggedIn && visible) {
-      const { masto, streaming, instance } = api() as BackgroundApi;
+      const { masto, streaming, instance } = api();
+      if (!isMastoLike(masto)) return undefined;
+      const typedStreaming = isStreamingLike(streaming) ? streaming : undefined;
       void (async () => {
         // 1. Get the latest notification
         await checkLatestNotification(masto, instance);
 
         let hasStreaming = false;
         // 2. Start streaming
-        if (streaming) {
+        if (typedStreaming) {
           streamTimeout = setTimeout(() => {
             void (async () => {
               try {
                 hasStreaming = true;
-                sub = streaming.user.notification.subscribe();
+                sub = typedStreaming.user.notification.subscribe();
                 console.log('🎏 Streaming notification', sub);
                 for await (const entry of sub) {
                   if (!sub) break;
@@ -169,8 +206,8 @@ export default memo(function BackgroundService() {
     void (async () => {
       try {
         const r = await fetch('./version.json');
-        const info = await r.json();
-        if (info) states.appVersion = info;
+        const info: unknown = await r.json();
+        if (isRecord(info)) states.appVersion = info;
       } catch (e) {
         console.error(e);
       }

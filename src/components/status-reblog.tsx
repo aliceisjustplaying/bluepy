@@ -31,6 +31,15 @@ interface StatusReblogProps {
   renderStatus: (args: RenderReblogStatusArgs) => ReactNode;
 }
 
+function RebloggedStatus({
+  renderStatus,
+  ...args
+}: RenderReblogStatusArgs & {
+  renderStatus: StatusReblogProps['renderStatus'];
+}) {
+  return renderStatus(args);
+}
+
 export default function StatusReblog({
   wrapperStatus,
   reblog,
@@ -64,15 +73,16 @@ export default function StatusReblog({
             showAvatar
           />
         </div>
-        {renderStatus({
-          status: childStatus,
-          statusID: childStatusID,
-          instance,
-          size,
-          contentTextWeight,
-          readOnly,
-          mediaFirst,
-        })}
+        <RebloggedStatus
+          renderStatus={renderStatus}
+          status={childStatus}
+          statusID={childStatusID}
+          instance={instance}
+          size={size}
+          contentTextWeight={contentTextWeight}
+          readOnly={readOnly}
+          mediaFirst={mediaFirst}
+        />
       </div>
     );
   }
@@ -94,16 +104,17 @@ export default function StatusReblog({
           <span>reposted</span>
         </Trans>
       </div>
-      {renderStatus({
-        status: childStatus,
-        statusID: childStatusID,
-        instance,
-        size,
-        contentTextWeight,
-        readOnly,
-        enableCommentHint: true,
-        mediaFirst,
-      })}
+      <RebloggedStatus
+        renderStatus={renderStatus}
+        status={childStatus}
+        statusID={childStatusID}
+        instance={instance}
+        size={size}
+        contentTextWeight={contentTextWeight}
+        readOnly={readOnly}
+        enableCommentHint
+        mediaFirst={mediaFirst}
+      />
     </div>
   );
 }

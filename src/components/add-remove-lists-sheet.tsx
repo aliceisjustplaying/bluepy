@@ -41,14 +41,46 @@ interface AddRemoveListsSheetProps {
   children?: ReactNode;
 }
 
+interface ListsState {
+  uiState: UIState;
+  lists: ListLike[];
+  listsContainingAccount: ListLike[];
+}
+
+type ListsAction =
+  | { type: 'loading' }
+  | {
+      type: 'loaded';
+      lists: ListLike[];
+      listsContainingAccount: ListLike[];
+    }
+  | { type: 'error' };
+
+function listsReducer(state: ListsState, action: ListsAction): ListsState {
+  switch (action.type) {
+    case 'loading':
+      return { ...state, uiState: 'loading' };
+    case 'loaded':
+      return {
+        lists: action.lists,
+        listsContainingAccount: action.listsContainingAccount,
+        uiState: 'default',
+      };
+    case 'error':
+      return { ...state, uiState: 'error' };
+  }
+  return state;
+}
+
 function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
   const { t } = useLingui();
   const { masto } = api();
-  const [uiState, setUIState] = useState<UIState>('default');
-  const [lists, setLists] = useState<ListLike[]>([]);
-  const [listsContainingAccount, setListsContainingAccount] = useState<
-    ListLike[]
-  >([]);
+  const [{ uiState, lists, listsContainingAccount }, dispatchLists] =
+    useReducer(listsReducer, {
+      uiState: 'default',
+      lists: [],
+      listsContainingAccount: [],
+    });
   const [reloadCount, reload] = useReducer((c: number) => c + 1, 0);
 
   // `masto.v1.accounts` is a proxy that yields a fresh reference on every
@@ -62,11 +94,10 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
   );
 
   useEffect(() => {
-    setUIState('loading');
+    dispatchLists({ type: 'loading' });
     void (async () => {
       try {
         const fetchedLists = await getUserLists();
-        setLists(fetchedLists as ListLike[]);
         const fetchedListsContainingAccount = await accountsEndpoint
           .$select(accountID)
           .lists.list();
@@ -74,11 +105,14 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
           lists: fetchedLists,
           listsContainingAccount: fetchedListsContainingAccount,
         });
-        setListsContainingAccount(fetchedListsContainingAccount);
-        setUIState('default');
+        dispatchLists({
+          type: 'loaded',
+          lists: fetchedLists as ListLike[],
+          listsContainingAccount: fetchedListsContainingAccount,
+        });
       } catch (e) {
         console.error(e);
-        setUIState('error');
+        dispatchLists({ type: 'error' });
       }
     })();
   }, [reloadCount, accountID, accountsEndpoint]);
@@ -118,7 +152,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
                     className={`light ${inList ? 'checked' : ''}`}
                     disabled={uiState === 'loading'}
                     onClick={() => {
-                      setUIState('loading');
+                      dispatchLists({ type: 'loading' });
                       void (async () => {
                         try {
                           const listsEndpoint = masto.v1
@@ -140,7 +174,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
                           reload();
                         } catch (e) {
                           console.error(e);
-                          setUIState('error');
+                          dispatchLists({ type: 'error' });
                           alert(
                             inList
                               ? t`Unable to remove from list.`

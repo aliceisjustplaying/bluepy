@@ -172,7 +172,7 @@ function StatusCard({
 
   const hasIframeHTML = !!html && /<iframe/i.test(html);
   const canReadInline = canReadCardInline(card);
-  const handleClick = useCallback(
+  const openEmbeddableCard = useCallback(
     (e: MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
       if (hasIframeHTML) {
         e.preventDefault();
@@ -250,7 +250,7 @@ function StatusCard({
               ? `rgb(${rgbAverageColor.join(',')})`
               : undefined,
           }}
-          onClick={handleClick}
+          onClick={openEmbeddableCard}
         >
           <div className="card-image">
             <img
@@ -308,7 +308,7 @@ function StatusCard({
         target="_blank"
         rel="nofollow noopener noreferrer"
         className="card photo"
-        onClick={handleClick}
+        onClick={openEmbeddableCard}
       >
         <img
           src={embedUrl}
@@ -334,9 +334,9 @@ function StatusCard({
               className="card video"
               role="button"
               tabIndex={0}
-              onClick={handleClick}
+              onClick={openEmbeddableCard}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') handleClick(e);
+                if (e.key === 'Enter' || e.key === ' ') openEmbeddableCard(e);
               }}
             >
               <lite-youtube videoid={videoID} nocookie autoPause></lite-youtube>
@@ -367,7 +367,7 @@ function StatusCard({
           }`}
           lang={language}
           dir="auto"
-          onClick={handleClick}
+          onClick={openEmbeddableCard}
         >
           <div className="meta-container">
             <p className="meta domain">

@@ -200,19 +200,19 @@ function NotificationsMenu({
           states.notifications = groupedNotifications;
 
           // Update last read marker
-          (
-            masto.v1.markers as {
-              create(options: {
-                notifications: { lastReadId: string };
-              }): Promise<unknown>;
-            }
-          )
-            .create({
+          try {
+            await (
+              masto.v1.markers as {
+                create(options: {
+                  notifications: { lastReadId: string };
+                }): Promise<unknown>;
+              }
+            ).create({
               notifications: {
                 lastReadId: groupedNotifications[0].id,
               },
-            })
-            .catch(() => {});
+            });
+          } catch {}
         }
 
         states.notificationsShowNew = false;

@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 
 import niceDateTime from '../utils/nice-date-time';
 
@@ -16,6 +16,43 @@ interface EditedAtModalProps {
   renderStatus: (status: AnyStatus, instance?: string) => ReactNode;
 }
 
+function EditHistoryStatus({
+  status,
+  instance,
+  renderStatus,
+}: {
+  status: AnyStatus;
+  instance?: string;
+  renderStatus: EditedAtModalProps['renderStatus'];
+}) {
+  return renderStatus(status, instance);
+}
+
+interface EditHistoryState {
+  uiState: 'default' | 'loading' | 'error';
+  editHistory: AnyStatus[];
+}
+
+type EditHistoryAction =
+  | { type: 'loading' }
+  | { type: 'loaded'; editHistory: AnyStatus[] }
+  | { type: 'error' };
+
+function editHistoryReducer(
+  state: EditHistoryState,
+  action: EditHistoryAction,
+): EditHistoryState {
+  switch (action.type) {
+    case 'loading':
+      return { ...state, uiState: 'loading' };
+    case 'loaded':
+      return { editHistory: action.editHistory, uiState: 'default' };
+    case 'error':
+      return { ...state, uiState: 'error' };
+  }
+  return state;
+}
+
 export default function EditedAtModal({
   statusID: _statusID,
   instance,
@@ -24,24 +61,29 @@ export default function EditedAtModal({
   renderStatus,
 }: EditedAtModalProps) {
   const { t } = useLingui();
-  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
-    'default',
+  const [{ uiState, editHistory }, dispatchEditHistory] = useReducer(
+    editHistoryReducer,
+    {
+      uiState: 'default',
+      editHistory: [],
+    },
   );
-  const [editHistory, setEditHistory] = useState<AnyStatus[]>([]);
 
   const fetchStatusHistoryRef = useRef(fetchStatusHistory);
   fetchStatusHistoryRef.current = fetchStatusHistory;
 
   useEffect(() => {
-    setUIState('loading');
+    dispatchEditHistory({ type: 'loading' });
     void (async () => {
       try {
         const fetchedHistory = await fetchStatusHistoryRef.current();
-        setEditHistory(fetchedHistory ?? []);
-        setUIState('default');
+        dispatchEditHistory({
+          type: 'loaded',
+          editHistory: fetchedHistory ?? [],
+        });
       } catch (e) {
         console.error(e);
-        setUIState('error');
+        dispatchEditHistory({ type: 'error' });
       }
     })();
   }, []);
@@ -86,7 +128,11 @@ export default function EditedAtModal({
                       })}
                     </time>
                   </h3>
-                  {renderStatus(status, instance)}
+                  <EditHistoryStatus
+                    status={status}
+                    instance={instance}
+                    renderStatus={renderStatus}
+                  />
                 </li>
               );
             })}

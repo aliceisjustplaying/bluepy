@@ -93,6 +93,18 @@ function isAccountInfoShape(account: unknown): account is AccountInfoShape {
   return !!account && typeof account === 'object';
 }
 
+function isPinnedGroup(item: TimelineItem): item is PinnedGroup {
+  return 'type' in item && item.type === 'pinned';
+}
+
+function toStatusItems(
+  items: TimelineItem[],
+): Array<Status & { _pinned?: boolean }> {
+  return items.filter(
+    (item): item is Status & { _pinned?: boolean } => !isPinnedGroup(item),
+  );
+}
+
 function applySearchParamsObject(
   params: URLSearchParams,
   obj: SearchParamsObject,
@@ -125,7 +137,7 @@ const supportsInputMonth = mem(() => {
 function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   const { i18n, t } = useLingui();
   const snapStates = useSnapshot(states);
-  const routeParams = useParams() as { id?: string; instance?: string };
+  const routeParams = useParams<'id' | 'instance'>();
   const [routeSearchParams, setRouteSearchParamsBase] = useSearchParams();
   const id = columnMode ? props.id : props.id || routeParams.id;
   const params = columnMode
@@ -176,8 +188,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       const localParams = new URLSearchParams(
         columnMode ? { replies: '1' } : undefined,
       );
-      if (paramValue !== undefined) {
-        localParams.set(paramName as string, paramValue);
+      if (paramName && paramValue !== undefined) {
+        localParams.set(paramName, paramValue);
       }
       setSearchParams(localParams);
     },
@@ -210,17 +222,19 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   );
 
   const [account, setAccount] = useState<Account | undefined>();
+  const [currentMonthValue, setCurrentMonthValue] = useState('');
+  useEffect(() => {
+    const now = new Date();
+    setCurrentMonthValue(now.toISOString().slice(0, 7));
+  }, []);
   const searchOffsetRef = useRef(0);
   useEffect(() => {
     searchOffsetRef.current = 0;
   }, [month, excludeReplies, excludeBoosts, tagged, media]);
 
-  const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
+  const mediaFirst = isMediaFirstInstance();
 
-  const sameCurrentInstance = useMemo(
-    () => instance === currentInstance,
-    [instance, currentInstance],
-  );
+  const sameCurrentInstance = instance === currentInstance;
   const [searchEnabled, setSearchEnabled] = useState(false);
   useEffect(() => {
     // Only enable for current logged-in instance
@@ -238,7 +252,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     value: ReadonlyArray<TimelineItem>;
     done?: boolean;
   }> {
-    const isValidMonth = /^\d{4}-[01]\d$/.test(month as string);
+    const isValidMonth = !!month && /^\d{4}-[01]\d$/.test(month);
     // JS: `string >= number` coerces the string via ToNumber. Preserve via
     // explicit Number(); falls back to NaN >= MIN_YEAR (false) when month is
     // nullish, matching the original.
@@ -250,7 +264,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
           done: true,
         };
       }
-      const [_year, _month] = (month as string).split('-');
+      const [_year, _month] = month.split('-');
       const yearNum = parseInt(_year, 10);
       const monthIndex = parseInt(_month, 10) - 1;
       // YYYY-MM (no day)
@@ -314,7 +328,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
     if (firstLoad && !columnMode) {
       const { value } = await accountsResource
-        .$select(id as string)
+        .$select(id ?? '')
         .statuses.list({
           pinned: true,
         })
@@ -348,7 +362,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         tagged,
       };
       accountStatusesIterator.current = accountsResource
-        .$select(id as string)
+        .$select(id ?? '')
         .statuses.list(listParams)
         .values();
     }
@@ -364,18 +378,19 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
           if (
             first &&
             typeof first === 'object' &&
-            (first as PinnedGroup).type === 'pinned'
+            isPinnedGroup(first)
           ) {
-            pinnedStatusesIds = (first as PinnedGroup).id;
+            pinnedStatusesIds = first.id;
           } else {
             // TODO(oxlint:no-underscore-dangle) `_pinned` is the project-wide
             // pinned-status marker shared with timeline.tsx; renaming is out
             // of scope.
-            pinnedStatusesIds = (
-              results as Array<Status & { _pinned?: boolean }>
-            )
-              .filter((status) => status._pinned)
-              .map((status) => status.id);
+            pinnedStatusesIds = [];
+            for (const status of toStatusItems(results)) {
+              if (status._pinned) {
+                pinnedStatusesIds.push(status.id);
+              }
+            }
           }
           const containsAllPinned = pinnedStatusesIds.every((postId) =>
             value.some((status: Status) => status.id === postId),
@@ -427,7 +442,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   useTitle(title, ['/:instance/a/:id', '/a/:id', '/:scheme://*', '/:atUri']);
 
   const refetchAccount = useCallback(() => {
-    return memFetchAccount(id as string, masto);
+    return memFetchAccount(id ?? '', masto);
   }, [id, masto]);
 
   useEffect(() => {
@@ -446,7 +461,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       if (!mediaFirst) {
         try {
           const fetchedFeaturedTags = await accountsResource
-            .$select(id as string)
+            .$select(id ?? '')
             .featuredTags.list();
           console.log({ fetchedFeaturedTags });
           setFeaturedTags(fetchedFeaturedTags);
@@ -457,7 +472,9 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     })();
   }, [id, mediaFirst, refetchAccount, masto]);
 
-  const { displayName, acct, emojis } = account || ({} as Partial<Account>);
+  const displayName = account?.displayName;
+  const acct = account?.acct;
+  const emojis = account?.emojis;
 
   const isSelf = useMemo(
     () => account?.id === getCurrentAccountID(),
@@ -632,8 +649,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                       disabled={!account?.acct}
                       value={month || ''}
                       min={MIN_YEAR_MONTH}
-                      max={new Date().toISOString().slice(0, 7)}
-                      onInput={(e: SyntheticEvent<HTMLInputElement>) => {
+                      max={currentMonthValue}
+                      onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                         const { value, validity } = e.currentTarget;
                         if (!validity.valid) return;
                         setSearchParams(
@@ -665,7 +682,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                     disabled={!account?.acct}
                     value={month || ''}
                     min={MIN_YEAR_MONTH}
-                    max={new Date().toISOString().slice(0, 7)}
+                    max={currentMonthValue}
                     onInput={(e) => {
                       const { value, validity } = e;
                       if (!validity.valid) return;
@@ -732,6 +749,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     isSelf,
     setSearchParams,
     clearAndSetParam,
+    currentMonthValue,
   ]);
   const accountMonthKey = `${month ?? ''}${account?.acct ?? ''}`;
 
@@ -741,13 +759,15 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         []),
     ];
     if (!activeEls.length) return;
-    const barWidth = (filterBarRef.current as HTMLDivElement).offsetWidth;
+    const filterBar = filterBarRef.current;
+    if (!filterBar) return;
+    const barWidth = filterBar.offsetWidth;
     const left = Math.min(...activeEls.map((el) => el.offsetLeft));
     const right = Math.max(
       ...activeEls.map((el) => el.offsetLeft + el.offsetWidth),
     );
     const spanWidth = right - left;
-    (filterBarRef.current as HTMLDivElement).scrollTo({
+    filterBar.scrollTo({
       behavior: 'smooth',
       left: spanWidth >= barWidth ? left : left - (barWidth - spanWidth) / 2,
     });
@@ -835,10 +855,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             <MenuItem
               disabled={!allowSwitch}
               onClick={() => {
+                if (!account) return;
                 void (async () => {
                   try {
                     const { masto: instanceMasto } = api({
-                      instance: accountInstance as string | undefined,
+                      instance: accountInstance ?? undefined,
                     });
                     const accountsResource =
                       getMastoV1Resource<mastodon.rest.v1.AccountsResource>(
@@ -846,7 +867,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                         'accounts',
                       );
                     const acc = await accountsResource.lookup({
-                      acct: (account as Account).acct,
+                      acct: account.acct,
                     });
                     const { id: lookupId } = acc;
                     navigatePath(`/${accountInstance}/a/${lookupId}`);
@@ -873,6 +894,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             {!sameCurrentInstance && (
               <MenuItem
                 onClick={() => {
+                  if (!account) return;
                   void (async () => {
                     try {
                       const accountsResource =
@@ -881,7 +903,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                           'accounts',
                         );
                       const acc = await accountsResource.lookup({
-                        acct: (account as Account).acct + '@' + instance,
+                        acct: account.acct + '@' + instance,
                       });
                       const { id: lookupId } = acc;
                       navigatePath(`/${currentInstance}/a/${lookupId}`);
@@ -944,6 +966,10 @@ function MonthPicker(props: MonthPickerProps) {
     onInput = () => {},
   } = props;
   const [_year, _month] = value?.split('-') || [];
+  const [currentYearValue, setCurrentYearValue] = useState(MIN_YEAR);
+  useEffect(() => {
+    setCurrentYearValue(new Date().getFullYear());
+  }, []);
   const monthFieldRef = useRef<HTMLSelectElement | null>(null);
   const yearFieldRef = useRef<HTMLInputElement | null>(null);
 
@@ -964,9 +990,9 @@ function MonthPicker(props: MonthPickerProps) {
         ref={monthFieldRef}
         disabled={disabled}
         value={_month || ''}
-        onInput={(e: SyntheticEvent<HTMLSelectElement>) => {
+        onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
           const { value: month } = e.currentTarget;
-          const year = (yearFieldRef.current as HTMLInputElement).value;
+          const year = yearFieldRef.current?.value ?? '';
           if (!checkValidity(month, year)) {
             // JS original `return { value: '', validity: { valid: false } }`
             // here, but the return value of an `onInput` handler is discarded;
@@ -985,30 +1011,27 @@ function MonthPicker(props: MonthPickerProps) {
           <Trans>Month</Trans>
         </option>
         <option disabled>-----</option>
-        {Array.from({ length: 12 }, (_, i) => (
-          <option
-            value={
-              // Month is 1-indexed
-              (i + 1).toString().padStart(2, '0')
-            }
-            key={i}
-          >
-            {new Date(0, i).toLocaleString(i18n.locale, {
+        {Array.from({ length: 12 }, (_, i) => {
+          const monthValue = (i + 1).toString().padStart(2, '0');
+          return (
+            <option value={monthValue} key={monthValue}>
+              {new Date(0, i).toLocaleString(i18n.locale, {
               month: 'long',
-            })}
-          </option>
-        ))}
+              })}
+            </option>
+          );
+        })}
       </select>{' '}
       <input
         ref={yearFieldRef}
         type="number"
         disabled={disabled}
-        value={_year || new Date().getFullYear()}
+        value={_year || currentYearValue}
         min={min?.slice(0, 4) || MIN_YEAR}
-        max={max?.slice(0, 4) || new Date().getFullYear()}
-        onInput={(e: SyntheticEvent<HTMLInputElement>) => {
+        max={max?.slice(0, 4) || currentYearValue}
+        onChange={(e: SyntheticEvent<HTMLInputElement>) => {
           const { value: year, validity } = e.currentTarget;
-          const month = (monthFieldRef.current as HTMLSelectElement).value;
+          const month = monthFieldRef.current?.value ?? '';
           if (!validity.valid || !checkValidity(month, year)) {
             // JS original `return { value: '', validity: { valid: false } }`
             // here, but the return value of an `onInput` handler is discarded;

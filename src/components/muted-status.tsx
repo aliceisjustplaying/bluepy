@@ -22,10 +22,24 @@ interface MutedStatusProps {
   ) => ReactNode;
 }
 
+const EMPTY_CONTAINER_PROPS: HTMLAttributes<HTMLDivElement> = {};
+
+function ExpandedMutedStatus({
+  status,
+  instance,
+  renderExpandedStatus,
+}: {
+  status: AnyStatus;
+  instance?: string;
+  renderExpandedStatus: MutedStatusProps['renderExpandedStatus'];
+}) {
+  return renderExpandedStatus(status, instance);
+}
+
 export default function MutedStatus({
   status,
   instance,
-  containerProps = {},
+  containerProps = EMPTY_CONTAINER_PROPS,
   quoted,
   renderExpandedStatus,
 }: MutedStatusProps) {
@@ -112,7 +126,11 @@ export default function MutedStatus({
               <Trans>Hide</Trans>
             </button>
           </div>
-          {renderExpandedStatus(status, instance)}
+          <ExpandedMutedStatus
+            status={status}
+            instance={instance}
+            renderExpandedStatus={renderExpandedStatus}
+          />
         </div>
       )}
     </div>

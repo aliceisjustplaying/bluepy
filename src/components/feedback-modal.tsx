@@ -2,7 +2,7 @@ import './feedback-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import * as Sentry from '@sentry/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 
 import showToast from '../utils/show-toast';
 import { getAccount, getCurrentAccountID } from '../utils/store-utils';
@@ -13,6 +13,46 @@ const MAX_MESSAGE_LENGTH = 5000;
 const MAX_CONTACT_LENGTH = 200;
 
 type SubmissionStatus = 'idle' | 'submitting' | 'success' | 'error';
+
+interface FeedbackState {
+  message: string;
+  contact: string;
+  hp: string;
+  status: SubmissionStatus;
+  errorMessage: string | null;
+}
+
+type FeedbackAction =
+  | { type: 'message'; value: string }
+  | { type: 'contact'; value: string }
+  | { type: 'hp'; value: string }
+  | { type: 'invalid'; errorMessage: string }
+  | { type: 'submitting' }
+  | { type: 'success' }
+  | { type: 'error'; errorMessage: string };
+
+function feedbackReducer(
+  state: FeedbackState,
+  action: FeedbackAction,
+): FeedbackState {
+  switch (action.type) {
+    case 'message':
+      return { ...state, message: action.value };
+    case 'contact':
+      return { ...state, contact: action.value };
+    case 'hp':
+      return { ...state, hp: action.value };
+    case 'invalid':
+      return { ...state, status: 'error', errorMessage: action.errorMessage };
+    case 'submitting':
+      return { ...state, status: 'submitting', errorMessage: null };
+    case 'success':
+      return { ...state, status: 'success' };
+    case 'error':
+      return { ...state, status: 'error', errorMessage: action.errorMessage };
+  }
+  return state;
+}
 
 interface FeedbackModalProps {
   defaultMessage?: string;
@@ -80,11 +120,14 @@ export default function FeedbackModal({
   onClose,
 }: FeedbackModalProps) {
   const { t } = useLingui();
-  const [message, setMessage] = useState(defaultMessage);
-  const [contact, setContact] = useState('');
-  const [hp, setHp] = useState('');
-  const [status, setStatus] = useState<SubmissionStatus>('idle');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [{ message, contact, hp, status, errorMessage }, dispatchFeedback] =
+    useReducer(feedbackReducer, {
+      message: defaultMessage,
+      contact: '',
+      hp: '',
+      status: 'idle',
+      errorMessage: null,
+    });
   const messageRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -103,13 +146,14 @@ export default function FeedbackModal({
     const trimmedMessage = message.trim();
     const trimmedContact = contact.trim();
     if (!trimmedMessage) {
-      setStatus('error');
-      setErrorMessage(t`Tell us what happened first.`);
+      dispatchFeedback({
+        type: 'invalid',
+        errorMessage: t`Tell us what happened first.`,
+      });
       return;
     }
 
-    setStatus('submitting');
-    setErrorMessage(null);
+    dispatchFeedback({ type: 'submitting' });
 
     try {
       const sentryEventId = import.meta.env.VITE_SENTRY_DSN
@@ -135,13 +179,14 @@ export default function FeedbackModal({
             : `Request failed (${response.status})`,
         );
       }
-      setStatus('success');
+      dispatchFeedback({ type: 'success' });
       showToast(t`Feedback sent`);
     } catch (error) {
-      setStatus('error');
-      setErrorMessage(
-        error instanceof Error ? error.message : t`Feedback could not be sent.`,
-      );
+      dispatchFeedback({
+        type: 'error',
+        errorMessage:
+          error instanceof Error ? error.message : t`Feedback could not be sent.`,
+      });
     }
   }
 
@@ -181,10 +226,13 @@ export default function FeedbackModal({
                 aria-label={t`Leave this field blank`}
                 value={hp}
                 tabIndex={-1}
-                autoComplete="off"
-                onChange={(event) => {
-                  setHp(event.currentTarget.value);
-                }}
+	                autoComplete="off"
+	                onChange={(event) => {
+	                  dispatchFeedback({
+	                    type: 'hp',
+	                    value: event.currentTarget.value,
+	                  });
+	                }}
               />
             </div>
             <div>
@@ -199,10 +247,13 @@ export default function FeedbackModal({
                 rows={7}
                 value={message}
                 maxLength={MAX_MESSAGE_LENGTH}
-                placeholder={t`Bugs, confusing behavior, missing features, or anything else.`}
-                onChange={(event) => {
-                  setMessage(event.currentTarget.value);
-                }}
+	                placeholder={t`Bugs, confusing behavior, missing features, or anything else.`}
+	                onChange={(event) => {
+	                  dispatchFeedback({
+	                    type: 'message',
+	                    value: event.currentTarget.value,
+	                  });
+	                }}
               />
             </div>
             <div>
@@ -215,10 +266,13 @@ export default function FeedbackModal({
                 value={contact}
                 maxLength={MAX_CONTACT_LENGTH}
                 autoComplete="email"
-                placeholder={t`email or Bluesky handle`}
-                onChange={(event) => {
-                  setContact(event.currentTarget.value);
-                }}
+	                placeholder={t`email or Bluesky handle`}
+	                onChange={(event) => {
+	                  dispatchFeedback({
+	                    type: 'contact',
+	                    value: event.currentTarget.value,
+	                  });
+	                }}
               />
             </div>
             {status === 'error' && errorMessage && (
@@ -232,7 +286,7 @@ export default function FeedbackModal({
               </button>
               <button type="submit" disabled={status === 'submitting'}>
                 {status === 'submitting' ? (
-                  <Trans>Sending...</Trans>
+                  <Trans>Sending…</Trans>
                 ) : (
                   <Trans>Send</Trans>
                 )}

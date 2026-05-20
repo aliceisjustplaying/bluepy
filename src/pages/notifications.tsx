@@ -31,9 +31,7 @@ import NavMenu from '../components/nav-menu';
 import Notification, {
   type NotificationProps,
 } from '../components/notification';
-import StatusComponent, {
-  type StatusComponentProps,
-} from '../components/status';
+import StatusComponent from '../components/status';
 import { api } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
 import FilterContext from '../utils/filter-context';
@@ -68,7 +66,8 @@ function Status(props: {
   size?: 's' | 'm' | 'l';
   readOnly?: boolean;
 }) {
-  return <StatusComponent {...(props as StatusComponentProps)} />;
+  const NotificationStatus = StatusComponent as ComponentType<typeof props>;
+  return <NotificationStatus {...props} />;
 }
 
 // Loose shape for the notification objects this page renders. These come
@@ -192,8 +191,90 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   behavior: 'instant',
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
+
+function hasFunction<K extends string>(
+  value: unknown,
+  key: K,
+): value is Record<K, (...args: never[]) => unknown> {
+  return isRecord(value) && typeof value[key] === 'function';
+}
+
+function isMastoV2NotificationsApi(
+  value: unknown,
+): value is MastoV2NotificationsApi {
+  if (!isRecord(value)) return false;
+  const { policy } = value;
+  return (
+    hasFunction(value, 'list') &&
+    isRecord(policy) &&
+    hasFunction(policy, 'fetch') &&
+    hasFunction(policy, 'update')
+  );
+}
+
+function isMastoV1NotificationsApi(
+  value: unknown,
+): value is MastoV1NotificationsApi {
+  if (!isRecord(value)) return false;
+  const { requests } = value;
+  return (
+    hasFunction(value, 'list') &&
+    isRecord(requests) &&
+    hasFunction(requests, 'list') &&
+    hasFunction(requests, '$select')
+  );
+}
+
+function getV2NotificationsApi(value: unknown): MastoV2NotificationsApi {
+  if (!isMastoV2NotificationsApi(value)) {
+    throw new TypeError('Unsupported notifications API');
+  }
+  return value;
+}
+
+function getV1NotificationsApi(value: unknown): MastoV1NotificationsApi {
+  if (!isMastoV1NotificationsApi(value)) {
+    throw new TypeError('Unsupported notifications API');
+  }
+  return value;
+}
+
+function isMarkersApi(value: unknown): value is {
+  create(opts: { notifications: { lastReadId: string | undefined } }): Promise<
+    unknown
+  >;
+} {
+  return isRecord(value) && hasFunction(value, 'create');
+}
+
+function isAnnouncementsApi(value: unknown): value is {
+  list(): Promise<AnnouncementLike[]>;
+} {
+  return isRecord(value) && hasFunction(value, 'list');
+}
+
+function toHtmlString(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
+function isAccountBlockAccount(value: unknown): value is AccountBlockAccount {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.username === 'string' &&
+    typeof value.acct === 'string' &&
+    typeof value.url === 'string'
+  );
+}
+
 const memSupportsGroupedNotifications = mem(
-  () => ((getAPIVersions()?.mastodon as number | undefined) ?? 0) >= 2,
+  () => {
+    const mastodonVersion = getAPIVersions()?.mastodon;
+    return typeof mastodonVersion === 'number' && mastodonVersion >= 2;
+  },
   {
     expires: 1000 * 60 * 5, // 5 minutes
   },
@@ -204,14 +285,14 @@ function mastoFetchNotificationsIterable(
 ): MastoV2NotificationsListIterable {
   const { masto } = api();
   if (memSupportsGroupedNotifications()) {
-    const v2Notifications = masto.v2.notifications as MastoV2NotificationsApi;
+    const v2Notifications = getV2NotificationsApi(masto.v2.notifications);
     // https://github.com/mastodon/mastodon/pull/29889
     return v2Notifications.list({
       limit: NOTIFICATIONS_GROUPED_LIMIT,
       ...opts,
     });
   } else {
-    const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
+    const v1Notifications = getV1NotificationsApi(masto.v1.notifications);
     return v1Notifications.list({
       limit: NOTIFICATIONS_LIMIT,
       ...opts,
@@ -222,17 +303,20 @@ export function mastoFetchNotifications(opts: Record<string, unknown> = {}) {
   return mastoFetchNotificationsIterable(opts).values();
 }
 
-export function getGroupedNotifications(
-  notifications: unknown,
-): NotificationLike[] {
+function isNotificationLike(value: unknown): value is NotificationLike {
+  return isRecord(value);
+}
+
+function toNotificationLikes(value: unknown): NotificationLike[] {
+  return Array.isArray(value) ? value.filter(isNotificationLike) : [];
+}
+
+export function getGroupedNotifications(notifications: unknown) {
+  const notificationLikes = toNotificationLikes(notifications);
   if (memSupportsGroupedNotifications()) {
-    return groupNotifications2(
-      notifications as Parameters<typeof groupNotifications2>[0],
-    ) as NotificationLike[];
+    return toNotificationLikes(groupNotifications2(notificationLikes));
   } else {
-    return groupNotifications(
-      notifications as Parameters<typeof groupNotifications>[0],
-    ) as NotificationLike[];
+    return toNotificationLikes(groupNotifications(notificationLikes));
   }
 }
 
@@ -322,19 +406,17 @@ function Notifications({ columnMode }: NotificationsProps) {
       };
     }
     const allNotifications = await notificationsIterator.current.next();
-    const notifications = massageNotifications2(
-      allNotifications.value as Parameters<typeof massageNotifications2>[0],
-    ) as NotificationLike[] | undefined;
+    const notifications = toNotificationLikes(
+      massageNotifications2(allNotifications.value),
+    );
 
-    if (notifications?.length) {
+    if (notifications.length) {
       notifications.forEach((notification) => {
-        saveStatus(
-          notification.status as Parameters<typeof saveStatus>[0],
-          instance,
-          {
+        if (notification.status) {
+          saveStatus(notification.status, instance, {
             skipThreading: true,
-          },
-        );
+          });
+        }
       });
 
       // TEST: Slot in a fake notification to test 'severed_relationships'
@@ -370,18 +452,14 @@ function Notifications({ columnMode }: NotificationsProps) {
         states.notifications = groupedNotifications;
 
         // Update last read marker
-        const markers = masto.v1.markers as {
-          create(opts: {
-            notifications: { lastReadId: string | undefined };
-          }): Promise<unknown>;
-        };
-        markers
-          .create({
+        const { markers } = masto.v1;
+        if (isMarkersApi(markers)) {
+          void markers.create({
             notifications: {
               lastReadId: groupedNotifications[0].id,
             },
-          })
-          .catch(() => {});
+          });
+        }
 
         if (!columnMode) analyzeNotifications(groupedNotifications);
       } else {
@@ -391,14 +469,13 @@ function Notifications({ columnMode }: NotificationsProps) {
 
     states.notificationsShowNew = false;
     states.notificationsLastFetchTime = Date.now();
-    return allNotifications as { done?: boolean; value?: unknown };
+    return allNotifications;
   }
 
   async function fetchAnnouncements(): Promise<AnnouncementLike[]> {
     try {
-      const announcementsApi = masto.v1.announcements as {
-        list(): Promise<AnnouncementLike[]>;
-      };
+      const announcementsApi = masto.v1.announcements;
+      if (!isAnnouncementsApi(announcementsApi)) return [];
       return await announcementsApi.list();
     } catch {
       // Silently fail
@@ -413,28 +490,32 @@ function Notifications({ columnMode }: NotificationsProps) {
     useState(false);
   const [notificationsPolicy, setNotificationsPolicy] =
     useState<NotificationsPolicy>({});
-  function fetchNotificationsPolicy(): Promise<
+  async function fetchNotificationsPolicy(): Promise<
     NotificationsPolicy | undefined
   > {
-    const v2Notifications = masto.v2.notifications as MastoV2NotificationsApi;
-    return v2Notifications.policy.fetch().catch(() => undefined);
+    const v2Notifications = getV2NotificationsApi(masto.v2.notifications);
+    try {
+      return await v2Notifications.policy.fetch();
+    } catch {
+      return undefined;
+    }
   }
   function loadNotificationsPolicy() {
-    void fetchNotificationsPolicy()
-      .then((policy) => {
+    void (async () => {
+      try {
+        const policy = await fetchNotificationsPolicy();
         console.log('✨ Notifications policy', policy);
         // Match JS original: pass whatever the fetch resolves to (including
         // `undefined` on failure path) straight to the setter.
-        setNotificationsPolicy(policy as NotificationsPolicy);
-        return undefined;
-      })
-      .catch(() => {});
+        setNotificationsPolicy(policy ?? {});
+      } catch {}
+    })();
   }
   const [notificationsRequests, setNotificationsRequests] = useState<
     NotificationRequestLike[] | null
   >(null);
   function fetchNotificationsRequest(): Promise<NotificationRequestLike[]> {
-    const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
+    const v1Notifications = getV1NotificationsApi(masto.v1.notifications);
     return v1Notifications.requests.list();
   }
 
@@ -454,7 +535,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     const notificationCountPerDay: Record<string, number> = {};
     notifications.forEach((n) => {
       const { createdAt, notificationsCount, type } = n;
-      const date = new Date(createdAt as string).toDateString();
+      const date = new Date(createdAt ?? '').toDateString();
       notificationCountPerDay[date] =
         (notificationCountPerDay[date] || 0) + (notificationsCount || 1);
       if (type === 'mention') {
@@ -472,14 +553,14 @@ function Notifications({ columnMode }: NotificationsProps) {
     );
     // - > 30 on any grouped notification (notificationCount > 30)
     const tooManyNotificationsPerGroupNotification = notifications.some(
-      (n) => (n.notificationsCount as number) > 30,
+      (n) => (n.notificationsCount ?? 0) > 30,
     );
     // - > 30 notifications per hour
     const notificationCountPerHour: Record<string, number> = {};
     let tooManyNotificationsPerHour = false;
     for (const n of notifications) {
       const { createdAt, notificationsCount } = n;
-      const date = new Date(createdAt as string);
+      const date = new Date(createdAt ?? '');
       const hourKey = date.toISOString().slice(0, 13); // YYYY-MM-DDTHH
       notificationCountPerHour[hourKey] =
         (notificationCountPerHour[hourKey] || 0) + (notificationsCount || 1);
@@ -524,19 +605,19 @@ function Notifications({ columnMode }: NotificationsProps) {
         const fetchNotificationsPromise = fetchNotifications(firstLoad);
 
         if (firstLoad) {
-          void fetchAnnouncements()
-            .then((fetchedAnnouncements) => {
+          void (async () => {
+            try {
+              const fetchedAnnouncements = await fetchAnnouncements();
               fetchedAnnouncements.sort((a, b) => {
                 // Sort by updatedAt first, then createdAt
                 return (
-                  Date.parse((b.updatedAt || b.createdAt) as string) -
-                  Date.parse((a.updatedAt || a.createdAt) as string)
+                  Date.parse(b.updatedAt || b.createdAt || '') -
+                  Date.parse(a.updatedAt || a.createdAt || '')
                 );
               });
               setAnnouncements(fetchedAnnouncements);
-              return undefined;
-            })
-            .catch(() => {});
+            } catch {}
+          })();
 
           if (supportsFilteredNotifications) {
             loadNotificationsPolicy();
@@ -595,7 +676,7 @@ function Notifications({ columnMode }: NotificationsProps) {
       // skipping the check when `scrollTop` is missing matches the original.
       if (
         snapStates.settings.autoRefresh &&
-        (scrollableRef.current?.scrollTop as number) < 16 &&
+        (scrollableRef.current?.scrollTop ?? Number.POSITIVE_INFINITY) < 16 &&
         (disableIdleCheck || window.__IDLE__) &&
         !inBackground()
       ) {
@@ -645,12 +726,12 @@ function Notifications({ columnMode }: NotificationsProps) {
   const todayDate = new Date();
   const yesterdayDate = new Date(todayDate.getTime() - 24 * 60 * 60 * 1000);
   let currentDay = new Date();
-  const visibleNotifications = (
-    snapStates.notifications as NotificationLike[]
+  const visibleNotifications = toNotificationLikes(
+    snapStates.notifications,
   ).filter((notification) => notification.type !== 'follow_request');
   const showTodayEmpty = !visibleNotifications.some(
     (notification) =>
-      new Date(notification.createdAt as string).toDateString() ===
+      new Date(notification.createdAt ?? '').toDateString() ===
       todayDate.toDateString(),
   );
 
@@ -660,7 +741,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     if (notificationID) {
       states.routeNotification = {
         id: notificationID,
-        accessToken: atob(notificationAccessToken as string),
+        accessToken: notificationAccessToken ? atob(notificationAccessToken) : '',
       };
     }
   });
@@ -690,9 +771,9 @@ function Notifications({ columnMode }: NotificationsProps) {
   const jRef = useHotkeys<HTMLDivElement>(
     'j',
     () => {
-      const activeItem = document.activeElement?.closest(
-        itemsSelector,
-      ) as HTMLElement | null;
+      const activeElement = document.activeElement?.closest(itemsSelector);
+      const activeItem =
+        activeElement instanceof HTMLElement ? activeElement : null;
       const activeItemRect = activeItem?.getBoundingClientRect();
       const allItems = Array.from(
         scrollableRef.current?.querySelectorAll<HTMLElement>(itemsSelector) ??
@@ -737,9 +818,9 @@ function Notifications({ columnMode }: NotificationsProps) {
     'k',
     () => {
       // focus on previous status after active item
-      const activeItem = document.activeElement?.closest(
-        itemsSelector,
-      ) as HTMLElement | null;
+      const activeElement = document.activeElement?.closest(itemsSelector);
+      const activeItem =
+        activeElement instanceof HTMLElement ? activeElement : null;
       const activeItemRect = activeItem?.getBoundingClientRect();
       const allItems = Array.from(
         scrollableRef.current?.querySelectorAll<HTMLElement>(itemsSelector) ??
@@ -786,9 +867,9 @@ function Notifications({ columnMode }: NotificationsProps) {
       const activeItem = document.activeElement?.closest(itemsSelector);
       const statusLink = activeItem?.querySelector(
         '.status-link',
-      ) as HTMLElement | null;
+      );
       if (statusLink) {
-        statusLink.click();
+        if (statusLink instanceof HTMLElement) statusLink.click();
       }
     },
     {
@@ -854,22 +935,26 @@ function Notifications({ columnMode }: NotificationsProps) {
       >
         <header
           hidden={hiddenUI}
-          role="presentation"
-          onClick={(e: React.MouseEvent<HTMLElement>) => {
-            if (!(e.target as HTMLElement | null)?.closest('a, button')) {
+      role="presentation"
+      onClick={(e: React.MouseEvent<HTMLElement>) => {
+            const { target } = e;
+            if (!(target instanceof Element) || !target.closest('a, button')) {
               scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }}
           onKeyDown={(e: React.KeyboardEvent) => {
             if (e.key === 'Enter' || e.key === ' ') {
-              const target = e.target as HTMLElement | null;
-              if (target?.closest('a, button')) return;
+              const { target } = e;
+              if (target instanceof Element && target.closest('a, button')) {
+                return;
+              }
               e.preventDefault();
               scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }}
           onDoubleClick={(e: React.MouseEvent<HTMLElement>) => {
-            if (!(e.target as HTMLElement | null)?.closest('a, button')) {
+            const { target } = e;
+            if (!(target instanceof Element) || !target.closest('a, button')) {
               loadNotifications(true);
             }
           }}
@@ -984,7 +1069,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                 <div className="filtered-notifications">
                   <details
                     onToggle={(e: SyntheticEvent<HTMLDetailsElement>) => {
-                      const { open } = e.target as HTMLDetailsElement;
+                      const { open } = e.currentTarget;
                       if (open) {
                         void (async () => {
                           const requests = await fetchNotificationsRequest();
@@ -1070,7 +1155,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                   type="checkbox"
                   checked={onlyMentions}
                   onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-                    setOnlyMentions((e.target as HTMLInputElement).checked);
+                    setOnlyMentions(e.currentTarget.checked);
                   }}
                 />{' '}
                 <Trans>Only mentions</Trans>
@@ -1096,7 +1181,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                 return null;
               }
               const notificationDay = new Date(
-                notification.createdAt as string,
+                notification.createdAt ?? '',
               );
               const differentDay =
                 notificationDay.toDateString() !== currentDay.toDateString();
@@ -1223,30 +1308,25 @@ function Notifications({ columnMode }: NotificationsProps) {
               <form
                 onSubmit={(ev: SyntheticEvent<HTMLFormElement>) => {
                   ev.preventDefault();
-                  const form = ev.currentTarget
-                    .elements as HTMLFormControlsCollection &
-                    Record<NotificationsPolicyKey, HTMLInputElement>;
-                  const {
-                    forNotFollowing,
-                    forNotFollowers,
-                    forNewAccounts,
-                    forPrivateMentions,
-                    forLimitedAccounts,
-                  } = form;
+                  const getPolicyValue = (key: NotificationsPolicyKey) => {
+                    const field = ev.currentTarget.elements.namedItem(key);
+                    return field instanceof HTMLSelectElement ? field.value : '';
+                  };
                   const newPolicy: NotificationsPolicy = {
                     ...notificationsPolicy,
-                    forNotFollowing: forNotFollowing.value,
-                    forNotFollowers: forNotFollowers.value,
-                    forNewAccounts: forNewAccounts.value,
-                    forPrivateMentions: forPrivateMentions.value,
-                    forLimitedAccounts: forLimitedAccounts.value,
+                    forNotFollowing: getPolicyValue('forNotFollowing'),
+                    forNotFollowers: getPolicyValue('forNotFollowers'),
+                    forNewAccounts: getPolicyValue('forNewAccounts'),
+                    forPrivateMentions: getPolicyValue('forPrivateMentions'),
+                    forLimitedAccounts: getPolicyValue('forLimitedAccounts'),
                   };
                   setNotificationsPolicy(newPolicy);
                   setShowNotificationsSettings(false);
                   void (async () => {
                     try {
-                      const v2Notifications = masto.v2
-                        .notifications as MastoV2NotificationsApi;
+                      const v2Notifications = getV2NotificationsApi(
+                        masto.v2.notifications,
+                      );
                       await v2Notifications.policy.update(newPolicy);
                       showToast(t`Notifications settings updated`);
                     } catch (e) {
@@ -1308,10 +1388,12 @@ interface AnnouncementBlockProps {
 }
 function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
   const { instance } = api();
-  const { contact } = getCurrentInstance() as {
-    contact?: { account?: unknown };
-  };
-  const contactAccount = contact?.account;
+  const currentInstance = getCurrentInstance();
+  const contact = isRecord(currentInstance) ? currentInstance.contact : null;
+  const contactAccount =
+    isRecord(contact) && isAccountBlockAccount(contact.account)
+      ? contact.account
+      : null;
   const { content, publishedAt, updatedAt, mentions, emojis, reactions } =
     announcement;
 
@@ -1323,9 +1405,7 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
   return (
     <div className="announcement-block">
       <AccountBlock
-        account={
-          contactAccount as Parameters<typeof AccountBlock>[0]['account']
-        }
+        account={contactAccount}
       />
       {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
           this div delegates link clicks via handleContentLinks; embedded
@@ -1335,13 +1415,18 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
         className="announcement-content"
         role="presentation"
         onClick={handleContentLinks({
-          mentions: mentions as { url?: string; acct?: string }[] | undefined,
+          mentions: Array.isArray(mentions)
+            ? mentions.filter(
+                (mention): mention is { url?: string; acct?: string } =>
+                  isRecord(mention),
+              )
+            : undefined,
           instance,
         })}
         dangerouslySetInnerHTML={{
-          __html: enhanceContent(content, {
+          __html: toHtmlString(enhanceContent(content, {
             emojis,
-          }) as string,
+          })),
         }}
       />
       <p className="insignificant">
@@ -1388,7 +1473,7 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
 
 function fetchNotficationsByAccount(accountID: string) {
   const { masto } = api();
-  const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
+  const v1Notifications = getV1NotificationsApi(masto.v1.notifications);
   return v1Notifications.list({
     accountId: accountID,
   });
@@ -1482,11 +1567,11 @@ function NotificationRequestModalButton({
                     className="notification-peek"
                     role="presentation"
                     onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-                      const target = e.target as HTMLElement | null;
+                      const { target } = e;
                       // If button or links
                       if (
-                        target?.tagName === 'BUTTON' ||
-                        target?.tagName === 'A'
+                        target instanceof HTMLElement &&
+                        (target.tagName === 'BUTTON' || target.tagName === 'A')
                       ) {
                         onClose();
                       }
@@ -1537,8 +1622,9 @@ function NotificationRequestButtons({
           setUIState('loading');
           void (async () => {
             try {
-              const v1Notifications = masto.v1
-                .notifications as MastoV1NotificationsApi;
+              const v1Notifications = getV1NotificationsApi(
+                masto.v1.notifications,
+              );
               await v1Notifications.requests.$select(request.id).accept();
               setRequestState('accept');
               setUIState('default');
@@ -1568,8 +1654,9 @@ function NotificationRequestButtons({
           setUIState('loading');
           void (async () => {
             try {
-              const v1Notifications = masto.v1
-                .notifications as MastoV1NotificationsApi;
+              const v1Notifications = getV1NotificationsApi(
+                masto.v1.notifications,
+              );
               await v1Notifications.requests.$select(request.id).dismiss();
               setRequestState('dismiss');
               setUIState('default');

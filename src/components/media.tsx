@@ -1,6 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { getBlurHashAverageColor } from 'fast-blurhash';
 import type HlsType from 'hls.js';
+import type { ErrorData } from 'hls.js';
 import type { ReactNode, ComponentType, HTMLAttributes, Ref } from 'react';
 import { Fragment } from 'react';
 import { forwardRef, memo } from 'react';
@@ -25,7 +26,7 @@ type QuickPinchZoomProps = Omit<
   containerProps?: HTMLAttributes<HTMLDivElement>;
 };
 const QuickPinchZoom =
-  QuickPinchZoomImport as never as ComponentType<QuickPinchZoomProps>;
+  QuickPinchZoomImport as ComponentType<QuickPinchZoomProps>;
 
 import formatDuration from '../utils/format-duration';
 import {
@@ -118,6 +119,41 @@ const isStreamingVideoSupported = (() => {
   }
 })();
 
+type HlsConstructor = (typeof import('hls.js'))['default'];
+
+function attachHlsErrorHandler(
+  hls: HlsType,
+  HlsConstructor: HlsConstructor,
+  activeSrc: string,
+  setActiveSrc: (src: string) => void,
+) {
+  const handleHlsError = (_event: string, data: ErrorData) => {
+    if (data.type === HlsConstructor.ErrorTypes.NETWORK_ERROR) {
+      const responseCode = data.response?.code ?? 0;
+      const fallbackSrc =
+        responseCode >= 400 && responseCode < 500
+          ? getBlueskyVideoFallbackURL(activeSrc)
+          : undefined;
+      if (fallbackSrc) {
+        setActiveSrc(fallbackSrc);
+        return;
+      }
+    }
+    if (!data.fatal) return;
+    if (data.type === HlsConstructor.ErrorTypes.NETWORK_ERROR) {
+      hls.startLoad();
+    } else if (data.type === HlsConstructor.ErrorTypes.MEDIA_ERROR) {
+      hls.recoverMediaError();
+    } else {
+      hls.destroy();
+    }
+  };
+  hls.on(HlsConstructor.Events.ERROR, handleHlsError);
+  return () => {
+    hls.off(HlsConstructor.Events.ERROR, handleHlsError);
+  };
+}
+
 interface MediaAttachment {
   id?: string;
   blurhash?: string | null;
@@ -189,11 +225,7 @@ function HlsVideo({
   onLoadedMetadata,
 }: HlsVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [activeSrc, setActiveSrc] = useState(src);
-
-  useEffect(() => {
-    setActiveSrc(src);
-  }, [src]);
+  const [activeSrc, setActiveSrc] = useState(() => src);
 
   useEffect((): (() => void) | undefined => {
     const video = videoRef.current;
@@ -201,8 +233,10 @@ function HlsVideo({
 
     let hls: HlsType | undefined;
     let cancelled = false;
+    let releaseHlsError = () => {};
     const cleanup = () => {
       cancelled = true;
+      releaseHlsError();
       hls?.destroy();
       video.removeAttribute('src');
       video.load();
@@ -218,7 +252,7 @@ function HlsVideo({
     }
 
     void (async () => {
-      let HlsConstructor: (typeof import('hls.js'))['default'];
+      let HlsConstructor: HlsConstructor;
       try {
         ({ default: HlsConstructor } = await import('hls.js'));
       } catch {
@@ -229,27 +263,12 @@ function HlsVideo({
       hls = new HlsConstructor({
         capLevelToPlayerSize: true,
       });
-      hls.on(HlsConstructor.Events.ERROR, (_event, data) => {
-        if (data.type === HlsConstructor.ErrorTypes.NETWORK_ERROR) {
-          const responseCode = data.response?.code ?? 0;
-          const fallbackSrc =
-            responseCode >= 400 && responseCode < 500
-              ? getBlueskyVideoFallbackURL(activeSrc)
-              : undefined;
-          if (fallbackSrc) {
-            setActiveSrc(fallbackSrc);
-            return;
-          }
-        }
-        if (!data.fatal) return;
-        if (data.type === HlsConstructor.ErrorTypes.NETWORK_ERROR) {
-          hls?.startLoad();
-        } else if (data.type === HlsConstructor.ErrorTypes.MEDIA_ERROR) {
-          hls?.recoverMediaError();
-        } else {
-          hls?.destroy();
-        }
-      });
+      releaseHlsError = attachHlsErrorHandler(
+        hls,
+        HlsConstructor,
+        activeSrc,
+        setActiveSrc,
+      );
       hls.loadSource(activeSrc);
       hls.attachMedia(video);
     })();
@@ -318,7 +337,7 @@ function Media({
   if (previewUrl && /no-preview\./i.test(previewUrl)) {
     previewUrl = null;
   }
-  const mediaVTN = getSafeViewTransitionName((id || blurhash || url) as string);
+  const mediaVTN = getSafeViewTransitionName(id || blurhash || url || '');
   const { original = {}, small, focus } = meta || {};
 
   const width = showOriginal
@@ -370,8 +389,8 @@ function Media({
           mediaEl.style.setProperty('transform', value);
         }
 
-        (mediaEl.closest('.media-zoom') as HTMLElement).style.touchAction =
-          scale <= 1.01 ? 'pan-x' : '';
+        const mediaZoom = mediaEl.closest<HTMLElement>('.media-zoom');
+        if (mediaZoom) mediaZoom.style.touchAction = scale <= 1.01 ? 'pan-x' : '';
       }
     },
     [],
@@ -451,8 +470,8 @@ function Media({
     if (!showOriginal) return;
     if (!parentRef.current) return;
     const { offsetWidth, offsetHeight } = parentRef.current;
-    const smaller =
-      (width as number) < offsetWidth && (height as number) < offsetHeight;
+    if (!width || !height) return;
+    const smaller = width < offsetWidth && height < offsetHeight;
     if (smaller) setImageSmallerThanParent(smaller);
   }, [width, height, isImage, showOriginal]);
 
@@ -484,7 +503,8 @@ function Media({
   if (
     allowLongerCaption &&
     !showInlineDesc &&
-    (description?.length as number) <= MEDIA_CAPTION_LIMIT_LONGER
+    description &&
+    description.length <= MEDIA_CAPTION_LIMIT_LONGER
   ) {
     showInlineDesc = true;
   }
@@ -535,7 +555,8 @@ function Media({
 
   const interceptOnClick = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
-      const target = e.target as Element;
+      const { target } = e;
+      if (!(target instanceof Element)) return;
       const isOnPostPage = target.closest('.status-deck');
       const startViewTransition = (
         document as ViewTransitionDocument
@@ -587,10 +608,13 @@ function Media({
     if (!isImage) return;
     if (!isSafari) return;
     if (!showOriginal) return;
+    if (!mediaURL) return;
     void (async () => {
       try {
-        await fetch(mediaURL as string, { mode: 'no-cors' });
-        (mediaRef.current as HTMLImageElement).src = mediaURL as string;
+        await fetch(mediaURL, { mode: 'no-cors' });
+        if (mediaRef.current instanceof HTMLImageElement) {
+          mediaRef.current.src = mediaURL;
+        }
       } catch {
         // Ignore
       }
@@ -627,9 +651,11 @@ function Media({
           {showOriginal ? (
             <QuickPinchZoom {...quickPinchZoomProps}>
               <img
-                ref={mediaRef as Ref<HTMLImageElement>}
+                ref={(node) => {
+                  mediaRef.current = node;
+                }}
                 src={mediaURL}
-                alt={description as string | undefined}
+                alt={description ?? undefined}
                 width={width}
                 height={height}
                 data-orientation={orientation}
@@ -639,17 +665,18 @@ function Media({
                   viewTransitionName: mediaVTN,
                 }}
                 onLoad={(e) => {
-                  const el = e.target as HTMLImageElement;
+                  const el = e.currentTarget;
                   const mediaImage = el.closest<HTMLElement>('.media-image');
                   if (mediaImage) {
                     mediaImage.style.backgroundImage = `url(${el.src})`;
                     mediaImage.style.removeProperty('--bg-image');
                   }
-                  (el.closest('.media-zoom') as HTMLElement).style.display = '';
+                  const mediaZoom = el.closest<HTMLElement>('.media-zoom');
+                  if (mediaZoom) mediaZoom.style.display = '';
                   setPinchZoomEnabled(true);
                 }}
                 onError={(e) => {
-                  const target = e.target as HTMLImageElement;
+                  const target = e.currentTarget;
                   const { src } = target;
                   if (
                     src === mediaURL &&
@@ -665,7 +692,7 @@ function Media({
             <>
               <img
                 src={mediaURL}
-                alt={showInlineDesc ? '' : (description as string | undefined)}
+                alt={showInlineDesc ? '' : (description ?? undefined)}
                 width={width}
                 height={height}
                 data-orientation={orientation}
@@ -681,7 +708,7 @@ function Media({
                   // Clamp between 5s and 120s
                   '--anim-duration': `${Math.min(
                     Math.max(
-                      Math.max(width as number, height as number) / 100,
+                      Math.max(width || 0, height || 0) / 100,
                       5,
                     ),
                     120,
@@ -689,8 +716,8 @@ function Media({
                 }}
                 onLoad={(e) => {
                   // e.target.closest('.media-image').style.backgroundImage = '';
-                  const target = e.target as HTMLImageElement;
-                  (target.dataset as Record<string, string>).loaded = 'true';
+                  const target = e.currentTarget;
+                  target.dataset.loaded = 'true';
                   const $media = target.closest<HTMLElement>('.media');
                   if (!hasPreviewDimensions && $media) {
                     const { naturalWidth, naturalHeight } = target;
@@ -722,7 +749,7 @@ function Media({
                           naturalHeight < minDimension
                         ) {
                           (
-                            $media.dataset as Record<string, string>
+                            $media.dataset
                           ).hasSmallDimension = 'true';
                         } else {
                           const displayNaturalHeight =
@@ -735,7 +762,7 @@ function Media({
                               $media.closest<HTMLElement>('.media');
                             if ($mediaParent) {
                               (
-                                $mediaParent.dataset as Record<string, string>
+                                $mediaParent.dataset
                               ).hasNaturalAspectRatio = 'true';
                             }
                           }
@@ -745,7 +772,7 @@ function Media({
                   }
                 }}
                 onError={(e) => {
-                  const target = e.target as HTMLImageElement;
+                  const target = e.currentTarget;
                   const { src } = target;
                   if (
                     src === mediaURL &&
@@ -767,7 +794,7 @@ function Media({
         {mediaLoadError && (
           <div>
             <a
-              href={remoteUrl as string | undefined}
+              href={remoteUrl ?? undefined}
               className="button plain6 small"
               target="_blank"
             >
@@ -786,7 +813,7 @@ function Media({
     isVideoMaybe ||
     isStreamingVideoMaybe
   ) {
-    const duration = original.duration as number;
+    const duration = original.duration ?? 0;
     const hasDuration = duration > 0;
     const shortDuration = duration < 31;
     const isGIF = type === 'gifv' && shortDuration;
@@ -884,7 +911,9 @@ function Media({
             isGIF && showOriginal ? (
               <QuickPinchZoom {...quickPinchZoomProps} enabled>
                 <div
-                  ref={mediaRef as Ref<HTMLDivElement>}
+                  ref={(node) => {
+                    mediaRef.current = node;
+                  }}
                   dangerouslySetInnerHTML={{
                     __html: gifHTML,
                   }}
@@ -901,8 +930,9 @@ function Media({
               <div className="video-container">
                 {isHlsVideo ? (
                   <HlsVideo
+                    key={videoURL}
                     src={videoURL}
-                    poster={previewUrl as string | undefined}
+                    poster={previewUrl ?? undefined}
                     width={width}
                     height={height}
                     orientation={orientation}
@@ -916,7 +946,7 @@ function Media({
                 ) : (
                   <video
                     src={videoURL}
-                    poster={previewUrl as string | undefined}
+                    poster={previewUrl ?? undefined}
                     width={width}
                     height={height}
                     data-orientation={orientation}
@@ -934,7 +964,7 @@ function Media({
             <video
               ref={videoRef}
               src={url ?? undefined}
-              poster={previewUrl as string | undefined}
+              poster={previewUrl ?? undefined}
               width={width}
               height={height}
               data-orientation={orientation}
@@ -947,11 +977,10 @@ function Media({
               onTimeUpdate={
                 showProgress
                   ? (e) => {
-                      const target = e.target as HTMLVideoElement | null;
-                      const container = target?.closest(
-                        '.media-gif',
-                      ) as HTMLElement | null;
-                      if (container && target) {
+                      const target = e.currentTarget;
+                      const container =
+                        target.closest<HTMLElement>('.media-gif');
+                      if (container) {
                         const percentage =
                           (target.currentTime / target.duration) * 100;
                         container.style.setProperty(
@@ -969,7 +998,7 @@ function Media({
                 <img
                   src={previewUrl}
                   alt={
-                    showInlineDesc ? '' : (description as string | undefined)
+                    showInlineDesc ? '' : (description ?? undefined)
                   }
                   width={width}
                   height={height}
@@ -979,7 +1008,7 @@ function Media({
                   data-view-transition-name={mediaVTN}
                   onLoad={(e) => {
                     if (!hasPreviewDimensions) {
-                      const target = e.target as HTMLImageElement;
+                      const target = e.currentTarget;
                       const $media = target.closest<HTMLElement>('.media');
                       if ($media) {
                         const { naturalHeight, naturalWidth } = target;
@@ -1003,8 +1032,9 @@ function Media({
               ) : videoURL ? (
                 isHlsVideo ? (
                   <HlsVideo
+                    key={videoURL}
                     src={videoURL}
-                    poster={previewUrl as string | undefined}
+                    poster={previewUrl ?? undefined}
                     width={width}
                     height={height}
                     orientation={orientation}
@@ -1014,7 +1044,7 @@ function Media({
                     disablePictureInPicture
                     onLoadedMetadata={(e) => {
                       if (!hasDuration) {
-                        const target = e.target as HTMLVideoElement;
+                        const target = e.currentTarget;
                         const { duration: targetDuration } = target;
                         if (targetDuration) {
                           const loadedDuration = formatDuration(targetDuration);
@@ -1040,7 +1070,7 @@ function Media({
                     disablePictureInPicture
                     onLoadedMetadata={(e) => {
                       if (!hasDuration) {
-                        const target = e.target as HTMLVideoElement;
+                        const target = e.currentTarget;
                         const { duration: targetDuration } = target;
                         if (targetDuration) {
                           const loadedDuration = formatDuration(targetDuration);
@@ -1115,7 +1145,7 @@ function Media({
           ) : previewUrl ? (
             <img
               src={previewUrl}
-              alt={showInlineDesc ? '' : (description as string | undefined)}
+              alt={showInlineDesc ? '' : (description ?? undefined)}
               width={width}
               height={height}
               data-orientation={orientation}
@@ -1123,7 +1153,7 @@ function Media({
               onError={(e) => {
                 try {
                   // Remove self if broken
-                  (e.target as HTMLImageElement | null)?.remove?.();
+                  e.currentTarget.remove();
                 } catch {}
               }}
             />

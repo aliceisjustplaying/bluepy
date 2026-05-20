@@ -3,7 +3,7 @@ import './login.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import Fuse from 'fuse.js';
 import type { SyntheticEvent } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import logo from '../assets/logo.svg';
@@ -58,6 +58,25 @@ const HANDLE_SUFFIXES = [
   '.npmx.social',
 ];
 
+interface SuffixState {
+  currentSuffix: string;
+  suffixFading: boolean;
+}
+
+type SuffixAction =
+  | { type: 'fade' }
+  | { type: 'replace'; suffix: string };
+
+function suffixReducer(state: SuffixState, action: SuffixAction): SuffixState {
+  switch (action.type) {
+    case 'fade':
+      return { ...state, suffixFading: true };
+    case 'replace':
+      return { currentSuffix: action.suffix, suffixFading: false };
+  }
+  return state;
+}
+
 function Login() {
   const { t } = useLingui();
   useTitle(t`Log in`, '/login');
@@ -68,31 +87,38 @@ function Login() {
   const [bskyIdentifier, setBskyIdentifier] = useState('');
   const [bskyPassword, setBskyPassword] = useState('');
   const [bskyService, setBskyService] = useState('');
-  const [appview, setAppview] = useState(getActiveAppview());
+  const [appview, setAppview] = useState(() => getActiveAppview());
   useEffect(() => {
     applyAppviewTheme(appview);
   }, [appview]);
   const remainingSuffixes = useRef<string[]>([]);
-  const [currentSuffix, setCurrentSuffix] = useState(HANDLE_SUFFIXES[0]);
-  const [suffixFading, setSuffixFading] = useState(false);
+  const [{ currentSuffix, suffixFading }, dispatchSuffix] = useReducer(
+    suffixReducer,
+    {
+      currentSuffix: HANDLE_SUFFIXES[0],
+      suffixFading: false,
+    },
+  );
   const [handleFocused, setHandleFocused] = useState(false);
   useEffect(() => {
     const id = setInterval(() => {
-      setSuffixFading(true);
+      dispatchSuffix({ type: 'fade' });
       setTimeout(() => {
-        setCurrentSuffix((prev: string) => {
-          if (remainingSuffixes.current.length === 0) {
-            remainingSuffixes.current = HANDLE_SUFFIXES.filter(
-              (s) => s !== prev,
-            ).toSorted(() => Math.random() - 0.5);
-          }
-          return remainingSuffixes.current.pop()!;
+        if (remainingSuffixes.current.length === 0) {
+          remainingSuffixes.current = HANDLE_SUFFIXES.filter(
+            (s) => s !== currentSuffix,
+          ).toSorted(() => Math.random() - 0.5);
+        }
+        dispatchSuffix({
+          type: 'replace',
+          suffix: remainingSuffixes.current.pop() ?? HANDLE_SUFFIXES[0],
         });
-        setSuffixFading(false);
       }, 500);
     }, 1500);
-    return () => clearInterval(id);
-  }, []);
+    return () => {
+      clearInterval(id);
+    };
+  }, [currentSuffix]);
   const [searchParams] = useSearchParams();
   const instance = searchParams.get('instance');
   const submit = searchParams.get('submit');
@@ -100,14 +126,14 @@ function Login() {
     instance || cachedInstanceURL?.toLowerCase() || '',
   );
 
-  const [instancesList, setInstancesList] = useState<string[]>([]);
+  const instancesList = useRef<string[]>([]);
   const searcher = useRef<Fuse<string> | undefined>(undefined);
   useEffect(() => {
     void (async () => {
       try {
         const res = await fetch(instancesListURL);
-        const data = await res.json();
-        setInstancesList(data);
+        const data = (await res.json()) as string[];
+        instancesList.current = data;
         searcher.current = new Fuse(data);
       } catch (e) {
         // Silently fail
@@ -255,7 +281,7 @@ function Login() {
     : instancesSuggestions?.length
       ? instancesSuggestions[0]
       : instanceText
-        ? instancesList.find((item) => item.includes(instanceText))
+        ? instancesList.current.find((item) => item.includes(instanceText))
         : null;
 
   const submitBluesky = (e: SyntheticEvent<HTMLFormElement>) => {
@@ -363,11 +389,15 @@ function Login() {
                 autoCapitalize="off"
                 autoComplete="username"
                 spellCheck={false}
-                onInput={(e: SyntheticEvent<HTMLInputElement>) => {
+                onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                   setBskyIdentifier(e.currentTarget.value);
                 }}
-                onFocus={() => setHandleFocused(true)}
-                onBlur={() => setHandleFocused(false)}
+                onFocus={() => {
+                  setHandleFocused(true);
+                }}
+                onBlur={() => {
+                  setHandleFocused(false);
+                }}
                 style={{ width: '100%' }}
               />
               {!bskyIdentifier && !handleFocused && (
@@ -413,9 +443,9 @@ function Login() {
             AppView:{' '}
             <select
               value={appview}
-              onChange={(e) =>
-                setAppview((e.target as HTMLSelectElement).value)
-              }
+              onChange={(e) => {
+                setAppview(e.currentTarget.value);
+              }}
             >
               {Object.entries(APPVIEW_OPTIONS).map(([key, { label }]) => (
                 <option key={key} value={key}>
@@ -443,7 +473,7 @@ function Login() {
                 className="large"
                 disabled={uiState === 'loading'}
                 autoComplete="current-password"
-                onInput={(e: SyntheticEvent<HTMLInputElement>) => {
+                onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                   setBskyPassword(e.currentTarget.value);
                 }}
               />
@@ -460,7 +490,7 @@ function Login() {
                 autoComplete="url"
                 spellCheck={false}
                 placeholder="pds.example.com"
-                onInput={(e: SyntheticEvent<HTMLInputElement>) => {
+                onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                   setBskyService(e.currentTarget.value);
                 }}
               />

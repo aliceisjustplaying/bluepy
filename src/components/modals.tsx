@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
-import { useEffect } from 'react';
+import { type ComponentType, useEffect } from 'react';
 import { useLocation, type Location } from 'react-router-dom';
 import { subscribe, useSnapshot } from 'valtio';
 
@@ -19,7 +19,7 @@ import FeedbackModal from './feedback-modal';
 import GenericAccounts from './generic-accounts';
 import ImportExportAccounts from './import-export-accounts';
 import MediaAltModal from './media-alt-modal';
-import MediaModalComponent, { type MediaModalProps } from './media-modal';
+import MediaModalComponent from './media-modal';
 import Modal from './modal';
 import OpenLinkSheet from './open-link-sheet';
 import QrCodeModal from './qr-code-modal';
@@ -35,7 +35,8 @@ function MediaModal(props: {
   index?: number;
   onClose?: () => void;
 }) {
-  return <MediaModalComponent {...(props as MediaModalProps)} />;
+  const TypedMediaModal = MediaModalComponent as ComponentType<typeof props>;
+  return <TypedMediaModal {...props} />;
 }
 
 // `show*` payloads in `states` are typed as `unknown` because the same key
@@ -43,7 +44,41 @@ function MediaModal(props: {
 // to `Payload` (loose record) at the read site rather than introducing many
 // narrow interfaces.
 type Payload = Record<string, unknown>;
-const p = (v: unknown): Payload => (v as Payload) || ({} as Payload);
+const p = (v: unknown): Payload =>
+  v !== null && typeof v === 'object' ? Object.fromEntries(Object.entries(v)) : {};
+const str = (value: unknown): string | undefined =>
+  typeof value === 'string' ? value : undefined;
+const strRequired = (value: unknown): string =>
+  typeof value === 'string' ? value : '';
+const num = (value: unknown): number | undefined =>
+  typeof value === 'number' ? value : undefined;
+const strOrNum = (value: unknown): string | number | undefined =>
+  typeof value === 'string' || typeof value === 'number' ? value : undefined;
+const bool = (value: unknown): boolean | undefined =>
+  typeof value === 'boolean' ? value : undefined;
+const stringArray = (value: unknown): readonly string[] | undefined =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string')
+    ? value
+    : undefined;
+const noArgFn = (value: unknown): (() => void) | undefined =>
+  typeof value === 'function' ? () => value() : undefined;
+const textValidator = (
+  value: unknown,
+): ((text: string) => boolean) | undefined =>
+  typeof value === 'function'
+    ? (text) => {
+        const result = value(text);
+        return typeof result === 'boolean' ? result : false;
+      }
+    : undefined;
+const scannerClose = (
+  value: unknown,
+): ((arg?: { text: string } | MouseEvent) => void) | undefined =>
+  typeof value === 'function'
+    ? (arg) => {
+        value(arg);
+      }
+    : undefined;
 
 type WindowWithCompose = Window & {
   __COMPOSE__?: Payload | null;
@@ -87,7 +122,7 @@ export default function Modals() {
     };
   }, []);
 
-  const composerState = snapStates.composerState as Payload;
+  const composerState = p(snapStates.composerState);
   const composeWindow = window as WindowWithCompose;
 
   return (
@@ -120,15 +155,19 @@ export default function Modals() {
             }
             sharedData={composeWindow.__SHARED_DATA__ || null}
             onClose={(results: Payload | undefined) => {
-              const { newStatus, instance, type } = (results || {}) as {
-                newStatus?: { id: string } | null;
-                instance?: string | null;
-                type?: 'post' | 'reply' | 'edit';
-              };
+              const resultPayload = p(results);
+              const newStatus = p(resultPayload.newStatus);
+              const instance = str(resultPayload.instance);
+              const resultType = str(resultPayload.type);
+              const type =
+                resultType === 'reply' || resultType === 'edit'
+                  ? resultType
+                  : 'post';
+              const newStatusId = str(newStatus.id);
               states.showCompose = false;
               composeWindow.__COMPOSE__ = null;
               composeWindow.__SHARED_DATA__ = null;
-              if (newStatus) {
+              if (newStatusId) {
                 states.reloadStatusPage++;
                 const toastText = {
                   post: t`Post published. Check it out.`,
@@ -145,8 +184,8 @@ export default function Modals() {
                     navigatePath(
                       canonicalizeAppPath(
                         instance
-                          ? `/${instance}/s/${newStatus.id}`
-                          : `/s/${newStatus.id}`,
+                          ? `/${instance}/s/${newStatusId}`
+                          : `/s/${newStatusId}`,
                       ),
                     );
                   },
@@ -195,7 +234,7 @@ export default function Modals() {
                 typeof AccountSheet
               >[0]['account']
             }
-            instance={p(snapStates.showAccount).instance as string | undefined}
+            instance={str(p(snapStates.showAccount).instance)}
             onClose={() => {
               states.showAccount = false;
               // states.showGenericAccounts = false;
@@ -213,8 +252,8 @@ export default function Modals() {
           }}
         >
           <OpenLinkSheet
-            url={p(snapStates.showOpenLink).url as string}
-            linkText={p(snapStates.showOpenLink).linkText as string | undefined}
+            url={strRequired(p(snapStates.showOpenLink).url)}
+            linkText={str(p(snapStates.showOpenLink).linkText)}
             onClose={() => {
               states.showOpenLink = false;
             }}
@@ -237,10 +276,11 @@ export default function Modals() {
       {!!snapStates.showMediaModal && (
         <Modal
           onClick={(e) => {
-            const target = e.target as HTMLElement | null;
+            const { target } = e;
             if (
               target === e.currentTarget ||
-              target?.classList?.contains('media')
+              (target instanceof HTMLElement &&
+                target.classList.contains('media'))
             ) {
               states.showMediaModal = false;
             }
@@ -248,11 +288,9 @@ export default function Modals() {
         >
           <MediaModal
             mediaAttachments={p(snapStates.showMediaModal).mediaAttachments}
-            instance={
-              p(snapStates.showMediaModal).instance as string | undefined
-            }
-            index={p(snapStates.showMediaModal).mediaIndex as number}
-            statusID={p(snapStates.showMediaModal).statusID as string}
+            instance={str(p(snapStates.showMediaModal).instance)}
+            index={num(p(snapStates.showMediaModal).mediaIndex)}
+            statusID={strRequired(p(snapStates.showMediaModal).statusID)}
             onClose={() => {
               states.showMediaModal = false;
             }}
@@ -279,23 +317,17 @@ export default function Modals() {
           }}
         >
           <GenericAccounts
-            instance={
-              p(snapStates.showGenericAccounts).instance as string | undefined
-            }
+            instance={str(p(snapStates.showGenericAccounts).instance)}
             excludeRelationshipAttrs={
-              p(snapStates.showGenericAccounts).excludeRelationshipAttrs as
-                | readonly string[]
-                | undefined
+              stringArray(
+                p(snapStates.showGenericAccounts).excludeRelationshipAttrs,
+              )
             }
-            postID={
-              p(snapStates.showGenericAccounts).postID as string | undefined
-            }
+            postID={str(p(snapStates.showGenericAccounts).postID)}
             onClose={() => {
               states.showGenericAccounts = false;
             }}
-            blankCopy={
-              p(snapStates.showGenericAccounts).blankCopy as string | undefined
-            }
+            blankCopy={str(p(snapStates.showGenericAccounts).blankCopy)}
           />
         </Modal>
       )}
@@ -307,10 +339,10 @@ export default function Modals() {
         >
           <MediaAltModal
             alt={
-              (p(snapStates.showMediaAlt).alt ||
-                snapStates.showMediaAlt) as string
+              str(p(snapStates.showMediaAlt).alt) ||
+              strRequired(snapStates.showMediaAlt)
             }
-            lang={p(snapStates.showMediaAlt).lang as string | undefined}
+            lang={str(p(snapStates.showMediaAlt).lang)}
             onClose={() => {
               states.showMediaAlt = false;
             }}
@@ -325,18 +357,12 @@ export default function Modals() {
           }}
         >
           <EmbedModal
-            html={p(snapStates.showEmbedModal).html as string | undefined}
-            url={p(snapStates.showEmbedModal).url as string | undefined}
-            iframeUrl={
-              p(snapStates.showEmbedModal).iframeUrl as string | undefined
-            }
-            title={p(snapStates.showEmbedModal).title as string | undefined}
-            width={
-              p(snapStates.showEmbedModal).width as number | string | undefined
-            }
-            height={
-              p(snapStates.showEmbedModal).height as number | string | undefined
-            }
+            html={str(p(snapStates.showEmbedModal).html)}
+            url={str(p(snapStates.showEmbedModal).url)}
+            iframeUrl={str(p(snapStates.showEmbedModal).iframeUrl)}
+            title={str(p(snapStates.showEmbedModal).title)}
+            width={strOrNum(p(snapStates.showEmbedModal).width)}
+            height={strOrNum(p(snapStates.showEmbedModal).height)}
             onClose={() => {
               states.showEmbedModal = false;
             }}
@@ -350,11 +376,7 @@ export default function Modals() {
           }}
         >
           <FeedbackModal
-            defaultMessage={
-              p(snapStates.showFeedbackModal).defaultMessage as
-                | string
-                | undefined
-            }
+            defaultMessage={str(p(snapStates.showFeedbackModal).defaultMessage)}
             onClose={() => {
               states.showFeedbackModal = false;
             }}
@@ -392,21 +414,15 @@ export default function Modals() {
           }}
         >
           <QrCodeModal
-            text={p(snapStates.showQrCodeModal).text as string}
-            arena={p(snapStates.showQrCodeModal).arena as string | undefined}
-            backgroundMask={
-              p(snapStates.showQrCodeModal).backgroundMask as string | undefined
-            }
-            caption={
-              p(snapStates.showQrCodeModal).caption as string | undefined
-            }
+            text={strRequired(p(snapStates.showQrCodeModal).text)}
+            arena={str(p(snapStates.showQrCodeModal).arena)}
+            backgroundMask={str(p(snapStates.showQrCodeModal).backgroundMask)}
+            caption={str(p(snapStates.showQrCodeModal).caption)}
             onClose={() => {
               states.showQrCodeModal = false;
             }}
             onScannerClick={
-              p(snapStates.showQrCodeModal).onScannerClick as
-                | (() => void)
-                | undefined
+              noArgFn(p(snapStates.showQrCodeModal).onScannerClick)
             }
           />
         </Modal>
@@ -420,19 +436,15 @@ export default function Modals() {
         >
           <QrScannerModal
             checkValidity={
-              p(snapStates.showQrScannerModal).checkValidity as
-                | ((text: string) => boolean)
-                | undefined
+              textValidator(p(snapStates.showQrScannerModal).checkValidity)
             }
-            actionableText={
-              p(snapStates.showQrScannerModal).actionableText as
-                | string
-                | undefined
-            }
+            actionableText={str(
+              p(snapStates.showQrScannerModal).actionableText,
+            )}
             onClose={(arg?: { text: string } | MouseEvent) => {
-              const onClose = p(snapStates.showQrScannerModal).onClose as
-                | ((arg?: { text: string } | MouseEvent) => void)
-                | undefined;
+              const onClose = scannerClose(
+                p(snapStates.showQrScannerModal).onClose,
+              );
               if (onClose) {
                 onClose(arg);
               }
@@ -453,9 +465,7 @@ export default function Modals() {
             }}
             exportDisabled={
               typeof snapStates.showImportExportAccounts === 'object'
-                ? (p(snapStates.showImportExportAccounts).exportDisabled as
-                    | boolean
-                    | undefined)
+                ? bool(p(snapStates.showImportExportAccounts).exportDisabled)
                 : false
             }
           />

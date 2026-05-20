@@ -14,14 +14,14 @@ function AsyncText({ children }: AsyncTextProps) {
       return undefined;
     }
     let cancelled = false;
-    Promise.resolve(children)
-      .then((resolved) => {
+    void (async () => {
+      try {
+        const resolved = await children;
         if (!cancelled) setText(resolved);
-        return undefined;
-      })
-      .catch((error: unknown) => {
+      } catch (error) {
         console.error(error);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };

@@ -18,9 +18,11 @@ const alphaCache = new Map<string | undefined, boolean>();
 const canvas: OffscreenCanvas | HTMLCanvasElement = window.OffscreenCanvas
   ? new OffscreenCanvas(1, 1)
   : document.createElement('canvas');
-const ctx = canvas.getContext('2d', {
+const maybeCtx = canvas.getContext('2d', {
   willReadFrequently: true,
-}) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+});
+if (!maybeCtx) throw new Error('Canvas 2D context unavailable');
+const ctx = maybeCtx;
 ctx.imageSmoothingEnabled = false;
 
 const scheduleTask =
@@ -87,14 +89,14 @@ function Avatar({
               : undefined
           }
           onError={(e) => {
-            const target = e.target as HTMLImageElement | null;
-            if (target?.crossOrigin) {
+            const target = e.currentTarget;
+            if (target.crossOrigin) {
               target.crossOrigin = null;
               target.src = url;
             }
           }}
           onLoad={(loadEvent) => {
-            const target = loadEvent.target as HTMLImageElement;
+            const target = loadEvent.currentTarget;
             if (avatarRef.current) avatarRef.current.dataset.loaded = 'true';
             if (alphaCache.has(url)) return;
             if (isMissing) return;

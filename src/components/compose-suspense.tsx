@@ -17,8 +17,9 @@ function importIntlSegmenter(): Promise<unknown> {
 }
 
 function importCompose(): Promise<ComposeModule> {
-  composeModulePromise ??= import('./compose')
-    .then((mod) => {
+  composeModulePromise ??= (async () => {
+    try {
+      const mod = await import('./compose');
       const Compose = mod.default;
       const LoadedCompose: ComponentType<Record<string, unknown>> = (props) => (
         <Compose
@@ -28,20 +29,22 @@ function importCompose(): Promise<ComposeModule> {
         />
       );
       return { default: LoadedCompose };
-    })
-    .catch((e: unknown) => {
+    } catch (e) {
       composeModulePromise = undefined;
       throw e;
-    });
+    }
+  })();
   return composeModulePromise;
 }
 
 export async function preload() {
   try {
     await importIntlSegmenter();
-    importCompose().catch((err: unknown) => {
+    try {
+      await importCompose();
+    } catch (err) {
       console.error(err);
-    });
+    }
   } catch (e) {
     console.error(e);
   }

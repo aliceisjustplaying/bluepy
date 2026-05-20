@@ -11,7 +11,11 @@ const supportsIntlSegmenter = !shouldPolyfill();
 setTimeout(() => {
   queueMicrotask(() => {
     if (!supportsIntlSegmenter) {
-      import('@formatjs/intl-segmenter/polyfill-force.js').catch(() => {});
+      void (async () => {
+        try {
+          await import('@formatjs/intl-segmenter/polyfill-force.js');
+        } catch {}
+      })();
     }
   });
 }, 1000);

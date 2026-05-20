@@ -159,12 +159,16 @@ export default function AtprotoLabels({
     [fetchedLabelers, preferenceLabelerInfo, sourceProfileInfo],
   );
   const missingLabelerDids = useMemo(
-    () =>
-      uniqueStrings(
-        visibleLabels
-          .map((label) => label.src)
-          .filter((did) => did.startsWith('did:') && !getOwn(labelerInfo, did)),
-      ),
+    () => {
+      const dids: string[] = [];
+      for (const label of visibleLabels) {
+        const did = label.src;
+        if (did.startsWith('did:') && !getOwn(labelerInfo, did)) {
+          dids.push(did);
+        }
+      }
+      return uniqueStrings(dids);
+    },
     [labelerInfo, visibleLabels],
   );
 

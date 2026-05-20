@@ -637,9 +637,13 @@ function YearInPosts() {
     const uniqueOrderedIds = [...new Set(orderedIds)];
 
     const postsMap = new Map<string, MastoStatus>(posts.map((p) => [p.id, p]));
-    const postResults = uniqueOrderedIds
-      .map((id) => postsMap.get(String(id)))
-      .filter((p): p is MastoStatus => Boolean(p));
+    const postResults: MastoStatus[] = [];
+    for (const id of uniqueOrderedIds) {
+      const post = postsMap.get(String(id));
+      if (post) {
+        postResults.push(post);
+      }
+    }
     return postResults;
   }, [posts, searchQuery, totalPosts]);
 
@@ -1203,50 +1207,52 @@ function YearInPosts() {
                 <div className="sort-controls">
                   <span className="filter-label">Sort</span>{' '}
                   <fieldset className="radio-field-group">
-                    {SORT_OPTIONS.filter((o) => {
-                      if (o.key === 'relevance') return !!searchQuery;
-                      if (o.key === 'createdAt') return true;
-                      return !searchQuery;
-                    }).map(({ key }) => (
-                      <label
-                        className="filter-sort"
-                        key={key}
-                        onClick={(e) => {
-                          if (sortBy === key && key !== 'relevance') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                          }
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          name="filter-sort-cat"
-                          checked={sortBy === key}
-                          onChange={() => {
-                            setSortBy(key);
-                            const order = /(replies|favourites|reblogs)/.test(
-                              key,
-                            )
-                              ? 'desc'
-                              : 'asc';
-                            setSortOrder(order);
+                    {SORT_OPTIONS.map(({ key }) => {
+                      if (key === 'relevance' && !searchQuery) return null;
+                      if (key !== 'relevance' && key !== 'createdAt' && searchQuery) {
+                        return null;
+                      }
+                      return (
+                        <label
+                          className="filter-sort"
+                          key={key}
+                          onClick={(e) => {
+                            if (sortBy === key && key !== 'relevance') {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                            }
                           }}
-                        />
-                        {
+                        >
+                          <input
+                            type="radio"
+                            name="filter-sort-cat"
+                            checked={sortBy === key}
+                            onChange={() => {
+                              setSortBy(key);
+                              const order = /(replies|favourites|reblogs)/.test(
+                                key,
+                              )
+                                ? 'desc'
+                                : 'asc';
+                              setSortOrder(order);
+                            }}
+                          />
                           {
-                            relevance: `Relevance`,
-                            createdAt: `Date`,
-                            repliesCount: `Replies`,
-                            favouritesCount: `Likes`,
-                            reblogsCount: `Reposts`,
-                          }[key]
-                        }
-                        {sortBy === key &&
-                          key !== 'relevance' &&
-                          (sortOrder === 'asc' ? ' ↑' : ' ↓')}
-                      </label>
-                    ))}
+                            {
+                              relevance: `Relevance`,
+                              createdAt: `Date`,
+                              repliesCount: `Replies`,
+                              favouritesCount: `Likes`,
+                              reblogsCount: `Reposts`,
+                            }[key]
+                          }
+                          {sortBy === key &&
+                            key !== 'relevance' &&
+                            (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+                        </label>
+                      );
+                    })}
                   </fieldset>
                 </div>
               )}

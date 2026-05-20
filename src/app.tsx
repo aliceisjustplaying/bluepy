@@ -799,9 +799,9 @@ function App() {
   // Signal to service worker that this client is ready to receive share data
   useEffect(() => {
     if ('serviceWorker' in navigator && isPWA && uiState === 'default') {
-      navigator.serviceWorker
-        .getRegistration()
-        .then(function (registration) {
+      void (async () => {
+        try {
+          const registration = await navigator.serviceWorker.getRegistration();
           console.log('💪 Got SW registration', registration);
           const activeWorker = registration?.active;
           if (activeWorker) {
@@ -813,11 +813,10 @@ function App() {
             const postToSW = activeWorker.postMessage.bind(activeWorker);
             postToSW({ type: 'client-ready' });
           }
-          return undefined;
-        })
-        .catch(function (err) {
+        } catch (err) {
           console.error('Could not get registration', err);
-        });
+        }
+      })();
     }
   }, [uiState]);
 

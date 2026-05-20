@@ -154,6 +154,26 @@ interface QuoteStatusProps {
   renderStatus: RenderStatus;
 }
 
+function QuotedStatusCard({
+  quote,
+  status,
+  level,
+  renderStatus,
+}: {
+  quote: QuoteRef;
+  status?: AnyStatus | null;
+  level: number;
+  renderStatus: RenderStatus;
+}) {
+  return renderStatus({
+    statusID: quote.id,
+    status,
+    instance: quote.instance,
+    level: level + 1,
+    quoteDomain: quote.originalDomain,
+  });
+}
+
 const QuoteStatus = memo(
   ({ quote, level = 0, renderStatus }: QuoteStatusProps) => {
     const { i18n } = useLingui();
@@ -260,13 +280,12 @@ const QuoteStatus = memo(
         className={`status-card-link ${q.native ? 'quote-post-native' : ''}`}
         readMore={_(readMoreText)}
       >
-        {renderStatus({
-          statusID: q.id,
-          status: isStaticQuote ? quoteStatus : undefined,
-          instance: q.instance,
-          level: level + 1,
-          quoteDomain: q.originalDomain,
-        })}
+        <QuotedStatusCard
+          quote={q}
+          status={isStaticQuote ? quoteStatus : undefined}
+          level={level}
+          renderStatus={renderStatus}
+        />
       </StatusCardLink>
     );
     return q.native ? (
@@ -325,8 +344,17 @@ const QuoteStatuses = memo(
       (q: QuoteRef, i: number, arr: readonly QuoteRef[]) =>
         q.native || arr.findIndex((q2) => q2.url === q.url) === i,
     );
+    const fallbackQuoteRef: QuoteRef | null = fallbackQuote?.quotedStatus
+      ? {
+          id: fallbackQuote.quotedStatus.id || fallbackQuote.id || id,
+          instance,
+          state: fallbackQuote.state,
+          native: true,
+          quoteStatus: fallbackQuote.quotedStatus,
+        }
+      : null;
 
-    if (!uniqueQuotes?.length && fallbackQuote?.quotedStatus) {
+    if (!uniqueQuotes?.length && fallbackQuoteRef) {
       return (
         <div
           className="status-card-container"
@@ -334,16 +362,7 @@ const QuoteStatuses = memo(
           data-read-more={_(readMoreText)}
           data-quote-container-static={true}
         >
-          <QuoteStatus
-            quote={{
-              id: fallbackQuote.quotedStatus.id || fallbackQuote.id || id,
-              instance,
-              state: fallbackQuote.state,
-              native: true,
-              quoteStatus: fallbackQuote.quotedStatus,
-            }}
-            renderStatus={renderStatus}
-          />
+          <QuoteStatus quote={fallbackQuoteRef} renderStatus={renderStatus} />
         </div>
       );
     }

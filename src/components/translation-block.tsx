@@ -63,7 +63,7 @@ function translangTranslateInner(
   target: string,
 ): Promise<TranslangResult> {
   console.log('TRANSLATE', text, source, target);
-  const fetchCall = () => {
+  const fetchCall = async (): Promise<TranslangResult> => {
     let instance = TRANSLANG_INSTANCES[currentTranslangInstance];
     const tooLong = text.length > 2000;
     let fetchPromise;
@@ -94,23 +94,19 @@ function translangTranslateInner(
         },
       );
     }
-    return fetchPromise
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText);
-        return res.json() as Promise<{
+    const res = await fetchPromise;
+    if (!res.ok) throw new Error(res.statusText);
+    const translation = (await res.json()) as {
           translated_text?: string;
           detected_language?: string;
           pronunciation?: string;
-        }>;
-      })
-      .then((res): TranslangResult => {
-        return {
-          provider: 'translang',
-          content: res.translated_text,
-          detectedSourceLanguage: res.detected_language,
-          pronunciation: res.pronunciation,
         };
-      });
+    return {
+      provider: 'translang',
+      content: translation.translated_text,
+      detectedSourceLanguage: translation.detected_language,
+      pronunciation: translation.pronunciation,
+    };
   };
   return pRetry(fetchCall, {
     retries: 3,

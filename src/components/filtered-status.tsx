@@ -34,11 +34,25 @@ interface FilteredStatusProps {
   ) => ReactNode;
 }
 
+const EMPTY_CONTAINER_PROPS: HTMLAttributes<HTMLDivElement> = {};
+
+function PeekFilteredStatus({
+  status,
+  instance,
+  renderPeekStatus,
+}: {
+  status: AnyStatus;
+  instance?: string;
+  renderPeekStatus: FilteredStatusProps['renderPeekStatus'];
+}) {
+  return renderPeekStatus(status, instance);
+}
+
 export default function FilteredStatus({
   status,
   filterInfo,
   instance,
-  containerProps = {},
+  containerProps = EMPTY_CONTAINER_PROPS,
   quoted,
   renderPeekStatus,
 }: FilteredStatusProps) {
@@ -178,7 +192,11 @@ export default function FilteredStatus({
                 }}
                 data-read-more={_(readMoreText)}
               >
-                {renderPeekStatus(status, instance)}
+                <PeekFilteredStatus
+                  status={status}
+                  instance={instance}
+                  renderPeekStatus={renderPeekStatus}
+                />
               </Link>
             </main>
           </div>

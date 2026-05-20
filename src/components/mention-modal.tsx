@@ -134,11 +134,9 @@ function MentionModal({
   useHotkeys(
     'down',
     () => {
-      if (selectedIndex < accounts.length - 1) {
-        setSelectedIndex(selectedIndex + 1);
-      } else {
-        setSelectedIndex(0);
-      }
+      setSelectedIndex((currentIndex) =>
+        currentIndex < accounts.length - 1 ? currentIndex + 1 : 0,
+      );
       setTimeout(() => {
         const selectedItem = listRef.current?.querySelector('.selected');
         if (selectedItem) {
@@ -161,11 +159,9 @@ function MentionModal({
   useHotkeys(
     'up',
     () => {
-      if (selectedIndex > 0) {
-        setSelectedIndex(selectedIndex - 1);
-      } else {
-        setSelectedIndex(accounts.length - 1);
-      }
+      setSelectedIndex((currentIndex) =>
+        currentIndex > 0 ? currentIndex - 1 : accounts.length - 1,
+      );
       setTimeout(() => {
         const selectedItem = listRef.current?.querySelector('.selected');
         if (selectedItem) {

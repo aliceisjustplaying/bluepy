@@ -22,25 +22,46 @@ interface ListItem {
 
 type ListAddEditModalState = boolean | { list?: ListItem };
 type UIState = 'default' | 'loading' | 'error';
+interface ListsState {
+  uiState: UIState;
+  lists: ListItem[];
+}
+type ListsAction =
+  | { type: 'loading' }
+  | { type: 'loaded'; lists: ListItem[] }
+  | { type: 'error' };
+
+function listsReducer(state: ListsState, action: ListsAction): ListsState {
+  switch (action.type) {
+    case 'loading':
+      return { ...state, uiState: 'loading' };
+    case 'loaded':
+      return { uiState: 'default', lists: action.lists };
+    case 'error':
+      return { ...state, uiState: 'error' };
+  }
+  return state;
+}
 
 function Lists() {
   const { t } = useLingui();
   useTitle(t`Lists & Feeds`, `/l`);
-  const [uiState, setUIState] = useState<UIState>('default');
+  const [{ uiState, lists }, dispatchLists] = useReducer(listsReducer, {
+    uiState: 'default',
+    lists: [],
+  });
 
   const [reloadCount, reload] = useReducer((c: number) => c + 1, 0);
-  const [lists, setLists] = useState<ListItem[]>([]);
   useEffect(() => {
-    setUIState('loading');
+    dispatchLists({ type: 'loading' });
     void (async () => {
       try {
         const fetched = (await fetchLists()) as ListItem[];
         console.log(fetched);
-        setLists(fetched);
-        setUIState('default');
+        dispatchLists({ type: 'loaded', lists: fetched });
       } catch (e) {
         console.error(e);
-        setUIState('error');
+        dispatchLists({ type: 'error' });
       }
     })();
   }, [reloadCount]);

@@ -45,14 +45,15 @@ export interface NameTextProps {
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => unknown;
 }
 
+const NAME_COLLATOR_OPTIONS: Intl.CollatorOptions = {
+  sensitivity: 'base',
+};
+
 const nameCollator = mem((locale: string | undefined) => {
-  const options: Intl.CollatorOptions = {
-    sensitivity: 'base',
-  };
   try {
-    return new Intl.Collator(locale || undefined, options);
+    return new Intl.Collator(locale || undefined, NAME_COLLATOR_OPTIONS);
   } catch {
-    return new Intl.Collator(undefined, options);
+    return new Intl.Collator(undefined, NAME_COLLATOR_OPTIONS);
   }
 });
 

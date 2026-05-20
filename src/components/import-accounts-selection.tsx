@@ -155,10 +155,11 @@ function ImportAccountsSelection({
                       type="checkbox"
                       checked={isSelected}
                       onChange={(e) => {
-                        setSelectedAccounts({
-                          ...selectedAccounts,
-                          [key]: (e.target as HTMLInputElement).checked,
-                        });
+                        const checked = (e.target as HTMLInputElement).checked;
+                        setSelectedAccounts((currentSelection) => ({
+                          ...currentSelection,
+                          [key]: checked,
+                        }));
                       }}
                       disabled={
                         uiState === 'importing' || status === 'duplicate'

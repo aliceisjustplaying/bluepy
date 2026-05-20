@@ -116,9 +116,13 @@ function Mentions() {
       let statuses: (mastodon.v1.Status | null | undefined)[] =
         fixedNotifications.map((item) => item.status);
       if (onlyFollowings && statuses?.length) {
-        const accounts = statuses
-          .map((status) => status?.account)
-          .filter((a): a is mastodon.v1.Account => !!a && !!a.id);
+        const accounts: mastodon.v1.Account[] = [];
+        for (const status of statuses) {
+          const account = status?.account;
+          if (account?.id) {
+            accounts.push(account);
+          }
+        }
         const relationships = await fetchRelationships(
           accounts,
           relationshipsMap.current,

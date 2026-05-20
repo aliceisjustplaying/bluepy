@@ -102,20 +102,26 @@ const detectLangs = async (input: string): Promise<string[] | null> => {
       input,
     )) as LanguageDetectionResult[];
     if (langs?.length) {
-      return langs
-        .slice(0, 2)
-        .map((lang) => lang.detectedLanguage)
-        .filter((l): l is string => typeof l === 'string');
+      const detectedLanguages: string[] = [];
+      for (const lang of langs.slice(0, 2)) {
+        if (typeof lang.detectedLanguage === 'string') {
+          detectedLanguages.push(lang.detectedLanguage);
+        }
+      }
+      return detectedLanguages;
     }
   }
   const { detectAll } = await import('tinyld/light');
   const langs = (detectAll as (t: string) => LanguageDetectionResult[])(input);
   if (langs?.length) {
     // return max 2
-    return langs
-      .slice(0, 2)
-      .map((lang) => lang.lang)
-      .filter((l): l is string => typeof l === 'string');
+    const detectedLanguages: string[] = [];
+    for (const lang of langs.slice(0, 2)) {
+      if (typeof lang.lang === 'string') {
+        detectedLanguages.push(lang.lang);
+      }
+    }
+    return detectedLanguages;
   }
   return null;
 };

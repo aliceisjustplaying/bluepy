@@ -251,6 +251,36 @@ export const handleScannerClick = (): void => {
 };
 
 type UIState = 'default' | 'loading' | 'error';
+interface AccountInfoState {
+  uiState: UIState;
+  info: AccountInfoShape | null;
+}
+
+type AccountInfoAction =
+  | { type: 'sync'; info: AccountInfoShape | null }
+  | { type: 'loading' }
+  | { type: 'loaded'; info: AccountInfoShape }
+  | { type: 'error'; clearInfo: boolean };
+
+function accountInfoReducer(
+  state: AccountInfoState,
+  action: AccountInfoAction,
+): AccountInfoState {
+  switch (action.type) {
+    case 'sync':
+      return { ...state, info: action.info };
+    case 'loading':
+      return { ...state, uiState: 'loading' };
+    case 'loaded':
+      return { uiState: 'default', info: action.info };
+    case 'error':
+      return {
+        uiState: 'error',
+        info: action.clearInfo ? null : state.info,
+      };
+  }
+  return state;
+}
 
 interface AccountInfoProps {
   account: AccountInfoShape | string | null | undefined;
@@ -272,41 +302,38 @@ function AccountInfo({
     instance,
   });
   const { masto: currentMasto, instance: currentInstance } = api();
-  const [uiState, setUIState] = useState<UIState>('default');
   const isString = typeof account === 'string';
-  const [info, setInfo] = useState<AccountInfoShape | null>(
-    isString ? null : (account ?? null),
+  const [{ uiState, info }, dispatchAccountInfo] = useReducer(
+    accountInfoReducer,
+    {
+      uiState: 'default',
+      info: isString ? null : (account ?? null),
+    },
   );
   const [reloadCount, reload] = useReducer((c: number) => c + 1, 0);
 
-  const sameCurrentInstance = useMemo(
-    () => instance === currentInstance,
-    [instance, currentInstance],
-  );
+  const sameCurrentInstance = instance === currentInstance;
 
   useEffect(() => {
     if (!isString) {
-      setInfo(account ?? null);
+      dispatchAccountInfo({ type: 'sync', info: account ?? null });
       // TODO(oxlint:no-underscore-dangle) `_atproto` is the project-wide
       // adapter cache key; renaming is out of scope.
       if (account?._atproto?.hasProfileCounts !== false) return;
     }
-    setUIState('loading');
+    dispatchAccountInfo({ type: 'loading' });
     void (async () => {
       try {
         const result = await fetchAccount();
         if (!result) {
-          if (isString) setInfo(null);
-          setUIState('error');
+          dispatchAccountInfo({ type: 'error', clearInfo: isString });
           return;
         }
         states.accounts[`${result.id}@${instance}`] = { ...result };
-        setInfo(result);
-        setUIState('default');
+        dispatchAccountInfo({ type: 'loaded', info: result });
       } catch (e) {
         console.error(e);
-        if (isString) setInfo(null);
-        setUIState('error');
+        dispatchAccountInfo({ type: 'error', clearInfo: isString });
       }
     })();
   }, [isString, account, fetchAccount, reloadCount, instance]);
@@ -537,7 +564,7 @@ function AccountInfo({
     (newAccount: AccountInfoShape) => {
       if (newAccount.id === id) {
         console.log('Updated account info', newAccount);
-        setInfo(newAccount);
+        dispatchAccountInfo({ type: 'loaded', info: newAccount });
         states.accounts[`${newAccount.id}@${instance}`] = { ...newAccount };
       }
     },

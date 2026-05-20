@@ -239,7 +239,7 @@ function StatusPage(params: StatusPageParams) {
   // `id` is always present on this route, so `statusKey` always returns a
   // string here. Fall back to `id` defensively for the type system.
   const sKey: string = statusKey(id, instance) ?? id;
-  const [heroStatus, setHeroStatus] = useState<RawStatus | undefined>(
+  const [heroStatus, setHeroStatus] = useState<RawStatus | undefined>(() =>
     rawStatusFromState(states.statuses[sKey]),
   );
   useEffect(() => {
@@ -429,10 +429,14 @@ function StatusPage(params: StatusPageParams) {
             }
             mediaClose();
           });
-          void transition.ready.finally(() => {
-            el.style.viewTransitionName = '';
-            el.dataset.viewTransitioned = mediaVTN;
-          });
+          void (async () => {
+            try {
+              await transition.ready;
+            } finally {
+              el.style.viewTransitionName = '';
+              el.dataset.viewTransitioned = mediaVTN;
+            }
+          })();
         } else {
           mediaClose();
         }
@@ -1071,19 +1075,22 @@ function StatusThread({
     if (!url) return undefined;
     return URL.parse(url)?.hostname;
   }, [heroStatus]);
-  const postSameInstance = useMemo<boolean | undefined>(() => {
-    if (!postInstance) return undefined;
-    return postInstance === instance;
-  }, [postInstance, instance]);
+  const postSameInstance = postInstance ? postInstance === instance : undefined;
 
   const [limit, setLimit] = useState(LIMIT);
-  const showMore = useMemo(() => {
-    // return number of statuses to show
-    return statuses.length - limit;
-  }, [statuses.length, limit]);
+  const showMore = statuses.length - limit;
 
   const hasDescendants = statuses.some((s) => s.descendant);
   const ancestors = statuses.filter((s) => s.ancestor);
+  const topAncestorAccounts = [];
+  const topAncestorAccountIds = new Set<string | undefined>();
+  for (const ancestor of ancestors) {
+    if (ancestor.ghost) continue;
+    if (topAncestorAccountIds.has(ancestor.accountID)) continue;
+    topAncestorAccountIds.add(ancestor.accountID);
+    topAncestorAccounts.push(ancestor);
+    if (topAncestorAccounts.length === 3) break;
+  }
 
   const [heroInView, setHeroInView] = useState(true);
   const heroPointer = useMemo(() => {
@@ -1826,15 +1833,7 @@ function StatusThread({
                     title={t`${ancestors.length} posts above ‒ Go to top`}
                   >
                     <Icon icon="arrow-up" />
-                    {ancestors
-                      .filter((a) => !a.ghost)
-                      .filter(
-                        (a, i, arr) =>
-                          arr.findIndex((b) => b.accountID === a.accountID) ===
-                          i,
-                      )
-                      .slice(0, 3)
-                      .map((ancestor) => {
+                    {topAncestorAccounts.map((ancestor) => {
                         const acct = ancestor.account as
                           | (Record<string, unknown> & {
                               id?: string;
@@ -2131,10 +2130,15 @@ function SubComments({
   const sameCount = replies.length === totalComments;
 
   // Get the first 3 accounts, unique by id
-  const accounts = replies
-    .map((r) => r.account)
-    .filter((a, i, arr) => arr.findIndex((b) => b?.id === a?.id) === i)
-    .slice(0, 3);
+  const accounts = [];
+  const accountIds = new Set<string | undefined>();
+  for (const reply of replies) {
+    const account = reply.account;
+    if (accountIds.has(account?.id)) continue;
+    accountIds.add(account?.id);
+    accounts.push(account);
+    if (accounts.length === 3) break;
+  }
 
   const totalWeight = useMemo<number>(() => {
     return (replies ?? []).reduce<number>((acc, reply) => {
