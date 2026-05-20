@@ -1,19 +1,30 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2026-05-20 20:11+0000\n"
+"POT-Creation-Date: 2025-05-03 21:08+0800\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: ja-JP\n"
+"Language: ja\n"
+"Project-Id-Version: phanpy\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-16 15:49\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: phanpy\n"
+"X-Crowdin-Project-ID: 703337\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: /main/src/locales/en.po\n"
+"X-Crowdin-File-ID: 18\n"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments:"
-msgstr ""
+msgstr "メディアの添付"
 
 #: src/components/related-actions.tsx
 msgid "Unblock <0>@{username}</0>"
-msgstr ""
+msgstr "<0>@{username}</0> のブロックを解除"
 
 #: src/utils/show-compose.ts
 msgid "A draft post is currently minimized. Post or discard it before creating a new one."
@@ -21,7 +32,7 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Pop in"
-msgstr ""
+msgstr "ポップイン"
 
 #: src/pages/settings.tsx
 msgid "Removes all UI animations, transitions, and smooth scrolling. Useful if motion is distracting."
@@ -33,7 +44,7 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Muted {username}"
-msgstr ""
+msgstr "{username} をミュートしました"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -45,7 +56,7 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/trending.tsx
 msgid "Mentions"
-msgstr ""
+msgstr "メンション"
 
 #: src/pages/account-statuses.tsx
 msgid "Account posts"
@@ -57,15 +68,15 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Downloading GIF…"
-msgstr ""
+msgstr "GIF をダウンロード中…"
 
 #: src/pages/catchup.tsx
 msgid "Show all authors"
-msgstr ""
+msgstr "すべての投稿者を表示"
 
 #: src/components/report-modal.tsx
 msgid "Other"
-msgstr ""
+msgstr "その他"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -74,32 +85,32 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Unable to copy HTML code"
-msgstr ""
+msgstr "HTMLコードをコピーできません"
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "No lists."
-msgstr ""
+msgstr "リストはありません。"
 
 #: src/components/math-block.tsx
 msgid "Math expressions found."
-msgstr ""
+msgstr "数式が見つかりました。"
 
 #. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
 msgid "Muted @{username} for {0}"
-msgstr ""
+msgstr "@{username} を {0} ミュートしました"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
-msgstr ""
+msgstr "この下書きを削除しますか？"
 
 #: src/components/notification-service.tsx
 msgid "View all notifications"
-msgstr ""
+msgstr "すべての通知を表示"
 
 #: src/components/quotes-modal.tsx
 msgid "No quotes yet"
-msgstr ""
+msgstr "まだ引用がありません"
 
 #: src/pages/status.tsx
 #: src/pages/status.tsx
@@ -108,12 +119,12 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Unable to report post"
-msgstr ""
+msgstr "ポストを報告できません"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{account} followed you.} other {<0><1>{0}</1> people</0> followed you.}}"
-msgstr ""
+msgstr "{count, plural, =1 {{account} があなたをフォローしました。} other {<0><1>{0}</1> 人</0>があなたをフォローしました。}}"
 
 #. placeholder {0}: niceDateTime(account.createdAt)
 #: src/pages/accounts.tsx
@@ -125,37 +136,37 @@ msgstr ""
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Only you can quote"
-msgstr ""
+msgstr "あなただけが引用可能"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>c</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>c</1>"
 
 #: src/components/related-actions.tsx
 msgid "Muted"
-msgstr ""
+msgstr "ミュート済み"
 
 #: src/pages/account-statuses.tsx
 msgid "Nothing to see here yet."
-msgstr ""
+msgstr "ここに表示するものはまだありません。"
 
 #: src/components/list-add-edit.tsx
 msgid "Delete this list?"
-msgstr ""
+msgstr "このリストを削除しますか？"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcut settings copied"
-msgstr ""
+msgstr "ショートカット設定をコピーしました"
 
 #: src/pages/settings.tsx
 msgid "anyone"
-msgstr ""
+msgstr "誰でも"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Posts"
-msgstr ""
+msgstr "投稿"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've blocked {domain}."
@@ -163,7 +174,7 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
-msgstr ""
+msgstr "{optionVotesCount, plural, other {#投票}}"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle}"
@@ -181,7 +192,7 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered"
-msgstr ""
+msgstr "フィルター済み"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/compose.tsx
@@ -190,27 +201,27 @@ msgstr ""
 
 #: src/components/qr-scanner-modal.tsx
 msgid "Unable to access camera. Please check permissions."
-msgstr ""
+msgstr "カメラにアクセスできません。権限を確認してください。"
 
 #: src/components/related-actions.tsx
 msgid " Notifications disabled for @{username}'s posts."
-msgstr ""
+msgstr "@{username} の投稿の通知を無効にしました。"
 
 #: src/components/drafts.tsx
 msgid "Error deleting drafts! Please try again."
-msgstr ""
+msgstr "下書きの削除中にエラーが発生しました。もう一度やり直してください。"
 
 #: src/pages/settings.tsx
 msgid "Auto refresh timeline posts"
-msgstr ""
+msgstr "タイムライン投稿を自動更新する"
 
 #: src/components/import-accounts-selection.tsx
 msgid "{selectedCount, plural, one {Import # account} other {Import # accounts}}"
-msgstr ""
+msgstr "{selectedCount, plural, other {#アカウントをインポート}}"
 
 #: src/pages/catchup.tsx
 msgid "Back to top"
-msgstr ""
+msgstr "トップへ戻る"
 
 #: src/components/status-helpers.ts
 msgid "Private posts cannot be quoted"
@@ -218,19 +229,19 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
-msgstr ""
+msgstr "これは静的でスタイルやスクリプトもありません。必要に応じて独自のスタイルを適用して編集する必要があります。"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
-msgstr ""
+msgstr "翻訳を投稿"
 
 #: src/components/related-actions.tsx
 msgid "Unable to unblock @{username}"
-msgstr ""
+msgstr "@{username} のブロックを解除できません"
 
 #: src/pages/catchup.tsx
 msgid "Density"
-msgstr ""
+msgstr "密度"
 
 #: src/pages/notifications.tsx
 msgid "Only mentions"
@@ -248,16 +259,16 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Notifications"
-msgstr ""
+msgstr "通知に移動"
 
 #: src/components/generic-accounts.tsx
 msgid "Nothing to show"
-msgstr ""
+msgstr "表示するものがありません"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Bookmarked"
-msgstr ""
+msgstr "ブックマークしました"
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
@@ -283,15 +294,15 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Light"
-msgstr ""
+msgstr "ライト"
 
 #: src/pages/catchup.tsx
 msgid "last 4 hours"
-msgstr ""
+msgstr "4時間以内"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Send post"
-msgstr ""
+msgstr "ポストの送信"
 
 #: src/pages/notifications.tsx
 msgid "Dismiss"
@@ -299,7 +310,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
-msgstr ""
+msgstr "フォローしている人のポストをキャッチアップしよう！"
 
 #: src/components/compose.tsx
 #: src/components/compose.tsx
@@ -308,7 +319,7 @@ msgstr ""
 
 #: src/components/open-link-sheet.tsx
 msgid "Open"
-msgstr ""
+msgstr "開く"
 
 #. placeholder {0}: mediaAttachments[index]?.fileName || index + 1
 #: src/components/compose.tsx
@@ -317,12 +328,12 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Ended"
-msgstr ""
+msgstr "終了済み"
 
 #: src/components/nav-menu.tsx
 #: src/components/text-expander.tsx
 msgid "More…"
-msgstr ""
+msgstr "その他…"
 
 #: src/pages/status.tsx
 msgid "{years, plural, one {# year later} other {# years later}}"
@@ -331,7 +342,7 @@ msgstr ""
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Copy handle"
-msgstr ""
+msgstr "ハンドルをコピー"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Bookmarks"
@@ -339,7 +350,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "List"
-msgstr ""
+msgstr "リスト"
 
 #: src/components/status-placeholders.tsx
 #: src/components/status-quotes.tsx
@@ -367,7 +378,7 @@ msgstr ""
 #: src/components/timeline2.tsx
 #: src/pages/search.tsx
 msgid "The end."
-msgstr ""
+msgstr "終わりです。"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media-attachment.tsx
@@ -384,7 +395,7 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/status.tsx
 msgid "More"
-msgstr ""
+msgstr "その他"
 
 #: src/pages/welcome.tsx
 msgid "Reposts Carousel"
@@ -392,7 +403,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up"
-msgstr ""
+msgstr "キャッチアップ！"
 
 #: src/pages/status.tsx
 msgid "Switch to Full view"
@@ -400,7 +411,7 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Error fetching quoted status!"
-msgstr ""
+msgstr "引用の取得中にエラーが発生しました"
 
 #: src/components/feedback-modal.tsx
 msgid "Feedback sent"
@@ -408,16 +419,16 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Pending review"
-msgstr ""
+msgstr "審査待ち"
 
 #: src/components/timeline.tsx
 #: src/pages/settings.tsx
 msgid "New posts"
-msgstr ""
+msgstr "新しい投稿"
 
 #: src/components/related-actions.tsx
 msgid "Blocked"
-msgstr ""
+msgstr "ブロック済み"
 
 #: src/components/atproto-labels.tsx
 msgid "Explicit sexual images."
@@ -429,16 +440,16 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Delete all drafts?"
-msgstr ""
+msgstr "すべての下書きを削除しますか？"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move down"
-msgstr ""
+msgstr "下へ移動"
 
 #: src/components/related-actions.tsx
 msgid "Mention <0>@{username}</0>"
-msgstr ""
+msgstr "<0>@{username}</0>にメンション"
 
 #: src/components/related-actions.tsx
 msgid "Enable reposts"
@@ -452,7 +463,7 @@ msgstr ""
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
 msgid "Quote settings updated"
-msgstr ""
+msgstr "引用設定が更新されました"
 
 #: src/pages/year-in-posts.tsx
 msgid "Year"
@@ -464,46 +475,46 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Minimize"
-msgstr ""
+msgstr "最小化"
 
 #: src/components/quotes-modal.tsx
 msgid "Error loading quotes"
-msgstr ""
+msgstr "引用の読み込みエラー"
 
 #: src/components/media-attachment.tsx
 msgid "Uploaded"
-msgstr ""
+msgstr "アップロード済"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add more than one shortcut/column to make this work."
-msgstr ""
+msgstr "1つ以上のショートカットかカラムを指定してください。"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/trending.tsx
 msgid "Trending"
-msgstr ""
+msgstr "トレンド"
 
 #: src/components/embed-modal.tsx
 msgid "Open in new window"
-msgstr ""
+msgstr "新しいウィンドウで開く"
 
 #: src/pages/notifications.tsx
 msgid "Notifications settings updated"
-msgstr ""
+msgstr "通知設定が更新されました"
 
 #: src/pages/accounts.tsx
 msgid "View profile…"
-msgstr ""
+msgstr "プロフィールの表示…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Expand content warning or<0/>toggle expanded/collapsed thread"
-msgstr ""
+msgstr "CWを表示/隠す または スレッドを開く/閉じる"
 
 #: src/components/account-info.tsx
 msgid "Unable to load account."
-msgstr ""
+msgstr "アカウントを読み込めません。"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -512,15 +523,15 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "{query} <0>‒ accounts, hashtags & posts</0>"
-msgstr ""
+msgstr "{query} <0> アカウント、ハッシュタグ、投稿</0>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Content"
-msgstr ""
+msgstr "内容"
 
 #: src/components/report-modal.tsx
 msgid "Send Report"
-msgstr ""
+msgstr "報告を送信"
 
 #. More from [Author]
 #: src/components/byline.tsx
@@ -534,7 +545,7 @@ msgstr ""
 #: src/components/recent-searches.tsx
 #: src/components/search-form.tsx
 msgid "Recent searches"
-msgstr ""
+msgstr "最近の検索"
 
 #: src/utils/open-compose.ts
 msgid "Looks like your browser is blocking popups."
@@ -547,19 +558,19 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Poll"
-msgstr ""
+msgstr "アンケート"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Profile picture"
-msgstr ""
+msgstr "プロフィール画像"
 
 #: src/components/notification-service.tsx
 msgid "Notification"
-msgstr ""
+msgstr "通知"
 
 #: src/pages/accounts.tsx
 msgid "Note: <0>Default</0> account will always be used for first load. Switched accounts will persist during the session."
-msgstr ""
+msgstr "注意: <0>デフォルト</0>アカウントは常に最初に読み込まれます。セッション中に切り替えたアカウントは維持されます。"
 
 #: src/components/status-quotes.tsx
 msgid "Post removed by author"
@@ -568,7 +579,7 @@ msgstr ""
 #: src/components/media-alt-modal.tsx
 #: src/components/media.tsx
 msgid "Media description"
-msgstr ""
+msgstr "メディアの説明"
 
 #: src/pages/home.tsx
 msgid "Unable to fetch notifications."
@@ -576,19 +587,19 @@ msgstr ""
 
 #: src/components/media-modal.tsx
 msgid "Open original media in new window"
-msgstr ""
+msgstr "元のメディアを新しいウィンドウで開く"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not available in current view mode"
-msgstr ""
+msgstr "現在のビューモードでは使用できません"
 
 #: src/components/import-accounts-selection.tsx
 msgid "Existing"
-msgstr ""
+msgstr "既存"
 
 #: src/components/poll.tsx
 msgid "Ended <0/>"
-msgstr ""
+msgstr "終了済み <0/>"
 
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
@@ -604,7 +615,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Follow requests"
-msgstr ""
+msgstr "フォローリクエスト"
 
 #: src/pages/trending.tsx
 msgid "No trending posts."
@@ -626,7 +637,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
-msgstr ""
+msgstr "現在のショートカットに追加しますか？"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
@@ -638,7 +649,7 @@ msgstr ""
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Previous post"
-msgstr ""
+msgstr "前のポスト"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Posts)"
@@ -646,34 +657,34 @@ msgstr ""
 
 #: src/components/media-modal.tsx
 msgid "Describe image…"
-msgstr ""
+msgstr "画像を説明する"
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
 msgid "Name"
-msgstr ""
+msgstr "名前"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Override current shortcuts?"
-msgstr ""
+msgstr "現在のショートカットを上書きしますか？"
 
 #: src/components/account-info.tsx
 msgid "View profile"
-msgstr ""
+msgstr "プロフィールを見る"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "キーボードショートカット"
 
 #: src/utils/visibility-text.ts
 msgid "Public"
-msgstr ""
+msgstr "公開"
 
 #: src/components/nav-menu.tsx
 msgid "Accounts…"
-msgstr ""
+msgstr "アカウント…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -681,11 +692,11 @@ msgstr ""
 #: src/pages/bookmarks.tsx
 #: src/pages/bookmarks.tsx
 msgid "Bookmarks"
-msgstr ""
+msgstr "ブックマーク"
 
 #: src/components/media-post.tsx
 msgid "Filtered: {filterTitleStr}"
-msgstr ""
+msgstr "フィルターされました: {filterTitleStr}"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -701,11 +712,11 @@ msgstr ""
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to remove from list."
-msgstr ""
+msgstr "リストから削除できません。"
 
 #: src/components/account-block.tsx
 msgid "Mutual"
-msgstr ""
+msgstr "相互フォロー"
 
 #: src/components/status-account-menu.tsx
 msgid "Report post…"
@@ -719,37 +730,37 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Text size"
-msgstr ""
+msgstr "テキストサイズ"
 
 #: src/pages/catchup.tsx
 msgid "last 11 hours"
-msgstr ""
+msgstr "11時間以内"
 
 #: src/components/account-info.tsx
 msgid "View profile image"
-msgstr ""
+msgstr "プロフィール画像を表示"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Home / Following"
-msgstr ""
+msgstr "ホーム / フォロー中"
 
 #: src/pages/catchup.tsx
 msgid "last 3 hours"
-msgstr ""
+msgstr "3時間以内"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>l</0> or <1>f</1>"
-msgstr ""
+msgstr "<0>l</0> または <1>f</1>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Label"
-msgstr ""
+msgstr "ラベル"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Liked"
-msgstr ""
+msgstr "いいね！しました"
 
 #: src/pages/settings.tsx
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
@@ -759,11 +770,11 @@ msgstr ""
 #: src/components/quote-chain-modal.tsx
 #: src/components/status-helpers.ts
 msgid "Read more →"
-msgstr ""
+msgstr "続きを見る →"
 
 #: src/components/drafts.tsx
 msgid "No drafts found."
-msgstr ""
+msgstr "下書きはありません。"
 
 #: src/pages/bookmarks.tsx
 msgid "No bookmarks yet. Go bookmark something!"
@@ -771,12 +782,12 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Shortcuts / Columns…"
-msgstr ""
+msgstr "ショートカット/列…"
 
 #. placeholder {0}: username || acct
 #: src/components/status-utility-menu.tsx
 msgid "View post by <0>@{0}</0>"
-msgstr ""
+msgstr "<0>@{0}</0> さんの投稿を表示"
 
 #: src/pages/welcome.tsx
 msgid "Connect your existing Bluesky or Blacksky account.<0/>Your credentials are not stored by Bluepy."
@@ -797,7 +808,7 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
-msgstr ""
+msgstr "会話をミュートできません"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
@@ -806,11 +817,11 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generating description. Please wait…"
-msgstr ""
+msgstr "説明を生成しています。しばらくお待ちください…"
 
 #: src/components/nav-menu.tsx
 msgid "New update available…"
-msgstr ""
+msgstr "新しいアップデートが利用可能です…"
 
 #. index/total posts in a thread
 #: src/components/thread-badge.tsx
@@ -819,7 +830,7 @@ msgstr ""
 
 #: src/components/translated-bio-sheet.tsx
 msgid "Translated Bio"
-msgstr ""
+msgstr "翻訳されたプロフィール"
 
 #: src/pages/status.tsx
 msgid "Unable to switch"
@@ -827,18 +838,18 @@ msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
-msgstr ""
+msgstr "入力して検索"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Your followers can quote"
-msgstr ""
+msgstr "あなたのフォロワーが引用可能"
 
 #: src/components/media.tsx
 msgid "Open file"
-msgstr ""
+msgstr "ファイルを開く"
 
 #. placeholder {0}: groupBy ?? ''
 #: src/pages/catchup.tsx
@@ -849,7 +860,7 @@ msgstr ""
 #: src/components/edit-profile-sheet.tsx
 #: src/components/related-actions.tsx
 msgid "Edit profile"
-msgstr ""
+msgstr "プロフィールを編集"
 
 #: src/pages/accounts.tsx
 msgid "Remove account…"
@@ -861,17 +872,17 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
-msgstr ""
+msgstr "画像説明の生成"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut…"
-msgstr ""
+msgstr "ショートカットを追加…"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/atproto-labels.tsx
 msgid "Automated"
-msgstr ""
+msgstr "BOTアカウント"
 
 #: src/pages/trending.tsx
 msgid "Trending News"
@@ -883,16 +894,16 @@ msgstr ""
 
 #: src/components/status-media-embeds.tsx
 msgid "Show media"
-msgstr ""
+msgstr "メディアを表示"
 
 #: src/components/related-actions.tsx
 msgid "Forever"
-msgstr ""
+msgstr "無期限"
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications settings"
-msgstr ""
+msgstr "通知設定"
 
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/{total}"
@@ -900,7 +911,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "beta"
-msgstr ""
+msgstr "ベータ"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/nav-menu.tsx
@@ -910,36 +921,36 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Search"
-msgstr ""
+msgstr "検索"
 
 #: src/components/modals.tsx
 msgid "Post updated. Check it out."
-msgstr ""
+msgstr "投稿を更新しました。チェックしてみてください。"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unpin post"
-msgstr ""
+msgstr "ポストのピン留めを削除できません"
 
 #: src/components/shortcuts-settings.tsx
 msgid "e.g. PixelArt (Max 5, space-separated)"
-msgstr ""
+msgstr "例: PixelArt (最大 5 個、スペース区切り)"
 
 #. placeholder {0}: accounts.length
 #: src/components/import-export-accounts.tsx
 msgid "{0, plural, one {# account} other {# accounts}}"
-msgstr ""
+msgstr "{0, plural, other {# アカウント}}"
 
 #: src/components/account-info.tsx
 msgid "Go to account page"
-msgstr ""
+msgstr "アカウントページに移動"
 
 #: src/pages/settings.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "外観"
 
 #: src/pages/settings.tsx
 msgid "Follows"
-msgstr ""
+msgstr "フォロー"
 
 #. By [Author]
 #. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
@@ -949,49 +960,49 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
-msgstr ""
+msgstr "すでに親ウィンドウで編集画面が開いているようです。 このウィンドウを開くと、親ウィンドウで行った変更が破棄されます。続けますか？"
 
 #: src/components/report-modal.tsx
 msgid "Report @{username}"
-msgstr ""
+msgstr "@{username} を報告"
 
 #: src/components/media-modal.tsx
 msgid "Open original media"
-msgstr ""
+msgstr "元のメディアを開く"
 
 #: src/components/post-embed-modal.tsx
 msgid "Account Emojis:"
-msgstr ""
+msgstr "アカウントの絵文字"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Account"
-msgstr ""
+msgstr "アカウント"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>?"
-msgstr ""
+msgstr "<0>@{username}</0> をブロックしますか？"
 
 #: src/components/related-actions.tsx
 msgid "@{username} removed from followers"
-msgstr ""
+msgstr "@{username} がフォロワーから削除されました"
 
 #: src/pages/catchup.tsx
 msgid "Overlaps with your last catch-up"
-msgstr ""
+msgstr "前回のキャッチアップと重複します"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post"
-msgstr ""
+msgstr "新しいポスト"
 
 #. Action to switch from rendered math back to raw (LaTeX) markup
 #: src/components/math-block.tsx
 msgid "Show markup"
-msgstr ""
+msgstr "マークアップを表示"
 
 #. placeholder {0}: shortenNumber(statusesCount)
 #: src/components/account-block.tsx
 msgid "Posts: {0}"
-msgstr ""
+msgstr "投稿: {0}"
 
 #: src/pages/accounts.tsx
 msgid "Log out and remove <0>@{acct}</0>"
@@ -1012,16 +1023,16 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Looks like you have unsent drafts. Let's continue where you left off."
-msgstr ""
+msgstr "未送信の下書きがあります。中断したところから再開しましょう。"
 
 #: src/components/generic-accounts.tsx
 #: src/components/mention-modal.tsx
 msgid "Error loading accounts"
-msgstr ""
+msgstr "アカウントの読み込みエラー"
 
 #: src/components/modals.tsx
 msgid "Post published. Check it out."
-msgstr ""
+msgstr "公開しました。チェックしてみてください。"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Hashtags)"
@@ -1047,7 +1058,7 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Polls are not interactive, becomes a list with vote counts."
-msgstr ""
+msgstr "投票はインタラクティブではなく、投票数のリストになります。"
 
 #: src/components/atproto-labels.tsx
 msgid "Sexually Suggestive"
@@ -1055,7 +1066,7 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Unmuted @{username}"
-msgstr ""
+msgstr "@{username} のミュートを解除しました"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
@@ -1070,7 +1081,7 @@ msgstr ""
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Unable to copy handle"
-msgstr ""
+msgstr "ハンドルをコピーできません"
 
 #: src/pages/settings.tsx
 msgid "Default threadgate updated"
@@ -1078,17 +1089,17 @@ msgstr ""
 
 #: src/components/import-export-accounts.tsx
 msgid "Import failed"
-msgstr ""
+msgstr "インポートに失敗しました"
 
 #. placeholder {0}: sharers.map((s) => { const { id: sharerId, avatarStatic, displayName, } = s; return ( <button key={sharerId} type="button" className="plain" style={{ padding: 0, }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); // Reset and filter to author setSelectedAuthor(sharerId); setSelectedFilterCategory('all'); }} > <Avatar url={avatarStatic} size="s" alt={displayName} /> </button> ); })
 #: src/pages/catchup.tsx
 msgid "Shared by {0}"
-msgstr ""
+msgstr "{0} が共有しました"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Import/export"
-msgstr ""
+msgstr "インポート/エクスポート"
 
 #: src/pages/account-statuses.tsx
 msgid "Hiding replies"
@@ -1100,11 +1111,11 @@ msgstr ""
 
 #: src/components/quote-chain-modal.tsx
 msgid "Quote chain"
-msgstr ""
+msgstr "引用チェーン"
 
 #: src/components/post-embed-modal.tsx
 msgid "HTML code copied"
-msgstr ""
+msgstr "HTMLコードをコピーしました"
 
 #: src/pages/search.tsx
 msgid "See more accounts"
@@ -1113,7 +1124,7 @@ msgstr ""
 #: src/components/related-actions.tsx
 #: src/pages/account-statuses.tsx
 msgid "Search my posts"
-msgstr ""
+msgstr "自分の投稿を検索"
 
 #: src/components/generic-accounts.tsx
 #: src/components/notification.tsx
@@ -1121,7 +1132,7 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Accounts"
-msgstr ""
+msgstr "アカウント"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've muted @{name}."
@@ -1132,7 +1143,7 @@ msgstr ""
 #: src/components/account-info.tsx
 #: src/components/account-info.tsx
 msgid "This user has chosen to not make this information available."
-msgstr ""
+msgstr "このユーザーはこの情報を利用できないように選択しました。"
 
 #: src/utils/visibility-text.ts
 msgid "Followers, followed people, and mentioned people can reply"
@@ -1140,7 +1151,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
-msgstr ""
+msgstr "一番上までスクロール"
 
 #: src/utils/visibility-text.ts
 msgid "Followers and followed people can reply"
@@ -1152,7 +1163,7 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to original profile page"
-msgstr ""
+msgstr "元のプロフィールページに移動"
 
 #. placeholder {0}: detectedLang ?? '…'
 #: src/components/translation-block.tsx
@@ -1165,7 +1176,7 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
-msgstr ""
+msgstr "承認済み"
 
 #: src/components/feedback-modal.tsx
 msgid "Leave this field blank"
@@ -1173,43 +1184,43 @@ msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Powered by GIPHY"
-msgstr ""
+msgstr "Powered by GIPHY"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Help"
-msgstr ""
+msgstr "ヘルプ"
 
 #. placeholder {0}: shortenNumber(statusesCount)
 #. placeholder {1}: shortenNumber(statusesCount)
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{statusesCount, plural, one {<0>{0}</0> Post} other {<1>{1}</1> Posts}}"
-msgstr ""
+msgstr "{statusesCount, plural, one {<0>{0}</0> 投稿} other {<1>{1}</1> 投稿}}"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Header picture"
-msgstr ""
+msgstr "ヘッダー画像"
 
 #: src/components/account-info.tsx
 msgid "<0>{displayName}</0> has indicated that their new account is now:"
-msgstr ""
+msgstr "<0>{displayName}</0>の新しいアカウント:"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unmute conversation"
-msgstr ""
+msgstr "会話のミュートを解除できません"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Toggle Cloak mode"
-msgstr ""
+msgstr "クロークモードの切り替え"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import & append…"
-msgstr ""
+msgstr "インポートと追加…"
 
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Mute profile</0>"
-msgstr ""
+msgstr "レポートを送信 <0>+ プロフィールをミュート</0>"
 
 #. placeholder {0}: snapStates.settings.contentTranslationHideLanguages .length
 #: src/pages/settings.tsx
@@ -1222,15 +1233,15 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Accounts with <0>{query}</0>"
-msgstr ""
+msgstr "<0>{query}</0>を含むアカウント"
 
 #: src/pages/catchup.tsx
 msgid "Preview of Catch-up UI"
-msgstr ""
+msgstr "キャッチアップUIのプレビュー"
 
 #: src/pages/settings.tsx
 msgid "Display language"
-msgstr ""
+msgstr "表示言語"
 
 #: src/pages/settings.tsx
 msgid "Paginated timeline (beta)"
@@ -1238,7 +1249,7 @@ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of nested comments thread"
-msgstr ""
+msgstr "コメントスレッドのスクリーンショット"
 
 #: src/pages/trending.tsx
 msgid "Trending ({instance})"
@@ -1246,11 +1257,11 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specify a list of shortcuts that'll appear as:"
-msgstr ""
+msgstr "ショートカットの表示を指定"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Timeline"
-msgstr ""
+msgstr "タイムライン"
 
 #: src/pages/hashtag.tsx
 msgid "No one has posted anything with this tag yet."
@@ -1262,43 +1273,43 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Sort: Density"
-msgstr ""
+msgstr "ソート: 密度"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Like (favourite)"
-msgstr ""
+msgstr "いいね (お気に入り)"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/hashtag.tsx
 msgid "Filters"
-msgstr ""
+msgstr "フィルター"
 
 #: src/components/report-modal.tsx
 msgid "Malicious links, fake engagement, or repetitive replies"
-msgstr ""
+msgstr "悪意のあるリンクや虚偽の情報、執拗な返信など"
 
 #: src/components/compose.tsx
 #: src/components/compose.tsx
 #: src/components/file-picker-input.tsx
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
-msgstr ""
+msgstr "{maxMediaAttachments, plural, other {添付できるファイルは最大#個までです。}}"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 msgid "Shortcuts"
-msgstr ""
+msgstr "ショートカット"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts copied"
-msgstr ""
+msgstr "ショートカットをコピーしました"
 
 #: src/pages/accounts.tsx
 msgid "Log out…"
-msgstr ""
+msgstr "ログアウト…"
 
 #: src/pages/catchup.tsx
 msgid "What is this?"
-msgstr ""
+msgstr "これは何？"
 
 #: src/pages/hashtag.tsx
 msgid "Add hashtag"
@@ -1306,11 +1317,11 @@ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Nested comments thread"
-msgstr ""
+msgstr "コメントスレッド"
 
 #: src/components/report-modal.tsx
 msgid "Forward to <0>{domain}</0>"
-msgstr ""
+msgstr "<0>{domain}</0>に転送"
 
 #: src/pages/notifications.tsx
 msgid "You don't follow"
@@ -1322,11 +1333,11 @@ msgstr ""
 
 #: src/utils/visibility-text.ts
 msgid "Local"
-msgstr ""
+msgstr "ローカル"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
-msgstr ""
+msgstr "投稿用の GIF ピッカー"
 
 #. placeholder {0}: prettyBytes( imageSize, )
 #. placeholder {0}: prettyBytes( videoSize, )
@@ -1334,11 +1345,11 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
-msgstr ""
+msgstr "容量が大きすぎます。アップロード時に問題が発生する可能性があります。 {0} から {1} 以下に減らしてみてください。"
 
 #: src/pages/catchup.tsx
 msgid "Remove this catch-up?"
-msgstr ""
+msgstr "このキャッチアップを削除しますか？"
 
 #. placeholder {0}: rtf.format(-statusMonthsAgo, 'month')
 #: src/components/status-menu-state.tsx
@@ -1348,7 +1359,7 @@ msgstr ""
 #. placeholder {0}: dtf.format(new Date(lastCatchupEndAt))
 #: src/pages/catchup.tsx
 msgid "Until the last catch-up ({0})"
-msgstr ""
+msgstr "前回のキャッチアップまで ({0})"
 
 #: src/components/compose.tsx
 #: src/components/edit-profile-sheet.tsx
@@ -1357,7 +1368,7 @@ msgstr ""
 #: src/components/open-link-sheet.tsx
 #: src/components/quote-suggestion.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "キャンセル"
 
 #: src/pages/status.tsx
 msgid "This post is from another PDS (<0>{instance}</0>). Interactions (reply, repost, etc) are not possible."
@@ -1372,7 +1383,7 @@ msgstr ""
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Previous"
-msgstr ""
+msgstr "前へ"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts in {monthYear} by {accountDisplay}"
@@ -1380,7 +1391,7 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Reload page now to update?"
-msgstr ""
+msgstr "今すぐページを再読み込みして更新しますか？"
 
 #: src/components/status-helpers.ts
 msgid "You are not allowed to quote this post"
@@ -1388,7 +1399,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Search term"
-msgstr ""
+msgstr "検索キーワード"
 
 #: src/pages/status.tsx
 msgid "Error: {e}"
@@ -1403,15 +1414,15 @@ msgstr ""
 #. Action to render math expressions from raw (LaTeX) markup
 #: src/components/math-block.tsx
 msgid "Format math"
-msgstr ""
+msgstr "数式をフォーマット"
 
 #: src/components/media-attachment.tsx
 msgid "Done"
-msgstr ""
+msgstr "完了"
 
 #: src/pages/catchup.tsx
 msgid "Authors"
-msgstr ""
+msgstr "ユーザー"
 
 #: src/pages/status.tsx
 msgid "{months, plural, one {# month later} other {# months later}}"
@@ -1419,11 +1430,11 @@ msgstr ""
 
 #: src/components/status-utility-menu.tsx
 msgid "Edited: {editedDateText}"
-msgstr ""
+msgstr "編集済み： {editedDateText}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List ID"
-msgstr ""
+msgstr "リスト ID"
 
 #. placeholder {0}: i18n.number( width as number, )
 #. placeholder {1}: i18n.number(height as number)
@@ -1432,32 +1443,32 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Dimension too large. Uploading might encounter issues. Try reduce dimension from {0}×{1}px to {2}×{3}px."
-msgstr ""
+msgstr "サイズが大きすぎます。アップロード時に問題が発生する可能性があります。 {0} × {1} px から {2} × {3} px に減らしてみてください。"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post"
-msgstr ""
+msgstr "@{0}の投稿に返信します"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import shortcuts?"
-msgstr ""
+msgstr "ショートカットをインポートしますか？"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to next post"
-msgstr ""
+msgstr "カルーセルをスキップして次のポスト"
 
 #: src/pages/catchup.tsx
 msgid "last 5 hours"
-msgstr ""
+msgstr "5時間以内"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Bio"
-msgstr ""
+msgstr "プロフィール"
 
 #: src/pages/welcome.tsx
 msgid "Sign up"
-msgstr ""
+msgstr "登録"
 
 #: src/components/status-activity-menu.tsx
 msgid "Unwrap quote chain"
@@ -1474,18 +1485,18 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Raw Shortcuts JSON"
-msgstr ""
+msgstr "ショートカットのRaw JSON"
 
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/pages/catchup.tsx
 msgid "Thread"
-msgstr ""
+msgstr "スレッド"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multiple hashtags are supported. Space-separated."
-msgstr ""
+msgstr "複数のハッシュタグがサポートされています。スペース区切りです。"
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Failed to load history"
@@ -1497,7 +1508,7 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Additional info"
-msgstr ""
+msgstr "追加情報"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
@@ -1506,40 +1517,40 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "None"
-msgstr ""
+msgstr "なし"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Link copied"
-msgstr ""
+msgstr "リンクをコピーしました"
 
 #: src/components/mention-modal.tsx
 msgid "Search accounts"
-msgstr ""
+msgstr "アカウントを検索"
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to list members"
-msgstr ""
+msgstr "リストメンバーへの返信を表示"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Top links"
-msgstr ""
+msgstr "トップリンク"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/hashtag.tsx
 msgid "Media only"
-msgstr ""
+msgstr "メディアのみ対象"
 
 #: src/components/compose.tsx
 msgid "Update"
-msgstr ""
+msgstr "更新"
 
 #: src/components/status-account-menu.tsx
 #: src/pages/settings.tsx
 msgid "Quote settings"
-msgstr ""
+msgstr "引用の設定"
 
 #: src/utils/visibility-text.ts
 msgid "Followers, followed people, mentioned people, and list members can reply"
@@ -1547,30 +1558,30 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
-msgstr ""
+msgstr "{account} が {targetAccount} を報告しました"
 
 #. placeholder {0}: err?.message ? `: ${err.message}` : ''
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description{0}"
-msgstr ""
+msgstr "説明の生成に失敗しました: {0}"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
-msgstr ""
+msgstr "編集"
 
 #: src/pages/catchup.tsx
 msgid "You don't have to read everything."
-msgstr ""
+msgstr "すべてを読む必要はありません。"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Max {SHORTCUTS_LIMIT} shortcuts"
-msgstr ""
+msgstr "最大 {SHORTCUTS_LIMIT} ショートカットまで"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Esc</0> or <1>Backspace</1>"
-msgstr ""
+msgstr "<0>Esc</0>または<1>Backspace</1>"
 
 #: src/components/account-info.tsx
 #: src/components/quotes-modal.tsx
@@ -1579,30 +1590,30 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Quotes"
-msgstr ""
+msgstr "引用"
 
 #. placeholder {0}: info.acct || info.username
 #: src/components/related-actions.tsx
 msgid "Unfollow @{0}?"
-msgstr ""
+msgstr "@{0} のフォローを解除しますか？"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/related-actions.tsx
 msgid "Last post: <0>{0}</0>"
-msgstr ""
+msgstr "最終投稿: <0>{0}</0>"
 
 #: src/pages/catchup.tsx
 msgid "Next author"
-msgstr ""
+msgstr "次のユーザー"
 
 #: src/pages/catchup.tsx
 msgid "Sort"
-msgstr ""
+msgstr "ソート"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/account-block.tsx
 msgid "Last posted: {0}"
-msgstr ""
+msgstr "最終投稿: {0}"
 
 #: src/pages/settings.tsx
 msgid "Only for new images while composing new posts."
@@ -1615,20 +1626,20 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Delete this post?"
-msgstr ""
+msgstr "この投稿を削除しますか？"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>k</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>k</1>"
 
 #: src/pages/settings.tsx
 msgid "Volunteer translations"
-msgstr ""
+msgstr "翻訳のボランティア"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 msgid "Unable to fetch account info"
-msgstr ""
+msgstr "アカウント情報を取得できませんでした"
 
 #: src/pages/search.tsx
 msgid "Enter your search term or paste a URL above to get started."
@@ -1655,22 +1666,22 @@ msgstr ""
 
 #: src/components/media-post.tsx
 msgid "Sensitive media"
-msgstr ""
+msgstr "センシティブなメディア"
 
 #: src/components/compose.tsx
 msgid "Add GIF"
-msgstr ""
+msgstr "GIFを追加"
 
 #. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
 msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr ""
+msgstr "<0>@{0}</0> さんの投稿から自分の投稿を削除しますか？"
 
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
 msgid "Posts on this list are hidden from Home/Following"
-msgstr ""
+msgstr "このリストの投稿はホーム/フォロー中カラムから非表示になります"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
@@ -1694,11 +1705,11 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not sure what to add?<0/>Try adding <1>Home / Following and Notifications</1> first."
-msgstr ""
+msgstr "何を追加したらいいかわかりませんか?<0/>まずは<1>ホーム /フォロー中と通知</1>を追加してみてください。"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
-msgstr ""
+msgstr "プロフィールを更新できませんでした"
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
@@ -1707,15 +1718,15 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
-msgstr ""
+msgstr "あなたのアカウントはサスペンドされました。"
 
 #: src/components/account-block.tsx
 msgid "Locked"
-msgstr ""
+msgstr "ロック中"
 
 #: src/pages/notifications.tsx
 msgid "Accept"
-msgstr ""
+msgstr "承認する"
 
 #: src/pages/notifications.tsx
 msgid "Ignore"
@@ -1726,7 +1737,7 @@ msgstr ""
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "QR code"
-msgstr ""
+msgstr "QRコード"
 
 #: src/pages/settings.tsx
 msgid "Unable to copy version string"
@@ -1734,11 +1745,11 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Look up <0>{query}</0>"
-msgstr ""
+msgstr "<0>{query}</0> で検索"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open link?"
-msgstr ""
+msgstr "リンクを開く"
 
 #: src/pages/notifications.tsx
 msgid "Unable to load notifications"
@@ -1746,7 +1757,7 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "HTML Code"
-msgstr ""
+msgstr "HTML コード"
 
 #: src/components/timeline.tsx
 msgid "Pinned posts"
@@ -1755,16 +1766,16 @@ msgstr ""
 #: src/components/compose.tsx
 msgctxt "Submit button in composer"
 msgid "Post"
-msgstr ""
+msgstr "投稿"
 
 #: src/components/status-post-body.tsx
 #: src/components/timeline.tsx
 msgid "Content warning"
-msgstr ""
+msgstr "コンテンツに関する警告"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Hashtag"
-msgstr ""
+msgstr "ハッシュタグ"
 
 #. js-lingui-explicit-id
 #: src/pages/catchup.tsx
@@ -1774,16 +1785,16 @@ msgstr ""
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Export"
-msgstr ""
+msgstr "エクスポート"
 
 #: src/components/search-form.tsx
 #: src/pages/home.tsx
 msgid "See all"
-msgstr ""
+msgstr "すべて表示"
 
 #: src/pages/settings.tsx
 msgid "Auto inline translation"
-msgstr ""
+msgstr "自動インライン翻訳"
 
 #: src/pages/catchup.tsx
 msgid "Note: the Home timeline might only show a limited number of posts regardless of the time range."
@@ -1792,7 +1803,7 @@ msgstr ""
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Next post"
-msgstr ""
+msgstr "次の投稿"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
@@ -1805,7 +1816,7 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
 msgid "Lists"
-msgstr ""
+msgstr "リスト"
 
 #: src/pages/mentions.tsx
 msgid "Only followings"
@@ -1835,7 +1846,7 @@ msgstr ""
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
-msgstr ""
+msgstr "数式をフォーマットできません"
 
 #: src/components/compose.tsx
 msgid "Select a list..."
@@ -1846,7 +1857,7 @@ msgstr ""
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Anyone can quote"
-msgstr ""
+msgstr "誰でも引用可能"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/post-embed-modal.tsx
@@ -1854,16 +1865,16 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Copy"
-msgstr ""
+msgstr "コピー"
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
 msgid "Failed to update quote settings"
-msgstr ""
+msgstr "引用設定の更新に失敗しました"
 
 #: src/components/recent-searches.tsx
 msgid "Cleared recent searches"
-msgstr ""
+msgstr "最近の検索を消去しました"
 
 #. placeholder {0}: toUnicode(postInstance)
 #: src/pages/status.tsx
@@ -1877,19 +1888,19 @@ msgstr ""
 #. placeholder {0}: authorCountsList.length
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# author} other {# authors}}"
-msgstr ""
+msgstr "{0, plural, other {# 人}}"
 
 #: src/components/related-actions.tsx
 msgid "Unfollow…"
-msgstr ""
+msgstr "フォロー解除…"
 
 #: src/components/drafts.tsx
 msgid "Delete all…"
-msgstr ""
+msgstr "すべて削除…"
 
 #: src/pages/accounts.tsx
 msgid "Current"
-msgstr ""
+msgstr "現在のアカウント"
 
 #: src/pages/status.tsx
 msgid "Unable to load replies."
@@ -1897,28 +1908,28 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "You have unsaved changes. Discard this post?"
-msgstr ""
+msgstr "保存されていない変更があります。この投稿を破棄しますか？"
 
 #: src/components/edit-history-controls.tsx
 msgid "Edit History Snapshots"
-msgstr ""
+msgstr "履歴スナップショットの編集"
 
 #: src/components/account-info.tsx
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Original"
-msgstr ""
+msgstr "オリジナル"
 
 #: src/components/edit-history-controls.tsx
 #: src/components/gif-picker-modal.tsx
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Next"
-msgstr ""
+msgstr "次へ"
 
 #: src/components/list-add-edit.tsx
 msgid "Create"
-msgstr ""
+msgstr "作成"
 
 #: src/pages/search.tsx
 msgid "No posts found."
@@ -1938,15 +1949,15 @@ msgstr ""
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
 msgid "Home"
-msgstr ""
+msgstr "ホーム"
 
 #: src/components/status-account-menu.tsx
 msgid "Unmute conversation"
-msgstr ""
+msgstr "会話のミュートを解除"
 
 #: src/components/notification.tsx
 msgid "{account} reacted to your post with {emojiObject}"
-msgstr ""
+msgstr "{account} があなたの投稿に {emojiObject} でリアクションしました"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
@@ -1955,17 +1966,17 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
-msgstr ""
+msgstr "通知を有効化"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
 msgid "Reset filters"
-msgstr ""
+msgstr "フィルターをリセット"
 
 #: src/pages/catchup.tsx
 msgid "last 8 hours"
-msgstr ""
+msgstr "8時間以内"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
@@ -1978,7 +1989,7 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "{account} published a post."
-msgstr ""
+msgstr "{account} が投稿を公開しました。"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1989,19 +2000,19 @@ msgstr ""
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "通知"
 
 #: src/components/poll.tsx
 msgid "Voted"
-msgstr ""
+msgstr "投票済み"
 
 #: src/components/media-attachment.tsx
 msgid "Audio description"
-msgstr ""
+msgstr "音声の説明"
 
 #: src/components/notification.tsx
 msgid "Followed by…"
-msgstr ""
+msgstr "フォローされています"
 
 #: src/pages/status.tsx
 msgid "Back"
@@ -2009,7 +2020,7 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Illegal"
-msgstr ""
+msgstr "違法"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} on {instance}"
@@ -2022,7 +2033,7 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
-msgstr ""
+msgstr "返信"
 
 #: src/components/compose.tsx
 msgid "No user lists found."
@@ -2034,24 +2045,24 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has received a moderation warning."
-msgstr ""
+msgstr "あなたのアカウントはモデレーション警告を受けました。"
 
 #. placeholder {0}: shortcutsStr.length
 #: src/components/shortcuts-settings.tsx
 msgid "{0, plural, one {# character} other {# characters}}"
-msgstr ""
+msgstr "{0, plural, one {# 文字} other {# 文字}}"
 
 #: src/components/status-utility-menu.tsx
 msgid "Copy post text"
-msgstr ""
+msgstr "投稿テキストをコピー"
 
 #: src/pages/accounts.tsx
 msgid "Add an existing account"
-msgstr ""
+msgstr "アカウントを追加"
 
 #: src/components/media-modal.tsx
 msgid "View post"
-msgstr ""
+msgstr "投稿を表示"
 
 #: src/utils/visibility-text.ts
 msgid "Followers, mentioned people, and list members can reply"
@@ -2059,33 +2070,33 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "New"
-msgstr ""
+msgstr "New"
 
 #: src/components/status-utility-menu.tsx
 msgid "Post text copied"
-msgstr ""
+msgstr "投稿テキストをコピーしました"
 
 #: src/components/report-modal.tsx
 msgid "Violation"
-msgstr ""
+msgstr "違反"
 
 #: src/utils/visibility-text.ts
 msgid "Private mention"
-msgstr ""
+msgstr "非公開の返信"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
-msgstr ""
+msgstr "実験的機能"
 
 #: src/compose.tsx
 #: src/pages/http-route.tsx
 #: src/pages/login.tsx
 msgid "Go home"
-msgstr ""
+msgstr "ホームに戻る"
 
 #: src/components/background-service.tsx
 msgid "Cloak mode enabled"
-msgstr ""
+msgstr "クロークモードは有効化されています"
 
 #. placeholder {0}: fItems.length
 #: src/components/timeline.tsx
@@ -2094,7 +2105,7 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Note: This preview is lightly styled."
-msgstr ""
+msgstr "注: このプレビューは軽くスタイル付けされています。"
 
 #. placeholder {0}: account.username
 #: src/pages/list.tsx
@@ -2114,7 +2125,7 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Close post or dialogs"
-msgstr ""
+msgstr "ポストまたはダイアログを閉じる"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Reposts Carousel"
@@ -2124,12 +2135,12 @@ msgstr ""
 #: src/components/list-add-edit.tsx
 #: src/components/status-account-menu.tsx
 msgid "Delete…"
-msgstr ""
+msgstr "削除…"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Embed post"
-msgstr ""
+msgstr "ポストを埋め込む"
 
 #. placeholder {0}: shortenNumber(votersCount)
 #. placeholder {1}: shortenNumber(votersCount)
@@ -2143,11 +2154,11 @@ msgstr ""
 
 #: src/components/import-accounts-selection.tsx
 msgid "Select accounts to import"
-msgstr ""
+msgstr "インポートするアカウントを選択"
 
 #: src/components/related-actions.tsx
 msgid "Notifications enabled for @{username}'s posts."
-msgstr ""
+msgstr "@{username} の投稿の通知を有効にしました。"
 
 #: src/components/feedback-modal.tsx
 msgid "Send"
@@ -2159,30 +2170,30 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "System language ({systemTargetLanguageText})"
-msgstr ""
+msgstr "システム言語 ({systemTargetLanguageText})"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>…"
-msgstr ""
+msgstr "<0>@{username}</0> をブロック…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Open post details"
-msgstr ""
+msgstr "ポストの詳細を開く"
 
 #: src/components/compose.tsx
 msgid "Pop out"
-msgstr ""
+msgstr "ポップアウト"
 
 #. placeholder {0}: postingStats.total
 #. placeholder {1}: postingStats.total
 #: src/components/account-info.tsx
 msgid "{0, plural, one {Last 1 post in the past year(s)} other {Last {1} posts in the past year(s)}}"
-msgstr ""
+msgstr "{0, plural, one {1 年以内に 1 回の投稿} other {1 年以内に {1} 回の投稿}}"
 
 #: src/components/notification.tsx
 msgid "Your account has been disabled."
-msgstr ""
+msgstr "あなたのアカウントは無効になっています。"
 
 #: src/pages/status.tsx
 msgid "Unable to load post"
@@ -2190,7 +2201,7 @@ msgstr ""
 
 #: src/components/list-add-edit.tsx
 msgid "Hide posts on this list from Home/Following"
-msgstr ""
+msgstr "このリストの投稿をホーム/フォローから隠す"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2198,7 +2209,7 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Block profile</0>"
-msgstr ""
+msgstr "レポートを送信 <0>+ プロフィールをブロック</0>"
 
 #: src/components/compose.tsx
 #: src/pages/settings.tsx
@@ -2208,11 +2219,11 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
-msgstr ""
+msgstr "絵文字"
 
 #: src/pages/settings.tsx
 msgid "Post edits"
-msgstr ""
+msgstr "投稿の編集"
 
 #: src/components/related-actions.tsx
 msgid "Disable reposts"
@@ -2220,13 +2231,13 @@ msgstr ""
 
 #: src/components/import-export-accounts.tsx
 msgid "Import/Export <0>Accounts</0>"
-msgstr ""
+msgstr "<0>アカウント</0> のインポート/エクスポート "
 
 #. placeholder {0}: shortenNumber(votesCount)
 #. placeholder {1}: shortenNumber(votesCount)
 #: src/components/poll.tsx
 msgid "{votesCount, plural, one {<0>{0}</0> vote} other {<1>{1}</1> votes}}"
-msgstr ""
+msgstr "{votesCount, plural, one {<0>{0}</0> 票} other {<1>{1}</1> 票}}"
 
 #. placeholder {0}: username || acct
 #. placeholder {0}: usernameValue || acctValue
@@ -2237,7 +2248,7 @@ msgstr ""
 
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
-msgstr ""
+msgstr "この通知はあなたの他のアカウントからです。"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
@@ -2274,7 +2285,7 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Reply (new window)"
-msgstr ""
+msgstr "返信 (新しいウィンドウ)"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only) on {instance}"
@@ -2286,15 +2297,15 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in or created has ended."
-msgstr ""
+msgstr "投票または作成したアンケートが終了しました。"
 
 #: src/components/status-account-menu.tsx
 msgid "Post deleted"
-msgstr ""
+msgstr "ポストを削除しました"
 
 #: src/components/report-modal.tsx
 msgid "Blocked {username}"
-msgstr ""
+msgstr "@{username} をブロックしました"
 
 #: src/pages/list.tsx
 msgid "Nothing yet."
@@ -2306,24 +2317,24 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
-msgstr ""
+msgstr "音声の説明を編集"
 
 #: src/components/status-inline-controls.tsx
 msgid "Pinned"
-msgstr ""
+msgstr "ピン留めしました"
 
 #: src/components/notification.tsx
 msgid "A poll you have created has ended."
-msgstr ""
+msgstr "作成したアンケートが終了しました。"
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to create list."
-msgstr ""
+msgstr "リストを作成できません。"
 
 #: src/components/drafts.tsx
 #: src/pages/settings.tsx
 msgid "Unsent drafts"
-msgstr ""
+msgstr "未送信の下書き"
 
 #: src/pages/notifications.tsx
 msgid "You're all caught up."
@@ -2331,7 +2342,7 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
-msgstr ""
+msgstr "他のカテゴリに該当しない問題"
 
 #. placeholder {0}: tag.name
 #: src/pages/account-statuses.tsx
@@ -2341,53 +2352,53 @@ msgstr ""
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Import"
-msgstr ""
+msgstr "インポート"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/status-reblog.tsx
 msgid "Group"
-msgstr ""
+msgstr "グループ"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Hide results"
-msgstr ""
+msgstr "結果を隠す"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
-msgstr ""
+msgstr "この投稿の問題点は何ですか？"
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
 msgid "Privacy Policy"
-msgstr ""
+msgstr "プライバシーポリシー"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "更新"
 
 #: src/components/related-actions.tsx
 msgid "Search <0>@{username}</0>'s posts"
-msgstr ""
+msgstr "<0>@{username}</0> さんの投稿を検索"
 
 #: src/components/status-account-menu.tsx
 msgid "Pin to profile"
-msgstr ""
+msgstr "プロフィールに固定します"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Share…"
-msgstr ""
+msgstr "共有…"
 
 #: src/components/media-attachment.tsx
 msgid "Image description"
-msgstr ""
+msgstr "画像の説明"
 
 #: src/components/compose.tsx
 msgid "Mentioned"
@@ -2406,27 +2417,27 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "last 6 hours"
-msgstr ""
+msgstr "6時間以内"
 
 #: src/components/import-export-accounts.tsx
 msgid "Export failed"
-msgstr ""
+msgstr "エクスポートに失敗しました"
 
 #: src/components/status-post-body.tsx
 msgid "Show content"
-msgstr ""
+msgstr "コンテンツを表示"
 
 #: src/components/notification.tsx
 msgid "Liked by…"
-msgstr ""
+msgstr "お気に入りしたユーザー"
 
 #: src/components/poll.tsx
 msgid "Vote"
-msgstr ""
+msgstr "投票する"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut"
-msgstr ""
+msgstr "ショートカットを追加"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Catch-up"
@@ -2434,7 +2445,7 @@ msgstr ""
 
 #: src/components/compose-button.tsx
 msgid "Add to thread"
-msgstr ""
+msgstr "スレッドに追加する"
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -2455,19 +2466,19 @@ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Reply posted. Check it out."
-msgstr ""
+msgstr "返信を予約しました。チェックしてみてください。"
 
 #. placeholder {0}: localeCode2Text(lang)
 #: src/components/media-attachment.tsx
 msgid "({0}) <0>— experimental</0>"
-msgstr ""
+msgstr "({0}) <0>実験的</0>"
 
 #: src/components/compose.tsx
 #: src/components/mention-modal.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/list.tsx
 msgid "Add"
-msgstr ""
+msgstr "追加"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
@@ -2480,7 +2491,7 @@ msgstr ""
 
 #: src/components/translation-block.tsx
 msgid "Failed to translate"
-msgstr ""
+msgstr "翻訳に失敗しました"
 
 #: src/components/status-menu-state.tsx
 msgid "Some media have no descriptions."
@@ -2492,11 +2503,11 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Posts tagged with <0>{hashtag}</0>"
-msgstr ""
+msgstr "<0>{hashtag}</0> を含む投稿"
 
 #: src/components/compose.tsx
 msgid "Add media"
-msgstr ""
+msgstr "メディアを追加"
 
 #: src/pages/hashtag.tsx
 msgid "Hashtag shortcut added"
@@ -2505,7 +2516,7 @@ msgstr ""
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Follow"
-msgstr ""
+msgstr "フォロー"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-large-footer.tsx
@@ -2516,28 +2527,28 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has been limited."
-msgstr ""
+msgstr "あなたのアカウントは制限されています。"
 
 #: src/components/account-block.tsx
 msgid "{followersCount, plural, one {# follower} other {# followers}}"
-msgstr ""
+msgstr "{followersCount, plural, one {# フォロワー} other {# フォロワー}}"
 
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Video description"
-msgstr ""
+msgstr "動画の説明"
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in has ended."
-msgstr ""
+msgstr "投票したアンケートが終了しました。"
 
 #: src/components/compose.tsx
 msgid "Some media have no descriptions. Continue?"
-msgstr ""
+msgstr "一部のメディアには説明がありません。続行しますか？"
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to people I follow"
-msgstr ""
+msgstr "フォロー中の人への返信を表示"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -2550,7 +2561,7 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Report Post"
-msgstr ""
+msgstr "ポストを報告"
 
 #: src/pages/list.tsx
 msgid "Remove…"
@@ -2567,24 +2578,24 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Date"
-msgstr ""
+msgstr "日時"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>j</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>j</1>"
 
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy post text"
-msgstr ""
+msgstr "投稿テキストをコピーできません"
 
 #: src/components/nav-menu.tsx
 msgid "Muted users…"
-msgstr ""
+msgstr "ミュートしたユーザー…"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Synced"
-msgstr ""
+msgstr "同期済み"
 
 #. placeholder {0}: notificationsPolicy.summary?.pendingRequestsCount ?? 0
 #: src/pages/notifications.tsx
@@ -2594,11 +2605,11 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/search.tsx
 msgid "All"
-msgstr ""
+msgstr "すべて"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List may not work if it's from a different account."
-msgstr ""
+msgstr "別のアカウントのリストは動作しない場合があります。"
 
 #: src/components/account-info.tsx
 #: src/components/status-post-body.tsx
@@ -2610,7 +2621,7 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
-msgstr ""
+msgstr "返信"
 
 #: src/pages/search.tsx
 msgid "See more hashtags"
@@ -2618,7 +2629,7 @@ msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Keep as link"
-msgstr ""
+msgstr "リンクのままにする"
 
 #: src/pages/status.tsx
 msgid "Go to main post"
@@ -2634,7 +2645,7 @@ msgstr ""
 
 #: src/components/quote-chain-modal.tsx
 msgid "Failed to unwrap quote chain"
-msgstr ""
+msgstr "引用チェーンの展開に失敗しました"
 
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
@@ -2643,21 +2654,21 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users"
-msgstr ""
+msgstr "ブロックしたユーザー"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Only shortcuts that don’t exist in current shortcuts will be appended."
-msgstr ""
+msgstr "現在のショートカットに存在しないもののみが追加されます。"
 
 #: src/pages/catchup.tsx
 msgid "until the max"
-msgstr ""
+msgstr "最大限まで"
 
 #. Relative time in seconds, as short as possible
 #. placeholder {0}: seconds < 1 ? 1 : Math.floor(seconds)
 #: src/components/relative-time.tsx
 msgid "{0}s"
-msgstr ""
+msgstr "{0} 秒"
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
@@ -2676,11 +2687,11 @@ msgstr ""
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
 msgid "{0}h"
-msgstr ""
+msgstr "{0} 時間"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments can be images, videos, audios or any file types."
-msgstr ""
+msgstr "メディアは、画像、動画、音声、または任意のファイルを添付することができます。"
 
 #: src/pages/accounts.tsx
 msgid "Remove <0>@{acct}</0>?"
@@ -2688,7 +2699,7 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Posts with <0>{query}</0>"
-msgstr ""
+msgstr "<0>{query}</0>を含む投稿"
 
 #: src/components/compose.tsx
 msgid "Some can reply"
@@ -2696,7 +2707,7 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Ending"
-msgstr ""
+msgstr "終了中"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2712,15 +2723,15 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generate description…"
-msgstr ""
+msgstr "説明の生成…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "No new shortcuts to import"
-msgstr ""
+msgstr "インポートする新しいショートカットはありません"
 
 #: src/components/shortcuts-settings.tsx
 msgid "* Exists in current shortcuts"
-msgstr ""
+msgstr "* 現在のショートカットに存在します"
 
 #: src/pages/notifications.tsx
 msgid "Filter"
@@ -2738,11 +2749,11 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Unable to report profile"
-msgstr ""
+msgstr "プロフィールを報告できません"
 
 #: src/components/background-service.tsx
 msgid "Cloak mode disabled"
-msgstr ""
+msgstr "クロークモードは無効化されています"
 
 #: src/pages/hashtag.tsx
 msgid "Remove hashtag"
@@ -2750,7 +2761,7 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Mute conversation"
-msgstr ""
+msgstr "会話をミュート"
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Edit History"
@@ -2758,19 +2769,19 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Edit image description"
-msgstr ""
+msgstr "画像の説明を編集"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import/Export <0>Shortcuts</0>"
-msgstr ""
+msgstr "<0>ショートカット</0>のインポート/エクスポート"
 
 #: src/pages/catchup.tsx
 msgid "Show me all posts from…"
-msgstr ""
+msgstr "… からのすべての投稿を表示"
 
 #: src/components/poll.tsx
 msgid "Ending <0/>"
-msgstr ""
+msgstr "終了 <0/>"
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
@@ -2778,7 +2789,7 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Disable notifications"
-msgstr ""
+msgstr "通知を無効化"
 
 #: src/pages/hashtag.tsx
 msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
@@ -2786,15 +2797,15 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "last 1 hour"
-msgstr ""
+msgstr "1時間以内"
 
 #: src/pages/accounts.tsx
 msgid "Default"
-msgstr ""
+msgstr "デフォルト"
 
 #: src/components/compose.tsx
 msgid "What are you doing?"
-msgstr ""
+msgstr "なにしてる？"
 
 #. placeholder {0}: String(type)
 #: src/components/notification.tsx
@@ -2815,19 +2826,19 @@ msgstr ""
 #: src/components/account-block.tsx
 #: src/components/related-actions.tsx
 msgid "Follows you"
-msgstr ""
+msgstr "フォローされています"
 
 #: src/components/related-actions.tsx
 msgid "Unable to block @{username}"
-msgstr ""
+msgstr "@{username} をブロックできません"
 
 #: src/pages/settings.tsx
 msgid "followers"
-msgstr ""
+msgstr "フォロワー"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
-msgstr ""
+msgstr "GIF の読み込みに失敗しました"
 
 #: src/pages/settings.tsx
 msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
@@ -2835,30 +2846,30 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "last 9 hours"
-msgstr ""
+msgstr "9時間以内"
 
 #: src/pages/welcome.tsx
 msgid "Effortlessly follow conversations. Semi-collapsible replies."
-msgstr ""
+msgstr "会話をわかりやすく追えます。また、返信を折りたたみ可能。"
 
 #. placeholder {0}: niceDateTime(createdAt, { hideTime: true, })
 #. placeholder {0}: niceDateTime(createdAt, { hideTime: true, })
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Joined <0>{0}</0>"
-msgstr ""
+msgstr "<0>{0}</0> に参加しました"
 
 #: src/pages/settings.tsx
 msgid "Posting"
-msgstr ""
+msgstr "投稿"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
-msgstr ""
+msgstr "ショートカットを編集"
 
 #: src/pages/welcome.tsx
 msgid "Single or multi-column"
-msgstr ""
+msgstr "シングル or マルチカラム"
 
 #. placeholder {0}: WEBSITE.replace(/https?:\/\//g, '').replace(/\/$/, '')
 #: src/pages/settings.tsx
@@ -2882,7 +2893,7 @@ msgstr ""
 #: src/components/status-utility-menu.tsx
 #: src/components/translation-block.tsx
 msgid "Translate"
-msgstr ""
+msgstr "翻訳"
 
 #: src/pages/settings.tsx
 msgid "Version string copied"
@@ -2890,23 +2901,23 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "View post stats"
-msgstr ""
+msgstr "投稿の統計を見る"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post you have quoted."
-msgstr ""
+msgstr "{account} があなたが引用した投稿を編集しました。"
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation unmuted"
-msgstr ""
+msgstr "会話のミュートを解除しました"
 
 #: src/components/list-add-edit.tsx
 msgid "Don't show replies"
-msgstr ""
+msgstr "返信を表示しない"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
-msgstr ""
+msgstr "@{username} をブロックできません"
 
 #. js-lingui-explicit-id
 #: src/pages/status.tsx
@@ -2916,11 +2927,11 @@ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Set as default"
-msgstr ""
+msgstr "デフォルトに設定"
 
 #: src/utils/visibility-text.ts
 msgid "Quiet public"
-msgstr ""
+msgstr "ひかえめな公開"
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -2949,7 +2960,7 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
-msgstr ""
+msgstr "ダーク"
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Loading…"
@@ -2957,7 +2968,7 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Ctrl</0> + <1>Enter</1> or <2>⌘</2> + <3>Enter</3>"
-msgstr ""
+msgstr "<0>Ctrl</0> + <1>Enter</1> または <2>⌘</2> + <3>Enter</3>"
 
 #: src/pages/accounts.tsx
 msgid "Switch in new tab/window"
@@ -2968,17 +2979,17 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Bookmark"
-msgstr ""
+msgstr "ブックマーク"
 
 #: src/components/related-actions.tsx
 msgid "Unmute <0>@{username}</0>"
-msgstr ""
+msgstr "<0>@{username}</0> をミュート解除"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #. placeholder {1}: rtf.format(-replyToStatusMonthsAgo, 'month')
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post (<0>{1}</0>)"
-msgstr ""
+msgstr "@{0}の投稿に返信します (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
 msgid "Failed to remove subscription. Please try again."
@@ -2986,16 +2997,16 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "<0>{from}</0>の管理者が<1>{targetName}</1>をブロックしました。影響を受けるフォロワー： {followersCount}、フォロー： {followingCount}。"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unbookmark"
-msgstr ""
+msgstr "ブックマーク解除"
 
 #: src/pages/catchup.tsx
 msgid "This might take a while."
-msgstr ""
+msgstr "少々お待ち下さい。"
 
 #: src/components/error-fallback.tsx
 msgid ""
@@ -3007,19 +3018,19 @@ msgstr ""
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Verified"
-msgstr ""
+msgstr "認証済み"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>{key1}</0> then <1>{key2}</1>"
-msgstr ""
+msgstr "<0>{key1}</0> の後に <1>{key2}</1>"
 
 #: src/components/compose.tsx
 msgid "Looks like you closed the parent window."
-msgstr ""
+msgstr "親ウィンドウを閉じたようです。"
 
 #: src/components/status-utility-menu.tsx
 msgid "Show Edit History"
-msgstr ""
+msgstr "編集履歴を表示"
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
@@ -3032,12 +3043,12 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
-msgstr ""
+msgstr "ショートカットをインポートしました"
 
 #: src/components/compose-button.tsx
 #: src/compose.tsx
 msgid "Compose"
-msgstr ""
+msgstr "投稿"
 
 #: src/pages/welcome.tsx
 msgid "Connect to Atmosphere"
@@ -3050,7 +3061,7 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Report <0>@{username}</0>…"
-msgstr ""
+msgstr "<0>@{username}</0> を報告…"
 
 #: src/pages/settings.tsx
 msgid "Disable all animations"
@@ -3058,12 +3069,12 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Floating button"
-msgstr ""
+msgstr "フローティングボタン"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move up"
-msgstr ""
+msgstr "上へ移動"
 
 #. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
@@ -3077,15 +3088,15 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Edit your post"
-msgstr ""
+msgstr "投稿を編集する"
 
 #: src/components/import-export-accounts.tsx
 msgid "No login information or account access details are stored in the exported files. You will need to log in again for each account after importing."
-msgstr ""
+msgstr "エクスポートされたファイルにはログイン情報やアカウントへのアクセス情報は保存されません。インポート後、各アカウントに再度ログインする必要があります。"
 
 #: src/pages/catchup.tsx
 msgid "Catch up"
-msgstr ""
+msgstr "キャッチアップ"
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText} (auto-detected)"
@@ -3093,15 +3104,15 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users…"
-msgstr ""
+msgstr "ブロックしたユーザー…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Post could be edited or deleted later."
-msgstr ""
+msgstr "投稿は後で編集または削除できます。"
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to edit list."
-msgstr ""
+msgstr "リストを編集できません。"
 
 #. placeholder {0}: ancestors.length
 #: src/pages/status.tsx
@@ -3110,32 +3121,32 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Translate bio"
-msgstr ""
+msgstr "プロフィールを翻訳"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Auto"
-msgstr ""
+msgstr "自動"
 
 #: src/components/report-modal.tsx
 msgid "Profile reported"
-msgstr ""
+msgstr "プロフィールを報告しました"
 
 #: src/pages/catchup.tsx
 msgid "last 7 hours"
-msgstr ""
+msgstr "7時間以内"
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been deleted."
-msgstr ""
+msgstr "あなたの投稿の一部が削除されました。"
 
 #: src/pages/catchup.tsx
 msgid "Fetching posts…"
-msgstr ""
+msgstr "ポストの取得中…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Preview"
-msgstr ""
+msgstr "プレビュー"
 
 #: src/components/status-helpers.ts
 msgid "Author will manually review"
@@ -3143,7 +3154,7 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Error deleting draft! Please try again."
-msgstr ""
+msgstr "下書きの削除中にエラーが発生しました！もう一度やり直してください。"
 
 #: src/compose.tsx
 msgid "Close window"
@@ -3151,11 +3162,11 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "That's all."
-msgstr ""
+msgstr "これで全部です。"
 
 #: src/pages/catchup.tsx
 msgid "Previous author"
-msgstr ""
+msgstr "前のユーザー"
 
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
@@ -3181,17 +3192,17 @@ msgstr ""
 #. placeholder {2}: lf.format( unsupportedFiles.map((f) => f.name), )
 #: src/components/compose.tsx
 msgid "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
-msgstr ""
+msgstr "{0, plural, other {ファイル {2} はサポートされていません。}}"
 
 #: src/components/notification.tsx
 msgid "You have blocked <0>{targetName}</0>. Removed followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "<0>{targetName}</0>をブロックしました。削除されたフォロワー: {followersCount}, フォロー: {followingCount}."
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} liked your reply.} other {{account} liked your post.}}} other {{account} liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> liked your reply.} other {<2><3>{1}</3> people</2> liked your post.}}}}"
-msgstr ""
+msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} から返信にいいねされました。} other {{account} からポストをいいねされました。}}} other {{account} から {postsCount} 件のポストにいいねされました。}}} other {{postType, select, reply {<0><1>{0}</1> 人</0>から返信にいいねされました。} other {<2><3>{1}</3> 人</2> からポストにいいねされました。}}}}"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
@@ -3204,7 +3215,7 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this profile?"
-msgstr ""
+msgstr "このプロフィールの問題点は何ですか？"
 
 #: src/pages/http-route.tsx
 msgid "Resolving…"
@@ -3216,7 +3227,7 @@ msgstr ""
 
 #: src/components/status-header.tsx
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
-msgstr ""
+msgstr "{repliesCount, plural, one {# 件の返信} other {# 件の返信}}"
 
 #: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
@@ -3225,7 +3236,7 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Frame rate too high. Uploading might encounter issues."
-msgstr ""
+msgstr "フレームレートが高すぎます。アップロード時に問題が発生する可能性があります。"
 
 #: src/pages/notifications.tsx
 msgid "Unable to dismiss notification request"
@@ -3233,16 +3244,16 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to previous post"
-msgstr ""
+msgstr "カルーセルをスキップして前のポスト"
 
 #: src/components/status-account-menu.tsx
 msgid "Post pinned to profile"
-msgstr ""
+msgstr "プロフィールにピン留めされた投稿"
 
 #. placeholder {0}: pc.count
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# post} other {# posts}}"
-msgstr ""
+msgstr "{0, plural, other {# 件のポスト}}"
 
 #: src/pages/notifications.tsx
 msgid "Unable to accept notification request"
@@ -3252,7 +3263,7 @@ msgstr ""
 #: src/components/list-add-edit.tsx
 #: src/pages/lists.tsx
 msgid "New list"
-msgstr ""
+msgstr "新しいリスト"
 
 #: src/utils/visibility-text.ts
 msgid "Followers, followed people, and list members can reply"
@@ -3260,16 +3271,16 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
-msgstr ""
+msgstr "ショートカットがインポートされました。 {SHORTCUTS_LIMIT}を超えたため、残りはインポートされません。"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/trending.tsx
 msgid "Unable to load posts"
-msgstr ""
+msgstr "ポストを読み込むことができません"
 
 #: src/pages/catchup.tsx
 msgid "Group: Authors"
-msgstr ""
+msgstr "グループ: ユーザー"
 
 #: src/components/import-export-accounts.tsx
 msgid "Select file…"
@@ -3283,42 +3294,42 @@ msgstr ""
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{followingCount, plural, other {<0>{0}</0> Following}}"
-msgstr ""
+msgstr "{followingCount, plural, other {<0>{0}</0> フォロー}}"
 
 #: src/components/related-actions.tsx
 msgid "Unblocked @{username}"
-msgstr ""
+msgstr "@{username} のブロックを解除しました"
 
 #: src/components/account-handle-info.tsx
 msgid "username"
-msgstr ""
+msgstr "ユーザー名"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Add/Remove from Lists"
-msgstr ""
+msgstr "リストから追加/削除"
 
 #: src/components/compose.tsx
 msgid "Post your reply"
-msgstr ""
+msgstr "返信を投稿"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import…"
-msgstr ""
+msgstr "インポート…"
 
 #: src/components/media-attachment.tsx
 #: src/compose.tsx
 msgid "Error"
-msgstr ""
+msgstr "エラー"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post (new window)"
-msgstr ""
+msgstr "新しいポスト(新しいウィンドウ)"
 
 #: src/components/nav-menu.tsx
 msgid "Muted users"
-msgstr ""
+msgstr "ミュートしたユーザー"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -3339,7 +3350,7 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/welcome.tsx
 msgid "Log in"
-msgstr ""
+msgstr "ログイン"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -3359,7 +3370,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Posts are grouped by authors, sorted by posts count per author."
-msgstr ""
+msgstr "ポストはユーザーごとにグループ化され、ユーザーごとのポスト数でソートされます"
 
 #: src/pages/notifications.tsx
 msgid "With a new account"
@@ -3370,11 +3381,11 @@ msgstr ""
 #: src/components/status-media-embeds.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered: {0}"
-msgstr ""
+msgstr "フィルター: {0}"
 
 #: src/pages/catchup.tsx
 msgid "Note: Only max 3 will be stored. The rest will be automatically removed."
-msgstr ""
+msgstr "注意：最大3つのみが保存されます。残りは自動的に削除されます。"
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
@@ -3389,7 +3400,7 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 msgid "Remove"
-msgstr ""
+msgstr "削除"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Profile"
@@ -3397,15 +3408,15 @@ msgstr ""
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
-msgstr ""
+msgstr "補足情報"
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
-msgstr ""
+msgstr "デフォルトではシングルモードですが、パワーユーザー向けにマルチカラムモードも設定できます。"
 
 #: src/components/report-modal.tsx
 msgid "Spam"
-msgstr ""
+msgstr "スパム"
 
 #: src/pages/status.tsx
 msgid "Switch to my PDS to enable interactions"
@@ -3417,7 +3428,7 @@ msgstr ""
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to add to list."
-msgstr ""
+msgstr "リストに追加できません。"
 
 #. placeholder {0}: niceDateTime(updatedAtDate)
 #: src/pages/notifications.tsx
@@ -3426,18 +3437,18 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Paste shortcuts here"
-msgstr ""
+msgstr "ここにショートカットを貼り付け"
 
 #: src/components/compose.tsx
 msgid "Take photo or video"
-msgstr ""
+msgstr "写真や動画を撮る"
 
 #. placeholder {0}: shortenNumber(followersCount)
 #. placeholder {1}: shortenNumber(followersCount)
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{followersCount, plural, one {<0>{0}</0> Follower} other {<1>{1}</1> Followers}}"
-msgstr ""
+msgstr "{followersCount, plural, one {<0>{0}</0> フォロワー} other {<1>{1}</1> フォロワー}}"
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
@@ -3445,11 +3456,11 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/notifications.tsx
 msgid "Save"
-msgstr ""
+msgstr "保存"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcut settings"
-msgstr ""
+msgstr "ショートカットの設定をコピーできません"
 
 #: src/components/compose.tsx
 msgid "From List"
@@ -3457,11 +3468,11 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
-msgstr ""
+msgstr "返信の取得中にエラーが発生しました！"
 
 #: src/components/post-embed-modal.tsx
 msgid "Notes:"
-msgstr ""
+msgstr "注"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} enabled."
@@ -3469,25 +3480,25 @@ msgstr ""
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to delete list."
-msgstr ""
+msgstr "リストを削除できません。"
 
 #: src/pages/welcome.tsx
 msgid "Up to 5 hashtags combined into a single timeline."
-msgstr ""
+msgstr "最大5つのハッシュタグを1つのタイムラインでまとめて表示できます。"
 
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Sharing doesn't seem to work."
-msgstr ""
+msgstr "共有は機能しないようです。"
 
 #: src/components/list-add-edit.tsx
 msgid "Edit list"
-msgstr ""
+msgstr "リストの編集"
 
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
-msgstr ""
+msgstr "2時間以内"
 
 #: src/compose.tsx
 msgid "Editing source status"
@@ -3495,7 +3506,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Settings"
-msgstr ""
+msgstr "設定"
 
 #: src/utils/visibility-text.ts
 msgid "Followed people and list members can reply"
@@ -3507,7 +3518,7 @@ msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
-msgstr ""
+msgstr "リンクを引用に変えますか？"
 
 #: src/pages/http-route.tsx
 msgid "Unable to resolve URL"
@@ -3515,7 +3526,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "or override…"
-msgstr ""
+msgstr "または上書きする…"
 
 #: src/components/status-account-menu.tsx
 msgid "Remove quote…"
@@ -3523,15 +3534,15 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Keyboard shortcuts help"
-msgstr ""
+msgstr "キーボードショートカットのヘルプ"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Home"
-msgstr ""
+msgstr "ホームに移動"
 
 #: src/components/related-actions.tsx
 msgid "Remove <0>@{username}</0> from followers?"
-msgstr ""
+msgstr "<0>@{username}</0> をフォロワーから削除しますか？"
 
 #: src/pages/bookmarks.tsx
 msgid "Unable to load bookmarks."
@@ -3539,11 +3550,11 @@ msgstr ""
 
 #: src/components/quote-chain-modal.tsx
 msgid "Continue unwrapping…"
-msgstr ""
+msgstr "さらに展開…"
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has suspended <1>{targetName}</1>, which means you can no longer receive updates from them or interact with them."
-msgstr ""
+msgstr "<0>{from}</0>の管理者が<1>{targetName}</1>を停止しました。これにより、更新を受け取ったり、交流したりすることができなくなります。"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on mobile device"
@@ -3551,24 +3562,24 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Posts are sorted by information density or depth. Shorter posts are \"lighter\" while longer posts are \"heavier\". Posts with photos are \"heavier\" than posts without photos."
-msgstr ""
+msgstr "ポストは情報密度によってソートされます。短いポストは「低く」、長いポストは「高く」なります。また、画像付きポストは画像なしポストより「高く」なります。"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
 msgid "Settings…"
-msgstr ""
+msgstr "設定…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multi-column"
-msgstr ""
+msgstr "複数列表示"
 
 #: src/components/quote-settings-sheet.tsx
 msgid "Quote settings for this post"
-msgstr ""
+msgstr "この投稿の引用設定"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Tab/Menu bar"
-msgstr ""
+msgstr "タブ/メニューバー"
 
 #: src/components/generic-accounts.tsx
 #: src/components/quotes-modal.tsx
@@ -3578,11 +3589,11 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/status.tsx
 msgid "Show more…"
-msgstr ""
+msgstr "もっと見る…"
 
 #: src/components/related-actions.tsx
 msgid "Blocked @{username}"
-msgstr ""
+msgstr "@{username} をブロックしました"
 
 #: src/components/status-interactions.ts
 msgid "Sorry, your current PDS can't interact with this post from another PDS."
@@ -3594,20 +3605,20 @@ msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Replace current quote"
-msgstr ""
+msgstr "現在の引用を置換"
 
 #: src/components/notification.tsx
 msgid "A post you interacted with has been edited."
-msgstr ""
+msgstr "あなたが交流した投稿が編集されました。"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/pages/lists.tsx
 msgid "Unable to load lists."
-msgstr ""
+msgstr "リストを読み込めませんでした"
 
 #: src/components/report-modal.tsx
 msgid "Unable to mute {username}"
-msgstr ""
+msgstr "{username} をミュートできません"
 
 #: src/pages/search.tsx
 #: src/pages/search.tsx
@@ -3622,7 +3633,7 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 
 #: src/pages/settings.tsx
 msgid "Quote settings are synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0> Default threadgate settings are stored locally."
@@ -3630,7 +3641,7 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
-msgstr ""
+msgstr "あなたの投稿の一部がセンシティブとして判定されています。"
 
 #: src/components/status-large-footer.tsx
 msgid "Comments"
@@ -3642,17 +3653,17 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
-msgstr ""
+msgstr "フォロワーを削除…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Profile"
-msgstr ""
+msgstr "プロフィール"
 
 #: src/components/media-modal.tsx
 msgid "Attempting to describe image. Please wait…"
-msgstr ""
+msgstr "画像を説明しています。お待ちください…"
 
 #: src/components/account-handle-info.tsx
 msgid "handle domain name"
@@ -3661,27 +3672,27 @@ msgstr ""
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
 msgid "Deleted"
-msgstr ""
+msgstr "削除しました"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to pin post"
-msgstr ""
+msgstr "ポストをピン留めできません"
 
 #: src/components/compose.tsx
 msgid "Failed to download GIF"
-msgstr ""
+msgstr "GIF のダウンロードに失敗しました"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Load new posts"
-msgstr ""
+msgstr "新しいポストを読み込む"
 
 #: src/components/account-info.tsx
 msgid "Post stats unavailable."
-msgstr ""
+msgstr "投稿の統計情報を利用できません。"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
-msgstr ""
+msgstr "マルチカラムUIのスクリーンショット"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
@@ -3690,7 +3701,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
-msgstr ""
+msgstr "ショートカットがありません。ショートカットの追加ボタンをタップしてください。"
 
 #: src/pages/trending.tsx
 msgid "Trending posts"
@@ -3702,15 +3713,15 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "beyond 12 hours"
-msgstr ""
+msgstr "12時間以上"
 
 #: src/pages/catchup.tsx
 msgid "last 12 hours"
-msgstr ""
+msgstr "12時間以内"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn into quote"
-msgstr ""
+msgstr "引用に変更する"
 
 #: src/utils/show-compose.ts
 msgid "A post is currently open. Post or discard it before creating a new one."
@@ -3718,7 +3729,7 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Unable to mute @{username}"
-msgstr ""
+msgstr "@{username} をミュートできません"
 
 #: src/pages/search.tsx
 #: src/pages/search.tsx
@@ -3731,17 +3742,17 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
-msgstr ""
+msgstr "{account} が投稿を編集しました。"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy link"
-msgstr ""
+msgstr "リンクをコピーできません"
 
 #: src/components/notification.tsx
 msgid "Your posts will be marked as sensitive from now on."
-msgstr ""
+msgstr "今後あなたの投稿はセンシティブとしてマークされます。"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on tablet device"
@@ -3762,11 +3773,11 @@ msgstr ""
 #: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
-msgstr ""
+msgstr "すべて選択"
 
 #: src/pages/welcome.tsx
 msgid "Multi-hashtag timeline"
-msgstr ""
+msgstr "マルチタグ・タイムライン"
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
@@ -3778,15 +3789,15 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Editing source post"
-msgstr ""
+msgstr "元の投稿を編集しています"
 
 #: src/pages/settings.tsx
 msgid "Polls"
-msgstr ""
+msgstr "投票"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
-msgstr ""
+msgstr "マルチタグ・タイムラインにハッシュタグを追加するスクリーンショット"
 
 #: src/pages/search.tsx
 msgid "Search: {q}"
@@ -3802,21 +3813,21 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "last 10 hours"
-msgstr ""
+msgstr "10時間以内"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Search GIFs"
-msgstr ""
+msgstr "GIFを検索"
 
 #. placeholder {0}: err.message
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description: {0}"
-msgstr ""
+msgstr "説明の生成に失敗しました: {0}"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Catch-up <0>beta</0>"
-msgstr ""
+msgstr "キャッチアップ <0>β</0>"
 
 #: src/pages/status.tsx
 msgid "You're not logged in. Interactions (reply, repost, etc) are not possible."
@@ -3829,18 +3840,18 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Edit video description"
-msgstr ""
+msgstr "動画の説明を編集"
 
 #: src/pages/settings.tsx
 msgid "people I follow"
-msgstr ""
+msgstr "フォローしている人"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/components/compose.tsx
 #: src/utils/visibility-text.ts
 msgid "Followers"
-msgstr ""
+msgstr "フォロワー"
 
 #: src/components/notification.tsx
 msgid "Reposted by…"
@@ -3852,25 +3863,25 @@ msgstr ""
 
 #: src/components/recent-searches.tsx
 msgid "Clear"
-msgstr ""
+msgstr "削除"
 
 #: src/components/qr-code-modal.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Scan QR code"
-msgstr ""
+msgstr "QRコードをスキャン"
 
 #: src/components/related-actions.tsx
 msgid "Mute <0>@{username}</0>…"
-msgstr ""
+msgstr "<0>@{username}</0> をミュート…"
 
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description"
-msgstr ""
+msgstr "説明の生成に失敗しました"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
 msgid "static URL"
-msgstr ""
+msgstr "静的 URL"
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
@@ -3879,7 +3890,7 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Lost connections with <0>{name}</0>."
-msgstr ""
+msgstr "<0>{name}</0>との接続が切れました。"
 
 #: src/pages/hashtag.tsx
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
@@ -3891,17 +3902,17 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>r</1>"
 
 #: src/components/status-account-menu.tsx
 msgid "Unpin from profile"
-msgstr ""
+msgstr "プロフィールから固定を解除"
 
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 #: src/pages/welcome.tsx
 msgid "Catch-up"
-msgstr ""
+msgstr "キャッチアップ"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specific list is optional."
@@ -3910,7 +3921,7 @@ msgstr ""
 #: src/components/drafts.tsx
 #: src/pages/account-statuses.tsx
 msgid "Media"
-msgstr ""
+msgstr "メディア"
 
 #: src/pages/notifications.tsx
 msgid "Yesterday"
@@ -3926,25 +3937,25 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Post reported"
-msgstr ""
+msgstr "ポストを報告しました"
 
 #: src/components/account-block.tsx
 #: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
-msgstr ""
+msgstr "フォロー中"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to delete post"
-msgstr ""
+msgstr "ポストを削除できません"
 
 #: src/components/edit-history-controls.tsx
 msgid "Exit"
-msgstr ""
+msgstr "終了"
 
 #: src/pages/catchup.tsx
 msgid "Previously…"
-msgstr ""
+msgstr "以前のキャッチアップ…"
 
 #: src/components/status-account-menu.tsx
 msgid "Quote removed"
@@ -3958,7 +3969,7 @@ msgstr ""
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Speak"
-msgstr ""
+msgstr "読み上げ"
 
 #: src/pages/hashtag.tsx
 msgid "Unable to load posts with this tag"
@@ -3967,7 +3978,7 @@ msgstr ""
 #: src/components/notification.tsx
 #: src/components/notification.tsx
 msgid "Learn more <0/>"
-msgstr ""
+msgstr "詳細 <0/>"
 
 #: src/pages/hashtag.tsx
 msgid "This timeline is disabled on Bluesky."
@@ -3975,7 +3986,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
-msgstr ""
+msgstr "「キャッチアップ」はあなたのための特別なタイムラインです。メールにヒントを得たシンプルなインターフェイスで、ポストを簡単に並べ替えたりフィルターしながら、概要を一目で確認できます。"
 
 #. [Name] [Visibility icon] reposted
 #: src/components/filtered-status.tsx
@@ -3984,11 +3995,11 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Moderation warning"
-msgstr ""
+msgstr "モデレーション警告"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>b</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>b</1>"
 
 #: src/pages/settings.tsx
 msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
@@ -4001,19 +4012,19 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcuts"
-msgstr ""
+msgstr "ショートカットをコピーできません"
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation muted"
-msgstr ""
+msgstr "会話をミュートしました"
 
 #: src/components/account-block.tsx
 msgid "Requested"
-msgstr ""
+msgstr "リクエスト済み"
 
 #: src/components/status-account-menu.tsx
 msgid "Post unpinned from profile"
-msgstr ""
+msgstr "プロフィールから固定解除された投稿"
 
 #: src/pages/search.tsx
 msgid "No accounts found."
@@ -4021,7 +4032,7 @@ msgstr ""
 
 #: src/components/recent-searches.tsx
 msgid "Clear all"
-msgstr ""
+msgstr "すべて削除"
 
 #: src/components/account-sheet.tsx
 #: src/components/add-remove-lists-sheet.tsx
@@ -4064,11 +4075,11 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/status.tsx
 msgid "Close"
-msgstr ""
+msgstr "閉じる"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
-msgstr ""
+msgstr "親ウィンドウで編集画面が開いており、現在公開中のようです。 完了するまで待ってからもう一度やり直してください。"
 
 #: src/components/compose.tsx
 msgid "Anyone"
@@ -4076,7 +4087,7 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
-msgstr ""
+msgstr "共有"
 
 #: src/pages/settings.tsx
 msgid "NOTE: Push notifications only work for <0>one account</0>."
@@ -4085,7 +4096,7 @@ msgstr ""
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Show results"
-msgstr ""
+msgstr "結果を表示"
 
 #: src/components/compose.tsx
 msgid "Some"
@@ -4095,20 +4106,20 @@ msgstr ""
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-quote-policy.ts
 msgid "Quote"
-msgstr ""
+msgstr "引用"
 
 #: src/pages/catchup.tsx
 msgid "Groups"
-msgstr ""
+msgstr "グループ"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
-msgstr ""
+msgstr "無効な設定フォーマット"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Handle copied"
-msgstr ""
+msgstr "ハンドルをコピーしました"
 
 #: src/pages/status.tsx
 msgid "View post with its replies"
@@ -4116,11 +4127,11 @@ msgstr ""
 
 #: src/components/media-modal.tsx
 msgid "Failed to describe image"
-msgstr ""
+msgstr "画像の説明に失敗しました"
 
 #: src/components/account-info.tsx
 msgid "View profile header"
-msgstr ""
+msgstr "プロフィールヘッダーを表示"
 
 #: src/pages/login.tsx
 #: src/pages/login.tsx
@@ -4140,7 +4151,7 @@ msgstr ""
 #. placeholder {0}: Math.floor(seconds / minute)
 #: src/components/relative-time.tsx
 msgid "{0}m"
-msgstr ""
+msgstr "{0} 分"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
@@ -4149,7 +4160,7 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Menu"
-msgstr ""
+msgstr "メニュー"
 
 #: src/pages/settings.tsx
 msgid "Translate to "
@@ -4172,4 +4183,4 @@ msgstr ""
 #: src/pages/favourites.tsx
 #: src/pages/settings.tsx
 msgid "Likes"
-msgstr ""
+msgstr "いいね！"

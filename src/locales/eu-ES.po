@@ -1,27 +1,38 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2026-05-20 20:11+0000\n"
+"POT-Creation-Date: 2025-05-03 21:08+0800\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: eu-ES\n"
+"Language: eu\n"
+"Project-Id-Version: phanpy\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-03-25 13:05\n"
+"Last-Translator: \n"
+"Language-Team: Basque\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: phanpy\n"
+"X-Crowdin-Project-ID: 703337\n"
+"X-Crowdin-Language: eu\n"
+"X-Crowdin-File: /main/src/locales/en.po\n"
+"X-Crowdin-File-ID: 18\n"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments:"
-msgstr ""
+msgstr "Multimedia eranskinak:"
 
 #: src/components/related-actions.tsx
 msgid "Unblock <0>@{username}</0>"
-msgstr ""
+msgstr "Utzi <0>@{username}</0> blokeatzeari"
 
 #: src/utils/show-compose.ts
 msgid "A draft post is currently minimized. Post or discard it before creating a new one."
-msgstr ""
+msgstr "Zirriborro bat ikonotuta dago. Argitaratu edo zokoratu berri bat sortu baino lehen."
 
 #: src/components/compose.tsx
 msgid "Pop in"
-msgstr ""
+msgstr "Sartu"
 
 #: src/pages/settings.tsx
 msgid "Removes all UI animations, transitions, and smooth scrolling. Useful if motion is distracting."
@@ -33,7 +44,7 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Muted {username}"
-msgstr ""
+msgstr "{username} mutututa"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -45,27 +56,27 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/trending.tsx
 msgid "Mentions"
-msgstr ""
+msgstr "Aipamenak"
 
 #: src/pages/account-statuses.tsx
 msgid "Account posts"
-msgstr ""
+msgstr "Kontuaren bidalketak"
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external GIF search service, powered by <0>GIPHY</0>. G-rated (suitable for viewing by all ages), tracking parameters are stripped, referrer information is omitted from requests, but search queries and IP address information will still reach their servers."
-msgstr ""
+msgstr "Oharra: ezaugarri honek hirugarrenen zerbitzua darabil GIFen bilaketarako, <0>GIPHY</0>k eskainia. Adin guztietarako egokia da, jarraipen parametroak ezabatu egiten dira, jatorriaren informazioa eskarietatik kanpo uzten da, baina bilaketa-kontsultek eta IP helbidearen informazioak bere zerbitzarietara iristen jarraituko dute."
 
 #: src/components/compose.tsx
 msgid "Downloading GIF…"
-msgstr ""
+msgstr "GIFa deskargatzen…"
 
 #: src/pages/catchup.tsx
 msgid "Show all authors"
-msgstr ""
+msgstr "Erakutsi egile guztiak"
 
 #: src/components/report-modal.tsx
 msgid "Other"
-msgstr ""
+msgstr "Beste zerbait"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -74,104 +85,104 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Unable to copy HTML code"
-msgstr ""
+msgstr "Ezin da HTML kodea kopiatu"
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "No lists."
-msgstr ""
+msgstr "Zerrendarik ez."
 
 #: src/components/math-block.tsx
 msgid "Math expressions found."
-msgstr ""
+msgstr "Adierazpen matematikoak aurkitu dira."
 
 #. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
 msgid "Muted @{username} for {0}"
-msgstr ""
+msgstr "@{username} {0}rako mututu da"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
-msgstr ""
+msgstr "Zirriborroa ezabatu nahi duzu?"
 
 #: src/components/notification-service.tsx
 msgid "View all notifications"
-msgstr ""
+msgstr "Ikusi jakinarazpen guztiak"
 
 #: src/components/quotes-modal.tsx
 msgid "No quotes yet"
-msgstr ""
+msgstr "Oraindik ez dago iruzkinik"
 
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Switch to Side Peek view"
-msgstr ""
+msgstr "Aldatu gainbegirada bistara"
 
 #: src/components/report-modal.tsx
 msgid "Unable to report post"
-msgstr ""
+msgstr "Ezin da bidalketa salatu"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{account} followed you.} other {<0><1>{0}</1> people</0> followed you.}}"
-msgstr ""
+msgstr "{count, plural, one {}=1 {{account}(e)k jarraitu dizu.} other {<0><1>{0}</1> pertsonak</0> jarraitu dizute.}}"
 
 #. placeholder {0}: niceDateTime(account.createdAt)
 #: src/pages/accounts.tsx
 msgid "Connected on {0} (<0/>)"
-msgstr ""
+msgstr "{0}(e)ra konektatuta (<0/>)"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Only you can quote"
-msgstr ""
+msgstr "Zeuk bakarrik iruzkindu dezakezu"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>c</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>c</1>"
 
 #: src/components/related-actions.tsx
 msgid "Muted"
-msgstr ""
+msgstr "Mutututa"
 
 #: src/pages/account-statuses.tsx
 msgid "Nothing to see here yet."
-msgstr ""
+msgstr "Ez dago ikusteko ezer."
 
 #: src/components/list-add-edit.tsx
 msgid "Delete this list?"
-msgstr ""
+msgstr "Zerrenda ezabatu nahi duzu?"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcut settings copied"
-msgstr ""
+msgstr "Lasterbideen ezarpenak kopiatu dira"
 
 #: src/pages/settings.tsx
 msgid "anyone"
-msgstr ""
+msgstr "edonor"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Posts"
-msgstr ""
+msgstr "bidalketa"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've blocked {domain}."
-msgstr ""
+msgstr "Bidalketa ezkutatu da {domain} blokeatu duzulako."
 
 #: src/components/poll.tsx
 msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
-msgstr ""
+msgstr "{optionVotesCount, plural, one {boto #} other {# boto}}"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle}"
-msgstr ""
+msgstr "{hashtagTitle}"
 
 #: src/pages/mentions.tsx
 msgid "No one mentioned you :("
-msgstr ""
+msgstr "Ez zaitu inork aipatu :("
 
 #: src/components/filtered-status.tsx
 #: src/components/filtered-status.tsx
@@ -181,88 +192,88 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered"
-msgstr ""
+msgstr "Iragazita"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/compose.tsx
 msgid "Replying to @{0}"
-msgstr ""
+msgstr "@{0}(r)i erantzuten"
 
 #: src/components/qr-scanner-modal.tsx
 msgid "Unable to access camera. Please check permissions."
-msgstr ""
+msgstr "Ezin da kamera atzitu. Egiaztatu baimenak."
 
 #: src/components/related-actions.tsx
 msgid " Notifications disabled for @{username}'s posts."
-msgstr ""
+msgstr " Jakinarazpenak gaitu dira @{username}(r)en bidalketetarako."
 
 #: src/components/drafts.tsx
 msgid "Error deleting drafts! Please try again."
-msgstr ""
+msgstr "Errorea zirriborroak ezabatzean! Saiatu berriro."
 
 #: src/pages/settings.tsx
 msgid "Auto refresh timeline posts"
-msgstr ""
+msgstr "Automatikoki freskatu denbora-lerroko bidalketak"
 
 #: src/components/import-accounts-selection.tsx
 msgid "{selectedCount, plural, one {Import # account} other {Import # accounts}}"
-msgstr ""
+msgstr "{selectedCount, plural, one {Inportatu kontu #} other {Inportatu # kontu}}"
 
 #: src/pages/catchup.tsx
 msgid "Back to top"
-msgstr ""
+msgstr "Itzuli gora"
 
 #: src/components/status-helpers.ts
 msgid "Private posts cannot be quoted"
-msgstr ""
+msgstr "Bidalketa pribatuak ezin dira iruzkindu"
 
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
-msgstr ""
+msgstr "Hau estatikoa da, diseinurik eta scriptik gabekoa. Litekeena da zure estiloak aplikatu eta editatu behar izatea."
 
 #: src/pages/settings.tsx
 msgid "Post translation"
-msgstr ""
+msgstr "Bidalketen itzulpena"
 
 #: src/components/related-actions.tsx
 msgid "Unable to unblock @{username}"
-msgstr ""
+msgstr "Ezin da @{username} blokeatzeari utzi"
 
 #: src/pages/catchup.tsx
 msgid "Density"
-msgstr ""
+msgstr "Dentsitatea"
 
 #: src/pages/notifications.tsx
 msgid "Only mentions"
-msgstr ""
+msgstr "Aipamenak soilik"
 
 #. placeholder {0}: announcements.length
 #: src/pages/notifications.tsx
 msgid "{0, plural, one {Announcement} other {Announcements}}"
-msgstr ""
+msgstr "{0, plural, one {Iragarpena} other {Iragarpenak}}"
 
 #. placeholder {0}: date.toLocaleString( i18n.locale, { month: 'long', year: 'numeric', }, )
 #: src/pages/account-statuses.tsx
 msgid "Showing posts in {0}"
-msgstr ""
+msgstr "{0}(e)ko bidalketak erakusten"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Notifications"
-msgstr ""
+msgstr "Joan jakinarazpenetara"
 
 #: src/components/generic-accounts.tsx
 msgid "Nothing to show"
-msgstr ""
+msgstr "Ezertxo ere ez"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Bookmarked"
-msgstr ""
+msgstr "Laster-marka jarria"
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
 msgid "Catch-up {0} removed"
-msgstr ""
+msgstr "{0} eguneraketa kendu da"
 
 #: src/components/report-modal.tsx
 msgid "Breaks specific Bluesky rules"
@@ -274,7 +285,7 @@ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "A separate timeline for followings. Email-inspired interface to sort and filter posts."
-msgstr ""
+msgstr "Jarraitzen diezunen denbora-lerro bereizia. Posta elektronikoan oinarritutako interfazea bidalketak sailkatu eta iragazteko."
 
 #: src/components/feedback-modal.tsx
 msgid "Tell us what happened first."
@@ -283,23 +294,23 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Light"
-msgstr ""
+msgstr "Argia"
 
 #: src/pages/catchup.tsx
 msgid "last 4 hours"
-msgstr ""
+msgstr "azken 4 ordutako bidalketak"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Send post"
-msgstr ""
+msgstr "Bidali"
 
 #: src/pages/notifications.tsx
 msgid "Dismiss"
-msgstr ""
+msgstr "Baztertu"
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
-msgstr ""
+msgstr "Jarri egunean jarraitzen diezunen bidalketekin."
 
 #: src/components/compose.tsx
 #: src/components/compose.tsx
@@ -308,7 +319,7 @@ msgstr ""
 
 #: src/components/open-link-sheet.tsx
 msgid "Open"
-msgstr ""
+msgstr "Ireki"
 
 #. placeholder {0}: mediaAttachments[index]?.fileName || index + 1
 #: src/components/compose.tsx
@@ -317,36 +328,36 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Ended"
-msgstr ""
+msgstr "Amaitu da"
 
 #: src/components/nav-menu.tsx
 #: src/components/text-expander.tsx
 msgid "More…"
-msgstr ""
+msgstr "Gehiago…"
 
 #: src/pages/status.tsx
 msgid "{years, plural, one {# year later} other {# years later}}"
-msgstr ""
+msgstr "{years, plural, one {urtebete geroago} other {# urte geroago}}"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Copy handle"
-msgstr ""
+msgstr "Kopiatu helbidea"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Bookmarks"
-msgstr ""
+msgstr "Joan laster-marketara"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List"
-msgstr ""
+msgstr "Zerrenda"
 
 #: src/components/status-placeholders.tsx
 #: src/components/status-quotes.tsx
 #: src/components/status-quotes.tsx
 #: src/components/status-quotes.tsx
 msgid "Post unavailable"
-msgstr ""
+msgstr "Bidalketa ez dago eskuragarri"
 
 #: src/components/report-modal.tsx
 msgid "Bluesky rule violation"
@@ -367,7 +378,7 @@ msgstr ""
 #: src/components/timeline2.tsx
 #: src/pages/search.tsx
 msgid "The end."
-msgstr ""
+msgstr "Amaiera."
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media-attachment.tsx
@@ -384,7 +395,7 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/status.tsx
 msgid "More"
-msgstr ""
+msgstr "Gehiago"
 
 #: src/pages/welcome.tsx
 msgid "Reposts Carousel"
@@ -392,15 +403,15 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Let's catch up"
-msgstr ""
+msgstr "Jar gaitezen egunean"
 
 #: src/pages/status.tsx
 msgid "Switch to Full view"
-msgstr ""
+msgstr "Aldatu bista osora"
 
 #: src/components/drafts.tsx
 msgid "Error fetching quoted status!"
-msgstr ""
+msgstr "Errorea iruzkindutako egoera eskuratzean!"
 
 #: src/components/feedback-modal.tsx
 msgid "Feedback sent"
@@ -408,16 +419,16 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Pending review"
-msgstr ""
+msgstr "Berrikusketeke"
 
 #: src/components/timeline.tsx
 #: src/pages/settings.tsx
 msgid "New posts"
-msgstr ""
+msgstr "Bidalketa berriak"
 
 #: src/components/related-actions.tsx
 msgid "Blocked"
-msgstr ""
+msgstr "Blokeatuta"
 
 #: src/components/atproto-labels.tsx
 msgid "Explicit sexual images."
@@ -425,20 +436,20 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "What's new"
-msgstr ""
+msgstr "Nobedadeak"
 
 #: src/components/drafts.tsx
 msgid "Delete all drafts?"
-msgstr ""
+msgstr "Zirriborro guztiak ezabatu?"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move down"
-msgstr ""
+msgstr "Mugitu behera"
 
 #: src/components/related-actions.tsx
 msgid "Mention <0>@{username}</0>"
-msgstr ""
+msgstr "Aipatu <0>@{username}</0>"
 
 #: src/components/related-actions.tsx
 msgid "Enable reposts"
@@ -452,7 +463,7 @@ msgstr ""
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
 msgid "Quote settings updated"
-msgstr ""
+msgstr "Iruzkinen ezarpenak eguneratu dira"
 
 #: src/pages/year-in-posts.tsx
 msgid "Year"
@@ -460,50 +471,50 @@ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Switch to this account"
-msgstr ""
+msgstr "Aldatu kontu honetara"
 
 #: src/components/compose.tsx
 msgid "Minimize"
-msgstr ""
+msgstr "Ikonotu"
 
 #: src/components/quotes-modal.tsx
 msgid "Error loading quotes"
-msgstr ""
+msgstr "Errorea iruzkinak kargatzean"
 
 #: src/components/media-attachment.tsx
 msgid "Uploaded"
-msgstr ""
+msgstr "Igota"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add more than one shortcut/column to make this work."
-msgstr ""
+msgstr "Gehitu lasterbide / zutabe bat baino gehiago erabili ahal izateko."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/trending.tsx
 msgid "Trending"
-msgstr ""
+msgstr "Joerak"
 
 #: src/components/embed-modal.tsx
 msgid "Open in new window"
-msgstr ""
+msgstr "Ireki leiho berrian"
 
 #: src/pages/notifications.tsx
 msgid "Notifications settings updated"
-msgstr ""
+msgstr "Jakinarazpenen ezarpenak eguneratu dira"
 
 #: src/pages/accounts.tsx
 msgid "View profile…"
-msgstr ""
+msgstr "Ikusi profila…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Expand content warning or<0/>toggle expanded/collapsed thread"
-msgstr ""
+msgstr "Hedatu edukiaren abisua edo<0/>hedatu / tolestu haria"
 
 #: src/components/account-info.tsx
 msgid "Unable to load account."
-msgstr ""
+msgstr "Ezin da kontua kargatu."
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -512,33 +523,33 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "{query} <0>‒ accounts, hashtags & posts</0>"
-msgstr ""
+msgstr "{query} <0>‒ kontuak, traolak eta bidalketak</0>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Content"
-msgstr ""
+msgstr "Edukia"
 
 #: src/components/report-modal.tsx
 msgid "Send Report"
-msgstr ""
+msgstr "Bidali salaketa"
 
 #. More from [Author]
 #: src/components/byline.tsx
 msgid "More from <0/>"
-msgstr ""
+msgstr "<0/>(r)en gehiago"
 
 #: src/pages/search.tsx
 msgid "No hashtags found."
-msgstr ""
+msgstr "Ez da traolarik aurkitu."
 
 #: src/components/recent-searches.tsx
 #: src/components/search-form.tsx
 msgid "Recent searches"
-msgstr ""
+msgstr "Azken bilaketak"
 
 #: src/utils/open-compose.ts
 msgid "Looks like your browser is blocking popups."
-msgstr ""
+msgstr "Badirudi nabigatzailea laster-leihoak blokeatzen ari dela."
 
 #. placeholder {0}: feeds.length
 #: src/pages/lists.tsx
@@ -547,52 +558,52 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Poll"
-msgstr ""
+msgstr "Bozketa"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Profile picture"
-msgstr ""
+msgstr "Profileko irudia"
 
 #: src/components/notification-service.tsx
 msgid "Notification"
-msgstr ""
+msgstr "Jakinarazpenak"
 
 #: src/pages/accounts.tsx
 msgid "Note: <0>Default</0> account will always be used for first load. Switched accounts will persist during the session."
-msgstr ""
+msgstr "Oharra: <0>Lehenetsitako</0> kontua erabiliko da beti hasieran. Gainerako kontuek saioa irekita mantendu bitartean iraungo dute."
 
 #: src/components/status-quotes.tsx
 msgid "Post removed by author"
-msgstr ""
+msgstr "Egileak bidalketa kendu du"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/media.tsx
 msgid "Media description"
-msgstr ""
+msgstr "Fitxategiaren deskribapena"
 
 #: src/pages/home.tsx
 msgid "Unable to fetch notifications."
-msgstr ""
+msgstr "Ezin dira jakinarazpenak eskuratu."
 
 #: src/components/media-modal.tsx
 msgid "Open original media in new window"
-msgstr ""
+msgstr "Ireki jatorrizko multimedia fitxategia leiho berrian"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not available in current view mode"
-msgstr ""
+msgstr "Ez dago erabilgarri uneko ikuspegian"
 
 #: src/components/import-accounts-selection.tsx
 msgid "Existing"
-msgstr ""
+msgstr "Badago"
 
 #: src/components/poll.tsx
 msgid "Ended <0/>"
-msgstr ""
+msgstr "<0/> amaitu da"
 
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
-msgstr ""
+msgstr "Ikusi iruzkinak"
 
 #: src/pages/settings.tsx
 msgid "Reposts carousel"
@@ -604,29 +615,29 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Follow requests"
-msgstr ""
+msgstr "Jarraipen-eskaerak"
 
 #: src/pages/trending.tsx
 msgid "No trending posts."
-msgstr ""
+msgstr "Ez dago bogadn dagoen joerarik."
 
 #. placeholder {0}: !__FAKE_COMMIT_HASH__ && ( <span className="ib insignificant"> ( <a href={`https://github.com/cheeaun/phanpy/commit/${__COMMIT_HASH__}`} target="_blank" rel="noopener noreferrer" > <RelativeTime datetime={new Date(__BUILD_TIME__)} /> </a> ) </span> )
 #: src/pages/settings.tsx
 msgid "<0>Version:</0> <1/> {0}"
-msgstr ""
+msgstr "<0>Bertsioa:</0> <1/> {0}"
 
 #: src/components/status-media-embeds.tsx
 #: src/components/status-post-body.tsx
 msgid "Show less"
-msgstr ""
+msgstr "Ezkutatu edukia"
 
 #: src/pages/settings.tsx
 msgid "Push notifications are blocked. Please enable them in your browser settings."
-msgstr ""
+msgstr "Push jakinarazpenak blokeatuta daude. Gaitu itzazu nabigatzaileko ezarpenetan."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
-msgstr ""
+msgstr "Gehitu uneko lasterbideei?"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
@@ -638,42 +649,42 @@ msgstr ""
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Previous post"
-msgstr ""
+msgstr "Aurreko bidalketa"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Posts)"
-msgstr ""
+msgstr "Bilatu: {q} (Bidalketak)"
 
 #: src/components/media-modal.tsx
 msgid "Describe image…"
-msgstr ""
+msgstr "Deskribatu irudia…"
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
 msgid "Name"
-msgstr ""
+msgstr "Izena"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Override current shortcuts?"
-msgstr ""
+msgstr "Uneko lasterbideak gainidatzi?"
 
 #: src/components/account-info.tsx
 msgid "View profile"
-msgstr ""
+msgstr "Ikusi profila"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Laster-teklak"
 
 #: src/utils/visibility-text.ts
 msgid "Public"
-msgstr ""
+msgstr "Publikoa"
 
 #: src/components/nav-menu.tsx
 msgid "Accounts…"
-msgstr ""
+msgstr "Kontuak…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -681,11 +692,11 @@ msgstr ""
 #: src/pages/bookmarks.tsx
 #: src/pages/bookmarks.tsx
 msgid "Bookmarks"
-msgstr ""
+msgstr "Laster-markak"
 
 #: src/components/media-post.tsx
 msgid "Filtered: {filterTitleStr}"
-msgstr ""
+msgstr "Iragazita: {filterTitleStr}"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -697,86 +708,86 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external translation services, powered by <0>{TRANSLATION_API_NAME}</0>."
-msgstr ""
+msgstr "Oharra: ezaugarri honek hirugarrenen itzulpen-zerbitzuak darabiltza, <0>{TRANSLATION_API_NAME}</0>(r)i esker."
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to remove from list."
-msgstr ""
+msgstr "Ezin da zerrendatik kendu."
 
 #: src/components/account-block.tsx
 msgid "Mutual"
-msgstr ""
+msgstr "Batak bestea"
 
 #: src/components/status-account-menu.tsx
 msgid "Report post…"
-msgstr ""
+msgstr "Salatu bidalketa…"
 
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 #: src/pages/list.tsx
 msgid "Unable to load posts."
-msgstr ""
+msgstr "Ezin dira bidalketak kargatu."
 
 #: src/pages/settings.tsx
 msgid "Text size"
-msgstr ""
+msgstr "Testuaren tamaina"
 
 #: src/pages/catchup.tsx
 msgid "last 11 hours"
-msgstr ""
+msgstr "azken 11 ordutako bidalketak"
 
 #: src/components/account-info.tsx
 msgid "View profile image"
-msgstr ""
+msgstr "Ikusi profileko irudia"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Home / Following"
-msgstr ""
+msgstr "Hasiera / Jarraitzen"
 
 #: src/pages/catchup.tsx
 msgid "last 3 hours"
-msgstr ""
+msgstr "azken 3 ordutako bidalketak"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>l</0> or <1>f</1>"
-msgstr ""
+msgstr "<0>l</0> edo <1>f</1>"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Label"
-msgstr ""
+msgstr "Etiketa"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Liked"
-msgstr ""
+msgstr "Gogoko egina"
 
 #: src/pages/settings.tsx
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-msgstr ""
+msgstr "Ez da push baimenik eman saioa azkenekoz hasi zenuenetik. <0><1>Hasi saioa</1> berriro baimentzeko</0>."
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
 #: src/components/status-helpers.ts
 msgid "Read more →"
-msgstr ""
+msgstr "Irakurri gehiago →"
 
 #: src/components/drafts.tsx
 msgid "No drafts found."
-msgstr ""
+msgstr "Ez dago zirriborrorik."
 
 #: src/pages/bookmarks.tsx
 msgid "No bookmarks yet. Go bookmark something!"
-msgstr ""
+msgstr "Ez duzu laster-markarik. Zoaz gordetzea merezi duen zerbait aurkitzera!"
 
 #: src/components/nav-menu.tsx
 msgid "Shortcuts / Columns…"
-msgstr ""
+msgstr "Lasterbideak / Zutabeak…"
 
 #. placeholder {0}: username || acct
 #: src/components/status-utility-menu.tsx
 msgid "View post by <0>@{0}</0>"
-msgstr ""
+msgstr "Ikusi <0>@{0}</0>(r)en bidalketa"
 
 #: src/pages/welcome.tsx
 msgid "Connect your existing Bluesky or Blacksky account.<0/>Your credentials are not stored by Bluepy."
@@ -785,11 +796,11 @@ msgstr ""
 #. placeholder {0}: userLists.length
 #: src/pages/lists.tsx
 msgid "{0, plural, one {# list} other {# lists}}"
-msgstr ""
+msgstr "{0, plural, one {zerrenda #} other {zerrenda #}}"
 
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
-msgstr ""
+msgstr "Erakutsi eduki hunkigarri guztia"
 
 #: src/components/compose.tsx
 msgid "(No user lists found)"
@@ -797,7 +808,7 @@ msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
-msgstr ""
+msgstr "Ezin da elkarrizketa mututu"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
@@ -806,39 +817,39 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generating description. Please wait…"
-msgstr ""
+msgstr "Deskribapena sortzen. Itxaron…"
 
 #: src/components/nav-menu.tsx
 msgid "New update available…"
-msgstr ""
+msgstr "Eguneraketa eskuragarri…"
 
 #. index/total posts in a thread
 #: src/components/thread-badge.tsx
 msgid "{index}/{total}"
-msgstr ""
+msgstr "{total}/{index}"
 
 #: src/components/translated-bio-sheet.tsx
 msgid "Translated Bio"
-msgstr ""
+msgstr "Itzulitako biografia"
 
 #: src/pages/status.tsx
 msgid "Unable to switch"
-msgstr ""
+msgstr "Ezin da aldatu"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
-msgstr ""
+msgstr "Idatzi GIFak bilatzeko"
 
 #: src/components/compose.tsx
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Your followers can quote"
-msgstr ""
+msgstr "Jarraitzaileek iruzkindu dezakete"
 
 #: src/components/media.tsx
 msgid "Open file"
-msgstr ""
+msgstr "Ireki fitxategia"
 
 #. placeholder {0}: groupBy ?? ''
 #: src/pages/catchup.tsx
@@ -849,58 +860,58 @@ msgstr ""
 #: src/components/edit-profile-sheet.tsx
 #: src/components/related-actions.tsx
 msgid "Edit profile"
-msgstr ""
+msgstr "Editatu profila"
 
 #: src/pages/accounts.tsx
 msgid "Remove account…"
-msgstr ""
+msgstr "Kendu kontua…"
 
 #: src/pages/trending.tsx
 msgid "Back to showing trending posts"
-msgstr ""
+msgstr "Itzuli bogan dauden bidalketetara"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
-msgstr ""
+msgstr "Irudien deskribapen-sortzailea"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut…"
-msgstr ""
+msgstr "Gehitu lasterbidea…"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/atproto-labels.tsx
 msgid "Automated"
-msgstr ""
+msgstr "Automatizatua"
 
 #: src/pages/trending.tsx
 msgid "Trending News"
-msgstr ""
+msgstr "Pil-pilean dauden albisteak"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
-msgstr ""
+msgstr "Ireki multimediaren edo bidalketaren xehetasunak"
 
 #: src/components/status-media-embeds.tsx
 msgid "Show media"
-msgstr ""
+msgstr "Erakutsi multimedia fitxategiak"
 
 #: src/components/related-actions.tsx
 msgid "Forever"
-msgstr ""
+msgstr "Betiko"
 
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications settings"
-msgstr ""
+msgstr "Jakinarazpenen ezarpenak"
 
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/{total}"
-msgstr ""
+msgstr "Haria {total}/{index}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "beta"
-msgstr ""
+msgstr "beta"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/nav-menu.tsx
@@ -910,88 +921,88 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Search"
-msgstr ""
+msgstr "Bilatu"
 
 #: src/components/modals.tsx
 msgid "Post updated. Check it out."
-msgstr ""
+msgstr "Bidalketa eguneratu da. Ikus ezazu."
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unpin post"
-msgstr ""
+msgstr "Ezin da bidalketa finkatzeari utzi"
 
 #: src/components/shortcuts-settings.tsx
 msgid "e.g. PixelArt (Max 5, space-separated)"
-msgstr ""
+msgstr "adib. PixelArt (5 gehienez, espazioen bidez bereizita)"
 
 #. placeholder {0}: accounts.length
 #: src/components/import-export-accounts.tsx
 msgid "{0, plural, one {# account} other {# accounts}}"
-msgstr ""
+msgstr "{0, plural, one {kontu #} other {# kontu}}"
 
 #: src/components/account-info.tsx
 msgid "Go to account page"
-msgstr ""
+msgstr "Joan kontuaren orrira"
 
 #: src/pages/settings.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "Itxura"
 
 #: src/pages/settings.tsx
 msgid "Follows"
-msgstr ""
+msgstr "Jarraitzen die"
 
 #. By [Author]
 #. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
 msgid "By {0}"
-msgstr ""
+msgstr "{0}(r)en eskutik"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
-msgstr ""
+msgstr "Badirudi dagoeneko baduzula editorea irekita leiho nagusian. Leiho berri bat ateraz gero, leiho nagusian egindako aldaketak zokoratuko dira. Jarraitu nahi duzu?"
 
 #: src/components/report-modal.tsx
 msgid "Report @{username}"
-msgstr ""
+msgstr "Salatu @{username}"
 
 #: src/components/media-modal.tsx
 msgid "Open original media"
-msgstr ""
+msgstr "Ireki jatorrizko multimedia fitxategia"
 
 #: src/components/post-embed-modal.tsx
 msgid "Account Emojis:"
-msgstr ""
+msgstr "Kontuaren emojiak:"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Account"
-msgstr ""
+msgstr "Kontua"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>?"
-msgstr ""
+msgstr "<0>@{username}</0> blokeatu nahi?"
 
 #: src/components/related-actions.tsx
 msgid "@{username} removed from followers"
-msgstr ""
+msgstr "@{username} jarraitzaileetatik kendu da"
 
 #: src/pages/catchup.tsx
 msgid "Overlaps with your last catch-up"
-msgstr ""
+msgstr "Azken eguneraketarekin gainjartzen da"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post"
-msgstr ""
+msgstr "Idatzi bidalketa berria"
 
 #. Action to switch from rendered math back to raw (LaTeX) markup
 #: src/components/math-block.tsx
 msgid "Show markup"
-msgstr ""
+msgstr "Erakutsi LaTeX markatzeko lengoaia"
 
 #. placeholder {0}: shortenNumber(statusesCount)
 #: src/components/account-block.tsx
 msgid "Posts: {0}"
-msgstr ""
+msgstr "Bidalketak: {0}"
 
 #: src/pages/accounts.tsx
 msgid "Log out and remove <0>@{acct}</0>"
@@ -999,7 +1010,7 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've blocked @{name}."
-msgstr ""
+msgstr "Bidalketa ezkutatu da @{name} blokeatu duzulako."
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
@@ -1012,20 +1023,20 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Looks like you have unsent drafts. Let's continue where you left off."
-msgstr ""
+msgstr "Badirudi bidali gabeko zirriborroak dituzula. Jarrai ezazu utzi zenuen tokian."
 
 #: src/components/generic-accounts.tsx
 #: src/components/mention-modal.tsx
 msgid "Error loading accounts"
-msgstr ""
+msgstr "Errorea kontuak kargatzean"
 
 #: src/components/modals.tsx
 msgid "Post published. Check it out."
-msgstr ""
+msgstr "Bidalketa argitaratu da. Ikus ezazu."
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Hashtags)"
-msgstr ""
+msgstr "Bilatu: {q} (Traolak)"
 
 #: src/components/status-reblog.tsx
 msgid "<0/> <1>reposted</1>"
@@ -1033,11 +1044,11 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Show anyway"
-msgstr ""
+msgstr "Erakutsi hala ere"
 
 #: src/components/status-helpers.ts
 msgid "Request to quote"
-msgstr ""
+msgstr "Iruzkintzeko eskaerak"
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
@@ -1047,7 +1058,7 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Polls are not interactive, becomes a list with vote counts."
-msgstr ""
+msgstr "Bozketak ez dira interaktiboak, zerrendak bilakatzen dira boto-zenbaketan."
 
 #: src/components/atproto-labels.tsx
 msgid "Sexually Suggestive"
@@ -1055,7 +1066,7 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Unmuted @{username}"
-msgstr ""
+msgstr "@{username} mututzeari utzi zaio"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
@@ -1065,12 +1076,12 @@ msgstr ""
 #. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
 msgid "Showing posts mentioning <0>{0}</0>"
-msgstr ""
+msgstr "<0>{0}</0> aipatzen duten bidalketak erakusten"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Unable to copy handle"
-msgstr ""
+msgstr "Ezin da helbidea kopiatu"
 
 #: src/pages/settings.tsx
 msgid "Default threadgate updated"
@@ -1078,17 +1089,17 @@ msgstr ""
 
 #: src/components/import-export-accounts.tsx
 msgid "Import failed"
-msgstr ""
+msgstr "Inportazioak huts egin du"
 
 #. placeholder {0}: sharers.map((s) => { const { id: sharerId, avatarStatic, displayName, } = s; return ( <button key={sharerId} type="button" className="plain" style={{ padding: 0, }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); // Reset and filter to author setSelectedAuthor(sharerId); setSelectedFilterCategory('all'); }} > <Avatar url={avatarStatic} size="s" alt={displayName} /> </button> ); })
 #: src/pages/catchup.tsx
 msgid "Shared by {0}"
-msgstr ""
+msgstr "{0}(e)k partekatua"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Import/export"
-msgstr ""
+msgstr "Inportatu / esportatu"
 
 #: src/pages/account-statuses.tsx
 msgid "Hiding replies"
@@ -1100,20 +1111,20 @@ msgstr ""
 
 #: src/components/quote-chain-modal.tsx
 msgid "Quote chain"
-msgstr ""
+msgstr "Aipuen katea"
 
 #: src/components/post-embed-modal.tsx
 msgid "HTML code copied"
-msgstr ""
+msgstr "HTML kodea kopiatu da"
 
 #: src/pages/search.tsx
 msgid "See more accounts"
-msgstr ""
+msgstr "Ikusi kontu gehiago"
 
 #: src/components/related-actions.tsx
 #: src/pages/account-statuses.tsx
 msgid "Search my posts"
-msgstr ""
+msgstr "Bilatu nire bidalketetan"
 
 #: src/components/generic-accounts.tsx
 #: src/components/notification.tsx
@@ -1121,18 +1132,18 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Accounts"
-msgstr ""
+msgstr "Kontuak"
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden because you've muted @{name}."
-msgstr ""
+msgstr "Bidalketa ezkutatu da @{name} mututu duzulako."
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/components/account-info.tsx
 msgid "This user has chosen to not make this information available."
-msgstr ""
+msgstr "Erabiltzaileak informazio hau publiko ez egitea aukeratu du."
 
 #: src/utils/visibility-text.ts
 msgid "Followers, followed people, and mentioned people can reply"
@@ -1140,7 +1151,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
-msgstr ""
+msgstr "Korritu gora"
 
 #: src/utils/visibility-text.ts
 msgid "Followers and followed people can reply"
@@ -1152,12 +1163,12 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to original profile page"
-msgstr ""
+msgstr "Joan jatorrizko profilaren orrira"
 
 #. placeholder {0}: detectedLang ?? '…'
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
-msgstr ""
+msgstr "Automatikoa ({0})"
 
 #: src/components/compose.tsx
 msgid "Allowed:"
@@ -1165,7 +1176,7 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
-msgstr ""
+msgstr "Onartuta"
 
 #: src/components/feedback-modal.tsx
 msgid "Leave this field blank"
@@ -1173,48 +1184,48 @@ msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Powered by GIPHY"
-msgstr ""
+msgstr "GIPHYri esker"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Help"
-msgstr ""
+msgstr "Laguntza"
 
 #. placeholder {0}: shortenNumber(statusesCount)
 #. placeholder {1}: shortenNumber(statusesCount)
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{statusesCount, plural, one {<0>{0}</0> Post} other {<1>{1}</1> Posts}}"
-msgstr ""
+msgstr "{statusesCount, plural, one {Bidalketa <0>{0}</0>} other {<1>{1}</1> bidalketa}}"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Header picture"
-msgstr ""
+msgstr "Goiburuko irudia"
 
 #: src/components/account-info.tsx
 msgid "<0>{displayName}</0> has indicated that their new account is now:"
-msgstr ""
+msgstr "<0>{displayName}</0>(e)k adierazi du kontu berria duela:"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to unmute conversation"
-msgstr ""
+msgstr "Ezin da elkarrizketa mututzeari utzi"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Toggle Cloak mode"
-msgstr ""
+msgstr "Estalki modua bai/ez"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import & append…"
-msgstr ""
+msgstr "Inportatu eta gehitu…"
 
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Mute profile</0>"
-msgstr ""
+msgstr "Bidali salaketa <0>+ Mututu profila</0>"
 
 #. placeholder {0}: snapStates.settings.contentTranslationHideLanguages .length
 #: src/pages/settings.tsx
 msgid "{0, plural, =0 {Hide \"Translate\" button for:} other {Hide \"Translate\" button for (#):}}"
-msgstr ""
+msgstr "{0, plural, one {}=0 {Ezkutatu \"Itzuli\" botoia honentzat:} other {Ezkutatu \"Itzuli\" botoia (#) hauentzat:}}"
 
 #: src/components/error-fallback.tsx
 msgid "Report a bug"
@@ -1222,39 +1233,39 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Accounts with <0>{query}</0>"
-msgstr ""
+msgstr "<0>{query}</0> duten kontuak"
 
 #: src/pages/catchup.tsx
 msgid "Preview of Catch-up UI"
-msgstr ""
+msgstr "Zer berri? interfazearen aurrebista"
 
 #: src/pages/settings.tsx
 msgid "Display language"
-msgstr ""
+msgstr "Pantaila-hizkuntza"
 
 #: src/pages/settings.tsx
 msgid "Paginated timeline (beta)"
-msgstr ""
+msgstr "Orrialdekatutako denbora-lerroa (beta)"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of nested comments thread"
-msgstr ""
+msgstr "Habiratutako iruzkinen hariaren pantaila-argazkia"
 
 #: src/pages/trending.tsx
 msgid "Trending ({instance})"
-msgstr ""
+msgstr "Joerak ({instance})"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specify a list of shortcuts that'll appear as:"
-msgstr ""
+msgstr "Zehaztu lasterbideen zerrenda bat honela agertzeko:"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Timeline"
-msgstr ""
+msgstr "Denbora-lerroa"
 
 #: src/pages/hashtag.tsx
 msgid "No one has posted anything with this tag yet."
-msgstr ""
+msgstr "Oraindik ez du inork traola hau erabili."
 
 #: src/components/feedback-modal.tsx
 msgid "Thanks, got it."
@@ -1262,71 +1273,71 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Sort: Density"
-msgstr ""
+msgstr "Sailkatu: dentsitatea"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Like (favourite)"
-msgstr ""
+msgstr "Egin gogoko"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/hashtag.tsx
 msgid "Filters"
-msgstr ""
+msgstr "Iragazkiak"
 
 #: src/components/report-modal.tsx
 msgid "Malicious links, fake engagement, or repetitive replies"
-msgstr ""
+msgstr "Esteka maltzurrak, gezurrezko elkarrekintzak edo erantzun errepikakorrak"
 
 #: src/components/compose.tsx
 #: src/components/compose.tsx
 #: src/components/file-picker-input.tsx
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
-msgstr ""
+msgstr "{maxMediaAttachments, plural, one {Fitxategi bakarra erantsi dezakezu.} other {# fitxategi erantsi ditzakezu gehienez.}}"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 msgid "Shortcuts"
-msgstr ""
+msgstr "Lasterbideak"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts copied"
-msgstr ""
+msgstr "Lasterbideak kopiatu dira"
 
 #: src/pages/accounts.tsx
 msgid "Log out…"
-msgstr ""
+msgstr "Amaitu saioa…"
 
 #: src/pages/catchup.tsx
 msgid "What is this?"
-msgstr ""
+msgstr "Zer da hau?"
 
 #: src/pages/hashtag.tsx
 msgid "Add hashtag"
-msgstr ""
+msgstr "Gehitu traola"
 
 #: src/pages/welcome.tsx
 msgid "Nested comments thread"
-msgstr ""
+msgstr "Habiratutako iruzkinen haria"
 
 #: src/components/report-modal.tsx
 msgid "Forward to <0>{domain}</0>"
-msgstr ""
+msgstr "Birbidali <0>{domain}</0>(e)ra"
 
 #: src/pages/notifications.tsx
 msgid "You don't follow"
-msgstr ""
+msgstr "Jarraitzen ez ditudanenak"
 
 #: src/compose.tsx
 msgid "Login required."
-msgstr ""
+msgstr "Saioa hasi behar da."
 
 #: src/utils/visibility-text.ts
 msgid "Local"
-msgstr ""
+msgstr "Lokala"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
-msgstr ""
+msgstr "GIF hautatzailea"
 
 #. placeholder {0}: prettyBytes( imageSize, )
 #. placeholder {0}: prettyBytes( videoSize, )
@@ -1334,21 +1345,21 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
-msgstr ""
+msgstr "Fitxategia handiegia da. Igoerak arazoak izan ditzake. Saiatu tamaina {0}tik {1} edo gutxiagora murrizten."
 
 #: src/pages/catchup.tsx
 msgid "Remove this catch-up?"
-msgstr ""
+msgstr "Eguneraketa kendu?"
 
 #. placeholder {0}: rtf.format(-statusMonthsAgo, 'month')
 #: src/components/status-menu-state.tsx
 msgid "Old post (<0>{0}</0>)"
-msgstr ""
+msgstr "Bidalketa zaharra (<0>{0}</0>)"
 
 #. placeholder {0}: dtf.format(new Date(lastCatchupEndAt))
 #: src/pages/catchup.tsx
 msgid "Until the last catch-up ({0})"
-msgstr ""
+msgstr "Azken eguneraketara arte ({0})"
 
 #: src/components/compose.tsx
 #: src/components/edit-profile-sheet.tsx
@@ -1357,7 +1368,7 @@ msgstr ""
 #: src/components/open-link-sheet.tsx
 #: src/components/quote-suggestion.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "Utzi"
 
 #: src/pages/status.tsx
 msgid "This post is from another PDS (<0>{instance}</0>). Interactions (reply, repost, etc) are not possible."
@@ -1372,7 +1383,7 @@ msgstr ""
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Previous"
-msgstr ""
+msgstr "Aurrekoa"
 
 #: src/pages/account-statuses.tsx
 msgid "Posts in {monthYear} by {accountDisplay}"
@@ -1380,50 +1391,50 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "Reload page now to update?"
-msgstr ""
+msgstr "Birkargatu orria orain eguneratzeko?"
 
 #: src/components/status-helpers.ts
 msgid "You are not allowed to quote this post"
-msgstr ""
+msgstr "Ez duzu bidalketa hau iruzkintzeko baimenik"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Search term"
-msgstr ""
+msgstr "Bilatzeko terminoa"
 
 #: src/pages/status.tsx
 msgid "Error: {e}"
-msgstr ""
+msgstr "Errorea: {e}"
 
 #. placeholder {0}: replies.length
 #. placeholder {1}: shortenNumber(replies.length)
 #: src/pages/status.tsx
 msgid "{0, plural, one {# reply} other {<0>{1}</0> replies}}"
-msgstr ""
+msgstr "{0, plural, one {erantzun #} other {<0>{1}</0> erantzun}}"
 
 #. Action to render math expressions from raw (LaTeX) markup
 #: src/components/math-block.tsx
 msgid "Format math"
-msgstr ""
+msgstr "Eman formatu matematikoa"
 
 #: src/components/media-attachment.tsx
 msgid "Done"
-msgstr ""
+msgstr "Eginda"
 
 #: src/pages/catchup.tsx
 msgid "Authors"
-msgstr ""
+msgstr "Egileak"
 
 #: src/pages/status.tsx
 msgid "{months, plural, one {# month later} other {# months later}}"
-msgstr ""
+msgstr "{months, plural, one {hilabete geroago} other {# hilabete geroago}}"
 
 #: src/components/status-utility-menu.tsx
 msgid "Edited: {editedDateText}"
-msgstr ""
+msgstr "Editatuta: {editedDateText}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List ID"
-msgstr ""
+msgstr "Zerrendaren IDa"
 
 #. placeholder {0}: i18n.number( width as number, )
 #. placeholder {1}: i18n.number(height as number)
@@ -1432,36 +1443,36 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Dimension too large. Uploading might encounter issues. Try reduce dimension from {0}×{1}px to {2}×{3}px."
-msgstr ""
+msgstr "Neurria handiegia da. Igoerak arazoak izan ditzake. Saiatu neurria {0}×{1}px-etik {2}×{3}px-era murrizten."
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post"
-msgstr ""
+msgstr "@{0}(r)en bidalketari erantzuten"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import shortcuts?"
-msgstr ""
+msgstr "Lasterbideak inportatu?"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to next post"
-msgstr ""
+msgstr "Biratu karrusela hurrengora"
 
 #: src/pages/catchup.tsx
 msgid "last 5 hours"
-msgstr ""
+msgstr "azken 5 ordutako bidalketak"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Bio"
-msgstr ""
+msgstr "Biografia"
 
 #: src/pages/welcome.tsx
 msgid "Sign up"
-msgstr ""
+msgstr "Eman izena"
 
 #: src/components/status-activity-menu.tsx
 msgid "Unwrap quote chain"
-msgstr ""
+msgstr "Ireki aipuen katea"
 
 #. placeholder {0}: sourceLangText ?? ''
 #: src/components/translation-block.tsx
@@ -1474,72 +1485,72 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Raw Shortcuts JSON"
-msgstr ""
+msgstr "Lasterbideen JSON gordina"
 
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/pages/catchup.tsx
 msgid "Thread"
-msgstr ""
+msgstr "Haria"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multiple hashtags are supported. Space-separated."
-msgstr ""
+msgstr "Traola bat baino gehiago onartzen dira. Espazioen bidez bereizita."
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Failed to load history"
-msgstr ""
+msgstr "Ezin da historia kargatu"
 
 #: src/pages/notifications.tsx
 msgid "Today"
-msgstr ""
+msgstr "Gaur"
 
 #: src/components/report-modal.tsx
 msgid "Additional info"
-msgstr ""
+msgstr "Informazio gehigarria"
 
 #. placeholder {0}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{account} signed up.} other {<0><1>{0}</1> people</0> signed up.}}"
-msgstr ""
+msgstr "{count, plural, one {}=1 {{account} izena eman du.} other {<0><1>{0}</1> pertsonak</0> izena eman dute.}}"
 
 #: src/pages/catchup.tsx
 msgid "None"
-msgstr ""
+msgstr "Bat ere ez"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Link copied"
-msgstr ""
+msgstr "Esteka kopiatu da"
 
 #: src/components/mention-modal.tsx
 msgid "Search accounts"
-msgstr ""
+msgstr "Bilatu kontuak"
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to list members"
-msgstr ""
+msgstr "Erakutsi zerrandako kideen erantzunak"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Top links"
-msgstr ""
+msgstr "Gori-gorian dauden estekak"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/hashtag.tsx
 msgid "Media only"
-msgstr ""
+msgstr "Multimedia bakarrik"
 
 #: src/components/compose.tsx
 msgid "Update"
-msgstr ""
+msgstr "Eguneratu"
 
 #: src/components/status-account-menu.tsx
 #: src/pages/settings.tsx
 msgid "Quote settings"
-msgstr ""
+msgstr "Iruzkinen ezarpenak"
 
 #: src/utils/visibility-text.ts
 msgid "Followers, followed people, mentioned people, and list members can reply"
@@ -1547,30 +1558,30 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
-msgstr ""
+msgstr "{account}(e)k {targetAccount} salatu du"
 
 #. placeholder {0}: err?.message ? `: ${err.message}` : ''
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description{0}"
-msgstr ""
+msgstr "Ezin izan da deskribapena sortu{0}"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Editatu"
 
 #: src/pages/catchup.tsx
 msgid "You don't have to read everything."
-msgstr ""
+msgstr "Ez duzu zertan guztia irakurri."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Max {SHORTCUTS_LIMIT} shortcuts"
-msgstr ""
+msgstr "{SHORTCUTS_LIMIT} lasterbide gehienez"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Esc</0> or <1>Backspace</1>"
-msgstr ""
+msgstr "<0>Esc</0> or <1>Backspace</1>"
 
 #: src/components/account-info.tsx
 #: src/components/quotes-modal.tsx
@@ -1579,60 +1590,60 @@ msgstr ""
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Quotes"
-msgstr ""
+msgstr "Iruzkinak"
 
 #. placeholder {0}: info.acct || info.username
 #: src/components/related-actions.tsx
 msgid "Unfollow @{0}?"
-msgstr ""
+msgstr "Utzi @{0} jarraitzeari?"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/related-actions.tsx
 msgid "Last post: <0>{0}</0>"
-msgstr ""
+msgstr "Azken bidalketa: <0>{0}</0>"
 
 #: src/pages/catchup.tsx
 msgid "Next author"
-msgstr ""
+msgstr "Hurrengo egilea"
 
 #: src/pages/catchup.tsx
 msgid "Sort"
-msgstr ""
+msgstr "Sailkatu"
 
 #. placeholder {0}: niceDateTime(lastStatusAt, { hideTime: true, })
 #: src/components/account-block.tsx
 msgid "Last posted: {0}"
-msgstr ""
+msgstr "Azken bidalketa: {0}"
 
 #: src/pages/settings.tsx
 msgid "Only for new images while composing new posts."
-msgstr ""
+msgstr "Soilik irudi berrientzat bidalketa berriak idaztean."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Bookmarked @{0}'s post"
-msgstr ""
+msgstr "@{0}(r)en bidalketari laster-marka jarri dio"
 
 #: src/components/status-account-menu.tsx
 msgid "Delete this post?"
-msgstr ""
+msgstr "Bidalketa ezabatu nahi duzu?"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>k</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>k</1>"
 
 #: src/pages/settings.tsx
 msgid "Volunteer translations"
-msgstr ""
+msgstr "Eskaini burua itzultzeko"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 msgid "Unable to fetch account info"
-msgstr ""
+msgstr "Ezin da kontuaren informazioa eskuratu"
 
 #: src/pages/search.tsx
 msgid "Enter your search term or paste a URL above to get started."
-msgstr ""
+msgstr "Sartu bilatzeko terminoa edo itsatsi URLa gainean."
 
 #: src/pages/catchup.tsx
 msgid "Links shared by followings, sorted by shared counts, reposts and likes."
@@ -1647,7 +1658,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
-msgstr ""
+msgstr "Oharra: ezaugarri honek hirugarrenen AA zerbitzua darabil, <0>img-alt-api</0>k eskainia. Litekeena da erabat ondo ez egitea. Soilik irudientzat eta soilik ingelesez."
 
 #: src/utils/visibility-text.ts
 msgid "List members can reply"
@@ -1655,28 +1666,28 @@ msgstr ""
 
 #: src/components/media-post.tsx
 msgid "Sensitive media"
-msgstr ""
+msgstr "Multimedia fitxategi hunkigarria"
 
 #: src/components/compose.tsx
 msgid "Add GIF"
-msgstr ""
+msgstr "Gehitu GIFa"
 
 #. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
 msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr ""
+msgstr "Nire bidalketa <0>@{0}</0>(r)en bidalketatik kendu?"
 
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
 msgid "Posts on this list are hidden from Home/Following"
-msgstr ""
+msgstr "Zerrenda honetako bidalketak ez dira Hasiera / Jarraitzen denbora-lerroan erakutsiko"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "following.stats"
-msgstr ""
+msgstr "jarraitzen"
 
 #. js-lingui-explicit-id
 #: src/components/nav-menu.tsx
@@ -1686,104 +1697,104 @@ msgstr ""
 #: src/pages/following2.tsx
 #: src/pages/following2.tsx
 msgid "following.title"
-msgstr ""
+msgstr "Jarraitzen ditu"
 
 #: src/pages/search.tsx
 msgid "Search: {q} (Accounts)"
-msgstr ""
+msgstr "Bilatu: {q} (Kontuak)"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Not sure what to add?<0/>Try adding <1>Home / Following and Notifications</1> first."
-msgstr ""
+msgstr "Ez dakizu zer gehitu?<0/>Probatu <1>Hasiera / Jarraitzen eta Jakinarazpenak</1>."
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
-msgstr ""
+msgstr "Ezin da profila eguneratu."
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/X"
-msgstr ""
+msgstr "Haria X/{index}"
 
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
-msgstr ""
+msgstr "Zure kontua bertan behera utzi da."
 
 #: src/components/account-block.tsx
 msgid "Locked"
-msgstr ""
+msgstr "Babestua"
 
 #: src/pages/notifications.tsx
 msgid "Accept"
-msgstr ""
+msgstr "Onartu"
 
 #: src/pages/notifications.tsx
 msgid "Ignore"
-msgstr ""
+msgstr "Ez hartu kontuan"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "QR code"
-msgstr ""
+msgstr "QR kodea"
 
 #: src/pages/settings.tsx
 msgid "Unable to copy version string"
-msgstr ""
+msgstr "Ezin da bertsioaren haria kopiatu"
 
 #: src/components/search-form.tsx
 msgid "Look up <0>{query}</0>"
-msgstr ""
+msgstr "Bilatu <0>{query}</0>"
 
 #: src/components/open-link-sheet.tsx
 msgid "Open link?"
-msgstr ""
+msgstr "Esteka ireki?"
 
 #: src/pages/notifications.tsx
 msgid "Unable to load notifications"
-msgstr ""
+msgstr "Ezin dira jakinarazpenak kargatu"
 
 #: src/components/post-embed-modal.tsx
 msgid "HTML Code"
-msgstr ""
+msgstr "HTML kodea"
 
 #: src/components/timeline.tsx
 msgid "Pinned posts"
-msgstr ""
+msgstr "Finkatutako bidalketak"
 
 #: src/components/compose.tsx
 msgctxt "Submit button in composer"
 msgid "Post"
-msgstr ""
+msgstr "Argitaratu"
 
 #: src/components/status-post-body.tsx
 #: src/components/timeline.tsx
 msgid "Content warning"
-msgstr ""
+msgstr "Edukiari buruzko abisua"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Hashtag"
-msgstr ""
+msgstr "Traolak"
 
 #. js-lingui-explicit-id
 #: src/pages/catchup.tsx
 msgid "group.filter"
-msgstr ""
+msgstr "Iragazi"
 
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Export"
-msgstr ""
+msgstr "Esportatu"
 
 #: src/components/search-form.tsx
 #: src/pages/home.tsx
 msgid "See all"
-msgstr ""
+msgstr "Ikusi guztia"
 
 #: src/pages/settings.tsx
 msgid "Auto inline translation"
-msgstr ""
+msgstr "Itzulpen automatikoa bidalketan bertan"
 
 #: src/pages/catchup.tsx
 msgid "Note: the Home timeline might only show a limited number of posts regardless of the time range."
@@ -1792,12 +1803,12 @@ msgstr ""
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Next post"
-msgstr ""
+msgstr "Hurrengo bidalketa"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
 msgid "View notifications from <0>@{0}</0>"
-msgstr ""
+msgstr "Ikusi <0>@{0}</0>(r)en jakinarazpenak"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1805,37 +1816,37 @@ msgstr ""
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
 msgid "Lists"
-msgstr ""
+msgstr "Zerrendak"
 
 #: src/pages/mentions.tsx
 msgid "Only followings"
-msgstr ""
+msgstr "Jarraitzen dituzunak bakarrik"
 
 #: src/pages/notifications.tsx
 msgid "Allow"
-msgstr ""
+msgstr "Baimendu"
 
 #. placeholder {0}: account?.username
 #: src/pages/account-statuses.tsx
 msgid "Search @{0}'s posts"
-msgstr ""
+msgstr "Bilatu @{0}(r)en bidalketetan"
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText}"
-msgstr ""
+msgstr "Itzuli {sourceLangText}"
 
 #: src/pages/account-statuses.tsx
 msgid "Month"
-msgstr ""
+msgstr "Hilabetea"
 
 #: src/pages/list.tsx
 #: src/pages/list.tsx
 msgid "Manage members"
-msgstr ""
+msgstr "Kudeatu kideak"
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
-msgstr ""
+msgstr "Ezin zaio formatu matematikoa eman"
 
 #: src/components/compose.tsx
 msgid "Select a list..."
@@ -1846,7 +1857,7 @@ msgstr ""
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
 msgid "Anyone can quote"
-msgstr ""
+msgstr "Edonork iruzkindu dezake"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/post-embed-modal.tsx
@@ -1854,16 +1865,16 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Copy"
-msgstr ""
+msgstr "Kopiatu"
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
 msgid "Failed to update quote settings"
-msgstr ""
+msgstr "Ezin dira iruzkinaren ezarperpenak eguneratu"
 
 #: src/components/recent-searches.tsx
 msgid "Cleared recent searches"
-msgstr ""
+msgstr "Azken bilaketak garbitu dira"
 
 #. placeholder {0}: toUnicode(postInstance)
 #: src/pages/status.tsx
@@ -1872,61 +1883,61 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
-msgstr ""
+msgstr "{hashtagTitle} (multimedia fitxategiak bakarrik)"
 
 #. placeholder {0}: authorCountsList.length
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# author} other {# authors}}"
-msgstr ""
+msgstr "{0, plural, one {egile #} other {# egile}}"
 
 #: src/components/related-actions.tsx
 msgid "Unfollow…"
-msgstr ""
+msgstr "Utzi jarraitzeari…"
 
 #: src/components/drafts.tsx
 msgid "Delete all…"
-msgstr ""
+msgstr "Ezabatu guztia…"
 
 #: src/pages/accounts.tsx
 msgid "Current"
-msgstr ""
+msgstr "Unean"
 
 #: src/pages/status.tsx
 msgid "Unable to load replies."
-msgstr ""
+msgstr "Ezin dira erantzunak kargatu."
 
 #: src/components/compose.tsx
 msgid "You have unsaved changes. Discard this post?"
-msgstr ""
+msgstr "Gorde gabeko aldaketak dituzu. Bidalketa zokoratu nahi duzu?"
 
 #: src/components/edit-history-controls.tsx
 msgid "Edit History Snapshots"
-msgstr ""
+msgstr "Edizio-historia"
 
 #: src/components/account-info.tsx
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Original"
-msgstr ""
+msgstr "Originalak"
 
 #: src/components/edit-history-controls.tsx
 #: src/components/gif-picker-modal.tsx
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
 msgid "Next"
-msgstr ""
+msgstr "Hurrengoa"
 
 #: src/components/list-add-edit.tsx
 msgid "Create"
-msgstr ""
+msgstr "Sortu"
 
 #: src/pages/search.tsx
 msgid "No posts found."
-msgstr ""
+msgstr "Ez da bidalketarik aurkitu."
 
 #: src/pages/hashtag.tsx
 msgid "Add to Shortcuts"
-msgstr ""
+msgstr "Gehitu lasterbideetara"
 
 #: src/components/columns.tsx
 #: src/components/nav-menu.tsx
@@ -1938,47 +1949,47 @@ msgstr ""
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
 msgid "Home"
-msgstr ""
+msgstr "Hasiera"
 
 #: src/components/status-account-menu.tsx
 msgid "Unmute conversation"
-msgstr ""
+msgstr "Utzi elkarrizketa mututzeari"
 
 #: src/components/notification.tsx
 msgid "{account} reacted to your post with {emojiObject}"
-msgstr ""
+msgstr "{account}(e)k zure bidalketari {emojiObject}rekin erantzun dio"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
-msgstr ""
+msgstr "Ezin da harpidetza eguneratu. Saiatu berriro."
 
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
-msgstr ""
+msgstr "Gaitu jakinarazpenak"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
 msgid "Reset filters"
-msgstr ""
+msgstr "Berrezarri iragazkiak"
 
 #: src/pages/catchup.tsx
 msgid "last 8 hours"
-msgstr ""
+msgstr "azken 8 ordutako bidalketak"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from @{0} will not show up in Filtered notifications from now on."
-msgstr ""
+msgstr "Aurrerantzean ez dira @{0}(r)en jakinarazpenak erakutsiko iragazitako jakinarazpenetan."
 
 #: src/pages/notifications.tsx
 msgid "Who unsolicitedly private mention you"
-msgstr ""
+msgstr "Nik nahi gabe era pribatuan aipatu nautenenak"
 
 #: src/components/notification.tsx
 msgid "{account} published a post."
-msgstr ""
+msgstr "{account}(e)k bidalketa bat argitaratu du"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
@@ -1989,31 +2000,31 @@ msgstr ""
 #: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "Jakinarazpenak"
 
 #: src/components/poll.tsx
 msgid "Voted"
-msgstr ""
+msgstr "Bozkatu duzu"
 
 #: src/components/media-attachment.tsx
 msgid "Audio description"
-msgstr ""
+msgstr "Audioaren deskribapena"
 
 #: src/components/notification.tsx
 msgid "Followed by…"
-msgstr ""
+msgstr "Jarraitzen dizu…"
 
 #: src/pages/status.tsx
 msgid "Back"
-msgstr ""
+msgstr "Atzera"
 
 #: src/components/report-modal.tsx
 msgid "Illegal"
-msgstr ""
+msgstr "Legez kanpokoa"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} on {instance}"
-msgstr ""
+msgstr "{hashtagTitle} {instance}(e)n"
 
 #: src/components/compose.tsx
 #: src/components/keyboard-shortcuts-help.tsx
@@ -2022,7 +2033,7 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
-msgstr ""
+msgstr "Erantzun"
 
 #: src/components/compose.tsx
 msgid "No user lists found."
@@ -2034,24 +2045,24 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has received a moderation warning."
-msgstr ""
+msgstr "Zure kontuak moderazio-ohartarazpen bat jaso du."
 
 #. placeholder {0}: shortcutsStr.length
 #: src/components/shortcuts-settings.tsx
 msgid "{0, plural, one {# character} other {# characters}}"
-msgstr ""
+msgstr "{0, plural, one {karaktere #} other {# karaktere}}"
 
 #: src/components/status-utility-menu.tsx
 msgid "Copy post text"
-msgstr ""
+msgstr "Kopiatu bidalketako testua"
 
 #: src/pages/accounts.tsx
 msgid "Add an existing account"
-msgstr ""
+msgstr "Gehitu lehendik dudan kontu bat"
 
 #: src/components/media-modal.tsx
 msgid "View post"
-msgstr ""
+msgstr "Ikusi bidalketa"
 
 #: src/utils/visibility-text.ts
 msgid "Followers, mentioned people, and list members can reply"
@@ -2059,33 +2070,33 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 msgid "New"
-msgstr ""
+msgstr "Berria"
 
 #: src/components/status-utility-menu.tsx
 msgid "Post text copied"
-msgstr ""
+msgstr "Bidalketako testua kopiatu da"
 
 #: src/components/report-modal.tsx
 msgid "Violation"
-msgstr ""
+msgstr "Urraketa"
 
 #: src/utils/visibility-text.ts
 msgid "Private mention"
-msgstr ""
+msgstr "Aipamen pribatua"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
-msgstr ""
+msgstr "Esperimentuak"
 
 #: src/compose.tsx
 #: src/pages/http-route.tsx
 #: src/pages/login.tsx
 msgid "Go home"
-msgstr ""
+msgstr "Joan orri nagusira"
 
 #: src/components/background-service.tsx
 msgid "Cloak mode enabled"
-msgstr ""
+msgstr "Estalki modua gaituta"
 
 #. placeholder {0}: fItems.length
 #: src/components/timeline.tsx
@@ -2094,27 +2105,27 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Note: This preview is lightly styled."
-msgstr ""
+msgstr "Oharra: aurrebista honi estilo arin bat aplikatu zaio."
 
 #. placeholder {0}: account.username
 #: src/pages/list.tsx
 msgid "Remove <0>@{0}</0> from list?"
-msgstr ""
+msgstr "<0>@{0}</0> zerrendatik kendu nahi?"
 
 #: src/pages/notifications.tsx
 msgid "Dismissed"
-msgstr ""
+msgstr "Baztertuta"
 
 #. Preview of one character, in largest size
 #. Preview of one character, in smallest size
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "A"
-msgstr ""
+msgstr "A"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Close post or dialogs"
-msgstr ""
+msgstr "Itxi bidalketa edo leihoa"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Reposts Carousel"
@@ -2124,18 +2135,18 @@ msgstr ""
 #: src/components/list-add-edit.tsx
 #: src/components/status-account-menu.tsx
 msgid "Delete…"
-msgstr ""
+msgstr "Ezabatu…"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Embed post"
-msgstr ""
+msgstr "Txertatu bidalketa"
 
 #. placeholder {0}: shortenNumber(votersCount)
 #. placeholder {1}: shortenNumber(votersCount)
 #: src/components/poll.tsx
 msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
-msgstr ""
+msgstr "{votersCount, plural, one {hautesle <0>{0}</0>} other {<1>{1}</1> hautesle}}"
 
 #: src/components/atproto-labels.tsx
 msgid "Does not include nudity."
@@ -2143,11 +2154,11 @@ msgstr ""
 
 #: src/components/import-accounts-selection.tsx
 msgid "Select accounts to import"
-msgstr ""
+msgstr "Hautatu inportatzeko kontuak"
 
 #: src/components/related-actions.tsx
 msgid "Notifications enabled for @{username}'s posts."
-msgstr ""
+msgstr "Jakinarazpenak gaitu dira @{username}(r)en bidalketetarako."
 
 #: src/components/feedback-modal.tsx
 msgid "Send"
@@ -2159,46 +2170,46 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "System language ({systemTargetLanguageText})"
-msgstr ""
+msgstr "Sistemak darabilena ({systemTargetLanguageText})"
 
 #: src/components/related-actions.tsx
 msgid "Block <0>@{username}</0>…"
-msgstr ""
+msgstr "Blokeatu <0>@{username}</0>…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/pages/catchup.tsx
 msgid "Open post details"
-msgstr ""
+msgstr "Ireki bidalketaren xehetasunak"
 
 #: src/components/compose.tsx
 msgid "Pop out"
-msgstr ""
+msgstr "Atera"
 
 #. placeholder {0}: postingStats.total
 #. placeholder {1}: postingStats.total
 #: src/components/account-info.tsx
 msgid "{0, plural, one {Last 1 post in the past year(s)} other {Last {1} posts in the past year(s)}}"
-msgstr ""
+msgstr "{0, plural, one {Azken bidalketa azken urte(et)an} other {Azken {1} bidalketak azken urte(et)an}}"
 
 #: src/components/notification.tsx
 msgid "Your account has been disabled."
-msgstr ""
+msgstr "Zure kontua ezgaitu da."
 
 #: src/pages/status.tsx
 msgid "Unable to load post"
-msgstr ""
+msgstr "Ezin da bidalketa kargatu"
 
 #: src/components/list-add-edit.tsx
 msgid "Hide posts on this list from Home/Following"
-msgstr ""
+msgstr "Ezkutatu Hasiera / Jarraitzen -etik zerrenda honetako bidalketak"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
-msgstr ""
+msgstr "Jakinarazpen berriak"
 
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Block profile</0>"
-msgstr ""
+msgstr "Bidali salaketa <0>+ Blokeatu profila</0>"
 
 #: src/components/compose.tsx
 #: src/pages/settings.tsx
@@ -2208,11 +2219,11 @@ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
-msgstr ""
+msgstr "Emojiak:"
 
 #: src/pages/settings.tsx
 msgid "Post edits"
-msgstr ""
+msgstr "Bidalketen edizioak"
 
 #: src/components/related-actions.tsx
 msgid "Disable reposts"
@@ -2220,13 +2231,13 @@ msgstr ""
 
 #: src/components/import-export-accounts.tsx
 msgid "Import/Export <0>Accounts</0>"
-msgstr ""
+msgstr "Inportatu / Esportatu <0>Kontuak</0>"
 
 #. placeholder {0}: shortenNumber(votesCount)
 #. placeholder {1}: shortenNumber(votesCount)
 #: src/components/poll.tsx
 msgid "{votesCount, plural, one {<0>{0}</0> vote} other {<1>{1}</1> votes}}"
-msgstr ""
+msgstr "{votesCount, plural, one {boto <0>{0}</0>} other {<1>{1}</1> boto}}"
 
 #. placeholder {0}: username || acct
 #. placeholder {0}: usernameValue || acctValue
@@ -2237,7 +2248,7 @@ msgstr ""
 
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
-msgstr ""
+msgstr "Jakinarazpena zure beste kontuarena da."
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
@@ -2252,7 +2263,7 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Try again"
-msgstr ""
+msgstr "Saiatu berriro"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2266,7 +2277,7 @@ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "This shortcut already exists"
-msgstr ""
+msgstr "Lasterbidea badago lehendik ere"
 
 #: src/components/atproto-labels.tsx
 msgid "Non-sexual Nudity"
@@ -2274,31 +2285,31 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Reply (new window)"
-msgstr ""
+msgstr "Erantzun (leiho berria)"
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only) on {instance}"
-msgstr ""
+msgstr "{hashtagTitle} (multimedia fitxategiak bakarrik) {instance}(e)n"
 
 #: src/pages/favourites.tsx
 msgid "Unable to load likes."
-msgstr ""
+msgstr "Ezin dira gogokoak kargatu."
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in or created has ended."
-msgstr ""
+msgstr "Sortu edo boza eman zenuen bozketa bat amaitu da."
 
 #: src/components/status-account-menu.tsx
 msgid "Post deleted"
-msgstr ""
+msgstr "Bidalketa ezabatu da"
 
 #: src/components/report-modal.tsx
 msgid "Blocked {username}"
-msgstr ""
+msgstr "{username} blokeatuta"
 
 #: src/pages/list.tsx
 msgid "Nothing yet."
-msgstr ""
+msgstr "Oraindik ezer ez."
 
 #: src/utils/visibility-text.ts
 msgid "Followers and mentioned people can reply"
@@ -2306,88 +2317,88 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
-msgstr ""
+msgstr "Editatu audioaren deskribapena"
 
 #: src/components/status-inline-controls.tsx
 msgid "Pinned"
-msgstr ""
+msgstr "Finkatua"
 
 #: src/components/notification.tsx
 msgid "A poll you have created has ended."
-msgstr ""
+msgstr "Sortu zenuen bozketa bat amaitu da."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to create list."
-msgstr ""
+msgstr "Ezin da zerrenda sortu."
 
 #: src/components/drafts.tsx
 #: src/pages/settings.tsx
 msgid "Unsent drafts"
-msgstr ""
+msgstr "Bidali gabeko zirriborroak"
 
 #: src/pages/notifications.tsx
 msgid "You're all caught up."
-msgstr ""
+msgstr "Zaharrak berri."
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
-msgstr ""
+msgstr "Arazoa ez dator bat beste kategoriekin"
 
 #. placeholder {0}: tag.name
 #: src/pages/account-statuses.tsx
 msgid "Showing posts tagged with #{0}"
-msgstr ""
+msgstr "#{0} traola duten bidalketak erakusten"
 
 #: src/components/import-export-accounts.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Import"
-msgstr ""
+msgstr "Inportatu"
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 #: src/components/status-reblog.tsx
 msgid "Group"
-msgstr ""
+msgstr "Taldea"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Hide results"
-msgstr ""
+msgstr "Ezkutatu emaitzak"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
-msgstr ""
+msgstr "Zein da bidalketaren arazoa?"
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
 msgid "Privacy Policy"
-msgstr ""
+msgstr "Pribatutasun politika"
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "Freskatu"
 
 #: src/components/related-actions.tsx
 msgid "Search <0>@{username}</0>'s posts"
-msgstr ""
+msgstr "Bilatu <0>@{username}</0>(r)en bidalketetan"
 
 #: src/components/status-account-menu.tsx
 msgid "Pin to profile"
-msgstr ""
+msgstr "Finkatu profilean"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Share…"
-msgstr ""
+msgstr "Partekatu…"
 
 #: src/components/media-attachment.tsx
 msgid "Image description"
-msgstr ""
+msgstr "Irudiaren deskribapena"
 
 #: src/components/compose.tsx
 msgid "Mentioned"
@@ -2402,52 +2413,52 @@ msgstr ""
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "{0, plural, one {# choice} other {# choices}}"
-msgstr ""
+msgstr "{0, plural, one {aukera #} other {# aukera}}"
 
 #: src/pages/catchup.tsx
 msgid "last 6 hours"
-msgstr ""
+msgstr "azken 6 ordutako bidalketak"
 
 #: src/components/import-export-accounts.tsx
 msgid "Export failed"
-msgstr ""
+msgstr "Esportazioak huts egin du"
 
 #: src/components/status-post-body.tsx
 msgid "Show content"
-msgstr ""
+msgstr "Erakutsi edukia"
 
 #: src/components/notification.tsx
 msgid "Liked by…"
-msgstr ""
+msgstr "Gogoko du…"
 
 #: src/components/poll.tsx
 msgid "Vote"
-msgstr ""
+msgstr "Bozkatu"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut"
-msgstr ""
+msgstr "Gehitu lasterbidea"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Catch-up"
-msgstr ""
+msgstr "Zer berri?-ren pantaila-argazkia"
 
 #: src/components/compose-button.tsx
 msgid "Add to thread"
-msgstr ""
+msgstr "Gehitu harira"
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unbookmarked @{0}'s post"
-msgstr ""
+msgstr "@{0}(r)en bidalketari laster-marka kendu dio"
 
 #: src/pages/settings.tsx
 msgid "Cloak mode <0>(<1>Text</1> → <2>████</2>)</0>"
-msgstr ""
+msgstr "Eskalki modua <0>(<1>Testua</1> → <2>████</2>)</0>"
 
 #: src/pages/search.tsx
 msgid "See more posts"
-msgstr ""
+msgstr "Ikusi bidalketa gehiago"
 
 #: src/pages/account-statuses.tsx
 msgid "Media posts tagged #{tagged} by {accountDisplay}"
@@ -2455,19 +2466,19 @@ msgstr ""
 
 #: src/components/modals.tsx
 msgid "Reply posted. Check it out."
-msgstr ""
+msgstr "Erantzuna argitaratu da. Ikus ezazu."
 
 #. placeholder {0}: localeCode2Text(lang)
 #: src/components/media-attachment.tsx
 msgid "({0}) <0>— experimental</0>"
-msgstr ""
+msgstr "({0}) <0>— esperimentala</0>"
 
 #: src/components/compose.tsx
 #: src/components/mention-modal.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/list.tsx
 msgid "Add"
-msgstr ""
+msgstr "Gehitu"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
@@ -2476,36 +2487,36 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Unable to vote in poll"
-msgstr ""
+msgstr "Ezin da bozketan botoa eman"
 
 #: src/components/translation-block.tsx
 msgid "Failed to translate"
-msgstr ""
+msgstr "Ezin da itzuli"
 
 #: src/components/status-menu-state.tsx
 msgid "Some media have no descriptions."
-msgstr ""
+msgstr "Multimedia fitxategi batzuek ez dute deskribapenik."
 
 #: src/compose.tsx
 msgid "You may close this page now."
-msgstr ""
+msgstr "Orria itxi dezakezu."
 
 #: src/components/search-form.tsx
 msgid "Posts tagged with <0>{hashtag}</0>"
-msgstr ""
+msgstr "<0>{hashtag}</0> traola duten bidalketak"
 
 #: src/components/compose.tsx
 msgid "Add media"
-msgstr ""
+msgstr "Gehitu multimedia"
 
 #: src/pages/hashtag.tsx
 msgid "Hashtag shortcut added"
-msgstr ""
+msgstr "Traolaren lasterbidea gehitu da"
 
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Follow"
-msgstr ""
+msgstr "Jarraitu"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-large-footer.tsx
@@ -2516,89 +2527,89 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Your account has been limited."
-msgstr ""
+msgstr "Zure kontuari mugak jarri zaizkio."
 
 #: src/components/account-block.tsx
 msgid "{followersCount, plural, one {# follower} other {# followers}}"
-msgstr ""
+msgstr "{followersCount, plural, one {jarraitzaile #} other {# jarraitzaile}}"
 
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Video description"
-msgstr ""
+msgstr "Bideoaren deskribapena"
 
 #: src/components/notification.tsx
 msgid "A poll you have voted in has ended."
-msgstr ""
+msgstr "Boza eman zenuen bozketa bat amaitu da."
 
 #: src/components/compose.tsx
 msgid "Some media have no descriptions. Continue?"
-msgstr ""
+msgstr "Ez dituzu multimedia fitxategi batzuk deskribatu. Jarraitu?"
 
 #: src/components/list-add-edit.tsx
 msgid "Show replies to people I follow"
-msgstr ""
+msgstr "Erakutsi erantzunak jarraitzen diedan pertsonei"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
 msgid "Edited"
-msgstr ""
+msgstr "Editatuta"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Settings"
-msgstr ""
+msgstr "Joan ezarpenetara"
 
 #: src/components/report-modal.tsx
 msgid "Report Post"
-msgstr ""
+msgstr "Salatu bidalketa"
 
 #: src/pages/list.tsx
 msgid "Remove…"
-msgstr ""
+msgstr "Kendu…"
 
 #. placeholder {0}: account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from <0>@{0}</0>"
-msgstr ""
+msgstr "<0>@{0}</0>(r)en jakinarazpenak"
 
 #: src/pages/accounts.tsx
 msgid "Logged out"
-msgstr ""
+msgstr "Amaitu da saioa"
 
 #: src/pages/catchup.tsx
 msgid "Date"
-msgstr ""
+msgstr "Data"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>j</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>j</1>"
 
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy post text"
-msgstr ""
+msgstr "Ezin da bidalketako testua kopiatu"
 
 #: src/components/nav-menu.tsx
 msgid "Muted users…"
-msgstr ""
+msgstr "Mutututakoak…"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Synced"
-msgstr ""
+msgstr "Sinkronizatuta"
 
 #. placeholder {0}: notificationsPolicy.summary?.pendingRequestsCount ?? 0
 #: src/pages/notifications.tsx
 msgid "{0, plural, one {Filtered notifications from # person} other {Filtered notifications from # people}}"
-msgstr ""
+msgstr "{0, plural, one {Pertsona #en iragazitako jakinarazpenak} other {# pertsonaren iragazitako jakinarazpenak}}"
 
 #: src/pages/catchup.tsx
 #: src/pages/search.tsx
 msgid "All"
-msgstr ""
+msgstr "Guztia"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List may not work if it's from a different account."
-msgstr ""
+msgstr "Litekeena da zerrendak ezin erabiltzea beste kontu batekoak badira."
 
 #: src/components/account-info.tsx
 #: src/components/status-post-body.tsx
@@ -2610,19 +2621,19 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
-msgstr ""
+msgstr "Erantzunak"
 
 #: src/pages/search.tsx
 msgid "See more hashtags"
-msgstr ""
+msgstr "Ikusi traola gehiago"
 
 #: src/components/quote-suggestion.tsx
 msgid "Keep as link"
-msgstr ""
+msgstr "Mantendu esteka gisa"
 
 #: src/pages/status.tsx
 msgid "Go to main post"
-msgstr ""
+msgstr "Joan bidalketa nagusira"
 
 #: src/pages/accounts.tsx
 msgid "Log out <0>@{acct}</0>?"
@@ -2630,39 +2641,39 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Donate"
-msgstr ""
+msgstr "Egin dohaintza"
 
 #: src/components/quote-chain-modal.tsx
 msgid "Failed to unwrap quote chain"
-msgstr ""
+msgstr "Ezin izan da aipuen katea ireki"
 
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 msgid "Nothing to see here."
-msgstr ""
+msgstr "Ez dago ikusteko ezer."
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users"
-msgstr ""
+msgstr "Blokeatutako erabiltzaileak"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Only shortcuts that don’t exist in current shortcuts will be appended."
-msgstr ""
+msgstr "Uneko lasterbideetan ez daudenak gehituko dira soilik."
 
 #: src/pages/catchup.tsx
 msgid "until the max"
-msgstr ""
+msgstr "gehienez ere"
 
 #. Relative time in seconds, as short as possible
 #. placeholder {0}: seconds < 1 ? 1 : Math.floor(seconds)
 #: src/components/relative-time.tsx
 msgid "{0}s"
-msgstr ""
+msgstr "{0}s"
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
 msgid "{index}/X"
-msgstr ""
+msgstr "X/{index}"
 
 #: src/pages/account-statuses.tsx
 msgid "Switch to my PDS (<0>{currentInstance}</0>)"
@@ -2670,17 +2681,17 @@ msgstr ""
 
 #: src/components/status-helpers.ts
 msgid "Only followers can quote this post"
-msgstr ""
+msgstr "Jarraitzaileek soilik iruzkindu dezakete bidalketa hau"
 
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
 msgid "{0}h"
-msgstr ""
+msgstr "{0}h"
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments can be images, videos, audios or any file types."
-msgstr ""
+msgstr "Multimedia eranskinak irudiak, bideoak, audioak edo edozein fitxategi mota izan daitezke."
 
 #: src/pages/accounts.tsx
 msgid "Remove <0>@{acct}</0>?"
@@ -2688,7 +2699,7 @@ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Posts with <0>{query}</0>"
-msgstr ""
+msgstr "<0>{query}</0> duten bidalketak"
 
 #: src/components/compose.tsx
 msgid "Some can reply"
@@ -2696,7 +2707,7 @@ msgstr ""
 
 #: src/components/poll.tsx
 msgid "Ending"
-msgstr ""
+msgstr "Amaiera-data"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -2706,95 +2717,95 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Sponsor"
-msgstr ""
+msgstr "Eman babesa"
 
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generate description…"
-msgstr ""
+msgstr "Sortu deskribapena…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "No new shortcuts to import"
-msgstr ""
+msgstr "Ez dago inportatzeko lasterbide berririk"
 
 #: src/components/shortcuts-settings.tsx
 msgid "* Exists in current shortcuts"
-msgstr ""
+msgstr "* Lasterbidea badago lehendik ere"
 
 #: src/pages/notifications.tsx
 msgid "Filter"
-msgstr ""
+msgstr "Iragazi"
 
 #: src/pages/notifications.tsx
 msgid "Who don't follow you"
-msgstr ""
+msgstr "Jarraitzen ez nautenenak"
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unlike"
-msgstr ""
+msgstr "Utzi gogoko egiteari"
 
 #: src/components/report-modal.tsx
 msgid "Unable to report profile"
-msgstr ""
+msgstr "Ezin da profila salatu"
 
 #: src/components/background-service.tsx
 msgid "Cloak mode disabled"
-msgstr ""
+msgstr "Estalki modua ezgaituta"
 
 #: src/pages/hashtag.tsx
 msgid "Remove hashtag"
-msgstr ""
+msgstr "Kendu traola"
 
 #: src/components/status-account-menu.tsx
 msgid "Mute conversation"
-msgstr ""
+msgstr "Mututu elkarrizketa"
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Edit History"
-msgstr ""
+msgstr "Edizio-historia"
 
 #: src/components/media-attachment.tsx
 msgid "Edit image description"
-msgstr ""
+msgstr "Editatu irudiaren deskribapena"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import/Export <0>Shortcuts</0>"
-msgstr ""
+msgstr "Inportatu / Esportatu <0>Lasterbideak</0>"
 
 #: src/pages/catchup.tsx
 msgid "Show me all posts from…"
-msgstr ""
+msgstr "Erakutsidazu…"
 
 #: src/components/poll.tsx
 msgid "Ending <0/>"
-msgstr ""
+msgstr "<0/> amaituko da"
 
 #: src/pages/status.tsx
 msgid "View Edit History Snapshots"
-msgstr ""
+msgstr "Ikusi edizio-historia"
 
 #: src/components/related-actions.tsx
 msgid "Disable notifications"
-msgstr ""
+msgstr "Ezgaitu jakinarazpenak"
 
 #: src/pages/hashtag.tsx
 msgid "{TOTAL_TAGS_LIMIT, plural, other {Max # tags}}"
-msgstr ""
+msgstr "{TOTAL_TAGS_LIMIT, plural, one {}other {Gehienez # traola}}"
 
 #: src/pages/catchup.tsx
 msgid "last 1 hour"
-msgstr ""
+msgstr "azken orduko bidalketak"
 
 #: src/pages/accounts.tsx
 msgid "Default"
-msgstr ""
+msgstr "Lehenetsia"
 
 #: src/components/compose.tsx
 msgid "What are you doing?"
-msgstr ""
+msgstr "Zertan zabiltza?"
 
 #. placeholder {0}: String(type)
 #: src/components/notification.tsx
@@ -2810,60 +2821,60 @@ msgstr ""
 #. placeholder {6}: postingStats.daysSinceLastPost
 #: src/components/account-info.tsx
 msgid "{0, plural, one {{1, plural, one {Last 1 post in the past 1 day} other {Last 1 post in the past {2} days}}} other {{3, plural, one {Last {4} posts in the past 1 day} other {Last {5} posts in the past {6} days}}}}"
-msgstr ""
+msgstr "{0, plural, one {{1, plural, one {Azken bidalketa azken egunean} other {Azken bidalketa azken {2} egunetan}}} other {{3, plural, one {Azken {4} bidalketak azken egunean} other {Azken {5} bidalketak azken {6} egunetan}}}}"
 
 #: src/components/account-block.tsx
 #: src/components/related-actions.tsx
 msgid "Follows you"
-msgstr ""
+msgstr "Jarraitzen dizu"
 
 #: src/components/related-actions.tsx
 msgid "Unable to block @{username}"
-msgstr ""
+msgstr "Ezin da @{username} blokeatu"
 
 #: src/pages/settings.tsx
 msgid "followers"
-msgstr ""
+msgstr "jarraitzaile"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
-msgstr ""
+msgstr "Errorea GIFak kargatzean"
 
 #: src/pages/settings.tsx
 msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
-msgstr ""
+msgstr "Erakutsi automatikoki bidalketen itzulpena denbora-lerroaren baitan. Bidalketa <0>labur</0>retarako balio du bakarrik, eta ezin dute edukiari buruzko oharrik, multimedia fitxategirik edo bozketarik izan."
 
 #: src/pages/catchup.tsx
 msgid "last 9 hours"
-msgstr ""
+msgstr "azken 9 ordutako bidalketak"
 
 #: src/pages/welcome.tsx
 msgid "Effortlessly follow conversations. Semi-collapsible replies."
-msgstr ""
+msgstr "Jarraitu elkarrizketak arazorik gabe. Erantzunak tolesten dira."
 
 #. placeholder {0}: niceDateTime(createdAt, { hideTime: true, })
 #. placeholder {0}: niceDateTime(createdAt, { hideTime: true, })
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Joined <0>{0}</0>"
-msgstr ""
+msgstr "<0>{0}</0>(e)an batu zen"
 
 #: src/pages/settings.tsx
 msgid "Posting"
-msgstr ""
+msgstr "Argitaratzean"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
-msgstr ""
+msgstr "Editatu lasterbidea"
 
 #: src/pages/welcome.tsx
 msgid "Single or multi-column"
-msgstr ""
+msgstr "Nahi beste zutabe"
 
 #. placeholder {0}: WEBSITE.replace(/https?:\/\//g, '').replace(/\/$/, '')
 #: src/pages/settings.tsx
 msgid "<0>Site:</0> {0}"
-msgstr ""
+msgstr "<0>Gunea:</0> {0}"
 
 #: src/components/atproto-labels.tsx
 msgid "E.g. artistic nudes."
@@ -2871,7 +2882,7 @@ msgstr ""
 
 #: src/pages/favourites.tsx
 msgid "No likes yet. Go like something!"
-msgstr ""
+msgstr "Ez dugu gogokorik. Zoaz gogoko zerbait aurkitzera!"
 
 #: src/components/report-modal.tsx
 msgid "Violates local law"
@@ -2882,45 +2893,45 @@ msgstr ""
 #: src/components/status-utility-menu.tsx
 #: src/components/translation-block.tsx
 msgid "Translate"
-msgstr ""
+msgstr "Itzuli"
 
 #: src/pages/settings.tsx
 msgid "Version string copied"
-msgstr ""
+msgstr "Bertsioaren haria kopiatuta"
 
 #: src/components/account-info.tsx
 msgid "View post stats"
-msgstr ""
+msgstr "Ikusi bidalketen estatistikak"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post you have quoted."
-msgstr ""
+msgstr "{account}(e)k iruzkindu duzun bidalketa bat editatu du."
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation unmuted"
-msgstr ""
+msgstr "Elkarrizketa mututzeari utzi zaio"
 
 #: src/components/list-add-edit.tsx
 msgid "Don't show replies"
-msgstr ""
+msgstr "Ez erakutsi erantzunik"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
-msgstr ""
+msgstr "Ezin da {username} blokeatu"
 
 #. js-lingui-explicit-id
 #: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "post.title"
-msgstr ""
+msgstr "Bidalketa"
 
 #: src/pages/accounts.tsx
 msgid "Set as default"
-msgstr ""
+msgstr "Ezarri lehenetsi gisa"
 
 #: src/utils/visibility-text.ts
 msgid "Quiet public"
-msgstr ""
+msgstr "Ikusgarritasun mugatua"
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -2928,7 +2939,7 @@ msgstr ""
 
 #: src/pages/mentions.tsx
 msgid "Unable to load mentions."
-msgstr ""
+msgstr "Ezin dira aipamenak kargatu."
 
 #: src/components/timeline.tsx
 msgid "View Full Thread"
@@ -2936,7 +2947,7 @@ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "In Memoriam"
-msgstr ""
+msgstr "In Memoriam"
 
 #: src/pages/welcome.tsx
 msgid "A minimalistic opinionated Atmosphere web client."
@@ -2944,58 +2955,58 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Post pending"
-msgstr ""
+msgstr "Bidalketa zain dago"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
-msgstr ""
+msgstr "Iluna"
 
 #: src/components/status-edit-history-modal.tsx
 msgid "Loading…"
-msgstr ""
+msgstr "Kargatzen…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Ctrl</0> + <1>Enter</1> or <2>⌘</2> + <3>Enter</3>"
-msgstr ""
+msgstr "<0>Ctrl</0> + <1>Enter</1> or <2>⌘</2> + <3>Enter</3>"
 
 #: src/pages/accounts.tsx
 msgid "Switch in new tab/window"
-msgstr ""
+msgstr "Aldatu fitxa / leiho berrian"
 
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Bookmark"
-msgstr ""
+msgstr "Jarri laster-marka"
 
 #: src/components/related-actions.tsx
 msgid "Unmute <0>@{username}</0>"
-msgstr ""
+msgstr "Utzi <0>@{username}</0> mututzeari"
 
 #. placeholder {0}: replyToStatus.account?.acct || replyToStatus.account?.username
 #. placeholder {1}: rtf.format(-replyToStatusMonthsAgo, 'month')
 #: src/components/compose.tsx
 msgid "Replying to @{0}’s post (<0>{1}</0>)"
-msgstr ""
+msgstr "@{0}(r)en bidalketari erantzuten (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
 msgid "Failed to remove subscription. Please try again."
-msgstr ""
+msgstr "Ezin da harpidetza kendu. Saiatu berriro."
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "<0>{from}</0>(e)ko administratzaile batek <1>{targetName}</1> blokeatu du. Eragina du jarraitzen dizuten {followersCount} eta jarraitzen dituzun {followingCount} -engan."
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Unbookmark"
-msgstr ""
+msgstr "Kendu laster-marka"
 
 #: src/pages/catchup.tsx
 msgid "This might take a while."
-msgstr ""
+msgstr "Litekeena da donbora behar izatea."
 
 #: src/components/error-fallback.tsx
 msgid ""
@@ -3007,19 +3018,19 @@ msgstr ""
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
 msgid "Verified"
-msgstr ""
+msgstr "Egiaztatua"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>{key1}</0> then <1>{key2}</1>"
-msgstr ""
+msgstr "<0>{key1}</0> orduan <1>{key2}</1>"
 
 #: src/components/compose.tsx
 msgid "Looks like you closed the parent window."
-msgstr ""
+msgstr "Badirudi leiho nagusia itxi duzula."
 
 #: src/components/status-utility-menu.tsx
 msgid "Show Edit History"
-msgstr ""
+msgstr "Erakutsi edizio-historia"
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
@@ -3032,12 +3043,12 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
-msgstr ""
+msgstr "Lasterbideak inportatu dira"
 
 #: src/components/compose-button.tsx
 #: src/compose.tsx
 msgid "Compose"
-msgstr ""
+msgstr "Idatzi"
 
 #: src/pages/welcome.tsx
 msgid "Connect to Atmosphere"
@@ -3046,11 +3057,11 @@ msgstr ""
 #. placeholder {0}: shortenNumber(totalComments)
 #: src/pages/status.tsx
 msgid "{totalComments, plural, one {# comment} other {<0>{0}</0> comments}}"
-msgstr ""
+msgstr "{totalComments, plural, one {iruzkin #} other {<0>{0}</0> iruzkin}}"
 
 #: src/components/related-actions.tsx
 msgid "Report <0>@{username}</0>…"
-msgstr ""
+msgstr "Salatu <0>@{username}</0>…"
 
 #: src/pages/settings.tsx
 msgid "Disable all animations"
@@ -3058,17 +3069,17 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Floating button"
-msgstr ""
+msgstr "Botoi mugikorra"
 
 #: src/components/shortcuts-settings.tsx
 #: src/pages/accounts.tsx
 msgid "Move up"
-msgstr ""
+msgstr "Mugitu gora"
 
 #. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
 msgid "Allow from <0>{0}</0>"
-msgstr ""
+msgstr "Baimendu <0>{0}</0>(r)en"
 
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
@@ -3077,85 +3088,85 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Edit your post"
-msgstr ""
+msgstr "Editatu bidalketa"
 
 #: src/components/import-export-accounts.tsx
 msgid "No login information or account access details are stored in the exported files. You will need to log in again for each account after importing."
-msgstr ""
+msgstr "Esportatutako fitxategietan ez da saioa hasteko informaziorik gordetzen, ezta kontu-sarbidearen xehetasunik ere. Inportatu ondoren berriro hasi beharko duzu saioa kontu bakoitzean."
 
 #: src/pages/catchup.tsx
 msgid "Catch up"
-msgstr ""
+msgstr "Jarri egunean"
 
 #: src/components/translation-block.tsx
 msgid "Translate from {sourceLangText} (auto-detected)"
-msgstr ""
+msgstr "Itzuli {sourceLangText} (automatikoki antzemanda)"
 
 #: src/components/nav-menu.tsx
 msgid "Blocked users…"
-msgstr ""
+msgstr "Blokeatutakoak…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Post could be edited or deleted later."
-msgstr ""
+msgstr "Bidalketa editatu edo ezabatu daiteke geroago."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to edit list."
-msgstr ""
+msgstr "Ezin da zerrenda editatu."
 
 #. placeholder {0}: ancestors.length
 #: src/pages/status.tsx
 msgid "{0} posts above ‒ Go to top"
-msgstr ""
+msgstr "{0} bidalketa goian ‒ Joan gora"
 
 #: src/components/related-actions.tsx
 msgid "Translate bio"
-msgstr ""
+msgstr "Itzuli biografia"
 
 #: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Auto"
-msgstr ""
+msgstr "Automatikoa"
 
 #: src/components/report-modal.tsx
 msgid "Profile reported"
-msgstr ""
+msgstr "Profila salatu da"
 
 #: src/pages/catchup.tsx
 msgid "last 7 hours"
-msgstr ""
+msgstr "azken 7 ordutako bidalketak"
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been deleted."
-msgstr ""
+msgstr "Zure bidalketa batzuk ezabatu dira."
 
 #: src/pages/catchup.tsx
 msgid "Fetching posts…"
-msgstr ""
+msgstr "Bidalketak eskuratzen…"
 
 #: src/components/post-embed-modal.tsx
 msgid "Preview"
-msgstr ""
+msgstr "Aurrebista"
 
 #: src/components/status-helpers.ts
 msgid "Author will manually review"
-msgstr ""
+msgstr "Egileak eskuz berrikusiko du"
 
 #: src/components/drafts.tsx
 msgid "Error deleting draft! Please try again."
-msgstr ""
+msgstr "Errorea zirriborroa ezabatzean! Saiatu berriro."
 
 #: src/compose.tsx
 msgid "Close window"
-msgstr ""
+msgstr "Itxi leihoa"
 
 #: src/pages/catchup.tsx
 msgid "That's all."
-msgstr ""
+msgstr "Hori da guztia."
 
 #: src/pages/catchup.tsx
 msgid "Previous author"
-msgstr ""
+msgstr "Aurreko egilea"
 
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
@@ -3169,7 +3180,7 @@ msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Showing posts with media"
-msgstr ""
+msgstr "Multimedia fitxategiak dituzten bidalketak erakusten"
 
 #: src/components/feedback-modal.tsx
 #: src/pages/welcome.tsx
@@ -3181,17 +3192,17 @@ msgstr ""
 #. placeholder {2}: lf.format( unsupportedFiles.map((f) => f.name), )
 #: src/components/compose.tsx
 msgid "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
-msgstr ""
+msgstr "{0, plural, one {{1} fitxategia ez da bateragarria.} other {{2} fitxategiak ez dira bateragarriak.}}"
 
 #: src/components/notification.tsx
 msgid "You have blocked <0>{targetName}</0>. Removed followers: {followersCount}, followings: {followingCount}."
-msgstr ""
+msgstr "<0>{targetName}</0> blokeatu duzu. Jarraitzen zizuten {followersCount} eta jarraitzen zenituen {followingCount} kendu dira."
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
 #: src/components/notification.tsx
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} liked your reply.} other {{account} liked your post.}}} other {{account} liked {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> liked your reply.} other {<2><3>{1}</3> people</2> liked your post.}}}}"
-msgstr ""
+msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account}(e)k zure erantzuna gogoko du.} other {{account}(e)k zure bidalketa gogoko du.}}} other {{account}(e)k zure {postsCount} bidalketa gogoko ditu.}}} other {{postType, select, reply {<0><1>{0}</1> pertsonak</0> zure erantzuna gogoko dute.} other {<2><3>{1}</3> pertsonak</2> zure bidalketa gogoko dute.}}}}"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
@@ -3200,15 +3211,15 @@ msgstr ""
 
 #: src/pages/status.tsx
 msgid "Experimental"
-msgstr ""
+msgstr "Esperimentala"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this profile?"
-msgstr ""
+msgstr "Zein da profilaren arazoa?"
 
 #: src/pages/http-route.tsx
 msgid "Resolving…"
-msgstr ""
+msgstr "Ebazten…"
 
 #: src/components/compose.tsx
 msgid "Who can reply:"
@@ -3216,7 +3227,7 @@ msgstr ""
 
 #: src/components/status-header.tsx
 msgid "{repliesCount, plural, one {# reply} other {# replies}}"
-msgstr ""
+msgstr "{repliesCount, plural, one {erantzun #} other {# erantzun}}"
 
 #: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
@@ -3225,34 +3236,34 @@ msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Frame rate too high. Uploading might encounter issues."
-msgstr ""
+msgstr "Fotograma-tasa (frame rate) altuegia da. Igoerak arazoak izan ditzake."
 
 #: src/pages/notifications.tsx
 msgid "Unable to dismiss notification request"
-msgstr ""
+msgstr "Ezin da jakinarazpen-eskaera zokoratu"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Skip carousel to previous post"
-msgstr ""
+msgstr "Biratu karrusela aurrekora"
 
 #: src/components/status-account-menu.tsx
 msgid "Post pinned to profile"
-msgstr ""
+msgstr "Profilean finkatutako bidalketa"
 
 #. placeholder {0}: pc.count
 #: src/pages/catchup.tsx
 msgid "{0, plural, one {# post} other {# posts}}"
-msgstr ""
+msgstr "{0, plural, one {bidalketa #} other {# bidalketa}}"
 
 #: src/pages/notifications.tsx
 msgid "Unable to accept notification request"
-msgstr ""
+msgstr "Ezin da jakinarazpen-eskaera onartu"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/list-add-edit.tsx
 #: src/pages/lists.tsx
 msgid "New list"
-msgstr ""
+msgstr "Zerrenda berria"
 
 #: src/utils/visibility-text.ts
 msgid "Followers, followed people, and list members can reply"
@@ -3260,20 +3271,20 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
-msgstr ""
+msgstr "Lasterbideak inportatu dira. {SHORTCUTS_LIMIT} muga gainditu da, gainerakoak ez dira inportatuko."
 
 #: src/pages/account-statuses.tsx
 #: src/pages/trending.tsx
 msgid "Unable to load posts"
-msgstr ""
+msgstr "Ezin dira bidalketak kargatu"
 
 #: src/pages/catchup.tsx
 msgid "Group: Authors"
-msgstr ""
+msgstr "Taldekatu: egileak"
 
 #: src/components/import-export-accounts.tsx
 msgid "Select file…"
-msgstr ""
+msgstr "Hautatu fitxategia…"
 
 #: src/pages/account-statuses.tsx
 msgid "Hiding reposts"
@@ -3283,42 +3294,42 @@ msgstr ""
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{followingCount, plural, other {<0>{0}</0> Following}}"
-msgstr ""
+msgstr "{followingCount, plural, one {}other {<0>{0}</0> jarraitzen}}"
 
 #: src/components/related-actions.tsx
 msgid "Unblocked @{username}"
-msgstr ""
+msgstr "@{username} blokeatzeari utzi zaio"
 
 #: src/components/account-handle-info.tsx
 msgid "username"
-msgstr ""
+msgstr "erabiltzaile-izena"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Add/Remove from Lists"
-msgstr ""
+msgstr "Gehitu zerrendara / kendu zerrendatik"
 
 #: src/components/compose.tsx
 msgid "Post your reply"
-msgstr ""
+msgstr "Argitaratu erantzuna"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Import…"
-msgstr ""
+msgstr "Inportatu…"
 
 #: src/components/media-attachment.tsx
 #: src/compose.tsx
 msgid "Error"
-msgstr ""
+msgstr "Errorea"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Compose new post (new window)"
-msgstr ""
+msgstr "Idatzi bidalketa berria (leiho berria)"
 
 #: src/components/nav-menu.tsx
 msgid "Muted users"
-msgstr ""
+msgstr "Mutututako erabiltzaileak"
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
@@ -3339,7 +3350,7 @@ msgstr ""
 #: src/pages/status.tsx
 #: src/pages/welcome.tsx
 msgid "Log in"
-msgstr ""
+msgstr "Hasi saioa"
 
 #. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
@@ -3351,7 +3362,7 @@ msgstr ""
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
 msgid "<0>Filtered</0>: <1>{0}</1>"
-msgstr ""
+msgstr "<0>Iragazita</0>: <1>{0}</1>"
 
 #: src/pages/account-statuses.tsx
 msgid "Showing reposts"
@@ -3359,53 +3370,53 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Posts are grouped by authors, sorted by posts count per author."
-msgstr ""
+msgstr "Bidalketak egilearen arabera taldekatzen dira, egilearen bidalketen kopuruaren arabera sailkatuta."
 
 #: src/pages/notifications.tsx
 msgid "With a new account"
-msgstr ""
+msgstr "Kontu berria dutenenak"
 
 #. placeholder {0}: filterInfo.titlesStr
 #. placeholder {0}: filterInfoMaybe?.titlesStr
 #: src/components/status-media-embeds.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered: {0}"
-msgstr ""
+msgstr "Iragazita: {0}"
 
 #: src/pages/catchup.tsx
 msgid "Note: Only max 3 will be stored. The rest will be automatically removed."
-msgstr ""
+msgstr "Oharra: gehienez 3 gordeko dira. Gainerakoak automatikoki kenduko dira."
 
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
-msgstr ""
+msgstr "@{0}(r)en bidalketa gogoko izateari utzi diozu"
 
 #: src/pages/settings.tsx
 msgid "Replace text as blocks, useful when taking screenshots, for privacy reasons."
-msgstr ""
+msgstr "Testua blokeekin ordezkatzen du, pantaila-argazkiak egitean aproposa pribatutasun arrazoiengatik."
 
 #: src/components/media-attachment.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 msgid "Remove"
-msgstr ""
+msgstr "Kendu"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Profile"
-msgstr ""
+msgstr "Joan profilera"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
-msgstr ""
+msgstr "Eremu gehigarriak"
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
-msgstr ""
+msgstr "Defektuz, zutabe bakarra ZEN antolaketa nahi dutenentzako. Zutabe gehiago konfiguratu daitezke erabilera aurreraturako."
 
 #: src/components/report-modal.tsx
 msgid "Spam"
-msgstr ""
+msgstr "Mezu baztergarria"
 
 #: src/pages/status.tsx
 msgid "Switch to my PDS to enable interactions"
@@ -3417,27 +3428,27 @@ msgstr ""
 
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to add to list."
-msgstr ""
+msgstr "Ezin da zerrendara gehitu."
 
 #. placeholder {0}: niceDateTime(updatedAtDate)
 #: src/pages/notifications.tsx
 msgid "Updated <0>{0}</0>"
-msgstr ""
+msgstr "<0>{0}</0>(e)an eguneratu zen"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Paste shortcuts here"
-msgstr ""
+msgstr "Itsatsi lasterbideak hemen"
 
 #: src/components/compose.tsx
 msgid "Take photo or video"
-msgstr ""
+msgstr "Egin argazkia edo bideoa"
 
 #. placeholder {0}: shortenNumber(followersCount)
 #. placeholder {1}: shortenNumber(followersCount)
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 msgid "{followersCount, plural, one {<0>{0}</0> Follower} other {<1>{1}</1> Followers}}"
-msgstr ""
+msgstr "{followersCount, plural, one {Jarraitzaile <0>{0}</0>} other {<1>{1}</1> jarraitzaile}}"
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
@@ -3445,11 +3456,11 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/notifications.tsx
 msgid "Save"
-msgstr ""
+msgstr "Gorde"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcut settings"
-msgstr ""
+msgstr "Ezin dira lasterbideen ezarpenak kopiatu"
 
 #: src/components/compose.tsx
 msgid "From List"
@@ -3457,11 +3468,11 @@ msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
-msgstr ""
+msgstr "Errorea erantzuten ari zaion egoera eskuratzean!"
 
 #: src/components/post-embed-modal.tsx
 msgid "Notes:"
-msgstr ""
+msgstr "Oharrak:"
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} enabled."
@@ -3469,33 +3480,33 @@ msgstr ""
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to delete list."
-msgstr ""
+msgstr "Ezin da zerrenda ezabatu."
 
 #: src/pages/welcome.tsx
 msgid "Up to 5 hashtags combined into a single timeline."
-msgstr ""
+msgstr "Denbora-lerro bakarrean 5 traola ere batu daitezke."
 
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Sharing doesn't seem to work."
-msgstr ""
+msgstr "Ez dirudi partekatzea dabilenik."
 
 #: src/components/list-add-edit.tsx
 msgid "Edit list"
-msgstr ""
+msgstr "Editatu zerrenda"
 
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
-msgstr ""
+msgstr "azken 2 ordutako bidalketak"
 
 #: src/compose.tsx
 msgid "Editing source status"
-msgstr ""
+msgstr "Jatorrizko egoera editatzen"
 
 #: src/pages/settings.tsx
 msgid "Settings"
-msgstr ""
+msgstr "Ezarpenak"
 
 #: src/utils/visibility-text.ts
 msgid "Followed people and list members can reply"
@@ -3507,43 +3518,43 @@ msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
-msgstr ""
+msgstr "Esteka iruzkin bihurtu nahi duzu?"
 
 #: src/pages/http-route.tsx
 msgid "Unable to resolve URL"
-msgstr ""
+msgstr "Ezin da URLa ebatzi"
 
 #: src/components/shortcuts-settings.tsx
 msgid "or override…"
-msgstr ""
+msgstr "edo gainidatzi…"
 
 #: src/components/status-account-menu.tsx
 msgid "Remove quote…"
-msgstr ""
+msgstr "Kendu iruzkina…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Keyboard shortcuts help"
-msgstr ""
+msgstr "Teklatuko laster-teklen laguntza"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Go to Home"
-msgstr ""
+msgstr "Joan hasierara"
 
 #: src/components/related-actions.tsx
 msgid "Remove <0>@{username}</0> from followers?"
-msgstr ""
+msgstr "<0>@{username}</0> jarraitzaileetatik kendu nahi?"
 
 #: src/pages/bookmarks.tsx
 msgid "Unable to load bookmarks."
-msgstr ""
+msgstr "Ezin dira laster-markak kargatu."
 
 #: src/components/quote-chain-modal.tsx
 msgid "Continue unwrapping…"
-msgstr ""
+msgstr "Jarraitu irekitzen…"
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has suspended <1>{targetName}</1>, which means you can no longer receive updates from them or interact with them."
-msgstr ""
+msgstr "<0>{from}</0>(e)ko administratzaile batek <1>{targetName}</1> bertan behera utzi du, eta horrek esan nahi du aurrerantzean ezingo duzula harekin harremanik izan."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on mobile device"
@@ -3551,24 +3562,24 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Posts are sorted by information density or depth. Shorter posts are \"lighter\" while longer posts are \"heavier\". Posts with photos are \"heavier\" than posts without photos."
-msgstr ""
+msgstr "Bidalketak informazioaren dentsitatearen edo sakoneraren arabera sailkatzen dira. Postu motzenak \"arinagoak\" dira, eta luzeenak, berriz, \"astunagoak\". Argazkidun bidalketak argazkirik gabekoak baino \"astunagoak\" dira."
 
 #: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
 msgid "Settings…"
-msgstr ""
+msgstr "Ezarpenak…"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Multi-column"
-msgstr ""
+msgstr "Zutabe anitz"
 
 #: src/components/quote-settings-sheet.tsx
 msgid "Quote settings for this post"
-msgstr ""
+msgstr "Bidalketa honi buruzko iruzkin-ezarpenak"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Tab/Menu bar"
-msgstr ""
+msgstr "Erlaitz- / Menu-barra"
 
 #: src/components/generic-accounts.tsx
 #: src/components/quotes-modal.tsx
@@ -3578,11 +3589,11 @@ msgstr ""
 #: src/pages/search.tsx
 #: src/pages/status.tsx
 msgid "Show more…"
-msgstr ""
+msgstr "Erakutsi gehiago…"
 
 #: src/components/related-actions.tsx
 msgid "Blocked @{username}"
-msgstr ""
+msgstr "@{username} blokeatu da"
 
 #: src/components/status-interactions.ts
 msgid "Sorry, your current PDS can't interact with this post from another PDS."
@@ -3590,30 +3601,30 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "About"
-msgstr ""
+msgstr "Honi buruz"
 
 #: src/components/quote-suggestion.tsx
 msgid "Replace current quote"
-msgstr ""
+msgstr "Ordeztu uneko iruzkina"
 
 #: src/components/notification.tsx
 msgid "A post you interacted with has been edited."
-msgstr ""
+msgstr "Interaktuatu zenuen bidalketa bat editatu dute."
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/pages/lists.tsx
 msgid "Unable to load lists."
-msgstr ""
+msgstr "Ezin dira zerrendak kargatu."
 
 #: src/components/report-modal.tsx
 msgid "Unable to mute {username}"
-msgstr ""
+msgstr "Ezin da {username} mututu"
 
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "See more"
-msgstr ""
+msgstr "Ikusi gehiago"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
@@ -3622,7 +3633,7 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 
 #: src/pages/settings.tsx
 msgid "Quote settings are synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0> Default threadgate settings are stored locally."
@@ -3630,11 +3641,11 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
-msgstr ""
+msgstr "Zure bidalketa batzuk hunkigarri gisa markatu dira."
 
 #: src/components/status-large-footer.tsx
 msgid "Comments"
-msgstr ""
+msgstr "Iruzkinak"
 
 #: src/pages/status.tsx
 msgid "Switch to post's PDS"
@@ -3642,17 +3653,17 @@ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
-msgstr ""
+msgstr "Kendu jarraitzailea…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Profile"
-msgstr ""
+msgstr "Profila"
 
 #: src/components/media-modal.tsx
 msgid "Attempting to describe image. Please wait…"
-msgstr ""
+msgstr "Irudia deskribatzen saiatzen. Itxaron…"
 
 #: src/components/account-handle-info.tsx
 msgid "handle domain name"
@@ -3661,27 +3672,27 @@ msgstr ""
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
 msgid "Deleted"
-msgstr ""
+msgstr "Ezabatua"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to pin post"
-msgstr ""
+msgstr "Ezin da bidalketa finkatu"
 
 #: src/components/compose.tsx
 msgid "Failed to download GIF"
-msgstr ""
+msgstr "Ezin da GIFa deskargatu"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Load new posts"
-msgstr ""
+msgstr "Kargatu bidalketa berriak"
 
 #: src/components/account-info.tsx
 msgid "Post stats unavailable."
-msgstr ""
+msgstr "Bidalketaren estatistikak ez daude erabilgarri."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
-msgstr ""
+msgstr "Zutabe anitzeko interfazearen pantaila-argazkia"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
@@ -3690,58 +3701,58 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
-msgstr ""
+msgstr "Oraindik ez dago lasterbiderik. Egin tap Gehitu lasterbidea botoian."
 
 #: src/pages/trending.tsx
 msgid "Trending posts"
-msgstr ""
+msgstr "Bogan dauden bidalketak"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
-msgstr ""
+msgstr "Instalatu {CLIENT_NAME}"
 
 #: src/pages/catchup.tsx
 msgid "beyond 12 hours"
-msgstr ""
+msgstr "12 ordu baino haratagoko bidalketak"
 
 #: src/pages/catchup.tsx
 msgid "last 12 hours"
-msgstr ""
+msgstr "azken 12 ordutako bidalketak"
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn into quote"
-msgstr ""
+msgstr "Bihurtu iruzkin"
 
 #: src/utils/show-compose.ts
 msgid "A post is currently open. Post or discard it before creating a new one."
-msgstr ""
+msgstr "Bidalketa bat irekita dago. Argitaratu edo zokoratu berri bat sortu baino lehen."
 
 #: src/components/related-actions.tsx
 msgid "Unable to mute @{username}"
-msgstr ""
+msgstr "Ezin da @{username} mututu"
 
 #: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Hashtags"
-msgstr ""
+msgstr "Traolak"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to remove quote"
-msgstr ""
+msgstr "Ezin da iruzkina kendu"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
-msgstr ""
+msgstr "{account}(e)k bidalketa bat editatu du."
 
 #: src/components/open-link-sheet.tsx
 #: src/components/related-actions.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Unable to copy link"
-msgstr ""
+msgstr "Ezin da esteka kopiatu"
 
 #: src/components/notification.tsx
 msgid "Your posts will be marked as sensitive from now on."
-msgstr ""
+msgstr "Aurrerantzean zure bidalketak hunkigarri gisa markatuko dira."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of Bluepy home timeline on tablet device"
@@ -3753,7 +3764,7 @@ msgstr ""
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Like"
-msgstr ""
+msgstr "Gogoko egin"
 
 #: src/components/compose.tsx
 msgid "Select a list before publishing this post."
@@ -3762,11 +3773,11 @@ msgstr ""
 #: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
-msgstr ""
+msgstr "Hautatu guztiak"
 
 #: src/pages/welcome.tsx
 msgid "Multi-hashtag timeline"
-msgstr ""
+msgstr "Traola anitzeko denbora-lerroa"
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
@@ -3778,45 +3789,45 @@ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Editing source post"
-msgstr ""
+msgstr "Jatorrizko bidalketa editatzen"
 
 #: src/pages/settings.tsx
 msgid "Polls"
-msgstr ""
+msgstr "Bozketak"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
-msgstr ""
+msgstr "Traola anitzeko denbora-lerroaren pantaila-argazkia, traola gehiago gehitzeko inprimakiarekin"
 
 #: src/pages/search.tsx
 msgid "Search: {q}"
-msgstr ""
+msgstr "Bilatu: {q}"
 
 #: src/pages/notifications.tsx
 msgid "Filter out notifications from people:"
-msgstr ""
+msgstr "Ez erakutsi hauen jakinarazpenak:"
 
 #: src/pages/settings.tsx
 msgid "Push Notifications (beta)"
-msgstr ""
+msgstr "Push jakinarazpenak (beta)"
 
 #: src/pages/catchup.tsx
 msgid "last 10 hours"
-msgstr ""
+msgstr "azken 10 ordutako bidalketak"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Search GIFs"
-msgstr ""
+msgstr "Bilatu GIFak"
 
 #. placeholder {0}: err.message
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description: {0}"
-msgstr ""
+msgstr "Ezin izan da deskribapena sortu: {0}"
 
 #: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Catch-up <0>beta</0>"
-msgstr ""
+msgstr "Zer berri? <0>beta</0>"
 
 #: src/pages/status.tsx
 msgid "You're not logged in. Interactions (reply, repost, etc) are not possible."
@@ -3829,18 +3840,18 @@ msgstr ""
 #: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Edit video description"
-msgstr ""
+msgstr "Editatu bideoaren deskribapena"
 
 #: src/pages/settings.tsx
 msgid "people I follow"
-msgstr ""
+msgstr "jarraitzen diodan jendea"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
 #: src/components/compose.tsx
 #: src/utils/visibility-text.ts
 msgid "Followers"
-msgstr ""
+msgstr "jarraitzaile"
 
 #: src/components/notification.tsx
 msgid "Reposted by…"
@@ -3848,42 +3859,42 @@ msgstr ""
 
 #: src/components/status-quotes.tsx
 msgid "Post hidden by your filters"
-msgstr ""
+msgstr "Iragazkiek ezkutatutako bidalketa"
 
 #: src/components/recent-searches.tsx
 msgid "Clear"
-msgstr ""
+msgstr "Garbitu"
 
 #: src/components/qr-code-modal.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Scan QR code"
-msgstr ""
+msgstr "Eskaneatu QR kodea"
 
 #: src/components/related-actions.tsx
 msgid "Mute <0>@{username}</0>…"
-msgstr ""
+msgstr "Mututu <0>@{username}</0>…"
 
 #: src/components/media-attachment.tsx
 msgid "Failed to generate description"
-msgstr ""
+msgstr "Ezin izan da deskribapena sortu"
 
 #: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
 msgid "static URL"
-msgstr ""
+msgstr "URL estatikoa"
 
 #. placeholder {0}: pc.id
 #: src/pages/catchup.tsx
 msgid "Removing Catch-up {0}"
-msgstr ""
+msgstr "{0} eguneraketa kentzen"
 
 #: src/components/notification.tsx
 msgid "Lost connections with <0>{name}</0>."
-msgstr ""
+msgstr "<0>{name}</0>(r)ekin harremana galdu da."
 
 #: src/pages/hashtag.tsx
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
-msgstr ""
+msgstr "{SHORTCUTS_LIMIT, plural, one {Gehienezko lasterbidera (#) iritsi zara. Ezin da lasterbidea gehitu.} other {Gehienezko # lasterbideetara iritsi zara. Ezin da lasterbidea gehitu.}}"
 
 #: src/components/compose.tsx
 msgid "Nobody"
@@ -3891,17 +3902,17 @@ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>r</1>"
 
 #: src/components/status-account-menu.tsx
 msgid "Unpin from profile"
-msgstr ""
+msgstr "Utzi profilean finkatzeari"
 
 #: src/components/nav-menu.tsx
 #: src/pages/catchup.tsx
 #: src/pages/welcome.tsx
 msgid "Catch-up"
-msgstr ""
+msgstr "Zer berri?"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Specific list is optional."
@@ -3910,11 +3921,11 @@ msgstr ""
 #: src/components/drafts.tsx
 #: src/pages/account-statuses.tsx
 msgid "Media"
-msgstr ""
+msgstr "Multimedia"
 
 #: src/pages/notifications.tsx
 msgid "Yesterday"
-msgstr ""
+msgstr "Atzo"
 
 #: src/components/feedback-modal.tsx
 msgid "What happened?"
@@ -3926,48 +3937,48 @@ msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Post reported"
-msgstr ""
+msgstr "Bidalketa salatu da"
 
 #: src/components/account-block.tsx
 #: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
-msgstr ""
+msgstr "Jarraitzen"
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to delete post"
-msgstr ""
+msgstr "Ezin da bidalketa ezabatu"
 
 #: src/components/edit-history-controls.tsx
 msgid "Exit"
-msgstr ""
+msgstr "Irten"
 
 #: src/pages/catchup.tsx
 msgid "Previously…"
-msgstr ""
+msgstr "Lehenago…"
 
 #: src/components/status-account-menu.tsx
 msgid "Quote removed"
-msgstr ""
+msgstr "Iruzkina kendu da"
 
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Quote with link"
-msgstr ""
+msgstr "Iruzkindu estekarekin"
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
 msgid "Speak"
-msgstr ""
+msgstr "Irakurri ozenki"
 
 #: src/pages/hashtag.tsx
 msgid "Unable to load posts with this tag"
-msgstr ""
+msgstr "Ezin dira etiketa hau duten bidalketak kargatu"
 
 #: src/components/notification.tsx
 #: src/components/notification.tsx
 msgid "Learn more <0/>"
-msgstr ""
+msgstr "Ikasi gehiago <0/>"
 
 #: src/pages/hashtag.tsx
 msgid "This timeline is disabled on Bluesky."
@@ -3975,7 +3986,7 @@ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Catch-up is a separate timeline for your followings, offering a high-level view at a glance, with a simple, email-inspired interface to effortlessly sort and filter through posts."
-msgstr ""
+msgstr "Zer berri? denbora-lerro bereizi bat da jarraitzen diezunekin; goi-mailako ikuspegi bat eskaintzen du begirada batean, posta elektronikoan oinarritutako interfaze erraz batekin, mezuak sailkatzea eta iragaztea ahalbidetzen duena."
 
 #. [Name] [Visibility icon] reposted
 #: src/components/filtered-status.tsx
@@ -3984,11 +3995,11 @@ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Moderation warning"
-msgstr ""
+msgstr "Moderazio-ohartarazpena"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>b</1>"
-msgstr ""
+msgstr "<0>Shift</0> + <1>b</1>"
 
 #: src/pages/settings.tsx
 msgid "Manual pagination of timeline posts instead of infinite scrolling. Only works for Home/Following timeline for now. Auto refresh and reposts carousel will not work when this is enabled."
@@ -3997,31 +4008,31 @@ msgstr ""
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Liked @{0}'s post"
-msgstr ""
+msgstr "@{0}(r)en bidalketa gogoko egin du"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcuts"
-msgstr ""
+msgstr "Ezin dira lasterbideak kopiatu"
 
 #: src/components/status-account-menu.tsx
 msgid "Conversation muted"
-msgstr ""
+msgstr "Elkarrizketa mututu da"
 
 #: src/components/account-block.tsx
 msgid "Requested"
-msgstr ""
+msgstr "Eskatuta"
 
 #: src/components/status-account-menu.tsx
 msgid "Post unpinned from profile"
-msgstr ""
+msgstr "Bidalketa profilean finkatzeari utzi zaio"
 
 #: src/pages/search.tsx
 msgid "No accounts found."
-msgstr ""
+msgstr "Ez da konturik aurkitu."
 
 #: src/components/recent-searches.tsx
 msgid "Clear all"
-msgstr ""
+msgstr "Garbitu guztia"
 
 #: src/components/account-sheet.tsx
 #: src/components/add-remove-lists-sheet.tsx
@@ -4064,11 +4075,11 @@ msgstr ""
 #: src/pages/settings.tsx
 #: src/pages/status.tsx
 msgid "Close"
-msgstr ""
+msgstr "Itxi"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
-msgstr ""
+msgstr "Badirudi dagoeneko baduzula editorea irekita leiho nagusian eta zerbait argitaratzen ari zarela. Itxaron bukatu arte eta saiatu berriro geroago."
 
 #: src/components/compose.tsx
 msgid "Anyone"
@@ -4076,16 +4087,16 @@ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
-msgstr ""
+msgstr "Partekatu"
 
 #: src/pages/settings.tsx
 msgid "NOTE: Push notifications only work for <0>one account</0>."
-msgstr ""
+msgstr "Oharra: push jakinarazpenak <0>kontu bakarrarentzat</0> dabiltza."
 
 #: src/components/poll.tsx
 #: src/components/poll.tsx
 msgid "Show results"
-msgstr ""
+msgstr "Erakutsi emaitzak"
 
 #: src/components/compose.tsx
 msgid "Some"
@@ -4095,37 +4106,37 @@ msgstr ""
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-quote-policy.ts
 msgid "Quote"
-msgstr ""
+msgstr "Iruzkindu"
 
 #: src/pages/catchup.tsx
 msgid "Groups"
-msgstr ""
+msgstr "Taldeak"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Invalid settings format"
-msgstr ""
+msgstr "Ezarpenen formatu baliogabea"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Handle copied"
-msgstr ""
+msgstr "Helbidea kopiatu da"
 
 #: src/pages/status.tsx
 msgid "View post with its replies"
-msgstr ""
+msgstr "Ikusi bidalketa eta erantzunak"
 
 #: src/components/media-modal.tsx
 msgid "Failed to describe image"
-msgstr ""
+msgstr "Ezin da irudia deskribatu"
 
 #: src/components/account-info.tsx
 msgid "View profile header"
-msgstr ""
+msgstr "Ikusi goiburuko irudia"
 
 #: src/pages/login.tsx
 #: src/pages/login.tsx
 msgid "Failed to register application"
-msgstr ""
+msgstr "Aplikazioa erregistratzeak huts egin du"
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
@@ -4140,24 +4151,24 @@ msgstr ""
 #. placeholder {0}: Math.floor(seconds / minute)
 #: src/components/relative-time.tsx
 msgid "{0}m"
-msgstr ""
+msgstr "{0}m"
 
 #. placeholder {0}: request.account.username
 #: src/pages/notifications.tsx
 msgid "Notifications from @{0} will not be filtered from now on."
-msgstr ""
+msgstr "Aurrerantzean ez dira @{0}(r)en jakinarazpenak iragaziko."
 
 #: src/components/nav-menu.tsx
 msgid "Menu"
-msgstr ""
+msgstr "Menua"
 
 #: src/pages/settings.tsx
 msgid "Translate to "
-msgstr ""
+msgstr "Itzuli… "
 
 #: src/components/translation-block.tsx
 msgid "Translating…"
-msgstr ""
+msgstr "Itzultzen…"
 
 #: src/components/atproto-labels.tsx
 msgid "This account has marked itself as automated."
@@ -4172,4 +4183,4 @@ msgstr ""
 #: src/pages/favourites.tsx
 #: src/pages/settings.tsx
 msgid "Likes"
-msgstr ""
+msgstr "Gogokoak"
