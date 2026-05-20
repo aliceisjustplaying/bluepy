@@ -20,17 +20,17 @@
 
 ## Hard Stops — these need an explicit ask before proceeding
 
-- Do not force-push. `git push --force` and `--force-with-lease` are not part of our workflow. To update pushed work, add a follow-up commit and `git push`.
-- Do not merge or amend published commits.
-- Do not flip a PR from draft to ready-for-review.
-- Do not touch the prod Worker (`bluepy` → `bluepy.social`).
-- Do not delete or restore files you don't own (`git restore`, `git checkout --`, `git clean -f` outside your own staged work).
-- Do not bypass checks: `--no-verify`, `.skip`, `xfail`, `eslint-disable`, `@ts-ignore`, `@ts-expect-error`, `any`.
-- Do not disable a lint rule. If a rule blocks useful work, report the rule name, diagnostic, and smallest compliant change; for a real change write `docs/rule-change-proposals/YYYY-MM-DD-name.md` and get reviewer approval first.
-- Do not run `lingui extract` unless source strings changed, and do not strip `<Trans>` tags.
-- Do not commit generated images, or fold generated locale catalogs into a code commit (separate commit, only if asked).
-- Do not push or open a PR without having run `bunx oxlint <changed files>` on every changed file.
-- Do not self-review. Claude never reviews Claude-authored work.
+- To update pushed work, add a follow-up commit and `git push`. Force-push (`--force`, `--force-with-lease`) is not part of our workflow.
+- Add new commits to update published work. Merging and amending published commits need an explicit ask.
+- Keep PRs in draft until asked to mark ready.
+- Leave the prod Worker (`bluepy` → `bluepy.social`) to the human.
+- Only modify files that are part of your task. `git restore`, `git checkout --`, `git clean -f` on other files need an explicit ask.
+- Run all checks as-is: `--no-verify`, `.skip`, `xfail`, `eslint-disable`, `@ts-ignore`, `@ts-expect-error`, and `any` are off-limits.
+- If a lint rule blocks useful work, report the rule name, diagnostic, and smallest compliant change; for a real change write `docs/rule-change-proposals/YYYY-MM-DD-name.md` and get reviewer approval first.
+- Only run `lingui extract` when source strings changed. Preserve `<Trans>` tags.
+- Keep generated images and locale catalogs out of code commits (separate commit, only if asked).
+- Run `bunx oxlint <changed files>` on every changed file before pushing or opening a PR.
+- Send your work to Codex for review. Claude does not review Claude-authored work.
 
 ## Review CLI — Codex reviews Claude's work
 
