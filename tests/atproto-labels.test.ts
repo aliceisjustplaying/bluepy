@@ -100,6 +100,23 @@ void test('custom label definitions win over global strings', () => {
   );
 });
 
+void test('custom labels without locale strings fall back to global strings', () => {
+  assert.equal(
+    describeAtprotoLabel(
+      label(),
+      { 'did:plc:custom': [{ ...customLabelDef, locales: [] }] },
+      'en',
+      {
+        bot: {
+          name: 'Automated',
+          description: 'Global bot label.',
+        },
+      },
+    ).name,
+    'Automated',
+  );
+});
+
 void test('locale fallback tries language before first locale', () => {
   assert.equal(
     describeAtprotoLabel(

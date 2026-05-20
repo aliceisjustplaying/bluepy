@@ -204,9 +204,9 @@ export function describeAtprotoLabel(
   const { customDef, globalDef } = getDefinitions(label, labelDefs);
   const def = customDef ?? globalDef;
   const globalStrings = getOwn(globalLabelStrings, label.val);
-  const strings = customDef
-    ? getLocaleStrings(customDef, locale)
-    : (globalStrings ?? (globalDef && getLocaleStrings(globalDef, locale)));
+  const customStrings = customDef && getLocaleStrings(customDef, locale);
+  const strings =
+    customStrings ?? globalStrings ?? (globalDef && getLocaleStrings(globalDef, locale));
   const fallbackName = label.val
     .replace(/^!/, '')
     .replace(/-/g, ' ')
