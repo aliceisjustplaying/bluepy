@@ -32,6 +32,9 @@ const {
   PHANPY_DISALLOW_ROBOTS: DISALLOW_ROBOTS,
   PHANPY_DEV,
 } = loadEnv('production', process.cwd(), allowedEnvPrefixes);
+const hasSentrySourcemapUpload =
+  !!SENTRY_AUTH_TOKEN && !!SENTRY_ORG && !!SENTRY_PROJECT;
+const shouldAnalyzeBundle = process.env.ANALYZE === '1';
 const productionOrigin = (WEBSITE || 'https://bluepy.social').replace(
   /\/$/,
   '',
@@ -112,6 +115,43 @@ logger.warn = (msg, options) => {
   }
   originalWarn(msg, options);
 };
+
+function removeUploadedSourcemaps() {
+  return {
+    name: 'remove-uploaded-sourcemaps',
+    closeBundle() {
+      const outputDir = resolve(__dirname, 'dist');
+      /** @param {string} filePath */
+      const stripSourceMappingURL = (filePath) => {
+        const source = fs.readFileSync(filePath, 'utf-8');
+        const next = source.replace(
+          /\n?\/\/# sourceMappingURL=.+\.map\s*$/u,
+          '',
+        );
+        if (next !== source) {
+          fs.writeFileSync(filePath, next);
+        }
+      };
+      /** @param {string} dir */
+      const visit = (dir) => {
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+          const filePath = resolve(dir, entry.name);
+          if (entry.isDirectory()) {
+            visit(filePath);
+          } else if (entry.name.endsWith('.map')) {
+            fs.unlinkSync(filePath);
+          } else if (/\.(?:js|mjs)$/u.test(entry.name)) {
+            stripSourceMappingURL(filePath);
+          }
+        }
+      };
+
+      if (hasSentrySourcemapUpload && fs.existsSync(outputDir)) {
+        visit(outputDir);
+      }
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -376,9 +416,7 @@ export default defineConfig({
         );
       },
     },
-    SENTRY_AUTH_TOKEN &&
-      SENTRY_ORG &&
-      SENTRY_PROJECT &&
+    hasSentrySourcemapUpload &&
       sentryVitePlugin({
         authToken: SENTRY_AUTH_TOKEN,
         org: SENTRY_ORG,
@@ -386,6 +424,13 @@ export default defineConfig({
         release: {
           name: commitHash ? `bluepy@${commitHash}` : undefined,
         },
+        ...(shouldAnalyzeBundle
+          ? {}
+          : {
+              sourcemaps: {
+                filesToDeleteAfterUpload: 'dist/**/*.map',
+              },
+            }),
       }),
     VitePWA({
       manifest: {
@@ -451,11 +496,16 @@ export default defineConfig({
         type: 'module',
       },
     }),
-    Sonda({
-      deep: true,
-      brotli: true,
-      open: false,
-    }),
+    shouldAnalyzeBundle &&
+      Sonda({
+        deep: true,
+        brotli: true,
+        open: false,
+      }),
+    // Runs after Sentry and the PWA child build so uploaded maps are not deployed.
+    hasSentrySourcemapUpload &&
+      !shouldAnalyzeBundle &&
+      removeUploadedSourcemaps(),
     {
       name: 'css-ordering-plugin',
       transformIndexHtml(html) {
@@ -483,7 +533,7 @@ export default defineConfig({
     },
   ],
   build: {
-    sourcemap: true,
+    sourcemap: hasSentrySourcemapUpload || shouldAnalyzeBundle,
     cssCodeSplit: false,
     rolldownOptions: {
       treeshake: false,
