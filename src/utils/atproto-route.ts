@@ -49,6 +49,12 @@ function isAtprotoPostPath(pathname: string): boolean {
   return isAtprotoPostURI(getAtprotoURIFromPathname(pathname));
 }
 
+function isStatusPath(pathname: string): boolean {
+  return (
+    /^\/(?:[^/]+\/)?s\/[^/?#]+/i.test(pathname) || isAtprotoPostPath(pathname)
+  );
+}
+
 function buildAtprotoRecordPath(uri: string): string {
   return `/${uri}`;
 }
@@ -133,5 +139,6 @@ export {
   isAtprotoPostURI,
   isAtprotoProfileURI,
   isAtprotoRecordURI,
+  isStatusPath,
   maybeDecodeAtprotoURI,
 };

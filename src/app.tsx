@@ -7,13 +7,7 @@ import debounce from 'just-debounce-it';
 import type { ReactElement } from 'react';
 import { lazy, memo, Suspense } from 'react';
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import {
-  matchPath,
-  Navigate,
-  Route,
-  Routes,
-  useLocation,
-} from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { subscribe } from 'valtio';
 import { unstable_enableOp } from 'valtio/vanilla';
 
@@ -34,7 +28,10 @@ import NotificationService from './components/notification-service';
 import SearchCommand from './components/search-command';
 import Shortcuts from './components/shortcuts';
 import AccountStatuses from './pages/account-statuses';
-import AtprotoRoute from './pages/atproto-route';
+import {
+  AtprotoNonStatusRoute,
+  AtprotoStatusRoute,
+} from './pages/atproto-route';
 import Bookmarks from './pages/bookmarks';
 import Catchup from './pages/catchup';
 import Favourites from './pages/favourites';
@@ -68,8 +65,9 @@ import {
 } from './utils/atproto-oauth';
 import {
   getAtprotoURIFromPathname,
-  isAtprotoPostPath,
+  getAtprotoPathFromLegacyRoute,
   isAtprotoPostURI,
+  isStatusPath,
 } from './utils/atproto-route';
 import { getAccessToken } from './utils/auth';
 import {
@@ -838,10 +836,9 @@ function App() {
     <AuthProvider value={isLoggedIn}>
       <PrimaryRoutes />
       <SecondaryRoutes />
-      <AtprotoBackgroundRoutes />
       <Routes>
-        <Route path="/:scheme://*" element={<AtprotoRoute />} />
-        <Route path="/:atUri" element={<AtprotoRoute />} />
+        <Route path="/:scheme://*" element={<AtprotoStatusRoute />} />
+        <Route path="/:atUri" element={<AtprotoStatusRoute />} />
         <Route path="/:instance?/s/:id" element={<StatusRoute />} />
         <Route path="*" element={null} />
       </Routes>
@@ -877,11 +874,35 @@ function isNativeAtprotoPath(pathname: string) {
   return pathname.toLowerCase().startsWith('/at://');
 }
 
+function getSuppressibleAtprotoPathname(pathname: string): string | null {
+  if (isNativeAtprotoPath(pathname)) return pathname;
+  return getAtprotoPathFromLegacyRoute(pathname);
+}
+
+function shouldSuppressPrimaryRoute(
+  location: ReturnType<typeof useLocation>,
+  isLoggedIn: boolean,
+): boolean {
+  const currentAtprotoPathname = getSuppressibleAtprotoPathname(
+    location.pathname,
+  );
+  if (!currentAtprotoPathname) return false;
+  if (!isLoggedIn) return true;
+
+  const currentAtUri = getAtprotoURIFromPathname(currentAtprotoPathname);
+  if (!isAtprotoPostURI(currentAtUri)) return true;
+
+  const prevAtprotoPathname = getSuppressibleAtprotoPathname(
+    states.prevLocation?.pathname ?? '',
+  );
+  const prevAtUri = getAtprotoURIFromPathname(prevAtprotoPathname ?? '');
+  return !!prevAtUri && !isAtprotoPostURI(prevAtUri);
+}
+
 const PrimaryRoutes = memo(() => {
   const location = useLocation();
   const isLoggedIn = useAuth();
-  const suppressPrimaryRoute =
-    !isLoggedIn && isNativeAtprotoPath(location.pathname);
+  const suppressPrimaryRoute = shouldSuppressPrimaryRoute(location, isLoggedIn);
   const primaryLocation = useMemo(() => {
     const { pathname } = location;
     if (pathname === '/' || isRootPath(pathname)) return location;
@@ -938,43 +959,17 @@ function getPrevLocation() {
 }
 
 function isStatusModalPath(pathname: string) {
-  if (
-    matchPath('/:instance/s/:id', pathname) ||
-    matchPath('/s/:id', pathname)
-  ) {
-    return true;
-  }
-  return isAtprotoPostPath(pathname);
-}
-
-function AtprotoBackgroundRoutes() {
-  const currentLocation = useLocation();
-  const backgroundLocation = useMemo(() => {
-    if (!isStatusModalPath(currentLocation.pathname)) return null;
-    const prevLocation = getPrevLocation();
-    const prevPathname = prevLocation?.pathname;
-    if (!prevPathname) return null;
-    const prevAtUri = getAtprotoURIFromPathname(prevPathname);
-    if (!prevAtUri || isAtprotoPostURI(prevAtUri)) return null;
-    return prevLocation;
-  }, [currentLocation.pathname]);
-
-  if (!backgroundLocation) return null;
-
-  return (
-    <Routes location={backgroundLocation}>
-      <Route path="/:scheme://*" element={<AtprotoRoute />} />
-      <Route path="/:atUri" element={<AtprotoRoute />} />
-      <Route path="*" element={null} />
-    </Routes>
-  );
+  return isStatusPath(pathname);
 }
 
 function SecondaryRoutes() {
   // const snapStates = useSnapshot(states);
   const currentLocation = useLocation();
   // const prevLocation = snapStates.prevLocation;
-  const backgroundLocation = useRef(getPrevLocation());
+  const backgroundLocation = useRef<
+    ReturnType<typeof useLocation> | ReturnType<typeof getPrevLocation>
+  >(getPrevLocation());
+  const lastNonModalLocation = useRef(currentLocation);
 
   const isModalPage = useMemo(() => {
     return isStatusModalPath(currentLocation.pathname);
@@ -1002,10 +997,19 @@ function SecondaryRoutes() {
   }, [isModalPage]);
 
   if (isModalPage) {
-    if (!backgroundLocation.current)
-      backgroundLocation.current = getPrevLocation();
+    if (!backgroundLocation.current) {
+      const prevLocation = getPrevLocation();
+      const canReuseLastLocation =
+        prevLocation &&
+        lastNonModalLocation.current.pathname === prevLocation.pathname &&
+        lastNonModalLocation.current.search === prevLocation.search;
+      backgroundLocation.current = canReuseLastLocation
+        ? lastNonModalLocation.current
+        : prevLocation;
+    }
   } else {
     backgroundLocation.current = null;
+    lastNonModalLocation.current = currentLocation;
   }
   console.debug({
     backgroundLocation: backgroundLocation.current,
@@ -1014,6 +1018,8 @@ function SecondaryRoutes() {
 
   return (
     <Routes location={backgroundLocation.current || currentLocation}>
+      <Route path="/:scheme://*" element={<AtprotoNonStatusRoute />} />
+      <Route path="/:atUri" element={<AtprotoNonStatusRoute />} />
       <Route
         path="/notifications"
         element={

@@ -20,6 +20,14 @@ function currentAppPath(): string {
   return `${location.pathname}${location.search}`;
 }
 
+function getPrevLocationSnapshot(): { pathname: string; search: string } {
+  const currentURL = new URL(currentAppPath(), location.origin);
+  return {
+    pathname: currentURL.pathname,
+    search: currentURL.search,
+  };
+}
+
 function isModifiedClick(e: React.MouseEvent): boolean {
   return e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1;
 }
@@ -60,6 +68,7 @@ function migrateLegacyCanonicalRoute(): void {
 export {
   canonicalizeAppPath,
   currentAppPath,
+  getPrevLocationSnapshot,
   isModifiedClick,
   migrateLegacyCanonicalRoute,
   migrateLegacyHashRoute,

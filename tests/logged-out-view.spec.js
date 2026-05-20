@@ -2,28 +2,8 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * @typedef {{ did: string; handle: string; displayName: string }} AtprotoTestActor
- * @typedef {{
- *   uri: string;
- *   cid: string;
- *   author: AtprotoTestActor;
- *   record: {
- *     $type: 'app.bsky.feed.post';
- *     text: string;
- *     createdAt: string;
- *     reply?: {
- *       root: { uri: string; cid: string };
- *       parent: { uri: string; cid: string };
- *     };
- *   };
- *   indexedAt: string;
- *   replyCount: number;
- *   repostCount: number;
- *   likeCount: number;
- *   quoteCount: number;
- *   labels: unknown[];
- *   viewer: Record<string, unknown>;
- * }} AtprotoTestPost
+ * @typedef {import('@atproto/api').AppBskyActorDefs.ProfileViewBasic} AtprotoTestActor
+ * @typedef {import('@atproto/api').AppBskyFeedDefs.PostView} AtprotoTestPost
  */
 
 /**
@@ -666,6 +646,9 @@ const AT_LIST_URI = `at://${AT_REPO}/app.bsky.graph.list/abc123`;
 const AT_LIST_PATH = `/${AT_LIST_URI}`;
 const AT_FEED_URI = `at://${AT_REPO}/app.bsky.feed.generator/whats-hot`;
 const AT_FEED_PATH = `/${AT_FEED_URI}`;
+const SCROLL_AT_FEED_URI = `at://${AT_REPO}/app.bsky.feed.generator/scroll-feed`;
+const SCROLL_AT_FEED_PATH = `/${SCROLL_AT_FEED_URI}`;
+const SCROLL_LOCAL_FEED_PATH = `/l/${encodeURIComponent(SCROLL_AT_FEED_URI)}`;
 const AT_POST_URI = `at://${AT_REPO}/app.bsky.feed.post/post123`;
 const AT_POST_PATH = `/${AT_POST_URI}`;
 const AT_PROFILE_AVATAR =
@@ -708,6 +691,62 @@ function getBootReloadAttempts() {
   return typeof attempts === 'number' ? attempts : null;
 }
 
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {{ homeTimeline?: { type: string; id: string } }} [options]
+ */
+async function seedAtprotoLogin(page, options = {}) {
+  await page.addInitScript(
+    ({ avatar, homeTimeline, repo }) => {
+      localStorage.setItem(
+        'accounts',
+        JSON.stringify([
+          {
+            accessToken: 'test-token',
+            atproto: true,
+            info: {
+              id: repo,
+              username: 'alice.test',
+              acct: 'alice.test',
+              displayName: 'Alice Profile',
+              avatar,
+              avatarStatic: avatar,
+            },
+            instanceURL: 'bsky.social',
+          },
+        ]),
+      );
+      localStorage.setItem(
+        'instances',
+        JSON.stringify({
+          'bsky.social': {
+            title: 'Bluesky',
+          },
+        }),
+      );
+      sessionStorage.setItem('currentAccount', repo);
+      if (homeTimeline) {
+        localStorage.setItem(
+          'homeTimeline',
+          JSON.stringify({
+            [`${repo}@bsky.social`]: homeTimeline,
+          }),
+        );
+      }
+    },
+    {
+      avatar: AT_PROFILE_AVATAR,
+      homeTimeline: options.homeTimeline,
+      repo: AT_REPO,
+    },
+  );
+}
+
+/**
+ * @param {string} [uri]
+ * @param {string} [text]
+ * @returns {AtprotoTestPost}
+ */
 function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
   return {
     $type: 'app.bsky.feed.defs#postView',
@@ -723,10 +762,6 @@ function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
       $type: 'app.bsky.feed.post',
       text,
       createdAt: '2024-01-01T12:00:00.000Z',
-      reply:
-        /** @type {{ root?: { uri: string, cid: string, author: object }, parent?: { uri: string, cid: string, author: object } } | undefined} */ (
-          undefined
-        ),
     },
     indexedAt: '2024-01-01T12:00:00.000Z',
     replyCount: 0,
@@ -739,7 +774,6 @@ function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
 }
 
 /**
- * @typedef {ReturnType<typeof makeAtprotoPost>} AtprotoTestPost
  * @typedef {{ uri: string, cid: string, author: AtprotoTestPost['author'] }} AtprotoReplyRef
  * @typedef {{
  *   $type: string,
@@ -936,10 +970,12 @@ async function routeAtprotoThreadNavigation(page) {
     const url = new URL(route.request().url());
     const endpoint = url.pathname.replace('/xrpc/', '');
     if (endpoint === 'app.bsky.feed.getFeedGenerator') {
+      expect(url.searchParams.get('feed')).toBe(AT_FEED_URI);
       await route.fulfill({ headers, json: { view: feed, isOnline: true } });
       return;
     }
     if (endpoint === 'app.bsky.feed.getFeed') {
+      expect(url.searchParams.get('feed')).toBe(AT_FEED_URI);
       await route.fulfill({ headers, json: { feed: [{ post: middle }] } });
       return;
     }
@@ -952,7 +988,11 @@ async function routeAtprotoThreadNavigation(page) {
       return;
     }
     if (endpoint === 'app.bsky.feed.getPostThread') {
-      const thread = threadByURI.get(url.searchParams.get('uri') || '')?.();
+      const uri = url.searchParams.get('uri') || '';
+      const thread = threadByURI.get(uri)?.();
+      if (!thread) {
+        throw new Error(`Unexpected thread URI in test fixture: ${uri}`);
+      }
       await route.fulfill({ headers, json: { thread } });
       return;
     }
@@ -960,7 +1000,145 @@ async function routeAtprotoThreadNavigation(page) {
       await route.fulfill({ headers, json: profile });
       return;
     }
-    await route.fulfill({ headers, json: {} });
+    if (endpoint === 'app.bsky.actor.getPreferences') {
+      await route.fulfill({ headers, json: { preferences: [] } });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.putPreferences') {
+      await route.fulfill({ headers, json: {} });
+      return;
+    }
+    if (endpoint === 'app.bsky.labeler.getServices') {
+      await route.fulfill({ headers, json: { views: [] } });
+      return;
+    }
+    throw new Error(`Unexpected XRPC endpoint in test fixture: ${endpoint}`);
+  });
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+async function routeAtprotoScrollableFeed(page) {
+  const posts = Array.from({ length: 60 }, (_unused, index) =>
+    makeAtprotoPost(
+      `at://${AT_REPO}/app.bsky.feed.post/scroll-${String(index).padStart(2, '0')}`,
+      `AT feed position post ${index}\n${Array.from(
+        { length: 12 },
+        (_line, lineIndex) => `feed position filler ${index}-${lineIndex}`,
+      ).join('\n')}`,
+    ),
+  );
+  posts[59].embed = {
+    $type: 'app.bsky.embed.images#view',
+    images: [
+      {
+        thumb: AT_PROFILE_AVATAR,
+        fullsize: AT_PROFILE_AVATAR,
+        alt: 'AT feed position image',
+        aspectRatio: { width: 1, height: 1 },
+      },
+    ],
+  };
+  const profile = {
+    $type: 'app.bsky.actor.defs#profileView',
+    did: AT_REPO,
+    handle: 'alice.test',
+    displayName: 'Alice Profile',
+    description: '',
+    followersCount: 1,
+    followsCount: 2,
+    postsCount: posts.length,
+    labels: [],
+    viewer: {},
+  };
+  const feed = {
+    $type: 'app.bsky.feed.defs#generatorView',
+    uri: SCROLL_AT_FEED_URI,
+    cid: 'bafyreihltdmuzgj3iaoj5woin7jn3yfhftewnsijzf4b5gqsuxorrhw4qi',
+    did: AT_REPO,
+    displayName: 'AT Feed',
+    description: '',
+    creator: profile,
+    indexedAt: '2024-01-01T12:00:00.000Z',
+    likeCount: 0,
+    viewer: {},
+  };
+  const headers = { 'access-control-allow-origin': '*' };
+
+  await page.route('**/xrpc/**', async (route) => {
+    const url = new URL(route.request().url());
+    const endpoint = url.pathname.replace('/xrpc/', '');
+    if (endpoint === 'app.bsky.feed.getFeedGenerator') {
+      expect(url.searchParams.get('feed')).toBe(SCROLL_AT_FEED_URI);
+      await route.fulfill({
+        headers,
+        json: { view: feed, isOnline: true, isValid: true },
+      });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getFeed') {
+      expect(url.searchParams.get('feed')).toBe(SCROLL_AT_FEED_URI);
+      await route.fulfill({
+        headers,
+        json: { feed: posts.map((post) => ({ post })) },
+      });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getPosts') {
+      const uris = url.searchParams.getAll('uris');
+      await route.fulfill({
+        headers,
+        json: {
+          posts: uris.length
+            ? posts.filter(({ uri }) => uris.includes(uri))
+            : posts,
+        },
+      });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getPostThread') {
+      const uri = url.searchParams.get('uri') || '';
+      const post = posts.find((item) => item.uri === uri);
+      if (!post) {
+        throw new Error(`Unexpected thread URI in test fixture: ${uri}`);
+      }
+      await route.fulfill({
+        headers,
+        json: {
+          thread: {
+            $type: 'app.bsky.feed.defs#threadViewPost',
+            post,
+            replies: [],
+          },
+        },
+      });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.getProfile') {
+      await route.fulfill({ headers, json: profile });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.getPreferences') {
+      await route.fulfill({ headers, json: { preferences: [] } });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.putPreferences') {
+      await route.fulfill({ headers, json: {} });
+      return;
+    }
+    if (endpoint === 'app.bsky.labeler.getServices') {
+      await route.fulfill({ headers, json: { views: [] } });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getTimeline') {
+      await route.fulfill({
+        headers,
+        json: { feed: posts.map((post) => ({ post })) },
+      });
+      return;
+    }
+    throw new Error(`Unexpected XRPC endpoint in test fixture: ${endpoint}`);
   });
 }
 
@@ -1419,6 +1597,25 @@ test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
 });
 
+test('keeps logged-in native AT list and profile routes off the home deck', async ({
+  page,
+}) => {
+  await seedAtprotoLogin(page);
+  await routeAtprotoRecords(page);
+
+  await page.goto(AT_LIST_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+
+  await page.goto(AT_PROFILE_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#account-statuses-page')).toHaveCount(1);
+});
+
 test('keeps AT thread links navigable from a feed-backed post detail', async ({
   page,
 }) => {
@@ -1478,6 +1675,244 @@ test('keeps AT thread links navigable from a feed-backed post detail', async ({
   await expect(page.getByText('Thread middle post').first()).toBeVisible();
   await page.locator('.deck-close').click();
   await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
+});
+
+test('restores AT feed position after opening a feed post in the sidebar', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto(SCROLL_AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  const feedDeck = page.locator('#list-page');
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page.getByText('AT feed position post 59').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/scroll-59`),
+  );
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(SCROLL_AT_FEED_PATH));
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#list-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('restores AT feed position after opening an image from the feed', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto(SCROLL_AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  const feedDeck = page.locator('#list-page');
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page
+    .locator(`a.media[href*="/app.bsky.feed.post/scroll-59"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(/media-only=1/);
+  await page.locator('.carousel-top-controls button').first().click();
+  await expect(page).toHaveURL(pathRegex(SCROLL_AT_FEED_PATH));
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#list-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('keeps a logged-in AT feed as the post sidebar background', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedAtprotoLogin(page);
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto(SCROLL_AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  const feedDeck = page.locator('#list-page');
+  await expect(feedDeck).toHaveCount(1);
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page.getByText('AT feed position post 59').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/scroll-59`),
+  );
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(SCROLL_AT_FEED_PATH));
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#list-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('keeps a logged-in legacy custom feed route off the home deck', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedAtprotoLogin(page);
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.evaluate((path) => {
+    history.pushState(history.state, '', path);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }, SCROLL_LOCAL_FEED_PATH);
+
+  await expect(page).toHaveURL(pathRegex(SCROLL_LOCAL_FEED_PATH));
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  const feedDeck = page.locator('#list-page');
+  await expect(feedDeck).toHaveCount(1);
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page.getByText('AT feed position post 59').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/scroll-59`),
+  );
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(SCROLL_AT_FEED_PATH));
+  await expect(page.locator('.status-deck')).toHaveCount(0);
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#list-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('restores logged-in custom feed position on narrow post navigation', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 820 });
+  await seedAtprotoLogin(page);
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto(SCROLL_AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  const feedDeck = page.locator('#list-page');
+  await expect(feedDeck).toHaveCount(1);
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page.getByText('AT feed position post 59').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/scroll-59`),
+  );
+  await expect(page.locator('#list-page')).toHaveCount(1);
+
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(SCROLL_AT_FEED_PATH));
+  await expect(page.locator('.status-deck')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#list-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('restores logged-in selected home feed position after opening a feed post', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedAtprotoLogin(page, {
+    homeTimeline: {
+      type: 'feed',
+      id: encodeURIComponent(SCROLL_AT_FEED_URI),
+    },
+  });
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  const feedDeck = page.locator('#home-page');
+  await expect(feedDeck).toHaveCount(1);
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page.getByText('AT feed position post 59').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/scroll-59`),
+  );
+  await expect(page.locator('#home-page')).toHaveCount(1);
+
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex('/'));
+  await expect(page.locator('.status-deck')).toHaveCount(0);
+  await expect(page.locator('#home-page')).toHaveCount(1);
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#home-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
 });
 
 test('keeps app-local routes outside the AT URI schema', async ({ page }) => {

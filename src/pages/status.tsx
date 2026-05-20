@@ -42,8 +42,8 @@ import type { AnyStatus } from '../components/status-types';
 import { api, getMastoV2Resource } from '../utils/api';
 import {
   getAtprotoURIFromPathname,
-  isAtprotoPostPath,
   isAtprotoPostURI,
+  isStatusPath,
 } from '../utils/atproto-route';
 import {
   EditHistoryProvider,
@@ -178,12 +178,6 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
 // https://front-end.social/@AmeliaBR/109784776146144471
 const STATUSES_SELECTOR =
   '.status-link:not(details:not([open]) > summary ~ *, details:not([open]) > summary ~ * *), .status-focus:not(details:not([open]) > summary ~ *, details:not([open]) > summary ~ * *)';
-
-const STATUS_URL_REGEX = /\/s\//i;
-
-function isStatusPath(pathname: string): boolean {
-  return STATUS_URL_REGEX.test(pathname) || isAtprotoPostPath(pathname);
-}
 
 const postViewState = (): 'large' | 'small' =>
   window.matchMedia('(min-width: calc(40em + 350px))').matches
@@ -454,13 +448,21 @@ function StatusPage(params: StatusPageParams) {
   }, [showMediaOnly]);
 
   useEffect(() => {
-    const $deckContainers = document.querySelectorAll('.deck-container');
+    const $deckContainers =
+      document.querySelectorAll<HTMLElement>('.deck-container');
+    const scrollTops = new Map<HTMLElement, number>();
     $deckContainers.forEach(($deckContainer) => {
+      scrollTops.set($deckContainer, $deckContainer.scrollTop);
       $deckContainer.setAttribute('inert', '');
     });
     return () => {
       $deckContainers.forEach(($deckContainer) => {
         $deckContainer.removeAttribute('inert');
+      });
+      requestAnimationFrame(() => {
+        scrollTops.forEach((scrollTop, $deckContainer) => {
+          $deckContainer.scrollTop = scrollTop;
+        });
       });
     };
   }, []);
@@ -2012,7 +2014,11 @@ function StatusThread({
                   <span>{t`View Edit History Snapshots`}</span>
                 </MenuItem>
               </Menu2>
-              <Link className="button plain deck-close" to={closeLink}>
+              <Link
+                className="button plain deck-close"
+                to={closeLink}
+                preservePrevLocation
+              >
                 <Icon icon="x" size="xl" alt={t`Close`} />
               </Link>
             </div>
