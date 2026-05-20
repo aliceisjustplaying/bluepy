@@ -1,9 +1,17 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { getBlurHashAverageColor } from 'fast-blurhash';
+import type HlsType from 'hls.js';
 import type { ReactNode, ComponentType, HTMLAttributes, Ref } from 'react';
 import { Fragment } from 'react';
 import { forwardRef, memo } from 'react';
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import QuickPinchZoomImport, {
   make3dTransformValue,
   type PinchZoomProps as ReactQuickPinchZoomProps,
@@ -20,6 +28,11 @@ const QuickPinchZoom =
   QuickPinchZoomImport as never as ComponentType<QuickPinchZoomProps>;
 
 import formatDuration from '../utils/format-duration';
+import {
+  getBlueskyVideoFallbackURL,
+  getMediaURLObj,
+  isHlsPlaylistURL,
+} from '../utils/media-url';
 import mem from '../utils/mem';
 import { navigatePath } from '../utils/router';
 import states from '../utils/states';
@@ -138,6 +151,143 @@ interface MediaProps {
 
 interface MediaParentProps extends Record<string, unknown> {
   children?: ReactNode;
+}
+
+interface HlsVideoProps {
+  src: string;
+  poster?: string;
+  width?: number;
+  height?: number;
+  orientation?: string | null;
+  viewTransitionName?: string;
+  preload?: 'none' | 'metadata' | 'auto';
+  autoPlay?: boolean;
+  controls?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+  playsInline?: boolean;
+  disablePictureInPicture?: boolean;
+  dataViewTransitionName?: string;
+  onLoadedMetadata?: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
+}
+
+function HlsVideo({
+  src,
+  poster,
+  width,
+  height,
+  orientation,
+  viewTransitionName,
+  preload = 'metadata',
+  autoPlay,
+  controls,
+  loop,
+  muted,
+  playsInline,
+  disablePictureInPicture,
+  dataViewTransitionName,
+  onLoadedMetadata,
+}: HlsVideoProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [activeSrc, setActiveSrc] = useState(src);
+
+  useEffect(() => {
+    setActiveSrc(src);
+  }, [src]);
+
+  useEffect((): (() => void) | undefined => {
+    const video = videoRef.current;
+    if (!video) return undefined;
+
+    let hls: HlsType | undefined;
+    let cancelled = false;
+    const cleanup = () => {
+      cancelled = true;
+      hls?.destroy();
+      video.removeAttribute('src');
+      video.load();
+    };
+
+    const canPlayNative =
+      video.canPlayType('application/vnd.apple.mpegurl') !== '' ||
+      video.canPlayType('application/x-mpegURL') !== '';
+
+    if (canPlayNative) {
+      video.src = activeSrc;
+      return cleanup;
+    }
+
+    void (async () => {
+      let HlsConstructor: (typeof import('hls.js'))['default'];
+      try {
+        ({ default: HlsConstructor } = await import('hls.js'));
+      } catch {
+        if (!cancelled) video.src = activeSrc;
+        return;
+      }
+      if (cancelled || !HlsConstructor.isSupported()) return;
+      hls = new HlsConstructor({
+        capLevelToPlayerSize: true,
+      });
+      hls.on(HlsConstructor.Events.ERROR, (_event, data) => {
+        if (data.type === HlsConstructor.ErrorTypes.NETWORK_ERROR) {
+          const responseCode = data.response?.code ?? 0;
+          const fallbackSrc =
+            responseCode >= 400 && responseCode < 500
+              ? getBlueskyVideoFallbackURL(activeSrc)
+              : undefined;
+          if (fallbackSrc) {
+            setActiveSrc(fallbackSrc);
+            return;
+          }
+        }
+        if (!data.fatal) return;
+        if (data.type === HlsConstructor.ErrorTypes.NETWORK_ERROR) {
+          hls?.startLoad();
+        } else if (data.type === HlsConstructor.ErrorTypes.MEDIA_ERROR) {
+          hls?.recoverMediaError();
+        } else {
+          hls?.destroy();
+        }
+      });
+      hls.loadSource(activeSrc);
+      hls.attachMedia(video);
+    })();
+
+    return cleanup;
+  }, [activeSrc]);
+
+  const handleError = useCallback(() => {
+    const fallbackSrc = getBlueskyVideoFallbackURL(activeSrc);
+    if (fallbackSrc) setActiveSrc(fallbackSrc);
+  }, [activeSrc]);
+
+  return (
+    <video
+      ref={videoRef}
+      poster={poster}
+      width={width}
+      height={height}
+      data-orientation={orientation ?? undefined}
+      data-view-transition-name={dataViewTransitionName}
+      preload={preload}
+      autoPlay={autoPlay}
+      controls={controls}
+      loop={loop}
+      muted={muted}
+      playsInline={playsInline}
+      disablePictureInPicture={disablePictureInPicture}
+      onError={handleError}
+      style={
+        viewTransitionName
+          ? {
+              viewTransitionName,
+            }
+          : undefined
+      }
+      onLoadedMetadata={onLoadedMetadata}
+    />
+  );
 }
 
 function Media({
@@ -268,15 +418,15 @@ function Media({
     ));
   }, [to, mediaLoadError]);
 
-  const remoteMediaURLObj = remoteMediaURL ? getURLObj(remoteMediaURL) : null;
+  const remoteMediaURLObj = remoteMediaURL
+    ? getMediaURLObj(remoteMediaURL)
+    : null;
   const isVideoMaybe =
     type === 'unknown' &&
     remoteMediaURLObj &&
     /\.(mp4|m4r|m4v|mov|webm)$/i.test(remoteMediaURLObj.pathname);
-  const isStreamingVideoMaybe =
-    remoteMediaURLObj &&
-    /\.m3u8$/i.test(remoteMediaURLObj.pathname) &&
-    isStreamingVideoSupported;
+  const isHlsVideo = isHlsPlaylistURL(remoteMediaURL);
+  const isStreamingVideoMaybe = isHlsVideo && isStreamingVideoSupported;
   const isAudioMaybe =
     type === 'unknown' &&
     remoteMediaURLObj &&
@@ -288,11 +438,10 @@ function Media({
       !isVideoMaybe &&
       !isStreamingVideoMaybe &&
       !isAudioMaybe);
+  const previewURLObj = previewUrl ? getMediaURLObj(previewUrl) : null;
   const isPreviewVideoMaybe =
-    (previewUrl &&
-      /\.(mp4|m4r|m4v|mov|webm)$/i.test(
-        (getURLObj(previewUrl) as URL).pathname,
-      )) ||
+    (!!previewURLObj &&
+      /\.(mp4|m4r|m4v|mov|webm)$/i.test(previewURLObj.pathname)) ||
     isStreamingVideoMaybe;
 
   const parentRef = useRef<HTMLElement | null>(null);
@@ -671,22 +820,8 @@ function Media({
       ></video>
   `;
 
-    const videoURL = isStreamingVideoMaybe ? remoteMediaURL : url;
-    const videoHTML = `
-      <video
-        src="${videoURL}"
-        poster="${previewUrl}"
-        width="${width}"
-        height="${height}"
-        data-orientation="${orientation}"
-        style="view-transition-name: ${mediaVTN}"
-        preload="auto"
-        autoplay
-        playsInline
-        ${loopable ? 'loop' : ''}
-        controls
-      ></video>
-    `;
+    const videoURL =
+      (isHlsVideo ? remoteMediaURL : url || remoteMediaURL) || undefined;
 
     return (
       <Figure>
@@ -762,12 +897,39 @@ function Media({
                   __html: gifHTML,
                 }}
               />
-            ) : (
-              <div
-                className="video-container"
-                dangerouslySetInnerHTML={{ __html: videoHTML }}
-              />
-            )
+            ) : videoURL ? (
+              <div className="video-container">
+                {isHlsVideo ? (
+                  <HlsVideo
+                    src={videoURL}
+                    poster={previewUrl as string | undefined}
+                    width={width}
+                    height={height}
+                    orientation={orientation}
+                    viewTransitionName={mediaVTN}
+                    preload="auto"
+                    autoPlay
+                    playsInline
+                    loop={loopable}
+                    controls
+                  />
+                ) : (
+                  <video
+                    src={videoURL}
+                    poster={previewUrl as string | undefined}
+                    width={width}
+                    height={height}
+                    data-orientation={orientation}
+                    style={{ viewTransitionName: mediaVTN }}
+                    preload="auto"
+                    autoPlay
+                    playsInline
+                    loop={loopable}
+                    controls
+                  />
+                )}
+              </div>
+            ) : null
           ) : isGIF ? (
             <video
               ref={videoRef}
@@ -838,32 +1000,62 @@ function Media({
                     }
                   }}
                 />
-              ) : (
-                <video
-                  src={videoURL + '#t=0.1'} // Make Safari show 1st-frame preview
-                  width={width}
-                  height={height}
-                  data-orientation={orientation}
-                  data-view-transition-name={mediaVTN}
-                  preload="metadata"
-                  muted
-                  disablePictureInPicture
-                  onLoadedMetadata={(e) => {
-                    if (!hasDuration) {
-                      const target = e.target as HTMLVideoElement;
-                      const { duration: targetDuration } = target;
-                      if (targetDuration) {
-                        const loadedDuration = formatDuration(targetDuration);
-                        const container =
-                          target.closest<HTMLElement>('.media-video');
-                        if (container) {
-                          container.dataset.formattedDuration = loadedDuration;
+              ) : videoURL ? (
+                isHlsVideo ? (
+                  <HlsVideo
+                    src={videoURL}
+                    poster={previewUrl as string | undefined}
+                    width={width}
+                    height={height}
+                    orientation={orientation}
+                    dataViewTransitionName={mediaVTN}
+                    preload="metadata"
+                    muted
+                    disablePictureInPicture
+                    onLoadedMetadata={(e) => {
+                      if (!hasDuration) {
+                        const target = e.target as HTMLVideoElement;
+                        const { duration: targetDuration } = target;
+                        if (targetDuration) {
+                          const loadedDuration = formatDuration(targetDuration);
+                          const container =
+                            target.closest<HTMLElement>('.media-video');
+                          if (container) {
+                            container.dataset.formattedDuration =
+                              loadedDuration;
+                          }
                         }
                       }
-                    }
-                  }}
-                />
-              )}
+                    }}
+                  />
+                ) : (
+                  <video
+                    src={`${videoURL}#t=0.1`} // Make Safari show 1st-frame preview
+                    width={width}
+                    height={height}
+                    data-orientation={orientation}
+                    data-view-transition-name={mediaVTN}
+                    preload="metadata"
+                    muted
+                    disablePictureInPicture
+                    onLoadedMetadata={(e) => {
+                      if (!hasDuration) {
+                        const target = e.target as HTMLVideoElement;
+                        const { duration: targetDuration } = target;
+                        if (targetDuration) {
+                          const loadedDuration = formatDuration(targetDuration);
+                          const container =
+                            target.closest<HTMLElement>('.media-video');
+                          if (container) {
+                            container.dataset.formattedDuration =
+                              loadedDuration;
+                          }
+                        }
+                      }
+                    }}
+                  />
+                )
+              ) : null}
               <div className="media-play">
                 <Icon icon="play" size="xl" alt="▶" />
               </div>
@@ -951,11 +1143,6 @@ function Media({
     );
   }
   return null;
-}
-
-function getURLObj(url: string) {
-  // Fake base URL if url doesn't have https:// prefix
-  return URL.parse(url, location.origin);
 }
 
 export function getSafeViewTransitionName(inputString: string) {
