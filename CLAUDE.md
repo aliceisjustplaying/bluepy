@@ -9,6 +9,7 @@
 → **Secrets:** `source ~/.secrets/bluepy/source.env`.
 → **Build:** Bun only (`bun install`, `bun run …`, `bunx …`). Reuse `@atproto/*` types before defining new ones. "Type X" means convert X to TS, not patch JSDoc into `.js`. Runtime is browser / Cloudflare Workers.
 → **Verify** (apply the gates that match your change):
+  - i18n — after changing user-facing strings, `<Trans>`, `t``…```, or Lingui message IDs, run `bun run messages:extract` before typecheck/build. Do not rely on `bun run build` to extract catalogs.
   - typecheck — always: `bun run typecheck`
   - test — when touching a module with Playwright coverage: `bun run test`
   - build — when changing bundling, routing, imports, assets, or packaging: `bun run build`
@@ -29,7 +30,7 @@ The Path above is yours to run autonomously. These few actions are the exception
 - Only modify files that are part of your task. `git restore`, `git checkout --`, `git clean -f` on other files need an explicit ask.
 - Run all checks as-is: `--no-verify`, `.skip`, `xfail`, `eslint-disable`, `@ts-ignore`, `@ts-expect-error`, and `any` are off-limits.
 - If a lint rule blocks useful work, report the rule name, diagnostic, and smallest compliant change; for a real change write `docs/rule-change-proposals/YYYY-MM-DD-name.md` and get reviewer approval first.
-- Only run `lingui extract` when source strings changed. Preserve `<Trans>` tags.
+- Only run `bun run messages:extract` when source strings changed. Preserve `<Trans>` tags and report any generated locale catalog diff before staging it.
 - Keep generated images and locale catalogs out of code commits (separate commit, only if asked).
 - Run `bunx oxlint <changed files>` on every changed file before pushing or opening a PR.
 - Send your work to Codex for review. Claude does not review Claude-authored work.
