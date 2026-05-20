@@ -1,7 +1,7 @@
 .atproto-labels {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 5px;
   margin-block: 4px 6px;
   line-height: 1.2;
 }
