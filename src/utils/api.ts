@@ -538,7 +538,11 @@ export function setPreferences(preferences: JsonRecord): void {
   store.account.set('preferences', preferences);
   preferenceSnapshot = preferences;
   preferenceListeners.forEach((listener) => {
-    listener();
+    try {
+      listener();
+    } catch (error) {
+      console.error(error);
+    }
   });
 }
 
