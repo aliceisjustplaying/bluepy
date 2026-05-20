@@ -867,13 +867,22 @@ function isRootPath(pathname: string) {
   return /^\/(login|welcome|_sandbox|_qr-scan|_mock)/i.test(pathname);
 }
 
+function isNativeAtprotoPath(pathname: string) {
+  return pathname.toLowerCase().startsWith('/at://');
+}
+
 const PrimaryRoutes = memo(() => {
   const location = useLocation();
+  const isLoggedIn = useAuth();
+  const suppressPrimaryRoute =
+    !isLoggedIn && isNativeAtprotoPath(location.pathname);
   const primaryLocation = useMemo(() => {
     const { pathname } = location;
     if (pathname === '/' || isRootPath(pathname)) return location;
     return { ...location, pathname: '/' };
   }, [location]);
+
+  if (suppressPrimaryRoute) return null;
 
   return (
     <Routes location={primaryLocation}>
