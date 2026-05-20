@@ -15,6 +15,7 @@ import {
   useEffectEvent,
   useLayoutEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from 'react';
@@ -237,15 +238,16 @@ const FILTER_SORTS: string[] = [
 ];
 const FILTER_GROUPS: (string | null)[] = [null, 'account'];
 
+const DTF_OPTIONS: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+};
 const DTF = mem(
   (locale: string | undefined) =>
-    new Intl.DateTimeFormat(locale || undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-    }),
+    new Intl.DateTimeFormat(locale || undefined, DTF_OPTIONS),
 );
 
 const SWITCH_INPUT_PROPS = { switch: true };
@@ -319,6 +321,11 @@ function getCardLike(value: unknown): CardLike | null {
     : null;
 }
 
+function sortableValue(post: CatchupPost, key: string): string | number {
+  const value = post[key];
+  return typeof value === 'number' || typeof value === 'string' ? value : '';
+}
+
 function nameTextAccount(
   account: QuoteAccount | null | undefined,
 ): NameTextAccount | undefined {
@@ -384,8 +391,7 @@ function Catchup() {
               homeIterable.params.include_reblogs = true;
             }
           }
-          const results = await homeIterator.next();
-          const { value } = results as { value: CatchupPost[] | undefined };
+          const { value } = await homeIterator.next();
           if (value?.length) {
             for (let i = 0; i < value.length; i++) {
               const item = value[i];
@@ -502,10 +508,10 @@ function Catchup() {
     syncRouteCatchup();
   }, [id, uiState]);
 
-  const [reloadCatchupsCount, setReloadCatchupsCount] = useState(0);
-  const reloadCatchups = useCallback(() => {
-    setReloadCatchupsCount((c) => c + 1);
-  }, []);
+  const [reloadCatchupsCount, reloadCatchups] = useReducer(
+    (count: number) => count + 1,
+    0,
+  );
   const [lastCatchupEndAt, setLastCatchupEndAt] = useState<number | null>(null);
   const [prevCatchups, setPrevCatchups] = useState<CatchupSummary[]>([]);
 
@@ -862,14 +868,10 @@ function Catchup() {
         }
         if (sortOrder === 'asc') {
           if (sortBy === 'createdAt') return compareCreatedAt(a, b);
-          return (a[sortBy] as number | string) > (b[sortBy] as number | string)
-            ? 1
-            : -1;
+          return sortableValue(a, sortBy) > sortableValue(b, sortBy) ? 1 : -1;
         } else {
           if (sortBy === 'createdAt') return compareCreatedAt(b, a);
-          return (b[sortBy] as number | string) > (a[sortBy] as number | string)
-            ? 1
-            : -1;
+          return sortableValue(b, sortBy) > sortableValue(a, sortBy) ? 1 : -1;
         }
       },
     );
@@ -1119,9 +1121,9 @@ function Catchup() {
   const jRef = useHotkeys<HTMLDivElement>(
     'j',
     () => {
-      const activeItem = document.activeElement?.closest(
-        itemsSelector,
-      ) as HTMLElement | null;
+      const activeElement = document.activeElement?.closest(itemsSelector);
+      const activeItem =
+        activeElement instanceof HTMLElement ? activeElement : null;
       const activeItemRect = activeItem?.getBoundingClientRect();
       const allItems = Array.from(
         scrollableRef.current?.querySelectorAll<HTMLElement>(itemsSelector) ??
@@ -1174,9 +1176,9 @@ function Catchup() {
   const kRef = useHotkeys<HTMLDivElement>(
     'k',
     () => {
-      const activeItem = document.activeElement?.closest(
-        itemsSelector,
-      ) as HTMLElement | null;
+      const activeElement = document.activeElement?.closest(itemsSelector);
+      const activeItem =
+        activeElement instanceof HTMLElement ? activeElement : null;
       const activeItemRect = activeItem?.getBoundingClientRect();
       const allItems = Array.from(
         scrollableRef.current?.querySelectorAll<HTMLElement>(itemsSelector) ??
@@ -1336,7 +1338,10 @@ function Catchup() {
           className={uiState === 'loading' ? 'loading' : ''}
           role="presentation"
           onClick={(e) => {
-            if (!(e.target as HTMLElement | null)?.closest('a, button')) {
+            if (
+              e.target instanceof HTMLElement &&
+              !e.target.closest('a, button')
+            ) {
               scrollableRef.current?.scrollTo({
                 top: 0,
                 behavior: 'smooth',
@@ -1410,11 +1415,10 @@ function Catchup() {
                   <button
                     type="button"
                     onClick={(e) => {
-                      (
-                        (e.target as HTMLElement).closest(
-                          'details',
-                        ) as HTMLDetailsElement
-                      ).open = false;
+                      const details = e.currentTarget.closest('details');
+                      if (details instanceof HTMLDetailsElement) {
+                        details.open = false;
+                      }
                     }}
                   >
                     <Trans>Let's catch up</Trans>
@@ -1666,7 +1670,7 @@ function Catchup() {
                         height,
                         publishedAt,
                       } = card;
-                      const domain = getDomain(url as string);
+                      const domain = getDomain(url ?? '');
                       let accentColor;
                       if (blurhash) {
                         const averageColor = getBlurHashAverageColor(blurhash);
@@ -2325,7 +2329,7 @@ function postDensity(post: CatchupPost): number {
       140 +
     (mediaAttachments?.length
       ? MEDIA_DENSITY * mediaAttachments.length
-      : (card as CardLike | null | undefined)?.image
+      : getCardLike(card)?.image
         ? CARD_DENSITY
         : 0);
   return density;
@@ -2363,7 +2367,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
   if (!mediaAttachments?.length && theQuote?.mediaAttachments?.length) {
     mediaAttachments = theQuote.mediaAttachments;
   }
-  const cardLike = card as CardLike | null | undefined;
+  const cardLike = getCardLike(card);
 
   const prefs = getPreferences();
   const readingExpandSpoilers = !!prefs['reading:expand:spoilers'];
@@ -2451,13 +2455,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
             ? mediaAttachments.map((m: mastodon.v1.MediaAttachment) => {
                 const mediaURL = m.previewUrl || m.url;
                 const remoteMediaURL = m.previewRemoteUrl || m.remoteUrl;
-                const mMeta = m.meta as
-                  | {
-                      original?: { width?: number; height?: number };
-                      small?: { width?: number; height?: number };
-                    }
-                  | null
-                  | undefined;
+                const mMeta = m.meta;
                 const width = mMeta?.original
                   ? mMeta.original.width
                   : mMeta?.small?.width || mMeta?.original?.width;
@@ -2474,7 +2472,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                         alt={m.description ?? undefined}
                         loading="lazy"
                         onError={(e) => {
-                          const target = e.target as HTMLImageElement;
+                          const target = e.currentTarget;
                           const { src } = target;
                           if (
                             src === mediaURL &&
@@ -2506,7 +2504,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                         alt={m.description ?? undefined}
                         loading="lazy"
                         onError={(e) => {
-                          const target = e.target as HTMLImageElement;
+                          const target = e.currentTarget;
                           const { src } = target;
                           if (
                             src === mediaURL &&
@@ -2529,7 +2527,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                         alt={m.description ?? undefined}
                         loading="lazy"
                         onError={(e) => {
-                          const target = e.target as HTMLImageElement;
+                          const target = e.currentTarget;
                           const { src } = target;
                           if (
                             src === mediaURL &&
