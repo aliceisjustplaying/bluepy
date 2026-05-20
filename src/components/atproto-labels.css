@@ -1,0 +1,38 @@
+.atproto-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-block: 4px 6px;
+  line-height: 1.2;
+}
+
+.atproto-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  border-radius: 999px;
+  background-color: var(--bg-color);
+  color: var(--text-insignificant-color);
+  padding: 2px;
+  font-size: 0.78em;
+  font-weight: 600;
+}
+
+.atproto-label-avatar {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.atproto-label-avatar > .avatar {
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.atproto-label-alert {
+  color: var(--red-color);
+}
+
+.atproto-label-inform {
+  color: var(--link-color);
+}

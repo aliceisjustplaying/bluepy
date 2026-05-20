@@ -34,6 +34,7 @@ import supports from '../utils/supports';
 
 import AccountBlock from './account-block';
 import AccountHandleInfo from './account-handle-info';
+import AtprotoLabels from './atproto-labels';
 import Avatar from './avatar';
 import EditProfileSheetComponent, {
   type EditProfileSheetProps,
@@ -930,6 +931,7 @@ function AccountInfo({
                     <Icon icon="group" /> <Trans>Group</Trans>
                   </span>
                 )}
+                <AtprotoLabels labels={info._atproto?.labels} sourceProfiles={info} />
                 {/* {roles?.map((role) => (
                   <span className="tag">
                     {role.name}
