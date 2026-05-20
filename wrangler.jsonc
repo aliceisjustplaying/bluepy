@@ -23,7 +23,6 @@
   "env": {
     "bluepy": {
       "name": "bluepy",
-      "services": [{ "binding": "FEEDBACK_PROXY", "service": "bluepy-dev" }],
       "durable_objects": {
         "bindings": [
           {

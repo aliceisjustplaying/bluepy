@@ -4,7 +4,6 @@
  *   RESEND_API_KEY?: string;
  *   BLUEPY_FEEDBACK_TO?: string;
  *   BLUEPY_FEEDBACK_FROM?: string;
- *   FEEDBACK_PROXY?: { fetch(request: Request): Promise<Response> };
  *   BLUEPY_FEEDBACK_PROXY_URL?: string;
  *   BLUEPY_BUILD_TIME?: string;
  *   BLUEPY_COMMIT_HASH?: string;
@@ -192,15 +191,6 @@ async function handleFeedback(request, env) {
     return new Response('Method not allowed', { status: 405 });
   }
   if (!env.RESEND_API_KEY || !env.BLUEPY_FEEDBACK_TO) {
-    if (env.FEEDBACK_PROXY) {
-      return env.FEEDBACK_PROXY.fetch(
-        new Request('https://bluepy-feedback-proxy/api/feedback', {
-          body: request.body,
-          headers: request.headers,
-          method: request.method,
-        }),
-      );
-    }
     if (env.BLUEPY_FEEDBACK_PROXY_URL) {
       return fetch(
         new Request(env.BLUEPY_FEEDBACK_PROXY_URL, {
