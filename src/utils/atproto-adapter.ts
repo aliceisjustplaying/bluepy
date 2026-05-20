@@ -1863,7 +1863,6 @@ async function createMediaUpload({
   description?: string;
 }): Promise<AdaptedUploadedMedia> {
   if (!file) throw new Error('Missing media file');
-  const url = URL.createObjectURL(file);
 
   if (file.type?.startsWith('image/')) {
     const { file: uploadFile, dimensions } =
@@ -1888,6 +1887,7 @@ async function createMediaUpload({
   }
 
   if (file.type?.startsWith('video/')) {
+    const url = URL.createObjectURL(file);
     const blob = await uploadVideoBlob(agent, file);
     const id = blobRefID(blob);
     const media: AdaptedUploadedMedia = {
