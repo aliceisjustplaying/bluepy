@@ -357,6 +357,16 @@ function NavMenu(props: Record<string, unknown>) {
               </MenuItem>
               <MenuItem
                 onClick={() => {
+                  states.showFeedbackModal = true;
+                }}
+              >
+                <Icon icon="comment" size="l" />{' '}
+                <span>
+                  <Trans>Send feedback…</Trans>
+                </span>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
                   states.showShortcutsSettings = true;
                 }}
               >
@@ -387,6 +397,16 @@ function NavMenu(props: Record<string, unknown>) {
                 <Icon icon="gear" size="l" />{' '}
                 <span>
                   <Trans>Settings…</Trans>
+                </span>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  states.showFeedbackModal = true;
+                }}
+              >
+                <Icon icon="comment" size="l" />{' '}
+                <span>
+                  <Trans>Send feedback…</Trans>
                 </span>
               </MenuItem>
             </>

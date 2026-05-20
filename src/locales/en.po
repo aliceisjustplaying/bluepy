@@ -69,6 +69,11 @@ msgstr ""
 msgid "Other"
 msgstr ""
 
+#: src/components/nav-menu.tsx:365
+#: src/components/nav-menu.tsx:409
+msgid "Send feedback…"
+msgstr "Send feedback…"
+
 #: src/components/post-embed-modal.tsx:262
 msgid "Unable to copy HTML code"
 msgstr ""
@@ -274,9 +279,13 @@ msgstr ""
 msgid "Catch-up {0} removed"
 msgstr "Catch-up {0} removed"
 
-#: src/pages/welcome.tsx:158
+#: src/pages/welcome.tsx:163
 msgid "A separate timeline for followings. Email-inspired interface to sort and filter posts."
 msgstr "A separate timeline for followings. Email-inspired interface to sort and filter posts."
+
+#: src/components/feedback-modal.tsx:106
+msgid "Tell us what happened first."
+msgstr "Tell us what happened first."
 
 #: src/pages/settings.tsx:249
 #: src/pages/settings.tsx:253
@@ -341,7 +350,7 @@ msgstr ""
 msgid "Post unavailable"
 msgstr "Post unavailable"
 
-#: src/components/nav-menu.tsx:464
+#: src/components/nav-menu.tsx:484
 #: src/components/shortcuts-settings.tsx:790
 #: src/components/shortcuts.tsx:115
 #: src/pages/list.tsx:267
@@ -375,7 +384,7 @@ msgstr ""
 msgid "More"
 msgstr ""
 
-#: src/pages/welcome.tsx:135
+#: src/pages/welcome.tsx:140
 msgid "Reposts Carousel"
 msgstr "Reposts Carousel"
 
@@ -390,6 +399,10 @@ msgstr ""
 #: src/components/drafts.tsx:212
 msgid "Error fetching quoted status!"
 msgstr "Error fetching quoted status!"
+
+#: src/components/feedback-modal.tsx:130
+msgid "Feedback sent"
+msgstr "Feedback sent"
 
 #: src/components/report-modal.tsx:233
 msgid "Pending review"
@@ -573,6 +586,10 @@ msgstr "Reposts carousel"
 msgid "Hiding boosts"
 msgstr "Hiding boosts"
 
+#: src/components/feedback-modal.tsx:157
+msgid "We read every message even when we cannot reply."
+msgstr "We read every message even when we cannot reply."
+
 #: src/pages/settings.tsx:1490
 msgid "Follow requests"
 msgstr ""
@@ -741,7 +758,7 @@ msgstr ""
 msgid "No bookmarks yet. Go bookmark something!"
 msgstr "No bookmarks yet. Go bookmark something!"
 
-#: src/components/nav-menu.tsx:365
+#: src/components/nav-menu.tsx:375
 msgid "Shortcuts / Columns…"
 msgstr "Shortcuts / Columns…"
 
@@ -750,7 +767,7 @@ msgstr "Shortcuts / Columns…"
 msgid "View post by <0>@{0}</0>"
 msgstr ""
 
-#: src/pages/welcome.tsx:77
+#: src/pages/welcome.tsx:82
 msgid "Connect your existing Bluesky or Blacksky account.<0/>Your credentials are not stored by Bluepy."
 msgstr "Connect your existing Bluesky or Blacksky account.<0/>Your credentials are not stored by Bluepy."
 
@@ -1041,6 +1058,10 @@ msgstr ""
 msgid "Hiding replies"
 msgstr "Hiding replies"
 
+#: src/components/feedback-modal.tsx:134
+msgid "Feedback could not be sent."
+msgstr "Feedback could not be sent."
+
 #: src/components/quote-chain-modal.tsx:162
 msgid "Quote chain"
 msgstr "Quote chain"
@@ -1103,6 +1124,10 @@ msgstr ""
 msgid "Accepted"
 msgstr ""
 
+#: src/components/feedback-modal.tsx:167
+msgid "Leave this field blank"
+msgstr "Leave this field blank"
+
 #: src/components/gif-picker-modal.tsx:153
 msgid "Powered by GIPHY"
 msgstr "Powered by GIPHY"
@@ -1148,6 +1173,10 @@ msgstr ""
 msgid "{0, plural, =0 {Hide \"Translate\" button for:} other {Hide \"Translate\" button for (#):}}"
 msgstr ""
 
+#: src/components/error-fallback.tsx:26
+msgid "Report a bug"
+msgstr "Report a bug"
+
 #: src/components/search-form.tsx:84
 msgid "Accounts with <0>{query}</0>"
 msgstr ""
@@ -1164,7 +1193,7 @@ msgstr ""
 msgid "Paginated timeline (beta)"
 msgstr "Paginated timeline (beta)"
 
-#: src/pages/welcome.tsx:168
+#: src/pages/welcome.tsx:173
 msgid "Screenshot of nested comments thread"
 msgstr ""
 
@@ -1191,6 +1220,10 @@ msgstr ""
 #: src/pages/hashtag.tsx:244
 msgid "No one has posted anything with this tag yet."
 msgstr ""
+
+#: src/components/feedback-modal.tsx:154
+msgid "Thanks, got it."
+msgstr "Thanks, got it."
 
 #: src/pages/catchup.tsx:2103
 msgid "Sort: Density"
@@ -1240,7 +1273,7 @@ msgstr ""
 msgid "Boosts from @{username} disabled."
 msgstr "Boosts from @{username} disabled."
 
-#: src/pages/welcome.tsx:175
+#: src/pages/welcome.tsx:180
 msgid "Nested comments thread"
 msgstr ""
 
@@ -1293,6 +1326,7 @@ msgstr ""
 
 #: src/components/compose.tsx:1823
 #: src/components/edit-profile-sheet.tsx:422
+#: src/components/feedback-modal.tsx:219
 #: src/components/import-accounts-selection.tsx:202
 #: src/components/open-link-sheet.tsx:87
 #: src/components/quote-suggestion.tsx:58
@@ -1395,7 +1429,7 @@ msgstr ""
 msgid "Bio"
 msgstr ""
 
-#: src/pages/welcome.tsx:70
+#: src/pages/welcome.tsx:75
 msgid "Sign up"
 msgstr ""
 
@@ -1734,7 +1768,7 @@ msgstr ""
 msgid "View notifications from <0>@{0}</0>"
 msgstr ""
 
-#: src/components/nav-menu.tsx:444
+#: src/components/nav-menu.tsx:464
 #: src/components/shortcuts-settings.tsx:781
 #: src/components/shortcuts.tsx:95
 #: src/pages/list.tsx:246
@@ -1954,6 +1988,10 @@ msgstr "{hashtagTitle} on {instance}"
 msgid "Reply"
 msgstr ""
 
+#: src/components/feedback-modal.tsx:223
+msgid "Sending..."
+msgstr "Sending..."
+
 #: src/components/notification.tsx:494
 msgid "Your account has received a moderation warning."
 msgstr ""
@@ -2030,7 +2068,7 @@ msgstr ""
 msgid "Close post or dialogs"
 msgstr ""
 
-#: src/pages/welcome.tsx:128
+#: src/pages/welcome.tsx:133
 msgid "Screenshot of Reposts Carousel"
 msgstr "Screenshot of Reposts Carousel"
 
@@ -2058,6 +2096,10 @@ msgstr "Select accounts to import"
 #: src/components/related-actions.tsx:492
 msgid "Notifications enabled for @{username}'s posts."
 msgstr "Notifications enabled for @{username}'s posts."
+
+#: src/components/feedback-modal.tsx:225
+msgid "Send"
+msgstr "Send"
 
 #: src/pages/lists.tsx:184
 msgid "No lists or feeds yet."
@@ -2152,6 +2194,10 @@ msgstr ""
 #: src/components/notification.tsx:240
 msgid "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} reposted your reply.} other {{account} reposted your post.}}} other {{account} reposted {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> reposted your reply.} other {<2><3>{1}</3> people</2> reposted your post.}}}}"
 msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{account} reposted your reply.} other {{account} reposted your post.}}} other {{account} reposted {postsCount} of your posts.}}} other {{postType, select, reply {<0><1>{0}</1> people</0> reposted your reply.} other {<2><3>{1}</3> people</2> reposted your post.}}}}"
+
+#: src/components/error-fallback.tsx:18
+msgid "Something went wrong."
+msgstr "Something went wrong."
 
 #: src/pages/hashtag.tsx:404
 msgid "This shortcut already exists"
@@ -2251,7 +2297,7 @@ msgid "What's the issue with this post?"
 msgstr ""
 
 #: src/pages/settings.tsx:949
-#: src/pages/welcome.tsx:269
+#: src/pages/welcome.tsx:274
 msgid "Privacy Policy"
 msgstr ""
 
@@ -2315,7 +2361,7 @@ msgstr "Vote"
 msgid "Add shortcut"
 msgstr ""
 
-#: src/pages/welcome.tsx:148
+#: src/pages/welcome.tsx:153
 msgid "Screenshot of Catch-up"
 msgstr "Screenshot of Catch-up"
 
@@ -2726,7 +2772,7 @@ msgstr ""
 msgid "last 9 hours"
 msgstr ""
 
-#: src/pages/welcome.tsx:178
+#: src/pages/welcome.tsx:183
 msgid "Effortlessly follow conversations. Semi-collapsible replies."
 msgstr ""
 
@@ -2745,7 +2791,7 @@ msgstr ""
 msgid "Edit shortcut"
 msgstr ""
 
-#: src/pages/welcome.tsx:194
+#: src/pages/welcome.tsx:199
 msgid "Single or multi-column"
 msgstr ""
 
@@ -2808,6 +2854,10 @@ msgstr ""
 msgid "Quiet public"
 msgstr "Quiet public"
 
+#: src/components/feedback-modal.tsx:199
+msgid "Contact, optional"
+msgstr "Contact, optional"
+
 #: src/pages/mentions.tsx:199
 msgid "Unable to load mentions."
 msgstr ""
@@ -2820,7 +2870,7 @@ msgstr "View Full Thread"
 msgid "In Memoriam"
 msgstr ""
 
-#: src/pages/welcome.tsx:53
+#: src/pages/welcome.tsx:55
 msgid "A minimalistic opinionated Atmosphere web client."
 msgstr "A minimalistic opinionated Atmosphere web client."
 
@@ -2891,6 +2941,16 @@ msgstr ""
 msgid "This timeline is disabled on this server."
 msgstr "This timeline is disabled on this server."
 
+#: src/components/error-fallback.tsx:37
+msgid ""
+"Something went wrong while using Bluepy.\n"
+"\n"
+""
+msgstr ""
+"Something went wrong while using Bluepy.\n"
+"\n"
+""
+
 #: src/components/account-block.tsx:242
 #: src/components/account-info.tsx:980
 msgid "Verified"
@@ -2918,7 +2978,7 @@ msgstr ""
 msgid "Compose"
 msgstr ""
 
-#: src/pages/welcome.tsx:64
+#: src/pages/welcome.tsx:66
 msgid "Connect to Atmosphere"
 msgstr "Connect to Atmosphere"
 
@@ -3044,6 +3104,11 @@ msgstr "Reposts"
 #: src/pages/account-statuses.tsx:577
 msgid "Showing posts with media"
 msgstr ""
+
+#: src/components/feedback-modal.tsx:143
+#: src/pages/welcome.tsx:289
+msgid "Send feedback"
+msgstr "Send feedback"
 
 #. placeholder {0}: unsupportedFiles.length
 #. placeholder {1}: unsupportedFiles[0].name
@@ -3184,9 +3249,9 @@ msgstr ""
 msgid "Muted users"
 msgstr ""
 
-#: src/components/nav-menu.tsx:427
-#: src/components/nav-menu.tsx:435
-#: src/components/nav-menu.tsx:481
+#: src/components/nav-menu.tsx:447
+#: src/components/nav-menu.tsx:455
+#: src/components/nav-menu.tsx:501
 #: src/components/shortcuts-settings.tsx:103
 #: src/components/shortcuts-settings.tsx:215
 #: src/components/shortcuts.tsx:88
@@ -3201,7 +3266,7 @@ msgstr "Lists & Feeds"
 #: src/pages/login.tsx:55
 #: src/pages/login.tsx:333
 #: src/pages/status.tsx:1395
-#: src/pages/welcome.tsx:64
+#: src/pages/welcome.tsx:66
 msgid "Log in"
 msgstr ""
 
@@ -3252,7 +3317,7 @@ msgstr "Go to Profile"
 msgid "Extra fields"
 msgstr ""
 
-#: src/pages/welcome.tsx:197
+#: src/pages/welcome.tsx:202
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
 msgstr ""
 
@@ -3316,7 +3381,7 @@ msgstr ""
 msgid "Unable to delete list."
 msgstr ""
 
-#: src/pages/welcome.tsx:217
+#: src/pages/welcome.tsx:222
 msgid "Up to 5 hashtags combined into a single timeline."
 msgstr ""
 
@@ -3386,7 +3451,7 @@ msgstr "Enable boosts"
 msgid "An admin from <0>{from}</0> has suspended <1>{targetName}</1>, which means you can no longer receive updates from them or interact with them."
 msgstr ""
 
-#: src/pages/welcome.tsx:97
+#: src/pages/welcome.tsx:102
 msgid "Screenshot of Bluepy home timeline on mobile device"
 msgstr "Screenshot of Bluepy home timeline on mobile device"
 
@@ -3394,8 +3459,8 @@ msgstr "Screenshot of Bluepy home timeline on mobile device"
 msgid "Posts are sorted by information density or depth. Shorter posts are \"lighter\" while longer posts are \"heavier\". Posts with photos are \"heavier\" than posts without photos."
 msgstr ""
 
-#: src/components/nav-menu.tsx:375
-#: src/components/nav-menu.tsx:389
+#: src/components/nav-menu.tsx:385
+#: src/components/nav-menu.tsx:399
 msgid "Settings…"
 msgstr ""
 
@@ -3503,7 +3568,7 @@ msgstr ""
 msgid "Post stats unavailable."
 msgstr "Post stats unavailable."
 
-#: src/pages/welcome.tsx:187
+#: src/pages/welcome.tsx:192
 msgid "Screenshot of multi-column UI"
 msgstr ""
 
@@ -3566,7 +3631,7 @@ msgstr ""
 msgid "Your posts will be marked as sensitive from now on."
 msgstr ""
 
-#: src/pages/welcome.tsx:114
+#: src/pages/welcome.tsx:119
 msgid "Screenshot of Bluepy home timeline on tablet device"
 msgstr "Screenshot of Bluepy home timeline on tablet device"
 
@@ -3583,11 +3648,11 @@ msgstr ""
 msgid "Select all"
 msgstr "Select all"
 
-#: src/pages/welcome.tsx:214
+#: src/pages/welcome.tsx:219
 msgid "Multi-hashtag timeline"
 msgstr ""
 
-#: src/pages/welcome.tsx:138
+#: src/pages/welcome.tsx:143
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
 msgstr "Visually separate original posts and re-shared posts (reposted posts)."
 
@@ -3610,7 +3675,7 @@ msgstr ""
 msgid "Polls"
 msgstr ""
 
-#: src/pages/welcome.tsx:207
+#: src/pages/welcome.tsx:212
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
 msgstr ""
 
@@ -3721,7 +3786,7 @@ msgstr ""
 
 #: src/components/nav-menu.tsx:219
 #: src/pages/catchup.tsx:1344
-#: src/pages/welcome.tsx:155
+#: src/pages/welcome.tsx:160
 msgid "Catch-up"
 msgstr ""
 
@@ -3737,6 +3802,14 @@ msgstr ""
 #: src/pages/notifications.tsx:1111
 msgid "Yesterday"
 msgstr ""
+
+#: src/components/feedback-modal.tsx:182
+msgid "What happened?"
+msgstr "What happened?"
+
+#: src/components/feedback-modal.tsx:206
+msgid "email or Bluesky handle"
+msgstr "email or Bluesky handle"
 
 #: src/components/report-modal.tsx:280
 msgid "Post reported"
@@ -3842,6 +3915,8 @@ msgstr "Clear all"
 #: src/components/drafts.tsx:96
 #: src/components/edit-profile-sheet.tsx:155
 #: src/components/embed-modal.tsx:44
+#: src/components/feedback-modal.tsx:146
+#: src/components/feedback-modal.tsx:160
 #: src/components/filtered-status.tsx:169
 #: src/components/generic-accounts.tsx:263
 #: src/components/gif-picker-modal.tsx:122
@@ -3934,6 +4009,10 @@ msgstr "View profile header"
 #: src/pages/login.tsx:188
 msgid "Failed to register application"
 msgstr "Failed to register application"
+
+#: src/components/feedback-modal.tsx:191
+msgid "Bugs, confusing behavior, missing features, or anything else."
+msgstr "Bugs, confusing behavior, missing features, or anything else."
 
 #. Relative time in minutes, as short as possible
 #. placeholder {0}: Math.floor(seconds / minute)
