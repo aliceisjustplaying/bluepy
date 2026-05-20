@@ -35,7 +35,6 @@ import store from './store';
 const BSKY_APPVIEW = 'https://public.api.bsky.app';
 const BSKY_APPVIEW_DID = 'did:web:api.bsky.app';
 const BSKY_APPVIEW_PROXY = `${BSKY_APPVIEW_DID}#bsky_appview`;
-const BSKY_APPVIEW_AGENT = new AtpAgent({ service: BSKY_APPVIEW });
 
 const BLACKSKY_APPVIEW = 'https://api.blacksky.community';
 const BLACKSKY_APPVIEW_DID = 'did:web:api.blacksky.community';
@@ -957,7 +956,9 @@ async function fetchBlueskyProfileFallback(
   if (cached && cached.expiresAt > now) return cached.promise;
   const promise = (async () => {
     try {
-      const res = await BSKY_APPVIEW_AGENT.getProfile({ actor: did });
+      const res = await new AtpAgent({ service: BSKY_APPVIEW }).getProfile({
+        actor: did,
+      });
       return res.data;
     } catch {
       blueskyProfileFallbacks.delete(did);
@@ -2043,7 +2044,8 @@ export function createAtprotoClient({
     agentLoose.sessionManager.session = sessionData;
   }
   const shouldHydrateProfilePresentation =
-    getActiveAppviewConfig().url !== BSKY_APPVIEW;
+    getActiveAppviewConfig().url !== BSKY_APPVIEW ||
+    service === BLACKSKY_APPVIEW;
   const uploadedMedia = new Map<string, AdaptedUploadedMedia>();
 
   const statusAPI = (id: string) => {
@@ -2649,16 +2651,22 @@ export function createAtprotoClient({
       if (post.uri) map[post.uri] = postToStatus(post, agent);
       return map;
     }, {});
-    const items: AdaptedNotification[] = notifications.map((notification) => {
-      const statusURI = notificationStatusURI(notification);
-      return {
-        id: `${notification.uri}-${notification.indexedAt}`,
-        type: notificationType(notification.reason),
-        createdAt: notification.indexedAt,
-        account: actorToAccount(notification.author),
-        status: statusURI ? postMap[statusURI] : undefined,
-      };
-    });
+    const items: AdaptedNotification[] = await Promise.all(
+      notifications.map(async (notification) => {
+        const statusURI = notificationStatusURI(notification);
+        const author = await hydrateMissingProfilePresentation(
+          notification.author,
+          shouldHydrateProfilePresentation,
+        );
+        return {
+          id: `${notification.uri}-${notification.indexedAt}`,
+          type: notificationType(notification.reason),
+          createdAt: notification.indexedAt,
+          account: actorToAccount(author),
+          status: statusURI ? postMap[statusURI] : undefined,
+        };
+      }),
+    );
     const statusRequiredTypes = new Set<AdaptedNotificationType>([
       'favourite',
       'reblog',

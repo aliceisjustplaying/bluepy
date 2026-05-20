@@ -127,4 +127,94 @@ test.describe('ATProto notifications', () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  test('backfills notification author avatars from Bluesky when Blacksky omits them', async () => {
+    const originalFetch = globalThis.fetch;
+    const originalLocalStorage = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'localStorage',
+    );
+    let fallbackRequests = 0;
+
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: (key) => (key === 'settings-appview' ? 'blacksky' : null),
+        removeItem: () => {},
+        setItem: () => {},
+      },
+    });
+
+    globalThis.fetch = async (input) => {
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url;
+      const parsedUrl = new URL(url);
+
+      if (url.includes('app.bsky.notification.listNotifications')) {
+        return Response.json({
+          cursor: undefined,
+          notifications: [
+            {
+              uri: 'at://did:plc:alice/app.bsky.graph.follow/follow-record',
+              cid: TEST_CID,
+              author: {
+                did: 'did:plc:alice',
+                handle: 'alice.test',
+                displayName: 'Alice',
+              },
+              reason: 'follow',
+              record: {},
+              isRead: false,
+              indexedAt: '2026-05-18T10:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (
+        parsedUrl.hostname === 'public.api.bsky.app' &&
+        url.includes('app.bsky.actor.getProfile')
+      ) {
+        fallbackRequests += 1;
+        return Response.json({
+          $type: 'app.bsky.actor.defs#profileView',
+          did: 'did:plc:alice',
+          handle: 'alice.test',
+          displayName: 'Alice',
+          avatar:
+            'https://cdn.bsky.app/img/avatar/plain/did:plc:alice/avatar@jpeg',
+          labels: [],
+          viewer: {},
+        });
+      }
+
+      return Response.json({});
+    };
+
+    try {
+      const client = createAtprotoClient({
+        service: 'https://api.blacksky.community',
+      });
+      const page = await client.v1.notifications
+        .list({ limit: 20 })
+        .values()
+        .next();
+
+      expect(fallbackRequests).toBe(1);
+      expect(page.value[0].account.avatarStatic).toBe(
+        'https://cdn.bsky.app/img/avatar/plain/did:plc:alice/avatar@jpeg',
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+      if (originalLocalStorage) {
+        Object.defineProperty(globalThis, 'localStorage', originalLocalStorage);
+      } else {
+        delete globalThis.localStorage;
+      }
+    }
+  });
 });
