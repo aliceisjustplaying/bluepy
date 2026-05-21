@@ -1,4 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { mastodon } from 'masto';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
@@ -15,22 +16,13 @@ const SUPPORTED_IMAGE_FORMATS = [
 ];
 const SUPPORTED_IMAGE_FORMATS_STR = SUPPORTED_IMAGE_FORMATS.join(',');
 
-interface ProfileField {
-  name?: string;
-  value?: string;
+type ProfileField = Partial<mastodon.v1.AccountField> & {
   [key: string]: unknown;
-}
+};
 
-interface ProfileAccount {
-  displayName?: string;
-  avatar?: string;
-  header?: string;
-  source?: {
-    note?: string;
-    fields?: ProfileField[];
-  };
+type ProfileAccount = mastodon.v1.AccountCredentials & {
   [key: string]: unknown;
-}
+};
 
 interface MastoAccountsUpdate {
   verifyCredentials(): Promise<ProfileAccount | null | undefined>;
@@ -422,12 +414,12 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                 {Array.from({
                   length: Math.max(4, profileFields.length),
                 }).map((_, i) => {
-                  const { name = '', value = '' } = profileFields[i] || {};
+                  const field = profileFields[i];
                   return (
                     <FieldsAttributesRow
                       key={i}
-                      name={name}
-                      value={value}
+                      name={field?.name ?? ''}
+                      value={field?.value ?? ''}
                       index={i}
                       disabled={uiState === 'loading'}
                     />

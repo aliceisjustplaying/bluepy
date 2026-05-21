@@ -36,9 +36,7 @@ import AccountBlock from './account-block';
 import AccountHandleInfo from './account-handle-info';
 import AtprotoLabels from './atproto-labels';
 import Avatar from './avatar';
-import EditProfileSheetComponent, {
-  type EditProfileSheetProps,
-} from './edit-profile-sheet';
+import EditProfileSheet from './edit-profile-sheet';
 import EmojiText from './emoji-text';
 import Icon from './icon';
 import Link from './link';
@@ -127,16 +125,6 @@ function enhanceHTML(
 ): string {
   const enhanced = enhanceContent(content, { emojis });
   return typeof enhanced === 'string' ? enhanced : '';
-}
-
-// Shim for EditProfileSheet: the peer declares its onClose result as
-// ProfileAccount (a deliberately loose local type), but the runtime value is
-// a real mastodon.v1.Account returned by masto.v1.accounts.updateCredentials.
-// This cast preserves that app-level knowledge.
-function EditProfileSheet(props: {
-  onClose?: (arg?: { state?: string; account?: AccountInfoShape }) => void;
-}) {
-  return <EditProfileSheetComponent {...(props as EditProfileSheetProps)} />;
 }
 
 // Posting stats are derived locally. `daysSinceLastPost` is conditionally
@@ -1400,10 +1388,10 @@ function AccountInfo({
           }}
         >
           <EditProfileSheet
-            onClose={({ state, account: updatedAccount } = {}) => {
+            onClose={(result) => {
               setShowEditProfile(false);
-              if (state === 'success' && updatedAccount) {
-                onProfileUpdate(updatedAccount);
+              if (result?.state === 'success' && result.account) {
+                onProfileUpdate(result.account);
               }
             }}
           />
