@@ -375,9 +375,19 @@ function QrScannerModal({
       ) : (
         <>
           <div ref={containerRef} className="qr-scanner-video-container">
-            <video ref={videoRef} playsInline muted disablePictureInPicture />
+            <video
+              ref={videoRef}
+              playsInline
+              muted
+              disablePictureInPicture
+              aria-hidden="true"
+            />
             {!hasBarcodeDetector && (
-              <canvas ref={overlayRef} className="qr-scanner-canvas" />
+              <canvas
+                ref={overlayRef}
+                className="qr-scanner-canvas"
+                aria-hidden="true"
+              />
             )}
             <svg
               className="qr-scanner-corner-hint"

@@ -554,7 +554,6 @@ function Timeline({
   } | null>(null);
   cachePayloadRef.current = { cacheKey, items, showMore };
 
-  console.debug('RENDER Timeline', id, refresh);
   __BENCHMARK.start(`timeline-${id}-load`);
 
   const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
@@ -634,7 +633,6 @@ function Timeline({
             if (visiblePinnedPosts.length) {
               processed = [...visiblePinnedPosts, ...processed];
             }
-            console.log(processed);
             if (firstLoad) {
               setItems(dedupeTimelineEntries(processed));
             } else {
@@ -818,14 +816,6 @@ function Timeline({
       const noPointers = scrollableRef.current
         ? getComputedStyle(scrollableRef.current).pointerEvents === 'none'
         : false;
-      console.log('✨ Load or check updates', id, {
-        autoRefresh: snapStates.settings.autoRefresh,
-        scrollTop: scrollableRef.current?.scrollTop,
-        disableIdleCheck,
-        idle: window.__IDLE__,
-        inBackground: inBackground(),
-        noPointers,
-      });
       if (
         snapStates.settings.autoRefresh &&
         scrollableRef.current &&
@@ -834,18 +824,15 @@ function Timeline({
         !inBackground() &&
         !noPointers
       ) {
-        console.log('✨ Load updates', id, snapStates.settings.autoRefresh);
         loadItems(true);
       } else {
-        console.log('✨ Check updates', id, snapStates.settings.autoRefresh);
         const hasUpdate = await checkForUpdates();
         if (hasUpdate) {
-          console.log('✨ Has new updates', id);
           setShowNew(true);
         }
       }
     },
-    [id, loadItems, checkForUpdates, snapStates.settings.autoRefresh],
+    [loadItems, checkForUpdates, snapStates.settings.autoRefresh],
   );
 
   const lastHiddenTime = useRef<number | undefined>(undefined);
@@ -1098,7 +1085,6 @@ export const TimelineItem = memo(
     mediaFirst,
   }: TimelineItemProps): ReactElement | ReactElement[] | null => {
     const { t } = useLingui();
-    console.debug('RENDER TimelineItem', entryID(status));
     const groupView = hasItems(status);
 
     if (groupView) {

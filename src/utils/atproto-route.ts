@@ -42,7 +42,10 @@ function maybeDecodeAtprotoURI(
 }
 
 function decodeAtprotoRecordPath(path: string): string {
-  const [pathnameAndSearch, hash = ''] = path.split('#', 2);
+  const hashIndex = path.indexOf('#');
+  const pathnameAndSearch =
+    hashIndex === -1 ? path : path.slice(0, hashIndex);
+  const hash = hashIndex === -1 ? '' : path.slice(hashIndex);
   const queryIndex = pathnameAndSearch.indexOf('?');
   const pathname =
     queryIndex === -1
@@ -55,7 +58,7 @@ function decodeAtprotoRecordPath(path: string): string {
       /^\/at:\/(?!\/)/i,
       '/at://',
     );
-    return `${decoded}${search}${hash ? `#${hash}` : ''}`;
+    return `${decoded}${search}${hash}`;
   } catch {
     return path;
   }

@@ -1210,6 +1210,86 @@ test('keeps titles working on legacy account routes', async ({ page }) => {
   await expect(page).toHaveTitle(/Legacy Account/);
 });
 
+test('filters hidden posts from grouped pinned timelines', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('settings-mutedPostVisibility', 'hide');
+  });
+  const account = {
+    id: '12345',
+    username: 'pinneduser',
+    acct: 'pinneduser@mastodon.social',
+    display_name: 'Pinned Account',
+    avatar: '',
+    avatar_static: '',
+    header: '',
+    header_static: '',
+    followers_count: 0,
+    following_count: 0,
+    statuses_count: 3,
+    bot: false,
+    locked: false,
+    emojis: [],
+  };
+  /**
+   * @param {string} id
+   * @param {string} content
+   * @param {boolean} [mutedAuthor]
+   */
+  const makeStatus = (id, content, mutedAuthor = false) => ({
+    id,
+    uri: `https://mastodon.social/users/pinneduser/statuses/${id}`,
+    url: `https://mastodon.social/@pinneduser/${id}`,
+    created_at: '2024-01-01T12:00:00.000Z',
+    account,
+    content: `<p>${content}</p>`,
+    visibility: 'public',
+    replies_count: 0,
+    reblogs_count: 0,
+    favourites_count: 0,
+    reblogged: false,
+    favourited: false,
+    bookmarked: false,
+    muted: false,
+    sensitive: false,
+    spoiler_text: '',
+    media_attachments: [],
+    mentions: [],
+    tags: [],
+    emojis: [],
+    card: null,
+    poll: null,
+    filtered: [],
+    ...(mutedAuthor ? { _atproto: { mutedAuthor: true } } : {}),
+  });
+  const pinnedStatuses = [
+    makeStatus('pin-1', 'Visible pinned one'),
+    makeStatus('pin-2', 'Muted pinned hidden', true),
+    makeStatus('pin-3', 'Visible pinned three'),
+  ];
+
+  await page.route('**/api/v1/accounts/12345', async (route) => {
+    await route.fulfill({ json: account });
+  });
+  await page.route('**/api/v1/accounts/12345/statuses*', async (route) => {
+    const url = new URL(route.request().url());
+    await route.fulfill({
+      json: url.searchParams.get('pinned') === 'true' ? pinnedStatuses : [],
+    });
+  });
+
+  await page.goto('/mastodon.social/a/12345', {
+    waitUntil: 'domcontentloaded',
+  });
+
+  await expect(page.getByText('Pinned posts')).toBeVisible();
+  await expect(page.locator('.pinned-carousel .status-carousel-link')).toHaveCount(
+    2,
+  );
+  await expect(page.getByText('Visible pinned one')).toBeVisible();
+  await expect(page.getByText('Visible pinned three')).toBeVisible();
+  await expect(page.getByText('Muted pinned hidden')).toHaveCount(0);
+});
+
 test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
   await routeAtprotoRecords(page);
 

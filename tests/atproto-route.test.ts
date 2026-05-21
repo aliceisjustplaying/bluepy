@@ -12,6 +12,16 @@ describe('ATProto route helpers', () => {
         '/at%3A/did%3Aplc%3Aabc/app.bsky.feed.post/post123?q=1#reply',
       ),
     ).toBe('/at://did:plc:abc/app.bsky.feed.post/post123?q=1#reply');
+    expect(
+      decodeAtprotoRecordPath(
+        '/at%3A/did%3Aplc%3Aabc/app.bsky.feed.post/post123?q=1#reply#nested',
+      ),
+    ).toBe('/at://did:plc:abc/app.bsky.feed.post/post123?q=1#reply#nested');
+    expect(
+      decodeAtprotoRecordPath(
+        '/at%3A/did%3Aplc%3Aabc/app.bsky.feed.post/post123#',
+      ),
+    ).toBe('/at://did:plc:abc/app.bsky.feed.post/post123#');
   });
 
   test('leaves unrelated encoded paths unchanged', () => {

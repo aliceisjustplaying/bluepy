@@ -392,6 +392,7 @@ function ShortcutsViewMode() {
               type="radio"
               name="shortcuts-view-mode"
               value={value}
+              aria-label={label}
               checked={checked}
               onChange={(e) => {
                 states.settings.shortcutsViewMode = e.currentTarget.value;
@@ -660,7 +661,6 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
               typeof showForm === 'object' ? showForm.shortcutIndex : undefined
             }
             onSubmit={({ result, mode }) => {
-              console.log('onSubmit', result);
               if (mode === 'edit') {
                 if (typeof showForm === 'object') {
                   states.shortcuts[showForm.shortcutIndex] = result;
@@ -748,7 +748,6 @@ function ShortcutForm({
 }: ShortcutFormProps) {
   const { i18n } = useLingui();
   const _: Translator = (descriptor) => i18n._(descriptor);
-  console.log('shortcut', shortcut);
   const editMode = !!shortcut;
   const [currentType, setCurrentType] = useState<string | null>(
     shortcut?.type || null,
@@ -827,7 +826,6 @@ function ShortcutForm({
                 result[key] = result[key].replace(/^@?[^@]+@/, '');
               }
             });
-            console.log('result', result);
             if (!result.type) return;
             onSubmit({
               result: { ...result, type: result.type },
@@ -854,7 +852,7 @@ function ShortcutForm({
                 name="type"
                 dir="auto"
               >
-                <option></option>
+                <option value="" aria-label={t`Timeline`}></option>
                 {TYPES.map((type) => (
                   <option key={type} value={type}>
                     {_(TYPE_TEXT[type])}
@@ -882,7 +880,7 @@ function ShortcutForm({
                             }
                             dir="auto"
                           >
-                            <option value=""></option>
+                            <option value="" aria-label={t`List`}></option>
                             {userLists.length > 0 && (
                               <optgroup label={t`Lists`}>
                                 {userLists.map((list) => (
@@ -1045,6 +1043,7 @@ function ImportShortcutsSection({
           type="text"
           name="import"
           placeholder={t`Paste shortcuts here`}
+          aria-label={t`Paste shortcuts here`}
           className="block"
           onInput={(e) => {
             setImportShortcutStr(e.currentTarget.value);
@@ -1241,6 +1240,7 @@ function ExportShortcutsSection({
           style={{ width: '100%' }}
           type="text"
           value={shortcutsStr}
+          aria-label={t`Export`}
           readOnly
           onClick={(e) => {
             const target = e.currentTarget;
@@ -1333,7 +1333,7 @@ function ExportShortcutsSection({
       </p>
       {!!shortcutsStr && (
         <details>
-          <summary className="insignificant">
+          <summary className="insignificant" aria-label={t`Raw Shortcuts JSON`}>
             <small>
               <Trans>Raw Shortcuts JSON</Trans>
             </small>
@@ -1373,7 +1373,6 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
       const parsedList = unknownArray(parsed);
       if (!parsedList) throw new Error('Not an array');
       setImportUIState('default');
-      console.log('⚡ Parsed imported shortcuts', parsedList);
       return parsedList;
     } catch {
       // Fallback to JSON string parsing
