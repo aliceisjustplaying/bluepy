@@ -19,7 +19,7 @@ import MenuLink from '../components/menu-link';
 import Menu2 from '../components/menu2';
 import Modal from '../components/modal';
 import Timeline from '../components/timeline';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import {
   getList,
@@ -41,21 +41,6 @@ interface ListLike {
 }
 
 type StatusLike = mastodon.v1.Status;
-
-interface SaveStatusPayload extends Record<string, unknown> {
-  id?: string;
-  account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
-  quote?: SaveStatusPayload | null;
-  state?: unknown;
-  quotedStatus?: SaveStatusPayload | null;
-}
-
-function toSaveStatus(
-  status: StatusLike | null | undefined,
-): SaveStatusPayload | null | undefined {
-  return status as SaveStatusPayload | null | undefined;
-}
 
 interface FetchItemsResult {
   done?: boolean;
@@ -92,6 +77,14 @@ type InViewProps = {
 const InView: ComponentType<InViewProps> =
   InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
+function statusList(value: unknown): StatusLike[] | undefined {
+  return Array.isArray(value) ? value : undefined;
+}
+
+function accountList(value: unknown): mastodon.v1.Account[] | undefined {
+  return Array.isArray(value) ? value : undefined;
+}
+
 interface ListProps {
   id?: string;
   instance?: string;
@@ -109,9 +102,9 @@ function List(props: ListProps) {
   const latestItem = useRef<string | undefined>(undefined);
   // const [reloadCount, reload] = useReducer((c) => c + 1, 0);
 
-  const timelinesApi = masto.v1.timelines as {
+  const timelinesApi = getMastoV1Resource<{
     list: ListTimelineEndpoint;
-  };
+  }>(masto, 'timelines');
 
   const listIterator = useRef<AsyncIterator<StatusLike[]> | undefined>(
     undefined,
@@ -126,7 +119,7 @@ function List(props: ListProps) {
         .values();
     }
     const results = await listIterator.current.next();
-    const value = results.value as StatusLike[] | undefined;
+    const value = statusList(results.value);
     if (value?.length) {
       if (firstLoad) {
         latestItem.current = value[0].id;
@@ -134,7 +127,7 @@ function List(props: ListProps) {
 
       // value = filteredItems(value, 'home');
       value.forEach((item) => {
-        saveStatus(toSaveStatus(item), instance);
+        saveStatus(item, instance);
       });
     }
     return {
@@ -149,12 +142,10 @@ function List(props: ListProps) {
         limit: 1,
         since_id: latestItem.current,
       });
-      let value: StatusLike[] | undefined = Array.isArray(results)
-        ? results
-        : results?.value;
+      let value = statusList(Array.isArray(results) ? results : results?.value);
       const valueContainsLatestItem = value?.[0]?.id === latestItem.current; // since_id might not be supported
       if (value?.length && !valueContainsLatestItem) {
-        value = filteredItems(value, 'home') as StatusLike[];
+        value = [...filteredItems(value, 'home')];
         return true;
       }
       return false;
@@ -413,7 +404,7 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
   );
   const [showMore, setShowMore] = useState(false);
 
-  const listsApi = masto.v1.lists as ListMembersEndpoint;
+  const listsApi = getMastoV1Resource<ListMembersEndpoint>(masto, 'lists');
 
   const membersIterator = useRef<
     AsyncIterator<mastodon.v1.Account[]> | undefined
@@ -434,10 +425,8 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
             .values();
         }
         const results = await membersIterator.current.next();
-        const { done, value } = results as {
-          done?: boolean;
-          value?: mastodon.v1.Account[];
-        };
+        const done = results.done;
+        const value = accountList(results.value);
         if (value?.length) {
           if (firstLoad) {
             setMembers(value);
@@ -521,7 +510,7 @@ function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
     'default',
   );
   const [removed, setRemoved] = useState(false);
-  const listsApi = masto.v1.lists as ListMembersEndpoint;
+  const listsApi = getMastoV1Resource<ListMembersEndpoint>(masto, 'lists');
 
   return (
     <MenuConfirm
