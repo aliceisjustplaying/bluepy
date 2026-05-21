@@ -225,6 +225,42 @@ function isTimelineStatus(entry: TimelineItemEntry): entry is TimelineStatusEntr
   return !hasItems(entry) && !isFilteredGroup(entry);
 }
 
+function isTimelineStatusEntry(value: unknown): value is TimelineStatusEntry {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof value.id === 'string'
+  );
+}
+
+function toStatusPeekPayload(status: TimelineStatusEntry): StatusPeekPayload {
+  return {
+    spoilerText: status.spoilerText,
+    content: status.content,
+    poll: status.poll
+      ? {
+          options: status.poll.options?.map((option) => ({
+            title: option.title,
+          })),
+          multiple: status.poll.multiple,
+        }
+      : status.poll,
+    mediaAttachments: status.mediaAttachments?.map((attachment) => ({
+      type: attachment.type,
+    })),
+    quote:
+      status.quote && 'quotedStatus' in status.quote && status.quote.quotedStatus
+        ? {
+            quotedStatus: {
+              ...toStatusPeekPayload(status.quote.quotedStatus),
+              id: status.quote.quotedStatus.id,
+            },
+          }
+        : null,
+  };
+}
+
 function entryID(entry: TimelineEntry): string {
   return Array.isArray(entry.id) ? entry.id.join(',') : entry.id;
 }
@@ -538,7 +574,7 @@ function Timeline({
           let { done, value } = await fetchItems(firstLoad);
           if (ts !== loadItemsTS.current) return;
           if (Array.isArray(value)) {
-            const rawValue = value as TimelineStatusEntry[];
+            const rawValue = value.filter(isTimelineStatusEntry);
             // Avoid grouping for pinned posts
             const [pinnedPosts, otherPosts] = rawValue.reduce<
               [TimelineStatusEntry[], TimelineStatusEntry[]]
@@ -553,24 +589,20 @@ function Timeline({
               },
               [[], []],
             );
-            let processed: TimelineEntry[] = otherPosts;
-            processed = filterHiddenStatuses(
-              processed as TimelineStatusEntry[],
-              filterContext,
-            ) as TimelineEntry[];
+            let processed: TimelineEntry[] = [
+              ...filterHiddenStatuses(otherPosts, filterContext),
+            ];
             if (allowGrouping) {
               if (boostsCarousel) {
-                processed = groupBoosts(
-                  processed as TimelineStatusEntry[],
-                ) as TimelineEntry[];
+                processed = [...groupBoosts(processed.filter(isTimelineStatus))];
               }
               processed = groupContext(
-                processed as TimelineStatusEntry[],
+                processed.filter(isTimelineStatus),
                 instance,
-              ) as TimelineEntry[];
+              );
             }
             if (pinnedPosts.length) {
-              processed = (pinnedPosts as TimelineEntry[]).concat(processed);
+              processed = [...pinnedPosts, ...processed];
             }
             console.log(processed);
             if (firstLoad) {
@@ -918,7 +950,7 @@ function Timeline({
                     filterContext={filterContext}
                     key={`${
                       Array.isArray(status.id) ? status.id.join(',') : status.id
-                    }${String((status as TimelineStatusEntry)._pinned)}${view}`}
+                    }${String(status._pinned)}${view}`}
                     view={view}
                     showReplyParent={showReplyParent}
                     mediaFirst={mediaFirst}
@@ -1465,7 +1497,7 @@ function TimelineStatusCompact({
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const { id, visibility, language } = status;
-  const statusPeekText = statusPeek(status as StatusPeekPayload);
+  const statusPeekText = statusPeek(toStatusPeekPayload(status));
   const sKey = statusKey(id, instance);
   const filterInfo = isFiltered(status.filtered, filterContext || '');
   return (
