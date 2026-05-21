@@ -2,18 +2,20 @@ import "./notifications-menu.css";
 
 import { msg } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ControlledMenu } from "@szhsin/react-menu";
+import { ControlledMenu, type RectElement } from "@szhsin/react-menu";
 import type { RefObject } from "react";
 import { memo } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSnapshot } from "valtio";
 
 import Columns from "../components/columns";
 import Icon from "../components/icon";
 import Link from "../components/link";
 import Loader from "../components/loader";
-import Notification from "../components/notification";
-import { api } from "../utils/api";
+import Notification, {
+  type NotificationProps,
+} from "../components/notification";
+import { api, getMastoV1Resource } from "../utils/api";
 import db from "../utils/db";
 import FilterContext from "../utils/filter-context";
 import { massageNotifications2 } from "../utils/group-notifications";
@@ -144,12 +146,11 @@ interface NotificationsMenuProps {
   onClose: () => void;
 }
 
-interface NotificationItem {
+type NotificationItem = NotificationProps["notification"] & {
   id: string;
   _ids?: string;
   type?: string;
-  status?: Parameters<typeof saveStatus>[0];
-}
+};
 
 interface NotificationRecord {
   id?: string;
@@ -240,9 +241,8 @@ function NotificationsMenu({
           states.notifications = groupedNotifications;
 
           // Update last read marker
-          void (
-            masto.v1.markers as MarkerResource
-          )
+          const markers = getMastoV1Resource<MarkerResource>(masto, "markers");
+          void markers
             .create({
               notifications: {
                 lastReadId: groupedNotifications[0].id,
@@ -262,6 +262,14 @@ function NotificationsMenu({
   }, [masto, instance]);
 
   const menuRef = useRef<ControlledMenuRef | null>(null);
+  const menuAnchorRef = useMemo<RefObject<Element | RectElement>>(
+    () => ({
+      get current() {
+        return anchorRef.current ?? document.body;
+      },
+    }),
+    [anchorRef],
+  );
   const headerHeight = 52;
   useEffect(() => {
     if (state !== "open") return;
@@ -282,7 +290,7 @@ function NotificationsMenu({
       ref={menuRef}
       menuClassName="notifications-menu"
       state={state}
-      anchorRef={anchorRef as never}
+      anchorRef={menuAnchorRef}
       onClose={onClose}
       portal={{
         target: document.body,
@@ -313,11 +321,7 @@ function NotificationsMenu({
                   <Notification
                     key={notification._ids || notification.id}
                     instance={instance}
-                    notification={
-                      notification as Parameters<
-                        typeof Notification
-                      >[0]["notification"]
-                    }
+                    notification={notification}
                     disableContextMenu
                   />
                 ))}

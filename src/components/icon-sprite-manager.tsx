@@ -29,10 +29,17 @@ function isIconData(value: unknown): value is IconData {
   return (
     typeof value === 'object' &&
     value !== null &&
-    typeof (value as { width?: unknown }).width === 'number' &&
-    typeof (value as { height?: unknown }).height === 'number' &&
-    typeof (value as { body?: unknown }).body === 'string'
+    'width' in value &&
+    typeof value.width === 'number' &&
+    'height' in value &&
+    typeof value.height === 'number' &&
+    'body' in value &&
+    typeof value.body === 'string'
   );
+}
+
+function isIconModule(value: unknown): value is IconModule {
+  return typeof value === 'function';
 }
 
 interface IconSpriteProviderProps {
@@ -63,7 +70,12 @@ export function IconSpriteProvider({ children }: IconSpriteProviderProps) {
 
         let iconModule: IconModule;
         if (Array.isArray(iconBlock)) {
-          [iconModule] = iconBlock as [IconModule, string?, string?];
+          const [firstEntry] = iconBlock;
+          if (!isIconModule(firstEntry)) {
+            console.warn(`Icon ${iconName} has invalid module`);
+            return;
+          }
+          iconModule = firstEntry;
         } else if (typeof iconBlock === 'object') {
           iconModule = iconBlock.module;
         } else {

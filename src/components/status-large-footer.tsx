@@ -56,6 +56,26 @@ interface StatusLargeFooterProps {
   menuItems: ReactNode;
 }
 
+interface EmojiReaction {
+  name: string;
+  count?: number;
+  me?: boolean;
+  url?: string;
+  staticUrl?: string;
+}
+
+function emojiReactionData(value: Record<string, unknown>): EmojiReaction | null {
+  if (typeof value.name !== 'string') return null;
+  return {
+    name: value.name,
+    count: typeof value.count === 'number' ? value.count : undefined,
+    me: typeof value.me === 'boolean' ? value.me : undefined,
+    url: typeof value.url === 'string' ? value.url : undefined,
+    staticUrl:
+      typeof value.staticUrl === 'string' ? value.staticUrl : undefined,
+  };
+}
+
 export default function StatusLargeFooter({
   deleted,
   visibility,
@@ -146,19 +166,9 @@ export default function StatusLargeFooter({
       {!!emojiReactions?.length && (
         <div className="emoji-reactions">
           {emojiReactions.map((emojiReaction: Record<string, unknown>) => {
-            const {
-              name,
-              count,
-              me,
-              url: reactionUrl,
-              staticUrl,
-            } = emojiReaction as {
-              name: string;
-              count?: number;
-              me?: boolean;
-              url?: string;
-              staticUrl?: string;
-            };
+            const reaction = emojiReactionData(emojiReaction);
+            if (!reaction) return null;
+            const { name, count, me, url: reactionUrl, staticUrl } = reaction;
             if (reactionUrl) {
               return (
                 <span
