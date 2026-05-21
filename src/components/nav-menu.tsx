@@ -12,7 +12,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { getLists, splitListsAndFeeds } from '../utils/lists';
 import safeBoundingBoxPadding from '../utils/safe-bounding-box-padding';
 import states from '../utils/states';
@@ -38,6 +38,22 @@ interface MutesBlocksApi {
 
 type MenuStateValue = 'open' | 'closed' | 'opening' | 'closing' | undefined;
 
+function isShortcut(value: unknown): value is ShortcutLike {
+  return !!value && typeof value === 'object';
+}
+
+function shortcutList(value: unknown): ShortcutLike[] {
+  return Array.isArray(value) ? value.filter(isShortcut) : [];
+}
+
+function stringValue(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function booleanValue(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
 function NavMenu(props: Record<string, unknown>) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
@@ -54,9 +70,7 @@ function NavMenu(props: Record<string, unknown>) {
   // Don't show avatar in nav button if profile shortcut is already showing
   const tabMenuHasProfile =
     snapStates.settings.shortcutsViewMode === 'tab-menu-bar' &&
-    (snapStates.shortcuts as readonly ShortcutLike[]).some(
-      (pin) => pin.type === 'profile',
-    );
+    shortcutList(snapStates.shortcuts).some((pin) => pin.type === 'profile');
   const showAvatarInButton = moreThanOneAccount && !tabMenuHasProfile;
 
   const showFollowing = authenticated;
@@ -82,29 +96,21 @@ function NavMenu(props: Record<string, unknown>) {
     0,
   ]);
 
-  const mastoV1 = (masto as { v1: Record<string, unknown> }).v1;
-
   const mutesIterator = useRef<AsyncIterator<unknown> | undefined>(undefined);
+  const mutesApi = getMastoV1Resource<MutesBlocksApi>(masto, 'mutes');
   async function fetchMutes(firstLoad: boolean) {
     if (firstLoad || !mutesIterator.current) {
-      mutesIterator.current = (mastoV1.mutes as MutesBlocksApi)
-        .list({
-          limit: 80,
-        })
-        .values();
+      mutesIterator.current = mutesApi.list({ limit: 80 }).values();
     }
     const results = await mutesIterator.current.next();
     return results;
   }
 
   const blocksIterator = useRef<AsyncIterator<unknown> | undefined>(undefined);
+  const blocksApi = getMastoV1Resource<MutesBlocksApi>(masto, 'blocks');
   async function fetchBlocks(firstLoad: boolean) {
     if (firstLoad || !blocksIterator.current) {
-      blocksIterator.current = (mastoV1.blocks as MutesBlocksApi)
-        .list({
-          limit: 80,
-        })
-        .values();
+      blocksIterator.current = blocksApi.list({ limit: 80 }).values();
     }
     const results = await blocksIterator.current.next();
     return results;
@@ -135,11 +141,11 @@ function NavMenu(props: Record<string, unknown>) {
         {showAvatarInButton && (
           <Avatar
             url={
-              (currentAccount?.info?.avatar ||
-                currentAccount?.info?.avatarStatic) as string | undefined
+              stringValue(currentAccount?.info?.avatar) ||
+              stringValue(currentAccount?.info?.avatarStatic)
             }
             size="l"
-            squircle={currentAccount?.info?.bot as boolean | undefined}
+            squircle={booleanValue(currentAccount?.info?.bot)}
           />
         )}
         <Icon icon="menu" size={showAvatarInButton ? 's' : 'l'} alt={t`Menu`} />
