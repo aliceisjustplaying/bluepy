@@ -378,8 +378,9 @@ export default function QrCode({
             ref={captionRef}
             {...{ xmlns: 'http://www.w3.org/1999/xhtml' }}
             className="qr-code-caption"
-            dangerouslySetInnerHTML={{ __html: caption }}
-          />
+          >
+            {caption}
+          </div>
         </foreignObject>
       )}
     </svg>
