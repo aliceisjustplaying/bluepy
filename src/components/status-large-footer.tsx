@@ -64,6 +64,11 @@ interface EmojiReaction {
   staticUrl?: string;
 }
 
+interface EmojiReactionsProps {
+  emojiReactions?: readonly Record<string, unknown>[];
+  emojis?: readonly mastodon.v1.CustomEmoji[];
+}
+
 function emojiReactionData(value: Record<string, unknown>): EmojiReaction | null {
   if (typeof value.name !== 'string') return null;
   return {
@@ -74,6 +79,60 @@ function emojiReactionData(value: Record<string, unknown>): EmojiReaction | null
     staticUrl:
       typeof value.staticUrl === 'string' ? value.staticUrl : undefined,
   };
+}
+
+function EmojiReactions({ emojiReactions, emojis }: EmojiReactionsProps) {
+  if (!emojiReactions?.length) return null;
+  return (
+    <div className="emoji-reactions">
+      {emojiReactions.map((emojiReaction: Record<string, unknown>) => {
+        const reaction = emojiReactionData(emojiReaction);
+        if (!reaction) return null;
+        const { name, count, me, url: reactionUrl, staticUrl } = reaction;
+        if (reactionUrl) {
+          return (
+            <span
+              key={name}
+              className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
+            >
+              <CustomEmoji alt={name} url={reactionUrl} staticUrl={staticUrl} />{' '}
+              {count}
+            </span>
+          );
+        }
+        const isShortCode = /^:.+?:$/.test(name);
+        if (isShortCode) {
+          const emoji = emojis?.find(
+            (e: mastodon.v1.CustomEmoji) =>
+              e.shortcode === name.replace(/^:/, '').replace(/:$/, ''),
+          );
+          if (emoji) {
+            return (
+              <span
+                key={name}
+                className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
+              >
+                <CustomEmoji
+                  alt={name}
+                  url={emoji.url}
+                  staticUrl={emoji.staticUrl}
+                />{' '}
+                {count}
+              </span>
+            );
+          }
+        }
+        return (
+          <span
+            key={name}
+            className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
+          >
+            {name} {count}
+          </span>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function StatusLargeFooter({
@@ -163,60 +222,7 @@ export default function StatusLargeFooter({
           </>
         )}
       </div>
-      {!!emojiReactions?.length && (
-        <div className="emoji-reactions">
-          {emojiReactions.map((emojiReaction: Record<string, unknown>) => {
-            const reaction = emojiReactionData(emojiReaction);
-            if (!reaction) return null;
-            const { name, count, me, url: reactionUrl, staticUrl } = reaction;
-            if (reactionUrl) {
-              return (
-                <span
-                  key={name}
-                  className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
-                >
-                  <CustomEmoji
-                    alt={name}
-                    url={reactionUrl}
-                    staticUrl={staticUrl}
-                  />{' '}
-                  {count}
-                </span>
-              );
-            }
-            const isShortCode = /^:.+?:$/.test(name);
-            if (isShortCode) {
-              const emoji = emojis?.find(
-                (e: mastodon.v1.CustomEmoji) =>
-                  e.shortcode === name.replace(/^:/, '').replace(/:$/, ''),
-              );
-              if (emoji) {
-                return (
-                  <span
-                    key={name}
-                    className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
-                  >
-                    <CustomEmoji
-                      alt={name}
-                      url={emoji.url}
-                      staticUrl={emoji.staticUrl}
-                    />{' '}
-                    {count}
-                  </span>
-                );
-              }
-            }
-            return (
-              <span
-                key={name}
-                className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
-              >
-                {name} {count}
-              </span>
-            );
-          })}
-        </div>
-      )}
+      <EmojiReactions emojiReactions={emojiReactions} emojis={emojis} />
       <div className={`actions ${deleted ? 'disabled' : ''}`}>
         <div className="action has-count">
           <StatusButton
