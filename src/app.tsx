@@ -129,8 +129,22 @@ interface AccessTokenResponse {
   access_token?: string;
 }
 
+type PopupOpener = {
+  closed?: boolean;
+  postMessage(message: unknown, targetOrigin: string): void;
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object";
+}
+
+function isPopupOpener(value: unknown): value is PopupOpener {
+  return isRecord(value) && typeof value.postMessage === "function";
+}
+
+function popupOpener(): PopupOpener | null {
+  const opener: unknown = Reflect.get(window, "opener");
+  return isPopupOpener(opener) ? opener : null;
 }
 
 function getOptionalString(value: unknown): string | undefined {
@@ -175,7 +189,7 @@ function isIconModuleLoader(value: unknown): value is IconModuleLoader {
 
 function preloadIconEntry(entry: unknown) {
   if (Array.isArray(entry)) {
-    const [load] = entry;
+    const load: unknown = entry[0];
     if (isIconModuleLoader(load)) void load();
     return;
   }
@@ -604,11 +618,12 @@ function App() {
       if (code) {
         console.log({ code });
 
-        const isPopup = window.opener && !window.opener.closed;
+        const opener = popupOpener();
+        const isPopup = opener && !opener.closed;
 
         if (isPopup) {
           try {
-            window.opener.postMessage(
+            opener.postMessage(
               {
                 type: "oauth-callback",
                 code: code,
