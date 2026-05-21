@@ -9,7 +9,6 @@ import { toUnicode } from 'punycode/';
 import type {
   ReactNode,
   CSSProperties,
-  Ref,
   MouseEvent,
 } from 'react';
 import { memo } from 'react';
@@ -181,24 +180,32 @@ function navigationEntriesLength(): number | undefined {
   return window.navigation.entries?.().length;
 }
 
-function rawStatusFromState(status: unknown): RawStatus | undefined {
-  if (!status || typeof status !== 'object') return undefined;
-  return status as RawStatus;
+function isRawStatus(status: unknown): status is RawStatus {
+  return (
+    !!status &&
+    typeof status === 'object' &&
+    'id' in status &&
+    typeof status.id === 'string' &&
+    'account' in status &&
+    !!status.account &&
+    typeof status.account === 'object'
+  );
 }
 
-type SaveStatusInput = Parameters<typeof saveStatus>[0];
-type ThreadifyStatusInput = Parameters<typeof threadifyStatus>[0];
+function rawStatusFromState(status: unknown): RawStatus | undefined {
+  return isRawStatus(status) ? status : undefined;
+}
 
 function saveRawStatus(
   status: RawStatus,
   instance?: string | Parameters<typeof saveStatus>[1],
   opts?: Parameters<typeof saveStatus>[2],
 ): void {
-  saveStatus(status as SaveStatusInput, instance, opts);
+  saveStatus(status as Parameters<typeof saveStatus>[0], instance, opts);
 }
 
 function threadifyRawStatus(status: RawStatus, instance?: string | null): void {
-  threadifyStatus(status as ThreadifyStatusInput, instance);
+  threadifyStatus(status as Parameters<typeof threadifyStatus>[0], instance);
 }
 
 interface StatusPageParams {
@@ -2161,9 +2168,10 @@ function SubComments({
     [setSearchParams],
   );
 
-  // The Container element is either `div` or `details` depending on `open`.
-  // Use a permissive ref type to satisfy both branches of the JSX union.
   const detailsRef = useRef<HTMLElement | null>(null);
+  const setDetailsRef = useCallback((node: HTMLElement | null) => {
+    detailsRef.current = node;
+  }, []);
   useLayoutEffect(() => {
     function handleScroll(e: Event) {
       // NOTE: this scrollLeft works for RTL too
@@ -2192,13 +2200,14 @@ function SubComments({
 
   return (
     <Container
-      ref={detailsRef as Ref<HTMLDetailsElement> & Ref<HTMLDivElement>}
+      ref={setDetailsRef}
       className="replies"
       open={isDetails ? openBefore || open : undefined}
       onToggle={
         isDetails
           ? (e: React.SyntheticEvent) => {
-              const target = e.target as HTMLDetailsElement | null;
+              const target =
+                e.target instanceof HTMLDetailsElement ? e.target : null;
               const newOpen = !!target?.open;
               setIsOpen(newOpen);
               // use first reply as ID
