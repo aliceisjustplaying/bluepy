@@ -37,7 +37,7 @@ interface StatusMediaEmbedsProps {
   status: AnyStatus;
   showMultipleMediaCaptions: boolean;
   captionChildren: ReactNode;
-  mediaContainerRef: RefObject<HTMLDivElement>;
+  mediaContainerRef: RefObject<HTMLDivElement | null>;
   displayedMediaAttachments: AnyMediaAttachment[];
   content?: string | null;
 }

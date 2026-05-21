@@ -1,7 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
-import type { ReactNode, RefObject } from 'react';
+import type { ReactNode } from 'react';
 import { useCallback, use, useMemo, useReducer, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
@@ -37,7 +36,6 @@ import useStatusQuotePolicy from './status-quote-policy';
 import useStatusReplyParent from './status-reply-parent';
 import type {
   AnyMediaAttachment,
-  AnyStatus,
   StatusContentMasto,
   StatusAtprotoMeta,
 } from './status-types';
@@ -70,9 +68,6 @@ function getAccountAtprotoLabels(account: unknown): unknown {
 function mergeAtprotoLabels(...values: unknown[]): unknown[] {
   return values.flatMap((value) => (isUnknownArray(value) ? value : []));
 }
-
-type StatusContentMediaAttachment = AnyMediaAttachment &
-  mastodon.v1.MediaAttachment;
 
 interface StatusContentProps extends StatusRouterProps {
   renderStatus: (props: StatusComponentProps) => ReactNode;
@@ -184,8 +179,7 @@ export default function StatusContent({
     emojis: _accountEmojis,
     bot,
   } = account || {};
-  const mediaAttachments = (statusMediaAttachments ||
-    EMPTY_MEDIA_ATTACHMENTS) as StatusContentMediaAttachment[];
+  const mediaAttachments = statusMediaAttachments || EMPTY_MEDIA_ATTACHMENTS;
   const accountAtprotoLabels = getAccountAtprotoLabels(account);
   const statusAtprotoLabels = status._atproto?.labels;
   const atprotoLabels = useMemo(
@@ -289,9 +283,9 @@ export default function StatusContent({
   const [showQuotes, setShowQuotes] = useState(false);
   const [showQuoteChain, setShowQuoteChain] = useState(false);
 
-  const spoilerContentRef = useTruncated() as RefObject<HTMLDivElement>;
-  const contentRef = useTruncated() as RefObject<HTMLDivElement>;
-  const mediaContainerRef = useTruncated() as RefObject<HTMLDivElement>;
+  const spoilerContentRef = useTruncated<HTMLDivElement>();
+  const contentRef = useTruncated<HTMLDivElement>();
+  const mediaContainerRef = useTruncated<HTMLDivElement>();
 
   const statusRef = useRef<HTMLElement | null>(null);
   const [reloadPostContentCount, reloadPostContent] = useReducer(
@@ -647,7 +641,9 @@ export default function StatusContent({
             withinContext={withinContext}
             isThread={isThread}
             threadNumber={
-              snapStates.statusThreadNumber[sKey] as number | undefined
+              typeof snapStates.statusThreadNumber[sKey] === 'number'
+                ? snapStates.statusThreadNumber[sKey]
+                : undefined
             }
             sKey={sKey}
             deleted={_deleted}
@@ -667,7 +663,7 @@ export default function StatusContent({
             visibility={visibility}
             editedAt={editedAt}
             createdAtDate={createdAtDate}
-            inReplyToAccount={inReplyToAccount as AnyStatus['account'] | null}
+            inReplyToAccount={inReplyToAccount}
             showReplyBadge={showReplyBadge && !hideReplyBadge}
           />
           <AtprotoLabels labels={atprotoLabels} sourceProfiles={account} />
@@ -708,9 +704,7 @@ export default function StatusContent({
             forceTranslate={forceTranslate}
             withinContext={withinContext}
             languageAutoDetected={!!languageAutoDetected}
-            displayedMediaAttachments={
-              displayedMediaAttachments as StatusContentMediaAttachment[]
-            }
+            displayedMediaAttachments={displayedMediaAttachments}
             showMultipleMediaCaptions={showMultipleMediaCaptions}
             captionChildren={captionChildren}
             mediaContainerRef={mediaContainerRef}

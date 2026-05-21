@@ -1,5 +1,4 @@
 import { useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useMemo, useRef } from 'react';
 
 import haptics from '../utils/haptics';
@@ -10,7 +9,12 @@ import states, { saveStatus } from '../utils/states';
 import supports from '../utils/supports';
 
 import { REACTIONS_LIMIT } from './status-helpers';
-import type { AnyAccount, AnyStatus, StatusContentMasto } from './status-types';
+import type {
+  AnyAccount,
+  AnyMediaAttachment,
+  AnyStatus,
+  StatusContentMasto,
+} from './status-types';
 
 type CachedStatus = (typeof states.statuses)[string];
 
@@ -42,7 +46,7 @@ interface StatusInteractionsArgs {
   favourited?: boolean | null;
   favouritesCount?: number;
   bookmarked?: boolean | null;
-  mediaAttachments: mastodon.v1.MediaAttachment[];
+  mediaAttachments: AnyMediaAttachment[];
   createdAt: string;
 }
 
@@ -70,8 +74,7 @@ export default function useStatusInteractions({
   const unauthInteractionErrorMessage = t`Sorry, your current PDS can't interact with this post from another PDS.`;
   const mediaNoDesc = useMemo(() => {
     return mediaAttachments.some(
-      (attachment: mastodon.v1.MediaAttachment) =>
-        !attachment.description?.trim?.(),
+      (attachment: AnyMediaAttachment) => !attachment.description?.trim?.(),
     );
   }, [mediaAttachments]);
   const statusMonthsAgo = useMemo(() => {

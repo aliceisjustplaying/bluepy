@@ -44,8 +44,23 @@ interface StatusHeaderProps {
   visibility: keyof typeof visibilityIconsMap;
   editedAt?: string | null;
   createdAtDate: Date;
-  inReplyToAccount?: AnyAccount | null;
+  inReplyToAccount?: unknown;
   showReplyBadge: boolean;
+}
+
+function isNameTextAccount(value: unknown): value is AnyAccount {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'acct' in value &&
+    typeof value.acct === 'string' &&
+    'id' in value &&
+    typeof value.id === 'string' &&
+    'url' in value &&
+    typeof value.url === 'string' &&
+    'username' in value &&
+    typeof value.username === 'string'
+  );
 }
 
 interface StatusTimeIconProps {
@@ -228,7 +243,7 @@ export default function StatusHeader({
             showReplyBadge && (
               <div className="status-reply-badge">
                 <Icon icon="reply" />{' '}
-                {inReplyToAccount ? (
+                {isNameTextAccount(inReplyToAccount) ? (
                   <NameText
                     account={inReplyToAccount}
                     instance={instance}

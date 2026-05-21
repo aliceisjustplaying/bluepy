@@ -101,7 +101,7 @@ function cleanDOMForTemml(dom: HTMLElement) {
 
 interface MathBlockProps {
   content: string;
-  contentRef: RefObject<HTMLElement>;
+  contentRef: RefObject<HTMLElement | null>;
   onRevert: () => void;
 }
 

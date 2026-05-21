@@ -44,13 +44,13 @@ interface StatusPostBodyProps {
   isSizeLarge: boolean;
   readingExpandSpoilers: boolean;
   language?: string | null;
-  spoilerContentRef: RefObject<HTMLDivElement>;
+  spoilerContentRef: RefObject<HTMLDivElement | null>;
   emojis?: mastodon.v1.CustomEmoji[];
   id: string;
   mediaAttachments: AnyMediaAttachment[];
   instance: string;
   content?: string | null;
-  contentRef: RefObject<HTMLDivElement>;
+  contentRef: RefObject<HTMLDivElement | null>;
   status: AnyStatus;
   previewMode?: boolean;
   reloadPostContentCount: number;
@@ -70,7 +70,7 @@ interface StatusPostBodyProps {
   displayedMediaAttachments: AnyMediaAttachment[];
   showMultipleMediaCaptions: boolean;
   captionChildren: ReactNode;
-  mediaContainerRef: RefObject<HTMLDivElement>;
+  mediaContainerRef: RefObject<HTMLDivElement | null>;
   onMediaClick?: (
     e: React.MouseEvent,
     index: number,
@@ -378,12 +378,12 @@ export default function StatusPostBody({
       </div>
       {!isSizeLarge && (showCommentCount || showQuoteCount) && (
         <div className="content-comment-hint insignificant">
-          {showCommentCount && (
+          {!!showCommentCount && (
             <>
               <Icon icon="comment2" alt={t`Replies`} /> {repliesCount}
             </>
           )}{' '}
-          {showQuoteCount && (
+          {!!showQuoteCount && (
             <>
               <Icon icon="quote" alt={t`Quotes`} /> {quotesCount}
             </>

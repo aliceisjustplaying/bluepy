@@ -1,12 +1,12 @@
-import type { mastodon } from 'masto';
 import { useMemo } from 'react';
 
 import states from '../utils/states';
 
 import { isMediaCaptionLong } from './media';
+import type { AnyMediaAttachment } from './status-types';
 
 interface StatusMediaCaptionsArgs {
-  mediaAttachments: mastodon.v1.MediaAttachment[];
+  mediaAttachments: AnyMediaAttachment[];
   isSizeLarge: boolean;
   language?: string | null;
 }
@@ -28,26 +28,24 @@ export default function useStatusMediaCaptions({
   const captionChildren = useMemo(() => {
     if (!showMultipleMediaCaptions) return null;
     interface CaptionAttachment {
-      media: mastodon.v1.MediaAttachment;
+      media: AnyMediaAttachment;
       indices: number[];
     }
     const attachments: CaptionAttachment[] = [];
-    displayedMediaAttachments.forEach(
-      (media: mastodon.v1.MediaAttachment, i: number) => {
-        if (!media.description) return;
-        const index = attachments.findIndex(
-          (attachment) => attachment.media.description === media.description,
-        );
-        if (index === -1) {
-          attachments.push({
-            media,
-            indices: [i],
-          });
-        } else {
-          attachments[index].indices.push(i);
-        }
-      },
-    );
+    displayedMediaAttachments.forEach((media: AnyMediaAttachment, i: number) => {
+      if (!media.description) return;
+      const index = attachments.findIndex(
+        (attachment) => attachment.media.description === media.description,
+      );
+      if (index === -1) {
+        attachments.push({
+          media,
+          indices: [i],
+        });
+      } else {
+        attachments[index].indices.push(i);
+      }
+    });
     return attachments.map(({ media, indices }) => {
       const handleAltClick = () => {
         states.showMediaAlt = {
