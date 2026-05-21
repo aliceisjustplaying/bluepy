@@ -126,6 +126,10 @@ function getDefaultYear(): number {
   return currentYear;
 }
 
+function getCurrentYear(): number {
+  return new Date().getFullYear();
+}
+
 function formatTimezoneOffset(offset: number): string {
   // offset is in minutes, negative for east of UTC
   const sign = offset <= 0 ? '+' : '-';
@@ -181,9 +185,7 @@ function getMonthName(
 
 function getYear(year: string | number | null | undefined): number | null {
   const parsed = parseInt(String(year ?? ''), 10);
-  return parsed >= MIN_YEAR && parsed <= new Date().getFullYear()
-    ? parsed
-    : null;
+  return parsed >= MIN_YEAR && parsed <= getCurrentYear() ? parsed : null;
 }
 
 function getMonth(month: string | number | null | undefined): number | null {
@@ -1028,7 +1030,7 @@ function YearInPosts() {
                         type="number"
                         aria-label={t`Year`}
                         min={MIN_YEAR}
-                        max={getDefaultYear()}
+                        max={getCurrentYear()}
                         name="year"
                         defaultValue={getDefaultYear()}
                         disabled={uiStateName === 'generating'}
@@ -1273,10 +1275,24 @@ function YearInPosts() {
                       <p className="ui-state insignificant">…</p>
                     ) : (
                       filteredPosts.map((post, index) => {
-                        const currentDateKey = post.createdAt.slice(0, 10);
+                        const currentDateKey = niceDateTime(post.createdAt, {
+                          hideTime: true,
+                          forceOpts: {
+                            year: 'numeric',
+                            month: 'numeric',
+                            day: 'numeric',
+                          },
+                        });
                         const previousPost = filteredPosts[index - 1];
                         const previousDateKey = previousPost
-                          ? previousPost.createdAt.slice(0, 10)
+                          ? niceDateTime(previousPost.createdAt, {
+                              hideTime: true,
+                              forceOpts: {
+                                year: 'numeric',
+                                month: 'numeric',
+                                day: 'numeric',
+                              },
+                            })
                           : null;
                         const showDateHeader =
                           sortBy === 'createdAt' &&

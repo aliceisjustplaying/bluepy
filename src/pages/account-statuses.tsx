@@ -668,6 +668,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                           t`Showing posts in ${DateTimeFormat(i18n.locale, {
                             month: 'long',
                             year: 'numeric',
+                            timeZone: 'UTC',
                           }).format(date)}`,
                         );
                       }}
@@ -1013,9 +1014,10 @@ function MonthPicker(props: MonthPickerProps) {
           const monthValue = (i + 1).toString().padStart(2, '0');
           return (
             <option value={monthValue} key={monthValue}>
-              {DateTimeFormat(i18n.locale, { month: 'long' }).format(
-                Date.UTC(2000, i),
-              )}
+              {DateTimeFormat(i18n.locale, {
+                month: 'long',
+                timeZone: 'UTC',
+              }).format(Date.UTC(2000, i))}
             </option>
           );
         })}
