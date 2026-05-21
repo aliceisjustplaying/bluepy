@@ -8,7 +8,10 @@ import poweredByGiphyURL from '../assets/powered-by-giphy.svg';
 import Icon from './icon';
 import Loader from './loader';
 
-const { PHANPY_GIPHY_API_KEY: GIPHY_API_KEY } = import.meta.env;
+const GIPHY_API_KEY =
+  typeof import.meta.env.PHANPY_GIPHY_API_KEY === 'string'
+    ? import.meta.env.PHANPY_GIPHY_API_KEY
+    : '';
 
 const GIFS_PER_PAGE = 20;
 
@@ -56,6 +59,14 @@ interface GIFPickerModalProps {
   onSelect?: (payload: GIFSelectPayload) => void;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function isGiphyResponse(value: unknown): value is GiphyResponse {
+  return isRecord(value) && Array.isArray(value.data);
+}
+
 function GIFPickerModal({
   onClose = () => {},
   onSelect = () => {},
@@ -90,13 +101,17 @@ function GIFPickerModal({
           offset: String(offset),
           lang: i18n.locale || 'en',
         };
-        const response: GiphyResponse = await fetch(
+        const responseJson: unknown = await fetch(
           'https://api.giphy.com/v1/gifs/search?' +
             new URLSearchParams(query).toString(),
           {
             referrerPolicy: 'no-referrer',
           },
         ).then((r) => r.json());
+        if (!isGiphyResponse(responseJson)) {
+          throw new TypeError('Invalid Giphy response');
+        }
+        const response = responseJson;
         currentOffset.current = response.pagination?.offset || 0;
         setResults(response);
         setUIState('results');
