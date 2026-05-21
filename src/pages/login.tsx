@@ -75,6 +75,31 @@ function suffixReducer(state: SuffixState, action: SuffixAction): SuffixState {
   return state;
 }
 
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item) => typeof item === "string")
+    : [];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object";
+}
+
+function credentialApplication(
+  value: unknown,
+): CredentialApplicationShape | null {
+  if (!isRecord(value)) return null;
+  return {
+    ...value,
+    client_id:
+      typeof value.client_id === "string" ? value.client_id : undefined,
+    client_secret:
+      typeof value.client_secret === "string"
+        ? value.client_secret
+        : undefined,
+  };
+}
+
 function Login() {
   const { t } = useLingui();
   useTitle(t`Log in`, "/login");
@@ -132,7 +157,7 @@ function Login() {
     void (async () => {
       try {
         const res = await fetch(instancesListURL);
-        const data = (await res.json()) as string[];
+        const data = stringArray(await res.json());
         setInstancesList(data);
         searcher.current = new Fuse(data);
       } catch (e) {
@@ -180,21 +205,26 @@ function Login() {
 
       setUIState("loading");
       try {
-        let credentialApplication = getCredentialApplication(
-          instanceURL,
-        ) as CredentialApplicationShape | null;
+        let credentialApp = credentialApplication(
+          getCredentialApplication(instanceURL),
+        );
         if (
-          !credentialApplication ||
-          !credentialApplication.client_id ||
-          !credentialApplication.client_secret
+          !credentialApp ||
+          !credentialApp.client_id ||
+          !credentialApp.client_secret
         ) {
-          credentialApplication = (await registerApplication({
-            instanceURL,
-          })) as CredentialApplicationShape;
-          storeCredentialApplication(instanceURL, credentialApplication);
+          credentialApp = credentialApplication(
+            await registerApplication({
+              instanceURL,
+            }),
+          );
+          if (!credentialApp) {
+            throw new Error("Unable to register application");
+          }
+          storeCredentialApplication(instanceURL, credentialApp);
         }
 
-        const { client_id, client_secret } = credentialApplication;
+        const { client_id, client_secret } = credentialApp;
 
         const authPKCE = await supportsPKCE({ instanceURL });
         console.log({ authPKCE });
@@ -265,8 +295,9 @@ function Login() {
         .trim()
     : null;
   const instanceTextLooksLikeDomain =
-    /[^\s\r\n\t/\\]+\.[^\s\r\n\t/\\]+/.test(cleanInstanceText as string) &&
-    !/[\s/\\@]/.test(cleanInstanceText as string);
+    !!cleanInstanceText &&
+    /[^\s\r\n\t/\\]+\.[^\s\r\n\t/\\]+/.test(cleanInstanceText) &&
+    !/[\s/\\@]/.test(cleanInstanceText);
 
   const instancesSuggestions = cleanInstanceText
     ? searcher.current

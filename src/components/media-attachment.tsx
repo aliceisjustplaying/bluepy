@@ -108,6 +108,29 @@ function isAltDescriptionResponse(
   return value !== null && typeof value === "object";
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object";
+}
+
+function numberField(record: Record<string, unknown>, key: string) {
+  const value = record[key];
+  return typeof value === "number" ? value : undefined;
+}
+
+function configurationWithMedia(value: unknown): ConfigurationWithMedia {
+  if (!isRecord(value) || !isRecord(value.mediaAttachments)) return {};
+  const { mediaAttachments } = value;
+  return {
+    mediaAttachments: {
+      imageSizeLimit: numberField(mediaAttachments, "imageSizeLimit"),
+      imageMatrixLimit: numberField(mediaAttachments, "imageMatrixLimit"),
+      videoSizeLimit: numberField(mediaAttachments, "videoSizeLimit"),
+      videoMatrixLimit: numberField(mediaAttachments, "videoMatrixLimit"),
+      videoFrameRateLimit: numberField(mediaAttachments, "videoFrameRateLimit"),
+    },
+  };
+}
+
 function scaleDimension(
   matrix: number,
   matrixLimit: number,
@@ -165,7 +188,7 @@ function MediaAttachment({
 
   const checkMaxError = !!fileSize;
   const configuration: ConfigurationWithMedia = checkMaxError
-    ? (getCurrentInstanceConfiguration() as ConfigurationWithMedia)
+    ? configurationWithMedia(getCurrentInstanceConfiguration())
     : {};
   const {
     mediaAttachments: {
