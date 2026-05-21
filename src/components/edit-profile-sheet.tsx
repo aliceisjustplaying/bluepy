@@ -1,5 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
+import type { Ref } from 'react';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
@@ -40,6 +41,17 @@ interface FieldsAttributesRowProps {
   value?: string;
   disabled?: boolean;
   index: number;
+}
+
+interface EditProfileFieldsTableProps {
+  ref?: Ref<HTMLTableElement>;
+  fields: readonly mastodon.v1.AccountField[];
+  disabled?: boolean;
+}
+
+interface EditProfileActionsProps {
+  disabled?: boolean;
+  onCancel: () => void;
 }
 
 interface EditProfileSheetCloseResult {
@@ -113,6 +125,61 @@ function FieldsAttributesRow({
         />
       </td>
     </tr>
+  );
+}
+
+function EditProfileFieldsTable({
+  ref,
+  fields,
+  disabled,
+}: EditProfileFieldsTableProps) {
+  return (
+    <table ref={ref}>
+      <thead>
+        <tr>
+          <th>
+            <Trans>Label</Trans>
+          </th>
+          <th>
+            <Trans>Content</Trans>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {Array.from({
+          length: Math.max(4, fields.length),
+        }).map((_, i) => {
+          const field = fields[i];
+          return (
+            <FieldsAttributesRow
+              key={i}
+              name={field?.name ?? ''}
+              value={field?.value ?? ''}
+              index={i}
+              disabled={disabled}
+            />
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
+function EditProfileActions({ disabled, onCancel }: EditProfileActionsProps) {
+  return (
+    <footer>
+      <button
+        type="button"
+        className="light"
+        disabled={disabled}
+        onClick={onCancel}
+      >
+        <Trans>Cancel</Trans>
+      </button>
+      <button type="submit" disabled={disabled}>
+        <Trans>Save</Trans>
+      </button>
+    </footer>
   );
 }
 
@@ -399,49 +466,17 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
             <p>
               <Trans>Extra fields</Trans>
             </p>
-            <table ref={fieldsAttributesRef}>
-              <thead>
-                <tr>
-                  <th>
-                    <Trans>Label</Trans>
-                  </th>
-                  <th>
-                    <Trans>Content</Trans>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from({
-                  length: Math.max(4, profileFields.length),
-                }).map((_, i) => {
-                  const field = profileFields[i];
-                  return (
-                    <FieldsAttributesRow
-                      key={i}
-                      name={field?.name ?? ''}
-                      value={field?.value ?? ''}
-                      index={i}
-                      disabled={uiState === 'loading'}
-                    />
-                  );
-                })}
-              </tbody>
-            </table>
-            <footer>
-              <button
-                type="button"
-                className="light"
-                disabled={uiState === 'loading'}
-                onClick={() => {
-                  onClose?.();
-                }}
-              >
-                <Trans>Cancel</Trans>
-              </button>
-              <button type="submit" disabled={uiState === 'loading'}>
-                <Trans>Save</Trans>
-              </button>
-            </footer>
+            <EditProfileFieldsTable
+              ref={fieldsAttributesRef}
+              fields={profileFields}
+              disabled={uiState === 'loading'}
+            />
+            <EditProfileActions
+              disabled={uiState === 'loading'}
+              onCancel={() => {
+                onClose?.();
+              }}
+            />
           </form>
         )}
       </main>
