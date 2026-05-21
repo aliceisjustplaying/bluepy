@@ -21,30 +21,25 @@ type MockStatus = NonNullable<StatusComponentProps['status']> & {
   [key: string]: unknown;
 };
 
-type JsonLike =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | JsonLike[]
-  | { [key: string]: JsonLike };
-
 // Helper function to convert snake_case keys to camelCase recursively
 // This mimics the behavior of masto.js which uses change-case library
 // to transform API responses from snake_case to camelCase
-function toCamelCase(obj: JsonLike): JsonLike {
+function toCamelCase(obj: unknown): unknown {
   if (!obj || typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(toCamelCase);
 
-  return Object.keys(obj).reduce<Record<string, JsonLike>>((acc, key) => {
+  return Object.keys(obj).reduce<Record<string, unknown>>((acc, key) => {
     // Convert snake_case to camelCase: user_name -> userName
     const camelKey = key.replace(/_([a-z])/g, (_, letter: string) =>
       letter.toUpperCase(),
     );
-    acc[camelKey] = toCamelCase((obj as Record<string, JsonLike>)[key]);
+    acc[camelKey] = toCamelCase(Reflect.get(obj, key));
     return acc;
   }, {});
+}
+
+function isMockStatus(value: unknown): value is MockStatus {
+  return !!value && typeof value === 'object' && 'id' in value;
 }
 
 const MOCK_SHORTCUTS = [
@@ -78,18 +73,19 @@ function MockHome() {
       const accountURL = new URL(status.account.url);
       const instance = accountURL.hostname;
 
-      // Convert all snake_case keys to camelCase. The JSON fixture has
-      // `id` and the snake→camel mapping is identity for it, so we narrow
-      // the result back to MockStatus here without a second cast below.
-      const transformedStatus = toCamelCase(status as JsonLike) as MockStatus;
-      transformedStatus._instance = instance;
-
       // Mock createdAt dates: now, then 15 minutes ago, 30 minutes ago, etc.
       const minutesAgo = index * 15;
       const createdAt = new Date(now.getTime() - minutesAgo * 60 * 1000);
-      transformedStatus.createdAt = createdAt.toISOString();
+      const transformedStatus = toCamelCase(status);
+      if (!isMockStatus(transformedStatus)) {
+        throw new TypeError('Invalid mock status fixture');
+      }
 
-      return transformedStatus;
+      return {
+        ...transformedStatus,
+        _instance: instance,
+        createdAt: createdAt.toISOString(),
+      };
     });
   }, []);
 
