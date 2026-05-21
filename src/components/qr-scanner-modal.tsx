@@ -161,7 +161,7 @@ function QrScannerModal({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const overlayRef = useRef<HTMLCanvasElement | null>(null);
   const [decodedText, setDecodedText] = useState('');
-  const [isScanning, setIsScanning] = useState(true);
+  const isScanningRef = useRef(true);
   const [uiState, setUIState] = useState('loading');
 
   // Based on screen, not viewport or window
@@ -286,8 +286,10 @@ function QrScannerModal({
         }
 
         if (hasBarcodeDetector) {
-          const BarcodeDetectorCtor =
-            window.BarcodeDetector as BarcodeDetectorCtor;
+          const BarcodeDetectorCtor = window.BarcodeDetector;
+          if (!BarcodeDetectorCtor) {
+            throw new Error('BarcodeDetector unavailable');
+          }
           detector = new BarcodeDetectorCtor({ formats: ['qr_code'] });
         } else {
           const qrDomModule: QrDomModule = await import('qr/dom.js');
@@ -296,8 +298,11 @@ function QrScannerModal({
             return;
           }
           qrDom = qrDomModule;
+          const targets = overlayRef.current
+            ? { overlay: overlayRef.current }
+            : {};
           qrCanvas = new qrDomModule.QRCanvas(
-            { overlay: overlayRef.current } as { overlay?: HTMLCanvasElement },
+            targets,
             {
               cropToSquare: false,
               overlayMainColor: 'transparent',
@@ -315,11 +320,11 @@ function QrScannerModal({
       } catch (err) {
         console.error('Error accessing camera:', err);
         setUIState('error');
-        setIsScanning(false);
+        isScanningRef.current = false;
       }
     };
 
-    if (isScanning) {
+    if (isScanningRef.current) {
       void startCamera();
     }
 
@@ -337,7 +342,7 @@ function QrScannerModal({
         qrCanvas.clear();
       }
     };
-  }, [isScanning]);
+  }, []);
 
   const showActionableButton =
     typeof checkValidity === 'function'

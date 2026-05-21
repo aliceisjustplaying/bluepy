@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { useLayoutEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import { currentAppPath, navigatePath } from '../utils/router';
 import states from '../utils/states';
 import type { StoredAccount } from '../utils/store-utils';
@@ -39,16 +39,41 @@ interface NotificationFetchedStatus {
   [key: string]: unknown;
 }
 
-interface NotificationFetched {
+type NotificationFetched = NotificationProps['notification'] & {
   type?: string;
   status?: NotificationFetchedStatus | null;
   account?: NotificationFetchedAccount;
   [key: string]: unknown;
-}
+};
 
 interface NotificationsApi {
   $select(id: string): {
     fetch(): Promise<NotificationFetched | null | undefined>;
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function serviceWorkerNotificationMessage(
+  value: unknown,
+): ServiceWorkerNotificationMessage {
+  if (!isRecord(value)) return {};
+  return {
+    type: typeof value.type === 'string' ? value.type : undefined,
+    id: typeof value.id === 'string' ? value.id : undefined,
+    accessToken:
+      typeof value.accessToken === 'string' ? value.accessToken : undefined,
+  };
+}
+
+function routeNotificationData(value: unknown): RouteNotification {
+  if (!isRecord(value)) return {};
+  return {
+    id: typeof value.id === 'string' ? value.id : undefined,
+    accessToken:
+      typeof value.accessToken === 'string' ? value.accessToken : undefined,
   };
 }
 
@@ -57,8 +82,9 @@ interface NotificationsApi {
     console.log('👂👂👂 Listen to message');
     navigator.serviceWorker.addEventListener('message', (event) => {
       console.log('💥💥💥 Message event', event);
-      const data = event?.data as ServiceWorkerNotificationMessage | undefined;
-      const { type, id, accessToken } = data || {};
+      const { type, id, accessToken } = serviceWorkerNotificationMessage(
+        event.data,
+      );
       if (type === 'notification') {
         states.routeNotification = {
           id,
@@ -85,8 +111,7 @@ export default memo(function NotificationService() {
 
   console.log('🛎️ Notification service', routeNotification);
 
-  const { id, accessToken } =
-    (routeNotification as RouteNotification | null | undefined) || {};
+  const { id, accessToken } = routeNotificationData(routeNotification);
   const [showNotificationSheet, setShowNotificationSheet] = useState<
     false | NotificationSheetData
   >(false);
@@ -104,7 +129,10 @@ export default memo(function NotificationService() {
       ? getAccountByAccessToken(accessToken)
       : getCurrentAccount();
     void (async () => {
-      const notifications = masto.v1.notifications as NotificationsApi;
+      const notifications = getMastoV1Resource<NotificationsApi>(
+        masto,
+        'notifications',
+      );
       const notification = await notifications.$select(id).fetch();
       if (notification && account) {
         console.log('🛎️ Notification', { id, notification, account });
@@ -231,16 +259,19 @@ export default memo(function NotificationService() {
               //   pointerEvents: sameInstance ? '' : 'none',
               // }}
               onClick={(e) => {
-                const target = e.target as HTMLElement | null;
+                const { target } = e;
                 // If button or links
-                if (target?.tagName === 'BUTTON' || target?.tagName === 'A') {
+                if (
+                  target instanceof HTMLElement &&
+                  (target.tagName === 'BUTTON' || target.tagName === 'A')
+                ) {
                   onClose();
                 }
               }}
             >
               <Notification
                 instance={account.instanceURL}
-                notification={notification as NotificationProps['notification']}
+                notification={notification}
                 isStatic
               />
             </div>
