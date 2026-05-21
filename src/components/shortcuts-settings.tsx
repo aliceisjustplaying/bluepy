@@ -297,6 +297,10 @@ function asShortcutEntries(value: unknown): readonly ShortcutEntry[] {
   return Array.isArray(value) ? value.filter(isShortcutEntry) : [];
 }
 
+function unknownArray(value: unknown): unknown[] | null {
+  return Array.isArray(value) ? value.map((item: unknown) => item) : null;
+}
+
 function getStringRecord(value: unknown): Record<string, string> {
   if (value === null || typeof value !== 'object') return {};
   return Object.fromEntries(
@@ -926,20 +930,22 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
         decompressFromEncodedURIComponent(importShortcutStr),
       );
       // Very basic validation, I know
-      if (!Array.isArray(parsed)) throw new Error('Not an array');
+      const parsedList = unknownArray(parsed);
+      if (!parsedList) throw new Error('Not an array');
       setImportUIState('default');
-      console.log('⚡ Parsed imported shortcuts', parsed);
-      return parsed;
+      console.log('⚡ Parsed imported shortcuts', parsedList);
+      return parsedList;
     } catch {
       // Fallback to JSON string parsing
       // There's a chance that someone might want to import a JSON string instead of the compressed version
       try {
         const parsed: unknown = JSON.parse(importShortcutStr);
-        if (!Array.isArray(parsed)) {
+        const parsedList = unknownArray(parsed);
+        if (!parsedList) {
           throw new Error('Not an array');
         }
         setImportUIState('default');
-        return parsed;
+        return parsedList;
       } catch {
         setImportUIState('error');
         return null;

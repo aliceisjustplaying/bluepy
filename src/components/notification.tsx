@@ -93,7 +93,7 @@ function renderableText(
 // `masto.v2.notifications` is typed as `unknown` in our local MastoClient
 // shim. Describe just the surface this component uses.
 interface MastoV2NotificationAccountsList {
-  values(): AsyncIterator<AccountWithBot[]>;
+  values(): AsyncIterator<AccountWithBot[], undefined>;
 }
 interface MastoV2NotificationSelector {
   accounts: {
