@@ -14,20 +14,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import QuickPinchZoomImport, {
+import QuickPinchZoom, {
   make3dTransformValue,
-  type PinchZoomProps as ReactQuickPinchZoomProps,
 } from 'react-quick-pinch-zoom';
-
-type QuickPinchZoomProps = Omit<
-  ReactQuickPinchZoomProps,
-  'children' | 'containerProps'
-> & {
-  children: ReactNode;
-  containerProps?: HTMLAttributes<HTMLDivElement>;
-};
-const QuickPinchZoom =
-  QuickPinchZoomImport as ComponentType<QuickPinchZoomProps>;
 
 import formatDuration from '../utils/format-duration';
 import {
