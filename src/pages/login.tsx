@@ -139,7 +139,7 @@ function credentialApplication(
   };
 }
 
-function Login() {
+function useLoginController() {
   const { t } = useLingui();
   useTitle(t`Log in`, "/login");
   const cachedInstanceURL = store.local.get("instanceURL");
@@ -436,6 +436,191 @@ function Login() {
     }
   }, []);
 
+  return {
+    appview,
+    bskyIdentifier,
+    bskyPassword,
+    bskyService,
+    currentSuffix,
+    dispatchLoginForm,
+    handleFocused,
+    submitBluesky,
+    submitBlueskyOAuth,
+    suffixFading,
+    uiState,
+  };
+}
+
+type LoginController = ReturnType<typeof useLoginController>;
+
+function AppPasswordDetails({
+  bskyIdentifier,
+  bskyPassword,
+  bskyService,
+  dispatchLoginForm,
+  uiState,
+}: Pick<
+  LoginController,
+  | "bskyIdentifier"
+  | "bskyPassword"
+  | "bskyService"
+  | "dispatchLoginForm"
+  | "uiState"
+>) {
+  return (
+    <details className="bsky-advanced-login">
+      <summary>Use app password</summary>
+      <label>
+        <p>App password</p>
+        <input
+          value={bskyPassword}
+          type="password"
+          className="large"
+          disabled={uiState === "loading"}
+          autoComplete="current-password"
+          onChange={(e: SyntheticEvent<HTMLInputElement>) => {
+            dispatchLoginForm({
+              type: "password",
+              value: e.currentTarget.value,
+            });
+          }}
+        />
+      </label>
+      <label>
+        <p>PDS URL, optional</p>
+        <input
+          value={bskyService}
+          type="text"
+          className="large"
+          disabled={uiState === "loading"}
+          autoCorrect="off"
+          autoCapitalize="off"
+          autoComplete="url"
+          spellCheck={false}
+          placeholder="pds.example.com"
+          onChange={(e: SyntheticEvent<HTMLInputElement>) => {
+            dispatchLoginForm({
+              type: "service",
+              value: e.currentTarget.value,
+            });
+          }}
+        />
+      </label>
+      <div>
+        <button
+          type="submit"
+          disabled={uiState === "loading" || !bskyIdentifier || !bskyPassword}
+        >
+          Continue with app password
+        </button>
+      </div>
+    </details>
+  );
+}
+
+function BskyLoginSection({
+  appview,
+  bskyIdentifier,
+  bskyPassword,
+  bskyService,
+  currentSuffix,
+  dispatchLoginForm,
+  handleFocused,
+  submitBlueskyOAuth,
+  suffixFading,
+  uiState,
+}: Omit<LoginController, "submitBluesky">) {
+  return (
+    <section className="bsky-login">
+      <label>
+        <div className="bsky-identifier-field">
+          <input
+            value={bskyIdentifier}
+            type="text"
+            className="large"
+            aria-label="Handle or PDS URL"
+            disabled={uiState === "loading"}
+            autoCorrect="off"
+            autoCapitalize="off"
+            autoComplete="username"
+            spellCheck={false}
+            onChange={(e: SyntheticEvent<HTMLInputElement>) => {
+              dispatchLoginForm({
+                type: "identifier",
+                value: e.currentTarget.value,
+              });
+            }}
+            onFocus={() => {
+              dispatchLoginForm({ type: "handleFocused", value: true });
+            }}
+            onBlur={() => {
+              dispatchLoginForm({ type: "handleFocused", value: false });
+            }}
+          />
+          {!bskyIdentifier && !handleFocused && (
+            <span aria-hidden="true" className="bsky-identifier-placeholder">
+              you
+              <span
+                className={`bsky-identifier-suffix ${
+                  suffixFading ? "fading" : "visible"
+                }`}
+              >
+                {currentSuffix}
+              </span>
+            </span>
+          )}
+        </div>
+      </label>
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "0.5em",
+          marginTop: "1em",
+        }}
+      >
+        AppView:{" "}
+        <select
+          value={appview}
+          onChange={(e) => {
+            dispatchLoginForm({
+              type: "appview",
+              value: e.currentTarget.value,
+            });
+          }}
+        >
+          {Object.entries(APPVIEW_OPTIONS).map(([key, { label }]) => (
+            <option key={key} value={key}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div style={{ marginTop: "1em" }}>
+        <button
+          type="button"
+          disabled={uiState === "loading" || !bskyIdentifier}
+          onClick={submitBlueskyOAuth}
+        >
+          Connect to Atmosphere
+        </button>
+      </div>
+      <AppPasswordDetails
+        bskyIdentifier={bskyIdentifier}
+        bskyPassword={bskyPassword}
+        bskyService={bskyService}
+        dispatchLoginForm={dispatchLoginForm}
+        uiState={uiState}
+      />
+    </section>
+  );
+}
+
+function Login() {
+  const controller = useLoginController();
+  const { submitBluesky, uiState } = controller;
+
   return (
     <main id="login" style={{ textAlign: "center" }}>
       <form onSubmit={submitBluesky}>
@@ -444,134 +629,7 @@ function Login() {
           <br />
           <Trans>Log in</Trans>
         </h1>
-        <section className="bsky-login">
-          <label>
-            <div className="bsky-identifier-field">
-              <input
-                value={bskyIdentifier}
-                type="text"
-                className="large"
-                aria-label="Handle or PDS URL"
-                disabled={uiState === "loading"}
-                autoCorrect="off"
-                autoCapitalize="off"
-                autoComplete="username"
-                spellCheck={false}
-                onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-                  dispatchLoginForm({
-                    type: "identifier",
-                    value: e.currentTarget.value,
-                  });
-                }}
-                onFocus={() => {
-                  dispatchLoginForm({ type: "handleFocused", value: true });
-                }}
-                onBlur={() => {
-                  dispatchLoginForm({ type: "handleFocused", value: false });
-                }}
-              />
-              {!bskyIdentifier && !handleFocused && (
-                <span
-                  aria-hidden="true"
-                  className="bsky-identifier-placeholder"
-                >
-                  you
-                  <span
-                    className={`bsky-identifier-suffix ${
-                      suffixFading ? 'fading' : 'visible'
-                    }`}
-                  >
-                    {currentSuffix}
-                  </span>
-                </span>
-              )}
-            </div>
-          </label>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.5em",
-              marginTop: "1em",
-            }}
-          >
-            AppView:{" "}
-            <select
-              value={appview}
-              onChange={(e) => {
-                dispatchLoginForm({
-                  type: "appview",
-                  value: e.currentTarget.value,
-                });
-              }}
-            >
-              {Object.entries(APPVIEW_OPTIONS).map(([key, { label }]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div style={{ marginTop: "1em" }}>
-            <button
-              type="button"
-              disabled={uiState === "loading" || !bskyIdentifier}
-              onClick={submitBlueskyOAuth}
-            >
-              Connect to Atmosphere
-            </button>
-          </div>
-          <details className="bsky-advanced-login">
-            <summary>Use app password</summary>
-            <label>
-              <p>App password</p>
-              <input
-                value={bskyPassword}
-                type="password"
-                className="large"
-                disabled={uiState === "loading"}
-                autoComplete="current-password"
-                onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-                  dispatchLoginForm({
-                    type: "password",
-                    value: e.currentTarget.value,
-                  });
-                }}
-              />
-            </label>
-            <label>
-              <p>PDS URL, optional</p>
-              <input
-                value={bskyService}
-                type="text"
-                className="large"
-                disabled={uiState === "loading"}
-                autoCorrect="off"
-                autoCapitalize="off"
-                autoComplete="url"
-                spellCheck={false}
-                placeholder="pds.example.com"
-                onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-                  dispatchLoginForm({
-                    type: "service",
-                    value: e.currentTarget.value,
-                  });
-                }}
-              />
-            </label>
-            <div>
-              <button
-                type="submit"
-                disabled={
-                  uiState === "loading" || !bskyIdentifier || !bskyPassword
-                }
-              >
-                Continue with app password
-              </button>
-            </div>
-          </details>
-        </section>
+        <BskyLoginSection {...controller} />
         {uiState === "error" && (
           <p className="error">
             <Trans>
