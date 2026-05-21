@@ -3,8 +3,8 @@ import { Trans } from '@lingui/react/macro';
 import states from '../utils/states';
 
 import Avatar from './avatar';
-import NameText from './name-text';
-import type { AnyAccount, GhostInfo, StatusSize } from './status-types';
+import NameText, { type NameTextAccount } from './name-text';
+import type { GhostInfo, StatusSize } from './status-types';
 
 interface PlaceholderProps {
   mediaFirst?: boolean;
@@ -15,15 +15,29 @@ interface StatusGhostProps extends PlaceholderProps {
   ghost: GhostInfo;
 }
 
+function isNameTextAccount(value: unknown): value is NameTextAccount {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'acct' in value &&
+    typeof value.acct === 'string' &&
+    'id' in value &&
+    typeof value.id === 'string' &&
+    'url' in value &&
+    typeof value.url === 'string' &&
+    'username' in value &&
+    typeof value.username === 'string'
+  );
+}
+
 export function StatusGhost({
   ghost,
   mediaFirst,
   size = 'm',
 }: StatusGhostProps) {
   const { inReplyToAccountId } = ghost;
-  const ghostAccount = (
-    inReplyToAccountId ? states.accounts[inReplyToAccountId] : null
-  ) as AnyAccount | null;
+  const account = inReplyToAccountId ? states.accounts[inReplyToAccountId] : null;
+  const ghostAccount = isNameTextAccount(account) ? account : null;
   return (
     <article
       className={`status ghost ${mediaFirst ? 'status-media-first small' : ''}`}
@@ -45,12 +59,7 @@ export function StatusGhost({
             />
           )}
           {ghostAccount && (
-            <NameText
-              account={
-                ghostAccount as Parameters<typeof NameText>[0]['account']
-              }
-              showAvatar={false}
-            />
+            <NameText account={ghostAccount} showAvatar={false} />
           )}
         </div>
         <div className="content-container">
