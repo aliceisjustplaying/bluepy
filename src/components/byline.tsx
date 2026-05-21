@@ -2,11 +2,7 @@ import { Trans } from '@lingui/react/macro';
 import type { ReactNode } from 'react';
 
 import Icon from './icon';
-import NameText, { type NameTextProps } from './name-text';
-
-function BylineNameText(props: { account: unknown; showAvatar?: boolean }) {
-  return <NameText {...(props as NameTextProps)} />;
-}
+import NameText from './name-text-proxy';
 
 interface Author {
   account?: {
@@ -32,7 +28,7 @@ function Byline({ authors, hidden, children }: BylineProps) {
         <Icon icon="link" size="s" />{' '}
         <small>
           <Trans comment="More from [Author]">
-            More from <BylineNameText account={author} showAvatar />
+            More from <NameText account={author} showAvatar />
           </Trans>
         </small>
       </div>

@@ -19,12 +19,8 @@ import Avatar from './avatar';
 import CustomEmoji from './custom-emoji';
 import Icon from './icon';
 import Link, { type LinkProps } from './link';
-import NameTextComponent, {
-  type NameTextProps as NameTextViewProps,
-} from './name-text';
-import StatusComponent, {
-  type StatusComponentProps as StatusViewProps,
-} from './status';
+import NameText from './name-text-proxy';
+import Status from './status-proxy';
 
 // Local wrappers keep this component's wider notification payload shapes
 // while forwarding through typed peers.
@@ -37,35 +33,6 @@ interface AccountWithBot {
   bot?: boolean;
   _types?: string[];
   [key: string]: unknown;
-}
-
-interface NameTextProps {
-  account?: AccountWithBot;
-  instance?: string;
-  showAvatar?: boolean;
-  showAcct?: boolean;
-  short?: boolean;
-  external?: boolean;
-  onClick?: (e: React.MouseEvent) => void;
-}
-function NameText(props: NameTextProps) {
-  return <NameTextComponent {...(props as NameTextViewProps)} />;
-}
-
-interface StatusComponentProps {
-  status?: mastodon.v1.Status | null;
-  statusID?: string;
-  instance?: string;
-  size?: 's' | 'm' | 'l';
-  previewMode?: boolean;
-  readOnly?: boolean;
-  allowContextMenu?: boolean;
-  allowFilters?: boolean;
-  hideReplyBadge?: boolean;
-  forceShowMuted?: boolean;
-}
-function Status(props: StatusComponentProps) {
-  return <StatusComponent {...(props as StatusViewProps)} />;
 }
 
 function fulfilledValue<T>(result: PromiseSettledResult<T>): T | undefined {
