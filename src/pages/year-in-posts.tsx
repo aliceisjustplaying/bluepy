@@ -4,7 +4,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import { Document as FlexSearchIndexDocument } from 'flexsearch';
 import type { mastodon } from 'masto';
-import type { Ref } from 'react';
+import type { Ref, SyntheticEvent } from 'react';
 import {
   useEffect,
   useImperativeHandle,
@@ -316,7 +316,7 @@ function YearInPosts() {
     loadYears();
   }, [year]);
 
-  const handleGenerate = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleGenerate = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const yearInput = form.elements.namedItem('year');
