@@ -94,6 +94,12 @@ type SearchResultsByType = {
   hashtags: mastodon.v1.Tag[];
 };
 
+const EMPTY_SEARCH_RESULTS: SearchResultsByType = {
+  statuses: [],
+  accounts: [],
+  hashtags: [],
+};
+
 function isResultsTypeKey(value: string | null): value is ResultsTypeKey {
   return value === 'statuses' || value === 'accounts' || value === 'hashtags';
 }
@@ -154,24 +160,30 @@ function Search({ columnMode, ...props }: SearchProps) {
     scrollableRef.current?.scrollTo?.(0, 0);
   }, [q, type]);
 
-  const [statusResults, setStatusResults] = useState<mastodon.v1.Status[]>([]);
-  const [accountResults, setAccountResults] = useState<mastodon.v1.Account[]>(
-    [],
-  );
-  const [hashtagResults, setHashtagResults] = useState<mastodon.v1.Tag[]>([]);
+  const [searchResults, setSearchResults] =
+    useState<SearchResultsByType>(EMPTY_SEARCH_RESULTS);
+  const { statuses: statusResults, accounts: accountResults, hashtags: hashtagResults } =
+    searchResults;
   useEffect(() => {
-    setStatusResults([]);
-    setAccountResults([]);
-    setHashtagResults([]);
+    setSearchResults(EMPTY_SEARCH_RESULTS);
   }, [q]);
   const setResultsForType = useCallback(
     (typeKey: ResultsTypeKey, results: SearchResultsLike) => {
       if (typeKey === 'statuses') {
-        setStatusResults(results.statuses ?? []);
+        setSearchResults((prev) => ({
+          ...prev,
+          statuses: results.statuses ?? [],
+        }));
       } else if (typeKey === 'accounts') {
-        setAccountResults(results.accounts ?? []);
+        setSearchResults((prev) => ({
+          ...prev,
+          accounts: results.accounts ?? [],
+        }));
       } else {
-        setHashtagResults(results.hashtags ?? []);
+        setSearchResults((prev) => ({
+          ...prev,
+          hashtags: results.hashtags ?? [],
+        }));
       }
     },
     [],
@@ -179,11 +191,20 @@ function Search({ columnMode, ...props }: SearchProps) {
   const appendResultsForType = useCallback(
     (typeKey: ResultsTypeKey, results: SearchResultsLike) => {
       if (typeKey === 'statuses') {
-        setStatusResults((prev) => [...prev, ...(results.statuses ?? [])]);
+        setSearchResults((prev) => ({
+          ...prev,
+          statuses: [...prev.statuses, ...(results.statuses ?? [])],
+        }));
       } else if (typeKey === 'accounts') {
-        setAccountResults((prev) => [...prev, ...(results.accounts ?? [])]);
+        setSearchResults((prev) => ({
+          ...prev,
+          accounts: [...prev.accounts, ...(results.accounts ?? [])],
+        }));
       } else {
-        setHashtagResults((prev) => [...prev, ...(results.hashtags ?? [])]);
+        setSearchResults((prev) => ({
+          ...prev,
+          hashtags: [...prev.hashtags, ...(results.hashtags ?? [])],
+        }));
       }
     },
     [],
@@ -240,9 +261,11 @@ function Search({ columnMode, ...props }: SearchProps) {
 
       setUIState('loading');
       if (firstLoad && !type) {
-        setStatusResults((prev) => prev.slice(0, SHORT_LIMIT));
-        setAccountResults((prev) => prev.slice(0, SHORT_LIMIT));
-        setHashtagResults((prev) => prev.slice(0, SHORT_LIMIT));
+        setSearchResults((prev) => ({
+          statuses: prev.statuses.slice(0, SHORT_LIMIT),
+          accounts: prev.accounts.slice(0, SHORT_LIMIT),
+          hashtags: prev.hashtags.slice(0, SHORT_LIMIT),
+        }));
       }
 
       void (async () => {
@@ -307,9 +330,11 @@ function Search({ columnMode, ...props }: SearchProps) {
             }
           } else {
             const typedResults = results;
-            setStatusResults(typedResults.statuses || []);
-            setAccountResults(typedResults.accounts || []);
-            setHashtagResults(typedResults.hashtags || []);
+            setSearchResults({
+              statuses: typedResults.statuses || [],
+              accounts: typedResults.accounts || [],
+              hashtags: typedResults.hashtags || [],
+            });
             offsetRef.current = 0;
             setShowMore(false);
           }
