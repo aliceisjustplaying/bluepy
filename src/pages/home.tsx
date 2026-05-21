@@ -41,7 +41,7 @@ function Home() {
   __BENCHMARK.end("time-to-home");
   useEffect(() => {
     void (async () => {
-      const keys = (await db.drafts.keys()) as string[];
+      const keys = stringList(await db.drafts.keys());
       if (keys.length) {
         const ns = getCurrentAccountNS();
         const ownKeys = keys.filter((key) => key.startsWith(ns));
@@ -148,7 +148,11 @@ interface NotificationItem {
   id: string;
   _ids?: string;
   type?: string;
-  status?: unknown;
+  status?: Parameters<typeof saveStatus>[0];
+}
+
+interface MarkerResource {
+  create(options: { notifications: { lastReadId: string } }): Promise<unknown>;
 }
 
 interface ControlledMenuHandle {
@@ -159,6 +163,24 @@ interface ControlledMenuHandle {
 type ControlledMenuRef = ControlledMenuHandle & HTMLElement;
 
 const NOTIFICATIONS_DISPLAY_LIMIT = 5;
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function notificationList(value: unknown): NotificationItem[] {
+  return Array.isArray(value)
+    ? value.filter(
+        (item): item is NotificationItem =>
+          typeof item === "object" &&
+          item !== null &&
+          "id" in item &&
+          typeof item.id === "string",
+      )
+    : [];
+}
 function NotificationsMenu({
   anchorRef,
   state,
@@ -174,17 +196,16 @@ function NotificationsMenu({
     setUIState("loading");
     void (async () => {
       try {
-        const notificationsIterator =
-          mastoFetchNotifications() as AsyncIterator<unknown[]>;
+        const notificationsIterator = mastoFetchNotifications();
         const allNotifications = await notificationsIterator.next();
-        const notifications = massageNotifications2(
-          allNotifications.value as Parameters<typeof massageNotifications2>[0],
-        ) as NotificationItem[] | undefined;
+        const notifications = notificationList(
+          massageNotifications2(allNotifications.value),
+        );
 
         if (notifications?.length) {
           notifications.forEach((notification) => {
             saveStatus(
-              notification.status as Parameters<typeof saveStatus>[0],
+              notification.status,
               instance,
               {
                 skipThreading: true,
@@ -192,20 +213,16 @@ function NotificationsMenu({
             );
           });
 
-          const groupedNotifications = getGroupedNotifications(
-            notifications,
-          ) as NotificationItem[];
+          const groupedNotifications = notificationList(
+            getGroupedNotifications(notifications),
+          );
 
           states.notificationsLast = groupedNotifications[0];
           states.notifications = groupedNotifications;
 
           // Update last read marker
           void (
-            masto.v1.markers as {
-              create(options: {
-                notifications: { lastReadId: string };
-              }): Promise<unknown>;
-            }
+            masto.v1.markers as MarkerResource
           )
             .create({
               notifications: {
@@ -237,9 +254,9 @@ function NotificationsMenu({
     }
   }, [state, snapStates.notificationsShowNew, loadNotifications]);
 
-  const visibleNotifications = (
-    snapStates.notifications as NotificationItem[]
-  ).filter((notification) => notification.type !== "follow_request");
+  const visibleNotifications = notificationList(snapStates.notifications).filter(
+    (notification) => notification.type !== "follow_request",
+  );
 
   return (
     <ControlledMenu
