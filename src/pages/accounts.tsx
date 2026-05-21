@@ -31,8 +31,7 @@ import {
 
 type AccountsNameTextAccount = NonNullable<NameTextProps['account']>;
 
-type OAuthAccount = Omit<StoredAccount, 'accessToken' | 'info'> & {
-  accessToken?: string;
+type OAuthAccount = StoredAccount & {
   clientId?: string;
   clientSecret?: string;
   info: StoredAccount['info'] & AccountsNameTextAccount;
@@ -50,11 +49,23 @@ interface AccountsProps {
 
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
+function hasAccountsNameTextInfo(
+  account: StoredAccount,
+): account is OAuthAccount {
+  const { info } = account;
+  return (
+    typeof info.acct === 'string' &&
+    typeof info.id === 'string' &&
+    typeof info.url === 'string' &&
+    typeof info.username === 'string'
+  );
+}
+
 function Accounts({ onClose }: AccountsProps) {
   const { t } = useLingui();
   const client = api().masto;
   // Accounts
-  const accounts = getAccounts() as OAuthAccount[];
+  const accounts = getAccounts().filter(hasAccountsNameTextInfo);
   const currentAccount = getCurrentAccountID();
   const moreThanOneAccount = accounts.length > 1;
 
@@ -64,7 +75,7 @@ function Accounts({ onClose }: AccountsProps) {
   };
   const [accountsListParent] = useAutoAnimate<HTMLUListElement>();
   const saveOAuthAccounts = () => {
-    saveAccounts(accounts as readonly StoredAccount[]);
+    saveAccounts(accounts);
   };
 
   return (
@@ -102,7 +113,7 @@ function Accounts({ onClose }: AccountsProps) {
                   instanceURL: account.instanceURL,
                   client_id: String(account.clientId),
                   client_secret: String(account.clientSecret),
-                  token: String(account.accessToken),
+                  token: account.accessToken,
                 });
               };
 
