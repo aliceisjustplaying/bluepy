@@ -55,34 +55,31 @@ interface Following2Props {
   [key: string]: unknown;
 }
 
-interface SaveStatusInput {
-  id?: string;
-  account?: { id?: string } | null;
-  reblog?: SaveStatusInput | null;
-  quote?: SaveStatusInput | null;
-  state?: unknown;
-  quotedStatus?: SaveStatusInput | null;
-  inReplyToId?: string | null;
-  inReplyToAccountId?: string | null;
-  _pinned?: unknown;
+function isStreamingUserClient(value: unknown): value is StreamingUserClient {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'user' in value &&
+    !!value.user &&
+    typeof value.user === 'object' &&
+    'subscribe' in value.user &&
+    typeof value.user.subscribe === 'function'
+  );
 }
 
-interface SaveStatusPayload extends Record<string, unknown> {
-  id?: string;
-  account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
-  quote?: SaveStatusPayload | null;
-  state?: unknown;
-  quotedStatus?: SaveStatusPayload | null;
-  inReplyToId?: string | null;
-  inReplyToAccountId?: string | null;
-  _pinned?: unknown;
+function isStatus(value: unknown): value is mastodon.v1.Status {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof value.id === 'string'
+  );
 }
 
-function toSaveStatus(
-  status: SaveStatusInput | null | undefined,
-): SaveStatusPayload | null | undefined {
-  return status as SaveStatusPayload | null | undefined;
+function isMutableDeletedStatus(
+  value: unknown,
+): value is Record<string, unknown> & { _deleted?: boolean } {
+  return !!value && typeof value === 'object';
 }
 
 function Following2({ title, path, id, ...props }: Following2Props) {
@@ -98,7 +95,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
   const { masto, streaming, instance, client } = api();
   const [streamingClient, setStreamingClient] = useState<
     StreamingUserClient | undefined
-  >(streaming as StreamingUserClient | undefined);
+  >(isStreamingUserClient(streaming) ? streaming : undefined);
 
   useEffect(() => {
     if (path === '/') return;
@@ -111,7 +108,9 @@ function Following2({ title, path, id, ...props }: Following2Props) {
   useEffect(() => {
     if (!streaming && client?.onStreamingReady) {
       client.onStreamingReady((newStreamingClient) => {
-        setStreamingClient(newStreamingClient as StreamingUserClient);
+        if (isStreamingUserClient(newStreamingClient)) {
+          setStreamingClient(newStreamingClient);
+        }
       });
     }
   }, [client, streaming]);
@@ -140,13 +139,15 @@ function Following2({ title, path, id, ...props }: Following2Props) {
       'timelines',
     ).home;
     const results = await homeResource.list(opts).values().next();
-    let { value } = results as { value: mastodon.v1.Status[] | undefined };
+    const value = Array.isArray(results.value)
+      ? results.value.filter(isStatus)
+      : undefined;
 
     const originalValue = [...(value || [])];
     if (value?.length) {
       // value = filteredItems(value, 'home');
       value.forEach((item) => {
-        saveStatus(toSaveStatus(item), instance);
+        saveStatus(item, instance);
       });
       // value = dedupeBoosts(value, instance);
 
@@ -158,7 +159,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
 
     __BENCHMARK.end('fetch-home');
     return {
-      ...(results as { done?: boolean }),
+      done: results.done,
       value,
       originalValue,
     };
@@ -182,9 +183,9 @@ function Following2({ title, path, id, ...props }: Following2Props) {
         'timelines',
       ).home;
       const results = await homeResource.list(opts).values().next();
-      const { value } = results as {
-        value: mastodon.v1.Status[] | undefined;
-      };
+      const value = Array.isArray(results.value)
+        ? results.value.filter(isStatus)
+        : undefined;
       if (value?.length) {
         const deduped = dedupeBoosts(value, instance);
         const filtered = filteredItems(deduped, 'home');
@@ -206,15 +207,18 @@ function Following2({ title, path, id, ...props }: Following2Props) {
         for await (const entry of sub) {
           if (!sub) break;
           if (entry.event === 'status.update') {
-            const status = entry.payload as mastodon.v1.Status;
+            const { payload: status } = entry;
+            if (!isStatus(status)) continue;
             console.log(`🔄 Status ${status.id} updated`);
-            saveStatus(toSaveStatus(status), instance);
+            saveStatus(status, instance);
           } else if (entry.event === 'delete') {
-            const statusID = entry.payload as string;
+            if (typeof entry.payload !== 'string') continue;
+            const statusID = entry.payload;
             console.log(`❌ Status ${statusID} deleted`);
-            const s = getStatus(statusID, instance) as
-              | (Record<string, unknown> & { _deleted?: boolean })
-              | undefined;
+            const statusValue = getStatus(statusID, instance);
+            const s = isMutableDeletedStatus(statusValue)
+              ? statusValue
+              : undefined;
             if (s) s._deleted = true;
           }
         }
