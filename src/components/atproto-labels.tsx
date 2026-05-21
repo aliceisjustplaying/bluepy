@@ -185,8 +185,7 @@ export default function AtprotoLabels({
       try {
         const nextLabelers =
           await fetchPublicLabelerInfoCached(missingLabelerDids);
-        if (!mounted.current) return undefined;
-        if (Object.keys(nextLabelers).length) {
+        if (mounted.current && Object.keys(nextLabelers).length) {
           setFetchedLabelers((current) => ({ ...current, ...nextLabelers }));
         }
       } catch {

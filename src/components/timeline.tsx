@@ -550,8 +550,7 @@ function Timeline({
         try {
           const ts = (loadItemsTS.current = Date.now());
           let { done, value } = await fetchItems(firstLoad);
-          if (ts !== loadItemsTS.current) return;
-          if (Array.isArray(value)) {
+          if (ts === loadItemsTS.current && Array.isArray(value)) {
             const rawValue = value.filter(isTimelineStatusEntry);
             // Avoid grouping for pinned posts
             const [pinnedPosts, otherPosts] = rawValue.reduce<
@@ -596,11 +595,13 @@ function Timeline({
             }
             if (!processed.length) done = true;
             setShowMore(!done);
-          } else {
+          } else if (ts === loadItemsTS.current) {
             setShowMore(false);
           }
-          setUIState('default');
-          __BENCHMARK.end(`timeline-${id}-load`);
+          if (ts === loadItemsTS.current) {
+            setUIState('default');
+            __BENCHMARK.end(`timeline-${id}-load`);
+          }
         } catch (e) {
           console.error(e);
           setUIState('error');

@@ -316,14 +316,16 @@ function StatusPage(params: StatusPageParams) {
       void (async () => {
         try {
           const status = await statusesEndpoint.$select(snapshotId).fetch();
-          if (stale) return;
-          saveRawStatus(status, snapshotInstance);
-          setHeroStatus(status);
+          if (!stale) {
+            saveRawStatus(status, snapshotInstance);
+            setHeroStatus(status);
+          }
         } catch (err) {
-          if (stale) return;
-          console.error(err);
-          alert('Unable to load post.');
-          navigatePath(snapshotCloseLink);
+          if (!stale) {
+            console.error(err);
+            alert('Unable to load post.');
+            navigatePath(snapshotCloseLink);
+          }
         }
       })();
       return () => {

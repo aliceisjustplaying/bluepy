@@ -295,20 +295,20 @@ function QrScannerModal({
           const qrDomModule: QrDomModule = await import('qr/dom.js');
           if (cancelled) {
             cam.stop();
-            return;
+          } else {
+            qrDom = qrDomModule;
+            const targets = overlayRef.current
+              ? { overlay: overlayRef.current }
+              : {};
+            qrCanvas = new qrDomModule.QRCanvas(
+              targets,
+              {
+                cropToSquare: false,
+                overlayMainColor: 'transparent',
+                overlayFinderColor: 'rgba(255, 0, 255, 0.5)',
+              },
+            );
           }
-          qrDom = qrDomModule;
-          const targets = overlayRef.current
-            ? { overlay: overlayRef.current }
-            : {};
-          qrCanvas = new qrDomModule.QRCanvas(
-            targets,
-            {
-              cropToSquare: false,
-              overlayMainColor: 'transparent',
-              overlayFinderColor: 'rgba(255, 0, 255, 0.5)',
-            },
-          );
         }
 
         // Start scanning loop when video plays (following demo pattern)

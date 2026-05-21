@@ -615,8 +615,9 @@ function Compose({
             | LinkPreviewMetadata
             | null
             | undefined;
-          if (requestId !== linkPreviewRef.current.id) return;
-          setLinkPreview(metadata ? { url, metadata } : null);
+          if (requestId === linkPreviewRef.current.id) {
+            setLinkPreview(metadata ? { url, metadata } : null);
+          }
         } catch (e) {
           console.error(e);
           if (requestId === linkPreviewRef.current.id) setLinkPreview(null);
