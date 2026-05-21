@@ -106,6 +106,16 @@ const targetLanguages = Object.entries(
 
 const TRANSLATION_API_NAME = 'TransLang API';
 
+const inlineLinkButtonStyle = {
+  background: 'none',
+  border: 0,
+  color: 'var(--link-color)',
+  cursor: 'pointer',
+  font: 'inherit',
+  padding: 0,
+  textDecoration: 'underline',
+};
+
 interface SettingsProps {
   onClose?: () => void;
 }
@@ -913,17 +923,15 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             />
             <div>
               <b>Bluepy</b>{' '}
-              <a
-                href="https://hachyderm.io/@phanpy"
-                // target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.preventDefault();
+              <button
+                type="button"
+                style={inlineLinkButtonStyle}
+                onClick={() => {
                   states.showAccount = 'phanpy@hachyderm.io';
                 }}
               >
                 @phanpy
-              </a>
+              </button>
               <br />
               <a
                 href="https://github.com/cheeaun/phanpy"
@@ -933,17 +941,15 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                 Built
               </a>{' '}
               by{' '}
-              <a
-                href="https://mastodon.social/@cheeaun"
-                // target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.preventDefault();
+              <button
+                type="button"
+                style={inlineLinkButtonStyle}
+                onClick={() => {
                   states.showAccount = 'cheeaun@mastodon.social';
                 }}
               >
                 @cheeaun
-              </a>
+              </button>
               , forked for ATProto by{' '}
               <a
                 href="https://bsky.app/profile/alice.mosphere.at"
