@@ -1,7 +1,7 @@
 import './import-export-accounts.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import showToast from '../utils/show-toast';
 import { getAccounts, type StoredAccount } from '../utils/store-utils';
@@ -17,11 +17,30 @@ interface ImportExportAccountsProps {
   exportDisabled?: boolean;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function isImportAccount(value: unknown): value is StoredAccount {
+  return (
+    isRecord(value) &&
+    isRecord(value.info) &&
+    typeof value.info.id === 'string' &&
+    typeof value.instanceURL === 'string'
+  );
+}
+
+function importAccountList(value: unknown): StoredAccount[] | null {
+  if (!Array.isArray(value)) return null;
+  return value.every(isImportAccount) ? value : null;
+}
+
 export default function ImportExportAccounts({
   onClose,
 }: ImportExportAccountsProps) {
   const { t } = useLingui();
   const accounts = getAccounts();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [uiState, setUIState] = useState<string>('default');
   const [importedAccounts, setImportedAccounts] = useState<
     StoredAccount[] | null
@@ -71,13 +90,16 @@ export default function ImportExportAccounts({
     setUIState('importing');
     try {
       const text = await file.text();
-      const json = JSON.parse(text);
+      const json: unknown = JSON.parse(text);
 
-      const importAccounts = json?.accounts;
-      if (!Array.isArray(importAccounts))
+      const importAccounts = isRecord(json)
+        ? importAccountList(json.accounts)
+        : null;
+      if (!importAccounts) {
         throw new Error('Invalid backup file');
+      }
 
-      setImportedAccounts(importAccounts as StoredAccount[]);
+      setImportedAccounts(importAccounts);
       setUIState('default');
     } catch (e) {
       console.error(e);
@@ -86,9 +108,8 @@ export default function ImportExportAccounts({
     }
   };
 
-  const handleImport = (e: React.SyntheticEvent) => {
-    const target = e.target as HTMLInputElement;
-    const file = (target.files as FileList)[0];
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.currentTarget.files?.[0];
     void processFile(file);
   };
 
@@ -130,29 +151,32 @@ export default function ImportExportAccounts({
       </header>
       <main>
         <section>
-          <label
+          <button
+            type="button"
             className={`section-button button-import button plain4 ${
               dragOver ? 'drag-over' : ''
             }`}
-            tabIndex={0}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uiState === 'importing'}
           >
             <Icon icon="arrow-down-circle" size="xxl" />
             <b>
               <Trans>Import</Trans>
             </b>
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              disabled={uiState === 'importing'}
-              style={{ display: 'none' }}
-            />
             <div>
               <small className="insignificant">
                 <Trans>Select file…</Trans>
               </small>
             </div>
-          </label>{' '}
+          </button>{' '}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleImport}
+            disabled={uiState === 'importing'}
+            style={{ display: 'none' }}
+          />
           <button
             type="button"
             className="section-button button-export plain4"
