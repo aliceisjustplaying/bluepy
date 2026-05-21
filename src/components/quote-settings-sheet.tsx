@@ -5,7 +5,7 @@ import type { mastodon } from 'masto';
 import type { SyntheticEvent } from 'react';
 import { useState } from 'react';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import showToast from '../utils/show-toast';
 import { saveStatus } from '../utils/states';
 
@@ -24,7 +24,7 @@ function isQuotePolicy(value: unknown): value is QuotePolicy {
 
 interface QuoteSettingsSheetProps {
   onClose: (arg?: unknown) => void;
-  post: mastodon.v1.Status & { instance?: string };
+  post: AnyStatus & { instance?: string };
   currentPolicy?: string | null;
   renderStatus: RenderStatus;
 }
@@ -39,30 +39,15 @@ interface StatusesSelector {
   $select(id: string): { interactionPolicy: InteractionPolicyClient };
 }
 
-interface SaveStatusPayload extends Record<string, unknown> {
-  id?: string;
-  account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
-  quote?: SaveStatusPayload | null;
-  state?: unknown;
-  quotedStatus?: SaveStatusPayload | null;
-}
-
-function toSaveStatus(
-  status: mastodon.v1.Status | null | undefined,
-): SaveStatusPayload | null | undefined {
-  return status as SaveStatusPayload | null | undefined;
-}
-
 function QuoteSettingsPreview({
   post,
   renderStatus,
 }: {
-  post: mastodon.v1.Status;
+  post: AnyStatus;
   renderStatus: RenderStatus;
 }) {
   return renderStatus({
-    status: post as AnyStatus,
+    status: post,
     size: 's',
     readOnly: true,
   });
@@ -76,6 +61,7 @@ function QuoteSettingsSheet({
 }: QuoteSettingsSheetProps) {
   const { t } = useLingui();
   const { masto } = api();
+  const statuses = getMastoV1Resource<StatusesSelector>(masto, 'statuses');
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
   );
@@ -86,7 +72,7 @@ function QuoteSettingsSheet({
 
   const handleFormSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
+    const formData = new FormData(e.currentTarget);
     const raw = formData.get('quoteApprovalPolicy');
     if (!isQuotePolicy(raw)) return;
     const quoteApprovalPolicy: QuotePolicy = raw;
@@ -95,7 +81,6 @@ function QuoteSettingsSheet({
     setUIState('loading');
 
     try {
-      const statuses = masto.v1.statuses as StatusesSelector;
       const newStatus = await statuses
         .$select(post.id)
         .interactionPolicy.update({
@@ -106,7 +91,7 @@ function QuoteSettingsSheet({
       setUIState('default');
 
       // Update the status with new quote policy
-      saveStatus(toSaveStatus(newStatus), post.instance, {
+      saveStatus(newStatus, post.instance, {
         skipThreading: true,
         skipUnfurling: true,
       });

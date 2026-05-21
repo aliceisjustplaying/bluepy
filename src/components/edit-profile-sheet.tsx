@@ -81,6 +81,10 @@ function profileReducer(
   return state;
 }
 
+function errorMessage(error: unknown): string | undefined {
+  return error instanceof Error ? error.message : undefined;
+}
+
 function FieldsAttributesRow({
   name,
   value,
@@ -154,6 +158,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   console.log('EditProfileSheet', account);
   const { displayName, source, avatar, header } = account || {};
   const { note, fields } = source || {};
+  const profileFields = Array.isArray(fields) ? fields : [];
   const fieldsAttributesRef = useRef<HTMLTableElement | null>(null);
 
   const avatarMediaAttachments = [
@@ -237,7 +242,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                   });
                 } catch (err) {
                   console.error(err);
-                  const message = (err as { message?: string })?.message;
+                  const message = errorMessage(err);
                   alert(message || t`Unable to update profile.`);
                 }
               })();
@@ -415,12 +420,9 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
               </thead>
               <tbody>
                 {Array.from({
-                  // JS original used `fields.length` unchecked; preserve that
-                  // (throws when `source.fields` is missing — same as before).
-                  length: Math.max(4, (fields as ProfileField[]).length),
+                  length: Math.max(4, profileFields.length),
                 }).map((_, i) => {
-                  const { name = '', value = '' } =
-                    (fields as ProfileField[])[i] || {};
+                  const { name = '', value = '' } = profileFields[i] || {};
                   return (
                     <FieldsAttributesRow
                       key={i}
