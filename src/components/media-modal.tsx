@@ -2,6 +2,9 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { getBlurHashAverageColor } from 'fast-blurhash';
 import {
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
   useEffect,
   useEffectEvent,
   useLayoutEffect,
@@ -46,6 +49,16 @@ interface AccentColor {
   light: RGB;
   dark: RGB;
   default: RGB;
+}
+
+interface MediaModalLabels {
+  attemptingDescription: string;
+  close: string;
+  failedDescription: string;
+  more: string;
+  next: string;
+  openOriginalTitle: string;
+  previous: string;
 }
 
 type CarouselCloseHandler = (
@@ -234,9 +247,12 @@ function MediaModal({
   }, [mediaAccentColors]);
 
   const toastRef = useRef<ToastHandle | null>(null);
+  const hideActiveToast = useEffectEvent(() => {
+    toastRef.current?.hideToast?.();
+  });
   useEffect(() => {
     return () => {
-      toastRef.current?.hideToast?.();
+      hideActiveToast();
     };
   }, []);
 
@@ -291,6 +307,69 @@ function MediaModal({
     };
   }, [currentIndex, mediaAccentColors]);
 
+  return renderMediaModal({
+    carouselFocusItem,
+    carouselRef,
+    currentIndex,
+    instance,
+    labels: {
+      attemptingDescription: t`Attempting to describe image. Please wait…`,
+      close: t`Close`,
+      failedDescription: t`Failed to describe image`,
+      more: t`More`,
+      next: t`Next`,
+      openOriginalTitle: t`Open original media in new window`,
+      previous: t`Previous`,
+    },
+    lang,
+    mediaAccentColors,
+    mediaAccentGradients,
+    mediaAttachments,
+    onClose,
+    setShowControls,
+    setUIState,
+    showControls,
+    statusID,
+    toastRef,
+    uiState,
+  });
+}
+
+function renderMediaModal({
+  carouselFocusItem,
+  carouselRef,
+  currentIndex,
+  instance,
+  labels,
+  lang,
+  mediaAccentColors,
+  mediaAccentGradients,
+  mediaAttachments,
+  onClose,
+  setShowControls,
+  setUIState,
+  showControls,
+  statusID,
+  toastRef,
+  uiState,
+}: {
+  carouselFocusItem: RefObject<HTMLDivElement | null>;
+  carouselRef: RefObject<HTMLElement | null>;
+  currentIndex: number;
+  instance?: string;
+  labels: MediaModalLabels;
+  lang?: string;
+  mediaAccentColors: Array<AccentColor | null>;
+  mediaAccentGradients: { light: string; dark: string };
+  mediaAttachments: MediaAttachment[];
+  onClose: CarouselCloseHandler;
+  setShowControls: Dispatch<SetStateAction<boolean>>;
+  setUIState: Dispatch<SetStateAction<'default' | 'loading'>>;
+  showControls: boolean;
+  statusID?: string;
+  toastRef: RefObject<ToastHandle | null>;
+  uiState: 'default' | 'loading';
+}) {
   return (
     <div
       className={`media-modal-container media-modal-count-${mediaAttachments?.length}`}
@@ -422,7 +501,7 @@ function MediaModal({
               onClose(e, currentIndex, mediaAttachments, carouselRef);
             }}
           >
-            <Icon icon="x" alt={t`Close`} />
+            <Icon icon="x" alt={labels.close} />
           </button>
         </span>
         {mediaAttachments?.length > 1 ? (
@@ -459,7 +538,7 @@ function MediaModal({
             menuClassName="glass-menu"
             menuButton={
               <button type="button" className="carousel-button">
-                <Icon icon="more2" alt={t`More`} />
+                <Icon icon="more2" alt={labels.more} />
               </button>
             }
           >
@@ -471,7 +550,7 @@ function MediaModal({
               }
               className="carousel-button"
               target="_blank"
-              title={t`Open original media in new window`}
+              title={labels.openOriginalTitle}
             >
               <Icon icon="popout" />
               <span>
@@ -493,7 +572,7 @@ function MediaModal({
                       if (typeof currentUrl !== 'string') return;
                       setUIState('loading');
                       toastRef.current = showToast({
-                        text: t`Attempting to describe image. Please wait…`,
+                        text: labels.attemptingDescription,
                         duration: -1,
                       });
                       void (async function () {
@@ -515,7 +594,7 @@ function MediaModal({
                           };
                         } catch (e) {
                           console.error(e);
-                          showToast(t`Failed to describe image`);
+                          showToast(labels.failedDescription);
                         } finally {
                           setUIState('default');
                           toastRef.current?.hideToast?.();
@@ -577,7 +656,7 @@ function MediaModal({
               });
             }}
           >
-            <Icon icon="arrow-left" alt={t`Previous`} />
+            <Icon icon="arrow-left" alt={labels.previous} />
           </button>
           <button
             type="button"
@@ -598,7 +677,7 @@ function MediaModal({
               });
             }}
           >
-            <Icon icon="arrow-right" alt={t`Next`} />
+            <Icon icon="arrow-right" alt={labels.next} />
           </button>
         </div>
       )}
