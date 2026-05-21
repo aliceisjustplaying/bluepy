@@ -110,6 +110,27 @@ function Status(props: {
   return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
+function isYearInPostsRecord(value: unknown): value is YearInPostsRecord {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof value.id === 'string' &&
+    'posts' in value &&
+    Array.isArray(value.posts) &&
+    'year' in value &&
+    typeof value.year === 'number' &&
+    'count' in value &&
+    typeof value.count === 'number' &&
+    'size' in value &&
+    typeof value.size === 'number' &&
+    'fetchedAt' in value &&
+    typeof value.fetchedAt === 'number' &&
+    'timezoneOffset' in value &&
+    typeof value.timezoneOffset === 'number'
+  );
+}
+
 const MIN_YEAR = 2005; // https://en.wikipedia.org/wiki/Microblogging#Origin
 
 function getDefaultYear(): number {
@@ -325,9 +346,10 @@ function YearInPosts() {
     if (generateYear) {
       try {
         const dataId = `${NS}-${generateYear}`;
-        const existingData = (await db.yearInPosts.get(dataId)) as
-          | YearInPostsRecord
-          | undefined;
+        const existingValue: unknown = await db.yearInPosts.get(dataId);
+        const existingData = isYearInPostsRecord(existingValue)
+          ? existingValue
+          : undefined;
 
         if (existingData && existingData.year === generateYear) {
           // Year already generated, go straight to year view
@@ -806,9 +828,8 @@ function YearInPosts() {
       try {
         const dataId = `${NS}-${year}`;
         console.time(`fetchYearPosts-${year}`);
-        const data = (await db.yearInPosts.get(dataId)) as
-          | YearInPostsRecord
-          | undefined;
+        const value: unknown = await db.yearInPosts.get(dataId);
+        const data = isYearInPostsRecord(value) ? value : undefined;
         console.timeEnd(`fetchYearPosts-${year}`);
         if (data && data.year === year) {
           data.posts.sort(

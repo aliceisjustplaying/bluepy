@@ -271,15 +271,19 @@ function quoteLike(
 ): QuoteLike | null {
   if (!quote) return null;
   if ('quotedStatus' in quote && quote.quotedStatus) {
-    return quote.quotedStatus as QuoteLike;
+    return isQuoteLike(quote.quotedStatus) ? quote.quotedStatus : null;
   }
-  return quote as QuoteLike;
+  return isQuoteLike(quote) ? quote : null;
 }
 
 type StatusPeekInput = Parameters<typeof statusPeek>[0];
 
 function isQuoteStatusLike(status: unknown): status is QuoteStatusLike {
   return !!status && typeof status === 'object';
+}
+
+function isQuoteLike(quote: unknown): quote is QuoteLike {
+  return !!quote && typeof quote === 'object';
 }
 
 function toStatusPeekInput(
@@ -333,7 +337,19 @@ function sortableValue(post: CatchupPost, key: string): string | number {
 function nameTextAccount(
   account: QuoteAccount | null | undefined,
 ): NameTextAccount | undefined {
-  return account as (QuoteAccount & NameTextAccount) | undefined;
+  return account &&
+    typeof account.acct === 'string' &&
+    typeof account.id === 'string' &&
+    typeof account.url === 'string' &&
+    typeof account.username === 'string'
+    ? {
+        ...account,
+        acct: account.acct,
+        id: account.id,
+        url: account.url,
+        username: account.username,
+      }
+    : undefined;
 }
 
 function quoteNameTextAccount(
@@ -344,6 +360,23 @@ function quoteNameTextAccount(
     'quotedStatus' in quote ? quote.quotedStatus?.account : undefined;
   const quoteAccount = 'account' in quote ? quote.account : undefined;
   return nameTextAccount(quotedStatusAccount || quoteAccount);
+}
+
+function isCatchupRecord(value: unknown): value is CatchupRecord {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof value.id === 'string' &&
+    'posts' in value &&
+    Array.isArray(value.posts) &&
+    'count' in value &&
+    typeof value.count === 'number' &&
+    'startAt' in value &&
+    (value.startAt === null || typeof value.startAt === 'number') &&
+    'endAt' in value &&
+    typeof value.endAt === 'number'
+  );
 }
 
 function Catchup() {
@@ -497,7 +530,10 @@ function Catchup() {
   const syncRouteCatchup = useEffectEvent(() => {
     if (id) {
       void (async () => {
-        const catchup = (await db.catchup.get(id)) as CatchupRecord | undefined;
+        const catchupValue: unknown = await db.catchup.get(id);
+        const catchup = isCatchupRecord(catchupValue)
+          ? catchupValue
+          : undefined;
         if (catchup) {
           catchup.posts.sort(compareCreatedAt);
           setPosts(catchup.posts);
@@ -536,14 +572,16 @@ function Catchup() {
   useEffect(() => {
     void (async () => {
       try {
-        const catchups = (await db.catchup.keys()) as string[];
+        const catchups = (await db.catchup.keys()).filter(
+          (key) => typeof key === 'string',
+        );
         if (catchups.length) {
           const ns = getCurrentAccountNS();
           const ownKeys = catchups.filter((key) => key.startsWith(`${ns}-`));
           if (ownKeys.length) {
-            let ownCatchups: CatchupRecord[] | null = (await db.catchup.getMany(
-              ownKeys,
-            )) as CatchupRecord[];
+            let ownCatchups: CatchupRecord[] | null = (
+              await db.catchup.getMany(ownKeys)
+            ).filter(isCatchupRecord);
             ownCatchups.sort((a, b) => b.endAt - a.endAt);
 
             // Split to 1st 3 last catchups, and the rest

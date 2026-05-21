@@ -60,12 +60,19 @@ interface FormattedShortcut {
 }
 
 type ShortcutPin = ShortcutMetaInput;
+type ShortcutMetaStatic =
+  | string
+  | MessageDescriptor
+  | Promise<string>
+  | string[]
+  | { url?: string; type: string }
+  | undefined;
 type ShortcutMetaResolver<T> = (
   shortcut: ShortcutMetaInput,
   index?: number,
 ) => T;
 
-function resolveMetaValue<T>(
+function resolveMetaValue<T extends ShortcutMetaStatic>(
   value: ShortcutMetaValue<T> | undefined,
   shortcut: ShortcutMetaInput,
   index: number,

@@ -58,6 +58,13 @@ type ShortcutMetaResolver<T> = (
   shortcut: ShortcutMetaInput,
   index?: number,
 ) => T;
+type ShortcutMetaStatic =
+  | string
+  | MessageDescriptor
+  | Promise<string>
+  | string[]
+  | { url?: string; type: string }
+  | undefined;
 
 // Lingui macro returns `Omit<I18nContext, "_"> & { t }`. Other tsx call sites
 // use `i18n._(msg)` to translate MessageDescriptors; we follow that pattern.
@@ -170,7 +177,7 @@ const fetchAccountTitle = pmem(
 
 // SHORTCUTS_META describes per-shortcut-type metadata. Some fields are static
 // strings/MessageDescriptors and some are functions of the shortcut entry.
-export type ShortcutMetaValue<T> =
+export type ShortcutMetaValue<T extends ShortcutMetaStatic> =
   | T
   | ShortcutMetaResolver<T>;
 export interface ShortcutMetaEntry {
@@ -244,7 +251,7 @@ export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
   },
   'account-statuses': {
     id: 'account-statuses',
-    title: (shortcut) => fetchAccountTitle(shortcut as { id: string }),
+    title: ({ id }) => (id ? fetchAccountTitle({ id }) : ''),
     path: ({ id }) => `/a/${id}`,
     icon: 'user',
   },
@@ -262,17 +269,17 @@ export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
   },
   hashtag: {
     id: 'hashtag',
-    title: ({ hashtag }) => hashtag as string,
+    title: ({ hashtag }) => hashtag || '',
     subtitle: ({ instance }) => instance || api().instance,
     path: ({ hashtag, instance, media }) =>
-      `${instance ? `/${instance}` : ''}/t/${(hashtag as string)
+      `${instance ? `/${instance}` : ''}/t/${(hashtag || '')
         .split(/\s+/)
         .join('+')}${media ? '?media=1' : ''}`,
     icon: 'hashtag',
   },
 };
 
-function resolveShortcutMeta<T>(
+function resolveShortcutMeta<T extends ShortcutMetaStatic>(
   value: ShortcutMetaValue<T> | undefined,
   shortcut: ShortcutEntry,
   index: number,
@@ -280,7 +287,7 @@ function resolveShortcutMeta<T>(
 ): T {
   if (value === undefined) return fallback;
   return typeof value === 'function'
-    ? (value as ShortcutMetaResolver<T>)(shortcut, index)
+    ? value(shortcut, index)
     : value;
 }
 
