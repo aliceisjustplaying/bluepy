@@ -12,7 +12,7 @@ import {
 } from 'react';
 import { useDebouncedCallback, useThrottledCallback } from 'use-debounce';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import FilterContext from '../utils/filter-context';
 import states, { saveStatus, statusKey } from '../utils/states';
 import store from '../utils/store';
@@ -78,7 +78,14 @@ interface SaveStatusPayload extends Record<string, unknown> {
 function toSaveStatus(
   status: SaveStatusInput | null | undefined,
 ): SaveStatusPayload | null | undefined {
-  return status as SaveStatusPayload | null | undefined;
+  if (!status) return status;
+  return {
+    ...status,
+    account: status.account ? { ...status.account } : undefined,
+    reblog: toSaveStatus(status.reblog),
+    quote: toSaveStatus(status.quote),
+    quotedStatus: toSaveStatus(status.quotedStatus),
+  };
 }
 
 interface TimelineGroupEntry {
@@ -89,10 +96,13 @@ interface TimelineGroupEntry {
 }
 
 type TimelineEntry = TimelineStatusEntry | TimelineGroupEntry;
-type TimelineDedupeInput = Parameters<typeof dedupeTimelineContextItems>[0];
 
 function isGroupEntry(entry: TimelineEntry): entry is TimelineGroupEntry {
   return Array.isArray('items' in entry ? entry.items : undefined);
+}
+
+function isTimelineEntry(value: unknown): value is TimelineEntry {
+  return !!value && typeof value === 'object' && 'id' in value;
 }
 
 function eventElement(target: EventTarget | null): Element | null {
@@ -100,9 +110,7 @@ function eventElement(target: EventTarget | null): Element | null {
 }
 
 function dedupeTimelineEntries(items: readonly TimelineEntry[]) {
-  return dedupeTimelineContextItems(
-    items as unknown as TimelineDedupeInput,
-  ) as TimelineEntry[];
+  return dedupeTimelineContextItems(items).filter(isTimelineEntry);
 }
 
 function getLastItem(items: readonly TimelineEntry[]): TimelineStatusEntry {
@@ -303,7 +311,10 @@ function Timeline2({
     interface MastoStatusesBatchList {
       list(params: { id: readonly string[] }): Promise<mastodon.v1.Status[]>;
     }
-    const statusesResource = masto.v1.statuses as MastoStatusesBatchList;
+    const statusesResource = getMastoV1Resource<MastoStatusesBatchList>(
+      masto,
+      'statuses',
+    );
     void (async () => {
       try {
         // Process in batches
@@ -445,11 +456,11 @@ function Timeline2({
             if (shouldDedupeBoosts) {
               value = dedupeBoosts(value, instance);
             }
-            value = filterHiddenStatuses(
+            value = [...filterHiddenStatuses(value, filterContext)];
+            const grouped = groupContext<TimelineStatusEntry, TimelineGroupEntry>(
               value,
-              filterContext,
-            ) as TimelineStatusEntry[];
-            const grouped = groupContext(value, instance) as TimelineEntry[];
+              instance,
+            );
 
             if (loadState === 'start') {
               minID.current = minIDValue;
