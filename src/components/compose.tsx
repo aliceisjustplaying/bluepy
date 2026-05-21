@@ -2040,7 +2040,7 @@ function Compose({
                           setShowGIFPicker(true);
                         }}
                       >
-                        <span className="icon icon-gif" role="img" />
+                        <span className="icon icon-gif" aria-hidden="true" />
                         <span>{_(ADD_LABELS.gif)}</span>
                       </MenuItem>
                     )}
