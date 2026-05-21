@@ -194,7 +194,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   });
   const [headerPreview, setHeaderPreview] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const isProfileLoading = uiState === ('loading' as ProfileUIState);
+  const isProfileLoading = uiState === 'loading';
 
   // `masto.v1.accounts` is a proxy returning a fresh reference on every
   // property access; depending on the raw expression would re-fire this

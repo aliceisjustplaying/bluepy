@@ -49,9 +49,7 @@ function MediaModal(props: {
 type Payload = Record<string, unknown>;
 type StatesSnapshot = Snapshot<typeof states>;
 const p = (v: unknown): Payload =>
-  v !== null && typeof v === 'object'
-    ? Object.fromEntries(Object.entries(v))
-    : {};
+  v !== null && typeof v === 'object' ? { ...v } : {};
 const str = (value: unknown): string | undefined =>
   typeof value === 'string' ? value : undefined;
 const msgDescriptor = (value: unknown): MessageDescriptor | undefined =>

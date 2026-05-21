@@ -25,9 +25,7 @@ function Menu2(props: Menu2Props) {
   } = props;
   const size = useWindowSize();
   const fallbackInstanceRef = useRef<MenuInstance | null>(null);
-  const instanceRef = externalInstanceRef?.current
-    ? externalInstanceRef
-    : fallbackInstanceRef;
+  const instanceRef = externalInstanceRef ?? fallbackInstanceRef;
 
   // Values: start, end, center
   // Note: don't mess with 'center'
