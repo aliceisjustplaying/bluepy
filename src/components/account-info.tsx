@@ -14,7 +14,7 @@ import {
   useState,
 } from 'react';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource, type MastoClient } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
 import handleContentLinks from '../utils/handle-content-links';
 import niceDateTime from '../utils/nice-date-time';
@@ -105,13 +105,16 @@ interface AccountsEndpoint {
   familiarFollowers: FamiliarFollowersEndpoint;
 }
 
-interface MastoLike {
-  v1: { accounts: unknown } & Record<string, unknown>;
-  [key: string]: unknown;
+function getAccountsEndpoint(masto: MastoClient): AccountsEndpoint {
+  return getMastoV1Resource<AccountsEndpoint>(masto, 'accounts');
 }
 
-function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
-  return masto.v1.accounts as AccountsEndpoint;
+function enhanceHTML(
+  content: string | undefined,
+  emojis: AccountInfoShape['emojis'] | undefined,
+): string {
+  const enhanced = enhanceContent(content, { emojis });
+  return typeof enhanced === 'string' ? enhanced : '';
 }
 
 // Shim for EditProfileSheet: the peer declares its onClose result as
@@ -148,7 +151,7 @@ const ACCOUNT_INFO_MAX_AGE = 1000 * 60 * 10; // 10 mins
 
 function fetchFamiliarFollowers(
   currentID: string,
-  masto: MastoLike,
+  masto: MastoClient,
 ): Promise<mastodon.v1.FamiliarFollowers[]> {
   return getAccountsEndpoint(masto).familiarFollowers.fetch({
     id: [currentID],
@@ -168,7 +171,7 @@ function eventImage(target: EventTarget | null): HTMLImageElement | null {
 
 async function fetchPostingStats(
   accountID: string,
-  masto: MastoLike,
+  masto: MastoClient,
 ): Promise<PostingStats> {
   const fetchStatuses = getAccountsEndpoint(masto)
     .$select(accountID)
@@ -178,9 +181,8 @@ async function fetchPostingStats(
     .values()
     .next();
 
-  const { value: statuses } = (await fetchStatuses) as {
-    value: mastodon.v1.Status[];
-  };
+  const result: IteratorResult<mastodon.v1.Status[]> = await fetchStatuses;
+  const statuses = Array.isArray(result.value) ? result.value : [];
   console.log('fetched statuses', statuses);
   const stats: PostingStats = {
     total: statuses.length,
@@ -352,7 +354,7 @@ function AccountInfo({
   // original. The cast keeps the inner field types non-optional so call
   // sites that need numbers (Plural, shortenNumber) don't have to invent
   // fallback values that would change message-extraction output.
-  const infoFields = info ?? ({} as AccountInfoShape);
+  const infoFields: Partial<AccountInfoShape> = info ?? {};
   const {
     acct,
     avatar,
@@ -363,15 +365,15 @@ function AccountInfo({
     displayName,
     emojis,
     fields,
-    followersCount,
-    followingCount,
+    followersCount = 0,
+    followingCount = 0,
     group,
     // header,
     // headerStatic,
     headerDescription,
     id,
     note,
-    statusesCount,
+    statusesCount = 0,
     url,
     memorial,
     moved,
@@ -997,7 +999,7 @@ function AccountInfo({
                      * through the inner <a> tags. */
                   }}
                   dangerouslySetInnerHTML={{
-                    __html: enhanceContent(note, { emojis }) as string,
+                    __html: enhanceHTML(note, emojis),
                   }}
                 />
                 <div className="account-metadata-box">
@@ -1023,9 +1025,7 @@ function AccountInfo({
                           </b>
                           <p
                             dangerouslySetInnerHTML={{
-                              __html: enhanceContent(value, {
-                                emojis,
-                              }) as string,
+                              __html: enhanceHTML(value, emojis),
                             }}
                           />
                         </div>
