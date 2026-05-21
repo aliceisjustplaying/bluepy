@@ -19,6 +19,7 @@ import showCompose from '../utils/show-compose';
 import states from '../utils/states';
 import statusPeek from '../utils/status-peek';
 import { getCurrentAccountID } from '../utils/store-utils';
+import useCurrentTime from '../utils/useCurrentTime';
 
 import Icon from './icon';
 import RelativeTime from './relative-time';
@@ -78,6 +79,7 @@ const fetchLatestPostsMemoized = pmem(
 export default function ComposeButton() {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
+  const currentTime = useCurrentTime();
   const { masto } = api();
 
   // Context menu state
@@ -233,8 +235,9 @@ export default function ComposeButton() {
         >
           {latestPosts.length > 0 &&
             latestPosts.map((post) => {
-              const createdDate = new Date(post.createdAt);
-              const isWithinDay = Date.now() - createdDate.getTime() < 86400000;
+              const createdTime = Date.parse(post.createdAt);
+              const isWithinDay =
+                currentTime !== null && currentTime - createdTime < 86400000;
 
               return (
                 <MenuItem
@@ -251,14 +254,14 @@ export default function ComposeButton() {
                       {/* Show relative time if within a day */}
                       {isWithinDay && (
                         <>
-                          <RelativeTime datetime={createdDate} format="micro" />{' '}
+                          <RelativeTime datetime={post.createdAt} format="micro" />{' '}
                           ‒{' '}
                         </>
                       )}
                       <time
                         className="created"
-                        dateTime={createdDate.toISOString()}
-                        title={createdDate.toLocaleString()}
+                        dateTime={post.createdAt}
+                        title={niceDateTime(post.createdAt)}
                       >
                         {niceDateTime(post.createdAt)}
                       </time>

@@ -120,8 +120,8 @@ function NavMenu(props: Record<string, unknown>) {
           showAvatarInButton ? 'with-avatar' : ''
         } ${menuState === 'open' ? 'active' : ''}`}
         style={{ position: 'relative' }}
-        onClick={() => {
-          buttonClickTS.current = Date.now();
+        onClick={(e) => {
+          buttonClickTS.current = e.timeStamp;
           setMenuState((state: MenuStateValue) =>
             !state ? 'open' : undefined,
           );
@@ -155,8 +155,8 @@ function NavMenu(props: Record<string, unknown>) {
           style: {
             zIndex: 10,
           },
-          onClick: () => {
-            if (Date.now() - buttonClickTS.current < 300) {
+          onClick: (e) => {
+            if (e.timeStamp - buttonClickTS.current < 300) {
               return;
             }
             // setMenuState(undefined);

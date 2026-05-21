@@ -8,6 +8,7 @@ import { supportsNativeQuote } from '../utils/quote-utils';
 import shortenNumber from '../utils/shorten-number';
 import showCompose from '../utils/show-compose';
 import supports from '../utils/supports';
+import useCurrentTime from '../utils/useCurrentTime';
 import visibilityIconsMap from '../utils/visibility-icons-map';
 import visibilityText from '../utils/visibility-text';
 
@@ -91,6 +92,7 @@ export default function StatusLargeFooter({
 }: StatusLargeFooterProps) {
   const { t, i18n } = useLingui();
   const _ = i18n._.bind(i18n);
+  const currentTime = useCurrentTime();
 
   return (
     <>
@@ -104,7 +106,8 @@ export default function StatusLargeFooter({
             <Icon icon={visibilityIconsMap[visibility]} alt="" />{' '}
             <span>{_(visibilityText[visibility])}</span> &bull;{' '}
             <a href={url ?? undefined} target="_blank" rel="noopener">
-              {Date.now() - createdAtDate.getTime() < 86400000 && (
+              {currentTime !== null &&
+                currentTime - createdAtDate.getTime() < 86400000 && (
                 <>
                   <RelativeTime datetime={createdAtDate} format="micro" />{' '}
                   ‒{' '}

@@ -1017,7 +1017,7 @@ export default function Sandbox() {
               }
               instance={currentInstance}
               allowFilters={true}
-              key={`status-${toggleState.mediaPreference}-${toggleState.expandWarnings}-${Date.now()}`}
+              key={`status-${toggleState.mediaPreference}-${toggleState.expandWarnings}`}
               // Prevent opening as URL
               onMediaClick={(
                 e: React.SyntheticEvent,
