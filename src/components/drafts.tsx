@@ -4,7 +4,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useReducer } from 'react';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import db from '../utils/db';
 import niceDateTime from '../utils/nice-date-time';
 import states from '../utils/states';
@@ -52,6 +52,12 @@ interface DraftsState {
   drafts: Draft[];
 }
 
+interface StatusesResource {
+  $select(id: string): {
+    fetch(): Promise<unknown>;
+  };
+}
+
 type DraftsAction =
   | { type: 'loading' }
   | { type: 'loaded'; drafts: Draft[] }
@@ -70,6 +76,23 @@ function draftsReducer(state: DraftsState, action: DraftsAction): DraftsState {
       return { ...state, uiState: action.uiState };
   }
   return state;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function isStringKey(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function isDraft(value: unknown): value is Draft {
+  return (
+    isRecord(value) &&
+    typeof value.key === 'string' &&
+    typeof value.updatedAt === 'string' &&
+    isRecord(value.draftStatus)
+  );
 }
 
 function Drafts({ onClose }: DraftsProps) {
@@ -91,13 +114,15 @@ function Drafts({ onClose }: DraftsProps) {
     dispatchDrafts({ type: 'loading' });
     void (async () => {
       try {
-        const keys = (await db.drafts.keys()) as string[];
+        const keys = (await db.drafts.keys()).filter(isStringKey);
         let nextDrafts: Draft[] = [];
         if (keys.length) {
           const ns = getCurrentAccountNS();
           const ownKeys = keys.filter((key) => key.startsWith(ns));
           if (ownKeys.length) {
-            const ownDrafts = (await db.drafts.getMany(ownKeys)) as Draft[];
+            const ownDrafts = (await db.drafts.getMany(ownKeys)).filter(
+              isDraft,
+            );
             ownDrafts.sort(
               (a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
             );
@@ -202,15 +227,13 @@ function Drafts({ onClose }: DraftsProps) {
                           let quoteStatus: unknown;
                           if (replyTo?.id || quote?.id) {
                             setUIState('loading');
-                            if (replyTo) {
+                            const statuses = getMastoV1Resource<StatusesResource>(
+                              masto,
+                              'statuses',
+                            );
+                            if (replyTo?.id) {
                               try {
-                                replyToStatus = await (
-                                  masto.v1.statuses as {
-                                    $select(id: string | undefined): {
-                                      fetch(): Promise<unknown>;
-                                    };
-                                  }
-                                )
+                                replyToStatus = await statuses
                                   .$select(replyTo.id)
                                   .fetch();
                               } catch (e) {
@@ -220,15 +243,9 @@ function Drafts({ onClose }: DraftsProps) {
                                 return;
                               }
                             }
-                            if (quote) {
+                            if (quote?.id) {
                               try {
-                                quoteStatus = await (
-                                  masto.v1.statuses as {
-                                    $select(id: string | undefined): {
-                                      fetch(): Promise<unknown>;
-                                    };
-                                  }
-                                )
+                                quoteStatus = await statuses
                                   .$select(quote.id)
                                   .fetch();
                               } catch (e) {

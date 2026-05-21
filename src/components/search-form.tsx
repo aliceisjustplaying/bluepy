@@ -88,9 +88,9 @@ export const generateSearchItemData = (
     to = `/search?q=${encodeURIComponent(query)}&type=accounts`;
     icon = 'group';
   } else if (queryType === 'hashtags') {
-    const [, hashSymbol = '#', hashtagText = query] = query.match(
-      /^([#＃])?(.*)$/,
-    ) as RegExpMatchArray;
+    const match = query.match(/^([#＃])?(.*)$/);
+    const hashSymbol = match?.[1] ?? '#';
+    const hashtagText = match?.[2] ?? query;
     const hashtag = `${hashSymbol}${hashtagText}`;
     label = (
       <Trans>
@@ -341,7 +341,7 @@ function SearchForm(props: SearchFormProps) {
                 );
                 if (focusItem) {
                   let nextItem: Element | null = focusItem.nextElementSibling;
-                  while (nextItem && (nextItem as HTMLElement).hidden) {
+                  while (nextItem instanceof HTMLElement && nextItem.hidden) {
                     nextItem = nextItem.nextElementSibling;
                   }
                   if (nextItem) {
@@ -376,7 +376,7 @@ function SearchForm(props: SearchFormProps) {
                 if (focusItem) {
                   let prevItem: Element | null =
                     focusItem.previousElementSibling;
-                  while (prevItem && (prevItem as HTMLElement).hidden) {
+                  while (prevItem instanceof HTMLElement && prevItem.hidden) {
                     prevItem = prevItem.previousElementSibling;
                   }
                   if (prevItem) {
@@ -409,7 +409,9 @@ function SearchForm(props: SearchFormProps) {
                 );
                 if (focusItem) {
                   e.preventDefault();
-                  (focusItem as HTMLElement).click();
+                  if (focusItem instanceof HTMLElement) {
+                    focusItem.click();
+                  }
                 }
                 setSearchMenuOpen(false);
                 props?.onSubmit?.(e);
