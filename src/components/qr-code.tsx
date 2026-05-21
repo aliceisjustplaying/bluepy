@@ -54,6 +54,162 @@ function arenaImageReducer(
   return state;
 }
 
+interface MarkerPosition {
+  x: number;
+  y: number;
+}
+
+interface QrCodeDefsProps {
+  arenaCircle: boolean;
+  arenaLoaded: boolean;
+  backgroundMask?: string;
+  centerImageSize: number;
+  centerImageX: number;
+  centerImageY: number;
+  effectiveArenaCircle: boolean;
+  markerInnerRadius: number;
+  markerOuterRadius: number;
+  markerPositions: MarkerPosition[];
+  pathData: string;
+}
+
+function PositionMarkers({ positions }: { positions: MarkerPosition[] }) {
+  return (
+    <g id="position-markers">
+      {positions.map((pos) => (
+        <use
+          key={`${pos.x}-${pos.y}`}
+          href="#position-marker"
+          x={pos.x}
+          y={pos.y}
+        />
+      ))}
+    </g>
+  );
+}
+
+function QrCodeDefs({
+  arenaCircle,
+  arenaLoaded,
+  backgroundMask,
+  centerImageSize,
+  centerImageX,
+  centerImageY,
+  effectiveArenaCircle,
+  markerInnerRadius,
+  markerOuterRadius,
+  markerPositions,
+  pathData,
+}: QrCodeDefsProps) {
+  return (
+    <defs>
+      <g id="position-marker">
+        <rect
+          x="0.5"
+          y="0.5"
+          width="6"
+          height="6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1"
+          rx={markerOuterRadius}
+          ry={markerOuterRadius}
+        />
+        <rect
+          x="2"
+          y="2"
+          width="3"
+          height="3"
+          fill="currentColor"
+          rx={markerInnerRadius}
+          ry={markerInnerRadius}
+        />
+      </g>
+      <g id="position-marker-mask">
+        <rect
+          x="0.5"
+          y="0.5"
+          width="6"
+          height="6"
+          fill="none"
+          stroke="white"
+          strokeWidth="1"
+          rx={markerOuterRadius}
+          ry={markerOuterRadius}
+        />
+        <rect
+          x="2"
+          y="2"
+          width="3"
+          height="3"
+          fill="white"
+          rx={markerInnerRadius}
+          ry={markerInnerRadius}
+        />
+      </g>
+      {backgroundMask && (
+        <filter id="blur-mask">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+          <feColorMatrix type="saturate" values="2" />
+          <feComponentTransfer>
+            <feFuncR type="linear" slope="1.2" intercept="0.3" />
+            <feFuncG type="linear" slope="1.2" intercept="0.3" />
+            <feFuncB type="linear" slope="1.2" intercept="0.3" />
+          </feComponentTransfer>
+        </filter>
+      )}
+      {backgroundMask && (
+        <mask id="qr-pattern-mask">
+          <path
+            fill="white"
+            stroke="white"
+            strokeWidth="1"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            d={pathData}
+          />
+          <g id="position-markers-mask">
+            {markerPositions.map((pos) => (
+              <use
+                key={`${pos.x}-${pos.y}`}
+                href="#position-marker-mask"
+                x={pos.x}
+                y={pos.y}
+              />
+            ))}
+          </g>
+          {arenaLoaded && effectiveArenaCircle && (
+            <circle
+              cx={centerImageX + centerImageSize / 2}
+              cy={centerImageY + centerImageSize / 2}
+              r={centerImageSize / 2}
+              fill="black"
+            />
+          )}
+          {arenaLoaded && !arenaCircle && (
+            <rect
+              x={centerImageX}
+              y={centerImageY}
+              width={centerImageSize}
+              height={centerImageSize}
+              fill="black"
+            />
+          )}
+        </mask>
+      )}
+      <path
+        id="qr-pattern"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        d={pathData}
+      />
+    </defs>
+  );
+}
+
 export default function QrCode({
   text,
   arena,
@@ -249,122 +405,21 @@ export default function QrCode({
       xmlns="http://www.w3.org/2000/svg"
       shapeRendering="geometricPrecision"
     >
-      <defs>
-        <g id="position-marker">
-          <rect
-            x="0.5"
-            y="0.5"
-            width="6"
-            height="6"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1"
-            rx={markerOuterRadius}
-            ry={markerOuterRadius}
-          />
-          <rect
-            x="2"
-            y="2"
-            width="3"
-            height="3"
-            fill="currentColor"
-            rx={markerInnerRadius}
-            ry={markerInnerRadius}
-          />
-        </g>
-        <g id="position-marker-mask">
-          <rect
-            x="0.5"
-            y="0.5"
-            width="6"
-            height="6"
-            fill="none"
-            stroke="white"
-            strokeWidth="1"
-            rx={markerOuterRadius}
-            ry={markerOuterRadius}
-          />
-          <rect
-            x="2"
-            y="2"
-            width="3"
-            height="3"
-            fill="white"
-            rx={markerInnerRadius}
-            ry={markerInnerRadius}
-          />
-        </g>
-        {backgroundMask && (
-          <filter id="blur-mask">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
-            <feColorMatrix type="saturate" values="2" />
-            <feComponentTransfer>
-              <feFuncR type="linear" slope="1.2" intercept="0.3" />
-              <feFuncG type="linear" slope="1.2" intercept="0.3" />
-              <feFuncB type="linear" slope="1.2" intercept="0.3" />
-            </feComponentTransfer>
-          </filter>
-        )}
-        {backgroundMask && (
-          <mask id="qr-pattern-mask">
-            <path
-              fill="white"
-              stroke="white"
-              strokeWidth="1"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              d={pathData}
-            />
-            <g id="position-markers-mask">
-              {markerPositions.map((pos) => (
-                <use
-                  key={`${pos.x}-${pos.y}`}
-                  href="#position-marker-mask"
-                  x={pos.x}
-                  y={pos.y}
-                />
-              ))}
-            </g>
-            {arenaLoaded && effectiveArenaCircle && (
-              <circle
-                cx={centerImageX + centerImageSize / 2}
-                cy={centerImageY + centerImageSize / 2}
-                r={centerImageSize / 2}
-                fill="black"
-              />
-            )}
-            {arenaLoaded && !arenaCircle && (
-              <rect
-                x={centerImageX}
-                y={centerImageY}
-                width={centerImageSize}
-                height={centerImageSize}
-                fill="black"
-              />
-            )}
-          </mask>
-        )}
-        <path
-          id="qr-pattern"
-          fill="currentColor"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          d={pathData}
-        />
-      </defs>
+      <QrCodeDefs
+        arenaCircle={arenaCircle}
+        arenaLoaded={arenaLoaded}
+        backgroundMask={backgroundMask}
+        centerImageSize={centerImageSize}
+        centerImageX={centerImageX}
+        centerImageY={centerImageY}
+        effectiveArenaCircle={effectiveArenaCircle}
+        markerInnerRadius={markerInnerRadius}
+        markerOuterRadius={markerOuterRadius}
+        markerPositions={markerPositions}
+        pathData={pathData}
+      />
       <use href="#qr-pattern" />
-      <g id="position-markers">
-        {markerPositions.map((pos) => (
-          <use
-            key={`${pos.x}-${pos.y}`}
-            href="#position-marker"
-            x={pos.x}
-            y={pos.y}
-          />
-        ))}
-      </g>
+      <PositionMarkers positions={markerPositions} />
       {backgroundMask && (
         <g mask="url(#qr-pattern-mask)">
           <image
