@@ -1,7 +1,6 @@
 import './quotes-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
@@ -15,7 +14,7 @@ const LIMIT = 20;
 
 type StatusesQuotesResource = {
   list(opts: { limit: number }): {
-    values(): AsyncIterator<mastodon.v1.Status[]>;
+    values(): AsyncIterator<AnyStatus[], undefined>;
   };
 };
 
@@ -35,12 +34,12 @@ function QuotedStatusPreview({
   instance,
   renderStatus,
 }: {
-  post: mastodon.v1.Status;
+  post: AnyStatus;
   instance?: string;
   renderStatus: RenderStatus;
 }) {
   return renderStatus({
-    status: post as AnyStatus,
+    status: post,
     instance,
     size: 's',
     readOnly: true,
@@ -58,14 +57,14 @@ export default function QuotesModal({
   const { t } = useLingui();
   const { masto } = api();
 
-  const [posts, setPosts] = useState<mastodon.v1.Status[]>([]);
+  const [posts, setPosts] = useState<AnyStatus[]>([]);
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
   );
   const [showMore, setShowMore] = useState(false);
 
   const quotesIterator = useRef<
-    AsyncIterator<mastodon.v1.Status[]> | undefined
+    AsyncIterator<AnyStatus[], undefined> | undefined
   >(undefined);
   const firstLoad = useRef(true);
 
@@ -151,7 +150,8 @@ export default function QuotesModal({
                     }
                     className="status-link"
                     onContextMenu={(e: React.MouseEvent) => {
-                      const target = e.target as Element | null;
+                      const target = e.target;
+                      if (!(target instanceof Element)) return;
                       const postEl = target?.querySelector('.status');
                       if (postEl) {
                         // Fire a custom event to open the context menu
