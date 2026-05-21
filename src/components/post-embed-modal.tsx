@@ -6,6 +6,7 @@ import showToast from '../utils/show-toast';
 import states, { statusKey } from '../utils/states';
 
 import Icon from './icon';
+import RawHtml from './raw-html';
 
 interface EmojiLike {
   shortcode: string;
@@ -432,9 +433,10 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
         <h3>
           <Trans>Preview</Trans>
         </h3>
-        <output
+        <RawHtml
+          tag="output"
           className="embed-preview"
-          dangerouslySetInnerHTML={{ __html: htmlCode }}
+          html={htmlCode}
           dir="auto"
         />
         <p>

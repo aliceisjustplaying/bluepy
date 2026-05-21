@@ -42,6 +42,7 @@ import states from '../utils/states';
 import Icon from './icon';
 import Link from './link';
 import type { LinkProps } from './link';
+import RawHtml from './raw-html';
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
 
@@ -927,21 +928,17 @@ function Media({
           {showOriginal || autoGIFAnimate ? (
             isGIF && showOriginal ? (
               <QuickPinchZoom {...quickPinchZoomProps} enabled>
-                <div
+                <RawHtml
                   ref={(node) => {
                     mediaRef.current = node;
                   }}
-                  dangerouslySetInnerHTML={{
-                    __html: gifHTML,
-                  }}
+                  html={gifHTML}
                 />
               </QuickPinchZoom>
             ) : isGIF ? (
-              <div
+              <RawHtml
                 className="video-container"
-                dangerouslySetInnerHTML={{
-                  __html: gifHTML,
-                }}
+                html={gifHTML}
               />
             ) : videoURL ? (
               <div className="video-container">

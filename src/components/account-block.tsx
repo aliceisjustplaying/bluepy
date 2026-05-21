@@ -14,6 +14,7 @@ import states from '../utils/states';
 import Avatar from './avatar';
 import EmojiText from './emoji-text';
 import Icon from './icon';
+import RawHtml from './raw-html';
 import RolesTags from './roles-tags';
 
 export interface AccountBlockProps {
@@ -259,14 +260,13 @@ function AccountBlock({
             {!!verifiedField && (
               <span className="verified-field">
                 <Icon icon="check-circle" size="s" alt={t`Verified`} />{' '}
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: stringValue(
-                      enhanceContent(verifiedField.value, {
-                        emojis,
-                      }),
-                    ),
-                  }}
+                <RawHtml
+                  tag="span"
+                  html={stringValue(
+                    enhanceContent(verifiedField.value, {
+                      emojis,
+                    }),
+                  )}
                 />
               </span>
             )}

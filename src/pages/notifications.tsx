@@ -26,6 +26,7 @@ import AccountBlock, {
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
+import RawHtml from '../components/raw-html';
 import Modal from '../components/modal';
 import NavMenu from '../components/nav-menu';
 import Notification, {
@@ -1418,7 +1419,7 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
           this div delegates link clicks via handleContentLinks; embedded
           anchors are focusable. A non-functional role/keydown shim would
           provide no real a11y benefit. */}
-      <div
+      <RawHtml
         className="announcement-content"
         role="presentation"
         onClick={handleContentLinks({
@@ -1430,11 +1431,9 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
             : undefined,
           instance,
         })}
-        dangerouslySetInnerHTML={{
-          __html: toHtmlString(enhanceContent(content, {
+        html={toHtmlString(enhanceContent(content, {
             emojis,
-          })),
-        }}
+          }))}
       />
       <p className="insignificant">
         <time dateTime={publishedAtDate.toISOString()}>
