@@ -9,7 +9,7 @@ interface CharCountMeterProps {
 
 function CharCountMeter({ maxCharacters = 500, hidden }: CharCountMeterProps) {
   const snapStates = useSnapshot(states);
-  const snapCharCount = snapStates.composerCharacterCount as number | undefined;
+  const snapCharCount: unknown = snapStates.composerCharacterCount;
   const charCount =
     typeof snapCharCount === 'number' && Number.isFinite(snapCharCount)
       ? snapCharCount

@@ -23,18 +23,20 @@ export default function OpenLinkSheet({
 
   let displayUrl: ReactNode = url;
   try {
-    const urlObj = URL.parse(url) as URL;
-    const protocol = urlObj.protocol;
-    const hostname = urlObj.hostname;
-    const rest = url.slice(urlObj.origin.length);
-    displayUrl = (
-      <>
-        {protocol}
-        {'//'}
-        <strong>{hostname}</strong>
-        {rest}
-      </>
-    );
+    const urlObj = URL.parse(url);
+    if (urlObj) {
+      const protocol = urlObj.protocol;
+      const hostname = urlObj.hostname;
+      const rest = url.slice(urlObj.origin.length);
+      displayUrl = (
+        <>
+          {protocol}
+          {'//'}
+          <strong>{hostname}</strong>
+          {rest}
+        </>
+      );
+    }
   } catch {}
 
   const handleCopy = () => {

@@ -76,6 +76,26 @@ interface StatusMenuStateArgs {
   >[0]['fetchBoostedLikedByAccounts'];
 }
 
+function isAcceptedQuoteFromCurrentAccount(
+  quote: unknown,
+  currentAccount: string | null | undefined,
+): boolean {
+  return (
+    !!quote &&
+    typeof quote === 'object' &&
+    'state' in quote &&
+    quote.state === 'accepted' &&
+    'quotedStatus' in quote &&
+    !!quote.quotedStatus &&
+    typeof quote.quotedStatus === 'object' &&
+    'account' in quote.quotedStatus &&
+    !!quote.quotedStatus.account &&
+    typeof quote.quotedStatus.account === 'object' &&
+    'id' in quote.quotedStatus.account &&
+    quote.quotedStatus.account.id === currentAccount
+  );
+}
+
 export default function useStatusMenuState({
   mediaNoDesc,
   reblogged,
@@ -138,15 +158,10 @@ export default function useStatusMenuState({
 }: StatusMenuStateArgs) {
   const { i18n } = useLingui();
   const rtf = RTF(i18n.locale);
-  const quoteAny = quote as
-    | {
-        state?: string;
-        quotedStatus?: { account?: { id?: string } | null } | null;
-      }
-    | undefined;
-  const isQuotingMyPost =
-    quoteAny?.state === 'accepted' &&
-    quoteAny?.quotedStatus?.account?.id === currentAccount;
+  const isQuotingMyPost = isAcceptedQuoteFromCurrentAccount(
+    quote,
+    currentAccount,
+  );
   const isPinnable = ['public', 'unlisted', 'private'].includes(visibility);
   const menuFooter: ReactNode =
     mediaNoDesc && !reblogged ? (

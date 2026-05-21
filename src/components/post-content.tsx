@@ -35,6 +35,13 @@ interface PostContentProps {
   previewMode?: boolean;
 }
 
+function quoteOriginalURL(quote: unknown): string | undefined {
+  if (!quote || typeof quote !== 'object' || !('originalURL' in quote)) {
+    return undefined;
+  }
+  return typeof quote.originalURL === 'string' ? quote.originalURL : undefined;
+}
+
 type EnhanceContentDOM = HTMLDivElement | DocumentFragment;
 
 function enhanceContentDOM(
@@ -103,13 +110,7 @@ const PostContent =
       const currentDiv = divRef.current;
       if (currentQuotes?.length) {
         for (const a of currentDiv?.querySelectorAll('a') ?? []) {
-          if (
-            currentQuotes.some(
-              (quote) =>
-                (quote as { originalURL?: string } | null)?.originalURL ===
-                a.href,
-            )
-          ) {
+          if (currentQuotes.some((quote) => quoteOriginalURL(quote) === a.href)) {
             a.classList.add('is-quote');
           }
         }

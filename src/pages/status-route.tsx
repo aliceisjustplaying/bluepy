@@ -8,6 +8,6 @@ export default function StatusRoute() {
   const params = useParams<{ id?: string; instance?: string }>();
   let { id, instance } = params;
   if (id?.startsWith('at://')) id = encodeAtprotoID(id);
-  // Route pattern `/:instance?/s/:id` guarantees `id` at runtime.
-  return <Status id={id as string} instance={instance} />;
+  if (!id) return null;
+  return <Status id={id} instance={instance} />;
 }

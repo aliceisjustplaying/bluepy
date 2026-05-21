@@ -47,9 +47,11 @@ export default function useStatusDisplayState({
 }: StatusDisplayStateArgs) {
   const prefs = getPreferences();
   const readingExpandSpoilers = !!prefs['reading:expand:spoilers'];
+  const readingExpandMediaValue = prefs['reading:expand:media'];
   const readingExpandMedia =
-    (prefs['reading:expand:media'] as string | undefined)?.toLowerCase() ||
-    'default';
+    typeof readingExpandMediaValue === 'string'
+      ? readingExpandMediaValue.toLowerCase()
+      : 'default';
   const snapStates = useSnapshot(states);
   const showSpoiler =
     previewMode || readingExpandSpoilers || !!snapStates.spoilers[id];
