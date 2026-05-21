@@ -34,6 +34,19 @@ interface TranslateInvocation {
   signal?: AbortSignal;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function stringField(record: Record<string, unknown>, key: string) {
+  const value = record[key];
+  return typeof value === 'string' ? value : undefined;
+}
+
+function abortError(error: unknown): boolean {
+  return isRecord(error) && error.name === 'AbortError';
+}
+
 const sourceLanguages = Object.entries(
   (languages as { sl: Record<string, string> }).sl,
 ).map(([code, name]) => ({
@@ -41,9 +54,7 @@ const sourceLanguages = Object.entries(
   name,
 }));
 
-const { PHANPY_TRANSLANG_INSTANCES } = import.meta.env as {
-  PHANPY_TRANSLANG_INSTANCES?: string;
-};
+const { PHANPY_TRANSLANG_INSTANCES } = import.meta.env;
 const TRANSLANG_INSTANCES: string[] = PHANPY_TRANSLANG_INSTANCES
   ? PHANPY_TRANSLANG_INSTANCES.split(/\s+/)
   : [];
@@ -59,8 +70,8 @@ let currentTranslangInstance = 0;
 
 function translangTranslateInner(
   text: string,
-  source: string,
-  target: string,
+  source?: string,
+  target?: string,
 ): Promise<TranslangResult> {
   console.log('TRANSLATE', text, source, target);
   const fetchCall = async (): Promise<TranslangResult> => {
@@ -86,8 +97,8 @@ function translangTranslateInner(
       // GET
       fetchPromise = fetch(
         `https://${instance}/api/v1/translate?sl=${encodeURIComponent(
-          source,
-        )}&tl=${encodeURIComponent(target)}&text=${encodeURIComponent(text)}`,
+          String(source),
+        )}&tl=${encodeURIComponent(String(target))}&text=${encodeURIComponent(text)}`,
         {
           priority: 'low',
           referrerPolicy: 'no-referrer',
@@ -96,16 +107,13 @@ function translangTranslateInner(
     }
     const res = await fetchPromise;
     if (!res.ok) throw new Error(res.statusText);
-    const translation = (await res.json()) as {
-          translated_text?: string;
-          detected_language?: string;
-          pronunciation?: string;
-        };
+    const translationResponse: unknown = await res.json();
+    const translation = isRecord(translationResponse) ? translationResponse : {};
     return {
       provider: 'translang',
-      content: translation.translated_text,
-      detectedSourceLanguage: translation.detected_language,
-      pronunciation: translation.pronunciation,
+      content: stringField(translation, 'translated_text'),
+      detectedSourceLanguage: stringField(translation, 'detected_language'),
+      pronunciation: stringField(translation, 'pronunciation'),
     };
   };
   return pRetry(fetchCall, {
@@ -125,15 +133,12 @@ const translangTranslate = pmem(translangTranslateInner, {
 });
 const throttledTranslangTranslate = pmem(
   ({ signal, text, source, target }: TranslateInvocation) =>
-    translationQueue.add(
-      // Preserve JS pass-through: source/target may be undefined. The
-      // converted translate helpers type these as `string`, so cast at the
-      // boundary to match the original runtime behavior.
-      () => translangTranslate(text, source as string, target as string),
+    translationQueue.add<TranslangResult | undefined>(
+      () => translangTranslate(text, source, target),
       {
         signal,
       },
-    ) as Promise<TranslangResult | undefined>,
+    ),
   {
     // I know, this is double-layered memoization
     expires: TRANSLATED_MAX_AGE,
@@ -147,7 +152,7 @@ const throttledBrowserTranslate = ({
   signal,
 }: TranslateInvocation): Promise<BrowserTranslateResult | undefined> =>
   translationQueue.add(
-    () => browserTranslate(text, source as string, target as string),
+    () => browserTranslate(text, source ?? 'auto', target ?? ''),
     {
       signal,
     },
@@ -221,8 +226,8 @@ function TranslationBlock({
           })
         : await translangTranslate(
             innerText,
-            source as string,
-            target as string,
+            source,
+            target,
           );
     });
 
@@ -235,8 +240,7 @@ function TranslationBlock({
         target: targetLang,
         signal: abortControllerRef.current?.signal,
       });
-      const { content, detectedSourceLanguage, provider } = (result ??
-        {}) as Partial<TranslationResult>;
+      const { content, detectedSourceLanguage, provider } = result ?? {};
       const error = result && 'error' in result ? result.error : undefined;
       const pronunciation =
         result && 'pronunciation' in result ? result.pronunciation : undefined;
@@ -264,7 +268,7 @@ function TranslationBlock({
         setUIState('error');
       }
     } catch (e) {
-      if ((e as { name?: string })?.name !== 'AbortError') {
+      if (!abortError(e)) {
         console.error(e);
         setUIState('error');
       }
