@@ -151,7 +151,10 @@ function Login() {
     instance || cachedInstanceURL?.toLowerCase() || "",
   );
 
-  const [instancesList, setInstancesList] = useState<string[]>([]);
+  const [instancesList, setInstancesList] = useReducer(
+    (_currentInstances: string[], nextInstances: string[]) => nextInstances,
+    [],
+  );
   const searcher = useRef<Fuse<string> | undefined>(undefined);
   useEffect(() => {
     void (async () => {

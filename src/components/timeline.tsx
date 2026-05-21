@@ -11,7 +11,14 @@ import type {
 } from 'react';
 import { Children } from 'react';
 import { memo } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useLocation } from 'react-router-dom';
@@ -545,7 +552,10 @@ function Timeline({
     cachedData?.showMore ?? false,
   );
   const [showNew, setShowNew] = useState(false);
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useReducer(
+    (_currentVisible: boolean, nextVisible: boolean) => nextVisible,
+    true,
+  );
   const scrollableRef = useRef<HTMLDivElement | null>(null);
 
   // Updated every render so the cleanup fn always sees the latest values
@@ -676,7 +686,11 @@ function Timeline({
   // });
   const headerRef = useRef<HTMLElement | null>(null);
   // const [hiddenUI, setHiddenUI] = useState(false);
-  const [nearReachStart, setNearReachStart] = useState(false);
+  const [nearReachStart, setNearReachStart] = useReducer(
+    (_currentNearReachStart: boolean, nextNearReachStart: boolean) =>
+      nextNearReachStart,
+    false,
+  );
   interface ScrollFnArgs {
     scrollDirection: 'end' | 'start' | null;
     nearReachStart: boolean;

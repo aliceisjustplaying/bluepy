@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useReducer,
   useRef,
   useState,
 } from 'react';
@@ -257,7 +258,10 @@ function Timeline2({
   const [showOlder, setShowOlder] = useState(
     cachedData.current?.showOlder ?? true,
   );
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useReducer(
+    (_currentVisible: boolean, nextVisible: boolean) => nextVisible,
+    true,
+  );
   const scrollableRef = useRef<HTMLDivElement | null>(null);
 
   const firstLoad = useRef(true);
