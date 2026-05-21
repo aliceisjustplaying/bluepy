@@ -137,11 +137,12 @@ function fetchTrendsStatuses(
     const pixelfedTrending = masto.pixelfed?.v2?.discover?.posts?.trending;
     if (pixelfedTrending) {
       return pixelfedTrending
-      .list({
-        range: 'daily',
-      })
-      .values();
+        .list({
+          range: 'daily',
+        })
+        .values();
     }
+    throw new TypeError('Pixelfed trending endpoint is unavailable');
   }
   return getMastoV1Resource<{ statuses: TrendingApiList<StatusItem[]> }>(
     masto,

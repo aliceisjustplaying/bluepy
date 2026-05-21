@@ -151,6 +151,14 @@ interface NotificationItem {
   status?: Parameters<typeof saveStatus>[0];
 }
 
+interface NotificationRecord {
+  id?: string;
+  _ids?: string;
+  type?: string;
+  status?: Parameters<typeof saveStatus>[0];
+  [key: string]: unknown;
+}
+
 interface MarkerResource {
   create(options: { notifications: { lastReadId: string } }): Promise<unknown>;
 }
@@ -181,6 +189,15 @@ function notificationList(value: unknown): NotificationItem[] {
       )
     : [];
 }
+
+function notificationRecords(value: unknown): NotificationRecord[] {
+  return Array.isArray(value)
+    ? value.filter(
+        (item): item is NotificationRecord =>
+          typeof item === "object" && item !== null,
+      )
+    : [];
+}
 function NotificationsMenu({
   anchorRef,
   state,
@@ -198,7 +215,7 @@ function NotificationsMenu({
       try {
         const notificationsIterator = mastoFetchNotifications();
         const allNotifications = await notificationsIterator.next();
-        const notifications = notificationList(
+        const notifications = notificationRecords(
           massageNotifications2(allNotifications.value),
         );
 
