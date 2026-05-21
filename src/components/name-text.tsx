@@ -3,7 +3,6 @@ import './name-text.css';
 import { useLingui } from '@lingui/react';
 
 import { api } from '../utils/api';
-import mem from '../utils/mem';
 import { canonicalizeAppPath } from '../utils/router';
 import states from '../utils/states';
 
@@ -49,13 +48,20 @@ const NAME_COLLATOR_OPTIONS: Intl.CollatorOptions = {
   sensitivity: 'base',
 };
 
-const nameCollator = mem((locale: string | undefined) => {
+function namesMatchByLocale(
+  left: string,
+  right: string,
+  locale: string | undefined,
+): boolean {
   try {
-    return new Intl.Collator(locale || undefined, NAME_COLLATOR_OPTIONS);
+    return (
+      left.localeCompare(right, locale || undefined, NAME_COLLATOR_OPTIONS) ===
+      0
+    );
   } catch {
-    return new Intl.Collator(undefined, NAME_COLLATOR_OPTIONS);
+    return left.localeCompare(right, undefined, NAME_COLLATOR_OPTIONS) === 0;
   }
-});
+}
 
 const ACCT_REGEX = /([^@]+)(@.+)/i;
 const SHORTCODES_REGEX = /(:(\w|\+|-)+:)(?=|[!.?]|$)/g;
@@ -104,10 +110,11 @@ function NameText({
       (trimmedUsername === trimmedDisplayName ||
         trimmedUsername === shortenedDisplayName ||
         trimmedUsername === shortenedAlphaNumericDisplayName ||
-        nameCollator(i18n.locale).compare(
+        namesMatchByLocale(
           trimmedUsername,
           shortenedDisplayName,
-        ) === 0)) ||
+          i18n.locale,
+        ))) ||
     shortenedAlphaNumericDisplayName === acct.toLowerCase();
 
   return (

@@ -360,7 +360,7 @@ function Shortcuts() {
                           <Icon icon={icon} size="xl" />
                         )}
                         <span>
-                          <AsyncText>{title ?? ''}</AsyncText>
+                          <AsyncText value={title ?? ''} />
                           {subtitle && (
                             <>
                               <br />
@@ -447,7 +447,7 @@ function Shortcuts() {
                     <>
                       <Icon icon={icon} size="l" />
                       <span className="menu-grow">
-                        <AsyncText>{title ?? ''}</AsyncText>
+                        <AsyncText value={title ?? ''} />
                       </span>
                       <Icon icon="chevron-right" />
                     </>
@@ -467,7 +467,7 @@ function Shortcuts() {
                 <Icon icon={icon} size="l" />{' '}
                 <span className="menu-grow">
                   <span>
-                    <AsyncText>{title ?? ''}</AsyncText>
+                    <AsyncText value={title ?? ''} />
                   </span>
                   {subtitle && (
                     <>

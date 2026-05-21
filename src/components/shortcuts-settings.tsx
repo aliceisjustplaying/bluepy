@@ -436,7 +436,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
                   <li key={key}>
                     <Icon icon={icon} />
                     <span className="shortcut-text">
-                      <AsyncText>{title}</AsyncText>
+                      <AsyncText value={title} />
                       {!!subtitle && (
                         <>
                           {' '}

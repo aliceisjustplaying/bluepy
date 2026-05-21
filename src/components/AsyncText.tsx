@@ -1,22 +1,20 @@
 import { useEffect, useState } from 'react';
 
 interface AsyncTextProps {
-  children: string | Promise<string>;
+  value: string | Promise<string>;
 }
 
-function AsyncText({ children }: AsyncTextProps) {
-  const [text, setText] = useState(
-    typeof children === 'string' ? children : '',
-  );
+function AsyncText({ value }: AsyncTextProps) {
+  const [text, setText] = useState(typeof value === 'string' ? value : '');
   useEffect(() => {
-    if (typeof children === 'string') {
-      setText(children);
+    if (typeof value === 'string') {
+      setText(value);
       return undefined;
     }
     let cancelled = false;
     void (async () => {
       try {
-        const resolved = await children;
+        const resolved = await value;
         if (!cancelled) setText(resolved);
       } catch (error) {
         console.error(error);
@@ -25,7 +23,7 @@ function AsyncText({ children }: AsyncTextProps) {
     return () => {
       cancelled = true;
     };
-  }, [children]);
+  }, [value]);
   return text;
 }
 
