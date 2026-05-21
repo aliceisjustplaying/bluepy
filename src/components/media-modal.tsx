@@ -76,7 +76,8 @@ function MediaModal({
   const [uiState, setUIState] = useState<'default' | 'loading'>('default');
   const carouselRef = useRef<HTMLElement | null>(null);
 
-  const [currentIndex, setCurrentIndex] = useState(index);
+  const initialIndexRef = useRef(index);
+  const [currentIndex, setCurrentIndex] = useState(initialIndexRef.current);
   const carouselFocusItem = useRef<HTMLDivElement | null>(null);
   useLayoutEffect(() => {
     carouselFocusItem.current?.scrollIntoView();

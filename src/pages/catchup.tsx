@@ -985,8 +985,11 @@ function Catchup() {
     if (!posts?.length) return null;
     const bins = binByTime(posts, 'createdAt', 320);
     return bins.map((postsInBin, i) => {
+      const binKey = postsInBin.length
+        ? postsInBin.map((post) => post.id).join('-')
+        : `empty-${i}`;
       return (
-        <div className="posts-bin" key={i}>
+        <div className="posts-bin" key={binKey}>
           {postsInBin.map((post) => {
             const postIsFiltered = filteredPostsMap[post.id];
             return (

@@ -28,6 +28,44 @@
   transition: all 0.2s ease-in-out;
 }
 
+#login .bsky-identifier-field {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+#login .bsky-identifier-field input {
+  width: 100%;
+}
+
+#login .bsky-identifier-placeholder {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--placeholder-color, #999);
+  white-space: nowrap;
+  font-size: inherit;
+}
+
+#login .bsky-identifier-suffix {
+  display: inline-block;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+#login .bsky-identifier-suffix.fading {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+#login .bsky-identifier-suffix.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 #login .bsky-advanced-login {
   margin: 1em 0;
 }

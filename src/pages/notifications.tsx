@@ -70,6 +70,10 @@ function Status(props: {
   return <NotificationStatus {...props} />;
 }
 
+function notificationDate(value: string | undefined): Date {
+  return new Date(value ?? '');
+}
+
 // Loose shape for the notification objects this page renders. These come
 // from `getGroupedNotifications` which returns the union of the v1/v2 group
 // outputs from `group-notifications.ts`. The page reads many fields off
@@ -1184,9 +1188,7 @@ function Notifications({ columnMode }: NotificationsProps) {
               if (onlyMentions && notification.type !== 'mention') {
                 return null;
               }
-              const notificationDay = new Date(
-                notification.createdAt ?? '',
-              );
+              const notificationDay = notificationDate(notification.createdAt);
               const differentDay =
                 notificationDay.toDateString() !== currentDay.toDateString();
               if (differentDay) {

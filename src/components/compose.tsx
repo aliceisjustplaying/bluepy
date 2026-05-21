@@ -566,9 +566,10 @@ function Compose({
   mediaAttachmentsRef.current = mediaAttachments;
   const [quoteSuggestion, setQuoteSuggestion] =
     useState<QuoteSuggestionState | null>(null);
+  const initialQuoteStatusRef = useRef(quoteStatus);
   const [localQuoteStatus, setLocalQuoteStatus] = useState<
     StatusLike | null | undefined
-  >(quoteStatus);
+  >(initialQuoteStatusRef.current);
   const [linkPreview, setLinkPreview] = useState<LinkPreviewState | null>(null);
   const linkPreviewRef = useRef<{
     id: number;

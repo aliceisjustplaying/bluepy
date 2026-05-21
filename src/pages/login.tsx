@@ -403,13 +403,7 @@ function Login() {
         </h1>
         <section className="bsky-login">
           <label>
-            <div
-              style={{
-                position: "relative",
-                display: "inline-block",
-                width: "100%",
-              }}
-            >
+            <div className="bsky-identifier-field">
               <input
                 value={bskyIdentifier}
                 type="text"
@@ -429,32 +423,17 @@ function Login() {
                 onBlur={() => {
                   setHandleFocused(false);
                 }}
-                style={{ width: "100%" }}
               />
               {!bskyIdentifier && !handleFocused && (
                 <span
                   aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    left: "12px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    pointerEvents: "none",
-                    color: "var(--placeholder-color, #999)",
-                    whiteSpace: "nowrap",
-                    fontSize: "inherit",
-                  }}
+                  className="bsky-identifier-placeholder"
                 >
                   you
                   <span
-                    style={{
-                      display: "inline-block",
-                      opacity: suffixFading ? 0 : 1,
-                      transform: suffixFading
-                        ? "translateY(-4px)"
-                        : "translateY(0)",
-                      transition: "opacity 0.25s ease, transform 0.25s ease",
-                    }}
+                    className={`bsky-identifier-suffix ${
+                      suffixFading ? 'fading' : 'visible'
+                    }`}
                   >
                     {currentSuffix}
                   </span>

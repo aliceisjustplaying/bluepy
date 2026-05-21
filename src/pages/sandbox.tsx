@@ -1386,8 +1386,9 @@ export default function Sandbox() {
                   <ul className="media-types">
                     {Array.from(
                       { length: parseInt(toggleState.mediaCount) },
-                      (_, index) => (
-                        <li key={`media-type-${index}`}>
+                      (_, index) => `media-type-${index}`,
+                    ).map((mediaTypeKey, index) => (
+                      <li key={mediaTypeKey}>
                           <label>
                             <input
                               type="radio"
@@ -1454,9 +1455,8 @@ export default function Sandbox() {
                             />
                             <span>Audio</span>
                           </label>
-                        </li>
-                      ),
-                    )}
+                      </li>
+                    ))}
                   </ul>
                 )}
               </li>

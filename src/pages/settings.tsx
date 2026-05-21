@@ -1166,7 +1166,8 @@ function TextSizeControl({
   currentTextSize,
 }: TextSizeControlProps): ReactElement {
   const textSizeFieldRef = useRef<HTMLInputElement | null>(null);
-  const [size, setSize] = useState<number>(currentTextSize);
+  const initialTextSizeRef = useRef(currentTextSize);
+  const [size, setSize] = useState<number>(initialTextSizeRef.current);
   const [debouncedSize] = useDebounce(size, 1000);
 
   useEffect(() => {

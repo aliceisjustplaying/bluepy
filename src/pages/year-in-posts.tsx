@@ -65,7 +65,9 @@ interface DayCounts {
 }
 
 interface HeatmapDay {
+  key: string;
   day: number | null;
+  cell: number;
   count: number;
   ratio: number;
   original: number;
@@ -75,11 +77,18 @@ interface HeatmapDay {
 }
 
 interface MediaGridCell {
+  key: string;
   post?: MastoStatus;
   hasMedia: boolean;
 }
 
-type MediaGridItem = MediaGridCell | null;
+interface EmptyMediaGridCell {
+  key: string;
+  hasMedia: false;
+  empty: true;
+}
+
+type MediaGridItem = MediaGridCell | EmptyMediaGridCell;
 
 interface MonthTypeCounts {
   original: number;
@@ -461,7 +470,9 @@ function YearInPosts() {
 
       for (let i = 0; i < firstDayOfWeek; i++) {
         calendar.push({
+          key: `${mKey}-empty-${i}`,
           day: null,
+          cell: i,
           count: 0,
           ratio: 0,
           original: 0,
@@ -476,7 +487,9 @@ function YearInPosts() {
         const count = dayData?.total || 0;
         const ratio = count && maxCount > 0 ? count / maxCount : 0;
         calendar.push({
+          key: `${mKey}-day-${day}`,
           day,
+          cell: firstDayOfWeek + day - 1,
           count,
           ratio,
           original: dayData?.original || 0,
@@ -513,7 +526,11 @@ function YearInPosts() {
       const calendar: MediaGridItem[] = [];
 
       for (let i = 0; i < firstDayOfWeek; i++) {
-        calendar.push(null);
+        calendar.push({
+          key: `${mKey}-empty-${i}`,
+          hasMedia: false,
+          empty: true,
+        });
       }
 
       for (let day = 1; day <= 31; day++) {
@@ -561,7 +578,11 @@ function YearInPosts() {
             hasMedia = true;
           }
         }
-        calendar.push(bestPost ? { post: bestPost, hasMedia } : { hasMedia });
+        calendar.push(
+          bestPost
+            ? { key: `${mKey}-day-${day}`, post: bestPost, hasMedia }
+            : { key: `${mKey}-day-${day}`, hasMedia },
+        );
       }
 
       result[mKey] = calendar;
@@ -1448,7 +1469,8 @@ const IntersectionPostItem = ({
   defaultShow,
 }: IntersectionPostItemProps) => {
   const ref = useRef<HTMLLIElement | null>(null);
-  const [show, setShow] = useState<boolean>(defaultShow);
+  const defaultShowRef = useRef(defaultShow);
+  const [show, setShow] = useState<boolean>(defaultShowRef.current);
 
   useEffect(() => {
     if (defaultShow) return undefined;
@@ -1555,14 +1577,19 @@ function CalendarBar({
               <div className="month-name">{getMonthName(m, i18n.locale)}</div>
               {postType === 'media'
                 ? mediaGrid.length > 0 && (
-                    <div className="month-media-grid">
-                      {mediaGrid.map((item, i) => {
-                        if (!item)
-                          return <span key={i} className="media-day empty" />;
-                        if (!item.hasMedia)
-                          return (
-                            <span key={i} className="media-day no-media" />
-                          );
+	                    <div className="month-media-grid">
+	                      {mediaGrid.map((item) => {
+	                        if ('empty' in item)
+	                          return (
+	                            <span key={item.key} className="media-day empty" />
+	                          );
+	                        if (!item.hasMedia)
+	                          return (
+	                            <span
+	                              key={item.key}
+	                              className="media-day no-media"
+	                            />
+	                          );
                         const status = item.post;
                         if (!status) return null;
                         const media = status.mediaAttachments?.[0];
@@ -1571,8 +1598,8 @@ function CalendarBar({
                         const fallbackSrc =
                           media.previewRemoteUrl || media.remoteUrl;
                         if (!mediaSrc) return null;
-                        return (
-                          <span key={i} className="media-day">
+	                        return (
+	                          <span key={item.key} className="media-day">
                             <img
                               src={mediaSrc}
                               loading="lazy"
@@ -1598,7 +1625,7 @@ function CalendarBar({
                   )
                 : heatmap.length > 0 && (
                     <div className="month-heatmap">
-                      {heatmap.map((dayData, i) => {
+	                      {heatmap.map((dayData) => {
                         const total = dayData.count || 0;
                         const dayOriginalRatio =
                           total > 0 ? dayData.original / total : 0;
@@ -1609,10 +1636,10 @@ function CalendarBar({
                         const dayBoostRatio =
                           total > 0 ? dayData.boost / total : 0;
 
-                        return (
-                          <span
-                            key={i}
-                            className={`heatmap-day ${dayData.day === null ? 'empty' : ''} ${i % 7 === 0 || i % 7 === 6 ? 'weekend' : ''}`}
+	                        return (
+	                          <span
+	                            key={dayData.key}
+	                            className={`heatmap-day ${dayData.day === null ? 'empty' : ''} ${dayData.cell % 7 === 0 || dayData.cell % 7 === 6 ? 'weekend' : ''}`}
                             data-ratio={dayData.ratio}
                             style={{
                               '--ratio': dayData.ratio,

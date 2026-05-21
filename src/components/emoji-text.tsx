@@ -127,14 +127,17 @@ const renderEmojiText = mem(
     if (!allEmojis.length) return text;
 
     const regex = shortcodesRegexp(allEmojis.map((e) => e.shortcode));
-    const elements = text.split(regex).map((word, index) => {
+    const shortcodeCounts = new Map<string, number>();
+    const elements = text.split(regex).map((word) => {
       const emoji = allEmojis.find((e) => e.shortcode === word);
 
       if (emoji) {
         const { url, staticUrl } = emoji;
+        const count = shortcodeCounts.get(word) ?? 0;
+        shortcodeCounts.set(word, count + 1);
         return (
           <CustomEmoji
-            key={`${word}-${index}`}
+            key={`${word}-${count}`}
             staticUrl={staticEmoji ? undefined : staticUrl}
             url={staticEmoji ? staticUrl || url : url}
             alt={word}

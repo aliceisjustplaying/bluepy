@@ -83,6 +83,7 @@ type SearchParamsSetter = (next: SearchParamsUpdater) => void;
 const LIMIT = 20;
 const MIN_YEAR = 1983;
 const MIN_YEAR_MONTH = `${MIN_YEAR}-01`; // Birth of the Internet
+const CURRENT_YEAR = new Date().getFullYear();
 
 function stateStatus<T extends mastodon.v1.Status>(
   status: T,
@@ -972,10 +973,7 @@ function MonthPicker(props: MonthPickerProps) {
     onInput = () => {},
   } = props;
   const [_year, _month] = value?.split('-') || [];
-  const [currentYearValue, setCurrentYearValue] = useState(MIN_YEAR);
-  useEffect(() => {
-    setCurrentYearValue(new Date().getFullYear());
-  }, []);
+  const currentYearValue = CURRENT_YEAR;
   const monthFieldRef = useRef<HTMLSelectElement | null>(null);
   const yearFieldRef = useRef<HTMLInputElement | null>(null);
 
