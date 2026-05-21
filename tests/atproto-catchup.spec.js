@@ -441,6 +441,13 @@ base(
     await expect(
       page.locator('[title="Quote Booster (@quote-booster.test)"]').first(),
     ).toBeVisible();
+    // The booster should be attributed exactly once, even if the boost
+    // wrapper is observed more than once during dedup.
+    await expect(
+      page.locator(
+        '.catchup-list [title="Quote Booster (@quote-booster.test)"]',
+      ),
+    ).toHaveCount(1);
   },
 );
 
