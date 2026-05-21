@@ -812,7 +812,7 @@ function Notification({
     return null;
   }
 
-  const debugHover = (e: React.MouseEvent<HTMLDivElement>) => {
+  const debugHover = (e: React.MouseEvent<HTMLElement>) => {
     if (e.shiftKey) {
       console.log({
         ...notification,
@@ -822,14 +822,11 @@ function Notification({
 
   return (
     // TODO(oxlint:jsx-a11y/no-noninteractive-tabindex): notification card
-    // is keyboard-focusable for j/k navigation and Shift+hover debug. There
-    // is no interactive ARIA role that fits "selectable feed item"; using
-    // `article` keeps the screen-reader landmark intact.
-    <div
+    // is keyboard-focusable for j/k navigation and Shift+hover debug.
+    <article
       className={`notification notification-${type}`}
       data-notification-id={_ids || id}
       data-group-key={_groupKeys?.join(' ') || groupKey}
-      role="article"
       tabIndex={0}
       onMouseEnter={debugHover}
     >
@@ -1121,7 +1118,7 @@ function Notification({
           </TruncatedLink>
         )}
       </div>
-    </div>
+    </article>
   );
 }
 

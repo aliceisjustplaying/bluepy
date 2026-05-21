@@ -519,7 +519,7 @@ function StatusParent(props: StatusParentProps) {
   return linkable ? (
     <Link className="status-link" to={to} onClick={onClick} {...restProps} />
   ) : (
-    <div className="status-focus" tabIndex={-1} role="article" {...restProps} />
+    <article className="status-focus" tabIndex={-1} {...restProps} />
   );
 }
 
@@ -2301,7 +2301,7 @@ function SubComments({
                 resetScrollPosition(r.id);
               }}
             > */}
-              <div className="status-focus" tabIndex={-1} role="article">
+              <article className="status-focus" tabIndex={-1}>
                 <Status
                   statusID={r.id}
                   instance={instance}
@@ -2321,7 +2321,7 @@ function SubComments({
                       </span>
                     </div>
                   )}
-              </div>
+              </article>
               {/* </Link> */}
               {!!r.replies?.length && (
                 <SubComments
