@@ -89,7 +89,7 @@ interface MockStatus {
   visibility: string;
   createdAt: string;
   // The remaining fields are required when the status is built fresh from
-  // MOCK_STATUS, but the reblog-wrapper branch in <Sandbox/> creates a new
+  // mockStatusFixture, but the reblog-wrapper branch in <Sandbox/> creates a new
   // mockStatus with only a subset, so we keep them optional to preserve the
   // original JS shape without inventing fields.
   content?: string;
@@ -113,7 +113,9 @@ interface MockStatus {
   [key: string]: unknown;
 }
 
-const MOCK_STATUS = ({ toggles }: { toggles?: Toggles } = {}): MockStatus => {
+const mockStatusFixture = ({
+  toggles,
+}: { toggles?: Toggles } = {}): MockStatus => {
   const resolvedToggles = toggles ?? {};
   console.log('toggles', toggles);
   const {
@@ -635,7 +637,7 @@ export default function Sandbox() {
   }, [currentInstance]);
 
   // Generate status with current toggle values and context
-  let mockStatus = MOCK_STATUS({
+  let mockStatus = mockStatusFixture({
     toggles: {
       loading: toggleState.loading,
       mediaFirst: toggleState.mediaFirst,
