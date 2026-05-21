@@ -86,15 +86,16 @@ function inputElement(element: Element | null): HTMLInputElement | null {
   return element instanceof HTMLInputElement ? element : null;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
 function hashtagShortcuts(value: unknown): HashtagShortcut[] {
   return Array.isArray(value)
     ? value.filter(
         (shortcut): shortcut is HashtagShortcut =>
-          typeof shortcut === 'object' &&
-          shortcut !== null &&
-          'type' in shortcut &&
+          isRecord(shortcut) &&
           shortcut.type === 'hashtag' &&
-          'hashtag' in shortcut &&
           typeof shortcut.hashtag === 'string',
       )
     : [];
