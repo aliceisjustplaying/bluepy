@@ -28,7 +28,9 @@ function MenuLink(props: MenuLinkProps) {
           assignFocusableAnchorRef(ref, node);
         };
         const { to, children, onClick, ...anchorProps } = restProps;
-        const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+        const closeMenuAfterAnchorClick = (
+          event: MouseEvent<HTMLAnchorElement>,
+        ) => {
           onClick?.(event);
           if (!event.defaultPrevented) {
             closeMenu(event.detail === 0 ? 'Enter' : undefined);
@@ -41,7 +43,7 @@ function MenuLink(props: MenuLinkProps) {
                 {...anchorProps}
                 to={to}
                 ref={setAnchorRef}
-                onClick={handleClick}
+                onClick={closeMenuAfterAnchorClick}
               >
                 {children}
               </Link>
@@ -50,7 +52,7 @@ function MenuLink(props: MenuLinkProps) {
                 href={href}
                 {...anchorProps}
                 ref={setAnchorRef}
-                onClick={handleClick}
+                onClick={closeMenuAfterAnchorClick}
               >
                 {children}
               </a>
