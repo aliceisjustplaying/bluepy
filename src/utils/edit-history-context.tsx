@@ -3,7 +3,7 @@ import { createContext } from 'react';
 import type { RefObject } from 'react';
 import { use, useCallback, useMemo, useRef, useState } from 'react';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 
 interface EditHistoryEntry {
   createdAt: string;
@@ -20,8 +20,20 @@ interface EditHistoryContextValue {
   nextEditedAt: () => void;
 }
 
+const EMPTY_EDIT_HISTORY: EditHistoryEntry[] = [];
+
+const defaultEditHistoryContext: EditHistoryContextValue = {
+  editHistoryRef: { current: EMPTY_EDIT_HISTORY },
+  initEditHistory: () => Promise.resolve(),
+  exitEditHistory: () => {},
+  editHistoryMode: false,
+  editedAtIndex: 0,
+  prevEditedAt: () => {},
+  nextEditedAt: () => {},
+};
+
 const EditHistoryContext = createContext<EditHistoryContextValue>(
-  {} as EditHistoryContextValue,
+  defaultEditHistoryContext,
 );
 
 const supportsViewTransition = !!document.startViewTransition;
@@ -58,11 +70,11 @@ export function EditHistoryProvider({
 
   const fetchEditHistory = useCallback(async () => {
     const { masto } = api();
-    const statuses = masto.v1.statuses as {
+    const statuses = getMastoV1Resource<{
       $select: (id: string) => {
         history: { list: () => Promise<EditHistoryEntry[]> };
       };
-    };
+    }>(masto, 'statuses');
     const history = await statuses.$select(statusID).history.list();
     // sort latest first
     history.sort(

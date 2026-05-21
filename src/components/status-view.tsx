@@ -32,6 +32,18 @@ import type {
 const EMPTY_MEDIA_ATTACHMENTS: AnyStatus['mediaAttachments'] = [];
 Object.freeze(EMPTY_MEDIA_ATTACHMENTS);
 
+function isAnyStatus(value: unknown): value is AnyStatus {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof value.id === 'string' &&
+    'account' in value &&
+    !!value.account &&
+    typeof value.account === 'object'
+  );
+}
+
 export interface StatusComponentProps {
   statusID?: string | null;
   status?: AnyStatus | null;
@@ -96,11 +108,10 @@ function StatusShell(props: StatusComponentProps) {
   const snapStates = useSnapshot(states);
   let status = propStatus;
   if (!status) {
-    status = ((sKeyMaybe ? snapStates.statuses[sKeyMaybe] : undefined) ||
-      (statusID ? snapStates.statuses[statusID] : undefined)) as
-      | AnyStatus
-      | null
-      | undefined;
+    const cachedStatus =
+      (sKeyMaybe ? snapStates.statuses[sKeyMaybe] : undefined) ||
+      (statusID ? snapStates.statuses[statusID] : undefined);
+    status = isAnyStatus(cachedStatus) ? cachedStatus : undefined;
     sKeyMaybe = statusKey(status?.id, instance);
   }
   if (!status || !sKeyMaybe) {
@@ -184,20 +195,13 @@ function StatusRouter({
   const directContext = withinContext || requestedSize === 'l';
 
   const filterContext = use(FilterContext);
-  // The short-circuited `&&` chain narrows to `false | FilterState`; in
-  // practice JS treated the boolean fall-through as a falsy value. The cast
-  // surfaces the FilterState shape for the optional property accesses below.
-  type FilterInfoShape = {
-    action: 'hide' | 'blur' | 'warn';
-    titles?: string[];
-    titlesStr?: string;
-  };
-  const filterInfo = (!isSelf &&
+  const filterInfo =
+    !isSelf &&
     ((!readOnly && !previewMode) || allowFilters) &&
-    isFiltered(filtered, filterContext as string)) as
-    | FilterInfoShape
-    | false
-    | undefined;
+    isFiltered(
+      filtered,
+      typeof filterContext === 'string' ? filterContext : '',
+    );
   // Narrowed accessor for `?.action` style reads — boolean fall-through is
   // treated as no filter at all (matches JS runtime).
   const filterInfoMaybe = filterInfo || undefined;
