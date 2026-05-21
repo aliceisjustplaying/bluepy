@@ -867,12 +867,12 @@ function StatusThread({
       }
 
       try {
-        const context = await contextFetch;
-        const { ancestors } = context;
         if (!heroStatus) {
           setUIState('error');
           return;
         }
+        const context = await contextFetch;
+        const { ancestors } = context;
         fullContext.current = { ...context, heroStatus };
         const restructured = restructureContext();
         if (!restructured) return;
