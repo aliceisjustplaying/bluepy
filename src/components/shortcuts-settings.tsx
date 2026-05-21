@@ -9,7 +9,7 @@ import {
   decompressFromEncodedURIComponent,
 } from 'lz-string';
 import type { Dispatch, HTMLAttributes, RefObject, SetStateAction } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import floatingButtonUrl from '../assets/floating-button.svg';
@@ -703,6 +703,30 @@ interface ShortcutFormProps {
 }
 
 type ListLike = Awaited<ReturnType<typeof getLists>>[number];
+interface ShortcutFormListState {
+  lists: ListLike[];
+  uiState: string;
+}
+
+type ShortcutFormListAction =
+  | { type: 'loading' }
+  | { type: 'success'; lists: ListLike[] }
+  | { type: 'error' };
+
+function shortcutFormListReducer(
+  state: ShortcutFormListState,
+  action: ShortcutFormListAction,
+): ShortcutFormListState {
+  switch (action.type) {
+    case 'loading':
+      return { ...state, uiState: 'loading' };
+    case 'success':
+      return { lists: action.lists, uiState: 'default' };
+    case 'error':
+      return { ...state, uiState: 'error' };
+  }
+  return state;
+}
 
 function ShortcutForm({
   onSubmit,
@@ -719,20 +743,21 @@ function ShortcutForm({
     shortcut?.type || null,
   );
 
-  const [uiState, setUIState] = useState('default');
-  const [lists, setLists] = useState<ListLike[]>([]);
+  const [{ lists, uiState }, dispatchListState] = useReducer(
+    shortcutFormListReducer,
+    { lists: [], uiState: 'default' },
+  );
   const { lists: userLists, feeds } = splitListsAndFeeds(lists);
   useEffect(() => {
     void (async () => {
       if (currentType !== 'list') return;
       try {
-        setUIState('loading');
+        dispatchListState({ type: 'loading' });
         const fetchedLists = await getLists();
-        setLists(fetchedLists);
-        setUIState('default');
+        dispatchListState({ type: 'success', lists: fetchedLists });
       } catch (e) {
         console.error(e);
-        setUIState('error');
+        dispatchListState({ type: 'error' });
       }
     })();
   }, [currentType]);
