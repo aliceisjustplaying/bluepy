@@ -92,7 +92,17 @@ interface StatusPostBodyProps {
   quotesCount?: number;
 }
 
-export default function StatusPostBody({
+export default function StatusPostBody(props: StatusPostBodyProps) {
+  const { t, i18n } = useLingui();
+  return renderStatusPostBody(props, {
+    quotesAlt: t`Quotes`,
+    readMoreLabel: i18n._(readMoreText),
+    repliesAlt: t`Replies`,
+  });
+}
+
+function renderStatusPostBody(
+  {
   mediaFirst,
   hasMediaAttachments,
   spoilerText,
@@ -147,10 +157,17 @@ export default function StatusPostBody({
   showQuoteCount,
   repliesCount = 0,
   quotesCount = 0,
-}: StatusPostBodyProps) {
-  const { t, i18n } = useLingui();
-  const _ = i18n._.bind(i18n);
-
+}: StatusPostBodyProps,
+  {
+    quotesAlt,
+    readMoreLabel,
+    repliesAlt,
+  }: {
+    quotesAlt: string;
+    readMoreLabel: string;
+    repliesAlt: string;
+  },
+) {
   return (
     <>
       <div
@@ -183,7 +200,7 @@ export default function StatusPostBody({
                     lang={language ?? undefined}
                     dir="auto"
                     ref={spoilerContentRef}
-                    data-read-more={_(readMoreText)}
+                    data-read-more={readMoreLabel}
                   >
                     <EmojiText text={spoilerText} emojis={emojis} />{' '}
                   </span>
@@ -221,7 +238,7 @@ export default function StatusPostBody({
                   lang={language ?? undefined}
                   dir="auto"
                   ref={spoilerContentRef}
-                  data-read-more={_(readMoreText)}
+                  data-read-more={readMoreLabel}
                 >
                   <p>
                     <EmojiText text={spoilerText} emojis={emojis} />
@@ -244,7 +261,7 @@ export default function StatusPostBody({
               <div
                 className="content"
                 ref={contentRef}
-                data-read-more={_(readMoreText)}
+                data-read-more={readMoreLabel}
                 inert={!!spoilerText && !showSpoiler ? true : undefined}
               >
                 <PostContent
@@ -380,12 +397,12 @@ export default function StatusPostBody({
         <div className="content-comment-hint insignificant">
           {!!showCommentCount && (
             <>
-              <Icon icon="comment2" alt={t`Replies`} /> {repliesCount}
+              <Icon icon="comment2" alt={repliesAlt} /> {repliesCount}
             </>
           )}{' '}
           {!!showQuoteCount && (
             <>
-              <Icon icon="quote" alt={t`Quotes`} /> {quotesCount}
+              <Icon icon="quote" alt={quotesAlt} /> {quotesCount}
             </>
           )}
         </div>
