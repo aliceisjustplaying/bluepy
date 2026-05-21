@@ -1,7 +1,6 @@
 import './quote-chain-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { Ref } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -14,7 +13,7 @@ import Link, { type LinkProps } from './link';
 import Loader from './loader';
 import type { AnyStatus, RenderStatus } from './status-types';
 
-type QuotedStatus = mastodon.v1.Status & {
+type QuotedStatus = AnyStatus & {
   quote?: {
     quotedStatusId?: string;
     quotedStatus?: { id?: string };
@@ -29,6 +28,10 @@ function TruncatedLink(props: LinkProps) {
   const { t } = useLingui();
   const ref = useTruncated() as Ref<HTMLAnchorElement>;
   return <Link {...props} data-read-more={t`Read more →`} ref={ref} />;
+}
+
+function isQuotedStatus(value: unknown): value is QuotedStatus {
+  return !!value && typeof value === 'object' && 'id' in value;
 }
 
 const FETCH_DELAY = 500; // Delay between fetches to avoid rate limiting
@@ -51,7 +54,7 @@ function QuoteChainStatus({
   renderStatus: RenderStatus;
 }) {
   return renderStatus({
-    status: post as AnyStatus,
+    status: post,
     instance,
     size: 's',
     readOnly: true,
@@ -113,9 +116,10 @@ export default function QuoteChainModal({
           break;
         }
 
-        let fullStatus = getStatus(currentPostID, instance) as
-          | QuotedStatus
-          | undefined;
+        const cachedStatus = getStatus(currentPostID, instance);
+        let fullStatus: QuotedStatus | undefined = isQuotedStatus(cachedStatus)
+          ? cachedStatus
+          : undefined;
         const cached = !!fullStatus;
 
         if (!cached) {
@@ -193,8 +197,9 @@ export default function QuoteChainModal({
                 to={instance ? `/${instance}/s/${post.id}` : `/s/${post.id}`}
                 className="status-link"
                 onContextMenu={(e: React.MouseEvent) => {
-                  const target = e.target as Element | null;
-                  const postEl = target?.querySelector('.status');
+                  const target = e.target;
+                  if (!(target instanceof Element)) return;
+                  const postEl = target.querySelector('.status');
                   if (postEl) {
                     if (e.metaKey) return;
                     e.preventDefault();
