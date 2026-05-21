@@ -242,13 +242,17 @@ function NotificationsMenu({
 
           // Update last read marker
           const markers = getMastoV1Resource<MarkerResource>(masto, "markers");
-          void markers
-            .create({
-              notifications: {
-                lastReadId: groupedNotifications[0].id,
-              },
-            })
-            .catch(() => {});
+          void (async () => {
+            try {
+              await markers.create({
+                notifications: {
+                  lastReadId: groupedNotifications[0].id,
+                },
+              });
+            } catch {
+              // Marker updates are best effort.
+            }
+          })();
         }
 
         states.notificationsShowNew = false;

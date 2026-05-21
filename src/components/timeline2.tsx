@@ -610,9 +610,13 @@ function Timeline2({
         loadItems();
       } else {
         // If from cache, check for updates
-        checkUpdates().catch((err: unknown) => {
-          console.error(err);
-        });
+        void (async () => {
+          try {
+            await checkUpdates();
+          } catch (err) {
+            console.error(err);
+          }
+        })();
       }
     }
   }, [loadItems, checkUpdates]);
@@ -633,9 +637,13 @@ function Timeline2({
       if (isVisible) {
         const timeDiff = Date.now() - (lastHiddenTime.current ?? 0);
         if (!lastHiddenTime.current || timeDiff > 1000 * 3) {
-          checkUpdates().catch((err: unknown) => {
-            console.error(err);
-          });
+          void (async () => {
+            try {
+              await checkUpdates();
+            } catch (err) {
+              console.error(err);
+            }
+          })();
         }
       } else {
         lastHiddenTime.current = Date.now();
@@ -647,9 +655,13 @@ function Timeline2({
 
   useInterval(
     () => {
-      checkUpdates().catch((err: unknown) => {
-        console.error(err);
-      });
+      void (async () => {
+        try {
+          await checkUpdates();
+        } catch (err) {
+          console.error(err);
+        }
+      })();
     },
     visible && !showNewer ? checkForUpdatesInterval : null,
   );
