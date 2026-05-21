@@ -313,7 +313,7 @@ function QrScannerModal({
 
         // Start scanning loop when video plays (following demo pattern)
         video = videoRef.current ?? undefined;
-        if (video) {
+        if (!cancelled && video) {
           video.addEventListener('loadedmetadata', handleLoadedMetadata);
           video.addEventListener('play', handlePlay);
         }

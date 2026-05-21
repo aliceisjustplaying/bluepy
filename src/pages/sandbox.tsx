@@ -1,6 +1,6 @@
 import './sandbox.css';
 
-import type { ComponentType, SyntheticEvent } from 'react';
+import type { SyntheticEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { uid } from 'uid/single';
 
@@ -9,42 +9,37 @@ import testPreviewURL from '../assets/sandbox/big-buck-bunny-preview.png';
 import testAudioURL from '../assets/sandbox/big-buck-bunny.mp3';
 import testVideoURL from '../assets/sandbox/big-buck-bunny.webm';
 
-import UntypedStatus, { type StatusComponentProps } from '../components/status';
+import Status from '../components/status-proxy';
 import { api, getPreferences } from '../utils/api';
 import FilterContext from '../utils/filter-context';
 import states, { statusKey } from '../utils/states';
 import store from '../utils/store';
 import useTitle from '../utils/useTitle';
 
-type SandboxStatusComponentProps = Omit<
-  StatusComponentProps,
-  'status' | 'onMediaClick'
-> & {
-  status?: MockStatus;
-  onMediaClick?: (
-    e: React.SyntheticEvent,
-    i: number,
-    media: unknown,
-    status: { mediaAttachments?: unknown[] },
-  ) => void;
-};
-
-const Status = UntypedStatus as ComponentType<SandboxStatusComponentProps>;
-
 type UnknownRecord = Record<string, unknown>;
 
 function stringifyPrimitive(value: unknown): string {
-  return String(
-    value as string | number | boolean | symbol | bigint | null | undefined,
-  );
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'boolean') return String(value);
+  if (typeof value === 'bigint') return String(value);
+  if (typeof value === 'symbol') return String(value);
+  if (value === null || value === undefined) return String(value);
+  return '';
+}
+
+function isUnknownRecord(value: unknown): value is UnknownRecord {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
 function hashID(obj: unknown): string {
   if (!obj) return '';
   if (typeof obj !== 'object') return stringifyPrimitive(obj);
-  return Object.entries(obj as UnknownRecord)
+  if (Array.isArray(obj)) return `[${obj.map(hashID).join(',')}]`;
+  if (!isUnknownRecord(obj)) return stringifyPrimitive(obj);
+  return Object.entries(obj)
     .map(([k, v]) =>
-      typeof v === 'object' && v !== null && !Array.isArray(v)
+      typeof v === 'object' && v !== null
         ? `${k}:${hashID(v)}`
         : `${k}:${stringifyPrimitive(v)}`,
     )
@@ -118,9 +113,8 @@ interface MockStatus {
   [key: string]: unknown;
 }
 
-const MOCK_STATUS = ({
-  toggles = {} as Toggles,
-}: { toggles?: Toggles } = {}): MockStatus => {
+const MOCK_STATUS = ({ toggles }: { toggles?: Toggles } = {}): MockStatus => {
+  const resolvedToggles = toggles ?? {};
   console.log('toggles', toggles);
   const {
     contentType,
@@ -137,7 +131,7 @@ const MOCK_STATUS = ({
     showTags,
     tagsCount,
     deleted,
-  } = toggles;
+  } = resolvedToggles;
 
   const shortContent = 'This is a test status with short text content.';
   const longContent = `<p>This is a test status with long text content. It contains multiple paragraphs and spans several lines to demonstrate how longer content appears.</p>
@@ -190,7 +184,7 @@ const MOCK_STATUS = ({
                       ? mathContent
                       : shortContent
         : '',
-    visibility: toggles.visibility || 'public',
+    visibility: resolvedToggles.visibility || 'public',
     createdAt: new Date().toISOString(),
     reblogsCount: 0,
     favouritesCount: 0,
@@ -211,7 +205,7 @@ const MOCK_STATUS = ({
     base.mediaAttachments = Array(parseInt(mediaCount, 10))
       .fill(0)
       .map((_, i) => {
-        const mediaType = toggles.mediaTypes?.[i] || 'image';
+        const mediaType = resolvedToggles.mediaTypes?.[i] || 'image';
 
         // Configure media based on type
         const mediaConfig: MediaConfig = {
@@ -498,6 +492,36 @@ const INITIAL_STATE: ToggleState = {
   tagsCount: 'few', // New option for tags count: 'few' (3) or 'many' (10)
   deleted: false, // Toggle to mark status as deleted
 };
+const INITIAL_STATE_KEYS: Array<keyof ToggleState> = [
+  'loading',
+  'mediaFirst',
+  'hasContent',
+  'contentType',
+  'visibility',
+  'hasSpoiler',
+  'spoilerType',
+  'mediaCount',
+  'mediaTypes',
+  'pollCount',
+  'pollMultiple',
+  'pollExpired',
+  'pollVoted',
+  'showCard',
+  'showQuotes',
+  'quotesCount',
+  'quoteNestingLevel',
+  'quoteState',
+  'size',
+  'filters',
+  'quoteFilters',
+  'mediaPreference',
+  'expandWarnings',
+  'contextType',
+  'displayStyle',
+  'showTags',
+  'tagsCount',
+  'deleted',
+];
 
 export default function Sandbox() {
   useTitle('Sandbox', '/_sandbox');
@@ -536,22 +560,28 @@ export default function Sandbox() {
     });
 
     // Create a backup of the original method
-    const originalGet = store.account.get.bind(store.account);
+    const originalGet: typeof store.account.get = store.account.get.bind(
+      store.account,
+    );
 
     // Stub the store.account.get method to return our custom preferences
-    const stubbedGet = ((key: string): unknown => {
+    const stubbedGet: typeof store.account.get = <Result = unknown>(
+      key: string,
+      revive?: (value: unknown) => Result,
+    ): Result | null => {
       if (key === 'preferences') {
         console.log('Preferences requested, returning:', {
           'reading:expand:media': toggleState.mediaPreference,
           'reading:expand:spoilers': toggleState.expandWarnings,
         });
-        return {
+        const preferences = {
           'reading:expand:media': toggleState.mediaPreference,
           'reading:expand:spoilers': toggleState.expandWarnings,
         };
+        return revive ? revive(preferences) : (preferences as Result);
       }
-      return originalGet.call(store.account, key);
-    }) as typeof store.account.get;
+      return originalGet(key, revive);
+    };
     store.account.get = stubbedGet;
 
     // Clear the getPreferences cache to ensure our new preferences are used
@@ -953,17 +983,15 @@ export default function Sandbox() {
 
   // Function to check if the current state is different from the initial state
   const hasChanges = () => {
-    return (Object.keys(INITIAL_STATE) as Array<keyof ToggleState>).some(
-      (key) => {
-        const initial = INITIAL_STATE[key];
-        const current = toggleState[key];
-        if (Array.isArray(initial) && Array.isArray(current)) {
-          if (initial.length !== current.length) return true;
-          return initial.some((val, i) => val !== current[i]);
-        }
-        return initial !== current;
-      },
-    );
+    return INITIAL_STATE_KEYS.some((key) => {
+      const initial = INITIAL_STATE[key];
+      const current = toggleState[key];
+      if (Array.isArray(initial) && Array.isArray(current)) {
+        if (initial.length !== current.length) return true;
+        return initial.some((val, i) => val !== current[i]);
+      }
+      return initial !== current;
+    });
   };
 
   // Function to reset state to initial values
@@ -988,7 +1016,7 @@ export default function Sandbox() {
       <div
         className={`sandbox-preview ${toggleState.displayStyle}`}
         onClickCapture={(e: React.MouseEvent<HTMLDivElement>) => {
-          const target = e.target as Element | null;
+          const target = e.target instanceof Element ? e.target : null;
           const isAllowed = target?.closest(
             '.media, .media-caption, .spoiler-button, .spoiler-media-button, .math-block button, .status-card-unfulfilled button, .poll .poll-results-button, .poll .poll-hide-results-button, .poll-options .poll-option',
           );
