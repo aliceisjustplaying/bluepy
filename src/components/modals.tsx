@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro';
 import { useEffect } from 'react';
 import { useLocation, type Location } from 'react-router-dom';
-import { subscribe, useSnapshot } from 'valtio';
+import { subscribe, type Snapshot, useSnapshot } from 'valtio';
 
 import Accounts from '../pages/accounts';
 import Settings from '../pages/settings';
@@ -46,6 +46,7 @@ function MediaModal(props: {
 // to `Payload` (loose record) at the read site rather than introducing many
 // narrow interfaces.
 type Payload = Record<string, unknown>;
+type StatesSnapshot = Snapshot<typeof states>;
 const p = (v: unknown): Payload =>
   v !== null && typeof v === 'object' ? Object.fromEntries(Object.entries(v)) : {};
 const str = (value: unknown): string | undefined =>
@@ -155,10 +156,488 @@ subscribe(states, (changes) => {
   }
 });
 
-export default function Modals() {
+function ComposeModal({
+  composerState,
+  showCompose,
+}: {
+  composerState: Payload;
+  showCompose: unknown;
+}) {
   const { t } = useLingui();
-  const snapStates = useSnapshot(states);
   const location = useLocation();
+
+  const composePayload = p(Reflect.get(window, '__COMPOSE__'));
+  const sharedData = Reflect.get(window, '__SHARED_DATA__') || null;
+
+  return (
+    <Modal
+      className={`solid ${composerState.minimized ? 'min' : ''}`}
+      minimized={!!composerState.minimized}
+    >
+      <ComposeSuspense
+        replyToStatus={
+          typeof showCompose !== 'boolean'
+            ? p(showCompose).replyToStatus
+            : composePayload.replyToStatus || null
+        }
+        editStatus={
+          p(states.showCompose).editStatus || composePayload.editStatus || null
+        }
+        draftStatus={
+          p(states.showCompose).draftStatus || composePayload.draftStatus || null
+        }
+        quoteStatus={
+          p(states.showCompose).quoteStatus || composePayload.quoteStatus || null
+        }
+        sharedData={sharedData}
+        onClose={(results: Payload | undefined) => {
+          const resultPayload = p(results);
+          const newStatus = p(resultPayload.newStatus);
+          const instance = str(resultPayload.instance);
+          const resultType = str(resultPayload.type);
+          const type =
+            resultType === 'reply' || resultType === 'edit'
+              ? resultType
+              : 'post';
+          const newStatusId = str(newStatus.id);
+          states.showCompose = false;
+          Reflect.set(window, '__COMPOSE__', null);
+          Reflect.set(window, '__SHARED_DATA__', null);
+          if (newStatusId) {
+            states.reloadStatusPage++;
+            const toastText = {
+              post: t`Post published. Check it out.`,
+              reply: t`Reply posted. Check it out.`,
+              edit: t`Post updated. Check it out.`,
+            }[type || 'post'];
+            showToast({
+              text: toastText,
+              delay: 1000,
+              duration: 10_000, // 10 seconds
+              onClick: (toast: { hideToast: () => void }) => {
+                toast.hideToast();
+                states.prevLocation = toPrevLocation(location);
+                navigatePath(
+                  canonicalizeAppPath(
+                    instance
+                      ? `/${instance}/s/${newStatusId}`
+                      : `/s/${newStatusId}`,
+                  ),
+                );
+              },
+            });
+          }
+        }}
+      />
+    </Modal>
+  );
+}
+
+function SettingsModal() {
+  return (
+    <Modal
+      onClose={() => {
+        states.showSettings = false;
+      }}
+    >
+      <Settings
+        onClose={() => {
+          states.showSettings = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function AccountsModal() {
+  return (
+    <Modal
+      onClose={() => {
+        states.showAccounts = false;
+      }}
+    >
+      <Accounts
+        onClose={() => {
+          states.showAccounts = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function AccountModal({ showAccount }: { showAccount: unknown }) {
+  const showAccountPayload = p(showAccount);
+  const showAccountValue = accountSheetAccount(
+    showAccountPayload.account || showAccount,
+  );
+
+  if (!showAccountValue) return null;
+
+  return (
+    <Modal
+      onClose={() => {
+        states.showAccount = false;
+      }}
+    >
+      <AccountSheet
+        account={showAccountValue}
+        instance={str(showAccountPayload.instance)}
+        onClose={() => {
+          states.showAccount = false;
+          // states.showGenericAccounts = false;
+          // if (destination) {
+          //   states.showAccounts = false;
+          // }
+        }}
+      />
+    </Modal>
+  );
+}
+
+function OpenLinkModal({ showOpenLink }: { showOpenLink: unknown }) {
+  const showOpenLinkPayload = p(showOpenLink);
+
+  return (
+    <Modal
+      onClose={() => {
+        states.showOpenLink = false;
+      }}
+    >
+      <OpenLinkSheet
+        url={strRequired(showOpenLinkPayload.url)}
+        linkText={str(showOpenLinkPayload.linkText)}
+        onClose={() => {
+          states.showOpenLink = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function DraftsModal() {
+  return (
+    <Modal
+      onClose={() => {
+        states.showDrafts = false;
+      }}
+    >
+      <Drafts
+        onClose={() => {
+          states.showDrafts = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function ActiveMediaModal({ showMediaModal }: { showMediaModal: unknown }) {
+  const showMediaModalPayload = p(showMediaModal);
+
+  return (
+    <Modal
+      onClick={(e) => {
+        const { target } = e;
+        if (
+          target === e.currentTarget ||
+          (target instanceof HTMLElement && target.classList.contains('media'))
+        ) {
+          states.showMediaModal = false;
+        }
+      }}
+    >
+      <MediaModal
+        mediaAttachments={showMediaModalPayload.mediaAttachments}
+        instance={str(showMediaModalPayload.instance)}
+        index={num(showMediaModalPayload.mediaIndex)}
+        statusID={strRequired(showMediaModalPayload.statusID)}
+        onClose={() => {
+          states.showMediaModal = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function ShortcutsSettingsModal() {
+  return (
+    <Modal
+      onClose={() => {
+        states.showShortcutsSettings = false;
+      }}
+    >
+      <ShortcutsSettings
+        onClose={() => {
+          states.showShortcutsSettings = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function GenericAccountsModal({
+  showGenericAccounts,
+}: {
+  showGenericAccounts: unknown;
+}) {
+  const showGenericAccountsPayload = p(showGenericAccounts);
+
+  return (
+    <Modal
+      onClose={() => {
+        states.showGenericAccounts = false;
+      }}
+    >
+      <GenericAccounts
+        instance={str(showGenericAccountsPayload.instance)}
+        excludeRelationshipAttrs={stringArray(
+          showGenericAccountsPayload.excludeRelationshipAttrs,
+        )}
+        postID={str(showGenericAccountsPayload.postID)}
+        onClose={() => {
+          states.showGenericAccounts = false;
+        }}
+        blankCopy={str(showGenericAccountsPayload.blankCopy)}
+      />
+    </Modal>
+  );
+}
+
+function MediaAltModalView({ showMediaAlt }: { showMediaAlt: unknown }) {
+  const showMediaAltPayload = p(showMediaAlt);
+
+  return (
+    <Modal
+      onClose={() => {
+        states.showMediaAlt = false;
+      }}
+    >
+      <MediaAltModal
+        alt={str(showMediaAltPayload.alt) || strRequired(showMediaAlt)}
+        lang={str(showMediaAltPayload.lang)}
+        onClose={() => {
+          states.showMediaAlt = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function EmbedModalView({ showEmbedModal }: { showEmbedModal: unknown }) {
+  const showEmbedModalPayload = p(showEmbedModal);
+
+  return (
+    <Modal
+      className="solid"
+      onClose={() => {
+        states.showEmbedModal = false;
+      }}
+    >
+      <EmbedModal
+        html={str(showEmbedModalPayload.html)}
+        url={str(showEmbedModalPayload.url)}
+        iframeUrl={str(showEmbedModalPayload.iframeUrl)}
+        title={str(showEmbedModalPayload.title)}
+        width={strOrNum(showEmbedModalPayload.width)}
+        height={strOrNum(showEmbedModalPayload.height)}
+        onClose={() => {
+          states.showEmbedModal = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function FeedbackModalView({
+  showFeedbackModal,
+}: {
+  showFeedbackModal: unknown;
+}) {
+  return (
+    <Modal
+      onClose={() => {
+        states.showFeedbackModal = false;
+      }}
+    >
+      <FeedbackModal
+        defaultMessage={str(p(showFeedbackModal).defaultMessage)}
+        onClose={() => {
+          states.showFeedbackModal = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function ActiveReportModal({ showReportModal }: { showReportModal: unknown }) {
+  const reportPayload = p(showReportModal);
+  const reportAccountValue = reportAccount(reportPayload.account);
+  const reportPostValue = reportPost(reportPayload.post);
+
+  if (!reportAccountValue) return null;
+
+  return (
+    <Modal
+      onClose={() => {
+        states.showReportModal = false;
+      }}
+    >
+      <ReportModal
+        account={reportAccountValue}
+        post={reportPostValue}
+        onClose={() => {
+          states.showReportModal = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function QrCodeModalView({ showQrCodeModal }: { showQrCodeModal: unknown }) {
+  const showQrCodeModalPayload = p(showQrCodeModal);
+
+  return (
+    <Modal
+      className="solid"
+      onClose={() => {
+        states.showQrCodeModal = false;
+      }}
+    >
+      <QrCodeModal
+        text={strRequired(showQrCodeModalPayload.text)}
+        arena={str(showQrCodeModalPayload.arena)}
+        backgroundMask={str(showQrCodeModalPayload.backgroundMask)}
+        caption={str(showQrCodeModalPayload.caption)}
+        onClose={() => {
+          states.showQrCodeModal = false;
+        }}
+        onScannerClick={noArgFn(showQrCodeModalPayload.onScannerClick)}
+      />
+    </Modal>
+  );
+}
+
+function QrScannerModalView({
+  showQrScannerModal,
+}: {
+  showQrScannerModal: unknown;
+}) {
+  const showQrScannerModalPayload = p(showQrScannerModal);
+
+  return (
+    <Modal
+      className="solid"
+      onClose={() => {
+        states.showQrScannerModal = false;
+      }}
+    >
+      <QrScannerModal
+        checkValidity={textValidator(showQrScannerModalPayload.checkValidity)}
+        actionableText={str(showQrScannerModalPayload.actionableText)}
+        onClose={(arg?: { text: string } | MouseEvent) => {
+          const onClose = scannerClose(showQrScannerModalPayload.onClose);
+          if (onClose) {
+            onClose(arg);
+          }
+          states.showQrScannerModal = false;
+        }}
+      />
+    </Modal>
+  );
+}
+
+function ImportExportAccountsModal({
+  showImportExportAccounts,
+}: {
+  showImportExportAccounts: unknown;
+}) {
+  return (
+    <Modal
+      onClose={() => {
+        states.showImportExportAccounts = false;
+      }}
+    >
+      <ImportExportAccounts
+        onClose={() => {
+          states.showImportExportAccounts = false;
+        }}
+        exportDisabled={
+          typeof showImportExportAccounts === 'object'
+            ? bool(p(showImportExportAccounts).exportDisabled)
+            : false
+        }
+      />
+    </Modal>
+  );
+}
+
+function OrderedModals({
+  isLoggedIn,
+  snapStates,
+}: {
+  isLoggedIn: boolean;
+  snapStates: StatesSnapshot;
+}) {
+  const composerState = p(snapStates.composerState);
+
+  return (
+    <>
+      {isLoggedIn && !!snapStates.showCompose && (
+        <ComposeModal
+          composerState={composerState}
+          showCompose={snapStates.showCompose}
+        />
+      )}
+      {isLoggedIn && !!snapStates.showSettings && <SettingsModal />}
+      {isLoggedIn && !!snapStates.showAccounts && <AccountsModal />}
+      {!!snapStates.showAccount && (
+        <AccountModal showAccount={snapStates.showAccount} />
+      )}
+      {!!snapStates.showOpenLink && (
+        <OpenLinkModal showOpenLink={snapStates.showOpenLink} />
+      )}
+      {isLoggedIn && !!snapStates.showDrafts && <DraftsModal />}
+      {!!snapStates.showMediaModal && (
+        <ActiveMediaModal showMediaModal={snapStates.showMediaModal} />
+      )}
+      {isLoggedIn && !!snapStates.showShortcutsSettings && (
+        <ShortcutsSettingsModal />
+      )}
+      {!!snapStates.showGenericAccounts && (
+        <GenericAccountsModal
+          showGenericAccounts={snapStates.showGenericAccounts}
+        />
+      )}
+      {!!snapStates.showMediaAlt && (
+        <MediaAltModalView showMediaAlt={snapStates.showMediaAlt} />
+      )}
+      {!!snapStates.showEmbedModal && (
+        <EmbedModalView showEmbedModal={snapStates.showEmbedModal} />
+      )}
+      {!!snapStates.showFeedbackModal && (
+        <FeedbackModalView showFeedbackModal={snapStates.showFeedbackModal} />
+      )}
+      {isLoggedIn && !!snapStates.showReportModal && (
+        <ActiveReportModal showReportModal={snapStates.showReportModal} />
+      )}
+      {!!snapStates.showQrCodeModal && (
+        <QrCodeModalView showQrCodeModal={snapStates.showQrCodeModal} />
+      )}
+      {!!snapStates.showQrScannerModal && (
+        <QrScannerModalView
+          showQrScannerModal={snapStates.showQrScannerModal}
+        />
+      )}
+      {isLoggedIn && !!snapStates.showImportExportAccounts && (
+        <ImportExportAccountsModal
+          showImportExportAccounts={snapStates.showImportExportAccounts}
+        />
+      )}
+    </>
+  );
+}
+
+export default function Modals() {
+  const snapStates = useSnapshot(states);
   const isLoggedIn = useAuth();
 
   useEffect(() => {
@@ -170,348 +649,9 @@ export default function Modals() {
     };
   }, []);
 
-  const composerState = p(snapStates.composerState);
-  const composePayload = p(Reflect.get(window, '__COMPOSE__'));
-  const sharedData = Reflect.get(window, '__SHARED_DATA__') || null;
-  const showAccountPayload = p(snapStates.showAccount);
-  const showAccountValue = accountSheetAccount(
-    showAccountPayload.account || snapStates.showAccount,
-  );
-  const reportPayload = p(snapStates.showReportModal);
-  const reportAccountValue = reportAccount(reportPayload.account);
-  const reportPostValue = reportPost(reportPayload.post);
-
   return (
     <>
-      {isLoggedIn && !!snapStates.showCompose && (
-        <Modal
-          className={`solid ${composerState.minimized ? 'min' : ''}`}
-          minimized={!!composerState.minimized}
-        >
-          <ComposeSuspense
-            replyToStatus={
-              typeof snapStates.showCompose !== 'boolean'
-                ? p(snapStates.showCompose).replyToStatus
-                : composePayload.replyToStatus || null
-            }
-            editStatus={
-              p(states.showCompose).editStatus || composePayload.editStatus || null
-            }
-            draftStatus={
-              p(states.showCompose).draftStatus ||
-              composePayload.draftStatus ||
-              null
-            }
-            quoteStatus={
-              p(states.showCompose).quoteStatus ||
-              composePayload.quoteStatus ||
-              null
-            }
-            sharedData={sharedData}
-            onClose={(results: Payload | undefined) => {
-              const resultPayload = p(results);
-              const newStatus = p(resultPayload.newStatus);
-              const instance = str(resultPayload.instance);
-              const resultType = str(resultPayload.type);
-              const type =
-                resultType === 'reply' || resultType === 'edit'
-                  ? resultType
-                  : 'post';
-              const newStatusId = str(newStatus.id);
-              states.showCompose = false;
-              Reflect.set(window, '__COMPOSE__', null);
-              Reflect.set(window, '__SHARED_DATA__', null);
-              if (newStatusId) {
-                states.reloadStatusPage++;
-                const toastText = {
-                  post: t`Post published. Check it out.`,
-                  reply: t`Reply posted. Check it out.`,
-                  edit: t`Post updated. Check it out.`,
-                }[type || 'post'];
-                showToast({
-                  text: toastText,
-                  delay: 1000,
-                  duration: 10_000, // 10 seconds
-                  onClick: (toast: { hideToast: () => void }) => {
-                    toast.hideToast();
-                    states.prevLocation = toPrevLocation(location);
-                    navigatePath(
-                      canonicalizeAppPath(
-                        instance
-                          ? `/${instance}/s/${newStatusId}`
-                          : `/s/${newStatusId}`,
-                      ),
-                    );
-                  },
-                });
-              }
-            }}
-          />
-        </Modal>
-      )}
-      {isLoggedIn && !!snapStates.showSettings && (
-        <Modal
-          onClose={() => {
-            states.showSettings = false;
-          }}
-        >
-          <Settings
-            onClose={() => {
-              states.showSettings = false;
-            }}
-          />
-        </Modal>
-      )}
-      {isLoggedIn && !!snapStates.showAccounts && (
-        <Modal
-          onClose={() => {
-            states.showAccounts = false;
-          }}
-        >
-          <Accounts
-            onClose={() => {
-              states.showAccounts = false;
-            }}
-          />
-        </Modal>
-      )}
-      {!!snapStates.showAccount && showAccountValue && (
-        <Modal
-          onClose={() => {
-            states.showAccount = false;
-          }}
-        >
-          <AccountSheet
-            account={showAccountValue}
-            instance={str(showAccountPayload.instance)}
-            onClose={() => {
-              states.showAccount = false;
-              // states.showGenericAccounts = false;
-              // if (destination) {
-              //   states.showAccounts = false;
-              // }
-            }}
-          />
-        </Modal>
-      )}
-      {!!snapStates.showOpenLink && (
-        <Modal
-          onClose={() => {
-            states.showOpenLink = false;
-          }}
-        >
-          <OpenLinkSheet
-            url={strRequired(p(snapStates.showOpenLink).url)}
-            linkText={str(p(snapStates.showOpenLink).linkText)}
-            onClose={() => {
-              states.showOpenLink = false;
-            }}
-          />
-        </Modal>
-      )}
-      {isLoggedIn && !!snapStates.showDrafts && (
-        <Modal
-          onClose={() => {
-            states.showDrafts = false;
-          }}
-        >
-          <Drafts
-            onClose={() => {
-              states.showDrafts = false;
-            }}
-          />
-        </Modal>
-      )}
-      {!!snapStates.showMediaModal && (
-        <Modal
-          onClick={(e) => {
-            const { target } = e;
-            if (
-              target === e.currentTarget ||
-              (target instanceof HTMLElement &&
-                target.classList.contains('media'))
-            ) {
-              states.showMediaModal = false;
-            }
-          }}
-        >
-          <MediaModal
-            mediaAttachments={p(snapStates.showMediaModal).mediaAttachments}
-            instance={str(p(snapStates.showMediaModal).instance)}
-            index={num(p(snapStates.showMediaModal).mediaIndex)}
-            statusID={strRequired(p(snapStates.showMediaModal).statusID)}
-            onClose={() => {
-              states.showMediaModal = false;
-            }}
-          />
-        </Modal>
-      )}
-      {isLoggedIn && !!snapStates.showShortcutsSettings && (
-        <Modal
-          onClose={() => {
-            states.showShortcutsSettings = false;
-          }}
-        >
-          <ShortcutsSettings
-            onClose={() => {
-              states.showShortcutsSettings = false;
-            }}
-          />
-        </Modal>
-      )}
-      {!!snapStates.showGenericAccounts && (
-        <Modal
-          onClose={() => {
-            states.showGenericAccounts = false;
-          }}
-        >
-          <GenericAccounts
-            instance={str(p(snapStates.showGenericAccounts).instance)}
-            excludeRelationshipAttrs={
-              stringArray(
-                p(snapStates.showGenericAccounts).excludeRelationshipAttrs,
-              )
-            }
-            postID={str(p(snapStates.showGenericAccounts).postID)}
-            onClose={() => {
-              states.showGenericAccounts = false;
-            }}
-            blankCopy={str(p(snapStates.showGenericAccounts).blankCopy)}
-          />
-        </Modal>
-      )}
-      {!!snapStates.showMediaAlt && (
-        <Modal
-          onClose={() => {
-            states.showMediaAlt = false;
-          }}
-        >
-          <MediaAltModal
-            alt={
-              str(p(snapStates.showMediaAlt).alt) ||
-              strRequired(snapStates.showMediaAlt)
-            }
-            lang={str(p(snapStates.showMediaAlt).lang)}
-            onClose={() => {
-              states.showMediaAlt = false;
-            }}
-          />
-        </Modal>
-      )}
-      {!!snapStates.showEmbedModal && (
-        <Modal
-          className="solid"
-          onClose={() => {
-            states.showEmbedModal = false;
-          }}
-        >
-          <EmbedModal
-            html={str(p(snapStates.showEmbedModal).html)}
-            url={str(p(snapStates.showEmbedModal).url)}
-            iframeUrl={str(p(snapStates.showEmbedModal).iframeUrl)}
-            title={str(p(snapStates.showEmbedModal).title)}
-            width={strOrNum(p(snapStates.showEmbedModal).width)}
-            height={strOrNum(p(snapStates.showEmbedModal).height)}
-            onClose={() => {
-              states.showEmbedModal = false;
-            }}
-          />
-        </Modal>
-      )}
-      {!!snapStates.showFeedbackModal && (
-        <Modal
-          onClose={() => {
-            states.showFeedbackModal = false;
-          }}
-        >
-          <FeedbackModal
-            defaultMessage={str(p(snapStates.showFeedbackModal).defaultMessage)}
-            onClose={() => {
-              states.showFeedbackModal = false;
-            }}
-          />
-        </Modal>
-      )}
-      {isLoggedIn && !!snapStates.showReportModal && reportAccountValue && (
-        <Modal
-          onClose={() => {
-            states.showReportModal = false;
-          }}
-        >
-          <ReportModal
-            account={reportAccountValue}
-            post={reportPostValue}
-            onClose={() => {
-              states.showReportModal = false;
-            }}
-          />
-        </Modal>
-      )}
-      {!!snapStates.showQrCodeModal && (
-        <Modal
-          className="solid"
-          onClose={() => {
-            states.showQrCodeModal = false;
-          }}
-        >
-          <QrCodeModal
-            text={strRequired(p(snapStates.showQrCodeModal).text)}
-            arena={str(p(snapStates.showQrCodeModal).arena)}
-            backgroundMask={str(p(snapStates.showQrCodeModal).backgroundMask)}
-            caption={str(p(snapStates.showQrCodeModal).caption)}
-            onClose={() => {
-              states.showQrCodeModal = false;
-            }}
-            onScannerClick={
-              noArgFn(p(snapStates.showQrCodeModal).onScannerClick)
-            }
-          />
-        </Modal>
-      )}
-      {!!snapStates.showQrScannerModal && (
-        <Modal
-          className="solid"
-          onClose={() => {
-            states.showQrScannerModal = false;
-          }}
-        >
-          <QrScannerModal
-            checkValidity={
-              textValidator(p(snapStates.showQrScannerModal).checkValidity)
-            }
-            actionableText={str(
-              p(snapStates.showQrScannerModal).actionableText,
-            )}
-            onClose={(arg?: { text: string } | MouseEvent) => {
-              const onClose = scannerClose(
-                p(snapStates.showQrScannerModal).onClose,
-              );
-              if (onClose) {
-                onClose(arg);
-              }
-              states.showQrScannerModal = false;
-            }}
-          />
-        </Modal>
-      )}
-      {isLoggedIn && !!snapStates.showImportExportAccounts && (
-        <Modal
-          onClose={() => {
-            states.showImportExportAccounts = false;
-          }}
-        >
-          <ImportExportAccounts
-            onClose={() => {
-              states.showImportExportAccounts = false;
-            }}
-            exportDisabled={
-              typeof snapStates.showImportExportAccounts === 'object'
-                ? bool(p(snapStates.showImportExportAccounts).exportDisabled)
-                : false
-            }
-          />
-        </Modal>
-      )}
+      <OrderedModals isLoggedIn={isLoggedIn} snapStates={snapStates} />
     </>
   );
 }

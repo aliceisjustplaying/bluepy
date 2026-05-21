@@ -154,12 +154,301 @@ function keyFor(
   return `${i}-${id ?? ''}-${stringifyKeyPart(title)}-${stringifyKeyPart(subtitle)}-${path ?? ''}`;
 }
 
-function Shortcuts() {
-  const { t } = useLingui();
+function useFormattedShortcuts(shortcuts: readonly unknown[]) {
   const { i18n } = useLinguiCore();
   const { instance } = api();
+  const formattedShortcuts: FormattedShortcut[] = [];
+  const shortcutPins = Array.isArray(shortcuts)
+    ? shortcuts.filter(isShortcutPin)
+    : [];
+  shortcutPins.forEach((pin, i) => {
+    const { type, ...data } = pin;
+    const meta = type ? SHORTCUTS_META[type] : undefined;
+    if (!type || !meta) return;
+    const shortcutData: ShortcutMetaInput = data;
+    const pathData: ShortcutMetaInput = {
+      ...data,
+      instance: data.instance || instance,
+    };
+    const id = resolveMetaValue(meta.id, shortcutData, i);
+    const path = resolveMetaValue(meta.path, pathData, i);
+    let title = resolveMetaValue(meta.title, shortcutData, i);
+    let subtitle = resolveMetaValue(meta.subtitle, shortcutData, i);
+    const icon = resolveMetaValue(meta.icon, shortcutData, i);
+    const altIcon = resolveMetaValue(meta.altIcon, shortcutData, i);
+
+    if (isMessageDescriptor(title)) {
+      title = i18n._(title);
+    }
+    if (isMessageDescriptor(subtitle)) {
+      subtitle = i18n._(subtitle);
+    }
+
+    formattedShortcuts.push({
+      id,
+      path,
+      title,
+      subtitle,
+      icon,
+      altIcon,
+    });
+  });
+
+  return formattedShortcuts;
+}
+
+function ShortcutTabBar({
+  formattedShortcuts,
+  lists,
+  listsLinkRef,
+  listsMenuAnchorRef,
+  listsMenuRef,
+  listsMenuState,
+  setListsMenuState,
+  tabBarRef,
+}: {
+  formattedShortcuts: FormattedShortcut[];
+  lists: ListLike[];
+  listsLinkRef: RefObject<HTMLAnchorElement | null>;
+  listsMenuAnchorRef: RefObject<Element | RectElement>;
+  listsMenuRef: RefObject<MenuInstance | null>;
+  listsMenuState: MenuState | undefined;
+  setListsMenuState: (state: MenuState | undefined) => void;
+  tabBarRef: RefObject<HTMLElement | null>;
+}) {
+  const bindListsLongPress = useLongPress(
+    () => {
+      setListsMenuState('open');
+    },
+    {
+      threshold: 600,
+      detect: LongPressEventType.Touch,
+      cancelOnMovement: true,
+    },
+  );
+
+  const bindProfileLongPress = useLongPress(
+    () => {
+      states.showAccounts = true;
+    },
+    {
+      threshold: 600,
+      detect: LongPressEventType.Touch,
+      cancelOnMovement: true,
+    },
+  );
+
+  return (
+    <>
+      <nav
+        ref={tabBarRef}
+        className="tab-bar"
+        onContextMenu={(e) => {
+          e.preventDefault();
+          states.showShortcutsSettings = true;
+        }}
+      >
+        <ul>
+          {formattedShortcuts.map(
+            ({ id, path, title, subtitle, icon, altIcon }, i) => {
+              const extraProps: Record<string, unknown> =
+                id === 'lists'
+                  ? {
+                      ref: listsLinkRef,
+                      onContextMenu(e: React.MouseEvent) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setListsMenuState('open');
+                      },
+                      ...bindListsLongPress(),
+                    }
+                  : id === 'profile'
+                    ? {
+                        onContextMenu(e: React.MouseEvent) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          states.showAccounts = true;
+                        },
+                        ...bindProfileLongPress(),
+                      }
+                    : {};
+
+              return (
+                <li key={keyFor(i, id, title, subtitle, path)}>
+                  <Link
+                    className={subtitle ? 'has-subtitle' : ''}
+                    to={path ?? ''}
+                    onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                      if (e.currentTarget.classList.contains('is-active')) {
+                        e.preventDefault();
+                        const page = document.getElementById(`${id}-page`);
+                        if (page) {
+                          page.scrollTop = 0;
+                          const updatesButton =
+                            page.querySelector('.updates-button');
+                          if (updatesButton instanceof HTMLElement) {
+                            updatesButton.click();
+                          }
+                        }
+                      }
+                    }}
+                    {...extraProps}
+                  >
+                    {altIcon?.url ? (
+                      altIcon?.type === 'avatar' ? (
+                        <Avatar staticUrl={altIcon.url} size="l" />
+                      ) : (
+                        <img
+                          src={altIcon.url}
+                          alt=""
+                          className="shortcut-icon"
+                          loading="lazy"
+                          decoding="async"
+                          fetchPriority="low"
+                        />
+                      )
+                    ) : (
+                      <Icon icon={icon} size="xl" />
+                    )}
+                    <span>
+                      <AsyncText value={title ?? ''} />
+                      {subtitle && (
+                        <>
+                          <br />
+                          <small>{subtitle}</small>
+                        </>
+                      )}
+                    </span>
+                  </Link>
+                </li>
+              );
+            },
+          )}
+        </ul>
+      </nav>
+      <ControlledMenu
+        ref={listsMenuRef}
+        state={listsMenuState}
+        anchorRef={listsMenuAnchorRef}
+        menuClassName="lists-picker-menu"
+        onClose={() => {
+          setListsMenuState(undefined);
+        }}
+        overflow="auto"
+        viewScroll="close"
+        gap={4}
+        boundingBoxPadding={safeBoundingBoxPadding()}
+        portal={{
+          target: document.body,
+        }}
+      >
+        <ListsMenuContent lists={lists} />
+      </ControlledMenu>
+    </>
+  );
+}
+
+function ShortcutDropdown({
+  formattedShortcuts,
+  hasLists,
+  lists,
+  menuRef,
+  setShortcutsButtonRef,
+  onListsOpen,
+}: {
+  formattedShortcuts: FormattedShortcut[];
+  hasLists: boolean;
+  lists: ListLike[];
+  menuRef: RefObject<MenuInstance | null>;
+  setShortcutsButtonRef: (button: HTMLButtonElement | null) => void;
+  onListsOpen: () => void;
+}) {
+  const { t } = useLingui();
+
+  return (
+    <Menu2
+      instanceRef={menuRef}
+      overflow="auto"
+      viewScroll="close"
+      menuClassName="glass-menu shortcuts-menu"
+      gap={8}
+      position="anchor"
+      onMenuChange={(e) => {
+        if (e.open && hasLists) {
+          onListsOpen();
+        }
+      }}
+      menuButton={
+        <button
+          ref={setShortcutsButtonRef}
+          type="button"
+          id="shortcuts-button"
+          className="plain"
+          onContextMenu={(e) => {
+            e.preventDefault();
+            states.showShortcutsSettings = true;
+          }}
+        >
+          <Icon icon="shortcut" size="xl" alt={t`Shortcuts`} />
+        </button>
+      }
+    >
+      {formattedShortcuts.map(({ id, path, title, subtitle, icon }, i) => {
+        if (id === 'lists') {
+          return (
+            <SubMenu2
+              key={keyFor(i, id, title, subtitle, path)}
+              menuClassName="glass-menu lists-picker-menu"
+              overflow="auto"
+              gap={-8}
+              label={
+                <>
+                  <Icon icon={icon} size="l" />
+                  <span className="menu-grow">
+                    <AsyncText value={title ?? ''} />
+                  </span>
+                  <Icon icon="chevron-right" />
+                </>
+              }
+            >
+              <ListsMenuContent lists={lists} />
+            </SubMenu2>
+          );
+        }
+
+        return (
+          <MenuLink
+            to={path}
+            key={keyFor(i, id, title, subtitle, path)}
+            className="glass-menu-item"
+          >
+            <Icon icon={icon} size="l" />{' '}
+            <span className="menu-grow">
+              <span>
+                <AsyncText value={title ?? ''} />
+              </span>
+              {subtitle && (
+                <>
+                  {' '}
+                  <small className="more-insignificant">{subtitle}</small>
+                </>
+              )}
+            </span>
+            <span className="menu-shortcut hide-until-focus-visible">
+              {i + 1}
+            </span>
+          </MenuLink>
+        );
+      })}
+    </Menu2>
+  );
+}
+
+function Shortcuts() {
   const snapStates = useSnapshot(states);
   const { shortcuts, settings } = snapStates;
+  const formattedShortcuts = useFormattedShortcuts(shortcuts);
+  const hasLists = formattedShortcuts.some(({ id }) => id === 'lists');
 
   const isMultiColumnMode =
     (settings.shortcutsViewMode === 'multi-column' ||
@@ -169,8 +458,6 @@ function Shortcuts() {
   const menuRef = useRef<MenuInstance | null>(null);
   const shortcutsButtonCleanupRef = useRef<(() => void) | null>(null);
   const tabBarRef = useRef<HTMLElement | null>(null);
-
-  const hasLists = useRef(false);
 
   const setShortcutsButtonRef = useCallback(
     (button: HTMLButtonElement | null) => {
@@ -198,47 +485,6 @@ function Shortcuts() {
     },
     [],
   );
-
-  const formattedShortcuts: FormattedShortcut[] = [];
-  const shortcutPins = Array.isArray(shortcuts)
-    ? shortcuts.filter(isShortcutPin)
-    : [];
-  shortcutPins.forEach((pin, i) => {
-      const { type, ...data } = pin;
-      const meta = type ? SHORTCUTS_META[type] : undefined;
-      if (!type || !meta) return;
-      const shortcutData: ShortcutMetaInput = data;
-      const pathData: ShortcutMetaInput = {
-        ...data,
-        instance: data.instance || instance,
-      };
-      const id = resolveMetaValue(meta.id, shortcutData, i);
-      const path = resolveMetaValue(meta.path, pathData, i);
-      let title = resolveMetaValue(meta.title, shortcutData, i);
-      let subtitle = resolveMetaValue(meta.subtitle, shortcutData, i);
-      const icon = resolveMetaValue(meta.icon, shortcutData, i);
-      const altIcon = resolveMetaValue(meta.altIcon, shortcutData, i);
-
-      if (isMessageDescriptor(title)) {
-        title = i18n._(title);
-      }
-      if (isMessageDescriptor(subtitle)) {
-        subtitle = i18n._(subtitle);
-      }
-
-      if (id === 'lists') {
-        hasLists.current = true;
-      }
-
-      formattedShortcuts.push({
-        id,
-        path,
-        title,
-        subtitle,
-        icon,
-        altIcon,
-      });
-    });
 
   // Auto-scroll to active tab on first render
   useEffect(() => {
@@ -302,40 +548,21 @@ function Shortcuts() {
   const [listsMenuState, setListsMenuState] = useState<MenuState | undefined>(
     undefined,
   );
+  const loadLists = useCallback(() => {
+    void (async () => {
+      try {
+        setLists(await getLists());
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (listsMenuState === 'open') {
-      void (async () => {
-        try {
-          setLists(await getLists());
-        } catch (err) {
-          console.error(err);
-        }
-      })();
+      loadLists();
     }
-  }, [listsMenuState]);
-
-  const bindListsLongPress = useLongPress(
-    () => {
-      setListsMenuState('open');
-    },
-    {
-      threshold: 600,
-      detect: LongPressEventType.Touch,
-      cancelOnMovement: true,
-    },
-  );
-
-  const bindProfileLongPress = useLongPress(
-    () => {
-      states.showAccounts = true;
-    },
-    {
-      threshold: 600,
-      detect: LongPressEventType.Touch,
-      cancelOnMovement: true,
-    },
-  );
+  }, [listsMenuState, loadLists]);
 
   if (!shortcuts.length || isMultiColumnMode) {
     return null;
@@ -344,194 +571,25 @@ function Shortcuts() {
   return (
     <div id="shortcuts">
       {snapStates.settings.shortcutsViewMode === 'tab-menu-bar' ? (
-        <>
-          <nav
-            ref={tabBarRef}
-            className="tab-bar"
-            onContextMenu={(e) => {
-              e.preventDefault();
-              states.showShortcutsSettings = true;
-            }}
-          >
-            <ul>
-              {formattedShortcuts.map(
-                ({ id, path, title, subtitle, icon, altIcon }, i) => {
-                  const extraProps: Record<string, unknown> =
-                    id === 'lists'
-                      ? {
-                          ref: listsLinkRef,
-                          onContextMenu(e: React.MouseEvent) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setListsMenuState('open');
-                          },
-                          ...bindListsLongPress(),
-                        }
-                      : id === 'profile'
-                        ? {
-                            onContextMenu(e: React.MouseEvent) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              states.showAccounts = true;
-                            },
-                            ...bindProfileLongPress(),
-                          }
-                        : {};
-
-                  return (
-                    <li key={keyFor(i, id, title, subtitle, path)}>
-                      <Link
-                        className={subtitle ? 'has-subtitle' : ''}
-                        to={path ?? ''}
-                        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                          if (e.currentTarget.classList.contains('is-active')) {
-                            e.preventDefault();
-                            const page = document.getElementById(`${id}-page`);
-                            if (page) {
-                              page.scrollTop = 0;
-                              const updatesButton =
-                                page.querySelector('.updates-button');
-                              if (updatesButton instanceof HTMLElement) {
-                                updatesButton.click();
-                              }
-                            }
-                          }
-                        }}
-                        {...extraProps}
-                      >
-                        {altIcon?.url ? (
-                          altIcon?.type === 'avatar' ? (
-                            <Avatar staticUrl={altIcon.url} size="l" />
-                          ) : (
-                            <img
-                              src={altIcon.url}
-                              alt=""
-                              className="shortcut-icon"
-                              loading="lazy"
-                              decoding="async"
-                              fetchPriority="low"
-                            />
-                          )
-                        ) : (
-                          <Icon icon={icon} size="xl" />
-                        )}
-                        <span>
-                          <AsyncText value={title ?? ''} />
-                          {subtitle && (
-                            <>
-                              <br />
-                              <small>{subtitle}</small>
-                            </>
-                          )}
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                },
-              )}
-            </ul>
-          </nav>
-          <ControlledMenu
-            ref={listsMenuRef}
-            state={listsMenuState}
-            anchorRef={listsMenuAnchorRef}
-            menuClassName="lists-picker-menu"
-            onClose={() => {
-              setListsMenuState(undefined);
-            }}
-            overflow="auto"
-            viewScroll="close"
-            gap={4}
-            boundingBoxPadding={safeBoundingBoxPadding()}
-            portal={{
-              target: document.body,
-            }}
-          >
-            <ListsMenuContent lists={lists} />
-          </ControlledMenu>
-        </>
+        <ShortcutTabBar
+          formattedShortcuts={formattedShortcuts}
+          lists={lists}
+          listsLinkRef={listsLinkRef}
+          listsMenuAnchorRef={listsMenuAnchorRef}
+          listsMenuRef={listsMenuRef}
+          listsMenuState={listsMenuState}
+          setListsMenuState={setListsMenuState}
+          tabBarRef={tabBarRef}
+        />
       ) : (
-        <Menu2
-          instanceRef={menuRef}
-          overflow="auto"
-          viewScroll="close"
-          menuClassName="glass-menu shortcuts-menu"
-          gap={8}
-          position="anchor"
-            onMenuChange={(e) => {
-              if (e.open && hasLists.current) {
-                void (async () => {
-                  try {
-                    setLists(await getLists());
-                  } catch (err) {
-                    console.error(err);
-                  }
-                })();
-              }
-            }}
-          menuButton={
-            <button
-              ref={setShortcutsButtonRef}
-              type="button"
-              id="shortcuts-button"
-              className="plain"
-              onContextMenu={(e) => {
-                e.preventDefault();
-                states.showShortcutsSettings = true;
-              }}
-            >
-              <Icon icon="shortcut" size="xl" alt={t`Shortcuts`} />
-            </button>
-          }
-        >
-          {formattedShortcuts.map(({ id, path, title, subtitle, icon }, i) => {
-            if (id === 'lists') {
-              return (
-                <SubMenu2
-                  key={keyFor(i, id, title, subtitle, path)}
-                  menuClassName="glass-menu lists-picker-menu"
-                  overflow="auto"
-                  gap={-8}
-                  label={
-                    <>
-                      <Icon icon={icon} size="l" />
-                      <span className="menu-grow">
-                        <AsyncText value={title ?? ''} />
-                      </span>
-                      <Icon icon="chevron-right" />
-                    </>
-                  }
-                >
-                  <ListsMenuContent lists={lists} />
-                </SubMenu2>
-              );
-            }
-
-            return (
-              <MenuLink
-                to={path}
-                key={keyFor(i, id, title, subtitle, path)}
-                className="glass-menu-item"
-              >
-                <Icon icon={icon} size="l" />{' '}
-                <span className="menu-grow">
-                  <span>
-                    <AsyncText value={title ?? ''} />
-                  </span>
-                  {subtitle && (
-                    <>
-                      {' '}
-                      <small className="more-insignificant">{subtitle}</small>
-                    </>
-                  )}
-                </span>
-                <span className="menu-shortcut hide-until-focus-visible">
-                  {i + 1}
-                </span>
-              </MenuLink>
-            );
-          })}
-        </Menu2>
+        <ShortcutDropdown
+          formattedShortcuts={formattedShortcuts}
+          hasLists={hasLists}
+          lists={lists}
+          menuRef={menuRef}
+          setShortcutsButtonRef={setShortcutsButtonRef}
+          onListsOpen={loadLists}
+        />
       )}
     </div>
   );
