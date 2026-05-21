@@ -541,7 +541,7 @@ const isPWA =
     true;
 const PATH_RESTORE_TIME_LIMIT = 1 * 60 * 60 * 1000; // 1 hour, should be good enough
 
-function App() {
+function useAppController() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     const account = getCurrentAccount();
     return !!account;
@@ -865,7 +865,17 @@ function App() {
     }
   }, [uiState]);
 
-  if (/\/https?:/.test(location.pathname)) {
+  return {
+    isHttpRoute: /\/https?:/.test(location.pathname),
+    isLoggedIn,
+    uiState,
+  };
+}
+
+function App() {
+  const { isHttpRoute, isLoggedIn, uiState } = useAppController();
+
+  if (isHttpRoute) {
     return <HttpRoute />;
   }
 
