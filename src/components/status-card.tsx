@@ -329,17 +329,13 @@ function StatusCard({
         const videoID = url ? url.match(/watch\?v=([^&]+)/)?.[1] : undefined;
         if (videoID) {
           return (
-            <div
+            <button
+              type="button"
               className="card video"
-              role="button"
-              tabIndex={0}
               onClick={openEmbeddableCard}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') openEmbeddableCard(e);
-              }}
             >
               <lite-youtube videoid={videoID} nocookie autoPause></lite-youtube>
-            </div>
+            </button>
           );
         }
       }
