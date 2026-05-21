@@ -1033,11 +1033,12 @@ function Notifications({ columnMode }: NotificationsProps) {
                           type="button"
                           className="plain2 small"
                           onClick={() => {
-                            (
-                              announcementsListRef.current?.children[index] as
-                                | HTMLElement
-                                | undefined
-                            )?.scrollIntoView({
+                            const announcementElement =
+                              announcementsListRef.current?.children[index];
+                            if (!(announcementElement instanceof HTMLElement)) {
+                              return;
+                            }
+                            announcementElement.scrollIntoView({
                               behavior: 'smooth',
                               block: 'nearest',
                             });

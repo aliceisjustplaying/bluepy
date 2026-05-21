@@ -244,7 +244,9 @@ function MediaModal({
     let $meta: HTMLMetaElement | null | undefined;
     let metaColor: string | undefined;
     if (currentColor) {
-      const theme = store.local.get('theme') as 'light' | 'dark' | null;
+      const themeValue = store.local.get('theme');
+      const theme =
+        themeValue === 'light' || themeValue === 'dark' ? themeValue : null;
       if (theme) {
         const mediaColor = `rgb(${currentColor[theme].join(',')})`;
         console.log({ mediaColor });

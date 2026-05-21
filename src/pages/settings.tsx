@@ -1394,7 +1394,7 @@ function PushNotificationsSection({
             policy: undefined;
           } = {
             data: {
-              policy: values.policy as string,
+              policy: typeof values.policy === 'string' ? values.policy : '',
               alerts: {
                 mention: !!values.mention,
                 favourite: !!values.favourite,
