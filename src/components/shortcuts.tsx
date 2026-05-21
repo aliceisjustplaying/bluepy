@@ -9,9 +9,11 @@ import {
   type MenuState,
   MenuDivider,
   MenuHeader,
+  type RectElement,
 } from '@szhsin/react-menu';
+import type { RefObject } from 'react';
 import { memo } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
@@ -77,6 +79,10 @@ function resolveMetaValue<T>(
 
 function isMessageDescriptor(value: unknown): value is MessageDescriptor {
   return !!value && typeof value === 'object' && 'id' in value;
+}
+
+function isShortcutPin(value: unknown): value is ShortcutPin {
+  return !!value && typeof value === 'object';
 }
 
 function ListsMenuContent({ lists }: { lists: ListLike[] }) {
@@ -187,7 +193,10 @@ function Shortcuts() {
   );
 
   const formattedShortcuts: FormattedShortcut[] = [];
-  (shortcuts as ShortcutPin[]).forEach((pin, i) => {
+  const shortcutPins = Array.isArray(shortcuts)
+    ? shortcuts.filter(isShortcutPin)
+    : [];
+  shortcutPins.forEach((pin, i) => {
       const { type, ...data } = pin;
       const meta = type ? SHORTCUTS_META[type] : undefined;
       if (!type || !meta) return;
@@ -275,6 +284,14 @@ function Shortcuts() {
 
   const listsMenuRef = useRef<MenuInstance | null>(null);
   const listsLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const listsMenuAnchorRef = useMemo<RefObject<Element | RectElement>>(
+    () => ({
+      get current() {
+        return listsLinkRef.current ?? document.body;
+      },
+    }),
+    [],
+  );
   const [listsMenuState, setListsMenuState] = useState<MenuState | undefined>(
     undefined,
   );
@@ -356,8 +373,11 @@ function Shortcuts() {
                         className={subtitle ? 'has-subtitle' : ''}
                         to={path ?? ''}
                         onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                          const target = e.target as HTMLElement;
-                          if (target.classList.contains('is-active')) {
+                          const { target } = e;
+                          if (
+                            target instanceof HTMLElement &&
+                            target.classList.contains('is-active')
+                          ) {
                             e.preventDefault();
                             const page = document.getElementById(`${id}-page`);
                             if (page) {
@@ -407,7 +427,7 @@ function Shortcuts() {
           <ControlledMenu
             ref={listsMenuRef}
             state={listsMenuState}
-            anchorRef={listsLinkRef as never}
+            anchorRef={listsMenuAnchorRef}
             menuClassName="lists-picker-menu"
             onClose={() => {
               setListsMenuState(undefined);
