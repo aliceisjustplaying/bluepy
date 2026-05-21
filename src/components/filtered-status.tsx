@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ReactNode, HTMLAttributes, RefObject } from 'react';
+import type { ReactNode, HTMLAttributes } from 'react';
 import { useState } from 'react';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 
@@ -78,7 +78,7 @@ export default function FilteredStatus({
     },
   );
 
-  const statusPeekRef = useTruncated() as RefObject<HTMLAnchorElement>;
+  const statusPeekRef = useTruncated<HTMLAnchorElement>();
   const ssKey =
     statusKey(status.id, instance) +
     ' ' +

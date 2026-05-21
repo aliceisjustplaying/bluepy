@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 
 import Link from '../components/link';
 import Loader from '../components/loader';
-import { api, getMastoV2Resource } from '../utils/api';
+import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
 import { getInstanceStatusObject } from '../utils/get-instance-status-url';
 import { navigatePath } from '../utils/router';
 
@@ -29,8 +29,11 @@ export default function HttpRoute() {
         const { instance, id } = statusObject;
         if (id) {
           const { masto } = api({ instance });
-          const statusesResource = masto.v1
-            .statuses as mastodon.rest.v1.StatusesResource;
+          const statusesResource =
+            getMastoV1Resource<mastodon.rest.v1.StatusesResource>(
+              masto,
+              'statuses',
+            );
           const status = await statusesResource.$select(id).fetch();
           if (status) {
             navigatePath(statusURL + '?view=full');

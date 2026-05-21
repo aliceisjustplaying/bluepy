@@ -3,7 +3,7 @@ import type { mastodon } from 'masto';
 import { useRef } from 'react';
 
 import Timeline from '../components/timeline';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
@@ -17,11 +17,13 @@ function Favourites() {
   >(undefined);
   async function fetchFavourites(firstLoad?: boolean) {
     if (firstLoad || !favouritesIterator.current) {
-      favouritesIterator.current = (
-        masto.v1.favourites as mastodon.rest.v1.FavouritesResource
-      )
-        .list({ limit: LIMIT })
-        .values();
+      favouritesIterator.current =
+        getMastoV1Resource<mastodon.rest.v1.FavouritesResource>(
+          masto,
+          'favourites',
+        )
+          .list({ limit: LIMIT })
+          .values();
     }
     return await favouritesIterator.current.next();
   }

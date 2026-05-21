@@ -3,7 +3,7 @@ import type { mastodon } from 'masto';
 import { useRef } from 'react';
 
 import Timeline from '../components/timeline';
-import { api } from '../utils/api';
+import { api, getMastoV1Resource } from '../utils/api';
 import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
@@ -17,11 +17,13 @@ function Bookmarks() {
   >(undefined);
   async function fetchBookmarks(firstLoad?: boolean) {
     if (firstLoad || !bookmarksIterator.current) {
-      bookmarksIterator.current = (
-        masto.v1.bookmarks as mastodon.rest.v1.BookmarksResource
-      )
-        .list({ limit: LIMIT })
-        .values();
+      bookmarksIterator.current =
+        getMastoV1Resource<mastodon.rest.v1.BookmarksResource>(
+          masto,
+          'bookmarks',
+        )
+          .list({ limit: LIMIT })
+          .values();
     }
     return await bookmarksIterator.current.next();
   }

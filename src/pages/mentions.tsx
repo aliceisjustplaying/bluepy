@@ -22,23 +22,6 @@ interface MentionNotificationLike {
   [key: string]: unknown;
 }
 
-type StatusLike = mastodon.v1.Status;
-
-interface SaveStatusPayload extends Record<string, unknown> {
-  id?: string;
-  account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
-  quote?: SaveStatusPayload | null;
-  state?: unknown;
-  quotedStatus?: SaveStatusPayload | null;
-}
-
-function toSaveStatus(
-  status: StatusLike | null | undefined,
-): SaveStatusPayload | null | undefined {
-  return status as SaveStatusPayload | null | undefined;
-}
-
 interface MastoNotificationsApi {
   list(options: { limit: number; types?: string[]; since_id?: string }): {
     values(): AsyncIterator<MentionNotificationLike[]>;
@@ -47,7 +30,7 @@ interface MastoNotificationsApi {
 
 interface FetchItemsResult {
   done?: boolean;
-  value: (StatusLike | null | undefined)[] | undefined;
+  value: (mastodon.v1.Status | null | undefined)[] | undefined;
 }
 
 function Mentions() {
@@ -68,8 +51,8 @@ function Mentions() {
   const latestItem = useRef<string | undefined>(undefined);
 
   function filterByFollowings(
-    items: (StatusLike | null | undefined)[] | undefined,
-  ): (StatusLike | null | undefined)[] {
+    items: (mastodon.v1.Status | null | undefined)[] | undefined,
+  ): (mastodon.v1.Status | null | undefined)[] {
     if (!onlyFollowings || !items?.length) return items ?? [];
 
     const currentAccountID = getCurrentAccountID();
@@ -110,7 +93,7 @@ function Mentions() {
       }
 
       fixedNotifications.forEach(({ status: item }) => {
-        saveStatus(toSaveStatus(item), instance);
+        saveStatus(item, instance);
       });
 
       let statuses: (mastodon.v1.Status | null | undefined)[] =

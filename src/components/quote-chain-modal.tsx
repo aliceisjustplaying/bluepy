@@ -1,7 +1,6 @@
 import './quote-chain-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { Ref } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
@@ -26,7 +25,7 @@ type StatusesSelectFn = (id: string) => {
 
 function TruncatedLink(props: LinkProps) {
   const { t } = useLingui();
-  const ref = useTruncated() as Ref<HTMLAnchorElement>;
+  const ref = useTruncated<HTMLAnchorElement>();
   return <Link {...props} data-read-more={t`Read more →`} ref={ref} />;
 }
 
