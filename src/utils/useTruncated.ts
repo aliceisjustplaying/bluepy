@@ -7,11 +7,11 @@ interface UseTruncatedOpts {
   onTruncated?: (truncated: boolean) => void;
 }
 
-export default function useTruncated({
+export default function useTruncated<T extends HTMLElement = HTMLElement>({
   className = 'truncated',
   onTruncated,
 }: UseTruncatedOpts = {}) {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<T>(null);
   const prevTruncatedRef = useRef<boolean | undefined>(undefined);
   const onResize = ({
     height,
@@ -37,7 +37,7 @@ export default function useTruncated({
       }
     }
   };
-  useThrottledResizeObserver<HTMLElement>({
+  useThrottledResizeObserver<T>({
     ref,
     box: 'border-box',
     onResize,

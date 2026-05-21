@@ -2,7 +2,7 @@ import type { MessageDescriptor } from '@lingui/core';
 import { msg, t } from '@lingui/core/macro';
 import { Plural, Select, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ReactNode, ComponentType, JSX, Ref, ReactElement } from 'react';
+import type { ReactNode, ComponentType, JSX, ReactElement } from 'react';
 import { createContext, useContext } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
@@ -66,6 +66,28 @@ interface StatusComponentProps {
 }
 function Status(props: StatusComponentProps) {
   return <StatusComponent {...(props as StatusViewProps)} />;
+}
+
+function fulfilledValue<T>(result: PromiseSettledResult<T>): T | undefined {
+  return result.status === 'fulfilled' ? result.value : undefined;
+}
+
+function hasNotificationAccount(
+  account: AccountWithBot | undefined,
+): account is AccountWithBot {
+  return !!account;
+}
+
+function hasStatus(
+  status: mastodon.v1.Status | null | undefined,
+): status is mastodon.v1.Status {
+  return !!status;
+}
+
+function renderableText(
+  text: ContentTextRenderer | JSX.Element | string | undefined,
+): ReactNode {
+  return typeof text === 'function' ? undefined : text;
 }
 
 // `masto.v2.notifications` is typed as `unknown` in our local MastoClient
@@ -704,44 +726,29 @@ function Notification({
             masto,
             'notifications',
           );
-          // JS original called `.map` on `_groupKeys` directly. Preserve
-          // that crash-on-missing behavior with a non-null cast.
           const keyAccounts = await Promise.allSettled(
-            (_groupKeys as string[]).map(async (gKey: string) => {
+            (_groupKeys ?? []).map(async (gKey: string) => {
               const iterator = mastoV2Notifications
                 .$select(gKey)
                 .accounts.list()
                 .values();
               const next = await iterator.next();
-              // `next.value` may be `undefined` when the async iterator is
-              // exhausted. JS original passed it through and would crash on
-              // the `for...of` below; preserve that with an honest type.
-              return [gKey, next.value] as [
-                string,
-                AccountWithBot[] | undefined,
-              ];
+              return { key: gKey, accounts: next.value };
             }),
           );
           const accounts: AccountWithBot[] = [];
           for (const keyAccount of keyAccounts) {
-            // The JS original accessed `.value` without checking `.status`;
-            // rejected entries crashed at the destructure below. Preserve
-            // that behavior via an unchecked cast.
-            const [key, keyAccountsList] = (
-              keyAccount as PromiseFulfilledResult<
-                [string, AccountWithBot[] | undefined]
-              >
-            ).value;
+            const value = fulfilledValue(keyAccount);
+            if (!value) continue;
+            const { key, accounts: keyAccountsList } = value;
             const reactionType = key.startsWith('favourite')
               ? 'favourite'
               : key.startsWith('reblog')
                 ? 'reblog'
                 : null;
             // if (!reactionType) continue;
-            // JS original iterated `_accounts` directly; an exhausted iterator
-            // (undefined) would crash here. Cast preserves that contract.
             const accountsById = new Map(accounts.map((a) => [a.id, a]));
-            for (const acct of keyAccountsList as AccountWithBot[]) {
+            for (const acct of keyAccountsList ?? []) {
               const theAccount = accountsById.get(acct.id);
               if (theAccount && reactionType) {
                 theAccount._types ??= [];
@@ -859,18 +866,15 @@ function Notification({
             <NotificationSubjectClickContext.Provider
               value={handleOpenGenericAccounts}
             >
-              <p>{text as ReactNode}</p>
+              <p>{renderableText(text)}</p>
             </NotificationSubjectClickContext.Provider>
             {type === 'severed_relationships' && (
               <div>
-                {/* JS original accessed `event.type` directly without a
-                    guard; missing `event` crashed here. Preserve that. */}
-                {SEVERED_RELATIONSHIPS_TEXT[
-                  (event as SeveredRelationshipEvent).type as string
-                ]({
-                  from: instance,
-                  ...(event as SeveredRelationshipEvent),
-                })}
+                {event?.type &&
+                  SEVERED_RELATIONSHIPS_TEXT[event.type]?.({
+                    from: instance,
+                    ...event,
+                  })}
                 <br />
                 <a
                   href={`https://${instance}/severed_relationships`}
@@ -887,20 +891,7 @@ function Notification({
             {type === 'moderation_warning' && !!moderation_warning && (
               <div>
                 {i18n._(
-                  // The JS original calls `()` on the table entry. Some
-                  // historical Lingui versions returned a thunk from `msg`,
-                  // others return a `MessageDescriptor` directly. Preserve
-                  // the JS-original call shape verbatim — if the value is
-                  // already a `MessageDescriptor` it crashes at runtime
-                  // exactly as the JS original did; if it is a thunk, it
-                  // resolves to the descriptor.
-                  Reflect.apply(
-                    MODERATION_WARNING_TEXT[
-                      moderation_warning.action as string
-                    ] as never,
-                    undefined,
-                    [],
-                  ),
+                  MODERATION_WARNING_TEXT[moderation_warning.action ?? 'none'],
                 )}
                 <br />
                 <a
@@ -945,9 +936,7 @@ function Notification({
                   />
                   {type === 'favourite+reblog' && (
                     <div className="account-sub-icons">
-                      {/* JS original accessed `_types` directly without a
-                          guard. Preserve crash-on-missing behavior. */}
-                      {(acct._types as string[]).map((iconType) => (
+                      {(acct._types ?? []).map((iconType) => (
                         <Icon
                           key={iconType}
                           icon={NOTIFICATION_ICONS[iconType]}
@@ -971,7 +960,7 @@ function Notification({
                 {(type === 'favourite' ||
                   type === 'reblog' ||
                   type === 'admin.sign_up') &&
-                  (notificationsCount as number) - _accounts.length}
+                  (notificationsCount ?? 0) - _accounts.length}
                 <Icon icon="chevron-down" />
               </button>
             ) : (
@@ -989,12 +978,7 @@ function Notification({
         )}
         {!_accounts?.length && sampleAccounts && sampleAccounts.length > 1 && (
           <p className="avatars-stack">
-            {/* JS original iterated sampleAccounts directly, accessing
-                `account.id`, `account.url`, etc. without guards. `undefined`
-                entries (from `accounts.find(...) => undefined` in
-                `massageNotifications2`) would crash here in both JS and TS;
-                preserve that contract with a non-null cast on the entries. */}
-            {(sampleAccounts as AccountWithBot[]).map((acct) => (
+            {sampleAccounts.filter(hasNotificationAccount).map((acct) => (
               <Fragment key={acct.id}>
                 <a
                   key={acct.id}
@@ -1035,7 +1019,7 @@ function Notification({
                   }
                   className="button small plain centered"
                 >
-                  +{(notificationsCount as number) - sampleAccounts.length}
+                  +{(notificationsCount ?? 0) - sampleAccounts.length}
                   <Icon icon="chevron-right" />
                 </Link>
               )}
@@ -1043,7 +1027,7 @@ function Notification({
         )}
         {_statuses && _statuses.length > 1 && (
           <ul className="notification-group-statuses">
-            {(_statuses as mastodon.v1.Status[]).map((groupStatus) => (
+            {_statuses.filter(hasStatus).map((groupStatus) => (
               <li key={groupStatus.id}>
                 <TruncatedLink
                   className={`status-link status-type-${type}`}
@@ -1077,7 +1061,8 @@ function Notification({
             onContextMenu={
               !disableContextMenu
                 ? (e: React.MouseEvent<HTMLElement>) => {
-                    const target = e.target as HTMLElement | null;
+                    const target =
+                      e.target instanceof HTMLElement ? e.target : null;
                     const post = target?.querySelector('.status');
                     if (post) {
                       // Fire a custom event to open the context menu
@@ -1127,13 +1112,9 @@ type TruncatedLinkProps = LinkProps & {
 
 function TruncatedLink(props: TruncatedLinkProps) {
   const { t: tt } = useLingui();
-  const ref = useTruncated();
+  const ref = useTruncated<HTMLAnchorElement>();
   return (
-    <Link
-      {...(props as LinkProps)}
-      data-read-more={tt`Read more →`}
-      ref={ref as Ref<HTMLAnchorElement>}
-    />
+    <Link {...props} data-read-more={tt`Read more →`} ref={ref} />
   );
 }
 
