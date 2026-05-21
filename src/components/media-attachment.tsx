@@ -263,8 +263,6 @@ function MediaAttachment({
     }
   };
 
-  const [description, setDescription] = useState(attachment.description);
-
   // Snapshot the mount-time props for the metadata extraction effect below.
   // The extraction must run exactly once per attachment lifetime; later
   // changes to `description`, `id`, `file`, etc. (e.g. user edits, upload
@@ -279,6 +277,9 @@ function MediaAttachment({
     id,
     description: attachment.description,
   });
+  const [description, setDescription] = useState(
+    () => extractionInputsRef.current.description,
+  );
 
   useEffect(() => {
     const {
@@ -756,7 +757,7 @@ function MediaAttachment({
                               <Trans>
                                 ({localeCode2Text(lang)}){" "}
                                 <span className="more-insignificant">
-                                  — experimental
+                                  (experimental)
                                 </span>
                               </Trans>
                             </small>
