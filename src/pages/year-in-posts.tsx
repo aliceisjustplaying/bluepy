@@ -119,6 +119,10 @@ function Status(props: {
   return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
 function isYearInPostsRecord(value: unknown): value is YearInPostsRecord {
   return (
     !!value &&
@@ -127,6 +131,12 @@ function isYearInPostsRecord(value: unknown): value is YearInPostsRecord {
     typeof value.id === 'string' &&
     'posts' in value &&
     Array.isArray(value.posts) &&
+    value.posts.every(
+      (post) =>
+        isRecord(post) &&
+        typeof post.id === 'string' &&
+        typeof post.createdAt === 'string',
+    ) &&
     'year' in value &&
     typeof value.year === 'number' &&
     'count' in value &&
@@ -311,7 +321,7 @@ function YearInPosts() {
         const target = e.target instanceof HTMLElement ? e.target : null;
         const isInput = ['INPUT', 'TEXTAREA'].includes(target?.tagName ?? '');
         // Allow '/' even with Shift (e.g. German keyboards)
-        if (e.key === '/') return false;
+        if (e.key === '/') return hasModal || isInput;
         return (
           hasModal ||
           isInput ||
@@ -388,17 +398,9 @@ function YearInPosts() {
       setUIState('generating');
       await fetchYearPosts(yearToRegen);
       setSearchParams({ year: String(yearToRegen) });
-    } catch {
+    } catch (error) {
       setUIState('error');
-      // Preserve original JS behavior: the pre-conversion source referenced
-      // an undeclared identifier `error` here, which throws ReferenceError
-      // before showToast runs. Reproduce that exact runtime behavior.
-      const undeclared: { readonly error: unknown } = {
-        get error(): unknown {
-          throw new ReferenceError('error is not defined');
-        },
-      };
-      console.error('Failed to regenerate year posts:', undeclared.error);
+      console.error('Failed to regenerate year posts:', error);
       showToast('Unable to regenerate year posts. Please try again.');
     } finally {
       if (uiState === 'generating') {
@@ -1577,19 +1579,19 @@ function CalendarBar({
               <div className="month-name">{getMonthName(m, i18n.locale)}</div>
               {postType === 'media'
                 ? mediaGrid.length > 0 && (
-	                    <div className="month-media-grid">
-	                      {mediaGrid.map((item) => {
-	                        if ('empty' in item)
-	                          return (
-	                            <span key={item.key} className="media-day empty" />
-	                          );
-	                        if (!item.hasMedia)
-	                          return (
-	                            <span
-	                              key={item.key}
-	                              className="media-day no-media"
-	                            />
-	                          );
+                    <div className="month-media-grid">
+                      {mediaGrid.map((item) => {
+                        if ('empty' in item)
+                          return (
+                            <span key={item.key} className="media-day empty" />
+                          );
+                        if (!item.hasMedia)
+                          return (
+                            <span
+                              key={item.key}
+                              className="media-day no-media"
+                            />
+                          );
                         const status = item.post;
                         if (!status) return null;
                         const media = status.mediaAttachments?.[0];
@@ -1597,11 +1599,12 @@ function CalendarBar({
                         const mediaSrc = media.previewUrl || media.url;
                         const fallbackSrc =
                           media.previewRemoteUrl || media.remoteUrl;
-                        if (!mediaSrc) return null;
-	                        return (
-	                          <span key={item.key} className="media-day">
+                        const thumbnailSrc = mediaSrc || fallbackSrc;
+                        if (!thumbnailSrc) return null;
+                        return (
+                          <span key={item.key} className="media-day">
                             <img
-                              src={mediaSrc}
+                              src={thumbnailSrc}
                               loading="lazy"
                               decoding="async"
                               onError={(e) => {
@@ -1625,7 +1628,7 @@ function CalendarBar({
                   )
                 : heatmap.length > 0 && (
                     <div className="month-heatmap">
-	                      {heatmap.map((dayData) => {
+                      {heatmap.map((dayData) => {
                         const total = dayData.count || 0;
                         const dayOriginalRatio =
                           total > 0 ? dayData.original / total : 0;
@@ -1636,10 +1639,10 @@ function CalendarBar({
                         const dayBoostRatio =
                           total > 0 ? dayData.boost / total : 0;
 
-	                        return (
-	                          <span
-	                            key={dayData.key}
-	                            className={`heatmap-day ${dayData.day === null ? 'empty' : ''} ${dayData.cell % 7 === 0 || dayData.cell % 7 === 6 ? 'weekend' : ''}`}
+                        return (
+                          <span
+                            key={dayData.key}
+                            className={`heatmap-day ${dayData.day === null ? 'empty' : ''} ${dayData.cell % 7 === 0 || dayData.cell % 7 === 6 ? 'weekend' : ''}`}
                             data-ratio={dayData.ratio}
                             style={{
                               '--ratio': dayData.ratio,

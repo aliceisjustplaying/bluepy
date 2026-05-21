@@ -265,6 +265,7 @@ function Login() {
           watchAuthPopup(
             popup,
             (code) => {
+              setUIState("default");
               const callbackUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(code)}`;
               window.location.href = callbackUrl;
             },
@@ -278,8 +279,6 @@ function Login() {
           console.log("Popup blocked, falling back to redirect");
           location.href = authUrl;
         }
-
-        setUIState("default");
       } catch (e) {
         console.error(e);
         setUIState("error");
@@ -350,11 +349,10 @@ function Login() {
         const redirectPath = store.session.get("loginRedirect") || "/";
         store.session.del("loginRedirect");
         navigatePath(redirectPath, { replace: true });
+        setUIState("default");
       } catch (err) {
         console.error(err);
         setUIState("error");
-      } finally {
-        setUIState("default");
       }
     })();
   };
@@ -368,11 +366,10 @@ function Login() {
       setUIState("loading");
       try {
         await startAtprotoOAuthLogin(bskyIdentifier.trim());
+        setUIState("default");
       } catch (err) {
         console.error(err);
         setUIState("error");
-      } finally {
-        setUIState("default");
       }
     })();
   };

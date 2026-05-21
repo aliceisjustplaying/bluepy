@@ -2,6 +2,7 @@ import './account-block.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
+import { useMemo } from 'react';
 
 // import { useNavigate } from 'react-router-dom';
 import enhanceContent from '../utils/enhance-content';
@@ -59,6 +60,13 @@ function AccountBlock({
   excludeRelationshipAttrs = EMPTY_EXCLUDED_RELATIONSHIP_ATTRS,
 }: AccountBlockProps) {
   const { t } = useLingui();
+  const excludedRelationshipAttrsSet = useMemo(
+    () =>
+      excludeRelationshipAttrs.length > 0
+        ? new Set(excludeRelationshipAttrs)
+        : EMPTY_EXCLUDED_RELATIONSHIP_ATTRS_SET,
+    [excludeRelationshipAttrs],
+  );
   if (skeleton) {
     return (
       <div className="account-block skeleton">
@@ -104,10 +112,6 @@ function AccountBlock({
 
   const verifiedField = fields?.find((f) => !!f.verifiedAt && !!f.value);
 
-  const excludedRelationshipAttrsSet =
-    excludeRelationshipAttrs.length > 0
-      ? new Set(excludeRelationshipAttrs)
-      : EMPTY_EXCLUDED_RELATIONSHIP_ATTRS_SET;
   const excludedRelationship: Record<string, unknown> = {};
   const relationshipRecord = relationship ?? EMPTY_RELATIONSHIP;
   for (const [key, value] of Object.entries(relationshipRecord)) {

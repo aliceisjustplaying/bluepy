@@ -61,7 +61,7 @@ interface ShowGenericAccountsState {
   showReactions?: boolean;
 }
 
-function showGenericAccountsState(
+function parseGenericAccountsState(
   value: unknown,
 ): ShowGenericAccountsState | false {
   return value && typeof value === 'object' ? value : false;
@@ -99,7 +99,7 @@ export default function GenericAccounts({
   const [uiState, setUIState] = useState('default');
   const [showMore, setShowMore] = useState(false);
 
-  const shownGenericAccounts = showGenericAccountsState(
+  const shownGenericAccounts = parseGenericAccountsState(
     snapStates.showGenericAccounts,
   );
   const staticAccounts = shownGenericAccounts
@@ -180,7 +180,13 @@ export default function GenericAccounts({
                   mergedById.set(account.id, mergedAccount);
                   merged.push(mergedAccount);
                 } else {
-                  theAccount._types.push(...(account._types ?? []));
+                  const mergedAccount = {
+                    ...theAccount,
+                    _types: [...(theAccount._types ?? []), ...(account._types ?? [])],
+                  };
+                  mergedById.set(account.id, mergedAccount);
+                  merged[merged.findIndex((item) => item.id === account.id)] =
+                    mergedAccount;
                 }
               }
               setAccounts(merged);
@@ -188,7 +194,10 @@ export default function GenericAccounts({
               // setAccounts((prev) => [...prev, ...value]);
               // Merge accounts by id and _types
               setAccounts((prev) => {
-                const newAccounts = prev;
+                const newAccounts = prev.map((account) => ({
+                  ...account,
+                  _types: [...(account._types ?? [])],
+                }));
                 const accountsById = new Map(newAccounts.map((a) => [a.id, a]));
                 for (const account of value) {
                   const theAccount = accountsById.get(account.id);
@@ -197,7 +206,17 @@ export default function GenericAccounts({
                     accountsById.set(account.id, newAccount);
                     newAccounts.push(newAccount);
                   } else {
-                    theAccount._types.push(...(account._types ?? []));
+                    const mergedAccount = {
+                      ...theAccount,
+                      _types: [
+                        ...(theAccount._types ?? []),
+                        ...(account._types ?? []),
+                      ],
+                    };
+                    accountsById.set(account.id, mergedAccount);
+                    newAccounts[
+                      newAccounts.findIndex((item) => item.id === account.id)
+                    ] = mergedAccount;
                   }
                 }
                 return newAccounts;
@@ -264,7 +283,7 @@ export default function GenericAccounts({
     }
   }, [snapStates.reloadGenericAccounts.counter]);
 
-  if (!showGenericAccountsState) {
+  if (!shownGenericAccounts) {
     return null;
   }
 

@@ -221,6 +221,10 @@ const RANGES: RangeEntry[] = [
   { label: msg`beyond 12 hours`, value: 13, beyond: true },
 ];
 
+function currentTimestamp() {
+  return Date.now();
+}
+
 const FILTER_KEYS: Record<string, MessageDescriptor> = {
   original: msg`Original`,
   replies: msg`Replies`,
@@ -538,6 +542,9 @@ function Catchup() {
           catchup.posts.sort(compareCreatedAt);
           setPosts(catchup.posts);
           setUIState('results');
+        } else {
+          setPosts([]);
+          setUIState('start');
         }
       })();
     } else if (uiState === 'results') {
@@ -583,6 +590,11 @@ function Catchup() {
               await db.catchup.getMany(ownKeys)
             ).filter(isCatchupRecord);
             ownCatchups.sort((a, b) => b.endAt - a.endAt);
+            if (!ownCatchups.length) {
+              setPrevCatchups([]);
+              setLastCatchupEndAt(null);
+              return;
+            }
 
             // Split to 1st 3 last catchups, and the rest
             let lastCatchups: CatchupRecord[] | null = ownCatchups.slice(0, 3);
@@ -1527,6 +1539,7 @@ function Catchup() {
                   type="button"
                   onClick={() => {
                     let duration: number | undefined;
+                    const clickTime = currentTimestamp();
                     const beyondRange = RANGES.find((r) => r.beyond);
                     if (beyondRange && range < beyondRange.value) {
                       // Within range
@@ -1537,8 +1550,8 @@ function Catchup() {
                       if (untilLastCatchup) {
                         // Until last catch-up's end time
                         duration =
-                          currentTime && lastCatchupEndAt
-                            ? currentTime - lastCatchupEndAt
+                          clickTime && lastCatchupEndAt
+                            ? clickTime - lastCatchupEndAt
                             : 0;
                       } else {
                         // Go beyond range until max, even after last catch-up's end time

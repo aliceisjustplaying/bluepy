@@ -100,11 +100,10 @@ function isResultsTypeKey(value: string | null): value is ResultsTypeKey {
 
 function firstResultId(list: readonly unknown[]): string | undefined {
   const first = list[0];
-  return first && typeof first === 'object' && 'id' in first
-    ? typeof first.id === 'string'
-      ? first.id
-      : undefined
-    : undefined;
+  if (!first || typeof first !== 'object') return undefined;
+  if ('id' in first && typeof first.id === 'string') return first.id;
+  if ('name' in first && typeof first.name === 'string') return first.name;
+  return undefined;
 }
 
 function Search({ columnMode, ...props }: SearchProps) {
@@ -274,7 +273,11 @@ function Search({ columnMode, ...props }: SearchProps) {
           console.log(results);
           if (type) {
             const typedResults = results;
-            if (!isResultsTypeKey(type)) return;
+            if (!isResultsTypeKey(type)) {
+              setShowMore(false);
+              setUIState('default');
+              return;
+            }
             const typeKey = type;
             const nextCursor = typedResults._pagination?.[type];
             const nextResults = typedResults[typeKey] ?? [];

@@ -272,8 +272,10 @@ export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
     title: ({ hashtag }) => hashtag || '',
     subtitle: ({ instance }) => instance || api().instance,
     path: ({ hashtag, instance, media }) =>
-      `${instance ? `/${instance}` : ''}/t/${(hashtag || '')
+      `${instance ? `/${encodeURIComponent(instance)}` : ''}/t/${(hashtag || '')
         .split(/\s+/)
+        .filter(Boolean)
+        .map((tag) => encodeURIComponent(tag))
         .join('+')}${media ? '?media=1' : ''}`,
     icon: 'hashtag',
   },

@@ -1,5 +1,5 @@
 import { FocusableItem } from '@szhsin/react-menu';
-import type { AnchorHTMLAttributes, Ref } from 'react';
+import type { AnchorHTMLAttributes, MouseEvent, Ref } from 'react';
 
 import { assignFocusableAnchorRef } from '../utils/assign-focusable-anchor-ref';
 
@@ -27,7 +27,13 @@ function MenuLink(props: MenuLinkProps) {
         const setAnchorRef = (node: HTMLAnchorElement | null) => {
           assignFocusableAnchorRef(ref, node);
         };
-        const { to, children, ...anchorProps } = restProps;
+        const { to, children, onClick, ...anchorProps } = restProps;
+        const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+          onClick?.(event);
+          if (!event.defaultPrevented) {
+            closeMenu(event.detail === 0 ? 'Enter' : undefined);
+          }
+        };
         return (
           <>
             {to ? (
@@ -35,18 +41,16 @@ function MenuLink(props: MenuLinkProps) {
                 {...anchorProps}
                 to={to}
                 ref={setAnchorRef}
-                onClick={({ detail }: React.MouseEvent<HTMLAnchorElement>) => {
-                  closeMenu(detail === 0 ? 'Enter' : undefined);
-                }}
-              />
+                onClick={handleClick}
+              >
+                {children}
+              </Link>
             ) : (
               <a
                 href={href}
                 {...anchorProps}
                 ref={setAnchorRef}
-                onClick={({ detail }) => {
-                  closeMenu(detail === 0 ? 'Enter' : undefined);
-                }}
+                onClick={handleClick}
               >
                 {children}
               </a>

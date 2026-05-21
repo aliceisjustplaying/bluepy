@@ -53,7 +53,12 @@ function isAnyStatus(value: unknown): value is AnyStatus {
 }
 
 function isQuoteRef(value: unknown): value is QuoteRef {
-  return isRecord(value);
+  return (
+    isRecord(value) &&
+    (isAnyStatus(value.quoteStatus) ||
+      typeof value.id === 'string' ||
+      isRecord(value.account))
+  );
 }
 
 function staticUnfulfilledState(

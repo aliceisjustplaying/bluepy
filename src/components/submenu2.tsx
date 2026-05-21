@@ -20,7 +20,7 @@ export default function SubMenu2(props: SubMenuProps) {
       const width = itemRef.current.offsetWidth;
       const viewportWidth = window.innerWidth;
       if (width > viewportWidth * 0.5) {
-        setComputedMenuProps({ direction: 'bottom', shift: shift || 8 });
+        setComputedMenuProps({ direction: 'bottom', shift: shift ?? 8 });
       } else {
         setComputedMenuProps({ direction, shift });
       }

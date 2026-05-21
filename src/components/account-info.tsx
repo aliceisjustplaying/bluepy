@@ -182,7 +182,9 @@ async function fetchPostingStats(
     .next();
 
   const result: IteratorResult<mastodon.v1.Status[]> = await fetchStatuses;
-  const statuses = Array.isArray(result.value) ? result.value : [];
+  const statuses: mastodon.v1.Status[] = Array.isArray(result.value)
+    ? result.value
+    : [];
   console.log('fetched statuses', statuses);
   const stats: PostingStats = {
     total: statuses.length,
@@ -278,7 +280,7 @@ function accountInfoReducer(
 ): AccountInfoState {
   switch (action.type) {
     case 'sync':
-      return { ...state, info: action.info };
+      return { uiState: 'default', info: action.info };
     case 'loading':
       return { ...state, uiState: 'loading' };
     case 'loaded':

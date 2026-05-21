@@ -44,6 +44,14 @@ import type { LinkProps } from './link';
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
 
+function escapeHTMLAttribute(value: string | number | null | undefined) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
 const postViewState = () =>
   window.matchMedia('(min-width: calc(40em + 350px))').matches
     ? 'large'
@@ -827,12 +835,12 @@ function Media({
     // This string is only for autoplay + muted to work on Mobile Safari
     const gifHTML = `
       <video
-        src="${url}"
-        poster="${previewUrl}"
-        width="${width}"
-        height="${height}"
-        data-orientation="${orientation}"
-        style="view-transition-name: ${mediaVTN}"
+        src="${escapeHTMLAttribute(url)}"
+        poster="${escapeHTMLAttribute(previewUrl)}"
+        width="${escapeHTMLAttribute(width)}"
+        height="${escapeHTMLAttribute(height)}"
+        data-orientation="${escapeHTMLAttribute(orientation)}"
+        style="view-transition-name: ${escapeHTMLAttribute(mediaVTN)}"
         preload="auto"
         autoplay
         muted

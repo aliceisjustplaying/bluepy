@@ -43,6 +43,7 @@ type PollOption = PollProps['poll']['options'][number];
 
 function keyedPollOptions(options: readonly PollOption[]) {
   const titleCounts = new Map<string, number>();
+  const usedKeys = new Set<string>();
   const keyedOptions: Array<{
     option: PollOption;
     optionKey: string;
@@ -52,9 +53,16 @@ function keyedPollOptions(options: readonly PollOption[]) {
     const { title } = option;
     const titleCount = titleCounts.get(title) ?? 0;
     titleCounts.set(title, titleCount + 1);
+    let optionKey = titleCount ? `${title}-${titleCount}` : title;
+    while (usedKeys.has(optionKey)) {
+      const nextTitleCount = titleCounts.get(title) ?? 0;
+      titleCounts.set(title, nextTitleCount + 1);
+      optionKey = `${title}-${nextTitleCount}`;
+    }
+    usedKeys.add(optionKey);
     keyedOptions.push({
       option,
-      optionKey: titleCount ? `${title}-${titleCount}` : title,
+      optionKey,
       optionIndex: keyedOptions.length,
     });
   }

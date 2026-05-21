@@ -95,10 +95,12 @@ function translangTranslateInner(
       });
     } else {
       // GET
+      const params = new URLSearchParams();
+      if (source !== undefined && source !== null) params.set('sl', source);
+      if (target !== undefined && target !== null) params.set('tl', target);
+      params.set('text', text);
       fetchPromise = fetch(
-        `https://${instance}/api/v1/translate?sl=${encodeURIComponent(
-          String(source),
-        )}&tl=${encodeURIComponent(String(target))}&text=${encodeURIComponent(text)}`,
+        `https://${instance}/api/v1/translate?${params.toString()}`,
         {
           priority: 'low',
           referrerPolicy: 'no-referrer',

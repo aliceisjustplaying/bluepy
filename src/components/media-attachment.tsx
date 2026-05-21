@@ -105,7 +105,13 @@ interface AltDescriptionResponse {
 function isAltDescriptionResponse(
   value: unknown,
 ): value is AltDescriptionResponse {
-  return value !== null && typeof value === "object";
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    (!("description" in value) || typeof value.description === "string") &&
+    (!("error" in value) || typeof value.error === "string")
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -514,7 +520,7 @@ function MediaAttachment({
             />
           ) : suffixType === "video" || suffixType === "gifv" ? (
             <video
-              src={url + "#t=0.1"} // Make Safari show 1st-frame preview
+              src={url ? `${url}#t=0.1` : undefined} // Make Safari show 1st-frame preview
               playsInline
               muted
               disablePictureInPicture

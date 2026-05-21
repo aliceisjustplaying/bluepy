@@ -187,6 +187,10 @@ export default memo(function BackgroundService() {
               }
             })();
           }, STREAMING_TIMEOUT);
+        } else {
+          pollNotifications = setInterval(() => {
+            void checkLatestNotification(masto, instance, true);
+          }, POLL_INTERVAL);
         }
       })();
     }

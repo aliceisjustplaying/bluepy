@@ -435,9 +435,13 @@ function getTransferData(event: ClipboardEvent | DragEvent): DataTransfer | null
   return event.dataTransfer;
 }
 
+function isComposeOpenerWindow(value: unknown): value is ComposeOpenerWindow {
+  return !!value && typeof value === 'object';
+}
+
 function getComposeOpener(windowRef: Window): ComposeOpenerWindow | null {
-  const opener = windowRef.opener;
-  return opener && typeof opener === 'object' ? opener : null;
+  const opener: unknown = windowRef.opener;
+  return isComposeOpenerWindow(opener) ? opener : null;
 }
 
 function getComposeWindowStates(
@@ -452,6 +456,8 @@ function hasResultId(
 ): result is PromiseFulfilledResult<{ id: string }> {
   return (
     result.status === 'fulfilled' &&
+    !!result.value &&
+    typeof result.value === 'object' &&
     typeof result.value.id === 'string' &&
     result.value.id.length > 0
   );
@@ -1658,20 +1664,24 @@ function Compose({
                     setUIState('error');
                     // Alert all the reasons
                     results.forEach((result, index) => {
+                      const fileName =
+                        mediaAttachments[index]?.fileName || index + 1;
                       if (result.status === 'rejected') {
                         console.error(result);
-                        alert(
-                          result.reason ||
-                            t`Attachment #${mediaAttachments[index]?.fileName || index + 1} failed`,
-                        );
+                        alert(result.reason || t`Attachment #${fileName} failed`);
+                      } else if (!hasResultId(result)) {
+                        console.error(result);
+                        alert(t`Attachment #${fileName} failed: missing media ID`);
                       }
                     });
                     return;
                   }
 
                   submitMediaAttachments = results.map((result) => {
-                    if (result.status === 'fulfilled') return result.value;
-                    throw result.reason;
+                    if (hasResultId(result)) return result.value;
+                    throw result.status === 'rejected'
+                      ? result.reason
+                      : new Error('Uploaded attachment is missing an ID');
                   });
                   setMediaAttachments(submitMediaAttachments);
                   console.log({

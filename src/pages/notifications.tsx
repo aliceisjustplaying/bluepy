@@ -568,6 +568,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     for (const n of notifications) {
       const { createdAt, notificationsCount } = n;
       const date = new Date(createdAt ?? '');
+      if (Number.isNaN(date.getTime())) continue;
       const hourKey = date.toISOString().slice(0, 13); // YYYY-MM-DDTHH
       notificationCountPerHour[hourKey] =
         (notificationCountPerHour[hourKey] || 0) + (notificationsCount || 1);
@@ -925,7 +926,7 @@ function Notifications({ columnMode }: NotificationsProps) {
   }, [todayDayKey]);
 
   return (
-    <div
+	                  <div
       id="notifications-page"
       className="deck-container"
       ref={(node) => {
@@ -1572,15 +1573,15 @@ function NotificationRequestModalButton({
                     key={notification.id}
                     className="notification-peek"
                     role="presentation"
-                    onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-                      const { target } = e;
-                      // If button or links
-                      if (
-                        target instanceof HTMLElement &&
-                        (target.tagName === 'BUTTON' || target.tagName === 'A')
-                      ) {
-                        onClose();
-                      }
+	                    onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+	                      const { target } = e;
+	                      // If button or links
+	                      if (
+	                        target instanceof HTMLElement &&
+	                        target.closest('button, a')
+	                      ) {
+	                        onClose();
+	                      }
                     }}
                   >
                     <Notification

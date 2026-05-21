@@ -85,6 +85,10 @@ const MIN_YEAR = 1983;
 const MIN_YEAR_MONTH = `${MIN_YEAR}-01`; // Birth of the Internet
 const CURRENT_YEAR = new Date().getFullYear();
 
+function monthDate(year: number, monthIndex: number) {
+  return new Date(year, monthIndex, 1);
+}
+
 function stateStatus<T extends mastodon.v1.Status>(
   status: T,
 ): T & SaveStatusInput {
@@ -231,7 +235,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   const [currentMonthValue, setCurrentMonthValue] = useState('');
   useEffect(() => {
     const now = new Date();
-    setCurrentMonthValue(now.toISOString().slice(0, 7));
+    const monthValue = (now.getMonth() + 1).toString().padStart(2, '0');
+    setCurrentMonthValue(`${now.getFullYear()}-${monthValue}`);
   }, []);
   const searchOffsetRef = useRef(0);
   useEffect(() => {
@@ -258,11 +263,12 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     value: ReadonlyArray<TimelineItem>;
     done?: boolean;
   }> {
-    const isValidMonth = !!month && /^\d{4}-[01]\d$/.test(month);
+    const isValidMonth = !!month && /^\d{4}-(?:0[1-9]|1[0-2])$/.test(month);
     // JS: `string >= number` coerces the string via ToNumber. Preserve via
     // explicit Number(); falls back to NaN >= MIN_YEAR (false) when month is
     // nullish, matching the original.
-    const isValidYear = Number(month?.split?.('-')?.[0]) >= MIN_YEAR;
+    const parsedYear = Number(month?.split?.('-')?.[0]);
+    const isValidYear = Number.isFinite(parsedYear) && parsedYear >= MIN_YEAR;
     if (isValidMonth && isValidYear) {
       if (!account) {
         return {
@@ -671,12 +677,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                         );
                         const [year, monthStr] = value.split('-');
                         const monthIndex = parseInt(monthStr, 10) - 1;
-                        const date = Date.UTC(parseInt(year, 10), monthIndex);
+                        const date = monthDate(parseInt(year, 10), monthIndex);
                         showToast(
                           t`Showing posts in ${DateTimeFormat(i18n.locale, {
                             month: 'long',
                             year: 'numeric',
-                            timeZone: 'UTC',
                           }).format(date)}`,
                         );
                       }}
@@ -909,8 +914,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                           currentMasto,
                           'accounts',
                         );
+                      const lookupAcct = account.acct.includes('@')
+                        ? account.acct
+                        : `${account.acct}@${instance}`;
                       const acc = await accountsResource.lookup({
-                        acct: account.acct + '@' + instance,
+                        acct: lookupAcct,
                       });
                       const { id: lookupId } = acc;
                       navigatePath(`/${currentInstance}/a/${lookupId}`);
@@ -997,10 +1005,8 @@ function MonthPicker(props: MonthPickerProps) {
         onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
           const { value: month } = e.currentTarget;
           const year = yearFieldRef.current?.value ?? '';
-          if (!checkValidity(month, year)) {
-            // JS original `return { value: '', validity: { valid: false } }`
-            // here, but the return value of an `onInput` handler is discarded;
-            // preserve the early-exit behavior without the dead object.
+          if (!month || !year || !checkValidity(month, year)) {
+            onInput({ value: '', validity: { valid: false } });
             return;
           }
           onInput({
@@ -1021,8 +1027,7 @@ function MonthPicker(props: MonthPickerProps) {
             <option value={monthValue} key={monthValue}>
               {DateTimeFormat(i18n.locale, {
                 month: 'long',
-                timeZone: 'UTC',
-              }).format(Date.UTC(2000, i))}
+              }).format(monthDate(2000, i))}
             </option>
           );
         })}
@@ -1037,10 +1042,8 @@ function MonthPicker(props: MonthPickerProps) {
         onChange={(e: SyntheticEvent<HTMLInputElement>) => {
           const { value: year, validity } = e.currentTarget;
           const month = monthFieldRef.current?.value ?? '';
-          if (!validity.valid || !checkValidity(month, year)) {
-            // JS original `return { value: '', validity: { valid: false } }`
-            // here, but the return value of an `onInput` handler is discarded;
-            // preserve the early-exit behavior without the dead object.
+          if (!year || !month || !validity.valid || !checkValidity(month, year)) {
+            onInput({ value: '', validity: { valid: false } });
             return;
           }
           onInput({

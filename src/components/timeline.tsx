@@ -589,6 +589,10 @@ function Timeline({
               },
               [[], []],
             );
+            const visiblePinnedPosts = filterHiddenStatuses(
+              pinnedPosts,
+              filterContext,
+            );
             let processed: TimelineEntry[] = [
               ...filterHiddenStatuses(otherPosts, filterContext),
             ];
@@ -601,8 +605,8 @@ function Timeline({
                 instance,
               );
             }
-            if (pinnedPosts.length) {
-              processed = [...pinnedPosts, ...processed];
+            if (visiblePinnedPosts.length) {
+              processed = [...visiblePinnedPosts, ...processed];
             }
             console.log(processed);
             if (firstLoad) {

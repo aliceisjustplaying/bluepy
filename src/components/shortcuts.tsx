@@ -306,7 +306,11 @@ function Shortcuts() {
   useEffect(() => {
     if (listsMenuState === 'open') {
       void (async () => {
-        setLists(await getLists());
+        try {
+          setLists(await getLists());
+        } catch (err) {
+          console.error(err);
+        }
       })();
     }
   }, [listsMenuState]);
@@ -380,11 +384,7 @@ function Shortcuts() {
                         className={subtitle ? 'has-subtitle' : ''}
                         to={path ?? ''}
                         onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                          const { target } = e;
-                          if (
-                            target instanceof HTMLElement &&
-                            target.classList.contains('is-active')
-                          ) {
+                          if (e.currentTarget.classList.contains('is-active')) {
                             e.preventDefault();
                             const page = document.getElementById(`${id}-page`);
                             if (page) {
@@ -458,13 +458,17 @@ function Shortcuts() {
           menuClassName="glass-menu shortcuts-menu"
           gap={8}
           position="anchor"
-          onMenuChange={(e) => {
-            if (e.open && hasLists.current) {
-              void (async () => {
-                setLists(await getLists());
-              })();
-            }
-          }}
+            onMenuChange={(e) => {
+              if (e.open && hasLists.current) {
+                void (async () => {
+                  try {
+                    setLists(await getLists());
+                  } catch (err) {
+                    console.error(err);
+                  }
+                })();
+              }
+            }}
           menuButton={
             <button
               ref={setShortcutsButtonRef}

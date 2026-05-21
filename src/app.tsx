@@ -608,6 +608,9 @@ function App() {
         } catch (e) {
           console.error(e);
         }
+        if (cancelled) return;
+        setUIState("error");
+        return;
       }
 
       const code = decodeURIComponent(
