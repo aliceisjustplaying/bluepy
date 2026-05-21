@@ -144,7 +144,10 @@ const supportsInputMonth = mem(() => {
   }
 });
 
-function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
+function useAccountStatusesController({
+  columnMode,
+  ...props
+}: AccountStatusesProps) {
   const { i18n, t } = useLingui();
   const snapStates = useSnapshot(states);
   const routeParams = useParams<'id' | 'instance'>();
@@ -800,6 +803,55 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   }, [account]);
   const sameInstance = instance === accountInstance;
   const allowSwitch = !!account && !sameInstance;
+
+  return {
+    account,
+    accountInstance,
+    accountMonthKey,
+    acct,
+    allowSwitch,
+    currentInstance,
+    currentMasto,
+    displayName,
+    emojis,
+    excludeBoosts,
+    excludeReplies,
+    fetchAccountStatuses,
+    id,
+    instance,
+    isSelf,
+    media,
+    mediaFirst,
+    sameCurrentInstance,
+    tagged,
+    TimelineStart,
+  };
+}
+
+function AccountStatuses(props: AccountStatusesProps) {
+  const { t } = useLingui();
+  const {
+    account,
+    accountInstance,
+    accountMonthKey,
+    acct,
+    allowSwitch,
+    currentInstance,
+    currentMasto,
+    displayName,
+    emojis,
+    excludeBoosts,
+    excludeReplies,
+    fetchAccountStatuses,
+    id,
+    instance,
+    isSelf,
+    media,
+    mediaFirst,
+    sameCurrentInstance,
+    tagged,
+    TimelineStart,
+  } = useAccountStatusesController(props);
 
   return (
     <>
