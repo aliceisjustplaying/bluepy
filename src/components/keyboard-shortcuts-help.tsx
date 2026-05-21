@@ -68,18 +68,22 @@ export default memo(function KeyboardShortcutsHelp() {
                 {(
                   [
                     {
+                      id: 'keyboard-shortcuts-help',
                       action: t`Keyboard shortcuts help`,
                       keys: <kbd>?</kbd>,
                     },
                     {
+                      id: 'next-post',
                       action: t`Next post`,
                       keys: <kbd>j</kbd>,
                     },
                     {
+                      id: 'previous-post',
                       action: t`Previous post`,
                       keys: <kbd>k</kbd>,
                     },
                     {
+                      id: 'skip-carousel-next',
                       action: t`Skip carousel to next post`,
                       keys: (
                         <Trans>
@@ -88,6 +92,7 @@ export default memo(function KeyboardShortcutsHelp() {
                       ),
                     },
                     {
+                      id: 'skip-carousel-previous',
                       action: t`Skip carousel to previous post`,
                       keys: (
                         <Trans>
@@ -96,18 +101,22 @@ export default memo(function KeyboardShortcutsHelp() {
                       ),
                     },
                     {
+                      id: 'load-new-posts',
                       action: t`Load new posts`,
                       keys: <kbd>.</kbd>,
                     },
                     {
+                      id: 'open-post-details',
                       action: t`Open post details`,
                       keys: <kbd>Enter</kbd>,
                     },
                     {
+                      id: 'open-media-or-post',
                       action: t`Open media or post details`,
                       keys: <kbd>o</kbd>,
                     },
                     {
+                      id: 'expand-content-warning',
                       action: (
                         <Trans>
                           Expand content warning or
@@ -118,6 +127,7 @@ export default memo(function KeyboardShortcutsHelp() {
                       keys: <kbd>x</kbd>,
                     },
                     {
+                      id: 'close-post-dialogs',
                       action: t`Close post or dialogs`,
                       keys: (
                         <Trans>
@@ -126,10 +136,12 @@ export default memo(function KeyboardShortcutsHelp() {
                       ),
                     },
                     {
+                      id: 'compose-new-post',
                       action: t`Compose new post`,
                       keys: <kbd>c</kbd>,
                     },
                     {
+                      id: 'compose-new-post-window',
                       action: t`Compose new post (new window)`,
                       className: 'insignificant',
                       keys: (
@@ -139,6 +151,7 @@ export default memo(function KeyboardShortcutsHelp() {
                       ),
                     },
                     {
+                      id: 'send-post',
                       action: t`Send post`,
                       keys: (
                         <Trans>
@@ -148,14 +161,17 @@ export default memo(function KeyboardShortcutsHelp() {
                       ),
                     },
                     {
+                      id: 'search',
                       action: t`Search`,
                       keys: <kbd>/</kbd>,
                     },
                     {
+                      id: 'reply',
                       action: t`Reply`,
                       keys: <kbd>r</kbd>,
                     },
                     {
+                      id: 'reply-window',
                       action: t`Reply (new window)`,
                       className: 'insignificant',
                       keys: (
@@ -165,6 +181,7 @@ export default memo(function KeyboardShortcutsHelp() {
                       ),
                     },
                     {
+                      id: 'like',
                       action: t`Like (favourite)`,
                       keys: (
                         <Trans>
@@ -173,6 +190,7 @@ export default memo(function KeyboardShortcutsHelp() {
                       ),
                     },
                     {
+                      id: 'repost',
                       action: t`Repost`,
                       keys: (
                         <Trans>
@@ -181,14 +199,17 @@ export default memo(function KeyboardShortcutsHelp() {
                       ),
                     },
                     {
+                      id: 'quote',
                       action: t`Quote`,
                       keys: <kbd>q</kbd>,
                     },
                     {
+                      id: 'bookmark',
                       action: t`Bookmark`,
                       keys: <kbd>d</kbd>,
                     },
                     {
+                      id: 'cloak-mode',
                       action: t`Toggle Cloak mode`,
                       keys: (
                         <Trans>
@@ -197,32 +218,38 @@ export default memo(function KeyboardShortcutsHelp() {
                       ),
                     },
                     {
+                      id: 'go-home',
                       action: t`Go to Home`,
                       keys: <SequentialKeys key1="g" key2="h" />,
                     },
                     {
+                      id: 'go-notifications',
                       action: t`Go to Notifications`,
                       keys: <SequentialKeys key1="g" key2="n" />,
                     },
                     {
+                      id: 'go-settings',
                       action: t`Go to Settings`,
                       keys: <SequentialKeys key1="g" key2="s" />,
                     },
                     {
+                      id: 'go-profile',
                       action: t`Go to Profile`,
                       keys: <SequentialKeys key1="g" key2="p" />,
                     },
                     {
+                      id: 'go-bookmarks',
                       action: t`Go to Bookmarks`,
                       keys: <SequentialKeys key1="g" key2="b" />,
                     },
                   ] as ReadonlyArray<{
+                    id: string;
                     action: import('react').ReactNode;
                     className?: string;
                     keys: import('react').ReactNode;
                   }>
-                ).map(({ action, className, keys }) => (
-                  <tr key={action as import('react').Key}>
+                ).map(({ id, action, className, keys }) => (
+                  <tr key={id}>
                     <th className={className}>{action}</th>
                     <td>{keys}</td>
                   </tr>

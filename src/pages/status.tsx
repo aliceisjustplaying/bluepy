@@ -833,8 +833,8 @@ function StatusThread({
           retries: 4,
         });
 
-      const hasStatus = !!snapStates.statuses[sKey];
       let heroStatus = rawStatusFromState(snapStates.statuses[sKey]);
+      const hasStatus = !!heroStatus;
       if (hasStatus && !reloadHero) {
         console.debug('Hero status is cached');
       } else {
