@@ -178,13 +178,15 @@ function stringList(value: unknown): string[] {
     : [];
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
 function notificationList(value: unknown): NotificationItem[] {
   return Array.isArray(value)
     ? value.filter(
         (item): item is NotificationItem =>
-          typeof item === "object" &&
-          item !== null &&
-          "id" in item &&
+          isRecord(item) &&
           typeof item.id === "string",
       )
     : [];
@@ -194,7 +196,7 @@ function notificationRecords(value: unknown): NotificationRecord[] {
   return Array.isArray(value)
     ? value.filter(
         (item): item is NotificationRecord =>
-          typeof item === "object" && item !== null,
+          isRecord(item),
       )
     : [];
 }

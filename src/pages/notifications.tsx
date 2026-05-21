@@ -104,7 +104,10 @@ interface NotificationRequestLike {
 // NOTE: The JS original also reads `.nextParams` off the iterator returned
 // from `values()` for a Pixelfed pagination guard. Keep it optional so the
 // normal `undefined` read preserves the JS behavior.
-interface NotificationsIterator extends AsyncIterableIterator<unknown> {
+type NotificationsPageValue = Parameters<typeof massageNotifications2>[0];
+
+interface NotificationsIterator
+  extends AsyncIterableIterator<NotificationsPageValue, undefined> {
   nextParams?: unknown;
 }
 interface MastoV2NotificationsListIterable {
