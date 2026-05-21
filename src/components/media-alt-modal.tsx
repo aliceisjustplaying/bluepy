@@ -4,28 +4,13 @@ import { useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
-import localeMatchDefault from '../utils/locale-match';
+import localeMatch from '../utils/locale-match';
 import { speak, supportsTTS } from '../utils/speech';
 import states from '../utils/states';
 
 import Icon from './icon';
 import Menu2 from './menu2';
 import TranslationBlock from './translation-block';
-
-// `localeMatch` is called throughout the codebase with 2 args (omitting the
-// required `defaultLocale`). The wrapper catches the resulting throw and
-// returns `false`. The `availableLocales` argument can in practice contain
-// `false` (when `getTranslateTargetLanguage` returns `false`) — the wrapper's
-// try/catch handles that. Cast to a permissive signature reflecting both
-// realities so we can keep matching the existing call shape without churning
-// the rest of the codebase in this batch.
-type OptionalDefaultLocaleMatch = (
-  requestedLocales: readonly string[],
-  availableLocales: readonly (string | false)[],
-  defaultLocale?: string,
-) => string | false;
-
-const localeMatch = localeMatchDefault as OptionalDefaultLocaleMatch;
 
 const FORCE_TRANSLATE_LIMIT = 140;
 

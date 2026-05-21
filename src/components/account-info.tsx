@@ -4,7 +4,7 @@ import { msg, plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { HTMLAttributes } from 'react';
+import type { ReactNode } from 'react';
 import {
   useCallback,
   useEffect,
@@ -41,7 +41,7 @@ import EditProfileSheetComponent, {
 } from './edit-profile-sheet';
 import EmojiText from './emoji-text';
 import Icon from './icon';
-import Link, { type LinkProps } from './link';
+import Link from './link';
 import Menu2 from './menu2';
 import Modal from './modal';
 import RawHtml from './raw-html';
@@ -148,6 +148,14 @@ interface PostingStats {
   boosts: number;
   quotes: number;
   daysSinceLastPost?: number;
+}
+
+interface LinkOrDivProps {
+  to: string;
+  className?: string;
+  tabIndex?: number;
+  onClick?: () => void;
+  children?: ReactNode;
 }
 
 // `info` updates may carry payload state for the app's flows. The QR/avatar
@@ -516,9 +524,9 @@ function AccountInfo({
   }
 
   const LinkOrDiv = useCallback(
-    ({ to, ...props }: LinkProps) => {
+    ({ to, ...props }: LinkOrDivProps) => {
       return standalone ? (
-        <div {...(props as HTMLAttributes<HTMLDivElement>)} />
+        <div {...props} />
       ) : (
         <Link to={to} {...props} />
       );

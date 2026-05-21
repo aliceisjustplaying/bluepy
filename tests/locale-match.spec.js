@@ -3,6 +3,20 @@ import { test, expect } from '@playwright/test';
 
 import { _localeMatch as localeMatch } from '../src/utils/locale-match.js';
 
+test.describe('Bluepy locale wrapper behavior', () => {
+  test('matches compatible locales without a default fallback', () => {
+    expect(localeMatch(['en-US'], ['en'])).toBe('en');
+  });
+
+  test('empty default fallback still allows real matches', () => {
+    expect(localeMatch(['pt-BR'], ['pt'], '')).toBe('pt');
+  });
+
+  test('no match without a default stays falsy', () => {
+    expect(localeMatch(['fr'], ['en'])).toBe(false);
+  });
+});
+
 // https://github.com/formatjs/formatjs/blob/cacd3182a590b6f373ca726b011a026a241f4740/packages/intl-localematcher/tests/index.test.ts
 test.describe('official formatjs test cases', () => {
   test('zh-HK', () => {

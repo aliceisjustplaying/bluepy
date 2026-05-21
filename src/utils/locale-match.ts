@@ -6,6 +6,8 @@ import store from './store';
 const CACHE_STORE = 'localeMatchCache';
 
 type MatchArgs = Parameters<typeof match>;
+type MatchOptions = MatchArgs[3];
+type LocaleMatchAvailable = string | false;
 
 interface LocaleInfo {
   canonical: string;
@@ -87,12 +89,30 @@ function normalizeBestFitMatch(
   return canonicalMatch;
 }
 
-function baseLocaleMatch(...args: MatchArgs): string | false {
+function baseLocaleMatch(
+  requestedLocales: readonly string[],
+  availableLocales: readonly LocaleMatchAvailable[],
+  defaultLocale?: string,
+  opts?: MatchOptions,
+): string | false {
+  const supportedLocales = availableLocales.filter(
+    (locale): locale is string => typeof locale === 'string',
+  );
   try {
-    const matchedLocale = match(...args);
-    return normalizeBestFitMatch(args[0], args[1], matchedLocale);
+    const matchArgs =
+      defaultLocale === undefined
+        ? [requestedLocales, supportedLocales]
+        : [requestedLocales, supportedLocales, defaultLocale, opts];
+    const matchedLocale = Reflect.apply(match, undefined, matchArgs);
+    if (typeof matchedLocale !== 'string') {
+      return defaultLocale ? canonicalLocale(defaultLocale) : false;
+    }
+    return normalizeBestFitMatch(
+      requestedLocales,
+      supportedLocales,
+      matchedLocale,
+    );
   } catch {
-    const defaultLocale = args[2];
     return defaultLocale ? canonicalLocale(defaultLocale) : false;
   }
 }
