@@ -707,10 +707,21 @@ function Catchup() {
   const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
 
   const [range, setRange] = useState<number>(1);
+  const [currentTime, setCurrentTime] = useState<number | null>(null);
 
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<string>('asc');
   const [groupBy, setGroupBy] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCurrentTime(Date.now());
+    const intervalId = window.setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 30_000);
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -998,9 +1009,9 @@ function Catchup() {
   // if range value exceeded lastCatchupEndAt, show error
   const lastCatchupRange = useMemo(() => {
     // return hour, not ms
-    if (!lastCatchupEndAt) return null;
-    return (Date.now() - lastCatchupEndAt) / 1000 / 60 / 60;
-  }, [lastCatchupEndAt]);
+    if (!lastCatchupEndAt || !currentTime) return null;
+    return (currentTime - lastCatchupEndAt) / 1000 / 60 / 60;
+  }, [currentTime, lastCatchupEndAt]);
 
   useEffect(() => {
     if (uiState !== 'results') return undefined;
@@ -1454,10 +1465,10 @@ function Catchup() {
                   {_(RANGES[range - 1].label)}
                   <br />
                   <small className="insignificant" suppressHydrationWarning>
-                    {range == RANGES[RANGES.length - 1].value
+                    {range == RANGES[RANGES.length - 1].value || !currentTime
                       ? t`until the max`
                       : niceDateTime(
-                          new Date(Date.now() - range * 60 * 60 * 1000),
+                          currentTime - range * 60 * 60 * 1000,
                         )}
                   </small>
                 </span>
@@ -1479,7 +1490,10 @@ function Catchup() {
                       const untilLastCatchup = catchupLastRef.current?.checked;
                       if (untilLastCatchup) {
                         // Until last catch-up's end time
-                        duration = Date.now() - (lastCatchupEndAt ?? Date.now());
+                        duration =
+                          currentTime && lastCatchupEndAt
+                            ? currentTime - lastCatchupEndAt
+                            : 0;
                       } else {
                         // Go beyond range until max, even after last catch-up's end time
                         // Don't need to set duration
@@ -1508,7 +1522,7 @@ function Catchup() {
                     />{' '}
                     <Trans>
                       Until the last catch-up (
-                      {dtf.format(new Date(lastCatchupEndAt))})
+                      {dtf.format(lastCatchupEndAt)})
                     </Trans>
                   </label>
                 </p>
@@ -1533,11 +1547,8 @@ function Catchup() {
                           <Icon icon="history2" />{' '}
                           <span>
                             {pc.startAt
-                              ? dtf.formatRange(
-                                  new Date(pc.startAt),
-                                  new Date(pc.endAt),
-                                )
-                              : `… – ${dtf.format(new Date(pc.endAt))}`}
+                              ? dtf.formatRange(pc.startAt, pc.endAt)
+                              : `… – ${dtf.format(pc.endAt)}`}
                           </span>
                         </Link>{' '}
                         <span>
@@ -1603,8 +1614,8 @@ function Catchup() {
                   <p>
                     <b className="ib">
                       {dtf.formatRange(
-                        new Date(posts[0].createdAt),
-                        new Date(posts[posts.length - 1].createdAt),
+                        Date.parse(posts[0].createdAt),
+                        Date.parse(posts[posts.length - 1].createdAt),
                       )}
                     </b>
                   </p>
@@ -2301,7 +2312,7 @@ const PostLine = memo(
             post={(reblog as CatchupPost | null | undefined) || post}
           />{' '}
           <RelativeTime
-            dateTime={new Date(reblog?.createdAt || post.createdAt)}
+            dateTime={reblog?.createdAt || post.createdAt}
             format="micro"
           />
         </span>
