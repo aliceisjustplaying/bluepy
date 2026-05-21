@@ -83,6 +83,7 @@ export const BSKY_INSTANCE = 'bsky.social';
 const BSKY_DISCOVER_FEED =
   'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot';
 const BSKY_GET_POSTS_LIMIT = 25;
+const BSKY_FOLLOWING_FILL_MAX_PAGES = 5;
 const BSKY_THREAD_CONTEXT_DEPTH = 1000;
 const BSKY_VIDEO_SERVICE = 'https://video.bsky.app';
 const BSKY_VIDEO_SERVICE_DID = 'did:web:video.bsky.app';
@@ -1759,6 +1760,43 @@ export function postProcessFollowingFeed(
   });
 }
 
+export async function fetchFollowingFeedPage({
+  agent,
+  currentUserDid,
+  cursor,
+  limit,
+  maxPages = BSKY_FOLLOWING_FILL_MAX_PAGES,
+}: {
+  agent: AtprotoAgent;
+  currentUserDid: string | undefined;
+  cursor?: string;
+  limit: number;
+  maxPages?: number;
+}): Promise<CollectionPage<AdaptedStatus[]>> {
+  const items: AdaptedStatus[] = [];
+
+  const collect = async (
+    page: number,
+    pageCursor: string | undefined,
+  ): Promise<string | undefined> => {
+    if (page >= maxPages) return pageCursor;
+
+    const res = await agent.getTimeline({ limit, cursor: pageCursor });
+    const nextCursor = res.data.cursor;
+    const feed = await hydrateFeedReplyContext(res.data.feed, agent);
+    const processedFeed = postProcessFollowingFeed(feed, currentUserDid);
+    items.push(...feedToStatuses(processedFeed, agent));
+
+    if (items.length >= limit || !nextCursor) return nextCursor;
+    return collect(page + 1, nextCursor);
+  };
+
+  return {
+    cursor: await collect(0, cursor),
+    items,
+  };
+}
+
 export function postToStatus(
   feedItemOrPost:
     | AtprotoFeedItem
@@ -2974,18 +3012,14 @@ export function createAtprotoClient({
       timelines: {
         home: {
           list({ limit = 20 }: { limit?: number } = {}) {
-            return makeCollection<AdaptedStatus[]>(async (cursor) => {
-              const res = await agent.getTimeline({ limit, cursor });
-              const feed = await hydrateFeedReplyContext(res.data.feed, agent);
-              const processedFeed = postProcessFollowingFeed(
-                feed,
-                agentLoose.did,
-              );
-              return {
-                cursor: res.data.cursor,
-                items: feedToStatuses(processedFeed, agent),
-              };
-            });
+            return makeCollection<AdaptedStatus[]>((cursor) =>
+              fetchFollowingFeedPage({
+                agent,
+                currentUserDid: agentLoose.did,
+                cursor,
+                limit,
+              }),
+            );
           },
         },
         public: {
