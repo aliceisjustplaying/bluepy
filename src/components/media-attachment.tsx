@@ -1,23 +1,23 @@
-import { Trans, useLingui } from '@lingui/react/macro';
-import { MenuItem } from '@szhsin/react-menu';
-import type { SyntheticEvent } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
+import { Trans, useLingui } from "@lingui/react/macro";
+import { MenuItem } from "@szhsin/react-menu";
+import type { SyntheticEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
 
-import extractImageDescription from '../utils/extract-image-desc';
-import localeCode2Text from '../utils/localeCode2Text';
-import prettyBytes from '../utils/pretty-bytes';
-import showToast from '../utils/show-toast';
-import states from '../utils/states';
-import { getCurrentInstanceConfiguration } from '../utils/store-utils';
-import supports from '../utils/supports';
+import extractImageDescription from "../utils/extract-image-desc";
+import localeCode2Text from "../utils/localeCode2Text";
+import prettyBytes from "../utils/pretty-bytes";
+import showToast from "../utils/show-toast";
+import states from "../utils/states";
+import { getCurrentInstanceConfiguration } from "../utils/store-utils";
+import supports from "../utils/supports";
 
-import Icon from './icon';
-import Menu2 from './menu2';
-import Modal from './modal';
+import Icon from "./icon";
+import Menu2 from "./menu2";
+import Modal from "./modal";
 
 const IMG_ALT_API_URL =
-  typeof import.meta.env.PHANPY_IMG_ALT_API_URL === 'string'
+  typeof import.meta.env.PHANPY_IMG_ALT_API_URL === "string"
     ? import.meta.env.PHANPY_IMG_ALT_API_URL
     : undefined;
 
@@ -56,15 +56,15 @@ interface ConfigurationWithMedia {
 }
 
 interface MaxErrorImageSize {
-  type: 'imageSizeLimit';
+  type: "imageSizeLimit";
   details: { imageSize: number; imageSizeLimit: number };
 }
 interface MaxErrorVideoSize {
-  type: 'videoSizeLimit';
+  type: "videoSizeLimit";
   details: { videoSize: number; videoSizeLimit: number };
 }
 interface MaxErrorImageMatrix {
-  type: 'imageMatrixLimit';
+  type: "imageMatrixLimit";
   details: {
     imageMatrix: number;
     imageMatrixLimit: number;
@@ -73,7 +73,7 @@ interface MaxErrorImageMatrix {
   };
 }
 interface MaxErrorVideoMatrix {
-  type: 'videoMatrixLimit';
+  type: "videoMatrixLimit";
   details: {
     videoMatrix: number;
     videoMatrixLimit: number;
@@ -82,7 +82,7 @@ interface MaxErrorVideoMatrix {
   };
 }
 interface MaxErrorVideoFrameRate {
-  type: 'videoFrameRateLimit';
+  type: "videoFrameRateLimit";
   details?: undefined;
 }
 
@@ -105,7 +105,7 @@ interface AltDescriptionResponse {
 function isAltDescriptionResponse(
   value: unknown,
 ): value is AltDescriptionResponse {
-  return value !== null && typeof value === 'object';
+  return value !== null && typeof value === "object";
 }
 
 function scaleDimension(
@@ -133,9 +133,9 @@ function MediaAttachment({
   onRemove = () => {},
 }: MediaAttachmentProps) {
   const { i18n, t } = useLingui();
-  const [uiState, setUIState] = useState('default');
+  const [uiState, setUIState] = useState("default");
   const supportsEdit =
-    supports('@mastodon') || supports('@gotosocial/edit-media-attributes');
+    supports("@mastodon") || supports("@gotosocial/edit-media-attributes");
   const { type, id, fileData, fileName, file } = attachment;
   const fileSize = attachment.size ?? file?.size;
   const url = useMemo(() => {
@@ -179,26 +179,26 @@ function MediaAttachment({
   const [maxError, setMaxError] = useState<MaxError | null>(() => {
     if (!checkMaxError) return null;
     if (
-      type.startsWith('image') &&
+      type.startsWith("image") &&
       imageSizeLimit &&
       fileSize !== undefined &&
       fileSize > imageSizeLimit
     ) {
       return {
-        type: 'imageSizeLimit',
+        type: "imageSizeLimit",
         details: {
           imageSize: fileSize,
           imageSizeLimit,
         },
       };
     } else if (
-      type.startsWith('video') &&
+      type.startsWith("video") &&
       videoSizeLimit &&
       fileSize !== undefined &&
       fileSize > videoSizeLimit
     ) {
       return {
-        type: 'videoSizeLimit',
+        type: "videoSizeLimit",
         details: {
           videoSize: fileSize,
           videoSizeLimit,
@@ -213,7 +213,7 @@ function MediaAttachment({
     const matrix = width * height;
     if (matrix > imageMatrixLimit) {
       setMaxError({
-        type: 'imageMatrixLimit',
+        type: "imageMatrixLimit",
         details: {
           imageMatrix: matrix,
           imageMatrixLimit,
@@ -229,7 +229,7 @@ function MediaAttachment({
     const matrix = width * height;
     if (matrix > videoMatrixLimit) {
       setMaxError({
-        type: 'videoMatrixLimit',
+        type: "videoMatrixLimit",
         details: {
           videoMatrix: matrix,
           videoMatrixLimit,
@@ -269,7 +269,7 @@ function MediaAttachment({
     const hasFileData = snapFileData || snapFile;
     if (
       !hasFileData ||
-      !snapType.startsWith('image/') ||
+      !snapType.startsWith("image/") ||
       snapId ||
       snapDescription
     ) {
@@ -279,11 +279,11 @@ function MediaAttachment({
     let cancelled = false;
 
     void (async () => {
-      setUIState('loading');
+      setUIState("loading");
       try {
         // Reconstruct File from fileData, or fall back to legacy file object
         const fileObj = snapFileData
-          ? new File([snapFileData], snapFileName || 'upload', {
+          ? new File([snapFileData], snapFileName || "upload", {
               type: snapType,
             })
           : snapFile;
@@ -292,10 +292,10 @@ function MediaAttachment({
           setDescription(extractedDescription);
         }
       } catch (error) {
-        console.debug('Failed to extract image metadata:', error);
+        console.debug("Failed to extract image metadata:", error);
       } finally {
         if (!cancelled) {
-          setUIState('default');
+          setUIState("default");
         }
       }
     })();
@@ -305,14 +305,14 @@ function MediaAttachment({
     };
   }, []);
 
-  let [suffixType, subtype] = type.split('/');
+  let [suffixType, subtype] = type.split("/");
   // If type is not supported, try to find a supported type with the same subtype
   // E.g. application/ogg -> audio/ogg
   const suffixTypes = new Set<string>();
   const subTypeMap: Record<string, string> = {};
   if (supportedMimeTypes?.length) {
     supportedMimeTypes.forEach((mimeType) => {
-      const [topType, st] = mimeType.split('/');
+      const [topType, st] = mimeType.split("/");
       subTypeMap[st] = topType;
       suffixTypes.add(topType);
     });
@@ -358,7 +358,7 @@ function MediaAttachment({
       ) : (
         <textarea
           ref={textareaRef}
-          value={description || ''}
+          value={description || ""}
           lang={lang}
           placeholder={
             (
@@ -375,8 +375,8 @@ function MediaAttachment({
           autoCorrect="on"
           spellCheck={true}
           dir="auto"
-          disabled={disabled || uiState === 'loading'}
-          className={uiState === 'loading' ? 'loading' : ''}
+          disabled={disabled || uiState === "loading"}
+          className={uiState === "loading" ? "loading" : ""}
           maxLength={descriptionLimit} // Not unicode-aware :(
           onChange={(e: SyntheticEvent<HTMLTextAreaElement>) => {
             const { value } = e.currentTarget;
@@ -399,13 +399,13 @@ function MediaAttachment({
 
   const maxErrorText = (err: MaxError): string => {
     switch (err.type) {
-      case 'imageSizeLimit': {
+      case "imageSizeLimit": {
         const { imageSize, imageSizeLimit: limit } = err.details;
         return t`File size too large. Uploading might encounter issues. Try reduce the file size from ${prettyBytes(
           imageSize,
         )} to ${prettyBytes(limit)} or lower.`;
       }
-      case 'imageMatrixLimit': {
+      case "imageMatrixLimit": {
         const {
           imageMatrix: matrix,
           imageMatrixLimit: limit,
@@ -424,13 +424,13 @@ function MediaAttachment({
           newHeight,
         )}px.`;
       }
-      case 'videoSizeLimit': {
+      case "videoSizeLimit": {
         const { videoSize, videoSizeLimit: limit } = err.details;
         return t`File size too large. Uploading might encounter issues. Try reduce the file size from ${prettyBytes(
           videoSize,
         )} to ${prettyBytes(limit)} or lower.`;
       }
-      case 'videoMatrixLimit': {
+      case "videoMatrixLimit": {
         const {
           videoMatrix: matrix,
           videoMatrixLimit: limit,
@@ -449,12 +449,12 @@ function MediaAttachment({
           newHeight,
         )}px.`;
       }
-      case 'videoFrameRateLimit': {
+      case "videoFrameRateLimit": {
         // Not possible to detect this on client-side for now
         return t`Frame rate too high. Uploading might encounter issues.`;
       }
       default:
-        return '';
+        return "";
     }
   };
 
@@ -472,13 +472,13 @@ function MediaAttachment({
             setShowModal(true);
           }}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               setShowModal(true);
             }
           }}
         >
-          {suffixType === 'image' ? (
+          {suffixType === "image" ? (
             <img
               src={url ?? undefined}
               alt=""
@@ -488,9 +488,9 @@ function MediaAttachment({
                 validateImageMatrix(naturalWidth, naturalHeight);
               }}
             />
-          ) : suffixType === 'video' || suffixType === 'gifv' ? (
+          ) : suffixType === "video" || suffixType === "gifv" ? (
             <video
-              src={url + '#t=0.1'} // Make Safari show 1st-frame preview
+              src={url + "#t=0.1"} // Make Safari show 1st-frame preview
               playsInline
               muted
               disablePictureInPicture
@@ -503,7 +503,7 @@ function MediaAttachment({
                 }
               }}
             />
-          ) : suffixType === 'audio' ? (
+          ) : suffixType === "audio" ? (
             // TODO(oxlint:jsx-a11y/media-has-caption): user-uploaded
             // attachment preview; no captions track is available, and
             // emitting an empty <track> would advertise fake captions.
@@ -570,15 +570,15 @@ function MediaAttachment({
             </header>
             <main tabIndex={-1}>
               <div className="media-preview">
-                {suffixType === 'image' ? (
+                {suffixType === "image" ? (
                   <img src={url ?? undefined} alt="" />
-                ) : suffixType === 'video' || suffixType === 'gifv' ? (
+                ) : suffixType === "video" || suffixType === "gifv" ? (
                   // TODO(oxlint:jsx-a11y/media-has-caption): user-uploaded
                   // attachment preview; no captions track is available,
                   // and emitting an empty <track> would advertise fake
                   // captions.
                   <video src={url ?? undefined} playsInline controls />
-                ) : suffixType === 'audio' ? (
+                ) : suffixType === "audio" ? (
                   // TODO(oxlint:jsx-a11y/media-has-caption): user-uploaded
                   // attachment preview; no captions track is available,
                   // and emitting an empty <track> would advertise fake
@@ -589,7 +589,7 @@ function MediaAttachment({
               <div className="media-form">
                 {descTextarea}
                 <footer>
-                  {suffixType === 'image' &&
+                  {suffixType === "image" &&
                     /^(png|jpe?g|gif|webp)$/i.test(subtype) &&
                     states.settings.mediaAltGenerator &&
                     !!IMG_ALT_API_URL && (
@@ -612,9 +612,9 @@ function MediaAttachment({
                         }
                       >
                         <MenuItem
-                          disabled={uiState === 'loading'}
+                          disabled={uiState === "loading"}
                           onClick={() => {
-                            setUIState('loading');
+                            setUIState("loading");
                             toastRef.current = showToast({
                               text: t`Generating description. Please wait…`,
                               duration: -1,
@@ -624,18 +624,18 @@ function MediaAttachment({
                               try {
                                 const body = new FormData();
                                 const fileObj = fileData
-                                  ? new File([fileData], fileName || 'upload', {
+                                  ? new File([fileData], fileName || "upload", {
                                       type,
                                     })
                                   : file;
                                 if (fileObj) {
-                                  body.append('image', fileObj);
+                                  body.append("image", fileObj);
                                 }
                                 if (!IMG_ALT_API_URL) {
                                   return;
                                 }
                                 const response = await fetch(IMG_ALT_API_URL, {
-                                  method: 'POST',
+                                  method: "POST",
                                   body,
                                 }).then((r) => r.json() as unknown);
                                 if (!isAltDescriptionResponse(response)) return;
@@ -652,14 +652,14 @@ function MediaAttachment({
                                     : t`Failed to generate description`,
                                 );
                               } finally {
-                                setUIState('default');
+                                setUIState("default");
                                 toastRef.current?.hideToast?.();
                               }
                             })();
                           }}
                         >
                           <Icon icon="sparkles2" />
-                          {lang && lang !== 'en' ? (
+                          {lang && lang !== "en" ? (
                             <small>
                               <Trans>Generate description…</Trans>
                               <br />
@@ -671,11 +671,11 @@ function MediaAttachment({
                             </span>
                           )}
                         </MenuItem>
-                        {!!lang && lang !== 'en' && (
+                        {!!lang && lang !== "en" && (
                           <MenuItem
-                            disabled={uiState === 'loading'}
+                            disabled={uiState === "loading"}
                             onClick={() => {
-                              setUIState('loading');
+                              setUIState("loading");
                               toastRef.current = showToast({
                                 text: t`Generating description. Please wait…`,
                                 duration: -1,
@@ -687,12 +687,12 @@ function MediaAttachment({
                                   const fileObj = fileData
                                     ? new File(
                                         [fileData],
-                                        fileName || 'upload',
+                                        fileName || "upload",
                                         { type },
                                       )
                                     : file;
                                   if (fileObj) {
-                                    body.append('image', fileObj);
+                                    body.append("image", fileObj);
                                   }
                                   if (!IMG_ALT_API_URL) {
                                     return;
@@ -701,11 +701,12 @@ function MediaAttachment({
                                   const response = await fetch(
                                     IMG_ALT_API_URL + params,
                                     {
-                                      method: 'POST',
+                                      method: "POST",
                                       body,
                                     },
                                   ).then((r) => r.json() as unknown);
-                                  if (!isAltDescriptionResponse(response)) return;
+                                  if (!isAltDescriptionResponse(response))
+                                    return;
                                   if (response.error) {
                                     throw new Error(response.error);
                                   }
@@ -715,11 +716,11 @@ function MediaAttachment({
                                   const err = e instanceof Error ? e : null;
                                   showToast(
                                     t`Failed to generate description${
-                                      err?.message ? `: ${err.message}` : ''
+                                      err?.message ? `: ${err.message}` : ""
                                     }`,
                                   );
                                 } finally {
-                                  setUIState('default');
+                                  setUIState("default");
                                   toastRef.current?.hideToast?.();
                                 }
                               })();
@@ -730,9 +731,9 @@ function MediaAttachment({
                               <Trans>Generate description…</Trans>
                               <br />
                               <Trans>
-                                ({localeCode2Text(lang)}){' '}
+                                ({localeCode2Text(lang)}){" "}
                                 <span className="more-insignificant">
-                                  (experimental)
+                                  — experimental
                                 </span>
                               </Trans>
                             </small>
@@ -746,7 +747,7 @@ function MediaAttachment({
                     onClick={() => {
                       setShowModal(false);
                     }}
-                    disabled={uiState === 'loading'}
+                    disabled={uiState === "loading"}
                   >
                     <Trans>Done</Trans>
                   </button>

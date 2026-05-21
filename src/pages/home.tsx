@@ -1,33 +1,33 @@
-import './notifications-menu.css';
+import "./notifications-menu.css";
 
-import { msg } from '@lingui/core/macro';
-import { Trans, useLingui } from '@lingui/react/macro';
-import { ControlledMenu } from '@szhsin/react-menu';
-import type { RefObject } from 'react';
-import { memo } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSnapshot } from 'valtio';
+import { msg } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { ControlledMenu } from "@szhsin/react-menu";
+import type { RefObject } from "react";
+import { memo } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSnapshot } from "valtio";
 
-import Columns from '../components/columns';
-import Icon from '../components/icon';
-import Link from '../components/link';
-import Loader from '../components/loader';
-import Notification from '../components/notification';
-import { api } from '../utils/api';
-import db from '../utils/db';
-import FilterContext from '../utils/filter-context';
-import { massageNotifications2 } from '../utils/group-notifications';
-import states, { saveStatus } from '../utils/states';
-import store from '../utils/store';
-import { getCurrentAccountNS } from '../utils/store-utils';
+import Columns from "../components/columns";
+import Icon from "../components/icon";
+import Link from "../components/link";
+import Loader from "../components/loader";
+import Notification from "../components/notification";
+import { api } from "../utils/api";
+import db from "../utils/db";
+import FilterContext from "../utils/filter-context";
+import { massageNotifications2 } from "../utils/group-notifications";
+import states, { saveStatus } from "../utils/states";
+import store from "../utils/store";
+import { getCurrentAccountNS } from "../utils/store-utils";
 
-import Following from './following';
-import Following2 from './following2';
-import List from './list';
+import Following from "./following";
+import Following2 from "./following2";
+import List from "./list";
 import {
   getGroupedNotifications,
   mastoFetchNotifications,
-} from './notifications';
+} from "./notifications";
 
 interface HomeTimeline {
   type?: string;
@@ -38,7 +38,7 @@ function Home() {
   const { i18n } = useLingui();
   const _ = i18n._.bind(i18n);
   const snapStates = useSnapshot(states);
-  __BENCHMARK.end('time-to-home');
+  __BENCHMARK.end("time-to-home");
   useEffect(() => {
     void (async () => {
       const keys = (await db.drafts.keys()) as string[];
@@ -54,16 +54,16 @@ function Home() {
 
   const expTimeline2 = useRef(false);
   if (!expTimeline2.current) {
-    expTimeline2.current = !!store.local.get('experiments-timeline2');
+    expTimeline2.current = !!store.local.get("experiments-timeline2");
   }
   const homeTimeline = (snapStates.homeTimeline ||
-    store.account.get('homeTimeline')) as HomeTimeline | null | undefined;
+    store.account.get("homeTimeline")) as HomeTimeline | null | undefined;
   const defaultFeedID =
-    homeTimeline?.type === 'feed' && homeTimeline?.id ? homeTimeline.id : null;
-  const defaultFollowing = homeTimeline?.type === 'following';
+    homeTimeline?.type === "feed" && homeTimeline?.id ? homeTimeline.id : null;
+  const defaultFollowing = homeTimeline?.type === "following";
 
   const isMultiColumn =
-    (snapStates.settings.shortcutsViewMode === 'multi-column' ||
+    (snapStates.settings.shortcutsViewMode === "multi-column" ||
       (!snapStates.settings.shortcutsViewMode &&
         snapStates.settings.shortcutsColumnsMode)) &&
     !!snapStates.shortcuts?.length;
@@ -102,7 +102,7 @@ function Home() {
   );
 }
 
-type MenuState = 'open' | 'closed' | undefined;
+type MenuState = "open" | "closed" | undefined;
 
 function NotificationsLink() {
   const { t } = useLingui();
@@ -115,13 +115,13 @@ function NotificationsLink() {
         ref={notificationLinkRef}
         to="/notifications"
         className={`button plain notifications-button ${
-          snapStates.notificationsShowNew ? 'has-badge' : ''
-        } ${menuState || ''}`}
+          snapStates.notificationsShowNew ? "has-badge" : ""
+        } ${menuState || ""}`}
         onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
           e.stopPropagation();
-          if (window.matchMedia('(min-width: calc(40em))').matches) {
+          if (window.matchMedia("(min-width: calc(40em))").matches) {
             e.preventDefault();
-            setMenuState((state) => (!state ? 'open' : undefined));
+            setMenuState((state) => (!state ? "open" : undefined));
           }
         }}
       >
@@ -166,12 +166,12 @@ function NotificationsMenu({
 }: NotificationsMenuProps) {
   const { masto, instance } = api();
   const snapStates = useSnapshot(states);
-  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
-    'default',
+  const [uiState, setUIState] = useState<"default" | "loading" | "error">(
+    "default",
   );
 
   const loadNotifications = useCallback(() => {
-    setUIState('loading');
+    setUIState("loading");
     void (async () => {
       try {
         const notificationsIterator =
@@ -200,27 +200,27 @@ function NotificationsMenu({
           states.notifications = groupedNotifications;
 
           // Update last read marker
-          try {
-            await (
-              masto.v1.markers as {
-                create(options: {
-                  notifications: { lastReadId: string };
-                }): Promise<unknown>;
-              }
-            ).create({
+          void (
+            masto.v1.markers as {
+              create(options: {
+                notifications: { lastReadId: string };
+              }): Promise<unknown>;
+            }
+          )
+            .create({
               notifications: {
                 lastReadId: groupedNotifications[0].id,
               },
-            });
-          } catch {}
+            })
+            .catch(() => {});
         }
 
         states.notificationsShowNew = false;
         states.notificationsLastFetchTime = Date.now();
 
-        setUIState('default');
+        setUIState("default");
       } catch {
-        setUIState('error');
+        setUIState("error");
       }
     })();
   }, [masto, instance]);
@@ -228,7 +228,7 @@ function NotificationsMenu({
   const menuRef = useRef<ControlledMenuRef | null>(null);
   const headerHeight = 52;
   useEffect(() => {
-    if (state !== 'open') return;
+    if (state !== "open") return;
     if (
       !snapStates.notificationsShowNew ||
       (menuRef.current?.scrollTop ?? 0) <= headerHeight
@@ -239,7 +239,7 @@ function NotificationsMenu({
 
   const visibleNotifications = (
     snapStates.notifications as NotificationItem[]
-  ).filter((notification) => notification.type !== 'follow_request');
+  ).filter((notification) => notification.type !== "follow_request");
 
   return (
     <ControlledMenu
@@ -280,18 +280,18 @@ function NotificationsMenu({
                     notification={
                       notification as Parameters<
                         typeof Notification
-                      >[0]['notification']
+                      >[0]["notification"]
                     }
                     disableContextMenu
                   />
                 ))}
             </>
-          ) : uiState === 'loading' ? (
+          ) : uiState === "loading" ? (
             <div className="ui-state">
               <Loader abrupt />
             </div>
           ) : (
-            uiState === 'error' && (
+            uiState === "error" && (
               <div className="ui-state">
                 <p>
                   <Trans>Unable to fetch notifications.</Trans>
@@ -313,7 +313,7 @@ function NotificationsMenu({
       </FilterContext.Provider>
       <footer>
         <Link to="/mentions" className="button plain">
-          <Icon icon="at" />{' '}
+          <Icon icon="at" />{" "}
           <span>
             <Trans>Mentions</Trans>
           </span>
@@ -321,7 +321,7 @@ function NotificationsMenu({
         <Link to="/notifications" className="button plain2">
           <b>
             <Trans>See all</Trans>
-          </b>{' '}
+          </b>{" "}
           <Icon icon="arrow-right" />
         </Link>
       </footer>

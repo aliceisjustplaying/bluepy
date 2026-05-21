@@ -82,9 +82,7 @@ type InViewProps = {
 const InView: ComponentType<InViewProps> =
   InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
-const { PHANPY_DEFAULT_INSTANCE: DEFAULT_INSTANCE } = import.meta.env as {
-  PHANPY_DEFAULT_INSTANCE?: string;
-};
+const { PHANPY_DEFAULT_INSTANCE: DEFAULT_INSTANCE } = import.meta.env;
 
 const LIMIT = 40;
 const SUBCOMMENTS_OPEN_ALL_LIMIT = 10;
@@ -225,7 +223,7 @@ function StatusPage(params: StatusPageParams) {
   const [searchParams, setSearchParams] = useSearchParams();
   const mediaParam = searchParams.get('media');
   const mediaOnlyParam = searchParams.get('media-only');
-  const mediaIndex = parseInt((mediaParam || mediaOnlyParam) as string, 10);
+  const mediaIndex = parseInt(mediaParam || mediaOnlyParam || '', 10);
   let showMedia = mediaIndex > 0;
   const mediaStatusID = searchParams.get('mediaStatusID');
   const mediaStatus = getStatus(mediaStatusID, instance);
@@ -394,9 +392,7 @@ function StatusPage(params: StatusPageParams) {
       ) {
         const media = currentMediaAttachments[currentIndex];
         const { id: mediaId, blurhash, url } = media;
-        const mediaVTN = getSafeViewTransitionName(
-          (mediaId || blurhash || url) as string,
-        );
+        const mediaVTN = getSafeViewTransitionName(mediaId || blurhash || url || '');
         const els = document.querySelectorAll(
           `.status .media [data-view-transition-name="${mediaVTN}"]`,
         );
@@ -410,11 +406,11 @@ function StatusPage(params: StatusPageParams) {
           );
         });
         // If more than one, get the one in status page
-        const el = (
+        const foundEl =
           foundEls.length === 1
             ? foundEls[0]
-            : foundEls.find((candidate) => !!candidate.closest('.status-deck'))
-        ) as HTMLElement | undefined;
+            : foundEls.find((candidate) => !!candidate.closest('.status-deck'));
+        const el = foundEl instanceof HTMLElement ? foundEl : undefined;
 
         console.log('xxx', { media, id, els, el });
         if (el) {
@@ -424,7 +420,9 @@ function StatusPage(params: StatusPageParams) {
               carouselRef.current
                 .querySelectorAll('.media img, .media video')
                 ?.forEach((nested) => {
-                  (nested as HTMLElement).style.viewTransitionName = '';
+                  if (nested instanceof HTMLElement) {
+                    nested.style.viewTransitionName = '';
+                  }
                 });
             }
             mediaClose();
@@ -976,9 +974,9 @@ function StatusThread({
         scrollTop: scrollableRef.current?.scrollTop,
       };
       const newScrollTop =
-        (newScrollOffsets.offsetTop as number) -
-        (scrollOffsets.current.offsetTop as number) +
-        (newScrollOffsets.scrollTop as number);
+        (newScrollOffsets.offsetTop ?? 0) -
+        (scrollOffsets.current.offsetTop ?? 0) +
+        (newScrollOffsets.scrollTop ?? 0);
       console.debug('Case 2', {
         scrollOffsets: scrollOffsets.current,
         newScrollOffsets,
@@ -1232,9 +1230,8 @@ function StatusThread({
         '.status-link, .status-focus',
       );
       if (activeStatus) {
-        const details =
-          activeStatus.nextElementSibling as HTMLDetailsElement | null;
-        if (details && details.tagName.toLowerCase() === 'details') {
+        const details = activeStatus.nextElementSibling;
+        if (details instanceof HTMLDetailsElement) {
           details.open = !details.open;
         }
       }
@@ -2183,8 +2180,8 @@ function SubComments({
     function handleScroll(e: Event) {
       // NOTE: this scrollLeft works for RTL too
       // Browsers do the magic for us
-      const target = e.target as HTMLElement | null;
-      if (target) {
+      const target = e.target;
+      if (target instanceof HTMLElement) {
         target.dataset.scrollLeft = String(target.scrollLeft);
       }
     }
@@ -2200,11 +2197,7 @@ function SubComments({
   const [isOpen, setIsOpen] = useState(openBefore || open);
 
   // If lazyRenderReplies, only render when open; else always render
-  const shouldRenderReplies = lazyRenderReplies ? isOpen : true;
-  const [renderReplies, setRenderReplies] = useState(shouldRenderReplies);
-  useEffect(() => {
-    setRenderReplies(shouldRenderReplies);
-  }, [shouldRenderReplies]);
+  const renderReplies = lazyRenderReplies ? isOpen : true;
 
   const Container = open ? 'div' : 'details';
   const isDetails = !open;

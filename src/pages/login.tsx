@@ -1,44 +1,44 @@
-import './login.css';
+import "./login.css";
 
-import { Trans, useLingui } from '@lingui/react/macro';
-import Fuse from 'fuse.js';
-import type { SyntheticEvent } from 'react';
-import { useEffect, useReducer, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Trans, useLingui } from "@lingui/react/macro";
+import Fuse from "fuse.js";
+import type { SyntheticEvent } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
-import logo from '../assets/logo.svg';
+import logo from "../assets/logo.svg";
 
-import LangSelector from '../components/lang-selector';
-import Link from '../components/link';
-import Loader from '../components/loader';
-import instancesListURL from '../data/instances.json?url';
-import { initClient, initInstance, initPreferences } from '../utils/api';
+import LangSelector from "../components/lang-selector";
+import Link from "../components/link";
+import Loader from "../components/loader";
+import instancesListURL from "../data/instances.json?url";
+import { initClient, initInstance, initPreferences } from "../utils/api";
 import {
   APPVIEW_OPTIONS,
   BSKY_INSTANCE,
   applyAppviewTheme,
   getActiveAppview,
   loginAtproto,
-} from '../utils/atproto-adapter';
-import { startAtprotoOAuthLogin } from '../utils/atproto-oauth';
+} from "../utils/atproto-adapter";
+import { startAtprotoOAuthLogin } from "../utils/atproto-oauth";
 import {
   getAuthorizationURL,
   getPKCEAuthorizationURL,
   registerApplication,
-} from '../utils/auth';
-import { notifyAuthChanged } from '../utils/auth-context';
-import { openAuthPopup, watchAuthPopup } from '../utils/auth-popup';
-import { supportsPKCE } from '../utils/oauth-pkce';
-import { navigatePath } from '../utils/router';
-import store from '../utils/store';
+} from "../utils/auth";
+import { notifyAuthChanged } from "../utils/auth-context";
+import { openAuthPopup, watchAuthPopup } from "../utils/auth-popup";
+import { supportsPKCE } from "../utils/oauth-pkce";
+import { navigatePath } from "../utils/router";
+import store from "../utils/store";
 import {
   getCredentialApplication,
   hasAccountInInstance,
   saveAccount,
   setCurrentAccountID,
   storeCredentialApplication,
-} from '../utils/store-utils';
-import useTitle from '../utils/useTitle';
+} from "../utils/store-utils";
+import useTitle from "../utils/useTitle";
 
 interface CredentialApplicationShape extends Record<string, unknown> {
   client_id?: string;
@@ -46,16 +46,16 @@ interface CredentialApplicationShape extends Record<string, unknown> {
 }
 
 const HANDLE_SUFFIXES = [
-  '.bsky.social',
-  '.blacksky.app',
-  '.eurosky.social',
-  '.pckt.cafe',
-  '.com',
-  '.tngl.sh',
-  '.myatproto.social',
-  '.margin.cafe',
-  '.selfhosted.social',
-  '.npmx.social',
+  ".bsky.social",
+  ".blacksky.app",
+  ".eurosky.social",
+  ".pckt.cafe",
+  ".com",
+  ".tngl.sh",
+  ".myatproto.social",
+  ".margin.cafe",
+  ".selfhosted.social",
+  ".npmx.social",
 ];
 
 interface SuffixState {
@@ -63,15 +63,13 @@ interface SuffixState {
   suffixFading: boolean;
 }
 
-type SuffixAction =
-  | { type: 'fade' }
-  | { type: 'replace'; suffix: string };
+type SuffixAction = { type: "fade" } | { type: "replace"; suffix: string };
 
 function suffixReducer(state: SuffixState, action: SuffixAction): SuffixState {
   switch (action.type) {
-    case 'fade':
+    case "fade":
       return { ...state, suffixFading: true };
-    case 'replace':
+    case "replace":
       return { currentSuffix: action.suffix, suffixFading: false };
   }
   return state;
@@ -79,14 +77,14 @@ function suffixReducer(state: SuffixState, action: SuffixAction): SuffixState {
 
 function Login() {
   const { t } = useLingui();
-  useTitle(t`Log in`, '/login');
-  const cachedInstanceURL = store.local.get('instanceURL');
-  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
-    'default',
+  useTitle(t`Log in`, "/login");
+  const cachedInstanceURL = store.local.get("instanceURL");
+  const [uiState, setUIState] = useState<"default" | "loading" | "error">(
+    "default",
   );
-  const [bskyIdentifier, setBskyIdentifier] = useState('');
-  const [bskyPassword, setBskyPassword] = useState('');
-  const [bskyService, setBskyService] = useState('');
+  const [bskyIdentifier, setBskyIdentifier] = useState("");
+  const [bskyPassword, setBskyPassword] = useState("");
+  const [bskyService, setBskyService] = useState("");
   const [appview, setAppview] = useState(() => getActiveAppview());
   useEffect(() => {
     applyAppviewTheme(appview);
@@ -99,18 +97,20 @@ function Login() {
       suffixFading: false,
     },
   );
+  const currentSuffixRef = useRef(currentSuffix);
+  currentSuffixRef.current = currentSuffix;
   const [handleFocused, setHandleFocused] = useState(false);
   useEffect(() => {
     const id = setInterval(() => {
-      dispatchSuffix({ type: 'fade' });
+      dispatchSuffix({ type: "fade" });
       setTimeout(() => {
         if (remainingSuffixes.current.length === 0) {
           remainingSuffixes.current = HANDLE_SUFFIXES.filter(
-            (s) => s !== currentSuffix,
+            (s) => s !== currentSuffixRef.current,
           ).toSorted(() => Math.random() - 0.5);
         }
         dispatchSuffix({
-          type: 'replace',
+          type: "replace",
           suffix: remainingSuffixes.current.pop() ?? HANDLE_SUFFIXES[0],
         });
       }, 500);
@@ -118,22 +118,22 @@ function Login() {
     return () => {
       clearInterval(id);
     };
-  }, [currentSuffix]);
+  }, []);
   const [searchParams] = useSearchParams();
-  const instance = searchParams.get('instance');
-  const submit = searchParams.get('submit');
+  const instance = searchParams.get("instance");
+  const submit = searchParams.get("submit");
   const [instanceText] = useState(
-    instance || cachedInstanceURL?.toLowerCase() || '',
+    instance || cachedInstanceURL?.toLowerCase() || "",
   );
 
-  const instancesList = useRef<string[]>([]);
+  const [instancesList, setInstancesList] = useState<string[]>([]);
   const searcher = useRef<Fuse<string> | undefined>(undefined);
   useEffect(() => {
     void (async () => {
       try {
         const res = await fetch(instancesListURL);
         const data = (await res.json()) as string[];
-        instancesList.current = data;
+        setInstancesList(data);
         searcher.current = new Fuse(data);
       } catch (e) {
         // Silently fail
@@ -159,10 +159,10 @@ function Login() {
         const text = await res.text();
         // Parse XML
         const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(text, 'text/xml');
+        const xmlDoc = parser.parseFromString(text, "text/xml");
         // Get Link[template]
-        const link = xmlDoc.getElementsByTagName('Link')[0];
-        const template = link.getAttribute('template');
+        const link = xmlDoc.getElementsByTagName("Link")[0];
+        const template = link.getAttribute("template");
         const url = template ? URL.parse(template) : null;
         if (url) {
           const { host } = url; // host includes the port
@@ -176,9 +176,9 @@ function Login() {
         console.error(e);
       }
 
-      store.local.set('instanceURL', instanceURL);
+      store.local.set("instanceURL", instanceURL);
 
-      setUIState('loading');
+      setUIState("loading");
       try {
         let credentialApplication = getCredentialApplication(
           instanceURL,
@@ -208,11 +208,11 @@ function Login() {
               client_id,
               forceLogin,
             });
-            store.sessionCookie.set('codeVerifier', verifier);
+            store.sessionCookie.set("codeVerifier", verifier);
             authUrl = url;
           } else {
             alert(t`Failed to register application`);
-            setUIState('default');
+            setUIState("default");
             return;
           }
         } else {
@@ -224,7 +224,7 @@ function Login() {
             });
           } else {
             alert(t`Failed to register application`);
-            setUIState('default');
+            setUIState("default");
             return;
           }
         }
@@ -239,29 +239,29 @@ function Login() {
               window.location.href = callbackUrl;
             },
             (error) => {
-              console.error('Popup auth error:', error);
-              setUIState('error');
+              console.error("Popup auth error:", error);
+              setUIState("error");
             },
           );
         } else {
           // Popup blocked, fallback to redirect
-          console.log('Popup blocked, falling back to redirect');
+          console.log("Popup blocked, falling back to redirect");
           location.href = authUrl;
         }
 
-        setUIState('default');
+        setUIState("default");
       } catch (e) {
         console.error(e);
-        setUIState('error');
+        setUIState("error");
       }
     })();
   };
 
   const cleanInstanceText = instanceText
     ? instanceText
-        .replace(/^https?:\/\//, '') // Remove protocol from instance URL
-        .replace(/\/+$/, '') // Remove trailing slash
-        .replace(/^@?[^@]+@/, '') // Remove @?acct@
+        .replace(/^https?:\/\//, "") // Remove protocol from instance URL
+        .replace(/\/+$/, "") // Remove trailing slash
+        .replace(/^@?[^@]+@/, "") // Remove @?acct@
         .trim()
     : null;
   const instanceTextLooksLikeDomain =
@@ -281,16 +281,16 @@ function Login() {
     : instancesSuggestions?.length
       ? instancesSuggestions[0]
       : instanceText
-        ? instancesList.current.find((item) => item.includes(instanceText))
+        ? instancesList.find((item) => item.includes(instanceText))
         : null;
 
   const submitBluesky = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!bskyIdentifier || !bskyPassword) return;
     void (async () => {
-      store.local.set('settings-appview', appview);
+      store.local.set("settings-appview", appview);
       applyAppviewTheme(appview);
-      setUIState('loading');
+      setUIState("loading");
       try {
         const { account, session, service } = await loginAtproto({
           identifier: bskyIdentifier.trim(),
@@ -298,7 +298,7 @@ function Login() {
           service: bskyService,
         });
         const accessToken = JSON.stringify({
-          type: 'atproto',
+          type: "atproto",
           service,
           session,
         });
@@ -316,14 +316,14 @@ function Login() {
           initInstance(client, BSKY_INSTANCE),
         ]);
         notifyAuthChanged();
-        const redirectPath = store.session.get('loginRedirect') || '/';
-        store.session.del('loginRedirect');
+        const redirectPath = store.session.get("loginRedirect") || "/";
+        store.session.del("loginRedirect");
         navigatePath(redirectPath, { replace: true });
       } catch (err) {
         console.error(err);
-        setUIState('error');
+        setUIState("error");
       } finally {
-        setUIState('default');
+        setUIState("default");
       }
     })();
   };
@@ -332,16 +332,16 @@ function Login() {
     e.preventDefault();
     if (!bskyIdentifier) return;
     void (async () => {
-      store.local.set('settings-appview', appview);
+      store.local.set("settings-appview", appview);
       applyAppviewTheme(appview);
-      setUIState('loading');
+      setUIState("loading");
       try {
         await startAtprotoOAuthLogin(bskyIdentifier.trim());
       } catch (err) {
         console.error(err);
-        setUIState('error');
+        setUIState("error");
       } finally {
-        setUIState('default');
+        setUIState("default");
       }
     })();
   };
@@ -363,7 +363,7 @@ function Login() {
   }, []);
 
   return (
-    <main id="login" style={{ textAlign: 'center' }}>
+    <main id="login" style={{ textAlign: "center" }}>
       <form onSubmit={submitBluesky}>
         <h1>
           <img src={logo} alt="" width="80" height="80" />
@@ -374,9 +374,9 @@ function Login() {
           <label>
             <div
               style={{
-                position: 'relative',
-                display: 'inline-block',
-                width: '100%',
+                position: "relative",
+                display: "inline-block",
+                width: "100%",
               }}
             >
               <input
@@ -384,7 +384,7 @@ function Login() {
                 type="text"
                 className="large"
                 aria-label="Handle or PDS URL"
-                disabled={uiState === 'loading'}
+                disabled={uiState === "loading"}
                 autoCorrect="off"
                 autoCapitalize="off"
                 autoComplete="username"
@@ -398,31 +398,31 @@ function Login() {
                 onBlur={() => {
                   setHandleFocused(false);
                 }}
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
               />
               {!bskyIdentifier && !handleFocused && (
                 <span
                   aria-hidden="true"
                   style={{
-                    position: 'absolute',
-                    left: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    pointerEvents: 'none',
-                    color: 'var(--placeholder-color, #999)',
-                    whiteSpace: 'nowrap',
-                    fontSize: 'inherit',
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    pointerEvents: "none",
+                    color: "var(--placeholder-color, #999)",
+                    whiteSpace: "nowrap",
+                    fontSize: "inherit",
                   }}
                 >
                   you
                   <span
                     style={{
-                      display: 'inline-block',
+                      display: "inline-block",
                       opacity: suffixFading ? 0 : 1,
                       transform: suffixFading
-                        ? 'translateY(-4px)'
-                        : 'translateY(0)',
-                      transition: 'opacity 0.25s ease, transform 0.25s ease',
+                        ? "translateY(-4px)"
+                        : "translateY(0)",
+                      transition: "opacity 0.25s ease, transform 0.25s ease",
                     }}
                   >
                     {currentSuffix}
@@ -433,14 +433,14 @@ function Login() {
           </label>
           <label
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5em',
-              marginTop: '1em',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5em",
+              marginTop: "1em",
             }}
           >
-            AppView:{' '}
+            AppView:{" "}
             <select
               value={appview}
               onChange={(e) => {
@@ -454,10 +454,10 @@ function Login() {
               ))}
             </select>
           </label>
-          <div style={{ marginTop: '1em' }}>
+          <div style={{ marginTop: "1em" }}>
             <button
               type="button"
-              disabled={uiState === 'loading' || !bskyIdentifier}
+              disabled={uiState === "loading" || !bskyIdentifier}
               onClick={submitBlueskyOAuth}
             >
               Connect to Atmosphere
@@ -471,7 +471,7 @@ function Login() {
                 value={bskyPassword}
                 type="password"
                 className="large"
-                disabled={uiState === 'loading'}
+                disabled={uiState === "loading"}
                 autoComplete="current-password"
                 onChange={(e: SyntheticEvent<HTMLInputElement>) => {
                   setBskyPassword(e.currentTarget.value);
@@ -484,7 +484,7 @@ function Login() {
                 value={bskyService}
                 type="text"
                 className="large"
-                disabled={uiState === 'loading'}
+                disabled={uiState === "loading"}
                 autoCorrect="off"
                 autoCapitalize="off"
                 autoComplete="url"
@@ -499,7 +499,7 @@ function Login() {
               <button
                 type="submit"
                 disabled={
-                  uiState === 'loading' || !bskyIdentifier || !bskyPassword
+                  uiState === "loading" || !bskyIdentifier || !bskyPassword
                 }
               >
                 Continue with app password
@@ -507,14 +507,14 @@ function Login() {
             </div>
           </details>
         </section>
-        {uiState === 'error' && (
+        {uiState === "error" && (
           <p className="error">
             <Trans>
               Failed to log in. Please check your handle and app password.
             </Trans>
           </p>
         )}
-        <Loader hidden={uiState !== 'loading'} />
+        <Loader hidden={uiState !== "loading"} />
         <hr />
         <p>
           <Link to="/">

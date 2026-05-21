@@ -1,18 +1,18 @@
-import './feedback-modal.css';
+import "./feedback-modal.css";
 
-import { Trans, useLingui } from '@lingui/react/macro';
-import * as Sentry from '@sentry/react';
-import { useEffect, useReducer, useRef } from 'react';
+import { Trans, useLingui } from "@lingui/react/macro";
+import * as Sentry from "@sentry/react";
+import { useEffect, useReducer, useRef } from "react";
 
-import showToast from '../utils/show-toast';
-import { getAccount, getCurrentAccountID } from '../utils/store-utils';
+import showToast from "../utils/show-toast";
+import { getAccount, getCurrentAccountID } from "../utils/store-utils";
 
-import Icon from './icon';
+import Icon from "./icon";
 
 const MAX_MESSAGE_LENGTH = 5000;
 const MAX_CONTACT_LENGTH = 200;
 
-type SubmissionStatus = 'idle' | 'submitting' | 'success' | 'error';
+type SubmissionStatus = "idle" | "submitting" | "success" | "error";
 
 interface FeedbackState {
   message: string;
@@ -23,33 +23,33 @@ interface FeedbackState {
 }
 
 type FeedbackAction =
-  | { type: 'message'; value: string }
-  | { type: 'contact'; value: string }
-  | { type: 'hp'; value: string }
-  | { type: 'invalid'; errorMessage: string }
-  | { type: 'submitting' }
-  | { type: 'success' }
-  | { type: 'error'; errorMessage: string };
+  | { type: "message"; value: string }
+  | { type: "contact"; value: string }
+  | { type: "hp"; value: string }
+  | { type: "invalid"; errorMessage: string }
+  | { type: "submitting" }
+  | { type: "success" }
+  | { type: "error"; errorMessage: string };
 
 function feedbackReducer(
   state: FeedbackState,
   action: FeedbackAction,
 ): FeedbackState {
   switch (action.type) {
-    case 'message':
+    case "message":
       return { ...state, message: action.value };
-    case 'contact':
+    case "contact":
       return { ...state, contact: action.value };
-    case 'hp':
+    case "hp":
       return { ...state, hp: action.value };
-    case 'invalid':
-      return { ...state, status: 'error', errorMessage: action.errorMessage };
-    case 'submitting':
-      return { ...state, status: 'submitting', errorMessage: null };
-    case 'success':
-      return { ...state, status: 'success' };
-    case 'error':
-      return { ...state, status: 'error', errorMessage: action.errorMessage };
+    case "invalid":
+      return { ...state, status: "error", errorMessage: action.errorMessage };
+    case "submitting":
+      return { ...state, status: "submitting", errorMessage: null };
+    case "success":
+      return { ...state, status: "success" };
+    case "error":
+      return { ...state, status: "error", errorMessage: action.errorMessage };
   }
   return state;
 }
@@ -74,7 +74,7 @@ interface FeedbackPayload {
 }
 
 function optionalString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.length > 0 ? value : undefined;
+  return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
 function currentAccountLabel(): string | undefined {
@@ -84,7 +84,7 @@ function currentAccountLabel(): string | undefined {
     optionalString(account.info.acct) ||
     optionalString(account.info.username) ||
     optionalString(account.info.displayName);
-  return [handle, account.info.id].filter(Boolean).join(' / ');
+  return [handle, account.info.id].filter(Boolean).join(" / ");
 }
 
 function getCurrentFeedbackAccount() {
@@ -99,12 +99,12 @@ function buildFeedbackPayload(
 ): FeedbackPayload {
   const page = window.location.href;
   const account = currentAccountLabel();
-  const build = __COMMIT_HASH__ || 'unknown';
+  const build = __COMMIT_HASH__ || "unknown";
   return {
     message,
     contact: contact || undefined,
     hp,
-    subject: 'Feedback from Bluepy',
+    subject: "Feedback from Bluepy",
     page,
     account,
     pds: optionalString(getCurrentFeedbackAccount()?.instanceURL),
@@ -116,16 +116,16 @@ function buildFeedbackPayload(
 }
 
 export default function FeedbackModal({
-  defaultMessage = '',
+  defaultMessage = "",
   onClose,
 }: FeedbackModalProps) {
   const { t } = useLingui();
   const [{ message, contact, hp, status, errorMessage }, dispatchFeedback] =
     useReducer(feedbackReducer, {
       message: defaultMessage,
-      contact: '',
-      hp: '',
-      status: 'idle',
+      contact: "",
+      hp: "",
+      status: "idle",
       errorMessage: null,
     });
   const messageRef = useRef<HTMLTextAreaElement | null>(null);
@@ -141,27 +141,27 @@ export default function FeedbackModal({
 
   async function handleSubmit(event: { preventDefault(): void }) {
     event.preventDefault();
-    if (status === 'submitting') return;
+    if (status === "submitting") return;
 
     const trimmedMessage = message.trim();
     const trimmedContact = contact.trim();
     if (!trimmedMessage) {
       dispatchFeedback({
-        type: 'invalid',
+        type: "invalid",
         errorMessage: t`Tell us what happened first.`,
       });
       return;
     }
 
-    dispatchFeedback({ type: 'submitting' });
+    dispatchFeedback({ type: "submitting" });
 
     try {
       const sentryEventId = import.meta.env.VITE_SENTRY_DSN
         ? Sentry.lastEventId() || undefined
         : undefined;
-      const response = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           buildFeedbackPayload(
             trimmedMessage,
@@ -172,20 +172,22 @@ export default function FeedbackModal({
         ),
       });
       if (!response.ok) {
-        const text = await response.text().catch(() => '');
+        const text = await response.text().catch(() => "");
         throw new Error(
           text.length > 0 && text.length < 200
             ? text
             : `Request failed (${response.status})`,
         );
       }
-      dispatchFeedback({ type: 'success' });
+      dispatchFeedback({ type: "success" });
       showToast(t`Feedback sent`);
     } catch (error) {
       dispatchFeedback({
-        type: 'error',
+        type: "error",
         errorMessage:
-          error instanceof Error ? error.message : t`Feedback could not be sent.`,
+          error instanceof Error
+            ? error.message
+            : t`Feedback could not be sent.`,
       });
     }
   }
@@ -201,7 +203,7 @@ export default function FeedbackModal({
         </button>
       </div>
       <main>
-        {status === 'success' ? (
+        {status === "success" ? (
           <div className="feedback-success">
             <Icon icon="check-circle" size="xl" />
             <strong>
@@ -226,13 +228,13 @@ export default function FeedbackModal({
                 aria-label={t`Leave this field blank`}
                 value={hp}
                 tabIndex={-1}
-	                autoComplete="off"
-	                onChange={(event) => {
-	                  dispatchFeedback({
-	                    type: 'hp',
-	                    value: event.currentTarget.value,
-	                  });
-	                }}
+                autoComplete="off"
+                onChange={(event) => {
+                  dispatchFeedback({
+                    type: "hp",
+                    value: event.currentTarget.value,
+                  });
+                }}
               />
             </div>
             <div>
@@ -247,13 +249,13 @@ export default function FeedbackModal({
                 rows={7}
                 value={message}
                 maxLength={MAX_MESSAGE_LENGTH}
-	                placeholder={t`Bugs, confusing behavior, missing features, or anything else.`}
-	                onChange={(event) => {
-	                  dispatchFeedback({
-	                    type: 'message',
-	                    value: event.currentTarget.value,
-	                  });
-	                }}
+                placeholder={t`Bugs, confusing behavior, missing features, or anything else.`}
+                onChange={(event) => {
+                  dispatchFeedback({
+                    type: "message",
+                    value: event.currentTarget.value,
+                  });
+                }}
               />
             </div>
             <div>
@@ -266,16 +268,16 @@ export default function FeedbackModal({
                 value={contact}
                 maxLength={MAX_CONTACT_LENGTH}
                 autoComplete="email"
-	                placeholder={t`email or Bluesky handle`}
-	                onChange={(event) => {
-	                  dispatchFeedback({
-	                    type: 'contact',
-	                    value: event.currentTarget.value,
-	                  });
-	                }}
+                placeholder={t`email or Bluesky handle`}
+                onChange={(event) => {
+                  dispatchFeedback({
+                    type: "contact",
+                    value: event.currentTarget.value,
+                  });
+                }}
               />
             </div>
-            {status === 'error' && errorMessage && (
+            {status === "error" && errorMessage && (
               <p className="feedback-error" role="alert">
                 {errorMessage}
               </p>
@@ -284,9 +286,9 @@ export default function FeedbackModal({
               <button type="button" className="plain" onClick={onClose}>
                 <Trans>Cancel</Trans>
               </button>
-              <button type="submit" disabled={status === 'submitting'}>
-                {status === 'submitting' ? (
-                  <Trans>Sending…</Trans>
+              <button type="submit" disabled={status === "submitting"}>
+                {status === "submitting" ? (
+                  <Trans>Sending...</Trans>
                 ) : (
                   <Trans>Send</Trans>
                 )}
