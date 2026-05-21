@@ -78,6 +78,11 @@ interface InstanceRule {
   translations?: Record<string, { text?: string } | undefined>;
 }
 
+interface ReportInstance {
+  rules?: readonly InstanceRule[] | null;
+  domain?: string;
+}
+
 interface TranslatedInstanceRule extends InstanceRule {
   _translatedText: string | null;
 }
@@ -135,6 +140,26 @@ function translateRules(
   });
 }
 
+function isReportInstance(value: unknown): value is ReportInstance {
+  return !!value && typeof value === 'object';
+}
+
+function stringValue(value: FormDataEntryValue | null): string | undefined {
+  return typeof value === 'string' && value ? value : undefined;
+}
+
+function isReportCategory(value: string): value is ReportCategory {
+  return CATEGORIES.some((category) => category === value);
+}
+
+function reportCategory(value: FormDataEntryValue | null): ReportCategory {
+  return typeof value === 'string' && isReportCategory(value) ? value : 'other';
+}
+
+function errorMessage(value: unknown): string | undefined {
+  return value instanceof Error ? value.message : undefined;
+}
+
 interface ReportModalProps {
   account: mastodon.v1.Account;
   post?: { id?: string; [key: string]: unknown };
@@ -174,10 +199,8 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
   const [username, domain] = account.acct.split('@');
 
   const [translatedRules, currentDomain] = useMemo(() => {
-    const instance = getCurrentInstance() as {
-      rules?: readonly InstanceRule[] | null;
-      domain?: string;
-    };
+    const rawInstance = getCurrentInstance();
+    const instance = isReportInstance(rawInstance) ? rawInstance : {};
     const rawRules = instance.rules || [];
     return [translateRules(rawRules, i18n.locale), instance.domain] as const;
   }, [i18n.locale]);
@@ -240,16 +263,11 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
 
             const formEl = e.currentTarget;
             const formData = new FormData(formEl);
-            const entries = Object.fromEntries(formData.entries()) as Record<
-              string,
-              FormDataEntryValue
-            >;
-            console.log('ENTRIES', entries);
-
-            const category = entries.category as string;
-            let comment: string | undefined = entries.comment as string;
+            const entries = Object.fromEntries(formData.entries());
+            const category = reportCategory(formData.get('category'));
+            let comment = stringValue(formData.get('comment'));
             if (!comment) comment = undefined;
-            const forward = entries.forward === 'on' ? true : undefined;
+            const forward = formData.get('forward') === 'on' ? true : undefined;
             let ruleIds: string[] | undefined;
             if (category === 'violation') {
               ruleIds = [];
@@ -286,7 +304,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                 console.error(error);
                 setUIState('error');
                 const message =
-                  (error as { message?: string } | null)?.message ||
+                  errorMessage(error) ||
                   (post
                     ? t`Unable to report post`
                     : t`Unable to report profile`);
@@ -313,8 +331,9 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                       disabled={uiState === 'loading'}
                       onChange={(e) => {
                         const target = e.currentTarget;
-                        setSelectedCategory(target.value as ReportCategory);
-                        setShowRules(target.value === 'violation');
+                        const nextCategory = reportCategory(target.value);
+                        setSelectedCategory(nextCategory);
+                        setShowRules(nextCategory === 'violation');
                       }}
                     />
                     <span>
