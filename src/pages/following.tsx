@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { useSnapshot } from 'valtio';
 
 import Timeline from '../components/timeline';
@@ -85,7 +85,10 @@ function Following({ title, path, id, ...props }: FollowingProps) {
     path || '/following',
   );
   const { masto, streaming, instance, client } = api();
-  const [streamingClient, setStreamingClient] = useState<unknown>(streaming);
+  const [streamingClient, setStreamingClient] = useReducer(
+    (_currentClient: unknown, nextClient: unknown) => nextClient,
+    streaming,
+  );
 
   const snapStates = useSnapshot(states);
   const homeIterable = useRef<HomeIterable | undefined>(undefined);

@@ -10,6 +10,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from 'react';
@@ -234,7 +235,10 @@ function HlsVideo({
   onLoadedMetadata,
 }: HlsVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [activeSrc, setActiveSrc] = useState(() => src);
+  const [activeSrc, setActiveSrc] = useReducer(
+    (_currentSrc: string, nextSrc: string) => nextSrc,
+    src,
+  );
 
   useEffect((): (() => void) | undefined => {
     const video = videoRef.current;

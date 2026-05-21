@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 
 import Timeline2 from '../components/timeline2';
 import { api, getMastoV1Resource } from '../utils/api';
@@ -93,9 +93,13 @@ function Following2({ title, path, id, ...props }: Following2Props) {
     path || '/_following2',
   );
   const { masto, streaming, instance, client } = api();
-  const [streamingClient, setStreamingClient] = useState<
-    StreamingUserClient | undefined
-  >(isStreamingUserClient(streaming) ? streaming : undefined);
+  const [streamingClient, setStreamingClient] = useReducer(
+    (
+      _currentClient: StreamingUserClient | undefined,
+      nextClient: StreamingUserClient | undefined,
+    ) => nextClient,
+    isStreamingUserClient(streaming) ? streaming : undefined,
+  );
 
   useEffect(() => {
     if (path === '/') return;
