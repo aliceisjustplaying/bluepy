@@ -1388,13 +1388,14 @@ function PushNotificationsSection({
           // for this TS migration batch.
           const params: {
             data: {
-              policy: string;
+              policy: string | undefined;
               alerts: Record<string, boolean>;
             };
             policy: undefined;
           } = {
             data: {
-              policy: typeof values.policy === 'string' ? values.policy : '',
+              policy:
+                typeof values.policy === 'string' ? values.policy : undefined,
               alerts: {
                 mention: !!values.mention,
                 favourite: !!values.favourite,

@@ -1622,25 +1622,26 @@ function Compose({
                 console.log('MEDIA ATTACHMENTS', mediaAttachments);
                 let submitMediaAttachments = mediaAttachments;
                 if (mediaAttachments.length > 0) {
+                  const uploadAttachment = async (
+                    attachment: MediaAttachmentLike,
+                  ): Promise<ComposeMediaAttachment> => {
+                    const [uploadedAttachment] =
+                      await uploadComposeMediaAttachments(
+                        [attachment],
+                        (params) => {
+                          console.log('UPLOADING', attachment);
+                          return mediaEndpoint.create(
+                            removeNullUndefined({
+                              file: params.file,
+                              description: params.description,
+                            }),
+                          );
+                        },
+                      );
+                    return uploadedAttachment;
+                  };
                   // Upload media attachments first
-                  const mediaPromises = mediaAttachments.map(
-                    async (attachment) => {
-                      const [uploadedAttachment] =
-                        await uploadComposeMediaAttachments(
-                          [attachment],
-                          (params) => {
-                            console.log('UPLOADING', attachment);
-                            return mediaEndpoint.create(
-                              removeNullUndefined({
-                                file: params.file,
-                                description: params.description,
-                              }),
-                            );
-                          },
-                        );
-                      return uploadedAttachment;
-                    },
-                  );
+                  const mediaPromises = mediaAttachments.map(uploadAttachment);
                   const results = await Promise.allSettled(mediaPromises);
 
                   // If any failed, return
