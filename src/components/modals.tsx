@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
-import { type ComponentType, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation, type Location } from 'react-router-dom';
 import { subscribe, useSnapshot } from 'valtio';
 
@@ -19,7 +19,7 @@ import FeedbackModal from './feedback-modal';
 import GenericAccounts from './generic-accounts';
 import ImportExportAccounts from './import-export-accounts';
 import MediaAltModal from './media-alt-modal';
-import MediaModalComponent from './media-modal';
+import MediaModalComponent, { type MediaModalProps } from './media-modal';
 import Modal from './modal';
 import OpenLinkSheet from './open-link-sheet';
 import QrCodeModal from './qr-code-modal';
@@ -35,8 +35,10 @@ function MediaModal(props: {
   index?: number;
   onClose?: () => void;
 }) {
-  const TypedMediaModal = MediaModalComponent as ComponentType<typeof props>;
-  return <TypedMediaModal {...props} />;
+  const mediaAttachments = Array.isArray(props.mediaAttachments)
+    ? props.mediaAttachments.filter(isMediaModalAttachment)
+    : [];
+  return <MediaModalComponent {...props} mediaAttachments={mediaAttachments} />;
 }
 
 // `show*` payloads in `states` are typed as `unknown` because the same key
@@ -60,6 +62,47 @@ const stringArray = (value: unknown): readonly string[] | undefined =>
   Array.isArray(value) && value.every((item) => typeof item === 'string')
     ? value
     : undefined;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function isMediaModalAttachment(
+  value: unknown,
+): value is MediaModalProps['mediaAttachments'][number] {
+  return isRecord(value) && typeof value.type === 'string';
+}
+
+function isAccountObject(
+  value: unknown,
+): value is Exclude<Parameters<typeof AccountSheet>[0]['account'], string> {
+  return isRecord(value) && typeof value.id === 'string';
+}
+
+function isReportAccount(
+  value: unknown,
+): value is Parameters<typeof ReportModal>[0]['account'] {
+  return isRecord(value) && typeof value.id === 'string';
+}
+
+function accountSheetAccount(
+  value: unknown,
+): Parameters<typeof AccountSheet>[0]['account'] | undefined {
+  if (typeof value === 'string') return value;
+  return isAccountObject(value) ? value : undefined;
+}
+
+function reportAccount(
+  value: unknown,
+): Parameters<typeof ReportModal>[0]['account'] | undefined {
+  return isReportAccount(value) ? value : undefined;
+}
+
+function reportPost(
+  value: unknown,
+): Parameters<typeof ReportModal>[0]['post'] {
+  return isRecord(value) ? value : undefined;
+}
 
 const isNoArgFunction = (value: unknown): value is () => unknown =>
   typeof value === 'function';
@@ -89,11 +132,6 @@ const scannerClose = (
         value(arg);
       }
     : undefined;
-
-type WindowWithCompose = Window & {
-  __COMPOSE__?: Payload | null;
-  __SHARED_DATA__?: unknown;
-};
 
 function toPrevLocation(
   location: Location,
@@ -133,7 +171,15 @@ export default function Modals() {
   }, []);
 
   const composerState = p(snapStates.composerState);
-  const composeWindow = window as WindowWithCompose;
+  const composePayload = p(Reflect.get(window, '__COMPOSE__'));
+  const sharedData = Reflect.get(window, '__SHARED_DATA__') || null;
+  const showAccountPayload = p(snapStates.showAccount);
+  const showAccountValue = accountSheetAccount(
+    showAccountPayload.account || snapStates.showAccount,
+  );
+  const reportPayload = p(snapStates.showReportModal);
+  const reportAccountValue = reportAccount(reportPayload.account);
+  const reportPostValue = reportPost(reportPayload.post);
 
   return (
     <>
@@ -146,24 +192,22 @@ export default function Modals() {
             replyToStatus={
               typeof snapStates.showCompose !== 'boolean'
                 ? p(snapStates.showCompose).replyToStatus
-                : composeWindow.__COMPOSE__?.replyToStatus || null
+                : composePayload.replyToStatus || null
             }
             editStatus={
-              p(states.showCompose).editStatus ||
-              composeWindow.__COMPOSE__?.editStatus ||
-              null
+              p(states.showCompose).editStatus || composePayload.editStatus || null
             }
             draftStatus={
               p(states.showCompose).draftStatus ||
-              composeWindow.__COMPOSE__?.draftStatus ||
+              composePayload.draftStatus ||
               null
             }
             quoteStatus={
               p(states.showCompose).quoteStatus ||
-              composeWindow.__COMPOSE__?.quoteStatus ||
+              composePayload.quoteStatus ||
               null
             }
-            sharedData={composeWindow.__SHARED_DATA__ || null}
+            sharedData={sharedData}
             onClose={(results: Payload | undefined) => {
               const resultPayload = p(results);
               const newStatus = p(resultPayload.newStatus);
@@ -175,8 +219,8 @@ export default function Modals() {
                   : 'post';
               const newStatusId = str(newStatus.id);
               states.showCompose = false;
-              composeWindow.__COMPOSE__ = null;
-              composeWindow.__SHARED_DATA__ = null;
+              Reflect.set(window, '__COMPOSE__', null);
+              Reflect.set(window, '__SHARED_DATA__', null);
               if (newStatusId) {
                 states.reloadStatusPage++;
                 const toastText = {
@@ -231,20 +275,15 @@ export default function Modals() {
           />
         </Modal>
       )}
-      {!!snapStates.showAccount && (
+      {!!snapStates.showAccount && showAccountValue && (
         <Modal
           onClose={() => {
             states.showAccount = false;
           }}
         >
           <AccountSheet
-            account={
-              (p(snapStates.showAccount).account ||
-                snapStates.showAccount) as Parameters<
-                typeof AccountSheet
-              >[0]['account']
-            }
-            instance={str(p(snapStates.showAccount).instance)}
+            account={showAccountValue}
+            instance={str(showAccountPayload.instance)}
             onClose={() => {
               states.showAccount = false;
               // states.showGenericAccounts = false;
@@ -393,23 +432,15 @@ export default function Modals() {
           />
         </Modal>
       )}
-      {isLoggedIn && !!snapStates.showReportModal && (
+      {isLoggedIn && !!snapStates.showReportModal && reportAccountValue && (
         <Modal
           onClose={() => {
             states.showReportModal = false;
           }}
         >
           <ReportModal
-            account={
-              p(snapStates.showReportModal).account as Parameters<
-                typeof ReportModal
-              >[0]['account']
-            }
-            post={
-              p(snapStates.showReportModal).post as Parameters<
-                typeof ReportModal
-              >[0]['post']
-            }
+            account={reportAccountValue}
+            post={reportPostValue}
             onClose={() => {
               states.showReportModal = false;
             }}
