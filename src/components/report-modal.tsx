@@ -278,14 +278,6 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               }
             }
 
-            const params = {
-              category,
-              comment,
-              forward,
-              ruleIds,
-            };
-            console.log('PARAMS', params);
-
             setUIState('loading');
             void (async () => {
               try {

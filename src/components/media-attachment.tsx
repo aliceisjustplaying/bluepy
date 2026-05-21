@@ -733,7 +733,7 @@ function MediaAttachment({
                               <Trans>
                                 ({localeCode2Text(lang)}){" "}
                                 <span className="more-insignificant">
-                                  (experimental)
+                                  — experimental
                                 </span>
                               </Trans>
                             </small>

@@ -154,9 +154,34 @@ function Shortcuts() {
     !!shortcuts.length;
 
   const menuRef = useRef<MenuInstance | null>(null);
+  const shortcutsButtonRef = useRef<HTMLButtonElement | null>(null);
   const tabBarRef = useRef<HTMLElement | null>(null);
 
   const hasLists = useRef(false);
+
+  useEffect(() => {
+    const button = shortcutsButtonRef.current;
+    if (!button) return undefined;
+    const closeMenuWhenButtonDisappears = (event: TransitionEvent) => {
+      const target = event.target;
+      try {
+        if (
+          target instanceof Element &&
+          getComputedStyle(target).pointerEvents === 'none'
+        ) {
+          menuRef.current?.closeMenu?.();
+        }
+      } catch {}
+    };
+    button.addEventListener('transitionstart', closeMenuWhenButtonDisappears);
+    return () => {
+      button.removeEventListener(
+        'transitionstart',
+        closeMenuWhenButtonDisappears,
+      );
+    };
+  }, []);
+
   const formattedShortcuts: FormattedShortcut[] = [];
   (shortcuts as ShortcutPin[]).forEach((pin, i) => {
       const { type, ...data } = pin;
@@ -411,24 +436,13 @@ function Shortcuts() {
           }}
           menuButton={
             <button
+              ref={shortcutsButtonRef}
               type="button"
               id="shortcuts-button"
               className="plain"
               onContextMenu={(e) => {
                 e.preventDefault();
                 states.showShortcutsSettings = true;
-              }}
-              onTransitionEnd={(e) => {
-                // Close menu if the button disappears
-                try {
-                  const target = e.target;
-                  if (
-                    target instanceof Element &&
-                    getComputedStyle(target).pointerEvents === 'none'
-                  ) {
-                    menuRef.current?.closeMenu?.();
-                  }
-                } catch {}
               }}
             >
               <Icon icon="shortcut" size="xl" alt={t`Shortcuts`} />
