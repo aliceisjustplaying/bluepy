@@ -3,6 +3,7 @@ import './search.css';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
+import type { ReactNode, RefCallback } from 'react';
 import {
   useCallback,
   useEffect,
@@ -52,6 +53,9 @@ interface SearchProps {
   type?: string;
   [key: string]: unknown;
 }
+type SearchControllerProps = Pick<SearchProps, 'query' | 'type'> & {
+  instance?: string;
+};
 
 interface SearchListParams {
   q: string;
@@ -99,7 +103,425 @@ function firstResultId(list: readonly unknown[]): string | undefined {
   return undefined;
 }
 
-function Search({ columnMode, ...props }: SearchProps) {
+function SearchFilterBar({
+  filterBarParent,
+  q,
+  type,
+  uiState,
+}: {
+  filterBarParent: RefCallback<HTMLDivElement>;
+  q: string;
+  type: string | null;
+  uiState: string;
+}) {
+  const { t } = useLingui();
+
+  return (
+    <div
+      ref={filterBarParent}
+      className={`filter-bar ${uiState === 'loading' ? 'loading' : ''}`}
+    >
+      {!!type && (
+        <Link to={`/search${q ? `?q=${encodeURIComponent(q)}` : ''}`}>
+          <Icon icon="chevron-left" /> <Trans>All</Trans>
+        </Link>
+      )}
+      {sorted(
+        [
+          {
+            label: t`Accounts`,
+            type: 'accounts',
+            to: `/search?q=${encodeURIComponent(q)}&type=accounts`,
+          },
+          {
+            label: t`Hashtags`,
+            type: 'hashtags',
+            to: `/search?q=${encodeURIComponent(q)}&type=hashtags`,
+          },
+          {
+            label: t`Posts`,
+            type: 'statuses',
+            to: `/search?q=${encodeURIComponent(q)}&type=statuses`,
+          },
+        ],
+        (a, b) => {
+          if (a.type === type) return -1;
+          if (b.type === type) return 1;
+          return 0;
+        },
+      ).map((link) => (
+        <Link to={link.to} key={link.type}>
+          {link.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function EmptyResults({
+  children,
+  type,
+  uiState,
+}: {
+  children: ReactNode;
+  type: string | null;
+  uiState: string;
+}) {
+  if (type) return null;
+
+  return uiState === 'loading' ? (
+    <p className="ui-state">
+      <Loader abrupt />
+    </p>
+  ) : (
+    <p className="ui-state">{children}</p>
+  );
+}
+
+function SearchSectionHeader({
+  children,
+  q,
+  resultType,
+  type,
+}: {
+  children: ReactNode;
+  q: string;
+  resultType: ResultsTypeKey;
+  type: string | null;
+}) {
+  const { t } = useLingui();
+
+  if (type === resultType) return null;
+
+  return (
+    <h2 className="timeline-header">
+      {children}{' '}
+      <Link to={`/search?q=${encodeURIComponent(q)}&type=${resultType}`}>
+        <Icon icon="arrow-right" size="l" alt={t`See more`} />
+      </Link>
+    </h2>
+  );
+}
+
+function SeeMoreLink({
+  children,
+  q,
+  resultType,
+  type,
+}: {
+  children: ReactNode;
+  q: string;
+  resultType: ResultsTypeKey;
+  type: string | null;
+}) {
+  if (type === resultType) return null;
+
+  return (
+    <div className="ui-state">
+      <Link
+        className="plain button"
+        to={`/search?q=${encodeURIComponent(q)}&type=${resultType}`}
+      >
+        {children} <Icon icon="arrow-right" />
+      </Link>
+    </div>
+  );
+}
+
+function AccountResultsSection({
+  accountResults,
+  instance,
+  q,
+  relationshipsMap,
+  type,
+  uiState,
+}: {
+  accountResults: mastodon.v1.Account[];
+  instance: string;
+  q: string;
+  relationshipsMap: Record<string, mastodon.v1.Relationship>;
+  type: string | null;
+  uiState: string;
+}) {
+  if (type && type !== 'accounts') return null;
+
+  return (
+    <>
+      <SearchSectionHeader q={q} resultType="accounts" type={type}>
+        <Trans>Accounts</Trans>
+      </SearchSectionHeader>
+      {accountResults.length > 0 ? (
+        <>
+          <ul className="timeline flat accounts-list">
+            {accountResults.map((account) => (
+              <li key={account.id}>
+                <AccountBlock
+                  account={account}
+                  instance={instance}
+                  showStats
+                  relationship={
+                    relationshipsMap[
+                      account.id
+                    ] as Partial<mastodon.v1.Relationship> | null
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+          <SeeMoreLink q={q} resultType="accounts" type={type}>
+            <Trans>See more accounts</Trans>
+          </SeeMoreLink>
+        </>
+      ) : (
+        <EmptyResults type={type} uiState={uiState}>
+          <Trans>No accounts found.</Trans>
+        </EmptyResults>
+      )}
+    </>
+  );
+}
+
+function HashtagResultsSection({
+  hashtagResults,
+  instance,
+  q,
+  type,
+  uiState,
+}: {
+  hashtagResults: mastodon.v1.Tag[];
+  instance: string;
+  q: string;
+  type: string | null;
+  uiState: string;
+}) {
+  if (type && type !== 'hashtags') return null;
+
+  return (
+    <>
+      <SearchSectionHeader q={q} resultType="hashtags" type={type}>
+        <Trans>Hashtags</Trans>
+      </SearchSectionHeader>
+      {hashtagResults.length > 0 ? (
+        <>
+          <ul className="link-list hashtag-list">
+            {hashtagResults.map((hashtag) => {
+              const { name, history } = hashtag;
+              const total = history?.reduce?.(
+                (acc, cur) => acc + +cur.uses,
+                0,
+              );
+              return (
+                <li key={`${name}-${total}`}>
+                  <Link to={instance ? `/${instance}/t/${name}` : `/t/${name}`}>
+                    <Icon icon="hashtag" alt="#" />
+                    <span>{name}</span>
+                    {!!total && (
+                      <span className="count">{shortenNumber(total)}</span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <SeeMoreLink q={q} resultType="hashtags" type={type}>
+            <Trans>See more hashtags</Trans>
+          </SeeMoreLink>
+        </>
+      ) : (
+        <EmptyResults type={type} uiState={uiState}>
+          <Trans>No hashtags found.</Trans>
+        </EmptyResults>
+      )}
+    </>
+  );
+}
+
+function StatusResultsSection({
+  instance,
+  q,
+  statusResults,
+  type,
+  uiState,
+}: {
+  instance: string;
+  q: string;
+  statusResults: mastodon.v1.Status[];
+  type: string | null;
+  uiState: string;
+}) {
+  if (type && type !== 'statuses') return null;
+
+  return (
+    <>
+      <SearchSectionHeader q={q} resultType="statuses" type={type}>
+        <Trans>Posts</Trans>
+      </SearchSectionHeader>
+      {statusResults.length > 0 ? (
+        <>
+          <ul className="timeline">
+            {statusResults.map((status) => (
+              <li key={status.id}>
+                <Link
+                  className="status-link"
+                  to={instance ? `/${instance}/s/${status.id}` : `/s/${status.id}`}
+                >
+                  <Status status={status} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <SeeMoreLink q={q} resultType="statuses" type={type}>
+            <Trans>See more posts</Trans>
+          </SeeMoreLink>
+        </>
+      ) : (
+        <EmptyResults type={type} uiState={uiState}>
+          <Trans>No posts found.</Trans>
+        </EmptyResults>
+      )}
+    </>
+  );
+}
+
+function SearchPagination({
+  loadResults,
+  showMore,
+  type,
+  uiState,
+}: {
+  loadResults: () => void;
+  showMore: boolean;
+  type: string | null;
+  uiState: string;
+}) {
+  if (!type) return null;
+
+  if (uiState === 'loading') {
+    return (
+      <p className="ui-state">
+        <Loader abrupt />
+      </p>
+    );
+  }
+
+  if (uiState !== 'default') return null;
+
+  return showMore ? (
+    <InView
+      onChange={(inView) => {
+        if (inView) {
+          loadResults();
+        }
+      }}
+    >
+      <button
+        type="button"
+        className="plain block"
+        onClick={loadResults}
+        style={{ marginBlockEnd: '6em' }}
+      >
+        <Trans>Show more…</Trans>
+      </button>
+    </InView>
+  ) : (
+    <p className="ui-state insignificant">
+      <Trans>The end.</Trans>
+    </p>
+  );
+}
+
+function EmptySearchPrompt({ uiState }: { uiState: string }) {
+  return uiState === 'loading' ? (
+    <p className="ui-state">
+      <Loader abrupt />
+    </p>
+  ) : (
+    <>
+      <p className="ui-state insignificant">
+        <Trans>Enter your search term or paste a URL above to get started.</Trans>
+      </p>
+      <RecentSearches />
+    </>
+  );
+}
+
+function SearchResultsView({
+  accountResults,
+  columnMode,
+  filterBarParent,
+  hashtagResults,
+  instance,
+  loadResults,
+  q,
+  relationshipsMap,
+  showMore,
+  statusResults,
+  type,
+  uiState,
+}: {
+  accountResults: mastodon.v1.Account[];
+  columnMode?: boolean;
+  filterBarParent: RefCallback<HTMLDivElement>;
+  hashtagResults: mastodon.v1.Tag[];
+  instance: string;
+  loadResults: (firstLoad?: boolean) => void;
+  q: string | null | undefined;
+  relationshipsMap: Record<string, mastodon.v1.Relationship>;
+  showMore: boolean;
+  statusResults: mastodon.v1.Status[];
+  type: string | null;
+  uiState: string;
+}) {
+  if (!q) return <EmptySearchPrompt uiState={uiState} />;
+
+  return (
+    <>
+      {!columnMode && (
+        <SearchFilterBar
+          filterBarParent={filterBarParent}
+          q={q}
+          type={type}
+          uiState={uiState}
+        />
+      )}
+      <AccountResultsSection
+        accountResults={accountResults}
+        instance={instance}
+        q={q}
+        relationshipsMap={relationshipsMap}
+        type={type}
+        uiState={uiState}
+      />
+      <HashtagResultsSection
+        hashtagResults={hashtagResults}
+        instance={instance}
+        q={q}
+        type={type}
+        uiState={uiState}
+      />
+      <StatusResultsSection
+        instance={instance}
+        q={q}
+        statusResults={statusResults}
+        type={type}
+        uiState={uiState}
+      />
+      <SearchPagination
+        loadResults={() => {
+          loadResults();
+        }}
+        showMore={showMore}
+        type={type}
+        uiState={uiState}
+      />
+    </>
+  );
+}
+
+function useSearchController(
+  columnMode: boolean | undefined,
+  props: SearchControllerProps,
+) {
   const { t } = useLingui();
   const routeParams = useParams<{ instance?: string }>();
   const [routeSearchParams] = useSearchParams();
@@ -492,6 +914,46 @@ function Search({ columnMode, ...props }: SearchProps) {
 
   const [filterBarParent] = useAutoAnimate();
 
+  return {
+    accountResults,
+    columnMode,
+    filterBarParent,
+    hashtagResults,
+    instance,
+    jRef,
+    kRef,
+    loadResults,
+    q,
+    relationshipsMap,
+    searchFormRef,
+    scrollableRef,
+    showMore,
+    statusResults,
+    type,
+    uiState,
+  };
+}
+
+function Search({ columnMode, ...props }: SearchProps) {
+  const { t } = useLingui();
+  const {
+    accountResults,
+    filterBarParent,
+    hashtagResults,
+    instance,
+    jRef,
+    kRef,
+    loadResults,
+    q,
+    relationshipsMap,
+    searchFormRef,
+    scrollableRef,
+    showMore,
+    statusResults,
+    type,
+    uiState,
+  } = useSearchController(columnMode, props);
+
   return (
     <div
       id="search-page"
@@ -525,282 +987,20 @@ function Search({ columnMode, ...props }: SearchProps) {
           </div>
         </header>
         <main>
-          {!!q && !columnMode && (
-            <div
-              ref={filterBarParent}
-              className={`filter-bar ${uiState === 'loading' ? 'loading' : ''}`}
-            >
-              {!!type && (
-                <Link to={`/search${q ? `?q=${encodeURIComponent(q)}` : ''}`}>
-                  <Icon icon="chevron-left" /> <Trans>All</Trans>
-                </Link>
-              )}
-              {sorted(
-                [
-                  {
-                    label: t`Accounts`,
-                    type: 'accounts',
-                    to: `/search?q=${encodeURIComponent(q)}&type=accounts`,
-                  },
-                  {
-                    label: t`Hashtags`,
-                    type: 'hashtags',
-                    to: `/search?q=${encodeURIComponent(q)}&type=hashtags`,
-                  },
-                  {
-                    label: t`Posts`,
-                    type: 'statuses',
-                    to: `/search?q=${encodeURIComponent(q)}&type=statuses`,
-                  },
-                ],
-                (a, b) => {
-                  if (a.type === type) return -1;
-                  if (b.type === type) return 1;
-                  return 0;
-                },
-              ).map((link) => (
-                <Link to={link.to} key={link.type}>
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          )}
-          {q ? (
-            <>
-              {(!type || type === 'accounts') && (
-                <>
-                  {type !== 'accounts' && (
-                    <h2 className="timeline-header">
-                      <Trans>Accounts</Trans>{' '}
-                      <Link
-                        to={`/search?q=${encodeURIComponent(q)}&type=accounts`}
-                      >
-                        <Icon icon="arrow-right" size="l" alt={t`See more`} />
-                      </Link>
-                    </h2>
-                  )}
-                  {accountResults.length > 0 ? (
-                    <>
-                      <ul className="timeline flat accounts-list">
-                        {accountResults.map((account) => (
-                          <li key={account.id}>
-                            <AccountBlock
-                              account={account}
-                              instance={instance}
-                              showStats
-                              relationship={
-                                relationshipsMap[
-                                  account.id
-                                ] as Partial<mastodon.v1.Relationship> | null
-                              }
-                            />
-                          </li>
-                        ))}
-                      </ul>
-                      {type !== 'accounts' && (
-                        <div className="ui-state">
-                          <Link
-                            className="plain button"
-                            to={`/search?q=${encodeURIComponent(
-                              q,
-                            )}&type=accounts`}
-                          >
-                            <Trans>See more accounts</Trans>{' '}
-                            <Icon icon="arrow-right" />
-                          </Link>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    !type &&
-                    (uiState === 'loading' ? (
-                      <p className="ui-state">
-                        <Loader abrupt />
-                      </p>
-                    ) : (
-                      <p className="ui-state">
-                        <Trans>No accounts found.</Trans>
-                      </p>
-                    ))
-                  )}
-                </>
-              )}
-              {(!type || type === 'hashtags') && (
-                <>
-                  {type !== 'hashtags' && (
-                    <h2 className="timeline-header">
-                      <Trans>Hashtags</Trans>{' '}
-                      <Link
-                        to={`/search?q=${encodeURIComponent(q)}&type=hashtags`}
-                      >
-                        <Icon icon="arrow-right" size="l" alt={t`See more`} />
-                      </Link>
-                    </h2>
-                  )}
-                  {hashtagResults.length > 0 ? (
-                    <>
-                      <ul className="link-list hashtag-list">
-                        {hashtagResults.map((hashtag) => {
-                          const { name, history } = hashtag;
-                          const total = history?.reduce?.(
-                            (acc, cur) => acc + +cur.uses,
-                            0,
-                          );
-                          return (
-                            <li key={`${name}-${total}`}>
-                              <Link
-                                to={
-                                  instance
-                                    ? `/${instance}/t/${name}`
-                                    : `/t/${name}`
-                                }
-                              >
-                                <Icon icon="hashtag" alt="#" />
-                                <span>{name}</span>
-                                {!!total && (
-                                  <span className="count">
-                                    {shortenNumber(total)}
-                                  </span>
-                                )}
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                      {type !== 'hashtags' && (
-                        <div className="ui-state">
-                          <Link
-                            className="plain button"
-                            to={`/search?q=${encodeURIComponent(
-                              q,
-                            )}&type=hashtags`}
-                          >
-                            <Trans>See more hashtags</Trans>{' '}
-                            <Icon icon="arrow-right" />
-                          </Link>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    !type &&
-                    (uiState === 'loading' ? (
-                      <p className="ui-state">
-                        <Loader abrupt />
-                      </p>
-                    ) : (
-                      <p className="ui-state">
-                        <Trans>No hashtags found.</Trans>
-                      </p>
-                    ))
-                  )}
-                </>
-              )}
-              {(!type || type === 'statuses') && (
-                <>
-                  {type !== 'statuses' && (
-                    <h2 className="timeline-header">
-                      <Trans>Posts</Trans>{' '}
-                      <Link
-                        to={`/search?q=${encodeURIComponent(q)}&type=statuses`}
-                      >
-                        <Icon icon="arrow-right" size="l" alt={t`See more`} />
-                      </Link>
-                    </h2>
-                  )}
-                  {statusResults.length > 0 ? (
-                    <>
-                      <ul className="timeline">
-                        {statusResults.map((status) => (
-                          <li key={status.id}>
-                            <Link
-                              className="status-link"
-                              to={
-                                instance
-                                  ? `/${instance}/s/${status.id}`
-                                  : `/s/${status.id}`
-                              }
-                            >
-                              <Status status={status} />
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                      {type !== 'statuses' && (
-                        <div className="ui-state">
-                          <Link
-                            className="plain button"
-                            to={`/search?q=${encodeURIComponent(
-                              q,
-                            )}&type=statuses`}
-                          >
-                            <Trans>See more posts</Trans>{' '}
-                            <Icon icon="arrow-right" />
-                          </Link>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    !type &&
-                    (uiState === 'loading' ? (
-                      <p className="ui-state">
-                        <Loader abrupt />
-                      </p>
-                    ) : (
-                      <p className="ui-state">
-                        <Trans>No posts found.</Trans>
-                      </p>
-                    ))
-                  )}
-                </>
-              )}
-              {!!type &&
-                (uiState === 'default' ? (
-                  showMore ? (
-                    <InView
-                      onChange={(inView) => {
-                        if (inView) {
-                          loadResults();
-                        }
-                      }}
-                    >
-                      <button
-                        type="button"
-                        className="plain block"
-                        onClick={() => {
-                          loadResults();
-                        }}
-                        style={{ marginBlockEnd: '6em' }}
-                      >
-                        <Trans>Show more…</Trans>
-                      </button>
-                    </InView>
-                  ) : (
-                    <p className="ui-state insignificant">
-                      <Trans>The end.</Trans>
-                    </p>
-                  )
-                ) : (
-                  uiState === 'loading' && (
-                    <p className="ui-state">
-                      <Loader abrupt />
-                    </p>
-                  )
-                ))}
-            </>
-          ) : uiState === 'loading' ? (
-            <p className="ui-state">
-              <Loader abrupt />
-            </p>
-          ) : (
-            <>
-              <p className="ui-state insignificant">
-                <Trans>
-                  Enter your search term or paste a URL above to get started.
-                </Trans>
-              </p>
-              <RecentSearches />
-            </>
-          )}
+          <SearchResultsView
+            accountResults={accountResults}
+            columnMode={columnMode}
+            filterBarParent={filterBarParent}
+            hashtagResults={hashtagResults}
+            instance={instance}
+            loadResults={loadResults}
+            q={q}
+            relationshipsMap={relationshipsMap}
+            showMore={showMore}
+            statusResults={statusResults}
+            type={type}
+            uiState={uiState}
+          />
         </main>
       </div>
     </div>
