@@ -4,6 +4,7 @@ import './trending.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { getBlurHashAverageColor } from 'fast-blurhash';
 import type { mastodon } from 'masto';
+import type { CSSProperties, Dispatch, RefObject, SetStateAction } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
@@ -172,6 +173,297 @@ interface TrendingProps {
   [key: string]: unknown;
 }
 
+interface TrendingTimelineStartProps {
+  currentLink: string | null;
+  currentLinkMentionsLoading: boolean;
+  currentLinkRef: RefObject<HTMLAnchorElement | null>;
+  hasCurrentLink: boolean;
+  hashtags: HashtagItem[];
+  instance: string;
+  links: LinkItem[];
+  setCurrentLink: Dispatch<SetStateAction<string | null>>;
+  supportsTrendingLinkPosts: boolean;
+}
+
+interface TrendingLinksBarProps {
+  currentLink: string | null;
+  currentLinkRef: RefObject<HTMLAnchorElement | null>;
+  hasCurrentLink: boolean;
+  links: LinkItem[];
+  setCurrentLink: Dispatch<SetStateAction<string | null>>;
+  supportsTrendingLinkPosts: boolean;
+}
+
+interface TrendingLinkCardProps {
+  currentLink: string | null;
+  currentLinkRef: RefObject<HTMLAnchorElement | null>;
+  hasCurrentLink: boolean;
+  link: LinkItem;
+  setCurrentLink: Dispatch<SetStateAction<string | null>>;
+  supportsTrendingLinkPosts: boolean;
+}
+
+interface AccentColorStyle extends CSSProperties {
+  '--accent-color'?: string;
+  '--accent-alpha-color'?: string;
+}
+
+function TrendingHashtagsBar({
+  hashtags,
+  instance,
+}: {
+  hashtags: HashtagItem[];
+  instance: string;
+}) {
+  if (!hashtags.length) return null;
+
+  return (
+    <div className="filter-bar expandable">
+      <Icon icon="chart" className="insignificant" size="l" />
+      {hashtags.map((tag) => {
+        const { name, history } = tag;
+        const total = history.reduce(
+          (acc: number, cur: HashtagHistoryEntry) => acc + +cur.uses,
+          0,
+        );
+        return (
+          <Link to={`/${instance}/t/${name}`} key={name}>
+            <span dir="auto">
+              <span className="more-insignificant">#</span>
+              {name}
+            </span>
+            <span className="filter-count">{shortenNumber(total)}</span>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function linkAccentStyle(blurhash: string | undefined): AccentColorStyle {
+  if (!blurhash) return {};
+  const averageColor = getBlurHashAverageColor(blurhash);
+  const labAverageColor = rgb2oklab(averageColor) as readonly number[];
+  const accentColor = oklab2rgb([
+    0.6,
+    labAverageColor[1],
+    labAverageColor[2],
+  ]) as readonly number[];
+  return {
+    '--accent-color': `rgb(${accentColor.join(',')})`,
+    '--accent-alpha-color': `rgba(${accentColor.join(',')}, 0.4)`,
+  };
+}
+
+function TrendingLinkCard({
+  currentLink,
+  currentLinkRef,
+  hasCurrentLink,
+  link,
+  setCurrentLink,
+  supportsTrendingLinkPosts,
+}: TrendingLinkCardProps) {
+  const {
+    authors,
+    authorName,
+    authorUrl,
+    blurhash,
+    description,
+    height,
+    image,
+    imageDescription,
+    language,
+    publishedAt,
+    title: linkTitle,
+    url,
+    width,
+  } = link;
+  const author = authors?.[0]?.account?.id ? authors[0].account : null;
+  const isShortTitle = linkTitle.length < 30;
+  const hasAuthor = !!(authorName || author);
+  const domain = getDomain(url);
+
+  return (
+    <div>
+      <a
+        ref={currentLink === url ? currentLinkRef : null}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`link-block ${
+          hasCurrentLink ? (currentLink === url ? 'active' : 'inactive') : ''
+        }`}
+        style={linkAccentStyle(blurhash)}
+      >
+        <article>
+          <figure>
+            <img
+              src={image}
+              alt={imageDescription}
+              width={width}
+              height={height}
+              loading="lazy"
+            />
+          </figure>
+          <div className="article-body">
+            <header>
+              <div className="article-meta">
+                <span className="domain">{domain}</span>{' '}
+                {!!publishedAt && <>&middot; </>}
+                {!!publishedAt && (
+                  <>
+                    <RelativeTime dateTime={publishedAt} format="micro" />
+                  </>
+                )}
+              </div>
+              {!!linkTitle && (
+                <h1
+                  className="title"
+                  lang={language}
+                  dir="auto"
+                  title={linkTitle}
+                >
+                  {linkTitle}
+                </h1>
+              )}
+            </header>
+            {!!description && (
+              <p
+                className={`description ${
+                  hasAuthor && !isShortTitle ? '' : 'more-lines'
+                }`}
+                lang={language}
+                dir="auto"
+                title={description}
+              >
+                {description}
+              </p>
+            )}
+            {hasAuthor && (
+              <>
+                <hr />
+                <p className="byline">
+                  <small>
+                    <Trans comment="By [Author]">
+                      By{' '}
+                      {author ? (
+                        <NameText account={author} showAvatar />
+                      ) : authorUrl ? (
+                        <a
+                          href={authorUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {authorName}
+                        </a>
+                      ) : (
+                        authorName
+                      )}
+                    </Trans>
+                  </small>
+                </p>
+              </>
+            )}
+          </div>
+        </article>
+      </a>
+      {supportsTrendingLinkPosts && (
+        <button
+          type="button"
+          className="small plain4 block"
+          onClick={() => {
+            setCurrentLink(url);
+          }}
+          disabled={url === currentLink}
+        >
+          <Icon icon="comment2" />{' '}
+          <span>
+            <Trans>Mentions</Trans>
+          </span>{' '}
+          <Icon icon="chevron-down" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+function TrendingLinksBar(props: TrendingLinksBarProps) {
+  if (!props.links.length) return null;
+
+  return (
+    <div className="links-bar">
+      <header>
+        <h3>
+          <Trans>Trending News</Trans>
+        </h3>
+      </header>
+      {props.links.map((link) => (
+        <TrendingLinkCard key={link.url} {...props} link={link} />
+      ))}
+    </div>
+  );
+}
+
+function TrendingMentionsHeader({
+  currentLink,
+  currentLinkMentionsLoading,
+  hasCurrentLink,
+  links,
+  setCurrentLink,
+  supportsTrendingLinkPosts,
+}: TrendingTimelineStartProps) {
+  const { t } = useLingui();
+  if (!supportsTrendingLinkPosts || !links.length) return null;
+
+  return (
+    <div className={`timeline-header-block ${hasCurrentLink ? 'blended' : ''}`}>
+      {hasCurrentLink ? (
+        <>
+          <div style={{ width: 50, flexShrink: 0, textAlign: 'center' }}>
+            {currentLinkMentionsLoading ? (
+              <Loader abrupt />
+            ) : (
+              <button
+                type="button"
+                className="light"
+                onClick={() => {
+                  setCurrentLink(null);
+                }}
+              >
+                <Icon icon="x" alt={t`Back to showing trending posts`} />
+              </button>
+            )}
+          </div>
+          <p>
+            <Trans>
+              Showing posts mentioning{' '}
+              <span className="link-text">
+                {(currentLink ?? '')
+                  .replace(/^https?:\/\/(www\.)?/i, '')
+                  .replace(/\/$/, '')}
+              </span>
+            </Trans>
+          </p>
+        </>
+      ) : (
+        <p className="insignificant">
+          <Trans>Trending posts</Trans>
+        </p>
+      )}
+    </div>
+  );
+}
+
+function TrendingTimelineStart(props: TrendingTimelineStartProps) {
+  return (
+    <>
+      <TrendingHashtagsBar hashtags={props.hashtags} instance={props.instance} />
+      <TrendingLinksBar {...props} />
+      <TrendingMentionsHeader {...props} />
+    </>
+  );
+}
+
 function Trending({ columnMode, ...props }: TrendingProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
@@ -322,244 +614,30 @@ function Trending({ columnMode, ...props }: TrendingProps) {
     }
   }
 
-  const TimelineStart = useMemo(() => {
-    return (
-      <>
-        {!!hashtags.length && (
-          <div className="filter-bar expandable">
-            <Icon icon="chart" className="insignificant" size="l" />
-            {hashtags.map((tag: HashtagItem) => {
-              const { name, history } = tag;
-              const total = history.reduce(
-                (acc: number, cur: HashtagHistoryEntry) => acc + +cur.uses,
-                0,
-              );
-              return (
-                <Link to={`/${instance}/t/${name}`} key={name}>
-                  <span dir="auto">
-                    <span className="more-insignificant">#</span>
-                    {name}
-                  </span>
-                  <span className="filter-count">{shortenNumber(total)}</span>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-        {!!links.length && (
-          <div className="links-bar">
-            <header>
-              <h3>
-                <Trans>Trending News</Trans>
-              </h3>
-            </header>
-            {links.map((link: LinkItem) => {
-              const {
-                authors,
-                authorName,
-                authorUrl,
-                blurhash,
-                description,
-                height,
-                image,
-                imageDescription,
-                language,
-                publishedAt,
-                title: linkTitle,
-                url,
-                width,
-              } = link;
-              const author = authors?.[0]?.account?.id
-                ? authors[0].account
-                : null;
-              const isShortTitle = linkTitle.length < 30;
-              const hasAuthor = !!(authorName || author);
-              const domain = getDomain(url);
-              let accentColor: readonly number[] | undefined;
-              if (blurhash) {
-                const averageColor = getBlurHashAverageColor(blurhash);
-                const labAverageColor = rgb2oklab(
-                  averageColor,
-                ) as readonly number[];
-                accentColor = oklab2rgb([
-                  0.6,
-                  labAverageColor[1],
-                  labAverageColor[2],
-                ]) as readonly number[];
-              }
-
-              return (
-                <div key={url}>
-                  <a
-                    ref={currentLink === url ? currentLinkRef : null}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`link-block ${
-                      hasCurrentLink
-                        ? currentLink === url
-                          ? 'active'
-                          : 'inactive'
-                        : ''
-                    }`}
-                    style={
-                      accentColor
-                        ? {
-                            '--accent-color': `rgb(${accentColor.join(',')})`,
-                            '--accent-alpha-color': `rgba(${accentColor.join(
-                              ',',
-                            )}, 0.4)`,
-                          }
-                        : {}
-                    }
-                  >
-                    <article>
-                      <figure>
-                        <img
-                          src={image}
-                          alt={imageDescription}
-                          width={width}
-                          height={height}
-                          loading="lazy"
-                        />
-                      </figure>
-                      <div className="article-body">
-                        <header>
-                          <div className="article-meta">
-                            <span className="domain">{domain}</span>{' '}
-                            {!!publishedAt && <>&middot; </>}
-                            {!!publishedAt && (
-                              <>
-                                <RelativeTime
-                                  dateTime={publishedAt}
-                                  format="micro"
-                                />
-                              </>
-                            )}
-                          </div>
-                          {!!linkTitle && (
-                            <h1
-                              className="title"
-                              lang={language}
-                              dir="auto"
-                              title={linkTitle}
-                            >
-                              {linkTitle}
-                            </h1>
-                          )}
-                        </header>
-                        {!!description && (
-                          <p
-                            className={`description ${
-                              hasAuthor && !isShortTitle ? '' : 'more-lines'
-                            }`}
-                            lang={language}
-                            dir="auto"
-                            title={description}
-                          >
-                            {description}
-                          </p>
-                        )}
-                        {hasAuthor && (
-                          <>
-                            <hr />
-                            <p className="byline">
-                              <small>
-                                <Trans comment="By [Author]">
-                                  By{' '}
-                                  {author ? (
-                                    <NameText account={author} showAvatar />
-                                  ) : authorUrl ? (
-                                    <a
-                                      href={authorUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    >
-                                      {authorName}
-                                    </a>
-                                  ) : (
-                                    authorName
-                                  )}
-                                </Trans>
-                              </small>
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </article>
-                  </a>
-                  {supportsTrendingLinkPosts && (
-                    <button
-                      type="button"
-                      className="small plain4 block"
-                      onClick={() => {
-                        setCurrentLink(url);
-                      }}
-                      disabled={url === currentLink}
-                    >
-                      <Icon icon="comment2" />{' '}
-                      <span>
-                        <Trans>Mentions</Trans>
-                      </span>{' '}
-                      <Icon icon="chevron-down" />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-        {supportsTrendingLinkPosts && !!links.length && (
-          <div
-            className={`timeline-header-block ${hasCurrentLink ? 'blended' : ''}`}
-          >
-            {hasCurrentLink ? (
-              <>
-                <div style={{ width: 50, flexShrink: 0, textAlign: 'center' }}>
-                  {currentLinkMentionsLoading ? (
-                    <Loader abrupt />
-                  ) : (
-                    <button
-                      type="button"
-                      className="light"
-                      onClick={() => {
-                        setCurrentLink(null);
-                      }}
-                    >
-                      <Icon icon="x" alt={t`Back to showing trending posts`} />
-                    </button>
-                  )}
-                </div>
-                <p>
-                  <Trans>
-                    Showing posts mentioning{' '}
-                    <span className="link-text">
-                      {(currentLink ?? '')
-                        .replace(/^https?:\/\/(www\.)?/i, '')
-                        .replace(/\/$/, '')}
-                    </span>
-                  </Trans>
-                </p>
-              </>
-            ) : (
-              <p className="insignificant">
-                <Trans>Trending posts</Trans>
-              </p>
-            )}
-          </div>
-        )}
-      </>
-    );
-  }, [
-    hashtags,
-    links,
-    currentLink,
-    currentLinkMentionsLoading,
-    supportsTrendingLinkPosts,
-    instance,
-    t,
-    hasCurrentLink,
-  ]);
+  const TimelineStart = useMemo(
+    () => (
+      <TrendingTimelineStart
+        currentLink={currentLink}
+        currentLinkMentionsLoading={currentLinkMentionsLoading}
+        currentLinkRef={currentLinkRef}
+        hasCurrentLink={hasCurrentLink}
+        hashtags={hashtags}
+        instance={instance}
+        links={links}
+        setCurrentLink={setCurrentLink}
+        supportsTrendingLinkPosts={supportsTrendingLinkPosts}
+      />
+    ),
+    [
+      hashtags,
+      links,
+      currentLink,
+      currentLinkMentionsLoading,
+      supportsTrendingLinkPosts,
+      instance,
+      hasCurrentLink,
+    ],
+  );
 
   return (
     <Timeline
