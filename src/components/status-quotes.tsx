@@ -4,13 +4,13 @@ import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
 import { use } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
 import {
   canonicalizeAppPath,
+  getPrevLocationSnapshot,
   isModifiedClick,
   navigatePath,
 } from '../utils/router';
@@ -98,9 +98,8 @@ function StatusCardLink({
   children: ReactNode;
 }) {
   const href = canonicalizeAppPath(to);
-  const routerLocation = useLocation();
   const navigateFromCurrentLocation = () => {
-    states.prevLocation = { ...routerLocation };
+    states.prevLocation = getPrevLocationSnapshot();
     navigatePath(href);
   };
 

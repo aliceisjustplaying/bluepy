@@ -1199,7 +1199,7 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   color: inherit;
   text-decoration: none;
 }
-:is(.status-link, .status-carousel-link)
+:is(.status-link, .status-carousel-link, .status-focus)
   :is(
     a,
     button,

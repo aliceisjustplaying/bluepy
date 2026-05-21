@@ -29,6 +29,7 @@ export interface LinkProps extends Omit<
   to: string;
   class?: string;
   className?: string;
+  preservePrevLocation?: boolean;
   target?: string;
   [key: `data-${string}`]: unknown;
   [key: `aria-${string}`]: unknown;
@@ -68,6 +69,7 @@ function LinkBody(props: LinkBodyProps) {
     routerLocation,
     class: classProp,
     className,
+    preservePrevLocation,
     ref,
     onClick,
     ...restProps
@@ -102,10 +104,7 @@ function LinkBody(props: LinkBodyProps) {
           // If this <a> is nested inside another <a>
           e.stopPropagation();
         }
-        if (routerLocation) {
-          // react-router Location has typed fields that don't widen to
-          // PrevLocation's unknown index signature; spread into the
-          // PrevLocation shape to satisfy both types without a shim.
+        if (routerLocation && !preservePrevLocation) {
           states.prevLocation = { ...routerLocation };
         }
         onClick?.(e);

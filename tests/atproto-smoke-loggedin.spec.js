@@ -32,7 +32,7 @@ import path from 'node:path';
 
 import { AtpAgent } from '@atproto/api';
 import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
-import { expect, test as base } from '@playwright/test';
+import { devices, expect, test as base } from '@playwright/test';
 
 /** @typedef {import('@playwright/test').Page} Page */
 /** @typedef {import('@playwright/test').Locator} Locator */
@@ -62,6 +62,8 @@ base.describe.configure({ mode: 'serial' });
 const SMOKE_TAG_PREFIX = '[bluepy-smoke-';
 const RUN_TAG = `${SMOKE_TAG_PREFIX}${Date.now()}]`;
 const SMOKE_SEED_BODY = `${RUN_TAG} seed`;
+const BSKY_DISCOVER_FEED =
+  'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot';
 const STORAGE_FILE = path.join(
   os.tmpdir(),
   `bluepy-smoke-storage-${process.pid}.json`,
@@ -507,6 +509,90 @@ test.describe('read flows', () => {
         ];
       }),
     );
+  });
+
+  test('mobile Discover feed keeps position after opening and closing a post', async ({
+    browser,
+  }) => {
+    test.setTimeout(90_000);
+    const ctx = await browser.newContext({
+      storageState: STORAGE_FILE,
+      ...devices['iPhone 13'],
+    });
+    const page = await ctx.newPage();
+    try {
+      const discoverPath = `/${BSKY_DISCOVER_FEED}`;
+      await page.goto(discoverPath);
+      const list = page.locator('#list-page');
+      await expect(list).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator('#list-page [data-href]').first()).toBeVisible({
+        timeout: 30_000,
+      });
+      let targetIndex = -1;
+      let scrollTop = 0;
+      for (let attempt = 0; attempt < 8 && targetIndex < 0; attempt += 1) {
+        await list.evaluate((element, attemptIndex) => {
+          const startingScrollTop = Math.max(1400, element.scrollHeight * 0.25);
+          element.scrollTo(
+            0,
+            startingScrollTop + attemptIndex * window.innerHeight * 0.7,
+          );
+        }, attempt);
+        await page.waitForTimeout(500);
+        targetIndex = await page.evaluate(() => {
+          const items = Array.from(
+            document.querySelectorAll('#list-page [data-href]'),
+          );
+          return items.findIndex((item) => {
+            const rect = item.getBoundingClientRect();
+            return (
+              rect.top > 120 &&
+              rect.bottom < window.innerHeight - 20 &&
+              /\d+\s+repl(?:y|ies)/i.test(item.textContent || '')
+            );
+          });
+        });
+        scrollTop = await list.evaluate((element) => element.scrollTop);
+      }
+      expect(scrollTop).toBeGreaterThan(1000);
+      expect(
+        targetIndex,
+        'Expected a visible reply-bearing feed item',
+      ).toBeGreaterThanOrEqual(0);
+      const target = page.locator('#list-page [data-href]').nth(targetIndex);
+      await target.evaluate((element) => {
+        element.setAttribute('data-smoke-target', '1');
+      });
+      await target.locator(':scope > .status-link-native').tap();
+      await expect(page.locator('.deck-close')).toHaveCount(1, {
+        timeout: 30_000,
+      });
+      await expect
+        .poll(() => list.evaluate((element) => element.scrollTop))
+        .toBeGreaterThan(scrollTop - 300);
+
+      const threadLink = page
+        .locator('.status-deck li.descendant .status-link[href]')
+        .first();
+      await expect(threadLink).toBeVisible({ timeout: 30_000 });
+      const firstPostURL = page.url();
+      await threadLink.tap();
+      await expect(page).not.toHaveURL(firstPostURL);
+      await expect(page.locator('.deck-close')).toHaveCount(1);
+      await expect
+        .poll(() => list.evaluate((element) => element.scrollTop))
+        .toBeGreaterThan(scrollTop - 300);
+
+      await page.locator('.deck-close').tap();
+      await expect(page).toHaveURL(new RegExp(BSKY_DISCOVER_FEED));
+      await expect(page.locator('.deck-close')).toHaveCount(0);
+      await expect
+        .poll(() => list.evaluate((element) => element.scrollTop))
+        .toBeGreaterThan(scrollTop - 300);
+      await expect(page.locator('[data-smoke-target="1"]')).toBeVisible();
+    } finally {
+      await ctx.close();
+    }
   });
 
   test('notifications page renders', async ({ page }) => {

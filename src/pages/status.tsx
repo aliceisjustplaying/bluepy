@@ -39,15 +39,20 @@ import Status from '../components/status';
 import type { AnyStatus } from '../components/status-types';
 import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
 import {
+  getAtprotoURIFromPathname,
   isAtprotoPostURI,
-  maybeDecodeAtprotoURI,
+  isStatusPath,
 } from '../utils/atproto-route';
 import {
   EditHistoryProvider,
   useEditHistory,
 } from '../utils/edit-history-context';
 import htmlContentLength from '../utils/html-content-length';
-import { navigatePath } from '../utils/router';
+import {
+  canonicalizeAppPath,
+  isModifiedClick,
+  navigatePath,
+} from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import states, {
   getStatus,
@@ -72,14 +77,6 @@ const LIMIT = 40;
 const SUBCOMMENTS_OPEN_ALL_LIMIT = 10;
 const MAX_WEIGHT = 5;
 const COMMENTS_AUTO_EXPAND_LIMIT = 20;
-
-function getAtprotoURIFromPathname(pathname: string) {
-  const schemeMatch = matchPath('/:scheme://*', pathname);
-  if (schemeMatch?.params.scheme?.toLowerCase() === 'at') {
-    return `at://${(schemeMatch.params['*'] || '').replace(/^\/+/, '')}`;
-  }
-  return maybeDecodeAtprotoURI(matchPath('/:atUri', pathname)?.params.atUri);
-}
 
 // The status records this page works with originate from Masto's API but
 // also pick up internal mutations from `states.ts` (e.g. `__replies`,
@@ -167,8 +164,6 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
 // https://front-end.social/@AmeliaBR/109784776146144471
 const STATUSES_SELECTOR =
   '.status-link:not(details:not([open]) > summary ~ *, details:not([open]) > summary ~ * *), .status-focus:not(details:not([open]) > summary ~ *, details:not([open]) > summary ~ * *)';
-
-const STATUS_URL_REGEX = /\/s\//i;
 
 const postViewState = (): 'large' | 'small' =>
   window.matchMedia('(min-width: calc(40em + 350px))').matches
@@ -458,13 +453,21 @@ function StatusPage(params: StatusPageParams) {
   }, [showMediaOnly]);
 
   useEffect(() => {
-    const $deckContainers = document.querySelectorAll('.deck-container');
+    const $deckContainers =
+      document.querySelectorAll<HTMLElement>('.deck-container');
+    const scrollTops = new Map<HTMLElement, number>();
     $deckContainers.forEach(($deckContainer) => {
+      scrollTops.set($deckContainer, $deckContainer.scrollTop);
       $deckContainer.setAttribute('inert', '');
     });
     return () => {
       $deckContainers.forEach(($deckContainer) => {
         $deckContainer.removeAttribute('inert');
+      });
+      requestAnimationFrame(() => {
+        scrollTops.forEach((scrollTop, $deckContainer) => {
+          $deckContainer.scrollTop = scrollTop;
+        });
       });
     };
   }, []);
@@ -487,7 +490,7 @@ function StatusPage(params: StatusPageParams) {
           </div>
         )
       ) : (
-        <Link to={closeLink} />
+        <Link to={closeLink} preservePrevLocation />
       )}
       {!showMediaOnly && (
         <EditHistoryProvider statusID={id}>
@@ -505,15 +508,47 @@ function StatusPage(params: StatusPageParams) {
 interface StatusParentProps {
   linkable: boolean;
   to: string;
-  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  onClick?: () => void;
   children?: ReactNode;
 }
+
+const shouldLetStatusParentTargetHandleEvent = (target: EventTarget | null) =>
+  target instanceof Element &&
+  !!target.closest(
+    'button, input, textarea, select, summary, [role="button"], [data-menu-trigger]',
+  );
+
 function StatusParent(props: StatusParentProps) {
   const { linkable, to, onClick, ...restProps } = props;
-  return linkable ? (
-    <Link className="status-link" to={to} onClick={onClick} {...restProps} />
-  ) : (
-    <article className="status-focus" tabIndex={-1} {...restProps} />
+  const { t } = useLingui();
+  if (!linkable) {
+    return <article className="status-focus" tabIndex={-1} {...restProps} />;
+  }
+  const href = canonicalizeAppPath(to);
+  const navigateFromCurrentLocation = () => {
+    onClick?.();
+    navigatePath(href);
+  };
+  return (
+    <article
+      className="status-focus"
+      tabIndex={-1}
+      style={{ position: 'relative' }}
+      {...restProps}
+    >
+      <a
+        className="status-link status-link-native"
+        href={href}
+        aria-label={t`Open post`}
+        onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+          if (shouldLetStatusParentTargetHandleEvent(e.target)) return;
+          if (isModifiedClick(e)) return;
+          e.preventDefault();
+          navigateFromCurrentLocation();
+        }}
+      />
+      {props.children}
+    </article>
   );
 }
 
@@ -528,6 +563,22 @@ function createdAtSort(
 const MONTH_IN_MS = 1000 * 60 * 60 * 24 * 30;
 const segmenter =
   typeof Intl?.Segmenter === 'function' ? new Intl.Segmenter() : null;
+
+// Helper function to format time differences between two dates
+function formatTimeGap(months: number): string {
+  if (months < 12) {
+    return plural(months, {
+      one: '# month later',
+      other: '# months later',
+    });
+  } else {
+    const years = Math.floor(months / 12);
+    return plural(years, {
+      one: '# year later',
+      other: '# years later',
+    });
+  }
+}
 
 interface StatusThreadProps {
   id: string;
@@ -1337,7 +1388,10 @@ function StatusThread({
         level,
       } = status;
       const isHero = statusID === id;
-      const isLinkable = !!(!ghost && (isThread || ancestor));
+      const isLinkable = !!(
+        !ghost &&
+        (isThread || ancestor || descendant || thread)
+      );
 
       return (
         <li
@@ -1599,10 +1653,10 @@ function StatusThread({
       const prevEntry =
         navigation.entries()[(navigation.currentEntry?.index ?? 0) - 1];
       if (prevEntry?.url) {
-        return STATUS_URL_REGEX.test(prevEntry.url);
+        return isStatusPath(URL.parse(prevEntry.url)?.pathname ?? '');
       }
     }
-    return STATUS_URL_REGEX.test(states.prevLocation?.pathname ?? '');
+    return isStatusPath(states.prevLocation?.pathname ?? '');
   })();
 
   interface StatusKeyish {
@@ -1626,22 +1680,6 @@ function StatusThread({
     statuses.forEach(getIDs);
     return ids.map((sId) => statusKey(sId, instance));
   }, [statuses, instance]);
-
-  // Helper function to format time differences between two dates
-  function formatTimeGap(months: number): string {
-    if (months < 12) {
-      return plural(months, {
-        one: '# month later',
-        other: '# months later',
-      });
-    } else {
-      const years = Math.floor(months / 12);
-      return plural(years, {
-        one: '# year later',
-        other: '# years later',
-      });
-    }
-  }
 
   const statusesList = useMemo(() => {
     const result = [];
@@ -1999,7 +2037,11 @@ function StatusThread({
                   <span>{t`View Edit History Snapshots`}</span>
                 </MenuItem>
               </Menu2>
-              <Link className="button plain deck-close" to={closeLink}>
+              <Link
+                className="button plain deck-close"
+                to={closeLink}
+                preservePrevLocation
+              >
                 <Icon icon="x" size="xl" alt={t`Close`} />
               </Link>
             </div>
@@ -2170,6 +2212,15 @@ function SubComments({
     [setSearchParams],
   );
 
+  const handleStatusLinkClick = useCallback(
+    (_e: MouseEvent | globalThis.KeyboardEvent, status: AnyStatus) => {
+      resetScrollPosition(status.id);
+    },
+    [],
+  );
+
+  // The Container element is either `div` or `details` depending on `open`.
+  // Use a permissive ref type to satisfy both branches of the JSX union.
   const detailsRef = useRef<HTMLElement | null>(null);
   const setDetailsRef = useCallback((node: HTMLElement | null) => {
     detailsRef.current = node;
@@ -2279,6 +2330,7 @@ function SubComments({
               className="replies-parent-link"
               to={parentLink.to}
               onClick={parentLink.onClick}
+              preservePrevLocation
               title={t`View post with its replies`}
             >
               &raquo;
@@ -2290,14 +2342,13 @@ function SubComments({
         <ul>
           {replies.map((r) => (
             <li key={r.id}>
-              {/* <Link
-              className="status-link"
-              to={instance ? `/${instance}/s/${r.id}` : `/s/${r.id}`}
-              onClick={() => {
-                resetScrollPosition(r.id);
-              }}
-            > */}
-              <article className="status-focus" tabIndex={-1}>
+              <StatusParent
+                linkable
+                to={instance ? `/${instance}/s/${r.id}` : `/s/${r.id}`}
+                onClick={() => {
+                  resetScrollPosition(r.id);
+                }}
+              >
                 <Status
                   statusID={r.id}
                   instance={instance}
@@ -2305,6 +2356,7 @@ function SubComments({
                   size="s"
                   enableTranslate
                   onMediaClick={handleMediaClick}
+                  onStatusLinkClick={handleStatusLinkClick}
                   showActionsBar
                 />
                 {!r.replies?.length &&
@@ -2317,8 +2369,7 @@ function SubComments({
                       </span>
                     </div>
                   )}
-              </article>
-              {/* </Link> */}
+              </StatusParent>
               {!!r.replies?.length && (
                 <SubComments
                   instance={instance}
