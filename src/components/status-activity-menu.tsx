@@ -8,6 +8,18 @@ import states from '../utils/states';
 import Icon from './icon';
 import type { StatusMenuPartsArgs } from './status-menu-types';
 
+function hasNestedQuote(value: unknown): value is mastodon.v1.Quote {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'quotedStatus' in value &&
+    !!value.quotedStatus &&
+    typeof value.quotedStatus === 'object' &&
+    'quote' in value.quotedStatus &&
+    !!value.quotedStatus.quote
+  );
+}
+
 type StatusActivityMenuProps = Pick<
   StatusMenuPartsArgs,
   | 'fetchBoostedLikedByAccounts'
@@ -58,7 +70,7 @@ export default function StatusActivityMenu({
           </span>
         </MenuItem>
       )}
-      {(quote as mastodon.v1.Quote | null | undefined)?.quotedStatus?.quote && (
+      {hasNestedQuote(quote) && (
         <MenuItem
           onClick={() => {
             setShowQuoteChain(true);

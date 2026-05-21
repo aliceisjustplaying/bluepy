@@ -58,7 +58,7 @@ export default function StatusInlineControls({
             className={`status-actions ${
               isContextMenuOpen === 'actions-bar' ? 'open' : ''
             }`}
-            ref={actionsRef as RefObject<HTMLDivElement>}
+            ref={actionsRef}
           >
             <StatusButton
               size="s"

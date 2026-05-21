@@ -1,9 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu, MenuItem } from '@szhsin/react-menu';
-import type { MenuInstance } from '@szhsin/react-menu';
+import type { MenuInstance, RectElement } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { MouseEvent } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import type { MouseEvent, RefObject } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
@@ -80,6 +80,14 @@ export default function ComposeButton() {
   const [loadingPosts, setLoadingPosts] = useState(false);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<MenuInstance | null>(null);
+  const menuAnchorRef = useMemo<RefObject<Element | RectElement>>(
+    () => ({
+      get current() {
+        return buttonRef.current ?? document.body;
+      },
+    }),
+    [],
+  );
 
   const columnMode = false;
 
@@ -192,7 +200,7 @@ export default function ComposeButton() {
       <ControlledMenu
         ref={menuRef}
         state={menuOpen ? 'open' : undefined}
-        anchorRef={buttonRef as never}
+        anchorRef={menuAnchorRef}
         onClose={() => {
           setMenuOpen(false);
         }}

@@ -76,7 +76,7 @@ function CameraCaptureInput({
             console.error('Failed to read file:', err);
             return;
           }
-          const attachment: CameraCaptureMediaAttachment = {
+          const attachment: CameraCaptureInputAttachment = {
             fileData,
             fileName: uploadFile.name,
             type: uploadFile.type,
@@ -88,7 +88,7 @@ function CameraCaptureInput({
           };
           setMediaAttachments((attachments) => [
             ...attachments,
-            attachment as CameraCaptureInputAttachment,
+            attachment,
           ]);
           target.value = '';
         })();

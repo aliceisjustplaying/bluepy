@@ -288,7 +288,7 @@ export default function FeedbackModal({
               </button>
               <button type="submit" disabled={status === "submitting"}>
                 {status === "submitting" ? (
-                  <Trans>Sending…</Trans>
+                  <Trans id="Sending...">Sending…</Trans>
                 ) : (
                   <Trans>Send</Trans>
                 )}
