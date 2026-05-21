@@ -21,6 +21,7 @@ interface EditHistoryContextValue {
 }
 
 const EMPTY_EDIT_HISTORY: EditHistoryEntry[] = [];
+Object.freeze(EMPTY_EDIT_HISTORY);
 
 const defaultEditHistoryContext: EditHistoryContextValue = {
   editHistoryRef: { current: EMPTY_EDIT_HISTORY },

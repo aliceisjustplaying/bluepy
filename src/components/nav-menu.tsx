@@ -6,7 +6,9 @@ import {
   MenuDivider,
   MenuHeader,
   MenuItem,
+  type RectElement,
 } from '@szhsin/react-menu';
+import type { RefObject } from 'react';
 import { memo } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { LongPressEventType, useLongPress } from 'use-long-press';
@@ -87,6 +89,14 @@ function NavMenu(props: Record<string, unknown>) {
   );
 
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuAnchorRef = useMemo<RefObject<Element | RectElement>>(
+    () => ({
+      get current() {
+        return buttonRef.current ?? document.body;
+      },
+    }),
+    [],
+  );
   const [menuState, setMenuState] = useState<MenuStateValue>(undefined);
 
   const boundingBoxPadding = safeBoundingBoxPadding([
@@ -153,7 +163,7 @@ function NavMenu(props: Record<string, unknown>) {
       <ControlledMenu
         menuClassName="nav-menu"
         state={menuState}
-        anchorRef={buttonRef as never}
+        anchorRef={menuAnchorRef}
         onClose={() => {
           setMenuState(undefined);
         }}
