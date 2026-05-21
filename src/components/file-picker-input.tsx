@@ -56,12 +56,12 @@ function FilePickerInput({
       }
       disabled={disabled}
       onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-        const target = e.target as HTMLInputElement;
+        const target = e.currentTarget;
         const files = target.files;
         if (!files) return;
 
         void (async () => {
-          let mediaFiles: FilePickerMediaAttachment[];
+          let mediaFiles: FilePickerInputAttachment[];
           try {
             mediaFiles = await Promise.all(
               Array.from(files).map(async (file) => {
@@ -100,9 +100,7 @@ function FilePickerInput({
             revokeAttachmentObjectUrls(mediaFiles);
           } else {
             setMediaAttachments((attachments) => {
-              return attachments.concat(
-                mediaFiles as FilePickerInputAttachment[],
-              );
+              return attachments.concat(mediaFiles);
             });
           }
           // Reset
