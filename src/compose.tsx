@@ -33,16 +33,38 @@ interface ComposeCloseResults {
   fn?: () => void;
 }
 
+type ComposeOpener = {
+  console?: Console;
+  focus?: () => void;
+  __STATES__?: { reloadStatusPage: number };
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function isComposeOpener(value: unknown): value is ComposeOpener {
+  return isRecord(value);
+}
+
+function composeOpener(): ComposeOpener | null {
+  const opener: unknown = Reflect.get(window, 'opener');
+  return isComposeOpener(opener) ? opener : null;
+}
+
+function composePayload(): ComposePayload {
+  const payload: unknown = Reflect.get(window, '__COMPOSE__');
+  return isRecord(payload) ? payload : {};
+}
+
 initActivateLang();
 initPWAViewport();
 
-const opener = (window as Window & { opener?: Window | null }).opener;
-if (opener) {
+const opener = composeOpener();
+if (opener?.console) {
   // The compose popup proxies its console through the parent window so
   // logs surface in the opener's devtools.
-  (globalThis as { console: Console }).console = (
-    opener as Window & { console: Console }
-  ).console;
+  globalThis.console = opener.console;
 }
 
 function App() {
@@ -51,7 +73,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   const { editStatus, replyToStatus, draftStatus, quoteStatus } =
-    (window as Window & { __COMPOSE__?: ComposePayload }).__COMPOSE__ || {};
+    composePayload();
 
   useTitle(
     editStatus
@@ -76,7 +98,7 @@ function App() {
     if (uiState === 'closed') {
       try {
         // Focus parent window
-        (window as Window & { opener?: Window | null }).opener?.focus();
+        composeOpener()?.focus?.();
       } catch {}
       window.close();
     }
@@ -129,16 +151,13 @@ function App() {
         draftStatus={draftStatus}
         quoteStatus={quoteStatus}
         standalone
-        hasOpener={(window as Window & { opener?: Window | null }).opener}
+        hasOpener={!!composeOpener()}
         onClose={(results: ComposeCloseResults | null | undefined) => {
           const { newStatus, fn = () => {} } = results || {};
           try {
             if (newStatus) {
-              const openerWin = (window as Window & { opener?: Window | null })
-                .opener as Window & {
-                __STATES__: { reloadStatusPage: number };
-              };
-              openerWin.__STATES__.reloadStatusPage++;
+              const openerStates = composeOpener()?.__STATES__;
+              if (openerStates) openerStates.reloadStatusPage++;
             }
             fn();
             setUIState('closed');
