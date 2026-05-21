@@ -31,9 +31,13 @@ import states from './utils/states';
 
 const bluepyReactRoot = Symbol.for('bluepy.reactRoot');
 
-type RootContainer = HTMLElement & {
-  [bluepyReactRoot]?: Root;
-};
+declare global {
+  interface Window {
+    __CLOAK__?: () => void;
+    __IDLE__?: boolean;
+    __SHARED_DATA__?: unknown;
+  }
+}
 
 interface ShareData {
   title?: string;
@@ -59,6 +63,48 @@ function processShareData(
     initialText: textParts.join('\n\n'),
     files: data.files || [],
   };
+}
+
+function shareData(value: unknown): ShareData | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  return {
+    title:
+      'title' in value && typeof value.title === 'string'
+        ? value.title
+        : undefined,
+    text:
+      'text' in value && typeof value.text === 'string'
+        ? value.text
+        : undefined,
+    url: 'url' in value && typeof value.url === 'string' ? value.url : undefined,
+    files:
+      'files' in value && Array.isArray(value.files)
+        ? value.files.filter((file) => file instanceof File)
+        : undefined,
+  };
+}
+
+function serviceWorkerShareMessage(value: unknown): {
+  data?: ShareData;
+  action?: string;
+} {
+  if (!value || typeof value !== 'object') return {};
+  return {
+    data: 'data' in value ? shareData(value.data) : undefined,
+    action:
+      'action' in value && typeof value.action === 'string'
+        ? value.action
+        : undefined,
+  };
+}
+
+function isReactRoot(value: unknown): value is Root {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'render' in value &&
+    typeof value.render === 'function'
+  );
 }
 
 if (!redirectLegacyOrigin()) {
@@ -90,27 +136,32 @@ if (!redirectLegacyOrigin()) {
 
       // The HTML template guarantees this element. Preserve the original JS
       // behavior of failing loudly if it is ever missing.
-      const appContainer = document.getElementById('app') as RootContainer;
-      const root =
-        appContainer[bluepyReactRoot] ||
-        (appContainer[bluepyReactRoot] = createRoot(appContainer));
-      root.render(
-        <I18nProvider i18n={i18n}>
-          <BrowserRouter>
-            <IconSpriteProvider>
-              <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
-                <App />
-              </Sentry.ErrorBoundary>
-            </IconSpriteProvider>
-          </BrowserRouter>
-        </I18nProvider>,
-      );
+      const appContainer = document.getElementById('app');
+      if (appContainer instanceof HTMLElement) {
+        const existingRoot: unknown = Reflect.get(
+          appContainer,
+          bluepyReactRoot,
+        );
+        const root = isReactRoot(existingRoot)
+          ? existingRoot
+          : createRoot(appContainer);
+        Reflect.set(appContainer, bluepyReactRoot, root);
+        root.render(
+          <I18nProvider i18n={i18n}>
+            <BrowserRouter>
+              <IconSpriteProvider>
+                <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
+                  <App />
+                </Sentry.ErrorBoundary>
+              </IconSpriteProvider>
+            </BrowserRouter>
+          </I18nProvider>,
+        );
 
-      (
-        window as Window & {
-          __BLUEPY_APP_MOUNTED__?: boolean;
-        }
-      )['__BLUEPY_APP_MOUNTED__'] = true;
+        Reflect.set(window, '__BLUEPY_APP_MOUNTED__', true);
+      } else {
+        console.error('Missing app root');
+      }
 
       try {
         const bootReloadParam = '__bluepy_boot_retry';
@@ -143,7 +194,7 @@ if (!redirectLegacyOrigin()) {
         const FAST_INTERVAL = 10_000; // 10 seconds
         const SLOW_INTERVAL = 60 * 60 * 1000; // 1 hour
         async function clearCaches() {
-          if ((window as Window & { __IDLE__?: boolean }).__IDLE__) {
+          if (window.__IDLE__) {
             try {
               const keys = await caches.keys();
               await Promise.all(
@@ -178,25 +229,21 @@ if (!redirectLegacyOrigin()) {
 
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', (event) => {
-          const { data, action } =
-            (event.data as { data?: ShareData; action?: string } | undefined) ||
-            {};
+          const { data, action } = serviceWorkerShareMessage(event.data);
           if (action === 'compose-with-shared-data') {
             console.log('💪 Received shared data from SW', data);
             const sharedData = processShareData(data);
             if (sharedData) {
-              (
-                window as Window & { __SHARED_DATA__?: SharedDataPayload }
-              ).__SHARED_DATA__ = sharedData;
+              Reflect.set(window, '__SHARED_DATA__', sharedData);
               states.showCompose = true; // It'll use __SHARED_DATA__
             }
           }
         });
       }
 
-      (window as Window & { __CLOAK__?: () => void }).__CLOAK__ = () => {
+      Reflect.set(window, '__CLOAK__', () => {
         document.body.classList.toggle('cloak');
-      };
+      });
     }
   })();
 }
