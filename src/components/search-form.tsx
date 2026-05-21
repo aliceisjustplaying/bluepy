@@ -1,5 +1,11 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ReactNode, Ref, SyntheticEvent } from 'react';
+import type {
+  KeyboardEvent,
+  ReactNode,
+  Ref,
+  RefObject,
+  SyntheticEvent,
+} from 'react';
 import {
   useEffect,
   useImperativeHandle,
@@ -61,6 +67,25 @@ interface SearchFormProps {
   onSubmit?: (e: React.SyntheticEvent) => void;
 }
 
+interface SearchFieldProps {
+  formRef: RefObject<HTMLFormElement | null>;
+  onSubmit?: SearchFormProps['onSubmit'];
+  query: string;
+  searchFieldRef: RefObject<HTMLInputElement | null>;
+  searchMenuOpen: boolean;
+  setQuery: (query: string) => void;
+  setSearchMenuOpen: (open: boolean) => void;
+}
+
+interface SearchPopoverProps {
+  instance: string | undefined;
+  onSubmit?: SearchFormProps['onSubmit'];
+  query: string;
+  searchHistory: SearchHistoryEntry[];
+  searchMenuOpen: boolean;
+  searchSuggestionsData: SearchSuggestionItem[];
+}
+
 // Helper function to generate search item data (label and URL)
 export const generateSearchItemData = (
   query: string,
@@ -116,9 +141,227 @@ export const generateSearchItemData = (
   return { label, to, icon };
 };
 
+function SearchField({
+  formRef,
+  onSubmit,
+  query,
+  searchFieldRef,
+  searchMenuOpen,
+  setQuery,
+  setSearchMenuOpen,
+}: SearchFieldProps) {
+  const { t } = useLingui();
+
+  return (
+    <input
+      ref={searchFieldRef}
+      value={query}
+      name="q"
+      type="search"
+      // autofocus
+      placeholder={t`Search`}
+      dir="auto"
+      autoComplete="off"
+      autoCorrect="off"
+      autoCapitalize="off"
+      spellCheck={false}
+      enterKeyHint="search"
+      onChange={(e: SyntheticEvent<HTMLInputElement>) => {
+        setQuery(e.currentTarget.value);
+        setSearchMenuOpen(true);
+      }}
+      onFocus={() => {
+        setSearchMenuOpen(true);
+        // Focus first item
+        const firstItem = formRef.current?.querySelector(
+          '.search-popover-item',
+        );
+        if (firstItem) {
+          firstItem.classList.add('focus');
+        }
+      }}
+      onBlur={() => {
+        setTimeout(() => {
+          setSearchMenuOpen(false);
+        }, 100);
+        formRef.current
+          ?.querySelector('.search-popover-item.focus')
+          ?.classList.remove('focus');
+      }}
+      onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+        const { key } = e;
+        switch (key) {
+          case 'Escape':
+            setSearchMenuOpen(false);
+            break;
+          case 'Down':
+          case 'ArrowDown':
+            e.preventDefault();
+            if (searchMenuOpen) {
+              const focusItem = formRef.current?.querySelector(
+                '.search-popover-item.focus',
+              );
+              if (focusItem) {
+                let nextItem: Element | null = focusItem.nextElementSibling;
+                while (nextItem instanceof HTMLElement && nextItem.hidden) {
+                  nextItem = nextItem.nextElementSibling;
+                }
+                if (nextItem) {
+                  nextItem.classList.add('focus');
+                  const parent = nextItem.parentElement;
+                  if (parent) {
+                    const siblings = Array.from(parent.children).filter(
+                      (el) => el !== nextItem,
+                    );
+                    siblings.forEach((el) => {
+                      el.classList.remove('focus');
+                    });
+                  }
+                }
+              } else {
+                const firstItem = formRef.current?.querySelector(
+                  '.search-popover-item',
+                );
+                if (firstItem) {
+                  firstItem.classList.add('focus');
+                }
+              }
+            }
+            break;
+          case 'Up':
+          case 'ArrowUp':
+            e.preventDefault();
+            if (searchMenuOpen) {
+              const focusItem = document.querySelector(
+                '.search-popover-item.focus',
+              );
+              if (focusItem) {
+                let prevItem: Element | null = focusItem.previousElementSibling;
+                while (prevItem instanceof HTMLElement && prevItem.hidden) {
+                  prevItem = prevItem.previousElementSibling;
+                }
+                if (prevItem) {
+                  prevItem.classList.add('focus');
+                  const parent = prevItem.parentElement;
+                  if (parent) {
+                    const siblings = Array.from(parent.children).filter(
+                      (el) => el !== prevItem,
+                    );
+                    siblings.forEach((el) => {
+                      el.classList.remove('focus');
+                    });
+                  }
+                }
+              } else {
+                const items = document.querySelectorAll('.search-popover-item');
+                const lastItem = items[items.length - 1];
+                if (lastItem) {
+                  lastItem.classList.add('focus');
+                }
+              }
+            }
+            break;
+          case 'Enter':
+            if (searchMenuOpen) {
+              const focusItem = document.querySelector(
+                '.search-popover-item.focus',
+              );
+              if (focusItem) {
+                e.preventDefault();
+                if (focusItem instanceof HTMLElement) {
+                  focusItem.click();
+                }
+              }
+              setSearchMenuOpen(false);
+              onSubmit?.(e);
+            }
+            break;
+        }
+      }}
+    />
+  );
+}
+
+function SearchPopover({
+  instance,
+  onSubmit,
+  query,
+  searchHistory,
+  searchMenuOpen,
+  searchSuggestionsData,
+}: SearchPopoverProps) {
+  return (
+    <div className="search-popover" hidden={!searchMenuOpen}>
+      {/* Search History - show when no query */}
+      {!query && searchHistory.length > 0 && (
+        <div className="search-popover-recent-searches">
+          <div className="search-popover-header">
+            <Icon icon="history" size="s" />
+            <Trans>Recent searches</Trans>
+          </div>
+          {searchHistory.map((historyItem, i) => {
+            const { label, to, icon } = generateSearchItemData(
+              historyItem.query,
+              historyItem.queryType,
+              instance,
+            );
+
+            return (
+              <Link
+                key={`${historyItem.query}-${historyItem.queryType}-${historyItem.timestamp}`}
+                to={to}
+                className={`search-popover-item ${i === 0 ? 'focus' : ''}`}
+                onClick={(e: React.SyntheticEvent) => {
+                  addToSearchHistory(historyItem.query, historyItem.queryType);
+                  onSubmit?.(e);
+                }}
+              >
+                <Icon icon={icon} className="more-insignificant" />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
+          <Link
+            to="/search"
+            className="search-popover-item search-history-see-all"
+          >
+            <Icon icon="more2" className="more-insignificant" />
+            <span>
+              <Trans>See all</Trans>
+            </span>
+          </Link>
+        </div>
+      )}
+
+      {/* Search Suggestions - show when there's a query */}
+      {searchSuggestionsData.map(
+        ({ label, to, icon, queryType, isRecentSearch, historyItem }, i) => (
+          <Link
+            key={
+              isRecentSearch && historyItem
+                ? `recent-${historyItem.query}-${historyItem.queryType}-${historyItem.timestamp}`
+                : `suggestion-${queryType || 'general'}-${i}`
+            }
+            to={to}
+            className={`search-popover-item ${isRecentSearch ? 'search-popover-item-recent' : ''} ${i === 0 ? 'focus' : ''}`}
+            onClick={(e: React.SyntheticEvent) => {
+              if (!isRecentSearch) {
+                addToSearchHistory(query, queryType);
+              }
+              onSubmit?.(e);
+            }}
+          >
+            <Icon icon={icon} className="more-insignificant" />
+            <span>{label}</span>
+          </Link>
+        ),
+      )}
+    </div>
+  );
+}
+
 function SearchForm(props: SearchFormProps) {
   const { ref } = props;
-  const { t } = useLingui();
   const { instance } = api();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchMenuOpen, setSearchMenuOpen] = useState(false);
@@ -291,204 +534,23 @@ function SearchForm(props: SearchFormProps) {
         props?.onSubmit?.(e);
       }}
     >
-      <input
-        ref={searchFieldRef}
-        value={query}
-        name="q"
-        type="search"
-        // autofocus
-        placeholder={t`Search`}
-        dir="auto"
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck={false}
-        enterKeyHint="search"
-        onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-          setQuery(e.currentTarget.value);
-          setSearchMenuOpen(true);
-        }}
-        onFocus={() => {
-          setSearchMenuOpen(true);
-          // Focus first item
-          const firstItem = formRef.current?.querySelector(
-            '.search-popover-item',
-          );
-          if (firstItem) {
-            firstItem.classList.add('focus');
-          }
-        }}
-        onBlur={() => {
-          setTimeout(() => {
-            setSearchMenuOpen(false);
-          }, 100);
-          formRef.current
-            ?.querySelector('.search-popover-item.focus')
-            ?.classList.remove('focus');
-        }}
-        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-          const { key } = e;
-          switch (key) {
-            case 'Escape':
-              setSearchMenuOpen(false);
-              break;
-            case 'Down':
-            case 'ArrowDown':
-              e.preventDefault();
-              if (searchMenuOpen) {
-                const focusItem = formRef.current?.querySelector(
-                  '.search-popover-item.focus',
-                );
-                if (focusItem) {
-                  let nextItem: Element | null = focusItem.nextElementSibling;
-                  while (nextItem instanceof HTMLElement && nextItem.hidden) {
-                    nextItem = nextItem.nextElementSibling;
-                  }
-                  if (nextItem) {
-                    nextItem.classList.add('focus');
-                    const parent = nextItem.parentElement;
-                    if (parent) {
-                      const siblings = Array.from(parent.children).filter(
-                        (el) => el !== nextItem,
-                      );
-                      siblings.forEach((el) => {
-                        el.classList.remove('focus');
-                      });
-                    }
-                  }
-                } else {
-                  const firstItem = formRef.current?.querySelector(
-                    '.search-popover-item',
-                  );
-                  if (firstItem) {
-                    firstItem.classList.add('focus');
-                  }
-                }
-              }
-              break;
-            case 'Up':
-            case 'ArrowUp':
-              e.preventDefault();
-              if (searchMenuOpen) {
-                const focusItem = document.querySelector(
-                  '.search-popover-item.focus',
-                );
-                if (focusItem) {
-                  let prevItem: Element | null =
-                    focusItem.previousElementSibling;
-                  while (prevItem instanceof HTMLElement && prevItem.hidden) {
-                    prevItem = prevItem.previousElementSibling;
-                  }
-                  if (prevItem) {
-                    prevItem.classList.add('focus');
-                    const parent = prevItem.parentElement;
-                    if (parent) {
-                      const siblings = Array.from(parent.children).filter(
-                        (el) => el !== prevItem,
-                      );
-                      siblings.forEach((el) => {
-                        el.classList.remove('focus');
-                      });
-                    }
-                  }
-                } else {
-                  const items = document.querySelectorAll(
-                    '.search-popover-item',
-                  );
-                  const lastItem = items[items.length - 1];
-                  if (lastItem) {
-                    lastItem.classList.add('focus');
-                  }
-                }
-              }
-              break;
-            case 'Enter':
-              if (searchMenuOpen) {
-                const focusItem = document.querySelector(
-                  '.search-popover-item.focus',
-                );
-                if (focusItem) {
-                  e.preventDefault();
-                  if (focusItem instanceof HTMLElement) {
-                    focusItem.click();
-                  }
-                }
-                setSearchMenuOpen(false);
-                props?.onSubmit?.(e);
-              }
-              break;
-          }
-        }}
+      <SearchField
+        formRef={formRef}
+        onSubmit={props?.onSubmit}
+        query={query}
+        searchFieldRef={searchFieldRef}
+        searchMenuOpen={searchMenuOpen}
+        setQuery={setQuery}
+        setSearchMenuOpen={setSearchMenuOpen}
       />
-      <div className="search-popover" hidden={!searchMenuOpen}>
-        {/* Search History - show when no query */}
-        {!query && searchHistory.length > 0 && (
-          <div className="search-popover-recent-searches">
-            <div className="search-popover-header">
-              <Icon icon="history" size="s" />
-              <Trans>Recent searches</Trans>
-            </div>
-            {searchHistory.map((historyItem, i) => {
-              const { label, to, icon } = generateSearchItemData(
-                historyItem.query,
-                historyItem.queryType,
-                instance,
-              );
-
-              return (
-                <Link
-                  key={`${historyItem.query}-${historyItem.queryType}-${historyItem.timestamp}`}
-                  to={to}
-                  className={`search-popover-item ${i === 0 ? 'focus' : ''}`}
-                  onClick={(e: React.SyntheticEvent) => {
-                    addToSearchHistory(
-                      historyItem.query,
-                      historyItem.queryType,
-                    );
-                    props?.onSubmit?.(e);
-                  }}
-                >
-                  <Icon icon={icon} className="more-insignificant" />
-                  <span>{label}</span>
-                </Link>
-              );
-            })}
-            <Link
-              to="/search"
-              className="search-popover-item search-history-see-all"
-            >
-              <Icon icon="more2" className="more-insignificant" />
-              <span>
-                <Trans>See all</Trans>
-              </span>
-            </Link>
-          </div>
-        )}
-
-        {/* Search Suggestions - show when there's a query */}
-        {searchSuggestionsData.map(
-          ({ label, to, icon, queryType, isRecentSearch, historyItem }, i) => (
-            <Link
-              key={
-                isRecentSearch && historyItem
-                  ? `recent-${historyItem.query}-${historyItem.queryType}-${historyItem.timestamp}`
-                  : `suggestion-${queryType || 'general'}-${i}`
-              }
-              to={to}
-              className={`search-popover-item ${isRecentSearch ? 'search-popover-item-recent' : ''} ${i === 0 ? 'focus' : ''}`}
-              onClick={(e: React.SyntheticEvent) => {
-                if (!isRecentSearch) {
-                  addToSearchHistory(query, queryType);
-                }
-                props?.onSubmit?.(e);
-              }}
-            >
-              <Icon icon={icon} className="more-insignificant" />
-              <span>{label}</span>
-            </Link>
-          ),
-        )}
-      </div>
+      <SearchPopover
+        instance={instance}
+        onSubmit={props?.onSubmit}
+        query={query}
+        searchHistory={searchHistory}
+        searchMenuOpen={searchMenuOpen}
+        searchSuggestionsData={searchSuggestionsData}
+      />
     </form>
   );
 }
