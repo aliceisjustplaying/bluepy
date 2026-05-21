@@ -418,12 +418,12 @@ function Shortcuts() {
                 e.preventDefault();
                 states.showShortcutsSettings = true;
               }}
-              onTransitionStart={(e) => {
+              onTransitionEnd={(e) => {
                 // Close menu if the button disappears
                 try {
-                  const target = e.target as Element | null;
+                  const target = e.target;
                   if (
-                    target &&
+                    target instanceof Element &&
                     getComputedStyle(target).pointerEvents === 'none'
                   ) {
                     menuRef.current?.closeMenu?.();
