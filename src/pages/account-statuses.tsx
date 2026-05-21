@@ -106,6 +106,10 @@ function toStatusItems(
   );
 }
 
+function statusList(value: unknown): Status[] | undefined {
+  return Array.isArray(value) ? value : undefined;
+}
+
 function applySearchParamsObject(
   params: URLSearchParams,
   obj: SearchParamsObject,
@@ -328,13 +332,14 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     const accountsResource =
       getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
     if (firstLoad && !columnMode) {
-      const { value } = await accountsResource
+      const pinnedResult = await accountsResource
         .$select(id ?? '')
         .statuses.list({
           pinned: true,
         })
         .values()
         .next();
+      const value = statusList(pinnedResult.value);
       if (value?.length && !tagged && !media) {
         const pinnedStatuses = value.map((status: Status) => {
           saveStatus(stateStatus(status), instance);
@@ -367,7 +372,9 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         .statuses.list(listParams)
         .values();
     }
-    const { value, done } = await accountStatusesIterator.current.next();
+    const accountStatusesResult = await accountStatusesIterator.current.next();
+    const value = statusList(accountStatusesResult.value);
+    const done = accountStatusesResult.done;
     if (value?.length) {
       if (!supports('@mastodon/pinned-posts')) {
         // Check if value is same as pinned post (results)
