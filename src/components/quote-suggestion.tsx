@@ -1,23 +1,21 @@
 import './quote-suggestion.css';
 
 import { Trans } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
-
 import StatusComponent, { type StatusComponentProps } from './status';
 
 interface StatusProps {
-  status?: mastodon.v1.Status;
-  instance?: string;
-  size?: 's' | 'm' | 'l';
-  readOnly?: boolean;
+  status?: StatusComponentProps['status'];
+  instance?: StatusComponentProps['instance'];
+  size?: StatusComponentProps['size'];
+  readOnly?: StatusComponentProps['readOnly'];
 }
 function Status(props: StatusProps) {
-  return <StatusComponent {...(props as StatusComponentProps)} />;
+  return <StatusComponent {...props} />;
 }
 
 interface QuoteSuggestionData {
   url?: string;
-  status?: mastodon.v1.Status;
+  status?: StatusComponentProps['status'];
   instance?: string;
 }
 

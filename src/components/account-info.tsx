@@ -109,6 +109,17 @@ function getAccountsEndpoint(masto: MastoClient): AccountsEndpoint {
   return getMastoV1Resource<AccountsEndpoint>(masto, 'accounts');
 }
 
+function isStatusLike(value: unknown): value is mastodon.v1.Status {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof value.id === 'string' &&
+    'createdAt' in value &&
+    typeof value.createdAt === 'string'
+  );
+}
+
 function enhanceHTML(
   content: string | undefined,
   emojis: AccountInfoShape['emojis'] | undefined,
@@ -182,8 +193,9 @@ async function fetchPostingStats(
     .next();
 
   const result: IteratorResult<mastodon.v1.Status[]> = await fetchStatuses;
-  const statuses: mastodon.v1.Status[] = Array.isArray(result.value)
-    ? result.value
+  const resultValue: unknown = result.value;
+  const statuses: mastodon.v1.Status[] = Array.isArray(resultValue)
+    ? resultValue.filter(isStatusLike)
     : [];
   console.log('fetched statuses', statuses);
   const stats: PostingStats = {
