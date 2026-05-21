@@ -39,6 +39,22 @@ interface MutesBlocksApi {
 }
 
 type MenuStateValue = 'open' | 'closed' | 'opening' | 'closing' | undefined;
+type NavAccount = ReturnType<typeof getAccounts>[number] | undefined;
+type AccountFetcher = (firstLoad: boolean) => Promise<IteratorResult<unknown>>;
+
+interface AuthenticatedNavItemsProps {
+  currentAccount: NavAccount;
+  fetchBlocks: AccountFetcher;
+  fetchMutes: AccountFetcher;
+  instance: string;
+  menuState: MenuStateValue;
+  showFollowing: boolean;
+}
+
+interface NavUtilityItemsProps {
+  authenticated: boolean;
+  instance: string;
+}
 
 function isShortcut(value: unknown): value is ShortcutLike {
   return !!value && typeof value === 'object';
@@ -220,118 +236,14 @@ function NavMenu(props: Record<string, unknown>) {
             </span>
           </MenuLink>
           {authenticated ? (
-            <>
-              {showFollowing && (
-                <MenuLink to="/following">
-                  <Icon icon="following" size="l" />{' '}
-                  <span>
-                    <Trans id="following.title">Following</Trans>
-                  </span>
-                </MenuLink>
-              )}
-              <MenuLink to="/catchup">
-                <Icon icon="history2" size="l" />
-                <span>
-                  <Trans>Catch-up</Trans>
-                </span>
-              </MenuLink>
-              <MenuLink to="/mentions">
-                <Icon icon="at" size="l" />{' '}
-                <span>
-                  <Trans>Mentions</Trans>
-                </span>
-              </MenuLink>
-              <MenuLink to="/notifications">
-                <Icon icon="notification" size="l" />{' '}
-                <span>
-                  <Trans>Notifications</Trans>
-                </span>
-                {snapStates.notificationsShowNew && (
-                  <sup title={t`New`} style={{ opacity: 0.5 }}>
-                    {' '}
-                    &bull;
-                  </sup>
-                )}
-              </MenuLink>
-              <MenuDivider />
-              {currentAccount?.info?.id && (
-                <MenuLink to={`/${instance}/a/${currentAccount.info.id}`}>
-                  <Icon icon="user" size="l" />{' '}
-                  <span>
-                    <Trans>Profile</Trans>
-                  </span>
-                </MenuLink>
-              )}
-              <ListMenu menuState={menuState} />
-              <MenuLink to="/b">
-                <Icon icon="bookmark" size="l" />{' '}
-                <span>
-                  <Trans>Bookmarks</Trans>
-                </span>
-              </MenuLink>
-              <SubMenu2
-                menuClassName="nav-submenu"
-                overflow="auto"
-                gap={-8}
-                label={
-                  <>
-                    <Icon icon="more" size="l" />
-                    <span className="menu-grow">
-                      <Trans>More…</Trans>
-                    </span>
-                    <Icon icon="chevron-right" />
-                  </>
-                }
-              >
-                <MenuLink to="/f">
-                  <Icon icon="heart" size="l" />{' '}
-                  <span>
-                    <Trans>Likes</Trans>
-                  </span>
-                </MenuLink>
-                <MenuItem
-                  onClick={() => {
-                    states.showGenericAccounts = {
-                      id: 'mute',
-                      heading: t`Muted users`,
-                      fetchAccounts: fetchMutes,
-                      excludeRelationshipAttrs: ['muting'],
-                    };
-                  }}
-                >
-                  <Icon icon="mute" size="l" />{' '}
-                  <span>
-                    <Trans>Muted users…</Trans>
-                  </span>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    states.showGenericAccounts = {
-                      id: 'block',
-                      heading: t`Blocked users`,
-                      fetchAccounts: fetchBlocks,
-                      excludeRelationshipAttrs: ['blocking'],
-                    };
-                  }}
-                >
-                  <Icon icon="block" size="l" />{' '}
-                  <span>
-                    <Trans>Blocked users…</Trans>
-                  </span>
-                </MenuItem>{' '}
-              </SubMenu2>
-              <MenuDivider />
-              <MenuItem
-                onClick={() => {
-                  states.showAccounts = true;
-                }}
-              >
-                <Icon icon="group" size="l" />{' '}
-                <span>
-                  <Trans>Accounts…</Trans>
-                </span>
-              </MenuItem>
-            </>
+            <AuthenticatedNavItems
+              currentAccount={currentAccount}
+              fetchBlocks={fetchBlocks}
+              fetchMutes={fetchMutes}
+              instance={instance}
+              menuState={menuState}
+              showFollowing={showFollowing}
+            />
           ) : (
             <>
               <MenuDivider />
@@ -344,92 +256,225 @@ function NavMenu(props: Record<string, unknown>) {
             </>
           )}
         </section>
-        <section>
-          <MenuDivider />
-          <MenuLink to={`/search`}>
-            <Icon icon="search" size="l" />{' '}
-            <span>
-              <Trans>Search</Trans>
-            </span>
-          </MenuLink>
-          <MenuLink to={`/${instance}/trending`}>
-            <Icon icon="chart" size="l" />{' '}
-            <span>
-              <Trans>Trending</Trans>
-            </span>
-          </MenuLink>
-          {authenticated ? (
-            <>
-              <MenuDivider className="divider-grow" />
-              <MenuItem
-                onClick={() => {
-                  states.showKeyboardShortcutsHelp = true;
-                }}
-              >
-                <Icon icon="keyboard" size="l" />{' '}
-                <span>
-                  <Trans>Keyboard shortcuts</Trans>
-                </span>
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  states.showFeedbackModal = true;
-                }}
-              >
-                <Icon icon="comment" size="l" />{' '}
-                <span>
-                  <Trans>Send feedback…</Trans>
-                </span>
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  states.showShortcutsSettings = true;
-                }}
-              >
-                <Icon icon="shortcut" size="l" />{' '}
-                <span>
-                  <Trans>Shortcuts / Columns…</Trans>
-                </span>
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  states.showSettings = true;
-                }}
-              >
-                <Icon icon="gear" size="l" />{' '}
-                <span>
-                  <Trans>Settings…</Trans>
-                </span>
-              </MenuItem>
-            </>
-          ) : (
-            <>
-              <MenuDivider />
-              <MenuItem
-                onClick={() => {
-                  states.showSettings = true;
-                }}
-              >
-                <Icon icon="gear" size="l" />{' '}
-                <span>
-                  <Trans>Settings…</Trans>
-                </span>
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  states.showFeedbackModal = true;
-                }}
-              >
-                <Icon icon="comment" size="l" />{' '}
-                <span>
-                  <Trans>Send feedback…</Trans>
-                </span>
-              </MenuItem>
-            </>
-          )}
-        </section>
+        <NavUtilityItems authenticated={authenticated} instance={instance} />
       </ControlledMenu>
     </>
+  );
+}
+
+function AuthenticatedNavItems({
+  currentAccount,
+  fetchBlocks,
+  fetchMutes,
+  instance,
+  menuState,
+  showFollowing,
+}: AuthenticatedNavItemsProps) {
+  const { t } = useLingui();
+  const snapStates = useSnapshot(states);
+
+  return (
+    <>
+      {showFollowing && (
+        <MenuLink to="/following">
+          <Icon icon="following" size="l" />{' '}
+          <span>
+            <Trans id="following.title">Following</Trans>
+          </span>
+        </MenuLink>
+      )}
+      <MenuLink to="/catchup">
+        <Icon icon="history2" size="l" />
+        <span>
+          <Trans>Catch-up</Trans>
+        </span>
+      </MenuLink>
+      <MenuLink to="/mentions">
+        <Icon icon="at" size="l" />{' '}
+        <span>
+          <Trans>Mentions</Trans>
+        </span>
+      </MenuLink>
+      <MenuLink to="/notifications">
+        <Icon icon="notification" size="l" />{' '}
+        <span>
+          <Trans>Notifications</Trans>
+        </span>
+        {snapStates.notificationsShowNew && (
+          <sup title={t`New`} style={{ opacity: 0.5 }}>
+            {' '}
+            &bull;
+          </sup>
+        )}
+      </MenuLink>
+      <MenuDivider />
+      {currentAccount?.info?.id && (
+        <MenuLink to={`/${instance}/a/${currentAccount.info.id}`}>
+          <Icon icon="user" size="l" />{' '}
+          <span>
+            <Trans>Profile</Trans>
+          </span>
+        </MenuLink>
+      )}
+      <ListMenu menuState={menuState} />
+      <MenuLink to="/b">
+        <Icon icon="bookmark" size="l" />{' '}
+        <span>
+          <Trans>Bookmarks</Trans>
+        </span>
+      </MenuLink>
+      <SubMenu2
+        menuClassName="nav-submenu"
+        overflow="auto"
+        gap={-8}
+        label={
+          <>
+            <Icon icon="more" size="l" />
+            <span className="menu-grow">
+              <Trans>More…</Trans>
+            </span>
+            <Icon icon="chevron-right" />
+          </>
+        }
+      >
+        <MenuLink to="/f">
+          <Icon icon="heart" size="l" />{' '}
+          <span>
+            <Trans>Likes</Trans>
+          </span>
+        </MenuLink>
+        <MenuItem
+          onClick={() => {
+            states.showGenericAccounts = {
+              id: 'mute',
+              heading: t`Muted users`,
+              fetchAccounts: fetchMutes,
+              excludeRelationshipAttrs: ['muting'],
+            };
+          }}
+        >
+          <Icon icon="mute" size="l" />{' '}
+          <span>
+            <Trans>Muted users…</Trans>
+          </span>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            states.showGenericAccounts = {
+              id: 'block',
+              heading: t`Blocked users`,
+              fetchAccounts: fetchBlocks,
+              excludeRelationshipAttrs: ['blocking'],
+            };
+          }}
+        >
+          <Icon icon="block" size="l" />{' '}
+          <span>
+            <Trans>Blocked users…</Trans>
+          </span>
+        </MenuItem>{' '}
+      </SubMenu2>
+      <MenuDivider />
+      <MenuItem
+        onClick={() => {
+          states.showAccounts = true;
+        }}
+      >
+        <Icon icon="group" size="l" />{' '}
+        <span>
+          <Trans>Accounts…</Trans>
+        </span>
+      </MenuItem>
+    </>
+  );
+}
+
+function NavUtilityItems({ authenticated, instance }: NavUtilityItemsProps) {
+  return (
+    <section>
+      <MenuDivider />
+      <MenuLink to={`/search`}>
+        <Icon icon="search" size="l" />{' '}
+        <span>
+          <Trans>Search</Trans>
+        </span>
+      </MenuLink>
+      <MenuLink to={`/${instance}/trending`}>
+        <Icon icon="chart" size="l" />{' '}
+        <span>
+          <Trans>Trending</Trans>
+        </span>
+      </MenuLink>
+      {authenticated ? (
+        <>
+          <MenuDivider className="divider-grow" />
+          <MenuItem
+            onClick={() => {
+              states.showKeyboardShortcutsHelp = true;
+            }}
+          >
+            <Icon icon="keyboard" size="l" />{' '}
+            <span>
+              <Trans>Keyboard shortcuts</Trans>
+            </span>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              states.showFeedbackModal = true;
+            }}
+          >
+            <Icon icon="comment" size="l" />{' '}
+            <span>
+              <Trans>Send feedback…</Trans>
+            </span>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              states.showShortcutsSettings = true;
+            }}
+          >
+            <Icon icon="shortcut" size="l" />{' '}
+            <span>
+              <Trans>Shortcuts / Columns…</Trans>
+            </span>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              states.showSettings = true;
+            }}
+          >
+            <Icon icon="gear" size="l" />{' '}
+            <span>
+              <Trans>Settings…</Trans>
+            </span>
+          </MenuItem>
+        </>
+      ) : (
+        <>
+          <MenuDivider />
+          <MenuItem
+            onClick={() => {
+              states.showSettings = true;
+            }}
+          >
+            <Icon icon="gear" size="l" />{' '}
+            <span>
+              <Trans>Settings…</Trans>
+            </span>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              states.showFeedbackModal = true;
+            }}
+          >
+            <Icon icon="comment" size="l" />{' '}
+            <span>
+              <Trans>Send feedback…</Trans>
+            </span>
+          </MenuItem>
+        </>
+      )}
+    </section>
   );
 }
 
