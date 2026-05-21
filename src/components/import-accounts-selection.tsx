@@ -25,6 +25,10 @@ interface ImportAccountsSelectionProps {
   onClose: () => void;
 }
 
+function stringValue(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
 function ImportAccountsSelection({
   accounts: importedAccounts,
   onClose,
@@ -127,7 +131,7 @@ function ImportAccountsSelection({
                   }
                   onChange={(e) => {
                     const newSelection = { ...selectedAccounts };
-                    const shouldSelect = (e.target as HTMLInputElement).checked;
+                    const { checked: shouldSelect } = e.currentTarget;
                     accountsToImport.forEach((a) => {
                       if (a.importStatus !== 'duplicate') {
                         newSelection[a.info.id + a.instanceURL] = shouldSelect;
@@ -148,6 +152,20 @@ function ImportAccountsSelection({
               const key = account.info.id + account.instanceURL;
               const isSelected = selectedAccounts[key];
               const { importStatus: status } = account;
+              const acct = stringValue(account.info.acct) ?? account.info.id;
+              const displayAcct = /@/.test(acct)
+                ? acct
+                : `${acct}@${account.instanceURL}`;
+              const username = stringValue(account.info.username) ?? acct;
+              const nameAccount: NonNullable<NameTextProps['account']> = {
+                ...account.info,
+                acct: displayAcct,
+                id: account.info.id,
+                url:
+                  stringValue(account.info.url) ??
+                  `https://${account.instanceURL}/@${acct}`,
+                username,
+              };
               return (
                 <li key={key}>
                   <label className="account-item">
@@ -155,7 +173,7 @@ function ImportAccountsSelection({
                       type="checkbox"
                       checked={isSelected}
                       onChange={(e) => {
-                        const checked = (e.target as HTMLInputElement).checked;
+                        const { checked } = e.currentTarget;
                         setSelectedAccounts((currentSelection) => ({
                           ...currentSelection,
                           [key]: checked,
@@ -166,19 +184,12 @@ function ImportAccountsSelection({
                       }
                     />
                     <Avatar
-                      url={account.info.avatarStatic as string | undefined}
+                      url={stringValue(account.info.avatarStatic)}
                       size="xl"
                     />
                     <div className="account-info">
                       <NameText
-                        account={
-                          {
-                            ...account.info,
-                            acct: /@/.test(account.info.acct as string)
-                              ? (account.info.acct as string)
-                              : `${account.info.acct as string}@${account.instanceURL}`,
-                          } as NameTextProps['account']
-                        }
+                        account={nameAccount}
                         showAcct
                       />
                     </div>
