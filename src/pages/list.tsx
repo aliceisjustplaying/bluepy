@@ -3,14 +3,13 @@ import './lists.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ReactNode, ComponentType } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
 import AccountBlock from '../components/account-block';
 import Icon from '../components/icon';
+import InView from '../components/in-view';
 import Link from '../components/link';
 import ListAddEdit from '../components/list-add-edit';
 import ListExclusiveBadge from '../components/list-exclusive-badge';
@@ -66,16 +65,6 @@ interface ListMembersEndpoint {
     };
   };
 }
-
-// react-intersection-observer's InView ships without working JSX
-// component typings under React component types. Re-type for our usage.
-type InViewProps = {
-  as?: string;
-  onChange?: (inView: boolean) => void;
-  children?: ReactNode;
-};
-const InView: ComponentType<InViewProps> =
-  InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
 function statusList(value: unknown): StatusLike[] | undefined {
   return Array.isArray(value) ? value : undefined;

@@ -3,7 +3,7 @@ import './notifications.css';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType, SyntheticEvent, ReactNode } from 'react';
+import type { ComponentType, SyntheticEvent } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
 import {
@@ -15,7 +15,6 @@ import {
   useState,
 } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useSearchParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 import { subscribeKey } from 'valtio/utils';
@@ -24,11 +23,12 @@ import AccountBlock, {
   type AccountBlockProps,
 } from '../components/account-block';
 import Icon from '../components/icon';
+import InView from '../components/in-view';
 import Link from '../components/link';
 import Loader from '../components/loader';
-import RawHtml from '../components/raw-html';
 import Modal from '../components/modal';
 import NavMenu from '../components/nav-menu';
+import RawHtml from '../components/raw-html';
 import Notification, {
   type NotificationProps,
 } from '../components/notification';
@@ -52,15 +52,6 @@ import supports from '../utils/supports';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScroll from '../utils/useScroll';
 import useTitle from '../utils/useTitle';
-
-// `InView` is still untyped for our React interop; shim with just the
-// surface this page uses.
-type InViewProps = {
-  onChange?: (inView: boolean) => void;
-  children?: ReactNode;
-};
-const InView: ComponentType<InViewProps> =
-  InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
 function Status(props: {
   status?: unknown;

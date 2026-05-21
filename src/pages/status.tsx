@@ -8,7 +8,6 @@ import pRetry from 'p-retry';
 import { toUnicode } from 'punycode/';
 import type {
   ReactNode,
-  ComponentType,
   CSSProperties,
   Ref,
   MouseEvent,
@@ -23,13 +22,13 @@ import {
   useState,
 } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { InView as InViewUntyped } from 'react-intersection-observer';
 import { matchPath, useSearchParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
 import Avatar from '../components/avatar';
 import EditHistoryControls from '../components/edit-history-controls';
 import Icon from '../components/icon';
+import InView from '../components/in-view';
 import Link from '../components/link';
 import Loader from '../components/loader';
 import { getSafeViewTransitionName } from '../components/media';
@@ -67,20 +66,6 @@ import {
 import useTitle from '../utils/useTitle';
 
 import getInstanceStatusURL from './../utils/get-instance-status-url';
-
-// `react-intersection-observer`'s `InView` ships without working JSX
-// component typings under our React component types. Re-type as a React
-// component with the props this file actually uses.
-type InViewProps = {
-  threshold?: number;
-  class?: string;
-  className?: string;
-  tabIndex?: number;
-  onChange?: (inView: boolean) => void;
-  children?: ReactNode;
-};
-const InView: ComponentType<InViewProps> =
-  InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
 const { PHANPY_DEFAULT_INSTANCE: DEFAULT_INSTANCE } = import.meta.env;
 

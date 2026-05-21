@@ -3,7 +3,6 @@ import './search.css';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType, ReactNode } from 'react';
 import {
   useCallback,
   useEffect,
@@ -12,11 +11,11 @@ import {
   useState,
 } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import AccountBlock from '../components/account-block';
 import Icon from '../components/icon';
+import InView from '../components/in-view';
 import Link from '../components/link';
 import Loader from '../components/loader';
 import NavMenu from '../components/nav-menu';
@@ -45,12 +44,6 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
 function Status(props: { status: mastodon.v1.Status }) {
   return <StatusComponent {...(props as StatusComponentProps)} />;
 }
-type InViewProps = {
-  onChange?: (inView: boolean) => void;
-  children?: ReactNode;
-};
-const InView: ComponentType<InViewProps> =
-  InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
 interface SearchFormHandle {
   setValue: (value: string) => void;

@@ -3,7 +3,6 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type {
   ReactNode,
-  ComponentType,
   RefObject,
   MouseEvent,
   KeyboardEvent,
@@ -20,7 +19,6 @@ import {
   useState,
 } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useLocation } from 'react-router-dom';
 import { useDebouncedCallback } from 'use-debounce';
 import { useSnapshot } from 'valtio';
@@ -51,6 +49,7 @@ import usePageVisibility from '../utils/usePageVisibility';
 import useScrollFn from '../utils/useScrollFn';
 
 import Icon from './icon';
+import InView from './in-view';
 import Link from './link';
 import MediaPostComponent from './media-post';
 import NavMenu from './nav-menu';
@@ -139,20 +138,6 @@ function TimelineStatusLink({
     </div>
   );
 }
-
-// `react-intersection-observer`'s `InView` ships without working JSX
-// component typings under our React component types. Re-type as a
-// React component with the props this file actually uses.
-type InViewProps = {
-  root?: Element | null;
-  rootMargin?: string;
-  class?: string;
-  className?: string;
-  onChange?: (inView: boolean) => void;
-  children?: ReactNode;
-};
-const InView: ComponentType<InViewProps> =
-  InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
 
 // Mirrors the timeline entry union: either a flat status (augmented with the
 // timeline-pipeline mutation flags) or a group wrapper with nested items.

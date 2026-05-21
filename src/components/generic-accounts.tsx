@@ -2,9 +2,7 @@ import './generic-accounts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ComponentType, ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useSnapshot } from 'valtio';
 
 import { api } from '../utils/api';
@@ -14,6 +12,7 @@ import useLocationChange from '../utils/useLocationChange';
 
 import AccountBlock from './account-block';
 import Icon from './icon';
+import InView from './in-view';
 import Link from './link';
 import Loader from './loader';
 import StatusComponent, { type StatusComponentProps } from './status';
@@ -26,16 +25,6 @@ function Status(props: {
 }) {
   return <StatusComponent {...(props as StatusComponentProps)} />;
 }
-
-// `react-intersection-observer`'s `InView` ships without working JSX
-// component typings under our React component types. Re-type as a
-// React component with the props this batch actually uses.
-type InViewTypedProps = {
-  onChange?: (inView: boolean) => void;
-  children?: ReactNode;
-};
-const InViewTyped: ComponentType<InViewTypedProps> =
-  InViewUntyped as typeof InViewUntyped & ComponentType<InViewTypedProps>;
 
 // TODO(oxlint:no-underscore-dangle) `_types` is a shared internal cache key
 // on account records used by status.tsx and notification.tsx. Renaming requires
@@ -349,7 +338,7 @@ export default function GenericAccounts({
             </ul>
             {uiState === 'default' ? (
               showMore ? (
-                <InViewTyped
+                <InView
                   onChange={(inView: boolean) => {
                     if (inView) {
                       loadAccounts();
@@ -365,7 +354,7 @@ export default function GenericAccounts({
                   >
                     <Trans>Show more…</Trans>
                   </button>
-                </InViewTyped>
+                </InView>
               ) : (
                 <p className="ui-state insignificant">
                   <Trans>The end.</Trans>
