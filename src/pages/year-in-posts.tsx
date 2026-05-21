@@ -1103,7 +1103,7 @@ function YearInPosts() {
                               {count} posts{' '}
                               {/* TODO: Use Plural above when finalized */}
                             </small>{' '}
-                            {size && (
+                            {size > 0 && (
                               <small
                                 className="tag insignificant collapsed"
                                 title={`${size.toLocaleString(i18n.locale || undefined)} bytes`}
