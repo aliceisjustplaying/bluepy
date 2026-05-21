@@ -1,6 +1,6 @@
 import PQueue from 'p-queue';
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 
 import { getGifFirstFrame } from '../utils/get-gif-first-frame';
 import mem from '../utils/mem';
@@ -161,16 +161,41 @@ interface EmojiTextProps {
 
 const EMPTY_EMOJIS: readonly ResolvedEmoji[] = [];
 
+interface ResolvedEmojiState {
+  loading: boolean;
+  resolvedEmojis: ResolvedEmoji[];
+}
+
+type ResolvedEmojiAction =
+  | { type: 'loading' }
+  | { type: 'resolved'; emojis: ResolvedEmoji[] };
+
+function resolvedEmojiReducer(
+  state: ResolvedEmojiState,
+  action: ResolvedEmojiAction,
+): ResolvedEmojiState {
+  switch (action.type) {
+    case 'loading':
+      return { ...state, loading: true };
+    case 'resolved':
+      return { loading: false, resolvedEmojis: action.emojis };
+  }
+  return state;
+}
+
 function EmojiText({
   text,
   emojis = EMPTY_EMOJIS,
   staticEmoji,
   resolverURL,
 }: EmojiTextProps): ReactNode {
-  const [resolvedEmojis, setResolvedEmojis] = useState<ResolvedEmoji[]>(
-    () => (resolverURL && resolvedEmojisCache.get(resolverURL)) || [],
+  const [{ loading, resolvedEmojis }, dispatchResolvedEmojis] = useReducer(
+    resolvedEmojiReducer,
+    {
+      loading: false,
+      resolvedEmojis: (resolverURL && resolvedEmojisCache.get(resolverURL)) || [],
+    },
   );
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!resolverURL || !text?.includes(':')) return;
@@ -186,12 +211,11 @@ function EmojiText({
 
     if (resolvedEmojisCache.has(resolverURL)) return;
 
-    setLoading(true);
+    dispatchResolvedEmojis({ type: 'loading' });
 
     void (async () => {
       const resolved = await resolveEmojis(resolverURL);
-      setResolvedEmojis(resolved);
-      setLoading(false);
+      dispatchResolvedEmojis({ type: 'resolved', emojis: resolved });
     })();
   }, [resolverURL, text, emojis]);
 
