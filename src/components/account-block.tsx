@@ -37,6 +37,10 @@ const EMPTY_RELATIONSHIP: Partial<mastodon.v1.Relationship> = {};
 const EMPTY_EXCLUDED_RELATIONSHIP_ATTRS: readonly string[] = [];
 const EMPTY_EXCLUDED_RELATIONSHIP_ATTRS_SET = new Set<string>();
 
+function stringValue(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
 function AccountBlock({
   skeleton,
   account,
@@ -105,10 +109,10 @@ function AccountBlock({
       ? new Set(excludeRelationshipAttrs)
       : EMPTY_EXCLUDED_RELATIONSHIP_ATTRS_SET;
   const excludedRelationship: Record<string, unknown> = {};
-  const relationshipRecord = relationship as Record<string, unknown>;
-  for (const r in relationshipRecord) {
-    if (!excludedRelationshipAttrsSet.has(r)) {
-      excludedRelationship[r] = relationshipRecord[r];
+  const relationshipRecord = relationship ?? EMPTY_RELATIONSHIP;
+  for (const [key, value] of Object.entries(relationshipRecord)) {
+    if (!excludedRelationshipAttrsSet.has(key)) {
+      excludedRelationship[key] = value;
     }
   }
   const hasRelationship =
@@ -253,9 +257,11 @@ function AccountBlock({
                 <Icon icon="check-circle" size="s" alt={t`Verified`} />{' '}
                 <span
                   dangerouslySetInnerHTML={{
-                    __html: enhanceContent(verifiedField.value, {
-                      emojis,
-                    }) as string,
+                    __html: stringValue(
+                      enhanceContent(verifiedField.value, {
+                        emojis,
+                      }),
+                    ),
                   }}
                 />
               </span>
