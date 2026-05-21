@@ -4,7 +4,7 @@ import type HlsType from 'hls.js';
 import type { ErrorData } from 'hls.js';
 import type { ReactNode, ComponentType, HTMLAttributes, Ref } from 'react';
 import { Fragment } from 'react';
-import { forwardRef, memo } from 'react';
+import { memo } from 'react';
 import {
   useCallback,
   useEffect,
@@ -195,6 +195,7 @@ interface MediaProps {
 
 interface MediaParentProps extends Record<string, unknown> {
   children?: ReactNode;
+  ref?: Ref<HTMLElement>;
 }
 
 interface HlsVideoProps {
@@ -429,20 +430,24 @@ function Media({
 
   const Parent = useMemo<ComponentType<MediaParentProps>>(() => {
     if (to && !mediaLoadError) {
-      return forwardRef<HTMLElement, MediaParentProps>((props, ref) => (
-        <Link
-          to={to}
-          {...(props as Omit<LinkProps, 'to'>)}
-          ref={ref as Ref<HTMLAnchorElement>}
-        />
-      ));
+      return function MediaLinkParent({ ref, ...props }: MediaParentProps) {
+        return (
+          <Link
+            to={to}
+            {...(props as Omit<LinkProps, 'to'>)}
+            ref={ref as Ref<HTMLAnchorElement>}
+          />
+        );
+      };
     }
-    return forwardRef<HTMLElement, MediaParentProps>((props, ref) => (
-      <div
-        {...(props as HTMLAttributes<HTMLDivElement>)}
-        ref={ref as Ref<HTMLDivElement>}
-      />
-    ));
+    return function MediaDivParent({ ref, ...props }: MediaParentProps) {
+      return (
+        <div
+          {...(props as HTMLAttributes<HTMLDivElement>)}
+          ref={ref as Ref<HTMLDivElement>}
+        />
+      );
+    };
   }, [to, mediaLoadError]);
 
   const remoteMediaURLObj = remoteMediaURL

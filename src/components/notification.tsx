@@ -3,7 +3,7 @@ import { msg, t } from '@lingui/core/macro';
 import { Plural, Select, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import type { ReactNode, ComponentType, JSX, ReactElement } from 'react';
-import { createContext, useContext } from 'react';
+import { createContext, use } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
 
@@ -195,7 +195,7 @@ const SubjectFallback = ({ children }: SubjectProps) => <>{children}</>;
 const NotificationSubjectClickContext = createContext<(() => void) | null>(null);
 
 function NotificationSubject({ clickable, ...props }: SubjectProps) {
-  const handleOpenGenericAccounts = useContext(NotificationSubjectClickContext);
+  const handleOpenGenericAccounts = use(NotificationSubjectClickContext);
   if (!clickable) return <b {...props} />;
   const { className, ...buttonProps } = props as SubjectProps & {
     className?: string;
