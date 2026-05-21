@@ -158,6 +158,14 @@ const memFetchFamiliarFollowers = pmem(fetchFamiliarFollowers, {
   expires: ACCOUNT_INFO_MAX_AGE,
 });
 
+function accountList(value: unknown): mastodon.v1.Account[] | undefined {
+  return Array.isArray(value) ? value : undefined;
+}
+
+function eventImage(target: EventTarget | null): HTMLImageElement | null {
+  return target instanceof HTMLImageElement ? target : null;
+}
+
 async function fetchPostingStats(
   accountID: string,
   masto: MastoLike,
@@ -432,7 +440,7 @@ function AccountInfo({
     if (isSelf) return results;
     if (!sameCurrentInstance) return results;
 
-    const { value } = results;
+    const value = accountList(results.value);
     let newValue: mastodon.v1.Account[] = [];
     // On first load, fetch familiar followers, merge to top of results' `value`
     // Remove dups on every fetch
@@ -448,7 +456,7 @@ function AccountInfo({
       familiarFollowersCache.current = familiarFollowers?.[0]?.accounts || [];
       newValue = [
         ...familiarFollowersCache.current,
-        ...((value ?? []) as mastodon.v1.Account[]).filter(
+        ...(value ?? []).filter(
           (entry) =>
             !familiarFollowersCache.current.some(
               (familiar) => familiar.id === entry.id,
@@ -456,7 +464,7 @@ function AccountInfo({
         ),
       ];
     } else if (value?.length) {
-      newValue = (value as mastodon.v1.Account[]).filter(
+      newValue = value.filter(
         (entry) =>
           !familiarFollowersCache.current.some(
             (familiar) => familiar.id === entry.id,
@@ -690,7 +698,7 @@ function AccountInfo({
                     headerIsAvatar ? 'header-is-avatar' : ''
                   }`}
                   onError={(e) => {
-                    const img = e.target as HTMLImageElement | null;
+                    const img = eventImage(e.target);
                     if (!img) return;
                     if (img.crossOrigin) {
                       if (img.src !== headerStatic) {
@@ -711,7 +719,7 @@ function AccountInfo({
                       : 'anonymous'
                   }
                   onLoad={(e) => {
-                    const img = e.target as HTMLImageElement | null;
+                    const img = eventImage(e.target);
                     if (!img) return;
                     img.classList.add('loaded');
                     const { width, height } = img;
