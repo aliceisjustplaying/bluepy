@@ -840,12 +840,6 @@ function StatusThread({
         pRetry(() => statusesEndpoint.$select(id).fetch(), {
           retries: 4,
         });
-      const contextFetch = pRetry(
-        () => statusesEndpoint.$select(id).context.fetch(),
-        {
-          retries: 8,
-        },
-      );
 
       const hasStatus = !!snapStates.statuses[sKey];
       let heroStatus = rawStatusFromState(snapStates.statuses[sKey]);
@@ -871,6 +865,12 @@ function StatusThread({
           setUIState('error');
           return;
         }
+        const contextFetch = pRetry(
+          () => statusesEndpoint.$select(id).context.fetch(),
+          {
+            retries: 8,
+          },
+        );
         const context = await contextFetch;
         const { ancestors } = context;
         fullContext.current = { ...context, heroStatus };
