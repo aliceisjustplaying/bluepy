@@ -4,7 +4,7 @@ import {
   type MenuProps,
 } from '@szhsin/react-menu';
 import type { ReactNode, ReactElement } from 'react';
-import { cloneElement } from 'react';
+import { cloneElement, isValidElement } from 'react';
 
 import Menu2 from './menu2';
 import SubMenu2 from './submenu2';
@@ -52,7 +52,10 @@ function MenuConfirm({
       // JS contract requires `children` to be a single trigger ReactElement when
       // `onClick` is supplied without confirm; runtime crashes identically
       // on anything else.
-      return cloneElement(children as ReactElement<Record<string, unknown>>, {
+      if (!isValidElement<Record<string, unknown>>(children)) {
+        throw new TypeError('MenuConfirm children must be a React element');
+      }
+      return cloneElement(children, {
         onClick,
       });
     }
