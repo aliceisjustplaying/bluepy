@@ -36,21 +36,6 @@ const TOTAL_TAGS_LIMIT = TAGS_LIMIT_PER_MODE + 1;
 
 type HashtagStatus = mastodon.v1.Status;
 
-interface SaveStatusPayload extends Record<string, unknown> {
-  id?: string;
-  account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
-  quote?: SaveStatusPayload | null;
-  state?: unknown;
-  quotedStatus?: SaveStatusPayload | null;
-}
-
-function toSaveStatus(
-  status: HashtagStatus | null | undefined,
-): SaveStatusPayload | null | undefined {
-  return status as SaveStatusPayload | null | undefined;
-}
-
 interface FetchHashtagsResult {
   done?: boolean;
   value: HashtagStatus[] | undefined;
@@ -89,16 +74,39 @@ interface HashtagShortcut {
   media?: 'on' | undefined;
 }
 
+function statusList(value: unknown): HashtagStatus[] | undefined {
+  return Array.isArray(value) ? value : undefined;
+}
+
+function timelineAccessValue(value: unknown): TimelineAccess {
+  return typeof value === 'string' ? value : null;
+}
+
+function inputElement(element: Element | null): HTMLInputElement | null {
+  return element instanceof HTMLInputElement ? element : null;
+}
+
+function hashtagShortcuts(value: unknown): HashtagShortcut[] {
+  return Array.isArray(value)
+    ? value.filter(
+        (shortcut): shortcut is HashtagShortcut =>
+          typeof shortcut === 'object' &&
+          shortcut !== null &&
+          'type' in shortcut &&
+          shortcut.type === 'hashtag' &&
+          'hashtag' in shortcut &&
+          typeof shortcut.hashtag === 'string',
+      )
+    : [];
+}
+
 function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const { t } = useLingui();
   // const navigate = useNavigate();
-  const routerParams = useParams() as {
-    hashtag?: string;
-    instance?: string;
-  };
+  const routerParams = useParams();
   let { hashtag: rawHashtag, ...params } = columnMode ? {} : routerParams;
   if (props.hashtag) rawHashtag = props.hashtag;
-  const hashtags = sorted((rawHashtag as string).trim().split(/[\s+]+/));
+  const hashtags = sorted((rawHashtag ?? '').trim().split(/[\s+]+/));
   const hashtag: string = hashtags[0];
   const [searchParams, setSearchParams] = useSearchParams();
   const media = mediaView || !!searchParams.get('media');
@@ -150,7 +158,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
       feedType: 'local',
       instance,
     });
-    setTimelineAccess(access as TimelineAccess);
+    setTimelineAccess(timelineAccessValue(access));
     if (
       access === 'disabled' ||
       (access === 'authenticated' && !authenticated)
@@ -171,7 +179,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
       })
       .values()
       .next();
-    let { value } = results as { value: HashtagStatus[] | undefined };
+    let value = statusList(results.value);
     if (value?.length) {
       if (firstLoad) {
         latestItem.current = value[0].id;
@@ -179,7 +187,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
 
       // value = filteredItems(value, 'public');
       value.forEach((item) => {
-        saveStatus(toSaveStatus(item), instance, {
+        saveStatus(item, instance, {
           skipThreading: media || mediaFirst, // If media view, no need to form threads
         });
       });
@@ -187,7 +195,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
       maxID.current = value[value.length - 1].id;
     }
     return {
-      ...(results as { done?: boolean }),
+      done: results.done,
       value,
     };
   }
@@ -204,10 +212,10 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
         })
         .values()
         .next();
-      let { value } = results as { value: HashtagStatus[] };
+      let value = statusList(results.value) ?? [];
       const valueContainsLatestItem = value[0]?.id === latestItem.current; // since_id might not be supported
       if (value?.length && !valueContainsLatestItem) {
-        value = filteredItems(value, 'public') as HashtagStatus[];
+        value = [...filteredItems(value, 'public')];
         return true;
       }
       return false;
@@ -294,9 +302,9 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                 <form
                   onSubmit={(e: SyntheticEvent<HTMLFormElement>) => {
                     e.preventDefault();
-                    const input = e.currentTarget.elements.item(
-                      0,
-                    ) as HTMLInputElement | null;
+                    const input = inputElement(
+                      e.currentTarget.elements.item(0),
+                    );
                     const newHashtag = input?.value.trim();
                     // Use includes but need to be case insensitive
                     if (
@@ -396,7 +404,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                   media: media ? 'on' : undefined,
                 };
                 // Check if already exists
-                const exists = (states.shortcuts as HashtagShortcut[]).some(
+                const exists = hashtagShortcuts(states.shortcuts).some(
                   (s) =>
                     s.type === shortcut.type &&
                     sorted(s.hashtag.split(/[\s+]+/)).join(' ') ===
@@ -407,7 +415,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                 if (exists) {
                   alert(t`This shortcut already exists`);
                 } else {
-                  (states.shortcuts as HashtagShortcut[]).push(shortcut);
+                  states.shortcuts.push(shortcut);
                   showToast(t`Hashtag shortcut added`);
                 }
               }}
