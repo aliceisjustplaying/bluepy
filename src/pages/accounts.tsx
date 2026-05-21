@@ -68,6 +68,7 @@ function hasAccountsNameTextInfo(
 ): account is OAuthAccount {
   const { info } = account;
   return (
+    !!info &&
     typeof info.acct === 'string' &&
     typeof info.id === 'string' &&
     typeof info.url === 'string' &&
@@ -186,11 +187,13 @@ function AccountListItem({
                   location.reload();
                 }}
               >
-                <Icon icon="transfer" />{' '}
-                <Trans>Switch to this account</Trans>
+                <Icon icon="transfer" /> <Trans>Switch to this account</Trans>
               </MenuItem>
               {!isStandalone && !isCurrent && !isLoggedOut && (
-                <MenuLink href={`./?account=${account.info.id}`} target="_blank">
+                <MenuLink
+                  href={`./?account=${account.info.id}`}
+                  target="_blank"
+                >
                   <Icon icon="external" />
                   <span>
                     <Trans>Switch in new tab/window</Trans>
@@ -287,7 +290,11 @@ function AccountListItem({
               menuItemClassName="danger"
               onClick={() => {
                 void (async () => {
-                  await logOutAccount();
+                  try {
+                    await logOutAccount();
+                  } catch (error) {
+                    console.warn(error);
+                  }
                   delete (account as { accessToken?: string }).accessToken;
                   saveOAuthAccounts();
                   reload();
@@ -298,7 +305,11 @@ function AccountListItem({
                   className="danger"
                   onClick={() => {
                     void (async () => {
-                      await logOutAccount();
+                      try {
+                        await logOutAccount();
+                      } catch (error) {
+                        console.warn(error);
+                      }
                       removeAccount();
                       location.href = location.pathname || '/';
                     })();

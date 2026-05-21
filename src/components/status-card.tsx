@@ -120,8 +120,7 @@ function isCardPost(domain: string | undefined): boolean {
 
 function createBlurhashImage(
   blurhash: string,
-  setBlurhashImage: (url: string) => void,
-) {
+): Promise<{ url: string; revoke: boolean } | null> {
   const w = 44;
   const h = 44;
   const blurhashPixels = decodeBlurHash(blurhash, w, h);
@@ -139,17 +138,17 @@ function createBlurhashImage(
   }
   try {
     if ('convertToBlob' in canvas) {
-      void (async () => {
-        const blob = await canvas.convertToBlob();
-        setBlurhashImage(URL.createObjectURL(blob));
-      })();
+      return canvas
+        .convertToBlob()
+        .then((blob) => ({ url: URL.createObjectURL(blob), revoke: true }));
     } else if (canvas instanceof HTMLCanvasElement) {
-      setBlurhashImage(canvas.toDataURL());
+      return Promise.resolve({ url: canvas.toDataURL(), revoke: false });
     }
   } catch (e) {
     // Silently fail
     console.error(e);
   }
+  return Promise.resolve(null);
 }
 
 function StatusCardImagePreview({
@@ -175,9 +174,33 @@ function StatusCardImagePreview({
   const domain = getDomain(url ?? '');
   const rgbAverageColor =
     image && blurhash ? getBlurHashAverageColor(blurhash) : null;
-  if (!image && blurhash) {
-    createBlurhashImage(blurhash, setBlurhashImage);
-  }
+  useEffect(() => {
+    let canceled = false;
+    let objectURL: string | null = null;
+    if (image || !blurhash) {
+      setBlurhashImage(null);
+      return undefined;
+    }
+    void Promise.resolve()
+      .then(() => createBlurhashImage(blurhash))
+      .then((result) => {
+        if (canceled) {
+          if (result?.revoke) URL.revokeObjectURL(result.url);
+          return undefined;
+        }
+        objectURL = result?.revoke ? result.url : null;
+        setBlurhashImage(result?.url ?? null);
+        return undefined;
+      })
+      .catch((error: unknown) => {
+        console.error(error);
+        if (!canceled) setBlurhashImage(null);
+      });
+    return () => {
+      canceled = true;
+      if (objectURL) URL.revokeObjectURL(objectURL);
+    };
+  }, [blurhash, image]);
   const isPost = isCardPost(domain);
 
   return (

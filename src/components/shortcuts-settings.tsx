@@ -1006,14 +1006,22 @@ function shortcutExistsInList(
   shortcut: Record<string, string>,
   shortcuts: readonly ShortcutEntry[],
 ) {
-  return shortcuts.some((s) =>
-    Object.keys(s).every((key) => {
-      if (!(key in shortcut)) return true;
-      const val = shortcut[key];
-      if (val === '' || val === null || val === undefined) return true;
-      return s[key] === val;
-    }),
+  return shortcuts.some((s) => shortcutRecordsEqual(s, shortcut));
+}
+
+function shortcutComparisonKey(shortcut: Record<string, string | undefined>) {
+  return JSON.stringify(
+    Object.entries(shortcut)
+      .filter(([, value]) => value !== undefined && value !== '')
+      .toSorted(([left], [right]) => left.localeCompare(right)),
   );
+}
+
+function shortcutRecordsEqual(
+  left: Record<string, string | undefined>,
+  right: Record<string, string | undefined>,
+) {
+  return shortcutComparisonKey(left) === shortcutComparisonKey(right);
 }
 
 function ImportShortcutsSection({
@@ -1028,6 +1036,7 @@ function ImportShortcutsSection({
 }: ImportShortcutsSectionProps) {
   const { i18n } = useLingui();
   const _: Translator = (descriptor) => i18n._(descriptor);
+  const importableShortcuts = asShortcutEntries(parsedImportShortcutStr);
 
   return (
     <section>
@@ -1156,15 +1165,14 @@ function ImportShortcutsSection({
               }
               onClick={() => {
                 // Append non-unique shortcuts only.
-                const parsed = parsedImportShortcutStr ?? [];
+                const parsed = importableShortcuts;
                 const currentShortcuts = asShortcutEntries(states.shortcuts);
-                const nonUniqueShortcuts = parsed.filter((rawShortcut) => {
-                  const shortcut = getStringRecord(rawShortcut);
-                  return !currentShortcuts.some((s) =>
-                    // Compare all properties
-                    Object.keys(s).every((key) => s[key] === shortcut[key]),
-                  );
-                });
+                const nonUniqueShortcuts = parsed.filter(
+                  (shortcut) =>
+                    !currentShortcuts.some((s) =>
+                      shortcutRecordsEqual(s, shortcut),
+                    ),
+                );
                 if (!nonUniqueShortcuts.length) {
                   showToast(t`No new shortcuts to import`);
                   return;
@@ -1190,7 +1198,7 @@ function ImportShortcutsSection({
               <button
                 type="button"
                 className="plain2"
-                disabled={!parsedImportShortcutStr}
+                disabled={!importableShortcuts.length}
               >
                 <Trans>Import & append…</Trans>
               </button>
@@ -1205,7 +1213,7 @@ function ImportShortcutsSection({
           }
           menuItemClassName={hasCurrentSettings ? 'danger' : undefined}
           onClick={() => {
-            states.shortcuts = [...asShortcutEntries(parsedImportShortcutStr)];
+            states.shortcuts = [...importableShortcuts];
             showToast(t`Shortcuts imported`);
             onClose?.();
           }}
@@ -1213,7 +1221,7 @@ function ImportShortcutsSection({
           <button
             type="button"
             className="plain2"
-            disabled={!parsedImportShortcutStr}
+            disabled={!importableShortcuts.length}
           >
             {hasCurrentSettings ? t`or override…` : t`Import…`}
           </button>

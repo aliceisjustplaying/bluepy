@@ -178,7 +178,8 @@ function PollResultOptions({
 
         const isLeading =
           optionVotesCount > 0 &&
-          optionVotesCount === Math.max(...options.map((o) => o.votesCount ?? 0));
+          optionVotesCount ===
+            Math.max(...options.map((o) => o.votesCount ?? 0));
         return (
           <div
             key={optionKey}
@@ -402,7 +403,11 @@ function PollMeta({
         {(expired || voted) && showPollInfo && (
           <>
             <span className="ib">
-              <Plural value={options.length} one={`# choice`} other={`# choices`} />
+              <Plural
+                value={options.length}
+                one={`# choice`}
+                other={`# choices`}
+              />
             </span>{' '}
             &bull;{' '}
           </>
@@ -412,13 +417,17 @@ function PollMeta({
             value={votesCount}
             one={
               <Trans>
-                <span title={String(votesCount)}>{shortenNumber(votesCount)}</span>{' '}
+                <span title={String(votesCount)}>
+                  {shortenNumber(votesCount)}
+                </span>{' '}
                 vote
               </Trans>
             }
             other={
               <Trans>
-                <span title={String(votesCount)}>{shortenNumber(votesCount)}</span>{' '}
+                <span title={String(votesCount)}>
+                  {shortenNumber(votesCount)}
+                </span>{' '}
                 votes
               </Trans>
             }
@@ -499,8 +508,11 @@ function PollMeta({
             setUIState('loading');
 
             void (async () => {
-              await refresh();
-              setUIState('default');
+              try {
+                await refresh();
+              } finally {
+                setUIState('default');
+              }
             })();
           }}
           title={t`Refresh`}
@@ -616,7 +628,9 @@ export default function Poll({
   const ref = useTruncated<HTMLDivElement>({
     onTruncated: setShowPollInfo,
   });
-  const visibleOptions = keyedPollOptions(options.slice(0, visibleOptionsCount));
+  const visibleOptions = keyedPollOptions(
+    options.slice(0, visibleOptionsCount),
+  );
 
   return (
     <div

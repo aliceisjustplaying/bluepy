@@ -216,8 +216,12 @@ function isTimelineGroupEntry(value: unknown): value is TimelineGroupEntry {
     !!value &&
     typeof value === 'object' &&
     'id' in value &&
+    (typeof value.id === 'string' ||
+      (Array.isArray(value.id) &&
+        value.id.every((id) => typeof id === 'string'))) &&
     'items' in value &&
     Array.isArray(value.items) &&
+    value.items.every(isTimelineStatusEntry) &&
     'type' in value &&
     typeof value.type === 'string'
   );

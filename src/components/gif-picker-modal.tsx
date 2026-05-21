@@ -63,8 +63,39 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
 }
 
+function isGiphyImage(value: unknown): value is GiphyImage {
+  return (
+    isRecord(value) &&
+    typeof value.url === 'string' &&
+    (typeof value.width === 'number' || typeof value.width === 'string') &&
+    (typeof value.height === 'number' || typeof value.height === 'string')
+  );
+}
+
+function isGiphyImages(value: unknown): value is GiphyImages {
+  return (
+    isRecord(value) &&
+    isGiphyImage(value.fixed_height) &&
+    isGiphyImage(value.original) &&
+    (!('fixed_height_small' in value) ||
+      isGiphyImage(value.fixed_height_small)) &&
+    (!('fixed_height_downsampled' in value) ||
+      isGiphyImage(value.fixed_height_downsampled))
+  );
+}
+
+function isGiphyGif(value: unknown): value is GiphyGif {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    isGiphyImages(value.images)
+  );
+}
+
 function isGiphyResponse(value: unknown): value is GiphyResponse {
-  return isRecord(value) && Array.isArray(value.data);
+  return (
+    isRecord(value) && Array.isArray(value.data) && value.data.every(isGiphyGif)
+  );
 }
 
 function GIFPickerModal({

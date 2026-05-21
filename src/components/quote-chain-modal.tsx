@@ -196,9 +196,7 @@ export default function QuoteChainModal({
                 to={instance ? `/${instance}/s/${post.id}` : `/s/${post.id}`}
                 className="status-link"
                 onContextMenu={(e: React.MouseEvent) => {
-                  const target = e.target;
-                  if (!(target instanceof Element)) return;
-                  const postEl = target.querySelector('.status');
+                  const postEl = e.currentTarget.querySelector('.status');
                   if (postEl) {
                     if (e.metaKey) return;
                     e.preventDefault();

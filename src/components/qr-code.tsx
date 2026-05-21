@@ -60,7 +60,6 @@ interface MarkerPosition {
 }
 
 interface QrCodeDefsProps {
-  arenaCircle: boolean;
   arenaLoaded: boolean;
   backgroundMask?: string;
   centerImageSize: number;
@@ -89,7 +88,6 @@ function PositionMarkers({ positions }: { positions: MarkerPosition[] }) {
 }
 
 function QrCodeDefs({
-  arenaCircle,
   arenaLoaded,
   backgroundMask,
   centerImageSize,
@@ -186,7 +184,7 @@ function QrCodeDefs({
               fill="black"
             />
           )}
-          {arenaLoaded && !arenaCircle && (
+          {arenaLoaded && !effectiveArenaCircle && (
             <rect
               x={centerImageX}
               y={centerImageY}
@@ -406,7 +404,6 @@ export default function QrCode({
       shapeRendering="geometricPrecision"
     >
       <QrCodeDefs
-        arenaCircle={arenaCircle}
         arenaLoaded={arenaLoaded}
         backgroundMask={backgroundMask}
         centerImageSize={centerImageSize}

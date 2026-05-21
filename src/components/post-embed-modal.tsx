@@ -68,9 +68,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isPostLike(value: unknown): value is PostLike {
   return (
-    isRecord(value) &&
-    isRecord(value.account) &&
-    typeof value.id === 'string'
+    isRecord(value) && isRecord(value.account) && typeof value.id === 'string'
   );
 }
 
@@ -114,7 +112,7 @@ function generateHTMLCode(
             const quoteKey = statusKey(quoteId, quoteInstance);
             const s = quoteKey ? states.statuses[quoteKey] : undefined;
             if (isPostLike(s)) {
-              return generateHTMLCode(s, quoteInstance, ++level);
+              return generateHTMLCode(s, quoteInstance, level + 1);
             }
             return '';
           })

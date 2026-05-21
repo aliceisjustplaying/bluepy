@@ -4,7 +4,7 @@ import { msg, plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import {
   useCallback,
   useEffect,
@@ -143,6 +143,7 @@ interface LinkOrDivProps {
   className?: string;
   tabIndex?: number;
   onClick?: () => void;
+  onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
   children?: ReactNode;
 }
 
@@ -513,10 +514,23 @@ function AccountInfo({
 
   const LinkOrDiv = useCallback(
     ({ to, ...props }: LinkOrDivProps) => {
-      return standalone ? (
-        <div {...props} />
-      ) : (
-        <Link to={to} {...props} />
+      if (!standalone) {
+        return <Link to={to} {...props} />;
+      }
+      return (
+        <div
+          {...props}
+          role="button"
+          tabIndex={props.tabIndex ?? 0}
+          onKeyDown={(event) => {
+            props.onKeyDown?.(event);
+            if (event.defaultPrevented) return;
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              props.onClick?.();
+            }
+          }}
+        />
       );
     },
     [standalone],

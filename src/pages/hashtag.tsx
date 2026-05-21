@@ -34,6 +34,15 @@ const LIMIT = 20;
 const TAGS_LIMIT_PER_MODE = 4;
 const TOTAL_TAGS_LIMIT = TAGS_LIMIT_PER_MODE + 1;
 
+function normalizedHashtagShortcutKey(value: string) {
+  return sorted(
+    value
+      .toLocaleLowerCase()
+      .split(/[\s+]+/)
+      .filter(Boolean),
+  ).join(' ');
+}
+
 type HashtagStatus = mastodon.v1.Status;
 
 interface FetchHashtagsResult {
@@ -264,8 +273,8 @@ function HashtagHeaderMenu({
           const exists = hashtagShortcuts(states.shortcuts).some(
             (s) =>
               s.type === shortcut.type &&
-              sorted(s.hashtag.split(/[\s+]+/)).join(' ') ===
-                sorted(shortcut.hashtag.split(/[\s+]+/)).join(' ') &&
+              normalizedHashtagShortcutKey(s.hashtag) ===
+                normalizedHashtagShortcutKey(shortcut.hashtag) &&
               (s.instance ? s.instance === shortcut.instance : true) &&
               (s.media ? !!s.media === !!shortcut.media : true),
           );

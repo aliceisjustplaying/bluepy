@@ -65,7 +65,12 @@ function isStreamingUser(value: unknown): value is StreamingUser {
 }
 
 function isStreamStatusPayload(value: unknown): value is StreamStatusPayload {
-  return typeof value === 'object' && value !== null;
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    typeof value.id === 'string'
+  );
 }
 
 function statusList(value: unknown): mastodon.v1.Status[] | undefined {

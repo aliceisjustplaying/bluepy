@@ -29,6 +29,7 @@ import {
   getMastoV2Resource,
   type MastoClient,
 } from '../utils/api';
+import DateTimeFormat from '../utils/date-time-format';
 import isSearchEnabled from '../utils/is-search-enabled';
 import mem from '../utils/mem';
 import pmem from '../utils/pmem';
@@ -41,7 +42,6 @@ import {
   isMediaFirstInstance,
 } from '../utils/store-utils';
 import supports from '../utils/supports';
-import DateTimeFormat from '../utils/date-time-format';
 import useTitle from '../utils/useTitle';
 
 type Status = mastodon.v1.Status;
@@ -393,11 +393,7 @@ function useAccountStatusesController({
         if (results.length) {
           let pinnedStatusesIds: string[] = [];
           const first = results[0];
-          if (
-            first &&
-            typeof first === 'object' &&
-            isPinnedGroup(first)
-          ) {
+          if (first && typeof first === 'object' && isPinnedGroup(first)) {
             pinnedStatusesIds = first.id;
           } else {
             // TODO(oxlint:no-underscore-dangle) `_pinned` is the project-wide
@@ -1057,7 +1053,11 @@ function MonthPicker(props: MonthPickerProps) {
         onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
           const { value: month } = e.currentTarget;
           const year = yearFieldRef.current?.value ?? '';
-          if (!month || !year || !checkValidity(month, year)) {
+          if (!month || !year) {
+            onInput({ value: '', validity: { valid: true } });
+            return;
+          }
+          if (!checkValidity(month, year)) {
             onInput({ value: '', validity: { valid: false } });
             return;
           }
@@ -1094,7 +1094,11 @@ function MonthPicker(props: MonthPickerProps) {
         onChange={(e: SyntheticEvent<HTMLInputElement>) => {
           const { value: year, validity } = e.currentTarget;
           const month = monthFieldRef.current?.value ?? '';
-          if (!year || !month || !validity.valid || !checkValidity(month, year)) {
+          if (!year || !month) {
+            onInput({ value: '', validity: { valid: true } });
+            return;
+          }
+          if (!validity.valid || !checkValidity(month, year)) {
             onInput({ value: '', validity: { valid: false } });
             return;
           }

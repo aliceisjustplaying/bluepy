@@ -1,5 +1,5 @@
-import { useLingui } from '@lingui/react/macro';
 import type { MessageDescriptor } from '@lingui/core';
+import { useLingui } from '@lingui/react/macro';
 import { useEffect } from 'react';
 import { useLocation, type Location } from 'react-router-dom';
 import { subscribe, type Snapshot, useSnapshot } from 'valtio';
@@ -49,7 +49,9 @@ function MediaModal(props: {
 type Payload = Record<string, unknown>;
 type StatesSnapshot = Snapshot<typeof states>;
 const p = (v: unknown): Payload =>
-  v !== null && typeof v === 'object' ? Object.fromEntries(Object.entries(v)) : {};
+  v !== null && typeof v === 'object'
+    ? Object.fromEntries(Object.entries(v))
+    : {};
 const str = (value: unknown): string | undefined =>
   typeof value === 'string' ? value : undefined;
 const msgDescriptor = (value: unknown): MessageDescriptor | undefined =>
@@ -111,9 +113,7 @@ function reportAccount(
   return isReportAccount(value) ? value : undefined;
 }
 
-function reportPost(
-  value: unknown,
-): Parameters<typeof ReportModal>[0]['post'] {
+function reportPost(value: unknown): Parameters<typeof ReportModal>[0]['post'] {
   return isRecord(value) ? value : undefined;
 }
 
@@ -196,14 +196,19 @@ function ComposeModal({
           p(states.showCompose).editStatus || composePayload.editStatus || null
         }
         draftStatus={
-          p(states.showCompose).draftStatus || composePayload.draftStatus || null
+          p(states.showCompose).draftStatus ||
+          composePayload.draftStatus ||
+          null
         }
         quoteStatus={
-          p(states.showCompose).quoteStatus || composePayload.quoteStatus || null
+          p(states.showCompose).quoteStatus ||
+          composePayload.quoteStatus ||
+          null
         }
         sharedData={sharedData}
         onClose={(results: Payload | undefined) => {
           const resultPayload = p(results);
+          const afterClose = noArgFn(resultPayload.fn);
           const newStatus = p(resultPayload.newStatus);
           const instance = str(resultPayload.instance);
           const resultType = str(resultPayload.type);
@@ -215,6 +220,7 @@ function ComposeModal({
           states.showCompose = false;
           Reflect.set(window, '__COMPOSE__', null);
           Reflect.set(window, '__SHARED_DATA__', null);
+          afterClose?.();
           if (newStatusId) {
             states.reloadStatusPage++;
             const toastText = {

@@ -315,7 +315,9 @@ function ShortcutTabBar({
                       {subtitle && (
                         <>
                           <br />
-                          <small>{subtitle}</small>
+                          <small>
+                            <AsyncText value={subtitle} />
+                          </small>
                         </>
                       )}
                     </span>

@@ -63,8 +63,10 @@ export interface EditProfileSheetProps {
   onClose?: (result?: EditProfileSheetCloseResult) => void;
 }
 
+type ProfileUIState = 'default' | 'error' | 'loading';
+
 interface ProfileState {
-  uiState: string;
+  uiState: ProfileUIState;
   account: ProfileAccount | null;
 }
 
@@ -192,6 +194,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   });
   const [headerPreview, setHeaderPreview] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const isProfileLoading = uiState === ('loading' as ProfileUIState);
 
   // `masto.v1.accounts` is a proxy returning a fresh reference on every
   // property access; depending on the raw expression would re-fire this
@@ -443,7 +446,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                   name="display_name"
                   defaultValue={displayName}
                   maxLength={30}
-                  disabled={uiState === 'loading'}
+                  disabled={isProfileLoading}
                   dir="auto"
                   enterKeyHint="done"
                 />
@@ -457,7 +460,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                   name="note"
                   maxLength={500}
                   rows={5}
-                  disabled={uiState === 'loading'}
+                  disabled={isProfileLoading}
                   dir="auto"
                 />
               </label>
@@ -469,10 +472,10 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
             <EditProfileFieldsTable
               ref={fieldsAttributesRef}
               fields={profileFields}
-              disabled={uiState === 'loading'}
+              disabled={isProfileLoading}
             />
             <EditProfileActions
-              disabled={uiState === 'loading'}
+              disabled={isProfileLoading}
               onCancel={() => {
                 onClose?.();
               }}

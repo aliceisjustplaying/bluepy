@@ -110,14 +110,14 @@ function Following2({ title, path, id, ...props }: Following2Props) {
 
   // Streaming only happens after instance is initialized
   useEffect(() => {
-    if (!streaming && client?.onStreamingReady) {
+    if (!streamingClient && client?.onStreamingReady) {
       client.onStreamingReady((newStreamingClient) => {
         if (isStreamingUserClient(newStreamingClient)) {
           setStreamingClient(newStreamingClient);
         }
       });
     }
-  }, [client, streaming]);
+  }, [client, streamingClient]);
   __BENCHMARK.end('time-to-following');
 
   console.debug('RENDER Following2', title, id);
