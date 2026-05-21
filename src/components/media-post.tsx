@@ -44,6 +44,18 @@ interface StatusLike {
   [key: string]: unknown;
 }
 
+function isStatusLike(value: unknown): value is StatusLike {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof value.id === 'string' &&
+    'account' in value &&
+    !!value.account &&
+    typeof value.account === 'object'
+  );
+}
+
 type ParentTag = keyof JSX.IntrinsicElements;
 
 interface MediaPostProps {
@@ -85,7 +97,8 @@ function MediaPost({
     // Snapshot returns a readonly view of the proxy. Mirror the JS behavior
     // by allowing the resolved status to be reassigned into our local
     // mutable view. Narrower `Status` typing lives with the `states.ts` work.
-    status = (fromSKey || fromID) as StatusLike | undefined;
+    const cachedStatus = fromSKey || fromID;
+    status = isStatusLike(cachedStatus) ? cachedStatus : undefined;
     sKey = statusKey(status?.id, instance);
   }
   if (!status) {
@@ -116,12 +129,12 @@ function MediaPost({
     }
   };
 
-  // `isFiltered`'s typed signature requires a string context, but the JS
-  // original calls it with `undefined` when no FilterContext is provided and
-  // `_isFiltered` short-circuits to `false`. The `as string` shim mirrors
-  // existing call sites in `src/utils/filters.ts` and preserves that
-  // behavior; tightening the type lives with the `filters` typing work.
-  const filterInfo = !isSelf && isFiltered(filtered, filterContext as string);
+  const filterInfo =
+    !isSelf &&
+    isFiltered(
+      filtered,
+      typeof filterContext === 'string' ? filterContext : '',
+    );
 
   if (filterInfo && filterInfo.action === 'hide') {
     return null;

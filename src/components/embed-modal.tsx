@@ -70,7 +70,7 @@ function EmbedModal({
       ) : (
         <div
           className="embed-content"
-          dangerouslySetInnerHTML={{ __html: html as string }}
+          dangerouslySetInnerHTML={{ __html: html ?? '' }}
           style={
             {
               '--width': width + 'px',

@@ -20,12 +20,15 @@ interface StatusReplyEntry {
   instance?: string;
 }
 
+function isStatusReplyEntry(value: unknown): value is StatusReplyEntry {
+  return !!value && typeof value === 'object';
+}
+
 function StatusCompact({ sKey }: StatusCompactProps) {
   const snapStates = useSnapshot(states);
   const filterContext = use(FilterContext);
-  const statusReply = snapStates.statusReply[sKey] as
-    | StatusReplyEntry
-    | undefined;
+  const replyValue = snapStates.statusReply[sKey];
+  const statusReply = isStatusReplyEntry(replyValue) ? replyValue : undefined;
   if (!statusReply) return null;
 
   const { id, instance } = statusReply;
@@ -59,14 +62,17 @@ function StatusCompact({ sKey }: StatusCompactProps) {
   if (!content) return null;
 
   const srKey = statusKey(id, instance);
-  const statusPeekText = statusPeek(status as Parameters<typeof statusPeek>[0]);
+  const statusPeekText = statusPeek(status);
 
   const currentAccount = getCurrentAccID();
   const isSelf = currentAccount && currentAccount === accountId;
 
   let filterInfo = isSelf
     ? (false as const)
-    : isFiltered(filtered, filterContext as string);
+    : isFiltered(
+        filtered,
+        typeof filterContext === 'string' ? filterContext : '',
+      );
 
   // This is fine. Images are converted to emojis so they are
   // in a way, already "obscured"

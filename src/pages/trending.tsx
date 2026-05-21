@@ -175,7 +175,7 @@ interface TrendingProps {
 function Trending({ columnMode, ...props }: TrendingProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const routeParams = useParams() as Record<string, string>;
+  const routeParams = useParams<{ instance?: string }>();
   const params: Record<string, string | undefined> = columnMode
     ? {}
     : routeParams;
