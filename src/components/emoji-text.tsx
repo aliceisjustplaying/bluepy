@@ -19,6 +19,32 @@ interface EmojiTag {
   icon: { url: string; mediaType?: string };
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function emojiTag(value: unknown): EmojiTag | undefined {
+  if (!isRecord(value) || !isRecord(value.icon)) return undefined;
+  if (typeof value.name !== 'string' || typeof value.icon.url !== 'string') {
+    return undefined;
+  }
+  return {
+    type: typeof value.type === 'string' ? value.type : undefined,
+    name: value.name,
+    icon: {
+      url: value.icon.url,
+      mediaType:
+        typeof value.icon.mediaType === 'string'
+          ? value.icon.mediaType
+          : undefined,
+    },
+  };
+}
+
+function isEmojiTag(value: EmojiTag | undefined): value is EmojiTag {
+  return value?.type === 'Emoji';
+}
+
 const fetchQueue = new PQueue({
   concurrency: 2,
   interval: 1000,
@@ -51,11 +77,13 @@ const resolveEmojis = async (resolverURL: string): Promise<ResolvedEmoji[]> => {
       referrerPolicy: 'no-referrer',
     });
 
-    const data = (await response.json()) as {
-      tag?: EmojiTag[];
-    };
-    const emojiTags: EmojiTag[] =
-      data.tag?.filter((t) => t.type === 'Emoji') || [];
+    const data: unknown = await response.json();
+    const tag = isRecord(data) && Array.isArray(data.tag) ? data.tag : [];
+    const emojiTags: EmojiTag[] = [];
+    for (const item of tag) {
+      const tagItem = emojiTag(item);
+      if (isEmojiTag(tagItem)) emojiTags.push(tagItem);
+    }
 
     const emojis: ResolvedEmoji[] = emojiTags.length
       ? await Promise.all(

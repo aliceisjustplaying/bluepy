@@ -39,6 +39,28 @@ type PollAction =
   | { type: 'showMore'; total: number }
   | { type: 'resetVisibleOptions' };
 
+type PollOption = PollProps['poll']['options'][number];
+
+function keyedPollOptions(options: readonly PollOption[]) {
+  const titleCounts = new Map<string, number>();
+  const keyedOptions: Array<{
+    option: PollOption;
+    optionKey: string;
+    optionIndex: number;
+  }> = [];
+  for (const option of options) {
+    const { title } = option;
+    const titleCount = titleCounts.get(title) ?? 0;
+    titleCounts.set(title, titleCount + 1);
+    keyedOptions.push({
+      option,
+      optionKey: titleCount ? `${title}-${titleCount}` : title,
+      optionIndex: keyedOptions.length,
+    });
+  }
+  return keyedOptions;
+}
+
 function pollReducer(state: PollState, action: PollAction): PollState {
   switch (action.type) {
     case 'uiState':
@@ -162,6 +184,7 @@ export default function Poll({
   const ref = useTruncated<HTMLDivElement>({
     onTruncated: setShowPollInfo,
   });
+  const visibleOptions = keyedPollOptions(options.slice(0, visibleOptionsCount));
 
   return (
     <div
@@ -174,7 +197,7 @@ export default function Poll({
       {resultsView ? (
         <>
           <div className="poll-options" ref={ref}>
-            {options.slice(0, visibleOptionsCount).map((option, i) => {
+            {visibleOptions.map(({ option, optionKey, optionIndex }) => {
               const { title, votesCount: optionVotesCountRaw } = option;
               const optionVotesCount = optionVotesCountRaw ?? 0;
               const ratio = pollVotesCount
@@ -191,9 +214,9 @@ export default function Poll({
                 optionVotesCount > 0 &&
                 optionVotesCount ===
                   Math.max(...options.map((o) => o.votesCount ?? 0));
-	              return (
-	                <div
-	                  key={`${title}-${optionVotesCount}`}
+              return (
+                <div
+                  key={optionKey}
                   className={`poll-option poll-result ${
                     isLeading ? 'poll-option-leading' : ''
                   }`}
@@ -213,7 +236,7 @@ export default function Poll({
                       other: `# votes`,
                     })}
                   >
-                    {voted && ownVotes?.includes(i) && (
+                    {voted && ownVotes?.includes(optionIndex) && (
                       <>
                         <Icon icon="check-circle" alt={t`Voted`} />{' '}
                       </>
@@ -279,24 +302,24 @@ export default function Poll({
           }}
         >
           <div className="poll-options" ref={ref}>
-            {options.slice(0, visibleOptionsCount).map((option, i) => {
+            {visibleOptions.map(({ option, optionKey, optionIndex }) => {
               const { title } = option;
               const isSelected = Array.isArray(selectedOptions)
-                ? selectedOptions.includes(i)
-                : selectedOptions === i;
+                ? selectedOptions.includes(optionIndex)
+                : selectedOptions === optionIndex;
               return (
-                <div className="poll-option" key={title}>
+                <div className="poll-option" key={optionKey}>
                   <label className="poll-label">
                     <input
                       type={multiple ? 'checkbox' : 'radio'}
                       name="poll"
-                      value={i}
+                      value={optionIndex}
                       disabled={uiState === 'loading'}
                       readOnly={readOnly}
                       checked={isSelected}
                       onChange={(e) => {
-                        const value = i;
-                        const target = e.target as HTMLInputElement;
+                        const value = optionIndex;
+                        const target = e.currentTarget;
                         if (multiple) {
                           setSelectedOptions((prev) => {
                             const prevArr = Array.isArray(prev) ? prev : [];

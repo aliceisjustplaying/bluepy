@@ -201,7 +201,7 @@ export default function StatusUtilityMenu({
           onClick={() => {
             void (async () => {
               try {
-	                await navigator.clipboard.writeText(shareURL ?? '');
+                await navigator.clipboard.writeText(shareURL ?? '');
                 showToast(t`Link copied`);
               } catch (e) {
                 console.error(e);
@@ -221,7 +221,7 @@ export default function StatusUtilityMenu({
             <MenuItem
               onClick={() => {
                 try {
-	                  void navigator.share({ url: shareURL });
+                  void navigator.share({ url: shareURL });
                 } catch (e) {
                   console.error(e);
                   alert(t`Sharing doesn't seem to work.`);

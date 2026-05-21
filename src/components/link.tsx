@@ -69,6 +69,7 @@ function LinkBody(props: LinkBodyProps) {
     class: classProp,
     className,
     ref,
+    onClick,
     ...restProps
   } = props;
   let currentPath = currentAppPath();
@@ -93,11 +94,11 @@ function LinkBody(props: LinkBodyProps) {
     <a
       ref={ref}
       href={href}
-      {...(restProps as HTMLAttributes<HTMLAnchorElement>)}
+      {...restProps}
       className={`${classStr} ${isActive ? 'is-active' : ''}`}
       onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-        const parent = e.currentTarget?.parentNode as Element | null;
-        if (parent?.closest?.('a')) {
+        const { parentNode } = e.currentTarget;
+        if (parentNode instanceof Element && parentNode.closest('a')) {
           // If this <a> is nested inside another <a>
           e.stopPropagation();
         }
@@ -107,11 +108,7 @@ function LinkBody(props: LinkBodyProps) {
           // PrevLocation shape to satisfy both types without a shim.
           states.prevLocation = { ...routerLocation };
         }
-        (
-          props.onClick as
-            | ((ev: React.MouseEvent<HTMLAnchorElement>) => void)
-            | undefined
-        )?.(e);
+        onClick?.(e);
         if (e.defaultPrevented || isModifiedClick(e)) {
           return;
         }

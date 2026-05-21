@@ -35,10 +35,12 @@ const END_DELIMITER_BY_START = new Map([
 function cleanDOMForTemml(dom: HTMLElement) {
   // Walk through all text nodes
   const walker = document.createTreeWalker(dom, NodeFilter.SHOW_TEXT);
-  const textNodes: ChildNode[] = [];
+  const textNodes: Text[] = [];
   let node: Node | null;
   while ((node = walker.nextNode())) {
-    textNodes.push(node as ChildNode);
+    if (node instanceof Text) {
+      textNodes.push(node);
+    }
   }
 
   for (const textNode of textNodes) {
@@ -52,8 +54,8 @@ function cleanDOMForTemml(dom: HTMLElement) {
     const endDelimiter = END_DELIMITER_BY_START.get(startDelimiter) ?? '\\)';
 
     // Collect nodes from start delimiter until end delimiter
-    const nodesToCombine = [textNode];
-    let currentNode = textNode;
+    const nodesToCombine: ChildNode[] = [textNode];
+    let currentNode: ChildNode = textNode;
     let foundEnd = false;
     let combinedText = text;
 
@@ -69,7 +71,7 @@ function cleanDOMForTemml(dom: HTMLElement) {
           nodesToCombine.push(nextSibling);
           const siblingText = nextSibling.textContent ?? '';
           combinedText += siblingText;
-          if (siblingText.includes(endDelimiter)) {
+          if (siblingText.indexOf(endDelimiter) !== -1) {
             foundEnd = true;
           }
         } else if (nextSibling instanceof HTMLBRElement) {
