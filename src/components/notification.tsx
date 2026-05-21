@@ -84,6 +84,24 @@ function hasStatus(
   return !!status;
 }
 
+function filterNotificationAccounts(
+  accounts: readonly (AccountWithBot | undefined)[] | undefined,
+) {
+  return accounts?.reduce<AccountWithBot[]>((validAccounts, account) => {
+    if (hasNotificationAccount(account)) validAccounts.push(account);
+    return validAccounts;
+  }, []);
+}
+
+function filterStatuses(
+  statuses: readonly (mastodon.v1.Status | null | undefined)[] | undefined,
+) {
+  return statuses?.reduce<mastodon.v1.Status[]>((validStatuses, status) => {
+    if (hasStatus(status)) validStatuses.push(status);
+    return validStatuses;
+  }, []);
+}
+
 function renderableText(
   text: ContentTextRenderer | JSX.Element | string | undefined,
 ): ReactNode {
@@ -591,6 +609,8 @@ function Notification({
   // status = Attached when type of the notification is favourite, reblog, status, mention, poll, or update
   const actualStatus = status?.reblog || status;
   const actualStatusID = actualStatus?.id;
+  const validSampleAccounts = filterNotificationAccounts(sampleAccounts);
+  const validGroupStatuses = filterStatuses(_statuses);
 
   const currentAccount = getCurrentAccountID();
   const isSelf = currentAccount === account?.id;
@@ -978,7 +998,7 @@ function Notification({
         )}
         {!_accounts?.length && sampleAccounts && sampleAccounts.length > 1 && (
           <p className="avatars-stack">
-            {sampleAccounts.filter(hasNotificationAccount).map((acct) => (
+            {validSampleAccounts?.map((acct) => (
               <Fragment key={acct.id}>
                 <a
                   key={acct.id}
@@ -1027,7 +1047,7 @@ function Notification({
         )}
         {_statuses && _statuses.length > 1 && (
           <ul className="notification-group-statuses">
-            {_statuses.filter(hasStatus).map((groupStatus) => (
+            {validGroupStatuses?.map((groupStatus) => (
               <li key={groupStatus.id}>
                 <TruncatedLink
                   className={`status-link status-type-${type}`}
