@@ -8,7 +8,6 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -94,12 +93,18 @@ type SearchResultsByType = {
   accounts: mastodon.v1.Account[];
   hashtags: mastodon.v1.Tag[];
 };
-type ResultsSetterMap = {
-  [K in ResultsTypeKey]: (value: SearchResultsByType[K]) => void;
-};
 
 function isResultsTypeKey(value: string | null): value is ResultsTypeKey {
   return value === 'statuses' || value === 'accounts' || value === 'hashtags';
+}
+
+function firstResultId(list: readonly unknown[]): string | undefined {
+  const first = list[0];
+  return first && typeof first === 'object' && 'id' in first
+    ? typeof first.id === 'string'
+      ? first.id
+      : undefined
+    : undefined;
 }
 
 function Search({ columnMode, ...props }: SearchProps) {
@@ -160,39 +165,26 @@ function Search({ columnMode, ...props }: SearchProps) {
     setAccountResults([]);
     setHashtagResults([]);
   }, [q]);
-  // Setters from useState are stable, so this map only needs to be created
-  // once; that lets `loadResults` depend on it without churning.
-  const setTypeResultsFunc = useMemo<ResultsSetterMap>(
-    () => ({
-      statuses: setStatusResults,
-      accounts: setAccountResults,
-      hashtags: setHashtagResults,
-    }),
+  const setResultsForType = useCallback(
+    (typeKey: ResultsTypeKey, results: SearchResultsLike) => {
+      if (typeKey === 'statuses') {
+        setStatusResults(results.statuses ?? []);
+      } else if (typeKey === 'accounts') {
+        setAccountResults(results.accounts ?? []);
+      } else {
+        setHashtagResults(results.hashtags ?? []);
+      }
+    },
     [],
   );
-  const setResultsForType = useCallback(
-    <K extends ResultsTypeKey>(typeKey: K, value: SearchResultsByType[K]) => {
-      setTypeResultsFunc[typeKey](value);
-    },
-    [setTypeResultsFunc],
-  );
   const appendResultsForType = useCallback(
-    <K extends ResultsTypeKey>(typeKey: K, value: SearchResultsByType[K]) => {
+    (typeKey: ResultsTypeKey, results: SearchResultsLike) => {
       if (typeKey === 'statuses') {
-        setStatusResults((prev) => [
-          ...prev,
-          ...(value as SearchResultsByType['statuses']),
-        ]);
+        setStatusResults((prev) => [...prev, ...(results.statuses ?? [])]);
       } else if (typeKey === 'accounts') {
-        setAccountResults((prev) => [
-          ...prev,
-          ...(value as SearchResultsByType['accounts']),
-        ]);
+        setAccountResults((prev) => [...prev, ...(results.accounts ?? [])]);
       } else {
-        setHashtagResults((prev) => [
-          ...prev,
-          ...(value as SearchResultsByType['hashtags']),
-        ]);
+        setHashtagResults((prev) => [...prev, ...(results.hashtags ?? [])]);
       }
     },
     [],
@@ -287,26 +279,24 @@ function Search({ columnMode, ...props }: SearchProps) {
             const nextCursor = typedResults._pagination?.[type];
             const nextResults = typedResults[typeKey] ?? [];
             if (firstLoad) {
-              setResultsForType(typeKey, nextResults);
+              setResultsForType(typeKey, typedResults);
               const length = nextResults?.length;
               offsetRef.current = LIMIT;
               cursorRef.current[type] = nextCursor;
               setShowMore(atproto ? !!nextCursor : !!length);
             } else if (atproto) {
-              appendResultsForType(typeKey, nextResults);
+              appendResultsForType(typeKey, typedResults);
               cursorRef.current[type] = nextCursor;
               setShowMore(!!nextCursor);
             } else {
               // If first item is the same, it means API doesn't support offset
               // I know this is a very basic check, but it works for now
               const currentList = nextResults;
-              const existingList = typeResultsRef.current[typeKey] as Array<{
-                id?: string;
-              }>;
-              if (currentList[0]?.id === existingList[0]?.id) {
+              const existingList = typeResultsRef.current[typeKey];
+              if (firstResultId(currentList) === firstResultId(existingList)) {
                 setShowMore(false);
               } else {
-                appendResultsForType(typeKey, nextResults);
+                appendResultsForType(typeKey, typedResults);
                 const length = nextResults?.length;
                 offsetRef.current = offsetRef.current + LIMIT;
                 setShowMore(!!length);
