@@ -154,7 +154,6 @@ function Shortcuts() {
     !!shortcuts.length;
 
   const menuRef = useRef<MenuInstance | null>(null);
-  const shortcutsButtonRef = useRef<HTMLButtonElement | null>(null);
   const shortcutsButtonCleanupRef = useRef<(() => void) | null>(null);
   const tabBarRef = useRef<HTMLElement | null>(null);
 
@@ -164,7 +163,6 @@ function Shortcuts() {
     (button: HTMLButtonElement | null) => {
       shortcutsButtonCleanupRef.current?.();
       shortcutsButtonCleanupRef.current = null;
-      shortcutsButtonRef.current = button;
       if (!button) return;
       const closeMenuWhenButtonDisappears = (event: TransitionEvent) => {
         const target = event.target;
