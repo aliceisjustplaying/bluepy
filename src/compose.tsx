@@ -182,10 +182,14 @@ type RootContainer = HTMLElement & {
 
 // Preserve original JS behavior of failing loudly if the template's root
 // element is ever missing.
-const appContainer = document.getElementById('app-standalone') as RootContainer;
+const appContainer = document.getElementById('app-standalone');
+if (!appContainer) {
+  throw new Error('Missing #app-standalone');
+}
+const rootContainer: RootContainer = appContainer;
 const root =
-  appContainer[bluepyReactRoot] ||
-  (appContainer[bluepyReactRoot] = createRoot(appContainer));
+  rootContainer[bluepyReactRoot] ||
+  (rootContainer[bluepyReactRoot] = createRoot(rootContainer));
 root.render(
   <I18nProvider i18n={i18n}>
     <IconSpriteProvider>
