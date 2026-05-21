@@ -1224,21 +1224,18 @@ function YearInPosts() {
                         return null;
                       }
                       return (
-                        <label
-                          className="filter-sort"
-                          key={key}
-                          onClick={(e) => {
-                            if (sortBy === key && key !== 'relevance') {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                            }
-                          }}
-                        >
+                        <label className="filter-sort" key={key}>
                           <input
                             type="radio"
                             name="filter-sort-cat"
                             checked={sortBy === key}
+                            onClick={(e) => {
+                              if (sortBy === key && key !== 'relevance') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                              }
+                            }}
                             onChange={() => {
                               setSortBy(key);
                               const order = /(replies|favourites|reblogs)/.test(

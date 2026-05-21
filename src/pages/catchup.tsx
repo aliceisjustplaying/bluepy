@@ -1932,21 +1932,18 @@ function Catchup() {
                   </span>{' '}
                   <fieldset className="radio-field-group">
                     {FILTER_SORTS.map((key) => (
-                      <label
-                        className="filter-sort"
-                        key={key}
-                        onClick={(e) => {
-                          if (sortBy === key) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                          }
-                        }}
-                      >
+                      <label className="filter-sort" key={key}>
                         <input
                           type="radio"
                           name="filter-sort-cat"
                           checked={sortBy === key}
+                          onClick={(e) => {
+                            if (sortBy === key) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                            }
+                          }}
                           onChange={() => {
                             setSortBy(key);
                             const order =
