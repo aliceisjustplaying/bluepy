@@ -74,6 +74,19 @@ interface HashtagShortcut {
   media?: 'on' | undefined;
 }
 
+interface HashtagHeaderMenuProps {
+  currentAuthenticated: boolean;
+  shortcutHashtag: string;
+  hashtags: string[];
+  instance: string;
+  linkParams: string;
+  media: boolean;
+  mediaFirst: boolean;
+  reachLimit: boolean;
+  searchParams: URLSearchParams;
+  setSearchParams: (params: URLSearchParams) => void;
+}
+
 function statusList(value: unknown): HashtagStatus[] | undefined {
   return Array.isArray(value) ? value : undefined;
 }
@@ -99,6 +112,178 @@ function hashtagShortcuts(value: unknown): HashtagShortcut[] {
           typeof shortcut.hashtag === 'string',
       )
     : [];
+}
+
+function navigateToHashtagList(
+  instance: string,
+  hashtags: string[],
+  linkParams: string,
+) {
+  navigatePath(
+    instance
+      ? `/${instance}/t/${hashtags.join('+')}${linkParams}`
+      : `/t/${hashtags.join('+')}${linkParams}`,
+  );
+}
+
+function HashtagHeaderMenu({
+  currentAuthenticated,
+  shortcutHashtag,
+  hashtags,
+  instance,
+  linkParams,
+  media,
+  mediaFirst,
+  reachLimit,
+  searchParams,
+  setSearchParams,
+}: HashtagHeaderMenuProps) {
+  const { t } = useLingui();
+
+  return (
+    <Menu2
+      portal
+      setDownOverflow
+      overflow="auto"
+      // viewScroll="close"
+      position="anchor"
+      menuButton={
+        <button type="button" className="plain">
+          <Icon icon="more" size="l" alt={t`More`} />
+        </button>
+      }
+    >
+      {!mediaFirst && (
+        <>
+          <MenuHeader className="plain">
+            <Trans>Filters</Trans>
+          </MenuHeader>
+          <MenuItem
+            type="checkbox"
+            checked={media}
+            onClick={() => {
+              if (media) {
+                searchParams.delete('media');
+              } else {
+                searchParams.set('media', '1');
+              }
+              setSearchParams(searchParams);
+            }}
+          >
+            <Icon icon="check-circle" alt="☑️" />{' '}
+            <span className="menu-grow">
+              <Trans>Media only</Trans>
+            </span>
+          </MenuItem>
+          <MenuDivider />
+        </>
+      )}
+      <FocusableItem className="menu-field" disabled={reachLimit}>
+        {({ ref }: { ref: React.Ref<HTMLInputElement> }) => (
+          <form
+            onSubmit={(e: SyntheticEvent<HTMLFormElement>) => {
+              e.preventDefault();
+              const input = inputElement(e.currentTarget.elements.item(0));
+              const newHashtag = input?.value.trim();
+              // Use includes but need to be case insensitive
+              if (
+                newHashtag &&
+                !hashtags.some(
+                  (h) => h.toLowerCase() === newHashtag.toLowerCase(),
+                )
+              ) {
+                hashtags.push(newHashtag);
+                hashtags.sort();
+                navigateToHashtagList(instance, hashtags, linkParams);
+              }
+            }}
+          >
+            <Icon icon="hashtag" />
+            <input
+              ref={ref}
+              type="text"
+              placeholder={
+                reachLimit
+                  ? plural(TOTAL_TAGS_LIMIT, {
+                      other: 'Max # tags',
+                    })
+                  : t`Add hashtag`
+              }
+              required
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              // no spaces, no hashtags
+              pattern="[^#＃][^\s#＃]+[^#＃]"
+              disabled={reachLimit}
+              dir="auto"
+              enterKeyHint="go"
+            />
+          </form>
+        )}
+      </FocusableItem>
+      <MenuGroup takeOverflow>
+        {hashtags.map((tag, i) => (
+          <MenuItem
+            key={tag}
+            disabled={hashtags.length === 1}
+            onClick={() => {
+              hashtags.splice(i, 1);
+              hashtags.sort();
+              navigateToHashtagList(instance, hashtags, linkParams);
+            }}
+          >
+            <Icon icon="x" alt={t`Remove hashtag`} className="danger-icon" />
+            <span className="bidi-isolate">
+              <span className="more-insignificant">#</span>
+              {tag}
+            </span>
+          </MenuItem>
+        ))}
+      </MenuGroup>
+      <MenuDivider />
+      <MenuItem
+        disabled={!currentAuthenticated}
+        onClick={() => {
+          if (states.shortcuts.length >= SHORTCUTS_LIMIT) {
+            alert(
+              plural(SHORTCUTS_LIMIT, {
+                one: 'Max # shortcut reached. Unable to add shortcut.',
+                other: 'Max # shortcuts reached. Unable to add shortcut.',
+              }),
+            );
+            return;
+          }
+          const shortcut: HashtagShortcut = {
+            type: 'hashtag',
+            hashtag: shortcutHashtag,
+            instance,
+            media: media ? 'on' : undefined,
+          };
+          // Check if already exists
+          const exists = hashtagShortcuts(states.shortcuts).some(
+            (s) =>
+              s.type === shortcut.type &&
+              sorted(s.hashtag.split(/[\s+]+/)).join(' ') ===
+                sorted(shortcut.hashtag.split(/[\s+]+/)).join(' ') &&
+              (s.instance ? s.instance === shortcut.instance : true) &&
+              (s.media ? !!s.media === !!shortcut.media : true),
+          );
+          if (exists) {
+            alert(t`This shortcut already exists`);
+          } else {
+            states.shortcuts.push(shortcut);
+            showToast(t`Hashtag shortcut added`);
+          }
+        }}
+      >
+        <Icon icon="shortcut" />{' '}
+        <span>
+          <Trans>Add to Shortcuts</Trans>
+        </span>
+      </MenuItem>
+    </Menu2>
+  );
 }
 
 function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
@@ -261,172 +446,18 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
         // allowFilters
         filterContext="public"
         headerEnd={
-          <Menu2
-            portal
-            setDownOverflow
-            overflow="auto"
-            // viewScroll="close"
-            position="anchor"
-            menuButton={
-              <button type="button" className="plain">
-                <Icon icon="more" size="l" alt={t`More`} />
-              </button>
-            }
-          >
-            {!mediaFirst && (
-              <>
-                <MenuHeader className="plain">
-                  <Trans>Filters</Trans>
-                </MenuHeader>
-                <MenuItem
-                  type="checkbox"
-                  checked={media}
-                  onClick={() => {
-                    if (media) {
-                      searchParams.delete('media');
-                    } else {
-                      searchParams.set('media', '1');
-                    }
-                    setSearchParams(searchParams);
-                  }}
-                >
-                  <Icon icon="check-circle" alt="☑️" />{' '}
-                  <span className="menu-grow">
-                    <Trans>Media only</Trans>
-                  </span>
-                </MenuItem>
-                <MenuDivider />
-              </>
-            )}
-            <FocusableItem className="menu-field" disabled={reachLimit}>
-              {({ ref }: { ref: React.Ref<HTMLInputElement> }) => (
-                <form
-                  onSubmit={(e: SyntheticEvent<HTMLFormElement>) => {
-                    e.preventDefault();
-                    const input = inputElement(
-                      e.currentTarget.elements.item(0),
-                    );
-                    const newHashtag = input?.value.trim();
-                    // Use includes but need to be case insensitive
-                    if (
-                      newHashtag &&
-                      !hashtags.some(
-                        (h) => h.toLowerCase() === newHashtag.toLowerCase(),
-                      )
-                    ) {
-                      hashtags.push(newHashtag);
-                      hashtags.sort();
-                      // navigate(
-                      //   instance
-                      //     ? `/${instance}/t/${hashtags.join('+')}`
-                      //     : `/t/${hashtags.join('+')}`,
-                      // );
-                      navigatePath(
-                        instance
-                          ? `/${instance}/t/${hashtags.join('+')}${linkParams}`
-                          : `/t/${hashtags.join('+')}${linkParams}`,
-                      );
-                    }
-                  }}
-                >
-                  <Icon icon="hashtag" />
-                  <input
-                    ref={ref}
-                    type="text"
-                    placeholder={
-                      reachLimit
-                        ? plural(TOTAL_TAGS_LIMIT, {
-                            other: 'Max # tags',
-                          })
-                        : t`Add hashtag`
-                    }
-                    required
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck={false}
-                    // no spaces, no hashtags
-                    pattern="[^#＃][^\s#＃]+[^#＃]"
-                    disabled={reachLimit}
-                    dir="auto"
-                    enterKeyHint="go"
-                  />
-                </form>
-              )}
-            </FocusableItem>
-            <MenuGroup takeOverflow>
-              {hashtags.map((tag, i) => (
-                <MenuItem
-                  key={tag}
-                  disabled={hashtags.length === 1}
-                  onClick={() => {
-                    hashtags.splice(i, 1);
-                    hashtags.sort();
-                    // navigate(
-                    //   instance
-                    //     ? `/${instance}/t/${hashtags.join('+')}`
-                    //     : `/t/${hashtags.join('+')}`,
-                    // );
-                    navigatePath(
-                      instance
-                        ? `/${instance}/t/${hashtags.join('+')}${linkParams}`
-                        : `/t/${hashtags.join('+')}${linkParams}`,
-                    );
-                  }}
-                >
-                  <Icon
-                    icon="x"
-                    alt={t`Remove hashtag`}
-                    className="danger-icon"
-                  />
-                  <span className="bidi-isolate">
-                    <span className="more-insignificant">#</span>
-                    {tag}
-                  </span>
-                </MenuItem>
-              ))}
-            </MenuGroup>
-            <MenuDivider />
-            <MenuItem
-              disabled={!currentAuthenticated}
-              onClick={() => {
-                if (states.shortcuts.length >= SHORTCUTS_LIMIT) {
-                  alert(
-                    plural(SHORTCUTS_LIMIT, {
-                      one: 'Max # shortcut reached. Unable to add shortcut.',
-                      other: 'Max # shortcuts reached. Unable to add shortcut.',
-                    }),
-                  );
-                  return;
-                }
-                const shortcut: HashtagShortcut = {
-                  type: 'hashtag',
-                  hashtag: hashtags.join(' '),
-                  instance,
-                  media: media ? 'on' : undefined,
-                };
-                // Check if already exists
-                const exists = hashtagShortcuts(states.shortcuts).some(
-                  (s) =>
-                    s.type === shortcut.type &&
-                    sorted(s.hashtag.split(/[\s+]+/)).join(' ') ===
-                      sorted(shortcut.hashtag.split(/[\s+]+/)).join(' ') &&
-                    (s.instance ? s.instance === shortcut.instance : true) &&
-                    (s.media ? !!s.media === !!shortcut.media : true),
-                );
-                if (exists) {
-                  alert(t`This shortcut already exists`);
-                } else {
-                  states.shortcuts.push(shortcut);
-                  showToast(t`Hashtag shortcut added`);
-                }
-              }}
-            >
-              <Icon icon="shortcut" />{' '}
-              <span>
-                <Trans>Add to Shortcuts</Trans>
-              </span>
-            </MenuItem>
-          </Menu2>
+          <HashtagHeaderMenu
+            currentAuthenticated={currentAuthenticated}
+            shortcutHashtag={hashtags.join(' ')}
+            hashtags={hashtags}
+            instance={instance}
+            linkParams={linkParams}
+            media={media}
+            mediaFirst={mediaFirst}
+            reachLimit={reachLimit}
+            searchParams={searchParams}
+            setSearchParams={setSearchParams}
+          />
         }
       />
       {!columnMode && !!hashtags?.length && (
