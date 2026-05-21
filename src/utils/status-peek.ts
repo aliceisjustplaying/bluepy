@@ -14,22 +14,35 @@ interface MediaAttachmentLike {
 }
 
 interface StatusLike {
+  id?: string;
   spoilerText?: string;
   content?: string;
   poll?: PollLike | null;
   mediaAttachments?: MediaAttachmentLike[] | null;
-  quote?: { quotedStatus?: StatusLike & { id?: string } } | null;
+  quote?: unknown;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function quotedStatusFromQuote(
+  quote: unknown,
+): (StatusLike & { id?: string }) | undefined {
+  if (!isRecord(quote) || !isRecord(quote.quotedStatus)) return undefined;
+  return quote.quotedStatus;
 }
 
 function statusPeek(status: StatusLike): string {
   const { spoilerText, content, poll, mediaAttachments, quote } = status;
   let text = '';
   // Don't need supportsNativeQuote because checking quotedStatus ID is enough
-  const hasQuote = !!quote?.quotedStatus?.id;
+  const quotedStatus = quotedStatusFromQuote(quote);
+  const hasQuote = !!quotedStatus?.id;
   if (spoilerText?.trim()) {
     text += spoilerText;
   } else {
-    text += getHTMLText(content as string, {
+    text += getHTMLText(content ?? '', {
       preProcess: (dom) => {
         if (hasQuote) {
           const reContainer = dom.querySelector('.quote-inline');
@@ -64,8 +77,8 @@ function statusPeek(status: StatusLike): string {
         )
         .join('');
   }
-  if (hasQuote && quote?.quotedStatus) {
-    const quotePeek = statusPeek(quote.quotedStatus);
+  if (hasQuote && quotedStatus) {
+    const quotePeek = statusPeek(quotedStatus);
     text += `\n\n❝\n${quotePeek}\n❞`;
   }
   return text;

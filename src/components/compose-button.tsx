@@ -12,6 +12,7 @@ import { api, getMastoV1Resource } from '../utils/api';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
 import openCompose from '../utils/open-compose';
+import type { ComposeOpts } from '../utils/open-compose';
 import openOSK from '../utils/open-osk';
 import pmem from '../utils/pmem';
 import safeBoundingBoxPadding from '../utils/safe-bounding-box-padding';
@@ -36,23 +37,14 @@ interface AccountStatusesEndpoint {
         exclude_replies: boolean;
         exclude_reblogs: boolean;
       }): {
-        values(): AsyncIterator<mastodon.v1.Status[]>;
+        values(): AsyncIterator<mastodon.v1.Status[], undefined>;
       };
     };
   };
 }
 
-interface StatusPeekPayload {
-  spoilerText?: string;
-  content?: string;
-  poll?: {
-    options?: { title: string }[];
-    multiple?: boolean;
-  } | null;
-  mediaAttachments?: { type: string }[] | null;
-  quote?: {
-    quotedStatus?: StatusPeekPayload & { id?: string };
-  } | null;
+function isComposeOpts(value: unknown): value is ComposeOpts {
+  return !!value && typeof value === 'object';
 }
 
 // Function to fetch the latest posts from the current user
@@ -111,10 +103,13 @@ export default function ComposeButton() {
     const composeDataElements =
       document.querySelectorAll<HTMLDataElement>('data.compose-data');
     // If there's a lot of them, ignore
-    const opts =
+    const parsedComposeData: unknown =
       !columnMode && composeDataElements.length === 1
         ? JSON.parse(composeDataElements[0].value)
         : undefined;
+    const opts = isComposeOpts(parsedComposeData)
+      ? parsedComposeData
+      : undefined;
 
     if (ev.shiftKey) {
       const newWin = openCompose(opts);
@@ -248,7 +243,7 @@ export default function ComposeButton() {
                 >
                   <small>
                     <div className="menu-post-text">
-                      {statusPeek(post as StatusPeekPayload)}
+                      {statusPeek(post)}
                     </div>
                     <span className="more-insignificant">
                       {/* Show relative time if within a day */}

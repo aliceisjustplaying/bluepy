@@ -1,6 +1,6 @@
 import { t } from '@lingui/core/macro';
 
-interface ComposeOpts {
+export interface ComposeOpts {
   uid?: string | number;
   [key: string]: unknown;
 }
