@@ -24,9 +24,7 @@ import Loader from '../components/loader';
 import MenuConfirm from '../components/menu-confirm';
 import Menu2 from '../components/menu2';
 import NavMenu from '../components/nav-menu';
-import StatusComponent, {
-  type StatusComponentProps,
-} from '../components/status';
+import Status from '../components/status-proxy';
 import { api } from '../utils/api';
 import DateTimeFormat from '../utils/date-time-format';
 import db from '../utils/db';
@@ -106,17 +104,6 @@ interface MonthWithPosts {
   reply: number;
   quote: number;
   boost: number;
-}
-
-function Status(props: {
-  status?: unknown;
-  instance?: string;
-  size?: string;
-  showCommentCount?: boolean;
-  showQuoteCount?: boolean;
-  [key: string]: unknown;
-}) {
-  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

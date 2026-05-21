@@ -21,9 +21,7 @@ import Loader from '../components/loader';
 import NavMenu from '../components/nav-menu';
 import RecentSearches from '../components/recent-searches';
 import SearchForm from '../components/search-form';
-import StatusComponent, {
-  type StatusComponentProps,
-} from '../components/status';
+import Status from '../components/status-proxy';
 import { api, getMastoV2Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import shortenNumber from '../utils/shorten-number';
@@ -40,10 +38,6 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   inline: 'center',
   behavior: 'instant' as ScrollBehavior,
 };
-
-function Status(props: { status: mastodon.v1.Status }) {
-  return <StatusComponent {...(props as StatusComponentProps)} />;
-}
 
 interface SearchFormHandle {
   setValue: (value: string) => void;

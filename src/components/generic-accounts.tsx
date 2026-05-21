@@ -15,16 +15,7 @@ import Icon from './icon';
 import InView from './in-view';
 import Link from './link';
 import Loader from './loader';
-import StatusComponent, { type StatusComponentProps } from './status';
-
-function Status(props: {
-  status?: unknown;
-  size?: string;
-  readOnly?: boolean;
-  [key: string]: unknown;
-}) {
-  return <StatusComponent {...(props as StatusComponentProps)} />;
-}
+import Status from './status-proxy';
 
 // TODO(oxlint:no-underscore-dangle) `_types` is a shared internal cache key
 // on account records used by status.tsx and notification.tsx. Renaming requires

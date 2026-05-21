@@ -3,7 +3,7 @@ import './notifications.css';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { ComponentType, SyntheticEvent } from 'react';
+import type { SyntheticEvent } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
 import {
@@ -32,7 +32,7 @@ import RawHtml from '../components/raw-html';
 import Notification, {
   type NotificationProps,
 } from '../components/notification';
-import StatusComponent from '../components/status';
+import Status from '../components/status-proxy';
 import { api } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
 import FilterContext from '../utils/filter-context';
@@ -52,15 +52,6 @@ import supports from '../utils/supports';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScroll from '../utils/useScroll';
 import useTitle from '../utils/useTitle';
-
-function Status(props: {
-  status?: unknown;
-  size?: 's' | 'm' | 'l';
-  readOnly?: boolean;
-}) {
-  const NotificationStatus = StatusComponent as ComponentType<typeof props>;
-  return <NotificationStatus {...props} />;
-}
 
 function notificationDate(value: string | undefined): Date {
   return new Date(value ?? '');

@@ -15,17 +15,7 @@ import { getCurrentInstance } from '../utils/store-utils';
 import AccountBlock from './account-block';
 import Icon from './icon';
 import Loader from './loader';
-import StatusComponent, { type StatusComponentProps } from './status';
-
-function Status(props: {
-  status?: unknown;
-  size?: string;
-  previewMode?: boolean;
-  readOnly?: boolean;
-  [key: string]: unknown;
-}) {
-  return <StatusComponent {...(props as StatusComponentProps)} />;
-}
+import Status from './status-proxy';
 
 // NOTE: `dislike` hidden for now, it's actually not used for reporting
 // Mastodon shows another screen for unfollowing, muting or blocking instead of reporting

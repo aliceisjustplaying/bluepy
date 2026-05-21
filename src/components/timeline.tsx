@@ -53,25 +53,8 @@ import InView from './in-view';
 import Link from './link';
 import MediaPostComponent from './media-post';
 import NavMenu from './nav-menu';
-import StatusComponent, {
-  type StatusComponentProps as StatusViewProps,
-} from './status';
+import Status from './status-proxy';
 import ThreadBadge from './thread-badge';
-
-interface StatusComponentProps {
-  status?: TimelineEntry | null;
-  statusID?: string | null;
-  instance?: string;
-  size?: 's' | 'm' | 'l';
-  skeleton?: boolean;
-  mediaFirst?: boolean;
-  contentTextWeight?: boolean;
-  enableCommentHint?: boolean;
-  showReplyParent?: boolean;
-}
-function Status(props: StatusComponentProps) {
-  return <StatusComponent {...(props as StatusViewProps)} />;
-}
 
 interface TimelineStatusLinkProps {
   to: string;
