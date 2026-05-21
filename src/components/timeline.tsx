@@ -196,7 +196,9 @@ function isFilteredGroup(
   return '_grouped' in entry && entry._grouped;
 }
 
-function isTimelineStatus(entry: TimelineItemEntry): entry is TimelineStatusEntry {
+function isTimelineStatus(
+  entry: TimelineItemEntry,
+): entry is TimelineStatusEntry {
   return !hasItems(entry) && !isFilteredGroup(entry);
 }
 
@@ -214,8 +216,10 @@ function isTimelineGroupEntry(value: unknown): value is TimelineGroupEntry {
     !!value &&
     typeof value === 'object' &&
     'id' in value &&
-    ('items' in value && Array.isArray(value.items)) &&
-    ('type' in value && typeof value.type === 'string')
+    'items' in value &&
+    Array.isArray(value.items) &&
+    'type' in value &&
+    typeof value.type === 'string'
   );
 }
 
@@ -239,7 +243,9 @@ function toStatusPeekPayload(status: TimelineStatusEntry): StatusPeekPayload {
       type: attachment.type,
     })),
     quote:
-      status.quote && 'quotedStatus' in status.quote && status.quote.quotedStatus
+      status.quote &&
+      'quotedStatus' in status.quote &&
+      status.quote.quotedStatus
         ? {
             quotedStatus: {
               ...toStatusPeekPayload(status.quote.quotedStatus),
@@ -589,7 +595,22 @@ function Timeline({
             const visiblePinnedPosts: TimelineEntry[] = [];
             pinnedPosts.forEach((item) => {
               if (hasItems(item)) {
-                visiblePinnedPosts.push(item);
+                const visibleItems = [
+                  ...filterHiddenStatuses(item.items, filterContext),
+                ];
+                if (visibleItems.length) {
+                  visiblePinnedPosts.push({
+                    ...item,
+                    id: Array.isArray(item.id)
+                      ? item.id.filter((postId) =>
+                          visibleItems.some(
+                            (visibleItem) => visibleItem.id === postId,
+                          ),
+                        )
+                      : item.id,
+                    items: visibleItems,
+                  });
+                }
               } else {
                 visiblePinnedPosts.push(
                   ...filterHiddenStatuses([item], filterContext),
@@ -601,7 +622,9 @@ function Timeline({
             ];
             if (allowGrouping) {
               if (boostsCarousel) {
-                processed = [...groupBoosts(processed.filter(isTimelineStatus))];
+                processed = [
+                  ...groupBoosts(processed.filter(isTimelineStatus)),
+                ];
               }
               processed = groupContext<TimelineStatusEntry, TimelineGroupEntry>(
                 processed,
@@ -1075,10 +1098,7 @@ export const TimelineItem = memo(
     mediaFirst,
   }: TimelineItemProps): ReactElement | ReactElement[] | null => {
     const { t } = useLingui();
-    console.debug(
-      'RENDER TimelineItem',
-      entryID(status),
-    );
+    console.debug('RENDER TimelineItem', entryID(status));
     const groupView = hasItems(status);
 
     if (groupView) {

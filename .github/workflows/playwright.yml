@@ -27,4 +27,4 @@ jobs:
       - name: Run unit tests
         run: bun run test:unit
       - name: Run Playwright tests
-        run: bun run test
+        run: bun run test:e2e

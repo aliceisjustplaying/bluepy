@@ -8,7 +8,12 @@ import {
   compressToEncodedURIComponent,
   decompressFromEncodedURIComponent,
 } from 'lz-string';
-import type { Dispatch, HTMLAttributes, RefObject, SetStateAction } from 'react';
+import type {
+  Dispatch,
+  HTMLAttributes,
+  RefObject,
+  SetStateAction,
+} from 'react';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
@@ -243,11 +248,13 @@ export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
       const account = getCurrentAccount();
       const info = account?.info;
       const avatarStatic =
-        info &&
-        'avatarStatic' in info &&
-        typeof info.avatarStatic === 'string'
+        info && 'avatarStatic' in info && typeof info.avatarStatic === 'string'
           ? info.avatarStatic
-          : undefined;
+          : info &&
+              'avatar_static' in info &&
+              typeof info.avatar_static === 'string'
+            ? info.avatar_static
+            : undefined;
       return {
         // Prefer static URL
         url: avatarStatic || info?.avatar,
@@ -300,9 +307,7 @@ function resolveShortcutMeta<T extends ShortcutMetaStatic>(
   fallback: T,
 ): T {
   if (value === undefined) return fallback;
-  return typeof value === 'function'
-    ? value(shortcut, index)
-    : value;
+  return typeof value === 'function' ? value(shortcut, index) : value;
 }
 
 function isShortcutEntry(value: unknown): value is ShortcutEntry {
@@ -1089,7 +1094,9 @@ function ImportShortcutsSection({
                 <li key={shortcutKey}>
                   <span
                     style={{
-                      opacity: shortcutExistsInList(shortcut, shortcuts) ? 1 : 0,
+                      opacity: shortcutExistsInList(shortcut, shortcuts)
+                        ? 1
+                        : 0,
                     }}
                   >
                     *
@@ -1193,7 +1200,9 @@ function ImportShortcutsSection({
         )}
         <MenuConfirm
           confirmLabel={
-            hasCurrentSettings ? t`Override current shortcuts?` : t`Import shortcuts?`
+            hasCurrentSettings
+              ? t`Override current shortcuts?`
+              : t`Import shortcuts?`
           }
           menuItemClassName={hasCurrentSettings ? 'danger' : undefined}
           onClick={() => {
@@ -1412,7 +1421,10 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
           shortcuts={shortcuts}
           shortcutsImportFieldRef={shortcutsImportFieldRef}
         />
-        <ExportShortcutsSection shortcuts={shortcuts} shortcutsStr={shortcutsStr} />
+        <ExportShortcutsSection
+          shortcuts={shortcuts}
+          shortcutsStr={shortcutsStr}
+        />
       </main>
     </div>
   );

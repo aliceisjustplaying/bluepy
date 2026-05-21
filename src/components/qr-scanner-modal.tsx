@@ -162,7 +162,7 @@ function QrScannerModal({
     actionableText &&
     (typeof actionableText === 'string'
       ? i18n._(actionableText)
-      : i18n._(actionableText.id, actionableText.values));
+      : i18n._(actionableText));
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const overlayRef = useRef<HTMLCanvasElement | null>(null);
@@ -306,14 +306,11 @@ function QrScannerModal({
             const targets = overlayRef.current
               ? { overlay: overlayRef.current }
               : {};
-            qrCanvas = new qrDomModule.QRCanvas(
-              targets,
-              {
-                cropToSquare: false,
-                overlayMainColor: 'transparent',
-                overlayFinderColor: 'rgba(255, 0, 255, 0.5)',
-              },
-            );
+            qrCanvas = new qrDomModule.QRCanvas(targets, {
+              cropToSquare: false,
+              overlayMainColor: 'transparent',
+              overlayFinderColor: 'rgba(255, 0, 255, 0.5)',
+            });
           }
         }
 
