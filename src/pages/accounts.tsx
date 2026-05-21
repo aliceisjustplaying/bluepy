@@ -65,7 +65,8 @@ function Accounts({ onClose }: AccountsProps) {
   const { t } = useLingui();
   const client = api().masto;
   // Accounts
-  const accounts = getAccounts().filter(hasAccountsNameTextInfo);
+  const accounts = getAccounts();
+  const renderableAccounts = accounts.filter(hasAccountsNameTextInfo);
   const currentAccount = getCurrentAccountID();
   const moreThanOneAccount = accounts.length > 1;
 
@@ -93,13 +94,16 @@ function Accounts({ onClose }: AccountsProps) {
       <main>
         <section>
           <ul className="accounts-list" ref={accountsListParent}>
-            {accounts.map((account, i) => {
+            {renderableAccounts.map((account) => {
+              const accountIndex = accounts.findIndex(
+                (storedAccount) => storedAccount.info.id === account.info.id,
+              );
               const isCurrent = account.info.id === currentAccount;
-              const isDefault = i === 0; // first account is always default
+              const isDefault = accountIndex === 0; // first account is always default
               const isLoggedOut = !account.accessToken;
 
               const removeAccount = () => {
-                accounts.splice(i, 1);
+                if (accountIndex >= 0) accounts.splice(accountIndex, 1);
                 saveOAuthAccounts();
                 try {
                   if (store.session.get('currentAccount') === account.info.id) {
@@ -233,8 +237,9 @@ function Accounts({ onClose }: AccountsProps) {
                           <MenuItem
                             disabled={isDefault || isLoggedOut}
                             onClick={() => {
+                              if (accountIndex < 0) return;
                               // Move account to the top of the list
-                              accounts.splice(i, 1);
+                              accounts.splice(accountIndex, 1);
                               accounts.unshift(account);
                               saveOAuthAccounts();
                               reload();
@@ -246,11 +251,12 @@ function Accounts({ onClose }: AccountsProps) {
                             </span>
                           </MenuItem>
                           <MenuItem
-                            disabled={i <= 1}
+                            disabled={accountIndex <= 1}
                             onClick={() => {
+                              if (accountIndex < 0) return;
                               // Move account one position up
-                              accounts.splice(i, 1);
-                              accounts.splice(i - 1, 0, account);
+                              accounts.splice(accountIndex, 1);
+                              accounts.splice(accountIndex - 1, 0, account);
                               saveOAuthAccounts();
                               reload();
                             }}
@@ -261,11 +267,20 @@ function Accounts({ onClose }: AccountsProps) {
                             </span>
                           </MenuItem>
                           <MenuItem
-                            disabled={i === 0 || i === accounts.length - 1}
+                            disabled={
+                              accountIndex === 0 ||
+                              accountIndex === accounts.length - 1
+                            }
                             onClick={() => {
+                              if (
+                                accountIndex < 0 ||
+                                accountIndex === accounts.length - 1
+                              ) {
+                                return;
+                              }
                               // Move account one position down
-                              accounts.splice(i, 1);
-                              accounts.splice(i + 1, 0, account);
+                              accounts.splice(accountIndex, 1);
+                              accounts.splice(accountIndex + 1, 0, account);
                               saveOAuthAccounts();
                               reload();
                             }}
