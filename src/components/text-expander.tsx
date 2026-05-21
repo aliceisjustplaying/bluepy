@@ -18,10 +18,16 @@ interface AccountResult {
   displayName?: string;
   username?: string;
   acct?: string;
-  emojis?: unknown[];
+  emojis?: EmojiEntry[];
   history?: { uses?: number | string }[];
   roles?: { name?: string }[];
   url?: string;
+}
+
+interface EmojiEntry {
+  shortcode?: string;
+  url?: string;
+  staticUrl?: string;
 }
 
 interface AccountSearchResource {
@@ -66,6 +72,42 @@ interface TextExpanderValueDetail {
 
 interface TextExpanderCommittedDetail {
   input: HTMLInputElement | HTMLTextAreaElement | null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function isTextExpanderChangeDetail(
+  value: unknown,
+): value is TextExpanderChangeDetail {
+  return (
+    isRecord(value) &&
+    typeof value.key === 'string' &&
+    typeof value.text === 'string' &&
+    typeof value.provide === 'function'
+  );
+}
+
+function isTextExpanderValueDetail(
+  value: unknown,
+): value is TextExpanderValueDetail {
+  return (
+    isRecord(value) &&
+    typeof value.key === 'string' &&
+    value.item instanceof HTMLElement
+  );
+}
+
+function isTextExpanderCommittedDetail(
+  value: unknown,
+): value is TextExpanderCommittedDetail {
+  return (
+    isRecord(value) &&
+    (value.input instanceof HTMLInputElement ||
+      value.input instanceof HTMLTextAreaElement ||
+      value.input === null)
+  );
 }
 
 export interface TextExpanderHandle {
@@ -147,7 +189,10 @@ function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
     if (!textExpander) return undefined;
 
     const handleChange = (e: Event) => {
-      const detail = (e as CustomEvent<TextExpanderChangeDetail>).detail;
+      const detail: unknown = e instanceof CustomEvent ? e.detail : undefined;
+      if (!isTextExpanderChangeDetail(detail)) {
+        return;
+      }
       const { key, text } = detail;
       textExpanderTextRef.current = text;
 
@@ -218,10 +263,7 @@ function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
                   roles,
                   url,
                 } = result;
-                const displayNameWithEmoji = emojifyText(
-                  displayName ?? '',
-                  emojis as Parameters<typeof emojifyText>[1],
-                );
+                const displayNameWithEmoji = emojifyText(displayName ?? '', emojis);
                 const accountInstance = getDomain(url ?? '');
 
                 if (acct) {
@@ -302,7 +344,10 @@ function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
     };
 
     const handleValue = (e: Event) => {
-      const detail = (e as CustomEvent<TextExpanderValueDetail>).detail;
+      const detail: unknown = e instanceof CustomEvent ? e.detail : undefined;
+      if (!isTextExpanderValueDetail(detail)) {
+        return;
+      }
       const { key, item } = detail;
       const { value, more } = item.dataset;
 
@@ -328,7 +373,10 @@ function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
     };
 
     const handleCommited = (e: Event) => {
-      const detail = (e as CustomEvent<TextExpanderCommittedDetail>).detail;
+      const detail: unknown = e instanceof CustomEvent ? e.detail : undefined;
+      if (!isTextExpanderCommittedDetail(detail)) {
+        return;
+      }
       const { input } = detail;
 
       if (input) {
