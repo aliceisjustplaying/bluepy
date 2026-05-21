@@ -115,12 +115,11 @@ export default function EditedAtModal({
           <ol>
             {editHistory.map((status: AnyStatus) => {
               const { createdAt } = status;
-              const createdAtDate = new Date(createdAt);
               return (
                 <li key={createdAt} className="history-item">
                   <h3>
                     <time>
-                      {niceDateTime(createdAtDate, {
+                      {niceDateTime(createdAt, {
                         formatOpts: {
                           weekday: 'short',
                           second: 'numeric',

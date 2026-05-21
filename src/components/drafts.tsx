@@ -141,7 +141,6 @@ function Drafts({ onClose }: DraftsProps) {
             <ul className="drafts-list">
               {drafts.map((draft) => {
                 const { updatedAt, key, draftStatus, replyTo, quote } = draft;
-                const updatedAtDate = new Date(updatedAt);
                 return (
                   <li key={updatedAt}>
                     <div className="mini-draft-meta">
@@ -156,7 +155,7 @@ function Drafts({ onClose }: DraftsProps) {
                               <br />
                             </>
                           )}
-                          {niceDateTime(updatedAtDate)}
+                          {niceDateTime(updatedAt)}
                         </time>
                       </b>
                       <MenuConfirm

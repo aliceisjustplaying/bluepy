@@ -41,6 +41,7 @@ import {
   isMediaFirstInstance,
 } from '../utils/store-utils';
 import supports from '../utils/supports';
+import DateTimeFormat from '../utils/date-time-format';
 import useTitle from '../utils/useTitle';
 
 type Status = mastodon.v1.Status;
@@ -662,15 +663,12 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                         );
                         const [year, monthStr] = value.split('-');
                         const monthIndex = parseInt(monthStr, 10) - 1;
-                        const date = new Date(parseInt(year, 10), monthIndex);
+                        const date = Date.UTC(parseInt(year, 10), monthIndex);
                         showToast(
-                          t`Showing posts in ${date.toLocaleString(
-                            i18n.locale,
-                            {
-                              month: 'long',
-                              year: 'numeric',
-                            },
-                          )}`,
+                          t`Showing posts in ${DateTimeFormat(i18n.locale, {
+                            month: 'long',
+                            year: 'numeric',
+                          }).format(date)}`,
                         );
                       }}
                     />
@@ -1015,9 +1013,9 @@ function MonthPicker(props: MonthPickerProps) {
           const monthValue = (i + 1).toString().padStart(2, '0');
           return (
             <option value={monthValue} key={monthValue}>
-              {new Date(0, i).toLocaleString(i18n.locale, {
-              month: 'long',
-              })}
+              {DateTimeFormat(i18n.locale, { month: 'long' }).format(
+                Date.UTC(2000, i),
+              )}
             </option>
           );
         })}

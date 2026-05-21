@@ -1025,7 +1025,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <RelativeTime datetime={new Date(__BUILD_TIME__)} />
+                      <RelativeTime datetime={__BUILD_TIME__} />
                     </a>
                     )
                   </span>

@@ -1028,7 +1028,7 @@ function YearInPosts() {
                         type="number"
                         aria-label={t`Year`}
                         min={MIN_YEAR}
-                        max={new Date().getFullYear()}
+                        max={getDefaultYear()}
                         name="year"
                         defaultValue={getDefaultYear()}
                         disabled={uiStateName === 'generating'}
@@ -1130,14 +1130,11 @@ function YearInPosts() {
                                   className="insignificant"
                                 />{' '}
                                 <span className="insignificant">
-                                  {new Date(fetchedAt).toLocaleDateString(
-                                    i18n.locale,
-                                    {
-                                      year: 'numeric',
-                                      month: 'short',
-                                      day: 'numeric',
-                                    },
-                                  )}
+                                  {DateTimeFormat(i18n.locale, {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                  }).format(fetchedAt)}
                                 </span>{' '}
                                 {timezoneOffset !== undefined && (
                                   <small
@@ -1276,16 +1273,14 @@ function YearInPosts() {
                       <p className="ui-state insignificant">…</p>
                     ) : (
                       filteredPosts.map((post, index) => {
-                        const currentDate = new Date(post.createdAt);
+                        const currentDateKey = post.createdAt.slice(0, 10);
                         const previousPost = filteredPosts[index - 1];
-                        const previousDate = previousPost
-                          ? new Date(previousPost.createdAt)
+                        const previousDateKey = previousPost
+                          ? previousPost.createdAt.slice(0, 10)
                           : null;
                         const showDateHeader =
                           sortBy === 'createdAt' &&
-                          (!previousDate ||
-                            currentDate.toDateString() !==
-                              previousDate.toDateString());
+                          currentDateKey !== previousDateKey;
 
                         return (
                           <>
