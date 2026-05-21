@@ -46,6 +46,14 @@ import type { StatusComponentProps, StatusRouterProps } from './status-view';
 const EMPTY_MEDIA_ATTACHMENTS: AnyMediaAttachment[] = [];
 Object.freeze(EMPTY_MEDIA_ATTACHMENTS);
 
+function eventElement(target: EventTarget | null): Element | null {
+  return target instanceof Element ? target : null;
+}
+
+function htmlElement(element: Element | null): HTMLElement | null {
+  return element instanceof HTMLElement ? element : null;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
 }
@@ -199,7 +207,7 @@ export default function StatusContent({
   };
   const filterInfo = (!isSelf &&
     ((!readOnly && !previewMode) || allowFilters) &&
-    isFiltered(filtered, filterContext as string)) as
+    isFiltered(filtered, filterContext || '')) as
     | FilterInfoShape
     | false
     | undefined;
@@ -281,8 +289,6 @@ export default function StatusContent({
   const [showQuotes, setShowQuotes] = useState(false);
   const [showQuoteChain, setShowQuoteChain] = useState(false);
 
-  // `useTruncated` exposes `Ref<HTMLElement>` but JSX targets are usually
-  // narrower (HTMLDivElement, HTMLSpanElement). Cast at the boundary.
   const spoilerContentRef = useTruncated() as RefObject<HTMLDivElement>;
   const contentRef = useTruncated() as RefObject<HTMLDivElement>;
   const mediaContainerRef = useTruncated() as RefObject<HTMLDivElement>;
@@ -528,7 +534,7 @@ export default function StatusContent({
           if (!showContextMenu) return;
           if (e.metaKey) return;
           // console.log('context menu', e);
-          const link = (e.target as Element).closest('a');
+          const link = eventElement(e.target)?.closest('a');
           const href = link?.getAttribute('href');
           if (
             link &&
@@ -567,9 +573,9 @@ export default function StatusContent({
               setIsContextMenuOpen(false);
               // statusRef.current?.focus?.();
               if (e?.reason === 'click') {
-                (
-                  statusRef.current?.closest('[tabindex]') as HTMLElement | null
-                )?.focus?.();
+                htmlElement(
+                  statusRef.current?.closest('[tabindex]') ?? null,
+                )?.focus();
               }
             }}
             portal={{
