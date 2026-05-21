@@ -31,6 +31,7 @@ import NavMenu from '../components/nav-menu';
 import Notification, {
   type NotificationProps,
 } from '../components/notification';
+import RawHtml from '../components/raw-html';
 import StatusComponent, {
   type StatusComponentProps,
 } from '../components/status';
@@ -1331,18 +1332,14 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
           this div delegates link clicks via handleContentLinks; embedded
           anchors are focusable. A non-functional role/keydown shim would
           provide no real a11y benefit. */}
-      <div
+      <RawHtml
         className="announcement-content"
         role="presentation"
         onClick={handleContentLinks({
           mentions: mentions as { url?: string; acct?: string }[] | undefined,
           instance,
         })}
-        dangerouslySetInnerHTML={{
-          __html: enhanceContent(content, {
-            emojis,
-          }) as string,
-        }}
+        html={enhanceContent(content, { emojis }) as string}
       />
       <p className="insignificant">
         <time dateTime={publishedAtDate.toISOString()}>

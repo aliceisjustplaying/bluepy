@@ -414,6 +414,7 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
         </h3>
         <output
           className="embed-preview"
+          // TRUSTED-INTERNAL: app-generated, not user HTML — intentionally not sanitized
           dangerouslySetInnerHTML={{ __html: htmlCode }}
           dir="auto"
         />

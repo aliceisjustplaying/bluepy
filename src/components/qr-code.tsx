@@ -3,6 +3,8 @@ import './qr-code.css';
 import { encodeQR } from 'qr';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import RawHtml from './raw-html';
+
 interface QrCodeProps {
   text?: string;
   arena?: string;
@@ -366,11 +368,11 @@ export default function QrCode({
           width={gridSize}
           height={captionHeight}
         >
-          <div
+          <RawHtml
             ref={captionRef}
             {...{ xmlns: 'http://www.w3.org/1999/xhtml' }}
             className="qr-code-caption"
-            dangerouslySetInnerHTML={{ __html: caption }}
+            html={caption}
           />
         </foreignObject>
       )}
