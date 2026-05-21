@@ -41,6 +41,20 @@ function maybeDecodeAtprotoURI(
   }
 }
 
+function getAtprotoURIFromPathname(pathname: string): string | null {
+  return maybeDecodeAtprotoURI(pathname.replace(/^\/+/, ''));
+}
+
+function isAtprotoPostPath(pathname: string): boolean {
+  return isAtprotoPostURI(getAtprotoURIFromPathname(pathname));
+}
+
+function isStatusPath(pathname: string): boolean {
+  return (
+    /^\/(?:[^/]+\/)?s\/[^/?#]+/i.test(pathname) || isAtprotoPostPath(pathname)
+  );
+}
+
 function buildAtprotoRecordPath(uri: string): string {
   return `/${uri}`;
 }
@@ -116,12 +130,15 @@ export {
   buildAtprotoPostPermalink,
   buildAtprotoPostPath,
   encodeAtprotoID,
+  getAtprotoURIFromPathname,
   getAtprotoPathFromLegacyRoute,
   getAtprotoRepo,
   isAtprotoFeedGeneratorURI,
   isAtprotoListURI,
+  isAtprotoPostPath,
   isAtprotoPostURI,
   isAtprotoProfileURI,
   isAtprotoRecordURI,
+  isStatusPath,
   maybeDecodeAtprotoURI,
 };
