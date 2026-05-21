@@ -95,16 +95,16 @@ type SearchResultsByType = {
   hashtags: mastodon.v1.Tag[];
 };
 type ResultsSetterMap = {
-  [K in ResultsTypeKey]: (
-    value:
-      | SearchResultsByType[K]
-      | ((prev: SearchResultsByType[K]) => SearchResultsByType[K]),
-  ) => void;
+  [K in ResultsTypeKey]: (value: SearchResultsByType[K]) => void;
 };
+
+function isResultsTypeKey(value: string | null): value is ResultsTypeKey {
+  return value === 'statuses' || value === 'accounts' || value === 'hashtags';
+}
 
 function Search({ columnMode, ...props }: SearchProps) {
   const { t } = useLingui();
-  const routeParams = useParams() as { instance?: string };
+  const routeParams = useParams<{ instance?: string }>();
   const [routeSearchParams] = useSearchParams();
   const params: { instance?: string } = columnMode ? {} : routeParams;
   const { masto, instance, authenticated, client } = api({
@@ -171,15 +171,31 @@ function Search({ columnMode, ...props }: SearchProps) {
     [],
   );
   const setResultsForType = useCallback(
-    <K extends ResultsTypeKey>(
-      typeKey: K,
-      value:
-        | SearchResultsByType[K]
-        | ((prev: SearchResultsByType[K]) => SearchResultsByType[K]),
-    ) => {
+    <K extends ResultsTypeKey>(typeKey: K, value: SearchResultsByType[K]) => {
       setTypeResultsFunc[typeKey](value);
     },
     [setTypeResultsFunc],
+  );
+  const appendResultsForType = useCallback(
+    <K extends ResultsTypeKey>(typeKey: K, value: SearchResultsByType[K]) => {
+      if (typeKey === 'statuses') {
+        setStatusResults((prev) => [
+          ...prev,
+          ...(value as SearchResultsByType['statuses']),
+        ]);
+      } else if (typeKey === 'accounts') {
+        setAccountResults((prev) => [
+          ...prev,
+          ...(value as SearchResultsByType['accounts']),
+        ]);
+      } else {
+        setHashtagResults((prev) => [
+          ...prev,
+          ...(value as SearchResultsByType['hashtags']),
+        ]);
+      }
+    },
+    [],
   );
 
   const [relationshipsMap, setRelationshipsMap] = useState<
@@ -209,7 +225,7 @@ function Search({ columnMode, ...props }: SearchProps) {
   // Mirror the type-keyed result lists into refs so the stable
   // `loadResults` callback below can compare the previous first-id without
   // re-creating on every state update.
-  const typeResultsRef = useRef<Record<ResultsTypeKey, unknown[]>>({
+  const typeResultsRef = useRef<SearchResultsByType>({
     statuses: statusResults,
     accounts: accountResults,
     hashtags: hashtagResults,
@@ -240,7 +256,7 @@ function Search({ columnMode, ...props }: SearchProps) {
 
       void (async () => {
         const searchListParams: SearchListParams = {
-          q: q as string,
+          q: q ?? '',
           resolve: authenticated,
           limit: SHORT_LIMIT,
         };
@@ -266,11 +282,10 @@ function Search({ columnMode, ...props }: SearchProps) {
           console.log(results);
           if (type) {
             const typedResults = results;
-            const typeKey = type as ResultsTypeKey;
+            if (!isResultsTypeKey(type)) return;
+            const typeKey = type;
             const nextCursor = typedResults._pagination?.[type];
-            const nextResults = typedResults[
-              typeKey
-            ] as SearchResultsByType[typeof typeKey];
+            const nextResults = typedResults[typeKey] ?? [];
             if (firstLoad) {
               setResultsForType(typeKey, nextResults);
               const length = nextResults?.length;
@@ -278,36 +293,20 @@ function Search({ columnMode, ...props }: SearchProps) {
               cursorRef.current[type] = nextCursor;
               setShowMore(atproto ? !!nextCursor : !!length);
             } else if (atproto) {
-              setResultsForType(
-                typeKey,
-                (prev) =>
-                  [
-                    ...prev,
-                    ...nextResults,
-                  ] as SearchResultsByType[typeof typeKey],
-              );
+              appendResultsForType(typeKey, nextResults);
               cursorRef.current[type] = nextCursor;
               setShowMore(!!nextCursor);
             } else {
               // If first item is the same, it means API doesn't support offset
               // I know this is a very basic check, but it works for now
-              const currentList = nextResults as
-                | Array<{ id?: string }>
-                | undefined;
-              const existingList = typeResultsRef.current[typeKey] as
-                | Array<{ id?: string }>
-                | undefined;
-              if (currentList?.[0]?.id === existingList?.[0]?.id) {
+              const currentList = nextResults;
+              const existingList = typeResultsRef.current[typeKey] as Array<{
+                id?: string;
+              }>;
+              if (currentList[0]?.id === existingList[0]?.id) {
                 setShowMore(false);
               } else {
-                setResultsForType(
-                  typeKey,
-                  (prev) =>
-                    [
-                      ...prev,
-                      ...nextResults,
-                    ] as SearchResultsByType[typeof typeKey],
-                );
+                appendResultsForType(typeKey, nextResults);
                 const length = nextResults?.length;
                 offsetRef.current = offsetRef.current + LIMIT;
                 setShowMore(!!length);
@@ -338,6 +337,7 @@ function Search({ columnMode, ...props }: SearchProps) {
       masto,
       loadRelationships,
       setResultsForType,
+      appendResultsForType,
     ],
   );
 
@@ -345,7 +345,7 @@ function Search({ columnMode, ...props }: SearchProps) {
   usePageVisibility((visible: boolean) => {
     const reachStart = scrollableRef.current?.scrollTop === 0;
     if (visible && reachStart) {
-      const timeDiff = Date.now() - (lastHiddenTime.current as number);
+      const timeDiff = Date.now() - (lastHiddenTime.current ?? 0);
       if (!lastHiddenTime.current || timeDiff > 1000 * 3) {
         // 3 seconds
         loadResults(true);
@@ -391,17 +391,22 @@ function Search({ columnMode, ...props }: SearchProps) {
   const jRef = useHotkeys(
     'j',
     () => {
-      const activeElement = document.activeElement as HTMLElement | null;
+      const activeElement =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
       const activeItem = activeElement?.closest<HTMLElement>(itemsSelector);
       const activeItemRect = activeItem?.getBoundingClientRect();
-      const scrollable = scrollableRef.current as HTMLDivElement;
+      const scrollable = scrollableRef.current;
+      if (!scrollable) return;
       const allItems = Array.from(
         scrollable.querySelectorAll<HTMLElement>(itemsSelector),
       );
       if (
         activeItem &&
-        (activeItemRect as DOMRect).top < scrollable.clientHeight &&
-        (activeItemRect as DOMRect).bottom > 0
+        activeItemRect &&
+        activeItemRect.top < scrollable.clientHeight &&
+        activeItemRect.bottom > 0
       ) {
         const activeItemIndex = allItems.indexOf(activeItem);
         let nextItem = allItems[activeItemIndex + 1];
@@ -435,17 +440,22 @@ function Search({ columnMode, ...props }: SearchProps) {
     'k',
     () => {
       // focus on previous status after active item
-      const activeElement = document.activeElement as HTMLElement | null;
+      const activeElement =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
       const activeItem = activeElement?.closest<HTMLElement>(itemsSelector);
       const activeItemRect = activeItem?.getBoundingClientRect();
-      const scrollable = scrollableRef.current as HTMLDivElement;
+      const scrollable = scrollableRef.current;
+      if (!scrollable) return;
       const allItems = Array.from(
         scrollable.querySelectorAll<HTMLElement>(itemsSelector),
       );
       if (
         activeItem &&
-        (activeItemRect as DOMRect).top < scrollable.clientHeight &&
-        (activeItemRect as DOMRect).bottom > 0
+        activeItemRect &&
+        activeItemRect.top < scrollable.clientHeight &&
+        activeItemRect.bottom > 0
       ) {
         const activeItemIndex = allItems.indexOf(activeItem);
         let prevItem = allItems[activeItemIndex - 1];
