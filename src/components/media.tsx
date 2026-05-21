@@ -54,6 +54,10 @@ function escapeHTMLAttribute(value: string | number | null | undefined) {
     .replaceAll('>', '&gt;');
 }
 
+async function warmSafariImageCache(url: string) {
+  await fetch(url, { mode: 'no-cors' });
+}
+
 const postViewState = () =>
   window.matchMedia('(min-width: calc(40em + 350px))').matches
     ? 'large'
@@ -629,7 +633,7 @@ function Media({
     if (!mediaURL) return;
     void (async () => {
       try {
-        await fetch(mediaURL, { mode: 'no-cors' });
+        await warmSafariImageCache(mediaURL);
         if (mediaRef.current instanceof HTMLImageElement) {
           mediaRef.current.src = mediaURL;
         }
