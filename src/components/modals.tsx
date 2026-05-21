@@ -60,12 +60,22 @@ const stringArray = (value: unknown): readonly string[] | undefined =>
   Array.isArray(value) && value.every((item) => typeof item === 'string')
     ? value
     : undefined;
+
+const isNoArgFunction = (value: unknown): value is () => unknown =>
+  typeof value === 'function';
+const isTextValidator = (value: unknown): value is (text: string) => unknown =>
+  typeof value === 'function';
+const isScannerClose = (
+  value: unknown,
+): value is (arg?: { text: string } | MouseEvent) => unknown =>
+  typeof value === 'function';
+
 const noArgFn = (value: unknown): (() => void) | undefined =>
-  typeof value === 'function' ? () => value() : undefined;
+  isNoArgFunction(value) ? () => value() : undefined;
 const textValidator = (
   value: unknown,
 ): ((text: string) => boolean) | undefined =>
-  typeof value === 'function'
+  isTextValidator(value)
     ? (text) => {
         const result = value(text);
         return typeof result === 'boolean' ? result : false;
@@ -74,7 +84,7 @@ const textValidator = (
 const scannerClose = (
   value: unknown,
 ): ((arg?: { text: string } | MouseEvent) => void) | undefined =>
-  typeof value === 'function'
+  isScannerClose(value)
     ? (arg) => {
         value(arg);
       }
