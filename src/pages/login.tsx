@@ -65,6 +65,21 @@ interface SuffixState {
 
 type SuffixAction = { type: "fade" } | { type: "replace"; suffix: string };
 
+interface LoginFormState {
+  bskyIdentifier: string;
+  bskyPassword: string;
+  bskyService: string;
+  appview: string;
+  handleFocused: boolean;
+}
+
+type LoginFormAction =
+  | { type: "identifier"; value: string }
+  | { type: "password"; value: string }
+  | { type: "service"; value: string }
+  | { type: "appview"; value: string }
+  | { type: "handleFocused"; value: boolean };
+
 function suffixReducer(state: SuffixState, action: SuffixAction): SuffixState {
   switch (action.type) {
     case "fade":
@@ -75,10 +90,34 @@ function suffixReducer(state: SuffixState, action: SuffixAction): SuffixState {
   return state;
 }
 
+function loginFormReducer(
+  state: LoginFormState,
+  action: LoginFormAction,
+): LoginFormState {
+  switch (action.type) {
+    case "identifier":
+      return { ...state, bskyIdentifier: action.value };
+    case "password":
+      return { ...state, bskyPassword: action.value };
+    case "service":
+      return { ...state, bskyService: action.value };
+    case "appview":
+      return { ...state, appview: action.value };
+    case "handleFocused":
+      return { ...state, handleFocused: action.value };
+  }
+  return state;
+}
+
 function stringArray(value: unknown): string[] {
   return Array.isArray(value)
     ? value.filter((item) => typeof item === "string")
     : [];
+}
+
+async function loadInstancesList(): Promise<string[]> {
+  const res = await fetch(instancesListURL);
+  return stringArray(await res.json());
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -107,10 +146,16 @@ function Login() {
   const [uiState, setUIState] = useState<"default" | "loading" | "error">(
     "default",
   );
-  const [bskyIdentifier, setBskyIdentifier] = useState("");
-  const [bskyPassword, setBskyPassword] = useState("");
-  const [bskyService, setBskyService] = useState("");
-  const [appview, setAppview] = useState(() => getActiveAppview());
+  const [
+    { bskyIdentifier, bskyPassword, bskyService, appview, handleFocused },
+    dispatchLoginForm,
+  ] = useReducer(loginFormReducer, {
+    bskyIdentifier: "",
+    bskyPassword: "",
+    bskyService: "",
+    appview: getActiveAppview(),
+    handleFocused: false,
+  });
   useEffect(() => {
     applyAppviewTheme(appview);
   }, [appview]);
@@ -124,7 +169,6 @@ function Login() {
   );
   const currentSuffixRef = useRef(currentSuffix);
   currentSuffixRef.current = currentSuffix;
-  const [handleFocused, setHandleFocused] = useState(false);
   useEffect(() => {
     const id = setInterval(() => {
       dispatchSuffix({ type: "fade" });
@@ -159,8 +203,7 @@ function Login() {
   useEffect(() => {
     void (async () => {
       try {
-        const res = await fetch(instancesListURL);
-        const data = stringArray(await res.json());
+        const data = await loadInstancesList();
         setInstancesList(data);
         searcher.current = new Fuse(data);
       } catch (e) {
@@ -415,13 +458,16 @@ function Login() {
                 autoComplete="username"
                 spellCheck={false}
                 onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-                  setBskyIdentifier(e.currentTarget.value);
+                  dispatchLoginForm({
+                    type: "identifier",
+                    value: e.currentTarget.value,
+                  });
                 }}
                 onFocus={() => {
-                  setHandleFocused(true);
+                  dispatchLoginForm({ type: "handleFocused", value: true });
                 }}
                 onBlur={() => {
-                  setHandleFocused(false);
+                  dispatchLoginForm({ type: "handleFocused", value: false });
                 }}
               />
               {!bskyIdentifier && !handleFocused && (
@@ -454,7 +500,10 @@ function Login() {
             <select
               value={appview}
               onChange={(e) => {
-                setAppview(e.currentTarget.value);
+                dispatchLoginForm({
+                  type: "appview",
+                  value: e.currentTarget.value,
+                });
               }}
             >
               {Object.entries(APPVIEW_OPTIONS).map(([key, { label }]) => (
@@ -484,7 +533,10 @@ function Login() {
                 disabled={uiState === "loading"}
                 autoComplete="current-password"
                 onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-                  setBskyPassword(e.currentTarget.value);
+                  dispatchLoginForm({
+                    type: "password",
+                    value: e.currentTarget.value,
+                  });
                 }}
               />
             </label>
@@ -501,7 +553,10 @@ function Login() {
                 spellCheck={false}
                 placeholder="pds.example.com"
                 onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-                  setBskyService(e.currentTarget.value);
+                  dispatchLoginForm({
+                    type: "service",
+                    value: e.currentTarget.value,
+                  });
                 }}
               />
             </label>
