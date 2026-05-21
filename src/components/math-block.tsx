@@ -31,6 +31,11 @@ const END_DELIMITER_BY_START = new Map([
   ['\\[', '\\]'],
   ['\\(', '\\)'],
 ]);
+const END_DELIMITER_REGEX_BY_START = new Map([
+  ['\\[', new RegExp('\\\\\\]')],
+  ['\\(', new RegExp('\\\\\\)')],
+]);
+const DEFAULT_END_DELIMITER_REGEX = new RegExp('\\\\\\)');
 
 function cleanDOMForTemml(dom: HTMLElement) {
   // Walk through all text nodes
@@ -52,6 +57,9 @@ function cleanDOMForTemml(dom: HTMLElement) {
     // Find the matching end delimiter
     const startDelimiter = startMatch[0];
     const endDelimiter = END_DELIMITER_BY_START.get(startDelimiter) ?? '\\)';
+    const endDelimiterRegex =
+      END_DELIMITER_REGEX_BY_START.get(startDelimiter) ??
+      DEFAULT_END_DELIMITER_REGEX;
 
     // Collect nodes from start delimiter until end delimiter
     const nodesToCombine: ChildNode[] = [textNode];
@@ -71,7 +79,7 @@ function cleanDOMForTemml(dom: HTMLElement) {
           nodesToCombine.push(nextSibling);
           const siblingText = nextSibling.textContent ?? '';
           combinedText += siblingText;
-          if (siblingText.indexOf(endDelimiter) !== -1) {
+          if (endDelimiterRegex.test(siblingText)) {
             foundEnd = true;
           }
         } else if (nextSibling instanceof HTMLBRElement) {

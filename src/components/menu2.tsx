@@ -24,7 +24,7 @@ function Menu2(props: Menu2Props) {
     ...menuProps
   } = props;
   const size = useWindowSize();
-  const fallbackInstanceRef = useRef<MenuInstance | undefined>(undefined);
+  const fallbackInstanceRef = useRef<MenuInstance | null>(null);
   const instanceRef = externalInstanceRef?.current
     ? externalInstanceRef
     : fallbackInstanceRef;
@@ -46,7 +46,7 @@ function Menu2(props: Menu2Props) {
       unmountOnClose
       {...menuProps}
       align={rtlAlign}
-      instanceRef={instanceRef as RefObject<MenuInstance | null>}
+      instanceRef={instanceRef}
       containerProps={{
         onClick: (e: React.MouseEvent<HTMLElement>) => {
           if (e.target === e.currentTarget) {

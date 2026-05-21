@@ -272,14 +272,20 @@ export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
     title: ({ hashtag }) => hashtag || '',
     subtitle: ({ instance }) => instance || api().instance,
     path: ({ hashtag, instance, media }) =>
-      `${instance ? `/${encodeURIComponent(instance)}` : ''}/t/${(hashtag || '')
-        .split(/\s+/)
-        .filter(Boolean)
-        .map((tag) => encodeURIComponent(tag))
-        .join('+')}${media ? '?media=1' : ''}`,
+      `${instance ? `/${encodeURIComponent(instance)}` : ''}/t/${encodedHashtagPath(
+        hashtag || '',
+      )}${media ? '?media=1' : ''}`,
     icon: 'hashtag',
   },
 };
+
+function encodedHashtagPath(value: string) {
+  return value.split(/\s+/).reduce((path, tag) => {
+    if (!tag) return path;
+    const encodedTag = encodeURIComponent(tag);
+    return path ? `${path}+${encodedTag}` : encodedTag;
+  }, '');
+}
 
 function resolveShortcutMeta<T extends ShortcutMetaStatic>(
   value: ShortcutMetaValue<T> | undefined,

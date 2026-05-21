@@ -85,7 +85,8 @@ function Icon({
     flip: string | undefined,
     rtl: boolean | undefined = false;
   if (Array.isArray(iconBlock)) {
-    [, rotate, flip] = iconBlock as [IconModule, string?, string?];
+    rotate = typeof iconBlock[1] === 'string' ? iconBlock[1] : undefined;
+    flip = typeof iconBlock[2] === 'string' ? iconBlock[2] : undefined;
   } else if (typeof iconBlock === 'object') {
     ({ rotate, flip, rtl } = iconBlock);
   }

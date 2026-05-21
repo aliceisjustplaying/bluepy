@@ -16,9 +16,17 @@ interface QrCodeProps {
 const canvas: OffscreenCanvas | HTMLCanvasElement = window.OffscreenCanvas
   ? new OffscreenCanvas(1, 1)
   : document.createElement('canvas');
-const ctx = canvas.getContext('2d', {
-  willReadFrequently: true,
-}) as OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
+function createCanvasContext() {
+  const context = canvas.getContext('2d', {
+    willReadFrequently: true,
+  });
+  if (!context) {
+    throw new Error('Unable to create QR code canvas context');
+  }
+  return context;
+}
+
+const ctx = createCanvasContext();
 ctx.imageSmoothingEnabled = false;
 
 export default function QrCode({

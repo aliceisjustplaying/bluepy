@@ -57,6 +57,8 @@ function isQuoteRef(value: unknown): value is QuoteRef {
     isRecord(value) &&
     (isAnyStatus(value.quoteStatus) ||
       typeof value.id === 'string' ||
+      typeof value.state === 'string' ||
+      typeof value.url === 'string' ||
       isRecord(value.account))
   );
 }

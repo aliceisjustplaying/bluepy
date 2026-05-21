@@ -926,7 +926,7 @@ function Notifications({ columnMode }: NotificationsProps) {
   }, [todayDayKey]);
 
   return (
-	                  <div
+                  <div
       id="notifications-page"
       className="deck-container"
       ref={(node) => {
@@ -1573,15 +1573,15 @@ function NotificationRequestModalButton({
                     key={notification.id}
                     className="notification-peek"
                     role="presentation"
-	                    onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-	                      const { target } = e;
-	                      // If button or links
-	                      if (
-	                        target instanceof HTMLElement &&
-	                        target.closest('button, a')
-	                      ) {
-	                        onClose();
-	                      }
+                    onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+                      const { target } = e;
+                      // If button or links
+                      if (
+                        target instanceof HTMLElement &&
+                        target.closest('button, a')
+                      ) {
+                        onClose();
+                      }
                     }}
                   >
                     <Notification
