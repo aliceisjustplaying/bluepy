@@ -173,11 +173,13 @@ export default function GenericAccounts({
             if (firstLoadFlag) {
               const merged: AccountWithTypes[] = [];
               const mergedById = new Map<string, AccountWithTypes>();
+              const mergedIndexById = new Map<string, number>();
               for (const account of value) {
                 const theAccount = mergedById.get(account.id);
                 if (!theAccount) {
                   const mergedAccount = mergeTypes(account);
                   mergedById.set(account.id, mergedAccount);
+                  mergedIndexById.set(account.id, merged.length);
                   merged.push(mergedAccount);
                 } else {
                   const mergedAccount = {
@@ -185,8 +187,8 @@ export default function GenericAccounts({
                     _types: [...(theAccount._types ?? []), ...(account._types ?? [])],
                   };
                   mergedById.set(account.id, mergedAccount);
-                  merged[merged.findIndex((item) => item.id === account.id)] =
-                    mergedAccount;
+                  const index = mergedIndexById.get(account.id);
+                  if (index !== undefined) merged[index] = mergedAccount;
                 }
               }
               setAccounts(merged);
@@ -199,11 +201,15 @@ export default function GenericAccounts({
                   _types: [...(account._types ?? [])],
                 }));
                 const accountsById = new Map(newAccounts.map((a) => [a.id, a]));
+                const accountIndexById = new Map(
+                  newAccounts.map((account, index) => [account.id, index]),
+                );
                 for (const account of value) {
                   const theAccount = accountsById.get(account.id);
                   if (!theAccount) {
                     const newAccount = mergeTypes(account);
                     accountsById.set(account.id, newAccount);
+                    accountIndexById.set(account.id, newAccounts.length);
                     newAccounts.push(newAccount);
                   } else {
                     const mergedAccount = {
@@ -214,9 +220,8 @@ export default function GenericAccounts({
                       ],
                     };
                     accountsById.set(account.id, mergedAccount);
-                    newAccounts[
-                      newAccounts.findIndex((item) => item.id === account.id)
-                    ] = mergedAccount;
+                    const index = accountIndexById.get(account.id);
+                    if (index !== undefined) newAccounts[index] = mergedAccount;
                   }
                 }
                 return newAccounts;
