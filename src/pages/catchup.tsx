@@ -340,8 +340,20 @@ function catchupBoosterLabel(account: CatchupBooster): string {
   return account.displayName || account.acct || account.id;
 }
 
+function addCatchupBooster(
+  boosters: Set<CatchupBooster>,
+  account: CatchupBooster,
+): void {
+  if (![...boosters].some((booster) => booster.id === account.id)) {
+    boosters.add(account);
+  }
+}
+
 function catchupBoostersSignature(post: CatchupPost): string {
-  return [...(post.__BOOSTERS || [])].map((booster) => booster.id).join(',');
+  return [...(post.__BOOSTERS || [])]
+    .map((booster) => booster.id)
+    .toSorted()
+    .join(',');
 }
 
 function Catchup() {
@@ -802,11 +814,9 @@ function Catchup() {
       }
 
       if (post.reblog) {
-        if (existing.__BOOSTERS) {
-          existing.__BOOSTERS.add(post.account);
-        } else {
-          existing.__BOOSTERS = new Set([post.account]);
-        }
+        const existingBoosters =
+          existing.__BOOSTERS || (existing.__BOOSTERS = new Set());
+        addCatchupBooster(existingBoosters, post.account);
         post.__HIDDEN = true;
         return;
       }
@@ -814,7 +824,7 @@ function Catchup() {
       if (existing.reblog) {
         const existingBoosters =
           existing.__BOOSTERS || new Set<CatchupBooster>();
-        existingBoosters.add(existing.account);
+        addCatchupBooster(existingBoosters, existing.account);
         post.__BOOSTERS = existingBoosters;
         existing.__HIDDEN = true;
         seenPosts[postId] = post;
