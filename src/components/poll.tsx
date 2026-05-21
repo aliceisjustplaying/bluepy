@@ -2,7 +2,6 @@ import { i18n } from '@lingui/core';
 import { plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { Ref } from 'react';
 import { useEffect, useReducer, useRef, useState } from 'react';
 
 import haptics from '../utils/haptics';
@@ -160,7 +159,7 @@ export default function Poll({
       ? 1
       : 0;
   const [showPollInfo, setShowPollInfo] = useState(false);
-  const ref = useTruncated({
+  const ref = useTruncated<HTMLDivElement>({
     onTruncated: setShowPollInfo,
   });
 
@@ -174,7 +173,7 @@ export default function Poll({
     >
       {resultsView ? (
         <>
-          <div className="poll-options" ref={ref as Ref<HTMLDivElement>}>
+          <div className="poll-options" ref={ref}>
             {options.slice(0, visibleOptionsCount).map((option, i) => {
               const { title, votesCount: optionVotesCountRaw } = option;
               const optionVotesCount = optionVotesCountRaw ?? 0;
@@ -192,9 +191,9 @@ export default function Poll({
                 optionVotesCount > 0 &&
                 optionVotesCount ===
                   Math.max(...options.map((o) => o.votesCount ?? 0));
-              return (
-                <div
-                  key={`${i}-${title}`}
+	              return (
+	                <div
+	                  key={`${title}-${optionVotesCount}`}
                   className={`poll-option poll-result ${
                     isLeading ? 'poll-option-leading' : ''
                   }`}
@@ -279,14 +278,14 @@ export default function Poll({
             })();
           }}
         >
-          <div className="poll-options" ref={ref as Ref<HTMLDivElement>}>
+          <div className="poll-options" ref={ref}>
             {options.slice(0, visibleOptionsCount).map((option, i) => {
               const { title } = option;
               const isSelected = Array.isArray(selectedOptions)
                 ? selectedOptions.includes(i)
                 : selectedOptions === i;
               return (
-                <div className="poll-option" key={`${i}-${title}`}>
+                <div className="poll-option" key={title}>
                   <label className="poll-label">
                     <input
                       type={multiple ? 'checkbox' : 'radio'}
