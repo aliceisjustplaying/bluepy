@@ -485,7 +485,7 @@ function StatusPage(params: StatusPageParams) {
           </div>
         )
       ) : (
-        <Link to={closeLink} />
+        <Link to={closeLink} preservePrevLocation />
       )}
       {!showMediaOnly && (
         <EditHistoryProvider statusID={id}>
