@@ -14,7 +14,7 @@ import Loader from '../components/loader';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import Timeline from '../components/timeline';
-import { api, getMastoV1Resource } from '../utils/api';
+import { api, getMastoV1Resource, type MastoClient } from '../utils/api';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import { filteredItems } from '../utils/filters';
 import getDomain from '../utils/get-domain';
@@ -32,17 +32,27 @@ interface IteratorYield<T> {
   done?: boolean;
 }
 
-interface AsyncListIterator {
-  next(): Promise<IteratorYield<unknown>>;
+interface AsyncListIterator<T> {
+  next(): Promise<IteratorYield<T>>;
 }
 
-interface TrendingApiList {
+interface TrendingApiList<T> {
   list(params?: Record<string, unknown>): {
-    values(): AsyncListIterator;
+    values(): AsyncListIterator<T>;
   };
 }
 
-type MastoTrendingClient = Record<string, unknown>;
+interface MastoTrendingClient extends MastoClient {
+  pixelfed?: {
+    v2?: {
+      discover?: {
+        posts?: {
+          trending?: TrendingApiList<StatusItem[]>;
+        };
+      };
+    };
+  };
+}
 
 interface HashtagHistoryEntry {
   uses: number | string;
@@ -92,12 +102,13 @@ interface StatusItem {
 
 const fetchLinks = pmem(
   (masto: MastoTrendingClient, _instance?: string) => {
-    return (
-      masto as { v1: { trends: { links: TrendingApiList } } }
-    ).v1.trends.links
+    return getMastoV1Resource<{ links: TrendingApiList<LinkItem[]> }>(
+      masto,
+      'trends',
+    ).links
       .list()
       .values()
-      .next() as Promise<IteratorYield<LinkItem[]>>;
+      .next();
   },
   {
     expires: TREND_CACHE_TIME,
@@ -106,35 +117,36 @@ const fetchLinks = pmem(
 
 const fetchHashtags = pmem(
   (masto: MastoTrendingClient) => {
-    return (
-      masto as { v1: { trends: { tags: TrendingApiList } } }
-    ).v1.trends.tags
+    return getMastoV1Resource<{ tags: TrendingApiList<HashtagItem[]> }>(
+      masto,
+      'trends',
+    ).tags
       .list()
       .values()
-      .next() as Promise<IteratorYield<HashtagItem[]>>;
+      .next();
   },
   {
     expires: TREND_CACHE_TIME,
   },
 );
 
-function fetchTrendsStatuses(masto: MastoTrendingClient): AsyncListIterator {
+function fetchTrendsStatuses(
+  masto: MastoTrendingClient,
+): AsyncListIterator<StatusItem[]> {
   if (supports('@pixelfed/trending')) {
-    return (
-      masto as {
-        pixelfed: {
-          v2: { discover: { posts: { trending: TrendingApiList } } };
-        };
-      }
-    ).pixelfed.v2.discover.posts.trending
+    const pixelfedTrending = masto.pixelfed?.v2?.discover?.posts?.trending;
+    if (pixelfedTrending) {
+      return pixelfedTrending
       .list({
         range: 'daily',
       })
       .values();
+    }
   }
-  return (
-    masto as { v1: { trends: { statuses: TrendingApiList } } }
-  ).v1.trends.statuses
+  return getMastoV1Resource<{ statuses: TrendingApiList<StatusItem[]> }>(
+    masto,
+    'trends',
+  ).statuses
     .list({
       limit: LIMIT,
     })
@@ -144,10 +156,11 @@ function fetchTrendsStatuses(masto: MastoTrendingClient): AsyncListIterator {
 function fetchLinkList(
   masto: MastoTrendingClient,
   params: Record<string, unknown>,
-): AsyncListIterator {
-  return (
-    masto as { v1: { timelines: { link: TrendingApiList } } }
-  ).v1.timelines.link
+): AsyncListIterator<StatusItem[]> {
+  return getMastoV1Resource<{ link: TrendingApiList<StatusItem[]> }>(
+    masto,
+    'timelines',
+  ).link
     .list(params)
     .values();
 }
@@ -162,7 +175,9 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
   const routeParams = useParams() as Record<string, string>;
-  const params = columnMode ? ({} as Record<string, string>) : routeParams;
+  const params: Record<string, string | undefined> = columnMode
+    ? {}
+    : routeParams;
   const { masto, instance } = api({
     instance: props?.instance || params.instance,
   });
@@ -176,20 +191,20 @@ function Trending({ columnMode, ...props }: TrendingProps) {
 
   const [hashtags, setHashtags] = useState<HashtagItem[]>([]);
   const [links, setLinks] = useState<LinkItem[]>([]);
-  const trendIterator = useRef<AsyncListIterator | undefined>(undefined);
+  const trendIterator = useRef<AsyncListIterator<StatusItem[]> | undefined>(
+    undefined,
+  );
 
   async function fetchTrends(firstLoad?: boolean) {
     console.log('fetchTrend', firstLoad);
     if (firstLoad || !trendIterator.current) {
-      trendIterator.current = fetchTrendsStatuses(masto as MastoTrendingClient);
+      trendIterator.current = fetchTrendsStatuses(masto);
 
       // Get hashtags
       if (supports('@mastodon/trending-hashtags')) {
         try {
           // const iterator = masto.v1.trends.tags.list();
-          const { value: tags } = await fetchHashtags(
-            masto as MastoTrendingClient,
-          );
+          const { value: tags } = await fetchHashtags(masto);
           console.log('tags', tags);
           if (tags?.length) {
             setHashtags(tags);
@@ -202,10 +217,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
       // Get links
       if (supports('@mastodon/trending-links')) {
         try {
-          const { value } = await fetchLinks(
-            masto as MastoTrendingClient,
-            instance,
-          );
+          const { value } = await fetchLinks(masto, instance);
           // 4 types available: link, photo, video, rich
           // Only want links for now
           const filteredLinks = value?.filter?.((link) => link.type === 'link');
@@ -219,7 +231,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
       }
     }
     const results = await trendIterator.current.next();
-    const value = results.value as StatusItem[] | undefined;
+    const value = results.value;
     if (value?.length) {
       if (firstLoad) {
         latestItem.current = value[0].id;
@@ -240,9 +252,9 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   // https://github.com/mastodon/mastodon/pull/30381
   const [currentLinkMentionsLoading, setCurrentLinkMentionsLoading] =
     useState(false);
-  const currentLinkMentionsIterator = useRef<AsyncListIterator | undefined>(
-    undefined,
-  );
+  const currentLinkMentionsIterator = useRef<
+    AsyncListIterator<StatusItem[]> | undefined
+  >(undefined);
   const [currentLink, setCurrentLink] = useState<string | null>(null);
   const hasCurrentLink = !!currentLink;
   const currentLinkRef = useRef<HTMLAnchorElement | null>(null);
@@ -263,18 +275,15 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   async function fetchLinkMentions(firstLoad?: boolean) {
     if (firstLoad || !currentLinkMentionsIterator.current) {
       setCurrentLinkMentionsLoading(true);
-      currentLinkMentionsIterator.current = fetchLinkList(
-        masto as MastoTrendingClient,
-        {
-          url: currentLink,
-        },
-      );
+      currentLinkMentionsIterator.current = fetchLinkList(masto, {
+        url: currentLink,
+      });
     }
     prevCurrentLink.current = currentLink;
     const results = await currentLinkMentionsIterator.current.next();
-    let value = results.value as StatusItem[] | undefined;
+    let value = results.value;
     if (value?.length) {
-      value = filteredItems(value, 'public') as StatusItem[];
+      value = [...filteredItems(value, 'public')];
       value.forEach((item: StatusItem) => {
         saveStatus(item, instance);
       });
@@ -291,7 +300,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   async function checkForUpdates() {
     try {
       const results = await getMastoV1Resource<{
-        statuses: TrendingApiList;
+        statuses: TrendingApiList<StatusItem[]>;
       }>(masto, 'trends')
         .statuses.list({
           limit: 1,
@@ -300,8 +309,8 @@ function Trending({ columnMode, ...props }: TrendingProps) {
         })
         .values()
         .next();
-      let value = results.value as StatusItem[] | undefined;
-      value = filteredItems(value, 'public') as StatusItem[];
+      let value = results.value;
+      value = [...filteredItems(value, 'public')];
       if (value?.length && value[0].id !== latestItem.current) {
         latestItem.current = value[0].id;
         return true;
