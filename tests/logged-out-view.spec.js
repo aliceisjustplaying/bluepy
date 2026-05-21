@@ -95,6 +95,33 @@ test('has welcome page', async ({ page }) => {
   await expect(page.locator('#welcome')).toBeVisible();
 });
 
+test('status carousel controls stay above the native link overlay', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    // Synthetic fixture for the shared app.css stacking rule used by carousel cards.
+    const fixture = document.createElement('div');
+    fixture.innerHTML = `
+      <div class="status-carousel-link" style="position:relative;width:160px;height:80px">
+        <a class="status-link-native" href="/s/native-link"></a>
+        <button id="carousel-child-button" type="button">Child control</button>
+      </div>
+      <output id="carousel-child-result">idle</output>
+    `;
+    document.body.append(fixture);
+    document
+      .querySelector('#carousel-child-button')
+      ?.addEventListener('click', () => {
+        const result = document.querySelector('#carousel-child-result');
+        if (result) result.textContent = 'clicked';
+      });
+  });
+
+  await page.locator('#carousel-child-button').click();
+  await expect(page.locator('#carousel-child-result')).toHaveText('clicked');
+});
+
 test('login page appview switcher updates data-appview on html element', async ({
   page,
 }) => {

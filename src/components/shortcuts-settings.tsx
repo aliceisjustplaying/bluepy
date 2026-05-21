@@ -242,9 +242,15 @@ export const SHORTCUTS_META: Partial<Record<string, ShortcutMetaEntry>> = {
     altIcon: () => {
       const account = getCurrentAccount();
       const info = account?.info;
+      const avatarStatic =
+        info &&
+        'avatarStatic' in info &&
+        typeof info.avatarStatic === 'string'
+          ? info.avatarStatic
+          : undefined;
       return {
         // Prefer static URL
-        url: info?.avatar_static || info?.avatar,
+        url: avatarStatic || info?.avatar,
         type: 'avatar',
       };
     },

@@ -1,5 +1,6 @@
 import './qr-scanner-modal.css';
 
+import type { MessageDescriptor } from '@lingui/core';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useRef, useState } from 'react';
 
@@ -148,7 +149,7 @@ const createQRCamera = async (player: HTMLVideoElement) => {
 interface QrScannerModalProps {
   onClose: (arg?: { text: string } | MouseEvent) => void;
   checkValidity?: (text: string) => boolean;
-  actionableText?: string;
+  actionableText?: string | MessageDescriptor;
 }
 
 function QrScannerModal({
@@ -157,6 +158,11 @@ function QrScannerModal({
   actionableText,
 }: QrScannerModalProps) {
   const { t, i18n } = useLingui();
+  const actionableLabel =
+    actionableText &&
+    (typeof actionableText === 'string'
+      ? i18n._(actionableText)
+      : i18n._(actionableText.id, actionableText.values));
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const overlayRef = useRef<HTMLCanvasElement | null>(null);
@@ -423,8 +429,8 @@ function QrScannerModal({
                       onClose({ text: decodedText });
                     }}
                   >
-                    {actionableText ? (
-                      i18n._(actionableText)
+                    {actionableLabel ? (
+                      actionableLabel
                     ) : (
                       <Icon icon="arrow-right" />
                     )}

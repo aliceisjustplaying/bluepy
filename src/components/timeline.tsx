@@ -209,6 +209,20 @@ function isTimelineStatusEntry(value: unknown): value is TimelineStatusEntry {
   );
 }
 
+function isTimelineGroupEntry(value: unknown): value is TimelineGroupEntry {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'id' in value &&
+    ('items' in value && Array.isArray(value.items)) &&
+    ('type' in value && typeof value.type === 'string')
+  );
+}
+
+function isTimelineEntry(value: unknown): value is TimelineEntry {
+  return isTimelineStatusEntry(value) || isTimelineGroupEntry(value);
+}
+
 function toStatusPeekPayload(status: TimelineStatusEntry): StatusPeekPayload {
   return {
     spoilerText: status.spoilerText,
@@ -551,13 +565,19 @@ function Timeline({
           const ts = (loadItemsTS.current = Date.now());
           let { done, value } = await fetchItems(firstLoad);
           if (ts === loadItemsTS.current && Array.isArray(value)) {
-            const rawValue = value.filter(isTimelineStatusEntry);
+            const rawValue = value.filter(isTimelineEntry);
             // Avoid grouping for pinned posts
             const [pinnedPosts, otherPosts] = rawValue.reduce<
-              [TimelineStatusEntry[], TimelineStatusEntry[]]
+              [TimelineEntry[], TimelineStatusEntry[]]
             >(
               (acc, item) => {
-                if (item._pinned) {
+                if (hasItems(item)) {
+                  if (item.type === 'pinned') {
+                    acc[0].push(item);
+                  } else {
+                    acc[1].push(...item.items);
+                  }
+                } else if (item._pinned) {
                   acc[0].push(item);
                 } else {
                   acc[1].push(item);
@@ -566,10 +586,16 @@ function Timeline({
               },
               [[], []],
             );
-            const visiblePinnedPosts = filterHiddenStatuses(
-              pinnedPosts,
-              filterContext,
-            );
+            const visiblePinnedPosts: TimelineEntry[] = [];
+            pinnedPosts.forEach((item) => {
+              if (hasItems(item)) {
+                visiblePinnedPosts.push(item);
+              } else {
+                visiblePinnedPosts.push(
+                  ...filterHiddenStatuses([item], filterContext),
+                );
+              }
+            });
             let processed: TimelineEntry[] = [
               ...filterHiddenStatuses(otherPosts, filterContext),
             ];

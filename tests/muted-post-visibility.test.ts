@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 import {
   DEFAULT_MUTED_POST_VISIBILITY,
@@ -18,7 +18,7 @@ const mutedStatus = {
   _atproto: { mutedAuthor: true },
 };
 
-void test('muted post visibility validates persisted values', () => {
+test('muted post visibility validates persisted values', () => {
   assert.equal(getMutedPostVisibility({ mutedPostVisibility: 'hide' }), 'hide');
   assert.equal(
     getMutedPostVisibility({ mutedPostVisibility: 'collapse' }),
@@ -33,7 +33,7 @@ void test('muted post visibility validates persisted values', () => {
   assert.equal(isMutedPostVisibility('invalid'), false);
 });
 
-void test('muted author detection applies to reposts but not third-party quotes', () => {
+test('muted author detection applies to reposts but not third-party quotes', () => {
   assert.equal(hasMutedAuthor(mutedStatus), true);
   assert.equal(hasMutedAuthor({ reblog: mutedStatus }), true);
   assert.equal(hasMutedAuthor({ quote: { quotedStatus: mutedStatus } }), false);
@@ -52,7 +52,7 @@ void test('muted author detection applies to reposts but not third-party quotes'
   assert.equal(hasMutedAuthor({ _atproto: { mutedAuthor: 1 } }), false);
 });
 
-void test('hide mode drops muted statuses except direct context and current account', () => {
+test('hide mode drops muted statuses except direct context and current account', () => {
   assert.equal(
     shouldHideMutedStatus({
       status: mutedStatus,
@@ -91,7 +91,7 @@ void test('hide mode drops muted statuses except direct context and current acco
   );
 });
 
-void test('collapse mode keeps muted statuses renderable behind a reveal row', () => {
+test('collapse mode keeps muted statuses renderable behind a reveal row', () => {
   assert.equal(
     shouldCollapseMutedStatus({
       status: mutedStatus,

@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
+import type { MessageDescriptor } from '@lingui/core';
 import { useEffect } from 'react';
 import { useLocation, type Location } from 'react-router-dom';
 import { subscribe, type Snapshot, useSnapshot } from 'valtio';
@@ -51,6 +52,17 @@ const p = (v: unknown): Payload =>
   v !== null && typeof v === 'object' ? Object.fromEntries(Object.entries(v)) : {};
 const str = (value: unknown): string | undefined =>
   typeof value === 'string' ? value : undefined;
+const msgDescriptor = (value: unknown): MessageDescriptor | undefined =>
+  isRecord(value) && typeof value.id === 'string'
+    ? {
+        id: value.id,
+        comment: str(value.comment),
+        message: str(value.message),
+        values: isRecord(value.values) ? value.values : undefined,
+      }
+    : undefined;
+const strOrMsg = (value: unknown): string | MessageDescriptor | undefined =>
+  str(value) ?? msgDescriptor(value);
 const strRequired = (value: unknown): string =>
   typeof value === 'string' ? value : '';
 const num = (value: unknown): number | undefined =>
@@ -532,7 +544,7 @@ function QrScannerModalView({
     >
       <QrScannerModal
         checkValidity={textValidator(showQrScannerModalPayload.checkValidity)}
-        actionableText={str(showQrScannerModalPayload.actionableText)}
+        actionableText={strOrMsg(showQrScannerModalPayload.actionableText)}
         onClose={(arg?: { text: string } | MouseEvent) => {
           const onClose = scannerClose(showQrScannerModalPayload.onClose);
           if (onClose) {
