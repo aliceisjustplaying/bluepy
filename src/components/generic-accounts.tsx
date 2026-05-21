@@ -61,6 +61,19 @@ interface ShowGenericAccountsState {
   showReactions?: boolean;
 }
 
+function showGenericAccountsState(
+  value: unknown,
+): ShowGenericAccountsState | false {
+  return value && typeof value === 'object' ? value : false;
+}
+
+function mergeTypes(account: FetchedAccount): AccountWithTypes {
+  return {
+    ...account,
+    _types: account._types ?? [],
+  };
+}
+
 interface GenericAccountsProps {
   instance?: string;
   excludeRelationshipAttrs?: readonly string[];
@@ -86,11 +99,11 @@ export default function GenericAccounts({
   const [uiState, setUIState] = useState('default');
   const [showMore, setShowMore] = useState(false);
 
-  const showGenericAccountsState = snapStates.showGenericAccounts as
-    | ShowGenericAccountsState
-    | false;
-  const staticAccounts = showGenericAccountsState
-    ? showGenericAccountsState.accounts
+  const shownGenericAccounts = showGenericAccountsState(
+    snapStates.showGenericAccounts,
+  );
+  const staticAccounts = shownGenericAccounts
+    ? shownGenericAccounts.accounts
     : undefined;
   // The modal is only mounted when `showGenericAccounts` is truthy (see
   // modals.tsx), so the lazy initializer captures the snapshotted
@@ -108,15 +121,15 @@ export default function GenericAccounts({
 
   useLocationChange(onClose);
 
-  const id = showGenericAccountsState ? showGenericAccountsState.id : undefined;
-  const heading = showGenericAccountsState
-    ? showGenericAccountsState.heading
+  const id = shownGenericAccounts ? shownGenericAccounts.id : undefined;
+  const heading = shownGenericAccounts
+    ? shownGenericAccounts.heading
     : undefined;
-  const fetchAccounts = showGenericAccountsState
-    ? showGenericAccountsState.fetchAccounts
+  const fetchAccounts = shownGenericAccounts
+    ? shownGenericAccounts.fetchAccounts
     : undefined;
-  const showReactions = showGenericAccountsState
-    ? showGenericAccountsState.showReactions
+  const showReactions = shownGenericAccounts
+    ? shownGenericAccounts.showReactions
     : undefined;
 
   // Mirror `accounts` into a ref so the stable callbacks below can read the
@@ -163,14 +176,11 @@ export default function GenericAccounts({
               for (const account of value) {
                 const theAccount = mergedById.get(account.id);
                 if (!theAccount) {
-                  const mergedAccount = {
-                    ...account,
-                    _types: account._types ?? [],
-                  };
+                  const mergedAccount = mergeTypes(account);
                   mergedById.set(account.id, mergedAccount);
                   merged.push(mergedAccount);
                 } else {
-                  theAccount._types.push(...(account._types as string[]));
+                  theAccount._types.push(...(account._types ?? []));
                 }
               }
               setAccounts(merged);
@@ -183,11 +193,11 @@ export default function GenericAccounts({
                 for (const account of value) {
                   const theAccount = accountsById.get(account.id);
                   if (!theAccount) {
-                    const newAccount = account as AccountWithTypes;
+                    const newAccount = mergeTypes(account);
                     accountsById.set(account.id, newAccount);
                     newAccounts.push(newAccount);
                   } else {
-                    theAccount._types.push(...(account._types as string[]));
+                    theAccount._types.push(...(account._types ?? []));
                   }
                 }
                 return newAccounts;
@@ -195,7 +205,7 @@ export default function GenericAccounts({
             }
             setShowMore(!done);
 
-            void loadRelationships(value as AccountWithTypes[]);
+            void loadRelationships(value.map(mergeTypes));
           } else {
             setShowMore(false);
           }
@@ -215,8 +225,8 @@ export default function GenericAccounts({
   // We read showGenericAccountsState/id/loadAccounts/loadRelationships via
   // refs to avoid spurious refires when the valtio snapshot reference
   // changes or when the stable callbacks recompute.
-  const showStateRef = useRef(showGenericAccountsState);
-  showStateRef.current = showGenericAccountsState;
+  const showStateRef = useRef(shownGenericAccounts);
+  showStateRef.current = shownGenericAccounts;
   const reloadIdRef = useRef(id);
   reloadIdRef.current = id;
   const loadAccountsRef = useRef(loadAccounts);
