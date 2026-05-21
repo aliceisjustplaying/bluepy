@@ -33,6 +33,7 @@ import {
 import {
   revokeAttachmentObjectUrl,
   revokeAttachmentObjectUrls,
+  type ComposeMediaAttachment,
   uploadComposeMediaAttachments,
 } from '../utils/compose-media';
 import db from '../utils/db';
@@ -391,10 +392,8 @@ function insertTextAtCursor({
 }): void {
   if (!targetElement) return;
 
-  // Original JS reads selectionStart/selectionEnd directly; for text-y
-  // inputs these are numbers in practice. Narrow with non-null assertion.
-  const selectionStart = targetElement.selectionStart as number;
-  const selectionEnd = targetElement.selectionEnd as number;
+  const selectionStart = targetElement.selectionStart ?? targetElement.value.length;
+  const selectionEnd = targetElement.selectionEnd ?? selectionStart;
   const { value } = targetElement;
   let textBeforeInsert = value.slice(0, selectionStart);
 
@@ -422,6 +421,46 @@ function insertTextAtCursor({
   targetElement.selectionStart = targetElement.selectionEnd = newPos;
   targetElement.focus();
   dispatchComposeInput(targetElement);
+}
+
+function alertReason(error: unknown): string {
+  if (error && typeof error === 'object' && 'reason' in error) {
+    return typeof error.reason === 'string' ? error.reason : String(error.reason);
+  }
+  return typeof error === 'string' ? error : String(error);
+}
+
+function getTransferData(event: ClipboardEvent | DragEvent): DataTransfer | null {
+  if (event instanceof ClipboardEvent) return event.clipboardData;
+  return event.dataTransfer;
+}
+
+function getComposeOpener(windowRef: Window): ComposeOpenerWindow | null {
+  const opener = windowRef.opener;
+  return opener && typeof opener === 'object' ? opener : null;
+}
+
+function getComposeWindowStates(
+  opener: ComposeOpenerWindow | null,
+): ComposeWindowStates | null {
+  const statesValue = opener?.__STATES__;
+  return statesValue && typeof statesValue === 'object' ? statesValue : null;
+}
+
+function hasResultId(
+  result: PromiseSettledResult<ComposeMediaAttachment>,
+): result is PromiseFulfilledResult<{ id: string }> {
+  return (
+    result.status === 'fulfilled' &&
+    typeof result.value.id === 'string' &&
+    result.value.id.length > 0
+  );
+}
+
+function isSaveStatusStatus(
+  value: unknown,
+): value is Parameters<typeof saveStatus>[0] {
+  return !!value && typeof value === 'object';
 }
 
 function dispatchComposeInput(
@@ -843,7 +882,7 @@ function Compose({
           setUIState('default');
         } catch (e) {
           console.error(e);
-          alert((e as { reason?: string } | null)?.reason || (e as string));
+          alert(alertReason(e));
           setUIState('error');
         }
       })();
@@ -1173,8 +1212,7 @@ function Compose({
       // Ignore drops when a sheet is open
       if (document.querySelector('.sheet')) return;
 
-      const clipboardData =
-        (e as ClipboardEvent).clipboardData || (e as DragEvent).dataTransfer;
+      const clipboardData = getTransferData(e);
       if (!clipboardData) return;
       const { items } = clipboardData;
       const files: File[] = [];
@@ -1426,8 +1464,12 @@ function Compose({
                     return;
                   }
 
-                  const opener = window.opener as ComposeOpenerWindow;
-                  const openerStates = opener.__STATES__ as ComposeWindowStates;
+                  const opener = getComposeOpener(window);
+                  const openerStates = getComposeWindowStates(opener);
+                  if (!opener || !openerStates) {
+                    alert(t`Looks like you closed the parent window.`);
+                    return;
+                  }
 
                   if (openerStates.showCompose) {
                     if (openerStates.composerState?.publishing) {
@@ -1541,13 +1583,8 @@ function Compose({
           onSubmit={(submitEvent: SyntheticEvent<HTMLFormElement>) => {
             submitEvent.preventDefault();
 
-            const formData = new FormData(
-              submitEvent.target as HTMLFormElement,
-            );
-            const entries = Object.fromEntries(formData.entries()) as Record<
-              string,
-              FormDataEntryValue
-            >;
+            const formData = new FormData(submitEvent.currentTarget);
+            const entries = Object.fromEntries(formData.entries());
             console.log('ENTRIES', entries);
             const rawStatus = entries.status;
             const rawQuoteApprovalPolicy = entries.quoteApprovalPolicy;
@@ -1610,8 +1647,7 @@ function Compose({
                   if (
                     results.some((result) => {
                       return (
-                        result.status === 'rejected' ||
-                        !(result.value as { id?: string } | undefined)?.id
+                        result.status === 'rejected' || !hasResultId(result)
                       );
                     })
                   ) {
@@ -1700,13 +1736,11 @@ function Compose({
                   newStatus = await statusesEndpoint
                     .$select(editStatus.id)
                     .update(params);
-                  saveStatus(
-                    newStatus as Parameters<typeof saveStatus>[0],
-                    instance,
-                    {
+                  if (isSaveStatusStatus(newStatus)) {
+                    saveStatus(newStatus, instance, {
                       skipThreading: true,
-                    },
-                  );
+                    });
+                  }
                 } else {
                   try {
                     newStatus = await statusesEndpoint.create(params, {
@@ -1739,7 +1773,7 @@ function Compose({
                 composerState.publishingError = true;
                 console.error(e);
                 alert(
-                  (e as { reason?: string } | null)?.reason || (e as string),
+                  alertReason(e),
                 );
                 setUIState('error');
               }
@@ -2082,9 +2116,7 @@ function Compose({
                   name="quoteApprovalPolicy"
                   value={quoteApprovalPolicy}
                   onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
-                    setQuoteApprovalPolicy(
-                      (e.target as HTMLSelectElement).value,
-                    );
+                    setQuoteApprovalPolicy(e.currentTarget.value);
                   }}
                   disabled={uiState === 'loading'}
                   dir="auto"
@@ -2113,7 +2145,7 @@ function Compose({
                 name="language"
                 value={language}
                 onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
-                  const { value } = e.target as HTMLSelectElement;
+                  const { value } = e.currentTarget;
                   setLanguage(value || DEFAULT_LANG);
                   store.session.set('currentLanguage', value || DEFAULT_LANG);
                 }}
@@ -2218,9 +2250,12 @@ function Compose({
               // Preserve original JS: `>= undefined` evaluates to false via
               // NaN coercion. plural(undefined, ...) would explode, but the
               // guard above means it is only called when max is defined.
-              if (mediaAttachments.length >= (maxMediaAttachments as number)) {
+              if (
+                typeof maxMediaAttachments === 'number' &&
+                mediaAttachments.length >= maxMediaAttachments
+              ) {
                 alert(
-                  plural(maxMediaAttachments as number, {
+                  plural(maxMediaAttachments, {
                     one: 'You can only attach up to 1 file.',
                     other: 'You can only attach up to # files.',
                   }),
