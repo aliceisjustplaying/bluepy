@@ -1,7 +1,6 @@
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
-import type { KeyboardEvent, MouseEvent, ReactNode, RefObject } from 'react';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
 import { use } from 'react';
@@ -40,6 +39,39 @@ const revealableUnfulfilledStates = new Set([
   'blocked_domain',
   'muted_account',
 ]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function isAnyStatus(value: unknown): value is AnyStatus {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    isRecord(value.account)
+  );
+}
+
+function isQuoteRef(value: unknown): value is QuoteRef {
+  return isRecord(value);
+}
+
+function staticUnfulfilledState(
+  value: string | undefined,
+): StaticUnfulfilledState | undefined {
+  if (!value) return undefined;
+  switch (value) {
+    case 'filterHidden':
+    case 'pending':
+    case 'deleted':
+    case 'unauthorized':
+    case 'rejected':
+    case 'revoked':
+      return value;
+    default:
+      return undefined;
+  }
+}
 
 const shouldLetStatusCardTargetHandleEvent = (target: EventTarget | null) =>
   target instanceof Element &&
@@ -187,20 +219,21 @@ const QuoteStatus = memo(
 
     const isStaticQuote = !!q.quoteStatus;
     const quoteStatusKey = statusKey(q.id, q.instance);
-    const quoteStatus =
-      ((quoteStatusKey ? snapStates.statuses[quoteStatusKey] : undefined) as
-        | AnyStatus
-        | undefined) || q.quoteStatus;
+    const cachedQuoteStatus = quoteStatusKey
+      ? snapStates.statuses[quoteStatusKey]
+      : undefined;
+    const quoteStatus = isAnyStatus(cachedQuoteStatus)
+      ? cachedQuoteStatus
+      : q.quoteStatus;
     if (quoteStatus) {
       const isSelf =
         currentAccount && currentAccount === quoteStatus.account?.id;
-      const filterInfo = (!isSelf &&
+      const filterInfo =
+        !isSelf &&
         isFiltered(
-          quoteStatus.filtered as
-            | readonly mastodon.v1.FilterResult[]
-            | undefined,
-          filterContext as string,
-        )) as { action?: string } | false;
+          quoteStatus.filtered,
+          typeof filterContext === 'string' ? filterContext : '',
+        );
 
       if (filterInfo && filterInfo.action === 'hide') {
         unfulfilledState = 'filterHidden';
@@ -214,36 +247,27 @@ const QuoteStatus = memo(
     }
 
     const isRevealable = revealableUnfulfilledStates.has(
-      unfulfilledState as string,
+      unfulfilledState ?? '',
     );
     const quoteKey = q.id ? statusKey(q.id, q.instance) : null;
     const isRevealed = quoteKey && snapStates.revealedQuotes[quoteKey];
 
     if (unfulfilledState && (!isRevealable || !isRevealed)) {
-      const quotedAccount = quoteStatus?.account as
-        | { acct?: string }
-        | null
-        | undefined;
-      const quotedAccountAcct = quotedAccount?.acct;
+      const quotedAccountAcct = quoteStatus?.account?.acct;
       const domain = quotedAccountAcct?.split('@')[1];
 
       let message: string | undefined;
       if (isRevealable) {
         if (unfulfilledState === 'blocked_account') {
-          message = _(
-            unfulfilledText.blocked_account(quotedAccountAcct as string),
-          );
+          message = _(unfulfilledText.blocked_account(quotedAccountAcct ?? ''));
         } else if (unfulfilledState === 'blocked_domain') {
-          message = _(unfulfilledText.blocked_domain(domain as string));
+          message = _(unfulfilledText.blocked_domain(domain ?? ''));
         } else if (unfulfilledState === 'muted_account') {
-          message = _(
-            unfulfilledText.muted_account(quotedAccountAcct as string),
-          );
+          message = _(unfulfilledText.muted_account(quotedAccountAcct ?? ''));
         }
       } else {
-        message = _(
-          unfulfilledText[unfulfilledState as StaticUnfulfilledState],
-        );
+        const staticState = staticUnfulfilledState(unfulfilledState);
+        message = staticState ? _(unfulfilledText[staticState]) : undefined;
       }
 
       return (
@@ -299,7 +323,7 @@ const QuoteStatus = memo(
 );
 
 const ShallowQuote = ({ quote }: { quote?: QuoteRef } = {}) => {
-  const { account, native, instance } = quote || ({} as QuoteRef);
+  const { account, native, instance } = quote || {};
   if (!account) return null;
   return (
     <div className="status-card-container">
@@ -334,12 +358,13 @@ const QuoteStatuses = memo(
     const { i18n } = useLingui();
     const _ = i18n._.bind(i18n);
     const snapStates = useSnapshot(states);
-    const containerRef = useTruncated() as RefObject<HTMLDivElement>;
+    const containerRef = useTruncated<HTMLDivElement>();
     if (!id || !instance) return null;
     const sKey = statusKey(id, instance);
-    const quotes = (sKey ? snapStates.statusQuotes[sKey] : undefined) as
-      | readonly QuoteRef[]
-      | undefined;
+    const quoteValues = sKey ? snapStates.statusQuotes[sKey] : undefined;
+    const quotes = Array.isArray(quoteValues)
+      ? quoteValues.filter(isQuoteRef)
+      : undefined;
     let uniqueQuotes = quotes?.filter(
       (q: QuoteRef, i: number, arr: readonly QuoteRef[]) =>
         q.native || arr.findIndex((q2) => q2.url === q.url) === i,
