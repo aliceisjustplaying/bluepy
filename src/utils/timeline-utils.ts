@@ -15,34 +15,50 @@ import supports from './supports';
 import {
   canonicalTimelineContextId,
   groupContextItems,
+  type TimelineContextStatus,
 } from './timeline-context';
 
 // Status payloads carry a handful of mutation flags the timeline pipeline
 // attaches (`_pinned`, `_differentAuthor`). Keep the type loose so callers
 // passing already-extended objects from `states.statuses` still fit.
-type TimelineStatus = mastodon.v1.Status & {
+type TimelineStatus = TimelineContextStatus &
+  Partial<mastodon.v1.Status> & {
   _pinned?: unknown;
   _differentAuthor?: boolean;
-  account?: mastodon.v1.Status['account'] & { group?: boolean };
+  account: TimelineContextStatus['account'] &
+    Partial<mastodon.v1.Account> & { group?: boolean };
+  reblog?: TimelineStatus | null;
   _atproto?: {
     root?: { uri?: string };
   };
 };
 
-interface BoostsGroup {
+interface BoostsGroup<T extends TimelineStatus = TimelineStatus> {
   id: string[];
-  items: TimelineStatus[];
+  items: T[];
   type: 'boosts';
 }
 
-interface ThreadGroup {
+interface ThreadGroup<T extends TimelineStatus = TimelineStatus> {
   id: string[];
-  items: TimelineStatus[];
+  items: T[];
   type: 'thread' | 'conversation';
   incompleteThread?: boolean;
 }
 
-type TimelineItem = TimelineStatus | BoostsGroup | ThreadGroup;
+interface PassthroughGroup {
+  id: string | string[];
+  items: unknown[];
+  type: string;
+  incompleteThread?: boolean;
+}
+
+function isTimelineStatusItem<
+  TStatus extends TimelineStatus,
+  TGroup extends PassthroughGroup,
+>(item: TStatus | TGroup | ThreadGroup<TStatus>): item is TStatus {
+  return !('items' in item && Array.isArray(item.items));
+}
 
 interface BoostedStatusIDsMap {
   [statusKey: string]: string;
@@ -58,11 +74,11 @@ interface MastoStatusesList {
   $select(id: string): { fetch(): Promise<mastodon.v1.Status> };
 }
 
-export function groupBoosts(
-  values: readonly TimelineStatus[],
-): TimelineItem[] | readonly TimelineStatus[] {
-  let newValues: TimelineItem[] = [];
-  const boostStash: TimelineStatus[] = [];
+export function groupBoosts<TStatus extends TimelineStatus>(
+  values: readonly TStatus[],
+): Array<TStatus | BoostsGroup<TStatus>> | readonly TStatus[] {
+  let newValues: Array<TStatus | BoostsGroup<TStatus>> = [];
+  const boostStash: TStatus[] = [];
   let serialBoosts = 0;
   for (let i = 0; i < values.length; i++) {
     const item = values[i];
@@ -122,7 +138,7 @@ export function dedupeBoosts<T extends TimelineStatus>(
     const boosterID = boostedStatusIDs[boostStatusKey];
     if (boosterID && boosterID !== item.id) {
       console.warn(
-        `🚫 Duplicate boost by ${item.account.displayName}`,
+        `🚫 Duplicate boost by ${item.account.displayName ?? item.account.id}`,
         item,
         item.reblog,
       );
@@ -172,18 +188,29 @@ export function filterHiddenStatuses<T extends TimelineStatus>(
   });
 }
 
-export function groupContext(
-  items: readonly TimelineStatus[],
+export function groupContext<
+  TStatus extends TimelineStatus,
+  TGroup extends PassthroughGroup,
+>(
+  items: readonly (TStatus | TGroup)[],
   instance: string | undefined,
-): TimelineItem[] {
-  const contexts = groupContextItems(items);
+): Array<TStatus | TGroup | ThreadGroup<TStatus>> {
+  const statusItems: TStatus[] = [];
+  items.forEach((item) => {
+    if (isTimelineStatusItem<TStatus, TGroup>(item)) statusItems.push(item);
+  });
+  const contexts = groupContextItems(statusItems);
 
   if (contexts.length) console.log('🧵 Contexts', contexts);
 
-  const newItems: TimelineItem[] = [];
+  const newItems: Array<TStatus | TGroup | ThreadGroup<TStatus>> = [];
   const appliedContextIndices: number[] = [];
   const inReplyToIds: ReplyHint[] = [];
   items.forEach((item) => {
+    if (!isTimelineStatusItem(item)) {
+      newItems.push(item);
+      return;
+    }
     for (let ctxIndex = 0; ctxIndex < contexts.length; ctxIndex++) {
       if (
         contexts[ctxIndex].items.find(

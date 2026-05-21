@@ -39,7 +39,7 @@ import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import Status from '../components/status';
 import type { AnyStatus } from '../components/status-types';
-import { api, getMastoV2Resource } from '../utils/api';
+import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
 import {
   isAtprotoPostURI,
   maybeDecodeAtprotoURI,
@@ -191,6 +191,11 @@ const postViewState = (): 'large' | 'small' =>
     ? 'large'
     : 'small';
 
+function navigationEntriesLength(): number | undefined {
+  if (!('navigation' in window)) return undefined;
+  return window.navigation.entries?.().length;
+}
+
 function rawStatusFromState(status: unknown): RawStatus | undefined {
   if (!status || typeof status !== 'object') return undefined;
   return status as RawStatus;
@@ -312,9 +317,9 @@ function StatusPage(params: StatusPageParams) {
       const snapshotId = id;
       const snapshotInstance = instance;
       const snapshotCloseLink = closeLinkRef.current;
-      const statusesEndpoint = masto.v1.statuses as {
+      const statusesEndpoint = getMastoV1Resource<{
         $select(id: string): { fetch(): Promise<RawStatus> };
-      };
+      }>(masto, 'statuses');
       let stale = false;
       void (async () => {
         try {
@@ -545,21 +550,16 @@ function StatusThread({
   const [searchParams, setSearchParams] = useSearchParams();
   const mediaParam = searchParams.get('media');
   const mediaStatusID = searchParams.get('mediaStatusID');
-  const showMedia = parseInt(mediaParam as string, 10) > 0;
+  const showMedia = parseInt(mediaParam ?? '', 10) > 0;
   const firstLoad = useRef(
     !states.prevLocation &&
       (history.length === 1 ||
-        ('navigation' in window &&
-          (
-            navigation as {
-              entries?: () => { length: number };
-            }
-          )?.entries?.()?.length === 1)),
+        navigationEntriesLength() === 1),
   );
   const [viewMode, setViewMode] = useState<string | null>(
     searchParams.get('view') || firstLoad.current ? 'full' : null,
   );
-  const translate = !!parseInt(searchParams.get('translate') as string);
+  const translate = !!parseInt(searchParams.get('translate') ?? '');
   const { masto, instance } = api({ instance: propInstance });
   const {
     masto: currentMasto,
@@ -832,7 +832,10 @@ function StatusThread({
     }
 
     void (async () => {
-      const statusesEndpoint = masto.v1.statuses as StatusContextResource;
+      const statusesEndpoint = getMastoV1Resource<StatusContextResource>(
+        masto,
+        'statuses',
+      );
       const heroFetch = () =>
         pRetry(() => statusesEndpoint.$select(id).fetch(), {
           retries: 4,

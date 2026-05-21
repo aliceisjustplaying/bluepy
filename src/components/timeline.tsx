@@ -596,8 +596,8 @@ function Timeline({
               if (boostsCarousel) {
                 processed = [...groupBoosts(processed.filter(isTimelineStatus))];
               }
-              processed = groupContext(
-                processed.filter(isTimelineStatus),
+              processed = groupContext<TimelineStatusEntry, TimelineGroupEntry>(
+                processed,
                 instance,
               );
             }
