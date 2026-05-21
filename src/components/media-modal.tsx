@@ -1,7 +1,14 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import { getBlurHashAverageColor } from 'fast-blurhash';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { oklch2rgb, rgb2oklch } from '../utils/color-utils';
@@ -100,10 +107,13 @@ function MediaModal({
   }, [index, statusID]);
 
   const [showControls, setShowControls] = useState(true);
+  const closeFromSwipe = useEffectEvent((e: Event) => {
+    onClose(e, currentIndex, mediaAttachments, carouselRef);
+  });
 
   useEffect(() => {
     const handleSwipe = (e: Event) => {
-      onClose(e, currentIndex, mediaAttachments, carouselRef);
+      closeFromSwipe(e);
     };
     const carousel = carouselRef.current;
     if (carousel) {
@@ -114,7 +124,7 @@ function MediaModal({
         carousel.removeEventListener('swiped-down', handleSwipe);
       }
     };
-  }, [currentIndex, mediaAttachments, onClose]);
+  }, []);
 
   useHotkeys(
     'esc',

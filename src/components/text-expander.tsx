@@ -2,6 +2,7 @@ import '@github/text-expander-element';
 
 import { useLingui } from '@lingui/react/macro';
 import type { HTMLAttributes, Ref } from 'react';
+import { useEffectEvent } from 'react';
 import { useImperativeHandle } from 'react';
 import { useEffect, useRef } from 'react';
 
@@ -122,6 +123,12 @@ function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
   const { t } = useLingui();
   const textExpanderRef = useRef<HTMLElement | null>(null);
   const { masto } = api();
+  const triggerMentionSearch = useEffectEvent((more: string) => {
+    onTrigger?.({
+      name: 'mention',
+      defaultSearchTerm: more,
+    });
+  });
   const textExpanderTextRef = useRef<string>('');
   const hasTextExpanderRef = useRef<boolean>(false);
 
@@ -304,10 +311,7 @@ function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
         if (more) {
           detail.continue = true;
           setTimeout(() => {
-            onTrigger?.({
-              name: 'mention',
-              defaultSearchTerm: more,
-            });
+            triggerMentionSearch(more);
           }, 300);
         }
       } else if (key === '＠') {
@@ -315,10 +319,7 @@ function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
         if (more) {
           detail.continue = true;
           setTimeout(() => {
-            onTrigger?.({
-              name: 'mention',
-              defaultSearchTerm: more,
-            });
+            triggerMentionSearch(more);
           }, 300);
         }
       } else {
@@ -366,7 +367,7 @@ function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
         handleDeactivate,
       );
     };
-  }, [onTrigger, t, masto]);
+  }, [t, masto]);
 
   return <text-expander ref={textExpanderRef} {...props} />;
 }
