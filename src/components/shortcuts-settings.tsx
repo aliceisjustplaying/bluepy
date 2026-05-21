@@ -1098,6 +1098,7 @@ function ImportShortcutsSection({
               // string-record to preserve that.
               const shortcut = getStringRecord(rawShortcut);
               const shortcutKey = JSON.stringify(shortcut);
+              const shortcutTypeText = TYPE_TEXT[shortcut.type];
               return (
                 <li key={shortcutKey}>
                   <span
@@ -1110,7 +1111,7 @@ function ImportShortcutsSection({
                     *
                   </span>
                   <span>
-                    {_(TYPE_TEXT[shortcut.type])}
+                    {shortcutTypeText ? _(shortcutTypeText) : shortcut.type}
                     {shortcut.type === 'list' && !!shortcut.id && ' ⚠️'}{' '}
                     {TYPE_PARAMS[shortcut.type]?.map?.(({ text, name, type }) =>
                       shortcut[name] ? (

@@ -517,6 +517,14 @@ function AccountInfo({
       if (!standalone) {
         return <Link to={to} {...props} />;
       }
+      if (!props.onClick) {
+        const {
+          onKeyDown: _onKeyDown,
+          tabIndex: _tabIndex,
+          ...divProps
+        } = props;
+        return <div {...divProps} />;
+      }
       return (
         <div
           {...props}

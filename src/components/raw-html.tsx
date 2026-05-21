@@ -38,7 +38,7 @@ function isSafeURL(value: string): boolean {
 }
 
 function sanitizeHTML(html: string): string {
-  if (typeof document === 'undefined') return html;
+  if (typeof document === 'undefined') return '';
   const template = document.createElement('template');
   template.innerHTML = html;
   template.content.querySelectorAll('*').forEach((element) => {

@@ -159,6 +159,7 @@ function SearchField({
       name="q"
       type="search"
       // autofocus
+      aria-label={t`Search`}
       placeholder={t`Search`}
       dir="auto"
       autoComplete="off"
@@ -232,7 +233,7 @@ function SearchField({
           case 'ArrowUp':
             e.preventDefault();
             if (searchMenuOpen) {
-              const focusItem = document.querySelector(
+              const focusItem = formRef.current?.querySelector(
                 '.search-popover-item.focus',
               );
               if (focusItem) {
@@ -253,7 +254,10 @@ function SearchField({
                   }
                 }
               } else {
-                const items = document.querySelectorAll('.search-popover-item');
+                const items = formRef.current?.querySelectorAll(
+                  '.search-popover-item',
+                );
+                if (!items) return;
                 const lastItem = items[items.length - 1];
                 if (lastItem) {
                   lastItem.classList.add('focus');
@@ -263,7 +267,7 @@ function SearchField({
             break;
           case 'Enter':
             if (searchMenuOpen) {
-              const focusItem = document.querySelector(
+              const focusItem = formRef.current?.querySelector(
                 '.search-popover-item.focus',
               );
               if (focusItem) {

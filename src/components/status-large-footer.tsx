@@ -69,7 +69,9 @@ interface EmojiReactionsProps {
   emojis?: readonly mastodon.v1.CustomEmoji[];
 }
 
-function emojiReactionData(value: Record<string, unknown>): EmojiReaction | null {
+function emojiReactionData(
+  value: Record<string, unknown>,
+): EmojiReaction | null {
   if (typeof value.name !== 'string') return null;
   return {
     name: value.name,
@@ -89,6 +91,7 @@ function EmojiReactions({ emojiReactions, emojis }: EmojiReactionsProps) {
         const reaction = emojiReactionData(emojiReaction);
         if (!reaction) return null;
         const { name, count, me, url: reactionUrl, staticUrl } = reaction;
+        const countText = count ?? 0;
         if (reactionUrl) {
           return (
             <span
@@ -96,7 +99,7 @@ function EmojiReactions({ emojiReactions, emojis }: EmojiReactionsProps) {
               className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
             >
               <CustomEmoji alt={name} url={reactionUrl} staticUrl={staticUrl} />{' '}
-              {count}
+              {countText}
             </span>
           );
         }
@@ -117,7 +120,7 @@ function EmojiReactions({ emojiReactions, emojis }: EmojiReactionsProps) {
                   url={emoji.url}
                   staticUrl={emoji.staticUrl}
                 />{' '}
-                {count}
+                {countText}
               </span>
             );
           }
@@ -127,7 +130,7 @@ function EmojiReactions({ emojiReactions, emojis }: EmojiReactionsProps) {
             key={name}
             className={`emoji-reaction tag ${me ? '' : 'insignificant'}`}
           >
-            {name} {count}
+            {name} {countText}
           </span>
         );
       })}
@@ -187,11 +190,11 @@ export default function StatusLargeFooter({
             <a href={url ?? undefined} target="_blank" rel="noopener">
               {currentTime !== null &&
                 currentTime - createdAtDate.getTime() < 86400000 && (
-                <>
-                  <RelativeTime datetime={createdAtDate} format="micro" />{' '}
-                  ‒{' '}
-                </>
-              )}
+                  <>
+                    <RelativeTime datetime={createdAtDate} format="micro" />{' '}
+                    ‒{' '}
+                  </>
+                )}
               {!!createdAt && (
                 <time
                   className="created"

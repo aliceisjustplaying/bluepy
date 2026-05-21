@@ -308,6 +308,7 @@ function StatusCardPhoto({
 function StatusCardVideo({
   openEmbeddableCard,
   providerName,
+  title,
   url,
 }: StatusCardRenderProps) {
   if (!providerName || !/youtube/i.test(providerName)) return null;
@@ -315,7 +316,12 @@ function StatusCardVideo({
   const videoID = url ? url.match(/watch\?v=([^&]+)/)?.[1] : undefined;
   if (!videoID) return null;
   return (
-    <button type="button" className="card video" onClick={openEmbeddableCard}>
+    <button
+      type="button"
+      className="card video"
+      onClick={openEmbeddableCard}
+      aria-label={title ? `Play video: ${title}` : 'Play video'}
+    >
       <lite-youtube videoid={videoID} nocookie autoPause></lite-youtube>
     </button>
   );
@@ -347,6 +353,7 @@ function StatusCardText({
       lang={language}
       dir="auto"
       onClick={openEmbeddableCard}
+      aria-label={title || description || providerName || authorName || domain}
     >
       <div className="meta-container">
         <p className="meta domain">

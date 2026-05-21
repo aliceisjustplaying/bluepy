@@ -161,7 +161,7 @@ function QrScannerModal({
   const actionableLabel =
     actionableText &&
     (typeof actionableText === 'string'
-      ? i18n._(actionableText)
+      ? actionableText
       : i18n._(actionableText));
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);

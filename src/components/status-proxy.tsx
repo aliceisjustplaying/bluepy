@@ -7,14 +7,14 @@ export interface StatusProxyProps extends Omit<StatusComponentProps, 'status'> {
 }
 
 function isStatusProxyStatus(value: unknown): value is StatusProxyStatus {
+  if (!value || typeof value !== 'object') return false;
+  if (!('id' in value) || typeof value.id !== 'string') return false;
+  if (!('account' in value) || !value.account) return false;
+  const { account } = value;
   return (
-    !!value &&
-    typeof value === 'object' &&
-    'id' in value &&
-    typeof value.id === 'string' &&
-    'account' in value &&
-    !!value.account &&
-    typeof value.account === 'object'
+    typeof account === 'object' &&
+    'id' in account &&
+    typeof account.id === 'string'
   );
 }
 

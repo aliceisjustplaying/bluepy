@@ -248,6 +248,7 @@ function toStatusPeekPayload(status: TimelineStatusEntry): StatusPeekPayload {
     })),
     quote:
       status.quote &&
+      typeof status.quote === 'object' &&
       'quotedStatus' in status.quote &&
       status.quote.quotedStatus
         ? {
