@@ -61,6 +61,29 @@ interface AccountsUpdateCredentialsClient {
 
 type Preferences = Record<string, unknown>;
 
+function stringValue(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function displayValue(value: unknown): string | number | null | undefined {
+  return typeof value === 'string' || typeof value === 'number' ? value : null;
+}
+
+function numericValue(value: unknown): number {
+  return typeof value === 'number' ? value : Number(value) || 0;
+}
+
+function valuedElement(element: Element | RadioNodeList | null) {
+  return element instanceof HTMLInputElement ||
+    element instanceof HTMLSelectElement
+    ? element
+    : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
 const DEFAULT_TEXT_SIZE = 16;
 const TEXT_SIZES = [14, 15, 16, 17, 18, 19, 20];
 const SMALLEST_TEXT_SIZE = TEXT_SIZES[0];
@@ -102,8 +125,8 @@ function Settings({ onClose }: SettingsProps): ReactElement {
   // on store. Normalize back to number on read so arithmetic (`size - 1`,
   // `Math.min(..., size + 1)`) doesn't string-concatenate.
   const storedTextSize = store.local.get('textSize');
-  const currentTextSize: number =
-    parseInt(storedTextSize as string, 10) || DEFAULT_TEXT_SIZE;
+  const currentTextSize =
+    parseInt(storedTextSize ?? '', 10) || DEFAULT_TEXT_SIZE;
 
   const [prefs, setPrefs] = useState<Preferences>(() => getPreferences());
   const { masto, authenticated } = api();
@@ -175,7 +198,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                     const form = themeFormRef.current;
                     if (!form) return;
                     const formData = new FormData(form);
-                    const theme = formData.get('theme') as string | null;
+                    const theme = stringValue(formData.get('theme'));
                     const html = document.documentElement;
 
                     if (theme === 'auto') {
@@ -227,13 +250,13 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                     );
                     $colorScheme?.setAttribute(
                       'content',
-                      theme === 'auto' ? 'light dark' : (theme as string),
+                      theme === 'auto' ? 'light dark' : (theme ?? ''),
                     );
 
                     if (theme === 'auto') {
                       store.local.del('theme');
-                    } else {
-                      store.local.set('theme', theme as string);
+                    } else if (theme) {
+                      store.local.set('theme', theme);
                     }
                   }}
                 >
@@ -335,9 +358,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                   <select
                     id="posting-privacy-field"
                     value={
-                      (prefs['posting:default:visibility'] as
-                        | string
-                        | undefined) || 'public'
+                      stringValue(prefs['posting:default:visibility']) || 'public'
                     }
                     onChange={(e) => {
                       const { value } = e.currentTarget;
@@ -394,9 +415,8 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                       value={
                         disableQuotePolicy
                           ? 'nobody'
-                          : (prefs['posting:default:quote_policy'] as
-                              | string
-                              | undefined) || 'public'
+                          : stringValue(prefs['posting:default:quote_policy']) ||
+                            'public'
                       }
                       disabled={disableQuotePolicy}
                       onChange={(e) => {
@@ -1049,14 +1069,14 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <p>Debugging</p>
             <p>
               <b>Vapid key</b>:{' '}
-              {getVapidKey() as string | number | null | undefined}
+              {displayValue(getVapidKey())}
             </p>
             {(window.__BENCH_RESULTS?.size ?? 0) > 0 && (
               <ul>
                 {Array.from(window.__BENCH_RESULTS?.entries() ?? []).map(
                   ([name, duration]) => (
                     <li key={name}>
-                      <b>{name}</b>: {duration as number}ms
+                      <b>{name}</b>: {numericValue(duration)}ms
                     </li>
                   ),
                 )}
@@ -1274,6 +1294,20 @@ interface BackendPushSubscriptionShape {
   [key: string]: unknown;
 }
 
+function backendPushSubscription(
+  value: unknown,
+): BackendPushSubscriptionShape | null {
+  if (!isRecord(value)) return null;
+  const record = value;
+  if (typeof record.policy !== 'string') return null;
+  const alerts = record.alerts;
+  return {
+    ...record,
+    alerts: isRecord(alerts) ? alerts : {},
+    policy: record.policy,
+  };
+}
+
 function PushNotificationsSection({
   onClose,
 }: PushNotificationsSectionProps): ReactElement | null {
@@ -1291,9 +1325,9 @@ function PushNotificationsSection({
       setUIState('loading');
       try {
         const result = await initSubscription();
-        const backendSubscription =
-          (result?.backendSubscription as BackendPushSubscriptionShape | null) ??
-          null;
+        const backendSubscription = backendPushSubscription(
+          result?.backendSubscription,
+        );
         if (
           backendSubscription?.policy &&
           backendSubscription.policy !== 'none'
@@ -1305,13 +1339,11 @@ function PushNotificationsSection({
           const form = pushFormRef.current;
           if (form) {
             const { elements } = form;
-            const policyEl = elements.namedItem('policy') as
-              | (HTMLElement & { value: string })
-              | null;
+            const policyEl = valuedElement(elements.namedItem('policy'));
             if (policyEl) policyEl.value = policy;
             // alerts is {}, iterate it
             Object.entries(alerts).forEach(([alert, value]) => {
-              const el = elements.namedItem(alert) as HTMLInputElement | null;
+              const el = valuedElement(elements.namedItem(alert));
               if (el?.type === 'checkbox') {
                 el.checked = !!value;
               }
