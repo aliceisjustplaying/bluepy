@@ -2,7 +2,7 @@ import './timeline2.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import type { ReactNode, RefObject } from 'react';
+import type { ReactNode } from 'react';
 import {
   useCallback,
   useEffect,
@@ -92,10 +92,11 @@ type TimelineEntry = TimelineStatusEntry | TimelineGroupEntry;
 type TimelineDedupeInput = Parameters<typeof dedupeTimelineContextItems>[0];
 
 function isGroupEntry(entry: TimelineEntry): entry is TimelineGroupEntry {
-  return (
-    Array.isArray((entry as TimelineGroupEntry).items) &&
-    (entry as TimelineGroupEntry).items !== undefined
-  );
+  return Array.isArray('items' in entry ? entry.items : undefined);
+}
+
+function eventElement(target: EventTarget | null): Element | null {
+  return target instanceof Element ? target : null;
 }
 
 function dedupeTimelineEntries(items: readonly TimelineEntry[]) {
@@ -569,7 +570,7 @@ function Timeline2({
   );
   const scrollFn = useScrollFn(
     {
-      scrollableRef: scrollableRef as RefObject<HTMLElement>,
+      scrollableRef,
       distanceFromEnd: 2,
       scrollThresholdStart: 44,
     },
@@ -710,7 +711,7 @@ function Timeline2({
         }}
         tabIndex={-1}
         onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-          const target = e.target as Element | null;
+          const target = eventElement(e.target);
           if (
             headerRef.current &&
             target?.closest('.timeline-item, .timeline-item-alt')
@@ -731,7 +732,7 @@ function Timeline2({
             ref={headerRef}
             role="presentation"
             onClick={(e: React.MouseEvent<HTMLElement>) => {
-              const target = e.target as Element | null;
+              const target = eventElement(e.target);
               if (!target?.closest('a, button')) {
                 scrollableRef.current?.scrollTo({
                   top: 0,
@@ -740,7 +741,7 @@ function Timeline2({
               }
             }}
             onDoubleClick={(e: React.MouseEvent<HTMLElement>) => {
-              const target = e.target as Element | null;
+              const target = eventElement(e.target);
               if (!target?.closest('a, button')) {
                 loadItems();
               }
