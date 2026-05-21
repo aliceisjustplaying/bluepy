@@ -74,7 +74,9 @@ interface CatchupBooster {
   id: string;
   avatar?: string;
   avatarStatic?: string;
+  acct?: string;
   bot?: boolean;
+  displayName?: string;
   [key: string]: unknown;
 }
 
@@ -245,6 +247,14 @@ const FILTER_SORTS: string[] = [
   // 'quotesCount',
   'density',
 ];
+const FILTER_SORT_LABELS: Record<string, MessageDescriptor> = {
+  createdAt: msg`Date`,
+  repliesCount: msg`Replies`,
+  favouritesCount: msg`Likes`,
+  reblogsCount: msg`Reposts`,
+  quotesCount: msg`Quotes`,
+  density: msg`Density`,
+};
 const FILTER_GROUPS: (string | null)[] = [null, 'account'];
 
 const DTF_OPTIONS: Intl.DateTimeFormatOptions = {
@@ -365,6 +375,21 @@ function quoteNameTextAccount(
     'quotedStatus' in quote ? quote.quotedStatus?.account : undefined;
   const quoteAccount = 'account' in quote ? quote.account : undefined;
   return nameTextAccount(quotedStatusAccount || quoteAccount);
+}
+
+function canonicalCatchupPostId(post: CatchupPost): string {
+  return post.reblog?.id || post.id;
+}
+
+function catchupBoosterLabel(account: CatchupBooster): string {
+  if (account.displayName && account.acct) {
+    return `${account.displayName} (@${account.acct})`;
+  }
+  return account.displayName || account.acct || account.id;
+}
+
+function catchupBoostersSignature(post: CatchupPost): string {
+  return [...(post.__BOOSTERS || [])].map((booster) => booster.id).join(',');
 }
 
 function isCatchupRecord(value: unknown): value is CatchupRecord {
@@ -852,22 +877,41 @@ function Catchup() {
       return postFilterMatches;
     });
 
-    // Deduplicate boosts
-    const boostedPosts: Record<string, CatchupPost> = {};
+    // Deduplicate the same canonical post across originals and repost wrappers.
+    const seenPosts: Record<string, CatchupPost> = {};
     filtered.forEach((post) => {
-      if (post.reblog) {
-        if (boostedPosts[post.reblog.id]) {
-          const existing = boostedPosts[post.reblog.id];
-          if (existing.__BOOSTERS) {
-            existing.__BOOSTERS.add(post.account);
-          } else {
-            existing.__BOOSTERS = new Set([post.account]);
-          }
-          post.__HIDDEN = true;
-        } else {
-          boostedPosts[post.reblog.id] = post;
-        }
+      delete post.__HIDDEN;
+      delete post.__BOOSTERS;
+    });
+    filtered.forEach((post) => {
+      const postId = canonicalCatchupPostId(post);
+      const existing = seenPosts[postId];
+      if (!existing) {
+        seenPosts[postId] = post;
+        return;
       }
+
+      if (post.reblog) {
+        if (existing.__BOOSTERS) {
+          existing.__BOOSTERS.add(post.account);
+        } else {
+          existing.__BOOSTERS = new Set([post.account]);
+        }
+        post.__HIDDEN = true;
+        return;
+      }
+
+      if (existing.reblog) {
+        const existingBoosters =
+          existing.__BOOSTERS || new Set<CatchupBooster>();
+        existingBoosters.add(existing.account);
+        post.__BOOSTERS = existingBoosters;
+        existing.__HIDDEN = true;
+        seenPosts[postId] = post;
+        return;
+      }
+
+      post.__HIDDEN = true;
     });
 
     if (selectedAuthor && authorCountsMap.has(selectedAuthor)) {
@@ -953,6 +997,7 @@ function Catchup() {
         post.createdAt,
         post.reblog?.createdAt ?? '',
         post.account.id,
+        catchupBoostersSignature(post),
       ].join('|');
       const keyCount = keyCounts.get(baseKey) ?? 0;
       keyCounts.set(baseKey, keyCount + 1);
@@ -1398,6 +1443,7 @@ function Catchup() {
       id="catchup-page"
       className="deck-container"
       tabIndex={-1}
+      onKeyDown={handleArrowKeys}
     >
       <div className="timeline-deck deck wide">
         {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
@@ -1455,7 +1501,7 @@ function Catchup() {
             </div>
           </div>
         </header>
-        <main onKeyDown={handleArrowKeys}>
+        <main>
           {uiState === 'start' && (
             <div className="catchup-start">
               <h1>
@@ -1506,6 +1552,7 @@ function Catchup() {
               <div className="catchup-form">
                 <input
                   ref={catchupRangeRef}
+                  aria-label={t`Catch-up range`}
                   type="range"
                   value={range}
                   min={RANGES[0].value}
@@ -1526,14 +1573,14 @@ function Catchup() {
                   <small className="insignificant" suppressHydrationWarning>
                     {range == RANGES[RANGES.length - 1].value || !currentTime
                       ? t`until the max`
-                      : niceDateTime(
-                          currentTime - range * 60 * 60 * 1000,
-                        )}
+                      : niceDateTime(currentTime - range * 60 * 60 * 1000)}
                   </small>
                 </span>
                 <datalist id="catchup-ranges">
                   {RANGES.map(({ label, value }) => (
-                    <option key={value} value={value} label={_(label)} />
+                    <option key={value} value={value} label={_(label)}>
+                      {_(label)}
+                    </option>
                   ))}
                 </datalist>{' '}
                 <button
@@ -1581,8 +1628,7 @@ function Catchup() {
                       ref={catchupLastRef}
                     />{' '}
                     <Trans>
-                      Until the last catch-up (
-                      {dtf.format(lastCatchupEndAt)})
+                      Until the last catch-up ({dtf.format(lastCatchupEndAt)})
                     </Trans>
                   </label>
                 </p>
@@ -1757,6 +1803,7 @@ function Catchup() {
                         <a
                           key={url}
                           href={url}
+                          aria-label={title || domain || url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="link-block"
@@ -1876,6 +1923,7 @@ function Catchup() {
                 <div className="catchup-filters">
                   <label className="filter-cat">
                     <input
+                      aria-label={t`All posts`}
                       type="radio"
                       name="filter-cat"
                       checked={selectedFilterCategory.toLowerCase() === 'all'}
@@ -1899,6 +1947,7 @@ function Catchup() {
                           }
                         >
                           <input
+                            aria-label={_(label)}
                             type="radio"
                             name="filter-cat"
                             checked={
@@ -1936,6 +1985,7 @@ function Catchup() {
                       // Legacy ordering note removed during React migration
                     >
                       <input
+                        aria-label={`${authors[author].displayName} (@${authors[author].acct})`}
                         type="radio"
                         name="filter-author"
                         checked={selectedAuthor === author}
@@ -1989,6 +2039,7 @@ function Catchup() {
                     {FILTER_SORTS.map((key) => (
                       <label className="filter-sort" key={key}>
                         <input
+                          aria-label={_(FILTER_SORT_LABELS[key])}
                           type="radio"
                           name="filter-sort-cat"
                           checked={sortBy === key}
@@ -1996,7 +2047,9 @@ function Catchup() {
                             if (sortBy === key) {
                               e.preventDefault();
                               e.stopPropagation();
-                              setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                              setSortOrder(
+                                sortOrder === 'asc' ? 'desc' : 'asc',
+                              );
                             }
                           }}
                           onChange={() => {
@@ -2008,16 +2061,7 @@ function Catchup() {
                             setSortOrder(order);
                           }}
                         />
-                        {
-                          {
-                            createdAt: t`Date`,
-                            repliesCount: t`Replies`,
-                            favouritesCount: t`Likes`,
-                            reblogsCount: t`Reposts`,
-                            quotesCount: t`Quotes`,
-                            density: t`Density`,
-                          }[key]
-                        }
+                        {_(FILTER_SORT_LABELS[key])}
                         {sortBy === key && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
                       </label>
                     ))}
@@ -2044,6 +2088,11 @@ function Catchup() {
                     {FILTER_GROUPS.map((key) => (
                       <label className="filter-group" key={key || 'none'}>
                         <input
+                          aria-label={
+                            key === 'account'
+                              ? t`Group by authors`
+                              : t`Do not group posts`
+                          }
                           type="radio"
                           name="filter-group"
                           checked={groupBy === key}
@@ -2221,7 +2270,7 @@ function Catchup() {
                 <dd>
                   <table>
                     <tbody>
-                      <tr>
+                      <tr aria-label={t`Next post shortcut`}>
                         <td>
                           <Trans>Next post</Trans>
                         </td>
@@ -2229,7 +2278,7 @@ function Catchup() {
                           <kbd>j</kbd>
                         </td>
                       </tr>
-                      <tr>
+                      <tr aria-label={t`Previous post shortcut`}>
                         <td>
                           <Trans>Previous post</Trans>
                         </td>
@@ -2237,7 +2286,7 @@ function Catchup() {
                           <kbd>k</kbd>
                         </td>
                       </tr>
-                      <tr>
+                      <tr aria-label={t`Next author shortcut`}>
                         <td>
                           <Trans>Next author</Trans>
                         </td>
@@ -2245,7 +2294,7 @@ function Catchup() {
                           <kbd>l</kbd>
                         </td>
                       </tr>
-                      <tr>
+                      <tr aria-label={t`Previous author shortcut`}>
                         <td>
                           <Trans>Previous author</Trans>
                         </td>
@@ -2253,7 +2302,7 @@ function Catchup() {
                           <kbd>h</kbd>
                         </td>
                       </tr>
-                      <tr>
+                      <tr aria-label={t`Open post details shortcut`}>
                         <td>
                           <Trans>Open post details</Trans>
                         </td>
@@ -2261,7 +2310,7 @@ function Catchup() {
                           <kbd>Enter</kbd>
                         </td>
                       </tr>
-                      <tr>
+                      <tr aria-label={t`Scroll to top shortcut`}>
                         <td>
                           <Trans>Scroll to top</Trans>
                         </td>
@@ -2285,101 +2334,118 @@ interface PostLineProps {
   post: CatchupPost;
 }
 
-const PostLine = memo(
-  function ({ post }: PostLineProps) {
-    const {
-      account,
-      group,
-      reblog,
-      quote,
-      inReplyToId,
-      inReplyToAccountId,
-      _filtered: filterInfo,
-      visibility,
-      __BOOSTERS,
-    } = post;
-    const isReplyTo = inReplyToId && inReplyToAccountId !== account.id;
-    const postIsFiltered = !!filterInfo && filterInfo.action !== 'blur';
+const PostLine = memo(function ({ post }: PostLineProps) {
+  const {
+    account,
+    group,
+    reblog,
+    quote,
+    inReplyToId,
+    inReplyToAccountId,
+    _filtered: filterInfo,
+    visibility,
+    __BOOSTERS,
+  } = post;
+  const isReplyTo = inReplyToId && inReplyToAccountId !== account.id;
+  const postIsFiltered = !!filterInfo && filterInfo.action !== 'blur';
 
-    const debugHover = (e: React.MouseEvent) => {
-      if (e.shiftKey) {
-        console.log({
-          ...post,
-        });
-      }
-    };
+  const debugHover = (e: React.MouseEvent) => {
+    if (e.shiftKey) {
+      console.log({
+        ...post,
+      });
+    }
+  };
 
-    return (
-      <article
-        className={`post-line ${
-          group
-            ? 'group'
-            : reblog
-              ? 'reblog'
-              : supportsNativeQuote() && hasQuote(quote)
-                ? 'quote'
-                : ''
-        } ${isReplyTo ? 'reply-to' : ''} ${
-          postIsFiltered ? 'filtered' : ''
-        } visibility-${visibility}`}
-        onMouseEnter={debugHover}
-      >
-        <span className="post-author">
-          {reblog ? (
-            <span className="post-reblog-avatar">
-              <Avatar
-                url={account.avatarStatic || account.avatar}
-                squircle={account.bot}
-              />
-              {__BOOSTERS && __BOOSTERS.size > 0
-                ? [...__BOOSTERS].map((b) => (
-                    <Avatar
-                      key={b.id}
-                      url={b.avatarStatic || b.avatar}
-                      squircle={b.bot}
-                    />
-                  ))
-                : ''}{' '}
-              <Icon icon="rocket" />{' '}
-              {/* <Avatar
+  return (
+    <article
+      className={`post-line ${
+        group
+          ? 'group'
+          : reblog
+            ? 'reblog'
+            : supportsNativeQuote() && hasQuote(quote)
+              ? 'quote'
+              : ''
+      } ${isReplyTo ? 'reply-to' : ''} ${
+        postIsFiltered ? 'filtered' : ''
+      } visibility-${visibility}`}
+      onMouseEnter={debugHover}
+    >
+      <span className="post-author">
+        {reblog ? (
+          <span className="post-reblog-avatar">
+            <Avatar
+              url={account.avatarStatic || account.avatar}
+              alt={catchupBoosterLabel(account)}
+              squircle={account.bot}
+            />
+            {__BOOSTERS && __BOOSTERS.size > 0
+              ? [...__BOOSTERS].map((b) => (
+                  <Avatar
+                    key={b.id}
+                    url={b.avatarStatic || b.avatar}
+                    alt={catchupBoosterLabel(b)}
+                    squircle={b.bot}
+                  />
+                ))
+              : ''}{' '}
+            <Icon icon="rocket" />{' '}
+            {/* <Avatar
               url={reblog.account.avatarStatic || reblog.account.avatar}
               squircle={reblog.account.bot}
             /> */}
-              <NameText account={reblog.account} showAvatar />
-            </span>
-          ) : hasQuote(quote) ? (
-            <span className="post-quote-avatar">
+            <NameText account={reblog.account} showAvatar />
+          </span>
+        ) : hasQuote(quote) ? (
+          <span className="post-quote-avatar">
+            {__BOOSTERS && __BOOSTERS.size > 0
+              ? [...__BOOSTERS].map((b) => (
+                  <Avatar
+                    key={b.id}
+                    url={b.avatarStatic || b.avatar}
+                    alt={catchupBoosterLabel(b)}
+                    squircle={b.bot}
+                  />
+                ))
+              : null}
+            <Avatar
+              url={account.avatarStatic || account.avatar}
+              squircle={account.bot}
+            />{' '}
+            <Icon icon="quote" />{' '}
+            <NameText account={quoteNameTextAccount(quote)} showAvatar />
+          </span>
+        ) : __BOOSTERS && __BOOSTERS.size > 0 ? (
+          <span className="post-reblog-avatar">
+            {[...__BOOSTERS].map((b) => (
               <Avatar
-                url={account.avatarStatic || account.avatar}
-                squircle={account.bot}
-              />{' '}
-              <Icon icon="quote" />{' '}
-              <NameText account={quoteNameTextAccount(quote)} showAvatar />
-            </span>
-          ) : (
-            <NameText account={account} showAvatar />
-          )}
-        </span>
-        <PostPeek
-          post={(reblog as CatchupPost | null | undefined) || post}
-          filterInfo={filterInfo}
+                key={b.id}
+                url={b.avatarStatic || b.avatar}
+                alt={catchupBoosterLabel(b)}
+                squircle={b.bot}
+              />
+            ))}{' '}
+            <Icon icon="rocket" /> <NameText account={account} showAvatar />
+          </span>
+        ) : (
+          <NameText account={account} showAvatar />
+        )}
+      </span>
+      <PostPeek
+        post={(reblog as CatchupPost | null | undefined) || post}
+        filterInfo={filterInfo}
+      />
+      <span className="post-meta">
+        <PostStats post={(reblog as CatchupPost | null | undefined) || post} />{' '}
+        <RelativeTime
+          dateTime={reblog?.createdAt || post.createdAt}
+          format="micro"
         />
-        <span className="post-meta">
-          <PostStats
-            post={(reblog as CatchupPost | null | undefined) || post}
-          />{' '}
-          <RelativeTime
-            dateTime={reblog?.createdAt || post.createdAt}
-            format="micro"
-          />
-        </span>
-      </article>
-    );
-  },
-  (oldProps, newProps) => {
-    return oldProps?.post?.id === newProps?.post?.id;
-  },
-);
+      </span>
+    </article>
+  );
+});
 
 // A media speak a thousand words
 const MEDIA_DENSITY = 8;
