@@ -61,6 +61,26 @@ interface PostEmbedModalProps {
   onClose?: () => void;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function isPostLike(value: unknown): value is PostLike {
+  return (
+    isRecord(value) &&
+    isRecord(value.account) &&
+    typeof value.id === 'string'
+  );
+}
+
+function isQuoteRef(value: unknown): value is QuoteRef {
+  return isRecord(value) && typeof value.id === 'string';
+}
+
+function quoteRefList(value: unknown): QuoteRef[] {
+  return Array.isArray(value) ? value.filter(isQuoteRef) : [];
+}
+
 function generateHTMLCode(
   post: PostLike,
   instance: string | undefined,
@@ -80,8 +100,8 @@ function generateHTMLCode(
   } = post;
 
   const sKey = statusKey(id, instance);
-  const quotes = (sKey ? states.statusQuotes[sKey] : undefined) || [];
-  const uniqueQuotes = (quotes as QuoteRef[]).filter(
+  const quotes = quoteRefList(sKey ? states.statusQuotes[sKey] : undefined);
+  const uniqueQuotes = quotes.filter(
     (q: QuoteRef, i: number, arr: QuoteRef[]) =>
       arr.findIndex((q2: QuoteRef) => q2.url === q.url) === i,
   );
@@ -92,19 +112,19 @@ function generateHTMLCode(
             const { id: quoteId, instance: quoteInstance } = quote;
             const quoteKey = statusKey(quoteId, quoteInstance);
             const s = quoteKey ? states.statuses[quoteKey] : undefined;
-            if (s) {
-              return generateHTMLCode(s as PostLike, quoteInstance, ++level);
+            if (isPostLike(s)) {
+              return generateHTMLCode(s, quoteInstance, ++level);
             }
             return '';
           })
           .join('')
       : '';
 
-  const createdAtDate = new Date(createdAt as string);
+  const createdAtDate = createdAt ? new Date(createdAt) : null;
   // const editedAtDate = editedAt && new Date(editedAt);
 
   const contentHTML =
-    emojifyText(content as string, emojis) +
+    emojifyText(content ?? '', emojis) +
     '\n' +
     quoteStatusesHTML +
     '\n' +
@@ -206,9 +226,9 @@ function generateHTMLCode(
       }
       <footer>
         — ${emojifyText(
-          displayName as string,
+          displayName ?? acct ?? '',
           accountEmojis,
-        )} (@${acct}) ${createdAt ? `<a href="${url}"><time datetime="${createdAtDate.toISOString()}">${createdAtDate.toLocaleString()}</time></a>` : ''}
+        )} (@${acct}) ${createdAt && createdAtDate ? `<a href="${url}"><time datetime="${createdAtDate.toISOString()}">${createdAtDate.toLocaleString()}</time></a>` : ''}
       </footer>
     </blockquote>
   `;
