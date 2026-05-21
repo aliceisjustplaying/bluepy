@@ -333,10 +333,261 @@ type ShortcutFormState =
   | false
   | true
   | { shortcut: ShortcutEntry; shortcutIndex: number };
+type ShortcutsListParent = ReturnType<
+  typeof useAutoAnimate<HTMLOListElement>
+>[0];
 
-function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
+interface ShortcutsListProps {
+  currentViewMode: unknown;
+  shortcuts: readonly ShortcutEntry[];
+  shortcutsListParent: ShortcutsListParent;
+  setShowForm: Dispatch<SetStateAction<ShortcutFormState>>;
+}
+
+interface ShortcutsActionsProps {
+  shortcutsCount: number;
+  setShowForm: Dispatch<SetStateAction<ShortcutFormState>>;
+  setShowImportExport: Dispatch<SetStateAction<boolean>>;
+}
+
+function ShortcutsViewMode() {
+  const snapStates = useSnapshot(states);
+
+  return (
+    <div className="shortcuts-view-mode">
+      {[
+        {
+          value: 'float-button',
+          label: t`Floating button`,
+          imgURL: floatingButtonUrl,
+        },
+        {
+          value: 'tab-menu-bar',
+          label: t`Tab/Menu bar`,
+          imgURL: tabMenuBarUrl,
+        },
+        {
+          value: 'multi-column',
+          label: t`Multi-column`,
+          imgURL: multiColumnUrl,
+        },
+      ].map(({ value, label, imgURL }) => {
+        const checked =
+          snapStates.settings.shortcutsViewMode === value ||
+          (value === 'float-button' && !snapStates.settings.shortcutsViewMode);
+        return (
+          <label key={value} className={checked ? 'checked' : ''}>
+            <input
+              type="radio"
+              name="shortcuts-view-mode"
+              value={value}
+              checked={checked}
+              onChange={(e) => {
+                states.settings.shortcutsViewMode = e.currentTarget.value;
+              }}
+            />{' '}
+            <img src={imgURL} alt="" width="80" height="58" />{' '}
+            <span>{label}</span>
+          </label>
+        );
+      })}
+    </div>
+  );
+}
+
+function ShortcutsList({
+  currentViewMode,
+  shortcuts,
+  shortcutsListParent,
+  setShowForm,
+}: ShortcutsListProps) {
   const { i18n } = useLingui();
   const _: Translator = (descriptor) => i18n._(descriptor);
+
+  if (shortcuts.length === 0) {
+    return (
+      <div className="ui-state insignificant">
+        <p>{t`No shortcuts yet. Tap on the Add shortcut button.`}</p>
+        <p>
+          <Trans>
+            Not sure what to add?
+            <br />
+            Try adding{' '}
+            <button
+              type="button"
+              className="plain"
+              onClick={() => {
+                states.shortcuts = [
+                  {
+                    type: 'following',
+                  },
+                  {
+                    type: 'notifications',
+                  },
+                ];
+              }}
+            >
+              Home / Following and Notifications
+            </button>{' '}
+            first.
+          </Trans>
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <ol className="shortcuts-list" ref={shortcutsListParent}>
+        {shortcuts.map((shortcut, i) => {
+          if (!shortcut) return null;
+          // const key = i + Object.values(shortcut);
+          const key = Object.values(shortcut).join('-');
+          const { type } = shortcut;
+          if (!SHORTCUTS_META[type]) return null;
+          const meta = SHORTCUTS_META[type];
+          const icon = resolveShortcutMeta(meta.icon, shortcut, i, '');
+          const titleValue = resolveShortcutMeta(meta.title, shortcut, i, '');
+          const title =
+            typeof titleValue === 'string' || titleValue instanceof Promise
+              ? titleValue
+              : _(titleValue);
+          const subtitle = resolveShortcutMeta(
+            meta.subtitle,
+            shortcut,
+            i,
+            undefined,
+          );
+          const excludeViewMode = resolveShortcutMeta(
+            meta.excludeViewMode,
+            shortcut,
+            i,
+            undefined,
+          );
+          const excludedViewMode =
+            typeof currentViewMode === 'string' &&
+            excludeViewMode?.includes(currentViewMode);
+          return (
+            <li key={key}>
+              <Icon icon={icon} />
+              <span className="shortcut-text">
+                <AsyncText value={title} />
+                {!!subtitle && (
+                  <>
+                    {' '}
+                    <small className="ib insignificant">{subtitle}</small>
+                  </>
+                )}
+                {excludedViewMode && (
+                  <span className="tag">
+                    <Trans>Not available in current view mode</Trans>
+                  </span>
+                )}
+              </span>
+              <span className="shortcut-actions">
+                <button
+                  type="button"
+                  className="plain small"
+                  disabled={i === 0}
+                  onClick={() => {
+                    const shortcutsArr = Array.from(states.shortcuts);
+                    if (i > 0) {
+                      const temp = states.shortcuts[i - 1];
+                      shortcutsArr[i - 1] = shortcut;
+                      shortcutsArr[i] = temp;
+                      states.shortcuts = shortcutsArr;
+                    }
+                  }}
+                >
+                  <Icon icon="arrow-up" alt={t`Move up`} />
+                </button>
+                <button
+                  type="button"
+                  className="plain small"
+                  disabled={i === shortcuts.length - 1}
+                  onClick={() => {
+                    const shortcutsArr = Array.from(states.shortcuts);
+                    if (i < states.shortcuts.length - 1) {
+                      const temp = states.shortcuts[i + 1];
+                      shortcutsArr[i + 1] = shortcut;
+                      shortcutsArr[i] = temp;
+                      states.shortcuts = shortcutsArr;
+                    }
+                  }}
+                >
+                  <Icon icon="arrow-down" alt={t`Move down`} />
+                </button>
+                <button
+                  type="button"
+                  className="plain small"
+                  onClick={() => {
+                    setShowForm({
+                      shortcut,
+                      shortcutIndex: i,
+                    });
+                  }}
+                >
+                  <Icon icon="pencil" alt={t`Edit`} />
+                </button>
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      {shortcuts.length === 1 && currentViewMode !== 'float-button' && (
+        <div className="ui-state insignificant">
+          <Icon icon="info" />{' '}
+          <small>
+            <Trans>Add more than one shortcut/column to make this work.</Trans>
+          </small>
+        </div>
+      )}
+    </>
+  );
+}
+
+function ShortcutsActions({
+  shortcutsCount,
+  setShowForm,
+  setShowImportExport,
+}: ShortcutsActionsProps) {
+  return (
+    <>
+      <p className="insignificant">
+        {shortcutsCount >= SHORTCUTS_LIMIT &&
+          t`Max ${SHORTCUTS_LIMIT} shortcuts`}
+      </p>
+      <p
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <button
+          type="button"
+          className="light"
+          onClick={() => {
+            setShowImportExport(true);
+          }}
+        >
+          <Trans>Import/export</Trans>
+        </button>
+        <button
+          type="button"
+          disabled={shortcutsCount >= SHORTCUTS_LIMIT}
+          onClick={() => {
+            setShowForm(true);
+          }}
+        >
+          <Icon icon="plus" /> <span>{t`Add shortcut…`}</span>
+        </button>
+      </p>
+    </>
+  );
+}
+
+function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
   const snapStates = useSnapshot(states);
   const shortcuts = asShortcutEntries(snapStates.shortcuts);
   const [showForm, setShowForm] = useState<ShortcutFormState>(false);
@@ -369,237 +620,18 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
         <p>
           <Trans>Specify a list of shortcuts that'll appear&nbsp;as:</Trans>
         </p>
-        <div className="shortcuts-view-mode">
-          {[
-            {
-              value: 'float-button',
-              label: t`Floating button`,
-              imgURL: floatingButtonUrl,
-            },
-            {
-              value: 'tab-menu-bar',
-              label: t`Tab/Menu bar`,
-              imgURL: tabMenuBarUrl,
-            },
-            {
-              value: 'multi-column',
-              label: t`Multi-column`,
-              imgURL: multiColumnUrl,
-            },
-          ].map(({ value, label, imgURL }) => {
-            const checked =
-              snapStates.settings.shortcutsViewMode === value ||
-              (value === 'float-button' &&
-                !snapStates.settings.shortcutsViewMode);
-            return (
-              <label key={value} className={checked ? 'checked' : ''}>
-                <input
-                  type="radio"
-                  name="shortcuts-view-mode"
-                  value={value}
-                  checked={checked}
-                  onChange={(e) => {
-                    states.settings.shortcutsViewMode = e.currentTarget.value;
-                  }}
-                />{' '}
-                <img src={imgURL} alt="" width="80" height="58" />{' '}
-                <span>{label}</span>
-              </label>
-            );
-          })}
-        </div>
-        {shortcuts.length > 0 ? (
-          <>
-            <ol className="shortcuts-list" ref={shortcutsListParent}>
-              {shortcuts.map((shortcut, i) => {
-                if (!shortcut) return null;
-                // const key = i + Object.values(shortcut);
-                const key = Object.values(shortcut).join('-');
-                const { type } = shortcut;
-                if (!SHORTCUTS_META[type]) return null;
-                const meta = SHORTCUTS_META[type];
-                const icon = resolveShortcutMeta(
-                  meta.icon,
-                  shortcut,
-                  i,
-                  '',
-                );
-                const titleValue = resolveShortcutMeta(
-                  meta.title,
-                  shortcut,
-                  i,
-                  '',
-                );
-                const title =
-                  typeof titleValue === 'string' ||
-                  titleValue instanceof Promise
-                    ? titleValue
-                    : _(titleValue);
-                const subtitle = resolveShortcutMeta(
-                  meta.subtitle,
-                  shortcut,
-                  i,
-                  undefined,
-                );
-                const excludeViewMode = resolveShortcutMeta(
-                  meta.excludeViewMode,
-                  shortcut,
-                  i,
-                  undefined,
-                );
-                const currentViewMode = snapStates.settings.shortcutsViewMode;
-                const excludedViewMode =
-                  typeof currentViewMode === 'string' &&
-                  excludeViewMode?.includes(currentViewMode);
-                return (
-                  <li key={key}>
-                    <Icon icon={icon} />
-                    <span className="shortcut-text">
-                      <AsyncText value={title} />
-                      {!!subtitle && (
-                        <>
-                          {' '}
-                          <small className="ib insignificant">
-                            {subtitle}
-                          </small>
-                        </>
-                      )}
-                      {excludedViewMode && (
-                        <span className="tag">
-                          <Trans>Not available in current view mode</Trans>
-                        </span>
-                      )}
-                    </span>
-                    <span className="shortcut-actions">
-                      <button
-                        type="button"
-                        className="plain small"
-                        disabled={i === 0}
-                        onClick={() => {
-                          const shortcutsArr = Array.from(states.shortcuts);
-                          if (i > 0) {
-                            const temp = states.shortcuts[i - 1];
-                            shortcutsArr[i - 1] = shortcut;
-                            shortcutsArr[i] = temp;
-                            states.shortcuts = shortcutsArr;
-                          }
-                        }}
-                      >
-                        <Icon icon="arrow-up" alt={t`Move up`} />
-                      </button>
-                      <button
-                        type="button"
-                        className="plain small"
-                        disabled={i === shortcuts.length - 1}
-                        onClick={() => {
-                          const shortcutsArr = Array.from(states.shortcuts);
-                          if (i < states.shortcuts.length - 1) {
-                            const temp = states.shortcuts[i + 1];
-                            shortcutsArr[i + 1] = shortcut;
-                            shortcutsArr[i] = temp;
-                            states.shortcuts = shortcutsArr;
-                          }
-                        }}
-                      >
-                        <Icon icon="arrow-down" alt={t`Move down`} />
-                      </button>
-                      <button
-                        type="button"
-                        className="plain small"
-                        onClick={() => {
-                          setShowForm({
-                            shortcut,
-                            shortcutIndex: i,
-                          });
-                        }}
-                      >
-                        <Icon icon="pencil" alt={t`Edit`} />
-                      </button>
-                      {/* <button
-                      type="button"
-                      className="plain small"
-                      onClick={() => {
-                        states.shortcuts.splice(i, 1);
-                      }}
-                    >
-                      <Icon icon="x" alt="Remove" />
-                    </button> */}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-            {shortcuts.length === 1 &&
-              snapStates.settings.shortcutsViewMode !== 'float-button' && (
-                <div className="ui-state insignificant">
-                  <Icon icon="info" />{' '}
-                  <small>
-                    <Trans>
-                      Add more than one shortcut/column to make this work.
-                    </Trans>
-                  </small>
-                </div>
-              )}
-          </>
-        ) : (
-          <div className="ui-state insignificant">
-            <p>{t`No shortcuts yet. Tap on the Add shortcut button.`}</p>
-            <p>
-              <Trans>
-                Not sure what to add?
-                <br />
-                Try adding{' '}
-                <button
-                  type="button"
-                  className="plain"
-                  onClick={() => {
-                    states.shortcuts = [
-                      {
-                        type: 'following',
-                      },
-                      {
-                        type: 'notifications',
-                      },
-                    ];
-                  }}
-                >
-                  Home / Following and Notifications
-                </button>{' '}
-                first.
-              </Trans>
-            </p>
-          </div>
-        )}
-        <p className="insignificant">
-          {shortcuts.length >= SHORTCUTS_LIMIT &&
-            t`Max ${SHORTCUTS_LIMIT} shortcuts`}
-        </p>
-        <p
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <button
-            type="button"
-            className="light"
-            onClick={() => {
-              setShowImportExport(true);
-            }}
-          >
-            <Trans>Import/export</Trans>
-          </button>
-          <button
-            type="button"
-            disabled={shortcuts.length >= SHORTCUTS_LIMIT}
-            onClick={() => {
-              setShowForm(true);
-            }}
-          >
-            <Icon icon="plus" /> <span>{t`Add shortcut…`}</span>
-          </button>
-        </p>
+        <ShortcutsViewMode />
+        <ShortcutsList
+          currentViewMode={snapStates.settings.shortcutsViewMode}
+          shortcuts={shortcuts}
+          shortcutsListParent={shortcutsListParent}
+          setShowForm={setShowForm}
+        />
+        <ShortcutsActions
+          shortcutsCount={shortcuts.length}
+          setShowForm={setShowForm}
+          setShowImportExport={setShowImportExport}
+        />
       </main>
       {showForm && (
         <Modal
