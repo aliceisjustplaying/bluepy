@@ -9,6 +9,7 @@ import type {
   KeyboardEvent,
   ReactElement,
 } from 'react';
+import { Children } from 'react';
 import { memo } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -199,7 +200,7 @@ interface TimelineGroupEntry {
 // wrapper containing nested posts (created inline below).
 interface TimelineFilteredGroup {
   _grouped: true;
-  posts: TimelineItemEntry[];
+  posts: TimelineStatusEntry[];
   id?: string;
   filtered?: TimelineStatusEntry['filtered'];
 }
@@ -218,6 +219,14 @@ function isFilteredGroup(
   entry: TimelineItemEntry,
 ): entry is TimelineFilteredGroup {
   return '_grouped' in entry && entry._grouped;
+}
+
+function isTimelineStatus(entry: TimelineItemEntry): entry is TimelineStatusEntry {
+  return !hasItems(entry) && !isFilteredGroup(entry);
+}
+
+function entryID(entry: TimelineEntry): string {
+  return Array.isArray(entry.id) ? entry.id.join(',') : entry.id;
 }
 
 function dedupeTimelineEntries(items: readonly TimelineEntry[]) {
@@ -1023,25 +1032,17 @@ export const TimelineItem = memo(
     const { t } = useLingui();
     console.debug(
       'RENDER TimelineItem',
-      Array.isArray(status.id) ? status.id.join(',') : status.id,
+      entryID(status),
     );
     const groupView = hasItems(status);
-    const statusID = (status as TimelineStatusEntry).id;
-    const reblog = (status as TimelineStatusEntry).reblog;
-    const _pinned = status._pinned;
-    if (_pinned) useItemID = false;
-    const actualStatusID = reblog?.id || statusID;
-    const url = instance
-      ? `/${instance}/s/${actualStatusID}`
-      : `/s/${actualStatusID}`;
 
     if (groupView) {
       const groupEntry = status;
+      const statusID = entryID(groupEntry);
       const type = groupEntry.type;
-      let fItems = filteredItems(
-        groupEntry.items as readonly TimelineStatusEntry[],
-        filterContext,
-      ) as TimelineItemEntry[];
+      let fItems: TimelineItemEntry[] = [
+        ...filteredItems(groupEntry.items, filterContext),
+      ];
       let title: string | ReactElement = '';
       if (type === 'boosts') {
         title = plural(fItems.length, {
@@ -1055,15 +1056,16 @@ export const TimelineItem = memo(
       if (isCarousel) {
         const filteredItemsIDs = new Set<string>();
         // Here, we don't hide filtered posts, but we sort them last
-        (fItems as TimelineStatusEntry[]).sort((a, b) => {
+        const carouselItems = fItems.filter(isTimelineStatus);
+        carouselItems.sort((a, b) => {
           // if (a._filtered && !b._filtered) {
           //   return 1;
           // }
           // if (!a._filtered && b._filtered) {
           //   return -1;
           // }
-          const aFiltered = isFiltered(a.filtered, filterContext as string);
-          const bFiltered = isFiltered(b.filtered, filterContext as string);
+          const aFiltered = isFiltered(a.filtered, filterContext || '');
+          const bFiltered = isFiltered(b.filtered, filterContext || '');
           if (aFiltered && aFiltered?.action !== 'blur') {
             filteredItemsIDs.add(a.id);
           }
@@ -1084,7 +1086,7 @@ export const TimelineItem = memo(
           // If 2 or more, group filtered items into one, limit to GROUP_SIZE in a group
           const unfiltered: TimelineStatusEntry[] = [];
           const filtered: TimelineStatusEntry[] = [];
-          (fItems as TimelineStatusEntry[]).forEach((item) => {
+          carouselItems.forEach((item) => {
             if (filteredItemsIDs.has(item.id)) {
               filtered.push(item);
             } else {
@@ -1098,7 +1100,7 @@ export const TimelineItem = memo(
               posts: filtered.slice(i, i + GROUP_SIZE),
             });
           }
-          fItems = (unfiltered as TimelineItemEntry[]).concat(filteredGrouped);
+          fItems = [...unfiltered, ...filteredGrouped];
         }
 
         return (
@@ -1107,19 +1109,16 @@ export const TimelineItem = memo(
               {fItems.map((item) => {
                 if (isFilteredGroup(item)) {
                   const grouped = item;
-                  const firstPost = grouped.posts[0] as
-                    | TimelineStatusEntry
-                    | undefined;
+                  const firstPost = grouped.posts[0];
                   return (
                     <li
                       key={firstPost?.id}
                       className="timeline-item-carousel-group"
                     >
                       {grouped.posts.map((inner) => {
-                        const innerStatus = inner as TimelineStatusEntry;
-                        const innerID = innerStatus.id;
-                        const innerReblog = innerStatus.reblog;
-                        const innerPinned = innerStatus._pinned;
+                        const innerID = inner.id;
+                        const innerReblog = inner.reblog;
+                        const innerPinned = inner._pinned;
                         const innerActualID = innerReblog?.id || innerID;
                         const innerURL = instance
                           ? `/${instance}/s/${innerActualID}`
@@ -1139,7 +1138,7 @@ export const TimelineItem = memo(
                               />
                             ) : (
                               <Status
-                                status={innerStatus}
+                                status={inner}
                                 instance={instance}
                                 size="s"
                               />
@@ -1151,7 +1150,8 @@ export const TimelineItem = memo(
                   );
                 }
 
-                const itemStatus = item as TimelineStatusEntry;
+                if (!isTimelineStatus(item)) return null;
+                const itemStatus = item;
                 const itemID = itemStatus.id;
                 const itemReblog = itemStatus.reblog;
                 const itemPinned = itemStatus._pinned;
@@ -1196,7 +1196,8 @@ export const TimelineItem = memo(
         );
       }
       const manyItems = fItems.length > 3;
-      return (fItems as TimelineStatusEntry[]).flatMap((item, i, arr) => {
+      const threadItems = fItems.filter(isTimelineStatus);
+      return threadItems.flatMap((item, i, arr) => {
         const itemStatusID = item.id;
         const itemActualStatusID = canonicalTimelineContextId(item);
         const _differentAuthor = item._differentAuthor;
@@ -1288,6 +1289,15 @@ export const TimelineItem = memo(
       });
     }
 
+    const statusID = status.id;
+    const reblog = status.reblog;
+    const _pinned = status._pinned;
+    if (_pinned) useItemID = false;
+    const actualStatusID = reblog?.id || statusID;
+    const url = instance
+      ? `/${instance}/s/${actualStatusID}`
+      : `/s/${actualStatusID}`;
+
     const itemKey = `timeline-${statusID}${String(_pinned)}`;
 
     if (view === 'media') {
@@ -1339,10 +1349,8 @@ export const TimelineItem = memo(
     );
   },
   (oldProps, newProps) => {
-    const oldID =
-      (oldProps.status as TimelineStatusEntry | undefined)?.id || '';
-    const newID =
-      (newProps.status as TimelineStatusEntry | undefined)?.id || '';
+    const oldID = entryID(oldProps.status);
+    const newID = entryID(newProps.status);
     return (
       oldID === newID &&
       oldProps.instance === newProps.instance &&
@@ -1379,9 +1387,7 @@ function StatusCarousel({
     };
   }, []);
 
-  // `children` is the `.map(...)` array produced by TimelineItem above; the
-  // JS original indexes into it directly. Preserve that shape exactly.
-  const childrenArray = children as ReactNode[];
+  const childrenArray = Children.toArray(children);
 
   return (
     <div className={`status-carousel ${className}`}>
@@ -1461,7 +1467,7 @@ function TimelineStatusCompact({
   const { id, visibility, language } = status;
   const statusPeekText = statusPeek(status as StatusPeekPayload);
   const sKey = statusKey(id, instance);
-  const filterInfo = isFiltered(status.filtered, filterContext as string);
+  const filterInfo = isFiltered(status.filtered, filterContext || '');
   return (
     <article
       className={`status compact-thread ${
