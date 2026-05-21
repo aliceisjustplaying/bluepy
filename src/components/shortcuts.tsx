@@ -11,7 +11,7 @@ import {
   MenuHeader,
 } from '@szhsin/react-menu';
 import { memo } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
@@ -155,32 +155,38 @@ function Shortcuts() {
 
   const menuRef = useRef<MenuInstance | null>(null);
   const shortcutsButtonRef = useRef<HTMLButtonElement | null>(null);
+  const shortcutsButtonCleanupRef = useRef<(() => void) | null>(null);
   const tabBarRef = useRef<HTMLElement | null>(null);
 
   const hasLists = useRef(false);
 
-  useEffect(() => {
-    const button = shortcutsButtonRef.current;
-    if (!button) return undefined;
-    const closeMenuWhenButtonDisappears = (event: TransitionEvent) => {
-      const target = event.target;
-      try {
-        if (
-          target instanceof Element &&
-          getComputedStyle(target).pointerEvents === 'none'
-        ) {
-          menuRef.current?.closeMenu?.();
-        }
-      } catch {}
-    };
-    button.addEventListener('transitionstart', closeMenuWhenButtonDisappears);
-    return () => {
-      button.removeEventListener(
-        'transitionstart',
-        closeMenuWhenButtonDisappears,
-      );
-    };
-  }, []);
+  const setShortcutsButtonRef = useCallback(
+    (button: HTMLButtonElement | null) => {
+      shortcutsButtonCleanupRef.current?.();
+      shortcutsButtonCleanupRef.current = null;
+      shortcutsButtonRef.current = button;
+      if (!button) return;
+      const closeMenuWhenButtonDisappears = (event: TransitionEvent) => {
+        const target = event.target;
+        try {
+          if (
+            target instanceof Element &&
+            getComputedStyle(target).pointerEvents === 'none'
+          ) {
+            menuRef.current?.closeMenu?.();
+          }
+        } catch {}
+      };
+      button.addEventListener('transitionstart', closeMenuWhenButtonDisappears);
+      shortcutsButtonCleanupRef.current = () => {
+        button.removeEventListener(
+          'transitionstart',
+          closeMenuWhenButtonDisappears,
+        );
+      };
+    },
+    [],
+  );
 
   const formattedShortcuts: FormattedShortcut[] = [];
   (shortcuts as ShortcutPin[]).forEach((pin, i) => {
@@ -436,7 +442,7 @@ function Shortcuts() {
           }}
           menuButton={
             <button
-              ref={shortcutsButtonRef}
+              ref={setShortcutsButtonRef}
               type="button"
               id="shortcuts-button"
               className="plain"
