@@ -220,13 +220,13 @@ function StatusCard({
         ctx.putImageData(imageData, 0, 0);
       }
       try {
-        if (window.OffscreenCanvas) {
+        if ('convertToBlob' in canvas) {
           void (async () => {
-            const blob = await (canvas as OffscreenCanvas).convertToBlob();
+            const blob = await canvas.convertToBlob();
             setBlurhashImage(URL.createObjectURL(blob));
           })();
-        } else {
-          setBlurhashImage((canvas as HTMLCanvasElement).toDataURL());
+        } else if (canvas instanceof HTMLCanvasElement) {
+          setBlurhashImage(canvas.toDataURL());
         }
       } catch (e) {
         // Silently fail
@@ -263,8 +263,7 @@ function StatusCard({
               alt={imageDescription || ''}
               onError={(e) => {
                 try {
-                  const target = e.target as HTMLImageElement | null;
-                  if (target) target.style.display = 'none';
+                  e.currentTarget.style.display = 'none';
                 } catch {}
               }}
               style={{
