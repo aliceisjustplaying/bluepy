@@ -19,7 +19,7 @@ import { getCurrentAccountID } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 
 type ShortcutParams = Record<string, unknown> & {
-  id?: string | null;
+  id?: string;
   query?: string;
 };
 
@@ -34,12 +34,6 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   inline: 'nearest',
   behavior: 'instant' as ScrollBehavior,
 };
-
-function columnComponentMap(
-  components: unknown,
-): Record<string, ColumnComponent | undefined> {
-  return components as Record<string, ColumnComponent | undefined>;
-}
 
 function isShortcut(value: unknown): value is Shortcut {
   return (
@@ -58,7 +52,7 @@ function eventElement(target: EventTarget | null): Element | null {
   return target instanceof Element ? target : null;
 }
 
-const columnComponents = columnComponentMap({
+const columnComponents: Record<string, ColumnComponent | undefined> = {
   following: Following,
   notifications: Notifications,
   list: List,
@@ -69,7 +63,7 @@ const columnComponents = columnComponentMap({
   trending: Trending,
   search: Search,
   profile: AccountStatuses,
-});
+};
 
 function Columns() {
   const { t } = useLingui();
@@ -90,7 +84,7 @@ function Columns() {
     if (type === 'list' && !params.id) return null;
     // If profile, provide the account ID
     if (type === 'profile') {
-      params.id = getCurrentAccountID();
+      params.id = getCurrentAccountID() ?? undefined;
     }
     if (type === 'mentions') {
       return <Component key={type + JSON.stringify(params)} {...params} />;
