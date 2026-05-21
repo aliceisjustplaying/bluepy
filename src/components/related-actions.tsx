@@ -5,7 +5,7 @@ import { toUnicode as punycodeToUnicode } from 'punycode/';
 import type { HTMLAttributes, ReactElement } from 'react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
-import { api } from '../utils/api';
+import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
 import isSearchEnabled from '../utils/is-search-enabled';
 import niceDateTime from '../utils/nice-date-time';
 import showCompose from '../utils/show-compose';
@@ -80,18 +80,12 @@ interface V2SearchEndpoint {
   list(params: SearchListParams): Promise<SearchListResult>;
 }
 
-interface MastoLike {
-  v1: { accounts: unknown } & Record<string, unknown>;
-  v2: { search: unknown } & Record<string, unknown>;
-  [key: string]: unknown;
+function getAccountsEndpoint(masto: Parameters<typeof getMastoV1Resource>[0]) {
+  return getMastoV1Resource<AccountsEndpoint>(masto, 'accounts');
 }
 
-function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
-  return masto.v1.accounts as AccountsEndpoint;
-}
-
-function getV2SearchEndpoint(masto: MastoLike): V2SearchEndpoint {
-  return masto.v2.search as V2SearchEndpoint;
+function getV2SearchEndpoint(masto: Parameters<typeof getMastoV2Resource>[0]) {
+  return getMastoV2Resource<V2SearchEndpoint>(masto, 'search');
 }
 
 type RelationshipUIState = 'default' | 'loading' | 'error';
