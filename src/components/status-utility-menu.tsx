@@ -71,6 +71,7 @@ export default function StatusUtilityMenu({
     enableTranslate ||
     !language ||
     differentLanguage;
+  const shareURL = typeof url === 'string' ? url : undefined;
 
   return (
     <>
@@ -200,7 +201,7 @@ export default function StatusUtilityMenu({
           onClick={() => {
             void (async () => {
               try {
-                await navigator.clipboard.writeText(url as string);
+	                await navigator.clipboard.writeText(shareURL ?? '');
                 showToast(t`Link copied`);
               } catch (e) {
                 console.error(e);
@@ -216,15 +217,11 @@ export default function StatusUtilityMenu({
         </MenuItem>
         {isPublic &&
           navigator?.share &&
-          navigator?.canShare?.({
-            url: url as string | undefined,
-          }) && (
+          navigator?.canShare?.({ url: shareURL }) && (
             <MenuItem
               onClick={() => {
                 try {
-                  void navigator.share({
-                    url: url as string | undefined,
-                  });
+	                  void navigator.share({ url: shareURL });
                 } catch (e) {
                   console.error(e);
                   alert(t`Sharing doesn't seem to work.`);
