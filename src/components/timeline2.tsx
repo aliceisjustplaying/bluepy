@@ -322,31 +322,43 @@ function Timeline2({
     void (async () => {
       try {
         // Process in batches
+        const batchIdsList: string[][] = [];
         for (let i = 0; i < statusIds.length; i += BATCH_SIZE) {
-          const batchIds = statusIds.slice(i, i + BATCH_SIZE);
-          try {
-            const hydratedStatuses = await statusesResource.list({
-              id: batchIds,
-            });
-            const returnedIds = new Set(
-              hydratedStatuses?.map((s) => s.id) || [],
-            );
-            // Track deleted statuses (not in returnedIds)
+          batchIdsList.push(statusIds.slice(i, i + BATCH_SIZE));
+        }
+        const hydratedBatches = await Promise.all(
+          batchIdsList.map(async (batchIds) => {
+            let hydratedStatuses: mastodon.v1.Status[] = [];
+            let ok = false;
+            try {
+              hydratedStatuses = await statusesResource.list({
+                id: batchIds,
+              });
+              ok = true;
+            } catch (e) {
+              console.error('Failed to hydrate batch:', e);
+            }
+            return { batchIds, hydratedStatuses, ok };
+          }),
+        );
+        hydratedBatches.forEach(({ batchIds, hydratedStatuses, ok }) => {
+          const returnedIds = new Set(
+            hydratedStatuses?.map((s) => s.id) || [],
+          );
+          // Track deleted statuses (not in returnedIds)
+          if (ok) {
             batchIds.forEach((batchId) => {
               if (!returnedIds.has(batchId)) {
                 deletedStatuses.push(batchId);
               }
             });
-            if (hydratedStatuses?.length) {
-              hydratedStatuses.forEach((status) => {
-                saveStatus(toSaveStatus(status), instance, { sync: true });
-              });
-            }
-          } catch (e) {
-            console.error('Failed to hydrate batch:', e);
           }
-        }
-
+          if (hydratedStatuses?.length) {
+            hydratedStatuses.forEach((status) => {
+              saveStatus(toSaveStatus(status), instance, { sync: true });
+            });
+          }
+        });
         // Mark deleted statuses
         deletedStatuses.forEach((deletedId) => {
           const key = statusKey(deletedId, instance);
