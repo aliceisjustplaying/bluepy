@@ -186,7 +186,7 @@ interface HomeTimelineParams {
 }
 
 interface HomeIterable {
-  values(): AsyncIterator<mastodon.v1.Status[]>;
+  values(): AsyncIterator<CatchupPost[]>;
   params?: HomeTimelineParams | string;
 }
 
@@ -194,6 +194,10 @@ type UIState = 'start' | 'loading' | 'results';
 
 const FILTER_CONTEXT = 'home';
 const CATCHUP_NS = 'catchup';
+
+function catchupPostList(value: unknown): CatchupPost[] | undefined {
+  return Array.isArray(value) ? value : undefined;
+}
 
 interface RangeEntry {
   label: MessageDescriptor;
@@ -391,7 +395,8 @@ function Catchup() {
               homeIterable.params.include_reblogs = true;
             }
           }
-          const { value } = await homeIterator.next();
+          const result = await homeIterator.next();
+          const value = catchupPostList(result.value);
           if (value?.length) {
             for (let i = 0; i < value.length; i++) {
               const item = value[i];
