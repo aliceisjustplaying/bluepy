@@ -41,6 +41,23 @@ function columnComponentMap(
   return components as Record<string, ColumnComponent | undefined>;
 }
 
+function isShortcut(value: unknown): value is Shortcut {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    typeof value.type === 'string'
+  );
+}
+
+function htmlElement(element: Element | null): HTMLElement | null {
+  return element instanceof HTMLElement ? element : null;
+}
+
+function eventElement(target: EventTarget | null): Element | null {
+  return target instanceof Element ? target : null;
+}
+
 const columnComponents = columnComponentMap({
   following: Following,
   notifications: Notifications,
@@ -62,10 +79,8 @@ function Columns() {
 
   console.debug('RENDER Columns', shortcuts);
 
-  const components = (
-    shortcuts as readonly (Shortcut | null | undefined)[]
-  ).map((shortcut) => {
-    if (!shortcut) return null;
+  const components = shortcuts.map((shortcut) => {
+    if (!isShortcut(shortcut)) return null;
     const { type, ...params } = shortcut;
     const Component = columnComponents[type];
     if (!Component) return null;
@@ -114,9 +129,9 @@ function Columns() {
     ['[', ']'],
     (_e, handler) => {
       const key = handler.keys?.[0];
-      const currentFocusedColumn = (
-        document.activeElement as HTMLElement | null
-      )?.closest('#columns > *') as HTMLElement | null;
+      const currentFocusedColumn = htmlElement(
+        document.activeElement?.closest('#columns > *') ?? null,
+      );
 
       const rtl = isRTL();
       const prevColKey = rtl ? ']' : '[';
@@ -126,12 +141,12 @@ function Columns() {
       if (key === prevColKey) {
         // If [, focus on left of focused column, else first column
         $column = currentFocusedColumn
-          ? (currentFocusedColumn.previousElementSibling as HTMLElement | null)
+          ? htmlElement(currentFocusedColumn.previousElementSibling)
           : (document.querySelectorAll<HTMLElement>('#columns > *')[0] ?? null);
       } else if (key === nextColKey) {
         // If ], focus on right of focused column, else 2nd column
         $column = currentFocusedColumn
-          ? (currentFocusedColumn.nextElementSibling as HTMLElement | null)
+          ? htmlElement(currentFocusedColumn.nextElementSibling)
           : (document.querySelectorAll<HTMLElement>('#columns > *')[1] ?? null);
       }
       if ($column) {
@@ -153,7 +168,7 @@ function Columns() {
     <div
       id="columns"
       onContextMenu={(e) => {
-        const target = e.target as Element | null;
+        const target = eventElement(e.target);
         // If right-click on header, but not links or buttons
         if (
           target?.closest('.deck > header') &&
@@ -166,9 +181,8 @@ function Columns() {
       }}
       onFocus={() => {
         // Get current focused column
-        const currentFocusedColumn = (
-          document.activeElement as HTMLElement | null
-        )?.closest('#columns > *');
+        const currentFocusedColumn =
+          document.activeElement?.closest('#columns > *') ?? null;
         if (currentFocusedColumn) {
           // Remove focus classes from all columns
           // Add focus class to current focused column
