@@ -48,34 +48,28 @@ interface HomeTimelineResource {
   list(options: { limit: number }): HomeIterable;
 }
 
-interface SaveStatusInput {
+interface StreamStatusPayload extends Record<string, unknown> {
   id?: string;
-  account?: { id?: string } | null;
-  reblog?: SaveStatusInput | null;
-  quote?: SaveStatusInput | null;
-  state?: unknown;
-  quotedStatus?: SaveStatusInput | null;
-  inReplyToId?: string | null;
-  inReplyToAccountId?: string | null;
-  _pinned?: unknown;
 }
 
-interface SaveStatusPayload extends Record<string, unknown> {
-  id?: string;
-  account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
-  quote?: SaveStatusPayload | null;
-  state?: unknown;
-  quotedStatus?: SaveStatusPayload | null;
-  inReplyToId?: string | null;
-  inReplyToAccountId?: string | null;
-  _pinned?: unknown;
+function isStreamingUser(value: unknown): value is StreamingUser {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'user' in value &&
+    typeof value.user === 'object' &&
+    value.user !== null &&
+    'subscribe' in value.user &&
+    typeof value.user.subscribe === 'function'
+  );
 }
 
-function toSaveStatus(
-  status: SaveStatusInput | null | undefined,
-): SaveStatusPayload | null | undefined {
-  return status as SaveStatusPayload | null | undefined;
+function isStreamStatusPayload(value: unknown): value is StreamStatusPayload {
+  return typeof value === 'object' && value !== null;
+}
+
+function statusList(value: unknown): mastodon.v1.Status[] | undefined {
+  return Array.isArray(value) ? value : undefined;
 }
 
 const LIMIT = 20;
@@ -122,7 +116,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
 
   async function fetchHome(
     firstLoad?: boolean,
-  ): Promise<IteratorResult<mastodon.v1.Status[]>> {
+  ): Promise<{ done?: boolean; value?: mastodon.v1.Status[] }> {
     if (firstLoad || !homeIterator.current) {
       __BENCHMARK.start('fetch-home-first');
       const homeTimeline = getMastoV1Resource<{ home: HomeTimelineResource }>(
@@ -141,8 +135,9 @@ function Following({ title, path, id, ...props }: FollowingProps) {
         homeIterable.current.params.include_reblogs = true;
       }
     }
-    const results = await homeIterator.current.next();
-    let { value } = results;
+    const results: IteratorResult<mastodon.v1.Status[]> =
+      await homeIterator.current.next();
+    let value = statusList(results.value);
     if (value?.length) {
       if (firstLoad) {
         if (value[0].id !== latestItem.current) {
@@ -153,7 +148,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
 
       // value = filteredItems(value, 'home');
       value.forEach((item: mastodon.v1.Status) => {
-        saveStatus(toSaveStatus(item), instance);
+        saveStatus(item, instance);
       });
       value = dedupeBoosts(value, instance);
 
@@ -189,14 +184,17 @@ function Following({ title, path, id, ...props }: FollowingProps) {
           };
         };
       }>(masto, 'timelines').home;
-      const results = await homeTimeline.list(opts).values().next();
-      let { value } = results;
+      const results: IteratorResult<mastodon.v1.Status[]> = await homeTimeline
+        .list(opts)
+        .values()
+        .next();
+      let value = statusList(results.value);
       console.log('checkForUpdates', latestItem.current, value);
       const valueContainsLatestItem = value?.[0]?.id === latestItem.current; // since_id might not be supported
       if (value?.length && !valueContainsLatestItem) {
         latestItem.current = value[0].id;
         value = dedupeBoosts(value, instance);
-        value = filteredItems(value, 'home');
+        value = [...filteredItems(value, 'home')];
         if (value.some((item: mastodon.v1.Status) => !item.reblog)) {
           return true;
         }
@@ -211,22 +209,22 @@ function Following({ title, path, id, ...props }: FollowingProps) {
   useEffect(() => {
     let sub: StreamingSubscription | null = null;
     void (async () => {
-      if (streamingClient) {
-        sub = (streamingClient as StreamingUser).user.subscribe();
+      if (isStreamingUser(streamingClient)) {
+        sub = streamingClient.user.subscribe();
         console.log('🎏 Streaming user', sub);
         for await (const entry of sub) {
           if (!sub) break;
           if (entry.event === 'status.update') {
-            const status = entry.payload as SaveStatusInput;
+            if (!isStreamStatusPayload(entry.payload)) continue;
+            const status = entry.payload;
             console.log(`🔄 Status ${status.id} updated`);
-            saveStatus(toSaveStatus(status), instance);
+            saveStatus(status, instance);
           } else if (entry.event === 'delete') {
-            const statusID = entry.payload as string;
+            if (typeof entry.payload !== 'string') continue;
+            const statusID = entry.payload;
             console.log(`❌ Status ${statusID} deleted`);
             // delete states.statuses[statusID];
-            const s = getStatus(statusID, instance) as
-              | { _deleted?: boolean }
-              | undefined;
+            const s = getStatus(statusID, instance);
             if (s) s._deleted = true;
           }
         }
