@@ -1,7 +1,7 @@
 import './qr-code.css';
 
 import { encodeQR } from 'qr';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 interface QrCodeProps {
   text?: string;
@@ -29,6 +29,31 @@ function createCanvasContext() {
 const ctx = createCanvasContext();
 ctx.imageSmoothingEnabled = false;
 
+interface ArenaImageState {
+  loaded: boolean;
+  hasAlpha: boolean;
+}
+
+type ArenaImageAction =
+  | { type: 'loaded'; hasAlpha: boolean }
+  | { type: 'error' }
+  | { type: 'reset' };
+
+function arenaImageReducer(
+  state: ArenaImageState,
+  action: ArenaImageAction,
+): ArenaImageState {
+  switch (action.type) {
+    case 'loaded':
+      return { loaded: true, hasAlpha: action.hasAlpha };
+    case 'error':
+      return { ...state, loaded: true };
+    case 'reset':
+      return { loaded: false, hasAlpha: false };
+  }
+  return state;
+}
+
 export default function QrCode({
   text,
   arena,
@@ -38,8 +63,11 @@ export default function QrCode({
 }: QrCodeProps) {
   const captionRef = useRef<HTMLDivElement | null>(null);
   const [captionHeight, setCaptionHeight] = useState(0);
-  const [arenaLoaded, setArenaLoaded] = useState(false);
-  const [arenaHasAlpha, setArenaHasAlpha] = useState(false);
+  const [arenaImage, dispatchArenaImage] = useReducer(arenaImageReducer, {
+    loaded: false,
+    hasAlpha: false,
+  });
+  const { loaded: arenaLoaded, hasAlpha: arenaHasAlpha } = arenaImage;
 
   const effectiveArenaCircle = arenaHasAlpha ? false : arenaCircle;
 
@@ -55,7 +83,6 @@ export default function QrCode({
       const img = new Image();
       img.crossOrigin = 'anonymous';
       const handleLoad = () => {
-        setArenaLoaded(true);
         try {
           const { width, height } = img;
           canvas.width = width;
@@ -73,14 +100,14 @@ export default function QrCode({
               break;
             }
           }
-          setArenaHasAlpha(hasAlpha);
+          dispatchArenaImage({ type: 'loaded', hasAlpha });
         } catch {
-          setArenaHasAlpha(false);
+          dispatchArenaImage({ type: 'loaded', hasAlpha: false });
         }
       };
       const handleError = (error: Event) => {
         console.error('Failed to load arena image:', error);
-        setArenaLoaded(true); // Still show the image even on CORS error
+        dispatchArenaImage({ type: 'error' }); // Still show the image even on CORS error
       };
       img.addEventListener('load', handleLoad);
       img.addEventListener('error', handleError);
@@ -90,7 +117,7 @@ export default function QrCode({
         img.removeEventListener('error', handleError);
       };
     } else {
-      setArenaLoaded(false);
+      dispatchArenaImage({ type: 'reset' });
     }
     return undefined;
   }, [arena]);

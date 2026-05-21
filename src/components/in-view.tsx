@@ -1,8 +1,8 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 
 export interface InViewProps {
-  as?: string;
+  as?: 'div' | 'li';
   root?: Element | null;
   rootMargin?: string;
   threshold?: number;
@@ -13,7 +13,24 @@ export interface InViewProps {
   children?: ReactNode;
 }
 
-const InView: ComponentType<InViewProps> =
-  InViewUntyped as typeof InViewUntyped & ComponentType<InViewProps>;
+function InView({
+  class: legacyClassName,
+  className,
+  onChange,
+  ...props
+}: InViewProps) {
+  const notifyInViewChange = onChange
+    ? (inView: boolean) => {
+        onChange(inView);
+      }
+    : undefined;
+  return (
+    <InViewUntyped
+      {...props}
+      className={className ?? legacyClassName}
+      onChange={notifyInViewChange}
+    />
+  );
+}
 
 export default InView;
