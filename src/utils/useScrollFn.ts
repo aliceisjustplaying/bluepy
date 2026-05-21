@@ -16,7 +16,7 @@ interface ScrollFnState {
 type ScrollFnCallback = (state: ScrollFnState) => void;
 
 interface UseScrollFnOpts {
-  scrollableRef: RefObject<HTMLElement>;
+  scrollableRef: RefObject<HTMLElement | null>;
   distanceFromStart?: number;
   distanceFromEnd?: number;
   scrollThresholdStart?: number;

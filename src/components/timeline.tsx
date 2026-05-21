@@ -78,6 +78,15 @@ const shouldLetStatusLinkTargetHandleEvent = (target: EventTarget | null) =>
     'a, button, input, textarea, select, summary, [role="button"], [data-menu-trigger]',
   );
 
+function eventElement(target: EventTarget | null): Element | null {
+  return target instanceof Element ? target : null;
+}
+
+function activeTimelineItem(): HTMLElement | null {
+  const closest = document.activeElement?.closest(itemsSelector);
+  return closest instanceof HTMLElement ? closest : null;
+}
+
 function TimelineStatusLink({
   to,
   children,
@@ -176,11 +185,11 @@ interface StatusPeekPayload {
   } | null;
 }
 
-type TimelineGroupType = 'boosts' | 'thread' | 'conversation' | 'pinned';
+type TimelineGroupType = string;
 
 interface TimelineGroupEntry {
   id: string | string[];
-  items: TimelineItemEntry[];
+  items: TimelineStatusEntry[];
   type: TimelineGroupType;
   _pinned?: unknown;
   incompleteThread?: boolean;
@@ -200,22 +209,19 @@ type TimelineItemEntry =
   | TimelineStatusEntry
   | TimelineGroupEntry
   | TimelineFilteredGroup;
-type TimelineDedupeInput = Parameters<typeof dedupeTimelineContextItems>[0];
 
-function hasItems(entry: TimelineEntry): entry is TimelineGroupEntry {
-  return Array.isArray((entry as TimelineGroupEntry).items);
+function hasItems(entry: TimelineItemEntry): entry is TimelineGroupEntry {
+  return Array.isArray('items' in entry ? entry.items : undefined);
 }
 
 function isFilteredGroup(
   entry: TimelineItemEntry,
 ): entry is TimelineFilteredGroup {
-  return (entry as TimelineFilteredGroup)._grouped ?? false;
+  return '_grouped' in entry && entry._grouped;
 }
 
 function dedupeTimelineEntries(items: readonly TimelineEntry[]) {
-  return dedupeTimelineContextItems(
-    items as unknown as TimelineDedupeInput,
-  ) as TimelineEntry[];
+  return dedupeTimelineContextItems(items);
 }
 
 const scrollIntoViewOptions: ScrollIntoViewOptions = {
@@ -252,9 +258,7 @@ export function useJHotkeys(scrollableRef: ScrollableRef) {
       if (e.shiftKey !== handler.shift) return;
 
       // focus on next status after active item
-      const activeItem = document.activeElement?.closest(
-        itemsSelector,
-      ) as HTMLElement | null;
+      const activeItem = activeTimelineItem();
       const activeItemRect = activeItem?.getBoundingClientRect();
       const allItems = Array.from(
         scrollableRef.current?.querySelectorAll<HTMLElement>(itemsSelector) ||
@@ -316,9 +320,7 @@ export function useKHotkeys(scrollableRef: ScrollableRef) {
       // Fix bug: shift+k is fired even when k is pressed due to useKey: true
       if (e.shiftKey !== handler.shift) return;
 
-      const activeItem = document.activeElement?.closest(
-        itemsSelector,
-      ) as HTMLElement | null;
+      const activeItem = activeTimelineItem();
       const activeItemRect = activeItem?.getBoundingClientRect();
       const allItems = Array.from(
         scrollableRef.current?.querySelectorAll<HTMLElement>(itemsSelector) ||
@@ -378,7 +380,10 @@ export function useOHotkeys() {
     ['enter', 'o'],
     (e, handler) => {
       // open active status
-      const activeItem = document.activeElement as HTMLElement | null;
+      const activeItem =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
       if (activeItem?.matches(itemsSelector)) {
         // find first media link and click it (not inside status-card)
         const isO = handler.keys?.join('') === 'o';
@@ -463,7 +468,7 @@ function Timeline({
   errorText,
   useItemID, // use statusID instead of status object, assuming it's already in states
   boostsCarousel,
-  fetchItems = () => Promise.resolve({} as FetchItemsResult),
+  fetchItems = () => Promise.resolve({}),
   checkForUpdates = () => undefined,
   checkForUpdatesInterval = 15_000, // 15 seconds
   headerStart,
@@ -651,7 +656,7 @@ function Timeline({
   );
   const scrollFn = useScrollFn(
     {
-      scrollableRef: scrollableRef as RefObject<HTMLElement>,
+      scrollableRef,
       distanceFromEnd: 2,
       scrollThresholdStart: 44,
     },
@@ -820,7 +825,7 @@ function Timeline({
         tabIndex={-1}
         onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           // If click on timeline item, unhide header
-          const target = e.target as Element | null;
+          const target = eventElement(e.target);
           if (
             headerRef.current &&
             target?.closest('.timeline-item, .timeline-item-alt')
@@ -842,7 +847,7 @@ function Timeline({
             role="presentation"
             // hidden={hiddenUI}
             onClick={(e: React.MouseEvent<HTMLElement>) => {
-              const target = e.target as Element | null;
+              const target = eventElement(e.target);
               if (!target?.closest('a, button')) {
                 scrollableRef.current?.scrollTo({
                   top: 0,
@@ -851,7 +856,7 @@ function Timeline({
               }
             }}
             onDoubleClick={(e: React.MouseEvent<HTMLElement>) => {
-              const target = e.target as Element | null;
+              const target = eventElement(e.target);
               if (!target?.closest('a, button')) {
                 loadItems(true);
               }
