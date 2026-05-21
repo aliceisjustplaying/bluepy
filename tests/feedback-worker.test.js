@@ -1,5 +1,3 @@
-/// <reference types="node" />
-
 import { afterEach, mock, spyOn, test } from 'bun:test';
 import assert from 'node:assert/strict';
 
