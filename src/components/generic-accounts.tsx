@@ -62,7 +62,58 @@ interface GenericAccountsProps {
   blankCopy?: string;
 }
 
+interface GenericAccountsListProps {
+  accounts: AccountWithTypes[];
+  excludeRelationshipAttrs: readonly string[];
+  relationshipsMap: Record<string, mastodon.v1.Relationship>;
+  showReactions?: boolean;
+}
+
 const EMPTY_EXCLUDED_RELATIONSHIP_ATTRS: readonly string[] = [];
+
+function GenericAccountsList({
+  accounts,
+  excludeRelationshipAttrs,
+  relationshipsMap,
+  showReactions,
+}: GenericAccountsListProps) {
+  return (
+    <ul className="accounts-list">
+      {accounts.map((account) => {
+        const relationship = relationshipsMap[account.id];
+        const key = `${account.id}-${account._types?.length || ''}`;
+        return (
+          <li key={key}>
+            {showReactions && account._types?.length > 0 && (
+              <div className="reactions-block">
+                {account._types.map((type) => (
+                  <Icon
+                    key={type}
+                    icon={
+                      {
+                        reblog: 'rocket',
+                        favourite: 'heart',
+                      }[type]
+                    }
+                    className={`${type}-icon`}
+                  />
+                ))}
+              </div>
+            )}
+            <div className="account-relationships">
+              <AccountBlock
+                account={account}
+                showStats
+                relationship={relationship}
+                excludeRelationshipAttrs={excludeRelationshipAttrs}
+              />
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 export default function GenericAccounts({
   instance,
@@ -293,40 +344,12 @@ export default function GenericAccounts({
         )}
         {accounts.length > 0 ? (
           <>
-            <ul className="accounts-list">
-              {accounts.map((account) => {
-                const relationship = relationshipsMap[account.id];
-                const key = `${account.id}-${account._types?.length || ''}`;
-                return (
-                  <li key={key}>
-                    {showReactions && account._types?.length > 0 && (
-                      <div className="reactions-block">
-                        {account._types.map((type) => (
-                          <Icon
-                            key={type}
-                            icon={
-                              {
-                                reblog: 'rocket',
-                                favourite: 'heart',
-                              }[type]
-                            }
-                            className={`${type}-icon`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                    <div className="account-relationships">
-                      <AccountBlock
-                        account={account}
-                        showStats
-                        relationship={relationship}
-                        excludeRelationshipAttrs={excludeRelationshipAttrs}
-                      />
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+            <GenericAccountsList
+              accounts={accounts}
+              excludeRelationshipAttrs={excludeRelationshipAttrs}
+              relationshipsMap={relationshipsMap}
+              showReactions={showReactions}
+            />
             {uiState === 'default' ? (
               showMore ? (
                 <InView
