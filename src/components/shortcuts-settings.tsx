@@ -8,7 +8,7 @@ import {
   compressToEncodedURIComponent,
   decompressFromEncodedURIComponent,
 } from 'lz-string';
-import type { HTMLAttributes } from 'react';
+import type { Dispatch, HTMLAttributes, RefObject, SetStateAction } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
@@ -920,9 +920,362 @@ interface ImportExportProps {
   onClose?: () => void;
 }
 
-function ImportExport({ shortcuts, onClose }: ImportExportProps) {
+interface ImportShortcutsSectionProps {
+  hasCurrentSettings: boolean;
+  importShortcutStr: string;
+  importUIState: string;
+  onClose?: () => void;
+  parsedImportShortcutStr: unknown[] | null;
+  setImportShortcutStr: Dispatch<SetStateAction<string>>;
+  shortcuts: readonly ShortcutEntry[];
+  shortcutsImportFieldRef: RefObject<HTMLInputElement | null>;
+}
+
+interface ExportShortcutsSectionProps {
+  shortcuts: readonly ShortcutEntry[];
+  shortcutsStr: string;
+}
+
+function shortcutExistsInList(
+  shortcut: Record<string, string>,
+  shortcuts: readonly ShortcutEntry[],
+) {
+  return shortcuts.some((s) =>
+    Object.keys(s).every((key) => {
+      if (!(key in shortcut)) return true;
+      const val = shortcut[key];
+      if (val === '' || val === null || val === undefined) return true;
+      return s[key] === val;
+    }),
+  );
+}
+
+function ImportShortcutsSection({
+  hasCurrentSettings,
+  importShortcutStr,
+  importUIState,
+  onClose,
+  parsedImportShortcutStr,
+  setImportShortcutStr,
+  shortcuts,
+  shortcutsImportFieldRef,
+}: ImportShortcutsSectionProps) {
   const { i18n } = useLingui();
   const _: Translator = (descriptor) => i18n._(descriptor);
+
+  return (
+    <section>
+      <h3>
+        <Icon icon="arrow-down-circle" size="l" className="insignificant" />{' '}
+        <span>
+          <Trans>Import</Trans>
+        </span>
+      </h3>
+      <p className="field-button">
+        <input
+          ref={shortcutsImportFieldRef}
+          type="text"
+          name="import"
+          placeholder={t`Paste shortcuts here`}
+          className="block"
+          onInput={(e) => {
+            setImportShortcutStr(e.currentTarget.value);
+          }}
+          dir="auto"
+        />
+        {mediaDevicesSupported && (
+          <button
+            type="button"
+            className="plain2 small"
+            onClick={() => {
+              states.showQrScannerModal = {
+                onClose: ({ text }: { text?: string } = {}) => {
+                  if (text) {
+                    setImportShortcutStr(text);
+                    const field = shortcutsImportFieldRef.current;
+                    if (field) {
+                      field.value = text;
+                      field.dispatchEvent(new Event('input'));
+                    }
+                  }
+                },
+              };
+            }}
+          >
+            <Icon icon="scan" alt={t`Scan QR code`} />
+          </button>
+        )}
+      </p>
+      {!!parsedImportShortcutStr && Array.isArray(parsedImportShortcutStr) && (
+        <>
+          <p>
+            <b>{parsedImportShortcutStr.length}</b> shortcut
+            {parsedImportShortcutStr.length > 1 ? 's' : ''}{' '}
+            <small className="insignificant">
+              ({importShortcutStr.length} characters)
+            </small>
+          </p>
+          <ol className="import-settings-list">
+            {parsedImportShortcutStr.map((rawShortcut) => {
+              // The JS original accesses fields directly without validating
+              // each entry. We treat each parsed element as a loose
+              // string-record to preserve that.
+              const shortcut = getStringRecord(rawShortcut);
+              const shortcutKey = JSON.stringify(shortcut);
+              return (
+                <li key={shortcutKey}>
+                  <span
+                    style={{
+                      opacity: shortcutExistsInList(shortcut, shortcuts) ? 1 : 0,
+                    }}
+                  >
+                    *
+                  </span>
+                  <span>
+                    {_(TYPE_TEXT[shortcut.type])}
+                    {shortcut.type === 'list' && !!shortcut.id && ' ⚠️'}{' '}
+                    {TYPE_PARAMS[shortcut.type]?.map?.(({ text, name, type }) =>
+                      shortcut[name] ? (
+                        <>
+                          <span className="tag collapsed insignificant">
+                            {typeof text === 'string' ? text : _(text)}:{' '}
+                            {type === 'checkbox'
+                              ? shortcut[name] === 'on'
+                                ? '✅'
+                                : '❌'
+                              : shortcut[name]}
+                          </span>{' '}
+                        </>
+                      ) : null,
+                    )}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+          <p>
+            <small>
+              <Trans>* Exists in current shortcuts</Trans>
+            </small>
+            <br />
+            <small>
+              ⚠️{' '}
+              <Trans>List may not work if it's from a different account.</Trans>
+            </small>
+          </p>
+        </>
+      )}
+      {importUIState === 'error' && (
+        <p className="error">
+          <small>
+            ⚠️ <Trans>Invalid settings format</Trans>
+          </small>
+        </p>
+      )}
+      <p>
+        {hasCurrentSettings && (
+          <>
+            <MenuConfirm
+              confirmLabel={t`Append to current shortcuts?`}
+              menuFooter={
+                <div className="footer">
+                  <Trans>
+                    Only shortcuts that don’t exist in current shortcuts will be
+                    appended.
+                  </Trans>
+                </div>
+              }
+              onClick={() => {
+                // Append non-unique shortcuts only.
+                const parsed = parsedImportShortcutStr ?? [];
+                const currentShortcuts = asShortcutEntries(states.shortcuts);
+                const nonUniqueShortcuts = parsed.filter((rawShortcut) => {
+                  const shortcut = getStringRecord(rawShortcut);
+                  return !currentShortcuts.some((s) =>
+                    // Compare all properties
+                    Object.keys(s).every((key) => s[key] === shortcut[key]),
+                  );
+                });
+                if (!nonUniqueShortcuts.length) {
+                  showToast(t`No new shortcuts to import`);
+                  return;
+                }
+                let newShortcuts: unknown[] = [
+                  ...states.shortcuts,
+                  ...nonUniqueShortcuts,
+                ];
+                const exceededLimit = newShortcuts.length > SHORTCUTS_LIMIT;
+                if (exceededLimit) {
+                  // If exceeded, trim it
+                  newShortcuts = newShortcuts.slice(0, SHORTCUTS_LIMIT);
+                }
+                states.shortcuts = [...asShortcutEntries(newShortcuts)];
+                showToast(
+                  exceededLimit
+                    ? t`Shortcuts imported. Exceeded max ${SHORTCUTS_LIMIT}, so the rest are not imported.`
+                    : t`Shortcuts imported`,
+                );
+                onClose?.();
+              }}
+            >
+              <button
+                type="button"
+                className="plain2"
+                disabled={!parsedImportShortcutStr}
+              >
+                <Trans>Import & append…</Trans>
+              </button>
+            </MenuConfirm>{' '}
+          </>
+        )}
+        <MenuConfirm
+          confirmLabel={
+            hasCurrentSettings ? t`Override current shortcuts?` : t`Import shortcuts?`
+          }
+          menuItemClassName={hasCurrentSettings ? 'danger' : undefined}
+          onClick={() => {
+            states.shortcuts = [...asShortcutEntries(parsedImportShortcutStr)];
+            showToast(t`Shortcuts imported`);
+            onClose?.();
+          }}
+        >
+          <button
+            type="button"
+            className="plain2"
+            disabled={!parsedImportShortcutStr}
+          >
+            {hasCurrentSettings ? t`or override…` : t`Import…`}
+          </button>
+        </MenuConfirm>
+      </p>
+    </section>
+  );
+}
+
+function ExportShortcutsSection({
+  shortcuts,
+  shortcutsStr,
+}: ExportShortcutsSectionProps) {
+  return (
+    <section>
+      <h3>
+        <Icon icon="arrow-up-circle" size="l" className="insignificant" />{' '}
+        <span>
+          <Trans>Export</Trans>
+        </span>
+      </h3>
+      <p className="field-button">
+        <input
+          style={{ width: '100%' }}
+          type="text"
+          value={shortcutsStr}
+          readOnly
+          onClick={(e) => {
+            const target = e.currentTarget;
+            if (!target.value) return;
+            target.select();
+            // Copy url to clipboard
+            void (async () => {
+              try {
+                await navigator.clipboard.writeText(target.value);
+                showToast(t`Shortcuts copied`);
+              } catch (err) {
+                console.error(err);
+                showToast(t`Unable to copy shortcuts`);
+              }
+            })();
+          }}
+          dir="auto"
+        />
+        <button
+          type="button"
+          className="plain2 small"
+          disabled={!shortcutsStr}
+          onClick={() => {
+            states.showQrCodeModal = {
+              text: shortcutsStr,
+            };
+          }}
+        >
+          <Icon icon="qrcode" alt={t`QR code`} />
+        </button>
+      </p>
+      <p>
+        <button
+          type="button"
+          className="plain2"
+          disabled={!shortcutsStr}
+          onClick={() => {
+            void (async () => {
+              try {
+                await navigator.clipboard.writeText(shortcutsStr);
+                showToast(t`Shortcut settings copied`);
+              } catch (err) {
+                console.error(err);
+                showToast(t`Unable to copy shortcut settings`);
+              }
+            })();
+          }}
+        >
+          <Icon icon="clipboard" />{' '}
+          <span>
+            <Trans>Copy</Trans>
+          </span>
+        </button>{' '}
+        {navigator?.share &&
+          navigator?.canShare?.({
+            text: shortcutsStr,
+          }) && (
+            <button
+              type="button"
+              className="plain2"
+              disabled={!shortcutsStr}
+              onClick={() => {
+                void (async () => {
+                  try {
+                    await navigator.share({
+                      text: shortcutsStr,
+                    });
+                  } catch (err) {
+                    console.error(err);
+                    alert(t`Sharing doesn't seem to work.`);
+                  }
+                })();
+              }}
+            >
+              <Icon icon="share" />{' '}
+              <span>
+                <Trans>Share</Trans>
+              </span>
+            </button>
+          )}{' '}
+        {shortcutsStr.length > 0 && (
+          <small className="insignificant ib">
+            <Plural
+              value={shortcutsStr.length}
+              one="# character"
+              other="# characters"
+            />
+          </small>
+        )}
+      </p>
+      {!!shortcutsStr && (
+        <details>
+          <summary className="insignificant">
+            <small>
+              <Trans>Raw Shortcuts JSON</Trans>
+            </small>
+          </summary>
+          <textarea style={{ width: '100%' }} rows={10} readOnly>
+            {JSON.stringify(shortcuts.filter(Boolean), null, 2)}
+          </textarea>
+        </details>
+      )}
+    </section>
+  );
+}
+
+function ImportExport({ shortcuts, onClose }: ImportExportProps) {
   const shortcutsStr = useMemo(() => {
     if (!shortcuts) return '';
     if (!shortcuts.filter(Boolean).length) return '';
@@ -986,343 +1339,17 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
         </h2>
       </header>
       <main tabIndex={-1}>
-        <section>
-          <h3>
-            <Icon icon="arrow-down-circle" size="l" className="insignificant" />{' '}
-            <span>
-              <Trans>Import</Trans>
-            </span>
-          </h3>
-          <p className="field-button">
-            <input
-              ref={shortcutsImportFieldRef}
-              type="text"
-              name="import"
-              placeholder={t`Paste shortcuts here`}
-              className="block"
-              onInput={(e) => {
-                setImportShortcutStr(e.currentTarget.value);
-              }}
-              dir="auto"
-            />
-            {mediaDevicesSupported && (
-              <button
-                type="button"
-                className="plain2 small"
-                onClick={() => {
-                  states.showQrScannerModal = {
-                    onClose: ({ text }: { text?: string } = {}) => {
-                      if (text) {
-                        setImportShortcutStr(text);
-                        const field = shortcutsImportFieldRef.current;
-                        if (field) {
-                          field.value = text;
-                          field.dispatchEvent(new Event('input'));
-                        }
-                      }
-                    },
-                  };
-                }}
-              >
-                <Icon icon="scan" alt={t`Scan QR code`} />
-              </button>
-            )}
-          </p>
-          {!!parsedImportShortcutStr &&
-            Array.isArray(parsedImportShortcutStr) && (
-              <>
-                <p>
-                  <b>{parsedImportShortcutStr.length}</b> shortcut
-                  {parsedImportShortcutStr.length > 1 ? 's' : ''}{' '}
-                  <small className="insignificant">
-                    ({importShortcutStr.length} characters)
-                  </small>
-                </p>
-                <ol className="import-settings-list">
-                  {parsedImportShortcutStr.map((rawShortcut) => {
-                    // The JS original accesses fields directly without
-                    // validating each entry. We treat each parsed element as
-                    // a loose string-record to preserve that.
-                    const shortcut = getStringRecord(rawShortcut);
-                    const shortcutKey = JSON.stringify(shortcut);
-                    return (
-                      <li key={shortcutKey}>
-                        <span
-                          style={{
-                            opacity: shortcuts.some((s: ShortcutEntry) =>
-                              // Compare all properties
-                              Object.keys(s).every((key) => {
-                                if (!(key in shortcut)) return true;
-                                const val = shortcut[key];
-                                if (
-                                  val === '' ||
-                                  val === null ||
-                                  val === undefined
-                                ) {
-                                  return true;
-                                }
-                                return s[key] === val;
-                              }),
-                            )
-                              ? 1
-                              : 0,
-                          }}
-                        >
-                          *
-                        </span>
-                        <span>
-                          {_(TYPE_TEXT[shortcut.type])}
-                          {shortcut.type === 'list' &&
-                            !!shortcut.id &&
-                            ' ⚠️'}{' '}
-                          {TYPE_PARAMS[shortcut.type]?.map?.(
-                            ({ text, name, type }) =>
-                              shortcut[name] ? (
-                                <>
-                                  <span className="tag collapsed insignificant">
-                                    {typeof text === 'string' ? text : _(text)}:{' '}
-                                    {type === 'checkbox'
-                                      ? shortcut[name] === 'on'
-                                        ? '✅'
-                                        : '❌'
-                                      : shortcut[name]}
-                                  </span>{' '}
-                                </>
-                              ) : null,
-                          )}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ol>
-                <p>
-                  <small>
-                    <Trans>* Exists in current shortcuts</Trans>
-                  </small>
-                  <br />
-                  <small>
-                    ⚠️{' '}
-                    <Trans>
-                      List may not work if it's from a different account.
-                    </Trans>
-                  </small>
-                </p>
-              </>
-            )}
-          {importUIState === 'error' && (
-            <p className="error">
-              <small>
-                ⚠️ <Trans>Invalid settings format</Trans>
-              </small>
-            </p>
-          )}
-          <p>
-            {hasCurrentSettings && (
-              <>
-                <MenuConfirm
-                  confirmLabel={t`Append to current shortcuts?`}
-                  menuFooter={
-                    <div className="footer">
-                      <Trans>
-                        Only shortcuts that don’t exist in current shortcuts
-                        will be appended.
-                      </Trans>
-                    </div>
-                  }
-                  onClick={() => {
-                    // states.shortcuts = [
-                    //   ...states.shortcuts,
-                    //   ...parsedImportShortcutStr,
-                    // ];
-                    // Append non-unique shortcuts only.
-                    // The trigger button is disabled when parsedImportShortcutStr
-                    // is null, so the assertion below matches the JS original
-                    // — which would throw on `.filter` if null reached here.
-                    const parsed = parsedImportShortcutStr ?? [];
-                    const currentShortcuts = asShortcutEntries(states.shortcuts);
-                    const nonUniqueShortcuts = parsed.filter((rawShortcut) => {
-                      const shortcut = getStringRecord(rawShortcut);
-                      return !currentShortcuts.some((s) =>
-                        // Compare all properties
-                        Object.keys(s).every((key) => s[key] === shortcut[key]),
-                      );
-                    });
-                    if (!nonUniqueShortcuts.length) {
-                      showToast(t`No new shortcuts to import`);
-                      return;
-                    }
-                    let newShortcuts: unknown[] = [
-                      ...states.shortcuts,
-                      ...nonUniqueShortcuts,
-                    ];
-                    const exceededLimit = newShortcuts.length > SHORTCUTS_LIMIT;
-                    if (exceededLimit) {
-                      // If exceeded, trim it
-                      newShortcuts = newShortcuts.slice(0, SHORTCUTS_LIMIT);
-                    }
-                    states.shortcuts = [...asShortcutEntries(newShortcuts)];
-                    showToast(
-                      exceededLimit
-                        ? t`Shortcuts imported. Exceeded max ${SHORTCUTS_LIMIT}, so the rest are not imported.`
-                        : t`Shortcuts imported`,
-                    );
-                    onClose?.();
-                  }}
-                >
-                  <button
-                    type="button"
-                    className="plain2"
-                    disabled={!parsedImportShortcutStr}
-                  >
-                    <Trans>Import & append…</Trans>
-                  </button>
-                </MenuConfirm>{' '}
-              </>
-            )}
-            <MenuConfirm
-              confirmLabel={
-                hasCurrentSettings
-                  ? t`Override current shortcuts?`
-                  : t`Import shortcuts?`
-              }
-              menuItemClassName={hasCurrentSettings ? 'danger' : undefined}
-              onClick={() => {
-                // Trigger button is disabled when parsed is null; the
-                // assertion below mirrors the original JS assignment which
-                // wrote `null` through to `states.shortcuts` if it ever
-                // reached this point.
-                states.shortcuts = [
-                  ...asShortcutEntries(parsedImportShortcutStr),
-                ];
-                showToast(t`Shortcuts imported`);
-                onClose?.();
-              }}
-            >
-              <button
-                type="button"
-                className="plain2"
-                disabled={!parsedImportShortcutStr}
-              >
-                {hasCurrentSettings ? t`or override…` : t`Import…`}
-              </button>
-            </MenuConfirm>
-          </p>
-        </section>
-        <section>
-          <h3>
-            <Icon icon="arrow-up-circle" size="l" className="insignificant" />{' '}
-            <span>
-              <Trans>Export</Trans>
-            </span>
-          </h3>
-          <p className="field-button">
-            <input
-              style={{ width: '100%' }}
-              type="text"
-              value={shortcutsStr}
-              readOnly
-              onClick={(e) => {
-                const target = e.currentTarget;
-                if (!target.value) return;
-                target.select();
-                // Copy url to clipboard
-                void (async () => {
-                  try {
-                    await navigator.clipboard.writeText(target.value);
-                    showToast(t`Shortcuts copied`);
-                  } catch (err) {
-                    console.error(err);
-                    showToast(t`Unable to copy shortcuts`);
-                  }
-                })();
-              }}
-              dir="auto"
-            />
-            <button
-              type="button"
-              className="plain2 small"
-              disabled={!shortcutsStr}
-              onClick={() => {
-                states.showQrCodeModal = {
-                  text: shortcutsStr,
-                };
-              }}
-            >
-              <Icon icon="qrcode" alt={t`QR code`} />
-            </button>
-          </p>
-          <p>
-            <button
-              type="button"
-              className="plain2"
-              disabled={!shortcutsStr}
-              onClick={() => {
-                void (async () => {
-                  try {
-                    await navigator.clipboard.writeText(shortcutsStr);
-                    showToast(t`Shortcut settings copied`);
-                  } catch (err) {
-                    console.error(err);
-                    showToast(t`Unable to copy shortcut settings`);
-                  }
-                })();
-              }}
-            >
-              <Icon icon="clipboard" />{' '}
-              <span>
-                <Trans>Copy</Trans>
-              </span>
-            </button>{' '}
-            {navigator?.share &&
-              navigator?.canShare?.({
-                text: shortcutsStr,
-              }) && (
-                <button
-                  type="button"
-                  className="plain2"
-                  disabled={!shortcutsStr}
-                  onClick={() => {
-                    void (async () => {
-                      try {
-                        await navigator.share({
-                          text: shortcutsStr,
-                        });
-                      } catch (err) {
-                        console.error(err);
-                        alert(t`Sharing doesn't seem to work.`);
-                      }
-                    })();
-                  }}
-                >
-                  <Icon icon="share" />{' '}
-                  <span>
-                    <Trans>Share</Trans>
-                  </span>
-                </button>
-              )}{' '}
-            {shortcutsStr.length > 0 && (
-              <small className="insignificant ib">
-                <Plural
-                  value={shortcutsStr.length}
-                  one="# character"
-                  other="# characters"
-                />
-              </small>
-            )}
-          </p>
-          {!!shortcutsStr && (
-            <details>
-              <summary className="insignificant">
-                <small>
-                  <Trans>Raw Shortcuts JSON</Trans>
-                </small>
-              </summary>
-              <textarea style={{ width: '100%' }} rows={10} readOnly>
-                {JSON.stringify(shortcuts.filter(Boolean), null, 2)}
-              </textarea>
-            </details>
-          )}
-        </section>
+        <ImportShortcutsSection
+          hasCurrentSettings={hasCurrentSettings}
+          importShortcutStr={importShortcutStr}
+          importUIState={importUIState}
+          onClose={onClose}
+          parsedImportShortcutStr={parsedImportShortcutStr}
+          setImportShortcutStr={setImportShortcutStr}
+          shortcuts={shortcuts}
+          shortcutsImportFieldRef={shortcutsImportFieldRef}
+        />
+        <ExportShortcutsSection shortcuts={shortcuts} shortcutsStr={shortcutsStr} />
       </main>
     </div>
   );
