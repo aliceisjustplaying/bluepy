@@ -1,9 +1,11 @@
 import { FocusableItem } from '@szhsin/react-menu';
-import type { Ref } from 'react';
+import type { AnchorHTMLAttributes, Ref } from 'react';
 
-import Link, { type LinkProps } from './link';
+import Link from './link';
 
-interface MenuLinkProps extends Partial<LinkProps> {
+interface MenuLinkProps
+  extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+  to?: string;
   href?: string;
   className?: string;
   disabled?: boolean;
@@ -19,30 +21,37 @@ function MenuLink(props: MenuLinkProps) {
       }: {
         ref: Ref<unknown>;
         closeMenu: (key?: string) => void;
-      }) => (
-        <>
-          {restProps.to ? (
-            <Link
-              {...(restProps as LinkProps)}
-              ref={ref as Ref<HTMLAnchorElement>}
-              onClick={({ detail }: React.MouseEvent<HTMLAnchorElement>) => {
-                closeMenu(detail === 0 ? 'Enter' : undefined);
-              }}
-            />
-          ) : (
-            <a
-              href={href}
-              {...(restProps as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
-              ref={ref as Ref<HTMLAnchorElement>}
-              onClick={({ detail }) => {
-                closeMenu(detail === 0 ? 'Enter' : undefined);
-              }}
-            >
-              {restProps.children}
-            </a>
-          )}
-        </>
-      )}
+      }) => {
+        const setAnchorRef = (node: HTMLAnchorElement | null) => {
+          if (typeof ref === 'function') ref(node);
+        };
+        const { to, children, ...anchorProps } = restProps;
+        return (
+          <>
+            {to ? (
+              <Link
+                {...anchorProps}
+                to={to}
+                ref={setAnchorRef}
+                onClick={({ detail }: React.MouseEvent<HTMLAnchorElement>) => {
+                  closeMenu(detail === 0 ? 'Enter' : undefined);
+                }}
+              />
+            ) : (
+              <a
+                href={href}
+                {...anchorProps}
+                ref={setAnchorRef}
+                onClick={({ detail }) => {
+                  closeMenu(detail === 0 ? 'Enter' : undefined);
+                }}
+              >
+                {children}
+              </a>
+            )}
+          </>
+        );
+      }}
     </FocusableItem>
   );
 }
