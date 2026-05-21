@@ -1,6 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 
 import haptics from '../utils/haptics';
 import { supportsNativeQuote } from '../utils/quote-utils';
@@ -23,6 +22,17 @@ function hasQuoteRevokeResource(
   resource: object,
 ): resource is StatusQuotesRevokeResource {
   return '$select' in resource;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object';
+}
+
+function quotedStatusFromQuote(
+  value: unknown,
+): Record<string, unknown> | undefined {
+  if (!isRecord(value)) return undefined;
+  return isRecord(value.quotedStatus) ? value.quotedStatus : undefined;
 }
 
 type StatusAccountMenuProps = Pick<
@@ -69,6 +79,9 @@ export default function StatusAccountMenu({
 }: StatusAccountMenuProps) {
   const { t, i18n } = useLingui();
   const _ = i18n._.bind(i18n);
+  const quoteApprovalPolicyMessage = postQuoteApprovalPolicy
+    ? quoteApprovalPolicyMessages[postQuoteApprovalPolicy]
+    : undefined;
 
   return (
     <>
@@ -171,11 +184,9 @@ export default function StatusAccountMenu({
                   <Trans>Quote settings</Trans>
                   <br />
                   <span className="more-insignificant">
-                    {_(
-                      quoteApprovalPolicyMessages[
-                        postQuoteApprovalPolicy as keyof typeof quoteApprovalPolicyMessages
-                      ],
-                    )}
+                    {quoteApprovalPolicyMessage
+                      ? _(quoteApprovalPolicyMessage)
+                      : ''}
                   </span>
                 </small>
               </MenuItem>
@@ -186,10 +197,8 @@ export default function StatusAccountMenu({
                 onClick={() => {
                   showCompose({
                     editStatus: status,
-                    quoteStatus: (
-                      status.quote as mastodon.v1.Quote | null | undefined
-                    )?.quotedStatus,
-                  } as Parameters<typeof showCompose>[0]);
+                    quoteStatus: quotedStatusFromQuote(status.quote),
+                  });
                 }}
               >
                 <Icon icon="pencil" />
@@ -266,8 +275,12 @@ export default function StatusAccountMenu({
                 void haptics.trigger('light');
                 void (async () => {
                   try {
-                    const quotedStatusID = (quote as mastodon.v1.Quote)
-                      .quotedStatus?.id;
+                    const quotedStatus = quotedStatusFromQuote(quote);
+                    const quotedStatusID =
+                      isRecord(quotedStatus) &&
+                      typeof quotedStatus.id === 'string'
+                        ? quotedStatus.id
+                        : undefined;
                     if (!quotedStatusID) {
                       throw new Error('Quoted status unavailable');
                     }

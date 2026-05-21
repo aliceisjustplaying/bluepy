@@ -1,12 +1,10 @@
 import type {
   TextareaHTMLAttributes,
   Ref,
-  RefObject,
   ClipboardEvent,
-  SyntheticEvent,
   UIEvent,
 } from 'react';
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { useDebouncedCallback, useThrottledCallback } from 'use-debounce';
 
 import { langDetector } from '../utils/browser-translator';
@@ -137,8 +135,24 @@ interface TextareaProps extends Omit<
 
 function Textarea(props: TextareaProps) {
   const { ref } = props;
-  const textareaRef = ref as RefObject<HTMLTextAreaElement>;
-  const { maxCharacters, onTrigger = null, ...textareaProps } = props;
+  const {
+    maxCharacters,
+    onTrigger = null,
+    onInput,
+    ...textareaProps
+  } = props;
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const setTextareaRef = useCallback(
+    (node: HTMLTextAreaElement | null) => {
+      textareaRef.current = node;
+      if (typeof ref === 'function') {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    },
+    [ref],
+  );
 
   const textExpanderRef = useRef<TextExpanderHandle | null>(null);
 
@@ -191,10 +205,8 @@ function Textarea(props: TextareaProps) {
   const debouncedAutoDetectLanguage = useDebouncedCallback(() => {
     // Make use of the highlightRef to get the DOM
     // Clone the dom
-    const dom = composeHighlightRef.current?.cloneNode(true) as
-      | HTMLElement
-      | undefined;
-    if (!dom) return;
+    const dom = composeHighlightRef.current?.cloneNode(true);
+    if (!(dom instanceof HTMLElement)) return;
     // Remove mark
     dom.querySelectorAll('mark').forEach((mark: HTMLElement) => {
       mark.remove();
@@ -229,7 +241,7 @@ function Textarea(props: TextareaProps) {
         rows={6}
         cols={50}
         {...textareaProps}
-        ref={ref}
+        ref={setTextareaRef}
         name="status"
         onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
           // Get line before cursor position after pressing 'Enter'
@@ -281,15 +293,11 @@ function Textarea(props: TextareaProps) {
             composeHighlightRef.current.scrollTop = target.scrollTop;
           }
         }}
-        onInput={(e: SyntheticEvent<HTMLTextAreaElement>) => {
+        onInput={(e) => {
           const target = e.currentTarget;
           const nextText = target.value;
           autoResizeTextarea(target);
-          (
-            props.onInput as
-              | ((ev: SyntheticEvent<HTMLTextAreaElement>) => void)
-              | undefined
-          )?.(e);
+          onInput?.(e);
           throttleHighlightText(nextText);
           debouncedAutoDetectLanguage();
         }}
