@@ -292,7 +292,8 @@ function MediaModal({
         data-swipe-threshold="44"
         className="carousel"
         onClick={(e) => {
-          const target = e.target as HTMLElement;
+          const target = e.target;
+          if (!(target instanceof HTMLElement)) return;
           if (
             target.classList.contains('carousel-item') ||
             target.classList.contains('media') ||
@@ -353,7 +354,11 @@ function MediaModal({
                 // if (e.target !== e.currentTarget) {
                 //   setShowControls(!showControls);
                 // }
-                if (!(e.target as HTMLElement).classList.contains('media')) {
+                const target = e.target;
+                if (
+                  target instanceof HTMLElement &&
+                  !target.classList.contains('media')
+                ) {
                   setShowControls(!showControls);
                 }
               }}
@@ -362,7 +367,11 @@ function MediaModal({
                 // the carousel-item itself, mirroring the click handler.
                 if (e.key !== 'Enter' && e.key !== ' ') return;
                 if (e.target !== e.currentTarget) return;
-                if (!(e.target as HTMLElement).classList.contains('media')) {
+                const target = e.target;
+                if (
+                  target instanceof HTMLElement &&
+                  !target.classList.contains('media')
+                ) {
                   e.preventDefault();
                   setShowControls(!showControls);
                 }
@@ -468,6 +477,7 @@ function MediaModal({
                     disabled={uiState === 'loading'}
                     onClick={() => {
                       const currentUrl = mediaAttachments[currentIndex]?.url;
+                      if (typeof currentUrl !== 'string') return;
                       setUIState('loading');
                       toastRef.current = showToast({
                         text: t`Attempting to describe image. Please wait…`,
@@ -475,13 +485,20 @@ function MediaModal({
                       });
                       void (async function () {
                         try {
-                          const response = await fetch(
+                          const response: unknown = await fetch(
                             `${IMG_ALT_API_URL}?image=${encodeURIComponent(
-                              currentUrl as string,
+                              currentUrl,
                             )}`,
                           ).then((r) => r.json());
+                          const description =
+                            response &&
+                            typeof response === 'object' &&
+                            'description' in response &&
+                            typeof response.description === 'string'
+                              ? response.description
+                              : '';
                           states.showMediaAlt = {
-                            alt: response.description,
+                            alt: description,
                           };
                         } catch (e) {
                           console.error(e);
