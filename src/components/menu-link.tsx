@@ -1,6 +1,8 @@
 import { FocusableItem } from '@szhsin/react-menu';
 import type { AnchorHTMLAttributes, Ref } from 'react';
 
+import { assignFocusableAnchorRef } from '../utils/assign-focusable-anchor-ref';
+
 import Link from './link';
 
 interface MenuLinkProps
@@ -23,7 +25,7 @@ function MenuLink(props: MenuLinkProps) {
         closeMenu: (key?: string) => void;
       }) => {
         const setAnchorRef = (node: HTMLAnchorElement | null) => {
-          if (typeof ref === 'function') ref(node);
+          assignFocusableAnchorRef(ref, node);
         };
         const { to, children, ...anchorProps } = restProps;
         return (
