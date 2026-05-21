@@ -86,7 +86,7 @@ import MentionModal from './mention-modal';
 import Menu2 from './menu2';
 import Modal from './modal';
 import QuoteSuggestionComponent from './quote-suggestion';
-import StatusComponent, { type StatusComponentProps } from './status';
+import Status from './status-proxy';
 
 // ---------------------------------------------------------------------------
 // Local type shims for still-untyped peers — narrow to what compose uses.
@@ -257,16 +257,6 @@ function QuoteSuggestion(
       {...(props as Parameters<typeof QuoteSuggestionComponent>[0])}
     />
   );
-}
-
-function Status(props: {
-  status?: StatusLike | null;
-  instance?: string;
-  size?: 's' | 'm' | 'l';
-  previewMode?: boolean;
-  readOnly?: boolean;
-}) {
-  return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
 // Narrow shape for masto v1/v2 used here. Mirrors what drafts.tsx shims.
