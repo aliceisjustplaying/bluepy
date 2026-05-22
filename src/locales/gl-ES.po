@@ -54,9 +54,7 @@ msgstr "Silenciou a {username}"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/pages/home.tsx
-#: src/pages/mentions.tsx
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
@@ -88,7 +86,6 @@ msgstr "Mostra todas as autoras"
 msgid "Other"
 msgstr "Outra"
 
-#: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
 msgid "Send feedback…"
 msgstr ""
@@ -130,7 +127,6 @@ msgstr "Aínda non hai citas."
 #~ msgstr "Eliminouse a programación"
 
 #: src/pages/status.tsx
-#: src/pages/status.tsx
 msgid "Switch to Side Peek view"
 msgstr "Cambiar a Vista Lateral con detalle"
 
@@ -156,8 +152,8 @@ msgstr "Connectada o {0} (<0/>)"
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
-msgid "Only you can quote"
-msgstr "Só ti podes citar"
+#~ msgid "Only you can quote"
+#~ msgstr "Só ti podes citar"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>c</1>"
@@ -166,11 +162,9 @@ msgstr "<0>Maiús</0> + <1>c</1>"
 #: src/components/compose-button.tsx
 #: src/components/nav-menu.tsx
 #: src/pages/scheduled-posts.tsx
-#: src/pages/scheduled-posts.tsx
 #~ msgid "Scheduled Posts"
 #~ msgstr "Publicacións programadas"
 
-#: src/components/muted-status.tsx
 #: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
@@ -198,7 +192,6 @@ msgstr "calquera"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "Posts"
 msgstr "Publicacións"
 
@@ -207,10 +200,9 @@ msgid "Post hidden because you've blocked {domain}."
 msgstr "Publicación oculta porque bloqueaches {domain}."
 
 #: src/components/poll.tsx
-msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
-msgstr "{optionVotesCount, plural, one {# voto} other {# votos}}"
+#~ msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
+#~ msgstr "{optionVotesCount, plural, one {# voto} other {# votos}}"
 
-#: src/components/status-activity-menu.tsx
 #: src/components/status-activity-menu.tsx
 #~ msgid "Boosted/Liked by…"
 #~ msgstr "Promovida/Favorecida por…"
@@ -224,11 +216,9 @@ msgid "No one mentioned you :("
 msgstr "Ninguén te mencionou :("
 
 #: src/components/filtered-status.tsx
-#: src/components/filtered-status.tsx
 #: src/components/media-post.tsx
 #: src/components/status-compact.tsx
 #: src/components/timeline.tsx
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered"
 msgstr "Filtrado"
@@ -271,8 +261,8 @@ msgid "Back to top"
 msgstr "Volver arriba"
 
 #: src/components/status-helpers.ts
-msgid "Private posts cannot be quoted"
-msgstr "As publicacións privadas non se poden citar"
+#~ msgid "Private posts cannot be quoted"
+#~ msgstr "As publicacións privadas non se poden citar"
 
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
@@ -344,8 +334,8 @@ msgid "Breaks specific Bluesky rules"
 msgstr ""
 
 #: src/pages/hashtag.tsx
-msgid "Login required to see posts from Bluesky."
-msgstr ""
+#~ msgid "Login required to see posts from Bluesky."
+#~ msgstr ""
 
 #: src/pages/filters.tsx
 #~ msgid "{0, plural, one {# keyword} other {# keywords}}"
@@ -359,7 +349,6 @@ msgstr "Cronoloxía separada para os seguimentos. Interface inspirada no correo 
 msgid "Tell us what happened first."
 msgstr ""
 
-#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Light"
 msgstr "Claro"
@@ -398,8 +387,8 @@ msgid "Attachment #{0} failed"
 msgstr ""
 
 #: src/components/poll.tsx
-msgid "Ended"
-msgstr "Finalizou"
+#~ msgid "Ended"
+#~ msgstr "Finalizou"
 
 #: src/components/nav-menu.tsx
 #: src/components/text-expander.tsx
@@ -433,8 +422,6 @@ msgstr "Lista"
 
 #: src/components/status-placeholders.tsx
 #: src/components/status-quotes.tsx
-#: src/components/status-quotes.tsx
-#: src/components/status-quotes.tsx
 msgid "Post unavailable"
 msgstr "Publicación non dispoñible"
 
@@ -465,8 +452,6 @@ msgstr "Fin."
 #: src/components/related-actions.tsx
 #: src/components/status-header.tsx
 #: src/components/status-inline-controls.tsx
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/accounts.tsx
@@ -557,8 +542,8 @@ msgstr ""
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
-msgid "Quote settings updated"
-msgstr "Actualizada a configuración das citas"
+#~ msgid "Quote settings updated"
+#~ msgstr "Actualizada a configuración das citas"
 
 #: src/pages/year-in-posts.tsx
 msgid "Year"
@@ -590,7 +575,6 @@ msgstr "Engadir máis de un atallo/columna para que isto funcione."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/pages/trending.tsx
 msgid "Trending"
 msgstr "En voga"
@@ -619,7 +603,6 @@ msgstr "Despregar o aviso sobre o contido ou<0/>pregar/despregar os fíos"
 msgid "Unable to load account."
 msgstr "Non se puido cargar a conta."
 
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Optional, e.g. bsky.social"
 msgstr ""
@@ -670,8 +653,8 @@ msgid "Looks like your browser is blocking popups."
 msgstr "Semella que o teu navegador está a bloquear xanelas emerxentes."
 
 #: src/pages/settings.tsx
-msgid "Default visibility updated"
-msgstr "Actualizada a visibilidade por defecto"
+#~ msgid "Default visibility updated"
+#~ msgstr "Actualizada a visibilidade por defecto"
 
 #: src/components/status-reply-menu.tsx
 #~ msgid "{0, plural, other {<0>@{1}</0> first, # others below}}"
@@ -683,8 +666,8 @@ msgid "{0, plural, one {# feed} other {# feeds}}"
 msgstr ""
 
 #: src/pages/catchup.tsx
-msgid "Poll"
-msgstr "Enquisa"
+#~ msgid "Poll"
+#~ msgstr "Enquisa"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Profile picture"
@@ -736,8 +719,8 @@ msgid "Existing"
 msgstr "Existente"
 
 #: src/components/poll.tsx
-msgid "Ended <0/>"
-msgstr "Finalizou <0/>"
+#~ msgid "Ended <0/>"
+#~ msgstr "Finalizou <0/>"
 
 #: src/components/notification.tsx
 #~ msgid "View #Wrapstodon"
@@ -763,7 +746,6 @@ msgstr ""
 #~ msgid "Shortcuts saved"
 #~ msgstr "Gardáronse os atallos"
 
-#: src/components/status-reply-menu.tsx
 #: src/components/status-reply-menu.tsx
 #~ msgid "Reply all"
 #~ msgstr "Responder a todas"
@@ -807,8 +789,6 @@ msgid "Append to current shortcuts?"
 msgstr "Engadir aos atallos actuais?"
 
 #: src/components/status-large-footer.tsx
-#: src/components/status-large-footer.tsx
-#: src/components/status-quick-menu.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Undo repost"
 msgstr ""
@@ -851,10 +831,9 @@ msgstr "Atallos do teclado"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
-msgid "Public"
-msgstr "Pública"
+#~ msgid "Public"
+#~ msgstr "Pública"
 
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Optional, e.g. mastodon.social"
 #~ msgstr "Optativo, ex. mastodon.social"
@@ -869,8 +848,6 @@ msgstr "Contas…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/pages/bookmarks.tsx
 #: src/pages/bookmarks.tsx
 msgid "Bookmarks"
 msgstr "Marcadores"
@@ -942,7 +919,6 @@ msgid "Label"
 msgstr "Etiqueta"
 
 #: src/components/status-inline-controls.tsx
-#: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Liked"
 msgstr "Favorecida"
@@ -1008,7 +984,6 @@ msgid "Posts tagged #{tagged} by {accountDisplay}"
 msgstr ""
 
 #: src/components/media-attachment.tsx
-#: src/components/media-attachment.tsx
 msgid "Generating description. Please wait…"
 msgstr "Creando a descrición. Agarda…"
 
@@ -1026,8 +1001,8 @@ msgid "Translated Bio"
 msgstr "Traduciuse a Bio"
 
 #: src/pages/status.tsx
-msgid "Unable to switch"
-msgstr "Non se puido cambiar"
+#~ msgid "Unable to switch"
+#~ msgstr "Non se puido cambiar"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
@@ -1037,8 +1012,8 @@ msgstr "Escribe para buscar GIFs"
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
-msgid "Your followers can quote"
-msgstr "As túas seguidoras poden citarte"
+#~ msgid "Your followers can quote"
+#~ msgstr "As túas seguidoras poden citarte"
 
 #: src/components/media.tsx
 msgid "Open file"
@@ -1067,7 +1042,6 @@ msgstr "Volver a mostrar publicacións populares"
 msgid "Image description generator"
 msgstr "Xerador da descrición de imaxes"
 
-#: src/pages/hashtag.tsx
 #: src/pages/hashtag.tsx
 #~ msgid "Featured on profile"
 #~ msgstr "Destacado no perfil"
@@ -1099,7 +1073,6 @@ msgstr "Mostrar multimedia"
 #~ msgstr "Permanente"
 
 #: src/pages/notifications.tsx
-#: src/pages/notifications.tsx
 msgid "Notifications settings"
 msgstr "Axustes das notificacións"
 
@@ -1119,8 +1092,6 @@ msgstr "beta"
 #: src/components/nav-menu.tsx
 #: src/components/search-form.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Search"
 msgstr "Buscar"
@@ -1278,8 +1249,8 @@ msgstr "Mostrar igualmente"
 #~ msgstr "Aumentar"
 
 #: src/components/status-helpers.ts
-msgid "Request to quote"
-msgstr "Solicitar a citación"
+#~ msgid "Request to quote"
+#~ msgstr "Solicitar a citación"
 
 #: src/pages/settings.jsx
 #~ msgid "<0>Built</0> by <1>@cheeaun</1>"
@@ -1287,13 +1258,12 @@ msgstr "Solicitar a citación"
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
-#: src/components/status-activity-menu.tsx
 msgid "Reposted/Liked by…"
 msgstr ""
 
 #: src/components/post-embed-modal.tsx
-msgid "Polls are not interactive, becomes a list with vote counts."
-msgstr "As enquisas non son interactivas, convértese nunha lista con conta dos votos."
+#~ msgid "Polls are not interactive, becomes a list with vote counts."
+#~ msgstr "As enquisas non son interactivas, convértese nunha lista con conta dos votos."
 
 #: src/components/atproto-labels.tsx
 msgid "Sexually Suggestive"
@@ -1322,6 +1292,11 @@ msgstr "A mostrar publicacións que mencionan <0>{0}</0>"
 #: src/components/related-actions.tsx
 msgid "Unable to copy handle"
 msgstr "Non se puido copiar o identificador"
+
+#. [Name] reposted
+#: src/components/filtered-status.tsx
+msgid "<0/> reposted"
+msgstr ""
 
 #: src/pages/filters.tsx
 #~ msgid "Change expiry"
@@ -1396,7 +1371,6 @@ msgstr "Buscar nas miñas publicacións"
 #: src/components/notification.tsx
 #: src/pages/accounts.tsx
 #: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "Accounts"
 msgstr "Contas"
 
@@ -1409,8 +1383,6 @@ msgstr "Publicación oculta porque silenciaches a @{name}."
 #~ msgstr "Esta publicación procede de outro servidor (<0>{instance}</0>). Non é posible interaccionar (responder, promover, etc)."
 
 #: src/components/account-info-mini.tsx
-#: src/components/account-info-mini.tsx
-#: src/components/account-info.tsx
 #: src/components/account-info.tsx
 msgid "This user has chosen to not make this information available."
 msgstr "A usuaria decidiu non ofrecer esta información."
@@ -1452,7 +1424,6 @@ msgstr ""
 msgid "Powered by GIPHY"
 msgstr "Proporcionado por GIPHY"
 
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Help"
 msgstr "Axuda"
@@ -1571,7 +1542,6 @@ msgid "Malicious links, fake engagement, or repetitive replies"
 msgstr "Ligazóns maliciosas, relacións engañosas, ou respostas repetitivas"
 
 #: src/components/compose.tsx
-#: src/components/compose.tsx
 #: src/components/file-picker-input.tsx
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
 msgstr "{maxMediaAttachments, plural, one {Só podes anexar un ficheiro.} other {Só podes anexar ata # ficheiros.}}"
@@ -1634,8 +1604,8 @@ msgid "Login required."
 msgstr "Precisa acceder."
 
 #: src/utils/visibility-text.ts
-msgid "Local"
-msgstr "Local"
+#~ msgid "Local"
+#~ msgstr "Local"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
@@ -1644,7 +1614,6 @@ msgstr "Selector de GIF para o editor"
 #. placeholder {0}: prettyBytes( imageSize, )
 #. placeholder {0}: prettyBytes( videoSize, )
 #. placeholder {1}: prettyBytes(limit)
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
 msgstr "Ficheiro demasiado grande. Podería haber problemas ao cargalo. Intenta reducir o tamaño de {0} a {1} ou inferior."
@@ -1684,7 +1653,6 @@ msgstr ""
 msgid "Media posts by {accountDisplay}"
 msgstr ""
 
-#: src/components/edit-history-controls.tsx
 #: src/components/gif-picker-modal.tsx
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
@@ -1704,8 +1672,8 @@ msgstr "Volver cargar a páxina para actualizar?"
 #~ msgstr "<0/> <1>promoveu</1>"
 
 #: src/components/status-helpers.ts
-msgid "You are not allowed to quote this post"
-msgstr "Non tes permiso para citar esta publicación"
+#~ msgid "You are not allowed to quote this post"
+#~ msgstr "Non tes permiso para citar esta publicación"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Search term"
@@ -1753,8 +1721,8 @@ msgstr "{months, plural, one {# mes máis tarde} other {# meses máis tarde}}"
 #~ msgstr "Foco na columna no modo con varias columnas"
 
 #: src/components/status-utility-menu.tsx
-msgid "Edited: {editedDateText}"
-msgstr "Editada: {editedDateText}"
+#~ msgid "Edited: {editedDateText}"
+#~ msgstr "Editada: {editedDateText}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List ID"
@@ -1764,7 +1732,6 @@ msgstr "ID da lista"
 #. placeholder {1}: i18n.number(height as number)
 #. placeholder {2}: i18n.number(newWidth)
 #. placeholder {3}: i18n.number( newHeight, )
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Dimension too large. Uploading might encounter issues. Try reduce dimension from {0}×{1}px to {2}×{3}px."
 msgstr "Tamaño demasiado grande. Podería dar problemas ao cargala. Intenta reducir o tamaño de {0}×{1}px a {2}×{3}px."
@@ -1798,6 +1765,10 @@ msgstr "Biografía"
 msgid "Sign up"
 msgstr "Crear conta"
 
+#: src/components/notification.tsx
+msgid "{account} reacted to your post with {emoji}"
+msgstr ""
+
 #: src/components/status-activity-menu.tsx
 msgid "Unwrap quote chain"
 msgstr "Despregar a cadea de citas"
@@ -1820,8 +1791,6 @@ msgid "Raw Shortcuts JSON"
 msgstr "Atallos en formato JSON"
 
 #: src/components/thread-badge.tsx
-#: src/components/thread-badge.tsx
-#: src/components/thread-badge.tsx
 #: src/pages/catchup.tsx
 msgid "Thread"
 msgstr "Fío"
@@ -1839,8 +1808,8 @@ msgid "Multiple hashtags are supported. Space-separated."
 msgstr "Hai compatibilidade para varios cancelos, separados por espazos."
 
 #: src/components/status-edit-history-modal.tsx
-msgid "Failed to load history"
-msgstr "Fallou a carga do historial"
+#~ msgid "Failed to load history"
+#~ msgstr "Fallou a carga do historial"
 
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Search emoji"
@@ -1886,7 +1855,6 @@ msgstr "Mostrar respostas a membros da lista"
 #~ msgstr "Fallou o anexo #{i}"
 
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
 msgid "Top links"
 msgstr "O máis compartido"
 
@@ -1905,8 +1873,8 @@ msgstr "Actualizar"
 
 #: src/components/status-account-menu.tsx
 #: src/pages/settings.tsx
-msgid "Quote settings"
-msgstr "Axustes para citar"
+#~ msgid "Quote settings"
+#~ msgstr "Axustes para citar"
 
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
@@ -1942,7 +1910,6 @@ msgstr "<0>Esc</0> or <1>Retroceso</1>"
 #: src/components/account-info.tsx
 #: src/components/quotes-modal.tsx
 #: src/components/status-post-body.tsx
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Quotes"
@@ -1992,7 +1959,6 @@ msgstr "<0>Maiús</0> + <1>k</1>"
 msgid "Volunteer translations"
 msgstr "Traducida por voluntarias"
 
-#: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 msgid "Unable to fetch account info"
 msgstr "Non se puido obter a información da conta"
@@ -2053,8 +2019,6 @@ msgstr "Seguimentos"
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/following.tsx
-#: src/pages/following.tsx
-#: src/pages/following2.tsx
 #: src/pages/following2.tsx
 msgid "following.title"
 msgstr "Seguimento"
@@ -2096,6 +2060,10 @@ msgstr "Fío {index}/X"
 msgid "Your account has been suspended."
 msgstr "A túa conta foi suspendida."
 
+#: src/pages/login.tsx
+msgid "PDS URL, optional"
+msgstr ""
+
 #: src/components/account-block.tsx
 msgid "Locked"
 msgstr "Bloqueada"
@@ -2113,7 +2081,6 @@ msgstr "Ignorar"
 #~ msgstr "Non se puideron descargar os atallos"
 
 #: src/components/account-info.tsx
-#: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "QR code"
@@ -2191,6 +2158,10 @@ msgstr "Agrupar"
 msgid "Export"
 msgstr "Exportar"
 
+#: src/pages/login.tsx
+msgid "App password"
+msgstr ""
+
 #: src/components/search-form.tsx
 #: src/pages/home.tsx
 msgid "See all"
@@ -2252,7 +2223,6 @@ msgid "Month"
 msgstr "Mes"
 
 #: src/pages/list.tsx
-#: src/pages/list.tsx
 msgid "Manage members"
 msgstr "Xestionar membros"
 
@@ -2264,8 +2234,8 @@ msgstr "Non se puido dar formato"
 #: src/components/quote-settings-sheet.tsx
 #: src/components/status-helpers.ts
 #: src/pages/settings.tsx
-msgid "Anyone can quote"
-msgstr "Calquera pode citarte"
+#~ msgid "Anyone can quote"
+#~ msgstr "Calquera pode citarte"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/post-embed-modal.tsx
@@ -2277,21 +2247,20 @@ msgstr "Copiar"
 
 #: src/components/quote-settings-sheet.tsx
 #: src/pages/settings.tsx
-msgid "Failed to update quote settings"
-msgstr "Fallo ao gardar a configuración para citar"
+#~ msgid "Failed to update quote settings"
+#~ msgstr "Fallo ao gardar a configuración para citar"
 
 #: src/pages/settings.tsx
-msgid "Failed to update default visibility"
-msgstr "Fallou o cambio da visibilidade por defecto"
+#~ msgid "Failed to update default visibility"
+#~ msgstr "Fallou o cambio da visibilidade por defecto"
 
 #: src/components/recent-searches.tsx
 msgid "Cleared recent searches"
 msgstr "Limpáronse as buscas recentes"
 
-#. placeholder {0}: toUnicode(postInstance)
 #: src/pages/status.tsx
-msgid "Switch to post's PDS ({0})"
-msgstr ""
+#~ msgid "Switch to post's PDS ({0})"
+#~ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
@@ -2331,8 +2300,8 @@ msgstr "Tes cambios sen gardar. Desbotas esta publicación?"
 #~ msgstr "{accountDisplay} (+ Respostas)"
 
 #: src/components/edit-history-controls.tsx
-msgid "Edit History Snapshots"
-msgstr "Editar historial de instantáneas"
+#~ msgid "Edit History Snapshots"
+#~ msgstr "Editar historial de instantáneas"
 
 #: src/components/account-info.tsx
 #: src/pages/catchup.tsx
@@ -2340,7 +2309,6 @@ msgstr "Editar historial de instantáneas"
 msgid "Original"
 msgstr "Orixinal"
 
-#: src/components/edit-history-controls.tsx
 #: src/components/gif-picker-modal.tsx
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
@@ -2366,7 +2334,6 @@ msgstr "Engadir a Atallos"
 #: src/components/timeline2.tsx
 #: src/pages/catchup.tsx
 #: src/pages/home.tsx
-#: src/pages/home.tsx
 #: src/pages/notifications.tsx
 msgid "Home"
 msgstr "Inicio"
@@ -2376,10 +2343,9 @@ msgid "Unmute conversation"
 msgstr "Reactivar a conversa"
 
 #: src/components/notification.tsx
-msgid "{account} reacted to your post with {emojiObject}"
-msgstr "{account} reaccionou á túa publicación con {emojiObject}"
+#~ msgid "{account} reacted to your post with {emojiObject}"
+#~ msgstr "{account} reaccionou á túa publicación con {emojiObject}"
 
-#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
 msgstr "Fallou a actualización da subscrición. Inténtao outra vez."
@@ -2388,7 +2354,6 @@ msgstr "Fallou a actualización da subscrición. Inténtao outra vez."
 msgid "Enable notifications"
 msgstr "Activar notificacións"
 
-#: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
 msgid "Reset filters"
@@ -2417,18 +2382,15 @@ msgstr "{account} enviou unha publicación."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/pages/home.tsx
 #: src/pages/home.tsx
 #: src/pages/list.tsx
-#: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications"
 msgstr "Notificacións"
 
 #: src/components/poll.tsx
-msgid "Voted"
-msgstr "Xa votaches"
+#~ msgid "Voted"
+#~ msgstr "Xa votaches"
 
 #: src/components/media-attachment.tsx
 msgid "Audio description"
@@ -2452,7 +2414,6 @@ msgstr "{hashtagTitle} en {instance}"
 
 #: src/components/compose.tsx
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-inline-controls.tsx
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-reply-menu.tsx
@@ -2510,8 +2471,8 @@ msgstr "Violación"
 
 #: src/components/status-header.tsx
 #: src/utils/visibility-text.ts
-msgid "Private mention"
-msgstr "Mención privada"
+#~ msgid "Private mention"
+#~ msgstr "Mención privada"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
@@ -2552,7 +2513,6 @@ msgstr "Desbotada"
 #. Preview of one character, in largest size
 #. Preview of one character, in smallest size
 #: src/pages/settings.tsx
-#: src/pages/settings.tsx
 msgid "A"
 msgstr "A"
 
@@ -2583,11 +2543,9 @@ msgstr "Incluír a publicación"
 #~ msgid "Mark media as sensitive"
 #~ msgstr "Marcar o multimedia como sensible"
 
-#. placeholder {0}: shortenNumber(votersCount)
-#. placeholder {1}: shortenNumber(votersCount)
 #: src/components/poll.tsx
-msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
-msgstr "{votersCount, plural, one {<0>{0}</0> votante} other {<1>{1}</1> votantes}}"
+#~ msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
+#~ msgstr "{votersCount, plural, one {<0>{0}</0> votante} other {<1>{1}</1> votantes}}"
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Downloading saved shortcuts from server…"
@@ -2688,11 +2646,9 @@ msgstr ""
 msgid "Import/Export <0>Accounts</0>"
 msgstr "Importar/Exportar <0>Contas</0>"
 
-#. placeholder {0}: shortenNumber(votesCount)
-#. placeholder {1}: shortenNumber(votesCount)
 #: src/components/poll.tsx
-msgid "{votesCount, plural, one {<0>{0}</0> vote} other {<1>{1}</1> votes}}"
-msgstr "{votesCount, plural, one {<0>{0}</0> voto} other {<1>{1}</1> votos}}"
+#~ msgid "{votesCount, plural, one {<0>{0}</0> vote} other {<1>{1}</1> votes}}"
+#~ msgstr "{votesCount, plural, one {<0>{0}</0> voto} other {<1>{1}</1> votos}}"
 
 #. placeholder {0}: username || acct
 #. placeholder {0}: usernameValue || acctValue
@@ -2710,7 +2666,6 @@ msgstr "Esta notificación procede de outra conta."
 #: src/components/timeline2.tsx
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
-#: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Try again"
 msgstr "Inténtao outra vez"
@@ -2752,8 +2707,8 @@ msgid "Unable to load likes."
 msgstr "Non se cargaron os favorecementos."
 
 #: src/components/notification.tsx
-msgid "A poll you have voted in or created has ended."
-msgstr "Finalizou unha enquisa creada por ti ou na que votaches."
+#~ msgid "A poll you have voted in or created has ended."
+#~ msgstr "Finalizou unha enquisa creada por ti ou na que votaches."
 
 #: src/components/status-account-menu.tsx
 msgid "Post deleted"
@@ -2780,8 +2735,8 @@ msgstr "Fixada"
 #~ msgstr "Violación das regras do servidor"
 
 #: src/components/notification.tsx
-msgid "A poll you have created has ended."
-msgstr "Finalizou unha enquisa creada por ti."
+#~ msgid "A poll you have created has ended."
+#~ msgstr "Finalizou unha enquisa creada por ti."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to create list."
@@ -2797,7 +2752,6 @@ msgid "You're all caught up."
 msgstr "Xa estás ao día."
 
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #~ msgid "Boost"
 #~ msgstr "Promover"
@@ -2831,10 +2785,8 @@ msgid "Group"
 msgstr "Grupo"
 
 #: src/components/poll.tsx
-#: src/components/poll.tsx
-#: src/components/poll.tsx
-msgid "Hide results"
-msgstr "Agochar resultados"
+#~ msgid "Hide results"
+#~ msgstr "Agochar resultados"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
@@ -2845,9 +2797,6 @@ msgstr "Cal é o problema con esta publicación?"
 msgid "Privacy Policy"
 msgstr "Política de Privacidade"
 
-#: src/components/poll.tsx
-#: src/components/poll.tsx
-#: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Refresh"
 msgstr "Actualizar"
@@ -2894,12 +2843,9 @@ msgstr ""
 #~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
 #~ msgstr ""
 
-#. placeholder {0}: options.length
 #: src/components/poll.tsx
-#: src/components/poll.tsx
-#: src/components/poll.tsx
-msgid "{0, plural, one {# choice} other {# choices}}"
-msgstr "{0, plural, one {# opción} other {# opcións}}"
+#~ msgid "{0, plural, one {# choice} other {# choices}}"
+#~ msgstr "{0, plural, one {# opción} other {# opcións}}"
 
 #: src/pages/catchup.tsx
 msgid "last 6 hours"
@@ -2918,8 +2864,8 @@ msgid "Liked by…"
 msgstr "Favorecida por…"
 
 #: src/components/poll.tsx
-msgid "Vote"
-msgstr "Votar"
+#~ msgid "Vote"
+#~ msgstr "Votar"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut"
@@ -2947,8 +2893,8 @@ msgid "Cloak mode <0>(<1>Text</1> → <2>████</2>)</0>"
 msgstr "Modo Capa <0>(<1>Texto</1> → <2>████</2>)</0>"
 
 #: src/pages/settings.tsx
-msgid "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
-msgstr ""
+#~ msgid "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
+#~ msgstr ""
 
 #: src/pages/search.tsx
 msgid "See more posts"
@@ -2983,8 +2929,8 @@ msgstr "Engadir"
 #~ msgstr "Finalizou"
 
 #: src/components/poll.tsx
-msgid "Unable to vote in poll"
-msgstr "Non podes votar na enquisa"
+#~ msgid "Unable to vote in poll"
+#~ msgstr "Non podes votar na enquisa"
 
 #: src/components/translation-block.tsx
 msgid "Failed to translate"
@@ -3015,12 +2961,10 @@ msgid "Hashtag shortcut added"
 msgstr "Engadiuse o atallo ao cancelo"
 
 #: src/components/related-actions.tsx
-#: src/components/related-actions.tsx
 msgid "Follow"
 msgstr "Seguir"
 
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Repost"
@@ -3039,13 +2983,12 @@ msgid "{followersCount, plural, one {# follower} other {# followers}}"
 msgstr "{followersCount, plural, one {# seguidora} other {# seguidoras}}"
 
 #: src/components/media-attachment.tsx
-#: src/components/media-attachment.tsx
 msgid "Video description"
 msgstr "Descrición do vídeo"
 
 #: src/components/notification.tsx
-msgid "A poll you have voted in has ended."
-msgstr "Finalizou unha enquisa na que votaches."
+#~ msgid "A poll you have voted in has ended."
+#~ msgstr "Finalizou unha enquisa na que votaches."
 
 #: src/components/compose.tsx
 msgid "Some media have no descriptions. Continue?"
@@ -3067,6 +3010,10 @@ msgstr "Ir aos Axustes"
 #: src/components/report-modal.tsx
 msgid "Report Post"
 msgstr "Denunciar Publicación"
+
+#: src/pages/settings.tsx
+msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning and media."
+msgstr ""
 
 #: src/pages/list.tsx
 msgid "Remove…"
@@ -3106,10 +3053,8 @@ msgid "Muted users…"
 msgstr "Usuarias acaladas…"
 
 #: src/pages/settings.tsx
-#: src/pages/settings.tsx
-#: src/pages/settings.tsx
-msgid "Synced"
-msgstr "Sincronizado"
+#~ msgid "Synced"
+#~ msgstr "Sincronizado"
 
 #. placeholder {0}: notificationsPolicy.summary?.pendingRequestsCount ?? 0
 #: src/pages/notifications.tsx
@@ -3129,17 +3074,14 @@ msgstr "A lista podería non funcionar se procede de outra conta."
 #: src/components/status-post-body.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/status.tsx
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
 msgstr "Respostas"
 
 #: src/pages/settings.tsx
-msgid "Default visibility"
-msgstr "Visibilidade por defecto"
+#~ msgid "Default visibility"
+#~ msgstr "Visibilidade por defecto"
 
 #: src/pages/search.tsx
 msgid "See more hashtags"
@@ -3210,8 +3152,8 @@ msgid "Switch to my PDS (<0>{currentInstance}</0>)"
 msgstr ""
 
 #: src/components/status-helpers.ts
-msgid "Only followers can quote this post"
-msgstr "Só as seguidoras poden citar esta publicación"
+#~ msgid "Only followers can quote this post"
+#~ msgstr "Só as seguidoras poden citar esta publicación"
 
 #: src/pages/settings.tsx
 msgid "Notifications from muted accounts are always hidden."
@@ -3252,8 +3194,8 @@ msgid "Posts with <0>{query}</0>"
 msgstr "Publicacións con <0>{query}</0>"
 
 #: src/components/poll.tsx
-msgid "Ending"
-msgstr "Finaliza"
+#~ msgid "Ending"
+#~ msgstr "Finaliza"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -3265,8 +3207,6 @@ msgstr ""
 msgid "Sponsor"
 msgstr "Patrocinios"
 
-#: src/components/media-attachment.tsx
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generate description…"
 msgstr "Crear unha descrición…"
@@ -3330,8 +3270,8 @@ msgstr "Acalar conversa"
 #~ msgstr "Sincronizar co servidor"
 
 #: src/components/status-edit-history-modal.tsx
-msgid "Edit History"
-msgstr "Editar Historial"
+#~ msgid "Edit History"
+#~ msgstr "Editar Historial"
 
 #: src/components/media-attachment.tsx
 msgid "Edit image description"
@@ -3346,8 +3286,8 @@ msgid "Show me all posts from…"
 msgstr "Móstrame todas as publicacións das…"
 
 #: src/components/poll.tsx
-msgid "Ending <0/>"
-msgstr "Finaliza en <0/>"
+#~ msgid "Ending <0/>"
+#~ msgstr "Finaliza en <0/>"
 
 #: src/components/muted-status.tsx
 msgid "Show muted post"
@@ -3358,8 +3298,8 @@ msgid "Hide entirely"
 msgstr ""
 
 #: src/pages/status.tsx
-msgid "View Edit History Snapshots"
-msgstr "Ver historial de edición de instantáneas"
+#~ msgid "View Edit History Snapshots"
+#~ msgstr "Ver historial de edición de instantáneas"
 
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Custom emojis are not available on this server."
@@ -3432,8 +3372,8 @@ msgid "Error loading GIFs"
 msgstr "Erro ao cargar GIFs"
 
 #: src/pages/settings.tsx
-msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
-msgstr "Mostra automaticamente na cronoloxía a tradución das publicacións. Só funciona para publicacións <0>curtas</0> sen aviso sobre o contido, multimedia ou enquisa."
+#~ msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
+#~ msgstr "Mostra automaticamente na cronoloxía a tradución das publicacións. Só funciona para publicacións <0>curtas</0> sen aviso sobre o contido, multimedia ou enquisa."
 
 #: src/pages/catchup.tsx
 msgid "last 9 hours"
@@ -3451,8 +3391,8 @@ msgid "Joined <0>{0}</0>"
 msgstr "Creada <0>{0}</0>"
 
 #: src/pages/settings.tsx
-msgid "Posting"
-msgstr "Ao publicar"
+#~ msgid "Posting"
+#~ msgstr "Ao publicar"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
@@ -3488,7 +3428,6 @@ msgstr ""
 #~ msgstr "Promovida por…"
 
 #: src/components/media-alt-modal.tsx
-#: src/components/status-utility-menu.tsx
 #: src/components/status-utility-menu.tsx
 #: src/components/translation-block.tsx
 msgid "Translate"
@@ -3532,7 +3471,6 @@ msgstr "Non se puido bloquear a {username}"
 
 #. js-lingui-explicit-id
 #: src/pages/status.tsx
-#: src/pages/status.tsx
 msgid "post.title"
 msgstr "Publicación"
 
@@ -3542,8 +3480,8 @@ msgstr "Establecer por defecto"
 
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
-msgid "Quiet public"
-msgstr "Pública limitada"
+#~ msgid "Quiet public"
+#~ msgstr "Pública limitada"
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -3572,12 +3510,9 @@ msgstr "Publicación pendente"
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
 #~ msgid "Boosts"
 #~ msgstr "Promocións"
 
-#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
 msgstr "Escuro"
@@ -3587,8 +3522,8 @@ msgstr "Escuro"
 #~ msgstr "@{username} xa non esta destacado no teu perfil."
 
 #: src/components/status-edit-history-modal.tsx
-msgid "Loading…"
-msgstr "Cargando…"
+#~ msgid "Loading…"
+#~ msgstr "Cargando…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Ctrl</0> + <1>Enter</1> or <2>⌘</2> + <3>Enter</3>"
@@ -3599,7 +3534,6 @@ msgid "Switch in new tab/window"
 msgstr "Cambiar en nova pestana/xanela"
 
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Bookmark"
@@ -3671,8 +3605,8 @@ msgid "Looks like you closed the parent window."
 msgstr "Semella que fechaches a xanela nai."
 
 #: src/components/status-utility-menu.tsx
-msgid "Show Edit History"
-msgstr "Mostrar historial de edicións"
+#~ msgid "Show Edit History"
+#~ msgstr "Mostrar historial de edicións"
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
@@ -3683,7 +3617,6 @@ msgstr ""
 #~ msgstr "Engadir palabra chave"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
 msgstr "Atallos importados"
 
@@ -3692,7 +3625,6 @@ msgstr "Atallos importados"
 msgid "Compose"
 msgstr "Escribir"
 
-#: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 #~ msgid "Show featured profiles"
 #~ msgstr "Mostrar perfís destacados"
@@ -3741,7 +3673,6 @@ msgid "Allow from <0>{0}</0>"
 msgstr "Permitir de <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 msgid "PDS"
 msgstr ""
 
@@ -3749,7 +3680,6 @@ msgstr ""
 msgid "Edit your post"
 msgstr "Edita a publicación"
 
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #~ msgid "Unboost"
 #~ msgstr "Retirar promoción"
@@ -3792,7 +3722,6 @@ msgstr "Traducir bio"
 #~ msgstr "Seguiches a #{hashtag}"
 
 #: src/pages/settings.tsx
-#: src/pages/settings.tsx
 msgid "Auto"
 msgstr "Auto"
 
@@ -3817,8 +3746,8 @@ msgid "Preview"
 msgstr "Vista previa"
 
 #: src/components/status-helpers.ts
-msgid "Author will manually review"
-msgstr "Será revisada manualmente"
+#~ msgid "Author will manually review"
+#~ msgstr "Será revisada manualmente"
 
 #: src/components/drafts.tsx
 msgid "Error deleting draft! Please try again."
@@ -3842,8 +3771,6 @@ msgstr "Autora anterior"
 
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
@@ -3885,8 +3812,8 @@ msgstr "{count, plural,  =1 {{postsCount, plural, =1 {{postType, select, reply {
 #~ msgstr "Máx {SHORTCUTS_LIMIT} columnas"
 
 #: src/pages/status.tsx
-msgid "Experimental"
-msgstr "Experimental"
+#~ msgid "Experimental"
+#~ msgstr "Experimental"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this profile?"
@@ -3916,7 +3843,6 @@ msgstr "{repliesCount, plural, one {# resposta} other {# respostas}}"
 #~ msgid "server domain name"
 #~ msgstr "dominio do servidor"
 
-#: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
 msgid "Explicit or potentially disturbing media."
 msgstr ""
@@ -3988,7 +3914,6 @@ msgid "{followingCount, plural, other {<0>{0}</0> Following}}"
 msgstr "{followingCount, plural, one {}other {<0>{0}</0> Seguimentos}}"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #~ msgid "Server"
 #~ msgstr "Servidor"
 
@@ -4005,7 +3930,6 @@ msgid "username"
 msgstr "nome de usuaria"
 
 #: src/components/add-remove-lists-sheet.tsx
-#: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Add/Remove from Lists"
 msgstr "Engadir/Retirar das Listas"
@@ -4032,20 +3956,14 @@ msgid "Muted users"
 msgstr "Usuarias acaladas"
 
 #: src/components/nav-menu.tsx
-#: src/components/nav-menu.tsx
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 #: src/pages/list.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
 #: src/pages/lists.tsx
 msgid "Lists & Feeds"
 msgstr ""
 
 #: src/components/nav-menu.tsx
-#: src/pages/login.tsx
 #: src/pages/login.tsx
 #: src/pages/status.tsx
 #: src/pages/welcome.tsx
@@ -4172,7 +4090,6 @@ msgstr "{followersCount, plural, one {<0>{0}</0> Seguidora} other {<1>{1}</1> Se
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
-#: src/components/quote-settings-sheet.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/notifications.tsx
 msgid "Save"
@@ -4334,7 +4251,6 @@ msgid "Posts are sorted by information density or depth. Shorter posts are \"lig
 msgstr "As publicacións están ordenadas pola densidade de información, pola cantidade relativa. As publicacións curtas son «lixeiras» mentres que as máis longas «pesan máis». As publicacións con fotos «pesan máis» que as que non as teñen."
 
 #: src/components/nav-menu.tsx
-#: src/components/nav-menu.tsx
 msgid "Settings…"
 msgstr "Axustes…"
 
@@ -4343,8 +4259,8 @@ msgid "Multi-column"
 msgstr "Varias columnas"
 
 #: src/components/quote-settings-sheet.tsx
-msgid "Quote settings for this post"
-msgstr "Axustes das citas para esta publicación"
+#~ msgid "Quote settings for this post"
+#~ msgstr "Axustes das citas para esta publicación"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Tab/Menu bar"
@@ -4390,8 +4306,6 @@ msgid "Unable to mute {username}"
 msgstr "Non se puido acalar a {username}"
 
 #: src/pages/search.tsx
-#: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "See more"
 msgstr "Ver máis"
 
@@ -4417,15 +4331,14 @@ msgstr "Comentarios"
 #~ msgstr "Engadir filtro"
 
 #: src/pages/status.tsx
-msgid "Switch to post's PDS"
-msgstr ""
+#~ msgid "Switch to post's PDS"
+#~ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
 msgstr "Retirar seguidora…"
 
 #: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Profile"
 msgstr "Perfil"
@@ -4516,7 +4429,6 @@ msgid "Unable to mute @{username}"
 msgstr "Non se puido silenciar a @{username}"
 
 #: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "Hashtags"
 msgstr "Cancelos"
 
@@ -4547,8 +4459,6 @@ msgid "Screenshot of Bluepy home timeline on tablet device"
 msgstr ""
 
 #: src/components/status-inline-controls.tsx
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Like"
@@ -4558,7 +4468,6 @@ msgstr "Gústame"
 #~ msgid "A minimalistic opinionated Bluesky web client."
 #~ msgstr ""
 
-#: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
 msgstr "Seleccionar todas"
@@ -4584,8 +4493,8 @@ msgid "Editing source post"
 msgstr "Editando o contido da publicación"
 
 #: src/pages/settings.tsx
-msgid "Polls"
-msgstr "Enquisas"
+#~ msgid "Polls"
+#~ msgstr "Enquisas"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
@@ -4621,7 +4530,6 @@ msgid "Failed to generate description: {0}"
 msgstr "Fallou a creación da descrición: {0}"
 
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
 msgid "Catch-up <0>beta</0>"
 msgstr "Ponte ao día <0>beta</0>"
 
@@ -4633,7 +4541,6 @@ msgstr ""
 msgid "Failed to log in. Please check your handle and app password."
 msgstr ""
 
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Edit video description"
 msgstr "Editar descrición do vídeo"
@@ -4648,8 +4555,6 @@ msgstr "persoas que sigo"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr "Seguidoras"
 
@@ -4696,11 +4601,9 @@ msgstr "Fallou a creación da descrición"
 
 #: src/components/nav-menu.tsx
 #: src/pages/followed-hashtags.tsx
-#: src/pages/followed-hashtags.tsx
 #~ msgid "Followed Hashtags"
 #~ msgstr "Cancelos seguidos"
 
-#: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
 msgid "static URL"
 msgstr "URL estático"
@@ -4783,14 +4686,13 @@ msgstr "Non se puido eliminar a publicación"
 #~ msgstr ""
 
 #: src/components/edit-history-controls.tsx
-msgid "Exit"
-msgstr "Saír"
+#~ msgid "Exit"
+#~ msgstr "Saír"
 
 #: src/pages/catchup.tsx
 msgid "Previously…"
 msgstr "Anteriormente…"
 
-#: src/pages/filters.tsx
 #: src/pages/filters.tsx
 #~ msgid "New filter"
 #~ msgstr "Novo filtro"
@@ -4799,7 +4701,6 @@ msgstr "Anteriormente…"
 msgid "Quote removed"
 msgstr "Retirouse a cita"
 
-#: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Quote with link"
 msgstr "Citar con ligazón"
@@ -4818,13 +4719,12 @@ msgid "Unable to load posts with this tag"
 msgstr "Non se puideron cargar publicacións con este cancelo"
 
 #: src/components/notification.tsx
-#: src/components/notification.tsx
 msgid "Learn more <0/>"
 msgstr "Saber mais <0/>"
 
 #: src/pages/hashtag.tsx
-msgid "This timeline is disabled on Bluesky."
-msgstr ""
+#~ msgid "This timeline is disabled on Bluesky."
+#~ msgstr ""
 
 #: src/pages/catchup.tsx
 #~ msgid "Links shared by followings, sorted by shared counts, boosts and likes."
@@ -4836,8 +4736,8 @@ msgstr "Ponte ao Día é unha cronoloxía separada para os teus seguimentos onde
 
 #. [Name] [Visibility icon] reposted
 #: src/components/filtered-status.tsx
-msgid "<0/> <1/> reposted"
-msgstr ""
+#~ msgid "<0/> <1/> reposted"
+#~ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Moderation warning"
@@ -4899,7 +4799,6 @@ msgstr "Limpar todo"
 #: src/components/edit-profile-sheet.tsx
 #: src/components/embed-modal.tsx
 #: src/components/feedback-modal.tsx
-#: src/components/feedback-modal.tsx
 #: src/components/filtered-status.tsx
 #: src/components/generic-accounts.tsx
 #: src/components/gif-picker-modal.tsx
@@ -4917,18 +4816,13 @@ msgstr "Limpar todo"
 #: src/components/qr-code-modal.tsx
 #: src/components/qr-scanner-modal.tsx
 #: src/components/quote-chain-modal.tsx
-#: src/components/quote-settings-sheet.tsx
 #: src/components/quotes-modal.tsx
 #: src/components/report-modal.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/components/status-edit-history-modal.tsx
 #: src/components/translated-bio-sheet.tsx
 #: src/pages/accounts.tsx
 #: src/pages/catchup.tsx
 #: src/pages/list.tsx
-#: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
 #: src/pages/status.tsx
@@ -4952,9 +4846,8 @@ msgid "NOTE: Push notifications only work for <0>one account</0>."
 msgstr "NOTA: As notificacións Push só funcionan para <0>unha conta</0>."
 
 #: src/components/poll.tsx
-#: src/components/poll.tsx
-msgid "Show results"
-msgstr "Mostrar resultados"
+#~ msgid "Show results"
+#~ msgstr "Mostrar resultados"
 
 #: src/components/status-reply-menu.tsx
 #~ msgid "Only <0>@{0}</0>"
@@ -4962,7 +4855,7 @@ msgstr "Mostrar resultados"
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-quote-policy.ts
+#: src/components/status-content.tsx
 msgid "Quote"
 msgstr "Cita"
 
@@ -5017,15 +4910,13 @@ msgid "View profile header"
 msgstr "Ver cabeceira do perfil"
 
 #: src/pages/login.tsx
-#: src/pages/login.tsx
-msgid "Failed to register application"
-msgstr "Fallou o rexistro da aplicación"
+#~ msgid "Failed to register application"
+#~ msgstr "Fallou o rexistro da aplicación"
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
 msgstr ""
 
-#: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
 msgid "Graphic Media"
 msgstr ""
@@ -5075,10 +4966,7 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/favourites.tsx
 #: src/pages/favourites.tsx
 #: src/pages/settings.tsx
 msgid "Likes"
