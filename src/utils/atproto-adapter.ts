@@ -3778,6 +3778,39 @@ export async function loginAtproto({
   };
 }
 
+// Best-effort server-side logout for app-password sessions. OAuth sessions are
+// revoked separately via the OAuth client. Like that path, this is resilient:
+// the caller clears local storage regardless of whether this network call
+// succeeds (e.g. the session already expired server-side).
+export async function logoutAtprotoSession(
+  accessToken: string | null | undefined,
+): Promise<void> {
+  if (!accessToken) return;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(accessToken);
+  } catch {
+    return;
+  }
+  if (!isRecord(parsed) || parsed.type !== 'atproto') return;
+  const session = toAtpSessionData(parsed.session);
+  if (!session) return;
+  // Session deletion targets the account's PDS (stored per-account in
+  // parsed.service for app-password logins), NOT the AppView. Fall back to the
+  // entryway PDS — never the AppView URL — for tokens missing a stored service.
+  const service =
+    typeof parsed.service === 'string' && parsed.service
+      ? parsed.service
+      : BSKY_PDS;
+  try {
+    const agent = new AtpAgent({ service });
+    await agent.resumeSession(session);
+    await agent.logout();
+  } catch (error) {
+    console.error('Failed to delete ATProto app-password session:', error);
+  }
+}
+
 export function createPublicAtprotoClient() {
   return createAtprotoClient({ service: getActiveAppviewConfig().url });
 }

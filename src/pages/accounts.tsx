@@ -15,7 +15,8 @@ import NameText, { type NameTextProps } from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import { getAccountProfileTarget } from '../utils/account-profile-target';
 import { api, getMastoV1Resource } from '../utils/api';
-import { revokeAccessToken } from '../utils/auth';
+import { logoutAtprotoSession } from '../utils/atproto-adapter';
+import { signOutAtprotoOAuthSession } from '../utils/atproto-oauth';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
 import { navigatePath } from '../utils/router';
@@ -97,13 +98,15 @@ function Accounts({ onClose }: AccountsProps) {
                 } catch {}
               };
 
-              const logOutAccount = async () => {
-                await revokeAccessToken({
-                  instanceURL: account.instanceURL,
-                  client_id: String(account.clientId),
-                  client_secret: String(account.clientSecret),
-                  token: String(account.accessToken),
-                });
+              const logOutAccount = () => {
+                // OAuth and app-password accounts carry different token shapes;
+                // each helper no-ops for the other. Fire-and-forget so the local
+                // session is cleared immediately and a stalled network revoke
+                // never blocks logout.
+                void Promise.allSettled([
+                  signOutAtprotoOAuthSession(account.accessToken),
+                  logoutAtprotoSession(account.accessToken),
+                ]);
               };
 
               const { acct, avatarStatic } = account.info;
@@ -283,23 +286,19 @@ function Accounts({ onClose }: AccountsProps) {
                           }
                           menuItemClassName="danger"
                           onClick={() => {
-                            void (async () => {
-                              await logOutAccount();
-                              delete (account as { accessToken?: string })
-                                .accessToken;
-                              saveOAuthAccounts();
-                              reload();
-                            })();
+                            logOutAccount();
+                            delete (account as { accessToken?: string })
+                              .accessToken;
+                            saveOAuthAccounts();
+                            reload();
                           }}
                           menuExtras={
                             <MenuItem
                               className="danger"
                               onClick={() => {
-                                void (async () => {
-                                  await logOutAccount();
-                                  removeAccount();
-                                  location.href = location.pathname || '/';
-                                })();
+                                logOutAccount();
+                                removeAccount();
+                                location.href = location.pathname || '/';
                               }}
                             >
                               <Icon icon="x" />
