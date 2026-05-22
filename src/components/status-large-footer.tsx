@@ -123,11 +123,13 @@ export default function StatusLargeFooter({
       {!!emojiReactions?.length && (
         <div className="emoji-reactions">
           {emojiReactions.map((emojiReaction: Record<string, unknown>) => {
-            const { name, count, me } = emojiReaction as {
-              name: string;
-              count?: number;
-              me?: boolean;
-            };
+            const name =
+              typeof emojiReaction.name === 'string' ? emojiReaction.name : '';
+            const count =
+              typeof emojiReaction.count === 'number'
+                ? emojiReaction.count
+                : undefined;
+            const me = emojiReaction.me === true;
             return (
               <span
                 key={name}

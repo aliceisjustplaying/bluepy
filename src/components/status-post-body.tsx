@@ -170,7 +170,7 @@ export default function StatusPostBody({
                     ref={spoilerContentRef}
                     data-read-more={_(readMoreText)}
                   >
-                    <EmojiText text={spoilerText} emojis={emojis} />{' '}
+                    <EmojiText text={spoilerText} />{' '}
                   </span>
                 )}
                 <SpoilerButton
@@ -209,7 +209,7 @@ export default function StatusPostBody({
                   data-read-more={_(readMoreText)}
                 >
                   <p>
-                    <EmojiText text={spoilerText} emojis={emojis} />
+                    <EmojiText text={spoilerText} />
                   </p>
                 </div>
                 {readingExpandSpoilers || previewMode ? (

@@ -38,7 +38,6 @@ interface StatusHeaderProps {
   showCommentHint: boolean;
   showCommentCount: boolean;
   repliesCount?: number;
-  visibility: 'direct' | 'local' | 'private' | 'public' | 'unlisted';
   editedAt?: string | null;
   createdAtDate: Date;
   inReplyToAccount?: AnyAccount | null;

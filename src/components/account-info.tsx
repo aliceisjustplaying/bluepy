@@ -977,7 +977,7 @@ function AccountInfo({
                           dir="auto"
                         >
                           <b>
-                            <EmojiText text={name} emojis={emojis} />{' '}
+                            <EmojiText text={name} />{' '}
                             {!!verifiedAt && (
                               <Icon
                                 icon="check-circle"

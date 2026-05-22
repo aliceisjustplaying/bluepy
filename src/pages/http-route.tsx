@@ -17,24 +17,28 @@ export default function HttpRoute() {
     setUIState('loading');
     void (async () => {
       // Resolve the URL via search
-      const { masto: currentMasto, instance: currentInstance } = api();
-      const searchResource =
-        getMastoV2Resource<mastodon.rest.v2.SearchResource>(
-          currentMasto,
-          'search',
-        );
-      const result = await searchResource.list({
-        q: url,
-        limit: 1,
-        resolve: true,
-      });
-      if (result.statuses.length) {
-        const status = result.statuses[0];
-        navigatePath(`/${currentInstance}/s/${status.id}?view=full`);
-      } else if (result.accounts.length) {
-        const account = result.accounts[0];
-        navigatePath(`/${currentInstance}/a/${account.id}`);
-      } else {
+      try {
+        const { masto: currentMasto, instance: currentInstance } = api();
+        const searchResource =
+          getMastoV2Resource<mastodon.rest.v2.SearchResource>(
+            currentMasto,
+            'search',
+          );
+        const result = await searchResource.list({
+          q: url,
+          limit: 1,
+          resolve: true,
+        });
+        if (result.statuses.length) {
+          const status = result.statuses[0];
+          navigatePath(`/${currentInstance}/s/${status.id}?view=full`);
+        } else if (result.accounts.length) {
+          const account = result.accounts[0];
+          navigatePath(`/${currentInstance}/a/${account.id}`);
+        } else {
+          setUIState('error');
+        }
+      } catch {
         setUIState('error');
       }
     })();
