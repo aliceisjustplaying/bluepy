@@ -98,10 +98,12 @@ function Accounts({ onClose }: AccountsProps) {
                 } catch {}
               };
 
-              const logOutAccount = async () => {
+              const logOutAccount = () => {
                 // OAuth and app-password accounts carry different token shapes;
-                // each helper no-ops for the other, so run both best-effort.
-                await Promise.allSettled([
+                // each helper no-ops for the other. Fire-and-forget so the local
+                // session is cleared immediately and a stalled network revoke
+                // never blocks logout.
+                void Promise.allSettled([
                   signOutAtprotoOAuthSession(account.accessToken),
                   logoutAtprotoSession(account.accessToken),
                 ]);
@@ -284,23 +286,19 @@ function Accounts({ onClose }: AccountsProps) {
                           }
                           menuItemClassName="danger"
                           onClick={() => {
-                            void (async () => {
-                              await logOutAccount();
-                              delete (account as { accessToken?: string })
-                                .accessToken;
-                              saveOAuthAccounts();
-                              reload();
-                            })();
+                            logOutAccount();
+                            delete (account as { accessToken?: string })
+                              .accessToken;
+                            saveOAuthAccounts();
+                            reload();
                           }}
                           menuExtras={
                             <MenuItem
                               className="danger"
                               onClick={() => {
-                                void (async () => {
-                                  await logOutAccount();
-                                  removeAccount();
-                                  location.href = location.pathname || '/';
-                                })();
+                                logOutAccount();
+                                removeAccount();
+                                location.href = location.pathname || '/';
                               }}
                             >
                               <Icon icon="x" />

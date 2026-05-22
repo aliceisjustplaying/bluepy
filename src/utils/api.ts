@@ -378,8 +378,11 @@ export function api({
   accountID,
   account,
 }: ApiOptions = {}): ApiResult {
-  // Always lowercase and trim the instance
-  const instance = requestedInstance?.toLowerCase().trim();
+  // ATProto-only: initClient always targets the Bluesky AppView and caches under
+  // BSKY_INSTANCE, so normalize any requested route instance to BSKY_INSTANCE.
+  // Otherwise a logged-in user on a legacy `/:instance/...` route would miss the
+  // cached/stored account and fall through to a public (logged-out) client.
+  const instance = requestedInstance ? BSKY_INSTANCE : undefined;
 
   // If instance and accessToken are provided, get the masto instance for that account
   if (instance && accessToken) {

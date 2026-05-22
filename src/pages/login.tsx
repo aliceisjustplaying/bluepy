@@ -238,7 +238,7 @@ function Login() {
                 value={bskyPassword}
                 type="password"
                 className="large"
-                aria-label="App password"
+                aria-label={t`App password`}
                 disabled={uiState === 'loading'}
                 autoComplete="current-password"
                 onInput={(e: SyntheticEvent<HTMLInputElement>) => {
@@ -252,7 +252,7 @@ function Login() {
                 value={bskyService}
                 type="text"
                 className="large"
-                aria-label="PDS URL, optional"
+                aria-label={t`PDS URL, optional`}
                 disabled={uiState === 'loading'}
                 autoCorrect="off"
                 autoCapitalize="off"

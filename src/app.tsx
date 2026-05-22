@@ -564,22 +564,21 @@ function App() {
 
       // No ATProto OAuth callback in the URL → restore an existing session.
       window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
-      const searchAccount = decodeURIComponent(
-        (window.location.search.match(/account=([^&]+)/) || [
-          undefined,
-          '',
-        ])[1] ?? '',
-      );
+      // URLSearchParams handles decoding and won't throw on malformed input.
+      const searchParams = new URLSearchParams(window.location.search);
+      const searchAccount = searchParams.get('account') ?? '';
       let account;
       if (searchAccount) {
         account = getAccount(searchAccount);
-        console.log('searchAccount', searchAccount, account);
         if (account) {
           setCurrentAccountID(account.info.id);
+          // Strip only the `account` param; keep any other params and the hash.
+          searchParams.delete('account');
+          const nextSearch = searchParams.toString();
           window.history.replaceState(
             {},
             document.title,
-            window.location.pathname || '/',
+            `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash}`,
           );
         }
       }
