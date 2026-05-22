@@ -1,12 +1,10 @@
-/// <reference types="node" />
-
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 import { compareCreatedAt } from '../src/utils/catchup-sort';
 import { sorted } from '../src/utils/sorted';
 
-void test('compareCreatedAt orders timezone-offset timestamps by instant', () => {
+test('compareCreatedAt orders timezone-offset timestamps by instant', () => {
   const posts = [
     {
       id: 'timezone-offset-newer-post',
