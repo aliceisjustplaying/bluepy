@@ -54,7 +54,9 @@ msgstr "{username} заглушено"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
 #: src/pages/home.tsx
+#: src/pages/mentions.tsx
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
@@ -85,6 +87,7 @@ msgstr "Показати всіх авторів"
 msgid "Other"
 msgstr "Інше"
 
+#: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
 msgid "Send feedback…"
 msgstr ""
@@ -126,6 +129,7 @@ msgstr "Ще немає цитувань"
 #~ msgstr "Запланована публікація видалена"
 
 #: src/pages/status.tsx
+#: src/pages/status.tsx
 msgid "Switch to Side Peek view"
 msgstr "Перемкнутися на вигляд з Боковою Панеллю"
 
@@ -165,6 +169,7 @@ msgstr "<0>Shift</0> + <1>c</1>"
 #~ msgstr "Заплановані пости"
 
 #: src/components/muted-status.tsx
+#: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "Заглушений(-а)"
@@ -191,6 +196,7 @@ msgstr "будь-кого"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
+#: src/pages/search.tsx
 msgid "Posts"
 msgstr "Дописів"
 
@@ -215,9 +221,11 @@ msgid "No one mentioned you :("
 msgstr "Ніхто не згадував вас :("
 
 #: src/components/filtered-status.tsx
+#: src/components/filtered-status.tsx
 #: src/components/media-post.tsx
 #: src/components/status-compact.tsx
 #: src/components/timeline.tsx
+#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered"
 msgstr "Відфільтровано"
@@ -349,6 +357,7 @@ msgid "Tell us what happened first."
 msgstr ""
 
 #: src/pages/settings.tsx
+#: src/pages/settings.tsx
 msgid "Light"
 msgstr "Світла"
 
@@ -421,6 +430,8 @@ msgstr "Список"
 
 #: src/components/status-placeholders.tsx
 #: src/components/status-quotes.tsx
+#: src/components/status-quotes.tsx
+#: src/components/status-quotes.tsx
 msgid "Post unavailable"
 msgstr "Допис недоступний"
 
@@ -451,6 +462,8 @@ msgstr "Кінець."
 #: src/components/related-actions.tsx
 #: src/components/status-header.tsx
 #: src/components/status-inline-controls.tsx
+#: src/components/status-inline-controls.tsx
+#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/accounts.tsx
@@ -574,6 +587,7 @@ msgstr "Додайте кілька ярликів/стовпців, щоб це
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
 #: src/pages/trending.tsx
 msgid "Trending"
 msgstr "Популярне"
@@ -602,6 +616,7 @@ msgstr "Розгорнути попередження про вміст або<0
 msgid "Unable to load account."
 msgstr "Не вдалося завантажити обліковий запис."
 
+#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Optional, e.g. bsky.social"
 msgstr ""
@@ -788,6 +803,8 @@ msgid "Append to current shortcuts?"
 msgstr "Додати до поточних ярликів?"
 
 #: src/components/status-large-footer.tsx
+#: src/components/status-large-footer.tsx
+#: src/components/status-quick-menu.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Undo repost"
 msgstr ""
@@ -847,6 +864,8 @@ msgstr "Облікові записи…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#: src/pages/bookmarks.tsx
 #: src/pages/bookmarks.tsx
 msgid "Bookmarks"
 msgstr "Закладки"
@@ -918,6 +937,7 @@ msgid "Label"
 msgstr "Заголовок"
 
 #: src/components/status-inline-controls.tsx
+#: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Liked"
 msgstr "Вподобано"
@@ -982,6 +1002,7 @@ msgstr ""
 msgid "Posts tagged #{tagged} by {accountDisplay}"
 msgstr ""
 
+#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generating description. Please wait…"
 msgstr "Генерується опис. Будь ласка, зачекайте…"
@@ -1072,6 +1093,7 @@ msgstr "Показати медіа"
 #~ msgstr "Назавжди"
 
 #: src/pages/notifications.tsx
+#: src/pages/notifications.tsx
 msgid "Notifications settings"
 msgstr "Налаштування сповіщень"
 
@@ -1091,6 +1113,8 @@ msgstr "бета"
 #: src/components/nav-menu.tsx
 #: src/components/search-form.tsx
 #: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Search"
 msgstr "Пошук"
@@ -1256,6 +1280,7 @@ msgstr "Все одно показати"
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
+#: src/components/status-activity-menu.tsx
 msgid "Reposted/Liked by…"
 msgstr ""
 
@@ -1368,6 +1393,7 @@ msgstr "Шукати мої дописи"
 #: src/components/notification.tsx
 #: src/pages/accounts.tsx
 #: src/pages/search.tsx
+#: src/pages/search.tsx
 msgid "Accounts"
 msgstr "Облікові записи"
 
@@ -1380,6 +1406,8 @@ msgstr "Допис приховано, оскільки ви заглушили 
 #~ msgstr "Цей допис з іншого серверу (<0>{instance}</0>). Взаємодія (відповідь, поширення тощо) неможлива."
 
 #: src/components/account-info-mini.tsx
+#: src/components/account-info-mini.tsx
+#: src/components/account-info.tsx
 #: src/components/account-info.tsx
 msgid "This user has chosen to not make this information available."
 msgstr "Цей користувач вирішив не розкривати цю інформацію."
@@ -1414,6 +1442,7 @@ msgid "Accepted"
 msgstr "Погоджено"
 
 #: src/components/feedback-modal.tsx
+#: src/components/feedback-modal.tsx
 msgid "Leave this field blank"
 msgstr ""
 
@@ -1421,6 +1450,7 @@ msgstr ""
 msgid "Powered by GIPHY"
 msgstr "На базі GIPHY"
 
+#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Help"
 msgstr "Довідка"
@@ -1539,6 +1569,7 @@ msgid "Malicious links, fake engagement, or repetitive replies"
 msgstr "Шкідливі посилання, фальшиві взаємодії, або відповіді, що повторюються"
 
 #: src/components/compose.tsx
+#: src/components/compose.tsx
 #: src/components/file-picker-input.tsx
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
 msgstr "{maxMediaAttachments, plural, one {Ви можете прикріпити до 1 файлу.} other {Ви можете прикріпити до # файлів.}}"
@@ -1611,6 +1642,7 @@ msgstr "Пошук GIF в редакторі"
 #. placeholder {0}: prettyBytes( imageSize, )
 #. placeholder {0}: prettyBytes( videoSize, )
 #. placeholder {1}: prettyBytes(limit)
+#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
 msgstr "Розмір файлу завеликий. Можуть виникнути проблеми з вивантаженням файлу. Спробуйте зменшити його розмір з {0} до {1} або менше."
@@ -1728,6 +1760,7 @@ msgstr "ID списку"
 #. placeholder {2}: i18n.number(newWidth)
 #. placeholder {3}: i18n.number( newHeight, )
 #: src/components/media-attachment.tsx
+#: src/components/media-attachment.tsx
 msgid "Dimension too large. Uploading might encounter issues. Try reduce dimension from {0}×{1}px to {2}×{3}px."
 msgstr "Розмір зображення завеликий. Можуть виникнути проблеми. Спробуйте зменшити зображення з {0}×{1}px до {2}×{3}px."
 
@@ -1785,6 +1818,8 @@ msgstr ""
 msgid "Raw Shortcuts JSON"
 msgstr "Вихідний JSON Ярликів"
 
+#: src/components/thread-badge.tsx
+#: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/pages/catchup.tsx
 msgid "Thread"
@@ -1850,6 +1885,7 @@ msgstr "Шукати облікові записи"
 #~ msgstr "Помилка вкладення #{i}"
 
 #: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
 msgid "Top links"
 msgstr "Найпопулярніші посилання"
 
@@ -1905,6 +1941,7 @@ msgstr "<0>Esc</0> або <1>Backspace</1>"
 #: src/components/quotes-modal.tsx
 #: src/components/status-post-body.tsx
 #: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Quotes"
 msgstr "Цитати"
@@ -1953,6 +1990,7 @@ msgstr "<0>Shift</0> + <1>k</1>"
 msgid "Volunteer translations"
 msgstr "Допомогти з перекладом"
 
+#: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 msgid "Unable to fetch account info"
 msgstr "Не вдалося отримати інформацію про обліковий запис"
@@ -2012,6 +2050,8 @@ msgstr "Підписок"
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/following.tsx
+#: src/pages/following.tsx
+#: src/pages/following2.tsx
 #: src/pages/following2.tsx
 msgid "following.title"
 msgstr "Підписки"
@@ -2074,6 +2114,7 @@ msgstr "Ігнорувати"
 #~ msgstr "Не вдалося завантажити ярлики"
 
 #: src/components/account-info.tsx
+#: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "QR code"
@@ -2216,6 +2257,7 @@ msgid "Month"
 msgstr "Місяць"
 
 #: src/pages/list.tsx
+#: src/pages/list.tsx
 msgid "Manage members"
 msgstr "Керувати учасниками"
 
@@ -2327,6 +2369,7 @@ msgstr "Додати в Ярлики"
 #: src/components/timeline2.tsx
 #: src/pages/catchup.tsx
 #: src/pages/home.tsx
+#: src/pages/home.tsx
 #: src/pages/notifications.tsx
 msgid "Home"
 msgstr "Домашня"
@@ -2340,6 +2383,7 @@ msgstr "Розглушити бесіду"
 #~ msgstr "{account} відреагував {emojiObject} на ваш допис "
 
 #: src/pages/settings.tsx
+#: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
 msgstr "Не вдалося оновити підписку. Будь ласка, спробуйте ще раз."
 
@@ -2347,6 +2391,7 @@ msgstr "Не вдалося оновити підписку. Будь ласка
 msgid "Enable notifications"
 msgstr "Увімкнути сповіщення"
 
+#: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
 msgid "Reset filters"
@@ -2375,8 +2420,11 @@ msgstr "{account} опублікував допис"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#: src/pages/home.tsx
 #: src/pages/home.tsx
 #: src/pages/list.tsx
+#: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications"
 msgstr "Сповіщення"
@@ -2407,6 +2455,7 @@ msgstr "{hashtagTitle} на {instance}"
 
 #: src/components/compose.tsx
 #: src/components/keyboard-shortcuts-help.tsx
+#: src/components/status-inline-controls.tsx
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-reply-menu.tsx
@@ -2505,6 +2554,7 @@ msgstr "Відхилено"
 
 #. Preview of one character, in largest size
 #. Preview of one character, in smallest size
+#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "A"
 msgstr "А"
@@ -2660,6 +2710,7 @@ msgstr "Це сповіщення з вашого іншого обліково�
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
 #: src/pages/status.tsx
+#: src/pages/status.tsx
 msgid "Try again"
 msgstr "Спробувати знову"
 
@@ -2790,6 +2841,7 @@ msgstr "Яка проблема з цим дописом?"
 msgid "Privacy Policy"
 msgstr "Політика конфіденційності"
 
+#: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Refresh"
 msgstr "Оновити"
@@ -2954,10 +3006,12 @@ msgid "Hashtag shortcut added"
 msgstr "Ярлик хештеґу додано"
 
 #: src/components/related-actions.tsx
+#: src/components/related-actions.tsx
 msgid "Follow"
 msgstr "Підписатися"
 
 #: src/components/keyboard-shortcuts-help.tsx
+#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Repost"
@@ -2975,6 +3029,7 @@ msgstr "Ваш обліковий запис було обмежено."
 msgid "{followersCount, plural, one {# follower} other {# followers}}"
 msgstr "{followersCount, plural, one {# підписник} many {# підписників} other {# підписники}}"
 
+#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Video description"
 msgstr "Опис відео"
@@ -3067,6 +3122,9 @@ msgstr "Список може не працювати, якщо він з інш
 #: src/components/status-post-body.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#: src/pages/status.tsx
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
@@ -3200,6 +3258,8 @@ msgstr ""
 msgid "Sponsor"
 msgstr "Спонсорувати"
 
+#: src/components/media-attachment.tsx
+#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generate description…"
 msgstr "Згенерувати опис…"
@@ -3422,6 +3482,7 @@ msgstr ""
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
+#: src/components/status-utility-menu.tsx
 #: src/components/translation-block.tsx
 msgid "Translate"
 msgstr "Перекласти"
@@ -3464,6 +3525,7 @@ msgstr "Не вдалося заблокувати {username}"
 
 #. js-lingui-explicit-id
 #: src/pages/status.tsx
+#: src/pages/status.tsx
 msgid "post.title"
 msgstr "Допис"
 
@@ -3476,6 +3538,7 @@ msgstr "Встановити за замовчуванням"
 #~ msgid "Quiet public"
 #~ msgstr "Непублічно"
 
+#: src/components/feedback-modal.tsx
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
 msgstr ""
@@ -3507,6 +3570,7 @@ msgstr "Допис в очікуванні"
 #~ msgstr "Поширення"
 
 #: src/pages/settings.tsx
+#: src/pages/settings.tsx
 msgid "Dark"
 msgstr "Темна"
 
@@ -3527,6 +3591,7 @@ msgid "Switch in new tab/window"
 msgstr "Перемкнутися в новій вкладці/вікні"
 
 #: src/components/keyboard-shortcuts-help.tsx
+#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Bookmark"
@@ -3610,6 +3675,7 @@ msgstr ""
 #~ msgstr "Додати ключове слово"
 
 #: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
 msgstr "Ярлики імпортовано"
 
@@ -3666,6 +3732,7 @@ msgid "Allow from <0>{0}</0>"
 msgstr "Дозволити від <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
 msgid "PDS"
 msgstr ""
 
@@ -3714,6 +3781,7 @@ msgstr "Перекласти біографію"
 #~ msgid "Followed #{hashtag}"
 #~ msgstr "#{hashtag} відстежується"
 
+#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Auto"
 msgstr "Автоматична"
@@ -3764,6 +3832,8 @@ msgstr "Попередній автор"
 
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
+#: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
@@ -3836,6 +3906,7 @@ msgstr "{repliesCount, plural, one {# відповідь} few {# відпові�
 #~ msgid "server domain name"
 #~ msgstr "доменне ім'я сервера"
 
+#: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
 msgid "Explicit or potentially disturbing media."
 msgstr ""
@@ -3924,6 +3995,7 @@ msgstr "ім'я користувача"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/related-actions.tsx
+#: src/components/related-actions.tsx
 msgid "Add/Remove from Lists"
 msgstr "Додати/видалити зі Списків"
 
@@ -3949,14 +4021,20 @@ msgid "Muted users"
 msgstr "Заглушені користувачі"
 
 #: src/components/nav-menu.tsx
+#: src/components/nav-menu.tsx
+#: src/components/nav-menu.tsx
+#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 #: src/pages/list.tsx
+#: src/pages/list.tsx
+#: src/pages/lists.tsx
 #: src/pages/lists.tsx
 msgid "Lists & Feeds"
 msgstr ""
 
 #: src/components/nav-menu.tsx
+#: src/pages/login.tsx
 #: src/pages/login.tsx
 #: src/pages/status.tsx
 #: src/pages/welcome.tsx
@@ -4241,6 +4319,7 @@ msgid "Posts are sorted by information density or depth. Shorter posts are \"lig
 msgstr "Дописи відсортовані за наповненням або розміром інформації. Короткі дописи - \"легші\", коли як довші пости - \"важче\". Дописи із зображенням \"важче\", аніж дописи без зображень."
 
 #: src/components/nav-menu.tsx
+#: src/components/nav-menu.tsx
 msgid "Settings…"
 msgstr "Налаштування…"
 
@@ -4296,6 +4375,8 @@ msgid "Unable to mute {username}"
 msgstr "Неможливо заглушити {username}"
 
 #: src/pages/search.tsx
+#: src/pages/search.tsx
+#: src/pages/search.tsx
 msgid "See more"
 msgstr "Показати більше"
 
@@ -4329,6 +4410,7 @@ msgid "Remove follower…"
 msgstr "Відписати…"
 
 #: src/components/nav-menu.tsx
+#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Profile"
 msgstr "Профіль"
@@ -4419,6 +4501,7 @@ msgid "Unable to mute @{username}"
 msgstr "Не вдалося заглушити @{username}"
 
 #: src/pages/search.tsx
+#: src/pages/search.tsx
 msgid "Hashtags"
 msgstr "Хештеґи"
 
@@ -4449,6 +4532,8 @@ msgid "Screenshot of Bluepy home timeline on tablet device"
 msgstr ""
 
 #: src/components/status-inline-controls.tsx
+#: src/components/status-inline-controls.tsx
+#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Like"
@@ -4458,6 +4543,7 @@ msgstr "Вподобати"
 #~ msgid "A minimalistic opinionated Bluesky web client."
 #~ msgstr ""
 
+#: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
 msgstr "Вибрати все"
@@ -4520,6 +4606,7 @@ msgid "Failed to generate description: {0}"
 msgstr "Помилка генерації опису: {0}"
 
 #: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
 msgid "Catch-up <0>beta</0>"
 msgstr "Ретроспектива <0>бета</0>"
 
@@ -4531,6 +4618,7 @@ msgstr ""
 msgid "Failed to log in. Please check your handle and app password."
 msgstr ""
 
+#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Edit video description"
 msgstr "Редагувати опис відео"
@@ -4595,6 +4683,7 @@ msgstr "Помилка генерації опису"
 #~ msgstr "Відстежувані хештеґи"
 
 #: src/components/post-embed-modal.tsx
+#: src/components/post-embed-modal.tsx
 msgid "static URL"
 msgstr "статичний URL"
 
@@ -4646,6 +4735,7 @@ msgstr "Медіа"
 msgid "Yesterday"
 msgstr "Вчора"
 
+#: src/components/feedback-modal.tsx
 #: src/components/feedback-modal.tsx
 msgid "What happened?"
 msgstr ""
@@ -4708,6 +4798,7 @@ msgstr "Вимовити"
 msgid "Unable to load posts with this tag"
 msgstr "Не вдалося завантажити дописи із цим хештеґом."
 
+#: src/components/notification.tsx
 #: src/components/notification.tsx
 msgid "Learn more <0/>"
 msgstr "Дізнайтеся більше <0/>"
@@ -4789,6 +4880,7 @@ msgstr "Очистити все"
 #: src/components/edit-profile-sheet.tsx
 #: src/components/embed-modal.tsx
 #: src/components/feedback-modal.tsx
+#: src/components/feedback-modal.tsx
 #: src/components/filtered-status.tsx
 #: src/components/generic-accounts.tsx
 #: src/components/gif-picker-modal.tsx
@@ -4809,10 +4901,13 @@ msgstr "Очистити все"
 #: src/components/quotes-modal.tsx
 #: src/components/report-modal.tsx
 #: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
 #: src/components/translated-bio-sheet.tsx
 #: src/pages/accounts.tsx
 #: src/pages/catchup.tsx
 #: src/pages/list.tsx
+#: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
 #: src/pages/status.tsx
@@ -4908,6 +5003,7 @@ msgid "Bugs, confusing behavior, missing features, or anything else."
 msgstr ""
 
 #: src/components/atproto-labels.tsx
+#: src/components/atproto-labels.tsx
 msgid "Graphic Media"
 msgstr ""
 
@@ -4956,7 +5052,10 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
+#: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
+#: src/pages/catchup.tsx
+#: src/pages/favourites.tsx
 #: src/pages/favourites.tsx
 #: src/pages/settings.tsx
 msgid "Likes"
