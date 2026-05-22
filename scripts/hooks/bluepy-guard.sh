@@ -34,6 +34,10 @@ tool_command() {
 	json_field '.tool_input.command // .tool_input.cmd // .tool_input.args.command'
 }
 
+tool_workdir() {
+	json_field '.tool_input.workdir // .tool_input.cwd // .cwd'
+}
+
 changed_files() {
 	{
 		git diff --name-only --diff-filter=ACMR HEAD -- 2>/dev/null || true
@@ -80,6 +84,16 @@ guard_bash_command() {
 	local cmd="$1"
 	[ -z "$cmd" ] && deny "could not parse Bash command from hook payload"
 
+	local effective_root requested_workdir
+	effective_root="$ROOT"
+	requested_workdir="$(tool_workdir)"
+	if [ -n "$requested_workdir" ]; then
+		requested_workdir="$(normalize_path "$requested_workdir")"
+		if [ -d "$requested_workdir" ]; then
+			effective_root="$(git -C "$requested_workdir" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$requested_workdir")"
+		fi
+	fi
+
 	# Match force flags only as whole tokens. The previous `-[^-[:space:]]*f`
 	# matched the `-f` *inside* ordinary branch/ref names (e.g. `kill-feature`,
 	# `my-fix`, `refs/heads/foo-f`), false-blocking legitimate pushes.
@@ -110,7 +124,7 @@ guard_bash_command() {
 	# Anything else (bare git, multiple cds, `;`/`||` separators, a non-existent
 	# target) falls back to the session root and so fails closed on bluesky.
 	if rg -q '(^|[;&|[:space:]])git[[:space:]]+(commit|push|add|merge|rebase)(\s|$)' <<<"$cmd"; then
-		local workdir="$ROOT" cdcount cdre target
+		local workdir="$effective_root" cdcount cdre target
 		# `|| true` keeps a no-match `rg` (exit 1) from tripping `set -o pipefail`
 		# and aborting the hook before the branch check — that would fail open.
 		cdcount="$({ rg -o '(^|[;&|])[[:space:]]*cd[[:space:]]' <<<"$cmd" || true; } | wc -l | tr -d '[:space:]')"
@@ -317,8 +331,11 @@ pre-bash)
 	;;
 pre-write)
 	file_path="$(json_field '.tool_input.file_path')"
+	workdir="$(tool_workdir)"
 	if [ -n "$file_path" ]; then
 		block_on_main_branch "$(dirname "$file_path")"
+	elif [ -n "$workdir" ]; then
+		block_on_main_branch "$(normalize_path "$workdir")"
 	else
 		block_on_main_branch
 	fi
