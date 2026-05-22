@@ -54,7 +54,6 @@ import {
   getCurrentInstanceConfiguration,
 } from '../utils/store-utils';
 import stringLength from '../utils/string-length';
-import supports from '../utils/supports';
 import urlRegexObj from '../utils/url-regex';
 import useCloseWatcher from '../utils/useCloseWatcher';
 import useInterval from '../utils/useInterval';
@@ -620,9 +619,7 @@ function Compose({
       }
       return Promise.all(
         allowedFiles.map(async (file) => {
-          const uploadFile = supports('@atproto')
-            ? await compressAtprotoImageIfNeeded(file)
-            : file;
+          const uploadFile = await compressAtprotoImageIfNeeded(file);
           return {
             fileData: await uploadFile.arrayBuffer(),
             fileName: uploadFile.name,
@@ -1583,23 +1580,7 @@ function Compose({
                     (attachment) => attachment.id,
                   ),
                 };
-                if (editStatus) {
-                  if (
-                    supports('@mastodon') ||
-                    supports('@gotosocial/edit-media-attributes')
-                  ) {
-                    params.media_attributes = submitMediaAttachments.map(
-                      (attachment) => {
-                        return {
-                          id: attachment.id,
-                          description: attachment.description,
-                          // focus
-                          // thumbnail
-                        };
-                      },
-                    );
-                  }
-                } else {
+                if (!editStatus) {
                   if (currentQuoteStatus?.id) {
                     params.quoted_status_id = currentQuoteStatus.id;
                   }

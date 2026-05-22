@@ -29,7 +29,6 @@ import {
   getCurrentAccountID,
   saveAccounts,
 } from '../utils/store-utils';
-import supports from '../utils/supports';
 
 import AccountBlock from './account-block';
 import AccountHandleInfo from './account-handle-info';
@@ -883,23 +882,21 @@ function AccountInfo({
                         </span>
                       </MenuItem>
                     )}
-                    {currentAuthenticated &&
-                      isSelf &&
-                      supports('@mastodon/profile-edit') && (
-                        <>
-                          <MenuDivider />
-                          <MenuItem
-                            onClick={() => {
-                              setShowEditProfile(true);
-                            }}
-                          >
-                            <Icon icon="pencil" />
-                            <span>
-                              <Trans>Edit profile</Trans>
-                            </span>
-                          </MenuItem>
-                        </>
-                      )}
+                    {currentAuthenticated && isSelf && (
+                      <>
+                        <MenuDivider />
+                        <MenuItem
+                          onClick={() => {
+                            setShowEditProfile(true);
+                          }}
+                        >
+                          <Icon icon="pencil" />
+                          <span>
+                            <Trans>Edit profile</Trans>
+                          </span>
+                        </MenuItem>
+                      </>
+                    )}
                   </Menu2>
                 ) : (
                   <AccountBlock

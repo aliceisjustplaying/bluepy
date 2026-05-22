@@ -8,7 +8,6 @@ const MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
 interface ListLike {
   id: string;
   title: string;
-  exclusive?: boolean;
   _atproto?: { type?: string } | null;
   [key: string]: unknown;
 }

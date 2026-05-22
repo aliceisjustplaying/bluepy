@@ -31,7 +31,6 @@ import AsyncText from './AsyncText';
 import Avatar from './avatar';
 import Icon from './icon';
 import Link from './link';
-import ListExclusiveBadge from './list-exclusive-badge';
 import MenuLink from './menu-link';
 import Menu2 from './menu2';
 import SubMenu2 from './submenu2';
@@ -39,7 +38,6 @@ import SubMenu2 from './submenu2';
 interface ListLike {
   id: string;
   title: string;
-  exclusive?: boolean;
   [key: string]: unknown;
 }
 
@@ -96,15 +94,7 @@ function ListsMenuContent({ lists }: { lists: ListLike[] }) {
           </MenuHeader>
           {userLists.map((list) => (
             <MenuLink key={list.id} to={`/l/${list.id}`}>
-              <span>
-                {list.title}
-                {list.exclusive && (
-                  <>
-                    {' '}
-                    <ListExclusiveBadge />
-                  </>
-                )}
-              </span>
+              <span>{list.title}</span>
             </MenuLink>
           ))}
         </>

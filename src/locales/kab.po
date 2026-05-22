@@ -58,7 +58,6 @@ msgstr "Yettwasgugem {username}"
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
-#: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "Ibdaren"
 
@@ -562,8 +561,8 @@ msgid "Error loading quotes"
 msgstr ""
 
 #: src/components/media-attachment.tsx
-msgid "Uploaded"
-msgstr "Yuli-d"
+#~ msgid "Uploaded"
+#~ msgstr "Yuli-d"
 
 #: src/components/shortcuts-settings.jsx
 #~ msgid "No columns yet. Tap on the Add column button."
@@ -1035,8 +1034,8 @@ msgid "Remove account…"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Back to showing trending posts"
-msgstr "Uɣal ɣer uskan n tsuffaɣ tinessaɣ"
+#~ msgid "Back to showing trending posts"
+#~ msgstr "Uɣal ɣer uskan n tsuffaɣ tinessaɣ"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
@@ -1057,8 +1056,8 @@ msgid "Automated"
 msgstr "Awurman"
 
 #: src/pages/trending.tsx
-msgid "Trending News"
-msgstr "Isallen inezzaɣ"
+#~ msgid "Trending News"
+#~ msgstr "Isallen inezzaɣ"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -1130,10 +1129,9 @@ msgid "Follows"
 msgstr "T·Yeṭafaṛ"
 
 #. By [Author]
-#. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
-msgid "By {0}"
-msgstr "Sɣur {0}"
+#~ msgid "By {0}"
+#~ msgstr "Sɣur {0}"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
@@ -1283,10 +1281,9 @@ msgstr "Yettwakkes usgugem ɣef @{username}"
 msgid "Reposted"
 msgstr ""
 
-#. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
-msgid "Showing posts mentioning <0>{0}</0>"
-msgstr "Askan n tsuffaɣ i d-ibedren <0>{0}</0>"
+#~ msgid "Showing posts mentioning <0>{0}</0>"
+#~ msgstr "Askan n tsuffaɣ i d-ibedren <0>{0}</0>"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
@@ -1845,8 +1842,8 @@ msgstr "Nadi imiḍanen"
 #~ msgstr "{account} yessuter ad k-yeḍfer."
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to list members"
-msgstr "Sken tiririyin i yiεeggalen n tebdart"
+#~ msgid "Show replies to list members"
+#~ msgstr "Sken tiririyin i yiεeggalen n tebdart"
 
 #: src/components/compose.tsx
 #~ msgid "Attachment #{i} failed"
@@ -1888,7 +1885,6 @@ msgid "Failed to generate description{0}"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "Ẓreg"
@@ -1992,10 +1988,9 @@ msgstr "Amidya amḥulfu"
 msgid "Add GIF"
 msgstr "Rnu tugna GIF"
 
-#. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
-msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr "Tukksa n tsuffeɣt-iw seg tsuffeɣt n <0>@{0}</0>?"
+#~ msgid "Remove my post from <0>@{0}</0>'s post?"
+#~ msgstr "Tukksa n tsuffeɣt-iw seg tsuffeɣt n <0>@{0}</0>?"
 
 #: src/pages/welcome.tsx
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
@@ -2004,8 +1999,8 @@ msgstr "Tukksa n tsuffeɣt-iw seg tsuffeɣt n <0>@{0}</0>?"
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
-msgid "Posts on this list are hidden from Home/Following"
-msgstr ""
+#~ msgid "Posts on this list are hidden from Home/Following"
+#~ msgstr ""
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
@@ -2613,8 +2608,8 @@ msgid "Unable to load post"
 msgstr "D awezɣi alluy n tsuffeɣt"
 
 #: src/components/list-add-edit.tsx
-msgid "Hide posts on this list from Home/Following"
-msgstr "Ffer tisuffaɣ deg tebdart-a seg ugejdan/Aḍfar"
+#~ msgid "Hide posts on this list from Home/Following"
+#~ msgstr "Ffer tisuffaɣ deg tebdart-a seg ugejdan/Aḍfar"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2993,8 +2988,8 @@ msgid "Some media have no descriptions. Continue?"
 msgstr "Kra yimidyaten ulac ɣer-sen aglam. Kemmel?"
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to people I follow"
-msgstr "Sken tiririyin i yimdanen i ṭṭafareɣ"
+#~ msgid "Show replies to people I follow"
+#~ msgstr "Sken tiririyin i yimdanen i ṭṭafareɣ"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -3460,8 +3455,8 @@ msgid "Conversation unmuted"
 msgstr "Yettwafsi usgugem ɣef udiwenni"
 
 #: src/components/list-add-edit.tsx
-msgid "Don't show replies"
-msgstr "Ur skan ara tiririyin"
+#~ msgid "Don't show replies"
+#~ msgstr "Ur skan ara tiririyin"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
@@ -3968,12 +3963,9 @@ msgstr ""
 msgid "Log in"
 msgstr "Qqen"
 
-#. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
-msgid "{0} original posts, {1} replies, {2} reposts"
-msgstr ""
+#~ msgid "{0} original posts, {1} replies, {2} reposts"
+#~ msgstr ""
 
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
@@ -4188,8 +4180,8 @@ msgid "or override…"
 msgstr "neɣ zgel…"
 
 #: src/components/status-account-menu.tsx
-msgid "Remove quote…"
-msgstr ""
+#~ msgid "Remove quote…"
+#~ msgstr ""
 
 #: src/components/related-actions.tsx
 #: src/pages/hashtag.tsx
@@ -4395,8 +4387,8 @@ msgid "Hide"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Trending posts"
-msgstr "Tisuffaɣ tinezzaɣ"
+#~ msgid "Trending posts"
+#~ msgstr "Tisuffaɣ tinezzaɣ"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
@@ -4435,8 +4427,8 @@ msgstr "Ihacṭagen"
 #~ msgstr "Ur teqqineḍ ara. Amiyigew (tiririt, azuzer, rtg) ur teddun ara."
 
 #: src/components/status-account-menu.tsx
-msgid "Unable to remove quote"
-msgstr ""
+#~ msgid "Unable to remove quote"
+#~ msgstr ""
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
@@ -4696,12 +4688,12 @@ msgstr "Uqbel…"
 #~ msgstr "Amsizdeg amaynut"
 
 #: src/components/status-account-menu.tsx
-msgid "Quote removed"
-msgstr "Tanebdurt tettwakkes"
+#~ msgid "Quote removed"
+#~ msgstr "Tanebdurt tettwakkes"
 
 #: src/components/status-quick-menu.tsx
-msgid "Quote with link"
-msgstr "Tanebdurt s useɣwen"
+#~ msgid "Quote with link"
+#~ msgstr "Tanebdurt s useɣwen"
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server ({0})"

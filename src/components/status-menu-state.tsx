@@ -14,7 +14,6 @@ interface StatusMenuStateArgs {
   statusMonthsAgo: number;
   accountId?: string | null;
   mentions?: mastodon.v1.StatusMention[];
-  currentAccount?: string | null;
   repliesCount?: number;
   username?: string;
   acct?: string;
@@ -74,7 +73,6 @@ export default function useStatusMenuState({
   statusMonthsAgo,
   accountId,
   mentions,
-  currentAccount,
   repliesCount,
   username,
   acct,
@@ -124,15 +122,6 @@ export default function useStatusMenuState({
 }: StatusMenuStateArgs) {
   const { i18n } = useLingui();
   const rtf = RTF(i18n.locale);
-  const quoteAny = quote as
-    | {
-        state?: string;
-        quotedStatus?: { account?: { id?: string } | null } | null;
-      }
-    | undefined;
-  const isQuotingMyPost =
-    quoteAny?.state === 'accepted' &&
-    quoteAny?.quotedStatus?.account?.id === currentAccount;
   const isPinnable = ['public', 'unlisted', 'private'].includes(visibility);
   const menuFooter: ReactNode =
     mediaNoDesc && !reblogged ? (
@@ -156,7 +145,6 @@ export default function useStatusMenuState({
   const { statusMenuItems: StatusMenuItems } = useStatusMenuParts({
     accountId,
     mentions,
-    currentAccount,
     repliesCount,
     username,
     acct,
@@ -204,7 +192,6 @@ export default function useStatusMenuState({
     pinned,
     isPinnable,
     visibility,
-    isQuotingMyPost,
     sKey,
     fetchBoostedLikedByAccounts,
   });

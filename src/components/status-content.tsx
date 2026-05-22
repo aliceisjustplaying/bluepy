@@ -348,7 +348,6 @@ export default function StatusContent({
     statusMonthsAgo,
     accountId,
     mentions,
-    currentAccount,
     repliesCount,
     username,
     acct,

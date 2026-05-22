@@ -58,7 +58,6 @@ msgstr "{username} заглушено"
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
-#: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "Згадки"
 
@@ -562,8 +561,8 @@ msgid "Error loading quotes"
 msgstr "Помилка завантаження цитат"
 
 #: src/components/media-attachment.tsx
-msgid "Uploaded"
-msgstr "Вивантажено"
+#~ msgid "Uploaded"
+#~ msgstr "Вивантажено"
 
 #: src/components/shortcuts-settings.jsx
 #~ msgid "No columns yet. Tap on the Add column button."
@@ -1035,8 +1034,8 @@ msgid "Remove account…"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Back to showing trending posts"
-msgstr "Назад до популярних дописів"
+#~ msgid "Back to showing trending posts"
+#~ msgstr "Назад до популярних дописів"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
@@ -1057,8 +1056,8 @@ msgid "Automated"
 msgstr "Автоматизовано"
 
 #: src/pages/trending.tsx
-msgid "Trending News"
-msgstr "Популярні Новини"
+#~ msgid "Trending News"
+#~ msgstr "Популярні Новини"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -1130,10 +1129,9 @@ msgid "Follows"
 msgstr "Підписки"
 
 #. By [Author]
-#. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
-msgid "By {0}"
-msgstr "Від {0}"
+#~ msgid "By {0}"
+#~ msgstr "Від {0}"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
@@ -1283,10 +1281,9 @@ msgstr "@{username} більше не глушиться"
 msgid "Reposted"
 msgstr ""
 
-#. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
-msgid "Showing posts mentioning <0>{0}</0>"
-msgstr "Показ дописів зі згадкою <0>{0}</0>"
+#~ msgid "Showing posts mentioning <0>{0}</0>"
+#~ msgstr "Показ дописів зі згадкою <0>{0}</0>"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
@@ -1845,8 +1842,8 @@ msgstr "Шукати облікові записи"
 #~ msgstr "{account} подав запит на підписку."
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to list members"
-msgstr "Показувати відповіді учасникам списку"
+#~ msgid "Show replies to list members"
+#~ msgstr "Показувати відповіді учасникам списку"
 
 #: src/components/compose.tsx
 #~ msgid "Attachment #{i} failed"
@@ -1888,7 +1885,6 @@ msgid "Failed to generate description{0}"
 msgstr "Помилка генерації опису{0}"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "Редагувати"
@@ -1992,10 +1988,9 @@ msgstr "Чутливе медіа"
 msgid "Add GIF"
 msgstr "Додати GIF"
 
-#. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
-msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr "Вилучити мій допис з допису <0>@{0}</0>?"
+#~ msgid "Remove my post from <0>@{0}</0>'s post?"
+#~ msgstr "Вилучити мій допис з допису <0>@{0}</0>?"
 
 #: src/pages/welcome.tsx
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
@@ -2004,8 +1999,8 @@ msgstr "Вилучити мій допис з допису <0>@{0}</0>?"
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
-msgid "Posts on this list are hidden from Home/Following"
-msgstr "Дописи в цьому списку приховано зі стрічки Домашня/Підписки"
+#~ msgid "Posts on this list are hidden from Home/Following"
+#~ msgstr "Дописи в цьому списку приховано зі стрічки Домашня/Підписки"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
@@ -2613,8 +2608,8 @@ msgid "Unable to load post"
 msgstr "Не вдалося завантажити дописи"
 
 #: src/components/list-add-edit.tsx
-msgid "Hide posts on this list from Home/Following"
-msgstr "Приховати дописи цього списку з Головної/Підписок"
+#~ msgid "Hide posts on this list from Home/Following"
+#~ msgstr "Приховати дописи цього списку з Головної/Підписок"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2993,8 +2988,8 @@ msgid "Some media have no descriptions. Continue?"
 msgstr "Деякі медіа не мають альтернативного тексту. Продовжити?"
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to people I follow"
-msgstr "Показувати відповіді на людей, на яких я підписан(ий/а)"
+#~ msgid "Show replies to people I follow"
+#~ msgstr "Показувати відповіді на людей, на яких я підписан(ий/а)"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -3460,8 +3455,8 @@ msgid "Conversation unmuted"
 msgstr "Бесіда більше не глушиться"
 
 #: src/components/list-add-edit.tsx
-msgid "Don't show replies"
-msgstr "Не показувати відповіді"
+#~ msgid "Don't show replies"
+#~ msgstr "Не показувати відповіді"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
@@ -3968,12 +3963,9 @@ msgstr ""
 msgid "Log in"
 msgstr "Увійти"
 
-#. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
-msgid "{0} original posts, {1} replies, {2} reposts"
-msgstr ""
+#~ msgid "{0} original posts, {1} replies, {2} reposts"
+#~ msgstr ""
 
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
@@ -4188,8 +4180,8 @@ msgid "or override…"
 msgstr "або замінити…"
 
 #: src/components/status-account-menu.tsx
-msgid "Remove quote…"
-msgstr "Вилучити цитату…"
+#~ msgid "Remove quote…"
+#~ msgstr "Вилучити цитату…"
 
 #: src/components/related-actions.tsx
 #: src/pages/hashtag.tsx
@@ -4395,8 +4387,8 @@ msgid "Hide"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Trending posts"
-msgstr "Популярні дописи"
+#~ msgid "Trending posts"
+#~ msgstr "Популярні дописи"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
@@ -4435,8 +4427,8 @@ msgstr "Хештеґи"
 #~ msgstr "Ви не увійшли в систему. Взаємодія (відповідь, поширення тощо) неможлива."
 
 #: src/components/status-account-menu.tsx
-msgid "Unable to remove quote"
-msgstr "Не вдалося видалити цитату"
+#~ msgid "Unable to remove quote"
+#~ msgstr "Не вдалося видалити цитату"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
@@ -4696,12 +4688,12 @@ msgstr "Раніше…"
 #~ msgstr "Новий фільтр"
 
 #: src/components/status-account-menu.tsx
-msgid "Quote removed"
-msgstr "Цитату видалено"
+#~ msgid "Quote removed"
+#~ msgstr "Цитату видалено"
 
 #: src/components/status-quick-menu.tsx
-msgid "Quote with link"
-msgstr "Цитувати з посиланням"
+#~ msgid "Quote with link"
+#~ msgstr "Цитувати з посиланням"
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server ({0})"

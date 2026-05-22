@@ -34,16 +34,7 @@ type InstanceConfiguration = JsonRecord & {
 };
 
 type InstanceInfo = JsonRecord & {
-  apiVersions?: JsonRecord;
   configuration?: InstanceConfiguration;
-  maxMediaAttachments?: unknown;
-  maxTootChars?: unknown;
-  pollLimits?: {
-    maxExpiration?: unknown;
-    maxOptionChars?: unknown;
-    maxOptions?: unknown;
-    minExpiration?: unknown;
-  };
   version?: string;
 };
 
@@ -254,66 +245,20 @@ export function getCurrentInstance(): InstanceInfo {
   }
 }
 
-let currentNodeInfo: JsonRecord | null = null;
-export function getCurrentNodeInfo(): JsonRecord {
-  if (currentNodeInfo) {
-    return currentNodeInfo;
-  }
-  try {
-    const account = getCurrentAccount();
-    if (!account) {
-      return {};
-    }
-    const nodeInfos =
-      store.local.getJSON<Record<string, JsonRecord>>('nodeInfos') ?? {};
-    const instanceURL = account.instanceURL.toLowerCase();
-    return (currentNodeInfo = nodeInfos[instanceURL] ?? {});
-  } catch (error) {
-    console.error(error);
-    return {};
-  }
-}
-
-// Massage these instance configurations to match the Mastodon API
-// - Pleroma
 function getInstanceConfiguration(
   instance: InstanceInfo,
 ): InstanceConfiguration {
-  const { configuration, maxMediaAttachments, maxTootChars, pollLimits } =
-    instance;
-
-  const statuses = configuration?.statuses ?? {};
-  if (maxMediaAttachments) {
-    statuses.maxMediaAttachments ??= maxMediaAttachments;
-  }
-
-  if (maxTootChars) {
-    statuses.maxCharacters ??= maxTootChars;
-  }
-
-  const polls = configuration?.polls ?? {};
-  if (pollLimits) {
-    polls.maxCharactersPerOption ??= pollLimits.maxOptionChars;
-    polls.maxExpiration ??= pollLimits.maxExpiration;
-    polls.maxOptions ??= pollLimits.maxOptions;
-    polls.minExpiration ??= pollLimits.minExpiration;
-  }
-
+  const { configuration } = instance;
   return {
     ...configuration,
-    polls,
-    statuses,
+    polls: configuration?.polls ?? {},
+    statuses: configuration?.statuses ?? {},
   };
 }
 
 export function getCurrentInstanceConfiguration(): InstanceConfiguration {
   const instance = getCurrentInstance();
   return getInstanceConfiguration(instance);
-}
-
-export function getAPIVersions(): JsonRecord {
-  const instance = getCurrentInstance();
-  return instance.apiVersions ?? {};
 }
 
 export function getVapidKey(instance?: InstanceInfo): unknown {
@@ -323,9 +268,4 @@ export function getVapidKey(instance?: InstanceInfo): unknown {
     : getCurrentInstanceConfiguration();
   const vapidKey = config.vapid?.publicKey ?? config.vapid?.public_key;
   return vapidKey ?? getCurrentAccount()?.vapidKey;
-}
-
-export function isMediaFirstInstance(): boolean {
-  const instance = getCurrentInstance();
-  return /pixelfed/i.test(instance.version ?? '');
 }

@@ -50,7 +50,6 @@ import { sorted } from '../utils/sorted';
 import statusPeek from '../utils/status-peek';
 import store from '../utils/store';
 import { getCurrentAccountID, getCurrentAccountNS } from '../utils/store-utils';
-import supports from '../utils/supports';
 import useTitle from '../utils/useTitle';
 
 // Types -----------------------------------------------------------------
@@ -370,8 +369,6 @@ function Catchup() {
     [currentAccount],
   );
 
-  const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
-
   const fetchHome = useCallback(
     async ({
       maxCreatedAt,
@@ -389,13 +386,6 @@ function Catchup() {
       const homeIterator = homeIterable.values();
       mainloop: while (true) {
         try {
-          if (supportsPixelfed && homeIterable.params) {
-            if (typeof homeIterable.params === 'string') {
-              homeIterable.params += '&include_reblogs=true';
-            } else {
-              homeIterable.params.include_reblogs = true;
-            }
-          }
           const results = await homeIterator.next();
           const { value } = results as { value: CatchupPost[] | undefined };
           if (value?.length) {
@@ -455,7 +445,7 @@ function Catchup() {
 
       return allResults;
     },
-    [masto, supportsPixelfed, isSelf],
+    [masto, isSelf],
   );
 
   const [posts, setPosts] = useState<CatchupPost[]>([]);

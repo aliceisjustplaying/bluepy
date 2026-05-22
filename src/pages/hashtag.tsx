@@ -9,7 +9,7 @@ import {
 } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
 import type { SyntheticEvent } from 'react';
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import Icon from '../components/icon';
@@ -22,7 +22,6 @@ import { navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import { sorted } from '../utils/sorted';
 import states, { saveStatus } from '../utils/states';
-import { isMediaFirstInstance } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
@@ -116,7 +115,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   useTitle(title, `/:instance?/t/:hashtag`);
   const latestItem = useRef<string | undefined>(undefined);
 
-  const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
+  const mediaFirst = false;
 
   const tagTimelines = getMastoV1Resource<{ tag: HashtagTimelineEndpoint }>(
     masto,

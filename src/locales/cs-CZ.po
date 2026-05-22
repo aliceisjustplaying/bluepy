@@ -58,7 +58,6 @@ msgstr "Ztlumit {username}"
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
-#: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "Zmínky"
 
@@ -562,8 +561,8 @@ msgid "Error loading quotes"
 msgstr ""
 
 #: src/components/media-attachment.tsx
-msgid "Uploaded"
-msgstr "Odesláno"
+#~ msgid "Uploaded"
+#~ msgstr "Odesláno"
 
 #: src/components/shortcuts-settings.jsx
 #~ msgid "No columns yet. Tap on the Add column button."
@@ -1035,8 +1034,8 @@ msgid "Remove account…"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Back to showing trending posts"
-msgstr ""
+#~ msgid "Back to showing trending posts"
+#~ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
@@ -1057,8 +1056,8 @@ msgid "Automated"
 msgstr "Automaticky"
 
 #: src/pages/trending.tsx
-msgid "Trending News"
-msgstr ""
+#~ msgid "Trending News"
+#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -1130,10 +1129,9 @@ msgid "Follows"
 msgstr ""
 
 #. By [Author]
-#. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
-msgid "By {0}"
-msgstr ""
+#~ msgid "By {0}"
+#~ msgstr ""
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
@@ -1283,10 +1281,9 @@ msgstr ""
 msgid "Reposted"
 msgstr ""
 
-#. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
-msgid "Showing posts mentioning <0>{0}</0>"
-msgstr ""
+#~ msgid "Showing posts mentioning <0>{0}</0>"
+#~ msgstr ""
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
@@ -1845,8 +1842,8 @@ msgstr "Hledat účty"
 #~ msgstr "{account} vás požádal o sledování."
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to list members"
-msgstr "Zobrazit odpovědi členům seznamu"
+#~ msgid "Show replies to list members"
+#~ msgstr "Zobrazit odpovědi členům seznamu"
 
 #: src/components/compose.tsx
 #~ msgid "Attachment #{i} failed"
@@ -1888,7 +1885,6 @@ msgid "Failed to generate description{0}"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "Upravit"
@@ -1992,10 +1988,9 @@ msgstr "Citlivá média"
 msgid "Add GIF"
 msgstr "Přidat GIF"
 
-#. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
-msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr ""
+#~ msgid "Remove my post from <0>@{0}</0>'s post?"
+#~ msgstr ""
 
 #: src/pages/welcome.tsx
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
@@ -2004,8 +1999,8 @@ msgstr ""
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
-msgid "Posts on this list are hidden from Home/Following"
-msgstr ""
+#~ msgid "Posts on this list are hidden from Home/Following"
+#~ msgstr ""
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
@@ -2613,8 +2608,8 @@ msgid "Unable to load post"
 msgstr ""
 
 #: src/components/list-add-edit.tsx
-msgid "Hide posts on this list from Home/Following"
-msgstr "Skrýt příspěvky z tohoto seznamu na Domovské stránce/Sledované"
+#~ msgid "Hide posts on this list from Home/Following"
+#~ msgstr "Skrýt příspěvky z tohoto seznamu na Domovské stránce/Sledované"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2993,8 +2988,8 @@ msgid "Some media have no descriptions. Continue?"
 msgstr "Některá média jsou bez popisu. Pokračovat?"
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to people I follow"
-msgstr "Zobrazit odpovědi lidem, které sleduji"
+#~ msgid "Show replies to people I follow"
+#~ msgstr "Zobrazit odpovědi lidem, které sleduji"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -3460,8 +3455,8 @@ msgid "Conversation unmuted"
 msgstr "Ztlumení konverzace zrušeno"
 
 #: src/components/list-add-edit.tsx
-msgid "Don't show replies"
-msgstr "Nezobrazovat odpovědi"
+#~ msgid "Don't show replies"
+#~ msgstr "Nezobrazovat odpovědi"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
@@ -3968,12 +3963,9 @@ msgstr ""
 msgid "Log in"
 msgstr "Přihlásit se"
 
-#. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
-msgid "{0} original posts, {1} replies, {2} reposts"
-msgstr ""
+#~ msgid "{0} original posts, {1} replies, {2} reposts"
+#~ msgstr ""
 
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
@@ -4188,8 +4180,8 @@ msgid "or override…"
 msgstr "nebo přepsat…"
 
 #: src/components/status-account-menu.tsx
-msgid "Remove quote…"
-msgstr ""
+#~ msgid "Remove quote…"
+#~ msgstr ""
 
 #: src/components/related-actions.tsx
 #: src/pages/hashtag.tsx
@@ -4395,8 +4387,8 @@ msgid "Hide"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Trending posts"
-msgstr ""
+#~ msgid "Trending posts"
+#~ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
@@ -4435,8 +4427,8 @@ msgstr "Hashtagy"
 #~ msgstr ""
 
 #: src/components/status-account-menu.tsx
-msgid "Unable to remove quote"
-msgstr ""
+#~ msgid "Unable to remove quote"
+#~ msgstr ""
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
@@ -4696,12 +4688,12 @@ msgstr "Předchozí…"
 #~ msgstr "Nový filtr"
 
 #: src/components/status-account-menu.tsx
-msgid "Quote removed"
-msgstr ""
+#~ msgid "Quote removed"
+#~ msgstr ""
 
 #: src/components/status-quick-menu.tsx
-msgid "Quote with link"
-msgstr ""
+#~ msgid "Quote with link"
+#~ msgstr ""
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server ({0})"
