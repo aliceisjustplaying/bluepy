@@ -331,6 +331,19 @@ test('loads native AT URI post URLs', async ({ page }) => {
   );
 });
 
+test('canonicalizes Worker-encoded native AT URI post URLs', async ({
+  page,
+}) => {
+  await routeAtprotoRecords(page);
+
+  const workerEncodedPath =
+    '/at%3A/did%3Aplc%3Aby3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/post123';
+  await page.goto(workerEncodedPath, { waitUntil: 'domcontentloaded' });
+  await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
+  await expect(page.locator('text=AT route post')).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
+});
+
 test('keeps nested same-author thread replies under their parent', async ({
   page,
 }) => {
@@ -1391,6 +1404,22 @@ test('canonicalizes legacy AT record routes on direct load', async ({
   });
   await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
   await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+});
+
+test('canonicalizes Worker-decoded legacy AT record routes', async ({ page }) => {
+  await routeAtprotoRecords(page);
+
+  await page.goto(`/bsky.social/s/at%3A/${AT_REPO}/app.bsky.feed.post/post123`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
+  await expect(page.locator('text=AT route post')).toBeVisible();
+
+  await page.goto(`/l/at%3A/${AT_REPO}/app.bsky.graph.list/abc123`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_LIST_PATH));
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
 });
 
 test('loads and reloads canonical AT profile URLs', async ({ page }) => {
