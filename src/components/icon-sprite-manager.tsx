@@ -140,6 +140,7 @@ const Symbol = memo(
       <symbol
         id={`${ICON_NAMESPACE}-${iconName}`}
         viewBox={`0 0 ${data.width} ${data.height}`}
+        // TRUSTED-INTERNAL: app-generated, not user HTML — intentionally not sanitized
         dangerouslySetInnerHTML={{ __html: data.body }}
       />
     );

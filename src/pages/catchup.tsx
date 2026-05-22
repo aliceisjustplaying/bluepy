@@ -31,6 +31,7 @@ import Loader from '../components/loader';
 import Modal from '../components/modal';
 import NameText, { type NameTextAccount } from '../components/name-text';
 import NavMenu from '../components/nav-menu';
+import RawHtml from '../components/raw-html';
 import RelativeTime from '../components/relative-time';
 import { api, getMastoV1Resource, getPreferences } from '../utils/api';
 import { catchupPageHasItemsInRange } from '../utils/catchup-fetch';
@@ -2456,14 +2457,13 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                   </>
                 )}
                 {!!content && (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        emojifyText(content, emojis) +
-                        (theQuote?.content
-                          ? `<blockquote class="post-peek-quote">${theQuote.content}</blockquote>`
-                          : ''),
-                    }}
+                  <RawHtml
+                    html={
+                      emojifyText(content, emojis) +
+                      (theQuote?.content
+                        ? `<blockquote class="post-peek-quote">${theQuote.content}</blockquote>`
+                        : '')
+                    }
                   />
                 )}
                 {!content &&

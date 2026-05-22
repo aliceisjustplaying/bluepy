@@ -49,12 +49,21 @@ function emojifyText(text: string, emojis: EmojiEntry[] = []): string {
 
     const { staticUrl, url } = emoji;
     const escapedShortcode = escapeHTML(match);
+    // Emoji metadata is remote/untrusted: a malicious `url`/`staticUrl`/
+    // `shortcode` like `x" onerror="alert(1)` would otherwise break out of the
+    // double-quoted attribute and inject a live handler. Escape every
+    // interpolated attribute value. (Consumers that render this through the
+    // DOMPurify sanitizer are already protected, but emojifyText output is also
+    // used in the trusted-internal embed-code snippet, which is not.)
+    const escapedTitle = escapeHTML(shortcode);
+    const escapedUrl = escapeHTML(url ?? '');
+    const escapedStaticUrl = staticUrl ? escapeHTML(staticUrl) : '';
 
-    const sourceTag = staticUrl
-      ? `<source srcset="${staticUrl}" media="(prefers-reduced-motion: reduce)"></source>`
+    const sourceTag = escapedStaticUrl
+      ? `<source srcset="${escapedStaticUrl}" media="(prefers-reduced-motion: reduce)"></source>`
       : '';
 
-    return `<picture>${sourceTag}<img class="shortcode-emoji emoji" src="${url}" alt="${escapedShortcode}" title="${shortcode}" width="16" height="16" loading="lazy" decoding="async" fetchPriority="low" onload="try { this.dataset.isLarger = this.naturalWidth > (this.width * 2) || this.naturalHeight > (this.height * 2) } catch (e) {}" /></picture>`;
+    return `<picture>${sourceTag}<img class="shortcode-emoji emoji" src="${escapedUrl}" alt="${escapedShortcode}" title="${escapedTitle}" width="16" height="16" loading="lazy" decoding="async" fetchPriority="low" onload="try { this.dataset.isLarger = this.naturalWidth > (this.width * 2) || this.naturalHeight > (this.height * 2) } catch (e) {}" /></picture>`;
   });
 }
 

@@ -4,6 +4,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import type { CSSProperties } from 'react';
 
 import Icon from './icon';
+import RawHtml from './raw-html';
 
 const EMBED_IFRAME_SANDBOX =
   'allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts';
@@ -68,9 +69,10 @@ function EmbedModal({
           />
         </div>
       ) : (
-        <div
+        <RawHtml
           className="embed-content"
-          dangerouslySetInnerHTML={{ __html: html as string }}
+          profile="embed"
+          html={html}
           style={
             {
               '--width': width + 'px',

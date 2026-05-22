@@ -44,6 +44,7 @@ import Icon from './icon';
 import Link, { type LinkProps } from './link';
 import Menu2 from './menu2';
 import Modal from './modal';
+import RawHtml from './raw-html';
 // TODO(oxlint:import/no-cycle): account-info <-> related-actions cycle is
 // structural; related-actions consumes AccountInfoShape and handleScannerClick
 // while account-info renders RelatedActions. Breaking it requires extracting
@@ -948,7 +949,7 @@ function AccountInfo({
                     )}
                   </span>
                 ))} */}
-                <div
+                <RawHtml
                   className="note"
                   dir="auto"
                   role="presentation"
@@ -961,9 +962,7 @@ function AccountInfo({
                      * the a11y linter — keyboard activation still flows
                      * through the inner <a> tags. */
                   }}
-                  dangerouslySetInnerHTML={{
-                    __html: enhanceContent(note, { emojis }) as string,
-                  }}
+                  html={enhanceContent(note, { emojis }) as string}
                 />
                 <div className="account-metadata-box">
                   {!!fields?.length && (
@@ -986,12 +985,9 @@ function AccountInfo({
                               />
                             )}
                           </b>
-                          <p
-                            dangerouslySetInnerHTML={{
-                              __html: enhanceContent(value, {
-                                emojis,
-                              }) as string,
-                            }}
+                          <RawHtml
+                            as="p"
+                            html={enhanceContent(value, { emojis }) as string}
                           />
                         </div>
                       ))}
