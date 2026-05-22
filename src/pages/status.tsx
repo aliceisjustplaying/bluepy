@@ -2298,8 +2298,11 @@ function calcStatusWeight(status: CalcStatusWeightInput | RawStatus): number {
   // coercion under TypeScript's checker.
   const length = htmlContentLength(String(spoilerText) + String(content));
   const mediaLength = mediaAttachments?.length ? MEDIA_VIRTUAL_LENGTH : 0;
+  // A link card is only rendered when there's a card and no media taking its
+  // place, so only that case adds card height. Previously the condition was
+  // inverted: every card-less post (the common case) was charged CARD_VIRTUAL_LENGTH.
   const cardLength =
-    card && mediaAttachments?.length ? 0 : CARD_VIRTUAL_LENGTH;
+    card && !mediaAttachments?.length ? CARD_VIRTUAL_LENGTH : 0;
   const totalLength = length + mediaLength + cardLength;
   const weight = totalLength / WEIGHT_SEGMENT;
   statusWeightCache.set(status.id, weight);
