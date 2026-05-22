@@ -975,8 +975,10 @@ test.describe('write flows', () => {
     );
     if (!rkeyMatch) throw new Error(`could not extract rkey from ${href}`);
     // Build the public bsky.app URL — exercises handle→DID resolution, not just
-    // a bare at:// URI.
-    const postUrl = `https://bsky.app/profile/${IDENTIFIER}/post/${rkeyMatch[1]}`;
+    // a bare at:// URI. Strip a leading '@' so a `@handle` env value still
+    // yields a valid profile URL.
+    const actor = (IDENTIFIER || '').replace(/^@/, '');
+    const postUrl = `https://bsky.app/profile/${actor}/post/${rkeyMatch[1]}`;
 
     // Open a fresh compose and paste the post URL, as a user would.
     await openModal(page, 'showCompose');

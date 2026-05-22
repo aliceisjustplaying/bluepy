@@ -22,6 +22,7 @@ const BSKY_POST_URL_RE =
 // Handles are resolved to DIDs so the returned URI is always canonical.
 export async function resolveAtprotoPostURI(
   input: string | undefined,
+  fetchFn: typeof fetch = globalThis.fetch,
 ): Promise<string | null> {
   const text = input?.trim();
   if (!text) return null;
@@ -29,7 +30,7 @@ export async function resolveAtprotoPostURI(
   // 1. Bare at:// post URI (repo may be a handle — normalize to a DID below).
   const direct = maybeDecodeAtprotoURI(text);
   if (isAtprotoPostURI(direct)) {
-    return resolvePostURIRepo(direct);
+    return resolvePostURIRepo(direct, fetchFn);
   }
 
   // 2. bsky.app/profile/<handleOrDid>/post/<rkey>
@@ -38,7 +39,7 @@ export async function resolveAtprotoPostURI(
     const actor = decodeURIComponent(bsky[1]);
     const rkey = decodeURIComponent(bsky[2]);
     try {
-      const did = await resolveAtprotoDid(actor, fetch);
+      const did = await resolveAtprotoDid(actor, fetchFn);
       const uri = `at://${did}/app.bsky.feed.post/${rkey}`;
       return isAtprotoPostURI(uri) ? uri : null;
     } catch {
@@ -50,7 +51,7 @@ export async function resolveAtprotoPostURI(
   //    (`https://<thisapp>/at://…` or the legacy `https://<thisapp>/s/<at-uri>`).
   const fromPath = getOwnPermalinkRecordURI(text);
   if (isAtprotoPostURI(fromPath)) {
-    return resolvePostURIRepo(fromPath);
+    return resolvePostURIRepo(fromPath, fetchFn);
   }
 
   return null;
@@ -78,13 +79,16 @@ export function getOwnPermalinkRecordURI(text: string): string | null {
 }
 
 // Normalize a post URI whose repo is a handle into a DID-based URI.
-async function resolvePostURIRepo(uri: string): Promise<string | null> {
+async function resolvePostURIRepo(
+  uri: string,
+  fetchFn: typeof fetch,
+): Promise<string | null> {
   const match = /^at:\/\/([^/]+)\/(.+)$/i.exec(uri);
   if (!match) return null;
   const [, repo, rest] = match;
   if (repo.startsWith('did:')) return uri;
   try {
-    const did = await resolveAtprotoDid(repo, fetch);
+    const did = await resolveAtprotoDid(repo, fetchFn);
     return `at://${did}/${rest}`;
   } catch {
     return null;
