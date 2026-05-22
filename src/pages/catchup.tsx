@@ -88,7 +88,6 @@ type QuoteStatusLike =
       spoilerText?: string;
       sensitive?: boolean;
       emojis?: mastodon.v1.Status['emojis'];
-      poll?: mastodon.v1.Status['poll'];
       mediaAttachments?: mastodon.v1.Status['mediaAttachments'];
       content?: string;
       [key: string]: unknown;
@@ -291,14 +290,6 @@ function toStatusPeekInput(
   return {
     spoilerText: status.spoilerText,
     content: status.content,
-    poll: status.poll
-      ? {
-          options: status.poll.options?.map((option) => ({
-            title: option.title,
-          })),
-          multiple: status.poll.multiple,
-        }
-      : status.poll,
     mediaAttachments: status.mediaAttachments?.map((attachment) => ({
       type: attachment.type,
     })),
@@ -2376,16 +2367,9 @@ const PostLine = memo(
 const MEDIA_DENSITY = 8;
 const CARD_DENSITY = 8;
 function postDensity(post: CatchupPost): number {
-  const { spoilerText, content, poll, mediaAttachments, card } = post;
-  const pollContent = poll?.options?.length
-    ? poll.options.reduce(
-        (acc: string, cur: { title: string }) => acc + cur.title,
-        '',
-      )
-    : '';
+  const { spoilerText, content, mediaAttachments, card } = post;
   const density =
-    (spoilerText.length + htmlContentLength(content) + pollContent.length) /
-      140 +
+    (spoilerText.length + htmlContentLength(content)) / 140 +
     (mediaAttachments?.length
       ? MEDIA_DENSITY * mediaAttachments.length
       : (card as CardLike | null | undefined)?.image
@@ -2408,7 +2392,6 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
     sensitive,
     content,
     emojis,
-    poll,
     mediaAttachments,
     card,
     inReplyToId,
@@ -2483,12 +2466,6 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                     }}
                   />
                 )}
-                {!!poll?.options?.length &&
-                  poll.options.map((o: { title: string }) => (
-                    <div key={o.title}>
-                      {poll.multiple ? '▪️' : '•'} {o.title}
-                    </div>
-                  ))}
                 {!content &&
                   mediaAttachments?.length === 1 &&
                   mediaAttachments[0].description && (
@@ -2504,12 +2481,6 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
       </span>
       {(!filterInfo || filterInfo?.action === 'blur') && (
         <span className="post-peek-post-content">
-          {!!poll && (
-            <span className="post-peek-tag post-peek-poll">
-              <Icon icon="poll" size="s" />
-              <Trans>Poll</Trans>
-            </span>
-          )}
           {mediaAttachments?.length
             ? mediaAttachments.map((m: mastodon.v1.MediaAttachment) => {
                 const mediaURL = m.previewUrl || m.url;

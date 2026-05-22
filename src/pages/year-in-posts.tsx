@@ -600,12 +600,11 @@ function YearInPosts() {
         preset: 'match',
         document: {
           id: 'id',
-          index: ['content', 'spoilerText', 'poll', 'media', 'card'],
+          index: ['content', 'spoilerText', 'media', 'card'],
         },
       }) as FlexSearchDocument;
       posts.forEach((p) => {
         const status = p.reblog || p;
-        const pollText = status.poll?.options?.map((o) => o.title).join(' ');
         const mediaText = status.mediaAttachments
           ?.map((m) => m.description)
           .join(' ');
@@ -616,7 +615,6 @@ function YearInPosts() {
           id: p.id,
           content: getHTMLText(status.content),
           spoilerText: status.spoilerText,
-          poll: pollText,
           media: mediaText,
           card: cardText,
         });

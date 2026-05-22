@@ -5,8 +5,6 @@ import type { ReactNode } from 'react';
 import haptics from '../utils/haptics';
 import shortenNumber from '../utils/shorten-number';
 import showCompose from '../utils/show-compose';
-import visibilityIconsMap from '../utils/visibility-icons-map';
-import visibilityText from '../utils/visibility-text';
 
 import Icon from './icon';
 import MenuConfirm from './menu-confirm';
@@ -17,7 +15,6 @@ import type { AnyStatus, LooseClickEvent } from './status-types';
 
 interface StatusLargeFooterProps {
   deleted?: boolean;
-  visibility: keyof typeof visibilityIconsMap;
   url?: string | null;
   createdAt?: string | null;
   createdAtDate: Date;
@@ -25,8 +22,6 @@ interface StatusLargeFooterProps {
   editedAt?: string | null;
   editedAtDate: Date;
   editedDateText?: string | false | null;
-  id: string;
-  setShowEdited: (value: string | false) => void;
   repliesCount?: number;
   replyStatus: (e?: LooseClickEvent) => void;
   canQuote?: boolean;
@@ -50,7 +45,6 @@ interface StatusLargeFooterProps {
 
 export default function StatusLargeFooter({
   deleted,
-  visibility,
   url,
   createdAt,
   createdAtDate,
@@ -58,8 +52,6 @@ export default function StatusLargeFooter({
   editedAt,
   editedAtDate,
   editedDateText,
-  id,
-  setShowEdited,
   repliesCount,
   replyStatus,
   canQuote,
@@ -80,8 +72,7 @@ export default function StatusLargeFooter({
   bookmarkStatus,
   menuItems,
 }: StatusLargeFooterProps) {
-  const { t, i18n } = useLingui();
-  const _ = i18n._.bind(i18n);
+  const { t } = useLingui();
 
   return (
     <>
@@ -92,8 +83,6 @@ export default function StatusLargeFooter({
           </span>
         ) : (
           <>
-            <Icon icon={visibilityIconsMap[visibility]} alt="" />{' '}
-            <span>{_(visibilityText[visibility])}</span> &bull;{' '}
             <a href={url ?? undefined} target="_blank" rel="noopener">
               {Date.now() - createdAtDate.getTime() < 86400000 && (
                 <>
@@ -115,17 +104,12 @@ export default function StatusLargeFooter({
               <span className="edited-container">
                 {' '}
                 &bull; <Icon icon="pencil" alt={t`Edited`} />{' '}
-                <button
-                  type="button"
-                  className="edited plain plain3"
-                  onClick={() => {
-                    setShowEdited(id);
-                  }}
+                <time
+                  className="edited"
+                  dateTime={editedAtDate.toISOString()}
                 >
-                  <time dateTime={editedAtDate.toISOString()}>
-                    {editedDateText}
-                  </time>
-                </button>
+                  {editedDateText}
+                </time>
               </span>
             )}
           </>

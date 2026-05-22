@@ -54,9 +54,6 @@ interface StatusMenuStateArgs {
     status: AnyStatus,
   ) => void;
   createdDateText?: string | false | null;
-  editedAt?: string | null;
-  setShowEdited: (value: string | false) => void;
-  editedDateText?: string | false | null;
   isPublic: boolean;
   authenticated?: boolean;
   isSelf?: boolean | string | null;
@@ -114,9 +111,6 @@ export default function useStatusMenuState({
   id,
   onStatusLinkClick,
   createdDateText,
-  editedAt,
-  setShowEdited,
-  editedDateText,
   isPublic,
   authenticated,
   isSelf,
@@ -201,9 +195,6 @@ export default function useStatusMenuState({
     id,
     onStatusLinkClick,
     createdDateText,
-    editedAt,
-    setShowEdited,
-    editedDateText,
     isPublic,
     authenticated,
     isSelf,
