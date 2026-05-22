@@ -148,11 +148,7 @@ function AccountBlock({
           <>
             {displayName ? (
               <b>
-                <EmojiText
-                  text={displayName}
-                  emojis={emojis}
-                  resolverURL={url}
-                />
+                <EmojiText text={displayName} />
               </b>
             ) : (
               <b>{username}</b>

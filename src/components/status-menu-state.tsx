@@ -41,7 +41,6 @@ interface StatusMenuStateArgs {
   quote?: unknown;
   setShowQuoteChain: (value: boolean) => void;
   setShowEmbed: (value: boolean) => void;
-  setShowQuoteSettings: (value: boolean) => void;
   mediaFirst?: boolean;
   enableTranslate?: boolean;
   language?: string | null;
@@ -55,9 +54,6 @@ interface StatusMenuStateArgs {
     status: AnyStatus,
   ) => void;
   createdDateText?: string | false | null;
-  editedAt?: string | null;
-  setShowEdited: (value: string | false) => void;
-  editedDateText?: string | false | null;
   isPublic: boolean;
   authenticated?: boolean;
   isSelf?: boolean | string | null;
@@ -65,10 +61,6 @@ interface StatusMenuStateArgs {
   masto: StatusContentMasto;
   muted?: boolean | null;
   pinned?: boolean | null;
-  quoteApprovalPolicyMessages: Parameters<
-    typeof useStatusMenuParts
-  >[0]['quoteApprovalPolicyMessages'];
-  postQuoteApprovalPolicy?: string | null;
   visibility: Parameters<typeof useStatusMenuParts>[0]['visibility'];
   sKey: string;
   fetchBoostedLikedByAccounts: Parameters<
@@ -109,7 +101,6 @@ export default function useStatusMenuState({
   quote,
   setShowQuoteChain,
   setShowEmbed,
-  setShowQuoteSettings,
   mediaFirst,
   enableTranslate,
   language,
@@ -120,9 +111,6 @@ export default function useStatusMenuState({
   id,
   onStatusLinkClick,
   createdDateText,
-  editedAt,
-  setShowEdited,
-  editedDateText,
   isPublic,
   authenticated,
   isSelf,
@@ -130,8 +118,6 @@ export default function useStatusMenuState({
   masto,
   muted,
   pinned,
-  quoteApprovalPolicyMessages,
-  postQuoteApprovalPolicy,
   visibility,
   sKey,
   fetchBoostedLikedByAccounts,
@@ -199,7 +185,6 @@ export default function useStatusMenuState({
     quote,
     setShowQuoteChain,
     setShowEmbed,
-    setShowQuoteSettings,
     mediaFirst,
     enableTranslate,
     language,
@@ -210,9 +195,6 @@ export default function useStatusMenuState({
     id,
     onStatusLinkClick,
     createdDateText,
-    editedAt,
-    setShowEdited,
-    editedDateText,
     isPublic,
     authenticated,
     isSelf,
@@ -221,8 +203,6 @@ export default function useStatusMenuState({
     muted,
     pinned,
     isPinnable,
-    quoteApprovalPolicyMessages,
-    postQuoteApprovalPolicy,
     visibility,
     isQuotingMyPost,
     sKey,

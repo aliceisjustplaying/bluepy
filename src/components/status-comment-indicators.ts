@@ -15,7 +15,6 @@ interface StatusCommentIndicatorsArgs {
   forceShowQuoteCount?: boolean | ((count?: number) => boolean);
   quotesCount?: number;
   card?: unknown;
-  poll?: unknown;
   sensitive?: boolean;
   spoilerText?: string | null;
   mediaCount: number;
@@ -36,7 +35,6 @@ export default function useStatusCommentIndicators({
   forceShowQuoteCount,
   quotesCount,
   card,
-  poll,
   sensitive,
   spoilerText,
   mediaCount,
@@ -72,7 +70,6 @@ export default function useStatusCommentIndicators({
     if (forceShowCommentCount && repliesCount > 0) return true;
     if (
       card ||
-      poll ||
       sensitive ||
       spoilerText ||
       mediaCount > 0 ||
@@ -92,7 +89,6 @@ export default function useStatusCommentIndicators({
   }, [
     forceShowCommentCount,
     card,
-    poll,
     sensitive,
     spoilerText,
     mediaCount,

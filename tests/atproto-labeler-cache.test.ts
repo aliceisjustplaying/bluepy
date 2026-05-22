@@ -1,7 +1,5 @@
-/// <reference types="node" />
-
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 import {
   createAtprotoLabelerInfoCache,
@@ -15,7 +13,7 @@ const labeler = {
   displayName: 'Labels',
 };
 
-void test('fetchCachedAtprotoLabelerInfo caches successful labeler lookups', async () => {
+test('fetchCachedAtprotoLabelerInfo caches successful labeler lookups', async () => {
   const cache = createAtprotoLabelerInfoCache();
   const calls: string[][] = [];
   const fetchLabelers = async (
@@ -36,7 +34,7 @@ void test('fetchCachedAtprotoLabelerInfo caches successful labeler lookups', asy
   assert.deepEqual(calls, [[labeler.did]]);
 });
 
-void test('fetchCachedAtprotoLabelerInfo deduplicates concurrent misses and caches negative results', async () => {
+test('fetchCachedAtprotoLabelerInfo deduplicates concurrent misses and caches negative results', async () => {
   const cache = createAtprotoLabelerInfoCache();
   const calls: string[][] = [];
   let resolveFetch: ((value: AtprotoLabelerInfoMap) => void) | undefined;
@@ -76,7 +74,7 @@ void test('fetchCachedAtprotoLabelerInfo deduplicates concurrent misses and cach
   assert.deepEqual(calls, [['did:plc:missing']]);
 });
 
-void test('fetchCachedAtprotoLabelerInfo retries after failed fetches', async () => {
+test('fetchCachedAtprotoLabelerInfo retries after failed fetches', async () => {
   const cache = createAtprotoLabelerInfoCache();
   let calls = 0;
   const fetchLabelers = async (): Promise<AtprotoLabelerInfoMap> => {

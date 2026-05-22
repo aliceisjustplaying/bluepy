@@ -1,7 +1,5 @@
-/// <reference types="node" />
-
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 function createStorage(): Storage {
   const values = new Map<string, string>();
@@ -27,7 +25,7 @@ function createStorage(): Storage {
   };
 }
 
-void test('preference subscribers receive fresh values and can unsubscribe', async () => {
+test('preference subscribers receive fresh values and can unsubscribe', async () => {
   const globalKeys = [
     'document',
     'localStorage',

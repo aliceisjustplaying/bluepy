@@ -69,7 +69,6 @@ import {
   isAtprotoPostURI,
   isStatusPath,
 } from './utils/atproto-route';
-import { getAccessToken } from './utils/auth';
 import {
   AUTH_CHANGED_EVENT,
   AuthProvider,
@@ -82,9 +81,7 @@ import store from './utils/store';
 import {
   getAccounts,
   getAccount,
-  getCredentialApplication,
   getCurrentAccount,
-  getVapidKey,
   removeAccount,
   setCurrentAccountID,
 } from './utils/store-utils';
@@ -168,10 +165,6 @@ function preloadIconEntry(entry: unknown) {
     return;
   }
   if (isIconModuleLoader(entry)) void entry();
-}
-
-function getStoredVapidKey(instanceURL: string | null | undefined) {
-  return getVapidKey(instanceURL ? { uri: instanceURL } : undefined);
 }
 
 appWindow.__STATES__ = states;
@@ -533,7 +526,6 @@ function App() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const instanceURL = store.local.get('instanceURL');
       const isAtprotoOAuthCallback =
         !!window.location.search.match(/[?&]code=/) &&
         !!window.location.search.match(/[?&]iss=/);
@@ -570,172 +562,74 @@ function App() {
         }
       }
 
-      const code = decodeURIComponent(
-        (window.location.search.match(/code=([^&]+)/) || [undefined, ''])[1] ??
-          '',
-      );
-
-      if (code) {
-        console.log({ code });
-
-        const isPopup = window.opener && !window.opener.closed;
-
-        if (isPopup) {
-          try {
-            window.opener.postMessage(
-              {
-                type: 'oauth-callback',
-                code: code,
-              },
-              window.location.origin,
-            );
-            window.setTimeout(() => {
-              window.close();
-            }, 100);
-          } catch (e) {
-            console.error('Failed to send message to parent window:', e);
-            window.close();
-          }
-          return;
-        }
-
-        // Clear the code from the URL
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname || '/',
-        );
-
-        const {
-          client_id: clientID,
-          client_secret: clientSecret,
-          vapid_key,
-        } = (getCredentialApplication(instanceURL as string) || {}) as {
-          client_id?: string;
-          client_secret?: string;
-          vapid_key?: string;
-        };
-        const vapidKey = getStoredVapidKey(instanceURL) || vapid_key;
-        const verifier = store.sessionCookie.get('codeVerifier');
-
-        if (cancelled) return;
-        setUIState('loading');
-        const { access_token: accessToken } = (await getAccessToken({
-          instanceURL: instanceURL as string,
-          client_id: clientID as string,
-          client_secret: clientSecret,
-          code,
-          code_verifier: verifier || undefined,
-        })) as { access_token?: string };
-
-        if (accessToken) {
-          const client = initClient({ instance: instanceURL, accessToken });
-          await Promise.allSettled([
-            initPreferences(client),
-            initInstance(client, instanceURL as string),
-            initAccount(
-              client,
-              instanceURL as string,
-              accessToken,
-              vapidKey as string | null | undefined,
-            ),
-          ]);
-          initStates();
-          window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
-
-          if (cancelled) return;
-          setIsLoggedIn(true);
-          setUIState('default');
-
-          // Redirect after successful login
-          const redirectPath = store.session.get('loginRedirect');
-          if (redirectPath) {
-            store.session.del('loginRedirect');
-            navigatePath(redirectPath);
-          } else if (isRootPath(window.location.pathname)) {
-            navigatePath('/', { replace: true });
-          }
-        } else {
-          if (cancelled) return;
-          setUIState('error');
-        }
-        __BENCHMARK.end('app-init');
-      } else {
-        window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
-        const searchAccount = decodeURIComponent(
-          (window.location.search.match(/account=([^&]+)/) || [
-            undefined,
-            '',
-          ])[1] ?? '',
-        );
-        let account;
-        if (searchAccount) {
-          account = getAccount(searchAccount);
-          console.log('searchAccount', searchAccount, account);
-          if (account) {
-            setCurrentAccountID(account.info.id);
-            window.history.replaceState(
-              {},
-              document.title,
-              window.location.pathname || '/',
-            );
-          }
-        }
-        if (!account) {
-          account = getCurrentAccount();
-        }
-        while (account) {
-          setCurrentAccountID(account.info.id);
-          try {
-            account.accessToken = await hydrateAtprotoOAuthAccessToken(
-              account.accessToken,
-            );
-            break;
-          } catch (error) {
-            console.error(error);
-            removeAccount(account.info.id);
-            account = getAccounts()[0] ?? null;
-          }
-        }
+      // No ATProto OAuth callback in the URL → restore an existing session.
+      window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+      // URLSearchParams handles decoding and won't throw on malformed input.
+      const searchParams = new URLSearchParams(window.location.search);
+      const searchAccount = searchParams.get('account') ?? '';
+      let account;
+      if (searchAccount) {
+        account = getAccount(searchAccount);
         if (account) {
-          const { client } = api({ account });
-          const { instance } = client;
-          // console.log('masto', masto);
-          initStates();
-          if (cancelled) return;
-          setUIState('loading');
-          try {
-            if (hasPreferences() && hasInstance(instance)) {
-              // Non-blocking
-              void initPreferences(client);
-              void initInstance(client, instance);
-            } else {
-              await Promise.allSettled([
-                initPreferences(client),
-                initInstance(client, instance),
-              ]);
-            }
-          } catch {
-            // ignore — fall through to mark logged in below
-          } finally {
-            if (!cancelled) {
-              setIsLoggedIn(true);
-              setUIState('default');
-              __BENCHMARK.end('app-init');
-            }
-          }
-        } else {
-          if (cancelled) return;
-          setIsLoggedIn(false);
-          setUIState('default');
-          __BENCHMARK.end('app-init');
+          setCurrentAccountID(account.info.id);
+          // Strip only the `account` param; keep any other params and the hash.
+          searchParams.delete('account');
+          const nextSearch = searchParams.toString();
+          window.history.replaceState(
+            {},
+            document.title,
+            `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash}`,
+          );
         }
       }
-
-      // Cleanup
-      store.sessionCookie.del('clientID');
-      store.sessionCookie.del('clientSecret');
-      store.sessionCookie.del('codeVerifier');
+      if (!account) {
+        account = getCurrentAccount();
+      }
+      while (account) {
+        setCurrentAccountID(account.info.id);
+        try {
+          account.accessToken = await hydrateAtprotoOAuthAccessToken(
+            account.accessToken,
+          );
+          break;
+        } catch (error) {
+          console.error(error);
+          removeAccount(account.info.id);
+          account = getAccounts()[0] ?? null;
+        }
+      }
+      if (account) {
+        const { client } = api({ account });
+        const { instance } = client;
+        initStates();
+        if (cancelled) return;
+        setUIState('loading');
+        try {
+          if (hasPreferences() && hasInstance(instance)) {
+            // Non-blocking
+            void initPreferences(client);
+            void initInstance(client, instance);
+          } else {
+            await Promise.allSettled([
+              initPreferences(client),
+              initInstance(client, instance),
+            ]);
+          }
+        } catch {
+          // ignore — fall through to mark logged in below
+        } finally {
+          if (!cancelled) {
+            setIsLoggedIn(true);
+            setUIState('default');
+            __BENCHMARK.end('app-init');
+          }
+        }
+      } else {
+        if (cancelled) return;
+        setIsLoggedIn(false);
+        setUIState('default');
+        __BENCHMARK.end('app-init');
+      }
     })();
     return () => {
       cancelled = true;

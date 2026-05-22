@@ -73,7 +73,9 @@ interface CatchupBooster {
   id: string;
   avatar?: string;
   avatarStatic?: string;
+  acct?: string;
   bot?: boolean;
+  displayName?: string;
   [key: string]: unknown;
 }
 
@@ -87,7 +89,6 @@ type QuoteStatusLike =
       spoilerText?: string;
       sensitive?: boolean;
       emojis?: mastodon.v1.Status['emojis'];
-      poll?: mastodon.v1.Status['poll'];
       mediaAttachments?: mastodon.v1.Status['mediaAttachments'];
       content?: string;
       [key: string]: unknown;
@@ -290,14 +291,6 @@ function toStatusPeekInput(
   return {
     spoilerText: status.spoilerText,
     content: status.content,
-    poll: status.poll
-      ? {
-          options: status.poll.options?.map((option) => ({
-            title: option.title,
-          })),
-          multiple: status.poll.multiple,
-        }
-      : status.poll,
     mediaAttachments: status.mediaAttachments?.map((attachment) => ({
       type: attachment.type,
     })),
@@ -326,6 +319,33 @@ function quoteNameTextAccount(
     'quotedStatus' in quote ? quote.quotedStatus?.account : undefined;
   const quoteAccount = 'account' in quote ? quote.account : undefined;
   return nameTextAccount(quotedStatusAccount || quoteAccount);
+}
+
+function canonicalCatchupPostId(post: CatchupPost): string {
+  return post.reblog?.id || post.id;
+}
+
+function catchupBoosterLabel(account: CatchupBooster): string {
+  if (account.displayName && account.acct) {
+    return `${account.displayName} (@${account.acct})`;
+  }
+  return account.displayName || account.acct || account.id;
+}
+
+function addCatchupBooster(
+  boosters: Set<CatchupBooster>,
+  account: CatchupBooster,
+): void {
+  if (![...boosters].some((booster) => booster.id === account.id)) {
+    boosters.add(account);
+  }
+}
+
+function catchupBoostersSignature(post: CatchupPost): string {
+  return [...(post.__BOOSTERS || [])]
+    .map((booster) => booster.id)
+    .toSorted()
+    .join(',');
 }
 
 function Catchup() {
@@ -771,22 +791,39 @@ function Catchup() {
       return postFilterMatches;
     });
 
-    // Deduplicate boosts
-    const boostedPosts: Record<string, CatchupPost> = {};
+    // Deduplicate the same canonical post across originals and repost wrappers.
+    const seenPosts: Record<string, CatchupPost> = {};
     filtered.forEach((post) => {
-      if (post.reblog) {
-        if (boostedPosts[post.reblog.id]) {
-          const existing = boostedPosts[post.reblog.id];
-          if (existing.__BOOSTERS) {
-            existing.__BOOSTERS.add(post.account);
-          } else {
-            existing.__BOOSTERS = new Set([post.account]);
-          }
-          post.__HIDDEN = true;
-        } else {
-          boostedPosts[post.reblog.id] = post;
-        }
+      delete post.__HIDDEN;
+      delete post.__BOOSTERS;
+    });
+    filtered.forEach((post) => {
+      const postId = canonicalCatchupPostId(post);
+      const existing = seenPosts[postId];
+      if (!existing) {
+        seenPosts[postId] = post;
+        return;
       }
+
+      if (post.reblog) {
+        const existingBoosters =
+          existing.__BOOSTERS || (existing.__BOOSTERS = new Set());
+        addCatchupBooster(existingBoosters, post.account);
+        post.__HIDDEN = true;
+        return;
+      }
+
+      if (existing.reblog) {
+        const existingBoosters =
+          existing.__BOOSTERS || new Set<CatchupBooster>();
+        addCatchupBooster(existingBoosters, existing.account);
+        post.__BOOSTERS = existingBoosters;
+        existing.__HIDDEN = true;
+        seenPosts[postId] = post;
+        return;
+      }
+
+      post.__HIDDEN = true;
     });
 
     if (selectedAuthor && authorCountsMap.has(selectedAuthor)) {
@@ -876,6 +913,7 @@ function Catchup() {
         post.createdAt,
         post.reblog?.createdAt ?? '',
         post.account.id,
+        catchupBoostersSignature(post),
       ].join('|');
       const keyCount = keyCounts.get(baseKey) ?? 0;
       keyCounts.set(baseKey, keyCount + 1);
@@ -2250,6 +2288,7 @@ const PostLine = memo(
             <span className="post-reblog-avatar">
               <Avatar
                 url={account.avatarStatic || account.avatar}
+                alt={catchupBoosterLabel(account)}
                 squircle={account.bot}
               />
               {__BOOSTERS && __BOOSTERS.size > 0
@@ -2257,6 +2296,7 @@ const PostLine = memo(
                     <Avatar
                       key={b.id}
                       url={b.avatarStatic || b.avatar}
+                      alt={catchupBoosterLabel(b)}
                       squircle={b.bot}
                     />
                   ))
@@ -2270,12 +2310,34 @@ const PostLine = memo(
             </span>
           ) : hasQuote(quote) ? (
             <span className="post-quote-avatar">
+              {__BOOSTERS && __BOOSTERS.size > 0
+                ? [...__BOOSTERS].map((b) => (
+                    <Avatar
+                      key={b.id}
+                      url={b.avatarStatic || b.avatar}
+                      alt={catchupBoosterLabel(b)}
+                      squircle={b.bot}
+                    />
+                  ))
+                : null}
               <Avatar
                 url={account.avatarStatic || account.avatar}
                 squircle={account.bot}
               />{' '}
               <Icon icon="quote" />{' '}
               <NameText account={quoteNameTextAccount(quote)} showAvatar />
+            </span>
+          ) : __BOOSTERS && __BOOSTERS.size > 0 ? (
+            <span className="post-reblog-avatar">
+              {[...__BOOSTERS].map((b) => (
+                <Avatar
+                  key={b.id}
+                  url={b.avatarStatic || b.avatar}
+                  alt={catchupBoosterLabel(b)}
+                  squircle={b.bot}
+                />
+              ))}{' '}
+              <Icon icon="rocket" /> <NameText account={account} showAvatar />
             </span>
           ) : (
             <NameText account={account} showAvatar />
@@ -2306,16 +2368,9 @@ const PostLine = memo(
 const MEDIA_DENSITY = 8;
 const CARD_DENSITY = 8;
 function postDensity(post: CatchupPost): number {
-  const { spoilerText, content, poll, mediaAttachments, card } = post;
-  const pollContent = poll?.options?.length
-    ? poll.options.reduce(
-        (acc: string, cur: { title: string }) => acc + cur.title,
-        '',
-      )
-    : '';
+  const { spoilerText, content, mediaAttachments, card } = post;
   const density =
-    (spoilerText.length + htmlContentLength(content) + pollContent.length) /
-      140 +
+    (spoilerText.length + htmlContentLength(content)) / 140 +
     (mediaAttachments?.length
       ? MEDIA_DENSITY * mediaAttachments.length
       : (card as CardLike | null | undefined)?.image
@@ -2338,7 +2393,6 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
     sensitive,
     content,
     emojis,
-    poll,
     mediaAttachments,
     card,
     inReplyToId,
@@ -2412,12 +2466,6 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
                     }
                   />
                 )}
-                {!!poll?.options?.length &&
-                  poll.options.map((o: { title: string }) => (
-                    <div key={o.title}>
-                      {poll.multiple ? '▪️' : '•'} {o.title}
-                    </div>
-                  ))}
                 {!content &&
                   mediaAttachments?.length === 1 &&
                   mediaAttachments[0].description && (
@@ -2433,12 +2481,6 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
       </span>
       {(!filterInfo || filterInfo?.action === 'blur') && (
         <span className="post-peek-post-content">
-          {!!poll && (
-            <span className="post-peek-tag post-peek-poll">
-              <Icon icon="poll" size="s" />
-              <Trans>Poll</Trans>
-            </span>
-          )}
           {mediaAttachments?.length
             ? mediaAttachments.map((m: mastodon.v1.MediaAttachment) => {
                 const mediaURL = m.previewUrl || m.url;

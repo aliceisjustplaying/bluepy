@@ -98,34 +98,25 @@ test('login page appview switcher updates data-appview on html element', async (
   await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
 });
 
-test('loads post page and works', async ({ page }) => {
-  await page.route('**/api/v1/statuses/123', async (route) => {
+test('does not run a Mastodon runtime for legacy instance post routes', async ({
+  page,
+}) => {
+  let mastodonRequested = false;
+  await page.route('**/api/v1/statuses/**', async (route) => {
+    mastodonRequested = true;
     await route.fulfill({
-      json: {
-        id: '123',
-        created_at: '2024-01-01T12:00:00.000Z',
-        account: {
-          id: '1',
-          username: 'testuser',
-          display_name: 'Test User',
-          acct: 'testuser@test.social',
-        },
-        content: '<p>This is a test post</p>',
-      },
-    });
-  });
-
-  await page.route('**/api/v1/statuses/123/context', async (route) => {
-    await route.fulfill({
-      json: {
-        ancestors: [],
-        descendants: [],
-      },
+      json: { id: '123', content: '<p>This is a test post</p>' },
     });
   });
 
   await page.goto('/test.social/s/123');
-  await expect(page.locator('text=This is a test post')).toBeVisible();
+
+  // ATProto-only: there is no Mastodon runtime to fetch a non-Bluesky instance
+  // post, so the route degrades to the welcome/login screen and never calls the
+  // Mastodon REST API.
+  await expect(page.locator('#welcome')).toBeVisible();
+  await expect(page.locator('text=This is a test post')).toHaveCount(0);
+  expect(mastodonRequested).toBe(false);
 });
 
 test('uses cache-busting reloads when the app script never mounts', async ({
@@ -252,29 +243,22 @@ test('does not treat post-mount module failures as boot failures', async ({
 });
 
 test('redirects old hash post URLs to path routes', async ({ page }) => {
-  await page.route('**/api/v1/statuses/123', async (route) => {
+  let mastodonRequested = false;
+  await page.route('**/api/v1/statuses/**', async (route) => {
+    mastodonRequested = true;
     await route.fulfill({
-      json: {
-        id: '123',
-        created_at: '2024-01-01T12:00:00.000Z',
-        account: {
-          id: '1',
-          username: 'testuser',
-          display_name: 'Test User',
-          acct: 'testuser@test.social',
-        },
-        content: '<p>Legacy hash post</p>',
-      },
+      json: { id: '123', content: '<p>Legacy hash post</p>' },
     });
   });
 
-  await page.route('**/api/v1/statuses/123/context', async (route) => {
-    await route.fulfill({ json: { ancestors: [], descendants: [] } });
-  });
-
   await page.goto('/#/test.social/s/123');
+  // Hash→path route normalization still applies...
   await expect(page).toHaveURL(/\/test\.social\/s\/123$/);
-  await expect(page.locator('text=Legacy hash post')).toBeVisible();
+  // ...but ATProto-only means no Mastodon runtime renders the post; it degrades
+  // to the welcome/login screen without a Mastodon REST call.
+  await expect(page.locator('#welcome')).toBeVisible();
+  await expect(page.locator('text=Legacy hash post')).toHaveCount(0);
+  expect(mastodonRequested).toBe(false);
 });
 
 test('loads native AT URI post URLs', async ({ page }) => {
@@ -329,6 +313,19 @@ test('loads native AT URI post URLs', async ({ page }) => {
       `/at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app\\.bsky\\.feed\\.post/3mlvekixsll23$`,
     ),
   );
+});
+
+test('canonicalizes Worker-encoded native AT URI post URLs', async ({
+  page,
+}) => {
+  await routeAtprotoRecords(page);
+
+  const workerEncodedPath =
+    '/at%3A/did%3Aplc%3Aby3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/post123';
+  await page.goto(workerEncodedPath, { waitUntil: 'domcontentloaded' });
+  await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
+  await expect(page.locator('text=AT route post')).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
 });
 
 test('keeps nested same-author thread replies under their parent', async ({
@@ -1393,6 +1390,22 @@ test('canonicalizes legacy AT record routes on direct load', async ({
   await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
 });
 
+test('canonicalizes Worker-decoded legacy AT record routes', async ({ page }) => {
+  await routeAtprotoRecords(page);
+
+  await page.goto(`/bsky.social/s/at%3A/${AT_REPO}/app.bsky.feed.post/post123`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
+  await expect(page.locator('text=AT route post')).toBeVisible();
+
+  await page.goto(`/l/at%3A/${AT_REPO}/app.bsky.graph.list/abc123`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_LIST_PATH));
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+});
+
 test('loads and reloads canonical AT profile URLs', async ({ page }) => {
   const noRouteWarnings = collectNoRouteWarnings(page);
   await routeAtprotoRecords(page);
@@ -1531,35 +1544,23 @@ test('does not fetch Bluesky media for Blacksky profiles that only lack a banner
   expect(blueskyProfileRequests).toBe(0);
 });
 
-test('keeps titles working on legacy account routes', async ({ page }) => {
-  const account = {
-    id: '12345',
-    username: 'legacyuser',
-    acct: 'legacyuser@mastodon.social',
-    display_name: 'Legacy Account',
-    avatar: '',
-    avatar_static: '',
-    header: '',
-    header_static: '',
-    followers_count: 0,
-    following_count: 0,
-    statuses_count: 0,
-    bot: false,
-    locked: false,
-    emojis: [],
-  };
-  await page.route('**/api/v1/accounts/12345', async (route) => {
-    await route.fulfill({ json: account });
-  });
-  await page.route('**/api/v1/accounts/12345/statuses*', async (route) => {
-    await route.fulfill({ json: [] });
+test('degrades legacy Mastodon account routes to welcome (ATProto-only)', async ({
+  page,
+}) => {
+  let mastodonRequested = false;
+  await page.route('**/api/v1/accounts/**', async (route) => {
+    mastodonRequested = true;
+    await route.fulfill({ json: {} });
   });
 
   await page.goto('/mastodon.social/a/12345', {
     waitUntil: 'domcontentloaded',
   });
+  // The route is preserved, but with no Mastodon runtime it degrades to the
+  // welcome/login screen instead of fetching the legacy account.
   await expect(page).toHaveURL(pathRegex('/mastodon.social/a/12345'));
-  await expect(page).toHaveTitle(/Legacy Account/);
+  await expect(page.locator('#welcome')).toBeVisible();
+  expect(mastodonRequested).toBe(false);
 });
 
 test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {

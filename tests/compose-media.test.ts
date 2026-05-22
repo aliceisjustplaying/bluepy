@@ -1,14 +1,12 @@
-/// <reference types="node" />
-
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 import {
   revokeAttachmentObjectUrl,
   uploadComposeMediaAttachments,
 } from '../src/utils/compose-media';
 
-void test('uploadComposeMediaAttachments uploads pending media without mutating state objects', async () => {
+test('uploadComposeMediaAttachments uploads pending media without mutating state objects', async () => {
   const pending = {
     fileData: new Uint8Array([1, 2, 3]).buffer,
     fileName: 'photo.png',
@@ -38,7 +36,7 @@ void test('uploadComposeMediaAttachments uploads pending media without mutating 
   );
 });
 
-void test('revokeAttachmentObjectUrl only revokes object URLs owned by compose', () => {
+test('revokeAttachmentObjectUrl only revokes object URLs owned by compose', () => {
   const revoked: string[] = [];
   const originalRevoke = URL.revokeObjectURL.bind(URL);
   URL.revokeObjectURL = (url: string) => {

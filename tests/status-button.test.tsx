@@ -1,7 +1,5 @@
-/// <reference types="node" />
-
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -23,7 +21,7 @@ function renderStatusButton(className: string, size?: string) {
   );
 }
 
-void test('StatusButton preserves React className modifiers', () => {
+test('StatusButton preserves React className modifiers', () => {
   assert.match(
     renderStatusButton('reply-button', 's'),
     /class="plain small reply-button"/,
