@@ -3795,10 +3795,13 @@ export async function logoutAtprotoSession(
   if (!isRecord(parsed) || parsed.type !== 'atproto') return;
   const session = toAtpSessionData(parsed.session);
   if (!session) return;
+  // Session deletion targets the account's PDS (stored per-account in
+  // parsed.service for app-password logins), NOT the AppView. Fall back to the
+  // entryway PDS — never the AppView URL — for tokens missing a stored service.
   const service =
     typeof parsed.service === 'string' && parsed.service
       ? parsed.service
-      : getActiveAppviewConfig().url;
+      : BSKY_PDS;
   try {
     const agent = new AtpAgent({ service });
     await agent.resumeSession(session);
