@@ -8,7 +8,6 @@ import EmojiText from './emoji-text';
 import Icon from './icon';
 import MathBlock from './math-block';
 import MediaFirstContainer from './media-first-container';
-import Poll from './poll';
 import PostContent from './post-content';
 import StatusCard from './status-card';
 import { getPostText, isTranslateble, readMoreText } from './status-helpers';
@@ -17,10 +16,8 @@ import QuoteStatuses, { type FallbackQuote } from './status-quotes';
 import StatusTags from './status-tags';
 import type {
   AnyMediaAttachment,
-  AnyPoll,
   AnyPreviewCard,
   AnyStatus,
-  StatusContentMasto,
 } from './status-types';
 import type { StatusComponentProps } from './status-view';
 import TranslationBlock from './translation-block';
@@ -55,12 +52,6 @@ interface StatusPostBodyProps {
   previewMode?: boolean;
   reloadPostContentCount: number;
   reloadPostContent: () => void;
-  poll?: AnyPoll | null;
-  readOnly?: boolean;
-  sameInstance: boolean;
-  authenticated?: boolean;
-  masto: StatusContentMasto;
-  sKey: string;
   enableTranslate?: boolean;
   inlineTranslate?: boolean;
   differentLanguage?: boolean;
@@ -117,12 +108,6 @@ export default function StatusPostBody({
   previewMode,
   reloadPostContentCount,
   reloadPostContent,
-  poll,
-  readOnly,
-  sameInstance,
-  authenticated,
-  masto,
-  sKey,
   enableTranslate,
   inlineTranslate,
   differentLanguage,
@@ -185,7 +170,7 @@ export default function StatusPostBody({
                     ref={spoilerContentRef}
                     data-read-more={_(readMoreText)}
                   >
-                    <EmojiText text={spoilerText} emojis={emojis} />{' '}
+                    <EmojiText text={spoilerText} />{' '}
                   </span>
                 )}
                 <SpoilerButton
@@ -224,7 +209,7 @@ export default function StatusPostBody({
                   data-read-more={_(readMoreText)}
                 >
                   <p>
-                    <EmojiText text={spoilerText} emojis={emojis} />
+                    <EmojiText text={spoilerText} />
                   </p>
                 </div>
                 {readingExpandSpoilers || previewMode ? (
@@ -260,36 +245,6 @@ export default function StatusPostBody({
                 content={content}
                 contentRef={contentRef}
                 onRevert={reloadPostContent}
-              />
-            )}
-            {!!poll && (
-              <Poll
-                lang={language ?? undefined}
-                poll={poll}
-                readOnly={readOnly || !sameInstance || !authenticated}
-                refresh={() => {
-                  return masto.v1.polls
-                    .$select(poll.id)
-                    .fetch()
-                    .then((pollResponse) => {
-                      (states.statuses[sKey] as Record<string, unknown>).poll =
-                        pollResponse;
-                      return undefined;
-                    })
-                    .catch((_e: unknown) => {});
-                }}
-                votePoll={(choices: number[]) => {
-                  return masto.v1.polls
-                    .$select(poll.id)
-                    .votes.create({
-                      choices,
-                    })
-                    .then((pollResponse) => {
-                      (states.statuses[sKey] as Record<string, unknown>).poll =
-                        pollResponse;
-                      return undefined;
-                    });
-                }}
               />
             )}
             {((!!content &&
@@ -357,7 +312,6 @@ export default function StatusPostBody({
               /^https/i.test(card.url) &&
               !sensitive &&
               !spoilerText &&
-              !poll &&
               !mediaAttachments.length &&
               !statusQuoteState && (
                 <StatusCard

@@ -38,7 +38,6 @@ interface PostLike {
     group?: boolean;
   };
   id: string;
-  poll?: { options?: { title: string; votesCount?: number }[] };
   spoilerText?: string;
   language?: string;
   editedAt?: string | null;
@@ -69,7 +68,6 @@ function generateHTMLCode(
   const {
     account: { displayName, acct, emojis: accountEmojis },
     id,
-    poll,
     spoilerText,
     language,
     createdAt,
@@ -108,22 +106,6 @@ function generateHTMLCode(
     '\n' +
     quoteStatusesHTML +
     '\n' +
-    (poll?.options?.length
-      ? `
-        <p>📊:</p>
-        <ul>
-        ${poll.options
-          .map(
-            (option: { title: string; votesCount?: number }) => `
-              <li>
-                ${option.title}
-                ${(option.votesCount ?? -1) >= 0 ? ` (${option.votesCount})` : ''}
-              </li>
-            `,
-          )
-          .join('')}
-        </ul>`
-      : '') +
     ((mediaAttachments?.length ?? 0) > 0
       ? '\n' +
         (mediaAttachments ?? [])
@@ -390,11 +372,6 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
                 <Trans>
                   This is static, unstyled and scriptless. You may need to apply
                   your own styles and edit as needed.
-                </Trans>
-              </li>
-              <li>
-                <Trans>
-                  Polls are not interactive, becomes a list with vote counts.
                 </Trans>
               </li>
               <li>

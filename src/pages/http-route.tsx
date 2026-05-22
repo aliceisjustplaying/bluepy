@@ -1,48 +1,23 @@
 import { Trans } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useLayoutEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import Link from '../components/link';
 import Loader from '../components/loader';
 import { api, getMastoV2Resource } from '../utils/api';
-import { getInstanceStatusObject } from '../utils/get-instance-status-url';
 import { navigatePath } from '../utils/router';
 
 export default function HttpRoute() {
   const location = useLocation();
   const url = location.pathname.replace(/^\//, '');
-  // Memoize so `statusObject` identity is stable per `url` and the
-  // useLayoutEffect dep list below can include it without looping.
-  const statusObject = useMemo(() => getInstanceStatusObject(url), [url]);
-  // const statusURL = getInstanceStatusURL(url);
-  const statusURL = statusObject?.instance
-    ? `/${statusObject.instance}/s/${statusObject.id}`
-    : null;
   const [uiState, setUIState] = useState<'loading' | 'error'>('loading');
 
   useLayoutEffect(() => {
     setUIState('loading');
     void (async () => {
-      // Check if status returns 200
+      // Resolve the URL via search
       try {
-        const { instance, id } = statusObject;
-        if (id) {
-          const { masto } = api({ instance });
-          const statusesResource = masto.v1
-            .statuses as mastodon.rest.v1.StatusesResource;
-          const status = await statusesResource.$select(id).fetch();
-          if (status) {
-            navigatePath(statusURL + '?view=full');
-            return;
-          }
-        }
-      } catch {
-        // ignore: fall through to search fallback
-      }
-
-      // Fallback to search
-      {
         const { masto: currentMasto, instance: currentInstance } = api();
         const searchResource =
           getMastoV2Resource<mastodon.rest.v2.SearchResource>(
@@ -60,15 +35,14 @@ export default function HttpRoute() {
         } else if (result.accounts.length) {
           const account = result.accounts[0];
           navigatePath(`/${currentInstance}/a/${account.id}`);
-        } else if (statusURL) {
-          // Fallback to original URL, which will probably show error
-          navigatePath(statusURL + '?view=full');
         } else {
           setUIState('error');
         }
+      } catch {
+        setUIState('error');
       }
     })();
-  }, [statusURL, url, statusObject]);
+  }, [url]);
 
   return (
     <div className="ui-state" tabIndex={-1}>

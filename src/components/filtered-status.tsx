@@ -6,8 +6,6 @@ import { LongPressEventType, useLongPress } from 'use-long-press';
 import { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
 import useTruncated from '../utils/useTruncated';
-import visibilityIconsMap from '../utils/visibility-icons-map';
-import visibilityText from '../utils/visibility-text';
 
 import Avatar from './avatar';
 import Icon from './icon';
@@ -110,23 +108,13 @@ export default function FilteredStatus({
         <span className="status-filtered-info">
           <span className="status-filtered-info-1">
             {isReblog ? (
-              <Trans comment="[Name] [Visibility icon] reposted">
+              <Trans comment="[Name] reposted">
                 <NameText account={status.account} instance={instance} />{' '}
-                <Icon
-                  icon={visibilityIconsMap[visibility]}
-                  alt={_(visibilityText[visibility])}
-                  size="s"
-                />{' '}
                 reposted
               </Trans>
             ) : (
               <>
                 <NameText account={status.account} instance={instance} />{' '}
-                <Icon
-                  icon={visibilityIconsMap[visibility]}
-                  alt={_(visibilityText[visibility])}
-                  size="s"
-                />{' '}
                 <RelativeTime datetime={createdAtDate} format="micro" />
               </>
             )}

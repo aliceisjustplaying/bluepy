@@ -6,7 +6,6 @@ import { use, useCallback, useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { api } from '../utils/api';
-import { useEditHistory } from '../utils/edit-history-context';
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
 import {
@@ -145,22 +144,7 @@ function StatusRouter({
   const apiResult = api({ instance: propInstance });
   const instance = apiResult.instance;
   const snapStates = useSnapshot(states);
-  const { editHistoryRef, editHistoryMode, editedAtIndex } = useEditHistory();
   const sKey = resolvedSKey;
-
-  // const originalStatus = useRef(status);
-  if (editHistoryMode && status?.editedAt && editHistoryRef.current.length) {
-    const eStatus = editHistoryRef.current[editedAtIndex];
-    if (eStatus) {
-      status = {
-        ...status,
-        ...eStatus,
-      };
-    }
-  } else {
-    // Revert back to original status
-    // Don't need to do anything, re-render will use the original status above
-  }
 
   const {
     account,

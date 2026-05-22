@@ -457,7 +457,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     })();
   }, [id, mediaFirst, refetchAccount, masto]);
 
-  const { displayName, acct, emojis } = account || ({} as Partial<Account>);
+  const { displayName, acct } = account || ({} as Partial<Account>);
 
   const isSelf = useMemo(
     () => account?.id === getCurrentAccountID(),
@@ -785,11 +785,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             // }}
           >
             <b>
-              <EmojiText
-                text={displayName}
-                emojis={emojis}
-                resolverURL={account?.url}
-              />
+              <EmojiText text={displayName} />
             </b>
             <div>
               <span className="bidi-isolate">@{acct}</span>
