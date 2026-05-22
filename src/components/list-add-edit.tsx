@@ -39,9 +39,9 @@ interface ListAddEditProps {
 }
 
 interface MastoListsApi {
-  create(params: { title: FormDataEntryValue | null }): Promise<ListLike>;
+  create(params: { title: string }): Promise<ListLike>;
   $select(id: string): {
-    update(params: { title: FormDataEntryValue | null }): Promise<ListLike>;
+    update(params: { title: string }): Promise<ListLike>;
     remove(): Promise<unknown>;
   };
 }
@@ -86,7 +86,8 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
             e.preventDefault(); // Get form values
 
             const formData = new FormData(e.target as HTMLFormElement);
-            const title = formData.get('title');
+            const titleValue = formData.get('title');
+            const title = typeof titleValue === 'string' ? titleValue : '';
             console.log({
               title,
             });

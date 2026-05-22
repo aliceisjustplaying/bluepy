@@ -292,10 +292,12 @@ export function groupContext(
               saveStatus(replyToStatus, instance, {
                 skipThreading: true,
               });
-              const sKey = inReplyToIds.find(
+              // Several visible posts can reply to the same parent, so set the
+              // reply hint for every matching sKey, not just the first.
+              const matchingHints = inReplyToIds.filter(
                 ({ inReplyToId }) => inReplyToId === replyToStatus.id,
-              )?.sKey;
-              if (sKey) {
+              );
+              for (const { sKey } of matchingHints) {
                 states.statusReply[sKey] = {
                   id: replyToStatus.id,
                   instance,
