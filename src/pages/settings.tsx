@@ -15,18 +15,11 @@ import LangSelector from '../components/lang-selector';
 import Link from '../components/link';
 import RelativeTime from '../components/relative-time';
 import languages from '../data/translang-languages.json';
-import {
-  api,
-  getMastoV1Resource,
-  getPreferences,
-  setPreferences,
-} from '../utils/api';
-import { APPVIEW_OPTIONS, getActiveAppview } from '../utils/atproto-adapter';
+import { api } from '../utils/api';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import localeCode2Text from '../utils/localeCode2Text';
 import { isMutedPostVisibility } from '../utils/muted-post-visibility';
 import prettyBytes from '../utils/pretty-bytes';
-import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import store from '../utils/store';
@@ -48,18 +41,6 @@ declare module 'react' {
     }
   }
 }
-
-// `masto.v1.accounts` in the typed api.ts shim only exposes
-// `verifyCredentials`. `updateCredentials` is used here at runtime to sync
-// posting preferences. Shim the call surface locally; the wave that fully
-// types the masto client removes this.
-interface AccountsUpdateCredentialsClient {
-  updateCredentials(params: {
-    source: { privacy?: string; quote_policy?: string };
-  }): Promise<unknown>;
-}
-
-type Preferences = Record<string, unknown>;
 
 const DEFAULT_TEXT_SIZE = 16;
 const TEXT_SIZES = [14, 15, 16, 17, 18, 19, 20];
@@ -105,8 +86,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
   const currentTextSize: number =
     parseInt(storedTextSize as string, 10) || DEFAULT_TEXT_SIZE;
 
-  const [prefs, setPrefs] = useState<Preferences>(getPreferences());
-  const { masto, authenticated } = api();
+  const { authenticated } = api();
 
   // Get preferences every time Settings is opened
   // NOTE: Disabled for now because I don't expect this to change often. Also for some reason, the /api/v1/preferences endpoint is cached for a while and return old prefs if refresh immediately after changing them.
@@ -131,8 +111,6 @@ function Settings({ onClose }: SettingsProps): ReactElement {
   const [expTimeline2, setExpTimeline2] = useState<string | boolean>(
     store.local.get('experiments-timeline2') ?? false,
   );
-
-  const disableQuotePolicy = prefs['posting:default:visibility'] === 'private';
 
   return (
     <div
@@ -316,157 +294,6 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             </li>
           </ul>
         </section>
-        {authenticated && (
-          <>
-            <h3>
-              <Trans>Posting</Trans>
-            </h3>
-            <section>
-              <ul>
-                <li>
-                  <label htmlFor="posting-privacy-field">
-                    <Trans>Default visibility</Trans>{' '}
-                    <Icon
-                      icon="cloud"
-                      alt={t`Synced`}
-                      className="synced-icon"
-                    />
-                  </label>
-                  <select
-                    id="posting-privacy-field"
-                    value={
-                      (prefs['posting:default:visibility'] as
-                        | string
-                        | undefined) || 'public'
-                    }
-                    onChange={(e) => {
-                      const { value } = e.currentTarget;
-                      void (async () => {
-                        try {
-                          await getMastoV1Resource<AccountsUpdateCredentialsClient>(
-                            masto,
-                            'accounts',
-                          ).updateCredentials({
-                            source: {
-                              privacy: value,
-                            },
-                          });
-                          const newPrefs: Preferences = {
-                            ...prefs,
-                            'posting:default:visibility': value,
-                          };
-                          if (value === 'private') {
-                            newPrefs['posting:default:quote_policy'] = 'nobody';
-                          }
-                          setPrefs(newPrefs);
-                          setPreferences(newPrefs);
-                          showToast(t`Default visibility updated`);
-                        } catch (err) {
-                          alert(t`Failed to update default visibility`);
-                          console.error(err);
-                        }
-                      })();
-                    }}
-                  >
-                    <option value="public">
-                      <Trans>Public</Trans>
-                    </option>
-                    <option value="unlisted">
-                      <Trans>Quiet public</Trans>
-                    </option>
-                    <option value="private">
-                      <Trans>Followers</Trans>
-                    </option>
-                  </select>
-                </li>
-                {supportsNativeQuote() && (
-                  <li>
-                    <label htmlFor="posting-quote-policy-field">
-                      <Trans>Quote settings</Trans>{' '}
-                      <Icon
-                        icon="cloud"
-                        alt={t`Synced`}
-                        className="synced-icon"
-                      />
-                    </label>
-                    <select
-                      id="posting-quote-policy-field"
-                      value={
-                        disableQuotePolicy
-                          ? 'nobody'
-                          : (prefs['posting:default:quote_policy'] as
-                              | string
-                              | undefined) || 'public'
-                      }
-                      disabled={disableQuotePolicy}
-                      onChange={(e) => {
-                        const { value } = e.currentTarget;
-                        void (async () => {
-                          try {
-                            await getMastoV1Resource<AccountsUpdateCredentialsClient>(
-                              masto,
-                              'accounts',
-                            ).updateCredentials({
-                              source: {
-                                quote_policy: value,
-                              },
-                            });
-                            const newPrefs: Preferences = {
-                              ...prefs,
-                              'posting:default:quote_policy': value,
-                            };
-                            setPrefs(newPrefs);
-                            setPreferences(newPrefs);
-                            showToast(t`Quote settings updated`);
-                          } catch (err) {
-                            alert(t`Failed to update quote settings`);
-                            console.error(err);
-                          }
-                        })();
-                      }}
-                    >
-                      <option value="public" disabled={disableQuotePolicy}>
-                        <Trans>Anyone can quote</Trans>
-                      </option>
-                      <option value="followers" disabled={disableQuotePolicy}>
-                        <Trans>Your followers can quote</Trans>
-                      </option>
-                      <option value="nobody">
-                        <Trans>Only you can quote</Trans>
-                      </option>
-                    </select>
-                  </li>
-                )}
-              </ul>
-            </section>
-            <p className="section-postnote">
-              <Icon icon="cloud" alt={t`Synced`} className="synced-icon" />{' '}
-              <small>
-                {(() => {
-                  const activeAppview = getActiveAppview();
-                  const appviewLabel =
-                    APPVIEW_OPTIONS[activeAppview]?.label ?? 'Bluesky';
-                  const settingsURL =
-                    activeAppview === 'blacksky'
-                      ? 'https://blacksky.community/settings'
-                      : 'https://bsky.app/settings';
-                  return (
-                    <Trans>
-                      Synced to your {appviewLabel} account settings.{' '}
-                      <a
-                        href={settingsURL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Open {appviewLabel} settings.
-                      </a>
-                    </Trans>
-                  );
-                })()}
-              </small>
-            </p>
-          </>
-        )}
         <h3>
           <Trans>Experiments</Trans>
         </h3>

@@ -258,17 +258,3 @@ export const checkDifferentLanguage = (
   }
   return different;
 };
-
-export const quoteMessages = {
-  quotePrivate: msg`Private posts cannot be quoted`,
-  requestQuote: msg`Request to quote`,
-  quoteManualReview: msg`Author will manually review`,
-  quoteFollowersOnly: msg`Only followers can quote this post`,
-  quoteCannot: msg`You are not allowed to quote this post`,
-};
-
-export const quoteApprovalPolicyMessages = {
-  public: msg`Anyone can quote`,
-  followers: msg`Your followers can quote`,
-  nobody: msg`Only you can quote`,
-};
