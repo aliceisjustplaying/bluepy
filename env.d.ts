@@ -54,7 +54,6 @@ declare global {
     __BLUEPY_OAUTH_TEST_CLIENT__?: unknown;
     __CLOAK__?: () => void;
     __COMPOSE__?: unknown;
-    __generateCodeChallenge?: unknown;
     __IDLE__?: boolean;
     __IGNORE_GET_ACCOUNT_ERROR__?: boolean;
     _memoize?: unknown;

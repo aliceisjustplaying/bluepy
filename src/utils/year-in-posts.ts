@@ -1,6 +1,6 @@
-import type { mastodon } from 'masto';
+import type { AtprotoCompat } from '../types/atproto-compat';
 
-import { api, getMastoV1Resource, getMastoV2Resource } from './api';
+import { api, getCompatV1Resource, getCompatV2Resource } from './api';
 import db from './db';
 import isSearchEnabled from './is-search-enabled';
 import { sorted } from './sorted';
@@ -27,18 +27,18 @@ export interface AvailableYear extends YearInPostsListEntry {
 
 export interface YearInPostsRecord extends YearInPostsListEntry {
   id: string;
-  posts: mastodon.v1.Status[];
+  posts: AtprotoCompat.v1.Status[];
   year: number;
 }
 
 export interface FetchYearPostsResult {
-  posts: mastodon.v1.Status[];
+  posts: AtprotoCompat.v1.Status[];
   searchEnabled: boolean;
   gapsFilled: boolean;
 }
 
-// Minimal account-statuses endpoint shape we touch. The shared `MastoClient`
-// interface in `api.ts` types nested members as `unknown`, and the real masto
+// Minimal account-statuses endpoint shape we touch. The shared `CompatClient`
+// interface in `api.ts` types nested members as `unknown`, and the real compat
 // types use camelCase params whereas this codebase passes snake_case directly
 // to the underlying client. Cast through a narrow local interface so the
 // snake_case params are preserved at runtime exactly as in the JS original.
@@ -52,7 +52,7 @@ interface AccountStatusesListParams {
 
 interface AccountStatusesEndpoint {
   list(params: AccountStatusesListParams): {
-    values(): AsyncIterator<mastodon.v1.Status[] | undefined>;
+    values(): AsyncIterator<AtprotoCompat.v1.Status[] | undefined>;
   };
 }
 
@@ -113,8 +113,8 @@ function isPostInYear(createdAt: string, year: number): boolean {
 export async function fetchYearPosts(
   year: number,
 ): Promise<FetchYearPostsResult> {
-  const { masto, instance } = api();
-  const allResults: mastodon.v1.Status[] = [];
+  const { compat, instance } = api();
+  const allResults: AtprotoCompat.v1.Status[] = [];
   let gapsFilled = false;
 
   const account = getCurrentAccount();
@@ -129,8 +129,8 @@ export async function fetchYearPosts(
 
   const searchEnabled = await isSearchEnabled(instance);
 
-  const accountsEndpoint = getMastoV1Resource<AccountsEndpoint>(
-    masto,
+  const accountsEndpoint = getCompatV1Resource<AccountsEndpoint>(
+    compat,
     'accounts',
   );
 
@@ -154,8 +154,8 @@ export async function fetchYearPosts(
           // Use "before" search to find last post before year ends
           const beforeStr = `${year + 1}-01-02`;
           try {
-            const searchEndpoint = getMastoV2Resource<SearchV2Endpoint>(
-              masto,
+            const searchEndpoint = getCompatV2Resource<SearchV2Endpoint>(
+              compat,
               'search',
             );
             const beforeResults = await searchEndpoint.list({

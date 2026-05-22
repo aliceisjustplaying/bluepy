@@ -34,7 +34,7 @@ import {
   isHlsPlaylistURL,
 } from '../utils/media-url';
 import mem from '../utils/mem';
-import { navigatePath } from '../utils/router';
+import { getPrevLocationSnapshot, navigatePath } from '../utils/router';
 import states from '../utils/states';
 
 import Icon from './icon';
@@ -264,6 +264,7 @@ function HlsVideo({
 
   return (
     <video
+      aria-label="Video player"
       ref={videoRef}
       poster={poster}
       width={width}
@@ -497,36 +498,7 @@ function Media({
         return (
           <figure {...(restProps as HTMLAttributes<HTMLElement>)}>
             {children}
-            {/* TODO(oxlint:jsx-a11y/no-noninteractive-tabindex,click-events-have-key-events):
-                  figcaption serves the dual role of semantic caption and an
-                  interactive "expand alt text" surface. We keep the figcaption
-                  for its figure-semantics and add keyboard support. Converting
-                  to <button> would lose the figure semantics and require CSS
-                  rework around .media-caption. */}
-            <figcaption
-              className="media-caption"
-              lang={lang}
-              dir="auto"
-              tabIndex={0}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                states.showMediaAlt = {
-                  alt: description,
-                  lang,
-                };
-              }}
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  states.showMediaAlt = {
-                    alt: description,
-                    lang,
-                  };
-                }
-              }}
-            >
+            <figcaption className="media-caption" lang={lang} dir="auto">
               {description}
             </figcaption>
           </figure>
@@ -565,14 +537,17 @@ function Media({
             try {
               startViewTransition(() => {
                 el.style.viewTransitionName = '';
+                states.prevLocation = getPrevLocationSnapshot();
                 navigatePath(to);
               });
             } catch (err) {
               console.error(err);
               el.style.viewTransitionName = '';
+              states.prevLocation = getPrevLocationSnapshot();
               navigatePath(to);
             }
           } else {
+            states.prevLocation = getPrevLocationSnapshot();
             navigatePath(to);
           }
         }
@@ -915,6 +890,7 @@ function Media({
                   />
                 ) : (
                   <video
+                    aria-label="Video player"
                     src={videoURL}
                     poster={previewUrl as string | undefined}
                     width={width}
@@ -932,6 +908,7 @@ function Media({
             ) : null
           ) : isGIF ? (
             <video
+              aria-label="Animated media"
               ref={videoRef}
               src={url ?? undefined}
               poster={previewUrl as string | undefined}
@@ -1030,6 +1007,7 @@ function Media({
                   />
                 ) : (
                   <video
+                    aria-label="Video preview"
                     src={`${videoURL}#t=0.1`} // Make Safari show 1st-frame preview
                     width={width}
                     height={height}
@@ -1082,11 +1060,11 @@ function Media({
         >
           {showOriginal ? (
             previewUrl ? (
-              // TODO(oxlint:jsx-a11y/media-has-caption): Mastodon's media
-              // model does not surface caption tracks; alt-text is exposed
+              // TODO(oxlint:jsx-a11y/media-has-caption): alt text is exposed
               // separately via the figcaption above. Inserting an empty
               // <track src=""> would advertise a non-existent captions file.
               <video
+                aria-label="Audio preview video"
                 src={remoteUrl || url ? `${remoteUrl || url}#t=0.1` : undefined}
                 width={width}
                 height={height}
@@ -1106,6 +1084,7 @@ function Media({
               // TODO(oxlint:jsx-a11y/media-has-caption): see note on <video>
               // above; alt-text is surfaced via the figcaption.
               <audio
+                aria-label="Audio player"
                 src={remoteUrl || url || undefined}
                 preload="none"
                 controls

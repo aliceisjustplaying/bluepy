@@ -1,12 +1,12 @@
-import type { mastodon } from 'masto';
 import { useMemo } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import states from '../utils/states';
 
 import { isMediaCaptionLong } from './media';
 
 interface StatusMediaCaptionsArgs {
-  mediaAttachments: mastodon.v1.MediaAttachment[];
+  mediaAttachments: AtprotoCompat.v1.MediaAttachment[];
   isSizeLarge: boolean;
   language?: string | null;
 }
@@ -28,12 +28,12 @@ export default function useStatusMediaCaptions({
   const captionChildren = useMemo(() => {
     if (!showMultipleMediaCaptions) return null;
     interface CaptionAttachment {
-      media: mastodon.v1.MediaAttachment;
+      media: AtprotoCompat.v1.MediaAttachment;
       indices: number[];
     }
     const attachments: CaptionAttachment[] = [];
     displayedMediaAttachments.forEach(
-      (media: mastodon.v1.MediaAttachment, i: number) => {
+      (media: AtprotoCompat.v1.MediaAttachment, i: number) => {
         if (!media.description) return;
         const index = attachments.findIndex(
           (attachment) => attachment.media.description === media.description,

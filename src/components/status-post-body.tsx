@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { ReactNode, CSSProperties, RefObject } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import states from '../utils/states';
 
 import EmojiText from './emoji-text';
@@ -20,7 +20,7 @@ import type {
   AnyPoll,
   AnyPreviewCard,
   AnyStatus,
-  StatusContentMasto,
+  StatusContentCompat,
 } from './status-types';
 import type { StatusComponentProps } from './status-view';
 import TranslationBlock from './translation-block';
@@ -45,7 +45,7 @@ interface StatusPostBodyProps {
   readingExpandSpoilers: boolean;
   language?: string | null;
   spoilerContentRef: RefObject<HTMLDivElement>;
-  emojis?: mastodon.v1.CustomEmoji[];
+  emojis?: AtprotoCompat.v1.CustomEmoji[];
   id: string;
   mediaAttachments: AnyMediaAttachment[];
   instance: string;
@@ -59,7 +59,7 @@ interface StatusPostBodyProps {
   readOnly?: boolean;
   sameInstance: boolean;
   authenticated?: boolean;
-  masto: StatusContentMasto;
+  compat: StatusContentCompat;
   sKey: string;
   enableTranslate?: boolean;
   inlineTranslate?: boolean;
@@ -85,7 +85,7 @@ interface StatusPostBodyProps {
   currentInstance: string;
   accountURL?: string | null;
   size: string;
-  tags?: mastodon.v1.Tag[];
+  tags?: AtprotoCompat.v1.Tag[];
   showCommentCount?: boolean;
   showQuoteCount?: boolean;
   repliesCount?: number;
@@ -121,7 +121,7 @@ export default function StatusPostBody({
   readOnly,
   sameInstance,
   authenticated,
-  masto,
+  compat,
   sKey,
   enableTranslate,
   inlineTranslate,
@@ -268,7 +268,7 @@ export default function StatusPostBody({
                 poll={poll}
                 readOnly={readOnly || !sameInstance || !authenticated}
                 refresh={() => {
-                  return masto.v1.polls
+                  return compat.v1.polls
                     .$select(poll.id)
                     .fetch()
                     .then((pollResponse) => {
@@ -279,7 +279,7 @@ export default function StatusPostBody({
                     .catch((_e: unknown) => {});
                 }}
                 votePoll={(choices: number[]) => {
-                  return masto.v1.polls
+                  return compat.v1.polls
                     .$select(poll.id)
                     .votes.create({
                       choices,

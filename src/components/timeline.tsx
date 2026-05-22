@@ -1,6 +1,5 @@
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type {
   ReactNode,
   ComponentType,
@@ -23,6 +22,7 @@ import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useDebouncedCallback } from 'use-debounce';
 import { useSnapshot } from 'valtio';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import FilterContext from '../utils/filter-context';
 import { filteredItems, isFiltered } from '../utils/filters';
 import isRTL from '../utils/is-rtl';
@@ -145,7 +145,7 @@ const InView: ComponentType<InViewProps> =
 
 // Mirrors the timeline entry union: either a flat status (augmented with the
 // timeline-pipeline mutation flags) or a group wrapper with nested items.
-type TimelineStatusEntry = mastodon.v1.Status & {
+type TimelineStatusEntry = AtprotoCompat.v1.Status & {
   _pinned?: unknown;
   _differentAuthor?: boolean;
 };

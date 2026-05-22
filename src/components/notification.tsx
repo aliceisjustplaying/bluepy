@@ -1,12 +1,12 @@
 import type { MessageDescriptor } from '@lingui/core';
 import { msg, t } from '@lingui/core/macro';
 import { Plural, Select, Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { ReactNode, ComponentType, JSX, Ref, ReactElement } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
 
-import { api, getMastoV2Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV2Resource } from '../utils/api';
 import { isFiltered } from '../utils/filters';
 import { hasMutedAuthor } from '../utils/muted-post-visibility';
 import shortenNumber from '../utils/shorten-number';
@@ -52,7 +52,7 @@ function NameText(props: NameTextProps) {
 }
 
 interface StatusComponentProps {
-  status?: mastodon.v1.Status | null;
+  status?: AtprotoCompat.v1.Status | null;
   statusID?: string;
   instance?: string;
   size?: 's' | 'm' | 'l';
@@ -67,23 +67,23 @@ function Status(props: StatusComponentProps) {
   return <StatusComponent {...(props as StatusViewProps)} />;
 }
 
-// `masto.v2.notifications` is typed as `unknown` in our local MastoClient
+// `compat.v2.notifications` is typed as `unknown` in our local CompatClient
 // shim. Describe just the surface this component uses.
-interface MastoV2NotificationAccountsList {
+interface CompatV2NotificationAccountsList {
   values(): AsyncIterator<AccountWithBot[]>;
 }
-interface MastoV2NotificationSelector {
+interface CompatV2NotificationSelector {
   accounts: {
-    list(): MastoV2NotificationAccountsList;
+    list(): CompatV2NotificationAccountsList;
   };
 }
-interface MastoV2Notifications {
-  $select(groupKey: string): MastoV2NotificationSelector;
+interface CompatV2Notifications {
+  $select(groupKey: string): CompatV2NotificationSelector;
 }
 
-// Input shape for this component. Mirrors `mastodon.v1.Notification` /
-// `mastodon.v2.NotificationGroup` plus client-side grouping fields injected
-// by `group-notifications.ts`. The masto entity unions are too strict to
+// Input shape for this component. Mirrors `AtprotoCompat.v1.Notification` /
+// `AtprotoCompat.v2.NotificationGroup` plus client-side grouping fields injected
+// by `group-notifications.ts`. The compat entity unions are too strict to
 // describe the full superset, so we keep a wide local interface.
 interface EmojiUrlObject {
   url?: string;
@@ -114,7 +114,7 @@ interface NotificationInput {
   type?: string;
   createdAt?: string;
   account?: AccountWithBot;
-  status?: mastodon.v1.Status | null;
+  status?: AtprotoCompat.v1.Status | null;
   report?: NotificationReport;
   event?: SeveredRelationshipEvent;
   moderation_warning?: ModerationWarningPayload;
@@ -123,7 +123,7 @@ interface NotificationInput {
   // Client-side grouped notification
   _ids?: string;
   _accounts?: AccountWithBot[];
-  _statuses?: (mastodon.v1.Status | null | undefined)[];
+  _statuses?: (AtprotoCompat.v1.Status | null | undefined)[];
   _groupKeys?: string[];
   _notificationsCount?: number[];
   _sampleAccountsCount?: number[];
@@ -182,7 +182,6 @@ const NOTIFICATION_ICONS: Record<string, string> = {
   moderation_warning: 'alert',
   emoji_reaction: 'emoji2',
   reaction: 'emoji2',
-  'pleroma:emoji_reaction': 'emoji2',
   quote: 'quote',
   quoted_update: 'pencil',
 };
@@ -455,7 +454,6 @@ const contentText: Record<string, ContentTextRenderer> = {
   ),
   emoji_reaction: emojiText,
   reaction: emojiText,
-  'pleroma:emoji_reaction': emojiText,
 };
 
 interface SeveredRelationshipArgs {
@@ -511,7 +509,7 @@ function Notification({
   disableContextMenu,
 }: NotificationProps) {
   const { i18n } = useLingui();
-  const { masto } = api();
+  const { compat } = api();
   const {
     id,
     status,
@@ -575,7 +573,7 @@ function Notification({
   } else if (type && contentText[type]) {
     text = contentText[type];
   } else {
-    // Anticipate unhandled notification types, possibly from Mastodon forks or non-Mastodon instances
+    // Anticipate unhandled notification types from ATProto services.
     // This surfaces the error to the user, hoping that users will report it
     // Preserve JS behavior: undefined `type` interpolates as the string
     // "undefined". The `t` macro placeholder type rejects `undefined`, so
@@ -583,7 +581,7 @@ function Notification({
     text = t`[Unknown notification type: ${String(type)}]`;
   }
 
-  const Subject: SubjectComponent = ({ clickable, ...props }) => {
+  const renderSubject: SubjectComponent = ({ clickable, ...props }) => {
     if (!clickable) return <b {...props} />;
     const { className, ...buttonProps } = props as SubjectProps & {
       className?: string;
@@ -631,10 +629,7 @@ function Notification({
       if (targetName) {
         text = renderer({ name: targetName });
       }
-    } else if (
-      (type === 'emoji_reaction' || type === 'pleroma:emoji_reaction') &&
-      notification.emoji
-    ) {
+    } else if (type === 'emoji_reaction' && notification.emoji) {
       const emojiShortcode = notification.emoji
         .replace(/^:/, '')
         .replace(/:$/, '');
@@ -656,7 +651,7 @@ function Notification({
         count,
         postsCount,
         postType: isReplyToOthers ? 'reply' : 'post',
-        components: { Subject },
+        components: { Subject: renderSubject },
       });
     }
   }
@@ -681,21 +676,19 @@ function Notification({
       type === 'reblog' ||
       type === 'admin.sign_up') &&
     expandAccounts === 'remote';
-  const handleOpenGenericAccounts = () => {
+  function handleOpenGenericAccounts() {
     if (showRemoteAccounts) {
       states.showGenericAccounts = {
         heading: genericAccountsHeading,
         accounts: _accounts,
         fetchAccounts: async () => {
-          const mastoV2Notifications = getMastoV2Resource<MastoV2Notifications>(
-            masto,
-            'notifications',
-          );
+          const compatV2Notifications =
+            getCompatV2Resource<CompatV2Notifications>(compat, 'notifications');
           // JS original called `.map` on `_groupKeys` directly. Preserve
           // that crash-on-missing behavior with a non-null cast.
           const keyAccounts = await Promise.allSettled(
             (_groupKeys as string[]).map(async (gKey: string) => {
-              const iterator = mastoV2Notifications
+              const iterator = compatV2Notifications
                 .$select(gKey)
                 .accounts.list()
                 .values();
@@ -755,7 +748,7 @@ function Notification({
         postID: statusKey(actualStatusID, instance),
       };
     }
-  };
+  }
 
   console.debug('RENDER Notification', notification.id);
 
@@ -1025,7 +1018,7 @@ function Notification({
         )}
         {_statuses && _statuses.length > 1 && (
           <ul className="notification-group-statuses">
-            {(_statuses as mastodon.v1.Status[]).map((groupStatus) => (
+            {(_statuses as AtprotoCompat.v1.Status[]).map((groupStatus) => (
               <li key={groupStatus.id}>
                 <TruncatedLink
                   className={`status-link status-type-${type}`}

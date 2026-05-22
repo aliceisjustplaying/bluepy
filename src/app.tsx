@@ -69,7 +69,6 @@ import {
   isAtprotoPostURI,
   isStatusPath,
 } from './utils/atproto-route';
-import { getAccessToken } from './utils/auth';
 import {
   AUTH_CHANGED_EVENT,
   AuthProvider,
@@ -82,9 +81,7 @@ import store from './utils/store';
 import {
   getAccounts,
   getAccount,
-  getCredentialApplication,
   getCurrentAccount,
-  getVapidKey,
   removeAccount,
   setCurrentAccountID,
 } from './utils/store-utils';
@@ -94,9 +91,6 @@ const Sandbox =
   import.meta.env.DEV || import.meta.env.PHANPY_DEV
     ? lazy(() => import('./pages/sandbox'))
     : () => null;
-
-// Lazy load MockHome component only in development (not PHANPY_DEV)
-const MockHome = lazy(() => import('./pages/mock-home'));
 
 // Lazy load YearInPosts component
 const YearInPosts = lazy(() => import('./pages/year-in-posts'));
@@ -168,10 +162,6 @@ function preloadIconEntry(entry: unknown) {
     return;
   }
   if (isIconModuleLoader(entry)) void entry();
-}
-
-function getStoredVapidKey(instanceURL: string | null | undefined) {
-  return getVapidKey(instanceURL ? { uri: instanceURL } : undefined);
 }
 
 appWindow.__STATES__ = states;
@@ -533,7 +523,6 @@ function App() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const instanceURL = store.local.get('instanceURL');
       const isAtprotoOAuthCallback =
         !!window.location.search.match(/[?&]code=/) &&
         !!window.location.search.match(/[?&]iss=/);
@@ -570,97 +559,7 @@ function App() {
         }
       }
 
-      const code = decodeURIComponent(
-        (window.location.search.match(/code=([^&]+)/) || [undefined, ''])[1] ??
-          '',
-      );
-
-      if (code) {
-        console.log({ code });
-
-        const isPopup = window.opener && !window.opener.closed;
-
-        if (isPopup) {
-          try {
-            window.opener.postMessage(
-              {
-                type: 'oauth-callback',
-                code: code,
-              },
-              window.location.origin,
-            );
-            window.setTimeout(() => {
-              window.close();
-            }, 100);
-          } catch (e) {
-            console.error('Failed to send message to parent window:', e);
-            window.close();
-          }
-          return;
-        }
-
-        // Clear the code from the URL
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname || '/',
-        );
-
-        const {
-          client_id: clientID,
-          client_secret: clientSecret,
-          vapid_key,
-        } = (getCredentialApplication(instanceURL as string) || {}) as {
-          client_id?: string;
-          client_secret?: string;
-          vapid_key?: string;
-        };
-        const vapidKey = getStoredVapidKey(instanceURL) || vapid_key;
-        const verifier = store.sessionCookie.get('codeVerifier');
-
-        if (cancelled) return;
-        setUIState('loading');
-        const { access_token: accessToken } = (await getAccessToken({
-          instanceURL: instanceURL as string,
-          client_id: clientID as string,
-          client_secret: clientSecret,
-          code,
-          code_verifier: verifier || undefined,
-        })) as { access_token?: string };
-
-        if (accessToken) {
-          const client = initClient({ instance: instanceURL, accessToken });
-          await Promise.allSettled([
-            initPreferences(client),
-            initInstance(client, instanceURL as string),
-            initAccount(
-              client,
-              instanceURL as string,
-              accessToken,
-              vapidKey as string | null | undefined,
-            ),
-          ]);
-          initStates();
-          window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
-
-          if (cancelled) return;
-          setIsLoggedIn(true);
-          setUIState('default');
-
-          // Redirect after successful login
-          const redirectPath = store.session.get('loginRedirect');
-          if (redirectPath) {
-            store.session.del('loginRedirect');
-            navigatePath(redirectPath);
-          } else if (isRootPath(window.location.pathname)) {
-            navigatePath('/', { replace: true });
-          }
-        } else {
-          if (cancelled) return;
-          setUIState('error');
-        }
-        __BENCHMARK.end('app-init');
-      } else {
+      {
         window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
         const searchAccount = decodeURIComponent(
           (window.location.search.match(/account=([^&]+)/) || [
@@ -700,7 +599,7 @@ function App() {
         if (account) {
           const { client } = api({ account });
           const { instance } = client;
-          // console.log('masto', masto);
+          // console.log('compat', compat);
           initStates();
           if (cancelled) return;
           setUIState('loading');
@@ -732,9 +631,6 @@ function App() {
         }
       }
 
-      // Cleanup
-      store.sessionCookie.del('clientID');
-      store.sessionCookie.del('clientSecret');
       store.sessionCookie.del('codeVerifier');
     })();
     return () => {
@@ -867,7 +763,7 @@ function Root() {
 }
 
 function isRootPath(pathname: string) {
-  return /^\/(login|welcome|_sandbox|_qr-scan|_mock)/i.test(pathname);
+  return /^\/(login|welcome|_sandbox|_qr-scan)/i.test(pathname);
 }
 
 function isNativeAtprotoPath(pathname: string) {
@@ -916,14 +812,6 @@ const PrimaryRoutes = memo(() => {
       <Route path="/" element={<Root />} />
       <Route path="/login" element={<Login />} />
       <Route path="/welcome" element={<Welcome />} />
-      <Route
-        path="/_mock/home"
-        element={
-          <Suspense fallback={undefined}>
-            <MockHome />
-          </Suspense>
-        }
-      />
       {(import.meta.env.DEV || import.meta.env.PHANPY_DEV) && (
         <>
           <Route

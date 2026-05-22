@@ -1,11 +1,11 @@
 import { useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 import type { ReactNode, RefObject } from 'react';
 import { useCallback, use, useMemo, useReducer, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import {
   buildAtprotoPostPermalink,
   isAtprotoPostURI,
@@ -38,7 +38,7 @@ import useStatusReplyParent from './status-reply-parent';
 import type {
   AnyMediaAttachment,
   AnyStatus,
-  StatusContentMasto,
+  StatusContentCompat,
   StatusAtprotoMeta,
 } from './status-types';
 import type { StatusComponentProps, StatusRouterProps } from './status-view';
@@ -64,7 +64,7 @@ function mergeAtprotoLabels(...values: unknown[]): unknown[] {
 }
 
 type StatusContentMediaAttachment = AnyMediaAttachment &
-  mastodon.v1.MediaAttachment;
+  AtprotoCompat.v1.MediaAttachment;
 
 interface StatusContentProps extends StatusRouterProps {
   renderStatus: (props: StatusComponentProps) => ReactNode;
@@ -103,23 +103,23 @@ export default function StatusContent({
   const authenticated = apiResult.authenticated;
   const statusesResource = useMemo(
     () =>
-      getMastoV1Resource<StatusContentMasto['v1']['statuses']>(
-        apiResult.masto,
+      getCompatV1Resource<StatusContentCompat['v1']['statuses']>(
+        apiResult.compat,
         'statuses',
       ),
-    [apiResult.masto],
+    [apiResult.compat],
   );
-  const masto: StatusContentMasto = useMemo(
+  const compat: StatusContentCompat = useMemo(
     () => ({
       v1: {
         statuses: statusesResource,
-        polls: getMastoV1Resource<StatusContentMasto['v1']['polls']>(
-          apiResult.masto,
+        polls: getCompatV1Resource<StatusContentCompat['v1']['polls']>(
+          apiResult.compat,
           'polls',
         ),
       },
     }),
-    [apiResult.masto, statusesResource],
+    [apiResult.compat, statusesResource],
   );
   const { instance: currentInstance } = api();
   const sameInstance = instance === currentInstance;
@@ -162,7 +162,7 @@ export default function StatusContent({
     _deleted,
     _pinned,
     // _filtered,
-    // Non-Mastodon
+    // Non-API props
     emojiReactions,
   } = status;
   const {
@@ -236,7 +236,7 @@ export default function StatusContent({
       statusID: id,
       spoilerText,
       mentions,
-      masto: apiResult.masto,
+      compat: apiResult.compat,
       atproto,
     });
 
@@ -346,7 +346,7 @@ export default function StatusContent({
     sKey,
     id,
     instance,
-    masto,
+    compat,
     sameInstance,
     authenticated,
     isSizeLarge,
@@ -413,7 +413,7 @@ export default function StatusContent({
     authenticated,
     isSelf,
     mentionSelf,
-    masto,
+    compat,
     muted,
     pinned,
     quoteApprovalPolicyMessages,
@@ -694,7 +694,7 @@ export default function StatusContent({
             readOnly={readOnly}
             sameInstance={sameInstance}
             authenticated={authenticated}
-            masto={masto}
+            compat={compat}
             sKey={sKey}
             enableTranslate={enableTranslate}
             inlineTranslate={inlineTranslate}

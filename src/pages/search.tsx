@@ -2,7 +2,6 @@ import './search.css';
 
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { ComponentType, ReactNode } from 'react';
 import {
   useCallback,
@@ -26,7 +25,8 @@ import SearchForm from '../components/search-form';
 import StatusComponent, {
   type StatusComponentProps,
 } from '../components/status';
-import { api, getMastoV2Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV2Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import shortenNumber from '../utils/shorten-number';
 import { sorted } from '../utils/sorted';
@@ -43,7 +43,7 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   behavior: 'instant' as ScrollBehavior,
 };
 
-function Status(props: { status: mastodon.v1.Status }) {
+function Status(props: { status: AtprotoCompat.v1.Status }) {
   return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 type InViewProps = {
@@ -77,9 +77,9 @@ interface SearchListParams {
 }
 
 interface SearchResultsLike {
-  statuses?: mastodon.v1.Status[];
-  accounts?: mastodon.v1.Account[];
-  hashtags?: mastodon.v1.Tag[];
+  statuses?: AtprotoCompat.v1.Status[];
+  accounts?: AtprotoCompat.v1.Account[];
+  hashtags?: AtprotoCompat.v1.Tag[];
   _pagination?: Record<string, string | undefined>;
   [key: string]: unknown;
 }
@@ -90,9 +90,9 @@ interface SearchApi {
 
 type ResultsTypeKey = 'statuses' | 'accounts' | 'hashtags';
 type SearchResultsByType = {
-  statuses: mastodon.v1.Status[];
-  accounts: mastodon.v1.Account[];
-  hashtags: mastodon.v1.Tag[];
+  statuses: AtprotoCompat.v1.Status[];
+  accounts: AtprotoCompat.v1.Account[];
+  hashtags: AtprotoCompat.v1.Tag[];
 };
 type ResultsSetterMap = {
   [K in ResultsTypeKey]: (
@@ -107,7 +107,7 @@ function Search({ columnMode, ...props }: SearchProps) {
   const routeParams = useParams() as { instance?: string };
   const [routeSearchParams] = useSearchParams();
   const params: { instance?: string } = columnMode ? {} : routeParams;
-  const { masto, instance, authenticated, client } = api({
+  const { compat, instance, authenticated, client } = api({
     instance: params.instance,
   });
   const atproto = !!client?.atproto;
@@ -150,11 +150,15 @@ function Search({ columnMode, ...props }: SearchProps) {
     scrollableRef.current?.scrollTo?.(0, 0);
   }, [q, type]);
 
-  const [statusResults, setStatusResults] = useState<mastodon.v1.Status[]>([]);
-  const [accountResults, setAccountResults] = useState<mastodon.v1.Account[]>(
+  const [statusResults, setStatusResults] = useState<AtprotoCompat.v1.Status[]>(
     [],
   );
-  const [hashtagResults, setHashtagResults] = useState<mastodon.v1.Tag[]>([]);
+  const [accountResults, setAccountResults] = useState<
+    AtprotoCompat.v1.Account[]
+  >([]);
+  const [hashtagResults, setHashtagResults] = useState<AtprotoCompat.v1.Tag[]>(
+    [],
+  );
   useEffect(() => {
     setStatusResults([]);
     setAccountResults([]);
@@ -183,14 +187,14 @@ function Search({ columnMode, ...props }: SearchProps) {
   );
 
   const [relationshipsMap, setRelationshipsMap] = useState<
-    Record<string, mastodon.v1.Relationship>
+    Record<string, AtprotoCompat.v1.Relationship>
   >({});
   // Stable callback: uses the functional setter and reads the previous map
   // via a transient peek so it never needs `relationshipsMap` as a dep.
   const loadRelationships = useCallback(
-    async (accounts: mastodon.v1.Account[] | undefined) => {
+    async (accounts: AtprotoCompat.v1.Account[] | undefined) => {
       if (!accounts?.length) return;
-      let snapshot: Record<string, mastodon.v1.Relationship> = {};
+      let snapshot: Record<string, AtprotoCompat.v1.Relationship> = {};
       setRelationshipsMap((prev) => {
         snapshot = prev;
         return prev;
@@ -261,7 +265,7 @@ function Search({ columnMode, ...props }: SearchProps) {
         }
 
         try {
-          const searchApi = getMastoV2Resource<SearchApi>(masto, 'search');
+          const searchApi = getCompatV2Resource<SearchApi>(compat, 'search');
           const results = await searchApi.list(searchListParams);
           console.log(results);
           if (type) {
@@ -335,7 +339,7 @@ function Search({ columnMode, ...props }: SearchProps) {
       type,
       atproto,
       authenticated,
-      masto,
+      compat,
       loadRelationships,
       setResultsForType,
     ],
@@ -576,7 +580,7 @@ function Search({ columnMode, ...props }: SearchProps) {
                               relationship={
                                 relationshipsMap[
                                   account.id
-                                ] as Partial<mastodon.v1.Relationship> | null
+                                ] as Partial<AtprotoCompat.v1.Relationship> | null
                               }
                             />
                           </li>

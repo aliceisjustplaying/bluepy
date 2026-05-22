@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useMemo, useRef } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import haptics from '../utils/haptics';
 import openCompose from '../utils/open-compose';
 import showCompose from '../utils/show-compose';
@@ -10,7 +10,11 @@ import states, { saveStatus } from '../utils/states';
 import supports from '../utils/supports';
 
 import { REACTIONS_LIMIT } from './status-helpers';
-import type { AnyAccount, AnyStatus, StatusContentMasto } from './status-types';
+import type {
+  AnyAccount,
+  AnyStatus,
+  StatusContentCompat,
+} from './status-types';
 
 type CachedStatus = (typeof states.statuses)[string];
 
@@ -21,7 +25,7 @@ type ReplyEvent =
   | undefined;
 type ReactionIterator = AsyncIterator<AnyAccount[], undefined>;
 type StatusSelector = ReturnType<
-  StatusContentMasto['v1']['statuses']['$select']
+  StatusContentCompat['v1']['statuses']['$select']
 >;
 type IteratorResult = { value?: AnyAccount[]; done?: boolean };
 
@@ -31,7 +35,7 @@ interface StatusInteractionsArgs {
   sKey: string;
   id: string;
   instance: string;
-  masto: StatusContentMasto;
+  compat: StatusContentCompat;
   sameInstance: boolean;
   authenticated?: boolean;
   isSizeLarge: boolean;
@@ -42,7 +46,7 @@ interface StatusInteractionsArgs {
   favourited?: boolean | null;
   favouritesCount?: number;
   bookmarked?: boolean | null;
-  mediaAttachments: mastodon.v1.MediaAttachment[];
+  mediaAttachments: AtprotoCompat.v1.MediaAttachment[];
   createdAt: string;
 }
 
@@ -52,7 +56,7 @@ export default function useStatusInteractions({
   sKey,
   id,
   instance,
-  masto,
+  compat,
   sameInstance,
   authenticated,
   isSizeLarge,
@@ -70,7 +74,7 @@ export default function useStatusInteractions({
   const unauthInteractionErrorMessage = t`Sorry, your current PDS can't interact with this post from another PDS.`;
   const mediaNoDesc = useMemo(() => {
     return mediaAttachments.some(
-      (attachment: mastodon.v1.MediaAttachment) =>
+      (attachment: AtprotoCompat.v1.MediaAttachment) =>
         !attachment.description?.trim?.(),
     );
   }, [mediaAttachments]);
@@ -108,10 +112,10 @@ export default function useStatusInteractions({
         reblogsCount: reblogsCount + (reblogged ? -1 : 1),
       } as CachedStatus;
       if (reblogged) {
-        const newStatus = await masto.v1.statuses.$select(id).unreblog();
+        const newStatus = await compat.v1.statuses.$select(id).unreblog();
         saveStatus(newStatus, instance);
       } else {
-        const newStatus = await masto.v1.statuses.$select(id).reblog();
+        const newStatus = await compat.v1.statuses.$select(id).reblog();
         saveStatus(newStatus, instance);
       }
       return true;
@@ -134,10 +138,10 @@ export default function useStatusInteractions({
         favouritesCount: favouritesCount + (favourited ? -1 : 1),
       } as CachedStatus;
       if (favourited) {
-        const newStatus = await masto.v1.statuses.$select(id).unfavourite();
+        const newStatus = await compat.v1.statuses.$select(id).unfavourite();
         saveStatus(newStatus, instance);
       } else {
-        const newStatus = await masto.v1.statuses.$select(id).favourite();
+        const newStatus = await compat.v1.statuses.$select(id).favourite();
         saveStatus(newStatus, instance);
       }
       return true;
@@ -165,7 +169,7 @@ export default function useStatusInteractions({
   };
 
   const bookmarkStatus = async (): Promise<boolean> => {
-    if (!supports('@mastodon/post-bookmark')) return false;
+    if (!supports('@atproto/post-bookmark')) return false;
     if (!sameInstance || !authenticated) {
       alert(unauthInteractionErrorMessage);
       return false;
@@ -176,10 +180,10 @@ export default function useStatusInteractions({
         bookmarked: !bookmarked,
       } as CachedStatus;
       if (bookmarked) {
-        const newStatus = await masto.v1.statuses.$select(id).unbookmark();
+        const newStatus = await compat.v1.statuses.$select(id).unbookmark();
         saveStatus(newStatus, instance);
       } else {
-        const newStatus = await masto.v1.statuses.$select(id).bookmark();
+        const newStatus = await compat.v1.statuses.$select(id).bookmark();
         saveStatus(newStatus, instance);
       }
       return true;
@@ -210,7 +214,7 @@ export default function useStatusInteractions({
   const favouriteIterator = useRef<ReactionIterator | null>(null);
   async function fetchBoostedLikedByAccounts(firstLoad?: boolean) {
     if (firstLoad) {
-      const stmtSel: StatusSelector = masto.v1.statuses.$select(
+      const stmtSel: StatusSelector = compat.v1.statuses.$select(
         statusID as string,
       );
       reblogIterator.current = stmtSel.rebloggedBy

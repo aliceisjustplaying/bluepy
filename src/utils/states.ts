@@ -1,10 +1,10 @@
 import { deepEqual } from 'fast-equals';
-import type { mastodon } from 'masto';
 import { proxy, subscribe } from 'valtio';
 import { subscribeKey } from 'valtio/utils';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
+
 import { api } from './api';
-import isMastodonLinkMaybe from './is-mastodon-link-maybe';
 import {
   DEFAULT_MUTED_POST_VISIBILITY,
   getMutedPostVisibility,
@@ -20,10 +20,6 @@ import {
   restoreShortcutsViewMode,
 } from './settings-storage';
 import store from './store';
-// TODO(oxlint:import/no-cycle): states <-> unfurl-link cycle is structural;
-// breaking it requires extracting unfurled-link types into a separate module
-// shared by states.ts. Out of scope for the oxlint cleanup batch.
-import unfurlMastodonLink from './unfurl-link';
 
 // Intentionally loose typings — this hub is mutated by 60+ consumers and 139
 // direct writes. Narrower Status / Account shapes belong in later waves; doing
@@ -39,14 +35,14 @@ type Status = Record<string, unknown> & {
   account?: { id?: string } & Record<string, unknown>;
   reblog?: Status | null;
   quote?: Status | null;
-  // Native Mastodon quote shape: { state, quotedStatus }
+  // Native quote shape: { state, quotedStatus }
   state?: unknown;
   quotedStatus?: Status | null;
   _pinned?: unknown;
 };
-type SaveStatusStatus = Status | mastodon.v1.Status;
+type SaveStatusStatus = Status | AtprotoCompat.v1.Status;
 
-type Account = Record<string, unknown> | mastodon.v1.Account;
+type Account = Record<string, unknown> | AtprotoCompat.v1.Account;
 
 interface PrevLocation {
   pathname?: string;
@@ -426,7 +422,7 @@ function saveStatusInternal(
       ];
     }
   }
-  // Mastodon native quotes
+  // Native quotes
   if (theQuote?.state) {
     const { quotedStatus, state } = theQuote;
     if (quotedStatus?.id) {
@@ -550,7 +546,7 @@ function threadifyStatusInternal(
   rootStatus: Status,
   propInstance?: string | null,
 ): Promise<void> | void {
-  const { masto, instance } = api({ instance: propInstance ?? undefined });
+  const { compat, instance } = api({ instance: propInstance ?? undefined });
   // Return all statuses in the thread, via inReplyToId, if inReplyToAccountId === account.id
   let fetchIndex = 0;
   async function traverse(currentStatus: Status, index = 0): Promise<Status[]> {
@@ -565,8 +561,8 @@ function threadifyStatusInternal(
       await new Promise<void>((r) => {
         setTimeout(r, 500 * fetchIndex);
       }); // Be nice to rate limits
-      // prevStatus = await masto.v1.statuses.$.select(inReplyToId).fetch();
-      prevStatus = await fetchStatus(inReplyToId as string, masto);
+      // prevStatus = await compat.v1.statuses.$.select(inReplyToId).fetch();
+      prevStatus = await fetchStatus(inReplyToId as string, compat);
       saveStatus(prevStatus, instance, { skipThreading: true });
     }
     // Prepend so that first status in thread will be index 0
@@ -594,54 +590,18 @@ export const threadifyStatus = rateLimit(
   100,
 ) as (status: Status, propInstance?: string | null) => void;
 
-const fauxDiv = document.createElement('div');
 export function unfurlStatus(
   status: Status | null | undefined,
   instance?: string | null,
 ): void {
-  const { instance: currentInstance } = api();
   const content = status?.content;
   if (!content) return;
   const hasLink = /<a/i.test(content);
   if (hasLink) {
     const sKey = statusKey(status?.id, instance);
-    fauxDiv.innerHTML = content;
-    const links = fauxDiv.querySelectorAll<HTMLAnchorElement>(
-      'a[href]:not(.u-url):not(.mention):not(.hashtag)',
-    );
-    [...links]
-      .filter((a) => {
-        const url = a.href;
-        const isPostItself = url === status?.url || url === status?.uri;
-        return !isPostItself && isMastodonLinkMaybe(url);
-      })
-      .forEach((a, i) => {
-        void unfurlMastodonLink(currentInstance, a.href)
-          .then((result) => {
-            if (!result) return undefined;
-            if (!sKey) return undefined;
-            if (result?.id === status?.id) {
-              // Unfurled post is the post itself???
-              // Scenario:
-              // 1. Post with [URL]
-              // 2. Unfurl [URL], API returns the same post that contains [URL]
-              // 3. 💥 Recursive quote posts 💥
-              // Note: Mastodon search doesn't return posts that contains [URL], it's actually used to *resolve* the URL
-              // But some non-Mastodon servers, their search API will eventually search posts that contains [URL] and return them
-              return undefined;
-            }
-            if (!Array.isArray(states.statusQuotes[sKey])) {
-              states.statusQuotes[sKey] = [];
-            }
-            if (!states.statusQuotes[sKey][i]) {
-              states.statusQuotes[sKey].splice(i, 0, result);
-            }
-            return undefined;
-          })
-          .catch((err: unknown) => {
-            console.error(err);
-          });
-      });
+    if (sKey && !Array.isArray(states.statusQuotes[sKey])) {
+      states.statusQuotes[sKey] = [];
+    }
   }
 }
 
@@ -650,8 +610,8 @@ interface StatusesEndpoint {
 }
 
 const fetchStatus = pmem(
-  (statusID: string, masto: ReturnType<typeof api>['masto']) => {
-    const statuses = masto.v1.statuses as StatusesEndpoint;
+  (statusID: string, compat: ReturnType<typeof api>['compat']) => {
+    const statuses = compat.v1.statuses as StatusesEndpoint;
     return statuses.$select(statusID).fetch();
   },
 );

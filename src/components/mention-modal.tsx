@@ -1,11 +1,11 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { SyntheticEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useDebouncedCallback } from 'use-debounce';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 
 import AccountBlock from './account-block';
@@ -18,7 +18,7 @@ interface AccountSearchResource {
       q: string;
       limit: number;
       resolve: boolean;
-    }): Promise<mastodon.v1.Account[]>;
+    }): Promise<AtprotoCompat.v1.Account[]>;
   };
 }
 
@@ -34,11 +34,11 @@ function MentionModal({
   defaultSearchTerm,
 }: MentionModalProps) {
   const { t } = useLingui();
-  const { masto } = api();
+  const { compat } = api();
   const [uiState, setUIState] = useState('default');
-  const [accounts, setAccounts] = useState<mastodon.v1.Account[]>([]);
+  const [accounts, setAccounts] = useState<AtprotoCompat.v1.Account[]>([]);
   const [relationshipsMap, setRelationshipsMap] = useState<
-    Record<string, mastodon.v1.Relationship>
+    Record<string, AtprotoCompat.v1.Relationship>
   >({});
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -47,7 +47,7 @@ function MentionModal({
   relationshipsMapRef.current = relationshipsMap;
 
   const loadRelationships = useCallback(
-    async (fetchedAccounts: mastodon.v1.Account[]) => {
+    async (fetchedAccounts: AtprotoCompat.v1.Account[]) => {
       if (!fetchedAccounts?.length) return;
       const relationships = await fetchRelationships(
         fetchedAccounts,
@@ -70,8 +70,8 @@ function MentionModal({
       void (async () => {
         try {
           const fetchedAccounts =
-            await getMastoV1Resource<AccountSearchResource>(
-              masto,
+            await getCompatV1Resource<AccountSearchResource>(
+              compat,
               'accounts',
             ).search.list({
               q: term,
@@ -87,7 +87,7 @@ function MentionModal({
         }
       })();
     },
-    [masto, loadRelationships],
+    [compat, loadRelationships],
   );
 
   const debouncedLoadAccounts = useDebouncedCallback(loadAccounts, 1000);
@@ -108,7 +108,7 @@ function MentionModal({
     loadAccounts(defaultSearchTerm || undefined);
   }, [defaultSearchTerm, loadAccounts]);
 
-  const selectAccount = (account: mastodon.v1.Account) => {
+  const selectAccount = (account: AtprotoCompat.v1.Account) => {
     const socialAddress = account.acct;
     onSelect(socialAddress);
     onClose();
@@ -202,6 +202,7 @@ function MentionModal({
           }}
         >
           <input
+            aria-label="Mention search"
             ref={inputRef}
             required
             type="search"

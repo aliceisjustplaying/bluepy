@@ -1,10 +1,10 @@
 import { i18n } from '@lingui/core';
 import { plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { Ref } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import haptics from '../utils/haptics';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
@@ -17,11 +17,11 @@ import RelativeTime from './relative-time';
 const POLL_OPTIONS_BATCH_SIZE = 40;
 
 interface PollProps {
-  // The `mastodon.v1.Poll` type asserts `votesCount` is a `number`, but at
+  // The `AtprotoCompat.v1.Poll` type asserts `votesCount` is a `number`, but at
   // runtime older servers (and some federated payloads) can omit it. Override
   // to keep the defensive `votesCount = 0` default below valid.
-  poll: Omit<mastodon.v1.Poll, 'votesCount'> & {
-    emojis?: mastodon.v1.CustomEmoji[];
+  poll: Omit<AtprotoCompat.v1.Poll, 'votesCount'> & {
+    emojis?: AtprotoCompat.v1.CustomEmoji[];
     votesCount?: number;
   };
   lang?: string;
@@ -257,6 +257,7 @@ export default function Poll({
                 <div className="poll-option" key={`${i}-${title}`}>
                   <label className="poll-label">
                     <input
+                      aria-label="Poll option"
                       type={multiple ? 'checkbox' : 'radio'}
                       name="poll"
                       value={i}

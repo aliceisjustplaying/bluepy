@@ -1,7 +1,7 @@
 import { msg } from '@lingui/core/macro';
-import type { mastodon } from 'masto';
 import PQueue from 'p-queue';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { langDetector } from '../utils/browser-translator';
 import getHTMLText from '../utils/get-html-text';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
@@ -9,7 +9,7 @@ import localeMatchDefault from '../utils/locale-match';
 import mem from '../utils/mem';
 import pmem from '../utils/pmem';
 
-import type { AnyPoll, AnyStatus, MastoClientFromApi } from './status-types';
+import type { AnyPoll, AnyStatus, CompatClientFromApi } from './status-types';
 
 export const SHOW_COMMENT_COUNT_LIMIT = 280;
 export const INLINE_TRANSLATE_LIMIT = 140;
@@ -29,11 +29,11 @@ type OptionalDefaultLocaleMatch = (
 
 const localeMatch = localeMatchDefault as OptionalDefaultLocaleMatch;
 
-type AccountFetchClient = MastoClientFromApi & {
-  readonly v1: MastoClientFromApi['v1'] & {
-    readonly accounts: MastoClientFromApi['v1']['accounts'] & {
+type AccountFetchClient = CompatClientFromApi & {
+  readonly v1: CompatClientFromApi['v1'] & {
+    readonly accounts: CompatClientFromApi['v1']['accounts'] & {
       readonly $select: (id: string) => {
-        readonly fetch: () => Promise<mastodon.v1.Account>;
+        readonly fetch: () => Promise<AtprotoCompat.v1.Account>;
       };
     };
   };
@@ -47,11 +47,11 @@ const accountQueue = new PQueue({
 
 function fetchAccount(
   id: string,
-  masto: MastoClientFromApi,
+  compat: CompatClientFromApi,
   signal?: AbortSignal,
 ) {
   return accountQueue.add(
-    () => (masto as AccountFetchClient).v1.accounts.$select(id).fetch(),
+    () => (compat as AccountFetchClient).v1.accounts.$select(id).fetch(),
     { signal },
   );
 }
@@ -65,7 +65,7 @@ export const isIOS =
 function getPollText(poll: AnyPoll | null | undefined): string {
   if (!poll?.options?.length) return '';
   return `📊:\n${poll.options
-    .map((option: mastodon.v1.PollOption) => `- ${option.title}`)
+    .map((option: AtprotoCompat.v1.PollOption) => `- ${option.title}`)
     .join('\n')}`;
 }
 
@@ -87,7 +87,7 @@ export function getPostText(status: AnyStatus, opts?: GetPostTextOpts): string {
   let { content } = status;
   if (maskCustomEmojis && emojis?.length) {
     const emojisRegex = new RegExp(
-      `:(${emojis.map((e: mastodon.v1.CustomEmoji) => e.shortcode).join('|')}):`,
+      `:(${emojis.map((e: AtprotoCompat.v1.CustomEmoji) => e.shortcode).join('|')}):`,
       'g',
     );
     content = content.replace(emojisRegex, '⬚');
@@ -140,11 +140,11 @@ function forgivingQSA(
 }
 
 export const getHTMLTextForDetectLang = mem(
-  (content: string, emojis?: mastodon.v1.CustomEmoji[]): string => {
+  (content: string, emojis?: AtprotoCompat.v1.CustomEmoji[]): string => {
     if (!content) return '';
     if (emojis?.length) {
       const emojisRegex = new RegExp(
-        `:(${emojis.map((e: mastodon.v1.CustomEmoji) => e.shortcode).join('|')}):`,
+        `:(${emojis.map((e: AtprotoCompat.v1.CustomEmoji) => e.shortcode).join('|')}):`,
         'g',
       );
       content = content.replace(emojisRegex, '');
@@ -180,7 +180,7 @@ export const getHTMLTextForDetectLang = mem(
 
 export function isTranslateble(
   content: string,
-  emojis?: mastodon.v1.CustomEmoji[],
+  emojis?: AtprotoCompat.v1.CustomEmoji[],
 ): boolean {
   return !!getHTMLTextForDetectLang(content, emojis);
 }
@@ -196,7 +196,7 @@ export const detectLang = pmem(
     text = text?.trim();
 
     // Ref: https://github.com/komodojp/tinyld/blob/develop/docs/benchmark.md
-    // 500 should be enough for now, also the default max chars for Mastodon
+    // 500 chars is enough for language detection.
     if ((text?.length ?? 0) > 500) {
       return null;
     }

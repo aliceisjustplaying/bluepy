@@ -1,11 +1,11 @@
 import './mentions.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useMemo, useRef, useState } from 'react';
 
 import Timeline from '../components/timeline';
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import { fixNotifications } from '../utils/group-notifications';
 import { fetchRelationships } from '../utils/relationships';
 import { saveStatus } from '../utils/states';
@@ -17,12 +17,12 @@ interface MentionNotificationLike {
   id?: string;
   type?: string;
   createdAt?: string;
-  account?: Partial<mastodon.v1.Account>;
-  status?: mastodon.v1.Status | null;
+  account?: Partial<AtprotoCompat.v1.Account>;
+  status?: AtprotoCompat.v1.Status | null;
   [key: string]: unknown;
 }
 
-type StatusLike = mastodon.v1.Status;
+type StatusLike = AtprotoCompat.v1.Status;
 
 interface SaveStatusPayload extends Record<string, unknown> {
   id?: string;
@@ -39,7 +39,7 @@ function toSaveStatus(
   return status as SaveStatusPayload | null | undefined;
 }
 
-interface MastoNotificationsApi {
+interface CompatNotificationsApi {
   list(options: { limit: number; types?: string[]; since_id?: string }): {
     values(): AsyncIterator<MentionNotificationLike[]>;
   };
@@ -52,15 +52,17 @@ interface FetchItemsResult {
 
 function Mentions() {
   const { t } = useLingui();
-  const { masto, instance } = api();
-  const notificationsApi = getMastoV1Resource<MastoNotificationsApi>(
-    masto,
+  const { compat, instance } = api();
+  const notificationsApi = getCompatV1Resource<CompatNotificationsApi>(
+    compat,
     'notifications',
   );
   useTitle(t`Mentions`, '/mentions');
 
   const [onlyFollowings, setOnlyFollowings] = useState(false);
-  const relationshipsMap = useRef<Record<string, mastodon.v1.Relationship>>({});
+  const relationshipsMap = useRef<
+    Record<string, AtprotoCompat.v1.Relationship>
+  >({});
 
   const mentionsIterator = useRef<
     AsyncIterator<MentionNotificationLike[]> | undefined
@@ -113,12 +115,12 @@ function Mentions() {
         saveStatus(toSaveStatus(item), instance);
       });
 
-      let statuses: (mastodon.v1.Status | null | undefined)[] =
+      let statuses: (AtprotoCompat.v1.Status | null | undefined)[] =
         fixedNotifications.map((item) => item.status);
       if (onlyFollowings && statuses?.length) {
         const accounts = statuses
           .map((status) => status?.account)
-          .filter((a): a is mastodon.v1.Account => !!a && !!a.id);
+          .filter((a): a is AtprotoCompat.v1.Account => !!a && !!a.id);
         const relationships = await fetchRelationships(
           accounts,
           relationshipsMap.current,
@@ -177,6 +179,7 @@ function Mentions() {
         <div id="followings-option">
           <label>
             <input
+              aria-label="Filter mentions"
               type="checkbox"
               checked={onlyFollowings}
               onChange={(e) => {

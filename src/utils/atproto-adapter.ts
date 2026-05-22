@@ -3328,35 +3328,6 @@ export function createAtprotoClient({
           },
         },
       },
-      announcements: {
-        async list(): Promise<never[]> {
-          return [];
-        },
-      },
-      push: {
-        subscription: {
-          async fetch() {
-            throw new Error('Push subscription not found');
-          },
-          async create() {
-            throw new Error('Bluesky push subscriptions are not supported');
-          },
-          async update() {
-            throw new Error('Bluesky push subscriptions are not supported');
-          },
-          async remove() {
-            return {};
-          },
-        },
-      },
-      markers: {
-        async create() {
-          return {};
-        },
-        async fetch() {
-          return {};
-        },
-      },
       statuses: {
         $select: statusAPI,
         async list({ id }: { id?: string | string[] } = {}): Promise<
@@ -3751,7 +3722,6 @@ export function atprotoInstanceInfo() {
         maxOptions: 0,
       },
     },
-    apiVersions: { mastodon: 7 },
   };
 }
 

@@ -95,7 +95,7 @@ export default memo(function NotificationService() {
     if (!hasServiceWorker) return;
     if (!id || !accessToken) return;
     const { instance: currentInstance } = api();
-    const { masto, instance } = api({
+    const { compat, instance } = api({
       accessToken,
     });
     console.log('API', { accessToken, currentInstance, instance });
@@ -104,7 +104,7 @@ export default memo(function NotificationService() {
       ? getAccountByAccessToken(accessToken)
       : getCurrentAccount();
     void (async () => {
-      const notifications = masto.v1.notifications as NotificationsApi;
+      const notifications = compat.v1.notifications as NotificationsApi;
       const notification = await notifications.$select(id).fetch();
       if (notification && account) {
         console.log('🛎️ Notification', { id, notification, account });

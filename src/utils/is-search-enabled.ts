@@ -2,8 +2,8 @@ import { api } from './api';
 import pmem from './pmem';
 
 async function isSearchEnabledImpl(instance: string): Promise<boolean> {
-  const { masto } = api({ instance });
-  const results = await masto.v2.search.list({
+  const { compat } = api({ instance });
+  const results = await compat.v2.search.list({
     q: 'from:me',
     type: 'statuses',
     limit: 1,

@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useEffect } from 'react';
 
-import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource, getCompatV2Resource } from '../utils/api';
 import states from '../utils/states';
 import useLocationChange from '../utils/useLocationChange';
 
@@ -13,9 +13,9 @@ interface AccountsLookupV1 {
   lookup(params: {
     acct: string;
     skip_webfinger?: boolean;
-  }): Promise<mastodon.v1.Account>;
+  }): Promise<AtprotoCompat.v1.Account>;
   $select(id: string): {
-    fetch(): Promise<mastodon.v1.Account>;
+    fetch(): Promise<AtprotoCompat.v1.Account>;
   };
 }
 
@@ -25,7 +25,7 @@ interface SearchV2Endpoint {
     type: 'accounts';
     limit: number;
     resolve: boolean;
-  }): Promise<{ accounts: mastodon.v1.Account[] }>;
+  }): Promise<{ accounts: AtprotoCompat.v1.Account[] }>;
 }
 
 type AccountSheetCloseArg =
@@ -36,7 +36,7 @@ type AccountSheetCloseArg =
 type AccountSheetCloseHandler = (arg?: AccountSheetCloseArg) => void;
 
 interface AccountSheetProps {
-  account: mastodon.v1.Account | string;
+  account: AtprotoCompat.v1.Account | string;
   instance?: string;
   onClose?: AccountSheetCloseHandler | null;
 }
@@ -47,7 +47,7 @@ function AccountSheet({
   onClose,
 }: AccountSheetProps) {
   const { t } = useLingui();
-  const { masto, instance, authenticated } = api({ instance: propInstance });
+  const { compat, instance, authenticated } = api({ instance: propInstance });
   const isString = typeof account === 'string';
 
   useEffect(() => {
@@ -87,12 +87,12 @@ function AccountSheet({
         account={account}
         fetchAccount={async () => {
           if (isString) {
-            const accountsEndpoint = getMastoV1Resource<AccountsLookupV1>(
-              masto,
+            const accountsEndpoint = getCompatV1Resource<AccountsLookupV1>(
+              compat,
               'accounts',
             );
-            const searchEndpoint = getMastoV2Resource<SearchV2Endpoint>(
-              masto,
+            const searchEndpoint = getCompatV2Resource<SearchV2Endpoint>(
+              compat,
               'search',
             );
             try {
@@ -138,8 +138,8 @@ function AccountSheet({
               return undefined;
             }
           } else {
-            const accountsEndpoint = getMastoV1Resource<AccountsLookupV1>(
-              masto,
+            const accountsEndpoint = getCompatV1Resource<AccountsLookupV1>(
+              compat,
               'accounts',
             );
             return accountsEndpoint.$select(account.id).fetch();

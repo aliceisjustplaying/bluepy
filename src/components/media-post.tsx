@@ -1,12 +1,12 @@
 import './media-post.css';
 
 import { useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { ReactNode, ComponentType, JSX } from 'react';
 import { memo } from 'react';
 import { use, useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { getPreferences } from '../utils/api';
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
@@ -15,7 +15,7 @@ import { getCurrentAccountID } from '../utils/store-utils';
 
 import Media from './media';
 
-type FilterResult = mastodon.v1.FilterResult;
+type FilterResult = AtprotoCompat.v1.FilterResult;
 
 interface MediaAttachmentLike {
   id: string;

@@ -1,7 +1,6 @@
 import './timeline2.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { ReactNode, RefObject } from 'react';
 import {
   useCallback,
@@ -12,6 +11,7 @@ import {
 } from 'react';
 import { useDebouncedCallback, useThrottledCallback } from 'use-debounce';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { api } from '../utils/api';
 import FilterContext from '../utils/filter-context';
 import states, { saveStatus, statusKey } from '../utils/states';
@@ -38,7 +38,7 @@ import {
   useOHotkeys,
 } from './timeline';
 
-// Batch size (Mastodon API limit is around 20-40)
+// Batch size for status lookup.
 const BATCH_SIZE = 20;
 const TIMELINE_LIMIT = 50;
 const CACHE_AGE = 1000 * 60 * 15; // 15 minutes
@@ -46,7 +46,7 @@ const CACHE_AGE = 1000 * 60 * 15; // 15 minutes
 // Mirrors the `TimelineItem` union in `timeline-utils.ts`: either a flat
 // status augmented with mutation flags, or a grouping wrapper that carries
 // nested statuses under `items`.
-type TimelineStatusEntry = mastodon.v1.Status & {
+type TimelineStatusEntry = AtprotoCompat.v1.Status & {
   _pinned?: unknown;
   _differentAuthor?: boolean;
 };
@@ -226,7 +226,7 @@ function Timeline2({
   // clearWhenRefresh,
 }: Timeline2Props) {
   const { t } = useLingui();
-  const { masto } = api({ instance });
+  const { compat } = api({ instance });
 
   const cacheKey = `timeline2-${id}`;
   const cachedData = useRef<CachedTimelineData | null>(null);
@@ -296,13 +296,15 @@ function Timeline2({
     if (statusIds.length === 0) return;
 
     const deletedStatuses: string[] = [];
-    // The runtime `masto.v1.statuses` resource has a `list({ id })` batch
-    // fetch that masto's TS types don't expose; mirror the same shim used in
+    // The runtime `compat.v1.statuses` resource has a `list({ id })` batch
+    // fetch that compat's TS types don't expose; mirror the same shim used in
     // timeline-utils.ts.
-    interface MastoStatusesBatchList {
-      list(params: { id: readonly string[] }): Promise<mastodon.v1.Status[]>;
+    interface CompatStatusesBatchList {
+      list(params: {
+        id: readonly string[];
+      }): Promise<AtprotoCompat.v1.Status[]>;
     }
-    const statusesResource = masto.v1.statuses as MastoStatusesBatchList;
+    const statusesResource = compat.v1.statuses as CompatStatusesBatchList;
     void (async () => {
       try {
         // Process in batches
@@ -346,7 +348,7 @@ function Timeline2({
         console.error('Failed to hydrate statuses:', e);
       }
     })();
-  }, [instance, masto]);
+  }, [instance, compat]);
 
   useEffect(() => {
     hydrateCache();

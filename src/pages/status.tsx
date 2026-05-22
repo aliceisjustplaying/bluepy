@@ -5,7 +5,6 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
 import debounce from 'just-debounce-it';
 import pRetry from 'p-retry';
-import { toUnicode } from 'punycode/';
 import type {
   ReactNode,
   ComponentType,
@@ -39,7 +38,7 @@ import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import Status from '../components/status';
 import type { AnyStatus } from '../components/status-types';
-import { api, getMastoV2Resource } from '../utils/api';
+import { api, getCompatV2Resource } from '../utils/api';
 import {
   getAtprotoURIFromPathname,
   isAtprotoPostURI,
@@ -67,8 +66,6 @@ import {
 } from '../utils/thread-structure';
 import useTitle from '../utils/useTitle';
 
-import getInstanceStatusURL from './../utils/get-instance-status-url';
-
 // `react-intersection-observer`'s `InView` ships without working JSX
 // component typings under our React component types. Re-type as a React
 // component with the props this file actually uses.
@@ -92,7 +89,7 @@ const SUBCOMMENTS_OPEN_ALL_LIMIT = 10;
 const MAX_WEIGHT = 5;
 const COMMENTS_AUTO_EXPAND_LIMIT = 20;
 
-// The status records this page works with originate from Masto's API but
+// The status records this page works with originate from Compat's API but
 // also pick up internal mutations from `states.ts` (e.g. `__replies`,
 // `_pinned`). Keep this type loose around those extensions.
 type RawStatus = AnyStatus & {
@@ -211,7 +208,7 @@ interface StatusPageParams {
 
 function StatusPage(params: StatusPageParams) {
   const { id } = params;
-  const { masto, instance } = api({ instance: params.instance });
+  const { compat, instance } = api({ instance: params.instance });
   const snapStates = useSnapshot(states);
   const [searchParams, setSearchParams] = useSearchParams();
   const mediaParam = searchParams.get('media');
@@ -305,7 +302,7 @@ function StatusPage(params: StatusPageParams) {
       const snapshotId = id;
       const snapshotInstance = instance;
       const snapshotCloseLink = closeLinkRef.current;
-      const statusesEndpoint = masto.v1.statuses as {
+      const statusesEndpoint = compat.v1.statuses as {
         $select(id: string): { fetch(): Promise<RawStatus> };
       };
       let stale = false;
@@ -327,7 +324,7 @@ function StatusPage(params: StatusPageParams) {
       };
     }
     return undefined;
-  }, [showMedia, id, instance, masto]);
+  }, [showMedia, id, instance, compat]);
 
   const mediaStatusKey = statusKey(mediaStatusID, instance);
   const mediaAttachments = mediaStatusID
@@ -539,6 +536,20 @@ interface StatusThreadProps {
   instance?: string;
 }
 
+function formatTimeGap(months: number): string {
+  if (months < 12) {
+    return plural(months, {
+      one: '# month later',
+      other: '# months later',
+    });
+  }
+  const years = Math.floor(months / 12);
+  return plural(years, {
+    one: '# year later',
+    other: '# years later',
+  });
+}
+
 function StatusThread({
   id,
   closeLink = '/',
@@ -563,17 +574,17 @@ function StatusThread({
     searchParams.get('view') || firstLoad.current ? 'full' : null,
   );
   const translate = !!parseInt(searchParams.get('translate') as string);
-  const { masto, instance } = api({ instance: propInstance });
+  const { compat, instance } = api({ instance: propInstance });
   const {
-    masto: currentMasto,
+    compat: currentCompat,
     instance: currentInstance,
     authenticated,
   } = api();
-  // Latest-value ref so the memoized renderStatus can call the current masto
-  // v2 search without having to depend on the masto proxy (whose `.v2.search`
+  // Latest-value ref so the memoized renderStatus can call the current compat
+  // v2 search without having to depend on the compat proxy (whose `.v2.search`
   // accessor returns a fresh identity per access and would churn the memo).
-  const currentMastoRef = useRef(currentMasto);
-  currentMastoRef.current = currentMasto;
+  const currentCompatRef = useRef(currentCompat);
+  currentCompatRef.current = currentCompat;
   const sameInstance = instance === currentInstance;
   const snapStates = useSnapshot(states);
   const [statuses, setStatuses] = useState<DisplayStatus[]>([]);
@@ -835,7 +846,7 @@ function StatusThread({
     }
 
     void (async () => {
-      const statusesEndpoint = masto.v1.statuses as StatusContextResource;
+      const statusesEndpoint = compat.v1.statuses as StatusContextResource;
       const heroFetch = () =>
         pRetry(() => statusesEndpoint.$select(id).fetch(), {
           retries: 4,
@@ -933,7 +944,7 @@ function StatusThread({
 
   useEffect(() => {
     return initContextRef.current();
-  }, [id, masto]);
+  }, [id, compat]);
 
   useEffect(() => {
     try {
@@ -1069,17 +1080,6 @@ function StatusThread({
         }),
     ['/:instance?/s/:id', '/s/:id', '/:scheme://*', '/:atUri'],
   );
-
-  const postInstance = useMemo<string | undefined>(() => {
-    if (!heroStatus) return undefined;
-    const { url } = heroStatus;
-    if (!url) return undefined;
-    return URL.parse(url)?.hostname;
-  }, [heroStatus]);
-  const postSameInstance = useMemo<boolean | undefined>(() => {
-    if (!postInstance) return undefined;
-    return postInstance === instance;
-  }, [postInstance, instance]);
 
   const [limit, setLimit] = useState(LIMIT);
   const showMore = useMemo(() => {
@@ -1415,14 +1415,14 @@ function StatusThread({
                             if (!heroStatus?.url) {
                               throw new Error('No status URL');
                             }
-                            const results = await getMastoV2Resource<{
+                            const results = await getCompatV2Resource<{
                               list(params: {
                                 q: string;
                                 type: 'statuses';
                                 resolve: boolean;
                                 limit: number;
                               }): Promise<{ statuses?: { id: string }[] }>;
-                            }>(currentMastoRef.current, 'search').list({
+                            }>(currentCompatRef.current, 'search').list({
                               q: heroStatus.url,
                               type: 'statuses',
                               resolve: true,
@@ -1633,22 +1633,6 @@ function StatusThread({
     statuses.forEach(getIDs);
     return ids.map((sId) => statusKey(sId, instance));
   }, [statuses, instance]);
-
-  // Helper function to format time differences between two dates
-  function formatTimeGap(months: number): string {
-    if (months < 12) {
-      return plural(months, {
-        one: '# month later',
-        other: '# months later',
-      });
-    } else {
-      const years = Math.floor(months / 12);
-      return plural(years, {
-        one: '# year later',
-        other: '# years later',
-      });
-    }
-  }
 
   const statusesList = useMemo(() => {
     const result = [];
@@ -1979,26 +1963,6 @@ function StatusThread({
                 <MenuHeader className="plain">
                   <Trans>Experimental</Trans>
                 </MenuHeader>
-                <MenuItem
-                  disabled={!postInstance || postSameInstance}
-                  onClick={() => {
-                    const statusURL = getInstanceStatusURL(
-                      heroStatus?.url ?? '',
-                    );
-                    if (statusURL) {
-                      navigatePath(statusURL);
-                    } else {
-                      alert(t`Unable to switch`);
-                    }
-                  }}
-                >
-                  <Icon icon="transfer" />
-                  <small className="menu-double-lines">
-                    {postInstance
-                      ? t`Switch to post's PDS (${toUnicode(postInstance)})`
-                      : t`Switch to post's PDS`}
-                  </small>
-                </MenuItem>
                 <MenuItem
                   disabled={
                     !sameInstance ||

@@ -1,14 +1,14 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu, MenuItem } from '@szhsin/react-menu';
 import type { MenuInstance } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 import type { MouseEvent } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useLongPress } from 'use-long-press';
 import { useSnapshot } from 'valtio';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
 import openCompose from '../utils/open-compose';
@@ -24,8 +24,8 @@ import Icon from './icon';
 import RelativeTime from './relative-time';
 import SubMenu2 from './submenu2';
 
-// Minimal shape of the masto client surface used here. The shared
-// MastoClient interface in utils/api intentionally keeps v1 endpoints loose
+// Minimal shape of the compat client surface used here. The shared
+// CompatClient interface in utils/api intentionally keeps v1 endpoints loose
 // (`[key: string]: unknown`), so we narrow locally for type-safe calls.
 interface AccountStatusesEndpoint {
   $select(id: string): {
@@ -35,7 +35,7 @@ interface AccountStatusesEndpoint {
         exclude_replies: boolean;
         exclude_reblogs: boolean;
       }): {
-        values(): AsyncIterator<mastodon.v1.Status[]>;
+        values(): AsyncIterator<AtprotoCompat.v1.Status[]>;
       };
     };
   };
@@ -60,7 +60,7 @@ const fetchLatestPostsMemoized = pmem(
   async (
     accountsEndpoint: AccountStatusesEndpoint,
     currentAccountID: string,
-  ): Promise<mastodon.v1.Status[]> => {
+  ): Promise<AtprotoCompat.v1.Status[]> => {
     const statusesIterator = accountsEndpoint
       .$select(currentAccountID)
       .statuses.list({
@@ -78,11 +78,11 @@ const fetchLatestPostsMemoized = pmem(
 export default function ComposeButton() {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const { masto } = api();
+  const { compat } = api();
 
   // Context menu state
   const [menuOpen, setMenuOpen] = useState(false);
-  const [latestPosts, setLatestPosts] = useState<mastodon.v1.Status[]>([]);
+  const [latestPosts, setLatestPosts] = useState<AtprotoCompat.v1.Status[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<MenuInstance | null>(null);
@@ -142,7 +142,7 @@ export default function ComposeButton() {
         return;
       }
       const posts = await fetchLatestPostsMemoized(
-        getMastoV1Resource<AccountStatusesEndpoint>(masto, 'accounts'),
+        getCompatV1Resource<AccountStatusesEndpoint>(compat, 'accounts'),
         currentAccountID,
       );
       setLatestPosts(posts);
@@ -151,7 +151,7 @@ export default function ComposeButton() {
     } finally {
       setLoadingPosts(false);
     }
-  }, [masto]);
+  }, [compat]);
 
   const openLatestPostsMenu = useCallback(() => {
     setMenuOpen(true);
@@ -164,7 +164,7 @@ export default function ComposeButton() {
   });
 
   // Function to handle opening the compose window to reply to a post
-  const handleReplyToPost = useCallback((post: mastodon.v1.Status) => {
+  const handleReplyToPost = useCallback((post: AtprotoCompat.v1.Status) => {
     showCompose({
       replyToStatus: post,
     });

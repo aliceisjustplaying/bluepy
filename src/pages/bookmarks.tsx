@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useRef } from 'react';
 
 import Timeline from '../components/timeline';
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { api } from '../utils/api';
 import useTitle from '../utils/useTitle';
 
@@ -11,14 +11,14 @@ const LIMIT = 20;
 function Bookmarks() {
   const { t } = useLingui();
   useTitle(t`Bookmarks`, '/b');
-  const { masto, instance } = api();
+  const { compat, instance } = api();
   const bookmarksIterator = useRef<
-    AsyncIterator<mastodon.v1.Status[]> | undefined
+    AsyncIterator<AtprotoCompat.v1.Status[]> | undefined
   >(undefined);
   async function fetchBookmarks(firstLoad?: boolean) {
     if (firstLoad || !bookmarksIterator.current) {
       bookmarksIterator.current = (
-        masto.v1.bookmarks as mastodon.rest.v1.BookmarksResource
+        compat.v1.bookmarks as AtprotoCompat.rest.v1.BookmarksResource
       )
         .list({ limit: LIMIT })
         .values();

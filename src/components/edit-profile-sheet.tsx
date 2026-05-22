@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import { api, getCompatV1Resource } from '../utils/api';
 import states from '../utils/states';
 
 import Icon from './icon';
@@ -32,7 +32,7 @@ interface ProfileAccount {
   [key: string]: unknown;
 }
 
-interface MastoAccountsUpdate {
+interface CompatAccountsUpdate {
   verifyCredentials(): Promise<ProfileAccount | null | undefined>;
   updateCredentials(params: {
     header?: FormDataEntryValue | null;
@@ -67,9 +67,10 @@ function FieldsAttributesRow({
 }: FieldsAttributesRowProps) {
   const [hasValue, setHasValue] = useState(!!value);
   return (
-    <tr>
-      <td>
+    <tr aria-label="Profile field row">
+      <td aria-label="Profile field label cell">
         <input
+          aria-label="Profile field label"
           type="text"
           name={`fields_attributes[${i}][name]`}
           defaultValue={name}
@@ -80,8 +81,9 @@ function FieldsAttributesRow({
           enterKeyHint="done"
         />
       </td>
-      <td>
+      <td aria-label="Profile field content cell">
         <input
+          aria-label="Profile field content"
           type="text"
           name={`fields_attributes[${i}][value]`}
           defaultValue={value}
@@ -100,19 +102,19 @@ function FieldsAttributesRow({
 
 function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
   const { t } = useLingui();
-  const { masto } = api();
+  const { compat } = api();
   const [uiState, setUIState] = useState('loading');
   const [account, setAccount] = useState<ProfileAccount | null>(null);
   const [headerPreview, setHeaderPreview] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  // `masto.v1.accounts` is a proxy returning a fresh reference on every
+  // `compat.v1.accounts` is a proxy returning a fresh reference on every
   // property access; depending on the raw expression would re-fire this
   // effect every render. Snapshot it once — the underlying client is stable
   // for the sheet's lifetime — and use the memoized reference as the dep.
   const accountsApi = useMemo(
-    () => getMastoV1Resource<MastoAccountsUpdate>(masto, 'accounts'),
-    [masto],
+    () => getCompatV1Resource<CompatAccountsUpdate>(compat, 'accounts'),
+    [compat],
   );
 
   useEffect(() => {
@@ -224,6 +226,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
               <label>
                 <Trans>Header picture</Trans>{' '}
                 <input
+                  aria-label="Header picture file"
                   type="file"
                   name="header"
                   accept={SUPPORTED_IMAGE_FORMATS_STR}
@@ -239,6 +242,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
               <div className="edit-profile-media-field">
                 {header ? (
                   <button
+                    aria-label="Open current header picture"
                     type="button"
                     className="edit-media plain"
                     style={{
@@ -263,6 +267,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                   <>
                     <Icon icon="arrow-right" />
                     <button
+                      aria-label="Open new header picture preview"
                       type="button"
                       className="edit-media plain"
                       style={{
@@ -288,6 +293,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
               <label>
                 <Trans>Profile picture</Trans>{' '}
                 <input
+                  aria-label="Profile picture file"
                   type="file"
                   name="avatar"
                   accept={SUPPORTED_IMAGE_FORMATS_STR}
@@ -303,6 +309,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
               <div className="edit-profile-media-field">
                 {avatar ? (
                   <button
+                    aria-label="Open current profile picture"
                     type="button"
                     className="edit-media plain"
                     style={{
@@ -327,6 +334,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
                   <>
                     <Icon icon="arrow-right" />
                     <button
+                      aria-label="Open new profile picture preview"
                       type="button"
                       className="edit-media plain"
                       style={{
@@ -352,6 +360,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
               <label>
                 <Trans>Name</Trans>{' '}
                 <input
+                  aria-label="Display name"
                   type="text"
                   name="display_name"
                   defaultValue={displayName}
@@ -366,6 +375,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
               <label>
                 <Trans>Bio</Trans>
                 <textarea
+                  aria-label="Bio"
                   defaultValue={note}
                   name="note"
                   maxLength={500}
@@ -381,7 +391,7 @@ function EditProfileSheet({ onClose = () => {} }: EditProfileSheetProps) {
             </p>
             <table ref={fieldsAttributesRef}>
               <thead>
-                <tr>
+                <tr aria-label="Extra profile fields table header">
                   <th>
                     <Trans>Label</Trans>
                   </th>

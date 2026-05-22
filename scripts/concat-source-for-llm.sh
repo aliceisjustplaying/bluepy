@@ -68,7 +68,7 @@ should_include() {
     src/*|scripts/*|docs/*|public/*.html|public/*.js|public/*.css|public/*.txt|compose/*.html)
       return 0
       ;;
-    AGENTS.md|CLAUDE.md|GOAL.md|README.md|CHANGELOG.md|SECURITY.md|PRIVACY.MD|ATPROTO_PORT_GOAL.md)
+    AGENTS.md|CLAUDE.md|GOAL.md|README.md|CHANGELOG.md|SECURITY.md|PRIVACY.MD)
       return 0
       ;;
     package.json|tsconfig*.json|vite.config.*|playwright.config.*|lingui.config.*|wrangler.*|rollbar.js)

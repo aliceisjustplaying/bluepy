@@ -1,12 +1,12 @@
 import './generic-accounts.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { ComponentType, ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useSnapshot } from 'valtio';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { api } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import states from '../utils/states';
@@ -40,13 +40,13 @@ const InViewTyped: ComponentType<InViewTypedProps> =
 // TODO(oxlint:no-underscore-dangle) `_types` is a shared internal cache key
 // on account records used by status.tsx and notification.tsx. Renaming requires
 // a cross-cutting refactor and is out of scope.
-interface AccountWithTypes extends mastodon.v1.Account {
+interface AccountWithTypes extends AtprotoCompat.v1.Account {
   _types: string[];
 }
 
 // Fetched accounts may or may not have `_types`; we coerce when adding to
 // the local list. The local list always carries `_types`.
-type FetchedAccount = mastodon.v1.Account & { _types?: string[] };
+type FetchedAccount = AtprotoCompat.v1.Account & { _types?: string[] };
 
 interface FetchAccountsResult {
   done: boolean;
@@ -99,7 +99,7 @@ export default function GenericAccounts({
   );
 
   const [relationshipsMap, setRelationshipsMap] = useState<
-    Record<string, mastodon.v1.Relationship>
+    Record<string, AtprotoCompat.v1.Relationship>
   >({});
 
   const firstLoad = useRef(true);
@@ -130,7 +130,7 @@ export default function GenericAccounts({
       // Functional updater so we don't need `relationshipsMap` as a dep; we
       // still pass the latest known map to `fetchRelationships` so it can
       // skip already-fetched ids.
-      let snapshot: Record<string, mastodon.v1.Relationship> = {};
+      let snapshot: Record<string, AtprotoCompat.v1.Relationship> = {};
       setRelationshipsMap((prev) => {
         snapshot = prev;
         return prev;

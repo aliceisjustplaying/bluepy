@@ -150,7 +150,7 @@ test.describe('ATProto reply mapping', () => {
     expect(status._atproto.root).toEqual({ uri: rootUri, cid: undefined });
   });
 
-  test('shows Bluesky reply badges even when the reply mentions the parent actor', () => {
+  test('shows ATProto reply badges even when the reply mentions the parent actor', () => {
     expect(
       shouldShowReplyBadge({
         inReplyToId: encodeURIComponent(parentUri),
@@ -166,12 +166,12 @@ test.describe('ATProto reply mapping', () => {
       shouldShowReplyBadge({
         inReplyToId: encodeURIComponent(parentUri),
         inReplyToAccount: { id: 'did:plc:parent' },
-        instance: 'mastodon.social',
+        instance: 'blacksky.app',
         spoilerText: '',
         mentions: [{ id: 'did:plc:parent' }],
         inReplyToAccountId: 'did:plc:parent',
       }),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   test('shows stable generic Bluesky reply badges when parent actor is unavailable', () => {

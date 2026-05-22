@@ -1,10 +1,10 @@
 import './quotes-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 
 import Icon from './icon';
 import Link from './link';
@@ -15,7 +15,7 @@ const LIMIT = 20;
 
 type StatusesQuotesResource = {
   list(opts: { limit: number }): {
-    values(): AsyncIterator<mastodon.v1.Status[]>;
+    values(): AsyncIterator<AtprotoCompat.v1.Status[]>;
   };
 };
 
@@ -37,27 +37,27 @@ export default function QuotesModal({
   renderStatus,
 }: QuotesModalProps) {
   const { t } = useLingui();
-  const { masto } = api();
+  const { compat } = api();
 
-  const [posts, setPosts] = useState<mastodon.v1.Status[]>([]);
+  const [posts, setPosts] = useState<AtprotoCompat.v1.Status[]>([]);
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
   );
   const [showMore, setShowMore] = useState(false);
 
   const quotesIterator = useRef<
-    AsyncIterator<mastodon.v1.Status[]> | undefined
+    AsyncIterator<AtprotoCompat.v1.Status[]> | undefined
   >(undefined);
   const firstLoad = useRef(true);
 
-  // `masto.v1.statuses` is a proxy yielding a fresh reference per access;
+  // `compat.v1.statuses` is a proxy yielding a fresh reference per access;
   // memoize the `$select` lookup so the loader callback below has stable
-  // identity tied to the (stable) `masto` client.
+  // identity tied to the (stable) `compat` client.
   const statusesSelect = useMemo(
     () =>
-      getMastoV1Resource<{ $select: StatusesSelectFn }>(masto, 'statuses')
+      getCompatV1Resource<{ $select: StatusesSelectFn }>(compat, 'statuses')
         .$select,
-    [masto],
+    [compat],
   );
 
   const loadQuotes = useCallback(

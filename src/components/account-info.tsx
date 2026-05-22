@@ -3,7 +3,6 @@ import './account-info.css';
 import { msg, plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 import type { HTMLAttributes } from 'react';
 import {
   useCallback,
@@ -14,6 +13,7 @@ import {
   useState,
 } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { api } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
 import handleContentLinks from '../utils/handle-content-links';
@@ -50,12 +50,9 @@ import Modal from './modal';
 // scanner-click + types into a shared leaf module.
 import RelatedActions from './related-actions';
 
-// Augmented Account shape used internally. Adds optional fields the app
-// reads but the masto.v1.Account base does not declare: `_atproto` cache
-// flag, `hideCollections` (Mastodon API extension surfaced by some forks),
-// `roles` (server-specific), and `avatarDescription` /
-// `headerDescription` (Mastodon 4.x media alt-text extensions).
-export type AccountInfoShape = mastodon.v1.Account & {
+// Augmented Account shape used internally. Adds optional fields the app reads
+// but the compat Account base does not declare.
+export type AccountInfoShape = AtprotoCompat.v1.Account & {
   _atproto?: { hasProfileCounts?: boolean } & Record<string, unknown>;
   hideCollections?: boolean | null;
   roles?: ReadonlyArray<{ name?: string } & Record<string, unknown>>;
@@ -67,15 +64,15 @@ export function toStoredAccountInfo(info: AccountInfoShape): StoredAccountInfo {
   return { ...info };
 }
 
-// Endpoint shims for masto APIs reached through the loose ApiClient.masto
+// Endpoint shims for compat APIs reached through the loose ApiClient.compat
 // shape. The runtime client supports `accounts.$select(id).{statuses,
 // followers, following}` and `accounts.familiarFollowers.fetch(...)`; the
-// declared MastoClient in utils/api.ts intentionally leaves these as
+// declared CompatClient in utils/api.ts intentionally leaves these as
 // `unknown`. We narrow locally rather than widening the shared interface.
 interface FamiliarFollowersEndpoint {
   fetch(params: {
     id: readonly string[];
-  }): Promise<mastodon.v1.FamiliarFollowers[]>;
+  }): Promise<AtprotoCompat.v1.FamiliarFollowers[]>;
 }
 interface AccountStatusesListParams {
   limit?: number;
@@ -83,7 +80,7 @@ interface AccountStatusesListParams {
 }
 interface AccountStatusesEndpoint {
   list(params: AccountStatusesListParams): {
-    values(): AsyncIterator<mastodon.v1.Status[]>;
+    values(): AsyncIterator<AtprotoCompat.v1.Status[]>;
   };
 }
 interface AccountFollowersListParams {
@@ -92,7 +89,7 @@ interface AccountFollowersListParams {
 }
 interface AccountFollowersEndpoint {
   list(params: AccountFollowersListParams): {
-    values(): AsyncIterator<mastodon.v1.Account[]>;
+    values(): AsyncIterator<AtprotoCompat.v1.Account[]>;
   };
 }
 interface AccountSelectEndpoint {
@@ -105,18 +102,18 @@ interface AccountsEndpoint {
   familiarFollowers: FamiliarFollowersEndpoint;
 }
 
-interface MastoLike {
+interface CompatLike {
   v1: { accounts: unknown } & Record<string, unknown>;
   [key: string]: unknown;
 }
 
-function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
-  return masto.v1.accounts as AccountsEndpoint;
+function getAccountsEndpoint(compat: CompatLike): AccountsEndpoint {
+  return compat.v1.accounts as AccountsEndpoint;
 }
 
 // Shim for EditProfileSheet: the peer declares its onClose result as
 // ProfileAccount (a deliberately loose local type), but the runtime value is
-// a real mastodon.v1.Account returned by masto.v1.accounts.updateCredentials.
+// a real AtprotoCompat.v1.Account returned by compat.v1.accounts.updateCredentials.
 // This cast preserves that app-level knowledge.
 function EditProfileSheet(props: {
   onClose?: (arg?: { state?: string; account?: AccountInfoShape }) => void;
@@ -138,7 +135,7 @@ interface PostingStats {
 // `info` updates may carry payload state for the app's flows. The QR/avatar
 // modal entries assign `unknown`-typed valtio state, mirrored locally.
 interface AccountIterPage {
-  value: mastodon.v1.Account[] | undefined;
+  value: AtprotoCompat.v1.Account[] | undefined;
   done?: boolean;
 }
 
@@ -148,9 +145,9 @@ const ACCOUNT_INFO_MAX_AGE = 1000 * 60 * 10; // 10 mins
 
 function fetchFamiliarFollowers(
   currentID: string,
-  masto: MastoLike,
-): Promise<mastodon.v1.FamiliarFollowers[]> {
-  return getAccountsEndpoint(masto).familiarFollowers.fetch({
+  compat: CompatLike,
+): Promise<AtprotoCompat.v1.FamiliarFollowers[]> {
+  return getAccountsEndpoint(compat).familiarFollowers.fetch({
     id: [currentID],
   });
 }
@@ -160,9 +157,9 @@ const memFetchFamiliarFollowers = pmem(fetchFamiliarFollowers, {
 
 async function fetchPostingStats(
   accountID: string,
-  masto: MastoLike,
+  compat: CompatLike,
 ): Promise<PostingStats> {
-  const fetchStatuses = getAccountsEndpoint(masto)
+  const fetchStatuses = getAccountsEndpoint(compat)
     .$select(accountID)
     .statuses.list({
       limit: 20,
@@ -171,7 +168,7 @@ async function fetchPostingStats(
     .next();
 
   const { value: statuses } = (await fetchStatuses) as {
-    value: mastodon.v1.Status[];
+    value: AtprotoCompat.v1.Status[];
   };
   console.log('fetched statuses', statuses);
   const stats: PostingStats = {
@@ -187,10 +184,9 @@ async function fetchPostingStats(
   // - Boosts (reblogs)
   // - Replies (not-self replies)
   // - Quotes
-  // Some Mastodon forks (and Bluepy's quote-utils helper) attach a
-  // non-standard `quote` field on Status. Narrow with a local shape rather
-  // than widening the masto type.
-  type StatusWithQuote = mastodon.v1.Status & {
+  // Bluepy's quote-utils helper can attach a non-standard `quote` field on
+  // Status. Narrow with a local shape rather than widening the compat type.
+  type StatusWithQuote = AtprotoCompat.v1.Status & {
     quote?: {
       id?: string;
       quotedStatus?: { id?: string } | null;
@@ -268,10 +264,10 @@ function AccountInfo({
   authenticated,
 }: AccountInfoProps) {
   const { i18n, t } = useLingui();
-  const { masto, authenticated: currentAuthenticated } = api({
+  const { compat, authenticated: currentAuthenticated } = api({
     instance,
   });
-  const { masto: currentMasto, instance: currentInstance } = api();
+  const { compat: currentCompat, instance: currentInstance } = api();
   const [uiState, setUIState] = useState<UIState>('default');
   const isString = typeof account === 'string';
   const [info, setInfo] = useState<AccountInfoShape | null>(
@@ -385,14 +381,14 @@ function AccountInfo({
   const [headerCornerColors, setHeaderCornerColors] = useState<string[]>([]);
 
   const followersIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
+    AsyncIterator<AtprotoCompat.v1.Account[]> | undefined
   >(undefined);
-  const familiarFollowersCache = useRef<mastodon.v1.Account[]>([]);
+  const familiarFollowersCache = useRef<AtprotoCompat.v1.Account[]>([]);
   async function fetchFollowers(
     firstLoad?: boolean,
-  ): Promise<AccountIterPage | IteratorResult<mastodon.v1.Account[]>> {
+  ): Promise<AccountIterPage | IteratorResult<AtprotoCompat.v1.Account[]>> {
     if (!id) return { value: undefined, done: true };
-    const accountsEndpoint = getAccountsEndpoint(masto);
+    const accountsEndpoint = getAccountsEndpoint(compat);
     if (firstLoad || !followersIterator.current) {
       followersIterator.current = accountsEndpoint
         .$select(id)
@@ -406,11 +402,11 @@ function AccountInfo({
     if (!sameCurrentInstance) return results;
 
     const { value } = results;
-    let newValue: mastodon.v1.Account[] = [];
+    let newValue: AtprotoCompat.v1.Account[] = [];
     // On first load, fetch familiar followers, merge to top of results' `value`
     // Remove dups on every fetch
     if (firstLoad) {
-      let familiarFollowers: mastodon.v1.FamiliarFollowers[] = [];
+      let familiarFollowers: AtprotoCompat.v1.FamiliarFollowers[] = [];
       try {
         familiarFollowers = await accountsEndpoint.familiarFollowers.fetch({
           id: [id],
@@ -421,7 +417,7 @@ function AccountInfo({
       familiarFollowersCache.current = familiarFollowers?.[0]?.accounts || [];
       newValue = [
         ...familiarFollowersCache.current,
-        ...((value ?? []) as mastodon.v1.Account[]).filter(
+        ...((value ?? []) as AtprotoCompat.v1.Account[]).filter(
           (entry) =>
             !familiarFollowersCache.current.some(
               (familiar) => familiar.id === entry.id,
@@ -429,7 +425,7 @@ function AccountInfo({
         ),
       ];
     } else if (value?.length) {
-      newValue = (value as mastodon.v1.Account[]).filter(
+      newValue = (value as AtprotoCompat.v1.Account[]).filter(
         (entry) =>
           !familiarFollowersCache.current.some(
             (familiar) => familiar.id === entry.id,
@@ -444,13 +440,13 @@ function AccountInfo({
   }
 
   const followingIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
+    AsyncIterator<AtprotoCompat.v1.Account[]> | undefined
   >(undefined);
   async function fetchFollowing(
     firstLoad?: boolean,
-  ): Promise<AccountIterPage | IteratorResult<mastodon.v1.Account[]>> {
+  ): Promise<AccountIterPage | IteratorResult<AtprotoCompat.v1.Account[]>> {
     if (!id) return { value: undefined, done: true };
-    const accountsEndpoint = getAccountsEndpoint(masto);
+    const accountsEndpoint = getAccountsEndpoint(compat);
     if (firstLoad || !followingIterator.current) {
       followingIterator.current = accountsEndpoint
         .$select(id)
@@ -476,7 +472,7 @@ function AccountInfo({
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
 
   const [familiarFollowers, setFamiliarFollowers] = useState<
-    mastodon.v1.Account[]
+    AtprotoCompat.v1.Account[]
   >([]);
   const [postingStats, setPostingStats] = useState<PostingStats | undefined>();
   const [postingStatsUIState, setPostingStatsUIState] =
@@ -488,7 +484,7 @@ function AccountInfo({
       try {
         const followers = await memFetchFamiliarFollowers(
           currentID,
-          currentMasto,
+          currentCompat,
         );
         console.log('fetched familiar followers', followers);
         setFamiliarFollowers(
@@ -498,28 +494,28 @@ function AccountInfo({
         console.error(e);
       }
     },
-    [currentMasto],
+    [currentCompat],
   );
 
   const renderPostingStats = useCallback(async () => {
     if (!id) return;
     setPostingStatsUIState('loading');
     try {
-      const stats = await memFetchPostingStats(id, masto);
+      const stats = await memFetchPostingStats(id, compat);
       setPostingStats(stats);
       setPostingStatsUIState('default');
     } catch (e) {
       console.error(e);
       setPostingStatsUIState('error');
     }
-  }, [id, masto]);
+  }, [id, compat]);
 
   const onRelationshipChange = useCallback(
     ({
       relationship,
       currentID,
     }: {
-      relationship: mastodon.v1.Relationship;
+      relationship: AtprotoCompat.v1.Relationship;
       currentID: string;
     }) => {
       if (!relationship.following) {
@@ -889,7 +885,7 @@ function AccountInfo({
                     )}
                     {currentAuthenticated &&
                       isSelf &&
-                      supports('@mastodon/profile-edit') && (
+                      supports('@atproto/profile-edit') && (
                         <>
                           <MenuDivider />
                           <MenuItem

@@ -3,7 +3,6 @@ import './trending.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { getBlurHashAverageColor } from 'fast-blurhash';
-import type { mastodon } from 'masto';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
@@ -14,7 +13,8 @@ import Loader from '../components/loader';
 import NameText from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import Timeline from '../components/timeline';
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import { filteredItems } from '../utils/filters';
 import getDomain from '../utils/get-domain';
@@ -42,7 +42,7 @@ interface TrendingApiList {
   };
 }
 
-type MastoTrendingClient = Record<string, unknown>;
+type CompatTrendingClient = Record<string, unknown>;
 
 interface HashtagHistoryEntry {
   uses: number | string;
@@ -85,15 +85,15 @@ interface LinkItem {
 
 interface StatusItem {
   id: string;
-  filtered?: readonly mastodon.v1.FilterResult[] | null;
+  filtered?: readonly AtprotoCompat.v1.FilterResult[] | null;
   account?: { id?: string } & Record<string, unknown>;
   [key: string]: unknown;
 }
 
 const fetchLinks = pmem(
-  (masto: MastoTrendingClient, _instance?: string) => {
+  (compat: CompatTrendingClient, _instance?: string) => {
     return (
-      masto as { v1: { trends: { links: TrendingApiList } } }
+      compat as { v1: { trends: { links: TrendingApiList } } }
     ).v1.trends.links
       .list()
       .values()
@@ -105,9 +105,9 @@ const fetchLinks = pmem(
 );
 
 const fetchHashtags = pmem(
-  (masto: MastoTrendingClient) => {
+  (compat: CompatTrendingClient) => {
     return (
-      masto as { v1: { trends: { tags: TrendingApiList } } }
+      compat as { v1: { trends: { tags: TrendingApiList } } }
     ).v1.trends.tags
       .list()
       .values()
@@ -118,22 +118,9 @@ const fetchHashtags = pmem(
   },
 );
 
-function fetchTrendsStatuses(masto: MastoTrendingClient): AsyncListIterator {
-  if (supports('@pixelfed/trending')) {
-    return (
-      masto as {
-        pixelfed: {
-          v2: { discover: { posts: { trending: TrendingApiList } } };
-        };
-      }
-    ).pixelfed.v2.discover.posts.trending
-      .list({
-        range: 'daily',
-      })
-      .values();
-  }
+function fetchTrendsStatuses(compat: CompatTrendingClient): AsyncListIterator {
   return (
-    masto as { v1: { trends: { statuses: TrendingApiList } } }
+    compat as { v1: { trends: { statuses: TrendingApiList } } }
   ).v1.trends.statuses
     .list({
       limit: LIMIT,
@@ -142,11 +129,11 @@ function fetchTrendsStatuses(masto: MastoTrendingClient): AsyncListIterator {
 }
 
 function fetchLinkList(
-  masto: MastoTrendingClient,
+  compat: CompatTrendingClient,
   params: Record<string, unknown>,
 ): AsyncListIterator {
   return (
-    masto as { v1: { timelines: { link: TrendingApiList } } }
+    compat as { v1: { timelines: { link: TrendingApiList } } }
   ).v1.timelines.link
     .list(params)
     .values();
@@ -163,7 +150,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   const snapStates = useSnapshot(states);
   const routeParams = useParams() as Record<string, string>;
   const params = columnMode ? ({} as Record<string, string>) : routeParams;
-  const { masto, instance } = api({
+  const { compat, instance } = api({
     instance: props?.instance || params.instance,
   });
   const { instance: currentInstance } = api();
@@ -181,14 +168,16 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   async function fetchTrends(firstLoad?: boolean) {
     console.log('fetchTrend', firstLoad);
     if (firstLoad || !trendIterator.current) {
-      trendIterator.current = fetchTrendsStatuses(masto as MastoTrendingClient);
+      trendIterator.current = fetchTrendsStatuses(
+        compat as CompatTrendingClient,
+      );
 
       // Get hashtags
-      if (supports('@mastodon/trending-hashtags')) {
+      if (supports('@atproto/trending-hashtags')) {
         try {
-          // const iterator = masto.v1.trends.tags.list();
+          // const iterator = compat.v1.trends.tags.list();
           const { value: tags } = await fetchHashtags(
-            masto as MastoTrendingClient,
+            compat as CompatTrendingClient,
           );
           console.log('tags', tags);
           if (tags?.length) {
@@ -200,10 +189,10 @@ function Trending({ columnMode, ...props }: TrendingProps) {
       }
 
       // Get links
-      if (supports('@mastodon/trending-links')) {
+      if (supports('@atproto/trending-links')) {
         try {
           const { value } = await fetchLinks(
-            masto as MastoTrendingClient,
+            compat as CompatTrendingClient,
             instance,
           );
           // 4 types available: link, photo, video, rich
@@ -237,7 +226,6 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   }
 
   // Link mentions
-  // https://github.com/mastodon/mastodon/pull/30381
   const [currentLinkMentionsLoading, setCurrentLinkMentionsLoading] =
     useState(false);
   const currentLinkMentionsIterator = useRef<AsyncListIterator | undefined>(
@@ -247,7 +235,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
   const hasCurrentLink = !!currentLink;
   const currentLinkRef = useRef<HTMLAnchorElement | null>(null);
   const supportsTrendingLinkPosts =
-    sameCurrentInstance && supports('@mastodon/trending-link-posts');
+    sameCurrentInstance && supports('@atproto/trending-link-posts');
 
   useEffect(() => {
     if (currentLink && currentLinkRef.current) {
@@ -264,7 +252,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
     if (firstLoad || !currentLinkMentionsIterator.current) {
       setCurrentLinkMentionsLoading(true);
       currentLinkMentionsIterator.current = fetchLinkList(
-        masto as MastoTrendingClient,
+        compat as CompatTrendingClient,
         {
           url: currentLink,
         },
@@ -290,9 +278,9 @@ function Trending({ columnMode, ...props }: TrendingProps) {
 
   async function checkForUpdates() {
     try {
-      const results = await getMastoV1Resource<{
+      const results = await getCompatV1Resource<{
         statuses: TrendingApiList;
-      }>(masto, 'trends')
+      }>(compat, 'trends')
         .statuses.list({
           limit: 1,
           // NOT SUPPORTED
@@ -381,6 +369,7 @@ function Trending({ columnMode, ...props }: TrendingProps) {
               return (
                 <div key={url}>
                   <a
+                    aria-label="Month filter"
                     ref={currentLink === url ? currentLinkRef : null}
                     href={url}
                     target="_blank"

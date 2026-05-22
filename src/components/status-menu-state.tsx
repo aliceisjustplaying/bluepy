@@ -1,19 +1,19 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { ReactNode } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import RTF from '../utils/relative-time-format';
 
 import Icon from './icon';
 import useStatusMenuParts from './status-menu';
-import type { AnyStatus, StatusContentMasto } from './status-types';
+import type { AnyStatus, StatusContentCompat } from './status-types';
 
 interface StatusMenuStateArgs {
   mediaNoDesc: boolean;
   reblogged?: boolean | null;
   statusMonthsAgo: number;
   accountId?: string | null;
-  mentions?: mastodon.v1.StatusMention[];
+  mentions?: AtprotoCompat.v1.StatusMention[];
   currentAccount?: string | null;
   repliesCount?: number;
   username?: string;
@@ -62,7 +62,7 @@ interface StatusMenuStateArgs {
   authenticated?: boolean;
   isSelf?: boolean | string | null;
   mentionSelf?: unknown;
-  masto: StatusContentMasto;
+  compat: StatusContentCompat;
   muted?: boolean | null;
   pinned?: boolean | null;
   quoteApprovalPolicyMessages: Parameters<
@@ -127,7 +127,7 @@ export default function useStatusMenuState({
   authenticated,
   isSelf,
   mentionSelf,
-  masto,
+  compat,
   muted,
   pinned,
   quoteApprovalPolicyMessages,
@@ -217,7 +217,7 @@ export default function useStatusMenuState({
     authenticated,
     isSelf,
     mentionSelf,
-    masto,
+    compat,
     muted,
     pinned,
     isPinnable,

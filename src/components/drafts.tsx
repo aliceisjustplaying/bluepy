@@ -49,7 +49,7 @@ interface DraftsProps {
 
 function Drafts({ onClose }: DraftsProps) {
   const { t } = useLingui();
-  const { masto } = api();
+  const { compat } = api();
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
   );
@@ -181,7 +181,7 @@ function Drafts({ onClose }: DraftsProps) {
                             if (replyTo) {
                               try {
                                 replyToStatus = await (
-                                  masto.v1.statuses as {
+                                  compat.v1.statuses as {
                                     $select(id: string | undefined): {
                                       fetch(): Promise<unknown>;
                                     };
@@ -199,7 +199,7 @@ function Drafts({ onClose }: DraftsProps) {
                             if (quote) {
                               try {
                                 quoteStatus = await (
-                                  masto.v1.statuses as {
+                                  compat.v1.statuses as {
                                     $select(id: string | undefined): {
                                       fetch(): Promise<unknown>;
                                     };

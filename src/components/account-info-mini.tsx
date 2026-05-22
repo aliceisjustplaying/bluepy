@@ -1,8 +1,8 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useRef } from 'react';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import shortenNumber from '../utils/shorten-number';
 import states from '../utils/states';
 
@@ -10,7 +10,7 @@ import Link from './link';
 
 const LIMIT = 80;
 
-type AccountWithHideCollections = mastodon.v1.Account & {
+type AccountWithHideCollections = AtprotoCompat.v1.Account & {
   hideCollections?: boolean | null;
 };
 
@@ -26,10 +26,10 @@ export default function AccountInfoMini({
   const { t } = useLingui();
 
   const followersIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
+    AsyncIterator<AtprotoCompat.v1.Account[]> | undefined
   >(undefined);
   const followingIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
+    AsyncIterator<AtprotoCompat.v1.Account[]> | undefined
   >(undefined);
 
   if (!account) return null;
@@ -38,9 +38,12 @@ export default function AccountInfoMini({
     account;
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
 
-  const { masto } = api({ instance });
+  const { compat } = api({ instance });
   const accountsResource =
-    getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
+    getCompatV1Resource<AtprotoCompat.rest.v1.AccountsResource>(
+      compat,
+      'accounts',
+    );
 
   async function fetchFollowers(firstLoad?: boolean) {
     if (!id) return { value: [], done: true };

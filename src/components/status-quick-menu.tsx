@@ -186,7 +186,7 @@ export default function StatusQuickMenu({
               : t`Like`}
         </span>
       </MenuItem>
-      {supports('@mastodon/post-bookmark') && (
+      {supports('@atproto/post-bookmark') && (
         <MenuItem
           onClick={() => {
             void bookmarkStatusNotify();

@@ -2,7 +2,6 @@ import './lists.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 import type { ReactNode, ComponentType } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { InView as InViewUntyped } from 'react-intersection-observer';
@@ -19,6 +18,7 @@ import MenuLink from '../components/menu-link';
 import Menu2 from '../components/menu2';
 import Modal from '../components/modal';
 import Timeline from '../components/timeline';
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { api } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import {
@@ -40,7 +40,7 @@ interface ListLike {
   [key: string]: unknown;
 }
 
-type StatusLike = mastodon.v1.Status;
+type StatusLike = AtprotoCompat.v1.Status;
 
 interface SaveStatusPayload extends Record<string, unknown> {
   id?: string;
@@ -74,7 +74,7 @@ interface ListMembersEndpoint {
   $select(id: string): {
     accounts: {
       list(options: { limit: number }): {
-        values(): AsyncIterator<mastodon.v1.Account[]>;
+        values(): AsyncIterator<AtprotoCompat.v1.Account[]>;
       };
       create(params: { accountIds: string[] }): Promise<unknown>;
       remove(params: { accountIds: string[] }): Promise<unknown>;
@@ -101,7 +101,7 @@ interface ListProps {
 function List(props: ListProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const { masto, instance } = api({ instance: props.instance });
+  const { compat, instance } = api({ instance: props.instance });
   const params = useParams();
   const id = props?.id || params?.id;
   const timelineId = props?.timelineId || 'list';
@@ -109,7 +109,7 @@ function List(props: ListProps) {
   const latestItem = useRef<string | undefined>(undefined);
   // const [reloadCount, reload] = useReducer((c) => c + 1, 0);
 
-  const timelinesApi = masto.v1.timelines as {
+  const timelinesApi = compat.v1.timelines as {
     list: ListTimelineEndpoint;
   };
 
@@ -406,17 +406,17 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
   // Show list of members with [Remove] button
   // API only returns 40 members at a time, so this need to be paginated with infinite scroll
   // Show [Add] button after removing a member
-  const { masto, instance } = api();
-  const [members, setMembers] = useState<mastodon.v1.Account[]>([]);
+  const { compat, instance } = api();
+  const [members, setMembers] = useState<AtprotoCompat.v1.Account[]>([]);
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
   );
   const [showMore, setShowMore] = useState(false);
 
-  const listsApi = masto.v1.lists as ListMembersEndpoint;
+  const listsApi = compat.v1.lists as ListMembersEndpoint;
 
   const membersIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
+    AsyncIterator<AtprotoCompat.v1.Account[]> | undefined
   >(undefined);
 
   const fetchMembersRef = useRef<((firstLoad?: boolean) => void) | null>(null);
@@ -436,7 +436,7 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
         const results = await membersIterator.current.next();
         const { done, value } = results as {
           done?: boolean;
-          value?: mastodon.v1.Account[];
+          value?: AtprotoCompat.v1.Account[];
         };
         if (value?.length) {
           if (firstLoad) {
@@ -462,7 +462,7 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
     fetchMembers(true);
     // TODO(oxlint:react-hooks/exhaustive-deps): mount-only initial load. The
     // fetchMembers reference is intentionally read via a ref so the effect
-    // does not retrigger when masto proxy access recreates the closure.
+    // does not retrigger when compat proxy access recreates the closure.
   }, []);
 
   return (
@@ -510,18 +510,18 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
 }
 
 interface RemoveAddButtonProps {
-  account: mastodon.v1.Account;
+  account: AtprotoCompat.v1.Account;
   listID: string;
 }
 
 function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
   const { t } = useLingui();
-  const { masto } = api();
+  const { compat } = api();
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
   );
   const [removed, setRemoved] = useState(false);
-  const listsApi = masto.v1.lists as ListMembersEndpoint;
+  const listsApi = compat.v1.lists as ListMembersEndpoint;
 
   return (
     <MenuConfirm

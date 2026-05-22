@@ -1,12 +1,8 @@
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 import * as navigationPreload from 'workbox-navigation-preload';
-import { RegExpRoute, registerRoute, Route } from 'workbox-routing';
-import {
-  CacheFirst,
-  NetworkFirst,
-  StaleWhileRevalidate,
-} from 'workbox-strategies';
+import { registerRoute, Route } from 'workbox-routing';
+import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
 navigationPreload.enable();
 
@@ -228,92 +224,6 @@ const imageRoute = new Route(
   }),
 );
 registerRoute(imageRoute);
-
-// 1-day cache for
-// - /api/v1/custom_emojis
-// - /api/v1/lists/:id
-// - /api/v1/announcements
-const apiExtendedRoute = new RegExpRoute(
-  /^https?:\/\/[^/]+\/api\/v\d+\/(custom_emojis|lists\/\d+|announcements)$/,
-  new StaleWhileRevalidate({
-    cacheName: 'api-extended',
-    plugins: [
-      new ExpirationPlugin({
-        maxAgeSeconds: 12 * 60 * 60, // 12 hours
-        ...expirationPluginOptions,
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  }),
-);
-registerRoute(apiExtendedRoute);
-
-// Cache ActivityPub requests (Accept: application/activity+json)
-const activityPubRoute = new Route(
-  ({ request }) => {
-    const acceptHeader = request.headers.get('accept');
-    return acceptHeader?.includes('application/activity+json');
-  },
-  new StaleWhileRevalidate({
-    cacheName: 'activity-json',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 30,
-        maxAgeSeconds: 60 * 60, // 1 hour
-        ...expirationPluginOptions,
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  }),
-);
-registerRoute(activityPubRoute);
-
-// Note: expiration is not working as expected
-// https://github.com/GoogleChrome/workbox/issues/3316
-//
-// const apiIntermediateRoute = new RegExpRoute(
-//   // Matches:
-//   // - trends/*
-//   // - timelines/link
-//   /^https?:\/\/[^\/]+\/api\/v\d+\/(trends|timelines\/link)/,
-//   new StaleWhileRevalidate({
-//     cacheName: 'api-intermediate',
-//     plugins: [
-//       new ExpirationPlugin({
-//         maxAgeSeconds: 1 * 60, // 1min
-//       }),
-//       new CacheableResponsePlugin({
-//         statuses: [0, 200],
-//       }),
-//     ],
-//   }),
-// );
-// registerRoute(apiIntermediateRoute);
-
-const apiRoute = new RegExpRoute(
-  // Matches:
-  // - statuses/:id/context - some contexts are really huge
-  /^https?:\/\/[^/]+\/api\/v\d+\/(statuses\/\d+\/context)/,
-  new NetworkFirst({
-    cacheName: 'api',
-    networkTimeoutSeconds: 5,
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 30,
-        maxAgeSeconds: 5 * 60, // 5 minutes
-        ...expirationPluginOptions,
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  }),
-);
-registerRoute(apiRoute);
 
 // PUSH NOTIFICATIONS
 // ==================

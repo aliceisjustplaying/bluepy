@@ -74,6 +74,10 @@ function buildAtprotoProfileURI(repo: string): string {
   return `at://${repo}/app.bsky.actor.profile/self`;
 }
 
+function buildAtprotoPostURI(repo: string, rkey: string): string {
+  return `at://${repo}/app.bsky.feed.post/${rkey}`;
+}
+
 function isAtprotoHandleID(value: string): boolean {
   return /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/i.test(
     value,
@@ -124,12 +128,37 @@ function getAtprotoPathFromLegacyRoute(path: string): string | null {
   return null;
 }
 
+function getAtprotoPathFromBskyAppURL(value: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return null;
+  }
+  if (url.hostname !== 'bsky.app') return null;
+
+  const [, resource, repo, collection, rkey] = url.pathname.split('/');
+  if (resource !== 'profile' || !repo) return null;
+
+  if (!collection) {
+    return buildAtprotoRecordPath(buildAtprotoProfileURI(repo));
+  }
+
+  if (collection === 'post' && rkey) {
+    return buildAtprotoRecordPath(buildAtprotoPostURI(repo, rkey));
+  }
+
+  return null;
+}
+
 export {
+  buildAtprotoPostURI,
   buildAtprotoProfileURI,
   buildAtprotoRecordPath,
   buildAtprotoPostPermalink,
   buildAtprotoPostPath,
   encodeAtprotoID,
+  getAtprotoPathFromBskyAppURL,
   getAtprotoURIFromPathname,
   getAtprotoPathFromLegacyRoute,
   getAtprotoRepo,

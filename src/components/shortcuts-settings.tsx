@@ -16,7 +16,7 @@ import floatingButtonUrl from '../assets/floating-button.svg';
 import multiColumnUrl from '../assets/multi-column.svg';
 import tabMenuBarUrl from '../assets/tab-menu-bar.svg';
 
-import { api, type MastoClient } from '../utils/api';
+import { api, type CompatClient } from '../utils/api';
 import { getLists, getListTitle, splitListsAndFeeds } from '../utils/lists';
 import pmem from '../utils/pmem';
 import showToast from '../utils/show-toast';
@@ -42,7 +42,7 @@ interface ShortcutEntry extends ShortcutMetaInput {
   type: string;
 }
 
-// `api().masto` is loosely typed at the hub (open index signature). Shim a
+// `api().compat` is loosely typed at the hub (open index signature). Shim a
 // narrower view for the v1 endpoints touched here.
 interface AccountSelectClient {
   fetch(): Promise<{
@@ -51,21 +51,21 @@ interface AccountSelectClient {
     displayName?: string;
   }>;
 }
-interface MastoV1AccountsForShortcuts {
+interface CompatV1AccountsForShortcuts {
   $select(id: string): AccountSelectClient;
 }
-interface ShortcutsMastoClient extends MastoClient {
+interface ShortcutsCompatClient extends CompatClient {
   v1: {
-    accounts: MastoClient['v1']['accounts'] & MastoV1AccountsForShortcuts;
-  } & MastoClient['v1'];
+    accounts: CompatClient['v1']['accounts'] & CompatV1AccountsForShortcuts;
+  } & CompatClient['v1'];
 }
 
-function asShortcutsMasto(masto: MastoClient): ShortcutsMastoClient {
-  return masto as ShortcutsMastoClient;
+function asShortcutsCompat(compat: CompatClient): ShortcutsCompatClient {
+  return compat as ShortcutsCompatClient;
 }
 
-function shortcutsMasto(): ShortcutsMastoClient {
-  return asShortcutsMasto(api().masto);
+function shortcutsCompat(): ShortcutsCompatClient {
+  return asShortcutsCompat(api().compat);
 }
 
 // Lingui macro returns `Omit<I18nContext, "_"> & { t }`. Other tsx call sites
@@ -168,7 +168,7 @@ const TYPE_PARAMS: Record<string, TypeParam[]> = {
 };
 const fetchAccountTitle = pmem(
   async ({ id }: { id: string }): Promise<string> => {
-    const account = await shortcutsMasto().v1.accounts.$select(id).fetch();
+    const account = await shortcutsCompat().v1.accounts.$select(id).fetch();
     return account.username || account.acct || account.displayName || '';
   },
 );
@@ -348,6 +348,7 @@ function ShortcutsSettings({ onClose }: ShortcutsSettingsProps) {
             return (
               <label key={value} className={checked ? 'checked' : ''}>
                 <input
+                  aria-label="Keyboard shortcut action"
                   type="radio"
                   name="shortcuts-view-mode"
                   value={value}
@@ -747,7 +748,7 @@ function ShortcutForm({
                 name="type"
                 dir="auto"
               >
-                <option></option>
+                <option aria-label="Shortcut key group"></option>
                 {TYPES.map((type) => (
                   <option key={type} value={type}>
                     {_(TYPE_TEXT[type])}
@@ -775,7 +776,7 @@ function ShortcutForm({
                             }
                             dir="auto"
                           >
-                            <option value=""></option>
+                            <option aria-label="Shortcut key" value=""></option>
                             {userLists.length > 0 && (
                               <optgroup label={t`Lists`}>
                                 {userLists.map((list) => (
@@ -955,6 +956,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
           </h3>
           <p className="field-button">
             <input
+              aria-label="Shortcut modifier key"
               ref={shortcutsImportFieldRef}
               type="text"
               name="import"
@@ -1175,6 +1177,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
           </h3>
           <p className="field-button">
             <input
+              aria-label="Shortcut modifier key"
               style={{ width: '100%' }}
               type="text"
               value={shortcutsStr}
@@ -1270,7 +1273,7 @@ function ImportExport({ shortcuts, onClose }: ImportExportProps) {
           </p>
           {!!shortcutsStr && (
             <details>
-              <summary className="insignificant">
+              <summary aria-label="Shortcut details" className="insignificant">
                 <small>
                   <Trans>Raw Shortcuts JSON</Trans>
                 </small>

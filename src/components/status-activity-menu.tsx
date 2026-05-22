@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { supportsNativeQuote } from '../utils/quote-utils';
 import states from '../utils/states';
 
@@ -58,7 +58,8 @@ export default function StatusActivityMenu({
           </span>
         </MenuItem>
       )}
-      {(quote as mastodon.v1.Quote | null | undefined)?.quotedStatus?.quote && (
+      {(quote as AtprotoCompat.v1.Quote | null | undefined)?.quotedStatus
+        ?.quote && (
         <MenuItem
           onClick={() => {
             setShowQuoteChain(true);

@@ -1,9 +1,9 @@
-import type { mastodon } from 'masto';
+import type { AtprotoCompat } from '../types/atproto-compat';
 
 import mem from './mem';
 import { getCurrentAccountID } from './store-utils';
 
-type FilterResult = mastodon.v1.FilterResult;
+type FilterResult = AtprotoCompat.v1.FilterResult;
 
 interface FilterableItem {
   readonly filtered?: readonly FilterResult[] | null;

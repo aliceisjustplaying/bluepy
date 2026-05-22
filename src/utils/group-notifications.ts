@@ -1,12 +1,12 @@
-import type { mastodon } from 'masto';
+import type { AtprotoCompat } from '../types/atproto-compat';
 
 import { sorted } from './sorted';
 
 // Loose shapes for the inputs and outputs of these helpers. The runtime data
-// is `mastodon.v1.Notification` / `mastodon.v2.NotificationGroup` payloads,
+// is `AtprotoCompat.v1.Notification` / `AtprotoCompat.v2.NotificationGroup` payloads,
 // but these helpers also mutate notifications and accounts in-place (adding
 // `_types`, `_accounts`, `_statuses`, etc.) and accept partial / malformed
-// payloads. The masto entity unions are too strict for that pattern, so we
+// payloads. The compat entity unions are too strict for that pattern, so we
 // describe a wider local shape that mirrors what the JS original allowed.
 //
 // TODO(oxlint:no-underscore-dangle) The `_types`, `_accounts`, `_statuses`,
@@ -16,7 +16,7 @@ import { sorted } from './sorted';
 // `generic-accounts.tsx`. Renaming requires a cross-cutting refactor and is
 // out of scope.
 
-interface AccountWithTypes extends Partial<mastodon.v1.Account> {
+interface AccountWithTypes extends Partial<AtprotoCompat.v1.Account> {
   _types?: string[];
 }
 
@@ -25,10 +25,10 @@ interface NotificationLike {
   type?: string;
   createdAt?: string;
   account?: AccountWithTypes;
-  status?: mastodon.v1.Status | null;
+  status?: AtprotoCompat.v1.Status | null;
   _ids?: string;
   _accounts?: AccountWithTypes[];
-  _statuses?: (mastodon.v1.Status | null | undefined)[];
+  _statuses?: (AtprotoCompat.v1.Status | null | undefined)[];
   [key: string]: unknown;
 }
 
@@ -37,7 +37,7 @@ interface NotificationGroupLike {
   type?: string;
   createdAt?: string;
   account?: AccountWithTypes;
-  status?: mastodon.v1.Status | null;
+  status?: AtprotoCompat.v1.Status | null;
   groupKey?: string;
   sampleAccountIds?: string[];
   // `sampleAccounts` entries may be undefined: `massageNotifications2` resolves
@@ -51,7 +51,7 @@ interface NotificationGroupLike {
   latestPageNotificationAt?: string;
   _ids?: string;
   _accounts?: (AccountWithTypes | undefined)[];
-  _statuses?: (mastodon.v1.Status | null | undefined)[];
+  _statuses?: (AtprotoCompat.v1.Status | null | undefined)[];
   _groupKeys?: string[];
   _notificationsCount?: number[];
   _sampleAccountsCount?: number[];
@@ -73,7 +73,7 @@ type AugmentedNotificationGroup = NotificationGroupLike & {
 type AugmentedNotificationGroup2 = NotificationGroupLike & {
   _groupKeys: string[];
   _ids: string | undefined;
-  _statuses: (mastodon.v1.Status | null | undefined)[];
+  _statuses: (AtprotoCompat.v1.Status | null | undefined)[];
 };
 
 type AugmentedNotification = NotificationLike & {
@@ -83,13 +83,13 @@ type AugmentedNotification = NotificationLike & {
 
 type AugmentedNotification2 = NotificationLike & {
   _ids: string | undefined;
-  _statuses: (mastodon.v1.Status | null | undefined)[];
+  _statuses: (AtprotoCompat.v1.Status | null | undefined)[];
 };
 
 interface GroupedNotificationsPayload {
   accounts?: AccountWithTypes[];
   notificationGroups?: NotificationGroupLike[];
-  statuses?: mastodon.v1.Status[];
+  statuses?: AtprotoCompat.v1.Status[];
   [key: string]: unknown;
 }
 

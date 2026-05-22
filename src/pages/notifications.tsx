@@ -35,20 +35,16 @@ import StatusComponent, {
   type StatusComponentProps,
 } from '../components/status';
 import { api } from '../utils/api';
-import enhanceContent from '../utils/enhance-content';
 import FilterContext from '../utils/filter-context';
 import groupNotifications, {
   groupNotifications2,
   massageNotifications2,
 } from '../utils/group-notifications';
-import handleContentLinks from '../utils/handle-content-links';
 import haptics from '../utils/haptics';
 import mem from '../utils/mem';
 import niceDateTime from '../utils/nice-date-time';
-import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
-import { getAPIVersions, getCurrentInstance } from '../utils/store-utils';
 import supports from '../utils/supports';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScroll from '../utils/useScroll';
@@ -88,7 +84,7 @@ type NotificationLike = NotificationProps['notification'] & {
 };
 
 // Shape of a notification request entry from the v1 endpoint. Loose because
-// `masto.v1.notifications` is typed as `unknown` in our local masto shim.
+// `compat.v1.notifications` is typed as `unknown` in our local compat shim.
 interface NotificationRequestLike {
   id: string;
   account: AccountBlockAccount & {
@@ -100,44 +96,44 @@ interface NotificationRequestLike {
   [key: string]: unknown;
 }
 
-// `masto.v2.notifications` / `masto.v1.notifications` are typed as `unknown`
-// in the local masto shim. Describe just the surface used in this file.
+// Notification resources are typed as `unknown` in the local compat shim.
+// Describe just the surface used in this file.
 // NOTE: The JS original also reads `.nextParams` off the iterator returned
-// from `values()` for a Pixelfed pagination guard. Keep it optional so the
-// normal `undefined` read preserves the JS behavior.
+// from `values()`. Keep it optional so the normal `undefined` read preserves
+// the JS behavior.
 interface NotificationsIterator extends AsyncIterableIterator<unknown> {
   nextParams?: unknown;
 }
-interface MastoV2NotificationsListIterable {
+interface CompatV2NotificationsListIterable {
   values(): NotificationsIterator;
 }
-interface MastoV1NotificationsListResult
+interface CompatV1NotificationsListResult
   extends
-    MastoV2NotificationsListIterable,
+    CompatV2NotificationsListIterable,
     PromiseLike<NotificationLike[] | undefined> {}
-interface MastoV2NotificationsApi {
+interface CompatV2NotificationsApi {
   list(opts: {
     limit: number;
     [key: string]: unknown;
-  }): MastoV2NotificationsListIterable;
+  }): CompatV2NotificationsListIterable;
   policy: {
     fetch(): Promise<NotificationsPolicy>;
     update(policy: NotificationsPolicy): Promise<unknown>;
   };
 }
-interface MastoV1NotificationsRequestsApi {
+interface CompatV1NotificationsRequestsApi {
   list(): Promise<NotificationRequestLike[]>;
   $select(id: string): {
     accept(): Promise<unknown>;
     dismiss(): Promise<unknown>;
   };
 }
-interface MastoV1NotificationsApi {
+interface CompatV1NotificationsApi {
   list(opts?: {
     limit?: number;
     [key: string]: unknown;
-  }): MastoV1NotificationsListResult;
-  requests: MastoV1NotificationsRequestsApi;
+  }): CompatV1NotificationsListResult;
+  requests: CompatV1NotificationsRequestsApi;
 }
 
 interface NotificationsPolicySummary {
@@ -153,35 +149,6 @@ interface NotificationsPolicy {
   [key: string]: unknown;
 }
 
-interface AnnouncementReaction {
-  name: string;
-  count: number;
-  me?: boolean;
-  staticUrl?: string;
-  url?: string;
-}
-
-interface AnnouncementLike {
-  id: string;
-  content: string;
-  startsAt?: string | null;
-  endsAt?: string | null;
-  published?: boolean;
-  allDay?: boolean;
-  publishedAt: string;
-  // `createdAt` is not part of Mastodon's public Announcement schema, but the
-  // JS original referenced it in the sort comparator (`b.updatedAt ||
-  // b.createdAt`). Preserve the read so behavior is unchanged.
-  createdAt?: string;
-  updatedAt: string;
-  read?: boolean;
-  mentions?: unknown[];
-  statuses?: unknown[];
-  tags?: unknown[];
-  emojis?: readonly { shortcode?: string; url?: string; staticUrl?: string }[];
-  reactions: AnnouncementReaction[];
-}
-
 const NOTIFICATIONS_LIMIT = 80;
 const NOTIFICATIONS_GROUPED_LIMIT = 20;
 const emptySearchParams = new URLSearchParams();
@@ -192,34 +159,30 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   behavior: 'instant',
 };
 
-const memSupportsGroupedNotifications = mem(
-  () => ((getAPIVersions()?.mastodon as number | undefined) ?? 0) >= 2,
-  {
-    expires: 1000 * 60 * 5, // 5 minutes
-  },
-);
+const memSupportsGroupedNotifications = mem(() => true, {
+  expires: 1000 * 60 * 5, // 5 minutes
+});
 
-function mastoFetchNotificationsIterable(
+function fetchNotificationsIterable(
   opts: Record<string, unknown> = {},
-): MastoV2NotificationsListIterable {
-  const { masto } = api();
+): CompatV2NotificationsListIterable {
+  const { compat } = api();
   if (memSupportsGroupedNotifications()) {
-    const v2Notifications = masto.v2.notifications as MastoV2NotificationsApi;
-    // https://github.com/mastodon/mastodon/pull/29889
+    const v2Notifications = compat.v2.notifications as CompatV2NotificationsApi;
     return v2Notifications.list({
       limit: NOTIFICATIONS_GROUPED_LIMIT,
       ...opts,
     });
   } else {
-    const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
+    const v1Notifications = compat.v1.notifications as CompatV1NotificationsApi;
     return v1Notifications.list({
       limit: NOTIFICATIONS_LIMIT,
       ...opts,
     });
   }
 }
-export function mastoFetchNotifications(opts: Record<string, unknown> = {}) {
-  return mastoFetchNotificationsIterable(opts).values();
+export function fetchNotifications(opts: Record<string, unknown> = {}) {
+  return fetchNotificationsIterable(opts).values();
 }
 
 export function getGroupedNotifications(
@@ -269,7 +232,7 @@ function Notifications({ columnMode }: NotificationsProps) {
   const { i18n, t } = useLingui();
   const _ = i18n._.bind(i18n);
   useTitle(t`Notifications`, '/notifications');
-  const { masto, instance } = api();
+  const { compat, instance } = api();
   const snapStates = useSnapshot(states);
   const [uiState, setUIState] = useState('default');
   const [routerSearchParams] = useSearchParams();
@@ -287,36 +250,32 @@ function Notifications({ columnMode }: NotificationsProps) {
     scrollableRef,
   });
   const hiddenUI = scrollDirection === 'end' && !nearReachStart;
-  const [announcements, setAnnouncements] = useState<AnnouncementLike[]>([]);
-
   console.debug('RENDER Notifications');
 
-  const notificationsIterable = useRef<MastoV2NotificationsListIterable | null>(
-    null,
-  );
+  const notificationsIterable =
+    useRef<CompatV2NotificationsListIterable | null>(null);
   const notificationsIterator = useRef<ReturnType<
-    MastoV2NotificationsListIterable['values']
+    CompatV2NotificationsListIterable['values']
   > | null>(null);
-  async function fetchNotifications(
+  async function fetchNotificationsPage(
     firstLoad?: boolean,
   ): Promise<{ done?: boolean; value?: unknown }> {
     if (firstLoad || !notificationsIterator.current) {
       // Reset iterator
-      notificationsIterable.current = mastoFetchNotificationsIterable({
+      notificationsIterable.current = fetchNotificationsIterable({
         excludeTypes: ['follow_request'],
       });
       notificationsIterator.current = notificationsIterable.current.values();
     }
     // Preserve JS original: read `.nextParams` directly off the iterator.
-    // masto's `AsyncIterableIterator` does not expose this field, so the
+    // The typed iterator does not expose this field, so the
     // value is `undefined` at runtime and the regex test always returns
     // `false` (`String(undefined)` → `"undefined"`). Keep the dead guard
     // verbatim so behavior matches; do not coerce away from `undefined`.
     if (
       /max_id=($|&)/i.test(String(notificationsIterator.current?.nextParams))
     ) {
-      // Pixelfed returns next paginationed link with empty max_id
-      // I assume, it's done (end of list)
+      // Empty max_id marks the end of the list.
       return {
         done: true,
       };
@@ -344,7 +303,7 @@ function Notifications({ columnMode }: NotificationsProps) {
       //   createdAt: '2024-03-22T19:20:08.316Z',
       //   event: {
       //     type: 'account_suspension',
-      //     targetName: 'mastodon.dev',
+      //     targetName: 'example.test',
       //     followersCount: 0,
       //     followingCount: 0,
       //   },
@@ -369,20 +328,6 @@ function Notifications({ columnMode }: NotificationsProps) {
         states.notificationsLast = groupedNotifications[0];
         states.notifications = groupedNotifications;
 
-        // Update last read marker
-        const markers = masto.v1.markers as {
-          create(opts: {
-            notifications: { lastReadId: string | undefined };
-          }): Promise<unknown>;
-        };
-        markers
-          .create({
-            notifications: {
-              lastReadId: groupedNotifications[0].id,
-            },
-          })
-          .catch(() => {});
-
         if (!columnMode) analyzeNotifications(groupedNotifications);
       } else {
         states.notifications.push(...groupedNotifications);
@@ -394,20 +339,8 @@ function Notifications({ columnMode }: NotificationsProps) {
     return allNotifications as { done?: boolean; value?: unknown };
   }
 
-  async function fetchAnnouncements(): Promise<AnnouncementLike[]> {
-    try {
-      const announcementsApi = masto.v1.announcements as {
-        list(): Promise<AnnouncementLike[]>;
-      };
-      return await announcementsApi.list();
-    } catch {
-      // Silently fail
-      return [];
-    }
-  }
-
   const supportsFilteredNotifications = supports(
-    '@mastodon/filtered-notifications',
+    '@atproto/filtered-notifications',
   );
   const [showNotificationsSettings, setShowNotificationsSettings] =
     useState(false);
@@ -416,7 +349,7 @@ function Notifications({ columnMode }: NotificationsProps) {
   function fetchNotificationsPolicy(): Promise<
     NotificationsPolicy | undefined
   > {
-    const v2Notifications = masto.v2.notifications as MastoV2NotificationsApi;
+    const v2Notifications = compat.v2.notifications as CompatV2NotificationsApi;
     return v2Notifications.policy.fetch().catch(() => undefined);
   }
   function loadNotificationsPolicy() {
@@ -434,7 +367,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     NotificationRequestLike[] | null
   >(null);
   function fetchNotificationsRequest(): Promise<NotificationRequestLike[]> {
-    const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
+    const v1Notifications = compat.v1.notifications as CompatV1NotificationsApi;
     return v1Notifications.requests.list();
   }
 
@@ -521,23 +454,9 @@ function Notifications({ columnMode }: NotificationsProps) {
     setUIState('loading');
     void (async () => {
       try {
-        const fetchNotificationsPromise = fetchNotifications(firstLoad);
+        const fetchNotificationsPromise = fetchNotificationsPage(firstLoad);
 
         if (firstLoad) {
-          void fetchAnnouncements()
-            .then((fetchedAnnouncements) => {
-              fetchedAnnouncements.sort((a, b) => {
-                // Sort by updatedAt first, then createdAt
-                return (
-                  Date.parse((b.updatedAt || b.createdAt) as string) -
-                  Date.parse((a.updatedAt || a.createdAt) as string)
-                );
-              });
-              setAnnouncements(fetchedAnnouncements);
-              return undefined;
-            })
-            .catch(() => {});
-
           if (supportsFilteredNotifications) {
             loadNotificationsPolicy();
           }
@@ -653,8 +572,6 @@ function Notifications({ columnMode }: NotificationsProps) {
       new Date(notification.createdAt as string).toDateString() ===
       todayDate.toDateString(),
   );
-
-  const announcementsListRef = useRef<HTMLUListElement | null>(null);
 
   const syncRouteNotification = useEffectEvent(() => {
     if (notificationID) {
@@ -919,64 +836,6 @@ function Notifications({ columnMode }: NotificationsProps) {
             </button>
           )}
         </header>
-        {announcements.length > 0 && (
-          <div className="shazam-container">
-            <div className="shazam-container-inner">
-              <details className="announcements">
-                <summary>
-                  <span>
-                    <Icon
-                      icon="announce"
-                      className="announcement-icon"
-                      size="l"
-                    />{' '}
-                    <Plural
-                      value={announcements.length}
-                      one="Announcement"
-                      other="Announcements"
-                    />{' '}
-                    <small className="insignificant">{instance}</small>
-                  </span>
-                  {announcements.length > 1 && (
-                    <span className="announcements-nav-buttons">
-                      {announcements.map((announcement, index) => (
-                        <button
-                          key={announcement.id}
-                          type="button"
-                          className="plain2 small"
-                          onClick={() => {
-                            (
-                              announcementsListRef.current?.children[index] as
-                                | HTMLElement
-                                | undefined
-                            )?.scrollIntoView({
-                              behavior: 'smooth',
-                              block: 'nearest',
-                            });
-                          }}
-                        >
-                          {index + 1}
-                        </button>
-                      ))}
-                    </span>
-                  )}
-                </summary>
-                <ul
-                  className={`announcements-list-${
-                    announcements.length > 1 ? 'multiple' : 'single'
-                  }`}
-                  ref={announcementsListRef}
-                >
-                  {announcements.map((announcement) => (
-                    <li key={announcement.id}>
-                      <AnnouncementBlock announcement={announcement} />
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            </div>
-          </div>
-        )}
         {supportsFilteredNotifications &&
           (notificationsPolicy?.summary?.pendingRequestsCount ?? 0) > 0 && (
             <div className="shazam-container">
@@ -1067,6 +926,7 @@ function Notifications({ columnMode }: NotificationsProps) {
             ) : (
               <label>
                 <input
+                  aria-label="Only mentions"
                   type="checkbox"
                   checked={onlyMentions}
                   onChange={(e: SyntheticEvent<HTMLInputElement>) => {
@@ -1245,8 +1105,8 @@ function Notifications({ columnMode }: NotificationsProps) {
                   setShowNotificationsSettings(false);
                   void (async () => {
                     try {
-                      const v2Notifications = masto.v2
-                        .notifications as MastoV2NotificationsApi;
+                      const v2Notifications = compat.v2
+                        .notifications as CompatV2NotificationsApi;
                       await v2Notifications.policy.update(newPolicy);
                       showToast(t`Notifications settings updated`);
                     } catch (e) {
@@ -1266,6 +1126,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                         <label>
                           {_(NOTIFICATIONS_POLICIES_TEXT[key])}
                           <select
+                            aria-label="Notification policy"
                             name={key}
                             defaultValue={value}
                             className="small"
@@ -1303,92 +1164,9 @@ function inBackground() {
   return !!document.querySelector('.deck-backdrop, #modal-container > *');
 }
 
-interface AnnouncementBlockProps {
-  announcement: AnnouncementLike;
-}
-function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
-  const { instance } = api();
-  const { contact } = getCurrentInstance() as {
-    contact?: { account?: unknown };
-  };
-  const contactAccount = contact?.account;
-  const { content, publishedAt, updatedAt, mentions, emojis, reactions } =
-    announcement;
-
-  const publishedAtDate = new Date(publishedAt);
-  const publishedDateText = niceDateTime(publishedAtDate);
-  const updatedAtDate = new Date(updatedAt);
-  const updatedAtText = niceDateTime(updatedAtDate);
-
-  return (
-    <div className="announcement-block">
-      <AccountBlock
-        account={
-          contactAccount as Parameters<typeof AccountBlock>[0]['account']
-        }
-      />
-      {/* TODO(oxlint:jsx-a11y/click-events-have-key-events,no-static-element-interactions):
-          this div delegates link clicks via handleContentLinks; embedded
-          anchors are focusable. A non-functional role/keydown shim would
-          provide no real a11y benefit. */}
-      <div
-        className="announcement-content"
-        role="presentation"
-        onClick={handleContentLinks({
-          mentions: mentions as { url?: string; acct?: string }[] | undefined,
-          instance,
-        })}
-        dangerouslySetInnerHTML={{
-          __html: enhanceContent(content, {
-            emojis,
-          }) as string,
-        }}
-      />
-      <p className="insignificant">
-        <time dateTime={publishedAtDate.toISOString()}>
-          {niceDateTime(publishedAtDate)}
-        </time>
-        {updatedAt && updatedAtText !== publishedDateText && (
-          <>
-            {' '}
-            &bull;{' '}
-            <span className="ib">
-              <Trans>
-                Updated{' '}
-                <time dateTime={updatedAtDate.toISOString()}>
-                  {niceDateTime(updatedAtDate)}
-                </time>
-              </Trans>
-            </span>
-          </>
-        )}
-      </p>
-      <div className="announcement-reactions" hidden>
-        {reactions.map((reaction: AnnouncementReaction) => {
-          const { name, count, me, staticUrl, url } = reaction;
-          return (
-            <button
-              key={name}
-              type="button"
-              className={`plain4 small ${me ? 'reacted' : ''}`}
-            >
-              {url || staticUrl ? (
-                <img src={url || staticUrl} alt={name} width="16" height="16" />
-              ) : (
-                <span>{name}</span>
-              )}{' '}
-              <span className="count">{shortenNumber(count)}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function fetchNotficationsByAccount(accountID: string) {
-  const { masto } = api();
-  const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
+  const { compat } = api();
+  const v1Notifications = compat.v1.notifications as CompatV1NotificationsApi;
   return v1Notifications.list({
     accountId: accountID,
   });
@@ -1418,8 +1196,8 @@ function NotificationRequestModalButton({
     setUIState('loading');
     void (async () => {
       // Preserve original JS behavior: the JS original `await`ed
-      // `masto.v1.notifications.list(...)` directly without `.values()`.
-      // The masto paginator returns a thenable-ish object; awaiting it
+      // `compat.v1.notifications.list(...)` directly without `.values()`.
+      // The compat paginator returns a thenable-ish object; awaiting it
       // resolves to the first-page array. Mirror that runtime contract.
       const notifs =
         (await fetchNotficationsByAccount(request.account.id)) || [];
@@ -1522,7 +1300,7 @@ function NotificationRequestButtons({
   onChange,
 }: NotificationRequestButtonsProps) {
   const { t } = useLingui();
-  const { masto } = api();
+  const { compat } = api();
   const [uiState, setUIState] = useState('default');
   const [requestState, setRequestState] = useState<RequestState>(null); // accept, dismiss
   const hasRequestState = requestState !== null;
@@ -1537,8 +1315,8 @@ function NotificationRequestButtons({
           setUIState('loading');
           void (async () => {
             try {
-              const v1Notifications = masto.v1
-                .notifications as MastoV1NotificationsApi;
+              const v1Notifications = compat.v1
+                .notifications as CompatV1NotificationsApi;
               await v1Notifications.requests.$select(request.id).accept();
               setRequestState('accept');
               setUIState('default');
@@ -1568,8 +1346,8 @@ function NotificationRequestButtons({
           setUIState('loading');
           void (async () => {
             try {
-              const v1Notifications = masto.v1
-                .notifications as MastoV1NotificationsApi;
+              const v1Notifications = compat.v1
+                .notifications as CompatV1NotificationsApi;
               await v1Notifications.requests.$select(request.id).dismiss();
               setRequestState('dismiss');
               setUIState('default');

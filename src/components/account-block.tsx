@@ -1,8 +1,8 @@
 import './account-block.css';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 // import { useNavigate } from 'react-router-dom';
 import enhanceContent from '../utils/enhance-content';
 import niceDateTime from '../utils/nice-date-time';
@@ -17,7 +17,7 @@ import RolesTags from './roles-tags';
 
 export interface AccountBlockProps {
   skeleton?: boolean;
-  account?: mastodon.v1.Account | null;
+  account?: AtprotoCompat.v1.Account | null;
   avatarSize?: string;
   avatarDescription?: string;
   useAvatarStatic?: boolean;
@@ -29,7 +29,7 @@ export interface AccountBlockProps {
   showStats?: boolean;
   accountInstance?: string;
   hideDisplayName?: boolean;
-  relationship?: Partial<mastodon.v1.Relationship> | null;
+  relationship?: Partial<AtprotoCompat.v1.Relationship> | null;
   excludeRelationshipAttrs?: readonly string[];
 }
 

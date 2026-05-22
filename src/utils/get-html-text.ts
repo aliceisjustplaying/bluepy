@@ -9,13 +9,10 @@ interface GetHTMLTextOptions {
   readonly truncateLinks?: boolean;
 }
 
-function truncateMastodonLinks(content: DocumentFragment): void {
-  // MASTODON-SPECIFIC classes
-  // Remove .invisible
+function normalizeCollapsedLinks(content: DocumentFragment): void {
   for (const invisibleElement of content.querySelectorAll('.invisible')) {
     invisibleElement.remove();
   }
-  // Add … at end of .ellipsis
   for (const ellipsisElement of content.querySelectorAll('.ellipsis')) {
     ellipsisElement.append('…');
   }
@@ -53,7 +50,7 @@ function getHTMLText(
   preProcess?.(content);
 
   if (truncateLinks) {
-    truncateMastodonLinks(content);
+    normalizeCollapsedLinks(content);
   }
 
   // Collect innerText from all child nodes since DocumentFragment doesn't have innerText

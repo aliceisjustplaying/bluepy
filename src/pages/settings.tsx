@@ -17,7 +17,7 @@ import RelativeTime from '../components/relative-time';
 import languages from '../data/translang-languages.json';
 import {
   api,
-  getMastoV1Resource,
+  getCompatV1Resource,
   getPreferences,
   setPreferences,
 } from '../utils/api';
@@ -30,13 +30,6 @@ import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import store from '../utils/store';
-import { getVapidKey } from '../utils/store-utils';
-import {
-  initSubscription,
-  isPushSupported,
-  removeSubscription,
-  updateSubscription,
-} from '../utils/web-push-subscriptions';
 
 // `button-install` is a custom element registered in
 // `../components/button-install`. Declare its JSX shape so the wrapper below
@@ -49,10 +42,10 @@ declare module 'react' {
   }
 }
 
-// `masto.v1.accounts` in the typed api.ts shim only exposes
+// `compat.v1.accounts` in the typed api.ts shim only exposes
 // `verifyCredentials`. `updateCredentials` is used here at runtime to sync
 // posting preferences. Shim the call surface locally; the wave that fully
-// types the masto client removes this.
+// types the compat client removes this.
 interface AccountsUpdateCredentialsClient {
   updateCredentials(params: {
     source: { privacy?: string; quote_policy?: string };
@@ -106,15 +99,15 @@ function Settings({ onClose }: SettingsProps): ReactElement {
     parseInt(storedTextSize as string, 10) || DEFAULT_TEXT_SIZE;
 
   const [prefs, setPrefs] = useState<Preferences>(getPreferences());
-  const { masto, authenticated } = api();
+  const { compat, authenticated } = api();
 
   // Get preferences every time Settings is opened
   // NOTE: Disabled for now because I don't expect this to change often. Also for some reason, the /api/v1/preferences endpoint is cached for a while and return old prefs if refresh immediately after changing them.
   // useEffect(() => {
-  //   const { masto } = api();
+  //   const { compat } = api();
   //   (async () => {
   //     try {
-  //       const preferences = await masto.v1.preferences.fetch();
+  //       const preferences = await compat.v1.preferences.fetch();
   //       setPrefs(preferences);
   //       store.account.set('preferences', preferences);
   //     } catch (e) {
@@ -333,6 +326,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                     />
                   </label>
                   <select
+                    aria-label="Default visibility"
                     id="posting-privacy-field"
                     value={
                       (prefs['posting:default:visibility'] as
@@ -343,8 +337,8 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                       const { value } = e.currentTarget;
                       void (async () => {
                         try {
-                          await getMastoV1Resource<AccountsUpdateCredentialsClient>(
-                            masto,
+                          await getCompatV1Resource<AccountsUpdateCredentialsClient>(
+                            compat,
                             'accounts',
                           ).updateCredentials({
                             source: {
@@ -390,6 +384,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                       />
                     </label>
                     <select
+                      aria-label="Quote settings"
                       id="posting-quote-policy-field"
                       value={
                         disableQuotePolicy
@@ -403,8 +398,8 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                         const { value } = e.currentTarget;
                         void (async () => {
                           try {
-                            await getMastoV1Resource<AccountsUpdateCredentialsClient>(
-                              masto,
+                            await getCompatV1Resource<AccountsUpdateCredentialsClient>(
+                              compat,
                               'accounts',
                             ).updateCredentials({
                               source: {
@@ -475,6 +470,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <li className="block">
               <label>
                 <input
+                  aria-label="Auto refresh timeline posts"
                   type="checkbox"
                   checked={snapStates.settings.autoRefresh}
                   onChange={(e) => {
@@ -487,6 +483,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <li className="block">
               <label>
                 <input
+                  aria-label="Reposts carousel"
                   type="checkbox"
                   checked={snapStates.settings.boostsCarousel}
                   onChange={(e) => {
@@ -500,6 +497,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <label>
                 <Trans>Muted posts</Trans>{' '}
                 <select
+                  aria-label="Muted posts visibility"
                   value={snapStates.settings.mutedPostVisibility}
                   onChange={(e) => {
                     const visibility = e.currentTarget.value;
@@ -531,6 +529,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <li className="block">
                 <label>
                   <input
+                    aria-label="Post translation"
                     type="checkbox"
                     checked={snapStates.settings.contentTranslation}
                     onChange={(e) => {
@@ -611,6 +610,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                         return (
                           <label key={lang.code}>
                             <input
+                              aria-label="Hide translate button for language"
                               type="checkbox"
                               checked={snapStates.settings.contentTranslationHideLanguages.includes(
                                 lang.code,
@@ -664,6 +664,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                   <div>
                     <label>
                       <input
+                        aria-label="Auto inline translation"
                         type="checkbox"
                         checked={
                           snapStates.settings.contentTranslationAutoInline
@@ -693,6 +694,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <li className="block">
                 <label>
                   <input
+                    aria-label="Paginated timeline"
                     type="checkbox"
                     checked={!!expTimeline2}
                     onChange={(e) => {
@@ -723,6 +725,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <li className="block">
                 <label>
                   <input
+                    aria-label="GIF picker for composer"
                     type="checkbox"
                     checked={snapStates.settings.composerGIFPicker}
                     onChange={(e) => {
@@ -757,6 +760,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <li className="block">
                 <label>
                   <input
+                    aria-label="Image description generator"
                     type="checkbox"
                     checked={snapStates.settings.mediaAltGenerator}
                     onChange={(e) => {
@@ -794,6 +798,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <li className="block">
               <label>
                 <input
+                  aria-label="Cloak mode"
                   type="checkbox"
                   checked={snapStates.settings.cloakMode}
                   onChange={(e) => {
@@ -819,6 +824,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <li className="block">
               <label>
                 <input
+                  aria-label="Disable all animations"
                   type="checkbox"
                   checked={snapStates.settings.noAnimations}
                   onChange={(e) => {
@@ -864,7 +870,6 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             </li>
           </ul>
         </section>
-        {authenticated && <PushNotificationsSection onClose={onClose} />}
         <h3>
           <Trans>About</Trans>
         </h3>
@@ -914,13 +919,9 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               </a>{' '}
               by{' '}
               <a
-                href="https://mastodon.social/@cheeaun"
-                // target="_blank"
+                href="https://github.com/cheeaun"
+                target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  states.showAccount = 'cheeaun@mastodon.social';
-                }}
               >
                 @cheeaun
               </a>
@@ -997,6 +998,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <Trans>
                 <span className="insignificant">Version:</span>{' '}
                 <input
+                  aria-label="Version string"
                   type="text"
                   className="version-string"
                   readOnly
@@ -1036,7 +1038,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
         </section>
         {(import.meta.env.DEV || import.meta.env.PHANPY_DEV) && (
           <details className="debug-info">
-            <summary></summary>
+            <summary aria-label="Debug info"></summary>
             <p className="side">
               <Link
                 to="/_sandbox"
@@ -1047,10 +1049,6 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               </Link>
             </p>
             <p>Debugging</p>
-            <p>
-              <b>Vapid key</b>:{' '}
-              {getVapidKey() as string | number | null | undefined}
-            </p>
             {(window.__BENCH_RESULTS?.size ?? 0) > 0 && (
               <ul>
                 {Array.from(window.__BENCH_RESULTS?.entries() ?? []).map(
@@ -1116,6 +1114,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <p>Temporary Experiments</p>
             <label>
               <input
+                aria-label="Tab bar v2"
                 type="checkbox"
                 checked={!!expTabBarV2}
                 onChange={(e) => {
@@ -1177,6 +1176,7 @@ function TextSizeControl({
         <Trans comment="Preview of one character, in smallest size">A</Trans>
       </button>{' '}
       <input
+        aria-label="Text size"
         ref={textSizeFieldRef}
         type="range"
         min={SMALLEST_TEXT_SIZE}
@@ -1202,7 +1202,7 @@ function TextSizeControl({
       </button>
       <datalist id="sizes">
         {TEXT_SIZES.map((s) => (
-          <option key={s} value={s} />
+          <option aria-label="Text size preset" key={s} value={s} />
         ))}
       </datalist>
     </div>
@@ -1262,317 +1262,6 @@ function clearCacheKey(key: string): Promise<boolean> {
 async function clearCaches(): Promise<void> {
   const keys = await caches.keys();
   await Promise.all(keys.map((key) => caches.delete(key)));
-}
-
-interface PushNotificationsSectionProps {
-  onClose?: () => void;
-}
-
-interface BackendPushSubscriptionShape {
-  alerts: Record<string, unknown>;
-  policy: string;
-  [key: string]: unknown;
-}
-
-function PushNotificationsSection({
-  onClose,
-}: PushNotificationsSectionProps): ReactElement | null {
-  const { t } = useLingui();
-  const pushSupported = isPushSupported();
-  const { instance } = api();
-  const [uiState, setUIState] = useState<string>('default');
-  const pushFormRef = useRef<HTMLFormElement | null>(null);
-  const [allowNotifications, setAllowNotifications] = useState<boolean>(false);
-  const [needRelogin, setNeedRelogin] = useState<boolean>(false);
-  const previousPolicyRef = useRef<string | undefined>(undefined);
-  useEffect(() => {
-    if (!pushSupported) return;
-    void (async () => {
-      setUIState('loading');
-      try {
-        const result = await initSubscription();
-        const backendSubscription =
-          (result?.backendSubscription as BackendPushSubscriptionShape | null) ??
-          null;
-        if (
-          backendSubscription?.policy &&
-          backendSubscription.policy !== 'none'
-        ) {
-          setAllowNotifications(true);
-          const { alerts, policy } = backendSubscription;
-          console.log('backendSubscription', backendSubscription);
-          previousPolicyRef.current = policy;
-          const form = pushFormRef.current;
-          if (form) {
-            const { elements } = form;
-            const policyEl = elements.namedItem('policy') as
-              | (HTMLElement & { value: string })
-              | null;
-            if (policyEl) policyEl.value = policy;
-            // alerts is {}, iterate it
-            Object.entries(alerts).forEach(([alert, value]) => {
-              const el = elements.namedItem(alert) as HTMLInputElement | null;
-              if (el?.type === 'checkbox') {
-                el.checked = !!value;
-              }
-            });
-          }
-        }
-        setUIState('default');
-      } catch (err) {
-        console.warn(err);
-        const message = err instanceof Error ? err.message : String(err);
-        if (/outside.*authorized/i.test(message)) {
-          setNeedRelogin(true);
-        } else {
-          alert(message);
-        }
-        setUIState('error');
-      }
-    })();
-  }, [pushSupported]);
-
-  const isLoading = uiState === 'loading';
-
-  if (!pushSupported) return null;
-
-  return (
-    <form
-      ref={pushFormRef}
-      onChange={() => {
-        setTimeout(() => {
-          const form = pushFormRef.current;
-          if (!form) return;
-          const values = Object.fromEntries(new FormData(form)) as Record<
-            string,
-            FormDataEntryValue
-          >;
-          const allowNext = !!values['policy-allow'];
-          // NOTE: original JS nested `policy` under `data` and did not pass a
-          // top-level `policy` argument to `updateSubscription`. The util
-          // destructures `policy` only at the top level, so the original code
-          // effectively sent `policy: undefined` to the backend update helper.
-          // Preserving that exact shape here; fixing the bug is out of scope
-          // for this TS migration batch.
-          const params: {
-            data: {
-              policy: string;
-              alerts: Record<string, boolean>;
-            };
-            policy: undefined;
-          } = {
-            data: {
-              policy: values.policy as string,
-              alerts: {
-                mention: !!values.mention,
-                favourite: !!values.favourite,
-                reblog: !!values.reblog,
-                follow: !!values.follow,
-                follow_request: !!values.followRequest,
-                poll: !!values.poll,
-                update: !!values.update,
-                status: !!values.status,
-              },
-            },
-            policy: undefined,
-          };
-
-          let alertsCount = 0;
-          // Remove false values from data.alerts
-          // API defaults to false anyway
-          Object.keys(params.data.alerts).forEach((key) => {
-            if (!params.data.alerts[key]) {
-              delete params.data.alerts[key];
-            } else {
-              alertsCount++;
-            }
-          });
-          const policyChanged =
-            previousPolicyRef.current !== params.data.policy;
-
-          console.log('PN Form', {
-            values,
-            allowNotifications: allowNext,
-            params,
-          });
-
-          if (allowNext && alertsCount > 0) {
-            if (policyChanged) {
-              console.debug('Policy changed.');
-              void (async () => {
-                try {
-                  await removeSubscription();
-                  await updateSubscription(params);
-                } catch (err) {
-                  console.warn(err);
-                  alert(t`Failed to update subscription. Please try again.`);
-                }
-              })();
-            } else {
-              void (async () => {
-                try {
-                  await updateSubscription(params);
-                } catch (err) {
-                  console.warn(err);
-                  alert(t`Failed to update subscription. Please try again.`);
-                }
-              })();
-            }
-          } else {
-            void (async () => {
-              try {
-                await removeSubscription();
-              } catch (err) {
-                console.warn(err);
-                alert(t`Failed to remove subscription. Please try again.`);
-              }
-            })();
-          }
-        }, 100);
-      }}
-    >
-      <h3>
-        <Trans>Push Notifications (beta)</Trans>
-      </h3>
-      <section>
-        <ul>
-          <li>
-            <label>
-              <input
-                type="checkbox"
-                disabled={isLoading || needRelogin}
-                name="policy-allow"
-                checked={allowNotifications}
-                onChange={(e) => {
-                  const { checked } = e.currentTarget;
-                  if (checked) {
-                    // Request permission
-                    void (async () => {
-                      const permission = await Notification.requestPermission();
-                      if (permission === 'granted') {
-                        setAllowNotifications(true);
-                      } else {
-                        setAllowNotifications(false);
-                        if (permission === 'denied') {
-                          alert(
-                            t`Push notifications are blocked. Please enable them in your browser settings.`,
-                          );
-                        }
-                      }
-                    })();
-                  } else {
-                    setAllowNotifications(false);
-                  }
-                }}
-              />{' '}
-              <Trans>
-                Allow from{' '}
-                <select
-                  name="policy"
-                  disabled={isLoading || needRelogin || !allowNotifications}
-                >
-                  {[
-                    {
-                      value: 'all',
-                      label: t`anyone`,
-                    },
-                    {
-                      value: 'followed',
-                      label: t`people I follow`,
-                    },
-                    {
-                      value: 'follower',
-                      label: t`followers`,
-                    },
-                  ].map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </Trans>
-            </label>
-            <div
-              className="shazam-container no-animation"
-              style={{
-                width: '100%',
-              }}
-              hidden={!allowNotifications}
-            >
-              <div className="shazam-container-inner">
-                <div className="sub-section">
-                  <ul>
-                    {[
-                      {
-                        value: 'mention',
-                        label: t`Mentions`,
-                      },
-                      {
-                        value: 'favourite',
-                        label: t`Likes`,
-                      },
-                      {
-                        value: 'reblog',
-                        label: t`Reposts`,
-                      },
-                      {
-                        value: 'follow',
-                        label: t`Follows`,
-                      },
-                      {
-                        value: 'followRequest',
-                        label: t`Follow requests`,
-                      },
-                      {
-                        value: 'poll',
-                        label: t`Polls`,
-                      },
-                      {
-                        value: 'update',
-                        label: t`Post edits`,
-                      },
-                      {
-                        value: 'status',
-                        label: t`New posts`,
-                      },
-                    ].map((alert) => (
-                      <li key={alert.value}>
-                        <label>
-                          <input type="checkbox" name={alert.value} />{' '}
-                          {alert.label}
-                        </label>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-            {needRelogin && (
-              <div className="sub-section">
-                <p>
-                  <Trans>
-                    Push permission was not granted since your last login.
-                    You'll need to{' '}
-                    <Link to={`/login?instance=${instance}`} onClick={onClose}>
-                      <b>log in</b> again to grant push permission
-                    </Link>
-                    .
-                  </Trans>
-                </p>
-              </div>
-            )}
-          </li>
-        </ul>
-      </section>
-      <p className="section-postnote">
-        <small>
-          <Trans>
-            NOTE: Push notifications only work for <b>one account</b>.
-          </Trans>
-        </small>
-      </p>
-    </form>
-  );
 }
 
 export default Settings;

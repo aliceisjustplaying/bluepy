@@ -24,10 +24,7 @@ import { getCurrentAccountNS } from '../utils/store-utils';
 import Following from './following';
 import Following2 from './following2';
 import List from './list';
-import {
-  getGroupedNotifications,
-  mastoFetchNotifications,
-} from './notifications';
+import { getGroupedNotifications, fetchNotifications } from './notifications';
 
 interface HomeTimeline {
   type?: string;
@@ -164,7 +161,7 @@ function NotificationsMenu({
   state,
   onClose,
 }: NotificationsMenuProps) {
-  const { masto, instance } = api();
+  const { instance } = api();
   const snapStates = useSnapshot(states);
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
@@ -174,8 +171,9 @@ function NotificationsMenu({
     setUIState('loading');
     void (async () => {
       try {
-        const notificationsIterator =
-          mastoFetchNotifications() as AsyncIterator<unknown[]>;
+        const notificationsIterator = fetchNotifications() as AsyncIterator<
+          unknown[]
+        >;
         const allNotifications = await notificationsIterator.next();
         const notifications = massageNotifications2(
           allNotifications.value as Parameters<typeof massageNotifications2>[0],
@@ -198,21 +196,6 @@ function NotificationsMenu({
 
           states.notificationsLast = groupedNotifications[0];
           states.notifications = groupedNotifications;
-
-          // Update last read marker
-          (
-            masto.v1.markers as {
-              create(options: {
-                notifications: { lastReadId: string };
-              }): Promise<unknown>;
-            }
-          )
-            .create({
-              notifications: {
-                lastReadId: groupedNotifications[0].id,
-              },
-            })
-            .catch(() => {});
         }
 
         states.notificationsShowNew = false;
@@ -223,7 +206,7 @@ function NotificationsMenu({
         setUIState('error');
       }
     })();
-  }, [masto, instance]);
+  }, [instance]);
 
   const menuRef = useRef<ControlledMenuRef | null>(null);
   const headerHeight = 52;

@@ -1,9 +1,8 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useRef, useState } from 'react';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import { api, getCompatV1Resource } from '../utils/api';
 import { addListStore, deleteListStore, updateListStore } from '../utils/lists';
-import supports from '../utils/supports';
 
 import Icon from './icon';
 import ListExclusiveBadge from './list-exclusive-badge';
@@ -42,7 +41,7 @@ interface ListAddEditProps {
   onClose?: (result?: ListAddEditCloseArg) => void;
 }
 
-interface MastoListsApi {
+interface CompatListsApi {
   create(params: {
     title: FormDataEntryValue | null;
     replies_policy: FormDataEntryValue | null;
@@ -62,8 +61,8 @@ type UIState = 'default' | 'loading' | 'error';
 
 function ListAddEdit({ list, onClose }: ListAddEditProps) {
   const { t } = useLingui();
-  const { masto } = api();
-  const listsApi = getMastoV1Resource<MastoListsApi>(masto, 'lists');
+  const { compat } = api();
+  const listsApi = getCompatV1Resource<CompatListsApi>(compat, 'lists');
   const [uiState, setUIState] = useState<UIState>('default');
   const editMode = !!list;
   const nameFieldRef = useRef<HTMLInputElement | null>(null);
@@ -82,9 +81,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
       }
     }
   }, [editMode, list]);
-  const supportsExclusive =
-    supports('@mastodon/list-exclusive') ||
-    supports('@gotosocial/list-exclusive');
+  const supportsExclusive = false;
 
   return (
     <div className="sheet">
@@ -167,6 +164,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
             <label htmlFor="list-title">
               <Trans>Name</Trans>{' '}
               <input
+                aria-label="List name"
                 ref={nameFieldRef}
                 type="text"
                 id="list-title"
@@ -179,6 +177,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
           </div>
           <div className="list-form-row">
             <select
+              aria-label="List replies policy"
               ref={repliesPolicyFieldRef}
               name="replies_policy"
               required
@@ -199,6 +198,7 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
             <div className="list-form-row">
               <label className="label-block">
                 <input
+                  aria-label="Hide list posts from Home and Following"
                   ref={exclusiveFieldRef}
                   type="checkbox"
                   name="exclusive"

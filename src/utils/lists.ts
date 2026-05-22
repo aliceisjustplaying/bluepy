@@ -18,7 +18,7 @@ interface StoredLists {
   updatedAt: number;
 }
 
-interface MastoListsApi {
+interface CompatListsApi {
   list(): Promise<ListLike[]>;
   $select(id: string): { fetch(): Promise<ListLike> };
 }
@@ -43,8 +43,8 @@ export function splitListsAndFeeds(lists: ListLike[] = []): {
 
 export const fetchLists = pmem(
   async () => {
-    const { masto } = api();
-    const lists = await (masto.v1.lists as MastoListsApi).list();
+    const { compat } = api();
+    const lists = await (compat.v1.lists as CompatListsApi).list();
     lists.sort((a, b) => a.title.localeCompare(b.title));
 
     if (lists.length) {
@@ -87,8 +87,8 @@ export async function getUserLists(): Promise<ListLike[]> {
 
 const fetchList = pmem(
   (id: string, instance?: string) => {
-    const { masto } = api({ instance });
-    return (masto.v1.lists as MastoListsApi).$select(id).fetch();
+    const { compat } = api({ instance });
+    return (compat.v1.lists as CompatListsApi).$select(id).fetch();
   },
   {
     expires: FETCH_MAX_AGE,

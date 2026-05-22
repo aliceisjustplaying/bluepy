@@ -7,6 +7,7 @@ import { MenuItem } from '@szhsin/react-menu';
 import { deepEqual } from 'fast-equals';
 import type { SyntheticEvent } from 'react';
 import {
+  useCallback,
   useEffect,
   useEffectEvent,
   useId,
@@ -21,8 +22,8 @@ import { useSnapshot } from 'valtio';
 import supportedLanguages from '../data/status-supported-languages.json';
 import {
   api,
-  getMastoV1Resource,
-  getMastoV2Resource,
+  getCompatV1Resource,
+  getCompatV2Resource,
   getPreferences,
 } from '../utils/api';
 import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
@@ -57,15 +58,10 @@ import {
 } from '../utils/store-utils';
 import stringLength from '../utils/string-length';
 import supports from '../utils/supports';
-import unfurlMastodonLink from '../utils/unfurl-link';
 import urlRegexObj from '../utils/url-regex';
 import useCloseWatcher from '../utils/useCloseWatcher';
 import useInterval from '../utils/useInterval';
 import useThrottledResizeObserver from '../utils/useThrottledResizeObserver';
-
-type ViewTransitionDocument = Document & {
-  startViewTransition?: (callback: () => void) => unknown;
-};
 
 import AccountBlockComponent, { type AccountBlockProps } from './account-block';
 // import Avatar from './avatar';
@@ -84,7 +80,6 @@ import MediaAttachmentComponent, {
 import MentionModal from './mention-modal';
 import Menu2 from './menu2';
 import Modal from './modal';
-import QuoteSuggestionComponent from './quote-suggestion';
 import StatusComponent, { type StatusComponentProps } from './status';
 
 // ---------------------------------------------------------------------------
@@ -102,7 +97,7 @@ interface AccountInfoLike {
   [key: string]: unknown;
 }
 
-interface MastodonMention {
+interface PostMention {
   acct: string;
   [key: string]: unknown;
 }
@@ -123,7 +118,7 @@ interface MediaAttachmentLike {
 interface StatusLike {
   id?: string;
   account?: AccountInfoLike;
-  mentions?: MastodonMention[];
+  mentions?: PostMention[];
   visibility?: string;
   language?: string | null;
   mediaAttachments?: MediaAttachmentLike[];
@@ -158,12 +153,6 @@ interface LinkPreviewState {
   metadata?: LinkPreviewMetadata | null;
 }
 
-interface QuoteSuggestionState {
-  status: StatusLike;
-  instance?: string;
-  url: string;
-}
-
 interface MentionPickerState {
   defaultSearchTerm?: string | null;
 }
@@ -177,7 +166,6 @@ type ToolbarAction = {
   name?: string;
   defaultSearchTerm?: string | null;
   languages?: string[];
-  url?: string;
   [key: string]: unknown;
 };
 
@@ -243,21 +231,6 @@ function MediaAttachment(props: {
   return <MediaAttachmentComponent {...(props as MediaAttachmentProps)} />;
 }
 
-function QuoteSuggestion(
-  props: Omit<
-    Parameters<typeof QuoteSuggestionComponent>[0],
-    'quoteSuggestion'
-  > & {
-    quoteSuggestion?: QuoteSuggestionState | null;
-  },
-) {
-  return (
-    <QuoteSuggestionComponent
-      {...(props as Parameters<typeof QuoteSuggestionComponent>[0])}
-    />
-  );
-}
-
 function Status(props: {
   status?: StatusLike | null;
   instance?: string;
@@ -268,8 +241,8 @@ function Status(props: {
   return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
-// Narrow shape for masto v1/v2 used here. Mirrors what drafts.tsx shims.
-interface MastoStatusesEditableSelector {
+// Narrow shape for compat v1/v2 used here. Mirrors what drafts.tsx shims.
+interface CompatStatusesEditableSelector {
   $select(id: string | undefined): {
     fetch(): Promise<StatusLike>;
     update(params: Record<string, unknown>): Promise<unknown>;
@@ -281,7 +254,7 @@ interface MastoStatusesEditableSelector {
   ): Promise<unknown>;
 }
 
-interface MastoMediaResource {
+interface CompatMediaResource {
   create(params: Record<string, unknown>): Promise<{ id?: string }>;
 }
 
@@ -332,7 +305,6 @@ const DEFAULT_LANG: string =
     'en',
   ) || 'en';
 
-// https://github.com/mastodon/mastodon/blob/c4a429ed47e85a6bbf0d470a41cc2f64cf120c19/app/javascript/mastodon/features/compose/util/counter.js
 const usernameRegex = /(^|[^/\w])[@＠](([a-z0-9_]+)@[a-z0-9.-]+[a-z0-9]+)/gi;
 const urlPlaceholder = '$2xxxxxxxxxxxxxxxxxxxxxxx';
 function countableText(inputText: string): string {
@@ -462,12 +434,15 @@ function Compose({
   const toolbarMediaInputId = useId();
 
   const apiResult = api();
-  const { masto } = apiResult;
-  const statusesEndpoint = getMastoV1Resource<MastoStatusesEditableSelector>(
-    masto,
+  const { compat } = apiResult;
+  const statusesEndpoint = getCompatV1Resource<CompatStatusesEditableSelector>(
+    compat,
     'statuses',
   );
-  const mediaEndpoint = getMastoV2Resource<MastoMediaResource>(masto, 'media');
+  const mediaEndpoint = getCompatV2Resource<CompatMediaResource>(
+    compat,
+    'media',
+  );
   const { instance } = apiResult;
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
@@ -525,11 +500,6 @@ function Compose({
   >([]);
   const mediaAttachmentsRef = useRef<MediaAttachmentLike[]>([]);
   mediaAttachmentsRef.current = mediaAttachments;
-  const [quoteSuggestion, setQuoteSuggestion] =
-    useState<QuoteSuggestionState | null>(null);
-  const [localQuoteStatus, setLocalQuoteStatus] = useState<
-    StatusLike | null | undefined
-  >(quoteStatus);
   const [linkPreview, setLinkPreview] = useState<LinkPreviewState | null>(null);
   const linkPreviewRef = useRef<{
     id: number;
@@ -542,7 +512,7 @@ function Compose({
     return typeof v === 'string' ? v : undefined;
   };
 
-  const currentQuoteStatus = localQuoteStatus || quoteStatus;
+  const currentQuoteStatus = quoteStatus;
   const isAtprotoCompose =
     !!currentAccount?.atproto || currentAccount?.instanceURL === 'bsky.social';
   const supportsQuoteApprovalPolicy =
@@ -587,38 +557,6 @@ function Compose({
         }
       })();
     }, 300);
-  };
-
-  // Quote eligibility logic duplicated from status.jsx
-  const checkQuoteEligibility = (status: StatusLike): boolean => {
-    if (!supportsNativeQuote()) return false;
-
-    const { visibility: statusVisibility, quoteApproval, account } = status;
-    const isSelf =
-      !!currentAccountInfo && currentAccountInfo.id === account?.id;
-    const isPublic = ['public', 'unlisted'].includes(statusVisibility ?? '');
-    const isMineAndPrivate = isSelf && statusVisibility === 'private';
-
-    const quoteApprovalNarrowed = quoteApproval as
-      | { currentUser?: string }
-      | null
-      | undefined;
-    const isQuoteAutomaticallyAccepted =
-      quoteApprovalNarrowed?.currentUser === 'automatic' &&
-      (isPublic || isMineAndPrivate);
-    const isQuoteManuallyAccepted =
-      quoteApprovalNarrowed?.currentUser === 'manual' &&
-      (isPublic || isMineAndPrivate);
-
-    if (!isPublic && !isSelf) {
-      return false;
-    } else if (isQuoteAutomaticallyAccepted) {
-      return true;
-    } else if (isQuoteManuallyAccepted) {
-      return true;
-    } else {
-      return false;
-    }
   };
 
   const processFiles = async (
@@ -680,55 +618,6 @@ function Compose({
       );
     }
     return null;
-  };
-
-  const handlePastedLink = async (url: string): Promise<void> => {
-    // Handle QP links
-    if (supportsNativeQuote()) {
-      // Quotes cannot coexist with media attachments
-      if (mediaAttachments.length > 0) {
-        return;
-      }
-
-      // Cannot add/remove/replace current quote when editing
-      if (editStatus) {
-        return;
-      }
-
-      try {
-        // unfurl-link.ts exposes a snapshot type without `id`/`instance`/
-        // `originalURL` keys publicly; the runtime data does carry them on
-        // resolved hits, so narrow here for the keys we read.
-        const unfurledData = (await unfurlMastodonLink(instance, url)) as
-          | {
-              id?: string;
-              instance?: string;
-              originalURL?: string;
-              [key: string]: unknown;
-            }
-          | null
-          | undefined;
-        if (unfurledData?.id) {
-          const status = (
-            states.statuses as Record<string, StatusLike | undefined>
-          )[`${unfurledData.instance}/${unfurledData.id}`];
-          if (status && checkQuoteEligibility(status)) {
-            // Don't show suggestion if it's the same as current quote
-            if (currentQuoteStatus?.id === status.id) {
-              return;
-            }
-
-            setQuoteSuggestion({
-              status,
-              instance: unfurledData.instance,
-              url: unfurledData.originalURL ?? url,
-            });
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
   };
 
   useEffect(() => {
@@ -883,7 +772,7 @@ function Compose({
         setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
     }
     // Effect deliberately runs only when an explicit source status changes;
-    // prefString/prefs/masto are read through latest-value
+    // prefString/prefs/compat are read through latest-value
     // refs declared below so we always see fresh values without re-running on
     // every render.
   }, [draftStatus, editStatus, replyToStatus]);
@@ -927,6 +816,20 @@ function Compose({
   }, [snapStates.composerState.minimized]);
 
   const formRef = useRef<HTMLFormElement | null>(null);
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return undefined;
+    const handleKeyDown = (keyEvent: KeyboardEvent) => {
+      if (keyEvent.key === 'Enter' && (keyEvent.ctrlKey || keyEvent.metaKey)) {
+        keyEvent.preventDefault();
+        form.requestSubmit();
+      }
+    };
+    form.addEventListener('keydown', handleKeyDown);
+    return () => {
+      form.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const beforeUnloadCopy = t`You have unsaved changes. Discard this post?`;
   const canClose = (): boolean => {
@@ -1305,6 +1208,17 @@ function Compose({
       toolbar.hidden = overTruncated;
     },
   });
+  const renderAddMenuButton = useCallback(
+    ({ open }: { open: boolean }) => (
+      <button
+        type="button"
+        className={`toolbar-button add-button ${open ? 'active' : ''}`}
+      >
+        <Icon icon="plus" title={t`Add`} />
+      </button>
+    ),
+    [t],
+  );
 
   return (
     <div id="compose-container-outer" ref={composeContainerRef}>
@@ -1522,22 +1436,6 @@ function Compose({
             pointerEvents: uiState === 'loading' ? 'none' : 'auto',
             opacity: uiState === 'loading' ? 0.5 : 1,
           }}
-          onClick={() => {
-            setTimeout(() => {
-              if (!document.activeElement) {
-                lastFocusedFieldRef.current?.focus?.();
-              }
-            }, 10);
-          }}
-          onKeyDown={(keyEvent: React.KeyboardEvent<HTMLFormElement>) => {
-            if (
-              keyEvent.key === 'Enter' &&
-              (keyEvent.ctrlKey || keyEvent.metaKey)
-            ) {
-              keyEvent.preventDefault();
-              keyEvent.currentTarget.requestSubmit();
-            }
-          }}
           onSubmit={(submitEvent: SyntheticEvent<HTMLFormElement>) => {
             submitEvent.preventDefault();
 
@@ -1642,12 +1540,6 @@ function Compose({
                   });
                 }
 
-                /* NOTE:
-                Using snakecase here because masto.js's `isObject` returns false for `params`, ONLY happens when opening in pop-out window. This is maybe due to `window.masto` variable being passed from the parent window. The check that failed is `x.constructor === Object`, so maybe the `Object` in new window is different than parent window's?
-                Code: https://github.com/neet/masto.js/blob/dd0d649067b6a2b6e60fbb0a96597c373a255b00/src/serializers/is-object.ts#L2
-
-                // TODO: Note above is no longer true in Masto.js v6. Revisit this.
-              */
                 let params: Record<string, unknown> = {
                   status,
                   language,
@@ -1660,10 +1552,7 @@ function Compose({
                   if (supportsQuoteApprovalPolicy) {
                     params.quote_approval_policy = quoteApprovalPolicy;
                   }
-                  if (
-                    supports('@mastodon') ||
-                    supports('@gotosocial/edit-media-attributes')
-                  ) {
+                  if (supports('@atproto/edit-media-attributes')) {
                     params.media_attributes = submitMediaAttachments.map(
                       (attachment) => {
                         return {
@@ -1774,8 +1663,6 @@ function Compose({
                   action?.languages
                 ) {
                   setAutoDetectedLanguages(action.languages);
-                } else if (action?.name === 'pasted-link' && action?.url) {
-                  void handlePastedLink(action.url);
                 }
               }}
             />
@@ -1874,54 +1761,6 @@ function Compose({
               />
             </div>
           )}
-          <QuoteSuggestion
-            quoteSuggestion={quoteSuggestion}
-            hasCurrentQuoteStatus={!!currentQuoteStatus?.id}
-            onAccept={() => {
-              if (!quoteSuggestion) return;
-              const { status } = quoteSuggestion;
-
-              // Remove the pasted link from textarea
-              const currentValue = textareaRef.current?.value || '';
-              // Find pasted link nearest to last cursor position
-              const lastCursorPos = textareaRef.current?.selectionStart || 0;
-              const pastedLinkPos = currentValue.lastIndexOf(
-                quoteSuggestion.url,
-                lastCursorPos,
-              );
-              const newValue =
-                currentValue.slice(0, pastedLinkPos) +
-                currentValue.slice(pastedLinkPos + quoteSuggestion.url.length);
-              if (textareaRef.current) {
-                textareaRef.current.value = newValue;
-                dispatchComposeInput(textareaRef.current);
-              }
-
-              const hasCurrentQuote = !!currentQuoteStatus?.id;
-              if (hasCurrentQuote) {
-                // If there's already a quote, replacement doesn't need transition
-                setQuoteSuggestion(null);
-                setLocalQuoteStatus(status);
-              } else {
-                // Transition the unfurled quote to the quote preview
-                const startVT = (document as ViewTransitionDocument)
-                  .startViewTransition;
-                if (startVT) {
-                  startVT(() => {
-                    setQuoteSuggestion(null);
-                    setLocalQuoteStatus(status);
-                  });
-                } else {
-                  setQuoteSuggestion(null);
-                  setLocalQuoteStatus(status);
-                }
-              }
-              focusTextarea();
-            }}
-            onCancel={() => {
-              setQuoteSuggestion(null);
-            }}
-          />
           <div className="toolbar compose-footer">
             <span className="add-toolbar-button-group spacer">
               {showAddButton && (
@@ -1953,16 +1792,7 @@ function Compose({
                         zIndex: 1001,
                       },
                     }}
-                    menuButton={({ open }: { open: boolean }) => (
-                      <button
-                        type="button"
-                        className={`toolbar-button add-button ${
-                          open ? 'active' : ''
-                        }`}
-                      >
-                        <Icon icon="plus" title={t`Add`} />
-                      </button>
-                    )}
+                    menuButton={renderAddMenuButton}
                   >
                     {supportsCameraCapture && (
                       <MenuItem
@@ -2079,6 +1909,7 @@ function Compose({
                   <Icon icon="block" className="insignificant" />
                 )}
                 <select
+                  aria-label="Quote approval policy"
                   name="quoteApprovalPolicy"
                   value={quoteApprovalPolicy}
                   onChange={(e: SyntheticEvent<HTMLSelectElement>) => {

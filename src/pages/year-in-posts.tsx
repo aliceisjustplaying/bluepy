@@ -3,7 +3,6 @@ import './year-in-posts.css';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import { Document as FlexSearchIndexDocument } from 'flexsearch';
-import type { mastodon } from 'masto';
 import type { Ref } from 'react';
 import {
   useEffect,
@@ -27,6 +26,7 @@ import NavMenu from '../components/nav-menu';
 import StatusComponent, {
   type StatusComponentProps,
 } from '../components/status';
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { api } from '../utils/api';
 import DateTimeFormat from '../utils/date-time-format';
 import db from '../utils/db';
@@ -46,13 +46,13 @@ import {
   type YearInPostsRecord,
 } from '../utils/year-in-posts';
 
-type MastoStatus = mastodon.v1.Status;
+type CompatStatus = AtprotoCompat.v1.Status;
 
-type StatusWithExtras = MastoStatus & {
+type StatusWithExtras = CompatStatus & {
   quote?: { id?: string; quotedStatus?: { id?: string } } | null;
 };
 
-type StatusWithQuotes = MastoStatus & {
+type StatusWithQuotes = CompatStatus & {
   quotesCount?: number;
 };
 
@@ -75,7 +75,7 @@ interface HeatmapDay {
 }
 
 interface MediaGridCell {
-  post?: MastoStatus;
+  post?: CompatStatus;
   hasMedia: boolean;
 }
 
@@ -232,7 +232,7 @@ function YearInPosts() {
 
   const { instance } = api();
   const [uiState, setUIState] = useState<UIState>('default');
-  const [posts, setPosts] = useState<MastoStatus[]>([]);
+  const [posts, setPosts] = useState<CompatStatus[]>([]);
   const [availableYears, setAvailableYears] = useState<AvailableYear[]>([]);
   const [searchEnabled] = useState<boolean>(true);
   const [showSearchField, setShowSearchField] =
@@ -461,7 +461,7 @@ function YearInPosts() {
 
   const monthMediaGrids = useMemo<Record<string, MediaGridItem[]>>(() => {
     if (postType !== 'media') return {};
-    const grids: Record<number, Record<number, MastoStatus[]>> = {};
+    const grids: Record<number, Record<number, CompatStatus[]>> = {};
     posts.forEach((post) => {
       const date = new Date(post.createdAt);
       const m = date.getMonth();
@@ -484,8 +484,8 @@ function YearInPosts() {
       }
 
       for (let day = 1; day <= 31; day++) {
-        const dayPosts: MastoStatus[] = days[day] || [];
-        let bestPost: MastoStatus | null = null;
+        const dayPosts: CompatStatus[] = days[day] || [];
+        let bestPost: CompatStatus | null = null;
         let hasMedia = false;
         if (dayPosts.length > 0) {
           const postsWithMedia = dayPosts.filter((post) => {
@@ -503,7 +503,7 @@ function YearInPosts() {
           });
 
           if (postsWithMedia.length > 0) {
-            bestPost = postsWithMedia.reduce<MastoStatus | null>(
+            bestPost = postsWithMedia.reduce<CompatStatus | null>(
               (topPost, post) => {
                 const actualPost = post as StatusWithQuotes;
                 const totalCount =
@@ -625,7 +625,7 @@ function YearInPosts() {
     }
   }, [posts, totalPosts]);
 
-  const searchedPosts = useMemo<MastoStatus[]>(() => {
+  const searchedPosts = useMemo<CompatStatus[]>(() => {
     if (!searchQuery) return posts;
     if (!searchIndexRef.current) return [];
     console.time(`search: '${searchQuery}'`);
@@ -636,10 +636,10 @@ function YearInPosts() {
     const orderedIds = allResults.flatMap((r) => r.result);
     const uniqueOrderedIds = [...new Set(orderedIds)];
 
-    const postsMap = new Map<string, MastoStatus>(posts.map((p) => [p.id, p]));
+    const postsMap = new Map<string, CompatStatus>(posts.map((p) => [p.id, p]));
     const postResults = uniqueOrderedIds
       .map((id) => postsMap.get(String(id)))
-      .filter((p): p is MastoStatus => Boolean(p));
+      .filter((p): p is CompatStatus => Boolean(p));
     return postResults;
   }, [posts, searchQuery, totalPosts]);
 
@@ -659,7 +659,7 @@ function YearInPosts() {
   type FilterCounts = Record<FilterKey, number>;
 
   const [filterCounts, monthPosts] = useMemo<
-    [FilterCounts, MastoStatus[]]
+    [FilterCounts, CompatStatus[]]
   >(() => {
     const monthFilteredPosts = searchedPosts.filter((post) => {
       if (searchQuery) return true;
@@ -700,7 +700,7 @@ function YearInPosts() {
     return [counts, monthFilteredPosts];
   }, [searchedPosts, month, searchQuery]);
 
-  const [filteredPosts, hasMore] = useMemo<[MastoStatus[], boolean]>(() => {
+  const [filteredPosts, hasMore] = useMemo<[CompatStatus[], boolean]>(() => {
     const filtered = monthPosts.filter((post) => {
       const p = post as StatusWithExtras;
       if (postType === 'boosts') {
@@ -1208,21 +1208,21 @@ function YearInPosts() {
                       if (o.key === 'createdAt') return true;
                       return !searchQuery;
                     }).map(({ key }) => (
-                      <label
-                        className="filter-sort"
-                        key={key}
-                        onClick={(e) => {
-                          if (sortBy === key && key !== 'relevance') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                          }
-                        }}
-                      >
+                      <label className="filter-sort" key={key}>
                         <input
+                          aria-label="Sort posts"
                           type="radio"
                           name="filter-sort-cat"
                           checked={sortBy === key}
+                          onClick={(e) => {
+                            if (sortBy === key && key !== 'relevance') {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSortOrder(
+                                sortOrder === 'asc' ? 'desc' : 'asc',
+                              );
+                            }
+                          }}
                           onChange={() => {
                             setSortBy(key);
                             const order = /(replies|favourites|reblogs)/.test(
@@ -1389,7 +1389,7 @@ function YearInPosts() {
 
 interface IntersectionPostItemProps {
   root: Element | null;
-  post: MastoStatus;
+  post: CompatStatus;
   instance: string;
   defaultShow: boolean;
 }
@@ -1516,7 +1516,7 @@ function CalendarBar({
                           return (
                             <span key={i} className="media-day no-media" />
                           );
-                        const status = item.post as MastoStatus;
+                        const status = item.post as CompatStatus;
                         // hasMedia guarantees mediaAttachments[0] exists.
                         const media = (status.mediaAttachments ?? [])[0] as {
                           previewUrl?: string | null;
@@ -1662,6 +1662,7 @@ function SearchField({
       }}
     >
       <input
+        aria-label="Search posts"
         ref={searchInputRef}
         type="search"
         name="q"

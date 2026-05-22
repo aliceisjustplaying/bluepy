@@ -1,20 +1,20 @@
 # Security Policy
 
 ## Supported Versions
-Only the **latest production release** of Phanpy receives security updates. Always update to the newest production version for the best protection.
+Only the latest production release of Bluepy receives security updates.
 
 ## Reporting a Vulnerability
 
 **Please don’t discuss security issues in public GitHub issues.** Instead:
 
 1. **GitHub Private Reporting** (preferred):
-   - Click ["Report a vulnerability"](https://github.com/cheeaun/phanpy/security/advisories/new) under the **Security** tab.
+   - Click "Report a vulnerability" under the Security tab.
 2. **Email**:
    - Reach out to me directly at cheeaun@gmail.com
 
 **Include**:
 - Steps to reproduce the issue
-- Which parts of Phanpy are affected
+- Which parts of Bluepy are affected
 - How severe you think the impact could be
 
 ## Disclosure Policy
@@ -29,8 +29,8 @@ Only the **latest production release** of Phanpy receives security updates. Alwa
 
 ### For Users
 
-- Use Phanpy with a Mastodon instance that enforces **HTTPS**.
-- Treat OAuth tokens like passwords – don’t share them!
+- Use Bluepy only with HTTPS AppView and PDS endpoints.
+- Treat OAuth sessions and app passwords like passwords.
 
 ### For Developers
 

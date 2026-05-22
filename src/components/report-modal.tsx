@@ -3,11 +3,11 @@ import './report-modal.css';
 import type { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { Fragment, type InputHTMLAttributes } from 'react';
 import { useMemo, useRef, useState } from 'react';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import localeMatch from '../utils/locale-match';
 import showToast from '../utils/show-toast';
 import { getCurrentInstance } from '../utils/store-utils';
@@ -27,8 +27,7 @@ function Status(props: {
   return <StatusComponent {...(props as StatusComponentProps)} />;
 }
 
-// NOTE: `dislike` hidden for now, it's actually not used for reporting
-// Mastodon shows another screen for unfollowing, muting or blocking instead of reporting
+// NOTE: `dislike` hidden for now, it's not used for reporting.
 
 type ReportCategory = 'spam' | 'legal' | 'violation' | 'other';
 
@@ -136,7 +135,7 @@ function translateRules(
 }
 
 interface ReportModalProps {
-  account: mastodon.v1.Account;
+  account: AtprotoCompat.v1.Account;
   post?: { id?: string; [key: string]: unknown };
   onClose: () => void;
 }
@@ -162,10 +161,13 @@ interface ReportAccountsResource {
 function ReportModal({ account, post, onClose }: ReportModalProps) {
   const { t, i18n } = useLingui();
   const _ = (descriptor: MessageDescriptor) => i18n._(descriptor);
-  const { masto } = api();
-  const reportsResource = getMastoV1Resource<ReportsResource>(masto, 'reports');
-  const accountsResource = getMastoV1Resource<ReportAccountsResource>(
-    masto,
+  const { compat } = api();
+  const reportsResource = getCompatV1Resource<ReportsResource>(
+    compat,
+    'reports',
+  );
+  const accountsResource = getCompatV1Resource<ReportAccountsResource>(
+    compat,
     'accounts',
   );
   const [uiState, setUIState] = useState<
@@ -303,6 +305,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                 <Fragment key={category}>
                   <label className="report-category">
                     <input
+                      aria-label="Report category"
                       type="radio"
                       name="category"
                       value={category}
@@ -332,6 +335,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                             (rule: TranslatedInstanceRule, i: number) => (
                               <label className="report-rule" key={rule.id}>
                                 <input
+                                  aria-label="Report rule"
                                   type="checkbox"
                                   name={`rule_ids[${i}]`}
                                   value={rule.id}
@@ -372,6 +376,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               </label>
             </p>
             <textarea
+              aria-label="Report comment"
               maxLength={1000}
               rows={1}
               name="comment"

@@ -1,4 +1,4 @@
-import type { mastodon } from 'masto';
+import type { AtprotoCompat } from '../types/atproto-compat';
 
 import { api } from './api';
 import { isFiltered } from './filters';
@@ -20,10 +20,10 @@ import {
 // Status payloads carry a handful of mutation flags the timeline pipeline
 // attaches (`_pinned`, `_differentAuthor`). Keep the type loose so callers
 // passing already-extended objects from `states.statuses` still fit.
-type TimelineStatus = mastodon.v1.Status & {
+type TimelineStatus = AtprotoCompat.v1.Status & {
   _pinned?: unknown;
   _differentAuthor?: boolean;
-  account?: mastodon.v1.Status['account'] & { group?: boolean };
+  account?: AtprotoCompat.v1.Status['account'] & { group?: boolean };
   _atproto?: {
     root?: { uri?: string };
   };
@@ -53,9 +53,9 @@ interface ReplyHint {
   inReplyToId: string;
 }
 
-interface MastoStatusesList {
-  list(params: { id: readonly string[] }): Promise<mastodon.v1.Status[]>;
-  $select(id: string): { fetch(): Promise<mastodon.v1.Status> };
+interface CompatStatusesList {
+  list(params: { id: readonly string[] }): Promise<AtprotoCompat.v1.Status[]>;
+  $select(id: string): { fetch(): Promise<AtprotoCompat.v1.Status> };
 }
 
 export function groupBoosts(
@@ -150,7 +150,7 @@ export function filterHiddenStatuses<T extends TimelineStatus>(
   const currentAccount = getCurrentAccountID();
   const mutedPostVisibility = getMutedPostVisibility(states.settings);
   return items.filter((item) => {
-    // Muted-account visibility is a timeline preference, not a Mastodon filter
+    // Muted-account visibility is a timeline preference, not a post filter.
     // context. Keep applying it when content filters are disabled.
     if (
       shouldHideMutedStatus({
@@ -223,11 +223,11 @@ export function groupContext(
         });
         // queueMicrotask(async () => {
         //   try {
-        //     const { masto } = api({ instance });
-        //     // const replyToStatus = await masto.v1.statuses
+        //     const { compat } = api({ instance });
+        //     // const replyToStatus = await compat.v1.statuses
         //     //   .$select(item.inReplyToId)
         //     //   .fetch();
-        //     const replyToStatus = await fetchStatus(item.inReplyToId, masto);
+        //     const replyToStatus = await fetchStatus(item.inReplyToId, compat);
         //     saveStatus(replyToStatus, instance, {
         //       skipThreading: true,
         //       skipUnfurling: true,
@@ -250,10 +250,10 @@ export function groupContext(
   // FETCH AND SHOW REPLY HINTS
   if (inReplyToIds?.length) {
     setTimeout(() => {
-      const { masto } = api({ instance });
+      const { compat } = api({ instance });
       console.log('REPLYHINT', inReplyToIds);
 
-      const statusesResource = masto.v1.statuses as MastoStatusesList;
+      const statusesResource = compat.v1.statuses as CompatStatusesList;
 
       // Fallback if batch fetch fails or returns nothing or not supported
       async function fallbackFetch(): Promise<void> {
@@ -282,9 +282,8 @@ export function groupContext(
         }
       }
 
-      if (supports('@mastodon/fetch-multiple-statuses')) {
-        // This is batch fetching yooo, woot
-        // Limit 20, returns 422 if exceeded https://github.com/mastodon/mastodon/pull/27871
+      if (supports('@atproto/fetch-multiple-statuses')) {
+        // Keep batch size within the compat endpoint limit.
         const ids = inReplyToIds.map(({ inReplyToId }) => inReplyToId);
         void (async () => {
           try {
@@ -323,7 +322,10 @@ export function groupContext(
 }
 
 const fetchStatus = pmem(
-  (statusID: string, masto: MastoStatusesList): Promise<mastodon.v1.Status> => {
-    return masto.$select(statusID).fetch();
+  (
+    statusID: string,
+    compat: CompatStatusesList,
+  ): Promise<AtprotoCompat.v1.Status> => {
+    return compat.$select(statusID).fetch();
   },
 );

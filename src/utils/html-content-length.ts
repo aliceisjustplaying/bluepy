@@ -24,8 +24,7 @@ export default function htmlContentLength(html: string): number {
     return 0;
   }
   template.innerHTML = html;
-  // .invisible spans for links
-  // E.g. <span class="invisible">https://</span>mastodon.social
+  // .invisible spans hide parts of collapsed rich-text links.
   const invisibleElements = template.content.querySelectorAll('.invisible');
   for (const invisibleElement of invisibleElements) {
     invisibleElement.remove();

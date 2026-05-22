@@ -388,7 +388,6 @@ const defaultRejectFilterMap: Record<string, true> = Object.fromEntries(
 
 const URL_PREFIX_REGEX = /^(https?:\/\/(www\.)?|xmpp:)/;
 const URL_DISPLAY_LENGTH = 30;
-// Similar to https://github.com/mastodon/mastodon/blob/1666b1955992e16f4605b414c6563ca25b3a3f18/app/lib/text_formatter.rb#L54-L69
 function shortenLink(link: HTMLAnchorElement | null | undefined): void {
   if (!link || link.querySelector?.('*')) {
     return;

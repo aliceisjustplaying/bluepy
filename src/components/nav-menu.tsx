@@ -41,7 +41,7 @@ type MenuStateValue = 'open' | 'closed' | 'opening' | 'closing' | undefined;
 function NavMenu(props: Record<string, unknown>) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const { masto, instance, authenticated } = api();
+  const { compat, instance, authenticated } = api();
 
   const [currentAccount, moreThanOneAccount] = useMemo(() => {
     const accounts = getAccounts();
@@ -82,12 +82,12 @@ function NavMenu(props: Record<string, unknown>) {
     0,
   ]);
 
-  const mastoV1 = (masto as { v1: Record<string, unknown> }).v1;
+  const compatV1 = (compat as { v1: Record<string, unknown> }).v1;
 
   const mutesIterator = useRef<AsyncIterator<unknown> | undefined>(undefined);
   async function fetchMutes(firstLoad: boolean) {
     if (firstLoad || !mutesIterator.current) {
-      mutesIterator.current = (mastoV1.mutes as MutesBlocksApi)
+      mutesIterator.current = (compatV1.mutes as MutesBlocksApi)
         .list({
           limit: 80,
         })
@@ -100,7 +100,7 @@ function NavMenu(props: Record<string, unknown>) {
   const blocksIterator = useRef<AsyncIterator<unknown> | undefined>(undefined);
   async function fetchBlocks(firstLoad: boolean) {
     if (firstLoad || !blocksIterator.current) {
-      blocksIterator.current = (mastoV1.blocks as MutesBlocksApi)
+      blocksIterator.current = (compatV1.blocks as MutesBlocksApi)
         .list({
           limit: 80,
         })
@@ -418,7 +418,7 @@ function NavMenu(props: Record<string, unknown>) {
 }
 
 function ListMenu({ menuState }: { menuState: MenuStateValue }) {
-  const supportsLists = supports('@mastodon/lists');
+  const supportsLists = supports('@atproto/lists');
   const [lists, setLists] = useState<Awaited<ReturnType<typeof getLists>>>([]);
   const { lists: userLists, feeds } = splitListsAndFeeds(lists);
   useEffect(() => {

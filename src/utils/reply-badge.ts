@@ -26,7 +26,7 @@ function shouldShowReplyBadge(options: ShouldShowReplyBadgeOptions): boolean {
   return (
     Boolean(inReplyToId) &&
     (Boolean(inReplyToAccount) || Boolean(isReplyParentUnavailable)) &&
-    (instance === 'bsky.social' ||
+    (Boolean(instance) ||
       Boolean(spoilerText) ||
       !mentions.some(
         (mention: Readonly<ReplyMention>) => mention.id === inReplyToAccountId,

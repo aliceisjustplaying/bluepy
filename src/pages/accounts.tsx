@@ -14,8 +14,7 @@ import Menu2 from '../components/menu2';
 import NameText, { type NameTextProps } from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import { getAccountProfileTarget } from '../utils/account-profile-target';
-import { api, getMastoV1Resource } from '../utils/api';
-import { revokeAccessToken } from '../utils/auth';
+import { api, getCompatV1Resource } from '../utils/api';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
 import { navigatePath } from '../utils/router';
@@ -33,8 +32,6 @@ type AccountsNameTextAccount = NonNullable<NameTextProps['account']>;
 
 type OAuthAccount = Omit<StoredAccount, 'accessToken' | 'info'> & {
   accessToken?: string;
-  clientId?: string;
-  clientSecret?: string;
   info: StoredAccount['info'] & AccountsNameTextAccount;
 };
 
@@ -52,7 +49,7 @@ const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
 function Accounts({ onClose }: AccountsProps) {
   const { t } = useLingui();
-  const client = api().masto;
+  const client = api().compat;
   // Accounts
   const accounts = getAccounts() as OAuthAccount[];
   const currentAccount = getCurrentAccountID();
@@ -97,15 +94,6 @@ function Accounts({ onClose }: AccountsProps) {
                 } catch {}
               };
 
-              const logOutAccount = async () => {
-                await revokeAccessToken({
-                  instanceURL: account.instanceURL,
-                  client_id: String(account.clientId),
-                  client_secret: String(account.clientSecret),
-                  token: String(account.accessToken),
-                });
-              };
-
               const { acct, avatarStatic } = account.info;
 
               return (
@@ -125,7 +113,7 @@ function Accounts({ onClose }: AccountsProps) {
                         if (isCurrent) {
                           try {
                             const accountsApi =
-                              getMastoV1Resource<AccountsSelectResource>(
+                              getCompatV1Resource<AccountsSelectResource>(
                                 client,
                                 'accounts',
                               );
@@ -146,9 +134,7 @@ function Accounts({ onClose }: AccountsProps) {
                       onClick={() => {
                         void haptics.trigger('medium');
                         if (isLoggedOut) {
-                          navigatePath(
-                            `/login?instance=${account.instanceURL}`,
-                          );
+                          navigatePath('/login');
                           onClose?.();
                         } else if (isCurrent) {
                           states.showAccount = getAccountProfileTarget(account);
@@ -283,23 +269,17 @@ function Accounts({ onClose }: AccountsProps) {
                           }
                           menuItemClassName="danger"
                           onClick={() => {
-                            void (async () => {
-                              await logOutAccount();
-                              delete (account as { accessToken?: string })
-                                .accessToken;
-                              saveOAuthAccounts();
-                              reload();
-                            })();
+                            delete (account as { accessToken?: string })
+                              .accessToken;
+                            saveOAuthAccounts();
+                            reload();
                           }}
                           menuExtras={
                             <MenuItem
                               className="danger"
                               onClick={() => {
-                                void (async () => {
-                                  await logOutAccount();
-                                  removeAccount();
-                                  location.href = location.pathname || '/';
-                                })();
+                                removeAccount();
+                                location.href = location.pathname || '/';
                               }}
                             >
                               <Icon icon="x" />

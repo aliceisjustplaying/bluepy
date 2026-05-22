@@ -1,11 +1,11 @@
-import type { mastodon } from 'masto';
 import { useEffect, useState } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { shouldShowReplyBadge } from '../utils/reply-badge';
 import states from '../utils/states';
 
 import { memFetchAccount } from './status-helpers';
-import type { AnyAccount, MastoClientFromApi } from './status-types';
+import type { AnyAccount, CompatClientFromApi } from './status-types';
 
 type ReplyToAccount =
   | AnyAccount
@@ -24,8 +24,8 @@ interface StatusReplyParentArgs {
   displayName?: string;
   statusID: string;
   spoilerText?: string | null;
-  mentions?: mastodon.v1.StatusMention[];
-  masto: MastoClientFromApi;
+  mentions?: AtprotoCompat.v1.StatusMention[];
+  compat: CompatClientFromApi;
   atproto?: {
     replyParentAccount?: AnyAccount | null;
     replyParentUnavailable?: boolean;
@@ -44,13 +44,14 @@ export default function useStatusReplyParent({
   statusID,
   spoilerText,
   mentions,
-  masto,
+  compat,
   atproto,
 }: StatusReplyParentArgs) {
   let inReplyToAccountRef: ReplyToAccount =
     atproto?.replyParentAccount ||
     mentions?.find(
-      (mention: mastodon.v1.StatusMention) => mention.id === inReplyToAccountId,
+      (mention: AtprotoCompat.v1.StatusMention) =>
+        mention.id === inReplyToAccountId,
     );
   if (!inReplyToAccountRef && inReplyToAccountId === statusID) {
     inReplyToAccountRef = { url: accountURL, username, displayName };
@@ -73,7 +74,7 @@ export default function useStatusReplyParent({
       }
 
       const abortController = new AbortController();
-      memFetchAccount(inReplyToAccountId, masto, abortController.signal)
+      memFetchAccount(inReplyToAccountId, compat, abortController.signal)
         .then((fetchedAccount: unknown) => {
           const acc = fetchedAccount as AnyAccount;
           setInReplyToAccount(acc);
@@ -89,11 +90,12 @@ export default function useStatusReplyParent({
       };
     }
     return undefined;
-  }, [withinContext, inReplyToAccount, inReplyToAccountId, instance, masto]);
+  }, [withinContext, inReplyToAccount, inReplyToAccountId, instance, compat]);
   const mentionSelf =
     (inReplyToAccountId && inReplyToAccountId === currentAccount) ||
     mentions?.find(
-      (mention: mastodon.v1.StatusMention) => mention.id === currentAccount,
+      (mention: AtprotoCompat.v1.StatusMention) =>
+        mention.id === currentAccount,
     );
   const showReplyBadge = shouldShowReplyBadge({
     inReplyToId,

@@ -1,13 +1,12 @@
 import { useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useEffect, useState } from 'react';
 
 import Timeline2 from '../components/timeline2';
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
-import supports from '../utils/supports';
 import { dedupeBoosts } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
@@ -23,13 +22,13 @@ interface FetchOpts {
 
 interface FetchResult {
   done?: boolean;
-  value: mastodon.v1.Status[] | undefined;
-  originalValue: mastodon.v1.Status[];
+  value: AtprotoCompat.v1.Status[] | undefined;
+  originalValue: AtprotoCompat.v1.Status[];
 }
 
 type HomeTimelineResource = {
   list(opts: FetchOpts): {
-    values(): AsyncIterator<mastodon.v1.Status[]>;
+    values(): AsyncIterator<AtprotoCompat.v1.Status[]>;
   };
 };
 
@@ -95,7 +94,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
       }),
     path || '/_following2',
   );
-  const { masto, streaming, instance, client } = api();
+  const { compat, streaming, instance, client } = api();
   const [streamingClient, setStreamingClient] = useState<
     StreamingUserClient | undefined
   >(streaming as StreamingUserClient | undefined);
@@ -118,8 +117,6 @@ function Following2({ title, path, id, ...props }: Following2Props) {
   __BENCHMARK.end('time-to-following');
 
   console.debug('RENDER Following2', title, id);
-  const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
-
   async function fetchHome({
     max_id,
     min_id,
@@ -131,16 +128,12 @@ function Following2({ title, path, id, ...props }: Following2Props) {
     };
     if (max_id) opts.max_id = max_id;
     if (min_id) opts.min_id = min_id;
-    if (supportsPixelfed) {
-      opts.include_reblogs = true;
-    }
-
-    const homeResource = getMastoV1Resource<{ home: HomeTimelineResource }>(
-      masto,
+    const homeResource = getCompatV1Resource<{ home: HomeTimelineResource }>(
+      compat,
       'timelines',
     ).home;
     const results = await homeResource.list(opts).values().next();
-    let { value } = results as { value: mastodon.v1.Status[] | undefined };
+    let { value } = results as { value: AtprotoCompat.v1.Status[] | undefined };
 
     const originalValue = [...(value || [])];
     if (value?.length) {
@@ -174,16 +167,13 @@ function Following2({ title, path, id, ...props }: Following2Props) {
         limit: 5,
         since_id: minID ?? undefined,
       };
-      if (supportsPixelfed) {
-        opts.include_reblogs = true;
-      }
-      const homeResource = getMastoV1Resource<{ home: HomeTimelineResource }>(
-        masto,
+      const homeResource = getCompatV1Resource<{ home: HomeTimelineResource }>(
+        compat,
         'timelines',
       ).home;
       const results = await homeResource.list(opts).values().next();
       const { value } = results as {
-        value: mastodon.v1.Status[] | undefined;
+        value: AtprotoCompat.v1.Status[] | undefined;
       };
       if (value?.length) {
         const deduped = dedupeBoosts(value, instance);
@@ -206,7 +196,7 @@ function Following2({ title, path, id, ...props }: Following2Props) {
         for await (const entry of sub) {
           if (!sub) break;
           if (entry.event === 'status.update') {
-            const status = entry.payload as mastodon.v1.Status;
+            const status = entry.payload as AtprotoCompat.v1.Status;
             console.log(`🔄 Status ${status.id} updated`);
             saveStatus(toSaveStatus(status), instance);
           } else if (entry.event === 'delete') {

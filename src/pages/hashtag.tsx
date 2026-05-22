@@ -7,7 +7,6 @@ import {
   MenuHeader,
   MenuItem,
 } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 import type { SyntheticEvent } from 'react';
 import { useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -16,7 +15,8 @@ import Icon from '../components/icon';
 import Menu2 from '../components/menu2';
 import { SHORTCUTS_LIMIT } from '../components/shortcuts-settings';
 import Timeline from '../components/timeline';
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import { navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
@@ -28,13 +28,11 @@ import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
 
-// Limit is 4 per "mode"
-// https://github.com/mastodon/mastodon/issues/15194
-// Hard-coded https://github.com/mastodon/mastodon/blob/19614ba2477f3d12468f5ec251ce1cc5f8c6210c/app/models/tag_feed.rb#L4
+// Limit is 4 per mode.
 const TAGS_LIMIT_PER_MODE = 4;
 const TOTAL_TAGS_LIMIT = TAGS_LIMIT_PER_MODE + 1;
 
-type HashtagStatus = mastodon.v1.Status;
+type HashtagStatus = AtprotoCompat.v1.Status;
 
 interface SaveStatusPayload extends Record<string, unknown> {
   id?: string;
@@ -104,7 +102,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const media = mediaView || !!searchParams.get('media');
   const linkParams = media ? '?media=1' : '';
 
-  const { masto, instance, authenticated } = api({
+  const { compat, instance, authenticated } = api({
     instance: props?.instance || params.instance,
   });
   const { authenticated: currentAuthenticated } = api();
@@ -127,8 +125,8 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const requiresAuth = timelineAccess === 'authenticated';
   const isPrivate = requiresAuth && !authenticated;
 
-  const tagTimelines = getMastoV1Resource<{ tag: HashtagTimelineEndpoint }>(
-    masto,
+  const tagTimelines = getCompatV1Resource<{ tag: HashtagTimelineEndpoint }>(
+    compat,
     'timelines',
   ).tag;
   // const hashtagsIterator = useRef();
@@ -137,7 +135,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
     firstLoad?: boolean,
   ): Promise<FetchHashtagsResult> {
     // if (firstLoad || !hashtagsIterator.current) {
-    //   hashtagsIterator.current = masto.v1.timelines.tag.$select(hashtag).list({
+    //   hashtagsIterator.current = compat.v1.timelines.tag.$select(hashtag).list({
     //     limit: LIMIT,
     //     any: hashtags.slice(1),
     //   }).values();
@@ -322,6 +320,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
                 >
                   <Icon icon="hashtag" />
                   <input
+                    aria-label="Month filter"
                     ref={ref}
                     type="text"
                     placeholder={

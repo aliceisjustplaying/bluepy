@@ -20,10 +20,6 @@ export default function openCompose(opts?: ComposeOpts): Window | null {
   );
 
   if (newWin) {
-    // if (masto) {
-    //   newWin.masto = masto;
-    // }
-
     (newWin as Window & { __COMPOSE__?: ComposeOpts }).__COMPOSE__ = opts;
   } else {
     alert(t`Looks like your browser is blocking popups.`);

@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import getHTMLText from '../utils/get-html-text';
 
 import Icon from './icon';
@@ -8,7 +8,7 @@ import TranslationBlock from './translation-block';
 
 interface TranslatedBioSheetProps {
   note?: string;
-  fields?: mastodon.v1.AccountField[];
+  fields?: AtprotoCompat.v1.AccountField[];
   onClose?: () => void;
 }
 

@@ -1,17 +1,17 @@
-import type { mastodon } from 'masto';
 import type { ReactNode } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import type { api } from '../utils/api';
 import type { AtprotoLabel } from '../utils/atproto-labels';
 
-export type AnyAccount = mastodon.v1.Account & Record<string, unknown>;
+export type AnyAccount = AtprotoCompat.v1.Account & Record<string, unknown>;
 
-export type AnyPoll = mastodon.v1.Poll & {
-  emojis?: mastodon.v1.CustomEmoji[];
+export type AnyPoll = AtprotoCompat.v1.Poll & {
+  emojis?: AtprotoCompat.v1.CustomEmoji[];
 } & Record<string, unknown>;
 
 export type AnyPreviewCard = Omit<
-  mastodon.v1.PreviewCard,
+  AtprotoCompat.v1.PreviewCard,
   | 'authorName'
   | 'authorUrl'
   | 'authors'
@@ -56,7 +56,7 @@ export type AnyPreviewCard = Omit<
 } & Record<string, unknown>;
 
 export type AnyMediaAttachment = Omit<
-  mastodon.v1.MediaAttachment,
+  AtprotoCompat.v1.MediaAttachment,
   | 'blurhash'
   | 'description'
   | 'meta'
@@ -76,7 +76,7 @@ export type AnyMediaAttachment = Omit<
   previewRemoteUrl?: string;
   previewUrl: string;
   remoteUrl?: string;
-  type: mastodon.v1.MediaAttachment['type'];
+  type: AtprotoCompat.v1.MediaAttachment['type'];
   url?: string | null;
 } & Record<string, unknown>;
 
@@ -102,9 +102,9 @@ interface StatusQuoteApproval {
 
 // Loose status type: some non-API extension fields (e.g. `_atproto`, `_deleted`,
 // `_pinned`, `emojiReactions`, `quoteApproval`) are added at runtime. Keep the
-// Mastodon base shape but override status-rendering fields that the app mutates.
+// compat base shape but override status-rendering fields that the app mutates.
 export type AnyStatus = Omit<
-  mastodon.v1.Status,
+  AtprotoCompat.v1.Status,
   | 'account'
   | 'card'
   | 'editedAt'
@@ -156,26 +156,26 @@ export interface GhostInfo {
   inReplyToAccountId?: string | null;
 }
 
-export type MastoClientFromApi = ReturnType<typeof api>['masto'];
+export type CompatClientFromApi = ReturnType<typeof api>['compat'];
 
 type StatusReactionList = (opts?: { limit: number }) => {
   values(): AsyncIterator<AnyAccount[], undefined>;
 };
 
-export interface StatusContentMasto {
+export interface StatusContentCompat {
   v1: {
     statuses: {
       $select(id: string): {
-        unreblog(): Promise<mastodon.v1.Status>;
-        reblog(): Promise<mastodon.v1.Status>;
-        unfavourite(): Promise<mastodon.v1.Status>;
-        favourite(): Promise<mastodon.v1.Status>;
-        unbookmark(): Promise<mastodon.v1.Status>;
-        bookmark(): Promise<mastodon.v1.Status>;
-        unmute(): Promise<mastodon.v1.Status>;
-        mute(): Promise<mastodon.v1.Status>;
-        unpin(): Promise<mastodon.v1.Status>;
-        pin(): Promise<mastodon.v1.Status>;
+        unreblog(): Promise<AtprotoCompat.v1.Status>;
+        reblog(): Promise<AtprotoCompat.v1.Status>;
+        unfavourite(): Promise<AtprotoCompat.v1.Status>;
+        favourite(): Promise<AtprotoCompat.v1.Status>;
+        unbookmark(): Promise<AtprotoCompat.v1.Status>;
+        bookmark(): Promise<AtprotoCompat.v1.Status>;
+        unmute(): Promise<AtprotoCompat.v1.Status>;
+        mute(): Promise<AtprotoCompat.v1.Status>;
+        unpin(): Promise<AtprotoCompat.v1.Status>;
+        pin(): Promise<AtprotoCompat.v1.Status>;
         remove(): Promise<unknown>;
         history: {
           list(): Promise<AnyStatus[] | undefined>;

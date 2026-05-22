@@ -1,13 +1,11 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import haptics from '../utils/haptics';
 import { supportsNativeQuote } from '../utils/quote-utils';
-import showCompose from '../utils/show-compose';
 import showToast from '../utils/show-toast';
 import states, { getStatus, saveStatus } from '../utils/states';
-import supports from '../utils/supports';
 
 import Icon from './icon';
 import MenuConfirm from './menu-confirm';
@@ -29,7 +27,7 @@ type StatusAccountMenuProps = Pick<
   StatusMenuPartsArgs,
   | 'isSelf'
   | 'mentionSelf'
-  | 'masto'
+  | 'compat'
   | 'id'
   | 'muted'
   | 'instance'
@@ -50,7 +48,7 @@ type StatusAccountMenuProps = Pick<
 export default function StatusAccountMenu({
   isSelf,
   mentionSelf,
-  masto,
+  compat,
   id,
   muted,
   instance,
@@ -79,7 +77,7 @@ export default function StatusAccountMenu({
             void haptics.trigger('light');
             void (async () => {
               try {
-                const stmtAction = masto.v1.statuses.$select(id);
+                const stmtAction = compat.v1.statuses.$select(id);
                 const newStatus = await (muted
                   ? stmtAction.unmute()
                   : stmtAction.mute());
@@ -121,7 +119,7 @@ export default function StatusAccountMenu({
             void haptics.trigger('light');
             void (async () => {
               try {
-                const stmtAction = masto.v1.statuses.$select(id);
+                const stmtAction = compat.v1.statuses.$select(id);
                 const newStatus = await (pinned
                   ? stmtAction.unpin()
                   : stmtAction.pin());
@@ -181,23 +179,6 @@ export default function StatusAccountMenu({
               </MenuItem>
             )}
           <div className="menu-horizontal">
-            {supports('@mastodon/post-edit') && (
-              <MenuItem
-                onClick={() => {
-                  showCompose({
-                    editStatus: status,
-                    quoteStatus: (
-                      status.quote as mastodon.v1.Quote | null | undefined
-                    )?.quotedStatus,
-                  } as Parameters<typeof showCompose>[0]);
-                }}
-              >
-                <Icon icon="pencil" />
-                <span>
-                  <Trans>Edit</Trans>
-                </span>
-              </MenuItem>
-            )}
             {isSizeLarge && (
               <MenuConfirm
                 subMenu
@@ -220,7 +201,7 @@ export default function StatusAccountMenu({
                 onClick={() => {
                   void (async () => {
                     try {
-                      await masto.v1.statuses.$select(id).remove();
+                      await compat.v1.statuses.$select(id).remove();
                       const cachedStatus = getStatus(id, instance);
                       if (cachedStatus) {
                         cachedStatus._deleted = true;
@@ -266,13 +247,13 @@ export default function StatusAccountMenu({
                 void haptics.trigger('light');
                 void (async () => {
                   try {
-                    const quotedStatusID = (quote as mastodon.v1.Quote)
+                    const quotedStatusID = (quote as AtprotoCompat.v1.Quote)
                       .quotedStatus?.id;
                     if (!quotedStatusID) {
                       throw new Error('Quoted status unavailable');
                     }
                     const quotesResource =
-                      masto.v1.statuses.$select(quotedStatusID).quotes;
+                      compat.v1.statuses.$select(quotedStatusID).quotes;
                     if (!hasQuoteRevokeResource(quotesResource)) {
                       throw new Error('Quote revoke endpoint unavailable');
                     }

@@ -1,11 +1,11 @@
 import './quote-chain-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { Ref } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import { getStatus } from '../utils/states';
 import useTruncated from '../utils/useTruncated';
 
@@ -14,7 +14,7 @@ import Link, { type LinkProps } from './link';
 import Loader from './loader';
 import type { AnyStatus, RenderStatus } from './status-types';
 
-type QuotedStatus = mastodon.v1.Status & {
+type QuotedStatus = AtprotoCompat.v1.Status & {
   quote?: {
     quotedStatusId?: string;
     quotedStatus?: { id?: string };
@@ -48,7 +48,7 @@ export default function QuoteChainModal({
   renderStatus,
 }: QuoteChainModalProps) {
   const { t } = useLingui();
-  const { masto } = api();
+  const { compat } = api();
 
   const [posts, setPosts] = useState<QuotedStatus[]>([]);
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
@@ -59,12 +59,12 @@ export default function QuoteChainModal({
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Memoize the statuses.$select endpoint so the loader callback's identity
-  // is tied to the stable `masto` client, not to per-render proxy access.
+  // is tied to the stable `compat` client, not to per-render proxy access.
   const statusesSelect = useMemo(
     () =>
-      getMastoV1Resource<{ $select: StatusesSelectFn }>(masto, 'statuses')
+      getCompatV1Resource<{ $select: StatusesSelectFn }>(compat, 'statuses')
         .$select,
-    [masto],
+    [compat],
   );
 
   // Track the live `posts` array via a ref so the cycle-detection check

@@ -1,6 +1,6 @@
-import type { mastodon } from 'masto';
+import type { AtprotoCompat } from '../types/atproto-compat';
 
-import { api, getMastoV1Resource } from './api';
+import { api, getCompatV1Resource } from './api';
 import { getCurrentAccountID } from './store-utils';
 
 interface AccountLike {
@@ -11,16 +11,16 @@ interface RelationshipsResource {
   readonly relationships: {
     fetch(params: {
       readonly id: readonly string[];
-    }): Promise<mastodon.v1.Relationship[]>;
+    }): Promise<AtprotoCompat.v1.Relationship[]>;
   };
 }
 
 export async function fetchRelationships(
   accounts: readonly AccountLike[] | null | undefined,
-  relationshipsMap: Record<string, mastodon.v1.Relationship> = {},
-): Promise<Record<string, mastodon.v1.Relationship> | null | undefined> {
+  relationshipsMap: Record<string, AtprotoCompat.v1.Relationship> = {},
+): Promise<Record<string, AtprotoCompat.v1.Relationship> | null | undefined> {
   if (!accounts?.length) return undefined;
-  const { masto } = api();
+  const { compat } = api();
 
   const currentAccount = getCurrentAccountID();
   const uniqueAccountIds = accounts.reduce<string[]>((acc, a) => {
@@ -39,15 +39,15 @@ export async function fetchRelationships(
   if (!uniqueAccountIds.length) return null;
 
   try {
-    const accountsResource = getMastoV1Resource<RelationshipsResource>(
-      masto,
+    const accountsResource = getCompatV1Resource<RelationshipsResource>(
+      compat,
       'accounts',
     );
     const relationships = await accountsResource.relationships.fetch({
       id: uniqueAccountIds,
     });
     const newRelationshipsMap = relationships.reduce<
-      Record<string, mastodon.v1.Relationship>
+      Record<string, AtprotoCompat.v1.Relationship>
     >((acc, r) => {
       acc[r.id] = r;
       return acc;

@@ -2,7 +2,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useReducer, useState } from 'react';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import { api, getCompatV1Resource } from '../utils/api';
 import { getUserLists } from '../utils/lists';
 
 import Icon from './icon';
@@ -43,7 +43,7 @@ interface AddRemoveListsSheetProps {
 
 function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
   const { t } = useLingui();
-  const { masto } = api();
+  const { compat } = api();
   const [uiState, setUIState] = useState<UIState>('default');
   const [lists, setLists] = useState<ListLike[]>([]);
   const [listsContainingAccount, setListsContainingAccount] = useState<
@@ -51,14 +51,14 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
   >([]);
   const [reloadCount, reload] = useReducer((c: number) => c + 1, 0);
 
-  // `masto.v1.accounts` is a proxy that yields a fresh reference on every
+  // `compat.v1.accounts` is a proxy that yields a fresh reference on every
   // access; depending on the raw expression would re-fire this effect on
-  // every render. Snapshot the endpoint once (the underlying `masto` client
+  // every render. Snapshot the endpoint once (the underlying `compat` client
   // is stable for the sheet's lifetime) so the dep list captures a stable
   // reference. Re-runs follow `reloadCount`/`accountID` as before.
   const accountsEndpoint = useMemo(
-    () => getMastoV1Resource<AccountListsEndpoint>(masto, 'accounts'),
-    [masto],
+    () => getCompatV1Resource<AccountListsEndpoint>(compat, 'accounts'),
+    [compat],
   );
 
   useEffect(() => {
@@ -121,7 +121,7 @@ function AddRemoveListsSheet({ accountID, onClose }: AddRemoveListsSheetProps) {
                       setUIState('loading');
                       void (async () => {
                         try {
-                          const listsEndpoint = masto.v1
+                          const listsEndpoint = compat.v1
                             .lists as ListsAccountsEndpoint;
                           if (inList) {
                             await listsEndpoint

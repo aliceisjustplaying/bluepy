@@ -1,12 +1,12 @@
 import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { KeyboardEvent, MouseEvent, ReactNode, RefObject } from 'react';
 import { Fragment } from 'react';
 import { memo } from 'react';
 import { use } from 'react';
 import { useSnapshot } from 'valtio';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
 import {
@@ -176,7 +176,7 @@ const QuoteStatus = memo(
       const filterInfo = (!isSelf &&
         isFiltered(
           quoteStatus.filtered as
-            | readonly mastodon.v1.FilterResult[]
+            | readonly AtprotoCompat.v1.FilterResult[]
             | undefined,
           filterContext as string,
         )) as { action?: string } | false;

@@ -1,10 +1,10 @@
 import './quote-settings-sheet.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import type { SyntheticEvent } from 'react';
 import { useState } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { api } from '../utils/api';
 import showToast from '../utils/show-toast';
 import { saveStatus } from '../utils/states';
@@ -24,7 +24,7 @@ function isQuotePolicy(value: unknown): value is QuotePolicy {
 
 interface QuoteSettingsSheetProps {
   onClose: (arg?: unknown) => void;
-  post: mastodon.v1.Status & { instance?: string };
+  post: AtprotoCompat.v1.Status & { instance?: string };
   currentPolicy?: string | null;
   renderStatus: RenderStatus;
 }
@@ -32,7 +32,7 @@ interface QuoteSettingsSheetProps {
 interface InteractionPolicyClient {
   update(params: {
     quote_approval_policy: string;
-  }): Promise<mastodon.v1.Status>;
+  }): Promise<AtprotoCompat.v1.Status>;
 }
 
 interface StatusesSelector {
@@ -49,7 +49,7 @@ interface SaveStatusPayload extends Record<string, unknown> {
 }
 
 function toSaveStatus(
-  status: mastodon.v1.Status | null | undefined,
+  status: AtprotoCompat.v1.Status | null | undefined,
 ): SaveStatusPayload | null | undefined {
   return status as SaveStatusPayload | null | undefined;
 }
@@ -61,7 +61,7 @@ function QuoteSettingsSheet({
   renderStatus,
 }: QuoteSettingsSheetProps) {
   const { t } = useLingui();
-  const { masto } = api();
+  const { compat } = api();
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
     'default',
   );
@@ -81,7 +81,7 @@ function QuoteSettingsSheet({
     setUIState('loading');
 
     try {
-      const statuses = masto.v1.statuses as StatusesSelector;
+      const statuses = compat.v1.statuses as StatusesSelector;
       const newStatus = await statuses
         .$select(post.id)
         .interactionPolicy.update({
@@ -136,6 +136,7 @@ function QuoteSettingsSheet({
           }}
         >
           <select
+            aria-label="Quote settings policy"
             value={selectedPolicy}
             name="quoteApprovalPolicy"
             disabled={uiState === 'loading'}

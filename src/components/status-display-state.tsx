@@ -1,8 +1,8 @@
-import type { mastodon } from 'masto';
 import { Fragment } from 'react';
 import { useMemo, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { getPreferences } from '../utils/api';
 import htmlContentLength from '../utils/html-content-length';
 import states from '../utils/states';
@@ -14,7 +14,7 @@ interface StatusDisplayStateArgs {
   id: string;
   content?: string | null;
   language?: string | null;
-  emojis?: mastodon.v1.CustomEmoji[];
+  emojis?: AtprotoCompat.v1.CustomEmoji[];
   readOnly?: boolean;
   withinContext?: boolean;
   isSizeLarge: boolean;

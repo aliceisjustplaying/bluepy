@@ -130,8 +130,7 @@ function MediaAttachment({
 }: MediaAttachmentProps) {
   const { i18n, t } = useLingui();
   const [uiState, setUIState] = useState('default');
-  const supportsEdit =
-    supports('@mastodon') || supports('@gotosocial/edit-media-attributes');
+  const supportsEdit = supports('@atproto/edit-media-attributes');
   const { type, id, fileData, fileName, file } = attachment;
   const fileSize = attachment.size ?? file?.size;
   const url = useMemo(() => {
@@ -353,6 +352,7 @@ function MediaAttachment({
         </div>
       ) : (
         <textarea
+          aria-label="Media description"
           ref={textareaRef}
           value={description || ''}
           lang={lang}
@@ -491,6 +491,7 @@ function MediaAttachment({
             />
           ) : suffixType === 'video' || suffixType === 'gifv' ? (
             <video
+              aria-label="Video attachment preview"
               src={url + '#t=0.1'} // Make Safari show 1st-frame preview
               playsInline
               muted
@@ -513,7 +514,11 @@ function MediaAttachment({
             // TODO(oxlint:jsx-a11y/media-has-caption): user-uploaded
             // attachment preview; no captions track is available, and
             // emitting an empty <track> would advertise fake captions.
-            <audio src={url as string} controls />
+            <audio
+              aria-label="Audio attachment preview"
+              src={url as string}
+              controls
+            />
           ) : null}
         </div>
         {descTextarea}
@@ -585,13 +590,22 @@ function MediaAttachment({
                   // attachment preview; no captions track is available,
                   // and emitting an empty <track> would advertise fake
                   // captions.
-                  <video src={url as string} playsInline controls />
+                  <video
+                    aria-label="Video attachment preview"
+                    src={url as string}
+                    playsInline
+                    controls
+                  />
                 ) : suffixType === 'audio' ? (
                   // TODO(oxlint:jsx-a11y/media-has-caption): user-uploaded
                   // attachment preview; no captions track is available,
                   // and emitting an empty <track> would advertise fake
                   // captions.
-                  <audio src={url as string} controls />
+                  <audio
+                    aria-label="Audio attachment preview"
+                    src={url as string}
+                    controls
+                  />
                 ) : null}
               </div>
               <div className="media-form">

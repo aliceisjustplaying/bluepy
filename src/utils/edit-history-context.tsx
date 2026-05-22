@@ -57,8 +57,8 @@ export function EditHistoryProvider({
   );
 
   const fetchEditHistory = useCallback(async () => {
-    const { masto } = api();
-    const statuses = masto.v1.statuses as {
+    const { compat } = api();
+    const statuses = compat.v1.statuses as {
       $select: (id: string) => {
         history: { list: () => Promise<EditHistoryEntry[]> };
       };

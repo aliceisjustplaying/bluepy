@@ -2,7 +2,6 @@ import './account-statuses.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 import { toUnicode as punycodeToUnicode } from 'punycode/';
 import type { SyntheticEvent } from 'react';
 import {
@@ -23,11 +22,12 @@ import Icon from '../components/icon';
 import Link from '../components/link';
 import Menu2 from '../components/menu2';
 import Timeline from '../components/timeline';
+import type { AtprotoCompat } from '../types/atproto-compat';
 import {
   api,
-  getMastoV1Resource,
-  getMastoV2Resource,
-  type MastoClient,
+  getCompatV1Resource,
+  getCompatV2Resource,
+  type CompatClient,
 } from '../utils/api';
 import isSearchEnabled from '../utils/is-search-enabled';
 import mem from '../utils/mem';
@@ -40,12 +40,11 @@ import {
   getCurrentAccountID,
   isMediaFirstInstance,
 } from '../utils/store-utils';
-import supports from '../utils/supports';
 import useTitle from '../utils/useTitle';
 
-type Status = mastodon.v1.Status;
-type Account = mastodon.v1.Account;
-type FeaturedTag = mastodon.v1.FeaturedTag;
+type Status = AtprotoCompat.v1.Status;
+type Account = AtprotoCompat.v1.Account;
+type FeaturedTag = AtprotoCompat.v1.FeaturedTag;
 type SaveStatusInput = NonNullable<Parameters<typeof saveStatus>[0]>;
 
 interface PinnedGroup {
@@ -55,11 +54,12 @@ interface PinnedGroup {
 }
 
 type TimelineItem = (Status & { _pinned?: boolean }) | PinnedGroup;
-type AccountStatusesListParams = mastodon.rest.v1.ListAccountStatusesParams & {
-  exclude_replies?: boolean;
-  exclude_reblogs?: boolean;
-  only_media?: boolean;
-};
+type AccountStatusesListParams =
+  AtprotoCompat.rest.v1.ListAccountStatusesParams & {
+    exclude_replies?: boolean;
+    exclude_reblogs?: boolean;
+    only_media?: boolean;
+  };
 
 interface AccountStatusesProps {
   columnMode?: boolean;
@@ -83,7 +83,7 @@ const LIMIT = 20;
 const MIN_YEAR = 1983;
 const MIN_YEAR_MONTH = `${MIN_YEAR}-01`; // Birth of the Internet
 
-function stateStatus<T extends mastodon.v1.Status>(
+function stateStatus<T extends AtprotoCompat.v1.Status>(
   status: T,
 ): T & SaveStatusInput {
   return status as T & SaveStatusInput;
@@ -201,10 +201,10 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   const excludeBoosts = !!searchParams.get('boosts');
   const tagged = searchParams.get('tagged');
   const media = !!searchParams.get('media');
-  const { masto, instance, authenticated } = api({
+  const { compat, instance, authenticated } = api({
     instance: params?.instance,
   });
-  const { masto: currentMasto, instance: currentInstance } = api();
+  const { compat: currentCompat, instance: currentInstance } = api();
   const accountStatusesIterator = useRef<AsyncIterator<Status[]> | undefined>(
     undefined,
   );
@@ -290,7 +290,10 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       }
 
       const searchResource =
-        getMastoV2Resource<mastodon.rest.v2.SearchResource>(masto, 'search');
+        getCompatV2Resource<AtprotoCompat.rest.v2.SearchResource>(
+          compat,
+          'search',
+        );
       const searchResults = await searchResource.list({
         q: `from:${account.acct} after:${afterStr} before:${beforeStr}`,
         type: 'statuses',
@@ -311,7 +314,10 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
 
     let results: TimelineItem[] = [];
     const accountsResource =
-      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
+      getCompatV1Resource<AtprotoCompat.rest.v1.AccountsResource>(
+        compat,
+        'accounts',
+      );
     if (firstLoad && !columnMode) {
       const { value } = await accountsResource
         .$select(id as string)
@@ -354,36 +360,32 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     }
     const { value, done } = await accountStatusesIterator.current.next();
     if (value?.length) {
-      if (!supports('@mastodon/pinned-posts')) {
-        // Check if value is same as pinned post (results)
-        // If the index for every post is the same, means API might not support pinned posts
-        // TODO: This is a really weird check, fix this at some point
-        if (results.length) {
-          let pinnedStatusesIds: string[] = [];
-          const first = results[0];
-          if (
-            first &&
-            typeof first === 'object' &&
-            (first as PinnedGroup).type === 'pinned'
-          ) {
-            pinnedStatusesIds = (first as PinnedGroup).id;
-          } else {
-            // TODO(oxlint:no-underscore-dangle) `_pinned` is the project-wide
-            // pinned-status marker shared with timeline.tsx; renaming is out
-            // of scope.
-            pinnedStatusesIds = (
-              results as Array<Status & { _pinned?: boolean }>
-            )
-              .filter((status) => status._pinned)
-              .map((status) => status.id);
-          }
-          const containsAllPinned = pinnedStatusesIds.every((postId) =>
-            value.some((status: Status) => status.id === postId),
-          );
-          if (containsAllPinned) {
-            // Remove pinned posts
-            results = [];
-          }
+      // Check if value is same as pinned post (results)
+      // If the index for every post is the same, means API might not support pinned posts
+      // TODO: This is a really weird check, fix this at some point
+      if (results.length) {
+        let pinnedStatusesIds: string[] = [];
+        const first = results[0];
+        if (
+          first &&
+          typeof first === 'object' &&
+          (first as PinnedGroup).type === 'pinned'
+        ) {
+          pinnedStatusesIds = (first as PinnedGroup).id;
+        } else {
+          // TODO(oxlint:no-underscore-dangle) `_pinned` is the project-wide
+          // pinned-status marker shared with timeline.tsx; renaming is out
+          // of scope.
+          pinnedStatusesIds = (results as Array<Status & { _pinned?: boolean }>)
+            .filter((status) => status._pinned)
+            .map((status) => status.id);
+        }
+        const containsAllPinned = pinnedStatusesIds.every((postId) =>
+          value.some((status: Status) => status.id === postId),
+        );
+        if (containsAllPinned) {
+          // Remove pinned posts
+          results = [];
         }
       }
 
@@ -427,12 +429,15 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   useTitle(title, ['/:instance/a/:id', '/a/:id', '/:scheme://*', '/:atUri']);
 
   const refetchAccount = useCallback(() => {
-    return memFetchAccount(id as string, masto);
-  }, [id, masto]);
+    return memFetchAccount(id as string, compat);
+  }, [id, compat]);
 
   useEffect(() => {
     const accountsResource =
-      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
+      getCompatV1Resource<AtprotoCompat.rest.v1.AccountsResource>(
+        compat,
+        'accounts',
+      );
     void (async () => {
       try {
         const acc = await refetchAccount();
@@ -455,7 +460,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         }
       }
     })();
-  }, [id, mediaFirst, refetchAccount, masto]);
+  }, [id, mediaFirst, refetchAccount, compat]);
 
   const { displayName, acct, emojis } = account || ({} as Partial<Account>);
 
@@ -533,6 +538,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             <div className="filter-bar-group">
               <label>
                 <input
+                  aria-label="Show replies"
                   type="checkbox"
                   checked={!excludeReplies}
                   disabled={!!month}
@@ -549,6 +555,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
               </label>
               <label>
                 <input
+                  aria-label="Show reposts"
                   type="checkbox"
                   checked={!excludeBoosts}
                   disabled={!!month}
@@ -628,6 +635,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                   <label className={`filter-field ${month ? 'is-active' : ''}`}>
                     <Icon icon="month" size="l" />
                     <input
+                      aria-label="Month filter"
                       type="month"
                       disabled={!account?.acct}
                       value={month || ''}
@@ -837,12 +845,12 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
               onClick={() => {
                 void (async () => {
                   try {
-                    const { masto: instanceMasto } = api({
+                    const { compat: instanceCompat } = api({
                       instance: accountInstance as string | undefined,
                     });
                     const accountsResource =
-                      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(
-                        instanceMasto,
+                      getCompatV1Resource<AtprotoCompat.rest.v1.AccountsResource>(
+                        instanceCompat,
                         'accounts',
                       );
                     const acc = await accountsResource.lookup({
@@ -876,8 +884,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                   void (async () => {
                     try {
                       const accountsResource =
-                        getMastoV1Resource<mastodon.rest.v1.AccountsResource>(
-                          currentMasto,
+                        getCompatV1Resource<AtprotoCompat.rest.v1.AccountsResource>(
+                          currentCompat,
                           'accounts',
                         );
                       const acc = await accountsResource.lookup({
@@ -1000,6 +1008,7 @@ function MonthPicker(props: MonthPickerProps) {
         ))}
       </select>{' '}
       <input
+        aria-label="Year filter"
         ref={yearFieldRef}
         type="number"
         disabled={disabled}
@@ -1030,9 +1039,12 @@ function MonthPicker(props: MonthPickerProps) {
   );
 }
 
-function fetchAccount(id: string, masto: MastoClient): Promise<Account> {
+function fetchAccount(id: string, compat: CompatClient): Promise<Account> {
   const accountsResource =
-    getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
+    getCompatV1Resource<AtprotoCompat.rest.v1.AccountsResource>(
+      compat,
+      'accounts',
+    );
   return accountsResource.$select(id).fetch();
 }
 const memFetchAccount = pmem(fetchAccount, {

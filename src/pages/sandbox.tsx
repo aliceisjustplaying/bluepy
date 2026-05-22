@@ -575,8 +575,8 @@ export default function Sandbox() {
     // Save original entry
     const originalEntry = apis[currentInstance];
 
-    // Create mock masto client
-    const mockMasto = {
+    // Create mock compat client
+    const mockCompat = {
       v1: {
         polls: {
           $select: () => ({
@@ -589,7 +589,7 @@ export default function Sandbox() {
 
     // Set mock api entry with accessToken to simulate authentication
     apis[currentInstance] = {
-      masto: mockMasto,
+      compat: mockCompat,
       streaming: null,
       instance: currentInstance,
       accessToken: 'sandbox-mock-token',
@@ -1059,6 +1059,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.loading}
                     onChange={() => {
@@ -1071,6 +1072,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.mediaFirst}
                     onChange={() => {
@@ -1083,6 +1085,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.deleted}
                     onChange={() => {
@@ -1100,6 +1103,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="visibility"
                     checked={toggleState.visibility === 'public'}
@@ -1113,6 +1117,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="visibility"
                     checked={toggleState.visibility === 'unlisted'}
@@ -1126,6 +1131,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="visibility"
                     checked={toggleState.visibility === 'private'}
@@ -1139,6 +1145,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="visibility"
                     checked={toggleState.visibility === 'direct'}
@@ -1157,6 +1164,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.hasContent}
                     onChange={() => {
@@ -1184,6 +1192,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'short'}
@@ -1198,6 +1207,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'long'}
@@ -1212,6 +1222,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'shortVerticalLr'}
@@ -1226,6 +1237,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'longVerticalLr'}
@@ -1240,6 +1252,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'links'}
@@ -1254,6 +1267,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'hashtags'}
@@ -1268,6 +1282,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'mentions'}
@@ -1282,6 +1297,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="contentType"
                         checked={toggleState.contentType === 'math'}
@@ -1298,6 +1314,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.hasSpoiler}
                     onChange={() => {
@@ -1311,6 +1328,7 @@ export default function Sandbox() {
                     <li>
                       <label>
                         <input
+                          aria-label="Sandbox demo control"
                           type="radio"
                           name="spoilerType"
                           checked={toggleState.spoilerType === 'all'}
@@ -1324,6 +1342,7 @@ export default function Sandbox() {
                     <li>
                       <label>
                         <input
+                          aria-label="Sandbox demo control"
                           type="radio"
                           name="spoilerType"
                           checked={toggleState.spoilerType === 'mediaOnly'}
@@ -1340,6 +1359,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={parseInt(toggleState.mediaCount) > 0}
                     onChange={(e: SyntheticEvent<HTMLInputElement>) => {
@@ -1359,6 +1379,7 @@ export default function Sandbox() {
                   />
                   <span>Media</span>
                   <input
+                    aria-label="Sandbox demo control"
                     type="number"
                     min="1"
                     // max="4"
@@ -1390,6 +1411,7 @@ export default function Sandbox() {
                         <li key={`media-type-${index}`}>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name={`mediaType${index}`}
                               checked={
@@ -1407,6 +1429,7 @@ export default function Sandbox() {
                           </label>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name={`mediaType${index}`}
                               checked={toggleState.mediaTypes[index] === 'gifv'}
@@ -1422,6 +1445,7 @@ export default function Sandbox() {
                           </label>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name={`mediaType${index}`}
                               checked={
@@ -1439,6 +1463,7 @@ export default function Sandbox() {
                           </label>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name={`mediaType${index}`}
                               checked={
@@ -1463,6 +1488,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={parseInt(toggleState.pollCount) > 0}
                     onChange={(e: SyntheticEvent<HTMLInputElement>) => {
@@ -1481,6 +1507,7 @@ export default function Sandbox() {
                   />
                   <span>Poll</span>
                   <input
+                    aria-label="Sandbox demo control"
                     type="number"
                     min="2"
                     autoComplete="off"
@@ -1497,6 +1524,7 @@ export default function Sandbox() {
                     <li>
                       <label>
                         <input
+                          aria-label="Sandbox demo control"
                           type="checkbox"
                           checked={toggleState.pollMultiple}
                           onChange={() => {
@@ -1511,6 +1539,7 @@ export default function Sandbox() {
                     <li>
                       <label>
                         <input
+                          aria-label="Sandbox demo control"
                           type="checkbox"
                           checked={toggleState.pollExpired}
                           onChange={() => {
@@ -1525,6 +1554,7 @@ export default function Sandbox() {
                     <li>
                       <label>
                         <input
+                          aria-label="Sandbox demo control"
                           type="checkbox"
                           checked={toggleState.pollVoted}
                           onChange={() => {
@@ -1542,6 +1572,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.showCard}
                     onChange={() => {
@@ -1555,6 +1586,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.showTags}
                     onChange={() => {
@@ -1568,6 +1600,7 @@ export default function Sandbox() {
                     <li>
                       <label>
                         <input
+                          aria-label="Sandbox demo control"
                           type="radio"
                           name="tagsCount"
                           checked={toggleState.tagsCount === 'few'}
@@ -1581,6 +1614,7 @@ export default function Sandbox() {
                     <li>
                       <label>
                         <input
+                          aria-label="Sandbox demo control"
                           type="radio"
                           name="tagsCount"
                           checked={toggleState.tagsCount === 'many'}
@@ -1597,6 +1631,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.showQuotes}
                     onChange={() => {
@@ -1605,6 +1640,7 @@ export default function Sandbox() {
                   />
                   <span>Quote post</span>
                   <input
+                    aria-label="Sandbox demo control"
                     type="number"
                     min="1"
                     max="10"
@@ -1624,6 +1660,7 @@ export default function Sandbox() {
                       <label>
                         <span>Nested quote post</span>
                         <input
+                          aria-label="Sandbox demo control"
                           type="number"
                           min="0"
                           max="2"
@@ -1645,6 +1682,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name="quoteState"
                               value="accepted"
@@ -1663,6 +1701,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name="quoteState"
                               value="deleted"
@@ -1681,6 +1720,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name="quoteState"
                               value="unauthorized"
@@ -1701,6 +1741,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name="quoteState"
                               value="pending"
@@ -1719,6 +1760,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name="quoteState"
                               value="rejected"
@@ -1737,6 +1779,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name="quoteState"
                               value="revoked"
@@ -1755,6 +1798,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name="quoteState"
                               value="blocked_account"
@@ -1775,6 +1819,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name="quoteState"
                               value="blocked_domain"
@@ -1795,6 +1840,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="radio"
                               name="quoteState"
                               value="muted_account"
@@ -1820,6 +1866,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="checkbox"
                               checked={toggleState.quoteFilters[0]}
                               onChange={() => {
@@ -1832,6 +1879,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="checkbox"
                               checked={toggleState.quoteFilters[1]}
                               onChange={() => {
@@ -1844,6 +1892,7 @@ export default function Sandbox() {
                         <li>
                           <label>
                             <input
+                              aria-label="Sandbox demo control"
                               type="checkbox"
                               checked={toggleState.quoteFilters[2]}
                               onChange={() => {
@@ -1866,6 +1915,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="size"
                     checked={toggleState.size === 'small'}
@@ -1879,6 +1929,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="size"
                     checked={toggleState.size === 'medium'}
@@ -1892,6 +1943,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="size"
                     checked={toggleState.size === 'large'}
@@ -1910,6 +1962,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="contextType"
                     checked={toggleState.contextType === 'none'}
@@ -1923,6 +1976,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="contextType"
                     checked={toggleState.contextType === 'reblog'}
@@ -1936,6 +1990,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="contextType"
                     checked={toggleState.contextType === 'group'}
@@ -1949,6 +2004,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="contextType"
                     checked={toggleState.contextType === 'reply-to'}
@@ -1967,6 +2023,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.filters[0]}
                     onChange={() => {
@@ -1979,6 +2036,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.filters[1]}
                     onChange={() => {
@@ -1991,6 +2049,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.filters[2]}
                     onChange={() => {
@@ -2008,6 +2067,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="displayStyle"
                     checked={toggleState.displayStyle === 'adaptive'}
@@ -2021,6 +2081,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="radio"
                     name="displayStyle"
                     checked={toggleState.displayStyle === 'narrow'}
@@ -2042,6 +2103,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="mediaPreference"
                         checked={toggleState.mediaPreference === 'default'}
@@ -2055,6 +2117,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="mediaPreference"
                         checked={toggleState.mediaPreference === 'show_all'}
@@ -2068,6 +2131,7 @@ export default function Sandbox() {
                   <li>
                     <label>
                       <input
+                        aria-label="Sandbox demo control"
                         type="radio"
                         name="mediaPreference"
                         checked={toggleState.mediaPreference === 'hide_all'}
@@ -2084,6 +2148,7 @@ export default function Sandbox() {
               <li>
                 <label>
                   <input
+                    aria-label="Sandbox demo control"
                     type="checkbox"
                     checked={toggleState.expandWarnings}
                     onChange={() => {

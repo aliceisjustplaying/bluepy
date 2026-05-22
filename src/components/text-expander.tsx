@@ -5,7 +5,7 @@ import type { HTMLAttributes, Ref } from 'react';
 import { useImperativeHandle } from 'react';
 import { useEffect, useRef } from 'react';
 
-import { api, getMastoV1Resource, getMastoV2Resource } from '../utils/api';
+import { api, getCompatV1Resource, getCompatV2Resource } from '../utils/api';
 import emojifyText from '../utils/emojify-text';
 import getDomain from '../utils/get-domain';
 import isRTL from '../utils/is-rtl';
@@ -121,7 +121,7 @@ function encodeHTML(str: string | number | null | undefined = '') {
 function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
   const { t } = useLingui();
   const textExpanderRef = useRef<HTMLElement | null>(null);
-  const { masto } = api();
+  const { compat } = api();
   const textExpanderTextRef = useRef<string>('');
   const hasTextExpanderRef = useRef<boolean>(false);
 
@@ -169,18 +169,19 @@ function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
             try {
               let searchResults: AccountResult[];
               if (type === 'accounts') {
-                searchResults = await getMastoV1Resource<AccountSearchResource>(
-                  masto,
-                  'accounts',
-                ).search.list({
-                  q: text,
-                  limit: 5,
-                  resolve: false,
-                });
+                searchResults =
+                  await getCompatV1Resource<AccountSearchResource>(
+                    compat,
+                    'accounts',
+                  ).search.list({
+                    q: text,
+                    limit: 5,
+                    resolve: false,
+                  });
               } else {
                 const response =
-                  await getMastoV2Resource<TextExpanderSearchResource>(
-                    masto,
+                  await getCompatV2Resource<TextExpanderSearchResource>(
+                    compat,
                     'search',
                   ).list({
                     type,
@@ -366,7 +367,7 @@ function TextExpander({ ref, onTrigger = null, ...props }: TextExpanderProps) {
         handleDeactivate,
       );
     };
-  }, [onTrigger, t, masto]);
+  }, [onTrigger, t, compat]);
 
   return <text-expander ref={textExpanderRef} {...props} />;
 }

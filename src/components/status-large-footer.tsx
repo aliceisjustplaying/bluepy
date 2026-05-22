@@ -1,8 +1,8 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 import type { ReactNode } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import haptics from '../utils/haptics';
 import { supportsNativeQuote } from '../utils/quote-utils';
 import shortenNumber from '../utils/shorten-number';
@@ -33,7 +33,7 @@ interface StatusLargeFooterProps {
   id: string;
   setShowEdited: (value: string | false) => void;
   emojiReactions?: readonly Record<string, unknown>[];
-  emojis?: readonly mastodon.v1.CustomEmoji[];
+  emojis?: readonly AtprotoCompat.v1.CustomEmoji[];
   repliesCount?: number;
   replyStatus: (e?: LooseClickEvent) => void;
   canQuote?: boolean;
@@ -174,7 +174,7 @@ export default function StatusLargeFooter({
             const isShortCode = /^:.+?:$/.test(name);
             if (isShortCode) {
               const emoji = emojis?.find(
-                (e: mastodon.v1.CustomEmoji) =>
+                (e: AtprotoCompat.v1.CustomEmoji) =>
                   e.shortcode === name.replace(/^:/, '').replace(/:$/, ''),
               );
               if (emoji) {
@@ -323,7 +323,7 @@ export default function StatusLargeFooter({
             }}
           />
         </div>
-        {supports('@mastodon/post-bookmark') && (
+        {supports('@atproto/post-bookmark') && (
           <div className="action">
             <StatusButton
               checked={bookmarked ?? undefined}

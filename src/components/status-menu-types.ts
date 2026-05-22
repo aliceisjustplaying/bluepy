@@ -1,18 +1,18 @@
 import type { MessageDescriptor } from '@lingui/core';
-import type { mastodon } from 'masto';
 import type { ReactNode } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import visibilityIconsMap from '../utils/visibility-icons-map';
 
 import type {
   AnyStatus,
   LooseClickEvent,
-  StatusContentMasto,
+  StatusContentCompat,
 } from './status-types';
 
 export interface StatusMenuPartsArgs {
   accountId?: string | null;
-  mentions?: mastodon.v1.StatusMention[];
+  mentions?: AtprotoCompat.v1.StatusMention[];
   currentAccount?: string | null;
   repliesCount?: number;
   username?: string;
@@ -63,7 +63,7 @@ export interface StatusMenuPartsArgs {
   authenticated?: boolean;
   isSelf?: boolean | string | null;
   mentionSelf?: unknown;
-  masto: StatusContentMasto;
+  compat: StatusContentCompat;
   muted?: boolean | null;
   pinned?: boolean | null;
   isPinnable: boolean;

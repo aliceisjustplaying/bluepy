@@ -6,7 +6,6 @@ import type { I18n, MessageDescriptor } from '@lingui/core';
 import { msg, select } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { getBlurHashAverageColor } from 'fast-blurhash';
-import type { mastodon } from 'masto';
 import { Fragment, type JSX } from 'react';
 import { memo } from 'react';
 import {
@@ -32,7 +31,8 @@ import Modal from '../components/modal';
 import NameText, { type NameTextAccount } from '../components/name-text';
 import NavMenu from '../components/nav-menu';
 import RelativeTime from '../components/relative-time';
-import { api, getMastoV1Resource, getPreferences } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource, getPreferences } from '../utils/api';
 import { catchupPageHasItemsInRange } from '../utils/catchup-fetch';
 import { compareCreatedAt } from '../utils/catchup-sort';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
@@ -50,14 +50,13 @@ import { sorted } from '../utils/sorted';
 import statusPeek from '../utils/status-peek';
 import store from '../utils/store';
 import { getCurrentAccountID, getCurrentAccountNS } from '../utils/store-utils';
-import supports from '../utils/supports';
 import useTitle from '../utils/useTitle';
 
 // Types -----------------------------------------------------------------
 
-// Mastodon's status type is augmented at runtime with bookkeeping flags the
-// catch-up pipeline attaches. Keep the surface open via index signatures so
-// downstream callers can still access the original Status fields.
+// Status records are augmented at runtime with bookkeeping flags the catch-up
+// pipeline attaches. Keep the surface open via index signatures so downstream
+// callers can still access the original fields.
 type FilterInfo =
   | {
       action?: string;
@@ -76,18 +75,20 @@ interface CatchupBooster {
   [key: string]: unknown;
 }
 
-type CatchupAccount = mastodon.v1.Account & NameTextAccount & CatchupBooster;
-type QuoteAccount = CatchupAccount | mastodon.v1.Status['account'];
+type CatchupAccount = AtprotoCompat.v1.Account &
+  NameTextAccount &
+  CatchupBooster;
+type QuoteAccount = CatchupAccount | AtprotoCompat.v1.Status['account'];
 type QuoteStatusLike =
-  | mastodon.v1.Status
+  | AtprotoCompat.v1.Status
   | {
       id?: string | null;
       account?: QuoteAccount;
       spoilerText?: string;
       sensitive?: boolean;
-      emojis?: mastodon.v1.Status['emojis'];
-      poll?: mastodon.v1.Status['poll'];
-      mediaAttachments?: mastodon.v1.Status['mediaAttachments'];
+      emojis?: AtprotoCompat.v1.Status['emojis'];
+      poll?: AtprotoCompat.v1.Status['poll'];
+      mediaAttachments?: AtprotoCompat.v1.Status['mediaAttachments'];
       content?: string;
       [key: string]: unknown;
     };
@@ -98,13 +99,13 @@ interface QuoteLike {
   account?: QuoteAccount;
   spoilerText?: string;
   sensitive?: boolean;
-  emojis?: mastodon.v1.Status['emojis'];
-  mediaAttachments?: mastodon.v1.Status['mediaAttachments'];
+  emojis?: AtprotoCompat.v1.Status['emojis'];
+  mediaAttachments?: AtprotoCompat.v1.Status['mediaAttachments'];
   content?: string;
   [key: string]: unknown;
 }
 
-type CatchupPost = mastodon.v1.Status & {
+type CatchupPost = AtprotoCompat.v1.Status & {
   account: CatchupAccount;
   reblog?: CatchupPost | null;
   _filtered?: FilterInfo;
@@ -185,7 +186,7 @@ interface HomeTimelineParams {
 }
 
 interface HomeIterable {
-  values(): AsyncIterator<mastodon.v1.Status[]>;
+  values(): AsyncIterator<AtprotoCompat.v1.Status[]>;
   params?: HomeTimelineParams | string;
 }
 
@@ -249,7 +250,7 @@ const DTF = mem(
 );
 
 function hasQuote(
-  quote: QuoteLike | mastodon.v1.Status['quote'] | null | undefined,
+  quote: QuoteLike | AtprotoCompat.v1.Status['quote'] | null | undefined,
 ): boolean {
   if (!quote) return false;
   const quotedStatusId =
@@ -259,7 +260,7 @@ function hasQuote(
 }
 
 function quoteLike(
-  quote: QuoteLike | mastodon.v1.Status['quote'] | null | undefined,
+  quote: QuoteLike | AtprotoCompat.v1.Status['quote'] | null | undefined,
 ): QuoteLike | null {
   if (!quote) return null;
   if ('quotedStatus' in quote && quote.quotedStatus) {
@@ -318,7 +319,7 @@ function nameTextAccount(
 }
 
 function quoteNameTextAccount(
-  quote: QuoteLike | mastodon.v1.Status['quote'] | null | undefined,
+  quote: QuoteLike | AtprotoCompat.v1.Status['quote'] | null | undefined,
 ): NameTextAccount | undefined {
   if (!quote) return undefined;
   const quotedStatusAccount =
@@ -335,7 +336,7 @@ function Catchup() {
   const dtf = DTF(i18n.locale);
 
   useTitle(`Catch-up`, '/catchup');
-  const { masto, instance } = api();
+  const { compat, instance } = api();
   const [searchParams, setSearchParams] = useSearchParams();
   const id = searchParams.get('id');
   const [uiState, setUIState] = useState<UIState>('start');
@@ -350,8 +351,6 @@ function Catchup() {
     [currentAccount],
   );
 
-  const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
-
   const fetchHome = useCallback(
     async ({
       maxCreatedAt,
@@ -360,22 +359,15 @@ function Catchup() {
     }): Promise<CatchupPost[]> => {
       console.debug('fetchHome', maxCreatedAt);
       const allResults: CatchupPost[] = [];
-      const timelines = getMastoV1Resource<{
+      const timelines = getCompatV1Resource<{
         home: {
           list(options: { limit: number }): HomeIterable;
         };
-      }>(masto, 'timelines');
+      }>(compat, 'timelines');
       const homeIterable = timelines.home.list({ limit: 40 });
       const homeIterator = homeIterable.values();
       mainloop: while (true) {
         try {
-          if (supportsPixelfed && homeIterable.params) {
-            if (typeof homeIterable.params === 'string') {
-              homeIterable.params += '&include_reblogs=true';
-            } else {
-              homeIterable.params.include_reblogs = true;
-            }
-          }
           const results = await homeIterator.next();
           const { value } = results as { value: CatchupPost[] | undefined };
           if (value?.length) {
@@ -435,7 +427,7 @@ function Catchup() {
 
       return allResults;
     },
-    [masto, supportsPixelfed, isSelf],
+    [compat, isSelf],
   );
 
   const [posts, setPosts] = useState<CatchupPost[]>([]);
@@ -1287,7 +1279,7 @@ function Catchup() {
     },
   );
 
-  const handleArrowKeys = useCallback((e: React.KeyboardEvent) => {
+  const handleArrowKeys = useCallback((e: KeyboardEvent) => {
     const activeElement = document.activeElement as
       | (HTMLElement & { type?: string })
       | null;
@@ -1304,6 +1296,12 @@ function Catchup() {
       return;
     }
   }, []);
+  useEffect(() => {
+    window.addEventListener('keydown', handleArrowKeys);
+    return () => {
+      window.removeEventListener('keydown', handleArrowKeys);
+    };
+  }, [handleArrowKeys]);
 
   return (
     <div
@@ -1372,7 +1370,7 @@ function Catchup() {
             </div>
           </div>
         </header>
-        <main onKeyDown={handleArrowKeys}>
+        <main>
           {uiState === 'start' && (
             <div className="catchup-start">
               <h1>
@@ -1423,6 +1421,7 @@ function Catchup() {
               </p>
               <div className="catchup-form">
                 <input
+                  aria-label="Catch-up time range"
                   ref={catchupRangeRef}
                   type="range"
                   value={range}
@@ -1451,7 +1450,12 @@ function Catchup() {
                 </span>
                 <datalist id="catchup-ranges">
                   {RANGES.map(({ label, value }) => (
-                    <option key={value} value={value} label={_(label)} />
+                    <option
+                      aria-label="Catch-up time range option"
+                      key={value}
+                      value={value}
+                      label={_(label)}
+                    />
                   ))}
                 </datalist>{' '}
                 <button
@@ -1672,6 +1676,7 @@ function Catchup() {
 
                       return (
                         <a
+                          aria-label="Open linked post"
                           key={url}
                           href={url}
                           target="_blank"
@@ -1793,6 +1798,7 @@ function Catchup() {
                 <div className="catchup-filters">
                   <label className="filter-cat">
                     <input
+                      aria-label="Show all posts"
                       type="radio"
                       name="filter-cat"
                       checked={selectedFilterCategory.toLowerCase() === 'all'}
@@ -1816,6 +1822,7 @@ function Catchup() {
                           }
                         >
                           <input
+                            aria-label="Filter posts by category"
                             type="radio"
                             name="filter-cat"
                             checked={
@@ -1853,6 +1860,7 @@ function Catchup() {
                       // Legacy ordering note removed during React migration
                     >
                       <input
+                        aria-label="Filter posts by author"
                         type="radio"
                         name="filter-author"
                         checked={selectedAuthor === author}
@@ -1904,21 +1912,21 @@ function Catchup() {
                   </span>{' '}
                   <fieldset className="radio-field-group">
                     {FILTER_SORTS.map((key) => (
-                      <label
-                        className="filter-sort"
-                        key={key}
-                        onClick={(e) => {
-                          if (sortBy === key) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                          }
-                        }}
-                      >
+                      <label className="filter-sort" key={key}>
                         <input
+                          aria-label="Sort catch-up posts"
                           type="radio"
                           name="filter-sort-cat"
                           checked={sortBy === key}
+                          onClick={(e) => {
+                            if (sortBy === key) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSortOrder(
+                                sortOrder === 'asc' ? 'desc' : 'asc',
+                              );
+                            }
+                          }}
                           onChange={() => {
                             setSortBy(key);
                             const order =
@@ -1964,6 +1972,7 @@ function Catchup() {
                     {FILTER_GROUPS.map((key) => (
                       <label className="filter-group" key={key || 'none'}>
                         <input
+                          aria-label="Group catch-up posts"
                           type="radio"
                           name="filter-group"
                           checked={groupBy === key}
@@ -2141,7 +2150,7 @@ function Catchup() {
                 <dd>
                   <table>
                     <tbody>
-                      <tr>
+                      <tr aria-label="Next post shortcut">
                         <td>
                           <Trans>Next post</Trans>
                         </td>
@@ -2149,7 +2158,7 @@ function Catchup() {
                           <kbd>j</kbd>
                         </td>
                       </tr>
-                      <tr>
+                      <tr aria-label="Previous post shortcut">
                         <td>
                           <Trans>Previous post</Trans>
                         </td>
@@ -2157,7 +2166,7 @@ function Catchup() {
                           <kbd>k</kbd>
                         </td>
                       </tr>
-                      <tr>
+                      <tr aria-label="Next author shortcut">
                         <td>
                           <Trans>Next author</Trans>
                         </td>
@@ -2165,7 +2174,7 @@ function Catchup() {
                           <kbd>l</kbd>
                         </td>
                       </tr>
-                      <tr>
+                      <tr aria-label="Previous author shortcut">
                         <td>
                           <Trans>Previous author</Trans>
                         </td>
@@ -2173,7 +2182,7 @@ function Catchup() {
                           <kbd>h</kbd>
                         </td>
                       </tr>
-                      <tr>
+                      <tr aria-label="Open post details shortcut">
                         <td>
                           <Trans>Open post details</Trans>
                         </td>
@@ -2181,7 +2190,7 @@ function Catchup() {
                           <kbd>Enter</kbd>
                         </td>
                       </tr>
-                      <tr>
+                      <tr aria-label="Scroll to top shortcut">
                         <td>
                           <Trans>Scroll to top</Trans>
                         </td>
@@ -2440,7 +2449,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
             </span>
           )}
           {mediaAttachments?.length
-            ? mediaAttachments.map((m: mastodon.v1.MediaAttachment) => {
+            ? mediaAttachments.map((m: AtprotoCompat.v1.MediaAttachment) => {
                 const mediaURL = m.previewUrl || m.url;
                 const remoteMediaURL = m.previewRemoteUrl || m.remoteUrl;
                 const mMeta = m.meta as

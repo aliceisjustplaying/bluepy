@@ -1,10 +1,10 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
-import type { mastodon } from 'masto';
 import { toUnicode as punycodeToUnicode } from 'punycode/';
 import type { HTMLAttributes, ReactElement } from 'react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { api } from '../utils/api';
 import isSearchEnabled from '../utils/is-search-enabled';
 import niceDateTime from '../utils/nice-date-time';
@@ -27,11 +27,11 @@ import Menu2 from './menu2';
 import Modal from './modal';
 import TranslatedBioSheet from './translated-bio-sheet';
 
-// Endpoint shims for the masto v1 accounts/relationships APIs. The runtime
-// client exposes these, but the loose `MastoClient` type in `utils/api.ts`
+// Endpoint shims for the compat v1 accounts/relationships APIs. The runtime
+// client exposes these, but the loose `CompatClient` type in `utils/api.ts`
 // types `v1.accounts` as `unknown`. We narrow locally rather than widening the
-// shared interface. Removed when api.ts gains a tighter masto shape.
-type Relationship = mastodon.v1.Relationship;
+// shared interface. Removed when api.ts gains a tighter compat shape.
+type Relationship = AtprotoCompat.v1.Relationship;
 
 interface ListLike {
   id: string;
@@ -73,25 +73,25 @@ interface SearchListParams {
 }
 
 interface SearchListResult {
-  accounts: mastodon.v1.Account[];
+  accounts: AtprotoCompat.v1.Account[];
 }
 
 interface V2SearchEndpoint {
   list(params: SearchListParams): Promise<SearchListResult>;
 }
 
-interface MastoLike {
+interface CompatLike {
   v1: { accounts: unknown } & Record<string, unknown>;
   v2: { search: unknown } & Record<string, unknown>;
   [key: string]: unknown;
 }
 
-function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
-  return masto.v1.accounts as AccountsEndpoint;
+function getAccountsEndpoint(compat: CompatLike): AccountsEndpoint {
+  return compat.v1.accounts as AccountsEndpoint;
 }
 
-function getV2SearchEndpoint(masto: MastoLike): V2SearchEndpoint {
-  return masto.v2.search as V2SearchEndpoint;
+function getV2SearchEndpoint(compat: CompatLike): V2SearchEndpoint {
+  return compat.v2.search as V2SearchEndpoint;
 }
 
 type RelationshipUIState = 'default' | 'loading' | 'error';
@@ -124,7 +124,7 @@ function RelatedActions({
 }: RelatedActionsProps) {
   const { t } = useLingui();
   const {
-    masto: currentMasto,
+    compat: currentCompat,
     instance: currentInstance,
     authenticated: currentAuthenticated,
   } = api();
@@ -162,16 +162,15 @@ function RelatedActions({
     domainBlocking: _domainBlocking,
   } = (relationship ?? {}) as Partial<Relationship>;
 
-  const [currentInfo, setCurrentInfo] = useState<mastodon.v1.Account | null>(
-    null,
-  );
+  const [currentInfo, setCurrentInfo] =
+    useState<AtprotoCompat.v1.Account | null>(null);
   const [isSelf, setIsSelf] = useState<boolean>(false);
 
   const acctWithInstance = acct.includes('@') ? acct : `${acct}@${instance}`;
 
   // The relationship fetch should re-run only when `info` or `authenticated`
   // change — never on every parent render of the (possibly non-memoized)
-  // `onRelationshipChange` callback, never on per-access masto proxy churn,
+  // `onRelationshipChange` callback, never on per-access compat proxy churn,
   // and never on derived values that update in lockstep with `info`. Forward
   // those through refs so the effect body reads the latest values without
   // subscribing to them.
@@ -181,7 +180,7 @@ function RelatedActions({
   }, [onRelationshipChange]);
 
   const fetchContextRef = useRef({
-    currentMasto,
+    currentCompat,
     currentAuthenticated,
     sameInstance,
     id,
@@ -189,18 +188,18 @@ function RelatedActions({
   });
   useEffect(() => {
     fetchContextRef.current = {
-      currentMasto,
+      currentCompat,
       currentAuthenticated,
       sameInstance,
       id,
       instance,
     };
-  }, [currentMasto, currentAuthenticated, sameInstance, id, instance]);
+  }, [currentCompat, currentAuthenticated, sameInstance, id, instance]);
 
   const loadRelationshipForInfo = useEffectEvent(() => {
     if (info) {
       const {
-        currentMasto: ctxMasto,
+        currentCompat: ctxCompat,
         currentAuthenticated: ctxCurrentAuth,
         sameInstance: ctxSameInstance,
         id: ctxId,
@@ -215,7 +214,7 @@ function RelatedActions({
           // Grab this account from my logged-in instance
           const acctHasInstance = info.acct.includes('@');
           try {
-            const results = await getV2SearchEndpoint(ctxMasto).list({
+            const results = await getV2SearchEndpoint(ctxCompat).list({
               q: acctHasInstance
                 ? info.acct
                 : `${info.username}@${ctxInstance}`,
@@ -248,7 +247,7 @@ function RelatedActions({
         setRelationshipUIState('loading');
 
         const fetchRelationships = getAccountsEndpoint(
-          ctxMasto,
+          ctxCompat,
         ).relationships.fetch({
           id: [currentID],
         });
@@ -385,7 +384,9 @@ function RelatedActions({
                 // Fetch lists that have this account
                 void (async () => {
                   try {
-                    const fetchedLists = await getAccountsEndpoint(currentMasto)
+                    const fetchedLists = await getAccountsEndpoint(
+                      currentCompat,
+                    )
                       .$select(accountID.current)
                       .lists.list();
                     console.log('fetched account lists', fetchedLists);
@@ -447,7 +448,7 @@ function RelatedActions({
                         setRelationshipUIState('loading');
                         void (async () => {
                           try {
-                            const rel = await getAccountsEndpoint(currentMasto)
+                            const rel = await getAccountsEndpoint(currentCompat)
                               .$select(accountID.current)
                               .follow({
                                 notify: !notifying,
@@ -478,7 +479,7 @@ function RelatedActions({
                         setRelationshipUIState('loading');
                         void (async () => {
                           try {
-                            const rel = await getAccountsEndpoint(currentMasto)
+                            const rel = await getAccountsEndpoint(currentCompat)
                               .$select(accountID.current)
                               .follow({
                                 reblogs: !showingReblogs,
@@ -645,7 +646,7 @@ function RelatedActions({
                       void (async () => {
                         try {
                           const newRelationship = await getAccountsEndpoint(
-                            currentMasto,
+                            currentCompat,
                           )
                             .$select(currentInfo?.id || id)
                             .unmute();
@@ -676,7 +677,7 @@ function RelatedActions({
                       void (async () => {
                         try {
                           const newRelationship = await getAccountsEndpoint(
-                            currentMasto,
+                            currentCompat,
                           )
                             .$select(currentInfo?.id || id)
                             .mute();
@@ -723,7 +724,7 @@ function RelatedActions({
                       void (async () => {
                         try {
                           const newRelationship = await getAccountsEndpoint(
-                            currentMasto,
+                            currentCompat,
                           )
                             .$select(currentInfo?.id || id)
                             .removeFromFollowers();
@@ -776,7 +777,7 @@ function RelatedActions({
                       try {
                         if (blocking) {
                           const newRelationship = await getAccountsEndpoint(
-                            currentMasto,
+                            currentCompat,
                           )
                             .$select(currentInfo?.id || id)
                             .unblock();
@@ -786,7 +787,7 @@ function RelatedActions({
                           showToast(t`Unblocked @${username}`);
                         } else {
                           const newRelationship = await getAccountsEndpoint(
-                            currentMasto,
+                            currentCompat,
                           )
                             .$select(currentInfo?.id || id)
                             .block();
@@ -851,7 +852,7 @@ function RelatedActions({
             {currentAuthenticated &&
               isSelf &&
               standalone &&
-              supports('@mastodon/profile-edit') && (
+              supports('@atproto/profile-edit') && (
                 <>
                   <MenuDivider />
                   <MenuItem
@@ -886,11 +887,11 @@ function RelatedActions({
                     let newRelationship: Relationship | undefined;
 
                     if (following) {
-                      newRelationship = await getAccountsEndpoint(currentMasto)
+                      newRelationship = await getAccountsEndpoint(currentCompat)
                         .$select(accountID.current)
                         .unfollow();
                     } else {
-                      newRelationship = await getAccountsEndpoint(currentMasto)
+                      newRelationship = await getAccountsEndpoint(currentCompat)
                         .$select(accountID.current)
                         .follow();
                     }

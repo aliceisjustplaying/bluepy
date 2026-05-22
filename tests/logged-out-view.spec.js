@@ -98,36 +98,6 @@ test('login page appview switcher updates data-appview on html element', async (
   await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
 });
 
-test('loads post page and works', async ({ page }) => {
-  await page.route('**/api/v1/statuses/123', async (route) => {
-    await route.fulfill({
-      json: {
-        id: '123',
-        created_at: '2024-01-01T12:00:00.000Z',
-        account: {
-          id: '1',
-          username: 'testuser',
-          display_name: 'Test User',
-          acct: 'testuser@test.social',
-        },
-        content: '<p>This is a test post</p>',
-      },
-    });
-  });
-
-  await page.route('**/api/v1/statuses/123/context', async (route) => {
-    await route.fulfill({
-      json: {
-        ancestors: [],
-        descendants: [],
-      },
-    });
-  });
-
-  await page.goto('/test.social/s/123');
-  await expect(page.locator('text=This is a test post')).toBeVisible();
-});
-
 test('uses cache-busting reloads when the app script never mounts', async ({
   page,
 }) => {
@@ -249,32 +219,6 @@ test('does not treat post-mount module failures as boot failures', async ({
       page.evaluate(() => sessionStorage.getItem('bluepy:boot-reload-state')),
     )
     .toBeNull();
-});
-
-test('redirects old hash post URLs to path routes', async ({ page }) => {
-  await page.route('**/api/v1/statuses/123', async (route) => {
-    await route.fulfill({
-      json: {
-        id: '123',
-        created_at: '2024-01-01T12:00:00.000Z',
-        account: {
-          id: '1',
-          username: 'testuser',
-          display_name: 'Test User',
-          acct: 'testuser@test.social',
-        },
-        content: '<p>Legacy hash post</p>',
-      },
-    });
-  });
-
-  await page.route('**/api/v1/statuses/123/context', async (route) => {
-    await route.fulfill({ json: { ancestors: [], descendants: [] } });
-  });
-
-  await page.goto('/#/test.social/s/123');
-  await expect(page).toHaveURL(/\/test\.social\/s\/123$/);
-  await expect(page.locator('text=Legacy hash post')).toBeVisible();
 });
 
 test('loads native AT URI post URLs', async ({ page }) => {
@@ -1341,7 +1285,7 @@ test('canonicalizes legacy AT record routes on direct load', async ({
     waitUntil: 'domcontentloaded',
   });
   await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
-  await expect(page.locator('text=AT route post')).toBeVisible();
+  await expect(page.getByText('AT route post').last()).toBeVisible();
   await page.goBack();
   await expect(page).toHaveURL(pathRegex('/search'));
 
@@ -1429,7 +1373,7 @@ test('returns to a logged-out AT profile after opening one of its posts', async 
 
   await page.locator(`.status-link-native[href="${AT_POST_PATH}"]`).click();
   await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
-  await expect(page.locator('text=AT route post')).toBeVisible();
+  await expect(page.getByText('AT route post').last()).toBeVisible();
   await expect(page.locator('.deck-close')).toHaveAttribute(
     'href',
     AT_PROFILE_PATH,
@@ -1529,37 +1473,6 @@ test('does not fetch Bluesky media for Blacksky profiles that only lack a banner
     page.locator('.account-container .avatar img').first(),
   ).toHaveAttribute('src', AT_PROFILE_AVATAR);
   expect(blueskyProfileRequests).toBe(0);
-});
-
-test('keeps titles working on legacy account routes', async ({ page }) => {
-  const account = {
-    id: '12345',
-    username: 'legacyuser',
-    acct: 'legacyuser@mastodon.social',
-    display_name: 'Legacy Account',
-    avatar: '',
-    avatar_static: '',
-    header: '',
-    header_static: '',
-    followers_count: 0,
-    following_count: 0,
-    statuses_count: 0,
-    bot: false,
-    locked: false,
-    emojis: [],
-  };
-  await page.route('**/api/v1/accounts/12345', async (route) => {
-    await route.fulfill({ json: account });
-  });
-  await page.route('**/api/v1/accounts/12345/statuses*', async (route) => {
-    await route.fulfill({ json: [] });
-  });
-
-  await page.goto('/mastodon.social/a/12345', {
-    waitUntil: 'domcontentloaded',
-  });
-  await expect(page).toHaveURL(pathRegex('/mastodon.social/a/12345'));
-  await expect(page).toHaveTitle(/Legacy Account/);
 });
 
 test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
@@ -1913,6 +1826,91 @@ test('restores logged-in selected home feed position after opening a feed post',
       page.locator('#home-page').evaluate((element) => element.scrollTop),
     )
     .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('opens the logged-in notifications dropdown without marker writes', async ({
+  page,
+}) => {
+  const headers = { 'access-control-allow-origin': '*' };
+  const timelinePost = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/home-notification-context`,
+    'Home notification context',
+  );
+  const notificationPost = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/home-notification`,
+    'Notification dropdown post',
+  );
+  const profile = {
+    $type: 'app.bsky.actor.defs#profileView',
+    did: AT_REPO,
+    handle: 'alice.test',
+    displayName: 'Alice Profile',
+    description: '',
+    followersCount: 1,
+    followsCount: 2,
+    postsCount: 2,
+    labels: [],
+    viewer: {},
+  };
+
+  await seedAtprotoLogin(page);
+  await page.route('**/xrpc/**', async (route) => {
+    const url = new URL(route.request().url());
+    const endpoint = url.pathname.replace('/xrpc/', '');
+    if (endpoint === 'app.bsky.feed.getTimeline') {
+      await route.fulfill({
+        headers,
+        json: { feed: [{ post: timelinePost }] },
+      });
+      return;
+    }
+    if (endpoint === 'app.bsky.notification.listNotifications') {
+      await route.fulfill({
+        headers,
+        json: {
+          notifications: [
+            {
+              uri: notificationPost.uri,
+              cid: notificationPost.cid,
+              author: notificationPost.author,
+              reason: 'mention',
+              record: {},
+              isRead: false,
+              indexedAt: notificationPost.indexedAt,
+            },
+          ],
+        },
+      });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getPosts') {
+      await route.fulfill({ headers, json: { posts: [notificationPost] } });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.getProfile') {
+      await route.fulfill({ headers, json: profile });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.getPreferences') {
+      await route.fulfill({ headers, json: { preferences: [] } });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.putPreferences') {
+      await route.fulfill({ headers, json: {} });
+      return;
+    }
+    if (endpoint === 'app.bsky.labeler.getServices') {
+      await route.fulfill({ headers, json: { views: [] } });
+      return;
+    }
+    throw new Error(`Unexpected XRPC endpoint in test fixture: ${endpoint}`);
+  });
+
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Notifications' }).click();
+
+  await expect(page.getByText('Notification dropdown post')).toBeVisible();
+  await expect(page.getByText('Unable to fetch notifications.')).toHaveCount(0);
 });
 
 test('keeps app-local routes outside the AT URI schema', async ({ page }) => {

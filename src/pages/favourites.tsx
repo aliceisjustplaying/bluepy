@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useRef } from 'react';
 
 import Timeline from '../components/timeline';
+import type { AtprotoCompat } from '../types/atproto-compat';
 import { api } from '../utils/api';
 import useTitle from '../utils/useTitle';
 
@@ -11,14 +11,14 @@ const LIMIT = 20;
 function Favourites() {
   const { t } = useLingui();
   useTitle(t`Likes`, '/favourites');
-  const { masto, instance } = api();
+  const { compat, instance } = api();
   const favouritesIterator = useRef<
-    AsyncIterator<mastodon.v1.Status[]> | undefined
+    AsyncIterator<AtprotoCompat.v1.Status[]> | undefined
   >(undefined);
   async function fetchFavourites(firstLoad?: boolean) {
     if (firstLoad || !favouritesIterator.current) {
       favouritesIterator.current = (
-        masto.v1.favourites as mastodon.rest.v1.FavouritesResource
+        compat.v1.favourites as AtprotoCompat.rest.v1.FavouritesResource
       )
         .list({ limit: LIMIT })
         .values();

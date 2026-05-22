@@ -1,14 +1,13 @@
 import { useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useEffect, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import Timeline from '../components/timeline';
-import { api, getMastoV1Resource } from '../utils/api';
+import type { AtprotoCompat } from '../types/atproto-compat';
+import { api, getCompatV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
-import supports from '../utils/supports';
 import { dedupeBoosts } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
@@ -40,7 +39,7 @@ interface HomeTimelineParams {
 }
 
 interface HomeIterable {
-  values(): AsyncIterator<mastodon.v1.Status[]>;
+  values(): AsyncIterator<AtprotoCompat.v1.Status[]>;
   params?: HomeTimelineParams | string;
 }
 
@@ -90,14 +89,14 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       }),
     path || '/following',
   );
-  const { masto, streaming, instance, client } = api();
+  const { compat, streaming, instance, client } = api();
   const [streamingClient, setStreamingClient] = useState<unknown>(streaming);
 
   const snapStates = useSnapshot(states);
   const homeIterable = useRef<HomeIterable | undefined>(undefined);
-  const homeIterator = useRef<AsyncIterator<mastodon.v1.Status[]> | undefined>(
-    undefined,
-  );
+  const homeIterator = useRef<
+    AsyncIterator<AtprotoCompat.v1.Status[]> | undefined
+  >(undefined);
   const latestItem = useRef<string | undefined>(undefined);
 
   useEffect(() => {
@@ -118,28 +117,19 @@ function Following({ title, path, id, ...props }: FollowingProps) {
   __BENCHMARK.end('time-to-following');
 
   console.debug('RENDER Following', title, id);
-  const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
-
   async function fetchHome(
     firstLoad?: boolean,
-  ): Promise<IteratorResult<mastodon.v1.Status[]>> {
+  ): Promise<IteratorResult<AtprotoCompat.v1.Status[]>> {
     if (firstLoad || !homeIterator.current) {
       __BENCHMARK.start('fetch-home-first');
-      const homeTimeline = getMastoV1Resource<{ home: HomeTimelineResource }>(
-        masto,
+      const homeTimeline = getCompatV1Resource<{ home: HomeTimelineResource }>(
+        compat,
         'timelines',
       ).home;
       homeIterable.current = homeTimeline.list({
         limit: LIMIT,
       });
       homeIterator.current = homeIterable.current.values();
-    }
-    if (supportsPixelfed && homeIterable.current?.params) {
-      if (typeof homeIterable.current.params === 'string') {
-        homeIterable.current.params += '&include_reblogs=true';
-      } else {
-        homeIterable.current.params.include_reblogs = true;
-      }
     }
     const results = await homeIterator.current.next();
     let { value } = results;
@@ -152,13 +142,13 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       }
 
       // value = filteredItems(value, 'home');
-      value.forEach((item: mastodon.v1.Status) => {
+      value.forEach((item: AtprotoCompat.v1.Status) => {
         saveStatus(toSaveStatus(item), instance);
       });
       value = dedupeBoosts(value, instance);
 
       // ENFORCE sort by datetime (Latest first)
-      value.sort((a: mastodon.v1.Status, b: mastodon.v1.Status) => {
+      value.sort((a: AtprotoCompat.v1.Status, b: AtprotoCompat.v1.Status) => {
         return Date.parse(b.createdAt) - Date.parse(a.createdAt);
       });
     }
@@ -179,16 +169,13 @@ function Following({ title, path, id, ...props }: FollowingProps) {
         limit: 5,
         since_id: latestItem.current,
       };
-      if (supportsPixelfed) {
-        opts.include_reblogs = true;
-      }
-      const homeTimeline = getMastoV1Resource<{
+      const homeTimeline = getCompatV1Resource<{
         home: {
           list(o: typeof opts): {
-            values(): AsyncIterator<mastodon.v1.Status[]>;
+            values(): AsyncIterator<AtprotoCompat.v1.Status[]>;
           };
         };
-      }>(masto, 'timelines').home;
+      }>(compat, 'timelines').home;
       const results = await homeTimeline.list(opts).values().next();
       let { value } = results;
       console.log('checkForUpdates', latestItem.current, value);
@@ -197,7 +184,7 @@ function Following({ title, path, id, ...props }: FollowingProps) {
         latestItem.current = value[0].id;
         value = dedupeBoosts(value, instance);
         value = filteredItems(value, 'home');
-        if (value.some((item: mastodon.v1.Status) => !item.reblog)) {
+        if (value.some((item: AtprotoCompat.v1.Status) => !item.reblog)) {
           return true;
         }
       }
