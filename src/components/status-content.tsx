@@ -554,7 +554,8 @@ export default function StatusContent({
                 // Higher than the backdrop
                 zIndex: 1001,
               },
-              onClick: () => {
+              onClick: (e: React.MouseEvent) => {
+                e.stopPropagation();
                 contextMenuRef.current?.closeMenu?.();
               },
             }}
