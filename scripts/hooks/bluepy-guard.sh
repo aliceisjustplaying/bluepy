@@ -35,7 +35,7 @@ tool_command() {
 }
 
 tool_workdir() {
-	json_field '.tool_input.workdir // .tool_input.cwd // .cwd'
+	json_field '.tool_input.workdir // .tool_input.working_dir // .tool_input.cwd // .tool_input.current_working_directory // .workdir // .working_dir // .cwd // .current_working_directory'
 }
 
 changed_files() {
