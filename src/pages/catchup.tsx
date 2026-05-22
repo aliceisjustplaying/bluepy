@@ -72,7 +72,9 @@ interface CatchupBooster {
   id: string;
   avatar?: string;
   avatarStatic?: string;
+  acct?: string;
   bot?: boolean;
+  displayName?: string;
   [key: string]: unknown;
 }
 
@@ -325,6 +327,33 @@ function quoteNameTextAccount(
     'quotedStatus' in quote ? quote.quotedStatus?.account : undefined;
   const quoteAccount = 'account' in quote ? quote.account : undefined;
   return nameTextAccount(quotedStatusAccount || quoteAccount);
+}
+
+function canonicalCatchupPostId(post: CatchupPost): string {
+  return post.reblog?.id || post.id;
+}
+
+function catchupBoosterLabel(account: CatchupBooster): string {
+  if (account.displayName && account.acct) {
+    return `${account.displayName} (@${account.acct})`;
+  }
+  return account.displayName || account.acct || account.id;
+}
+
+function addCatchupBooster(
+  boosters: Set<CatchupBooster>,
+  account: CatchupBooster,
+): void {
+  if (![...boosters].some((booster) => booster.id === account.id)) {
+    boosters.add(account);
+  }
+}
+
+function catchupBoostersSignature(post: CatchupPost): string {
+  return [...(post.__BOOSTERS || [])]
+    .map((booster) => booster.id)
+    .toSorted()
+    .join(',');
 }
 
 function Catchup() {
@@ -770,22 +799,39 @@ function Catchup() {
       return postFilterMatches;
     });
 
-    // Deduplicate boosts
-    const boostedPosts: Record<string, CatchupPost> = {};
+    // Deduplicate the same canonical post across originals and repost wrappers.
+    const seenPosts: Record<string, CatchupPost> = {};
     filtered.forEach((post) => {
-      if (post.reblog) {
-        if (boostedPosts[post.reblog.id]) {
-          const existing = boostedPosts[post.reblog.id];
-          if (existing.__BOOSTERS) {
-            existing.__BOOSTERS.add(post.account);
-          } else {
-            existing.__BOOSTERS = new Set([post.account]);
-          }
-          post.__HIDDEN = true;
-        } else {
-          boostedPosts[post.reblog.id] = post;
-        }
+      delete post.__HIDDEN;
+      delete post.__BOOSTERS;
+    });
+    filtered.forEach((post) => {
+      const postId = canonicalCatchupPostId(post);
+      const existing = seenPosts[postId];
+      if (!existing) {
+        seenPosts[postId] = post;
+        return;
       }
+
+      if (post.reblog) {
+        const existingBoosters =
+          existing.__BOOSTERS || (existing.__BOOSTERS = new Set());
+        addCatchupBooster(existingBoosters, post.account);
+        post.__HIDDEN = true;
+        return;
+      }
+
+      if (existing.reblog) {
+        const existingBoosters =
+          existing.__BOOSTERS || new Set<CatchupBooster>();
+        addCatchupBooster(existingBoosters, existing.account);
+        post.__BOOSTERS = existingBoosters;
+        existing.__HIDDEN = true;
+        seenPosts[postId] = post;
+        return;
+      }
+
+      post.__HIDDEN = true;
     });
 
     if (selectedAuthor && authorCountsMap.has(selectedAuthor)) {
@@ -875,6 +921,7 @@ function Catchup() {
         post.createdAt,
         post.reblog?.createdAt ?? '',
         post.account.id,
+        catchupBoostersSignature(post),
       ].join('|');
       const keyCount = keyCounts.get(baseKey) ?? 0;
       keyCounts.set(baseKey, keyCount + 1);
@@ -2249,6 +2296,7 @@ const PostLine = memo(
             <span className="post-reblog-avatar">
               <Avatar
                 url={account.avatarStatic || account.avatar}
+                alt={catchupBoosterLabel(account)}
                 squircle={account.bot}
               />
               {__BOOSTERS && __BOOSTERS.size > 0
@@ -2256,6 +2304,7 @@ const PostLine = memo(
                     <Avatar
                       key={b.id}
                       url={b.avatarStatic || b.avatar}
+                      alt={catchupBoosterLabel(b)}
                       squircle={b.bot}
                     />
                   ))
@@ -2269,12 +2318,34 @@ const PostLine = memo(
             </span>
           ) : hasQuote(quote) ? (
             <span className="post-quote-avatar">
+              {__BOOSTERS && __BOOSTERS.size > 0
+                ? [...__BOOSTERS].map((b) => (
+                    <Avatar
+                      key={b.id}
+                      url={b.avatarStatic || b.avatar}
+                      alt={catchupBoosterLabel(b)}
+                      squircle={b.bot}
+                    />
+                  ))
+                : null}
               <Avatar
                 url={account.avatarStatic || account.avatar}
                 squircle={account.bot}
               />{' '}
               <Icon icon="quote" />{' '}
               <NameText account={quoteNameTextAccount(quote)} showAvatar />
+            </span>
+          ) : __BOOSTERS && __BOOSTERS.size > 0 ? (
+            <span className="post-reblog-avatar">
+              {[...__BOOSTERS].map((b) => (
+                <Avatar
+                  key={b.id}
+                  url={b.avatarStatic || b.avatar}
+                  alt={catchupBoosterLabel(b)}
+                  squircle={b.bot}
+                />
+              ))}{' '}
+              <Icon icon="rocket" /> <NameText account={account} showAvatar />
             </span>
           ) : (
             <NameText account={account} showAvatar />
