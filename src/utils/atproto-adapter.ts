@@ -729,19 +729,34 @@ export function assertAtprotoPostParamsSupported(
 }
 
 function getServiceAuthAudFromUrl(url: string | URL): string | null {
-  const { hostname } = typeof url === 'string' ? new URL(url) : url;
-  if (!hostname) return null;
-  return `did:web:${hostname}`;
+  try {
+    const { host } = typeof url === 'string' ? new URL(url) : url;
+    if (!host) return null;
+    return `did:web:${host.replaceAll(':', '%3A')}`;
+  } catch {
+    return null;
+  }
 }
 
 function getServiceAuthAudFromUrlOrDid(value: string | URL): string | null {
-  if (typeof value === 'string' && value.startsWith('did:')) return value;
+  if (typeof value === 'string' && value.startsWith('did:')) {
+    if (isConfiguredAppViewUrl(value)) return null;
+    return value.split('#', 1)[0] || null;
+  }
   return getServiceAuthAudFromUrl(value);
 }
 
 function isConfiguredAppViewUrl(value: string | URL): boolean {
-  const url = typeof value === 'string' ? new URL(value) : value;
-  return KNOWN_APPVIEW_HOSTNAMES.has(url.hostname);
+  if (typeof value === 'string' && value.startsWith('did:')) {
+    const did = value.split('#', 1)[0];
+    return did === BSKY_APPVIEW_DID || did === BLACKSKY_APPVIEW_DID;
+  }
+  try {
+    const url = typeof value === 'string' ? new URL(value) : value;
+    return KNOWN_APPVIEW_HOSTNAMES.has(url.hostname);
+  } catch {
+    return false;
+  }
 }
 
 function createPdsFacingAgent(agent: AtprotoAgent): AtprotoAgent {

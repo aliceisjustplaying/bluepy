@@ -242,6 +242,24 @@ test.describe('ATProto video mapping', () => {
     expect(aud).toBe('did:web:pds.example.com');
   });
 
+  test('encodes custom PDS ports for video upload service auth', async () => {
+    const aud = await getVideoUploadServiceAuthAud({
+      dispatchUrl: 'https://pds.example.com:2583',
+      sessionManager: {},
+      com: {
+        atproto: {
+          server: {
+            getSession: async () => {
+              throw new Error('unexpected session lookup');
+            },
+          },
+        },
+      },
+    });
+
+    expect(aud).toBe('did:web:pds.example.com%3A2583');
+  });
+
   test('accepts a DID audience from the session token for video upload auth', async () => {
     const aud = await getVideoUploadServiceAuthAud({
       dispatchUrl: 'https://public.api.bsky.app',
@@ -268,6 +286,60 @@ test.describe('ATProto video mapping', () => {
     const sessionManager = {};
     const aud = await getVideoUploadServiceAuthAud({
       dispatchUrl: 'https://public.api.bsky.app',
+      sessionManager,
+      clone: () => ({
+        configureProxy: (proxy) => {
+          clearedProxies.push(proxy);
+        },
+        com: {
+          atproto: {
+            server: {
+              getSession: async () => ({
+                data: {
+                  didDoc: {
+                    '@context': ['https://www.w3.org/ns/did/v1'],
+                    id: 'did:plc:alice',
+                    service: [
+                      {
+                        id: '#atproto_pds',
+                        type: 'AtprotoPersonalDataServer',
+                        serviceEndpoint: 'https://pds.example.com',
+                      },
+                    ],
+                  },
+                },
+              }),
+            },
+          },
+        },
+      }),
+      configureProxy: () => {},
+      com: {
+        atproto: {
+          server: {
+            getSession: async () => {
+              throw new Error('expected cloned PDS-facing agent');
+            },
+          },
+        },
+      },
+    });
+
+    expect(aud).toBe('did:web:pds.example.com');
+    expect(sessionManager.pdsUrl.href).toBe('https://pds.example.com/');
+    expect(clearedProxies).toEqual([null]);
+  });
+
+  test('falls back to the PDS DID document when token audience is an appview proxy', async () => {
+    const clearedProxies = [];
+    /** @type {{ pdsUrl?: URL, getTokenInfo: () => Promise<{ aud: string }> }} */
+    const sessionManager = {
+      getTokenInfo: async () => ({
+        aud: 'did:web:api.bsky.app#bsky_appview',
+      }),
+    };
+    const aud = await getVideoUploadServiceAuthAud({
+      dispatchUrl: 'did:web:api.bsky.app#bsky_appview',
       sessionManager,
       clone: () => ({
         configureProxy: (proxy) => {
