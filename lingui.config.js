@@ -1,9 +1,14 @@
+import { readdirSync } from 'node:fs';
+
 import { formatter } from '@lingui/format-po';
 
-import { ALL_LOCALES } from './src/locales';
+const catalogLocales = readdirSync('src/locales')
+  .filter((file) => file.endsWith('.po'))
+  .map((file) => file.slice(0, -'.po'.length))
+  .toSorted((a, b) => a.localeCompare(b));
 
 const config = {
-  locales: ALL_LOCALES,
+  locales: catalogLocales,
   sourceLocale: 'en',
   format: formatter({
     origins: true,

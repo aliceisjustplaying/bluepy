@@ -42,9 +42,7 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "전체 단어"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr ""
 
@@ -54,9 +52,7 @@ msgstr "{username} 님 뮤트함"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/pages/home.tsx
-#: src/pages/mentions.tsx
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
@@ -87,7 +83,6 @@ msgstr "모든 글쓴이 보기"
 msgid "Other"
 msgstr "기타"
 
-#: src/components/nav-menu.tsx
 #: src/components/nav-menu.tsx
 msgid "Send feedback…"
 msgstr ""
@@ -129,7 +124,6 @@ msgstr ""
 #~ msgstr ""
 
 #: src/pages/status.tsx
-#: src/pages/status.tsx
 msgid "Switch to Side Peek view"
 msgstr ""
 
@@ -151,10 +145,7 @@ msgstr "{count, plural, =1 {{account} 님이 나를 팔로합니다.} other {<0>
 msgid "Connected on {0} (<0/>)"
 msgstr ""
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Only you can quote"
 #~ msgstr ""
 
@@ -162,13 +153,10 @@ msgstr ""
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr "<0>Shift</0> + <1>c</1>"
 
-#: src/components/compose-button.tsx
-#: src/components/nav-menu.tsx
-#: src/pages/scheduled-posts.tsx
+#: src/components/compose-button.tsx src/components/nav-menu.tsx src/pages/scheduled-posts.tsx
 #~ msgid "Scheduled Posts"
 #~ msgstr ""
 
-#: src/components/muted-status.tsx
 #: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
@@ -196,7 +184,6 @@ msgstr "모두"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "Posts"
 msgstr "게시물"
 
@@ -221,11 +208,9 @@ msgid "No one mentioned you :("
 msgstr "아무도 언급하지 않았습니다"
 
 #: src/components/filtered-status.tsx
-#: src/components/filtered-status.tsx
 #: src/components/media-post.tsx
 #: src/components/status-compact.tsx
 #: src/components/timeline.tsx
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered"
 msgstr "필터된"
@@ -326,8 +311,7 @@ msgstr "표시할 내용 없음"
 msgid "Bookmarked"
 msgstr "책갈피 꽂음"
 
-#: src/components/private-note-sheet.tsx
-#: src/components/related-actions.tsx
+#: src/components/private-note-sheet.tsx src/components/related-actions.tsx
 #~ msgid "Notes"
 #~ msgstr ""
 
@@ -356,7 +340,6 @@ msgstr ""
 msgid "Tell us what happened first."
 msgstr ""
 
-#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Light"
 msgstr "밝게"
@@ -430,8 +413,6 @@ msgstr "리스트"
 
 #: src/components/status-placeholders.tsx
 #: src/components/status-quotes.tsx
-#: src/components/status-quotes.tsx
-#: src/components/status-quotes.tsx
 msgid "Post unavailable"
 msgstr ""
 
@@ -462,8 +443,6 @@ msgstr "끝"
 #: src/components/related-actions.tsx
 #: src/components/status-header.tsx
 #: src/components/status-inline-controls.tsx
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/accounts.tsx
@@ -552,8 +531,7 @@ msgstr ""
 #~ msgid "Unable to unfeature on profile"
 #~ msgstr "프로필에 표시되지 않음 기능을 사용할 수 없습니다."
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Quote settings updated"
 #~ msgstr ""
 
@@ -587,7 +565,6 @@ msgstr "바로 가기/열을 두 개 이상 추가하여 작동하도록 합니�
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/pages/trending.tsx
 msgid "Trending"
 msgstr "인기"
@@ -617,7 +594,6 @@ msgid "Unable to load account."
 msgstr "계정을 불러 올 수 없습니다."
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 msgid "Optional, e.g. bsky.social"
 msgstr ""
 
@@ -633,9 +609,7 @@ msgstr "내용"
 msgid "Send Report"
 msgstr "신고하기"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Enter a new server e.g. \"mastodon.social\""
 #~ msgstr ""
 
@@ -643,8 +617,7 @@ msgstr "신고하기"
 #~ msgid "Unable to delete filter."
 #~ msgstr "필터를 지울 수 없습니다."
 
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
+#: src/components/nav-menu.tsx src/components/shortcuts-settings.tsx
 #~ msgid "Federated"
 #~ msgstr "연합"
 
@@ -803,8 +776,6 @@ msgid "Append to current shortcuts?"
 msgstr "현재 바로 가기에 덧붙일까요?"
 
 #: src/components/status-large-footer.tsx
-#: src/components/status-large-footer.tsx
-#: src/components/status-quick-menu.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Undo repost"
 msgstr ""
@@ -845,8 +816,7 @@ msgstr ""
 msgid "Keyboard shortcuts"
 msgstr "키보드 단축키"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Public"
 #~ msgstr "공개"
 
@@ -864,8 +834,6 @@ msgstr "계정들…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/pages/bookmarks.tsx
 #: src/pages/bookmarks.tsx
 msgid "Bookmarks"
 msgstr "책갈피"
@@ -937,7 +905,6 @@ msgid "Label"
 msgstr "레이블"
 
 #: src/components/status-inline-controls.tsx
-#: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Liked"
 msgstr "좋아함"
@@ -1003,7 +970,6 @@ msgid "Posts tagged #{tagged} by {accountDisplay}"
 msgstr ""
 
 #: src/components/media-attachment.tsx
-#: src/components/media-attachment.tsx
 msgid "Generating description. Please wait…"
 msgstr "설명을 자동 생성중. 잠시 기다려 주세요…"
 
@@ -1028,10 +994,7 @@ msgstr "번역된 소개문"
 msgid "Type to search GIFs"
 msgstr "움짤을 검색하려면 입력하세요"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Your followers can quote"
 #~ msgstr ""
 
@@ -1093,7 +1056,6 @@ msgstr "매체 보기"
 #~ msgstr "무기한"
 
 #: src/pages/notifications.tsx
-#: src/pages/notifications.tsx
 msgid "Notifications settings"
 msgstr "알림 설정"
 
@@ -1113,8 +1075,6 @@ msgstr "베타"
 #: src/components/nav-menu.tsx
 #: src/components/search-form.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Search"
 msgstr "검색"
@@ -1280,7 +1240,6 @@ msgstr ""
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
-#: src/components/status-activity-menu.tsx
 msgid "Reposted/Liked by…"
 msgstr ""
 
@@ -1296,8 +1255,7 @@ msgstr ""
 msgid "Unmuted @{username}"
 msgstr ""
 
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/status-inline-controls.tsx src/components/status-large-footer.tsx
 #~ msgid "Boosted"
 #~ msgstr "부스트함"
 
@@ -1350,9 +1308,7 @@ msgstr ""
 msgid "Quote chain"
 msgstr ""
 
-#: src/components/nav-menu.jsx
-#: src/components/shortcuts.jsx
-#: src/pages/list.jsx
+#: src/components/nav-menu.jsx src/components/shortcuts.jsx src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "모든 리스트"
 
@@ -1393,7 +1349,6 @@ msgstr ""
 #: src/components/notification.tsx
 #: src/pages/accounts.tsx
 #: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "Accounts"
 msgstr "계정"
 
@@ -1406,8 +1361,6 @@ msgstr ""
 #~ msgstr ""
 
 #: src/components/account-info-mini.tsx
-#: src/components/account-info-mini.tsx
-#: src/components/account-info.tsx
 #: src/components/account-info.tsx
 msgid "This user has chosen to not make this information available."
 msgstr "이 사용자는 해당 정보를 볼 수 없도록 설정했습니다."
@@ -1442,7 +1395,6 @@ msgid "Accepted"
 msgstr "수락함"
 
 #: src/components/feedback-modal.tsx
-#: src/components/feedback-modal.tsx
 msgid "Leave this field blank"
 msgstr ""
 
@@ -1450,7 +1402,6 @@ msgstr ""
 msgid "Powered by GIPHY"
 msgstr ""
 
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Help"
 msgstr "도움말"
@@ -1569,7 +1520,6 @@ msgid "Malicious links, fake engagement, or repetitive replies"
 msgstr "악성 링크, 허위 참여 또는 반복적인 댓글"
 
 #: src/components/compose.tsx
-#: src/components/compose.tsx
 #: src/components/file-picker-input.tsx
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
 msgstr "{maxMediaAttachments, plural, one {파일은 1개까지만 첨부할 수 있습니다.} other {파일은 #개 까지만 첨부할 수 있습니다.}}"
@@ -1642,7 +1592,6 @@ msgstr "글쓰기 창에서 움짤 고르기"
 #. placeholder {0}: prettyBytes( imageSize, )
 #. placeholder {0}: prettyBytes( videoSize, )
 #. placeholder {1}: prettyBytes(limit)
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
 msgstr "파일 크기가 너무 큽니다. 올리다가 문제가 생길 수 있습니다. 파일 크기를 {0}에서 {1} 이하로 줄여보세요."
@@ -1760,7 +1709,6 @@ msgstr "리스트 ID"
 #. placeholder {2}: i18n.number(newWidth)
 #. placeholder {3}: i18n.number( newHeight, )
 #: src/components/media-attachment.tsx
-#: src/components/media-attachment.tsx
 msgid "Dimension too large. Uploading might encounter issues. Try reduce dimension from {0}×{1}px to {2}×{3}px."
 msgstr ""
 
@@ -1818,8 +1766,6 @@ msgstr ""
 msgid "Raw Shortcuts JSON"
 msgstr "바로 가기 JSON 코드"
 
-#: src/components/thread-badge.tsx
-#: src/components/thread-badge.tsx
 #: src/components/thread-badge.tsx
 #: src/pages/catchup.tsx
 msgid "Thread"
@@ -1885,7 +1831,6 @@ msgstr ""
 #~ msgstr "첨부 파일 #{i} 실패"
 
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
 msgid "Top links"
 msgstr "인기 링크"
 
@@ -1902,8 +1847,7 @@ msgstr "매체만"
 msgid "Update"
 msgstr "업데이트"
 
-#: src/components/status-account-menu.tsx
-#: src/pages/settings.tsx
+#: src/components/status-account-menu.tsx src/pages/settings.tsx
 #~ msgid "Quote settings"
 #~ msgstr ""
 
@@ -1940,7 +1884,6 @@ msgstr "<0>Esc</0> 또는 <1>Backspace</1>"
 #: src/components/account-info.tsx
 #: src/components/quotes-modal.tsx
 #: src/components/status-post-body.tsx
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Quotes"
@@ -1991,7 +1934,6 @@ msgid "Volunteer translations"
 msgstr "번역 참여하기"
 
 #: src/pages/account-statuses.tsx
-#: src/pages/account-statuses.tsx
 msgid "Unable to fetch account info"
 msgstr "계정 정보를 가져올 수 없음"
 
@@ -2034,9 +1976,7 @@ msgstr ""
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
 #~ msgstr ""
 
-#: src/components/list-exclusive-badge.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
+#: src/components/list-exclusive-badge.tsx src/pages/list.tsx src/pages/lists.tsx
 #~ msgid "Posts on this list are hidden from Home/Following"
 #~ msgstr ""
 
@@ -2050,8 +1990,6 @@ msgstr ""
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/following.tsx
-#: src/pages/following.tsx
-#: src/pages/following2.tsx
 #: src/pages/following2.tsx
 msgid "following.title"
 msgstr ""
@@ -2114,7 +2052,6 @@ msgstr "무시"
 #~ msgstr "바로 가기 받을 수 없음"
 
 #: src/components/account-info.tsx
-#: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "QR code"
@@ -2257,7 +2194,6 @@ msgid "Month"
 msgstr "월"
 
 #: src/pages/list.tsx
-#: src/pages/list.tsx
 msgid "Manage members"
 msgstr "구성원 관리"
 
@@ -2265,10 +2201,7 @@ msgstr "구성원 관리"
 msgid "Unable to format math"
 msgstr ""
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Anyone can quote"
 #~ msgstr ""
 
@@ -2280,8 +2213,7 @@ msgstr ""
 msgid "Copy"
 msgstr "복사"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Failed to update quote settings"
 #~ msgstr ""
 
@@ -2369,7 +2301,6 @@ msgstr "바로 가기 추가"
 #: src/components/timeline2.tsx
 #: src/pages/catchup.tsx
 #: src/pages/home.tsx
-#: src/pages/home.tsx
 #: src/pages/notifications.tsx
 msgid "Home"
 msgstr "홈"
@@ -2383,7 +2314,6 @@ msgstr "대화 뮤트 풀기"
 #~ msgstr "{account} 님이 내 게시물에 {emojiObject} 반응을 남겼습니다."
 
 #: src/pages/settings.tsx
-#: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
 msgstr "구독을 갱신하는 데 실패했습니다. 다시 시도해 보세요."
 
@@ -2391,7 +2321,6 @@ msgstr "구독을 갱신하는 데 실패했습니다. 다시 시도해 보세�
 msgid "Enable notifications"
 msgstr ""
 
-#: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
 msgid "Reset filters"
@@ -2420,11 +2349,8 @@ msgstr "{account} 님이 게시물을 올렸습니다."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/pages/home.tsx
 #: src/pages/home.tsx
 #: src/pages/list.tsx
-#: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications"
 msgstr "알림"
@@ -2455,7 +2381,6 @@ msgstr "{instance} 상의 {hashtagTitle}"
 
 #: src/components/compose.tsx
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-inline-controls.tsx
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-reply-menu.tsx
@@ -2511,8 +2436,7 @@ msgstr ""
 msgid "Violation"
 msgstr "위반"
 
-#: src/components/status-header.tsx
-#: src/utils/visibility-text.ts
+#: src/components/status-header.tsx src/utils/visibility-text.ts
 #~ msgid "Private mention"
 #~ msgstr "쪽지"
 
@@ -2554,7 +2478,6 @@ msgstr "닫힘"
 
 #. Preview of one character, in largest size
 #. Preview of one character, in smallest size
-#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "A"
 msgstr "글"
@@ -2710,13 +2633,10 @@ msgstr "이 알림은 나의 다른 계정에서 왔습니다."
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
 #: src/pages/status.tsx
-#: src/pages/status.tsx
 msgid "Try again"
 msgstr "재시도"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to another server…"
 #~ msgstr ""
 
@@ -2795,8 +2715,7 @@ msgstr "올리지 않은 초고"
 msgid "You're all caught up."
 msgstr "모두 따라잡았습니다."
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/keyboard-shortcuts-help.tsx src/components/status-large-footer.tsx
 #~ msgid "Boost"
 #~ msgstr "부스트"
 
@@ -2841,7 +2760,6 @@ msgstr "이 게시물에 어떤 문제가 있나요?"
 msgid "Privacy Policy"
 msgstr "개인 정보 보호 정책"
 
-#: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Refresh"
 msgstr "새로 고침"
@@ -3006,12 +2924,10 @@ msgid "Hashtag shortcut added"
 msgstr "해시태그 바로 가기가 추가됨"
 
 #: src/components/related-actions.tsx
-#: src/components/related-actions.tsx
 msgid "Follow"
 msgstr "팔로"
 
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Repost"
@@ -3029,7 +2945,6 @@ msgstr "계정이 제한되었습니다."
 msgid "{followersCount, plural, one {# follower} other {# followers}}"
 msgstr "{followersCount, plural, one {# 팔로워} other {# 팔로워}}"
 
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Video description"
 msgstr "동영상 설명"
@@ -3122,9 +3037,6 @@ msgstr "다른 계정에서 온 리스트는 못 가져올 수 있습니다."
 #: src/components/status-post-body.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/status.tsx
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
@@ -3258,8 +3170,6 @@ msgstr ""
 msgid "Sponsor"
 msgstr "후원자"
 
-#: src/components/media-attachment.tsx
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generate description…"
 msgstr "설명 자동 생성…"
@@ -3482,7 +3392,6 @@ msgstr ""
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
-#: src/components/status-utility-menu.tsx
 #: src/components/translation-block.tsx
 msgid "Translate"
 msgstr "번역"
@@ -3525,7 +3434,6 @@ msgstr "{username} 님을 차단할 수 없음"
 
 #. js-lingui-explicit-id
 #: src/pages/status.tsx
-#: src/pages/status.tsx
 msgid "post.title"
 msgstr ""
 
@@ -3533,12 +3441,10 @@ msgstr ""
 msgid "Set as default"
 msgstr "기본 계정으로 삼기"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Quiet public"
 #~ msgstr ""
 
-#: src/components/feedback-modal.tsx
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
 msgstr ""
@@ -3563,13 +3469,10 @@ msgstr ""
 msgid "Post pending"
 msgstr ""
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
+#: src/components/account-info.tsx src/pages/account-statuses.tsx src/pages/catchup.tsx
 #~ msgid "Boosts"
 #~ msgstr "부스트"
 
-#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
 msgstr "어둡게"
@@ -3591,7 +3494,6 @@ msgid "Switch in new tab/window"
 msgstr "새 탭/창으로 변경하기"
 
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Bookmark"
@@ -3615,9 +3517,7 @@ msgstr "구독을 삭제하는 데 실패했습니다. 다시 시도하세요."
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
 msgstr "<0>{from}</0>의 관리자가 <1>{targetName}</1>를 차단하였습니다. 영향을 받는 팔로워: {followersCount}, 팔로잉: {followingCount}."
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Invalid server"
 #~ msgstr ""
 
@@ -3675,7 +3575,6 @@ msgstr ""
 #~ msgstr "검색어 추가"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
 msgstr "바로가기 복사됨"
 
@@ -3732,7 +3631,6 @@ msgid "Allow from <0>{0}</0>"
 msgstr "<0>{0}</0>에게서 알림 받기"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 msgid "PDS"
 msgstr ""
 
@@ -3781,7 +3679,6 @@ msgstr "소개문 번역"
 #~ msgid "Followed #{hashtag}"
 #~ msgstr "#{hashtag} 팔로함"
 
-#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Auto"
 msgstr "자동"
@@ -3832,8 +3729,6 @@ msgstr "이전 글쓴이"
 
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
@@ -3906,7 +3801,6 @@ msgstr "{repliesCount, plural, other {#개의 댓글}}"
 #~ msgid "server domain name"
 #~ msgstr "서버 도메인 이름"
 
-#: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
 msgid "Explicit or potentially disturbing media."
 msgstr ""
@@ -3995,7 +3889,6 @@ msgstr "사용자명"
 
 #: src/components/add-remove-lists-sheet.tsx
 #: src/components/related-actions.tsx
-#: src/components/related-actions.tsx
 msgid "Add/Remove from Lists"
 msgstr "리스트에서 더하기·빼기"
 
@@ -4021,20 +3914,14 @@ msgid "Muted users"
 msgstr "뮤트한 사용자"
 
 #: src/components/nav-menu.tsx
-#: src/components/nav-menu.tsx
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 #: src/pages/list.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
 #: src/pages/lists.tsx
 msgid "Lists & Feeds"
 msgstr ""
 
 #: src/components/nav-menu.tsx
-#: src/pages/login.tsx
 #: src/pages/login.tsx
 #: src/pages/status.tsx
 #: src/pages/welcome.tsx
@@ -4261,8 +4148,7 @@ msgstr "또는 덮어쓰기…"
 #~ msgid "Remove quote…"
 #~ msgstr ""
 
-#: src/components/related-actions.tsx
-#: src/pages/hashtag.tsx
+#: src/components/related-actions.tsx src/pages/hashtag.tsx
 #~ msgid "Feature on profile"
 #~ msgstr "프로필에 내보이기"
 
@@ -4319,7 +4205,6 @@ msgid "Posts are sorted by information density or depth. Shorter posts are \"lig
 msgstr "게시물을 정보 밀도가 높거나 낮은 순서로 보여줍니다. 짧은 게시물은 정보 밀도가 “낮고”, 긴 게시물은 “높다”고 봅니다. 이미지가 첨부된 게시물은 이미지가 없는 게시물보다 정보 밀도가 “높다”고 봅니다."
 
 #: src/components/nav-menu.tsx
-#: src/components/nav-menu.tsx
 msgid "Settings…"
 msgstr "설정…"
 
@@ -4375,8 +4260,6 @@ msgid "Unable to mute {username}"
 msgstr "{username} 님을 뮤트할 수 없음"
 
 #: src/pages/search.tsx
-#: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "See more"
 msgstr "더 보기"
 
@@ -4410,7 +4293,6 @@ msgid "Remove follower…"
 msgstr "팔로워에서 빼기…"
 
 #: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Profile"
 msgstr "프로필"
@@ -4501,7 +4383,6 @@ msgid "Unable to mute @{username}"
 msgstr ""
 
 #: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "Hashtags"
 msgstr "해시태그"
 
@@ -4532,8 +4413,6 @@ msgid "Screenshot of Bluepy home timeline on tablet device"
 msgstr ""
 
 #: src/components/status-inline-controls.tsx
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Like"
@@ -4543,7 +4422,6 @@ msgstr "좋아요"
 #~ msgid "A minimalistic opinionated Bluesky web client."
 #~ msgstr ""
 
-#: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
 msgstr ""
@@ -4606,7 +4484,6 @@ msgid "Failed to generate description: {0}"
 msgstr ""
 
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
 msgid "Catch-up <0>beta</0>"
 msgstr "따라잡기 <0>베타</0>"
 
@@ -4618,7 +4495,6 @@ msgstr ""
 msgid "Failed to log in. Please check your handle and app password."
 msgstr ""
 
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Edit video description"
 msgstr "동영상 설명 고치기"
@@ -4677,12 +4553,10 @@ msgstr ""
 msgid "Failed to generate description"
 msgstr "설명을 자동 생성하는 데 실패"
 
-#: src/components/nav-menu.tsx
-#: src/pages/followed-hashtags.tsx
+#: src/components/nav-menu.tsx src/pages/followed-hashtags.tsx
 #~ msgid "Followed Hashtags"
 #~ msgstr "팔로하는 해시태그"
 
-#: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
 msgid "static URL"
 msgstr "정적 URL"
@@ -4735,7 +4609,6 @@ msgstr "매체"
 msgid "Yesterday"
 msgstr "어제"
 
-#: src/components/feedback-modal.tsx
 #: src/components/feedback-modal.tsx
 msgid "What happened?"
 msgstr ""
@@ -4798,7 +4671,6 @@ msgstr "말하기"
 msgid "Unable to load posts with this tag"
 msgstr "해당 태그를 포함한 게시물을 불러올 수 없습니다"
 
-#: src/components/notification.tsx
 #: src/components/notification.tsx
 msgid "Learn more <0/>"
 msgstr "자세히 보기 <0/>"
@@ -4880,7 +4752,6 @@ msgstr ""
 #: src/components/edit-profile-sheet.tsx
 #: src/components/embed-modal.tsx
 #: src/components/feedback-modal.tsx
-#: src/components/feedback-modal.tsx
 #: src/components/filtered-status.tsx
 #: src/components/generic-accounts.tsx
 #: src/components/gif-picker-modal.tsx
@@ -4901,13 +4772,10 @@ msgstr ""
 #: src/components/quotes-modal.tsx
 #: src/components/report-modal.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/components/translated-bio-sheet.tsx
 #: src/pages/accounts.tsx
 #: src/pages/catchup.tsx
 #: src/pages/list.tsx
-#: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
 #: src/pages/status.tsx
@@ -5003,7 +4871,6 @@ msgid "Bugs, confusing behavior, missing features, or anything else."
 msgstr ""
 
 #: src/components/atproto-labels.tsx
-#: src/components/atproto-labels.tsx
 msgid "Graphic Media"
 msgstr ""
 
@@ -5052,10 +4919,7 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/favourites.tsx
 #: src/pages/favourites.tsx
 #: src/pages/settings.tsx
 msgid "Likes"
