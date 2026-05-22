@@ -34,10 +34,6 @@ tool_command() {
 	json_field '.tool_input.command // .tool_input.cmd // .tool_input.args.command'
 }
 
-current_branch() {
-	git branch --show-current 2>/dev/null || true
-}
-
 changed_files() {
 	{
 		git diff --name-only --diff-filter=ACMR HEAD -- 2>/dev/null || true
@@ -54,10 +50,30 @@ source_changed_files() {
 	changed_files | rg '^(src|tests|scripts|workers)/|^(vite|playwright|tsconfig|oxlint)\.' || true
 }
 
+normalize_path() {
+	# Strip one layer of surrounding quotes and expand a leading ~ / $HOME so a
+	# parsed path can be tested against the filesystem. We never eval.
+	local p="$1"
+	p="${p#[\"\']}"
+	p="${p%[\"\']}"
+	p="${p/#\~/$HOME}"
+	p="${p//\$HOME/$HOME}"
+	p="${p//\$\{HOME\}/$HOME}"
+	printf '%s' "$p"
+}
+
 block_on_main_branch() {
-	local branch
-	branch="$(current_branch)"
-	[ "$branch" = "bluesky" ] && deny "do not edit, commit, or push from bluesky; create a task worktree first"
+	local dir branch
+	dir="${1:-$ROOT}"
+	# A new file can live under a not-yet-created directory; walk up to the
+	# nearest existing ancestor so we still resolve the right worktree.
+	while [ -n "$dir" ] && [ "$dir" != "/" ] && [ ! -d "$dir" ]; do
+		dir="$(dirname "$dir")"
+	done
+	branch="$(git -C "$dir" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+	if [ "$branch" = "bluesky" ]; then
+		deny "do not edit, commit, or push from bluesky; create a task worktree first"
+	fi
 }
 
 guard_bash_command() {
@@ -84,9 +100,40 @@ guard_bash_command() {
 		deny "broad git checkout -- needs explicit human approval"
 	fi
 
+	# Direct `git <verb>` runs in the shell's cwd. Determining that cwd from an
+	# arbitrary shell string is unsound, so this is deliberately conservative:
+	# we only trust the exact `cd <existing-dir> && git …` worktree idiom — a
+	# single leading `cd`, joined with `&&`, to a directory that exists.
+	# Anything else (bare git, multiple cds, `;`/`||` separators, a non-existent
+	# target) falls back to the session root and so fails closed on bluesky.
 	if rg -q '(^|[;&|[:space:]])git[[:space:]]+(commit|push|add|merge|rebase)(\s|$)' <<<"$cmd"; then
-		block_on_main_branch
+		local workdir="$ROOT" cdcount cdre target
+		# `|| true` keeps a no-match `rg` (exit 1) from tripping `set -o pipefail`
+		# and aborting the hook before the branch check — that would fail open.
+		cdcount="$({ rg -o '(^|[;&|])[[:space:]]*cd[[:space:]]' <<<"$cmd" || true; } | wc -l | tr -d '[:space:]')"
+		cdre='^[[:space:]]*cd[[:space:]]+("[^"]+"|[^[:space:];&|]+)[[:space:]]*&&'
+		if [ "$cdcount" = "1" ] && [[ "$cmd" =~ $cdre ]]; then
+			target="$(normalize_path "${BASH_REMATCH[1]}")"
+			[ -d "$target" ] && workdir="$target"
+		fi
+		block_on_main_branch "$workdir"
 	fi
+
+	# `git -C <dir> <verb>` runs against <dir> regardless of the shell's cwd, so
+	# check that target directly (the `-C` form is not matched by the rule above).
+	local gitcre
+	gitcre='git[[:space:]]+-C[[:space:]]+("[^"]+"|[^[:space:];&|]+)[[:space:]]+(commit|push|add|merge|rebase)'
+	if [[ "$cmd" =~ $gitcre ]]; then
+		block_on_main_branch "$(normalize_path "${BASH_REMATCH[1]}")"
+	fi
+
+	# NOTE: Statically determining git's effective target from a shell string is
+	# unsound. This guard is a tripwire for the cooperative agent workflow, not a
+	# security boundary: deliberate target overrides (multiple `-C`, `GIT_DIR`/
+	# `GIT_WORK_TREE`, `--git-dir`, `eval`, command substitution) can still slip
+	# past. For airtight enforcement add a git `pre-commit`/`pre-push` hook (via
+	# core.hooksPath) that rejects work on the `bluesky` branch in git's own
+	# resolved context.
 
 	if rg -q '(^|[;&|[:space:]])gh[[:space:]]+pr[[:space:]]+create(\s|$)' <<<"$cmd" && ! rg -q '(^|\s)--draft(\s|$)' <<<"$cmd"; then
 		deny "Bluepy PRs must be opened as draft"
@@ -266,7 +313,12 @@ pre-bash)
 	guard_bash_command "$(tool_command)"
 	;;
 pre-write)
-	block_on_main_branch
+	file_path="$(json_field '.tool_input.file_path')"
+	if [ -n "$file_path" ]; then
+		block_on_main_branch "$(dirname "$file_path")"
+	else
+		block_on_main_branch
+	fi
 	;;
 post-edit)
 	require_tool rg
