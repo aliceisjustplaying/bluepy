@@ -949,6 +949,62 @@ test.describe('write flows', () => {
       page.locator('.account-block', { hasText: IDENTIFIER }).first(),
     ).toBeVisible({ timeout: 30_000 });
   });
+
+  test('paste-to-quote: pasting a Bluesky post URL suggests a native quote', async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    // Publish a post we can quote, then read back its canonical detail link.
+    const body = `${RUN_TAG} quote target ${Date.now()}`;
+    await composeAndPublish(page, body);
+
+    await goto(page, `/a/${IDENTIFIER}`);
+    const article = page
+      .locator('[data-state-post-id]', { hasText: body })
+      .first();
+    await article.waitFor({ timeout: 45_000 });
+    const href = await article.evaluate((element) => {
+      const link =
+        element.closest('.status-link[data-href]') ||
+        element.querySelector('.status-link[data-href]');
+      return link?.getAttribute('data-href');
+    });
+    if (!href) throw new Error('published post is missing a detail link');
+    const rkeyMatch = decodeURIComponent(href).match(
+      /app\.bsky\.feed\.post\/([^/?#]+)/i,
+    );
+    if (!rkeyMatch) throw new Error(`could not extract rkey from ${href}`);
+    // Build the public bsky.app URL — exercises handle→DID resolution, not just
+    // a bare at:// URI. Strip a leading '@' so a `@handle` env value still
+    // yields a valid profile URL.
+    const actor = (IDENTIFIER || '').replace(/^@/, '');
+    const postUrl = `https://bsky.app/profile/${actor}/post/${rkeyMatch[1]}`;
+
+    // Open a fresh compose and paste the post URL, as a user would.
+    await openModal(page, 'showCompose');
+    const textarea = page.locator('#compose-container textarea').first();
+    await textarea.waitFor({ timeout: 15_000 });
+    await textarea.focus();
+    await textarea.evaluate((el, url) => {
+      const dt = new DataTransfer();
+      dt.setData('text', url);
+      el.dispatchEvent(
+        new ClipboardEvent('paste', {
+          clipboardData: dt,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    }, postUrl);
+
+    // The resolved post should be offered as a quote, with our body inside it.
+    const suggestion = page.locator('.quote-suggestion');
+    await expect(suggestion).toBeVisible({ timeout: 20_000 });
+    await expect(suggestion).toContainText('Turn link into a quote?');
+    await expect(suggestion.locator('.quote-status')).toContainText(body, {
+      timeout: 20_000,
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------

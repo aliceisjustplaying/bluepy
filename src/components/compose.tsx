@@ -26,6 +26,7 @@ import {
   getPreferences,
 } from '../utils/api';
 import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
+import { encodeAtprotoID } from '../utils/atproto-route';
 import {
   fetchAtprotoLinkMetadata,
   getFirstPostURL,
@@ -42,8 +43,8 @@ import localeMatch from '../utils/locale-match';
 import localeCode2Text from '../utils/localeCode2Text';
 import mem from '../utils/mem';
 import openCompose from '../utils/open-compose';
-import { supportsNativeQuote } from '../utils/quote-utils';
 import RTF from '../utils/relative-time-format';
+import { resolveAtprotoPostURI } from '../utils/resolve-atproto-post-link';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
 import store from '../utils/store';
@@ -54,7 +55,6 @@ import {
 } from '../utils/store-utils';
 import stringLength from '../utils/string-length';
 import supports from '../utils/supports';
-import unfurlMastodonLink from '../utils/unfurl-link';
 import urlRegexObj from '../utils/url-regex';
 import useCloseWatcher from '../utils/useCloseWatcher';
 import useInterval from '../utils/useInterval';
@@ -578,38 +578,6 @@ function Compose({
     }, 300);
   };
 
-  // Quote eligibility logic duplicated from status.jsx
-  const checkQuoteEligibility = (status: StatusLike): boolean => {
-    if (!supportsNativeQuote()) return false;
-
-    const { visibility: statusVisibility, quoteApproval, account } = status;
-    const isSelf =
-      !!currentAccountInfo && currentAccountInfo.id === account?.id;
-    const isPublic = ['public', 'unlisted'].includes(statusVisibility ?? '');
-    const isMineAndPrivate = isSelf && statusVisibility === 'private';
-
-    const quoteApprovalNarrowed = quoteApproval as
-      | { currentUser?: string }
-      | null
-      | undefined;
-    const isQuoteAutomaticallyAccepted =
-      quoteApprovalNarrowed?.currentUser === 'automatic' &&
-      (isPublic || isMineAndPrivate);
-    const isQuoteManuallyAccepted =
-      quoteApprovalNarrowed?.currentUser === 'manual' &&
-      (isPublic || isMineAndPrivate);
-
-    if (!isPublic && !isSelf) {
-      return false;
-    } else if (isQuoteAutomaticallyAccepted) {
-      return true;
-    } else if (isQuoteManuallyAccepted) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
   const processFiles = async (
     files: File[] | FileList | null | undefined,
   ): Promise<MediaAttachmentLike[] | null | undefined> => {
@@ -672,51 +640,41 @@ function Compose({
   };
 
   const handlePastedLink = async (url: string): Promise<void> => {
-    // Handle QP links
-    if (supportsNativeQuote()) {
-      // Quotes cannot coexist with media attachments
-      if (mediaAttachments.length > 0) {
+    // ATProto-only: a pasted Bluesky post link (bsky.app or our own permalink)
+    // can become a native quote. Quotes are protocol-level embeds, so every
+    // resolvable post is quotable — there is no Mastodon visibility/approval
+    // gate to consult.
+
+    // Quotes cannot coexist with media attachments
+    if (mediaAttachments.length > 0) {
+      return;
+    }
+    // Cannot add/remove/replace current quote when editing
+    if (editStatus) {
+      return;
+    }
+
+    try {
+      const quoteURI = await resolveAtprotoPostURI(url);
+      if (!quoteURI) return;
+      const status = await statusesEndpoint
+        .$select(encodeAtprotoID(quoteURI))
+        .fetch();
+      if (!status?.id) return;
+      saveStatus(status as Parameters<typeof saveStatus>[0], instance, {
+        skipThreading: true,
+      });
+      // Don't show suggestion if it's the same as current quote
+      if (currentQuoteStatus?.id === status.id) {
         return;
       }
-
-      // Cannot add/remove/replace current quote when editing
-      if (editStatus) {
-        return;
-      }
-
-      try {
-        // unfurl-link.ts exposes a snapshot type without `id`/`instance`/
-        // `originalURL` keys publicly; the runtime data does carry them on
-        // resolved hits, so narrow here for the keys we read.
-        const unfurledData = (await unfurlMastodonLink(instance, url)) as
-          | {
-              id?: string;
-              instance?: string;
-              originalURL?: string;
-              [key: string]: unknown;
-            }
-          | null
-          | undefined;
-        if (unfurledData?.id) {
-          const status = (
-            states.statuses as Record<string, StatusLike | undefined>
-          )[`${unfurledData.instance}/${unfurledData.id}`];
-          if (status && checkQuoteEligibility(status)) {
-            // Don't show suggestion if it's the same as current quote
-            if (currentQuoteStatus?.id === status.id) {
-              return;
-            }
-
-            setQuoteSuggestion({
-              status,
-              instance: unfurledData.instance,
-              url: unfurledData.originalURL ?? url,
-            });
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
+      setQuoteSuggestion({
+        status,
+        instance,
+        url,
+      });
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -1642,10 +1600,8 @@ function Compose({
                     );
                   }
                 } else {
-                  if (supportsNativeQuote()) {
-                    if (currentQuoteStatus?.id) {
-                      params.quoted_status_id = currentQuoteStatus.id;
-                    }
+                  if (currentQuoteStatus?.id) {
+                    params.quoted_status_id = currentQuoteStatus.id;
                   }
                   // params.inReplyToId = replyToStatus?.id || undefined;
                   params.in_reply_to_id = replyToStatus?.id || undefined;

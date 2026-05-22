@@ -73,7 +73,6 @@ interface StatusPostBodyProps {
   renderStatus: (props: StatusComponentProps) => ReactNode;
   card?: AnyPreviewCard | null;
   statusQuoteState?: unknown;
-  currentInstance: string;
   accountURL?: string | null;
   size: string;
   tags?: mastodon.v1.Tag[];
@@ -124,7 +123,6 @@ export default function StatusPostBody({
   renderStatus,
   card,
   statusQuoteState,
-  currentInstance,
   accountURL,
   size,
   tags,
@@ -316,13 +314,9 @@ export default function StatusPostBody({
               !statusQuoteState && (
                 <StatusCard
                   card={card}
-                  selfReferential={
-                    card?.url === status.url || card?.url === status.uri
-                  }
                   selfAuthor={card?.authors?.some(
                     (a) => a.account?.url === accountURL,
                   )}
-                  instance={currentInstance}
                 />
               )}
             {size !== 's' && (

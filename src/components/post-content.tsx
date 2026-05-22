@@ -51,7 +51,7 @@ function enhanceContentDOM(
 const PostContent =
   /*memo(*/
   ({ post, instance, previewMode }: PostContentProps) => {
-    const { content, emojis, language, mentions, url } = post;
+    const { content, emojis, language, mentions } = post;
     const snapStates = useSnapshot(states);
     const sKey = statusKey(post.id, instance);
     const quotes = sKey ? snapStates.statusQuotes[sKey] : undefined;
@@ -131,7 +131,6 @@ const PostContent =
           mentions,
           instance,
           previewMode,
-          statusURL: url,
         })}
         // dangerouslySetInnerHTML={{
         //   __html: enhanceContent(content, {

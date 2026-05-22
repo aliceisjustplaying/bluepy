@@ -14,7 +14,6 @@ interface HandleContentLinksOpts {
   mentions?: MentionLike[];
   instance?: string;
   previewMode?: boolean;
-  statusURL?: string;
 }
 
 // The handler is attached to elements rendering arbitrary status content; the
@@ -27,7 +26,7 @@ type LinkClickTarget = HTMLElement &
 function handleContentLinks(
   opts?: HandleContentLinksOpts,
 ): (e: React.MouseEvent) => void {
-  const { mentions = [], instance, previewMode, statusURL } = opts || {};
+  const { mentions = [], instance, previewMode } = opts || {};
   return (e: React.MouseEvent) => {
     // If cmd/ctrl/shift/alt key is pressed or middle-click, let the browser handle it
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) {
@@ -130,25 +129,6 @@ function handleContentLinks(
         const tagURL = instance ? `/${instance}/t/${tag}` : `/t/${tag}`;
         console.log({ tagURL });
         navigatePath(tagURL);
-        return;
-      } else if (
-        (states.unfurledLinks as Record<string, { url?: string } | undefined>)[
-          href
-        ]?.url &&
-        statusURL !== href
-      ) {
-        // If unfurled AND not self-referential
-        e.preventDefault();
-        e.stopPropagation();
-        states.prevLocation = {
-          pathname: location.pathname,
-          search: location.search,
-        };
-        navigatePath(
-          (
-            states.unfurledLinks as Record<string, { url?: string } | undefined>
-          )[href]?.url as string,
-        );
         return;
       }
     }

@@ -44,7 +44,6 @@ import getDomain from '../utils/get-domain';
 import htmlContentLength from '../utils/html-content-length';
 import mem from '../utils/mem';
 import niceDateTime from '../utils/nice-date-time';
-import { supportsNativeQuote } from '../utils/quote-utils';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import { sorted } from '../utils/sorted';
@@ -617,7 +616,7 @@ function Catchup() {
       } else if (post.reblog) {
         boosts++;
         post.__FILTER = 'boosts';
-      } else if (supportsNativeQuote() && hasQuote(post.quote)) {
+      } else if (hasQuote(post.quote)) {
         quotes++;
         post.__FILTER = 'quotes';
       } else if (
@@ -2275,7 +2274,7 @@ const PostLine = memo(
             ? 'group'
             : reblog
               ? 'reblog'
-              : supportsNativeQuote() && hasQuote(quote)
+              : hasQuote(quote)
                 ? 'quote'
                 : ''
         } ${isReplyTo ? 'reply-to' : ''} ${
@@ -2403,8 +2402,9 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
   } = post;
   const isThread =
     (inReplyToId && inReplyToAccountId === account.id) || !!_thread;
-  let theQuote: QuoteLike | null =
-    supportsNativeQuote() && hasQuote(quote) ? quoteLike(quote) : null;
+  let theQuote: QuoteLike | null = hasQuote(quote)
+    ? quoteLike(quote)
+    : null;
   if (theQuote?.spoilerText || theQuote?.sensitive) theQuote = null;
   if (theQuote?.emojis) emojis.push(...theQuote.emojis);
   if (!mediaAttachments?.length && theQuote?.mediaAttachments?.length) {
