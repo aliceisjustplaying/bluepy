@@ -111,7 +111,7 @@ guard_bash_command() {
 		# `|| true` keeps a no-match `rg` (exit 1) from tripping `set -o pipefail`
 		# and aborting the hook before the branch check — that would fail open.
 		cdcount="$({ rg -o '(^|[;&|])[[:space:]]*cd[[:space:]]' <<<"$cmd" || true; } | wc -l | tr -d '[:space:]')"
-		cdre='^[[:space:]]*cd[[:space:]]+("[^"]+"|[^[:space:];&|]+)[[:space:]]*&&'
+		cdre=$'^[[:space:]]*cd[[:space:]]+("[^"]+"|\'[^\']+\'|[^[:space:];&|]+)[[:space:]]*&&'
 		if [ "$cdcount" = "1" ] && [[ "$cmd" =~ $cdre ]]; then
 			target="$(normalize_path "${BASH_REMATCH[1]}")"
 			[ -d "$target" ] && workdir="$target"
@@ -122,7 +122,7 @@ guard_bash_command() {
 	# `git -C <dir> <verb>` runs against <dir> regardless of the shell's cwd, so
 	# check that target directly (the `-C` form is not matched by the rule above).
 	local gitcre
-	gitcre='git[[:space:]]+-C[[:space:]]+("[^"]+"|[^[:space:];&|]+)[[:space:]]+(commit|push|add|merge|rebase)'
+	gitcre=$'git[[:space:]]+-C[[:space:]]+("[^"]+"|\'[^\']+\'|[^[:space:];&|]+)[[:space:]]+(commit|push|add|merge|rebase)'
 	if [[ "$cmd" =~ $gitcre ]]; then
 		block_on_main_branch "$(normalize_path "${BASH_REMATCH[1]}")"
 	fi
