@@ -59,6 +59,8 @@ import urlRegexObj from '../utils/url-regex';
 import useCloseWatcher from '../utils/useCloseWatcher';
 import useInterval from '../utils/useInterval';
 import useThrottledResizeObserver from '../utils/useThrottledResizeObserver';
+import visibilityIconsMap from '../utils/visibility-icons-map';
+import visibilityText from '../utils/visibility-text';
 
 type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => unknown;
@@ -646,11 +648,25 @@ function Compose({
     store.session.set('currentThreadgateListName', firstList.title || '');
   }, [threadgateRules, threadgateList, userLists]);
 
-  const replyGateSummary = (() => {
-    if (threadgate === 'nobody') return t`Nobody can reply`;
-    if (threadgate !== 'custom') return t`Anyone can reply`;
+  const replyGateIcon = (() => {
+    if (threadgate === 'nobody') return 'block';
+    if (threadgate !== 'custom') return 'earth';
+    const order = ['followers', 'following', 'mention', 'list'];
+    const sortedRules = order.filter((r) => threadgateRules.includes(r));
+    const key = sortedRules.length > 0 ? sortedRules.join('_') : 'everybody';
+    return (
+      visibilityIconsMap[key as keyof typeof visibilityIconsMap] || 'earth'
+    );
+  })();
 
-    return threadgateRules.length ? t`Some can reply` : t`Anyone can reply`;
+  const replyGateSummary = (() => {
+    if (threadgate === 'nobody') return _(visibilityText.nobody);
+    if (threadgate !== 'custom') return _(visibilityText.everybody);
+    const order = ['followers', 'following', 'mention', 'list'];
+    const sortedRules = order.filter((r) => threadgateRules.includes(r));
+    if (sortedRules.length === 0) return _(visibilityText.everybody);
+    const key = sortedRules.join('_');
+    return _(visibilityText[key as keyof typeof visibilityText]);
   })();
 
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
@@ -2016,6 +2032,11 @@ function Compose({
           {isAtprotoCompose && !editStatus && !replyToStatus && (
             <details className="atproto-interaction-settings">
               <summary className="atproto-interaction-settings-summary">
+                <Icon
+                  icon={replyGateIcon}
+                  size="s"
+                  className="atproto-interaction-settings-icon"
+                />
                 <span className="atproto-interaction-settings-title">
                   <span>{replyGateSummary}</span>
                 </span>

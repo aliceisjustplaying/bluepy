@@ -369,8 +369,8 @@ msgid "Let's catch up on the posts from your followings."
 msgstr "Lukem tisuffaɣ n yineḍfaren-ik."
 
 #: src/components/compose.tsx
-msgid "Anyone can reply"
-msgstr ""
+#~ msgid "Anyone can reply"
+#~ msgstr ""
 
 #: src/components/follow-request-buttons.tsx
 #~ msgid "Reject"
@@ -2648,7 +2648,6 @@ msgstr "Ulɣuten imaynuten"
 msgid "Send Report <0>+ Block profile</0>"
 msgstr "Azen aneqqis <0>+ Sewḥel amaɣnu</0>"
 
-#: src/components/compose.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Nobody can reply"
@@ -3237,8 +3236,8 @@ msgid "Posts with <0>{query}</0>"
 msgstr "Tisuffaɣ yesɛan <0>{query}</0>"
 
 #: src/components/compose.tsx
-msgid "Some can reply"
-msgstr ""
+#~ msgid "Some can reply"
+#~ msgstr ""
 
 #: src/components/poll.tsx
 #~ msgid "Ending"

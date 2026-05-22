@@ -1091,27 +1091,31 @@
 
 /* Bluesky Interaction Settings Ultra-Compact UI Styles */
 .atproto-interaction-settings {
-  margin: 4px 8px 0 8px;
-  padding: 0 4px;
+  margin: 6px 8px 0 8px;
+  padding: 0;
   color: var(--text-insignificant-color);
   font-size: 0.86em;
 }
 
 @media (min-width: 40em) {
   .atproto-interaction-settings {
-    margin: 10px 0 0 0;
+    margin: 8px 0 0 0;
   }
 }
 
 .atproto-interaction-settings-summary {
-  display: grid;
-  grid-template-columns: minmax(0, max-content) auto;
+  display: inline-flex;
   align-items: center;
-  justify-content: start;
-  gap: 4px;
-  min-height: 24px;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
   cursor: pointer;
   user-select: none;
+  background-color: var(--bg-color-alt, rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.08));
+  transition: all 0.2s ease;
+  width: max-content;
+  max-width: 100%;
 }
 
 .atproto-interaction-settings-summary::-webkit-details-marker {
@@ -1122,9 +1126,25 @@
   content: '';
 }
 
+.atproto-interaction-settings-summary:hover {
+  background-color: var(--bg-color-alt, rgba(0, 0, 0, 0.08));
+  border-color: var(--outline-hover-color, rgba(0, 0, 0, 0.22));
+}
+
+.atproto-interaction-settings[open] .atproto-interaction-settings-summary {
+  background-color: var(--bg-color-alt, rgba(0, 0, 0, 0.08));
+  border-color: var(--accent-color, var(--blue-color, #0085ff));
+}
+
+.atproto-interaction-settings-icon {
+  color: var(--text-insignificant-color);
+  opacity: 0.75;
+}
+
 .atproto-interaction-settings-chevron {
   color: var(--text-insignificant-color);
-  transition: transform 0.15s ease;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
 }
 
 .atproto-interaction-settings[open] .atproto-interaction-settings-chevron {
@@ -1134,16 +1154,20 @@
 .atproto-interaction-settings-panel {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
   margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background-color: var(--bg-color-alt, rgba(0, 0, 0, 0.02));
+  border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.06));
 }
 
 .atproto-interaction-settings-title {
-  font-weight: 600;
+  font-weight: 550;
   display: flex;
   align-items: center;
   color: var(--text-insignificant-color);
-  font-size: 0.94em;
+  font-size: 0.88em;
   min-width: 0;
 }
 
@@ -1156,38 +1180,36 @@
 /* Reply pills list container */
 .reply-pills-container {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
   align-items: center;
-  box-sizing: border-box;
-  width: max-content;
-  max-width: 100%;
-  margin-inline: auto;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .reply-detail-pills-container {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
   align-items: center;
-  box-sizing: border-box;
-  width: min(100%, 22rem);
-  margin-inline: auto;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .reply-pills-label {
-  font-size: 0.78em;
+  font-size: 0.75em;
   font-weight: 700;
   color: var(--text-insignificant-color);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .reply-pills-list {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  justify-content: center;
 }
 
 /* Pill style buttons */
@@ -1195,26 +1217,30 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 10px;
+  padding: 4px 8px;
   border-radius: 20px;
-  border: 1.2px solid var(--outline-color, rgba(0, 0, 0, 0.12));
+  border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.12));
   background-color: var(--bg-color, #fff);
   color: var(--text-insignificant-color);
-  font-size: 0.82em;
+  font-size: 0.8em;
   font-weight: 550;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
 }
 
 .reply-pill-btn .icon {
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
 .reply-pill-btn:hover:not(:disabled) {
   background-color: var(--bg-color-alt, rgba(0, 0, 0, 0.04));
-  border-color: var(--outline-hover-color, rgba(0, 0, 0, 0.25));
+  border-color: var(--outline-hover-color, rgba(0, 0, 0, 0.22));
   color: var(--text-color);
+}
+
+.reply-pill-btn:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
 .reply-pill-btn.active {
@@ -1233,8 +1259,8 @@
 
 /* Compact select lists dropdown below */
 .reply-list-dropdown-container-compact {
-  width: min(100%, 22rem);
-  margin: -2px auto 0;
+  flex: 1 0 100%;
+  margin-top: 4px;
   animation: slide-down 0.15s ease-out;
 }
 
@@ -1244,8 +1270,9 @@
   gap: 8px;
   box-sizing: border-box;
   width: 100%;
-  min-height: 32px;
-  padding: 5px 8px;
+  max-width: 22rem;
+  min-height: 30px;
+  padding: 4px 10px;
   appearance: none;
   border-radius: 8px;
   border: 1px solid var(--outline-color, rgba(0, 0, 0, 0.12));

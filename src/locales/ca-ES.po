@@ -369,8 +369,8 @@ msgid "Let's catch up on the posts from your followings."
 msgstr "Poseu-vos al dia amb les publicacions de les persones que seguiu."
 
 #: src/components/compose.tsx
-msgid "Anyone can reply"
-msgstr ""
+#~ msgid "Anyone can reply"
+#~ msgstr ""
 
 #: src/components/follow-request-buttons.tsx
 #~ msgid "Reject"
@@ -2652,7 +2652,6 @@ msgstr "Notificacions noves"
 msgid "Send Report <0>+ Block profile</0>"
 msgstr "Envia l'informe <0>+ Bloca el perfil</0>"
 
-#: src/components/compose.tsx
 #: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Nobody can reply"
@@ -3241,8 +3240,8 @@ msgid "Posts with <0>{query}</0>"
 msgstr "Publicacions amb <0>{query}</0>"
 
 #: src/components/compose.tsx
-msgid "Some can reply"
-msgstr ""
+#~ msgid "Some can reply"
+#~ msgstr ""
 
 #: src/components/poll.tsx
 #~ msgid "Ending"
