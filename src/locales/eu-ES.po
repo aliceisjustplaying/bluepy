@@ -42,9 +42,7 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "Hitz osoa"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr "Joan nire zerbitzarira (<0>{currentInstance}</0>)"
 
@@ -147,10 +145,7 @@ msgstr "{count, plural, one {}=1 {{account}(e)k jarraitu dizu.} other {<0><1>{0}
 msgid "Connected on {0} (<0/>)"
 msgstr "{0}(e)ra konektatuta (<0/>)"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Only you can quote"
 #~ msgstr "Zeuk bakarrik iruzkindu dezakezu"
 
@@ -158,9 +153,7 @@ msgstr "{0}(e)ra konektatuta (<0/>)"
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr "<0>Shift</0> + <1>c</1>"
 
-#: src/components/compose-button.tsx
-#: src/components/nav-menu.tsx
-#: src/pages/scheduled-posts.tsx
+#: src/components/compose-button.tsx src/components/nav-menu.tsx src/pages/scheduled-posts.tsx
 #~ msgid "Scheduled Posts"
 #~ msgstr "Programatutako bidalketak"
 
@@ -318,8 +311,7 @@ msgstr "Ezertxo ere ez"
 msgid "Bookmarked"
 msgstr "Laster-marka jarria"
 
-#: src/components/private-note-sheet.tsx
-#: src/components/related-actions.tsx
+#: src/components/private-note-sheet.tsx src/components/related-actions.tsx
 #~ msgid "Notes"
 #~ msgstr "Oharrak"
 
@@ -539,8 +531,7 @@ msgstr ""
 #~ msgid "Unable to unfeature on profile"
 #~ msgstr "Ezin da profilean nabarmentzen uzteari utzi"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Quote settings updated"
 #~ msgstr "Iruzkinen ezarpenak eguneratu dira"
 
@@ -618,9 +609,7 @@ msgstr "Edukia"
 msgid "Send Report"
 msgstr "Bidali salaketa"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Enter a new server e.g. \"mastodon.social\""
 #~ msgstr "Sartu zerbitzari berria, adib. \"mastodon.eus\""
 
@@ -628,8 +617,7 @@ msgstr "Bidali salaketa"
 #~ msgid "Unable to delete filter."
 #~ msgstr "Ezin da iragazkia ezabatu."
 
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
+#: src/components/nav-menu.tsx src/components/shortcuts-settings.tsx
 #~ msgid "Federated"
 #~ msgstr "Federatua"
 
@@ -828,8 +816,7 @@ msgstr "Ikusi profila"
 msgid "Keyboard shortcuts"
 msgstr "Laster-teklak"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Public"
 #~ msgstr "Publikoa"
 
@@ -1007,10 +994,7 @@ msgstr "Itzulitako biografia"
 msgid "Type to search GIFs"
 msgstr "Idatzi GIFak bilatzeko"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Your followers can quote"
 #~ msgstr "Jarraitzaileek iruzkindu dezakete"
 
@@ -1271,8 +1255,7 @@ msgstr ""
 msgid "Unmuted @{username}"
 msgstr "@{username} mututzeari utzi zaio"
 
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/status-inline-controls.tsx src/components/status-large-footer.tsx
 #~ msgid "Boosted"
 #~ msgstr "Bultzatua"
 
@@ -1325,9 +1308,7 @@ msgstr ""
 msgid "Quote chain"
 msgstr "Aipuen katea"
 
-#: src/components/nav-menu.jsx
-#: src/components/shortcuts.jsx
-#: src/pages/list.jsx
+#: src/components/nav-menu.jsx src/components/shortcuts.jsx src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Zerrenda guztiak"
 
@@ -1866,8 +1847,7 @@ msgstr "Multimedia bakarrik"
 msgid "Update"
 msgstr "Eguneratu"
 
-#: src/components/status-account-menu.tsx
-#: src/pages/settings.tsx
+#: src/components/status-account-menu.tsx src/pages/settings.tsx
 #~ msgid "Quote settings"
 #~ msgstr "Iruzkinen ezarpenak"
 
@@ -1996,9 +1976,7 @@ msgstr "Gehitu GIFa"
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
 #~ msgstr ""
 
-#: src/components/list-exclusive-badge.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
+#: src/components/list-exclusive-badge.tsx src/pages/list.tsx src/pages/lists.tsx
 #~ msgid "Posts on this list are hidden from Home/Following"
 #~ msgstr "Zerrenda honetako bidalketak ez dira Hasiera / Jarraitzen denbora-lerroan erakutsiko"
 
@@ -2223,10 +2201,7 @@ msgstr "Kudeatu kideak"
 msgid "Unable to format math"
 msgstr "Ezin zaio formatu matematikoa eman"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Anyone can quote"
 #~ msgstr "Edonork iruzkindu dezake"
 
@@ -2238,8 +2213,7 @@ msgstr "Ezin zaio formatu matematikoa eman"
 msgid "Copy"
 msgstr "Kopiatu"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Failed to update quote settings"
 #~ msgstr "Ezin dira iruzkinaren ezarperpenak eguneratu"
 
@@ -2462,8 +2436,7 @@ msgstr "Bidalketako testua kopiatu da"
 msgid "Violation"
 msgstr "Urraketa"
 
-#: src/components/status-header.tsx
-#: src/utils/visibility-text.ts
+#: src/components/status-header.tsx src/utils/visibility-text.ts
 #~ msgid "Private mention"
 #~ msgstr "Aipamen pribatua"
 
@@ -2663,9 +2636,7 @@ msgstr "Jakinarazpena zure beste kontuarena da."
 msgid "Try again"
 msgstr "Saiatu berriro"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to another server…"
 #~ msgstr "Joan beste zerbitzari batera…"
 
@@ -2744,8 +2715,7 @@ msgstr "Bidali gabeko zirriborroak"
 msgid "You're all caught up."
 msgstr "Zaharrak berri."
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/keyboard-shortcuts-help.tsx src/components/status-large-footer.tsx
 #~ msgid "Boost"
 #~ msgstr "Bultzatu"
 
@@ -3471,8 +3441,7 @@ msgstr "Bidalketa"
 msgid "Set as default"
 msgstr "Ezarri lehenetsi gisa"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Quiet public"
 #~ msgstr "Ikusgarritasun mugatua"
 
@@ -3500,9 +3469,7 @@ msgstr ""
 msgid "Post pending"
 msgstr "Bidalketa zain dago"
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
+#: src/components/account-info.tsx src/pages/account-statuses.tsx src/pages/catchup.tsx
 #~ msgid "Boosts"
 #~ msgstr "Bultzadak"
 
@@ -3550,9 +3517,7 @@ msgstr "Ezin da harpidetza kendu. Saiatu berriro."
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
 msgstr "<0>{from}</0>(e)ko administratzaile batek <1>{targetName}</1> blokeatu du. Eragina du jarraitzen dizuten {followersCount} eta jarraitzen dituzun {followingCount} -engan."
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Invalid server"
 #~ msgstr "Zerbitzaria ez da baliozkoa"
 
@@ -4183,8 +4148,7 @@ msgstr "edo gainidatzi…"
 #~ msgid "Remove quote…"
 #~ msgstr "Kendu iruzkina…"
 
-#: src/components/related-actions.tsx
-#: src/pages/hashtag.tsx
+#: src/components/related-actions.tsx src/pages/hashtag.tsx
 #~ msgid "Feature on profile"
 #~ msgstr "Nabarmendu profilean"
 
@@ -4589,8 +4553,7 @@ msgstr "Eskaneatu QR kodea"
 msgid "Failed to generate description"
 msgstr "Ezin izan da deskribapena sortu"
 
-#: src/components/nav-menu.tsx
-#: src/pages/followed-hashtags.tsx
+#: src/components/nav-menu.tsx src/pages/followed-hashtags.tsx
 #~ msgid "Followed Hashtags"
 #~ msgstr "Jarraitutako traolak"
 

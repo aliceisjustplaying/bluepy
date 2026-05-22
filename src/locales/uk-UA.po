@@ -42,9 +42,7 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "Ціле слово"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr "Перейти до мого серверу (<0>{currentInstance}</0>)"
 
@@ -147,10 +145,7 @@ msgstr "{count, plural, =1 {{account} підписа(вся/лась) на ва�
 msgid "Connected on {0} (<0/>)"
 msgstr "Під’єднано до {0} (<0/>)"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Only you can quote"
 #~ msgstr "Тільки ви можете цитувати"
 
@@ -158,9 +153,7 @@ msgstr "Під’єднано до {0} (<0/>)"
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr "<0>Shift</0> + <1>c</1>"
 
-#: src/components/compose-button.tsx
-#: src/components/nav-menu.tsx
-#: src/pages/scheduled-posts.tsx
+#: src/components/compose-button.tsx src/components/nav-menu.tsx src/pages/scheduled-posts.tsx
 #~ msgid "Scheduled Posts"
 #~ msgstr "Заплановані пости"
 
@@ -318,8 +311,7 @@ msgstr "Нічого показати"
 msgid "Bookmarked"
 msgstr "Додано в закладки"
 
-#: src/components/private-note-sheet.tsx
-#: src/components/related-actions.tsx
+#: src/components/private-note-sheet.tsx src/components/related-actions.tsx
 #~ msgid "Notes"
 #~ msgstr "Примітки"
 
@@ -539,8 +531,7 @@ msgstr ""
 #~ msgid "Unable to unfeature on profile"
 #~ msgstr "Не вдалося скасувати рекомендацію в профілі"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Quote settings updated"
 #~ msgstr "Налаштування цитування оновлено"
 
@@ -618,9 +609,7 @@ msgstr "Вміст"
 msgid "Send Report"
 msgstr "Надіслати скаргу"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Enter a new server e.g. \"mastodon.social\""
 #~ msgstr "Введіть новий сервер, напр. \"twiukraine.com\""
 
@@ -628,8 +617,7 @@ msgstr "Надіслати скаргу"
 #~ msgid "Unable to delete filter."
 #~ msgstr "Не вдалося видалити фільтр."
 
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
+#: src/components/nav-menu.tsx src/components/shortcuts-settings.tsx
 #~ msgid "Federated"
 #~ msgstr "Федеративна"
 
@@ -828,8 +816,7 @@ msgstr "Переглянути профіль"
 msgid "Keyboard shortcuts"
 msgstr "Комбінації клавіш"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Public"
 #~ msgstr "Для всіх"
 
@@ -1007,10 +994,7 @@ msgstr "Перекладена біографія"
 msgid "Type to search GIFs"
 msgstr "Почніть набирати для пошуку GIF-ок"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Your followers can quote"
 #~ msgstr "Ваші підписники можуть цитувати"
 
@@ -1271,8 +1255,7 @@ msgstr ""
 msgid "Unmuted @{username}"
 msgstr "@{username} більше не глушиться"
 
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/status-inline-controls.tsx src/components/status-large-footer.tsx
 #~ msgid "Boosted"
 #~ msgstr "Поширено"
 
@@ -1325,9 +1308,7 @@ msgstr ""
 msgid "Quote chain"
 msgstr "Ланцюжок цитувань"
 
-#: src/components/nav-menu.jsx
-#: src/components/shortcuts.jsx
-#: src/pages/list.jsx
+#: src/components/nav-menu.jsx src/components/shortcuts.jsx src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Всі списки"
 
@@ -1866,8 +1847,7 @@ msgstr "Лише медіа"
 msgid "Update"
 msgstr "Оновити"
 
-#: src/components/status-account-menu.tsx
-#: src/pages/settings.tsx
+#: src/components/status-account-menu.tsx src/pages/settings.tsx
 #~ msgid "Quote settings"
 #~ msgstr "Налаштування цитування"
 
@@ -1996,9 +1976,7 @@ msgstr "Додати GIF"
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
 #~ msgstr ""
 
-#: src/components/list-exclusive-badge.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
+#: src/components/list-exclusive-badge.tsx src/pages/list.tsx src/pages/lists.tsx
 #~ msgid "Posts on this list are hidden from Home/Following"
 #~ msgstr "Дописи в цьому списку приховано зі стрічки Домашня/Підписки"
 
@@ -2223,10 +2201,7 @@ msgstr "Керувати учасниками"
 msgid "Unable to format math"
 msgstr "Неможливо відформатувати формулу"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Anyone can quote"
 #~ msgstr "Будь-хто може цитувати"
 
@@ -2238,8 +2213,7 @@ msgstr "Неможливо відформатувати формулу"
 msgid "Copy"
 msgstr "Скопіювати"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Failed to update quote settings"
 #~ msgstr "Не вдалося оновити налаштування цитування"
 
@@ -2462,8 +2436,7 @@ msgstr "Текст допису скопійовано"
 msgid "Violation"
 msgstr "Порушення"
 
-#: src/components/status-header.tsx
-#: src/utils/visibility-text.ts
+#: src/components/status-header.tsx src/utils/visibility-text.ts
 #~ msgid "Private mention"
 #~ msgstr "Лише згадані"
 
@@ -2663,9 +2636,7 @@ msgstr "Це сповіщення з вашого іншого обліково�
 msgid "Try again"
 msgstr "Спробувати знову"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to another server…"
 #~ msgstr "Перейти на інший сервер…"
 
@@ -2744,8 +2715,7 @@ msgstr "Невідправлені чернетки"
 msgid "You're all caught up."
 msgstr "Ви наздогнали все."
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/keyboard-shortcuts-help.tsx src/components/status-large-footer.tsx
 #~ msgid "Boost"
 #~ msgstr "Поширити"
 
@@ -3471,8 +3441,7 @@ msgstr "Допис"
 msgid "Set as default"
 msgstr "Встановити за замовчуванням"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Quiet public"
 #~ msgstr "Непублічно"
 
@@ -3500,9 +3469,7 @@ msgstr ""
 msgid "Post pending"
 msgstr "Допис в очікуванні"
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
+#: src/components/account-info.tsx src/pages/account-statuses.tsx src/pages/catchup.tsx
 #~ msgid "Boosts"
 #~ msgstr "Поширення"
 
@@ -3550,9 +3517,7 @@ msgstr "Не вдалося скасувати підписку. Будь лас
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
 msgstr "Адміністратор з <0>{from}</0> заблокував <1>{targetName}</1>. Торкнулося підписників: {followersCount}, підписки: {followingCount}."
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Invalid server"
 #~ msgstr "Недійсний сервер"
 
@@ -4183,8 +4148,7 @@ msgstr "або замінити…"
 #~ msgid "Remove quote…"
 #~ msgstr "Вилучити цитату…"
 
-#: src/components/related-actions.tsx
-#: src/pages/hashtag.tsx
+#: src/components/related-actions.tsx src/pages/hashtag.tsx
 #~ msgid "Feature on profile"
 #~ msgstr "Рекомендувати в профілі"
 
@@ -4589,8 +4553,7 @@ msgstr "Сканувати QR-код"
 msgid "Failed to generate description"
 msgstr "Помилка генерації опису"
 
-#: src/components/nav-menu.tsx
-#: src/pages/followed-hashtags.tsx
+#: src/components/nav-menu.tsx src/pages/followed-hashtags.tsx
 #~ msgid "Followed Hashtags"
 #~ msgstr "Відстежувані хештеґи"
 

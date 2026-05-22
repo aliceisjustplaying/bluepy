@@ -42,9 +42,7 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "整词匹配"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr "转到我所在的实例 (<0>{currentInstance}</0>)"
 
@@ -147,10 +145,7 @@ msgstr "{count, plural, =1 {{account} 关注了你。} other {<0><1>{0}</1> 人<
 msgid "Connected on {0} (<0/>)"
 msgstr "在 {0} (<0/>) 建立连接"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Only you can quote"
 #~ msgstr "只有你才能引用"
 
@@ -158,9 +153,7 @@ msgstr "在 {0} (<0/>) 建立连接"
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr "<0>Shift</0> + <1>c</1>"
 
-#: src/components/compose-button.tsx
-#: src/components/nav-menu.tsx
-#: src/pages/scheduled-posts.tsx
+#: src/components/compose-button.tsx src/components/nav-menu.tsx src/pages/scheduled-posts.tsx
 #~ msgid "Scheduled Posts"
 #~ msgstr "定时嘟文"
 
@@ -318,8 +311,7 @@ msgstr "暂无内容"
 msgid "Bookmarked"
 msgstr "已收藏"
 
-#: src/components/private-note-sheet.tsx
-#: src/components/related-actions.tsx
+#: src/components/private-note-sheet.tsx src/components/related-actions.tsx
 #~ msgid "Notes"
 #~ msgstr "备注"
 
@@ -539,8 +531,7 @@ msgstr ""
 #~ msgid "Unable to unfeature on profile"
 #~ msgstr "无法从个人页精选中移除"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Quote settings updated"
 #~ msgstr "已更新引用设置"
 
@@ -618,9 +609,7 @@ msgstr "内容"
 msgid "Send Report"
 msgstr "发送举报"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Enter a new server e.g. \"mastodon.social\""
 #~ msgstr "输入一个新实例地址，例如 ”mastodon.social“"
 
@@ -628,8 +617,7 @@ msgstr "发送举报"
 #~ msgid "Unable to delete filter."
 #~ msgstr "无法删除过滤规则。"
 
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
+#: src/components/nav-menu.tsx src/components/shortcuts-settings.tsx
 #~ msgid "Federated"
 #~ msgstr "跨站"
 
@@ -828,8 +816,7 @@ msgstr "查看个人资料"
 msgid "Keyboard shortcuts"
 msgstr "快捷键"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Public"
 #~ msgstr "公开"
 
@@ -1007,10 +994,7 @@ msgstr "简介(已翻译)"
 msgid "Type to search GIFs"
 msgstr "输入以搜索 GIF"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Your followers can quote"
 #~ msgstr "你的粉丝才能引用"
 
@@ -1271,8 +1255,7 @@ msgstr ""
 msgid "Unmuted @{username}"
 msgstr "已取消静音 @{username}"
 
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/status-inline-controls.tsx src/components/status-large-footer.tsx
 #~ msgid "Boosted"
 #~ msgstr "已转嘟"
 
@@ -1325,9 +1308,7 @@ msgstr ""
 msgid "Quote chain"
 msgstr "引用链"
 
-#: src/components/nav-menu.jsx
-#: src/components/shortcuts.jsx
-#: src/pages/list.jsx
+#: src/components/nav-menu.jsx src/components/shortcuts.jsx src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "全部列表"
 
@@ -1866,8 +1847,7 @@ msgstr "仅媒体"
 msgid "Update"
 msgstr "更新"
 
-#: src/components/status-account-menu.tsx
-#: src/pages/settings.tsx
+#: src/components/status-account-menu.tsx src/pages/settings.tsx
 #~ msgid "Quote settings"
 #~ msgstr "引用设置"
 
@@ -1996,9 +1976,7 @@ msgstr "添加GIF"
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
 #~ msgstr ""
 
-#: src/components/list-exclusive-badge.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
+#: src/components/list-exclusive-badge.tsx src/pages/list.tsx src/pages/lists.tsx
 #~ msgid "Posts on this list are hidden from Home/Following"
 #~ msgstr "此列表中的嘟文不会出现在首页/关注时间线中"
 
@@ -2223,10 +2201,7 @@ msgstr "管理成员"
 msgid "Unable to format math"
 msgstr "无法渲染数学公式"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Anyone can quote"
 #~ msgstr "任何人都能引用"
 
@@ -2238,8 +2213,7 @@ msgstr "无法渲染数学公式"
 msgid "Copy"
 msgstr "复制"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Failed to update quote settings"
 #~ msgstr "引用设置保存失败"
 
@@ -2462,8 +2436,7 @@ msgstr "已复制嘟文文本"
 msgid "Violation"
 msgstr "违规"
 
-#: src/components/status-header.tsx
-#: src/utils/visibility-text.ts
+#: src/components/status-header.tsx src/utils/visibility-text.ts
 #~ msgid "Private mention"
 #~ msgstr "私信"
 
@@ -2663,9 +2636,7 @@ msgstr "此通知来自你的其他账号。"
 msgid "Try again"
 msgstr "重试"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to another server…"
 #~ msgstr "转到另一实例…"
 
@@ -2744,8 +2715,7 @@ msgstr "未发送的草稿"
 msgid "You're all caught up."
 msgstr "你已经全读完了。"
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/keyboard-shortcuts-help.tsx src/components/status-large-footer.tsx
 #~ msgid "Boost"
 #~ msgstr "转嘟"
 
@@ -3471,8 +3441,7 @@ msgstr "嘟文"
 msgid "Set as default"
 msgstr "设为默认账号"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Quiet public"
 #~ msgstr "悄悄公开"
 
@@ -3500,9 +3469,7 @@ msgstr ""
 msgid "Post pending"
 msgstr "待发布嘟文"
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
+#: src/components/account-info.tsx src/pages/account-statuses.tsx src/pages/catchup.tsx
 #~ msgid "Boosts"
 #~ msgstr "转嘟"
 
@@ -3550,9 +3517,7 @@ msgstr "订阅删除失败。请重试。"
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
 msgstr "一名来自<0>{from}</0>的管理员已屏蔽<1>{targetName}</1>。受影响的粉丝数:{followersCount}，关注数:{followingCount}。"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Invalid server"
 #~ msgstr "实例无效"
 
@@ -4183,8 +4148,7 @@ msgstr "或覆盖…"
 #~ msgid "Remove quote…"
 #~ msgstr "移除引用…"
 
-#: src/components/related-actions.tsx
-#: src/pages/hashtag.tsx
+#: src/components/related-actions.tsx src/pages/hashtag.tsx
 #~ msgid "Feature on profile"
 #~ msgstr "加入个人页精选"
 
@@ -4589,8 +4553,7 @@ msgstr "扫描二维码"
 msgid "Failed to generate description"
 msgstr "描述生成失败"
 
-#: src/components/nav-menu.tsx
-#: src/pages/followed-hashtags.tsx
+#: src/components/nav-menu.tsx src/pages/followed-hashtags.tsx
 #~ msgid "Followed Hashtags"
 #~ msgstr "关注的话题标签"
 

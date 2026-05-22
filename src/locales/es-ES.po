@@ -42,9 +42,7 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "Palabra completa"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr "Ir a mi servidor (<0>{currentInstance}</0>)"
 
@@ -147,10 +145,7 @@ msgstr "{count, plural, =1 {{account} te comenzó a seguir.} other {<0><1>{0}</1
 msgid "Connected on {0} (<0/>)"
 msgstr "Conectado el {0} (<0/>)"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Only you can quote"
 #~ msgstr "Solo tú puedes citar"
 
@@ -158,9 +153,7 @@ msgstr "Conectado el {0} (<0/>)"
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr "<0>Mayús</0> + <1>c</1>"
 
-#: src/components/compose-button.tsx
-#: src/components/nav-menu.tsx
-#: src/pages/scheduled-posts.tsx
+#: src/components/compose-button.tsx src/components/nav-menu.tsx src/pages/scheduled-posts.tsx
 #~ msgid "Scheduled Posts"
 #~ msgstr "Publicaciones programadas"
 
@@ -318,8 +311,7 @@ msgstr "No hay nada que mostrar"
 msgid "Bookmarked"
 msgstr "Añadido a marcadores"
 
-#: src/components/private-note-sheet.tsx
-#: src/components/related-actions.tsx
+#: src/components/private-note-sheet.tsx src/components/related-actions.tsx
 #~ msgid "Notes"
 #~ msgstr "Notas"
 
@@ -539,8 +531,7 @@ msgstr ""
 #~ msgid "Unable to unfeature on profile"
 #~ msgstr "No se ha podido desactivar en el perfil"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Quote settings updated"
 #~ msgstr "Configuración de cita actualizada"
 
@@ -618,9 +609,7 @@ msgstr "Contenido"
 msgid "Send Report"
 msgstr "Enviar reporte"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Enter a new server e.g. \"mastodon.social\""
 #~ msgstr "Introduce un nuevo servidor, por ejemplo, \"mastodon.social\""
 
@@ -628,8 +617,7 @@ msgstr "Enviar reporte"
 #~ msgid "Unable to delete filter."
 #~ msgstr "No se ha podido eliminar el filtro."
 
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
+#: src/components/nav-menu.tsx src/components/shortcuts-settings.tsx
 #~ msgid "Federated"
 #~ msgstr "Federados"
 
@@ -828,8 +816,7 @@ msgstr "Ver perfil"
 msgid "Keyboard shortcuts"
 msgstr "Atajos de teclado"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Public"
 #~ msgstr "Pública"
 
@@ -1007,10 +994,7 @@ msgstr "Biografía traducida"
 msgid "Type to search GIFs"
 msgstr "Escribe para buscar un GIF"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Your followers can quote"
 #~ msgstr "Tus seguidores pueden citar"
 
@@ -1271,8 +1255,7 @@ msgstr ""
 msgid "Unmuted @{username}"
 msgstr "Se ha dejado de silenciar a @{username}"
 
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/status-inline-controls.tsx src/components/status-large-footer.tsx
 #~ msgid "Boosted"
 #~ msgstr "Impulsó"
 
@@ -1325,9 +1308,7 @@ msgstr ""
 msgid "Quote chain"
 msgstr "Cadena de citas"
 
-#: src/components/nav-menu.jsx
-#: src/components/shortcuts.jsx
-#: src/pages/list.jsx
+#: src/components/nav-menu.jsx src/components/shortcuts.jsx src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Todas las listas"
 
@@ -1866,8 +1847,7 @@ msgstr "Solo multimedia"
 msgid "Update"
 msgstr "Actualizar"
 
-#: src/components/status-account-menu.tsx
-#: src/pages/settings.tsx
+#: src/components/status-account-menu.tsx src/pages/settings.tsx
 #~ msgid "Quote settings"
 #~ msgstr "Configuración de citas"
 
@@ -1996,9 +1976,7 @@ msgstr "Añadir GIF"
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
 #~ msgstr ""
 
-#: src/components/list-exclusive-badge.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
+#: src/components/list-exclusive-badge.tsx src/pages/list.tsx src/pages/lists.tsx
 #~ msgid "Posts on this list are hidden from Home/Following"
 #~ msgstr "Las publicaciones en esta lista están ocultas en Inicio/Seguidos"
 
@@ -2223,10 +2201,7 @@ msgstr "Administrar miembros"
 msgid "Unable to format math"
 msgstr "No se pudo dar formato matemático"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Anyone can quote"
 #~ msgstr "Cualquiera puede citar"
 
@@ -2238,8 +2213,7 @@ msgstr "No se pudo dar formato matemático"
 msgid "Copy"
 msgstr "Copiar"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Failed to update quote settings"
 #~ msgstr "No se han podido actualizar la configuración de citas"
 
@@ -2462,8 +2436,7 @@ msgstr "Texto de la publicación copiado"
 msgid "Violation"
 msgstr "Violación"
 
-#: src/components/status-header.tsx
-#: src/utils/visibility-text.ts
+#: src/components/status-header.tsx src/utils/visibility-text.ts
 #~ msgid "Private mention"
 #~ msgstr "Mención privada"
 
@@ -2663,9 +2636,7 @@ msgstr "Esta notificación proviene de tu otra cuenta."
 msgid "Try again"
 msgstr "Inténtalo de nuevo"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to another server…"
 #~ msgstr "Ir a otro servidor…"
 
@@ -2744,8 +2715,7 @@ msgstr "Borradores no enviados"
 msgid "You're all caught up."
 msgstr "Estás al día."
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/keyboard-shortcuts-help.tsx src/components/status-large-footer.tsx
 #~ msgid "Boost"
 #~ msgstr "Impulsar"
 
@@ -3471,8 +3441,7 @@ msgstr "Publicación"
 msgid "Set as default"
 msgstr "Establecer como predeterminada"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Quiet public"
 #~ msgstr "Pública, pero silenciosa"
 
@@ -3500,9 +3469,7 @@ msgstr ""
 msgid "Post pending"
 msgstr "Publicación pendiente"
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
+#: src/components/account-info.tsx src/pages/account-statuses.tsx src/pages/catchup.tsx
 #~ msgid "Boosts"
 #~ msgstr "Impulsos"
 
@@ -3550,9 +3517,7 @@ msgstr "No se ha podido cancelar la suscripción. Por favor, inténtalo de nuevo
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
 msgstr "Un administrador de <0>{from}</0> ha bloqueado <1>{targetName}</1>. Seguidores afectados: {followersCount}, siguiendo: {followingCount}."
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Invalid server"
 #~ msgstr "Servidor inválido"
 
@@ -4183,8 +4148,7 @@ msgstr "o sobreescribir…"
 #~ msgid "Remove quote…"
 #~ msgstr "Eliminar cita…"
 
-#: src/components/related-actions.tsx
-#: src/pages/hashtag.tsx
+#: src/components/related-actions.tsx src/pages/hashtag.tsx
 #~ msgid "Feature on profile"
 #~ msgstr "Destacar en el perfil"
 
@@ -4589,8 +4553,7 @@ msgstr "Escanear código QR"
 msgid "Failed to generate description"
 msgstr "No se ha podido generar la descripción"
 
-#: src/components/nav-menu.tsx
-#: src/pages/followed-hashtags.tsx
+#: src/components/nav-menu.tsx src/pages/followed-hashtags.tsx
 #~ msgid "Followed Hashtags"
 #~ msgstr "Etiquetas seguidas"
 

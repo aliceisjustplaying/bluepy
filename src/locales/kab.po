@@ -42,9 +42,7 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "Awal ummid"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr ""
 
@@ -147,10 +145,7 @@ msgstr "{count, plural, one {}=1 {{account} yeṭṭafar-ik.} other {<0><1>{0}</
 msgid "Connected on {0} (<0/>)"
 msgstr "D uqqin ɣef {0} (<0/>)"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Only you can quote"
 #~ msgstr ""
 
@@ -158,9 +153,7 @@ msgstr "D uqqin ɣef {0} (<0/>)"
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr "<0>Shift</0> + <1>c</1>"
 
-#: src/components/compose-button.tsx
-#: src/components/nav-menu.tsx
-#: src/pages/scheduled-posts.tsx
+#: src/components/compose-button.tsx src/components/nav-menu.tsx src/pages/scheduled-posts.tsx
 #~ msgid "Scheduled Posts"
 #~ msgstr "Tisuffaɣ yettwasɣawsen"
 
@@ -318,8 +311,7 @@ msgstr "Ulac ara yettwaskanen"
 msgid "Bookmarked"
 msgstr "Yettwacreḍ"
 
-#: src/components/private-note-sheet.tsx
-#: src/components/related-actions.tsx
+#: src/components/private-note-sheet.tsx src/components/related-actions.tsx
 #~ msgid "Notes"
 #~ msgstr ""
 
@@ -539,8 +531,7 @@ msgstr ""
 #~ msgid "Unable to unfeature on profile"
 #~ msgstr "D awezɣi tukksa seg umaɣnu"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Quote settings updated"
 #~ msgstr ""
 
@@ -618,9 +609,7 @@ msgstr "Agbur"
 msgid "Send Report"
 msgstr "Azen aneqqis"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Enter a new server e.g. \"mastodon.social\""
 #~ msgstr ""
 
@@ -628,8 +617,7 @@ msgstr "Azen aneqqis"
 #~ msgid "Unable to delete filter."
 #~ msgstr "D awezɣi tukksa n yimsizdeg."
 
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
+#: src/components/nav-menu.tsx src/components/shortcuts-settings.tsx
 #~ msgid "Federated"
 #~ msgstr "Asedduklan"
 
@@ -828,8 +816,7 @@ msgstr ""
 msgid "Keyboard shortcuts"
 msgstr "Inegzumen n unasiw"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Public"
 #~ msgstr "Azayaz"
 
@@ -1007,10 +994,7 @@ msgstr "Tettwasuqqel tudert"
 msgid "Type to search GIFs"
 msgstr "Aru i unadi n GIFs"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Your followers can quote"
 #~ msgstr ""
 
@@ -1271,8 +1255,7 @@ msgstr ""
 msgid "Unmuted @{username}"
 msgstr "Yettwakkes usgugem ɣef @{username}"
 
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/status-inline-controls.tsx src/components/status-large-footer.tsx
 #~ msgid "Boosted"
 #~ msgstr "Tettwazuzer"
 
@@ -1325,9 +1308,7 @@ msgstr ""
 msgid "Quote chain"
 msgstr ""
 
-#: src/components/nav-menu.jsx
-#: src/components/shortcuts.jsx
-#: src/pages/list.jsx
+#: src/components/nav-menu.jsx src/components/shortcuts.jsx src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Akk tibdarin"
 
@@ -1866,8 +1847,7 @@ msgstr "Amidya kan"
 msgid "Update"
 msgstr "Leqqem"
 
-#: src/components/status-account-menu.tsx
-#: src/pages/settings.tsx
+#: src/components/status-account-menu.tsx src/pages/settings.tsx
 #~ msgid "Quote settings"
 #~ msgstr "Iɣewwaren n tnebdurt"
 
@@ -1996,9 +1976,7 @@ msgstr "Rnu tugna GIF"
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
 #~ msgstr ""
 
-#: src/components/list-exclusive-badge.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
+#: src/components/list-exclusive-badge.tsx src/pages/list.tsx src/pages/lists.tsx
 #~ msgid "Posts on this list are hidden from Home/Following"
 #~ msgstr ""
 
@@ -2223,10 +2201,7 @@ msgstr "Sefrek imttekkiyen"
 msgid "Unable to format math"
 msgstr ""
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Anyone can quote"
 #~ msgstr ""
 
@@ -2238,8 +2213,7 @@ msgstr ""
 msgid "Copy"
 msgstr "Nɣel"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Failed to update quote settings"
 #~ msgstr ""
 
@@ -2462,8 +2436,7 @@ msgstr "Aḍris n tsuffeɣt yettwanɣel"
 msgid "Violation"
 msgstr "Takriṭ"
 
-#: src/components/status-header.tsx
-#: src/utils/visibility-text.ts
+#: src/components/status-header.tsx src/utils/visibility-text.ts
 #~ msgid "Private mention"
 #~ msgstr "Abdar uslig"
 
@@ -2663,9 +2636,7 @@ msgstr "Talɣut-a seg umiḍan-ik niḍen."
 msgid "Try again"
 msgstr "Ɛreḍ tikkelt-nniḍen"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to another server…"
 #~ msgstr ""
 
@@ -2744,8 +2715,7 @@ msgstr "Ur ttazen ara irewwayen"
 msgid "You're all caught up."
 msgstr "Tessawḍeḍ kullec."
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/keyboard-shortcuts-help.tsx src/components/status-large-footer.tsx
 #~ msgid "Boost"
 #~ msgstr "Zuzer"
 
@@ -3471,8 +3441,7 @@ msgstr "Tasuffeɣt"
 msgid "Set as default"
 msgstr "Sbadu-t d amezwer"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Quiet public"
 #~ msgstr "Azayez asusam"
 
@@ -3500,9 +3469,7 @@ msgstr ""
 msgid "Post pending"
 msgstr ""
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
+#: src/components/account-info.tsx src/pages/account-statuses.tsx src/pages/catchup.tsx
 #~ msgid "Boosts"
 #~ msgstr "Izuzar"
 
@@ -3550,9 +3517,7 @@ msgstr "Yecceḍ tukksa n uglam. Ttxil-k, εreḍ tikkelt niḍen."
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
 msgstr "Anedbal seg <0>{from}</0> yettusewḥel <1>{targetName}</1>. Ineḍfaren yettwaḥuzan: {followersCount}, ineḍfaren: {followingCount}."
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Invalid server"
 #~ msgstr ""
 
@@ -4183,8 +4148,7 @@ msgstr "neɣ zgel…"
 #~ msgid "Remove quote…"
 #~ msgstr ""
 
-#: src/components/related-actions.tsx
-#: src/pages/hashtag.tsx
+#: src/components/related-actions.tsx src/pages/hashtag.tsx
 #~ msgid "Feature on profile"
 #~ msgstr "Welleh fell-as deg umaɣnu-k"
 
@@ -4589,8 +4553,7 @@ msgstr ""
 msgid "Failed to generate description"
 msgstr "Yecceḍ usirew n uglam"
 
-#: src/components/nav-menu.tsx
-#: src/pages/followed-hashtags.tsx
+#: src/components/nav-menu.tsx src/pages/followed-hashtags.tsx
 #~ msgid "Followed Hashtags"
 #~ msgstr "Ihacṭagen yettwaḍfaren"
 

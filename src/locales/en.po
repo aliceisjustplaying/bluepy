@@ -116,10 +116,7 @@ msgstr ""
 msgid "Connected on {0} (<0/>)"
 msgstr "Connected on {0} (<0/>)"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Only you can quote"
 #~ msgstr "Only you can quote"
 
@@ -445,8 +442,7 @@ msgstr "Enable reposts"
 msgid "Switch to account's PDS {0}"
 msgstr "Switch to account's PDS {0}"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Quote settings updated"
 #~ msgstr "Quote settings updated"
 
@@ -675,8 +671,7 @@ msgstr "View profile"
 msgid "Keyboard shortcuts"
 msgstr ""
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Public"
 #~ msgstr ""
 
@@ -842,10 +837,7 @@ msgstr ""
 msgid "Type to search GIFs"
 msgstr ""
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Your followers can quote"
 #~ msgstr "Your followers can quote"
 
@@ -1065,8 +1057,7 @@ msgstr "Sexually Suggestive"
 msgid "Unmuted @{username}"
 msgstr "Unmuted @{username}"
 
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/status-inline-controls.tsx src/components/status-large-footer.tsx
 #~ msgid "Boosted"
 #~ msgstr ""
 
@@ -1562,8 +1553,7 @@ msgstr ""
 msgid "Update"
 msgstr "Update"
 
-#: src/components/status-account-menu.tsx
-#: src/pages/settings.tsx
+#: src/components/status-account-menu.tsx src/pages/settings.tsx
 #~ msgid "Quote settings"
 #~ msgstr "Quote settings"
 
@@ -1680,9 +1670,7 @@ msgstr "Add GIF"
 #~ msgid "Remove my post from <0>@{0}</0>'s post?"
 #~ msgstr "Remove my post from <0>@{0}</0>'s post?"
 
-#: src/components/list-exclusive-badge.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
+#: src/components/list-exclusive-badge.tsx src/pages/list.tsx src/pages/lists.tsx
 #~ msgid "Posts on this list are hidden from Home/Following"
 #~ msgstr "Posts on this list are hidden from Home/Following"
 
@@ -1867,10 +1855,7 @@ msgstr ""
 msgid "Unable to format math"
 msgstr "Unable to format math"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Anyone can quote"
 #~ msgstr "Anyone can quote"
 
@@ -1882,8 +1867,7 @@ msgstr "Unable to format math"
 msgid "Copy"
 msgstr ""
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Failed to update quote settings"
 #~ msgstr "Failed to update quote settings"
 
@@ -2082,8 +2066,7 @@ msgstr "Post text copied"
 msgid "Violation"
 msgstr ""
 
-#: src/components/status-header.tsx
-#: src/utils/visibility-text.ts
+#: src/components/status-header.tsx src/utils/visibility-text.ts
 #~ msgid "Private mention"
 #~ msgstr ""
 
@@ -2330,8 +2313,7 @@ msgstr ""
 msgid "You're all caught up."
 msgstr ""
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/keyboard-shortcuts-help.tsx src/components/status-large-footer.tsx
 #~ msgid "Boost"
 #~ msgstr ""
 
@@ -2932,8 +2914,7 @@ msgstr "Post"
 msgid "Set as default"
 msgstr ""
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Quiet public"
 #~ msgstr "Quiet public"
 
@@ -2961,9 +2942,7 @@ msgstr "A minimalistic opinionated Atmosphere web client."
 msgid "Post pending"
 msgstr "Post pending"
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
+#: src/components/account-info.tsx src/pages/account-statuses.tsx src/pages/catchup.tsx
 #~ msgid "Boosts"
 #~ msgstr ""
 

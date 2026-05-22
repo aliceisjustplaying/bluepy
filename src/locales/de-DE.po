@@ -42,9 +42,7 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "Ganzes Wort"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr ""
 
@@ -147,10 +145,7 @@ msgstr "{count, plural, =1 {{account} folgt dir jetzt.} other {<0><1>{0}</1> Leu
 msgid "Connected on {0} (<0/>)"
 msgstr "Verbunden am {0} (<0/>)"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Only you can quote"
 #~ msgstr "Nur Sie können zitieren"
 
@@ -158,9 +153,7 @@ msgstr "Verbunden am {0} (<0/>)"
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr "<0>Umschalt</0> + <1>c</1>"
 
-#: src/components/compose-button.tsx
-#: src/components/nav-menu.tsx
-#: src/pages/scheduled-posts.tsx
+#: src/components/compose-button.tsx src/components/nav-menu.tsx src/pages/scheduled-posts.tsx
 #~ msgid "Scheduled Posts"
 #~ msgstr "Geplante Posts"
 
@@ -318,8 +311,7 @@ msgstr "Nichts anzuzeigen"
 msgid "Bookmarked"
 msgstr "Lesezeichen hinzugefügt"
 
-#: src/components/private-note-sheet.tsx
-#: src/components/related-actions.tsx
+#: src/components/private-note-sheet.tsx src/components/related-actions.tsx
 #~ msgid "Notes"
 #~ msgstr "Notizen"
 
@@ -539,8 +531,7 @@ msgstr ""
 #~ msgid "Unable to unfeature on profile"
 #~ msgstr "Nicht möglich, das Vorstellen auf dem Profil rückgängig zu machen"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Quote settings updated"
 #~ msgstr "Zitiereinstellungen aktualisiert"
 
@@ -618,9 +609,7 @@ msgstr "Inhalt"
 msgid "Send Report"
 msgstr "Meldung senden"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Enter a new server e.g. \"mastodon.social\""
 #~ msgstr ""
 
@@ -628,8 +617,7 @@ msgstr "Meldung senden"
 #~ msgid "Unable to delete filter."
 #~ msgstr "Filter konnte nicht gelöscht werden."
 
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
+#: src/components/nav-menu.tsx src/components/shortcuts-settings.tsx
 #~ msgid "Federated"
 #~ msgstr "Föderiert"
 
@@ -828,8 +816,7 @@ msgstr "Profil anzeigen"
 msgid "Keyboard shortcuts"
 msgstr "Tastenkombinationen"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Public"
 #~ msgstr "Öffentlich"
 
@@ -1007,10 +994,7 @@ msgstr "Übersetzte Bio"
 msgid "Type to search GIFs"
 msgstr "Eintippen, um GIFs zu suchen"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Your followers can quote"
 #~ msgstr "Ihre Follower können zitieren"
 
@@ -1271,8 +1255,7 @@ msgstr ""
 msgid "Unmuted @{username}"
 msgstr "Stummschaltung von @{username} aufgehoben"
 
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/status-inline-controls.tsx src/components/status-large-footer.tsx
 #~ msgid "Boosted"
 #~ msgstr "Geboostet"
 
@@ -1325,9 +1308,7 @@ msgstr ""
 msgid "Quote chain"
 msgstr ""
 
-#: src/components/nav-menu.jsx
-#: src/components/shortcuts.jsx
-#: src/pages/list.jsx
+#: src/components/nav-menu.jsx src/components/shortcuts.jsx src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Alle Listen"
 
@@ -1866,8 +1847,7 @@ msgstr "Nur Medien"
 msgid "Update"
 msgstr "Aktualisieren"
 
-#: src/components/status-account-menu.tsx
-#: src/pages/settings.tsx
+#: src/components/status-account-menu.tsx src/pages/settings.tsx
 #~ msgid "Quote settings"
 #~ msgstr "Quote-Einstellungen"
 
@@ -1996,9 +1976,7 @@ msgstr "GIF hinzufügen"
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
 #~ msgstr ""
 
-#: src/components/list-exclusive-badge.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
+#: src/components/list-exclusive-badge.tsx src/pages/list.tsx src/pages/lists.tsx
 #~ msgid "Posts on this list are hidden from Home/Following"
 #~ msgstr "Beiträge auf dieser Liste sind ausgeblendet Home/Folgen"
 
@@ -2223,10 +2201,7 @@ msgstr "Mitglieder verwalten"
 msgid "Unable to format math"
 msgstr ""
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Anyone can quote"
 #~ msgstr "Alle können zitieren"
 
@@ -2238,8 +2213,7 @@ msgstr ""
 msgid "Copy"
 msgstr "Kopieren"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
 #~ msgid "Failed to update quote settings"
 #~ msgstr "Fehler beim Aktualisieren der Zitiereinstellungen"
 
@@ -2462,8 +2436,7 @@ msgstr "Beitragstext kopiert"
 msgid "Violation"
 msgstr "Verstoß"
 
-#: src/components/status-header.tsx
-#: src/utils/visibility-text.ts
+#: src/components/status-header.tsx src/utils/visibility-text.ts
 #~ msgid "Private mention"
 #~ msgstr "Private Erwähnung"
 
@@ -2663,9 +2636,7 @@ msgstr "Diese Benachrichtigung stammt von Ihrem anderen Konto."
 msgid "Try again"
 msgstr "Erneut versuchen"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to another server…"
 #~ msgstr ""
 
@@ -2744,8 +2715,7 @@ msgstr "Nicht gesendete Entwürfe"
 msgid "You're all caught up."
 msgstr "Sie sind auf dem neuesten Stand."
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/keyboard-shortcuts-help.tsx src/components/status-large-footer.tsx
 #~ msgid "Boost"
 #~ msgstr "Boosten"
 
@@ -3471,8 +3441,7 @@ msgstr ""
 msgid "Set as default"
 msgstr "Als Standard festlegen"
 
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
+#: src/pages/settings.tsx src/utils/visibility-text.ts
 #~ msgid "Quiet public"
 #~ msgstr "Still öffentlich"
 
@@ -3500,9 +3469,7 @@ msgstr ""
 msgid "Post pending"
 msgstr "Beitrag ausstehend"
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
+#: src/components/account-info.tsx src/pages/account-statuses.tsx src/pages/catchup.tsx
 #~ msgid "Boosts"
 #~ msgstr "Boosts"
 
@@ -3550,9 +3517,7 @@ msgstr "Fehler beim Entfernen des Abonnements. Bitte versuchen Sie es erneut."
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
 msgstr "Ein Admin von <0>{from}</0> hat <1>{targetName}</1> gesperrt. Betroffene Follower: {followersCount}; Profile, denen er/sie folgt: {followingCount}."
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Invalid server"
 #~ msgstr ""
 
@@ -4183,8 +4148,7 @@ msgstr "oder überschreiben…"
 #~ msgid "Remove quote…"
 #~ msgstr "Quote entfernen…"
 
-#: src/components/related-actions.tsx
-#: src/pages/hashtag.tsx
+#: src/components/related-actions.tsx src/pages/hashtag.tsx
 #~ msgid "Feature on profile"
 #~ msgstr "Auf Profil vorstellen"
 
@@ -4589,8 +4553,7 @@ msgstr "QR-Code scannen"
 msgid "Failed to generate description"
 msgstr "Beschreibung konnte nicht erzeugt werden"
 
-#: src/components/nav-menu.tsx
-#: src/pages/followed-hashtags.tsx
+#: src/components/nav-menu.tsx src/pages/followed-hashtags.tsx
 #~ msgid "Followed Hashtags"
 #~ msgstr "Gefolgte Hashtags"
 
