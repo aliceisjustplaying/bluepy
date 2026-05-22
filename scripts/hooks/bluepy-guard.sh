@@ -160,7 +160,7 @@ guard_locale_churn() {
 
 	po_count="$(printf '%s\n' "$changed" | rg -c '^src/locales/.*\.po$' || true)"
 	if [ "${po_count:-0}" -gt 3 ]; then
-		warn "broad locale catalog churn detected (${po_count} .po files); keep catalog updates separate unless requested"
+		warn "broad locale catalog churn detected (${po_count} .po files); keep catalog diffs limited to this PR's source string changes"
 	fi
 }
 

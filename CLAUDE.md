@@ -31,7 +31,7 @@ The Path above is yours to run autonomously. These few actions are the exception
 - Run all checks as-is: `--no-verify`, `.skip`, `xfail`, `eslint-disable`, `@ts-ignore`, `@ts-expect-error`, and `any` are off-limits.
 - If a lint rule blocks useful work, report the rule name, diagnostic, and smallest compliant change; for a real change write `docs/rule-change-proposals/YYYY-MM-DD-name.md` and get reviewer approval first.
 - Only run `bun run messages:extract` when source strings changed. Preserve `<Trans>` tags and report any generated locale catalog diff before staging it.
-- Keep generated images and locale catalogs out of code commits (separate commit, only if asked).
+- Keep generated images out of code commits. Keep locale catalog diffs limited to this PR's source string changes.
 - Run `bunx oxlint <changed files>` on every changed file before pushing or opening a PR.
 - Send your work to Codex for review. Claude does not review Claude-authored work.
 
