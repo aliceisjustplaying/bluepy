@@ -129,7 +129,11 @@ interface AtprotoAgentInternals {
 }
 
 interface AtprotoProxyAgent {
-  configureProxy: (proxy: string) => void;
+  configureProxy: (proxy: string | null) => void;
+}
+
+interface AtprotoCloneableProxyAgent extends AtprotoProxyAgent {
+  clone: () => AtprotoAgent;
 }
 
 interface AtprotoLabelersAgent {
@@ -212,6 +216,16 @@ function isAtprotoLabelersAgent(value: unknown): value is AtprotoLabelersAgent {
     (typeof value.configureLabelers === 'function' ||
       typeof value.getLabelers === 'function' ||
       typeof value.getLabelDefinitions === 'function')
+  );
+}
+
+function isAtprotoCloneableProxyAgent(
+  value: unknown,
+): value is AtprotoCloneableProxyAgent {
+  return (
+    isAtprotoProxyAgent(value) &&
+    isRecord(value) &&
+    typeof value.clone === 'function'
   );
 }
 
@@ -715,9 +729,76 @@ export function assertAtprotoPostParamsSupported(
   }
 }
 
-function getServiceAuthAudFromUrl(url: string | URL): string {
-  const { hostname } = typeof url === 'string' ? new URL(url) : url;
-  return `did:web:${hostname}`;
+function getServiceAuthAudFromUrl(url: string | URL): string | null {
+  try {
+    const { host } = typeof url === 'string' ? new URL(url) : url;
+    if (!host) return null;
+    return `did:web:${host.replaceAll(':', '%3A')}`;
+  } catch {
+    return null;
+  }
+}
+
+function getServiceAuthAudFromUrlOrDid(value: string | URL): string | null {
+  if (typeof value === 'string' && value.startsWith('did:')) {
+    if (isConfiguredAppViewUrl(value)) return null;
+    return value.split('#', 1)[0] || null;
+  }
+  return getServiceAuthAudFromUrl(value);
+}
+
+function isConfiguredAppViewUrl(value: string | URL): boolean {
+  if (typeof value === 'string' && value.startsWith('did:')) {
+    const did = value.split('#', 1)[0];
+    return did === BSKY_APPVIEW_DID || did === BLACKSKY_APPVIEW_DID;
+  }
+  try {
+    const url = typeof value === 'string' ? new URL(value) : value;
+    return KNOWN_APPVIEW_HOSTNAMES.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function createPdsFacingAgent(agent: AtprotoAgent): AtprotoAgent {
+  if (!isAtprotoCloneableProxyAgent(agent)) return agent;
+  const cloned = agent.clone();
+  if (isAtprotoProxyAgent(cloned)) cloned.configureProxy(null);
+  return cloned;
+}
+
+export async function getVideoUploadServiceAuthAud(
+  agent: AtprotoAgent,
+): Promise<string> {
+  if (!isAtprotoAgentInternals(agent)) {
+    throw new Error('Missing Bluesky session');
+  }
+  const sessionManager = agent.sessionManager;
+  if (sessionManager?.pdsUrl) {
+    const aud = getServiceAuthAudFromUrl(sessionManager.pdsUrl);
+    if (aud) return aud;
+  }
+  const tokenInfoAud = (await sessionManager?.getTokenInfo?.())?.aud;
+  if (tokenInfoAud) {
+    const aud = getServiceAuthAudFromUrlOrDid(tokenInfoAud);
+    if (aud) return aud;
+  }
+  if (agent.dispatchUrl && !isConfiguredAppViewUrl(agent.dispatchUrl)) {
+    const aud = getServiceAuthAudFromUrlOrDid(agent.dispatchUrl);
+    if (aud) return aud;
+  }
+  const session =
+    await createPdsFacingAgent(agent).com.atproto.server.getSession();
+  const pdsEndpoint = isValidDidDoc(session.data.didDoc)
+    ? getPdsEndpoint(session.data.didDoc)
+    : null;
+  if (pdsEndpoint && sessionManager)
+    sessionManager.pdsUrl = new URL(pdsEndpoint);
+  if (pdsEndpoint) {
+    const aud = getServiceAuthAudFromUrl(pdsEndpoint);
+    if (aud) return aud;
+  }
+  throw new Error('Missing Bluesky PDS URL');
 }
 
 function createVideoEndpointUrl(
@@ -823,21 +904,12 @@ async function uploadVideoBlob(
   const agentLoose = agent;
   if (!agentLoose.did) throw new Error('Missing Bluesky session');
 
-  if (agentLoose.sessionManager && !agentLoose.sessionManager.pdsUrl) {
-    const session = await agent.com.atproto.server.getSession();
-    const pdsEndpoint = isValidDidDoc(session.data.didDoc)
-      ? getPdsEndpoint(session.data.didDoc)
-      : null;
-    if (pdsEndpoint) agentLoose.sessionManager.pdsUrl = new URL(pdsEndpoint);
-  }
-  const dispatchUrl =
-    agentLoose.dispatchUrl ||
-    (await agentLoose.sessionManager?.getTokenInfo?.())?.aud;
-  if (!dispatchUrl) throw new Error('Missing Bluesky dispatch URL');
+  const pdsAgent = createPdsFacingAgent(agent);
+  const uploadAud = await getVideoUploadServiceAuthAud(agent);
 
   const uploadToken = await getServiceAuthToken({
-    agent,
-    aud: getServiceAuthAudFromUrl(dispatchUrl),
+    agent: pdsAgent,
+    aud: uploadAud,
     lxm: 'com.atproto.repo.uploadBlob',
     exp: Date.now() / 1000 + 60 * 30,
   });
@@ -868,7 +940,7 @@ async function uploadVideoBlob(
 
   const videoAgent = new AtpAgent({ service: BSKY_VIDEO_SERVICE });
   const statusToken = await getServiceAuthToken({
-    agent,
+    agent: pdsAgent,
     aud: BSKY_VIDEO_SERVICE_DID,
     lxm: 'app.bsky.video.getJobStatus',
   });
