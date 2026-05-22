@@ -33,7 +33,6 @@ import useStatusMediaCaptions from './status-media-captions';
 import useStatusMenuState from './status-menu-state';
 import StatusModals from './status-modals';
 import StatusPostBody from './status-post-body';
-import useStatusQuotePolicy from './status-quote-policy';
 import useStatusReplyParent from './status-reply-parent';
 import type {
   AnyMediaAttachment,
@@ -157,13 +156,10 @@ export default function StatusContent({
     emojis,
     tags,
     pinned,
-    quoteApproval,
     // Non-API props
     _deleted,
     _pinned,
     // _filtered,
-    // Non-Mastodon
-    emojiReactions,
   } = status;
   const {
     acct,
@@ -277,7 +273,6 @@ export default function StatusContent({
 
   const [showEdited, setShowEdited] = useState<string | false>(false);
   const [showEmbed, setShowEmbed] = useState(false);
-  const [showQuoteSettings, setShowQuoteSettings] = useState(false);
   const [showQuotes, setShowQuotes] = useState(false);
   const [showQuoteChain, setShowQuoteChain] = useState(false);
 
@@ -315,19 +310,12 @@ export default function StatusContent({
     canBoost = true;
   }
 
-  const {
-    quoteDisabled,
-    quoteText,
-    quoteMetaText,
-    canQuote,
-    postQuoteApprovalPolicy,
-    quoteApprovalPolicyMessages,
-  } = useStatusQuotePolicy({
-    quoteApproval,
-    isPublic,
-    isSelf,
-    visibility,
-  });
+  // ATProto-only: quotes are always available. Mastodon per-post quote-approval
+  // semantics are gone; postgate-based controls are a later round.
+  const quoteDisabled = false;
+  const quoteText = t`Quote`;
+  const quoteMetaText: string | undefined = undefined;
+  const canQuote = true;
 
   const {
     unauthInteractionErrorMessage,
@@ -395,7 +383,6 @@ export default function StatusContent({
     quote,
     setShowQuoteChain,
     setShowEmbed,
-    setShowQuoteSettings,
     mediaFirst,
     enableTranslate,
     language,
@@ -416,8 +403,6 @@ export default function StatusContent({
     masto,
     muted,
     pinned,
-    quoteApprovalPolicyMessages,
-    postQuoteApprovalPolicy,
     visibility,
     sKey,
     fetchBoostedLikedByAccounts,
@@ -736,8 +721,6 @@ export default function StatusContent({
               editedDateText={editedDateText}
               id={id}
               setShowEdited={setShowEdited}
-              emojiReactions={emojiReactions}
-              emojis={emojis}
               repliesCount={repliesCount}
               replyStatus={replyStatus}
               canQuote={canQuote}
@@ -765,8 +748,6 @@ export default function StatusContent({
           setShowEdited={setShowEdited}
           showEmbed={showEmbed}
           setShowEmbed={setShowEmbed}
-          showQuoteSettings={showQuoteSettings}
-          setShowQuoteSettings={setShowQuoteSettings}
           showQuotes={showQuotes}
           setShowQuotes={setShowQuotes}
           showQuoteChain={showQuoteChain}
@@ -788,7 +769,6 @@ export default function StatusContent({
             })
           }
           statusRef={statusRef}
-          postQuoteApprovalPolicy={postQuoteApprovalPolicy}
           renderStatus={(statusProps) => renderStatus(statusProps)}
         />
       </article>

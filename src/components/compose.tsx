@@ -42,10 +42,7 @@ import localeMatch from '../utils/locale-match';
 import localeCode2Text from '../utils/localeCode2Text';
 import mem from '../utils/mem';
 import openCompose from '../utils/open-compose';
-import {
-  getPostQuoteApprovalPolicy,
-  supportsNativeQuote,
-} from '../utils/quote-utils';
+import { supportsNativeQuote } from '../utils/quote-utils';
 import RTF from '../utils/relative-time-format';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
@@ -128,7 +125,6 @@ interface StatusLike {
   language?: string | null;
   mediaAttachments?: MediaAttachmentLike[];
   quoteApproval?: Record<string, unknown> | null;
-  quoteApprovalPolicy?: string;
   createdAt?: string;
   url?: string;
   [key: string]: unknown;
@@ -139,7 +135,6 @@ interface DraftStatusLike {
   status?: string;
   language?: string | null;
   mediaAttachments?: MediaAttachmentLike[];
-  quoteApprovalPolicy?: string;
   [key: string]: unknown;
 }
 
@@ -514,8 +509,6 @@ function Compose({
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const [quoteApprovalPolicy, setQuoteApprovalPolicy] =
-    useState<string>('public');
   const [language, setLanguage] = useState<string>(
     store.session.get('currentLanguage') || DEFAULT_LANG,
   );
@@ -543,10 +536,6 @@ function Compose({
   };
 
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
-  const isAtprotoCompose =
-    !!currentAccount?.atproto || currentAccount?.instanceURL === 'bsky.social';
-  const supportsQuoteApprovalPolicy =
-    supportsNativeQuote() && !isAtprotoCompose;
   const canShowLinkPreview =
     currentAccount?.atproto &&
     !editStatus &&
@@ -813,7 +802,6 @@ function Compose({
       const {
         language: editLanguage,
         mediaAttachments: editMediaAttachments,
-        quoteApproval,
       } = editStatus;
       setUIState('loading');
       void (async () => {
@@ -834,11 +822,6 @@ function Compose({
               prefStringFn('posting:default:language')?.toLowerCase() ||
               DEFAULT_LANG,
           );
-          if (supportsNativeQuote()) {
-            const postQuoteApprovalPolicy =
-              getPostQuoteApprovalPolicy(quoteApproval);
-            setQuoteApprovalPolicy(postQuoteApprovalPolicy);
-          }
           setMediaAttachments(editMediaAttachments ?? []);
           setUIState('default');
         } catch (e) {
@@ -854,17 +837,12 @@ function Compose({
       if (defaultLang) {
         setLanguage(defaultLang.toLowerCase());
       }
-      const defaultQuotePolicy = prefStringFn('posting:default:quote_policy');
-      if (defaultQuotePolicy) {
-        setQuoteApprovalPolicy(defaultQuotePolicy.toLowerCase());
-      }
     }
     if (draftStatus) {
       const {
         status,
         language: draftLanguage,
         mediaAttachments: draftMediaAttachments,
-        quoteApprovalPolicy: draftQuoteApprovalPolicy,
       } = draftStatus;
       const textarea = textareaRef.current;
       if (!textarea) return;
@@ -879,8 +857,6 @@ function Compose({
           DEFAULT_LANG,
       );
       if (draftMediaAttachments) setMediaAttachments(draftMediaAttachments);
-      if (draftQuoteApprovalPolicy)
-        setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
     }
     // Effect deliberately runs only when an explicit source status changes;
     // prefString/prefs/masto are read through latest-value
@@ -1127,7 +1103,6 @@ function Compose({
         status: textareaRef.current?.value ?? '',
         language,
         mediaAttachments,
-        quoteApprovalPolicy,
       },
       quote: currentQuoteStatus?.id
         ? {
@@ -1286,7 +1261,6 @@ function Compose({
     language !== prevLanguage.current ||
     (autoDetectedLanguages?.length &&
       !autoDetectedLanguages.includes(language));
-  const highlightQuoteApprovalPolicyField = quoteApprovalPolicy !== 'public';
 
   const addSubToolbarRef = useRef<HTMLSpanElement | null>(null);
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
@@ -1550,14 +1524,9 @@ function Compose({
             >;
             console.log('ENTRIES', entries);
             const rawStatus = entries.status;
-            const rawQuoteApprovalPolicy = entries.quoteApprovalPolicy;
 
             let status: string | undefined =
               typeof rawStatus === 'string' ? rawStatus : undefined;
-            const submitQuoteApprovalPolicy: string | undefined =
-              typeof rawQuoteApprovalPolicy === 'string'
-                ? rawQuoteApprovalPolicy
-                : undefined;
 
             // Let the backend validate character limits.
             // TODO: check for URLs and use `charactersReservedPerUrl` to calculate max characters
@@ -1657,9 +1626,6 @@ function Compose({
                   ),
                 };
                 if (editStatus) {
-                  if (supportsQuoteApprovalPolicy) {
-                    params.quote_approval_policy = quoteApprovalPolicy;
-                  }
                   if (
                     supports('@mastodon') ||
                     supports('@gotosocial/edit-media-attributes')
@@ -1676,9 +1642,6 @@ function Compose({
                     );
                   }
                 } else {
-                  if (supportsQuoteApprovalPolicy) {
-                    params.quote_approval_policy = submitQuoteApprovalPolicy;
-                  }
                   if (supportsNativeQuote()) {
                     if (currentQuoteStatus?.id) {
                       params.quoted_status_id = currentQuoteStatus.id;
@@ -2066,40 +2029,6 @@ function Compose({
                 // mirror the JS expression for behavior parity.
                 hidden={(uiState as string) === 'loading'}
               />
-            )}
-            {supportsQuoteApprovalPolicy && (
-              <label
-                className={`toolbar-button ${highlightQuoteApprovalPolicyField ? 'highlight' : ''}`}
-              >
-                <Icon icon="quote2" alt="Quote settings" />
-                {quoteApprovalPolicy === 'followers' && (
-                  <Icon icon="group" className="insignificant" />
-                )}
-                {quoteApprovalPolicy === 'nobody' && (
-                  <Icon icon="block" className="insignificant" />
-                )}
-                <select
-                  name="quoteApprovalPolicy"
-                  value={quoteApprovalPolicy}
-                  onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
-                    setQuoteApprovalPolicy(
-                      (e.target as HTMLSelectElement).value,
-                    );
-                  }}
-                  disabled={uiState === 'loading'}
-                  dir="auto"
-                >
-                  <option value="public">
-                    <Trans>Anyone can quote</Trans>
-                  </option>
-                  <option value="followers">
-                    <Trans>Your followers can quote</Trans>
-                  </option>
-                  <option value="nobody">
-                    <Trans>Only you can quote</Trans>
-                  </option>
-                </select>
-              </label>
             )}
             <label
               className={`toolbar-button ${
