@@ -38,6 +38,15 @@ tool_workdir() {
 	json_field '.tool_input.workdir // .tool_input.working_dir // .tool_input.cwd // .tool_input.current_working_directory // .workdir // .working_dir // .cwd // .current_working_directory'
 }
 
+patch_file_paths() {
+	[ -n "$PAYLOAD" ] || return 0
+	if command -v jq >/dev/null 2>&1 && jq -e . >/dev/null 2>&1 <<<"$PAYLOAD"; then
+		jq -r '.. | strings | select(test("\\*\\*\\* (Add|Update|Delete) File: "))' <<<"$PAYLOAD" 2>/dev/null
+	else
+		printf '%s\n' "$PAYLOAD"
+	fi | sed -nE 's/^\*\*\* (Add|Update|Delete) File: (.+)$/\2/p'
+}
+
 changed_files() {
 	{
 		git diff --name-only --diff-filter=ACMR HEAD -- 2>/dev/null || true
@@ -332,11 +341,34 @@ pre-bash)
 pre-write)
 	file_path="$(json_field '.tool_input.file_path')"
 	workdir="$(tool_workdir)"
+	paths="$(patch_file_paths)"
+	patch_root="$ROOT"
+	if [ -n "$workdir" ]; then
+		patch_root="$(normalize_path "$workdir")"
+	fi
+	checked_target=0
+
 	if [ -n "$file_path" ]; then
 		block_on_main_branch "$(dirname "$file_path")"
-	elif [ -n "$workdir" ]; then
+		checked_target=1
+	fi
+	if [ -n "$workdir" ]; then
 		block_on_main_branch "$(normalize_path "$workdir")"
-	else
+		checked_target=1
+	fi
+	if [ -n "$paths" ]; then
+		while IFS= read -r patch_path; do
+			[ -n "$patch_path" ] || continue
+			patch_path="$(normalize_path "$patch_path")"
+			if [[ "$patch_path" = /* ]]; then
+				block_on_main_branch "$(dirname "$patch_path")"
+			else
+				block_on_main_branch "$(dirname "$patch_root/$patch_path")"
+			fi
+		done <<<"$paths"
+		checked_target=1
+	fi
+	if [ "$checked_target" -eq 0 ]; then
 		block_on_main_branch
 	fi
 	;;
