@@ -1,11 +1,18 @@
 import { Trans } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
 import { useLayoutEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import Link from '../components/link';
 import Loader from '../components/loader';
-import { api, getMastoV2Resource } from '../utils/api';
+import {
+  buildAtprotoProfileURI,
+  buildAtprotoRecordPath,
+  isAtprotoRecordURI,
+} from '../utils/atproto-route';
+import {
+  getOwnPermalinkRecordURI,
+  resolveAtprotoPostURI,
+} from '../utils/resolve-atproto-post-link';
 import { navigatePath } from '../utils/router';
 
 export default function HttpRoute() {
@@ -16,28 +23,35 @@ export default function HttpRoute() {
   useLayoutEffect(() => {
     setUIState('loading');
     void (async () => {
-      // Resolve the URL via search
+      // ATProto-only: route Bluesky post/profile/record links internally and
+      // leave anything else as an external link. We never resolve arbitrary
+      // URLs through a Mastodon-style search.
       try {
-        const { masto: currentMasto, instance: currentInstance } = api();
-        const searchResource =
-          getMastoV2Resource<mastodon.rest.v2.SearchResource>(
-            currentMasto,
-            'search',
-          );
-        const result = await searchResource.list({
-          q: url,
-          limit: 1,
-          resolve: true,
-        });
-        if (result.statuses.length) {
-          const status = result.statuses[0];
-          navigatePath(`/${currentInstance}/s/${status.id}?view=full`);
-        } else if (result.accounts.length) {
-          const account = result.accounts[0];
-          navigatePath(`/${currentInstance}/a/${account.id}`);
-        } else {
-          setUIState('error');
+        const postURI = await resolveAtprotoPostURI(url);
+        if (postURI) {
+          navigatePath(buildAtprotoRecordPath(postURI));
+          return;
         }
+
+        // bsky.app/profile/<handleOrDid> (no /post/) → profile
+        const profileMatch = url.match(
+          /^https?:\/\/bsky\.app\/profile\/([^/?#\s]+)\/?$/i,
+        );
+        if (profileMatch) {
+          const repo = decodeURIComponent(profileMatch[1]);
+          navigatePath(buildAtprotoRecordPath(buildAtprotoProfileURI(repo)));
+          return;
+        }
+
+        // Our own permalinks for profiles/lists/feeds carry the at:// URI in
+        // the path (post URIs are already handled by resolveAtprotoPostURI).
+        const recordURI = getOwnPermalinkRecordURI(url);
+        if (isAtprotoRecordURI(recordURI)) {
+          navigatePath(buildAtprotoRecordPath(recordURI));
+          return;
+        }
+
+        setUIState('error');
       } catch {
         setUIState('error');
       }

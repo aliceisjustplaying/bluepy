@@ -37,7 +37,7 @@ function isBskyHostedPds(service: string): boolean {
   }
 }
 
-async function resolveAtprotoDid(
+export async function resolveAtprotoDid(
   identifier: string,
   fetchFn: Fetcher,
 ): Promise<string> {

@@ -2,7 +2,6 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
 
-import { supportsNativeQuote } from '../utils/quote-utils';
 import states from '../utils/states';
 
 import Icon from './icon';
@@ -46,18 +45,16 @@ export default function StatusActivityMenu({
           <Trans>Reposted/Liked by…</Trans>
         </span>
       </MenuItem>
-      {supportsNativeQuote() && (
-        <MenuItem
-          onClick={() => {
-            setShowQuotes(true);
-          }}
-        >
-          <Icon icon="quote" />
-          <span>
-            <Trans>View Quotes</Trans>
-          </span>
-        </MenuItem>
-      )}
+      <MenuItem
+        onClick={() => {
+          setShowQuotes(true);
+        }}
+      >
+        <Icon icon="quote" />
+        <span>
+          <Trans>View Quotes</Trans>
+        </span>
+      </MenuItem>
       {(quote as mastodon.v1.Quote | null | undefined)?.quotedStatus?.quote && (
         <MenuItem
           onClick={() => {

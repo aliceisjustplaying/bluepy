@@ -1,7 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 
-import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
 import { speak, supportsTTS } from '../utils/speech';
 
@@ -93,7 +92,7 @@ export default function StatusUtilityMenu({
               onClick={() => {
                 try {
                   const postText = getPostText(status, {
-                    hideInlineQuote: supportsNativeQuote(),
+                    hideInlineQuote: true,
                   });
                   if (postText) {
                     speak(postText, language);
@@ -117,7 +116,7 @@ export default function StatusUtilityMenu({
             void (async () => {
               try {
                 const postText = getPostText(status, {
-                  hideInlineQuote: supportsNativeQuote(),
+                  hideInlineQuote: true,
                   htmlTextOpts: {
                     truncateLinks: false,
                   },

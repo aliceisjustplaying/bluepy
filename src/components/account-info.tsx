@@ -19,7 +19,6 @@ import enhanceContent from '../utils/enhance-content';
 import handleContentLinks from '../utils/handle-content-links';
 import niceDateTime from '../utils/nice-date-time';
 import pmem from '../utils/pmem';
-import { supportsNativeQuote } from '../utils/quote-utils';
 import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
@@ -188,9 +187,8 @@ async function fetchPostingStats(
   // - Boosts (reblogs)
   // - Replies (not-self replies)
   // - Quotes
-  // Some Mastodon forks (and Bluepy's quote-utils helper) attach a
-  // non-standard `quote` field on Status. Narrow with a local shape rather
-  // than widening the masto type.
+  // The ATProto adapter attaches a non-standard `quote` field on Status.
+  // Narrow with a local shape rather than widening the masto type.
   type StatusWithQuote = mastodon.v1.Status & {
     quote?: {
       id?: string;
@@ -205,10 +203,7 @@ async function fetchPostingStats(
       status.inReplyToAccountId !== status.account.id // Not self-reply
     ) {
       stats.replies++;
-    } else if (
-      supportsNativeQuote() &&
-      (status.quote?.id || status.quote?.quotedStatus?.id)
-    ) {
+    } else if (status.quote?.id || status.quote?.quotedStatus?.id) {
       stats.quotes++;
     } else {
       stats.originals++;
@@ -1153,39 +1148,23 @@ function AccountInfo({
                         {hasPostingStats ? (
                           <div
                             className="posting-stats"
-                            title={
-                              supportsNativeQuote()
-                                ? t`${(
-                                    postingStats.originals / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} original posts, ${(
-                                    postingStats.replies / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} replies, ${(
-                                    postingStats.quotes / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} quotes, ${(
-                                    postingStats.boosts / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} reposts`
-                                : t`${(
-                                    postingStats.originals / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} original posts, ${(
-                                    postingStats.replies / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} replies, ${(
-                                    postingStats.boosts / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} reposts`
-                            }
+                            title={t`${(
+                              postingStats.originals / postingStats.total
+                            ).toLocaleString(i18n.locale || undefined, {
+                              style: 'percent',
+                            })} original posts, ${(
+                              postingStats.replies / postingStats.total
+                            ).toLocaleString(i18n.locale || undefined, {
+                              style: 'percent',
+                            })} replies, ${(
+                              postingStats.quotes / postingStats.total
+                            ).toLocaleString(i18n.locale || undefined, {
+                              style: 'percent',
+                            })} quotes, ${(
+                              postingStats.boosts / postingStats.total
+                            ).toLocaleString(i18n.locale || undefined, {
+                              style: 'percent',
+                            })} reposts`}
                           >
                             <div>
                               {postingStats.daysSinceLastPost !== undefined &&
@@ -1270,12 +1249,10 @@ function AccountInfo({
                                 <span className="posting-stats-legend-item posting-stats-bar-replies" />{' '}
                                 <Trans>Replies</Trans>
                               </span>{' '}
-                              {supportsNativeQuote() && (
-                                <span className="ib">
-                                  <span className="posting-stats-legend-item posting-stats-bar-quotes" />{' '}
-                                  <Trans>Quotes</Trans>
-                                </span>
-                              )}
+                              <span className="ib">
+                                <span className="posting-stats-legend-item posting-stats-bar-quotes" />{' '}
+                                <Trans>Quotes</Trans>
+                              </span>{' '}
                               <span className="ib">
                                 <span className="posting-stats-legend-item posting-stats-bar-boosts" />{' '}
                                 <Trans>Reposts</Trans>

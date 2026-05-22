@@ -681,7 +681,6 @@ export default function StatusContent({
             renderStatus={renderStatus}
             card={card}
             statusQuoteState={snapStates.statusQuotes[sKey]}
-            currentInstance={currentInstance}
             accountURL={accountURL}
             size={size}
             tags={tags}

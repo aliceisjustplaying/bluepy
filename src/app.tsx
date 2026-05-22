@@ -169,13 +169,7 @@ function preloadIconEntry(entry: unknown) {
 
 appWindow.__STATES__ = states;
 appWindow.__STATES_STATS__ = () => {
-  const keys = [
-    'statuses',
-    'accounts',
-    'spoilers',
-    'unfurledLinks',
-    'statusQuotes',
-  ];
+  const keys = ['statuses', 'accounts', 'spoilers', 'statusQuotes'];
   const counts: Record<string, number> = {};
   keys.forEach((key) => {
     counts[key] = Object.keys(states[key] as Record<string, unknown>).length;
@@ -208,7 +202,7 @@ appWindow.__STATES_STATS__ = () => {
 setInterval(
   () => {
     if (!appWindow.__IDLE__) return;
-    const { statuses, unfurledLinks, notifications } = states;
+    const { statuses, notifications } = states;
     let keysCount = 0;
     const { instance } = api();
     const mountedKeys = new Set<string>();
@@ -235,17 +229,6 @@ setInterval(
         if (!mountedKeys.has(key) && !postInNotifications) {
           delete states.statuses[key];
           delete states.statusQuotes[key];
-          for (const link in unfurledLinks) {
-            const unfurled = unfurledLinks[link] as {
-              id?: string;
-              instance?: string;
-            };
-            const sKey = statusKey(unfurled.id, unfurled.instance);
-            if (sKey === key) {
-              delete states.unfurledLinks[link];
-              break;
-            }
-          }
           keysCount++;
         }
       } catch {}
