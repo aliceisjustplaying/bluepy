@@ -157,3 +157,21 @@ export async function startAtprotoOAuthLogin(
     scope: ATPROTO_OAUTH_SCOPE,
   });
 }
+
+// Revoke an OAuth account's tokens at the authorization server and drop the
+// cached session. App-password accounts carry no OAuth token, so they parse to
+// null here and are simply cleared locally by the caller. Best-effort: the
+// local cache is dropped even if the network revocation fails.
+export async function signOutAtprotoOAuthSession(
+  accessToken: string | null | undefined,
+): Promise<void> {
+  const payload = parseAtprotoOAuthAccessToken(accessToken);
+  if (!payload?.sub) return;
+  oauthSessions.delete(payload.sub);
+  try {
+    const client = await getAtprotoOAuthClient();
+    await client.revoke(payload.sub);
+  } catch (error) {
+    console.error('Failed to revoke ATProto OAuth session:', error);
+  }
+}

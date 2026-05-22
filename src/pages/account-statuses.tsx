@@ -36,11 +36,7 @@ import { navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import { sorted } from '../utils/sorted';
 import states, { saveStatus } from '../utils/states';
-import {
-  getCurrentAccountID,
-  isMediaFirstInstance,
-} from '../utils/store-utils';
-import supports from '../utils/supports';
+import { getCurrentAccountID } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 
 type Status = mastodon.v1.Status;
@@ -215,7 +211,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     searchOffsetRef.current = 0;
   }, [month, excludeReplies, excludeBoosts, tagged, media]);
 
-  const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
+  const mediaFirst = false;
 
   const sameCurrentInstance = useMemo(
     () => instance === currentInstance,
@@ -354,36 +350,32 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     }
     const { value, done } = await accountStatusesIterator.current.next();
     if (value?.length) {
-      if (!supports('@mastodon/pinned-posts')) {
-        // Check if value is same as pinned post (results)
-        // If the index for every post is the same, means API might not support pinned posts
-        // TODO: This is a really weird check, fix this at some point
-        if (results.length) {
-          let pinnedStatusesIds: string[] = [];
-          const first = results[0];
-          if (
-            first &&
-            typeof first === 'object' &&
-            (first as PinnedGroup).type === 'pinned'
-          ) {
-            pinnedStatusesIds = (first as PinnedGroup).id;
-          } else {
-            // TODO(oxlint:no-underscore-dangle) `_pinned` is the project-wide
-            // pinned-status marker shared with timeline.tsx; renaming is out
-            // of scope.
-            pinnedStatusesIds = (
-              results as Array<Status & { _pinned?: boolean }>
-            )
-              .filter((status) => status._pinned)
-              .map((status) => status.id);
-          }
-          const containsAllPinned = pinnedStatusesIds.every((postId) =>
-            value.some((status: Status) => status.id === postId),
-          );
-          if (containsAllPinned) {
-            // Remove pinned posts
-            results = [];
-          }
+      // Check if value is same as pinned post (results)
+      // If the index for every post is the same, means API might not support pinned posts
+      // TODO: This is a really weird check, fix this at some point
+      if (results.length) {
+        let pinnedStatusesIds: string[] = [];
+        const first = results[0];
+        if (
+          first &&
+          typeof first === 'object' &&
+          (first as PinnedGroup).type === 'pinned'
+        ) {
+          pinnedStatusesIds = (first as PinnedGroup).id;
+        } else {
+          // TODO(oxlint:no-underscore-dangle) `_pinned` is the project-wide
+          // pinned-status marker shared with timeline.tsx; renaming is out
+          // of scope.
+          pinnedStatusesIds = (results as Array<Status & { _pinned?: boolean }>)
+            .filter((status) => status._pinned)
+            .map((status) => status.id);
+        }
+        const containsAllPinned = pinnedStatusesIds.every((postId) =>
+          value.some((status: Status) => status.id === postId),
+        );
+        if (containsAllPinned) {
+          // Remove pinned posts
+          results = [];
         }
       }
 
@@ -457,7 +449,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     })();
   }, [id, mediaFirst, refetchAccount, masto]);
 
-  const { displayName, acct, emojis } = account || ({} as Partial<Account>);
+  const { displayName, acct } = account || ({} as Partial<Account>);
 
   const isSelf = useMemo(
     () => account?.id === getCurrentAccountID(),
@@ -785,11 +777,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             // }}
           >
             <b>
-              <EmojiText
-                text={displayName}
-                emojis={emojis}
-                resolverURL={account?.url}
-              />
+              <EmojiText text={displayName} />
             </b>
             <div>
               <span className="bidi-isolate">@{acct}</span>

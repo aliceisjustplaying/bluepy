@@ -83,6 +83,7 @@ export const BSKY_INSTANCE = 'bsky.social';
 const BSKY_DISCOVER_FEED =
   'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot';
 const BSKY_GET_POSTS_LIMIT = 25;
+const BSKY_FOLLOWING_FILL_MAX_PAGES = 5;
 const BSKY_THREAD_CONTEXT_DEPTH = 1000;
 const BSKY_VIDEO_SERVICE = 'https://video.bsky.app';
 const BSKY_VIDEO_SERVICE_DID = 'did:web:video.bsky.app';
@@ -128,7 +129,11 @@ interface AtprotoAgentInternals {
 }
 
 interface AtprotoProxyAgent {
-  configureProxy: (proxy: string) => void;
+  configureProxy: (proxy: string | null) => void;
+}
+
+interface AtprotoCloneableProxyAgent extends AtprotoProxyAgent {
+  clone: () => AtprotoAgent;
 }
 
 interface AtprotoLabelersAgent {
@@ -211,6 +216,16 @@ function isAtprotoLabelersAgent(value: unknown): value is AtprotoLabelersAgent {
     (typeof value.configureLabelers === 'function' ||
       typeof value.getLabelers === 'function' ||
       typeof value.getLabelDefinitions === 'function')
+  );
+}
+
+function isAtprotoCloneableProxyAgent(
+  value: unknown,
+): value is AtprotoCloneableProxyAgent {
+  return (
+    isAtprotoProxyAgent(value) &&
+    isRecord(value) &&
+    typeof value.clone === 'function'
   );
 }
 
@@ -515,6 +530,7 @@ interface AdaptedStatusAtproto {
   parent?: AtprotoStrongRef;
   replyParentAccount?: AdaptedAccount;
   replyParentUnavailable: boolean;
+  mutedAuthor?: boolean;
   like?: string;
   repost?: string;
   text: string;
@@ -566,7 +582,6 @@ interface AdaptedList {
   id: string;
   title: string;
   repliesPolicy: 'list';
-  exclusive: false;
   _atproto: {
     uri?: string;
     cid?: string;
@@ -737,9 +752,76 @@ export function assertAtprotoPostParamsSupported(
   }
 }
 
-function getServiceAuthAudFromUrl(url: string | URL): string {
-  const { hostname } = typeof url === 'string' ? new URL(url) : url;
-  return `did:web:${hostname}`;
+function getServiceAuthAudFromUrl(url: string | URL): string | null {
+  try {
+    const { host } = typeof url === 'string' ? new URL(url) : url;
+    if (!host) return null;
+    return `did:web:${host.replaceAll(':', '%3A')}`;
+  } catch {
+    return null;
+  }
+}
+
+function getServiceAuthAudFromUrlOrDid(value: string | URL): string | null {
+  if (typeof value === 'string' && value.startsWith('did:')) {
+    if (isConfiguredAppViewUrl(value)) return null;
+    return value.split('#', 1)[0] || null;
+  }
+  return getServiceAuthAudFromUrl(value);
+}
+
+function isConfiguredAppViewUrl(value: string | URL): boolean {
+  if (typeof value === 'string' && value.startsWith('did:')) {
+    const did = value.split('#', 1)[0];
+    return did === BSKY_APPVIEW_DID || did === BLACKSKY_APPVIEW_DID;
+  }
+  try {
+    const url = typeof value === 'string' ? new URL(value) : value;
+    return KNOWN_APPVIEW_HOSTNAMES.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function createPdsFacingAgent(agent: AtprotoAgent): AtprotoAgent {
+  if (!isAtprotoCloneableProxyAgent(agent)) return agent;
+  const cloned = agent.clone();
+  if (isAtprotoProxyAgent(cloned)) cloned.configureProxy(null);
+  return cloned;
+}
+
+export async function getVideoUploadServiceAuthAud(
+  agent: AtprotoAgent,
+): Promise<string> {
+  if (!isAtprotoAgentInternals(agent)) {
+    throw new Error('Missing Bluesky session');
+  }
+  const sessionManager = agent.sessionManager;
+  if (sessionManager?.pdsUrl) {
+    const aud = getServiceAuthAudFromUrl(sessionManager.pdsUrl);
+    if (aud) return aud;
+  }
+  const tokenInfoAud = (await sessionManager?.getTokenInfo?.())?.aud;
+  if (tokenInfoAud) {
+    const aud = getServiceAuthAudFromUrlOrDid(tokenInfoAud);
+    if (aud) return aud;
+  }
+  if (agent.dispatchUrl && !isConfiguredAppViewUrl(agent.dispatchUrl)) {
+    const aud = getServiceAuthAudFromUrlOrDid(agent.dispatchUrl);
+    if (aud) return aud;
+  }
+  const session =
+    await createPdsFacingAgent(agent).com.atproto.server.getSession();
+  const pdsEndpoint = isValidDidDoc(session.data.didDoc)
+    ? getPdsEndpoint(session.data.didDoc)
+    : null;
+  if (pdsEndpoint && sessionManager)
+    sessionManager.pdsUrl = new URL(pdsEndpoint);
+  if (pdsEndpoint) {
+    const aud = getServiceAuthAudFromUrl(pdsEndpoint);
+    if (aud) return aud;
+  }
+  throw new Error('Missing Bluesky PDS URL');
 }
 
 function createVideoEndpointUrl(
@@ -845,21 +927,12 @@ async function uploadVideoBlob(
   const agentLoose = agent;
   if (!agentLoose.did) throw new Error('Missing Bluesky session');
 
-  if (agentLoose.sessionManager && !agentLoose.sessionManager.pdsUrl) {
-    const session = await agent.com.atproto.server.getSession();
-    const pdsEndpoint = isValidDidDoc(session.data.didDoc)
-      ? getPdsEndpoint(session.data.didDoc)
-      : null;
-    if (pdsEndpoint) agentLoose.sessionManager.pdsUrl = new URL(pdsEndpoint);
-  }
-  const dispatchUrl =
-    agentLoose.dispatchUrl ||
-    (await agentLoose.sessionManager?.getTokenInfo?.())?.aud;
-  if (!dispatchUrl) throw new Error('Missing Bluesky dispatch URL');
+  const pdsAgent = createPdsFacingAgent(agent);
+  const uploadAud = await getVideoUploadServiceAuthAud(agent);
 
   const uploadToken = await getServiceAuthToken({
-    agent,
-    aud: getServiceAuthAudFromUrl(dispatchUrl),
+    agent: pdsAgent,
+    aud: uploadAud,
     lxm: 'com.atproto.repo.uploadBlob',
     exp: Date.now() / 1000 + 60 * 30,
   });
@@ -890,7 +963,7 @@ async function uploadVideoBlob(
 
   const videoAgent = new AtpAgent({ service: BSKY_VIDEO_SERVICE });
   const statusToken = await getServiceAuthToken({
-    agent,
+    agent: pdsAgent,
     aud: BSKY_VIDEO_SERVICE_DID,
     lxm: 'app.bsky.video.getJobStatus',
   });
@@ -1343,7 +1416,6 @@ function listToPhanpyList(list: AtprotoList = {}): AdaptedList {
     id: encodeURIComponent(String(uri)),
     title: list.name || list.displayName || uri || '',
     repliesPolicy: 'list',
-    exclusive: false,
     _atproto: {
       uri,
       cid: list.cid,
@@ -1362,7 +1434,6 @@ function feedGeneratorToPhanpyList(
     id: encodeURIComponent(String(uri)),
     title: feed.displayName || feed.name || uri || '',
     repliesPolicy: 'list',
-    exclusive: false,
     _atproto: {
       uri,
       cid: feed.cid,
@@ -1644,6 +1715,10 @@ function isReasonPin(reason: AtprotoReason | undefined): boolean {
   return reason?.$type === 'app.bsky.feed.defs#reasonPin';
 }
 
+function isActorMuted(actor: AtprotoActor | undefined): boolean {
+  return !!(actor?.viewer?.muted || actor?.viewer?.mutedByList);
+}
+
 function blobRefID(blob: BlobRefLike): string {
   const json = blob.toJSON();
   if (isRecord(json)) {
@@ -1816,6 +1891,43 @@ function getThreadgateVisibility(post: AtprotoPost): string {
   return 'everybody';
 }
 
+export async function fetchFollowingFeedPage({
+  agent,
+  currentUserDid,
+  cursor,
+  limit,
+  maxPages = BSKY_FOLLOWING_FILL_MAX_PAGES,
+}: {
+  agent: AtprotoAgent;
+  currentUserDid: string | undefined;
+  cursor?: string;
+  limit: number;
+  maxPages?: number;
+}): Promise<CollectionPage<AdaptedStatus[]>> {
+  const items: AdaptedStatus[] = [];
+
+  const collect = async (
+    page: number,
+    pageCursor: string | undefined,
+  ): Promise<string | undefined> => {
+    if (page >= maxPages) return pageCursor;
+
+    const res = await agent.getTimeline({ limit, cursor: pageCursor });
+    const nextCursor = res.data.cursor;
+    const feed = await hydrateFeedReplyContext(res.data.feed, agent);
+    const processedFeed = postProcessFollowingFeed(feed, currentUserDid);
+    items.push(...feedToStatuses(processedFeed, agent));
+
+    if (items.length >= limit || !nextCursor) return nextCursor;
+    return collect(page + 1, nextCursor);
+  };
+
+  return {
+    cursor: await collect(0, cursor),
+    items,
+  };
+}
+
 export function postToStatus(
   feedItemOrPost:
     | AtprotoFeedItem
@@ -1917,6 +2029,7 @@ export function postToStatus(
         ? actorToAccount(replyParent.author)
         : undefined,
       replyParentUnavailable: !!replyParentURI && !replyParent?.author,
+      mutedAuthor: isActorMuted(post.author),
       like: post.viewer?.like,
       repost: post.viewer?.repost,
       text: record.text || '',
@@ -1936,6 +2049,10 @@ export function postToStatus(
       id: `${id}-repost-${reason.indexedAt}`,
       createdAt: reason.indexedAt,
       account: actorToAccount(reason.by),
+      _atproto: {
+        ...status._atproto,
+        mutedAuthor: status._atproto.mutedAuthor || isActorMuted(reason.by),
+      },
       reblog: status,
     };
   }
@@ -2833,6 +2950,7 @@ export function createAtprotoClient({
       const type = notificationType(notification.reason);
       if (allowedTypes && !allowedTypes.has(type)) return false;
       if (blockedTypes?.has(type)) return false;
+      if (isActorMuted(notification.author)) return false;
       return true;
     });
     const statusURIs = [
@@ -3025,18 +3143,14 @@ export function createAtprotoClient({
       timelines: {
         home: {
           list({ limit = 20 }: { limit?: number } = {}) {
-            return makeCollection<AdaptedStatus[]>(async (cursor) => {
-              const res = await agent.getTimeline({ limit, cursor });
-              const feed = await hydrateFeedReplyContext(res.data.feed, agent);
-              const processedFeed = postProcessFollowingFeed(
-                feed,
-                agentLoose.did,
-              );
-              return {
-                cursor: res.data.cursor,
-                items: feedToStatuses(processedFeed, agent),
-              };
-            });
+            return makeCollection<AdaptedStatus[]>((cursor) =>
+              fetchFollowingFeedPage({
+                agent,
+                currentUserDid: agentLoose.did,
+                cursor,
+                limit,
+              }),
+            );
           },
         },
         public: {
@@ -3892,7 +4006,6 @@ export function atprotoInstanceInfo() {
         maxOptions: 0,
       },
     },
-    apiVersions: { mastodon: 7 },
   };
 }
 
@@ -3917,6 +4030,39 @@ export async function loginAtproto({
     session: agent.session,
     service,
   };
+}
+
+// Best-effort server-side logout for app-password sessions. OAuth sessions are
+// revoked separately via the OAuth client. Like that path, this is resilient:
+// the caller clears local storage regardless of whether this network call
+// succeeds (e.g. the session already expired server-side).
+export async function logoutAtprotoSession(
+  accessToken: string | null | undefined,
+): Promise<void> {
+  if (!accessToken) return;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(accessToken);
+  } catch {
+    return;
+  }
+  if (!isRecord(parsed) || parsed.type !== 'atproto') return;
+  const session = toAtpSessionData(parsed.session);
+  if (!session) return;
+  // Session deletion targets the account's PDS (stored per-account in
+  // parsed.service for app-password logins), NOT the AppView. Fall back to the
+  // entryway PDS — never the AppView URL — for tokens missing a stored service.
+  const service =
+    typeof parsed.service === 'string' && parsed.service
+      ? parsed.service
+      : BSKY_PDS;
+  try {
+    const agent = new AtpAgent({ service });
+    await agent.resumeSession(session);
+    await agent.logout();
+  } catch (error) {
+    console.error('Failed to delete ATProto app-password session:', error);
+  }
 }
 
 export function createPublicAtprotoClient() {

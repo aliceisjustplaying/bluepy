@@ -42,7 +42,7 @@ test.describe('ATProto OAuth', () => {
 
     await page.goto('/login', { waitUntil: 'domcontentloaded' });
     await page.getByLabel('Handle or PDS URL').fill('alice.mosphere.at');
-    await page.getByRole('button', { name: 'Continue with OAuth' }).click();
+    await page.getByRole('button', { name: 'Connect to Atmosphere' }).click();
 
     await expect
       .poll(() => page.evaluate(() => window.__BLUEPY_OAUTH_ARGS__))
@@ -63,7 +63,7 @@ test.describe('ATProto OAuth', () => {
     await page.goto('/login', { waitUntil: 'domcontentloaded' });
 
     await expect(
-      page.getByRole('button', { name: 'Continue with OAuth' }),
+      page.getByRole('button', { name: 'Connect to Atmosphere' }),
     ).toBeVisible();
     await page.getByText('Use app password').click();
     await expect(page.getByLabel('App password')).toBeVisible();
@@ -174,7 +174,7 @@ test.describe('ATProto OAuth', () => {
     await page.goto('/');
 
     await expect(
-      page.getByRole('link', { name: 'Log in with Bluesky' }),
+      page.getByRole('link', { name: 'Connect to Atmosphere' }),
     ).toBeVisible({
       timeout: 15_000,
     });

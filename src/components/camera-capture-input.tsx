@@ -1,7 +1,6 @@
 import type { SyntheticEvent } from 'react';
 
 import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
-import supports from '../utils/supports';
 
 const isMobileSafari =
   /iPad|iPhone|iPod/.test(navigator.userAgent) &&
@@ -68,9 +67,7 @@ function CameraCaptureInput({
           let fileData;
           let uploadFile: File;
           try {
-            uploadFile = supports('@atproto')
-              ? await compressAtprotoImageIfNeeded(mediaFile)
-              : mediaFile;
+            uploadFile = await compressAtprotoImageIfNeeded(mediaFile);
             fileData = await uploadFile.arrayBuffer();
           } catch (err) {
             console.error('Failed to read file:', err);

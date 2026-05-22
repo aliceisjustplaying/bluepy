@@ -1,17 +1,14 @@
-import { Trans, useLingui } from '@lingui/react/macro';
+import { useLingui } from '@lingui/react/macro';
 import { MenuItem } from '@szhsin/react-menu';
 import type { ReactNode } from 'react';
 
 import haptics from '../utils/haptics';
-import { supportsNativeQuote } from '../utils/quote-utils';
 import shortenNumber from '../utils/shorten-number';
 import showCompose from '../utils/show-compose';
 import showToast from '../utils/show-toast';
-import supports from '../utils/supports';
 
 import Icon from './icon';
 import MenuConfirm from './menu-confirm';
-import { DEV } from './status-helpers';
 import type { StatusMenuPartsArgs } from './status-menu-types';
 import type { LooseClickEvent } from './status-types';
 
@@ -22,7 +19,6 @@ type StatusQuickMenuProps = Pick<
   | 'status'
   | 'quoteMetaText'
   | 'quoteText'
-  | 'url'
   | 'menuFooter'
   | 'canBoost'
   | 'confirmBoostStatus'
@@ -51,7 +47,6 @@ export default function StatusQuickMenu({
   status,
   quoteMetaText,
   quoteText,
-  url,
   menuFooter,
   canBoost,
   confirmBoostStatus,
@@ -88,48 +83,25 @@ export default function StatusQuickMenu({
         }
         className={`menu-reblog ${reblogged ? 'checked' : ''}`}
         menuExtras={
-          <>
-            {supportsNativeQuote() && (
-              <MenuItem
-                disabled={!!quoteDisabled}
-                onClick={() => {
-                  showCompose({
-                    quoteStatus: status,
-                  });
-                }}
-              >
-                <Icon icon="quote" />
-                {quoteMetaText ? (
-                  <small>
-                    {quoteText}
-                    <br />
-                    {quoteMetaText}
-                  </small>
-                ) : (
-                  <span>{quoteText}</span>
-                )}
-              </MenuItem>
+          <MenuItem
+            disabled={!!quoteDisabled}
+            onClick={() => {
+              showCompose({
+                quoteStatus: status,
+              });
+            }}
+          >
+            <Icon icon="quote" />
+            {quoteMetaText ? (
+              <small>
+                {quoteText}
+                <br />
+                {quoteMetaText}
+              </small>
+            ) : (
+              <span>{quoteText}</span>
             )}
-            {(DEV || !supportsNativeQuote()) && (
-              <MenuItem
-                onClick={() => {
-                  showCompose({
-                    draftStatus: {
-                      status: `\n${url}`,
-                    },
-                  });
-                }}
-              >
-                <Icon icon="quote" />
-                <span>
-                  <Trans>Quote with link</Trans>
-                </span>
-                {supportsNativeQuote() && DEV && (
-                  <small className="tag collapsed">DEV</small>
-                )}
-              </MenuItem>
-            )}
-          </>
+          </MenuItem>
         }
         menuFooter={menuFooter}
         disabled={!canBoost}
@@ -186,17 +158,15 @@ export default function StatusQuickMenu({
               : t`Like`}
         </span>
       </MenuItem>
-      {supports('@mastodon/post-bookmark') && (
-        <MenuItem
-          onClick={() => {
-            void bookmarkStatusNotify();
-          }}
-          className={`menu-bookmark ${bookmarked ? 'checked' : ''}`}
-        >
-          <Icon icon="bookmark" />
-          <span>{bookmarked ? t`Unbookmark` : t`Bookmark`}</span>
-        </MenuItem>
-      )}
+      <MenuItem
+        onClick={() => {
+          void bookmarkStatusNotify();
+        }}
+        className={`menu-bookmark ${bookmarked ? 'checked' : ''}`}
+      >
+        <Icon icon="bookmark" />
+        <span>{bookmarked ? t`Unbookmark` : t`Bookmark`}</span>
+      </MenuItem>
     </div>
   );
 }

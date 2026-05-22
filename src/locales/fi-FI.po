@@ -42,9 +42,11 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "Koko sana"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/settings.tsx
+msgid "Default threadgate (Who can reply)"
+msgstr ""
+
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr "Siirry omalle palvelimelle (<0>{currentInstance}</0>)"
 
@@ -54,13 +56,10 @@ msgstr "Mykistetty {username}"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/pages/home.tsx
-#: src/pages/mentions.tsx
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
-#: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "Maininnat"
 
@@ -89,7 +88,6 @@ msgid "Other"
 msgstr "Muu"
 
 #: src/components/nav-menu.tsx
-#: src/components/nav-menu.tsx
 msgid "Send feedback…"
 msgstr ""
 
@@ -109,10 +107,9 @@ msgstr "Löytyi matemaattisia lausekkeita."
 #~ msgid "e.g. “mastodon.social”"
 #~ msgstr "esim. ”mastodon.social”"
 
-#. placeholder {0}: typeof MUTE_DURATIONS_LABELS[duration] === 'function' ? ( MUTE_DURATIONS_LABELS[ duration ] as () => string )() : i18n._(MUTE_DURATIONS_LABELS[duration])
 #: src/components/related-actions.tsx
-msgid "Muted @{username} for {0}"
-msgstr "Mykistetty @{username}, kestona {0}"
+#~ msgid "Muted @{username} for {0}"
+#~ msgstr "Mykistetty @{username}, kestona {0}"
 
 #: src/components/drafts.tsx
 msgid "Delete this draft?"
@@ -130,7 +127,6 @@ msgstr "Ei vielä lainauksia"
 #~ msgid "Scheduled post deleted"
 #~ msgstr "Ajastettu julkaisu poistettu"
 
-#: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Switch to Side Peek view"
 msgstr "Vaihda sivupaneelinäkymään"
@@ -153,24 +149,19 @@ msgstr "{count, plural, one {}=1 {{account} seurasi sinua.} other {<0><1>{0}</1>
 msgid "Connected on {0} (<0/>)"
 msgstr "Yhdistetty {0} (<0/>)"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
-msgid "Only you can quote"
-msgstr "Vain sinä voit lainata"
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
+#~ msgid "Only you can quote"
+#~ msgstr "Vain sinä voit lainata"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>c</1>"
 msgstr "<0>Vaihto</0> + <1>c</1>"
 
-#: src/components/compose-button.tsx
-#: src/components/nav-menu.tsx
-#: src/pages/scheduled-posts.tsx
-#: src/pages/scheduled-posts.tsx
+#: src/components/compose-button.tsx src/components/nav-menu.tsx src/pages/scheduled-posts.tsx
 #~ msgid "Scheduled Posts"
 #~ msgstr "Ajastetut julkaisut"
 
+#: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
 msgstr "Mykistetty"
@@ -197,7 +188,6 @@ msgstr "keneltä tahansa"
 
 #: src/pages/account-statuses.tsx
 #: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "Posts"
 msgstr "Julkaisut"
 
@@ -206,10 +196,9 @@ msgid "Post hidden because you've blocked {domain}."
 msgstr "Julkaisu piilotettu, koska olet estänyt instanssin {domain}."
 
 #: src/components/poll.tsx
-msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
-msgstr "{optionVotesCount, plural, one {# ääni} other {# ääntä}}"
+#~ msgid "{optionVotesCount, plural, one {# vote} other {# votes}}"
+#~ msgstr "{optionVotesCount, plural, one {# ääni} other {# ääntä}}"
 
-#: src/components/status-activity-menu.tsx
 #: src/components/status-activity-menu.tsx
 #~ msgid "Boosted/Liked by…"
 #~ msgstr "Tehostaneet/tykänneet…"
@@ -223,11 +212,9 @@ msgid "No one mentioned you :("
 msgstr "Kukaan ei ole maininnut sinua :("
 
 #: src/components/filtered-status.tsx
-#: src/components/filtered-status.tsx
 #: src/components/media-post.tsx
 #: src/components/status-compact.tsx
 #: src/components/timeline.tsx
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Filtered"
 msgstr "Suodatettu"
@@ -270,8 +257,8 @@ msgid "Back to top"
 msgstr "Takaisin ylös"
 
 #: src/components/status-helpers.ts
-msgid "Private posts cannot be quoted"
-msgstr "Yksityisiä julkaisuja ei voi lainata"
+#~ msgid "Private posts cannot be quoted"
+#~ msgstr "Yksityisiä julkaisuja ei voi lainata"
 
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
@@ -328,8 +315,7 @@ msgstr "Ei mitään näytettävää"
 msgid "Bookmarked"
 msgstr "Lisätty kirjanmerkkeihin"
 
-#: src/components/private-note-sheet.tsx
-#: src/components/related-actions.tsx
+#: src/components/private-note-sheet.tsx src/components/related-actions.tsx
 #~ msgid "Notes"
 #~ msgstr "Merkinnät"
 
@@ -343,8 +329,8 @@ msgid "Breaks specific Bluesky rules"
 msgstr ""
 
 #: src/pages/hashtag.tsx
-msgid "Login required to see posts from Bluesky."
-msgstr ""
+#~ msgid "Login required to see posts from Bluesky."
+#~ msgstr ""
 
 #: src/pages/filters.tsx
 #~ msgid "{0, plural, one {# keyword} other {# keywords}}"
@@ -358,7 +344,6 @@ msgstr "Erillinen aikajana seurattavistasi. Sähköpostin innoittama käyttölii
 msgid "Tell us what happened first."
 msgstr ""
 
-#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Light"
 msgstr "Vaalea"
@@ -383,6 +368,10 @@ msgstr "Hylkää"
 msgid "Let's catch up on the posts from your followings."
 msgstr "Kurotaanpa seurattaviesi julkaisut kiinni."
 
+#: src/components/compose.tsx
+msgid "Anyone can reply"
+msgstr ""
+
 #: src/components/follow-request-buttons.tsx
 #~ msgid "Reject"
 #~ msgstr "Hylkää"
@@ -397,8 +386,8 @@ msgid "Attachment #{0} failed"
 msgstr ""
 
 #: src/components/poll.tsx
-msgid "Ended"
-msgstr "Päättynyt"
+#~ msgid "Ended"
+#~ msgstr "Päättynyt"
 
 #: src/components/nav-menu.tsx
 #: src/components/text-expander.tsx
@@ -432,8 +421,6 @@ msgstr "Lista"
 
 #: src/components/status-placeholders.tsx
 #: src/components/status-quotes.tsx
-#: src/components/status-quotes.tsx
-#: src/components/status-quotes.tsx
 msgid "Post unavailable"
 msgstr "Julkaisu ei saatavilla"
 
@@ -464,8 +451,6 @@ msgstr "Loppu."
 #: src/components/related-actions.tsx
 #: src/components/status-header.tsx
 #: src/components/status-inline-controls.tsx
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/accounts.tsx
@@ -554,10 +539,9 @@ msgstr ""
 #~ msgid "Unable to unfeature on profile"
 #~ msgstr "Ei voitu poistaa esiltä profiilista"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
-msgid "Quote settings updated"
-msgstr "Lainausasetukset päivitetty"
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
+#~ msgid "Quote settings updated"
+#~ msgstr "Lainausasetukset päivitetty"
 
 #: src/pages/year-in-posts.tsx
 msgid "Year"
@@ -576,8 +560,8 @@ msgid "Error loading quotes"
 msgstr "Virhe ladattaessa lainauksia"
 
 #: src/components/media-attachment.tsx
-msgid "Uploaded"
-msgstr "Ladattu"
+#~ msgid "Uploaded"
+#~ msgstr "Ladattu"
 
 #: src/components/shortcuts-settings.jsx
 #~ msgid "No columns yet. Tap on the Add column button."
@@ -588,7 +572,6 @@ msgid "Add more than one shortcut/column to make this work."
 msgstr "Lisää useampi pikavalinta/sarake, jotta tämä toimisi."
 
 #: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/trending.tsx
 msgid "Trending"
@@ -619,7 +602,6 @@ msgid "Unable to load account."
 msgstr "Tiliä ei voitu ladata."
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 msgid "Optional, e.g. bsky.social"
 msgstr ""
 
@@ -635,9 +617,7 @@ msgstr "Sisältö"
 msgid "Send Report"
 msgstr "Lähetä raportti"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Enter a new server e.g. \"mastodon.social\""
 #~ msgstr "Anna uusi palvelin, esim. ”mastodon.social”"
 
@@ -645,8 +625,7 @@ msgstr "Lähetä raportti"
 #~ msgid "Unable to delete filter."
 #~ msgstr "Suodatinta ei voitu poistaa."
 
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
+#: src/components/nav-menu.tsx src/components/shortcuts-settings.tsx
 #~ msgid "Federated"
 #~ msgstr "Federoitu"
 
@@ -669,8 +648,8 @@ msgid "Looks like your browser is blocking popups."
 msgstr "Selaimesi näyttää estävän ponnahdusikkunat."
 
 #: src/pages/settings.tsx
-msgid "Default visibility updated"
-msgstr "Oletusnäkyvyys päivitetty"
+#~ msgid "Default visibility updated"
+#~ msgstr "Oletusnäkyvyys päivitetty"
 
 #: src/components/status-reply-menu.tsx
 #~ msgid "{0, plural, other {<0>@{1}</0> first, # others below}}"
@@ -682,8 +661,8 @@ msgid "{0, plural, one {# feed} other {# feeds}}"
 msgstr ""
 
 #: src/pages/catchup.tsx
-msgid "Poll"
-msgstr "Äänestys"
+#~ msgid "Poll"
+#~ msgstr "Äänestys"
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Profile picture"
@@ -735,12 +714,16 @@ msgid "Existing"
 msgstr "Olemassa oleva"
 
 #: src/components/poll.tsx
-msgid "Ended <0/>"
-msgstr "Päättynyt <0/>"
+#~ msgid "Ended <0/>"
+#~ msgstr "Päättynyt <0/>"
 
 #: src/components/notification.tsx
 #~ msgid "View #Wrapstodon"
 #~ msgstr "Näytä #Wrapstodon"
+
+#: src/components/muted-status.tsx
+msgid "Post from muted account"
+msgstr ""
 
 #: src/components/status-activity-menu.tsx
 msgid "View Quotes"
@@ -758,7 +741,6 @@ msgstr ""
 #~ msgid "Shortcuts saved"
 #~ msgstr "Pikavalinnat tallennettu"
 
-#: src/components/status-reply-menu.tsx
 #: src/components/status-reply-menu.tsx
 #~ msgid "Reply all"
 #~ msgstr "Vastaa kaikille"
@@ -802,8 +784,6 @@ msgid "Append to current shortcuts?"
 msgstr "Lisätäänkö nykyisiin pikavalintoihin?"
 
 #: src/components/status-large-footer.tsx
-#: src/components/status-large-footer.tsx
-#: src/components/status-quick-menu.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Undo repost"
 msgstr ""
@@ -844,12 +824,10 @@ msgstr "Näytä profiili"
 msgid "Keyboard shortcuts"
 msgstr "Pikanäppäimet"
 
-#: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Public"
 msgstr "Julkinen"
 
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Optional, e.g. mastodon.social"
 #~ msgstr "Valinnainen, esim. mastodon.social"
@@ -864,8 +842,6 @@ msgstr "Tilit…"
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/pages/bookmarks.tsx
 #: src/pages/bookmarks.tsx
 msgid "Bookmarks"
 msgstr "Kirjanmerkit"
@@ -889,6 +865,10 @@ msgstr "Huomaa: Tämä ominaisuus käyttää ulkoisia käännöspalveluja, jotka
 #: src/components/add-remove-lists-sheet.tsx
 msgid "Unable to remove from list."
 msgstr "Listasta ei voitu poistaa."
+
+#: src/pages/settings.tsx
+msgid "Show normally"
+msgstr ""
 
 #: src/components/account-block.tsx
 msgid "Mutual"
@@ -932,7 +912,6 @@ msgstr "<0>l</0> tai <1>f</1>"
 msgid "Label"
 msgstr "Nimike"
 
-#: src/components/status-inline-controls.tsx
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 msgid "Liked"
@@ -986,15 +965,22 @@ msgstr "{0, plural, one {# lista} other {# listaa}}"
 msgid "Show all sensitive content"
 msgstr "Näytä kaikki arkaluonteinen sisältö"
 
+#: src/components/compose.tsx
+msgid "(No user lists found)"
+msgstr ""
+
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
 msgstr "Keskustelua ei voitu mykistää"
+
+#: src/components/muted-status.tsx
+msgid "Show"
+msgstr ""
 
 #: src/pages/account-statuses.tsx
 msgid "Posts tagged #{tagged} by {accountDisplay}"
 msgstr ""
 
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generating description. Please wait…"
 msgstr "Luodaan kuvausta. Odota hetki…"
@@ -1013,19 +999,16 @@ msgid "Translated Bio"
 msgstr "Käännetty elämäkerta"
 
 #: src/pages/status.tsx
-msgid "Unable to switch"
-msgstr "Ei voitu vaihtaa"
+#~ msgid "Unable to switch"
+#~ msgstr "Ei voitu vaihtaa"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Type to search GIFs"
 msgstr "Hae GIF‐kuvia kirjoittamalla"
 
-#: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
-msgid "Your followers can quote"
-msgstr "Seuraajasi voivat lainata"
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
+#~ msgid "Your followers can quote"
+#~ msgstr "Seuraajasi voivat lainata"
 
 #: src/components/media.tsx
 msgid "Open file"
@@ -1047,14 +1030,13 @@ msgid "Remove account…"
 msgstr "Poista tili…"
 
 #: src/pages/trending.tsx
-msgid "Back to showing trending posts"
-msgstr "Takaisin katsomaan suosittuja julkaisuja"
+#~ msgid "Back to showing trending posts"
+#~ msgstr "Takaisin katsomaan suosittuja julkaisuja"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
 msgstr "Kuvan kuvausgeneraattori"
 
-#: src/pages/hashtag.tsx
 #: src/pages/hashtag.tsx
 #~ msgid "Featured on profile"
 #~ msgstr "Nostettu esille profiiliin"
@@ -1070,8 +1052,8 @@ msgid "Automated"
 msgstr "Botti"
 
 #: src/pages/trending.tsx
-msgid "Trending News"
-msgstr "Suositut uutiset"
+#~ msgid "Trending News"
+#~ msgstr "Suositut uutiset"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -1082,10 +1064,9 @@ msgid "Show media"
 msgstr "Näytä media"
 
 #: src/components/related-actions.tsx
-msgid "Forever"
-msgstr "Ikuisesti"
+#~ msgid "Forever"
+#~ msgstr "Ikuisesti"
 
-#: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications settings"
 msgstr "Ilmoitusasetukset"
@@ -1106,8 +1087,6 @@ msgstr "beeta"
 #: src/components/nav-menu.tsx
 #: src/components/search-form.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/pages/search.tsx
 #: src/pages/search.tsx
 msgid "Search"
 msgstr "Haku"
@@ -1146,10 +1125,9 @@ msgid "Follows"
 msgstr "Uudet seuraajat"
 
 #. By [Author]
-#. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
-msgid "By {0}"
-msgstr "Tehnyt {0}"
+#~ msgid "By {0}"
+#~ msgstr "Tehnyt {0}"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
@@ -1223,6 +1201,10 @@ msgstr "Julkaisu piilotettu, koska olet estänyt käyttäjän @{name}."
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/pages/scheduled-posts.tsx
 #~ msgid "Failed to delete scheduled post"
 #~ msgstr "Ajastetun julkaisun poisto epäonnistui"
@@ -1265,8 +1247,8 @@ msgstr "Näytä kuitenkin"
 #~ msgstr "Lähennä"
 
 #: src/components/status-helpers.ts
-msgid "Request to quote"
-msgstr "Pyydä lupaa lainata"
+#~ msgid "Request to quote"
+#~ msgstr "Pyydä lupaa lainata"
 
 #: src/pages/settings.jsx
 #~ msgid "<0>Built</0> by <1>@cheeaun</1>"
@@ -1274,13 +1256,12 @@ msgstr "Pyydä lupaa lainata"
 
 #: src/components/notification.tsx
 #: src/components/status-activity-menu.tsx
-#: src/components/status-activity-menu.tsx
 msgid "Reposted/Liked by…"
 msgstr ""
 
 #: src/components/post-embed-modal.tsx
-msgid "Polls are not interactive, becomes a list with vote counts."
-msgstr "Äänestykset eivät ole vuorovaikutteisia, vaan niistä tulee luettelo äänimääristä."
+#~ msgid "Polls are not interactive, becomes a list with vote counts."
+#~ msgstr "Äänestykset eivät ole vuorovaikutteisia, vaan niistä tulee luettelo äänimääristä."
 
 #: src/components/atproto-labels.tsx
 msgid "Sexually Suggestive"
@@ -1290,8 +1271,7 @@ msgstr ""
 msgid "Unmuted @{username}"
 msgstr "Kumottu käyttäjän @{username} mykistys"
 
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/status-inline-controls.tsx src/components/status-large-footer.tsx
 #~ msgid "Boosted"
 #~ msgstr "Tehostettu"
 
@@ -1300,15 +1280,23 @@ msgstr "Kumottu käyttäjän @{username} mykistys"
 msgid "Reposted"
 msgstr ""
 
-#. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
-msgid "Showing posts mentioning <0>{0}</0>"
-msgstr "Näytetään julkaisut, joissa mainitaan <0>{0}</0>"
+#~ msgid "Showing posts mentioning <0>{0}</0>"
+#~ msgstr "Näytetään julkaisut, joissa mainitaan <0>{0}</0>"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
 msgid "Unable to copy handle"
 msgstr "Käyttäjätunnusta ei voitu kopioida"
+
+#. [Name] reposted
+#: src/components/filtered-status.tsx
+msgid "<0/> reposted"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Default threadgate updated"
+msgstr ""
 
 #: src/pages/filters.tsx
 #~ msgid "Change expiry"
@@ -1340,11 +1328,13 @@ msgstr ""
 msgid "Quote chain"
 msgstr "Lainausketju"
 
-#: src/components/nav-menu.jsx
-#: src/components/shortcuts.jsx
-#: src/pages/list.jsx
+#: src/components/nav-menu.jsx src/components/shortcuts.jsx src/pages/list.jsx
 #~ msgid "All Lists"
 #~ msgstr "Kaikki listat"
+
+#: src/pages/settings.tsx
+msgid "Collapse with reveal"
+msgstr ""
 
 #: src/pages/public.tsx
 #~ msgid "No one has posted anything yet."
@@ -1379,7 +1369,6 @@ msgstr "Hae omia julkaisujani"
 #: src/components/notification.tsx
 #: src/pages/accounts.tsx
 #: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "Accounts"
 msgstr "Tilit"
 
@@ -1392,8 +1381,6 @@ msgstr "Julkaisu piilotettu, koska olet mykistänyt käyttäjän @{name}."
 #~ msgstr "Tämä julkaisu on toiselta palvelimelta (<0>{instance}</0>). Vuorovaikutus (vastaaminen, tehostaminen jne.) ei ole mahdollista."
 
 #: src/components/account-info-mini.tsx
-#: src/components/account-info-mini.tsx
-#: src/components/account-info.tsx
 #: src/components/account-info.tsx
 msgid "This user has chosen to not make this information available."
 msgstr "Käyttäjä on päättänyt pitää nämä tiedot yksityisinä."
@@ -1402,6 +1389,10 @@ msgstr "Käyttäjä on päättänyt pitää nämä tiedot yksityisinä."
 #~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
 #~ msgstr "<0>Kehittänyt</0> <1>@cheeaun</1>. <2>Tietosuojakäytäntö</2>."
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and mentioned people can reply"
+msgstr ""
+
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
 msgstr "Vieritä ylös"
@@ -1409,6 +1400,10 @@ msgstr "Vieritä ylös"
 #: src/pages/filters.tsx
 #~ msgid "Home and lists"
 #~ msgstr "Koti ja listat"
+
+#: src/utils/visibility-text.ts
+msgid "Followers and followed people can reply"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1423,6 +1418,10 @@ msgstr "Siirry alkuperäiselle profiilisivulle"
 msgid "Auto ({0})"
 msgstr "Automaattinen ({0})"
 
+#: src/components/compose.tsx
+msgid "Allowed:"
+msgstr ""
+
 #: src/pages/notifications.tsx
 msgid "Accepted"
 msgstr "Hyväksytty"
@@ -1435,7 +1434,6 @@ msgstr ""
 msgid "Powered by GIPHY"
 msgstr "Palvelun tarjoaa GIPHY"
 
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Help"
 msgstr "Ohje"
@@ -1554,7 +1552,6 @@ msgid "Malicious links, fake engagement, or repetitive replies"
 msgstr "Haitalliset linkit, valeaktiivisuus tai toisteiset vastaukset"
 
 #: src/components/compose.tsx
-#: src/components/compose.tsx
 #: src/components/file-picker-input.tsx
 msgid "{maxMediaAttachments, plural, one {You can only attach up to 1 file.} other {You can only attach up to # files.}}"
 msgstr "{maxMediaAttachments, plural, one {Voit liittää enintään 1 tiedoston.} other {Voit liittää enintään # tiedostoa.}}"
@@ -1628,7 +1625,6 @@ msgstr "GIF‐valitsin luontikentässä"
 #. placeholder {0}: prettyBytes( videoSize, )
 #. placeholder {1}: prettyBytes(limit)
 #: src/components/media-attachment.tsx
-#: src/components/media-attachment.tsx
 msgid "File size too large. Uploading might encounter issues. Try reduce the file size from {0} to {1} or lower."
 msgstr "Liian suuri tiedostokoko. Palveluun lataaminen saattaa aiheuttaa ongelmia. Kokeile pienentää tiedostoa koosta {0} kokoon {1} tai pienemmäksi."
 
@@ -1667,7 +1663,6 @@ msgstr ""
 msgid "Media posts by {accountDisplay}"
 msgstr ""
 
-#: src/components/edit-history-controls.tsx
 #: src/components/gif-picker-modal.tsx
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
@@ -1687,8 +1682,8 @@ msgstr "Päivitetäänkö lataamalla sivu uudelleen nyt?"
 #~ msgstr "<0/> <1>tehosti</1>"
 
 #: src/components/status-helpers.ts
-msgid "You are not allowed to quote this post"
-msgstr "Sinulla ei ole oikeutta lainata tätä julkaisua"
+#~ msgid "You are not allowed to quote this post"
+#~ msgstr "Sinulla ei ole oikeutta lainata tätä julkaisua"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Search term"
@@ -1734,8 +1729,8 @@ msgstr "{months, plural, one {# kuukausi myöhemmin} other {# kuukautta myöhe
 #~ msgstr "Kohdista sarakkeeseen usean sarakkeen tilassa"
 
 #: src/components/status-utility-menu.tsx
-msgid "Edited: {editedDateText}"
-msgstr "Muokattu: {editedDateText}"
+#~ msgid "Edited: {editedDateText}"
+#~ msgstr "Muokattu: {editedDateText}"
 
 #: src/components/shortcuts-settings.tsx
 msgid "List ID"
@@ -1745,7 +1740,6 @@ msgstr "Listan tunnus"
 #. placeholder {1}: i18n.number(height as number)
 #. placeholder {2}: i18n.number(newWidth)
 #. placeholder {3}: i18n.number( newHeight, )
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Dimension too large. Uploading might encounter issues. Try reduce dimension from {0}×{1}px to {2}×{3}px."
 msgstr "Liian suuret mitat. Palveluun lataaminen saattaa aiheuttaa ongelmia. Kokeile pienentää kuvaa mitoista {0}×{1} px mittoihin {2}×{3} px."
@@ -1779,6 +1773,10 @@ msgstr "Elämäkerta"
 msgid "Sign up"
 msgstr "Rekisteröidy"
 
+#: src/components/notification.tsx
+msgid "{account} reacted to your post with {emoji}"
+msgstr ""
+
 #: src/components/status-activity-menu.tsx
 msgid "Unwrap quote chain"
 msgstr "Pura lainausketju"
@@ -1801,8 +1799,6 @@ msgid "Raw Shortcuts JSON"
 msgstr "Pikavalintojen raaka‐JSON"
 
 #: src/components/thread-badge.tsx
-#: src/components/thread-badge.tsx
-#: src/components/thread-badge.tsx
 #: src/pages/catchup.tsx
 msgid "Thread"
 msgstr "Ketju"
@@ -1820,8 +1816,8 @@ msgid "Multiple hashtags are supported. Space-separated."
 msgstr "Useaa aihetunnistetta tuetaan. Erottele välilyönnein."
 
 #: src/components/status-edit-history-modal.tsx
-msgid "Failed to load history"
-msgstr "Historian lataus epäonnistui"
+#~ msgid "Failed to load history"
+#~ msgstr "Historian lataus epäonnistui"
 
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Search emoji"
@@ -1859,14 +1855,13 @@ msgstr "Hae tilejä"
 #~ msgstr "{account} pyysi saada seurata sinua."
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to list members"
-msgstr "Näytä listan jäsenille osoitetut vastaukset"
+#~ msgid "Show replies to list members"
+#~ msgstr "Näytä listan jäsenille osoitetut vastaukset"
 
 #: src/components/compose.tsx
 #~ msgid "Attachment #{i} failed"
 #~ msgstr "Liite #{i} epäonnistui"
 
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 msgid "Top links"
 msgstr "Suosituimmat linkit"
@@ -1884,10 +1879,13 @@ msgstr "Vain media"
 msgid "Update"
 msgstr "Päivitä"
 
-#: src/components/status-account-menu.tsx
-#: src/pages/settings.tsx
-msgid "Quote settings"
-msgstr "Lainausasetukset"
+#: src/components/status-account-menu.tsx src/pages/settings.tsx
+#~ msgid "Quote settings"
+#~ msgstr "Lainausasetukset"
+
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, mentioned people, and list members can reply"
+msgstr ""
 
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
@@ -1903,7 +1901,6 @@ msgid "Failed to generate description{0}"
 msgstr "Kuvauksen luonti epäonnistui{0}"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "Muokkaa"
@@ -1923,7 +1920,6 @@ msgstr "<0>Esc</0> tai <1>askelpalautin</1>"
 #: src/components/account-info.tsx
 #: src/components/quotes-modal.tsx
 #: src/components/status-post-body.tsx
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Quotes"
@@ -1974,7 +1970,6 @@ msgid "Volunteer translations"
 msgstr "Vapaaehtoisten käännökset"
 
 #: src/pages/account-statuses.tsx
-#: src/pages/account-statuses.tsx
 msgid "Unable to fetch account info"
 msgstr "Tilitietoja ei voitu noutaa"
 
@@ -1997,6 +1992,10 @@ msgstr ""
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
 msgstr "Huomaa: Tämä ominaisuus käyttää ulkoista tekoälypalvelua, jonka tarjoaa <0>img-alt-api</0>. Ei välttämättä toimi hyvin. Vain kuville ja englanniksi."
 
+#: src/utils/visibility-text.ts
+msgid "List members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Zoom out"
 #~ msgstr "Loitonna"
@@ -2009,20 +2008,17 @@ msgstr "Arkaluonteinen media"
 msgid "Add GIF"
 msgstr "Lisää GIF"
 
-#. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
-msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr "Poistetaanko julkaisuni käyttäjän <0>@{0}</0> julkaisusta?"
+#~ msgid "Remove my post from <0>@{0}</0>'s post?"
+#~ msgstr "Poistetaanko julkaisuni käyttäjän <0>@{0}</0> julkaisusta?"
 
 #: src/pages/welcome.tsx
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
 #~ msgstr ""
 
-#: src/components/list-exclusive-badge.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
-msgid "Posts on this list are hidden from Home/Following"
-msgstr "Tämän listan julkaisut on piilotettu Koti‐ ja Seurattavat‐näkymistä"
+#: src/components/list-exclusive-badge.tsx src/pages/list.tsx src/pages/lists.tsx
+#~ msgid "Posts on this list are hidden from Home/Following"
+#~ msgstr "Tämän listan julkaisut on piilotettu Koti‐ ja Seurattavat‐näkymistä"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
@@ -2034,8 +2030,6 @@ msgstr "Seurattavat"
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/following.tsx
-#: src/pages/following.tsx
-#: src/pages/following2.tsx
 #: src/pages/following2.tsx
 msgid "following.title"
 msgstr "Seurattavat"
@@ -2068,6 +2062,10 @@ msgstr "Etkö ole varma, mitä lisätä?<0/>Kokeile lisätä ensin <1>Koti / Seu
 msgid "Unable to update profile."
 msgstr "Profiilia ei voitu päivittää."
 
+#: src/pages/settings.tsx
+msgid "Default threadgate settings are stored locally."
+msgstr ""
+
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
 msgid "Thread {index}/X"
@@ -2076,6 +2074,10 @@ msgstr "Ketju {index}/X"
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
 msgstr "Tilisi on jäädytetty."
+
+#: src/pages/login.tsx
+msgid "PDS URL, optional"
+msgstr ""
 
 #: src/components/account-block.tsx
 msgid "Locked"
@@ -2094,7 +2096,6 @@ msgstr "Sivuuta"
 #~ msgstr "Pikavalintoja ei voitu ladata"
 
 #: src/components/account-info.tsx
-#: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "QR code"
@@ -2172,6 +2173,10 @@ msgstr "Ryhmä"
 msgid "Export"
 msgstr "Vie"
 
+#: src/pages/login.tsx
+msgid "App password"
+msgstr ""
+
 #: src/components/search-form.tsx
 #: src/pages/home.tsx
 msgid "See all"
@@ -2233,7 +2238,6 @@ msgid "Month"
 msgstr "Kuukausi"
 
 #: src/pages/list.tsx
-#: src/pages/list.tsx
 msgid "Manage members"
 msgstr "Hallitse jäseniä"
 
@@ -2242,11 +2246,12 @@ msgid "Unable to format math"
 msgstr "Matemaattista lauseketta ei voitu muotoilla"
 
 #: src/components/compose.tsx
-#: src/components/quote-settings-sheet.tsx
-#: src/components/status-helpers.ts
-#: src/pages/settings.tsx
-msgid "Anyone can quote"
-msgstr "Kuka tahansa voi lainata"
+msgid "Select a list..."
+msgstr ""
+
+#: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
+#~ msgid "Anyone can quote"
+#~ msgstr "Kuka tahansa voi lainata"
 
 #: src/components/open-link-sheet.tsx
 #: src/components/post-embed-modal.tsx
@@ -2256,23 +2261,21 @@ msgstr "Kuka tahansa voi lainata"
 msgid "Copy"
 msgstr "Kopioi"
 
-#: src/components/quote-settings-sheet.tsx
-#: src/pages/settings.tsx
-msgid "Failed to update quote settings"
-msgstr "Lainausasetusten päivitys epäonnistui"
+#: src/components/quote-settings-sheet.tsx src/pages/settings.tsx
+#~ msgid "Failed to update quote settings"
+#~ msgstr "Lainausasetusten päivitys epäonnistui"
 
 #: src/pages/settings.tsx
-msgid "Failed to update default visibility"
-msgstr "Oletusnäkyvyyden päivitys epäonnistui"
+#~ msgid "Failed to update default visibility"
+#~ msgstr "Oletusnäkyvyyden päivitys epäonnistui"
 
 #: src/components/recent-searches.tsx
 msgid "Cleared recent searches"
 msgstr "Viimeaikaiset haut tyhjennetty"
 
-#. placeholder {0}: toUnicode(postInstance)
 #: src/pages/status.tsx
-msgid "Switch to post's PDS ({0})"
-msgstr ""
+#~ msgid "Switch to post's PDS ({0})"
+#~ msgstr ""
 
 #: src/pages/hashtag.tsx
 msgid "{hashtagTitle} (Media only)"
@@ -2312,8 +2315,8 @@ msgstr "Sinulla on tallentamattomia muutoksia. Hylätäänkö julkaisu?"
 #~ msgstr "{accountDisplay} (+ Vastaukset)"
 
 #: src/components/edit-history-controls.tsx
-msgid "Edit History Snapshots"
-msgstr "Muokkaushistorian tilannevedokset"
+#~ msgid "Edit History Snapshots"
+#~ msgstr "Muokkaushistorian tilannevedokset"
 
 #: src/components/account-info.tsx
 #: src/pages/catchup.tsx
@@ -2321,7 +2324,6 @@ msgstr "Muokkaushistorian tilannevedokset"
 msgid "Original"
 msgstr "Alkuperäiset"
 
-#: src/components/edit-history-controls.tsx
 #: src/components/gif-picker-modal.tsx
 #: src/components/media-modal.tsx
 #: src/components/timeline.tsx
@@ -2347,7 +2349,6 @@ msgstr "Lisää pikavalintoihin"
 #: src/components/timeline2.tsx
 #: src/pages/catchup.tsx
 #: src/pages/home.tsx
-#: src/pages/home.tsx
 #: src/pages/notifications.tsx
 msgid "Home"
 msgstr "Koti"
@@ -2357,10 +2358,9 @@ msgid "Unmute conversation"
 msgstr "Kumoa keskustelun mykistys"
 
 #: src/components/notification.tsx
-msgid "{account} reacted to your post with {emojiObject}"
-msgstr "{account} reagoi julkaisuusi emojilla {emojiObject}"
+#~ msgid "{account} reacted to your post with {emojiObject}"
+#~ msgstr "{account} reagoi julkaisuusi emojilla {emojiObject}"
 
-#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
 msgstr "Tilauksen päivitys epäonnistui. Yritä uudelleen."
@@ -2369,7 +2369,6 @@ msgstr "Tilauksen päivitys epäonnistui. Yritä uudelleen."
 msgid "Enable notifications"
 msgstr "Ota ilmoitukset käyttöön"
 
-#: src/pages/account-statuses.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
 msgid "Reset filters"
@@ -2398,18 +2397,15 @@ msgstr "{account} julkaisi."
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/pages/home.tsx
 #: src/pages/home.tsx
 #: src/pages/list.tsx
-#: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 msgid "Notifications"
 msgstr "Ilmoitukset"
 
 #: src/components/poll.tsx
-msgid "Voted"
-msgstr "Äänestetty"
+#~ msgid "Voted"
+#~ msgstr "Äänestetty"
 
 #: src/components/media-attachment.tsx
 msgid "Audio description"
@@ -2434,7 +2430,6 @@ msgstr "{hashtagTitle} palvelimella {instance}"
 #: src/components/compose.tsx
 #: src/components/keyboard-shortcuts-help.tsx
 #: src/components/status-inline-controls.tsx
-#: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
@@ -2443,6 +2438,10 @@ msgstr "Vastaa"
 #: src/components/notification.tsx
 #~ msgid "Your {year} #Wrapstodon is here!"
 #~ msgstr "Vuotesi {year} #Wrapstodon on täällä!"
+
+#: src/components/compose.tsx
+msgid "No user lists found."
+msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
@@ -2477,6 +2476,10 @@ msgstr "Lisää olemassa oleva tili"
 msgid "View post"
 msgstr "Näytä julkaisu"
 
+#: src/utils/visibility-text.ts
+msgid "Followers, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/nav-menu.tsx
 msgid "New"
 msgstr "Uusi"
@@ -2489,7 +2492,6 @@ msgstr "Julkaisun teksti kopioitu"
 msgid "Violation"
 msgstr "Rikkomus"
 
-#: src/components/status-header.tsx
 #: src/utils/visibility-text.ts
 msgid "Private mention"
 msgstr "Yksityismaininta"
@@ -2533,7 +2535,6 @@ msgstr "Hylätty"
 #. Preview of one character, in largest size
 #. Preview of one character, in smallest size
 #: src/pages/settings.tsx
-#: src/pages/settings.tsx
 msgid "A"
 msgstr "A"
 
@@ -2564,11 +2565,9 @@ msgstr "Upota julkaisu"
 #~ msgid "Mark media as sensitive"
 #~ msgstr "Merkitse media arkaluonteiseksi"
 
-#. placeholder {0}: shortenNumber(votersCount)
-#. placeholder {1}: shortenNumber(votersCount)
 #: src/components/poll.tsx
-msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
-msgstr "{votersCount, plural, one {<0>{0}</0> äänestäjä} other {<1>{1}</1> äänestäjää}}"
+#~ msgid "{votersCount, plural, one {<0>{0}</0> voter} other {<1>{1}</1> voters}}"
+#~ msgstr "{votersCount, plural, one {<0>{0}</0> äänestäjä} other {<1>{1}</1> äänestäjää}}"
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Downloading saved shortcuts from server…"
@@ -2638,8 +2637,8 @@ msgid "Unable to load post"
 msgstr "Julkaisua ei voitu ladata"
 
 #: src/components/list-add-edit.tsx
-msgid "Hide posts on this list from Home/Following"
-msgstr "Piilota tämän listan julkaisut Koti‐ ja Seurattavat‐näkymistä"
+#~ msgid "Hide posts on this list from Home/Following"
+#~ msgstr "Piilota tämän listan julkaisut Koti‐ ja Seurattavat‐näkymistä"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2648,6 +2647,12 @@ msgstr "Uudet ilmoitukset"
 #: src/components/report-modal.tsx
 msgid "Send Report <0>+ Block profile</0>"
 msgstr "Lähetä raportti <0>+ estä profiili</0>"
+
+#: src/components/compose.tsx
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Nobody can reply"
+msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
@@ -2669,11 +2674,9 @@ msgstr ""
 msgid "Import/Export <0>Accounts</0>"
 msgstr "Tuo/vie <0>tilejä</0>"
 
-#. placeholder {0}: shortenNumber(votesCount)
-#. placeholder {1}: shortenNumber(votesCount)
 #: src/components/poll.tsx
-msgid "{votesCount, plural, one {<0>{0}</0> vote} other {<1>{1}</1> votes}}"
-msgstr "{votesCount, plural, one {<0>{0}</0> ääni} other {<1>{1}</1> ääntä}}"
+#~ msgid "{votesCount, plural, one {<0>{0}</0> vote} other {<1>{1}</1> votes}}"
+#~ msgstr "{votesCount, plural, one {<0>{0}</0> ääni} other {<1>{1}</1> ääntä}}"
 
 #. placeholder {0}: username || acct
 #. placeholder {0}: usernameValue || acctValue
@@ -2686,19 +2689,21 @@ msgstr ""
 msgid "This notification is from your other account."
 msgstr "Tämä ilmoitus on toiselta tililtäsi."
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only your followers can reply"
+msgstr ""
+
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
 #: src/components/timeline2.tsx
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
 #: src/pages/status.tsx
-#: src/pages/status.tsx
 msgid "Try again"
 msgstr "Yritä uudelleen"
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to another server…"
 #~ msgstr "Siirry toisille palvelimelle…"
 
@@ -2733,8 +2738,8 @@ msgid "Unable to load likes."
 msgstr "Tykkäyksiä ei voitu ladata."
 
 #: src/components/notification.tsx
-msgid "A poll you have voted in or created has ended."
-msgstr "Äänestys, johon olet osallistunut tai jonka olet luonut, on päättynyt."
+#~ msgid "A poll you have voted in or created has ended."
+#~ msgstr "Äänestys, johon olet osallistunut tai jonka olet luonut, on päättynyt."
 
 #: src/components/status-account-menu.tsx
 msgid "Post deleted"
@@ -2747,6 +2752,10 @@ msgstr "Estetty {username}"
 #: src/pages/list.tsx
 msgid "Nothing yet."
 msgstr "Ei vielä mitään."
+
+#: src/utils/visibility-text.ts
+msgid "Followers and mentioned people can reply"
+msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
@@ -2761,8 +2770,8 @@ msgstr "Kiinnitetty"
 #~ msgstr "Palvelimen sääntöjen rikkomus"
 
 #: src/components/notification.tsx
-msgid "A poll you have created has ended."
-msgstr "Äänestys, jonka olet luonut, on päättynyt."
+#~ msgid "A poll you have created has ended."
+#~ msgstr "Äänestys, jonka olet luonut, on päättynyt."
 
 #: src/components/list-add-edit.tsx
 msgid "Unable to create list."
@@ -2777,11 +2786,13 @@ msgstr "Lähettämättömät luonnokset"
 msgid "You're all caught up."
 msgstr "Olet ajan tasalla."
 
-#: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
-#: src/components/status-large-footer.tsx
+#: src/components/keyboard-shortcuts-help.tsx src/components/status-large-footer.tsx
 #~ msgid "Boost"
 #~ msgstr "Tehosta"
+
+#: src/components/related-actions.tsx
+msgid "Muted @{username}"
+msgstr ""
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
@@ -2808,10 +2819,8 @@ msgid "Group"
 msgstr "Ryhmä"
 
 #: src/components/poll.tsx
-#: src/components/poll.tsx
-#: src/components/poll.tsx
-msgid "Hide results"
-msgstr "Piilota tulokset"
+#~ msgid "Hide results"
+#~ msgstr "Piilota tulokset"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
@@ -2822,9 +2831,6 @@ msgstr "Mikä ongelma on tässä julkaisussa?"
 msgid "Privacy Policy"
 msgstr "Tietosuojakäytäntö"
 
-#: src/components/poll.tsx
-#: src/components/poll.tsx
-#: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "Refresh"
 msgstr "Päivitä"
@@ -2859,6 +2865,10 @@ msgstr "Jaa…"
 msgid "Image description"
 msgstr "Kuvan kuvaus"
 
+#: src/components/compose.tsx
+msgid "Mentioned"
+msgstr ""
+
 #: src/components/compose-poll.tsx
 #~ msgid "Duration"
 #~ msgstr "Kesto"
@@ -2871,12 +2881,9 @@ msgstr ""
 #~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts} other {}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest} other {}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts} other {}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes} other {}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies} other {}}} density {{sortOrder, select, asc {least dense} desc {most dense} other {}}} other {}} first{0, select, account {, grouped by authors} other {}}"
 #~ msgstr ""
 
-#. placeholder {0}: options.length
 #: src/components/poll.tsx
-#: src/components/poll.tsx
-#: src/components/poll.tsx
-msgid "{0, plural, one {# choice} other {# choices}}"
-msgstr "{0, plural, one {# vaihtoehto} other {# vaihtoehtoa}}"
+#~ msgid "{0, plural, one {# choice} other {# choices}}"
+#~ msgstr "{0, plural, one {# vaihtoehto} other {# vaihtoehtoa}}"
 
 #: src/pages/catchup.tsx
 msgid "last 6 hours"
@@ -2895,8 +2902,8 @@ msgid "Liked by…"
 msgstr "Tykänneet…"
 
 #: src/components/poll.tsx
-msgid "Vote"
-msgstr "Äänestä"
+#~ msgid "Vote"
+#~ msgstr "Äänestä"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Add shortcut"
@@ -2924,8 +2931,8 @@ msgid "Cloak mode <0>(<1>Text</1> → <2>████</2>)</0>"
 msgstr "Peittotila <0>(<1>Teksti</1> → <2>██████</2>)</0>"
 
 #: src/pages/settings.tsx
-msgid "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
-msgstr ""
+#~ msgid "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
+#~ msgstr ""
 
 #: src/pages/search.tsx
 msgid "See more posts"
@@ -2959,9 +2966,14 @@ msgstr "Lisää"
 #~ msgid "Expired"
 #~ msgstr "Vanhentunut"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you follow can reply"
+msgstr ""
+
 #: src/components/poll.tsx
-msgid "Unable to vote in poll"
-msgstr "Ei voitu äänestää"
+#~ msgid "Unable to vote in poll"
+#~ msgstr "Ei voitu äänestää"
 
 #: src/components/translation-block.tsx
 msgid "Failed to translate"
@@ -2992,12 +3004,10 @@ msgid "Hashtag shortcut added"
 msgstr "Aihetunnisteen pikavalinta lisätty"
 
 #: src/components/related-actions.tsx
-#: src/components/related-actions.tsx
 msgid "Follow"
 msgstr "Seuraa"
 
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Repost"
@@ -3016,21 +3026,20 @@ msgid "{followersCount, plural, one {# follower} other {# followers}}"
 msgstr "{followersCount, plural, one {# seuraaja} other {# seuraajaa}}"
 
 #: src/components/media-attachment.tsx
-#: src/components/media-attachment.tsx
 msgid "Video description"
 msgstr "Videon kuvaus"
 
 #: src/components/notification.tsx
-msgid "A poll you have voted in has ended."
-msgstr "Äänestys, johon olet osallistunut, on päättynyt."
+#~ msgid "A poll you have voted in has ended."
+#~ msgstr "Äänestys, johon olet osallistunut, on päättynyt."
 
 #: src/components/compose.tsx
 msgid "Some media have no descriptions. Continue?"
 msgstr "Osalta mediasta puuttuu kuvaus. Jatketaanko?"
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to people I follow"
-msgstr "Näytä seuraamilleni käyttäjille osoitetut vastaukset"
+#~ msgid "Show replies to people I follow"
+#~ msgstr "Näytä seuraamilleni käyttäjille osoitetut vastaukset"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -3044,6 +3053,10 @@ msgstr "Siirry asetuksiin"
 #: src/components/report-modal.tsx
 msgid "Report Post"
 msgstr "Raportoi julkaisu"
+
+#: src/pages/settings.tsx
+msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning and media."
+msgstr ""
 
 #: src/pages/list.tsx
 msgid "Remove…"
@@ -3083,10 +3096,8 @@ msgid "Muted users…"
 msgstr "Mykistetyt käyttäjät…"
 
 #: src/pages/settings.tsx
-#: src/pages/settings.tsx
-#: src/pages/settings.tsx
-msgid "Synced"
-msgstr "Synkronoituva"
+#~ msgid "Synced"
+#~ msgstr "Synkronoituva"
 
 #. placeholder {0}: notificationsPolicy.summary?.pendingRequestsCount ?? 0
 #: src/pages/notifications.tsx
@@ -3106,17 +3117,14 @@ msgstr "Lista ei välttämättä toimi, jos se on eri tililtä."
 #: src/components/status-post-body.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/status.tsx
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
 msgstr "Vastaukset"
 
 #: src/pages/settings.tsx
-msgid "Default visibility"
-msgstr "Oletusnäkyvyys"
+#~ msgid "Default visibility"
+#~ msgstr "Oletusnäkyvyys"
 
 #: src/pages/search.tsx
 msgid "See more hashtags"
@@ -3187,8 +3195,12 @@ msgid "Switch to my PDS (<0>{currentInstance}</0>)"
 msgstr ""
 
 #: src/components/status-helpers.ts
-msgid "Only followers can quote this post"
-msgstr "Vain seuraajat voivat lainata tätä julkaisua"
+#~ msgid "Only followers can quote this post"
+#~ msgstr "Vain seuraajat voivat lainata tätä julkaisua"
+
+#: src/pages/settings.tsx
+msgid "Notifications from muted accounts are always hidden."
+msgstr ""
 
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
@@ -3224,9 +3236,13 @@ msgstr ""
 msgid "Posts with <0>{query}</0>"
 msgstr "Julkaisut haulla <0>{query}</0>"
 
+#: src/components/compose.tsx
+msgid "Some can reply"
+msgstr ""
+
 #: src/components/poll.tsx
-msgid "Ending"
-msgstr "Päättyy"
+#~ msgid "Ending"
+#~ msgstr "Päättyy"
 
 #. placeholder {0}: shortenNumber(count)
 #. placeholder {1}: shortenNumber(count)
@@ -3238,8 +3254,6 @@ msgstr ""
 msgid "Sponsor"
 msgstr "Sponsoroi"
 
-#: src/components/media-attachment.tsx
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Generate description…"
 msgstr "Luo kuvaus…"
@@ -3303,8 +3317,8 @@ msgstr "Mykistä keskustelu"
 #~ msgstr "Synkronoi palvelimelle"
 
 #: src/components/status-edit-history-modal.tsx
-msgid "Edit History"
-msgstr "Muokkaushistoria"
+#~ msgid "Edit History"
+#~ msgstr "Muokkaushistoria"
 
 #: src/components/media-attachment.tsx
 msgid "Edit image description"
@@ -3319,12 +3333,20 @@ msgid "Show me all posts from…"
 msgstr "Näytä kaikki julkaisut…"
 
 #: src/components/poll.tsx
-msgid "Ending <0/>"
-msgstr "Päättyy <0/>"
+#~ msgid "Ending <0/>"
+#~ msgstr "Päättyy <0/>"
+
+#: src/components/muted-status.tsx
+msgid "Show muted post"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Hide entirely"
+msgstr ""
 
 #: src/pages/status.tsx
-msgid "View Edit History Snapshots"
-msgstr "Näytä muokkaushistorian tilannevedokset"
+#~ msgid "View Edit History Snapshots"
+#~ msgstr "Näytä muokkaushistorian tilannevedokset"
 
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Custom emojis are not available on this server."
@@ -3397,8 +3419,8 @@ msgid "Error loading GIFs"
 msgstr "Virhe ladattaessa GIF‐kuvia"
 
 #: src/pages/settings.tsx
-msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
-msgstr "Näytä julkaisujen käännökset automaattisesti aikajanalla. Toimii vain <0>lyhyille</0> julkaisuille, joissa ei ole sisältövaroitusta, mediaa eikä äänestystä."
+#~ msgid "Automatically show translation for posts in timeline. Only works for <0>short</0> posts without content warning, media and poll."
+#~ msgstr "Näytä julkaisujen käännökset automaattisesti aikajanalla. Toimii vain <0>lyhyille</0> julkaisuille, joissa ei ole sisältövaroitusta, mediaa eikä äänestystä."
 
 #: src/pages/catchup.tsx
 msgid "last 9 hours"
@@ -3454,7 +3476,6 @@ msgstr ""
 
 #: src/components/media-alt-modal.tsx
 #: src/components/status-utility-menu.tsx
-#: src/components/status-utility-menu.tsx
 #: src/components/translation-block.tsx
 msgid "Translate"
 msgstr "Käännä"
@@ -3488,15 +3509,14 @@ msgid "Conversation unmuted"
 msgstr "Keskustelun mykistys kumottu"
 
 #: src/components/list-add-edit.tsx
-msgid "Don't show replies"
-msgstr "Älä näytä vastauksia"
+#~ msgid "Don't show replies"
+#~ msgstr "Älä näytä vastauksia"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
 msgstr "Käyttäjää {username} ei voitu estää"
 
 #. js-lingui-explicit-id
-#: src/pages/status.tsx
 #: src/pages/status.tsx
 msgid "post.title"
 msgstr "Julkaisu"
@@ -3505,7 +3525,6 @@ msgstr "Julkaisu"
 msgid "Set as default"
 msgstr "Aseta oletukseksi"
 
-#: src/pages/settings.tsx
 #: src/utils/visibility-text.ts
 msgid "Quiet public"
 msgstr "Vaivihkaa julkinen"
@@ -3534,15 +3553,10 @@ msgstr ""
 msgid "Post pending"
 msgstr "Julkaisu odottaa"
 
-#: src/components/account-info.tsx
-#: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
+#: src/components/account-info.tsx src/pages/account-statuses.tsx src/pages/catchup.tsx
 #~ msgid "Boosts"
 #~ msgstr "Tehostukset"
 
-#: src/pages/settings.tsx
 #: src/pages/settings.tsx
 msgid "Dark"
 msgstr "Tumma"
@@ -3552,8 +3566,8 @@ msgstr "Tumma"
 #~ msgstr "@{username} ei ole enää esille nostettuna profiilissasi."
 
 #: src/components/status-edit-history-modal.tsx
-msgid "Loading…"
-msgstr "Ladataan…"
+#~ msgid "Loading…"
+#~ msgstr "Ladataan…"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Ctrl</0> + <1>Enter</1> or <2>⌘</2> + <3>Enter</3>"
@@ -3564,7 +3578,6 @@ msgid "Switch in new tab/window"
 msgstr "Vaihda uuteen välilehteen/ikkunaan"
 
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Bookmark"
@@ -3588,9 +3601,7 @@ msgstr "Tilauksen poisto epäonnistui. Yritä uudelleen."
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
 msgstr "Palvelimen <0>{from}</0> ylläpitäjä on estänyt palvelimen <1>{targetName}</1>. Vaikutettuja seuraajia {followersCount}, seurattavia {followingCount}."
 
-#: src/pages/hashtag.tsx
-#: src/pages/public.tsx
-#: src/pages/trending.tsx
+#: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Invalid server"
 #~ msgstr "Virheellinen palvelin"
 
@@ -3636,18 +3647,21 @@ msgid "Looks like you closed the parent window."
 msgstr "Näytät sulkeneesi pääikkunan."
 
 #: src/components/status-utility-menu.tsx
-msgid "Show Edit History"
-msgstr "Näytä muokkaushistoria"
+#~ msgid "Show Edit History"
+#~ msgstr "Näytä muokkaushistoria"
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followed people and mentioned people can reply"
 msgstr ""
 
 #: src/pages/filters.tsx
 #~ msgid "Add keyword"
 #~ msgstr "Lisää avainsana"
 
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported"
 msgstr "Pikavalinnat tuotu"
@@ -3657,7 +3671,6 @@ msgstr "Pikavalinnat tuotu"
 msgid "Compose"
 msgstr "Luo"
 
-#: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 #~ msgid "Show featured profiles"
 #~ msgstr "Näytä esille nostetut profiilit"
@@ -3706,7 +3719,6 @@ msgid "Allow from <0>{0}</0>"
 msgstr "Salli <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 msgid "PDS"
 msgstr ""
 
@@ -3714,7 +3726,6 @@ msgstr ""
 msgid "Edit your post"
 msgstr "Muokkaa julkaisuasi"
 
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #~ msgid "Unboost"
 #~ msgstr "Kumoa tehostus"
@@ -3757,7 +3768,6 @@ msgstr "Käännä elämäkerta"
 #~ msgstr "Seurataan tunnistetta #{hashtag}"
 
 #: src/pages/settings.tsx
-#: src/pages/settings.tsx
 msgid "Auto"
 msgstr "Autom."
 
@@ -3782,8 +3792,8 @@ msgid "Preview"
 msgstr "Esikatselu"
 
 #: src/components/status-helpers.ts
-msgid "Author will manually review"
-msgstr "Tekijä arvioi pyynnön manuaalisesti"
+#~ msgid "Author will manually review"
+#~ msgstr "Tekijä arvioi pyynnön manuaalisesti"
 
 #: src/components/drafts.tsx
 msgid "Error deleting draft! Please try again."
@@ -3807,8 +3817,6 @@ msgstr "Edellinen tekijä"
 
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
-#: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
 #: src/pages/catchup.tsx
 #: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
@@ -3849,9 +3857,14 @@ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{
 #~ msgid "Max {SHORTCUTS_LIMIT} columns"
 #~ msgstr "Enintään {SHORTCUTS_LIMIT} saraketta"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Everybody can reply"
+msgstr ""
+
 #: src/pages/status.tsx
-msgid "Experimental"
-msgstr "Kokeellinen"
+#~ msgid "Experimental"
+#~ msgstr "Kokeellinen"
 
 #: src/components/report-modal.tsx
 msgid "What's the issue with this profile?"
@@ -3864,6 +3877,10 @@ msgstr "Ratkaistaan…"
 #: src/components/status-reply-menu.tsx
 #~ msgid "{mentionsCount, plural, other {# mentions}}"
 #~ msgstr "{mentionsCount, plural, other {# mainintaa}}"
+
+#: src/components/compose.tsx
+msgid "Who can reply:"
+msgstr ""
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server"
@@ -3881,7 +3898,6 @@ msgstr "{repliesCount, plural, one {# vastaus} other {# vastausta}}"
 #~ msgid "server domain name"
 #~ msgstr "palvelimen verkkotunnus"
 
-#: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
 msgid "Explicit or potentially disturbing media."
 msgstr ""
@@ -3925,6 +3941,10 @@ msgstr "Ilmoituspyyntöä ei voitu hyväksyä"
 msgid "New list"
 msgstr "Uusi lista"
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and list members can reply"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
 msgstr "Pikavalinnat tuotu. Enimmäismäärä {SHORTCUTS_LIMIT} ylittyi, joten loppuja ei tuotu."
@@ -3953,7 +3973,6 @@ msgid "{followingCount, plural, other {<0>{0}</0> Following}}"
 msgstr "{followingCount, plural, one {<0>{0}</0> seurattava}other {<0>{0}</0> seurattavaa}}"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #~ msgid "Server"
 #~ msgstr "Palvelin"
 
@@ -3970,7 +3989,6 @@ msgid "username"
 msgstr "käyttäjänimi"
 
 #: src/components/add-remove-lists-sheet.tsx
-#: src/components/related-actions.tsx
 #: src/components/related-actions.tsx
 msgid "Add/Remove from Lists"
 msgstr "Lisää/poista listoista"
@@ -3997,32 +4015,23 @@ msgid "Muted users"
 msgstr "Mykistetyt käyttäjät"
 
 #: src/components/nav-menu.tsx
-#: src/components/nav-menu.tsx
-#: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts.tsx
 #: src/pages/list.tsx
-#: src/pages/list.tsx
-#: src/pages/lists.tsx
 #: src/pages/lists.tsx
 msgid "Lists & Feeds"
 msgstr ""
 
 #: src/components/nav-menu.tsx
 #: src/pages/login.tsx
-#: src/pages/login.tsx
 #: src/pages/status.tsx
 #: src/pages/welcome.tsx
 msgid "Log in"
 msgstr "Kirjaudu sisään"
 
-#. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
-msgid "{0} original posts, {1} replies, {2} reposts"
-msgstr ""
+#~ msgid "{0} original posts, {1} replies, {2} reposts"
+#~ msgstr ""
 
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
@@ -4137,7 +4146,6 @@ msgstr "{followersCount, plural, one {<0>{0}</0> seuraaja} other {<1>{1}</1> seu
 
 #: src/components/edit-profile-sheet.tsx
 #: src/components/list-add-edit.tsx
-#: src/components/quote-settings-sheet.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/notifications.tsx
 msgid "Save"
@@ -4146,6 +4154,10 @@ msgstr "Tallenna"
 #: src/components/shortcuts-settings.tsx
 msgid "Unable to copy shortcut settings"
 msgstr "Pikavalintojen asetuksia ei voitu kopioida"
+
+#: src/components/compose.tsx
+msgid "From List"
+msgstr ""
 
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
@@ -4209,6 +4221,10 @@ msgstr "Asetukset"
 #~ msgid "Local timeline ({instance})"
 #~ msgstr "Paikallinen aikajana ({instance})"
 
+#: src/utils/visibility-text.ts
+msgid "Followed people and list members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Recently used"
 #~ msgstr "Viimeaikaiset"
@@ -4216,6 +4232,10 @@ msgstr "Asetukset"
 #: src/pages/filters.tsx
 #~ msgid "Status: <0><1/></0>"
 #~ msgstr "Tila: <0><1/></0>"
+
+#: src/utils/visibility-text.ts
+msgid "Mentioned people and list members can reply"
+msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -4238,11 +4258,10 @@ msgid "or override…"
 msgstr "tai korvaa…"
 
 #: src/components/status-account-menu.tsx
-msgid "Remove quote…"
-msgstr "Poista lainaus…"
+#~ msgid "Remove quote…"
+#~ msgstr "Poista lainaus…"
 
-#: src/components/related-actions.tsx
-#: src/pages/hashtag.tsx
+#: src/components/related-actions.tsx src/pages/hashtag.tsx
 #~ msgid "Feature on profile"
 #~ msgstr "Nosta esille profiiliin"
 
@@ -4299,7 +4318,6 @@ msgid "Posts are sorted by information density or depth. Shorter posts are \"lig
 msgstr "Julkaisut järjestetään informaatiotiheyden tai ‑syvyyden mukaan. Lyhyemmät julkaisut ovat ”kevyempiä”, pidemmät taas ”painavampia”. Kuvan sisältävät julkaisut ovat ”paivavampia” kuin kuvattomat."
 
 #: src/components/nav-menu.tsx
-#: src/components/nav-menu.tsx
 msgid "Settings…"
 msgstr "Asetukset…"
 
@@ -4308,8 +4326,8 @@ msgid "Multi-column"
 msgstr "Useampi sarake"
 
 #: src/components/quote-settings-sheet.tsx
-msgid "Quote settings for this post"
-msgstr "Julkaisun lainausasetukset"
+#~ msgid "Quote settings for this post"
+#~ msgstr "Julkaisun lainausasetukset"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Tab/Menu bar"
@@ -4355,8 +4373,6 @@ msgid "Unable to mute {username}"
 msgstr "Käyttäjää {username} ei voitu mykistää"
 
 #: src/pages/search.tsx
-#: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "See more"
 msgstr "Katso lisää"
 
@@ -4368,6 +4384,10 @@ msgstr ""
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 msgstr "<0>Vaihto</0> + <1>Alt</1> + <2>k</2>"
+
+#: src/pages/settings.tsx
+#~ msgid "Quote settings are synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0> Default threadgate settings are stored locally."
+#~ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
@@ -4382,15 +4402,14 @@ msgstr "Kommentit"
 #~ msgstr "Lisää suodatin"
 
 #: src/pages/status.tsx
-msgid "Switch to post's PDS"
-msgstr ""
+#~ msgid "Switch to post's PDS"
+#~ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Remove follower…"
 msgstr "Poista seuraaja…"
 
 #: src/components/nav-menu.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/components/shortcuts-settings.tsx
 msgid "Profile"
 msgstr "Profiili"
@@ -4440,13 +4459,22 @@ msgstr "Julkaisutilastoja ei saatavilla."
 msgid "Screenshot of multi-column UI"
 msgstr "Näyttökuva usean sarakkeen käyttöliittymästä"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you mention can reply"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
 msgstr "Ei vielä pikavalintoja. Napauta Lisää pikavalinta ‑painiketta."
 
+#: src/components/muted-status.tsx
+msgid "Hide"
+msgstr ""
+
 #: src/pages/trending.tsx
-msgid "Trending posts"
-msgstr "Suositut julkaisut"
+#~ msgid "Trending posts"
+#~ msgstr "Suositut julkaisut"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
@@ -4477,7 +4505,6 @@ msgid "Unable to mute @{username}"
 msgstr "Käyttäjää @{username} ei voitu mykistää"
 
 #: src/pages/search.tsx
-#: src/pages/search.tsx
 msgid "Hashtags"
 msgstr "Aihetunnisteet"
 
@@ -4486,8 +4513,8 @@ msgstr "Aihetunnisteet"
 #~ msgstr "Et ole kirjautuneena sisään. Vuorovaikutus (vastaaminen, tehostaminen jne.) ei ole mahdollista."
 
 #: src/components/status-account-menu.tsx
-msgid "Unable to remove quote"
-msgstr "Lainausta ei voitu poistaa"
+#~ msgid "Unable to remove quote"
+#~ msgstr "Lainausta ei voitu poistaa"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
@@ -4508,18 +4535,19 @@ msgid "Screenshot of Bluepy home timeline on tablet device"
 msgstr ""
 
 #: src/components/status-inline-controls.tsx
-#: src/components/status-inline-controls.tsx
-#: src/components/status-large-footer.tsx
 #: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
 msgid "Like"
 msgstr "Tykkää"
 
+#: src/components/compose.tsx
+msgid "Select a list before publishing this post."
+msgstr ""
+
 #: src/pages/welcome.tsx
 #~ msgid "A minimalistic opinionated Bluesky web client."
 #~ msgstr ""
 
-#: src/components/import-accounts-selection.tsx
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
 msgstr "Valitse kaikki"
@@ -4530,6 +4558,10 @@ msgstr "Usean aihetunnisteen aikajana"
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and list members can reply"
 msgstr ""
 
 #: src/components/account-info.tsx
@@ -4545,8 +4577,8 @@ msgid "Editing source post"
 msgstr "Muokataan lähdejulkaisua"
 
 #: src/pages/settings.tsx
-msgid "Polls"
-msgstr "Äänestykset"
+#~ msgid "Polls"
+#~ msgstr "Äänestykset"
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-hashtag timeline with a form to add more hashtags"
@@ -4582,7 +4614,6 @@ msgid "Failed to generate description: {0}"
 msgstr "Kuvauksen luonti epäonnistui: {0}"
 
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
 msgid "Catch-up <0>beta</0>"
 msgstr "Kiinnikuronta <0>beeta</0>"
 
@@ -4594,7 +4625,6 @@ msgstr ""
 msgid "Failed to log in. Please check your handle and app password."
 msgstr ""
 
-#: src/components/media-attachment.tsx
 #: src/components/media-attachment.tsx
 msgid "Edit video description"
 msgstr "Muokkaa videon kuvausta"
@@ -4609,7 +4639,7 @@ msgstr "käyttäjiltä, joita seuraan"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
-#: src/pages/settings.tsx
+#: src/components/compose.tsx
 #: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr "Seuraajat"
@@ -4640,8 +4670,8 @@ msgstr "Lue QR‐koodi"
 #~ msgstr "@{username} on nyt nostettu esille profiilissasi."
 
 #: src/components/related-actions.tsx
-msgid "Mute <0>@{username}</0>…"
-msgstr "Mykistä <0>@{username}</0>…"
+#~ msgid "Mute <0>@{username}</0>…"
+#~ msgstr "Mykistä <0>@{username}</0>…"
 
 #: src/components/related-actions.tsx
 #~ msgid "Unable to unfeature @{username} on your profile."
@@ -4655,13 +4685,10 @@ msgstr "Mykistä <0>@{username}</0>…"
 msgid "Failed to generate description"
 msgstr "Kuvauksen luonti epäonnistui"
 
-#: src/components/nav-menu.tsx
-#: src/pages/followed-hashtags.tsx
-#: src/pages/followed-hashtags.tsx
+#: src/components/nav-menu.tsx src/pages/followed-hashtags.tsx
 #~ msgid "Followed Hashtags"
 #~ msgstr "Seurattavat aihetunnisteet"
 
-#: src/components/post-embed-modal.tsx
 #: src/components/post-embed-modal.tsx
 msgid "static URL"
 msgstr "staattinen URL"
@@ -4686,6 +4713,10 @@ msgstr "Menetettiin yhteydet kohteeseen <0>{name}</0>."
 #: src/pages/hashtag.tsx
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
 msgstr "{SHORTCUTS_LIMIT, plural, one {Pikavalintojen enimmäismäärä # ylitetty. Pikavalintaa ei voitu lisätä.} other {Pikavalintojen enimmäismäärä # ylitetty. Pikavalintaa ei voitu lisätä.}}"
+
+#: src/components/compose.tsx
+msgid "Nobody"
+msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
@@ -4727,6 +4758,7 @@ msgid "Post reported"
 msgstr "Julkaisu raportoitu"
 
 #: src/components/account-block.tsx
+#: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
 msgstr "Seurataan"
@@ -4744,26 +4776,24 @@ msgstr "Julkaisua ei voitu poistaa"
 #~ msgstr ""
 
 #: src/components/edit-history-controls.tsx
-msgid "Exit"
-msgstr "Poistu"
+#~ msgid "Exit"
+#~ msgstr "Poistu"
 
 #: src/pages/catchup.tsx
 msgid "Previously…"
 msgstr "Aiemmin…"
 
 #: src/pages/filters.tsx
-#: src/pages/filters.tsx
 #~ msgid "New filter"
 #~ msgstr "Uusi suodatin"
 
 #: src/components/status-account-menu.tsx
-msgid "Quote removed"
-msgstr "Lainaus poistettu"
+#~ msgid "Quote removed"
+#~ msgstr "Lainaus poistettu"
 
-#: src/components/status-large-footer.tsx
 #: src/components/status-quick-menu.tsx
-msgid "Quote with link"
-msgstr "Lainaa linkillä"
+#~ msgid "Quote with link"
+#~ msgstr "Lainaa linkillä"
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server ({0})"
@@ -4779,13 +4809,12 @@ msgid "Unable to load posts with this tag"
 msgstr "Julkaisuja tällä tunnisteella ei voitu ladata"
 
 #: src/components/notification.tsx
-#: src/components/notification.tsx
 msgid "Learn more <0/>"
 msgstr "Lue lisää <0/>"
 
 #: src/pages/hashtag.tsx
-msgid "This timeline is disabled on Bluesky."
-msgstr ""
+#~ msgid "This timeline is disabled on Bluesky."
+#~ msgstr ""
 
 #: src/pages/catchup.tsx
 #~ msgid "Links shared by followings, sorted by shared counts, boosts and likes."
@@ -4797,8 +4826,8 @@ msgstr "Kiinnikuronta on erillinen aikajana, joka tarjoaa ylätason näkymän se
 
 #. [Name] [Visibility icon] reposted
 #: src/components/filtered-status.tsx
-msgid "<0/> <1/> reposted"
-msgstr ""
+#~ msgid "<0/> <1/> reposted"
+#~ msgstr ""
 
 #: src/components/notification.tsx
 msgid "Moderation warning"
@@ -4860,7 +4889,6 @@ msgstr "Tyhjennä kaikki"
 #: src/components/edit-profile-sheet.tsx
 #: src/components/embed-modal.tsx
 #: src/components/feedback-modal.tsx
-#: src/components/feedback-modal.tsx
 #: src/components/filtered-status.tsx
 #: src/components/generic-accounts.tsx
 #: src/components/gif-picker-modal.tsx
@@ -4878,18 +4906,13 @@ msgstr "Tyhjennä kaikki"
 #: src/components/qr-code-modal.tsx
 #: src/components/qr-scanner-modal.tsx
 #: src/components/quote-chain-modal.tsx
-#: src/components/quote-settings-sheet.tsx
 #: src/components/quotes-modal.tsx
 #: src/components/report-modal.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
-#: src/components/status-edit-history-modal.tsx
 #: src/components/translated-bio-sheet.tsx
 #: src/pages/accounts.tsx
 #: src/pages/catchup.tsx
 #: src/pages/list.tsx
-#: src/pages/notifications.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
 #: src/pages/status.tsx
@@ -4904,6 +4927,10 @@ msgstr "Sulje"
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 msgstr "Luontikenttä näyttää olevan sinulla avoinna pääikkunassa ja julkaiseminen meneillään. Odota, että se on valmis, ja yritä myöhemmin uudelleen."
 
+#: src/components/compose.tsx
+msgid "Anyone"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
 msgstr "Jaa"
@@ -4913,17 +4940,20 @@ msgid "NOTE: Push notifications only work for <0>one account</0>."
 msgstr "HUOMAA: Puskuilmoitukset toimivat vain <0>yhdellä tilillä</0>."
 
 #: src/components/poll.tsx
-#: src/components/poll.tsx
-msgid "Show results"
-msgstr "Näytä tulokset"
+#~ msgid "Show results"
+#~ msgstr "Näytä tulokset"
 
 #: src/components/status-reply-menu.tsx
 #~ msgid "Only <0>@{0}</0>"
 #~ msgstr "Vain <0>@{0}</0>"
 
+#: src/components/compose.tsx
+msgid "Some"
+msgstr ""
+
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx
-#: src/components/status-quote-policy.ts
+#: src/components/status-content.tsx
 msgid "Quote"
 msgstr "Lainaa"
 
@@ -4965,6 +4995,10 @@ msgstr "Kuvan kuvailu epäonnistui"
 #~ msgid "Failed to reschedule post"
 #~ msgstr "Julkaisun uudelleenajastus epäonnistui"
 
+#: src/components/related-actions.tsx
+msgid "Mute <0>@{username}</0>"
+msgstr ""
+
 #: src/pages/filters.tsx
 #~ msgid "hidden"
 #~ msgstr "piilotetaan"
@@ -4974,15 +5008,13 @@ msgid "View profile header"
 msgstr "Näytä profiilin otsake"
 
 #: src/pages/login.tsx
-#: src/pages/login.tsx
-msgid "Failed to register application"
-msgstr "Sovelluksen rekisteröinti epäonnistui"
+#~ msgid "Failed to register application"
+#~ msgstr "Sovelluksen rekisteröinti epäonnistui"
 
 #: src/components/feedback-modal.tsx
 msgid "Bugs, confusing behavior, missing features, or anything else."
 msgstr ""
 
-#: src/components/atproto-labels.tsx
 #: src/components/atproto-labels.tsx
 msgid "Graphic Media"
 msgstr ""
@@ -5011,6 +5043,10 @@ msgstr "Valikko"
 #~ msgstr "Yksityiset"
 
 #: src/pages/settings.tsx
+msgid "Muted posts"
+msgstr ""
+
+#: src/pages/settings.tsx
 msgid "Translate to "
 msgstr "Käännä kielelle "
 
@@ -5028,150 +5064,8 @@ msgstr ""
 
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
-#: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
-#: src/pages/catchup.tsx
-#: src/pages/favourites.tsx
 #: src/pages/favourites.tsx
 #: src/pages/settings.tsx
 msgid "Likes"
 msgstr "Tykkäykset"
-
-#: src/pages/settings.tsx
-msgid "Default threadgate (Who can reply)"
-msgstr ""
-
-#: src/components/compose.tsx
-#: src/components/compose.tsx
-msgid "Anyone can reply"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "(No user lists found)"
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Followed people, mentioned people, and list members can reply"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Default threadgate updated"
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Followers, followed people, and mentioned people can reply"
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Followers and followed people can reply"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Allowed:"
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Followers, followed people, mentioned people, and list members can reply"
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "List members can reply"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Select a list..."
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "No user lists found."
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Followers, mentioned people, and list members can reply"
-msgstr ""
-
-#: src/components/compose.tsx
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
-msgid "Nobody can reply"
-msgstr ""
-
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
-msgid "Only your followers can reply"
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Followers and mentioned people can reply"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Mentioned"
-msgstr ""
-
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
-msgid "Only people you follow can reply"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Some can reply"
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Followed people and mentioned people can reply"
-msgstr ""
-
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
-msgid "Everybody can reply"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Who can reply:"
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Followers, followed people, and list members can reply"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "From List"
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Followed people and list members can reply"
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Mentioned people and list members can reply"
-msgstr ""
-
-#: src/pages/settings.tsx
-msgid "Quote settings are synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0> Default threadgate settings are stored locally."
-msgstr ""
-
-#: src/pages/settings.tsx
-#: src/utils/visibility-text.ts
-msgid "Only people you mention can reply"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Select a list before publishing this post."
-msgstr ""
-
-#: src/utils/visibility-text.ts
-msgid "Followers and list members can reply"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Nobody"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Anyone"
-msgstr ""
-
-#: src/components/compose.tsx
-msgid "Some"
-msgstr ""

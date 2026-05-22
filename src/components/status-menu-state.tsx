@@ -3,7 +3,6 @@ import type { mastodon } from 'masto';
 import type { ReactNode } from 'react';
 
 import RTF from '../utils/relative-time-format';
-import supports from '../utils/supports';
 
 import Icon from './icon';
 import useStatusMenuParts from './status-menu';
@@ -15,7 +14,6 @@ interface StatusMenuStateArgs {
   statusMonthsAgo: number;
   accountId?: string | null;
   mentions?: mastodon.v1.StatusMention[];
-  currentAccount?: string | null;
   repliesCount?: number;
   username?: string;
   acct?: string;
@@ -42,7 +40,6 @@ interface StatusMenuStateArgs {
   quote?: unknown;
   setShowQuoteChain: (value: boolean) => void;
   setShowEmbed: (value: boolean) => void;
-  setShowQuoteSettings: (value: boolean) => void;
   mediaFirst?: boolean;
   enableTranslate?: boolean;
   language?: string | null;
@@ -56,9 +53,6 @@ interface StatusMenuStateArgs {
     status: AnyStatus,
   ) => void;
   createdDateText?: string | false | null;
-  editedAt?: string | null;
-  setShowEdited: (value: string | false) => void;
-  editedDateText?: string | false | null;
   isPublic: boolean;
   authenticated?: boolean;
   isSelf?: boolean | string | null;
@@ -66,10 +60,6 @@ interface StatusMenuStateArgs {
   masto: StatusContentMasto;
   muted?: boolean | null;
   pinned?: boolean | null;
-  quoteApprovalPolicyMessages: Parameters<
-    typeof useStatusMenuParts
-  >[0]['quoteApprovalPolicyMessages'];
-  postQuoteApprovalPolicy?: string | null;
   visibility: Parameters<typeof useStatusMenuParts>[0]['visibility'];
   sKey: string;
   fetchBoostedLikedByAccounts: Parameters<
@@ -83,7 +73,6 @@ export default function useStatusMenuState({
   statusMonthsAgo,
   accountId,
   mentions,
-  currentAccount,
   repliesCount,
   username,
   acct,
@@ -110,7 +99,6 @@ export default function useStatusMenuState({
   quote,
   setShowQuoteChain,
   setShowEmbed,
-  setShowQuoteSettings,
   mediaFirst,
   enableTranslate,
   language,
@@ -121,9 +109,6 @@ export default function useStatusMenuState({
   id,
   onStatusLinkClick,
   createdDateText,
-  editedAt,
-  setShowEdited,
-  editedDateText,
   isPublic,
   authenticated,
   isSelf,
@@ -131,26 +116,13 @@ export default function useStatusMenuState({
   masto,
   muted,
   pinned,
-  quoteApprovalPolicyMessages,
-  postQuoteApprovalPolicy,
   visibility,
   sKey,
   fetchBoostedLikedByAccounts,
 }: StatusMenuStateArgs) {
   const { i18n } = useLingui();
   const rtf = RTF(i18n.locale);
-  const quoteAny = quote as
-    | {
-        state?: string;
-        quotedStatus?: { account?: { id?: string } | null } | null;
-      }
-    | undefined;
-  const isQuotingMyPost =
-    quoteAny?.state === 'accepted' &&
-    quoteAny?.quotedStatus?.account?.id === currentAccount;
-  const isPinnable =
-    supports('@mastodon/pinned-posts') &&
-    ['public', 'unlisted', 'private'].includes(visibility);
+  const isPinnable = ['public', 'unlisted', 'private'].includes(visibility);
   const menuFooter: ReactNode =
     mediaNoDesc && !reblogged ? (
       <div className="footer">
@@ -173,7 +145,6 @@ export default function useStatusMenuState({
   const { statusMenuItems: StatusMenuItems } = useStatusMenuParts({
     accountId,
     mentions,
-    currentAccount,
     repliesCount,
     username,
     acct,
@@ -202,7 +173,6 @@ export default function useStatusMenuState({
     quote,
     setShowQuoteChain,
     setShowEmbed,
-    setShowQuoteSettings,
     mediaFirst,
     enableTranslate,
     language,
@@ -213,9 +183,6 @@ export default function useStatusMenuState({
     id,
     onStatusLinkClick,
     createdDateText,
-    editedAt,
-    setShowEdited,
-    editedDateText,
     isPublic,
     authenticated,
     isSelf,
@@ -224,10 +191,7 @@ export default function useStatusMenuState({
     muted,
     pinned,
     isPinnable,
-    quoteApprovalPolicyMessages,
-    postQuoteApprovalPolicy,
     visibility,
-    isQuotingMyPost,
     sKey,
     fetchBoostedLikedByAccounts,
   });

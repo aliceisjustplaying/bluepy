@@ -1,11 +1,9 @@
-/// <reference types="node" />
-
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 import { catchupPageHasItemsInRange } from '../src/utils/catchup-fetch';
 
-void test('catchupPageHasItemsInRange only stops on pages fully before cutoff', () => {
+test('catchupPageHasItemsInRange only stops on pages fully before cutoff', () => {
   const cutoff = Date.parse('2026-05-19T12:00:00.000Z');
 
   assert.equal(

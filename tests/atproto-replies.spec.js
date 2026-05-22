@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import {
+  fetchFollowingFeedPage,
   feedToStatuses,
   hydrateFeedReplyContext,
   postProcessFollowingFeed,
@@ -12,9 +13,17 @@ import {
   shouldFetchThreadParent,
 } from '../src/utils/reply-context.js';
 import {
+  appendThreadDescendant,
+  clearThreadDescendantReplies,
+} from '../src/utils/thread-structure.js';
+import {
   dedupeTimelineContextItems,
   groupContextItems,
 } from '../src/utils/timeline-context.js';
+
+/**
+ * @typedef {import('../src/utils/thread-structure.js').ThreadStatus} ThreadStatus
+ */
 
 const parentUri = 'at://did:plc:parent/app.bsky.feed.post/root';
 const childUri = 'at://did:plc:child/app.bsky.feed.post/reply';
@@ -715,6 +724,79 @@ test.describe('ATProto reply mapping', () => {
     expect(postProcessFollowingFeed([item], 'did:plc:user')).toEqual([item]);
   });
 
+  test('continues past empty processed Following pages', async () => {
+    const parent = {
+      uri: parentUri,
+      cid: 'parent-cid',
+      author: {
+        did: 'did:plc:parent',
+        handle: 'parent.test',
+        displayName: 'Parent',
+      },
+      record: {
+        $type: 'app.bsky.feed.post',
+        text: 'parent text',
+        createdAt: '2026-05-08T00:00:00.000Z',
+      },
+    };
+    const hiddenReply = feedReply({
+      post: {
+        author: {
+          did: 'did:plc:child',
+          handle: 'child.test',
+          displayName: 'Child',
+          viewer: { following: 'at://did:plc:user/app.bsky.graph.follow/1' },
+        },
+      },
+      reply: {
+        parent,
+        root: parent,
+      },
+    });
+    const visibleUri = 'at://did:plc:visible/app.bsky.feed.post/visible';
+    const visiblePost = {
+      post: {
+        uri: visibleUri,
+        cid: 'visible-cid',
+        author: {
+          did: 'did:plc:visible',
+          handle: 'visible.test',
+          displayName: 'Visible',
+          viewer: { following: 'at://did:plc:user/app.bsky.graph.follow/2' },
+        },
+        record: {
+          $type: 'app.bsky.feed.post',
+          text: 'visible text',
+          createdAt: '2026-05-08T00:01:00.000Z',
+        },
+        indexedAt: '2026-05-08T00:01:00.000Z',
+        replyCount: 0,
+        repostCount: 0,
+        likeCount: 0,
+        quoteCount: 0,
+      },
+    };
+    const cursors = [];
+    const agent = {
+      getTimeline: async ({ cursor }) => {
+        cursors.push(cursor);
+        return cursor
+          ? { data: { cursor: undefined, feed: [visiblePost] } }
+          : { data: { cursor: 'page-2', feed: [hiddenReply] } };
+      },
+    };
+
+    const page = await fetchFollowingFeedPage({
+      agent,
+      currentUserDid: 'did:plc:user',
+      limit: 20,
+    });
+
+    expect(cursors).toEqual([undefined, 'page-2']);
+    expect(page.cursor).toBeUndefined();
+    expect(page.items.map((status) => status.uri)).toEqual([visibleUri]);
+  });
+
   test('dedupes Following threads without hiding reposted replies', () => {
     const root = {
       post: {
@@ -997,5 +1079,67 @@ test.describe('ATProto reply mapping', () => {
           : item.uri,
       ),
     ).toEqual([[parentUri, middleUri, latestUri]]);
+  });
+
+  test('promotes same-author replies even when their parent is nested', () => {
+    /** @type {ThreadStatus} */
+    const hero = {
+      id: 'root',
+      account: { id: 'did:plc:alice' },
+    };
+    /** @type {ThreadStatus} */
+    const directReply = {
+      id: 'direct-reply',
+      inReplyToId: 'root',
+      inReplyToAccountId: 'did:plc:alice',
+      account: { id: 'did:plc:bob' },
+    };
+    /** @type {ThreadStatus} */
+    const nestedAliceReply = {
+      id: 'nested-alice-reply',
+      inReplyToId: 'direct-reply',
+      inReplyToAccountId: 'did:plc:bob',
+      account: { id: 'did:plc:alice' },
+    };
+    /** @type {ThreadStatus} */
+    const sameAuthorChild = {
+      id: 'same-author-child',
+      inReplyToId: 'nested-alice-reply',
+      inReplyToAccountId: 'did:plc:alice',
+      account: { id: 'did:plc:alice' },
+    };
+    /** @type {ThreadStatus[]} */
+    const descendants = [directReply, nestedAliceReply, sameAuthorChild];
+    /** @type {ThreadStatus[]} */
+    const topLevel = [];
+
+    for (const descendant of descendants) {
+      appendThreadDescendant(descendant, hero, descendants, topLevel);
+    }
+
+    expect(topLevel.map((status) => status.id)).toEqual([
+      'direct-reply',
+      'same-author-child',
+    ]);
+    expect(directReply.__replies?.map((status) => status.id)).toEqual([
+      'nested-alice-reply',
+    ]);
+    expect(nestedAliceReply.__replies).toBeUndefined();
+
+    clearThreadDescendantReplies(descendants);
+    /** @type {ThreadStatus[]} */
+    const rebuiltTopLevel = [];
+    for (const descendant of descendants) {
+      appendThreadDescendant(descendant, hero, descendants, rebuiltTopLevel);
+    }
+
+    expect(rebuiltTopLevel.map((status) => status.id)).toEqual([
+      'direct-reply',
+      'same-author-child',
+    ]);
+    expect(directReply.__replies?.map((status) => status.id)).toEqual([
+      'nested-alice-reply',
+    ]);
+    expect(nestedAliceReply.__replies).toBeUndefined();
   });
 });

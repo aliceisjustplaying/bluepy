@@ -1,10 +1,8 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 
-import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
 import { speak, supportsTTS } from '../utils/speech';
-import visibilityText from '../utils/visibility-text';
 
 import Icon from './icon';
 import MenuLink from './menu-link';
@@ -28,11 +26,7 @@ type StatusUtilityMenuProps = Pick<
   | 'onStatusLinkClick'
   | 'username'
   | 'acct'
-  | 'visibility'
   | 'createdDateText'
-  | 'editedAt'
-  | 'setShowEdited'
-  | 'editedDateText'
   | 'url'
   | 'isPublic'
   | 'setShowEmbed'
@@ -53,17 +47,12 @@ export default function StatusUtilityMenu({
   onStatusLinkClick,
   username,
   acct,
-  visibility,
   createdDateText,
-  editedAt,
-  setShowEdited,
-  editedDateText,
   url,
   isPublic,
   setShowEmbed,
 }: StatusUtilityMenuProps) {
-  const { t, i18n } = useLingui();
-  const _ = i18n._.bind(i18n);
+  const { t } = useLingui();
   const canTranslate =
     !mediaFirst && (enableTranslate || !language || differentLanguage);
   const showViewDivider =
@@ -103,7 +92,7 @@ export default function StatusUtilityMenu({
               onClick={() => {
                 try {
                   const postText = getPostText(status, {
-                    hideInlineQuote: supportsNativeQuote(),
+                    hideInlineQuote: true,
                   });
                   if (postText) {
                     speak(postText, language);
@@ -127,7 +116,7 @@ export default function StatusUtilityMenu({
             void (async () => {
               try {
                 const postText = getPostText(status, {
-                  hideInlineQuote: supportsNativeQuote(),
+                  hideInlineQuote: true,
                   htmlTextOpts: {
                     truncateLinks: false,
                   },
@@ -162,27 +151,9 @@ export default function StatusUtilityMenu({
               <span className="bidi-isolate">@{username || acct}</span>
             </Trans>
             <br />
-            <span className="more-insignificant">
-              {_(visibilityText[visibility])} • {createdDateText}
-            </span>
+            <span className="more-insignificant">{createdDateText}</span>
           </small>
         </MenuLink>
-      )}
-      {!!editedAt && (
-        <MenuItem
-          onClick={() => {
-            setShowEdited(id);
-          }}
-        >
-          <Icon icon="history" />
-          <small>
-            <Trans>Show Edit History</Trans>
-            <br />
-            <span className="more-insignificant">
-              <Trans>Edited: {editedDateText}</Trans>
-            </span>
-          </small>
-        </MenuItem>
       )}
       <MenuItem href={url || undefined} target="_blank">
         <Icon icon="external" />

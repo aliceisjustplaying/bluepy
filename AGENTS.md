@@ -9,6 +9,7 @@
 → **Secrets:** `source ~/.secrets/bluepy/source.env`.
 → **Build:** Bun only (`bun install`, `bun run …`, `bunx …`). Reuse `@atproto/*` types before defining new ones. "Type X" means convert X to TS, not patch JSDoc into `.js`. Runtime is browser / Cloudflare Workers.
 → **Verify** (apply the gates that match your change):
+  - i18n — after changing user-facing strings, `<Trans>`, `t` macro calls, or Lingui message IDs, run `bun run messages:extract` before typecheck/build. Do not rely on `bun run build` to extract catalogs.
   - typecheck — always: `bun run typecheck`
   - test — when touching a module with Playwright coverage: `bun run test`
   - build — when changing bundling, routing, imports, assets, or packaging: `bun run build`
@@ -22,17 +23,28 @@
 
 The Path above is yours to run autonomously. These few actions are the exceptions — check in before proceeding:
 
-- To update pushed work, add a follow-up commit and `git push`. Force-push (`--force`, `--force-with-lease`) is not part of our workflow.
+- To update pushed work, add a follow-up commit and `git push`.
 - Add new commits to update published work. Merging and amending published commits need an explicit ask.
 - Keep PRs in draft until asked to mark ready.
-- Leave the prod Worker (`bluepy` → `bluepy.social`) to the human.
 - Only modify files that are part of your task. `git restore`, `git checkout --`, `git clean -f` on other files need an explicit ask.
-- Run all checks as-is: `--no-verify`, `.skip`, `xfail`, `eslint-disable`, `@ts-ignore`, `@ts-expect-error`, and `any` are off-limits.
 - If a lint rule blocks useful work, report the rule name, diagnostic, and smallest compliant change; for a real change write `docs/rule-change-proposals/YYYY-MM-DD-name.md` and get reviewer approval first.
-- Only run `lingui extract` when source strings changed. Preserve `<Trans>` tags.
-- Keep generated images and locale catalogs out of code commits (separate commit, only if asked).
-- Run `bunx oxlint <changed files>` on every changed file before pushing or opening a PR.
+- Only run `bun run messages:extract` when source strings changed. Preserve `<Trans>` tags and report any generated locale catalog diff before staging it.
+- Keep generated images out of code commits.
 - Send your work to Claude for review. Codex does not review Codex-authored work.
+
+## Correctness Traps
+
+- Verify external review findings against current code before editing. CodeRabbit and GitHub summaries can be stale; compare the latest PR head SHA and review timestamp before declaring a PR clean.
+- Keep fixes minimal for review comments and merge conflicts. Resolve toward current `bluesky` behavior; put broader cleanup in a follow-up PR.
+- Treat post/profile/media/poll/spoiler/emoji fields as untrusted HTML input. Escape interpolated values before sanitizing and add XSS regression vectors when touching HTML preview/sanitizer code.
+- Do not guess ATProto behavior. Trace through `src/utils/atproto-adapter.ts` and `~/social-app`; logged-out public reads use AppView, PDS-facing writes/uploads need PDS audience/auth.
+- For compose changes, verify the final `com.atproto.repo.createRecord` payload directly. UI text, facets, embed state, and reply refs are separate concerns.
+- Overlay links, icon buttons, comboboxes, and visually labeled inputs need keyboard reachability and accessible names. A browser snapshot with unnamed controls is not clean.
+- Behavioral changes to timeline, post, compose, notification, auth, routing, or settings need a focused regression test plus the relevant logged-in browser check.
+
+## Hooks
+
+Project hooks live in `.claude/settings.json`, `.codex/hooks.json`, and `scripts/hooks/`. They block main-branch edits, destructive git commands, non-draft PR creation, production deploys, verification bypasses, runbook drift, and secret disclosure; they warn on locale churn, missing i18n extraction, behavioral changes without tests, sanitizer changes without XSS tests, and compose changes without payload assertions. Stop hooks run typecheck plus changed-file lint/format by default; set `BLUEPY_HOOK_CHECK_SCOPE=full` when the full-tree baseline is green, and `BLUEPY_HOOK_STRICT_CHECKS=1` to make those checks blocking.
 
 ## Review CLI — Claude reviews Codex's work
 

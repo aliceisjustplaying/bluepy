@@ -4,7 +4,11 @@ import { proxy, subscribe } from 'valtio';
 import { subscribeKey } from 'valtio/utils';
 
 import { api } from './api';
-import isMastodonLinkMaybe from './is-mastodon-link-maybe';
+import {
+  DEFAULT_MUTED_POST_VISIBILITY,
+  getMutedPostVisibility,
+  type MutedPostVisibility,
+} from './muted-post-visibility';
 import pmem from './pmem';
 import rateLimit from './ratelimit';
 import { shouldFetchThreadParent } from './reply-context';
@@ -15,10 +19,6 @@ import {
   restoreShortcutsViewMode,
 } from './settings-storage';
 import store from './store';
-// TODO(oxlint:import/no-cycle): states <-> unfurl-link cycle is structural;
-// breaking it requires extracting unfurled-link types into a separate module
-// shared by states.ts. Out of scope for the oxlint cleanup batch.
-import unfurlMastodonLink from './unfurl-link';
 
 // Intentionally loose typings — this hub is mutated by 60+ consumers and 139
 // direct writes. Narrower Status / Account shapes belong in later waves; doing
@@ -66,6 +66,7 @@ interface StatesSettings {
   composerGIFPicker: boolean;
   cloakMode: boolean;
   noAnimations: boolean;
+  mutedPostVisibility: MutedPostVisibility;
   // Future settings keys land here without touching this hub.
   [key: string]: unknown;
 }
@@ -94,8 +95,8 @@ interface StateProxy {
   spoilers: Record<string, unknown>;
   spoilersMedia: Record<string, unknown>;
   revealedQuotes: Record<string, unknown>;
+  revealedMutedPosts: Record<string, boolean>;
   scrollPositions: Record<string, unknown>;
-  unfurledLinks: Record<string, unknown>;
   statusQuotes: Record<string, unknown[]>;
   statusReply: Record<string, unknown>;
   accounts: Record<string, Account>;
@@ -171,8 +172,8 @@ const states = proxy<StateProxy>({
   spoilers: {},
   spoilersMedia: {},
   revealedQuotes: {},
+  revealedMutedPosts: {},
   scrollPositions: {},
-  unfurledLinks: {},
   statusQuotes: {},
   statusReply: {},
   accounts: {},
@@ -212,6 +213,7 @@ const states = proxy<StateProxy>({
     composerGIFPicker: false,
     cloakMode: false,
     noAnimations: false,
+    mutedPostVisibility: DEFAULT_MUTED_POST_VISIBILITY,
   },
 });
 
@@ -263,6 +265,11 @@ export function initStates(): void {
     store.account.get<boolean>('settings-cloakMode') ?? false;
   states.settings.noAnimations =
     store.account.get<boolean>('settings-noAnimations') ?? false;
+  states.settings.mutedPostVisibility = getMutedPostVisibility({
+    mutedPostVisibility: store.account.get<MutedPostVisibility>(
+      'settings-mutedPostVisibility',
+    ),
+  });
   // Apply persisted body classes on init (subscribe handlers only fire on change)
   if (typeof document !== 'undefined' && document.body) {
     document.body.classList.toggle(
@@ -327,6 +334,12 @@ subscribe(states, (changes) => {
     }
     if (path.join('.') === 'settings.noAnimations') {
       store.account.set('settings-noAnimations', !!value);
+    }
+    if (path.join('.') === 'settings.mutedPostVisibility') {
+      store.account.set(
+        'settings-mutedPostVisibility',
+        getMutedPostVisibility({ mutedPostVisibility: value }),
+      );
     }
   }
 });
@@ -470,7 +483,6 @@ function queueSaveStatus(
 interface SaveStatusOpts {
   override?: boolean;
   skipThreading?: boolean;
-  skipUnfurling?: boolean;
   sync?: boolean;
 }
 
@@ -490,7 +502,6 @@ export function saveStatus(
   const {
     override = true,
     skipThreading = false,
-    skipUnfurling = false,
     sync = false,
   } = resolvedOpts || {};
   if (!status) return;
@@ -509,16 +520,6 @@ export function saveStatus(
   if (!skipThreading) {
     setTimeout(() => {
       threadifyStatus(
-        statusForStorage.reblog || statusForStorage,
-        resolvedInstance,
-      );
-    }, 100);
-  }
-
-  // UNFURLER
-  if (!skipUnfurling) {
-    setTimeout(() => {
-      unfurlStatus(
         statusForStorage.reblog || statusForStorage,
         resolvedInstance,
       );
@@ -573,57 +574,6 @@ export const threadifyStatus = rateLimit(
   threadifyStatusInternal as (this: unknown, ...args: unknown[]) => void,
   100,
 ) as (status: Status, propInstance?: string | null) => void;
-
-const fauxDiv = document.createElement('div');
-export function unfurlStatus(
-  status: Status | null | undefined,
-  instance?: string | null,
-): void {
-  const { instance: currentInstance } = api();
-  const content = status?.content;
-  if (!content) return;
-  const hasLink = /<a/i.test(content);
-  if (hasLink) {
-    const sKey = statusKey(status?.id, instance);
-    fauxDiv.innerHTML = content;
-    const links = fauxDiv.querySelectorAll<HTMLAnchorElement>(
-      'a[href]:not(.u-url):not(.mention):not(.hashtag)',
-    );
-    [...links]
-      .filter((a) => {
-        const url = a.href;
-        const isPostItself = url === status?.url || url === status?.uri;
-        return !isPostItself && isMastodonLinkMaybe(url);
-      })
-      .forEach((a, i) => {
-        void unfurlMastodonLink(currentInstance, a.href)
-          .then((result) => {
-            if (!result) return undefined;
-            if (!sKey) return undefined;
-            if (result?.id === status?.id) {
-              // Unfurled post is the post itself???
-              // Scenario:
-              // 1. Post with [URL]
-              // 2. Unfurl [URL], API returns the same post that contains [URL]
-              // 3. 💥 Recursive quote posts 💥
-              // Note: Mastodon search doesn't return posts that contains [URL], it's actually used to *resolve* the URL
-              // But some non-Mastodon servers, their search API will eventually search posts that contains [URL] and return them
-              return undefined;
-            }
-            if (!Array.isArray(states.statusQuotes[sKey])) {
-              states.statusQuotes[sKey] = [];
-            }
-            if (!states.statusQuotes[sKey][i]) {
-              states.statusQuotes[sKey].splice(i, 0, result);
-            }
-            return undefined;
-          })
-          .catch((err: unknown) => {
-            console.error(err);
-          });
-      });
-  }
-}
 
 interface StatusesEndpoint {
   $select(id: string): { fetch(): Promise<Status> };

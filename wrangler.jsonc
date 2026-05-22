@@ -20,6 +20,12 @@
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["FeedbackRateLimiter"] },
   ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+    },
+  },
   "env": {
     "bluepy": {
       "name": "bluepy",

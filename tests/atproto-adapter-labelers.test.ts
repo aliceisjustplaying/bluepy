@@ -1,7 +1,5 @@
-/// <reference types="node" />
-
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 function createStorage(): Storage {
   const values = new Map<string, string>();
@@ -55,7 +53,7 @@ function getDetailedLabelerView(did: string) {
   };
 }
 
-void test('adapter labeler helpers normalize preferences and metadata', async () => {
+test('adapter labeler helpers normalize preferences and metadata', async () => {
   const globalKeys = [
     'document',
     'localStorage',

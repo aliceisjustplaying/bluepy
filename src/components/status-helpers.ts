@@ -9,7 +9,7 @@ import localeMatchDefault from '../utils/locale-match';
 import mem from '../utils/mem';
 import pmem from '../utils/pmem';
 
-import type { AnyPoll, AnyStatus, MastoClientFromApi } from './status-types';
+import type { AnyStatus, MastoClientFromApi } from './status-types';
 
 export const SHOW_COMMENT_COUNT_LIMIT = 280;
 export const INLINE_TRANSLATE_LIMIT = 140;
@@ -62,13 +62,6 @@ export const isIOS =
   window.ontouchstart !== undefined &&
   /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-function getPollText(poll: AnyPoll | null | undefined): string {
-  if (!poll?.options?.length) return '';
-  return `📊:\n${poll.options
-    .map((option: mastodon.v1.PollOption) => `- ${option.title}`)
-    .join('\n')}`;
-}
-
 interface GetPostTextOpts {
   maskCustomEmojis?: boolean;
   maskURLs?: boolean;
@@ -83,7 +76,7 @@ export function getPostText(status: AnyStatus, opts?: GetPostTextOpts): string {
     hideInlineQuote,
     htmlTextOpts = {},
   } = opts || {};
-  const { spoilerText, poll, emojis } = status;
+  const { spoilerText, emojis } = status;
   let { content } = status;
   if (maskCustomEmojis && emojis?.length) {
     const emojisRegex = new RegExp(
@@ -118,7 +111,6 @@ export function getPostText(status: AnyStatus, opts?: GetPostTextOpts): string {
             }
           : undefined,
     }),
-    getPollText(poll),
   ]
     .join('\n\n')
     .trim();
@@ -265,18 +257,4 @@ export const checkDifferentLanguage = (
     DIFFERENT_LANG_CHECK[cacheKey] = true;
   }
   return different;
-};
-
-export const quoteMessages = {
-  quotePrivate: msg`Private posts cannot be quoted`,
-  requestQuote: msg`Request to quote`,
-  quoteManualReview: msg`Author will manually review`,
-  quoteFollowersOnly: msg`Only followers can quote this post`,
-  quoteCannot: msg`You are not allowed to quote this post`,
-};
-
-export const quoteApprovalPolicyMessages = {
-  public: msg`Anyone can quote`,
-  followers: msg`Your followers can quote`,
-  nobody: msg`Only you can quote`,
 };

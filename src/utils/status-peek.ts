@@ -1,14 +1,5 @@
 import getHTMLText from './get-html-text';
 
-interface PollOption {
-  title: string;
-}
-
-interface PollLike {
-  options?: PollOption[];
-  multiple?: boolean;
-}
-
 interface MediaAttachmentLike {
   type: string;
 }
@@ -16,13 +7,12 @@ interface MediaAttachmentLike {
 interface StatusLike {
   spoilerText?: string;
   content?: string;
-  poll?: PollLike | null;
   mediaAttachments?: MediaAttachmentLike[] | null;
   quote?: { quotedStatus?: StatusLike & { id?: string } } | null;
 }
 
 function statusPeek(status: StatusLike): string {
-  const { spoilerText, content, poll, mediaAttachments, quote } = status;
+  const { spoilerText, content, mediaAttachments, quote } = status;
   let text = '';
   // Don't need supportsNativeQuote because checking quotedStatus ID is enough
   const hasQuote = !!quote?.quotedStatus?.id;
@@ -41,11 +31,6 @@ function statusPeek(status: StatusLike): string {
     });
   }
   text = text.trim();
-  if (poll?.options?.length) {
-    text += `\n\n📊:\n${poll.options
-      .map((o) => `${poll.multiple ? '▪️' : '•'} ${o.title}`)
-      .join('\n')}`;
-  }
   if (mediaAttachments?.length) {
     text +=
       ' ' +

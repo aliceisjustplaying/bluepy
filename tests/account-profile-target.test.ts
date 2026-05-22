@@ -1,11 +1,9 @@
-/// <reference types="node" />
-
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 import { getAccountProfileTarget } from '../src/utils/account-profile-target';
 
-void test('account profile target keeps ATProto handle separate from instance', () => {
+test('account profile target keeps ATProto handle separate from instance', () => {
   assert.deepEqual(
     getAccountProfileTarget({
       info: {
@@ -22,7 +20,7 @@ void test('account profile target keeps ATProto handle separate from instance', 
   );
 });
 
-void test('account profile target falls back to account id', () => {
+test('account profile target falls back to account id', () => {
   assert.deepEqual(
     getAccountProfileTarget({
       info: {

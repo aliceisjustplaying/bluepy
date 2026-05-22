@@ -31,25 +31,24 @@ import NavMenu from '../components/nav-menu';
 import Notification, {
   type NotificationProps,
 } from '../components/notification';
+import RawHtml from '../components/raw-html';
 import StatusComponent, {
   type StatusComponentProps,
 } from '../components/status';
 import { api } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
 import FilterContext from '../utils/filter-context';
-import groupNotifications, {
+import {
   groupNotifications2,
   massageNotifications2,
 } from '../utils/group-notifications';
 import handleContentLinks from '../utils/handle-content-links';
 import haptics from '../utils/haptics';
-import mem from '../utils/mem';
 import niceDateTime from '../utils/nice-date-time';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
-import { getAPIVersions, getCurrentInstance } from '../utils/store-utils';
-import supports from '../utils/supports';
+import { getCurrentInstance } from '../utils/store-utils';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScroll from '../utils/useScroll';
 import useTitle from '../utils/useTitle';
@@ -182,7 +181,6 @@ interface AnnouncementLike {
   reactions: AnnouncementReaction[];
 }
 
-const NOTIFICATIONS_LIMIT = 80;
 const NOTIFICATIONS_GROUPED_LIMIT = 20;
 const emptySearchParams = new URLSearchParams();
 
@@ -192,31 +190,16 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
   behavior: 'instant',
 };
 
-const memSupportsGroupedNotifications = mem(
-  () => ((getAPIVersions()?.mastodon as number | undefined) ?? 0) >= 2,
-  {
-    expires: 1000 * 60 * 5, // 5 minutes
-  },
-);
-
 function mastoFetchNotificationsIterable(
   opts: Record<string, unknown> = {},
 ): MastoV2NotificationsListIterable {
   const { masto } = api();
-  if (memSupportsGroupedNotifications()) {
-    const v2Notifications = masto.v2.notifications as MastoV2NotificationsApi;
-    // https://github.com/mastodon/mastodon/pull/29889
-    return v2Notifications.list({
-      limit: NOTIFICATIONS_GROUPED_LIMIT,
-      ...opts,
-    });
-  } else {
-    const v1Notifications = masto.v1.notifications as MastoV1NotificationsApi;
-    return v1Notifications.list({
-      limit: NOTIFICATIONS_LIMIT,
-      ...opts,
-    });
-  }
+  const v2Notifications = masto.v2.notifications as MastoV2NotificationsApi;
+  // https://github.com/mastodon/mastodon/pull/29889
+  return v2Notifications.list({
+    limit: NOTIFICATIONS_GROUPED_LIMIT,
+    ...opts,
+  });
 }
 export function mastoFetchNotifications(opts: Record<string, unknown> = {}) {
   return mastoFetchNotificationsIterable(opts).values();
@@ -225,15 +208,9 @@ export function mastoFetchNotifications(opts: Record<string, unknown> = {}) {
 export function getGroupedNotifications(
   notifications: unknown,
 ): NotificationLike[] {
-  if (memSupportsGroupedNotifications()) {
-    return groupNotifications2(
-      notifications as Parameters<typeof groupNotifications2>[0],
-    ) as NotificationLike[];
-  } else {
-    return groupNotifications(
-      notifications as Parameters<typeof groupNotifications>[0],
-    ) as NotificationLike[];
-  }
+  return groupNotifications2(
+    notifications as Parameters<typeof groupNotifications2>[0],
+  ) as NotificationLike[];
 }
 
 type NotificationsPolicyKey =
@@ -406,9 +383,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     }
   }
 
-  const supportsFilteredNotifications = supports(
-    '@mastodon/filtered-notifications',
-  );
+  const supportsFilteredNotifications = true;
   const [showNotificationsSettings, setShowNotificationsSettings] =
     useState(false);
   const [notificationsPolicy, setNotificationsPolicy] =
@@ -1331,18 +1306,14 @@ function AnnouncementBlock({ announcement }: AnnouncementBlockProps) {
           this div delegates link clicks via handleContentLinks; embedded
           anchors are focusable. A non-functional role/keydown shim would
           provide no real a11y benefit. */}
-      <div
+      <RawHtml
         className="announcement-content"
         role="presentation"
         onClick={handleContentLinks({
           mentions: mentions as { url?: string; acct?: string }[] | undefined,
           instance,
         })}
-        dangerouslySetInnerHTML={{
-          __html: enhanceContent(content, {
-            emojis,
-          }) as string,
-        }}
+        html={enhanceContent(content, { emojis }) as string}
       />
       <p className="insignificant">
         <time dateTime={publishedAtDate.toISOString()}>

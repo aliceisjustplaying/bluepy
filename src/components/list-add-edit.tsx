@@ -3,17 +3,13 @@ import { useEffect, useRef, useState } from 'react';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import { addListStore, deleteListStore, updateListStore } from '../utils/lists';
-import supports from '../utils/supports';
 
 import Icon from './icon';
-import ListExclusiveBadge from './list-exclusive-badge';
 import MenuConfirm from './menu-confirm';
 
 interface ListLike {
   id: string;
   title: string;
-  repliesPolicy?: string;
-  exclusive?: boolean;
   [key: string]: unknown;
 }
 
@@ -43,17 +39,9 @@ interface ListAddEditProps {
 }
 
 interface MastoListsApi {
-  create(params: {
-    title: FormDataEntryValue | null;
-    replies_policy: FormDataEntryValue | null;
-    exclusive: boolean;
-  }): Promise<ListLike>;
+  create(params: { title: string }): Promise<ListLike>;
   $select(id: string): {
-    update(params: {
-      title: FormDataEntryValue | null;
-      replies_policy: FormDataEntryValue | null;
-      exclusive: boolean;
-    }): Promise<ListLike>;
+    update(params: { title: string }): Promise<ListLike>;
     remove(): Promise<unknown>;
   };
 }
@@ -67,24 +55,13 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
   const [uiState, setUIState] = useState<UIState>('default');
   const editMode = !!list;
   const nameFieldRef = useRef<HTMLInputElement | null>(null);
-  const repliesPolicyFieldRef = useRef<HTMLSelectElement | null>(null);
-  const exclusiveFieldRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     if (editMode && list) {
       if (nameFieldRef.current) {
         nameFieldRef.current.value = list.title;
       }
-      if (repliesPolicyFieldRef.current) {
-        repliesPolicyFieldRef.current.value = list.repliesPolicy ?? '';
-      }
-      if (exclusiveFieldRef.current) {
-        exclusiveFieldRef.current.checked = !!list.exclusive;
-      }
     }
   }, [editMode, list]);
-  const supportsExclusive =
-    supports('@mastodon/list-exclusive') ||
-    supports('@gotosocial/list-exclusive');
 
   return (
     <div className="sheet">
@@ -109,13 +86,10 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
             e.preventDefault(); // Get form values
 
             const formData = new FormData(e.target as HTMLFormElement);
-            const title = formData.get('title');
-            const repliesPolicy = formData.get('replies_policy');
-            const exclusive = formData.get('exclusive') === 'on';
+            const titleValue = formData.get('title');
+            const title = typeof titleValue === 'string' ? titleValue : '';
             console.log({
               title,
-              repliesPolicy,
-              exclusive,
             });
             setUIState('loading');
 
@@ -126,14 +100,10 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
                 if (editMode && list) {
                   listResult = await listsApi.$select(list.id).update({
                     title,
-                    replies_policy: repliesPolicy,
-                    exclusive,
                   });
                 } else {
                   listResult = await listsApi.create({
                     title,
-                    replies_policy: repliesPolicy,
-                    exclusive,
                   });
                 }
 
@@ -177,38 +147,6 @@ function ListAddEdit({ list, onClose }: ListAddEditProps) {
               />
             </label>
           </div>
-          <div className="list-form-row">
-            <select
-              ref={repliesPolicyFieldRef}
-              name="replies_policy"
-              required
-              disabled={uiState === 'loading'}
-            >
-              <option value="list">
-                <Trans>Show replies to list members</Trans>
-              </option>
-              <option value="followed">
-                <Trans>Show replies to people I follow</Trans>
-              </option>
-              <option value="none">
-                <Trans>Don't show replies</Trans>
-              </option>
-            </select>
-          </div>
-          {supportsExclusive && (
-            <div className="list-form-row">
-              <label className="label-block">
-                <input
-                  ref={exclusiveFieldRef}
-                  type="checkbox"
-                  name="exclusive"
-                  disabled={uiState === 'loading'}
-                />{' '}
-                <ListExclusiveBadge insignificant />{' '}
-                <Trans>Hide posts on this list from Home/Following</Trans>
-              </label>
-            </div>
-          )}
           <div className="list-form-footer">
             <button type="submit" disabled={uiState === 'loading'}>
               {editMode ? t`Save` : t`Create`}

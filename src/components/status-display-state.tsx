@@ -21,7 +21,6 @@ interface StatusDisplayStateArgs {
   previewMode?: boolean;
   spoilerText?: string | null;
   sensitive?: boolean | null;
-  poll?: unknown;
   card?: unknown;
   filterInfoMaybe?: { action: 'hide' | 'blur' | 'warn' };
   enableTranslate?: boolean;
@@ -39,7 +38,6 @@ export default function useStatusDisplayState({
   previewMode,
   spoilerText,
   sensitive,
-  poll,
   card,
   filterInfoMaybe,
   enableTranslate: initialEnableTranslate,
@@ -85,7 +83,6 @@ export default function useStatusDisplayState({
       previewMode ||
       spoilerText ||
       sensitive ||
-      poll ||
       card
     ) {
       return false;
@@ -100,7 +97,6 @@ export default function useStatusDisplayState({
     previewMode,
     spoilerText,
     sensitive,
-    poll,
     card,
     contentLength,
   ]);

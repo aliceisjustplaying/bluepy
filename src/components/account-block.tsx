@@ -13,6 +13,7 @@ import states from '../utils/states';
 import Avatar from './avatar';
 import EmojiText from './emoji-text';
 import Icon from './icon';
+import RawHtml from './raw-html';
 import RolesTags from './roles-tags';
 
 export interface AccountBlockProps {
@@ -147,11 +148,7 @@ function AccountBlock({
           <>
             {displayName ? (
               <b>
-                <EmojiText
-                  text={displayName}
-                  emojis={emojis}
-                  resolverURL={url}
-                />
+                <EmojiText text={displayName} />
               </b>
             ) : (
               <b>{username}</b>
@@ -241,14 +238,39 @@ function AccountBlock({
               </span>
             )}
             {!!verifiedField && (
-              <span className="verified-field">
+              // The verified field renders enhanceContent links inside the
+              // card-level <a>. Stop click/keydown from bubbling so activating
+              // an inner link opens that link instead of triggering card
+              // navigation; the inner anchors keep their native behavior.
+              <span
+                className="verified-field"
+                onClick={(e) => {
+                  const anchor = (e.target as HTMLElement).closest('a');
+                  // Only stop propagation for clicks on an anchor INSIDE the
+                  // verified field. `closest('a')` would otherwise also match
+                  // the outer card anchor for plain text/icon clicks and
+                  // wrongly suppress card navigation.
+                  if (anchor && e.currentTarget.contains(anchor)) {
+                    e.stopPropagation();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  const anchor = (e.target as HTMLElement).closest('a');
+                  if (
+                    (e.key === 'Enter' || e.key === ' ') &&
+                    anchor &&
+                    e.currentTarget.contains(anchor)
+                  ) {
+                    e.stopPropagation();
+                  }
+                }}
+              >
                 <Icon icon="check-circle" size="s" alt={t`Verified`} />{' '}
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: enhanceContent(verifiedField.value, {
-                      emojis,
-                    }) as string,
-                  }}
+                <RawHtml
+                  as="span"
+                  html={
+                    enhanceContent(verifiedField.value, { emojis }) as string
+                  }
                 />
               </span>
             )}

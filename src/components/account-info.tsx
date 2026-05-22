@@ -19,7 +19,6 @@ import enhanceContent from '../utils/enhance-content';
 import handleContentLinks from '../utils/handle-content-links';
 import niceDateTime from '../utils/nice-date-time';
 import pmem from '../utils/pmem';
-import { supportsNativeQuote } from '../utils/quote-utils';
 import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
@@ -30,7 +29,6 @@ import {
   getCurrentAccountID,
   saveAccounts,
 } from '../utils/store-utils';
-import supports from '../utils/supports';
 
 import AccountBlock from './account-block';
 import AccountHandleInfo from './account-handle-info';
@@ -44,6 +42,7 @@ import Icon from './icon';
 import Link, { type LinkProps } from './link';
 import Menu2 from './menu2';
 import Modal from './modal';
+import RawHtml from './raw-html';
 // TODO(oxlint:import/no-cycle): account-info <-> related-actions cycle is
 // structural; related-actions consumes AccountInfoShape and handleScannerClick
 // while account-info renders RelatedActions. Breaking it requires extracting
@@ -187,9 +186,8 @@ async function fetchPostingStats(
   // - Boosts (reblogs)
   // - Replies (not-self replies)
   // - Quotes
-  // Some Mastodon forks (and Bluepy's quote-utils helper) attach a
-  // non-standard `quote` field on Status. Narrow with a local shape rather
-  // than widening the masto type.
+  // The ATProto adapter attaches a non-standard `quote` field on Status.
+  // Narrow with a local shape rather than widening the masto type.
   type StatusWithQuote = mastodon.v1.Status & {
     quote?: {
       id?: string;
@@ -204,10 +202,7 @@ async function fetchPostingStats(
       status.inReplyToAccountId !== status.account.id // Not self-reply
     ) {
       stats.replies++;
-    } else if (
-      supportsNativeQuote() &&
-      (status.quote?.id || status.quote?.quotedStatus?.id)
-    ) {
+    } else if (status.quote?.id || status.quote?.quotedStatus?.id) {
       stats.quotes++;
     } else {
       stats.originals++;
@@ -887,23 +882,21 @@ function AccountInfo({
                         </span>
                       </MenuItem>
                     )}
-                    {currentAuthenticated &&
-                      isSelf &&
-                      supports('@mastodon/profile-edit') && (
-                        <>
-                          <MenuDivider />
-                          <MenuItem
-                            onClick={() => {
-                              setShowEditProfile(true);
-                            }}
-                          >
-                            <Icon icon="pencil" />
-                            <span>
-                              <Trans>Edit profile</Trans>
-                            </span>
-                          </MenuItem>
-                        </>
-                      )}
+                    {currentAuthenticated && isSelf && (
+                      <>
+                        <MenuDivider />
+                        <MenuItem
+                          onClick={() => {
+                            setShowEditProfile(true);
+                          }}
+                        >
+                          <Icon icon="pencil" />
+                          <span>
+                            <Trans>Edit profile</Trans>
+                          </span>
+                        </MenuItem>
+                      </>
+                    )}
                   </Menu2>
                 ) : (
                   <AccountBlock
@@ -948,7 +941,7 @@ function AccountInfo({
                     )}
                   </span>
                 ))} */}
-                <div
+                <RawHtml
                   className="note"
                   dir="auto"
                   role="presentation"
@@ -961,9 +954,7 @@ function AccountInfo({
                      * the a11y linter — keyboard activation still flows
                      * through the inner <a> tags. */
                   }}
-                  dangerouslySetInnerHTML={{
-                    __html: enhanceContent(note, { emojis }) as string,
-                  }}
+                  html={enhanceContent(note, { emojis }) as string}
                 />
                 <div className="account-metadata-box">
                   {!!fields?.length && (
@@ -977,7 +968,7 @@ function AccountInfo({
                           dir="auto"
                         >
                           <b>
-                            <EmojiText text={name} emojis={emojis} />{' '}
+                            <EmojiText text={name} />{' '}
                             {!!verifiedAt && (
                               <Icon
                                 icon="check-circle"
@@ -986,12 +977,9 @@ function AccountInfo({
                               />
                             )}
                           </b>
-                          <p
-                            dangerouslySetInnerHTML={{
-                              __html: enhanceContent(value, {
-                                emojis,
-                              }) as string,
-                            }}
+                          <RawHtml
+                            as="p"
+                            html={enhanceContent(value, { emojis }) as string}
                           />
                         </div>
                       ))}
@@ -1157,39 +1145,23 @@ function AccountInfo({
                         {hasPostingStats ? (
                           <div
                             className="posting-stats"
-                            title={
-                              supportsNativeQuote()
-                                ? t`${(
-                                    postingStats.originals / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} original posts, ${(
-                                    postingStats.replies / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} replies, ${(
-                                    postingStats.quotes / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} quotes, ${(
-                                    postingStats.boosts / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} reposts`
-                                : t`${(
-                                    postingStats.originals / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} original posts, ${(
-                                    postingStats.replies / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} replies, ${(
-                                    postingStats.boosts / postingStats.total
-                                  ).toLocaleString(i18n.locale || undefined, {
-                                    style: 'percent',
-                                  })} reposts`
-                            }
+                            title={t`${(
+                              postingStats.originals / postingStats.total
+                            ).toLocaleString(i18n.locale || undefined, {
+                              style: 'percent',
+                            })} original posts, ${(
+                              postingStats.replies / postingStats.total
+                            ).toLocaleString(i18n.locale || undefined, {
+                              style: 'percent',
+                            })} replies, ${(
+                              postingStats.quotes / postingStats.total
+                            ).toLocaleString(i18n.locale || undefined, {
+                              style: 'percent',
+                            })} quotes, ${(
+                              postingStats.boosts / postingStats.total
+                            ).toLocaleString(i18n.locale || undefined, {
+                              style: 'percent',
+                            })} reposts`}
                           >
                             <div>
                               {postingStats.daysSinceLastPost !== undefined &&
@@ -1274,12 +1246,10 @@ function AccountInfo({
                                 <span className="posting-stats-legend-item posting-stats-bar-replies" />{' '}
                                 <Trans>Replies</Trans>
                               </span>{' '}
-                              {supportsNativeQuote() && (
-                                <span className="ib">
-                                  <span className="posting-stats-legend-item posting-stats-bar-quotes" />{' '}
-                                  <Trans>Quotes</Trans>
-                                </span>
-                              )}
+                              <span className="ib">
+                                <span className="posting-stats-legend-item posting-stats-bar-quotes" />{' '}
+                                <Trans>Quotes</Trans>
+                              </span>{' '}
                               <span className="ib">
                                 <span className="posting-stats-legend-item posting-stats-bar-boosts" />{' '}
                                 <Trans>Reposts</Trans>

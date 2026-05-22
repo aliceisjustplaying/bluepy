@@ -5,7 +5,7 @@ import Icon from './icon';
 import NameText from './name-text';
 import type { AnyStatus, StatusSize } from './status-types';
 
-interface RenderReblogStatusArgs {
+export interface RenderReblogStatusArgs {
   statusID?: string | null;
   status?: AnyStatus | null;
   instance?: string;

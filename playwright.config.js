@@ -10,6 +10,9 @@ console.debug = () => {};
 
 const DEV_PORT = Number(process.env.PORT || process.env.VITE_PORT) || 5173;
 const BASE_URL = `http://localhost:${DEV_PORT}`;
+const HAS_ATPROTO_TEST_CREDS = Boolean(
+  process.env.ATPROTO_TEST_IDENTIFIER && process.env.ATPROTO_TEST_PASSWORD,
+);
 const AGENT_CHROMIUM_ARGS = [
   '--disable-gpu',
   '--disable-dev-shm-usage',
@@ -35,14 +38,15 @@ const CHROMIUM_ARGS =
  */
 export default defineConfig({
   testDir: './tests',
+  testMatch: '**/*.spec.js',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Opt out of parallel tests on CI and when running live ATProto smoke tests. */
+  workers: process.env.CI || HAS_ATPROTO_TEST_CREDS ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI ? 'github' : 'list',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

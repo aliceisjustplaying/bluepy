@@ -3,7 +3,6 @@ import { useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { LongPressEventType, useLongPress } from 'use-long-press';
 
-import { supportsNativeQuote } from '../utils/quote-utils';
 import showCompose from '../utils/show-compose';
 import showToast from '../utils/show-toast';
 
@@ -72,7 +71,6 @@ export default function useStatusContextMenu({
   quoteDisabled,
   quoteMetaText,
   status,
-  url,
   boostToast,
 }: StatusContextMenuArgs) {
   const contextMenuRef = useRef<ContextMenuHandle | null>(null);
@@ -229,21 +227,13 @@ export default function useStatusContextMenu({
         return;
       }
 
-      if (supportsNativeQuote()) {
-        if (quoteDisabled) {
-          showToast(quoteMetaText as string);
-        } else {
-          showCompose({
-            quoteStatus: status,
-          } as Parameters<typeof showCompose>[0]);
-        }
-        return;
+      if (quoteDisabled) {
+        showToast(quoteMetaText as string);
+      } else {
+        showCompose({
+          quoteStatus: status,
+        } as Parameters<typeof showCompose>[0]);
       }
-      showCompose({
-        draftStatus: {
-          status: `\n${url}`,
-        },
-      } as Parameters<typeof showCompose>[0]);
     },
     {
       enabled: hotkeysEnabled,

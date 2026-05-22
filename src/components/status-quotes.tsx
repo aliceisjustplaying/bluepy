@@ -11,6 +11,7 @@ import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
 import {
   canonicalizeAppPath,
+  getPrevLocationSnapshot,
   isModifiedClick,
   navigatePath,
 } from '../utils/router';
@@ -58,6 +59,11 @@ function StatusCardLink({
   children: ReactNode;
 }) {
   const href = canonicalizeAppPath(to);
+  const navigateFromCurrentLocation = () => {
+    states.prevLocation = getPrevLocationSnapshot();
+    navigatePath(href);
+  };
+
   return (
     <div
       className={className}
@@ -68,12 +74,12 @@ function StatusCardLink({
       onClick={(e: MouseEvent<HTMLDivElement>) => {
         if (shouldLetStatusCardTargetHandleEvent(e.target)) return;
         if (isModifiedClick(e)) return;
-        navigatePath(href);
+        navigateFromCurrentLocation();
       }}
       onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        navigatePath(href);
+        navigateFromCurrentLocation();
       }}
     >
       <a
@@ -84,7 +90,7 @@ function StatusCardLink({
         onClick={(e: MouseEvent<HTMLAnchorElement>) => {
           if (isModifiedClick(e)) return;
           e.preventDefault();
-          navigatePath(href);
+          navigateFromCurrentLocation();
         }}
       />
       {children}

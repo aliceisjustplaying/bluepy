@@ -7,7 +7,6 @@ import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
-import supports from '../utils/supports';
 import { dedupeBoosts } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
@@ -118,7 +117,6 @@ function Following2({ title, path, id, ...props }: Following2Props) {
   __BENCHMARK.end('time-to-following');
 
   console.debug('RENDER Following2', title, id);
-  const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
 
   async function fetchHome({
     max_id,
@@ -131,9 +129,6 @@ function Following2({ title, path, id, ...props }: Following2Props) {
     };
     if (max_id) opts.max_id = max_id;
     if (min_id) opts.min_id = min_id;
-    if (supportsPixelfed) {
-      opts.include_reblogs = true;
-    }
 
     const homeResource = getMastoV1Resource<{ home: HomeTimelineResource }>(
       masto,
@@ -174,9 +169,6 @@ function Following2({ title, path, id, ...props }: Following2Props) {
         limit: 5,
         since_id: minID ?? undefined,
       };
-      if (supportsPixelfed) {
-        opts.include_reblogs = true;
-      }
       const homeResource = getMastoV1Resource<{ home: HomeTimelineResource }>(
         masto,
         'timelines',

@@ -26,6 +26,7 @@ import {
   getPreferences,
 } from '../utils/api';
 import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
+import { encodeAtprotoID } from '../utils/atproto-route';
 import {
   fetchAtprotoLinkMetadata,
   getFirstPostURL,
@@ -43,11 +44,8 @@ import localeMatch from '../utils/locale-match';
 import localeCode2Text from '../utils/localeCode2Text';
 import mem from '../utils/mem';
 import openCompose from '../utils/open-compose';
-import {
-  getPostQuoteApprovalPolicy,
-  supportsNativeQuote,
-} from '../utils/quote-utils';
 import RTF from '../utils/relative-time-format';
+import { resolveAtprotoPostURI } from '../utils/resolve-atproto-post-link';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
 import store from '../utils/store';
@@ -57,8 +55,6 @@ import {
   getCurrentInstanceConfiguration,
 } from '../utils/store-utils';
 import stringLength from '../utils/string-length';
-import supports from '../utils/supports';
-import unfurlMastodonLink from '../utils/unfurl-link';
 import urlRegexObj from '../utils/url-regex';
 import useCloseWatcher from '../utils/useCloseWatcher';
 import useInterval from '../utils/useInterval';
@@ -129,7 +125,6 @@ interface StatusLike {
   language?: string | null;
   mediaAttachments?: MediaAttachmentLike[];
   quoteApproval?: Record<string, unknown> | null;
-  quoteApprovalPolicy?: string;
   createdAt?: string;
   url?: string;
   [key: string]: unknown;
@@ -140,7 +135,6 @@ interface DraftStatusLike {
   status?: string;
   language?: string | null;
   mediaAttachments?: MediaAttachmentLike[];
-  quoteApprovalPolicy?: string;
   threadgate?: string;
   threadgateRules?: string[];
   threadgateList?: string;
@@ -522,8 +516,6 @@ function Compose({
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const [quoteApprovalPolicy, setQuoteApprovalPolicy] =
-    useState<string>('public');
   const [language, setLanguage] = useState<string>(
     store.session.get('currentLanguage') || DEFAULT_LANG,
   );
@@ -662,8 +654,6 @@ function Compose({
   })();
 
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
-  const supportsQuoteApprovalPolicy =
-    supportsNativeQuote() && !isAtprotoCompose;
   const canShowLinkPreview =
     currentAccount?.atproto &&
     !editStatus &&
@@ -704,23 +694,6 @@ function Compose({
         }
       })();
     }, 300);
-  };
-
-  // Quote eligibility logic
-  const checkQuoteEligibility = (status: StatusLike): boolean => {
-    if (!supportsNativeQuote()) return false;
-
-    const { quoteApproval } = status;
-    const quoteApprovalNarrowed = quoteApproval as
-      | { currentUser?: string }
-      | null
-      | undefined;
-    const isQuoteAutomaticallyAccepted =
-      quoteApprovalNarrowed?.currentUser === 'automatic';
-    const isQuoteManuallyAccepted =
-      quoteApprovalNarrowed?.currentUser === 'manual';
-
-    return isQuoteAutomaticallyAccepted || isQuoteManuallyAccepted;
   };
 
   const processFiles = async (
@@ -765,9 +738,7 @@ function Compose({
       }
       return Promise.all(
         allowedFiles.map(async (file) => {
-          const uploadFile = supports('@atproto')
-            ? await compressAtprotoImageIfNeeded(file)
-            : file;
+          const uploadFile = await compressAtprotoImageIfNeeded(file);
           return {
             fileData: await uploadFile.arrayBuffer(),
             fileName: uploadFile.name,
@@ -785,51 +756,41 @@ function Compose({
   };
 
   const handlePastedLink = async (url: string): Promise<void> => {
-    // Handle QP links
-    if (supportsNativeQuote()) {
-      // Quotes cannot coexist with media attachments
-      if (mediaAttachments.length > 0) {
+    // ATProto-only: a pasted Bluesky post link (bsky.app or our own permalink)
+    // can become a native quote. Quotes are protocol-level embeds, so every
+    // resolvable post is quotable — there is no Mastodon visibility/approval
+    // gate to consult.
+
+    // Quotes cannot coexist with media attachments
+    if (mediaAttachments.length > 0) {
+      return;
+    }
+    // Cannot add/remove/replace current quote when editing
+    if (editStatus) {
+      return;
+    }
+
+    try {
+      const quoteURI = await resolveAtprotoPostURI(url);
+      if (!quoteURI) return;
+      const status = await statusesEndpoint
+        .$select(encodeAtprotoID(quoteURI))
+        .fetch();
+      if (!status?.id) return;
+      saveStatus(status as Parameters<typeof saveStatus>[0], instance, {
+        skipThreading: true,
+      });
+      // Don't show suggestion if it's the same as current quote
+      if (currentQuoteStatus?.id === status.id) {
         return;
       }
-
-      // Cannot add/remove/replace current quote when editing
-      if (editStatus) {
-        return;
-      }
-
-      try {
-        // unfurl-link.ts exposes a snapshot type without `id`/`instance`/
-        // `originalURL` keys publicly; the runtime data does carry them on
-        // resolved hits, so narrow here for the keys we read.
-        const unfurledData = (await unfurlMastodonLink(instance, url)) as
-          | {
-              id?: string;
-              instance?: string;
-              originalURL?: string;
-              [key: string]: unknown;
-            }
-          | null
-          | undefined;
-        if (unfurledData?.id) {
-          const status = (
-            states.statuses as Record<string, StatusLike | undefined>
-          )[`${unfurledData.instance}/${unfurledData.id}`];
-          if (status && checkQuoteEligibility(status)) {
-            // Don't show suggestion if it's the same as current quote
-            if (currentQuoteStatus?.id === status.id) {
-              return;
-            }
-
-            setQuoteSuggestion({
-              status,
-              instance: unfurledData.instance,
-              url: unfurledData.originalURL ?? url,
-            });
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
+      setQuoteSuggestion({
+        status,
+        instance,
+        url,
+      });
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -915,7 +876,6 @@ function Compose({
       const {
         language: editLanguage,
         mediaAttachments: editMediaAttachments,
-        quoteApproval,
       } = editStatus;
       setUIState('loading');
       void (async () => {
@@ -936,11 +896,6 @@ function Compose({
               prefStringFn('posting:default:language')?.toLowerCase() ||
               DEFAULT_LANG,
           );
-          if (supportsNativeQuote()) {
-            const postQuoteApprovalPolicy =
-              getPostQuoteApprovalPolicy(quoteApproval);
-            setQuoteApprovalPolicy(postQuoteApprovalPolicy);
-          }
           setMediaAttachments(editMediaAttachments ?? []);
           setUIState('default');
         } catch (e) {
@@ -956,17 +911,12 @@ function Compose({
       if (defaultLang) {
         setLanguage(defaultLang.toLowerCase());
       }
-      const defaultQuotePolicy = prefStringFn('posting:default:quote_policy');
-      if (defaultQuotePolicy) {
-        setQuoteApprovalPolicy(defaultQuotePolicy.toLowerCase());
-      }
     }
     if (draftStatus) {
       const {
         status,
         language: draftLanguage,
         mediaAttachments: draftMediaAttachments,
-        quoteApprovalPolicy: draftQuoteApprovalPolicy,
       } = draftStatus;
       const textarea = textareaRef.current;
       if (!textarea) return;
@@ -981,8 +931,6 @@ function Compose({
           DEFAULT_LANG,
       );
       if (draftMediaAttachments) setMediaAttachments(draftMediaAttachments);
-      if (draftQuoteApprovalPolicy)
-        setQuoteApprovalPolicy(draftQuoteApprovalPolicy);
       if (draftStatus.threadgate) {
         const tg = draftStatus.threadgate;
         if (tg === 'everybody' || tg === 'nobody' || tg === 'custom') {
@@ -1250,7 +1198,6 @@ function Compose({
         status: textareaRef.current?.value ?? '',
         language,
         mediaAttachments,
-        quoteApprovalPolicy,
         threadgate,
         threadgateRules,
         threadgateList,
@@ -1414,7 +1361,6 @@ function Compose({
     language !== prevLanguage.current ||
     (autoDetectedLanguages?.length &&
       !autoDetectedLanguages.includes(language));
-  const highlightQuoteApprovalPolicyField = quoteApprovalPolicy !== 'public';
 
   const addSubToolbarRef = useRef<HTMLSpanElement | null>(null);
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
@@ -1493,7 +1439,6 @@ function Compose({
                         status: textareaRef.current?.value ?? '',
                         language,
                         mediaAttachments,
-                        quoteApprovalPolicy,
                         threadgate,
                         threadgateRules,
                         threadgateList,
@@ -1591,7 +1536,6 @@ function Compose({
                           status: textareaRef.current?.value ?? '',
                           language,
                           mediaAttachments,
-                          quoteApprovalPolicy,
                           threadgate,
                           threadgateRules,
                           threadgateList,
@@ -1690,14 +1634,9 @@ function Compose({
             >;
             console.log('ENTRIES', entries);
             const rawStatus = entries.status;
-            const rawQuoteApprovalPolicy = entries.quoteApprovalPolicy;
 
             let status: string | undefined =
               typeof rawStatus === 'string' ? rawStatus : undefined;
-            const submitQuoteApprovalPolicy: string | undefined =
-              typeof rawQuoteApprovalPolicy === 'string'
-                ? rawQuoteApprovalPolicy
-                : undefined;
 
             // Let the backend validate character limits.
             // TODO: check for URLs and use `charactersReservedPerUrl` to calculate max characters
@@ -1808,33 +1747,9 @@ function Compose({
                     (attachment) => attachment.id,
                   ),
                 };
-                if (editStatus) {
-                  if (supportsQuoteApprovalPolicy) {
-                    params.quote_approval_policy = quoteApprovalPolicy;
-                  }
-                  if (
-                    supports('@mastodon') ||
-                    supports('@gotosocial/edit-media-attributes')
-                  ) {
-                    params.media_attributes = submitMediaAttachments.map(
-                      (attachment) => {
-                        return {
-                          id: attachment.id,
-                          description: attachment.description,
-                          // focus
-                          // thumbnail
-                        };
-                      },
-                    );
-                  }
-                } else {
-                  if (supportsQuoteApprovalPolicy) {
-                    params.quote_approval_policy = submitQuoteApprovalPolicy;
-                  }
-                  if (supportsNativeQuote()) {
-                    if (currentQuoteStatus?.id) {
-                      params.quoted_status_id = currentQuoteStatus.id;
-                    }
+                if (!editStatus) {
+                  if (currentQuoteStatus?.id) {
+                    params.quoted_status_id = currentQuoteStatus.id;
                   }
                   // params.inReplyToId = replyToStatus?.id || undefined;
                   params.in_reply_to_id = replyToStatus?.id || undefined;
@@ -2560,40 +2475,6 @@ function Compose({
                 // mirror the JS expression for behavior parity.
                 hidden={(uiState as string) === 'loading'}
               />
-            )}
-            {supportsQuoteApprovalPolicy && (
-              <label
-                className={`toolbar-button ${highlightQuoteApprovalPolicyField ? 'highlight' : ''}`}
-              >
-                <Icon icon="quote2" alt="Quote settings" />
-                {quoteApprovalPolicy === 'followers' && (
-                  <Icon icon="group" className="insignificant" />
-                )}
-                {quoteApprovalPolicy === 'nobody' && (
-                  <Icon icon="block" className="insignificant" />
-                )}
-                <select
-                  name="quoteApprovalPolicy"
-                  value={quoteApprovalPolicy}
-                  onChange={(e: SyntheticEvent<HTMLSelectElement>) => {
-                    setQuoteApprovalPolicy(
-                      (e.target as HTMLSelectElement).value,
-                    );
-                  }}
-                  disabled={uiState === 'loading'}
-                  dir="auto"
-                >
-                  <option value="public">
-                    <Trans>Anyone can quote</Trans>
-                  </option>
-                  <option value="followers">
-                    <Trans>Your followers can quote</Trans>
-                  </option>
-                  <option value="nobody">
-                    <Trans>Only you can quote</Trans>
-                  </option>
-                </select>
-              </label>
             )}
             <label
               className={`toolbar-button ${

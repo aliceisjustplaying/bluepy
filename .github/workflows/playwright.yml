@@ -24,5 +24,7 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Install Playwright Browsers
         run: bunx playwright install --with-deps webkit --only-shell
+      - name: Run unit tests
+        run: bun run test:unit
       - name: Run Playwright tests
-        run: bun run test
+        run: bun run test:e2e

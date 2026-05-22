@@ -34,11 +34,48 @@ function maybeDecodeAtprotoURI(
 ): string | null {
   if (!value) return null;
   try {
-    const decoded = decodeURIComponent(value);
+    const decoded = decodeURIComponent(value).replace(/^at:\/(?!\/)/i, 'at://');
     return decoded.startsWith('at://') ? decoded : null;
   } catch {
     return value.startsWith('at://') ? value : null;
   }
+}
+
+function decodeAtprotoRecordPath(path: string): string {
+  const hashIndex = path.indexOf('#');
+  const pathnameAndSearch =
+    hashIndex === -1 ? path : path.slice(0, hashIndex);
+  const hash = hashIndex === -1 ? '' : path.slice(hashIndex);
+  const queryIndex = pathnameAndSearch.indexOf('?');
+  const pathname =
+    queryIndex === -1
+      ? pathnameAndSearch
+      : pathnameAndSearch.slice(0, queryIndex);
+  const search = queryIndex === -1 ? '' : pathnameAndSearch.slice(queryIndex);
+  if (!pathname.toLowerCase().startsWith('/at%3a/')) return path;
+  try {
+    const decoded = decodeURIComponent(pathname).replace(
+      /^\/at:\/(?!\/)/i,
+      '/at://',
+    );
+    return `${decoded}${search}${hash}`;
+  } catch {
+    return path;
+  }
+}
+
+function getAtprotoURIFromPathname(pathname: string): string | null {
+  return maybeDecodeAtprotoURI(pathname.replace(/^\/+/, ''));
+}
+
+function isAtprotoPostPath(pathname: string): boolean {
+  return isAtprotoPostURI(getAtprotoURIFromPathname(pathname));
+}
+
+function isStatusPath(pathname: string): boolean {
+  return (
+    /^\/(?:[^/]+\/)?s\/[^/?#]+/i.test(pathname) || isAtprotoPostPath(pathname)
+  );
 }
 
 function buildAtprotoRecordPath(uri: string): string {
@@ -115,13 +152,17 @@ export {
   buildAtprotoRecordPath,
   buildAtprotoPostPermalink,
   buildAtprotoPostPath,
+  decodeAtprotoRecordPath,
   encodeAtprotoID,
+  getAtprotoURIFromPathname,
   getAtprotoPathFromLegacyRoute,
   getAtprotoRepo,
   isAtprotoFeedGeneratorURI,
   isAtprotoListURI,
+  isAtprotoPostPath,
   isAtprotoPostURI,
   isAtprotoProfileURI,
   isAtprotoRecordURI,
+  isStatusPath,
   maybeDecodeAtprotoURI,
 };

@@ -1,5 +1,3 @@
-import type { MessageDescriptor } from '@lingui/core';
-import { msg } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
@@ -8,14 +6,12 @@ import type { HTMLAttributes, ReactElement } from 'react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { api } from '../utils/api';
-import i18nDuration from '../utils/i18n-duration';
 import isSearchEnabled from '../utils/is-search-enabled';
 import niceDateTime from '../utils/nice-date-time';
 import showCompose from '../utils/show-compose';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import { getCurrentAccountID, updateAccount } from '../utils/store-utils';
-import supports from '../utils/supports';
 
 import {
   type AccountInfoShape,
@@ -28,37 +24,7 @@ import Loader from './loader';
 import MenuConfirm from './menu-confirm';
 import Menu2 from './menu2';
 import Modal from './modal';
-import SubMenu2 from './submenu2';
 import TranslatedBioSheet from './translated-bio-sheet';
-
-const MUTE_DURATIONS = [
-  60 * 5, // 5 minutes
-  60 * 30, // 30 minutes
-  60 * 60, // 1 hour
-  60 * 60 * 6, // 6 hours
-  60 * 60 * 24, // 1 day
-  60 * 60 * 24 * 3, // 3 days
-  60 * 60 * 24 * 7, // 1 week
-  60 * 60 * 24 * 30, // 30 days
-  0, // forever
-];
-
-// Labels for mute durations. Values may be either a `MessageDescriptor` (from
-// `msg`) for the lingui core `_` helper, or a `() => string` factory returned
-// by `i18nDuration`. Consumers branch on `typeof === 'function'` at call sites
-// to preserve original JS behavior.
-type MuteDurationLabel = MessageDescriptor | (() => string);
-const MUTE_DURATIONS_LABELS: Record<number, MuteDurationLabel> = {
-  0: msg`Forever`,
-  300: i18nDuration(5, 'minute'),
-  1_800: i18nDuration(30, 'minute'),
-  3_600: i18nDuration(1, 'hour'),
-  21_600: i18nDuration(6, 'hour'),
-  86_400: i18nDuration(1, 'day'),
-  259_200: i18nDuration(3, 'day'),
-  604_800: i18nDuration(1, 'week'),
-  2592_000: i18nDuration(30, 'day'),
-};
 
 // Endpoint shims for the masto v1 accounts/relationships APIs. The runtime
 // client exposes these, but the loose `MastoClient` type in `utils/api.ts`
@@ -86,7 +52,7 @@ interface AccountSelectEndpoint {
     reblogs?: boolean;
   }): Promise<Relationship>;
   unfollow(): Promise<Relationship>;
-  mute(params: { duration: number }): Promise<Relationship>;
+  mute(params?: { duration?: number }): Promise<Relationship>;
   unmute(): Promise<Relationship>;
   block(): Promise<Relationship>;
   unblock(): Promise<Relationship>;
@@ -155,7 +121,7 @@ function RelatedActions({
   onRelationshipChange = () => {},
   setShowEditProfile = () => {},
 }: RelatedActionsProps) {
-  const { i18n, t } = useLingui();
+  const { t } = useLingui();
   const {
     masto: currentMasto,
     instance: currentInstance,
@@ -703,80 +669,37 @@ function RelatedActions({
                     </span>
                   </MenuItem>
                 ) : (
-                  <SubMenu2
-                    menuClassName="menu-blur"
-                    openTrigger="clickOnly"
-                    direction="bottom"
-                    overflow="auto"
-                    shift={16}
-                    label={
-                      <>
-                        <Icon icon="mute" />
-                        <span className="menu-grow">
-                          <Trans>
-                            Mute{' '}
-                            <span className="bidi-isolate">@{username}</span>…
-                          </Trans>
-                        </span>
-                        <span
-                          style={{
-                            textOverflow: 'clip',
-                          }}
-                        >
-                          <Icon icon="time" />
-                          <Icon icon="chevron-right" />
-                        </span>
-                      </>
-                    }
+                  <MenuItem
+                    onClick={() => {
+                      setRelationshipUIState('loading');
+                      void (async () => {
+                        try {
+                          const newRelationship = await getAccountsEndpoint(
+                            currentMasto,
+                          )
+                            .$select(currentInfo?.id || id)
+                            .mute();
+                          console.log('muting', newRelationship);
+                          setRelationship(newRelationship);
+                          setRelationshipUIState('default');
+                          showToast(t`Muted @${username}`);
+                          states.reloadGenericAccounts.id = 'mute';
+                          states.reloadGenericAccounts.counter++;
+                        } catch (e) {
+                          console.error(e);
+                          setRelationshipUIState('error');
+                          showToast(t`Unable to mute @${username}`);
+                        }
+                      })();
+                    }}
                   >
-                    <div className="menu-wrap">
-                      {MUTE_DURATIONS.map((duration) => (
-                        <MenuItem
-                          key={duration}
-                          onClick={() => {
-                            setRelationshipUIState('loading');
-                            void (async () => {
-                              try {
-                                const newRelationship =
-                                  await getAccountsEndpoint(currentMasto)
-                                    .$select(currentInfo?.id || id)
-                                    .mute({
-                                      duration,
-                                    });
-                                console.log('muting', newRelationship);
-                                setRelationship(newRelationship);
-                                setRelationshipUIState('default');
-                                showToast(
-                                  t`Muted @${username} for ${
-                                    typeof MUTE_DURATIONS_LABELS[duration] ===
-                                    'function'
-                                      ? (
-                                          MUTE_DURATIONS_LABELS[
-                                            duration
-                                          ] as () => string
-                                        )()
-                                      : i18n._(MUTE_DURATIONS_LABELS[duration])
-                                  }`,
-                                );
-                                states.reloadGenericAccounts.id = 'mute';
-                                states.reloadGenericAccounts.counter++;
-                              } catch (e) {
-                                console.error(e);
-                                setRelationshipUIState('error');
-                                showToast(t`Unable to mute @${username}`);
-                              }
-                            })();
-                          }}
-                        >
-                          {typeof MUTE_DURATIONS_LABELS[duration] === 'function'
-                            ? (
-                                MUTE_DURATIONS_LABELS[duration] as () => string
-                              )()
-                            : i18n._(MUTE_DURATIONS_LABELS[duration])}
-                        </MenuItem>
-                      ))}
-                    </div>
-                  </SubMenu2>
+                    <Icon icon="mute" />
+                    <span>
+                      <Trans>
+                        Mute <span className="bidi-isolate">@{username}</span>
+                      </Trans>
+                    </span>
+                  </MenuItem>
                 )}
                 {followedBy && (
                   <MenuConfirm
@@ -924,24 +847,21 @@ function RelatedActions({
                 </MenuItem>
               </>
             )}
-            {currentAuthenticated &&
-              isSelf &&
-              standalone &&
-              supports('@mastodon/profile-edit') && (
-                <>
-                  <MenuDivider />
-                  <MenuItem
-                    onClick={() => {
-                      setShowEditProfile(true);
-                    }}
-                  >
-                    <Icon icon="pencil" />
-                    <span>
-                      <Trans>Edit profile</Trans>
-                    </span>
-                  </MenuItem>
-                </>
-              )}
+            {currentAuthenticated && isSelf && standalone && (
+              <>
+                <MenuDivider />
+                <MenuItem
+                  onClick={() => {
+                    setShowEditProfile(true);
+                  }}
+                >
+                  <Icon icon="pencil" />
+                  <span>
+                    <Trans>Edit profile</Trans>
+                  </span>
+                </MenuItem>
+              </>
+            )}
           </Menu2>
           {!relationship && relationshipUIState === 'loading' && (
             <Loader abrupt />

@@ -1,4 +1,7 @@
-import { getAtprotoPathFromLegacyRoute } from './atproto-route';
+import {
+  decodeAtprotoRecordPath,
+  getAtprotoPathFromLegacyRoute,
+} from './atproto-route';
 
 function normalizeAppPath(path: string): string {
   if (!path) return '/';
@@ -8,7 +11,8 @@ function normalizeAppPath(path: string): string {
     if (url.origin !== location.origin) return path;
     return normalizeAppPath(`${url.pathname}${url.search}${url.hash}`);
   }
-  return path.startsWith('/') ? path : `/${path}`;
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  return decodeAtprotoRecordPath(normalized);
 }
 
 function canonicalizeAppPath(path: string): string {
@@ -18,6 +22,14 @@ function canonicalizeAppPath(path: string): string {
 
 function currentAppPath(): string {
   return `${location.pathname}${location.search}`;
+}
+
+function getPrevLocationSnapshot(): { pathname: string; search: string } {
+  const currentURL = new URL(currentAppPath(), location.origin);
+  return {
+    pathname: currentURL.pathname,
+    search: currentURL.search,
+  };
 }
 
 function isModifiedClick(e: React.MouseEvent): boolean {
@@ -60,6 +72,7 @@ function migrateLegacyCanonicalRoute(): void {
 export {
   canonicalizeAppPath,
   currentAppPath,
+  getPrevLocationSnapshot,
   isModifiedClick,
   migrateLegacyCanonicalRoute,
   migrateLegacyHashRoute,

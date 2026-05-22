@@ -79,7 +79,6 @@ function NameText({
     id,
     url,
     displayName,
-    emojis,
     bot,
     username,
     roles,
@@ -148,12 +147,7 @@ function NameText({
       {displayName && !short ? (
         <>
           <b dir="auto">
-            <EmojiText
-              text={displayName}
-              emojis={emojis}
-              resolverURL={account.url}
-              staticEmoji
-            />
+            <EmojiText text={displayName} />
           </b>
           {!showAcct && !hideUsername && (
             <>

@@ -1,7 +1,5 @@
-/// <reference types="node" />
-
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 import {
   persistShortcutsColumnsMode,
@@ -10,25 +8,25 @@ import {
   restoreShortcutsViewMode,
 } from '../src/utils/settings-storage';
 
-void test('shortcut view mode persistence keeps multi-column explicit', () => {
+test('shortcut view mode persistence keeps multi-column explicit', () => {
   assert.equal(persistShortcutsViewMode('multi-column'), 'multi-column');
   assert.equal(restoreShortcutsViewMode('multi-column'), 'multi-column');
 });
 
-void test('shortcut view mode persistence preserves default as null', () => {
+test('shortcut view mode persistence preserves default as null', () => {
   assert.equal(persistShortcutsViewMode(null), null);
   assert.equal(restoreShortcutsViewMode(null), null);
 });
 
-void test('legacy shortcut columns mode restores as multi-column view mode', () => {
+test('legacy shortcut columns mode restores as multi-column view mode', () => {
   assert.equal(restoreShortcutsViewMode(null, true), 'multi-column');
 });
 
-void test('explicit shortcut view mode overrides legacy columns mode', () => {
+test('explicit shortcut view mode overrides legacy columns mode', () => {
   assert.equal(restoreShortcutsViewMode('tab-menu-bar', true), 'tab-menu-bar');
 });
 
-void test('shortcut columns mode persistence keeps only explicit true', () => {
+test('shortcut columns mode persistence keeps only explicit true', () => {
   assert.equal(persistShortcutsColumnsMode(true), true);
   assert.equal(persistShortcutsColumnsMode(false), false);
   assert.equal(restoreShortcutsColumnsMode(true), true);

@@ -3,7 +3,6 @@ import type { SyntheticEvent } from 'react';
 
 import { compressAtprotoImageIfNeeded } from '../utils/atproto-image-compression';
 import { revokeAttachmentObjectUrls } from '../utils/compose-media';
-import supports from '../utils/supports';
 
 interface FilePickerMediaAttachment {
   fileData: ArrayBuffer;
@@ -65,9 +64,7 @@ function FilePickerInput({
           try {
             mediaFiles = await Promise.all(
               Array.from(files).map(async (file) => {
-                const uploadFile = supports('@atproto')
-                  ? await compressAtprotoImageIfNeeded(file)
-                  : file;
+                const uploadFile = await compressAtprotoImageIfNeeded(file);
                 return {
                   fileData: await uploadFile.arrayBuffer(),
                   fileName: uploadFile.name,

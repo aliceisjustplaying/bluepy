@@ -10,7 +10,13 @@ import type {
   ReactElement,
 } from 'react';
 import { memo } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useDebouncedCallback } from 'use-debounce';
@@ -21,13 +27,13 @@ import { filteredItems, isFiltered } from '../utils/filters';
 import isRTL from '../utils/is-rtl';
 import {
   canonicalizeAppPath,
+  getPrevLocationSnapshot,
   isModifiedClick,
   navigatePath,
 } from '../utils/router';
 import showToast from '../utils/show-toast';
 import states, { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
-import { isMediaFirstInstance } from '../utils/store-utils';
 import {
   canonicalTimelineContextId,
   dedupeTimelineContextItems,
@@ -83,6 +89,10 @@ function TimelineStatusLink({
   className = 'status-link timeline-item',
 }: TimelineStatusLinkProps) {
   const href = canonicalizeAppPath(to);
+  const navigateFromCurrentLocation = () => {
+    states.prevLocation = getPrevLocationSnapshot();
+    navigatePath(href);
+  };
 
   return (
     <div
@@ -93,12 +103,12 @@ function TimelineStatusLink({
       onClick={(e: MouseEvent<HTMLDivElement>) => {
         if (shouldLetStatusLinkTargetHandleEvent(e.target)) return;
         if (isModifiedClick(e)) return;
-        navigatePath(href);
+        navigateFromCurrentLocation();
       }}
       onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        navigatePath(href);
+        navigateFromCurrentLocation();
       }}
     >
       <a
@@ -109,7 +119,7 @@ function TimelineStatusLink({
         onClick={(e: MouseEvent<HTMLAnchorElement>) => {
           if (isModifiedClick(e)) return;
           e.preventDefault();
-          navigatePath(href);
+          navigateFromCurrentLocation();
         }}
       />
       {children}
@@ -227,6 +237,24 @@ interface TimelineCacheEntry {
 
 const timelineCache = new Map<string, TimelineCacheEntry>();
 const TIMELINE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function writeTimelineCache(
+  cacheKey: string,
+  items: TimelineEntry[],
+  showMore: boolean,
+  scrollTop: number,
+) {
+  if (!items.length) {
+    timelineCache.delete(cacheKey);
+    return;
+  }
+  timelineCache.set(cacheKey, {
+    items,
+    showMore,
+    scrollTop,
+    ts: Date.now(),
+  });
+}
 
 // paginationItemsSelector is for Timeline2
 const paginationPrevSelector =
@@ -491,6 +519,8 @@ function Timeline({
   const [showNew, setShowNew] = useState(false);
   const [visible, setVisible] = useState(true);
   const scrollableRef = useRef<HTMLDivElement | null>(null);
+  const scrollTopRef = useRef(cachedData?.scrollTop ?? 0);
+  const pendingScrollTopRef = useRef(cachedData?.scrollTop ?? 0);
 
   // Updated every render so the cleanup fn always sees the latest values
   const cachePayloadRef = useRef<{
@@ -503,7 +533,7 @@ function Timeline({
   console.debug('RENDER Timeline', id, refresh);
   __BENCHMARK.start(`timeline-${id}-load`);
 
-  const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
+  const mediaFirst = false;
 
   const allowGrouping = view !== 'media';
   const loadItemsTS = useRef(0); // Ensures only one loadItems at a time
@@ -653,6 +683,54 @@ function Timeline({
   );
   const resetScrollDirection = scrollFn?.resetScrollDirection;
 
+  useLayoutEffect(() => {
+    const scrollable = scrollableRef.current;
+    if (!scrollable) return undefined;
+    if (pendingScrollTopRef.current > 0) {
+      scrollable.scrollTop = pendingScrollTopRef.current;
+      scrollTopRef.current = pendingScrollTopRef.current;
+    } else {
+      scrollTopRef.current = scrollable.scrollTop;
+    }
+    let cacheWriteFrame: number | null = null;
+    let lastCachedScrollTop = scrollTopRef.current;
+    const writeCachedScrollTop = () => {
+      cacheWriteFrame = null;
+      const cachedPayload = cachePayloadRef.current;
+      if (!cachedPayload) return;
+      lastCachedScrollTop = scrollTopRef.current;
+      writeTimelineCache(
+        cachedPayload.cacheKey,
+        cachedPayload.items,
+        cachedPayload.showMore,
+        scrollTopRef.current,
+      );
+    };
+    const scheduleCacheWrite = () => {
+      if (cacheWriteFrame !== null) return;
+      cacheWriteFrame = requestAnimationFrame(writeCachedScrollTop);
+    };
+    const updateScrollTop = () => {
+      scrollTopRef.current = scrollable.scrollTop;
+      if (Math.abs(scrollTopRef.current - lastCachedScrollTop) >= 128) {
+        if (cacheWriteFrame !== null) {
+          cancelAnimationFrame(cacheWriteFrame);
+          cacheWriteFrame = null;
+        }
+        writeCachedScrollTop();
+      } else {
+        scheduleCacheWrite();
+      }
+    };
+    updateScrollTop();
+    scrollable.addEventListener('scroll', updateScrollTop, { passive: true });
+    return () => {
+      if (cacheWriteFrame !== null) cancelAnimationFrame(cacheWriteFrame);
+      writeCachedScrollTop();
+      scrollable.removeEventListener('scroll', updateScrollTop);
+    };
+  }, []);
+
   // Latest-value refs so the mount-only effect below can read fresh values
   // without participating in its dep array.
   const loadItemsRef = useRef(loadItems);
@@ -664,8 +742,8 @@ function Timeline({
   useEffect(() => {
     const initialCachedData = initialCachedDataRef.current;
     const load = loadItemsRef.current;
-    if (initialCachedData?.scrollTop && scrollableRef.current) {
-      scrollableRef.current.scrollTop = initialCachedData.scrollTop;
+    if (pendingScrollTopRef.current && scrollableRef.current) {
+      scrollableRef.current.scrollTop = pendingScrollTopRef.current;
     } else {
       scrollableRef.current?.scrollTo({ top: 0 });
     }
@@ -679,15 +757,26 @@ function Timeline({
         showMore: cachedShowMore,
       } = cachePayloadRef.current;
       if (cachedItems?.length) {
-        timelineCache.set(cachedCacheKey, {
-          items: cachedItems,
-          showMore: cachedShowMore,
-          scrollTop: scrollableRef.current?.scrollTop ?? 0,
-          ts: Date.now(),
-        });
+        writeTimelineCache(
+          cachedCacheKey,
+          cachedItems,
+          cachedShowMore,
+          Math.max(scrollableRef.current?.scrollTop ?? 0, scrollTopRef.current),
+        );
       }
     };
   }, []);
+  useLayoutEffect(() => {
+    if (!pendingScrollTopRef.current || !scrollableRef.current) return;
+    if (!items.length) return;
+    scrollableRef.current.scrollTop = pendingScrollTopRef.current;
+    if (scrollableRef.current.scrollTop >= pendingScrollTopRef.current) {
+      pendingScrollTopRef.current = 0;
+    }
+  }, [items.length]);
+  useEffect(() => {
+    writeTimelineCache(cacheKey, items, showMore, scrollTopRef.current);
+  }, [cacheKey, items, showMore]);
   const firstLoad = useRef(true);
   useEffect(() => {
     if (firstLoad.current) {

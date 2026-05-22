@@ -1,6 +1,75 @@
 // @ts-check
 import { expect, test } from '@playwright/test';
 
+/**
+ * @typedef {import('@atproto/api').AppBskyActorDefs.ProfileViewBasic} AtprotoTestActor
+ * @typedef {import('@atproto/api').AppBskyFeedDefs.PostView} AtprotoTestPost
+ */
+
+/**
+ * @param {string} did
+ * @param {string} handle
+ * @param {string} displayName
+ * @returns {AtprotoTestActor}
+ */
+function makeAtprotoTestActor(did, handle, displayName) {
+  return { did, handle, displayName };
+}
+
+/**
+ * @param {string} uri
+ * @param {AtprotoTestActor} author
+ * @param {string} text
+ * @param {{ uri: string; cid: string } | null} parent
+ * @param {string} createdAt
+ * @returns {AtprotoTestPost}
+ */
+function makeAtprotoTestPost(uri, author, text, parent, createdAt) {
+  const cid = THREAD_CIDS[uri];
+  return {
+    uri,
+    cid,
+    author,
+    record: {
+      $type: 'app.bsky.feed.post',
+      text,
+      createdAt,
+      ...(parent
+        ? {
+            reply: {
+              root: { uri: THREAD_ROOT_URI, cid: THREAD_ROOT_CID },
+              parent,
+            },
+          }
+        : {}),
+    },
+    indexedAt: createdAt,
+    replyCount: 0,
+    repostCount: 0,
+    likeCount: 0,
+    quoteCount: 0,
+    labels: [],
+    viewer: {},
+  };
+}
+
+const THREAD_ROOT_URI =
+  'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/threadroot';
+const THREAD_ROOT_CID =
+  'bafyreifpzxifkolbqfuez5mhvx6axkld7aynq2bjxkqivd375k2iobqfcq';
+/** @type {Record<string, string>} */
+const THREAD_CIDS = {
+  [THREAD_ROOT_URI]: THREAD_ROOT_CID,
+  'at://did:plc:p2cp5gopk7mgjegy6wadk3ep/app.bsky.feed.post/directreply':
+    'bafyreieuuxftpeth2jakt425iwn7on5or7ydni47uai2k4c4a7jxcrswsi',
+  'at://did:plc:vc7f4oafdgxsihk4cry2xpze/app.bsky.feed.post/nestedreply':
+    'bafyreic3pxdls7ilzck5xoyhfu66ijkeoqvxbhptksupex2xdjkdb4nia4',
+  'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/parentpost':
+    'bafyreigobhwuxqo4jevkyjuesxg4jhnsbbrx2lcwz2voe5ur5hapn4zhp4',
+  'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/childreply':
+    'bafyreid6oyjebcjmlq2h7omcm5mj6zq3yhmvn5nrkpe7gdq5j4i6ygc65m',
+};
+
 test('has welcome page', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#welcome')).toBeVisible();
@@ -29,34 +98,25 @@ test('login page appview switcher updates data-appview on html element', async (
   await expect(page.locator('html')).toHaveAttribute('data-appview', 'bluesky');
 });
 
-test('loads post page and works', async ({ page }) => {
-  await page.route('**/api/v1/statuses/123', async (route) => {
+test('does not run a Mastodon runtime for legacy instance post routes', async ({
+  page,
+}) => {
+  let mastodonRequested = false;
+  await page.route('**/api/v1/statuses/**', async (route) => {
+    mastodonRequested = true;
     await route.fulfill({
-      json: {
-        id: '123',
-        created_at: '2024-01-01T12:00:00.000Z',
-        account: {
-          id: '1',
-          username: 'testuser',
-          display_name: 'Test User',
-          acct: 'testuser@test.social',
-        },
-        content: '<p>This is a test post</p>',
-      },
-    });
-  });
-
-  await page.route('**/api/v1/statuses/123/context', async (route) => {
-    await route.fulfill({
-      json: {
-        ancestors: [],
-        descendants: [],
-      },
+      json: { id: '123', content: '<p>This is a test post</p>' },
     });
   });
 
   await page.goto('/test.social/s/123');
-  await expect(page.locator('text=This is a test post')).toBeVisible();
+
+  // ATProto-only: there is no Mastodon runtime to fetch a non-Bluesky instance
+  // post, so the route degrades to the welcome/login screen and never calls the
+  // Mastodon REST API.
+  await expect(page.locator('#welcome')).toBeVisible();
+  await expect(page.locator('text=This is a test post')).toHaveCount(0);
+  expect(mastodonRequested).toBe(false);
 });
 
 test('uses cache-busting reloads when the app script never mounts', async ({
@@ -183,29 +243,22 @@ test('does not treat post-mount module failures as boot failures', async ({
 });
 
 test('redirects old hash post URLs to path routes', async ({ page }) => {
-  await page.route('**/api/v1/statuses/123', async (route) => {
+  let mastodonRequested = false;
+  await page.route('**/api/v1/statuses/**', async (route) => {
+    mastodonRequested = true;
     await route.fulfill({
-      json: {
-        id: '123',
-        created_at: '2024-01-01T12:00:00.000Z',
-        account: {
-          id: '1',
-          username: 'testuser',
-          display_name: 'Test User',
-          acct: 'testuser@test.social',
-        },
-        content: '<p>Legacy hash post</p>',
-      },
+      json: { id: '123', content: '<p>Legacy hash post</p>' },
     });
   });
 
-  await page.route('**/api/v1/statuses/123/context', async (route) => {
-    await route.fulfill({ json: { ancestors: [], descendants: [] } });
-  });
-
   await page.goto('/#/test.social/s/123');
+  // Hash→path route normalization still applies...
   await expect(page).toHaveURL(/\/test\.social\/s\/123$/);
-  await expect(page.locator('text=Legacy hash post')).toBeVisible();
+  // ...but ATProto-only means no Mastodon runtime renders the post; it degrades
+  // to the welcome/login screen without a Mastodon REST call.
+  await expect(page.locator('#welcome')).toBeVisible();
+  await expect(page.locator('text=Legacy hash post')).toHaveCount(0);
+  expect(mastodonRequested).toBe(false);
 });
 
 test('loads native AT URI post URLs', async ({ page }) => {
@@ -254,10 +307,150 @@ test('loads native AT URI post URLs', async ({ page }) => {
 
   await page.goto(`/${atUri}`);
   await expect(page.locator('text=Native AT URI post')).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
   await expect(page).toHaveURL(
     new RegExp(
       `/at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app\\.bsky\\.feed\\.post/3mlvekixsll23$`,
     ),
+  );
+});
+
+test('canonicalizes Worker-encoded native AT URI post URLs', async ({
+  page,
+}) => {
+  await routeAtprotoRecords(page);
+
+  const workerEncodedPath =
+    '/at%3A/did%3Aplc%3Aby3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/post123';
+  await page.goto(workerEncodedPath, { waitUntil: 'domcontentloaded' });
+  await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
+  await expect(page.locator('text=AT route post')).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
+});
+
+test('keeps nested same-author thread replies under their parent', async ({
+  page,
+}) => {
+  const directUri =
+    'at://did:plc:p2cp5gopk7mgjegy6wadk3ep/app.bsky.feed.post/directreply';
+  const nestedUri =
+    'at://did:plc:vc7f4oafdgxsihk4cry2xpze/app.bsky.feed.post/nestedreply';
+  const parentUri =
+    'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/parentpost';
+  const childUri =
+    'at://did:plc:by3jhwdqgbtrcc7q4tkkv3cf/app.bsky.feed.post/childreply';
+  const alice = makeAtprotoTestActor(
+    'did:plc:by3jhwdqgbtrcc7q4tkkv3cf',
+    'alice.mosphere.at',
+    'Alice',
+  );
+  const bob = makeAtprotoTestActor(
+    'did:plc:p2cp5gopk7mgjegy6wadk3ep',
+    'samuel.fm',
+    'Samuel',
+  );
+  const jerry = makeAtprotoTestActor(
+    'did:plc:vc7f4oafdgxsihk4cry2xpze',
+    'jcsalterego.bsky.social',
+    'Jerry',
+  );
+  const root = makeAtprotoTestPost(
+    THREAD_ROOT_URI,
+    alice,
+    'Thread root post',
+    null,
+    '2026-05-20T13:00:00.000Z',
+  );
+  const direct = makeAtprotoTestPost(
+    directUri,
+    bob,
+    'Direct reply',
+    { uri: THREAD_ROOT_URI, cid: THREAD_ROOT_CID },
+    '2026-05-20T13:01:00.000Z',
+  );
+  const nested = makeAtprotoTestPost(
+    nestedUri,
+    jerry,
+    'Nested reply',
+    { uri: directUri, cid: direct.cid },
+    '2026-05-20T13:02:00.000Z',
+  );
+  const parent = makeAtprotoTestPost(
+    parentUri,
+    alice,
+    'Parent in nested chain',
+    { uri: nestedUri, cid: nested.cid },
+    '2026-05-20T13:03:00.000Z',
+  );
+  const child = makeAtprotoTestPost(
+    childUri,
+    alice,
+    'Same author child reply',
+    { uri: parentUri, cid: parent.cid },
+    '2026-05-20T13:04:00.000Z',
+  );
+
+  await page.route('**/xrpc/app.bsky.feed.getPosts*', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: { posts: [root] },
+    });
+  });
+  await page.route('**/xrpc/app.bsky.feed.getPostThread*', async (route) => {
+    await route.fulfill({
+      headers: { 'access-control-allow-origin': '*' },
+      json: {
+        thread: {
+          $type: 'app.bsky.feed.defs#threadViewPost',
+          post: root,
+          replies: [
+            {
+              $type: 'app.bsky.feed.defs#threadViewPost',
+              post: direct,
+              replies: [
+                {
+                  $type: 'app.bsky.feed.defs#threadViewPost',
+                  post: nested,
+                  replies: [
+                    {
+                      $type: 'app.bsky.feed.defs#threadViewPost',
+                      post: parent,
+                      replies: [
+                        {
+                          $type: 'app.bsky.feed.defs#threadViewPost',
+                          post: child,
+                          replies: [],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  await page.goto(`/${THREAD_ROOT_URI}`);
+  await expect(page.locator('text=Parent in nested chain')).toBeVisible();
+  await expect(page.locator('text=Same author child reply')).toBeVisible();
+
+  const childIsNestedUnderParent = await page.evaluate(() => {
+    const statuses = Array.from(document.querySelectorAll('.status'));
+    const parentStatus = statuses.find((status) =>
+      status.textContent?.includes('Parent in nested chain'),
+    );
+    const childStatus = statuses.find((status) =>
+      status.textContent?.includes('Same author child reply'),
+    );
+    return !!parentStatus?.closest('li')?.contains(childStatus || null);
+  });
+  const visibleText = await page.locator('body').innerText();
+  expect(childIsNestedUnderParent).toBe(true);
+  expect(visibleText.indexOf('Parent in nested chain')).toBeLessThan(
+    visibleText.indexOf('Same author child reply'),
   );
 });
 
@@ -450,6 +643,9 @@ const AT_LIST_URI = `at://${AT_REPO}/app.bsky.graph.list/abc123`;
 const AT_LIST_PATH = `/${AT_LIST_URI}`;
 const AT_FEED_URI = `at://${AT_REPO}/app.bsky.feed.generator/whats-hot`;
 const AT_FEED_PATH = `/${AT_FEED_URI}`;
+const SCROLL_AT_FEED_URI = `at://${AT_REPO}/app.bsky.feed.generator/scroll-feed`;
+const SCROLL_AT_FEED_PATH = `/${SCROLL_AT_FEED_URI}`;
+const SCROLL_LOCAL_FEED_PATH = `/l/${encodeURIComponent(SCROLL_AT_FEED_URI)}`;
 const AT_POST_URI = `at://${AT_REPO}/app.bsky.feed.post/post123`;
 const AT_POST_PATH = `/${AT_POST_URI}`;
 const AT_PROFILE_AVATAR =
@@ -492,6 +688,62 @@ function getBootReloadAttempts() {
   return typeof attempts === 'number' ? attempts : null;
 }
 
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {{ homeTimeline?: { type: string; id: string } }} [options]
+ */
+async function seedAtprotoLogin(page, options = {}) {
+  await page.addInitScript(
+    ({ avatar, homeTimeline, repo }) => {
+      localStorage.setItem(
+        'accounts',
+        JSON.stringify([
+          {
+            accessToken: 'test-token',
+            atproto: true,
+            info: {
+              id: repo,
+              username: 'alice.test',
+              acct: 'alice.test',
+              displayName: 'Alice Profile',
+              avatar,
+              avatarStatic: avatar,
+            },
+            instanceURL: 'bsky.social',
+          },
+        ]),
+      );
+      localStorage.setItem(
+        'instances',
+        JSON.stringify({
+          'bsky.social': {
+            title: 'Bluesky',
+          },
+        }),
+      );
+      sessionStorage.setItem('currentAccount', repo);
+      if (homeTimeline) {
+        localStorage.setItem(
+          'homeTimeline',
+          JSON.stringify({
+            [`${repo}@bsky.social`]: homeTimeline,
+          }),
+        );
+      }
+    },
+    {
+      avatar: AT_PROFILE_AVATAR,
+      homeTimeline: options.homeTimeline,
+      repo: AT_REPO,
+    },
+  );
+}
+
+/**
+ * @param {string} [uri]
+ * @param {string} [text]
+ * @returns {AtprotoTestPost}
+ */
 function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
   return {
     $type: 'app.bsky.feed.defs#postView',
@@ -516,6 +768,375 @@ function makeAtprotoPost(uri = AT_POST_URI, text = 'AT route post') {
     labels: [],
     viewer: {},
   };
+}
+
+/**
+ * @typedef {{ uri: string, cid: string, author: AtprotoTestPost['author'] }} AtprotoReplyRef
+ * @typedef {{
+ *   $type: string,
+ *   post: AtprotoTestPost,
+ *   parent?: AtprotoThreadNode,
+ *   replies: AtprotoThreadNode[],
+ * }} AtprotoThreadNode
+ */
+
+/**
+ * @param {AtprotoTestPost} post
+ * @returns {AtprotoReplyRef}
+ */
+function atprotoReplyRef(post) {
+  return {
+    uri: post.uri,
+    cid: post.cid,
+    author: post.author,
+  };
+}
+
+/**
+ * @param {AtprotoTestPost} post
+ * @param {{
+ *   parent?: AtprotoThreadNode,
+ *   replies?: AtprotoThreadNode[],
+ * }} [options]
+ * @returns {AtprotoThreadNode}
+ */
+function makeAtprotoThreadNode(post, options = {}) {
+  return {
+    $type: 'app.bsky.feed.defs#threadViewPost',
+    post,
+    ...(options.parent ? { parent: options.parent } : {}),
+    replies: options.replies || [],
+  };
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+async function routeAtprotoThreadNavigation(page) {
+  const root = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-root`,
+    'Thread root post',
+  );
+  const middle = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-middle`,
+    'Thread middle post',
+  );
+  const child = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-child`,
+    'Thread child post',
+  );
+  const grandchild = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-grandchild`,
+    'Thread grandchild post',
+  );
+  const otherReply = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-other-reply`,
+    'Thread other reply post',
+  );
+  const directOtherReply = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-direct-other-reply`,
+    'Thread direct other reply post',
+  );
+  otherReply.author = {
+    $type: 'app.bsky.actor.defs#profileViewBasic',
+    did: 'did:plc:otherreplyauthor',
+    handle: 'other.test',
+    displayName: 'Other Reply',
+  };
+  directOtherReply.author = otherReply.author;
+  middle.record.reply = {
+    root: atprotoReplyRef(root),
+    parent: atprotoReplyRef(root),
+  };
+  child.record.reply = {
+    root: atprotoReplyRef(root),
+    parent: atprotoReplyRef(middle),
+  };
+  grandchild.record.reply = {
+    root: atprotoReplyRef(root),
+    parent: atprotoReplyRef(child),
+  };
+  otherReply.record.reply = {
+    root: atprotoReplyRef(root),
+    parent: atprotoReplyRef(child),
+  };
+  directOtherReply.record.reply = {
+    root: atprotoReplyRef(root),
+    parent: atprotoReplyRef(middle),
+  };
+  root.replyCount = 1;
+  middle.replyCount = 2;
+  child.replyCount = 2;
+  const posts = [root, middle, child, grandchild, otherReply, directOtherReply];
+  const profile = {
+    $type: 'app.bsky.actor.defs#profileView',
+    did: AT_REPO,
+    handle: 'alice.test',
+    displayName: 'Alice Profile',
+    description: '',
+    followersCount: 1,
+    followsCount: 2,
+    postsCount: 3,
+    labels: [],
+    viewer: {},
+  };
+  const feed = {
+    $type: 'app.bsky.feed.defs#generatorView',
+    uri: AT_FEED_URI,
+    cid: 'bafyreihltdmuzgj3iaoj5woin7jn3yfhftewnsijzf4b5gqsuxorrhw4qi',
+    did: AT_REPO,
+    displayName: 'AT Feed',
+    description: '',
+    creator: profile,
+    indexedAt: '2024-01-01T12:00:00.000Z',
+    likeCount: 0,
+    viewer: {},
+  };
+  const rootNode = () =>
+    makeAtprotoThreadNode(root, {
+      replies: [
+        makeAtprotoThreadNode(middle, {
+          replies: [
+            makeAtprotoThreadNode(child, {
+              replies: [
+                makeAtprotoThreadNode(grandchild),
+                makeAtprotoThreadNode(otherReply),
+              ],
+            }),
+            makeAtprotoThreadNode(directOtherReply),
+          ],
+        }),
+      ],
+    });
+  const middleNode = () =>
+    makeAtprotoThreadNode(middle, {
+      parent: makeAtprotoThreadNode(root),
+      replies: [
+        makeAtprotoThreadNode(child, {
+          replies: [
+            makeAtprotoThreadNode(grandchild),
+            makeAtprotoThreadNode(otherReply),
+          ],
+        }),
+        makeAtprotoThreadNode(directOtherReply),
+      ],
+    });
+  const childNode = () =>
+    makeAtprotoThreadNode(child, {
+      parent: makeAtprotoThreadNode(middle, {
+        parent: makeAtprotoThreadNode(root),
+      }),
+      replies: [
+        makeAtprotoThreadNode(grandchild),
+        makeAtprotoThreadNode(otherReply),
+      ],
+    });
+  const grandchildNode = () =>
+    makeAtprotoThreadNode(grandchild, {
+      parent: makeAtprotoThreadNode(child, {
+        parent: makeAtprotoThreadNode(middle, {
+          parent: makeAtprotoThreadNode(root),
+        }),
+      }),
+    });
+  const otherReplyNode = () =>
+    makeAtprotoThreadNode(otherReply, {
+      parent: makeAtprotoThreadNode(child, {
+        parent: makeAtprotoThreadNode(middle, {
+          parent: makeAtprotoThreadNode(root),
+        }),
+      }),
+    });
+  const directOtherReplyNode = () =>
+    makeAtprotoThreadNode(directOtherReply, {
+      parent: makeAtprotoThreadNode(middle, {
+        parent: makeAtprotoThreadNode(root),
+      }),
+    });
+  const threadByURI = new Map([
+    [root.uri, rootNode],
+    [middle.uri, middleNode],
+    [child.uri, childNode],
+    [grandchild.uri, grandchildNode],
+    [otherReply.uri, otherReplyNode],
+    [directOtherReply.uri, directOtherReplyNode],
+  ]);
+  const headers = { 'access-control-allow-origin': '*' };
+
+  await page.route('**/xrpc/**', async (route) => {
+    const url = new URL(route.request().url());
+    const endpoint = url.pathname.replace('/xrpc/', '');
+    if (endpoint === 'app.bsky.feed.getFeedGenerator') {
+      expect(url.searchParams.get('feed')).toBe(AT_FEED_URI);
+      await route.fulfill({ headers, json: { view: feed, isOnline: true } });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getFeed') {
+      expect(url.searchParams.get('feed')).toBe(AT_FEED_URI);
+      await route.fulfill({ headers, json: { feed: [{ post: middle }] } });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getPosts') {
+      const uris = url.searchParams.getAll('uris');
+      const selectedPosts = uris.length
+        ? posts.filter(({ uri }) => uris.includes(uri))
+        : posts;
+      await route.fulfill({ headers, json: { posts: selectedPosts } });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getPostThread') {
+      const uri = url.searchParams.get('uri') || '';
+      const thread = threadByURI.get(uri)?.();
+      if (!thread) {
+        throw new Error(`Unexpected thread URI in test fixture: ${uri}`);
+      }
+      await route.fulfill({ headers, json: { thread } });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.getProfile') {
+      await route.fulfill({ headers, json: profile });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.getPreferences') {
+      await route.fulfill({ headers, json: { preferences: [] } });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.putPreferences') {
+      await route.fulfill({ headers, json: {} });
+      return;
+    }
+    if (endpoint === 'app.bsky.labeler.getServices') {
+      await route.fulfill({ headers, json: { views: [] } });
+      return;
+    }
+    throw new Error(`Unexpected XRPC endpoint in test fixture: ${endpoint}`);
+  });
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+async function routeAtprotoScrollableFeed(page) {
+  const posts = Array.from({ length: 60 }, (_unused, index) =>
+    makeAtprotoPost(
+      `at://${AT_REPO}/app.bsky.feed.post/scroll-${String(index).padStart(2, '0')}`,
+      `AT feed position post ${index}\n${Array.from(
+        { length: 12 },
+        (_line, lineIndex) => `feed position filler ${index}-${lineIndex}`,
+      ).join('\n')}`,
+    ),
+  );
+  posts[59].embed = {
+    $type: 'app.bsky.embed.images#view',
+    images: [
+      {
+        thumb: AT_PROFILE_AVATAR,
+        fullsize: AT_PROFILE_AVATAR,
+        alt: 'AT feed position image',
+        aspectRatio: { width: 1, height: 1 },
+      },
+    ],
+  };
+  const profile = {
+    $type: 'app.bsky.actor.defs#profileView',
+    did: AT_REPO,
+    handle: 'alice.test',
+    displayName: 'Alice Profile',
+    description: '',
+    followersCount: 1,
+    followsCount: 2,
+    postsCount: posts.length,
+    labels: [],
+    viewer: {},
+  };
+  const feed = {
+    $type: 'app.bsky.feed.defs#generatorView',
+    uri: SCROLL_AT_FEED_URI,
+    cid: 'bafyreihltdmuzgj3iaoj5woin7jn3yfhftewnsijzf4b5gqsuxorrhw4qi',
+    did: AT_REPO,
+    displayName: 'AT Feed',
+    description: '',
+    creator: profile,
+    indexedAt: '2024-01-01T12:00:00.000Z',
+    likeCount: 0,
+    viewer: {},
+  };
+  const headers = { 'access-control-allow-origin': '*' };
+
+  await page.route('**/xrpc/**', async (route) => {
+    const url = new URL(route.request().url());
+    const endpoint = url.pathname.replace('/xrpc/', '');
+    if (endpoint === 'app.bsky.feed.getFeedGenerator') {
+      expect(url.searchParams.get('feed')).toBe(SCROLL_AT_FEED_URI);
+      await route.fulfill({
+        headers,
+        json: { view: feed, isOnline: true, isValid: true },
+      });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getFeed') {
+      expect(url.searchParams.get('feed')).toBe(SCROLL_AT_FEED_URI);
+      await route.fulfill({
+        headers,
+        json: { feed: posts.map((post) => ({ post })) },
+      });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getPosts') {
+      const uris = url.searchParams.getAll('uris');
+      await route.fulfill({
+        headers,
+        json: {
+          posts: uris.length
+            ? posts.filter(({ uri }) => uris.includes(uri))
+            : posts,
+        },
+      });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getPostThread') {
+      const uri = url.searchParams.get('uri') || '';
+      const post = posts.find((item) => item.uri === uri);
+      if (!post) {
+        throw new Error(`Unexpected thread URI in test fixture: ${uri}`);
+      }
+      await route.fulfill({
+        headers,
+        json: {
+          thread: {
+            $type: 'app.bsky.feed.defs#threadViewPost',
+            post,
+            replies: [],
+          },
+        },
+      });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.getProfile') {
+      await route.fulfill({ headers, json: profile });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.getPreferences') {
+      await route.fulfill({ headers, json: { preferences: [] } });
+      return;
+    }
+    if (endpoint === 'app.bsky.actor.putPreferences') {
+      await route.fulfill({ headers, json: {} });
+      return;
+    }
+    if (endpoint === 'app.bsky.labeler.getServices') {
+      await route.fulfill({ headers, json: { views: [] } });
+      return;
+    }
+    if (endpoint === 'app.bsky.feed.getTimeline') {
+      await route.fulfill({
+        headers,
+        json: { feed: posts.map((post) => ({ post })) },
+      });
+      return;
+    }
+    throw new Error(`Unexpected XRPC endpoint in test fixture: ${endpoint}`);
+  });
 }
 
 /**
@@ -769,6 +1390,22 @@ test('canonicalizes legacy AT record routes on direct load', async ({
   await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
 });
 
+test('canonicalizes Worker-decoded legacy AT record routes', async ({ page }) => {
+  await routeAtprotoRecords(page);
+
+  await page.goto(`/bsky.social/s/at%3A/${AT_REPO}/app.bsky.feed.post/post123`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
+  await expect(page.locator('text=AT route post')).toBeVisible();
+
+  await page.goto(`/l/at%3A/${AT_REPO}/app.bsky.graph.list/abc123`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveURL(pathRegex(AT_LIST_PATH));
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+});
+
 test('loads and reloads canonical AT profile URLs', async ({ page }) => {
   const noRouteWarnings = collectNoRouteWarnings(page);
   await routeAtprotoRecords(page);
@@ -781,6 +1418,7 @@ test('loads and reloads canonical AT profile URLs', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: /Alice Profile/ }),
   ).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
   await expect(page).toHaveTitle(/Alice Profile/);
 
   await page.reload();
@@ -790,6 +1428,32 @@ test('loads and reloads canonical AT profile URLs', async ({ page }) => {
   ).toBeVisible();
   await expect(page).toHaveTitle(/Alice Profile/);
   expect(noRouteWarnings).toEqual([]);
+});
+
+test('returns to a logged-out AT profile after opening one of its posts', async ({
+  page,
+}) => {
+  await routeAtprotoRecords(page);
+
+  await page.goto(AT_PROFILE_PATH);
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+
+  await page.locator(`.status-link-native[href="${AT_POST_PATH}"]`).click();
+  await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
+  await expect(page.locator('text=AT route post')).toBeVisible();
+  await expect(page.locator('.deck-close')).toHaveAttribute(
+    'href',
+    AT_PROFILE_PATH,
+  );
+
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(AT_PROFILE_PATH));
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
 });
 
 test('backfills canonical AT profile media when Blacksky omits it', async ({
@@ -880,35 +1544,23 @@ test('does not fetch Bluesky media for Blacksky profiles that only lack a banner
   expect(blueskyProfileRequests).toBe(0);
 });
 
-test('keeps titles working on legacy account routes', async ({ page }) => {
-  const account = {
-    id: '12345',
-    username: 'legacyuser',
-    acct: 'legacyuser@mastodon.social',
-    display_name: 'Legacy Account',
-    avatar: '',
-    avatar_static: '',
-    header: '',
-    header_static: '',
-    followers_count: 0,
-    following_count: 0,
-    statuses_count: 0,
-    bot: false,
-    locked: false,
-    emojis: [],
-  };
-  await page.route('**/api/v1/accounts/12345', async (route) => {
-    await route.fulfill({ json: account });
-  });
-  await page.route('**/api/v1/accounts/12345/statuses*', async (route) => {
-    await route.fulfill({ json: [] });
+test('degrades legacy Mastodon account routes to welcome (ATProto-only)', async ({
+  page,
+}) => {
+  let mastodonRequested = false;
+  await page.route('**/api/v1/accounts/**', async (route) => {
+    mastodonRequested = true;
+    await route.fulfill({ json: {} });
   });
 
   await page.goto('/mastodon.social/a/12345', {
     waitUntil: 'domcontentloaded',
   });
+  // The route is preserved, but with no Mastodon runtime it degrades to the
+  // welcome/login screen instead of fetching the legacy account.
   await expect(page).toHaveURL(pathRegex('/mastodon.social/a/12345'));
-  await expect(page).toHaveTitle(/Legacy Account/);
+  await expect(page.locator('#welcome')).toBeVisible();
+  expect(mastodonRequested).toBe(false);
 });
 
 test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
@@ -916,6 +1568,7 @@ test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
 
   await page.goto(AT_LIST_PATH, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
   await expect(page.locator('text=AT list timeline post')).toBeVisible();
   await expect(page).toHaveTitle(/AT List/);
   await page.reload();
@@ -929,15 +1582,338 @@ test('loads and reloads canonical AT list and feed URLs', async ({ page }) => {
   await expect(page).toHaveURL(
     pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/listpost`),
   );
-  await expect(page.locator('text=AT list timeline post')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+  await expect(page.getByText('AT list timeline post').first()).toBeVisible();
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(AT_LIST_PATH));
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
 
   await page.goto(AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  await expect(page.locator('#welcome')).toBeHidden();
   await expect(page.locator('text=AT feed timeline post')).toBeVisible();
   await expect(page).toHaveTitle(/AT Feed/);
   await page.reload();
   await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
   await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+});
+
+test('keeps logged-in native AT list and profile routes off the home deck', async ({
+  page,
+}) => {
+  await seedAtprotoLogin(page);
+  await routeAtprotoRecords(page);
+
+  await page.goto(AT_LIST_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+
+  await page.goto(AT_PROFILE_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(
+    page.getByRole('heading', { name: /Alice Profile/ }),
+  ).toBeVisible();
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#account-statuses-page')).toHaveCount(1);
+});
+
+test('keeps AT thread links navigable from a feed-backed post detail', async ({
+  page,
+}) => {
+  await routeAtprotoThreadNavigation(page);
+
+  await page.goto(AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Thread middle post')).toBeVisible();
+  await page
+    .locator(`.status-link-native[href$="/app.bsky.feed.post/thread-middle"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-middle`),
+  );
+
+  await page
+    .locator(
+      `.status-link[href$="/app.bsky.feed.post/thread-direct-other-reply"]`,
+    )
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-direct-other-reply`),
+  );
+  await page.goBack();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-middle`),
+  );
+
+  await page
+    .locator(`.status-link[href$="/app.bsky.feed.post/thread-other-reply"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-other-reply`),
+  );
+  await page.goBack();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-middle`),
+  );
+
+  await page
+    .locator(`.status-link[href$="/app.bsky.feed.post/thread-child"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-child`),
+  );
+
+  await page
+    .locator(`.status-link[href$="/app.bsky.feed.post/thread-grandchild"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-grandchild`),
+  );
+  await expect(page.getByText('Thread middle post').first()).toBeVisible();
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
+});
+
+test('restores AT feed position after opening a feed post in the sidebar', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto(SCROLL_AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  const feedDeck = page.locator('#list-page');
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page.getByText('AT feed position post 59').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/scroll-59`),
+  );
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(SCROLL_AT_FEED_PATH));
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#list-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('restores AT feed position after opening an image from the feed', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto(SCROLL_AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  const feedDeck = page.locator('#list-page');
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page
+    .locator(`a.media[href*="/app.bsky.feed.post/scroll-59"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(/media-only=1/);
+  await page.locator('.carousel-top-controls button').first().click();
+  await expect(page).toHaveURL(pathRegex(SCROLL_AT_FEED_PATH));
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#list-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('keeps a logged-in AT feed as the post sidebar background', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedAtprotoLogin(page);
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto(SCROLL_AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  const feedDeck = page.locator('#list-page');
+  await expect(feedDeck).toHaveCount(1);
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page.getByText('AT feed position post 59').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/scroll-59`),
+  );
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(SCROLL_AT_FEED_PATH));
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#list-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('keeps a logged-in legacy custom feed route off the home deck', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedAtprotoLogin(page);
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.evaluate((path) => {
+    history.pushState(history.state, '', path);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }, SCROLL_LOCAL_FEED_PATH);
+
+  await expect(page).toHaveURL(pathRegex(SCROLL_LOCAL_FEED_PATH));
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  const feedDeck = page.locator('#list-page');
+  await expect(feedDeck).toHaveCount(1);
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page.getByText('AT feed position post 59').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/scroll-59`),
+  );
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(SCROLL_AT_FEED_PATH));
+  await expect(page.locator('.status-deck')).toHaveCount(0);
+  await expect(page.locator('#home-page')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#list-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('restores logged-in custom feed position on narrow post navigation', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 820 });
+  await seedAtprotoLogin(page);
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto(SCROLL_AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  const feedDeck = page.locator('#list-page');
+  await expect(feedDeck).toHaveCount(1);
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page.getByText('AT feed position post 59').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/scroll-59`),
+  );
+  await expect(page.locator('#list-page')).toHaveCount(1);
+
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(SCROLL_AT_FEED_PATH));
+  await expect(page.locator('.status-deck')).toHaveCount(0);
+  await expect(page.locator('#list-page')).toHaveCount(1);
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#list-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
+});
+
+test('restores logged-in selected home feed position after opening a feed post', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedAtprotoLogin(page, {
+    homeTimeline: {
+      type: 'feed',
+      id: encodeURIComponent(SCROLL_AT_FEED_URI),
+    },
+  });
+  await routeAtprotoScrollableFeed(page);
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  const feedDeck = page.locator('#home-page');
+  await expect(feedDeck).toHaveCount(1);
+  await feedDeck.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await expect(page.getByText('AT feed position post 59')).toBeVisible();
+  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+
+  await page.getByText('AT feed position post 59').first().click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/scroll-59`),
+  );
+  await expect(page.locator('#home-page')).toHaveCount(1);
+
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex('/'));
+  await expect(page.locator('.status-deck')).toHaveCount(0);
+  await expect(page.locator('#home-page')).toHaveCount(1);
+  await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
+  await expect(
+    page.getByText('AT feed position post 59').first(),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('#home-page').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(scrollBefore - 4);
 });
 
 test('keeps app-local routes outside the AT URI schema', async ({ page }) => {

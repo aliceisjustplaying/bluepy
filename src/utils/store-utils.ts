@@ -34,20 +34,9 @@ type InstanceConfiguration = JsonRecord & {
 };
 
 type InstanceInfo = JsonRecord & {
-  apiVersions?: JsonRecord;
   configuration?: InstanceConfiguration;
-  maxMediaAttachments?: unknown;
-  maxTootChars?: unknown;
-  pollLimits?: {
-    maxExpiration?: unknown;
-    maxOptionChars?: unknown;
-    maxOptions?: unknown;
-    minExpiration?: unknown;
-  };
   version?: string;
 };
-
-type CredentialApplication = JsonRecord;
 
 export function getAccounts(): StoredAccount[] {
   return store.local.getJSON<StoredAccount[]>('accounts') ?? [];
@@ -96,11 +85,6 @@ export function getAccountByInstance(
 ): StoredAccount | undefined {
   const accounts = getAccounts();
   return accounts.find((account) => account.instanceURL === instance);
-}
-
-export function hasAccountInInstance(instance: string): boolean {
-  const accounts = getAccounts();
-  return accounts.some((account) => account.instanceURL === instance);
 }
 
 const standaloneMQ =
@@ -261,66 +245,20 @@ export function getCurrentInstance(): InstanceInfo {
   }
 }
 
-let currentNodeInfo: JsonRecord | null = null;
-export function getCurrentNodeInfo(): JsonRecord {
-  if (currentNodeInfo) {
-    return currentNodeInfo;
-  }
-  try {
-    const account = getCurrentAccount();
-    if (!account) {
-      return {};
-    }
-    const nodeInfos =
-      store.local.getJSON<Record<string, JsonRecord>>('nodeInfos') ?? {};
-    const instanceURL = account.instanceURL.toLowerCase();
-    return (currentNodeInfo = nodeInfos[instanceURL] ?? {});
-  } catch (error) {
-    console.error(error);
-    return {};
-  }
-}
-
-// Massage these instance configurations to match the Mastodon API
-// - Pleroma
 function getInstanceConfiguration(
   instance: InstanceInfo,
 ): InstanceConfiguration {
-  const { configuration, maxMediaAttachments, maxTootChars, pollLimits } =
-    instance;
-
-  const statuses = configuration?.statuses ?? {};
-  if (maxMediaAttachments) {
-    statuses.maxMediaAttachments ??= maxMediaAttachments;
-  }
-
-  if (maxTootChars) {
-    statuses.maxCharacters ??= maxTootChars;
-  }
-
-  const polls = configuration?.polls ?? {};
-  if (pollLimits) {
-    polls.maxCharactersPerOption ??= pollLimits.maxOptionChars;
-    polls.maxExpiration ??= pollLimits.maxExpiration;
-    polls.maxOptions ??= pollLimits.maxOptions;
-    polls.minExpiration ??= pollLimits.minExpiration;
-  }
-
+  const { configuration } = instance;
   return {
     ...configuration,
-    polls,
-    statuses,
+    polls: configuration?.polls ?? {},
+    statuses: configuration?.statuses ?? {},
   };
 }
 
 export function getCurrentInstanceConfiguration(): InstanceConfiguration {
   const instance = getCurrentInstance();
   return getInstanceConfiguration(instance);
-}
-
-export function getAPIVersions(): JsonRecord {
-  const instance = getCurrentInstance();
-  return instance.apiVersions ?? {};
 }
 
 export function getVapidKey(instance?: InstanceInfo): unknown {
@@ -330,33 +268,4 @@ export function getVapidKey(instance?: InstanceInfo): unknown {
     : getCurrentInstanceConfiguration();
   const vapidKey = config.vapid?.publicKey ?? config.vapid?.public_key;
   return vapidKey ?? getCurrentAccount()?.vapidKey;
-}
-
-export function isMediaFirstInstance(): boolean {
-  const instance = getCurrentInstance();
-  return /pixelfed/i.test(instance.version ?? '');
-}
-
-const CREDENTIAL_APPLICATIONS_KEY = 'credentialApplications';
-
-export function storeCredentialApplication(
-  instanceURL: string,
-  credentialApplication: CredentialApplication,
-): void {
-  const stored =
-    store.local.getJSON<Record<string, CredentialApplication>>(
-      CREDENTIAL_APPLICATIONS_KEY,
-    ) ?? {};
-  stored[instanceURL] = credentialApplication;
-  store.local.setJSON(CREDENTIAL_APPLICATIONS_KEY, stored);
-}
-
-export function getCredentialApplication(
-  instanceURL: string,
-): CredentialApplication | null {
-  const stored =
-    store.local.getJSON<Record<string, CredentialApplication>>(
-      CREDENTIAL_APPLICATIONS_KEY,
-    ) ?? {};
-  return stored[instanceURL] ?? null;
 }

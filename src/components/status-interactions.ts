@@ -7,7 +7,6 @@ import openCompose from '../utils/open-compose';
 import showCompose from '../utils/show-compose';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
-import supports from '../utils/supports';
 
 import { REACTIONS_LIMIT } from './status-helpers';
 import type { AnyAccount, AnyStatus, StatusContentMasto } from './status-types';
@@ -165,7 +164,6 @@ export default function useStatusInteractions({
   };
 
   const bookmarkStatus = async (): Promise<boolean> => {
-    if (!supports('@mastodon/post-bookmark')) return false;
     if (!sameInstance || !authenticated) {
       alert(unauthInteractionErrorMessage);
       return false;

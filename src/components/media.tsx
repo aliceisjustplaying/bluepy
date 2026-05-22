@@ -27,6 +27,7 @@ type QuickPinchZoomProps = Omit<
 const QuickPinchZoom =
   QuickPinchZoomImport as never as ComponentType<QuickPinchZoomProps>;
 
+import escapeHTML from '../utils/escape-html';
 import formatDuration from '../utils/format-duration';
 import {
   getBlueskyVideoFallbackURL,
@@ -798,10 +799,13 @@ function Media({
     const showProgress = duration > 5;
 
     // This string is only for autoplay + muted to work on Mobile Safari
+    // TRUSTED-INTERNAL: app-built <video> markup — intentionally not sanitized.
+    // The interpolated ${url}/${previewUrl} are remote, so they are
+    // attribute-escaped to prevent attribute-injection breakout.
     const gifHTML = `
       <video
-        src="${url}"
-        poster="${previewUrl}"
+        src="${escapeHTML(url ?? '')}"
+        poster="${escapeHTML(previewUrl ?? '')}"
         width="${width}"
         height="${height}"
         data-orientation="${orientation}"

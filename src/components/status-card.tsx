@@ -2,8 +2,7 @@ import '@justinribeiro/lite-youtube';
 
 import { decodeBlurHash, getBlurHashAverageColor } from 'fast-blurhash';
 import type { HTMLAttributes, MouseEvent } from 'react';
-import { useCallback, useEffect, useState } from 'react';
-import { useSnapshot } from 'valtio';
+import { useCallback, useState } from 'react';
 
 declare module 'react' {
   namespace JSX {
@@ -23,10 +22,8 @@ declare module 'react' {
 }
 
 import getDomain from '../utils/get-domain';
-import isMastodonLinkMaybe from '../utils/is-mastodon-link-maybe';
 import { canReadCardInline } from '../utils/standard-site';
 import states from '../utils/states';
-import unfurlMastodonLink from '../utils/unfurl-link';
 
 import Byline from './byline';
 import Icon from './icon';
@@ -63,9 +60,7 @@ interface CardData {
 
 interface StatusCardProps {
   card: CardData;
-  selfReferential?: boolean;
   selfAuthor?: boolean;
-  instance?: string;
 }
 
 // "Post": Quote post + card link preview combo
@@ -84,13 +79,7 @@ function isCardPost(domain: string | undefined): boolean {
   ].includes(domain);
 }
 
-function StatusCard({
-  card,
-  selfReferential,
-  selfAuthor,
-  instance,
-}: StatusCardProps) {
-  const snapStates = useSnapshot(states);
+function StatusCard({ card, selfAuthor }: StatusCardProps) {
   const {
     blurhash,
     title,
@@ -124,52 +113,6 @@ function StatusCard({
       : false;
   const size = isLandscape ? 'large' : '';
 
-  const [cardStatusURL, setCardStatusURL] = useState<string | null>(null);
-  // const [cardStatusID, setCardStatusID] = useState(null);
-  useEffect(() => {
-    if (
-      !hasText ||
-      !image ||
-      selfReferential ||
-      !url ||
-      !instance ||
-      !isMastodonLinkMaybe(url)
-    ) {
-      return undefined;
-    }
-
-    const abortController = new AbortController();
-    void (async () => {
-      const result = await unfurlMastodonLink(
-        instance,
-        url,
-        abortController.signal,
-      );
-      if (!result) return;
-      const { url: resultUrl } = result;
-      if (!resultUrl) return;
-      setCardStatusURL('#' + resultUrl);
-
-      // NOTE: This is for quote post
-      // (async () => {
-      //   const { masto } = api({ instance });
-      //   const status = await masto.v1.statuses.$select(id).fetch();
-      //   saveStatus(status, instance);
-      //   setCardStatusID(id);
-      // })();
-    })();
-
-    return () => {
-      abortController.abort();
-    };
-  }, [hasText, image, selfReferential, url, instance]);
-
-  // if (cardStatusID) {
-  //   return (
-  //     <Status statusID={cardStatusID} instance={instance} size="s" readOnly />
-  //   );
-  // }
-
   const hasIframeHTML = !!html && /<iframe/i.test(html);
   const canReadInline = canReadCardInline(card);
   const handleClick = useCallback(
@@ -195,9 +138,6 @@ function StatusCard({
   );
 
   const [blurhashImage, setBlurhashImage] = useState<string | null>(null);
-
-  const unfurledLinks = snapStates.unfurledLinks as Record<string, unknown>;
-  if (url && unfurledLinks[url]) return null;
 
   if (hasText && (image || (type === 'photo' && blurhash))) {
     const domain = getDomain(url ?? '');
@@ -239,9 +179,9 @@ function StatusCard({
     return (
       <Byline hidden={!!selfAuthor} authors={authors}>
         <a
-          href={cardStatusURL || url}
-          target={cardStatusURL ? undefined : '_blank'}
-          rel="nofollow noopener"
+          href={url}
+          target="_blank"
+          rel="nofollow noopener noreferrer"
           className={`card link ${isPost ? 'card-post' : ''} ${
             blurhashImage ? '' : size
           } ${hasIframeHTML || canReadInline ? 'can-show-embed' : ''}`}
@@ -359,9 +299,9 @@ function StatusCard({
       const isPost = isCardPost(domain);
       return (
         <a
-          href={cardStatusURL || url}
-          target={cardStatusURL ? undefined : '_blank'}
-          rel="nofollow noopener"
+          href={url}
+          target="_blank"
+          rel="nofollow noopener noreferrer"
           className={`card link ${isPost ? 'card-post' : ''} no-image ${
             hasIframeHTML || canReadInline ? 'can-show-embed' : ''
           }`}

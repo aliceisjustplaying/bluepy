@@ -1,0 +1,45 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'cd \"${CODEX_PROJECT_DIR:-$PWD}\" && scripts/hooks/bluepy-guard.sh pre-bash'"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'cd \"${CODEX_PROJECT_DIR:-$PWD}\" && scripts/hooks/bluepy-guard.sh pre-write'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'cd \"${CODEX_PROJECT_DIR:-$PWD}\" && scripts/hooks/bluepy-guard.sh post-edit'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'cd \"${CODEX_PROJECT_DIR:-$PWD}\" && scripts/hooks/bluepy-guard.sh stop'"
+          }
+        ]
+      }
+    ]
+  }
+}

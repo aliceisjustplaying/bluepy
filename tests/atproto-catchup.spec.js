@@ -23,7 +23,7 @@ async function loginViaUI(page) {
   ) {
     return;
   }
-  await page.getByPlaceholder('alice.bsky.social').fill(IDENTIFIER);
+  await page.getByLabel('Handle or PDS URL').fill(IDENTIFIER);
   await page.getByText('Use app password').click();
   await page.locator('input[type="password"]').fill(PASSWORD);
   await page
@@ -218,12 +218,236 @@ base(
     await expect(
       page.locator('.catchup-list > li:not(.separator)').first(),
     ).toContainText('duplicate low rank one');
+    await expect(page.getByText('duplicate low rank two')).toHaveCount(0);
 
     await page.locator('label.filter-sort', { hasText: 'Likes' }).click();
 
     await expect(
       page.locator('.catchup-list > li:not(.separator)').first(),
     ).toContainText('duplicate key top rank');
+  },
+);
+
+base(
+  'catch-up shows booster attribution when an original absorbs its boost duplicate',
+  async ({ page }) => {
+    await loginViaUI(page);
+
+    const id = `catchup-original-boost-${Date.now()}`;
+    const originalAccount = {
+      ...fakePost(0).account,
+      id: 'did:plc:original-author',
+      username: 'original.test',
+      acct: 'original.test',
+      displayName: 'Original Author',
+    };
+    const boosterAccount = {
+      ...fakePost(1).account,
+      id: 'did:plc:booster-author',
+      username: 'booster.test',
+      acct: 'booster.test',
+      displayName: 'Booster Author',
+    };
+    const original = fakePost(0, {
+      id: 'original-absorbs-boost',
+      account: originalAccount,
+      content: 'original absorbs boost duplicate',
+      reblogsCount: 1,
+    });
+    const posts = [
+      original,
+      fakePost(1, {
+        id: 'boost-wrapper-duplicate',
+        account: boosterAccount,
+        content: 'hidden boost wrapper duplicate',
+        reblog: original,
+      }),
+    ];
+    await page.goto('/');
+    await page.evaluate(
+      async ({ id: catchupId, posts: catchupPosts }) => {
+        await new Promise((resolve, reject) => {
+          const request = indexedDB.open('catchup-db');
+          request.addEventListener('upgradeneeded', () => {
+            request.result.createObjectStore('catchup-store');
+          });
+          request.addEventListener('error', () => {
+            reject(request.error ?? new Error('Failed to open catch-up DB'));
+          });
+          request.addEventListener('success', () => {
+            const tx = request.result.transaction('catchup-store', 'readwrite');
+            tx.objectStore('catchup-store').put(
+              {
+                id: catchupId,
+                posts: catchupPosts,
+                count: catchupPosts.length,
+                startAt: Date.parse(catchupPosts[0].createdAt),
+                endAt: Date.parse(
+                  catchupPosts[catchupPosts.length - 1].createdAt,
+                ),
+              },
+              catchupId,
+            );
+            tx.addEventListener('complete', () => {
+              request.result.close();
+              resolve(undefined);
+            });
+            tx.addEventListener('error', () => {
+              request.result.close();
+              reject(tx.error ?? new Error('Failed to seed catch-up DB'));
+            });
+          });
+        });
+      },
+      { id, posts },
+    );
+
+    await page.goto(`/catchup?id=${id}`);
+    await expect(page.locator('.catchup-list')).toBeVisible();
+    await expect(
+      page.locator('.catchup-list > li:not(.separator)'),
+    ).toHaveCount(1);
+    await expect(page.getByText('hidden boost wrapper duplicate')).toHaveCount(
+      0,
+    );
+    await expect(
+      page.getByText('original absorbs boost duplicate'),
+    ).toBeVisible();
+    await expect(
+      page.locator('[title="Booster Author (@booster.test)"]').first(),
+    ).toBeVisible();
+    // The booster should be attributed exactly once, even if the boost
+    // wrapper is observed more than once during dedup.
+    await expect(
+      page.locator(
+        '.catchup-list [title="Booster Author (@booster.test)"]',
+      ),
+    ).toHaveCount(1);
+
+    await page
+      .locator('label.filter-author[data-author="did:plc:booster-author"]')
+      .click();
+
+    await expect(
+      page.locator('.catchup-list > li:not(.separator)'),
+    ).toHaveCount(1);
+    await expect(
+      page.getByText('original absorbs boost duplicate'),
+    ).toBeVisible();
+    await expect(
+      page.locator('[title="Booster Author (@booster.test)"]').first(),
+    ).toBeVisible();
+  },
+);
+
+base(
+  'catch-up shows booster attribution when a quote absorbs its boost duplicate',
+  async ({ page }) => {
+    await loginViaUI(page);
+
+    const id = `catchup-quote-boost-${Date.now()}`;
+    const quoteAccount = {
+      ...fakePost(0).account,
+      id: 'did:plc:quote-author',
+      username: 'quote.test',
+      acct: 'quote.test',
+      displayName: 'Quote Author',
+    };
+    const boosterAccount = {
+      ...fakePost(1).account,
+      id: 'did:plc:quote-booster',
+      username: 'quote-booster.test',
+      acct: 'quote-booster.test',
+      displayName: 'Quote Booster',
+    };
+    const quotedPost = fakePost(2, {
+      id: 'quoted-target-post',
+      account: {
+        ...fakePost(2).account,
+        id: 'did:plc:quoted-author',
+        username: 'quoted.test',
+        acct: 'quoted.test',
+        displayName: 'Quoted Author',
+        url: 'https://bsky.app/profile/quoted.test',
+      },
+      content: 'quoted target content',
+    });
+    const quotePost = fakePost(0, {
+      id: 'quote-absorbs-boost',
+      account: quoteAccount,
+      content: 'quote absorbs boost duplicate',
+      quote: {
+        quotedStatus: quotedPost,
+      },
+      reblogsCount: 1,
+    });
+    const posts = [
+      quotePost,
+      fakePost(1, {
+        id: 'quote-boost-wrapper-duplicate',
+        account: boosterAccount,
+        content: 'hidden quote boost wrapper duplicate',
+        reblog: quotePost,
+      }),
+    ];
+    await page.goto('/');
+    await page.evaluate(
+      async ({ id: catchupId, posts: catchupPosts }) => {
+        await new Promise((resolve, reject) => {
+          const request = indexedDB.open('catchup-db');
+          request.addEventListener('upgradeneeded', () => {
+            request.result.createObjectStore('catchup-store');
+          });
+          request.addEventListener('error', () => {
+            reject(request.error ?? new Error('Failed to open catch-up DB'));
+          });
+          request.addEventListener('success', () => {
+            const tx = request.result.transaction('catchup-store', 'readwrite');
+            tx.objectStore('catchup-store').put(
+              {
+                id: catchupId,
+                posts: catchupPosts,
+                count: catchupPosts.length,
+                startAt: Date.parse(catchupPosts[0].createdAt),
+                endAt: Date.parse(
+                  catchupPosts[catchupPosts.length - 1].createdAt,
+                ),
+              },
+              catchupId,
+            );
+            tx.addEventListener('complete', () => {
+              request.result.close();
+              resolve(undefined);
+            });
+            tx.addEventListener('error', () => {
+              request.result.close();
+              reject(tx.error ?? new Error('Failed to seed catch-up DB'));
+            });
+          });
+        });
+      },
+      { id, posts },
+    );
+
+    await page.goto(`/catchup?id=${id}`);
+    await expect(page.locator('.catchup-list')).toBeVisible();
+    await expect(
+      page.locator('.catchup-list > li:not(.separator)'),
+    ).toHaveCount(1);
+    await expect(
+      page.getByText('hidden quote boost wrapper duplicate'),
+    ).toHaveCount(0);
+    await expect(page.getByText('quote absorbs boost duplicate')).toBeVisible();
+    await expect(
+      page.locator('[title="Quote Booster (@quote-booster.test)"]').first(),
+    ).toBeVisible();
+    // The booster should be attributed exactly once, even if the boost
+    // wrapper is observed more than once during dedup.
+    await expect(
+      page.locator(
+        '.catchup-list [title="Quote Booster (@quote-booster.test)"]',
+      ),
+    ).toHaveCount(1);
   },
 );
 

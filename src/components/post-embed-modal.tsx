@@ -2,10 +2,33 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import prettify from 'html-prettify';
 
 import emojifyText from '../utils/emojify-text';
+import escapeHTML from '../utils/escape-html';
 import showToast from '../utils/show-toast';
 import states, { statusKey } from '../utils/states';
 
 import Icon from './icon';
+
+// The embed-code snippet interpolates UNTRUSTED post fields (spoiler text, poll
+// option titles, media descriptions, display names, and remote URLs) into an
+// HTML string. Escape every untrusted text/attribute value before
+// interpolation so the generated snippet cannot smuggle markup or break out of
+// an attribute. `escapeHTML` escapes `& < > " '`, covering both text and
+// quoted-attribute contexts.
+//
+// `attrURL` additionally restricts URL-valued attributes (src/href/cite/poster)
+// to absolute http(s) URLs; anything else (notably `javascript:`/`data:`)
+// becomes an empty string so the pasted snippet can never carry an active URI.
+function attrURL(value: string | null | undefined): string {
+  if (!value) return '';
+  let parsed: URL | null = null;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return '';
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '';
+  return escapeHTML(parsed.href);
+}
 
 interface EmojiLike {
   shortcode: string;
@@ -38,7 +61,6 @@ interface PostLike {
     group?: boolean;
   };
   id: string;
-  poll?: { options?: { title: string; votesCount?: number }[] };
   spoilerText?: string;
   language?: string;
   editedAt?: string | null;
@@ -61,7 +83,9 @@ interface PostEmbedModalProps {
   onClose?: () => void;
 }
 
-function generateHTMLCode(
+// Exported for unit testing of the untrusted-field escaping; not part of the
+// component's public API.
+export function generateHTMLCode(
   post: PostLike,
   instance: string | undefined,
   level = 0,
@@ -69,7 +93,6 @@ function generateHTMLCode(
   const {
     account: { displayName, acct, emojis: accountEmojis },
     id,
-    poll,
     spoilerText,
     language,
     createdAt,
@@ -108,22 +131,6 @@ function generateHTMLCode(
     '\n' +
     quoteStatusesHTML +
     '\n' +
-    (poll?.options?.length
-      ? `
-        <p>📊:</p>
-        <ul>
-        ${poll.options
-          .map(
-            (option: { title: string; votesCount?: number }) => `
-              <li>
-                ${option.title}
-                ${(option.votesCount ?? -1) >= 0 ? ` (${option.votesCount})` : ''}
-              </li>
-            `,
-          )
-          .join('')}
-        </ul>`
-      : '') +
     ((mediaAttachments?.length ?? 0) > 0
       ? '\n' +
         (mediaAttachments ?? [])
@@ -166,23 +173,30 @@ function generateHTMLCode(
             const isVideo = type === 'gifv' || type === 'video' || isVideoMaybe;
             const isAudio = type === 'audio' || isAudioMaybe;
 
+            const safeDescription = escapeHTML(description ?? '');
+            const safeWidth = escapeHTML(String(width ?? ''));
+            const safeHeight = escapeHTML(String(height ?? ''));
+            const safeSourceURL = attrURL(sourceMediaURL);
+            const safeMediaURL = attrURL(mediaURL);
+            const safePreviewURL = attrURL(previewMediaURL);
+
             let mediaHTML = '';
             if (isImage) {
-              mediaHTML = `<img src="${mediaURL}" width="${width}" height="${height}" alt="${description}" loading="lazy" />`;
+              mediaHTML = `<img src="${safeMediaURL}" width="${safeWidth}" height="${safeHeight}" alt="${safeDescription}" loading="lazy" />`;
             } else if (isVideo) {
               mediaHTML = `
-                <video src="${sourceMediaURL}" width="${width}" height="${height}" controls preload="auto" poster="${previewMediaURL}" loading="lazy"></video>
-                ${description ? `<figcaption>${description}</figcaption>` : ''}
+                <video src="${safeSourceURL}" width="${safeWidth}" height="${safeHeight}" controls preload="auto" poster="${safePreviewURL}" loading="lazy"></video>
+                ${description ? `<figcaption>${safeDescription}</figcaption>` : ''}
               `;
             } else if (isAudio) {
               mediaHTML = `
-                <audio src="${sourceMediaURL}" controls preload="auto"></audio>
-                ${description ? `<figcaption>${description}</figcaption>` : ''}
+                <audio src="${safeSourceURL}" controls preload="auto"></audio>
+                ${description ? `<figcaption>${safeDescription}</figcaption>` : ''}
               `;
             } else {
               mediaHTML = `
-                <a href="${sourceMediaURL}">📄 ${
-                  description || sourceMediaURL
+                <a href="${safeSourceURL}">📄 ${
+                  safeDescription || escapeHTML(sourceMediaURL ?? '')
                 }</a>
               `;
             }
@@ -192,23 +206,31 @@ function generateHTMLCode(
           .join('\n')
       : '');
 
+  const safeLang = escapeHTML(language ?? '');
+  const safeCiteURL = attrURL(url);
+  const safeAcct = escapeHTML(acct ?? '');
+  // emojifyText escapes the shortcode matches it substitutes but leaves the
+  // surrounding text raw, so pre-escape the display name to neutralize markup
+  // while still letting custom-emoji shortcodes resolve.
+  const safeDisplayName = emojifyText(
+    escapeHTML(displayName ?? ''),
+    accountEmojis,
+  );
+
   const htmlCode = `
-    <blockquote lang="${language}" cite="${url}" data-source="fediverse">
+    <blockquote lang="${safeLang}" cite="${safeCiteURL}" data-source="fediverse">
       ${
         spoilerText
           ? `
             <details>
-              <summary>${spoilerText}</summary>
+              <summary>${escapeHTML(spoilerText)}</summary>
               ${contentHTML}
             </details>
           `
           : contentHTML
       }
       <footer>
-        — ${emojifyText(
-          displayName as string,
-          accountEmojis,
-        )} (@${acct}) ${createdAt ? `<a href="${url}"><time datetime="${createdAtDate.toISOString()}">${createdAtDate.toLocaleString()}</time></a>` : ''}
+        — ${safeDisplayName} (@${safeAcct}) ${createdAt ? `<a href="${safeCiteURL}"><time datetime="${escapeHTML(createdAtDate.toISOString())}">${escapeHTML(createdAtDate.toLocaleString())}</time></a>` : ''}
       </footer>
     </blockquote>
   `;
@@ -394,11 +416,6 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
               </li>
               <li>
                 <Trans>
-                  Polls are not interactive, becomes a list with vote counts.
-                </Trans>
-              </li>
-              <li>
-                <Trans>
                   Media attachments can be images, videos, audios or any file
                   types.
                 </Trans>
@@ -414,6 +431,12 @@ function PostEmbedModal({ post, instance, onClose }: PostEmbedModalProps) {
         </h3>
         <output
           className="embed-preview"
+          // App-generated copy-paste embed snippet. The structure is
+          // app-built, but it interpolates untrusted post fields, so
+          // generateHTMLCode escapes every untrusted text/attribute value and
+          // restricts URL attributes to http(s) (see attrURL / escapeHTML
+          // there). The rich post body (content) is the same server-rendered
+          // HTML the app renders everywhere and is reproduced verbatim by design.
           dangerouslySetInnerHTML={{ __html: htmlCode }}
           dir="auto"
         />

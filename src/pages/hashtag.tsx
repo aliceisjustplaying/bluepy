@@ -9,7 +9,7 @@ import {
 } from '@szhsin/react-menu';
 import type { mastodon } from 'masto';
 import type { SyntheticEvent } from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import Icon from '../components/icon';
@@ -22,8 +22,6 @@ import { navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import { sorted } from '../utils/sorted';
 import states, { saveStatus } from '../utils/states';
-import { isMediaFirstInstance } from '../utils/store-utils';
-import { checkTimelineAccess } from '../utils/timeline-access';
 import useTitle from '../utils/useTitle';
 
 const LIMIT = 20;
@@ -72,8 +70,6 @@ interface HashtagTimelineEndpoint {
   };
 }
 
-type TimelineAccess = string | null;
-
 interface HashtagsProps {
   hashtag?: string;
   media?: boolean;
@@ -104,7 +100,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   const media = mediaView || !!searchParams.get('media');
   const linkParams = media ? '?media=1' : '';
 
-  const { masto, instance, authenticated } = api({
+  const { masto, instance } = api({
     instance: props?.instance || params.instance,
   });
   const { authenticated: currentAuthenticated } = api();
@@ -119,13 +115,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
   useTitle(title, `/:instance?/t/:hashtag`);
   const latestItem = useRef<string | undefined>(undefined);
 
-  const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
-
-  // Timeline access: public, authenticated, disabled
-  const [timelineAccess, setTimelineAccess] = useState<TimelineAccess>(null);
-  const isDisabled = timelineAccess === 'disabled';
-  const requiresAuth = timelineAccess === 'authenticated';
-  const isPrivate = requiresAuth && !authenticated;
+  const mediaFirst = false;
 
   const tagTimelines = getMastoV1Resource<{ tag: HashtagTimelineEndpoint }>(
     masto,
@@ -145,22 +135,6 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
     // const results = await hashtagsIterator.current.next();
 
     // NOTE: Temporary fix for listHashtag not persisting `any` in subsequent calls.
-    const access = await checkTimelineAccess({
-      feed: 'hashtagFeeds',
-      feedType: 'local',
-      instance,
-    });
-    setTimelineAccess(access as TimelineAccess);
-    if (
-      access === 'disabled' ||
-      (access === 'authenticated' && !authenticated)
-    ) {
-      return {
-        done: true,
-        value: [],
-      };
-    }
-
     const results = await tagTimelines
       .$select(hashtag)
       .list({
@@ -236,13 +210,7 @@ function Hashtags({ media: mediaView, columnMode, ...props }: HashtagsProps) {
           media ? 'media' : 'all'
         }`}
         instance={instance}
-        emptyText={
-          isDisabled
-            ? t`This timeline is disabled on Bluesky.`
-            : isPrivate
-              ? t`Login required to see posts from Bluesky.`
-              : t`No one has posted anything with this tag yet.`
-        }
+        emptyText={t`No one has posted anything with this tag yet.`}
         errorText={t`Unable to load posts with this tag`}
         fetchItems={fetchHashtags}
         checkForUpdates={checkForUpdates}

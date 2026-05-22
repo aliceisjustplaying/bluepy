@@ -8,7 +8,6 @@ import { api, getMastoV1Resource } from '../utils/api';
 import { filteredItems } from '../utils/filters';
 import states, { getStatus, saveStatus } from '../utils/states';
 import store from '../utils/store';
-import supports from '../utils/supports';
 import { dedupeBoosts } from '../utils/timeline-utils';
 import useTitle from '../utils/useTitle';
 
@@ -118,7 +117,6 @@ function Following({ title, path, id, ...props }: FollowingProps) {
   __BENCHMARK.end('time-to-following');
 
   console.debug('RENDER Following', title, id);
-  const supportsPixelfed = supports('@pixelfed/home-include-reblogs');
 
   async function fetchHome(
     firstLoad?: boolean,
@@ -133,13 +131,6 @@ function Following({ title, path, id, ...props }: FollowingProps) {
         limit: LIMIT,
       });
       homeIterator.current = homeIterable.current.values();
-    }
-    if (supportsPixelfed && homeIterable.current?.params) {
-      if (typeof homeIterable.current.params === 'string') {
-        homeIterable.current.params += '&include_reblogs=true';
-      } else {
-        homeIterable.current.params.include_reblogs = true;
-      }
     }
     const results = await homeIterator.current.next();
     let { value } = results;
@@ -174,14 +165,10 @@ function Following({ title, path, id, ...props }: FollowingProps) {
       const opts: {
         limit: number;
         since_id?: string;
-        include_reblogs?: boolean;
       } = {
         limit: 5,
         since_id: latestItem.current,
       };
-      if (supportsPixelfed) {
-        opts.include_reblogs = true;
-      }
       const homeTimeline = getMastoV1Resource<{
         home: {
           list(o: typeof opts): {

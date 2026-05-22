@@ -1,5 +1,3 @@
-/// <reference types="node" />
-
 import { afterEach, mock, spyOn, test } from 'bun:test';
 import assert from 'node:assert/strict';
 
@@ -78,7 +76,7 @@ function postFeedback(body, env = createEnv(), headers = {}) {
   );
 }
 
-void test('feedback endpoint sends Resend email with Linear target and diagnostics', async () => {
+test('feedback endpoint sends Resend email with Linear target and diagnostics', async () => {
   const calls = [];
   spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     calls.push([input, init]);
@@ -111,7 +109,7 @@ void test('feedback endpoint sends Resend email with Linear target and diagnosti
   assert.match(payload.text, /Sentry event: event-1/);
 });
 
-void test('feedback endpoint rejects invalid and abusive requests before sending', async () => {
+test('feedback endpoint rejects invalid and abusive requests before sending', async () => {
   const calls = [];
   spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     calls.push([input, init]);
@@ -135,7 +133,7 @@ void test('feedback endpoint rejects invalid and abusive requests before sending
   assert.equal(calls.length, 0);
 });
 
-void test('feedback endpoint rejects method, size, and missing config before sending', async () => {
+test('feedback endpoint rejects method, size, and missing config before sending', async () => {
   const calls = [];
   spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     calls.push([input, init]);
@@ -173,7 +171,7 @@ void test('feedback endpoint rejects method, size, and missing config before sen
   assert.equal(calls.length, 0);
 });
 
-void test('feedback endpoint proxies when email config is missing and proxy is configured', async () => {
+test('feedback endpoint proxies when email config is missing and proxy is configured', async () => {
   const calls = [];
   spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     calls.push([input, init]);
@@ -195,7 +193,7 @@ void test('feedback endpoint proxies when email config is missing and proxy is c
   assert.deepEqual(await calls[0][0].json(), { message: 'hello' });
 });
 
-void test('feedback endpoint refunds rate limit when Resend fails', async () => {
+test('feedback endpoint refunds rate limit when Resend fails', async () => {
   let calls = 0;
   spyOn(globalThis, 'fetch').mockImplementation(async () => {
     calls += 1;
@@ -217,7 +215,7 @@ void test('feedback endpoint refunds rate limit when Resend fails', async () => 
   );
 });
 
-void test('feedback endpoint refunds rate limit when Resend throws', async () => {
+test('feedback endpoint refunds rate limit when Resend throws', async () => {
   let calls = 0;
   spyOn(globalThis, 'fetch').mockImplementation(async () => {
     calls += 1;
@@ -240,7 +238,7 @@ void test('feedback endpoint refunds rate limit when Resend throws', async () =>
   );
 });
 
-void test('feedback endpoint rate limits repeated submissions', async () => {
+test('feedback endpoint rate limits repeated submissions', async () => {
   spyOn(globalThis, 'fetch').mockImplementation(
     async () => new Response('{}', { status: 200 }),
   );
@@ -259,7 +257,7 @@ void test('feedback endpoint rate limits repeated submissions', async () => {
   );
 });
 
-void test('feedback endpoint rate limit contact bucket is scoped to client address', async () => {
+test('feedback endpoint rate limit contact bucket is scoped to client address', async () => {
   spyOn(globalThis, 'fetch').mockImplementation(
     async () => new Response('{}', { status: 200 }),
   );
@@ -278,7 +276,7 @@ void test('feedback endpoint rate limit contact bucket is scoped to client addre
   );
 });
 
-void test('feedback endpoint returns unavailable when rate limiter fails', async () => {
+test('feedback endpoint returns unavailable when rate limiter fails', async () => {
   spyOn(globalThis, 'fetch').mockImplementation(
     async () => new Response('{}', { status: 200 }),
   );
@@ -298,7 +296,7 @@ void test('feedback endpoint returns unavailable when rate limiter fails', async
   assert.equal(response.status, 503);
 });
 
-void test('feedback rate limiter clears storage on alarm', async () => {
+test('feedback rate limiter clears storage on alarm', async () => {
   const storage = new MemoryDurableObjectStorage();
   const limiter = new FeedbackRateLimiter({ storage });
   const response = await limiter.fetch(

@@ -2,12 +2,15 @@ import type { mastodon } from 'masto';
 
 import { api } from './api';
 import { isFiltered } from './filters';
+import {
+  getMutedPostVisibility,
+  shouldHideMutedStatus,
+} from './muted-post-visibility';
 import pmem from './pmem';
 import { shouldFetchReplyContextForInstance } from './reply-context';
 import states, { saveStatus, statusKey } from './states';
 import store from './store';
 import { getCurrentAccountID } from './store-utils';
-import supports from './supports';
 import {
   canonicalTimelineContextId,
   groupContextItems,
@@ -143,9 +146,21 @@ export function filterHiddenStatuses<T extends TimelineStatus>(
   items: readonly T[],
   filterContext: string | null | undefined,
 ): readonly T[] {
-  if (!filterContext) return items;
   const currentAccount = getCurrentAccountID();
+  const mutedPostVisibility = getMutedPostVisibility(states.settings);
   return items.filter((item) => {
+    // Muted-account visibility is a timeline preference, not a Mastodon filter
+    // context. Keep applying it when content filters are disabled.
+    if (
+      shouldHideMutedStatus({
+        status: item,
+        currentAccountID: currentAccount,
+        visibility: mutedPostVisibility,
+      })
+    ) {
+      return false;
+    }
+    if (!filterContext) return true;
     if (!item?.filtered) return true;
     const isOwnPost = item?.account?.id === currentAccount;
     const filterInfo = isFiltered(item.filtered, filterContext);
@@ -266,40 +281,38 @@ export function groupContext(
         }
       }
 
-      if (supports('@mastodon/fetch-multiple-statuses')) {
-        // This is batch fetching yooo, woot
-        // Limit 20, returns 422 if exceeded https://github.com/mastodon/mastodon/pull/27871
-        const ids = inReplyToIds.map(({ inReplyToId }) => inReplyToId);
-        void (async () => {
-          try {
-            const replyToStatuses = await statusesResource.list({ id: ids });
-            if (replyToStatuses?.length) {
-              for (const replyToStatus of replyToStatuses) {
-                saveStatus(replyToStatus, instance, {
-                  skipThreading: true,
-                });
-                const sKey = inReplyToIds.find(
-                  ({ inReplyToId }) => inReplyToId === replyToStatus.id,
-                )?.sKey;
-                if (sKey) {
-                  states.statusReply[sKey] = {
-                    id: replyToStatus.id,
-                    instance,
-                  };
-                }
+      // This is batch fetching yooo, woot
+      // Limit 20, returns 422 if exceeded https://github.com/mastodon/mastodon/pull/27871
+      const ids = inReplyToIds.map(({ inReplyToId }) => inReplyToId);
+      void (async () => {
+        try {
+          const replyToStatuses = await statusesResource.list({ id: ids });
+          if (replyToStatuses?.length) {
+            for (const replyToStatus of replyToStatuses) {
+              saveStatus(replyToStatus, instance, {
+                skipThreading: true,
+              });
+              // Several visible posts can reply to the same parent, so set the
+              // reply hint for every matching sKey, not just the first.
+              const matchingHints = inReplyToIds.filter(
+                ({ inReplyToId }) => inReplyToId === replyToStatus.id,
+              );
+              for (const { sKey } of matchingHints) {
+                states.statusReply[sKey] = {
+                  id: replyToStatus.id,
+                  instance,
+                };
               }
-            } else {
-              void fallbackFetch();
             }
-          } catch (e) {
-            // Silently fail
-            console.error(e);
+          } else {
             void fallbackFetch();
           }
-        })();
-      } else {
-        void fallbackFetch();
-      }
+        } catch (e) {
+          // Silently fail
+          console.error(e);
+          void fallbackFetch();
+        }
+      })();
     }, 10);
   }
 

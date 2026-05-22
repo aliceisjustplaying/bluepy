@@ -33,7 +33,6 @@ import db from '../utils/db';
 import getHTMLText from '../utils/get-html-text';
 import niceDateTime from '../utils/nice-date-time';
 import prettyBytes from '../utils/pretty-bytes';
-import { supportsNativeQuote } from '../utils/quote-utils';
 import showToast from '../utils/show-toast';
 import { sorted as sortArray } from '../utils/sorted';
 import { getCurrentAccountNS } from '../utils/store-utils';
@@ -404,10 +403,7 @@ function YearInPosts() {
       const p = post as StatusWithExtras;
       if (p.reblog) {
         dayData.boost++;
-      } else if (
-        supportsNativeQuote() &&
-        (p.quote?.id || p.quote?.quotedStatus?.id)
-      ) {
+      } else if (p.quote?.id || p.quote?.quotedStatus?.id) {
         dayData.quote++;
       } else if (p.inReplyToId) {
         dayData.reply++;
@@ -556,10 +552,7 @@ function YearInPosts() {
       const p = post as StatusWithExtras;
       if (p.reblog) {
         monthTypes[m].boost++;
-      } else if (
-        supportsNativeQuote() &&
-        (p.quote?.id || p.quote?.quotedStatus?.id)
-      ) {
+      } else if (p.quote?.id || p.quote?.quotedStatus?.id) {
         monthTypes[m].quote++;
       } else if (p.inReplyToId) {
         monthTypes[m].reply++;
@@ -600,12 +593,11 @@ function YearInPosts() {
         preset: 'match',
         document: {
           id: 'id',
-          index: ['content', 'spoilerText', 'poll', 'media', 'card'],
+          index: ['content', 'spoilerText', 'media', 'card'],
         },
       }) as FlexSearchDocument;
       posts.forEach((p) => {
         const status = p.reblog || p;
-        const pollText = status.poll?.options?.map((o) => o.title).join(' ');
         const mediaText = status.mediaAttachments
           ?.map((m) => m.description)
           .join(' ');
@@ -616,7 +608,6 @@ function YearInPosts() {
           id: p.id,
           content: getHTMLText(status.content),
           spoilerText: status.spoilerText,
-          poll: pollText,
           media: mediaText,
           card: cardText,
         });
@@ -680,10 +671,7 @@ function YearInPosts() {
       const p = post as StatusWithExtras;
       if (p.reblog) {
         counts.boosts++;
-      } else if (
-        supportsNativeQuote() &&
-        (p.quote?.id || p.quote?.quotedStatus?.id)
-      ) {
+      } else if (p.quote?.id || p.quote?.quotedStatus?.id) {
         counts.quotes++;
       } else if (p.inReplyToId) {
         counts.replies++;
@@ -709,18 +697,13 @@ function YearInPosts() {
         const status = p.reblog || p;
         return !p.reblog && (status.mediaAttachments?.length ?? 0) > 0;
       } else if (postType === 'quotes') {
-        return (
-          supportsNativeQuote() && !!(p.quote?.id || p.quote?.quotedStatus?.id)
-        );
+        return !!(p.quote?.id || p.quote?.quotedStatus?.id);
       } else if (postType === 'replies') {
         return !!p.inReplyToId;
       } else if (postType === 'original') {
         return (
           !p.reblog &&
-          !(
-            supportsNativeQuote() &&
-            (p.quote?.id || p.quote?.quotedStatus?.id)
-          ) &&
+          !(p.quote?.id || p.quote?.quotedStatus?.id) &&
           !p.inReplyToId
         );
       }
@@ -1603,14 +1586,10 @@ function CalendarLegend() {
         <span className="calendar-bar-legend-item calendar-bar-reply" />{' '}
         <Trans>Replies</Trans>
       </span>{' '}
-      {supportsNativeQuote() && (
-        <>
-          <span className="ib">
-            <span className="calendar-bar-legend-item calendar-bar-quote" />{' '}
-            <Trans>Quotes</Trans>
-          </span>{' '}
-        </>
-      )}
+      <span className="ib">
+        <span className="calendar-bar-legend-item calendar-bar-quote" />{' '}
+        <Trans>Quotes</Trans>
+      </span>{' '}
       <span className="ib">
         <span className="calendar-bar-legend-item calendar-bar-boost" />{' '}
         <Trans>Reposts</Trans>

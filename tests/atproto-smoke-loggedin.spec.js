@@ -32,7 +32,7 @@ import path from 'node:path';
 
 import { AtpAgent } from '@atproto/api';
 import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
-import { expect, test as base } from '@playwright/test';
+import { devices, expect, test as base } from '@playwright/test';
 
 /** @typedef {import('@playwright/test').Page} Page */
 /** @typedef {import('@playwright/test').Locator} Locator */
@@ -62,6 +62,8 @@ base.describe.configure({ mode: 'serial' });
 const SMOKE_TAG_PREFIX = '[bluepy-smoke-';
 const RUN_TAG = `${SMOKE_TAG_PREFIX}${Date.now()}]`;
 const SMOKE_SEED_BODY = `${RUN_TAG} seed`;
+const BSKY_DISCOVER_FEED =
+  'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot';
 const STORAGE_FILE = path.join(
   os.tmpdir(),
   `bluepy-smoke-storage-${process.pid}.json`,
@@ -234,7 +236,7 @@ async function loginViaUI(page) {
       ) {
         return;
       }
-      await page.getByPlaceholder('alice.bsky.social').fill(IDENTIFIER);
+      await page.getByLabel('Handle or PDS URL').fill(IDENTIFIER);
       await page.getByText('Use app password').click();
       await page.locator('input[type="password"]').fill(PASSWORD);
       await page
@@ -381,6 +383,71 @@ function statusDetailButton(page, titleSelector) {
     .last();
 }
 
+/**
+ * @param {Page} page
+ * @param {string} stateKey
+ */
+async function openModal(page, stateKey) {
+  await page.goto('/');
+  await expect(page.locator('.deck-container').first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await page.evaluate((k) => {
+    const appWindow = /** @type {TestWindow} */ (window);
+    if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
+      appWindow.__STATES__[k] = true;
+    }
+  }, stateKey);
+}
+
+/**
+ * @param {Page} page
+ * @param {string} body
+ */
+async function composeAndPublish(page, body) {
+  await page.goto('/');
+  await expect(page.locator('.deck-container').first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await page.evaluate(() => {
+    const appWindow = /** @type {TestWindow} */ (window);
+    if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
+      appWindow.__STATES__.showCompose = true;
+    }
+  });
+  const textarea = page.locator('textarea').first();
+  await textarea.waitFor({ timeout: 15_000 });
+  await textarea.fill(body);
+  await page
+    .getByRole('button', { name: /^(post|publish)$/i })
+    .first()
+    .click();
+  // Compose modal closes; textarea disappears as success signal.
+  await expect(textarea).toHaveCount(0, { timeout: 30_000 });
+}
+
+/**
+ * @param {Page} page
+ * @param {string} body
+ */
+async function composeAndPublishWithShortcut(page, body) {
+  await page.goto('/');
+  await expect(page.locator('.deck-container').first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await page.evaluate(() => {
+    const appWindow = /** @type {TestWindow} */ (window);
+    if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
+      appWindow.__STATES__.showCompose = true;
+    }
+  });
+  const textarea = page.locator('textarea').first();
+  await textarea.waitFor({ timeout: 15_000 });
+  await textarea.fill(body);
+  await textarea.press('Control+Enter');
+  await expect(textarea).toHaveCount(0, { timeout: 30_000 });
+}
+
 // ---------------------------------------------------------------------------
 // LOGIN
 // ---------------------------------------------------------------------------
@@ -444,6 +511,89 @@ test.describe('read flows', () => {
     );
   });
 
+  test('mobile Discover feed keeps position after opening and closing a post', async ({
+    browser,
+  }) => {
+    const ctx = await browser.newContext({
+      storageState: STORAGE_FILE,
+      ...devices['iPhone 13'],
+    });
+    const page = await ctx.newPage();
+    try {
+      const discoverPath = `/${BSKY_DISCOVER_FEED}`;
+      await page.goto(discoverPath);
+      const list = page.locator('#list-page');
+      await expect(list).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator('#list-page [data-href]').first()).toBeVisible({
+        timeout: 30_000,
+      });
+      let targetIndex = -1;
+      let scrollTop = 0;
+      for (let attempt = 0; attempt < 8 && targetIndex < 0; attempt += 1) {
+        await list.evaluate((element, attemptIndex) => {
+          const startingScrollTop = Math.max(1400, element.scrollHeight * 0.25);
+          element.scrollTo(
+            0,
+            startingScrollTop + attemptIndex * window.innerHeight * 0.7,
+          );
+        }, attempt);
+        await page.waitForTimeout(500);
+        targetIndex = await page.evaluate(() => {
+          const items = Array.from(
+            document.querySelectorAll('#list-page [data-href]'),
+          );
+          return items.findIndex((item) => {
+            const rect = item.getBoundingClientRect();
+            return (
+              rect.top > 120 &&
+              rect.bottom < window.innerHeight - 20 &&
+              /\d+\s+repl(?:y|ies)/i.test(item.textContent || '')
+            );
+          });
+        });
+        scrollTop = await list.evaluate((element) => element.scrollTop);
+      }
+      expect(scrollTop).toBeGreaterThan(1000);
+      expect(
+        targetIndex,
+        'Expected a visible reply-bearing feed item',
+      ).toBeGreaterThanOrEqual(0);
+      const target = page.locator('#list-page [data-href]').nth(targetIndex);
+      await target.evaluate((element) => {
+        element.setAttribute('data-smoke-target', '1');
+      });
+      await target.tap();
+      await expect(page.locator('.deck-close')).toHaveCount(1, {
+        timeout: 30_000,
+      });
+      await expect
+        .poll(() => list.evaluate((element) => element.scrollTop))
+        .toBeGreaterThan(scrollTop - 300);
+
+      const threadLink = page
+        .locator('.status-deck li.descendant .status-link[href]')
+        .first();
+      await expect(threadLink).toBeVisible({ timeout: 30_000 });
+      const firstPostURL = page.url();
+      await threadLink.tap();
+      await expect(page).not.toHaveURL(firstPostURL);
+      await expect(page.locator('.deck-close')).toHaveCount(1);
+      await expect
+        .poll(() => list.evaluate((element) => element.scrollTop))
+        .toBeGreaterThan(scrollTop - 300);
+
+      await page.locator('.deck-close').tap();
+      await expect(page).toHaveURL(new RegExp(BSKY_DISCOVER_FEED));
+      await expect(page.locator('.deck-close')).toHaveCount(0);
+      await expect
+        .poll(() => list.evaluate((element) => element.scrollTop))
+        .toBeGreaterThan(scrollTop - 300);
+      await expect(page.locator('[data-smoke-target="1"]')).toBeVisible();
+    } finally {
+      await ctx.close();
+    }
+  });
+
   test('notifications page renders', async ({ page }) => {
     await goto(page, '/notifications');
     await expect(page.locator('#notifications-page')).toBeVisible({
@@ -468,6 +618,21 @@ test.describe('read flows', () => {
     await expect(page.locator('#lists-page')).toBeVisible({ timeout: 15_000 });
   });
 
+  // Phase 2D: the Mastodon-only list knobs (replies_policy, exclusive) were
+  // removed; ATProto list create/update only accepts a title.
+  test('new-list form is title-only (no Mastodon replies-policy / exclusive)', async ({
+    page,
+  }) => {
+    await goto(page, '/l');
+    await expect(page.locator('#lists-page')).toBeVisible({ timeout: 15_000 });
+    await page.getByRole('button', { name: /new list/i }).first().click();
+    const form = page.locator('form.list-form');
+    await expect(form).toBeVisible({ timeout: 10_000 });
+    await expect(form.locator('input[name="title"]')).toBeVisible();
+    await expect(form.locator('select[name="replies_policy"]')).toHaveCount(0);
+    await expect(form.locator('input[name="exclusive"]')).toHaveCount(0);
+  });
+
   test('bookmarks page renders', async ({ page }) => {
     await goto(page, '/b');
     await expect(page.locator('.deck-container').first()).toBeVisible({
@@ -487,6 +652,22 @@ test.describe('read flows', () => {
     await expect(page.locator('#catchup-page')).toBeVisible({
       timeout: 15_000,
     });
+  });
+
+  // Phase 2D: Trending was reduced to the Bluesky Discover feed. The Mastodon
+  // trending-hashtags / trending-links / link-mentions chrome was removed with
+  // the feature-detection system (those endpoints returned empty collections on
+  // ATProto). Assert the route still renders posts from the Discover feed.
+  test('trending page renders Discover-feed posts', async ({ page }) => {
+    await goto(page, '/trending');
+    await expect(page.locator('.deck-container').first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page
+        .locator('[data-state-post-id], article.status, .status-link')
+        .first(),
+    ).toBeVisible({ timeout: 30_000 });
   });
 
   test('year-in-posts page renders', async ({ page }) => {
@@ -509,23 +690,6 @@ test.describe('read flows', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('modals', () => {
-  /**
-   * @param {Page} page
-   * @param {string} stateKey
-   */
-  async function openModal(page, stateKey) {
-    await page.goto('/');
-    await expect(page.locator('.deck-container').first()).toBeVisible({
-      timeout: 30_000,
-    });
-    await page.evaluate((k) => {
-      const appWindow = /** @type {TestWindow} */ (window);
-      if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
-        appWindow.__STATES__[k] = true;
-      }
-    }, stateKey);
-  }
-
   test('settings modal opens', async ({ page }) => {
     await openModal(page, 'showSettings');
     await expect(page.locator('text=/Settings/i').first()).toBeVisible({
@@ -550,20 +714,19 @@ test.describe('modals', () => {
     );
   });
 
-  test('compose add-media menu attaches an image on narrow viewports', async ({
+  test('compose add-media control attaches an image on narrow viewports', async ({
     page,
   }) => {
+    test.setTimeout(60_000);
     await page.setViewportSize({ width: 390, height: 844 });
     await openModal(page, 'showCompose');
-    await page.locator('#compose-container .add-button').click();
-
-    const mediaItem = page.locator('.szh-menu__item.compose-menu-add-media');
-    await expect(mediaItem.first()).toBeVisible({ timeout: 5_000 });
-
-    const chooserPromise = page.waitForEvent('filechooser');
-    await mediaItem.first().click();
-    const chooser = await chooserPromise;
-    await chooser.setFiles(path.join(process.cwd(), 'public/logo-192.png'));
+    await page.locator('#compose-container textarea').first().waitFor({
+      timeout: 15_000,
+    });
+    await page
+      .locator('#compose-container input[type="file"]:not([capture])')
+      .last()
+      .setInputFiles(path.join(process.cwd(), 'public/logo-192.png'));
 
     await expect(
       page.locator('#compose-container img[src^="blob:"]').first(),
@@ -586,54 +749,6 @@ test.describe('write flows', () => {
   test.afterEach(async () => {
     await cleanupSmokePosts(RUN_TAG);
   });
-
-  /**
-   * @param {Page} page
-   * @param {string} body
-   */
-  async function composeAndPublish(page, body) {
-    await page.goto('/');
-    await expect(page.locator('.deck-container').first()).toBeVisible({
-      timeout: 30_000,
-    });
-    await page.evaluate(() => {
-      const appWindow = /** @type {TestWindow} */ (window);
-      if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
-        appWindow.__STATES__.showCompose = true;
-      }
-    });
-    const textarea = page.locator('textarea').first();
-    await textarea.waitFor({ timeout: 15_000 });
-    await textarea.fill(body);
-    await page
-      .getByRole('button', { name: /^(post|publish)$/i })
-      .first()
-      .click();
-    // Compose modal closes; textarea disappears as success signal.
-    await expect(textarea).toHaveCount(0, { timeout: 30_000 });
-  }
-
-  /**
-   * @param {Page} page
-   * @param {string} body
-   */
-  async function composeAndPublishWithShortcut(page, body) {
-    await page.goto('/');
-    await expect(page.locator('.deck-container').first()).toBeVisible({
-      timeout: 30_000,
-    });
-    await page.evaluate(() => {
-      const appWindow = /** @type {TestWindow} */ (window);
-      if (typeof appWindow.__STATES__ === 'object' && appWindow.__STATES__) {
-        appWindow.__STATES__.showCompose = true;
-      }
-    });
-    const textarea = page.locator('textarea').first();
-    await textarea.waitFor({ timeout: 15_000 });
-    await textarea.fill(body);
-    await textarea.press('Control+Enter');
-    await expect(textarea).toHaveCount(0, { timeout: 30_000 });
-  }
 
   async function openCreatedStatusDetail(page, body) {
     const article = page
@@ -732,7 +847,6 @@ test.describe('write flows', () => {
       /^at:\/\/[^/]+\/app\.bsky\.feed\.post\//,
     );
     expect(replyRecord.facets || []).toEqual([]);
-    CREATED.push({ page, body: replyBody });
     await expect(textarea).toHaveCount(0, { timeout: 30_000 });
   });
 
@@ -865,6 +979,62 @@ test.describe('write flows', () => {
     await expect(
       page.locator('.account-block', { hasText: IDENTIFIER }).first(),
     ).toBeVisible({ timeout: 30_000 });
+  });
+
+  test('paste-to-quote: pasting a Bluesky post URL suggests a native quote', async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    // Publish a post we can quote, then read back its canonical detail link.
+    const body = `${RUN_TAG} quote target ${Date.now()}`;
+    await composeAndPublish(page, body);
+
+    await goto(page, `/a/${IDENTIFIER}`);
+    const article = page
+      .locator('[data-state-post-id]', { hasText: body })
+      .first();
+    await article.waitFor({ timeout: 45_000 });
+    const href = await article.evaluate((element) => {
+      const link =
+        element.closest('.status-link[data-href]') ||
+        element.querySelector('.status-link[data-href]');
+      return link?.getAttribute('data-href');
+    });
+    if (!href) throw new Error('published post is missing a detail link');
+    const rkeyMatch = decodeURIComponent(href).match(
+      /app\.bsky\.feed\.post\/([^/?#]+)/i,
+    );
+    if (!rkeyMatch) throw new Error(`could not extract rkey from ${href}`);
+    // Build the public bsky.app URL — exercises handle→DID resolution, not just
+    // a bare at:// URI. Strip a leading '@' so a `@handle` env value still
+    // yields a valid profile URL.
+    const actor = (IDENTIFIER || '').replace(/^@/, '');
+    const postUrl = `https://bsky.app/profile/${actor}/post/${rkeyMatch[1]}`;
+
+    // Open a fresh compose and paste the post URL, as a user would.
+    await openModal(page, 'showCompose');
+    const textarea = page.locator('#compose-container textarea').first();
+    await textarea.waitFor({ timeout: 15_000 });
+    await textarea.focus();
+    await textarea.evaluate((el, url) => {
+      const dt = new DataTransfer();
+      dt.setData('text', url);
+      el.dispatchEvent(
+        new ClipboardEvent('paste', {
+          clipboardData: dt,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    }, postUrl);
+
+    // The resolved post should be offered as a quote, with our body inside it.
+    const suggestion = page.locator('.quote-suggestion');
+    await expect(suggestion).toBeVisible({ timeout: 20_000 });
+    await expect(suggestion).toContainText('Turn link into a quote?');
+    await expect(suggestion.locator('.quote-status')).toContainText(body, {
+      timeout: 20_000,
+    });
   });
 });
 

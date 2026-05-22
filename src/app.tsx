@@ -7,13 +7,7 @@ import debounce from 'just-debounce-it';
 import type { ReactElement } from 'react';
 import { lazy, memo, Suspense } from 'react';
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import {
-  matchPath,
-  Navigate,
-  Route,
-  Routes,
-  useLocation,
-} from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { subscribe } from 'valtio';
 import { unstable_enableOp } from 'valtio/vanilla';
 
@@ -34,7 +28,10 @@ import NotificationService from './components/notification-service';
 import SearchCommand from './components/search-command';
 import Shortcuts from './components/shortcuts';
 import AccountStatuses from './pages/account-statuses';
-import AtprotoRoute from './pages/atproto-route';
+import {
+  AtprotoNonStatusRoute,
+  AtprotoStatusRoute,
+} from './pages/atproto-route';
 import Bookmarks from './pages/bookmarks';
 import Catchup from './pages/catchup';
 import Favourites from './pages/favourites';
@@ -66,7 +63,12 @@ import {
   createAtprotoOAuthAccessToken,
   initAtprotoOAuthClient,
 } from './utils/atproto-oauth';
-import { getAccessToken } from './utils/auth';
+import {
+  getAtprotoURIFromPathname,
+  getAtprotoPathFromLegacyRoute,
+  isAtprotoPostURI,
+  isStatusPath,
+} from './utils/atproto-route';
 import {
   AUTH_CHANGED_EVENT,
   AuthProvider,
@@ -79,9 +81,7 @@ import store from './utils/store';
 import {
   getAccounts,
   getAccount,
-  getCredentialApplication,
   getCurrentAccount,
-  getVapidKey,
   removeAccount,
   setCurrentAccountID,
 } from './utils/store-utils';
@@ -167,19 +167,9 @@ function preloadIconEntry(entry: unknown) {
   if (isIconModuleLoader(entry)) void entry();
 }
 
-function getStoredVapidKey(instanceURL: string | null | undefined) {
-  return getVapidKey(instanceURL ? { uri: instanceURL } : undefined);
-}
-
 appWindow.__STATES__ = states;
 appWindow.__STATES_STATS__ = () => {
-  const keys = [
-    'statuses',
-    'accounts',
-    'spoilers',
-    'unfurledLinks',
-    'statusQuotes',
-  ];
+  const keys = ['statuses', 'accounts', 'spoilers', 'statusQuotes'];
   const counts: Record<string, number> = {};
   keys.forEach((key) => {
     counts[key] = Object.keys(states[key] as Record<string, unknown>).length;
@@ -212,7 +202,7 @@ appWindow.__STATES_STATS__ = () => {
 setInterval(
   () => {
     if (!appWindow.__IDLE__) return;
-    const { statuses, unfurledLinks, notifications } = states;
+    const { statuses, notifications } = states;
     let keysCount = 0;
     const { instance } = api();
     const mountedKeys = new Set<string>();
@@ -239,17 +229,6 @@ setInterval(
         if (!mountedKeys.has(key) && !postInNotifications) {
           delete states.statuses[key];
           delete states.statusQuotes[key];
-          for (const link in unfurledLinks) {
-            const unfurled = unfurledLinks[link] as {
-              id?: string;
-              instance?: string;
-            };
-            const sKey = statusKey(unfurled.id, unfurled.instance);
-            if (sKey === key) {
-              delete states.unfurledLinks[link];
-              break;
-            }
-          }
           keysCount++;
         }
       } catch {}
@@ -530,7 +509,6 @@ function App() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const instanceURL = store.local.get('instanceURL');
       const isAtprotoOAuthCallback =
         !!window.location.search.match(/[?&]code=/) &&
         !!window.location.search.match(/[?&]iss=/);
@@ -567,172 +545,74 @@ function App() {
         }
       }
 
-      const code = decodeURIComponent(
-        (window.location.search.match(/code=([^&]+)/) || [undefined, ''])[1] ??
-          '',
-      );
-
-      if (code) {
-        console.log({ code });
-
-        const isPopup = window.opener && !window.opener.closed;
-
-        if (isPopup) {
-          try {
-            window.opener.postMessage(
-              {
-                type: 'oauth-callback',
-                code: code,
-              },
-              window.location.origin,
-            );
-            window.setTimeout(() => {
-              window.close();
-            }, 100);
-          } catch (e) {
-            console.error('Failed to send message to parent window:', e);
-            window.close();
-          }
-          return;
-        }
-
-        // Clear the code from the URL
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname || '/',
-        );
-
-        const {
-          client_id: clientID,
-          client_secret: clientSecret,
-          vapid_key,
-        } = (getCredentialApplication(instanceURL as string) || {}) as {
-          client_id?: string;
-          client_secret?: string;
-          vapid_key?: string;
-        };
-        const vapidKey = getStoredVapidKey(instanceURL) || vapid_key;
-        const verifier = store.sessionCookie.get('codeVerifier');
-
-        if (cancelled) return;
-        setUIState('loading');
-        const { access_token: accessToken } = (await getAccessToken({
-          instanceURL: instanceURL as string,
-          client_id: clientID as string,
-          client_secret: clientSecret,
-          code,
-          code_verifier: verifier || undefined,
-        })) as { access_token?: string };
-
-        if (accessToken) {
-          const client = initClient({ instance: instanceURL, accessToken });
-          await Promise.allSettled([
-            initPreferences(client),
-            initInstance(client, instanceURL as string),
-            initAccount(
-              client,
-              instanceURL as string,
-              accessToken,
-              vapidKey as string | null | undefined,
-            ),
-          ]);
-          initStates();
-          window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
-
-          if (cancelled) return;
-          setIsLoggedIn(true);
-          setUIState('default');
-
-          // Redirect after successful login
-          const redirectPath = store.session.get('loginRedirect');
-          if (redirectPath) {
-            store.session.del('loginRedirect');
-            navigatePath(redirectPath);
-          } else if (isRootPath(window.location.pathname)) {
-            navigatePath('/', { replace: true });
-          }
-        } else {
-          if (cancelled) return;
-          setUIState('error');
-        }
-        __BENCHMARK.end('app-init');
-      } else {
-        window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
-        const searchAccount = decodeURIComponent(
-          (window.location.search.match(/account=([^&]+)/) || [
-            undefined,
-            '',
-          ])[1] ?? '',
-        );
-        let account;
-        if (searchAccount) {
-          account = getAccount(searchAccount);
-          console.log('searchAccount', searchAccount, account);
-          if (account) {
-            setCurrentAccountID(account.info.id);
-            window.history.replaceState(
-              {},
-              document.title,
-              window.location.pathname || '/',
-            );
-          }
-        }
-        if (!account) {
-          account = getCurrentAccount();
-        }
-        while (account) {
-          setCurrentAccountID(account.info.id);
-          try {
-            account.accessToken = await hydrateAtprotoOAuthAccessToken(
-              account.accessToken,
-            );
-            break;
-          } catch (error) {
-            console.error(error);
-            removeAccount(account.info.id);
-            account = getAccounts()[0] ?? null;
-          }
-        }
+      // No ATProto OAuth callback in the URL → restore an existing session.
+      window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+      // URLSearchParams handles decoding and won't throw on malformed input.
+      const searchParams = new URLSearchParams(window.location.search);
+      const searchAccount = searchParams.get('account') ?? '';
+      let account;
+      if (searchAccount) {
+        account = getAccount(searchAccount);
         if (account) {
-          const { client } = api({ account });
-          const { instance } = client;
-          // console.log('masto', masto);
-          initStates();
-          if (cancelled) return;
-          setUIState('loading');
-          try {
-            if (hasPreferences() && hasInstance(instance)) {
-              // Non-blocking
-              void initPreferences(client);
-              void initInstance(client, instance);
-            } else {
-              await Promise.allSettled([
-                initPreferences(client),
-                initInstance(client, instance),
-              ]);
-            }
-          } catch {
-            // ignore — fall through to mark logged in below
-          } finally {
-            if (!cancelled) {
-              setIsLoggedIn(true);
-              setUIState('default');
-              __BENCHMARK.end('app-init');
-            }
-          }
-        } else {
-          if (cancelled) return;
-          setIsLoggedIn(false);
-          setUIState('default');
-          __BENCHMARK.end('app-init');
+          setCurrentAccountID(account.info.id);
+          // Strip only the `account` param; keep any other params and the hash.
+          searchParams.delete('account');
+          const nextSearch = searchParams.toString();
+          window.history.replaceState(
+            {},
+            document.title,
+            `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash}`,
+          );
         }
       }
-
-      // Cleanup
-      store.sessionCookie.del('clientID');
-      store.sessionCookie.del('clientSecret');
-      store.sessionCookie.del('codeVerifier');
+      if (!account) {
+        account = getCurrentAccount();
+      }
+      while (account) {
+        setCurrentAccountID(account.info.id);
+        try {
+          account.accessToken = await hydrateAtprotoOAuthAccessToken(
+            account.accessToken,
+          );
+          break;
+        } catch (error) {
+          console.error(error);
+          removeAccount(account.info.id);
+          account = getAccounts()[0] ?? null;
+        }
+      }
+      if (account) {
+        const { client } = api({ account });
+        const { instance } = client;
+        initStates();
+        if (cancelled) return;
+        setUIState('loading');
+        try {
+          if (hasPreferences() && hasInstance(instance)) {
+            // Non-blocking
+            void initPreferences(client);
+            void initInstance(client, instance);
+          } else {
+            await Promise.allSettled([
+              initPreferences(client),
+              initInstance(client, instance),
+            ]);
+          }
+        } catch {
+          // ignore — fall through to mark logged in below
+        } finally {
+          if (!cancelled) {
+            setIsLoggedIn(true);
+            setUIState('default');
+            __BENCHMARK.end('app-init');
+          }
+        }
+      } else {
+        if (cancelled) return;
+        setIsLoggedIn(false);
+        setUIState('default');
+        __BENCHMARK.end('app-init');
+      }
     })();
     return () => {
       cancelled = true;
@@ -834,8 +714,8 @@ function App() {
       <PrimaryRoutes />
       <SecondaryRoutes />
       <Routes>
-        <Route path="/:scheme://*" element={<AtprotoRoute />} />
-        <Route path="/:atUri" element={<AtprotoRoute />} />
+        <Route path="/:scheme://*" element={<AtprotoStatusRoute />} />
+        <Route path="/:atUri" element={<AtprotoStatusRoute />} />
         <Route path="/:instance?/s/:id" element={<StatusRoute />} />
         <Route path="*" element={null} />
       </Routes>
@@ -867,13 +747,46 @@ function isRootPath(pathname: string) {
   return /^\/(login|welcome|_sandbox|_qr-scan|_mock)/i.test(pathname);
 }
 
+function isNativeAtprotoPath(pathname: string) {
+  return pathname.toLowerCase().startsWith('/at://');
+}
+
+function getSuppressibleAtprotoPathname(pathname: string): string | null {
+  if (isNativeAtprotoPath(pathname)) return pathname;
+  return getAtprotoPathFromLegacyRoute(pathname);
+}
+
+function shouldSuppressPrimaryRoute(
+  location: ReturnType<typeof useLocation>,
+  isLoggedIn: boolean,
+): boolean {
+  const currentAtprotoPathname = getSuppressibleAtprotoPathname(
+    location.pathname,
+  );
+  if (!currentAtprotoPathname) return false;
+  if (!isLoggedIn) return true;
+
+  const currentAtUri = getAtprotoURIFromPathname(currentAtprotoPathname);
+  if (!isAtprotoPostURI(currentAtUri)) return true;
+
+  const prevAtprotoPathname = getSuppressibleAtprotoPathname(
+    states.prevLocation?.pathname ?? '',
+  );
+  const prevAtUri = getAtprotoURIFromPathname(prevAtprotoPathname ?? '');
+  return !!prevAtUri && !isAtprotoPostURI(prevAtUri);
+}
+
 const PrimaryRoutes = memo(() => {
   const location = useLocation();
+  const isLoggedIn = useAuth();
+  const suppressPrimaryRoute = shouldSuppressPrimaryRoute(location, isLoggedIn);
   const primaryLocation = useMemo(() => {
     const { pathname } = location;
     if (pathname === '/' || isRootPath(pathname)) return location;
     return { ...location, pathname: '/' };
   }, [location]);
+
+  if (suppressPrimaryRoute) return null;
 
   return (
     <Routes location={primaryLocation}>
@@ -921,21 +834,22 @@ function AuthRoute({ children }: { children: ReactElement }) {
 function getPrevLocation() {
   return states.prevLocation || null;
 }
+
+function isStatusModalPath(pathname: string) {
+  return isStatusPath(pathname);
+}
+
 function SecondaryRoutes() {
   // const snapStates = useSnapshot(states);
   const currentLocation = useLocation();
   // const prevLocation = snapStates.prevLocation;
-  const backgroundLocation = useRef(getPrevLocation());
+  const backgroundLocation = useRef<
+    ReturnType<typeof useLocation> | ReturnType<typeof getPrevLocation>
+  >(getPrevLocation());
+  const lastNonModalLocation = useRef(currentLocation);
 
   const isModalPage = useMemo(() => {
-    const atUriParam = matchPath('/:atUri', currentLocation.pathname)?.params
-      .atUri;
-    return (
-      matchPath('/:instance/s/:id', currentLocation.pathname) ||
-      matchPath('/s/:id', currentLocation.pathname) ||
-      matchPath('/:scheme://*', currentLocation.pathname) ||
-      atUriParam?.toLowerCase().startsWith('at:')
-    );
+    return isStatusModalPath(currentLocation.pathname);
   }, [currentLocation.pathname]);
 
   // Persist prevLocation to sessionStorage while on a status/post page so it
@@ -960,10 +874,19 @@ function SecondaryRoutes() {
   }, [isModalPage]);
 
   if (isModalPage) {
-    if (!backgroundLocation.current)
-      backgroundLocation.current = getPrevLocation();
+    if (!backgroundLocation.current) {
+      const prevLocation = getPrevLocation();
+      const canReuseLastLocation =
+        prevLocation &&
+        lastNonModalLocation.current.pathname === prevLocation.pathname &&
+        lastNonModalLocation.current.search === prevLocation.search;
+      backgroundLocation.current = canReuseLastLocation
+        ? lastNonModalLocation.current
+        : prevLocation;
+    }
   } else {
     backgroundLocation.current = null;
+    lastNonModalLocation.current = currentLocation;
   }
   console.debug({
     backgroundLocation: backgroundLocation.current,
@@ -972,6 +895,8 @@ function SecondaryRoutes() {
 
   return (
     <Routes location={backgroundLocation.current || currentLocation}>
+      <Route path="/:scheme://*" element={<AtprotoNonStatusRoute />} />
+      <Route path="/:atUri" element={<AtprotoNonStatusRoute />} />
       <Route
         path="/notifications"
         element={

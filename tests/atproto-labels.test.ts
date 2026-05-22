@@ -1,7 +1,5 @@
-/// <reference types="node" />
-
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'bun:test';
 
 import type { InterpretedLabelValueDefinition } from '@atproto/api';
 
@@ -52,7 +50,7 @@ function label(overrides: Partial<AtprotoLabel> = {}): AtprotoLabel {
   };
 }
 
-void test('normalizeAtprotoLabels drops invalid and negated labels', () => {
+test('normalizeAtprotoLabels drops invalid and negated labels', () => {
   assert.deepEqual(
     normalizeAtprotoLabels([
       label(),
@@ -64,7 +62,7 @@ void test('normalizeAtprotoLabels drops invalid and negated labels', () => {
   );
 });
 
-void test('dedupeAtprotoLabels keeps one label per source and value', () => {
+test('dedupeAtprotoLabels keeps one label per source and value', () => {
   assert.deepEqual(
     dedupeAtprotoLabels([
       label({ cts: 'first' }),
@@ -75,7 +73,7 @@ void test('dedupeAtprotoLabels keeps one label per source and value', () => {
   );
 });
 
-void test('getDisplayAtprotoLabels drops system moderation labels', () => {
+test('getDisplayAtprotoLabels drops system moderation labels', () => {
   assert.deepEqual(
     getDisplayAtprotoLabels([
       label({ val: '!hide' }),
@@ -86,7 +84,7 @@ void test('getDisplayAtprotoLabels drops system moderation labels', () => {
   );
 });
 
-void test('custom label definitions win over global strings', () => {
+test('custom label definitions win over global strings', () => {
   assert.equal(
     describeAtprotoLabel(
       label(),
@@ -103,7 +101,7 @@ void test('custom label definitions win over global strings', () => {
   );
 });
 
-void test('custom labels without locale strings fall back to global strings', () => {
+test('custom labels without locale strings fall back to global strings', () => {
   assert.equal(
     describeAtprotoLabel(
       label(),
@@ -120,7 +118,7 @@ void test('custom labels without locale strings fall back to global strings', ()
   );
 });
 
-void test('locale fallback tries language before first locale', () => {
+test('locale fallback tries language before first locale', () => {
   assert.equal(
     describeAtprotoLabel(
       label(),
@@ -131,7 +129,7 @@ void test('locale fallback tries language before first locale', () => {
   );
 });
 
-void test('unknown labels get humanized fallback text', () => {
+test('unknown labels get humanized fallback text', () => {
   assert.equal(
     describeAtprotoLabel(label({ val: 'bridged-from-bridgy-fed-web' })).name,
     'Bridged From Bridgy Fed Web',
@@ -143,14 +141,14 @@ void test('unknown labels get humanized fallback text', () => {
   );
 });
 
-void test('label value lookups ignore prototype-chain keys', () => {
+test('label value lookups ignore prototype-chain keys', () => {
   const info = describeAtprotoLabel(label({ val: 'toString' }));
   assert.equal(info.name, 'ToString');
   assert.equal(info.description, 'toString');
   assert.equal(info.severity, 'none');
 });
 
-void test('known global labels use supplied global strings', () => {
+test('known global labels use supplied global strings', () => {
   const info = describeAtprotoLabel(
     label({ src: 'did:plc:bsky', val: 'sexual' }),
     {},
@@ -167,7 +165,7 @@ void test('known global labels use supplied global strings', () => {
   assert.equal(info.severity, 'none');
 });
 
-void test('global label strings without atproto definitions are neutral', () => {
+test('global label strings without atproto definitions are neutral', () => {
   const info = describeAtprotoLabel(
     label({ src: 'did:plc:bsky', val: 'gore' }),
     {},
@@ -183,7 +181,7 @@ void test('global label strings without atproto definitions are neutral', () => 
   assert.equal(info.severity, 'none');
 });
 
-void test('custom label severity is clamped for CSS class names', () => {
+test('custom label severity is clamped for CSS class names', () => {
   const info = describeAtprotoLabel(
     label(),
     {
@@ -199,7 +197,7 @@ void test('custom label severity is clamped for CSS class names', () => {
   assert.equal(info.severity, 'none');
 });
 
-void test('getAtprotoLabelClassName uses normalized severities', () => {
+test('getAtprotoLabelClassName uses normalized severities', () => {
   assert.equal(
     getAtprotoLabelClassName(
       describeAtprotoLabel(label(), {
@@ -223,7 +221,7 @@ void test('getAtprotoLabelClassName uses normalized severities', () => {
   );
 });
 
-void test('getAtprotoLabelDefinitions drops malformed cached entries', () => {
+test('getAtprotoLabelDefinitions drops malformed cached entries', () => {
   assert.deepEqual(
     getAtprotoLabelDefinitions({
       atprotoLabelDefs: {
@@ -243,7 +241,7 @@ void test('getAtprotoLabelDefinitions drops malformed cached entries', () => {
   );
 });
 
-void test('getAtprotoLabelerInfoMap drops malformed cached entries', () => {
+test('getAtprotoLabelerInfoMap drops malformed cached entries', () => {
   assert.deepEqual(
     getAtprotoLabelerInfoMap({
       atprotoLabelers: {
@@ -274,7 +272,7 @@ void test('getAtprotoLabelerInfoMap drops malformed cached entries', () => {
   );
 });
 
-void test('getAtprotoLabelerInfoFromSourceProfile derives DID and avatar', () => {
+test('getAtprotoLabelerInfoFromSourceProfile derives DID and avatar', () => {
   assert.deepEqual(
     getAtprotoLabelerInfoFromSourceProfile({
       id: 'did:plc:source',
@@ -314,7 +312,7 @@ void test('getAtprotoLabelerInfoFromSourceProfile derives DID and avatar', () =>
   );
 });
 
-void test('getAtprotoLabelerInfoFromView reads creator labeler profile', () => {
+test('getAtprotoLabelerInfoFromView reads creator labeler profile', () => {
   assert.deepEqual(
     getAtprotoLabelerInfoFromView({
       creator: {
@@ -334,7 +332,7 @@ void test('getAtprotoLabelerInfoFromView reads creator labeler profile', () => {
   assert.equal(getAtprotoLabelerInfoFromView({ creator: {} }), undefined);
 });
 
-void test('normalizeAtprotoLabelerDids handles cached strings and pref objects', () => {
+test('normalizeAtprotoLabelerDids handles cached strings and pref objects', () => {
   assert.deepEqual(
     normalizeAtprotoLabelerDids(
       [
@@ -350,7 +348,7 @@ void test('normalizeAtprotoLabelerDids handles cached strings and pref objects',
   );
 });
 
-void test('normalizeAtprotoLabelerDids deduplicates DIDs', () => {
+test('normalizeAtprotoLabelerDids deduplicates DIDs', () => {
   assert.deepEqual(
     normalizeAtprotoLabelerDids([
       'did:plc:a',

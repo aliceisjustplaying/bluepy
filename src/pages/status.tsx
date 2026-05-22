@@ -2,10 +2,9 @@ import './status.css';
 
 import { plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import { MenuDivider, MenuHeader, MenuItem } from '@szhsin/react-menu';
+import { MenuItem } from '@szhsin/react-menu';
 import debounce from 'just-debounce-it';
 import pRetry from 'p-retry';
-import { toUnicode } from 'punycode/';
 import type {
   ReactNode,
   ComponentType,
@@ -28,7 +27,6 @@ import { matchPath, useSearchParams } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
 import Avatar from '../components/avatar';
-import EditHistoryControls from '../components/edit-history-controls';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
@@ -41,9 +39,10 @@ import Status from '../components/status';
 import type { AnyStatus } from '../components/status-types';
 import { api, getMastoV2Resource } from '../utils/api';
 import {
-  EditHistoryProvider,
-  useEditHistory,
-} from '../utils/edit-history-context';
+  getAtprotoURIFromPathname,
+  isAtprotoPostURI,
+  isStatusPath,
+} from '../utils/atproto-route';
 import htmlContentLength from '../utils/html-content-length';
 import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
@@ -56,9 +55,11 @@ import states, {
 import statusPeek from '../utils/status-peek';
 import { getCurrentAccount } from '../utils/store-utils';
 import { ThreadCountContext } from '../utils/thread-count-context';
+import {
+  appendThreadDescendant,
+  clearThreadDescendantReplies,
+} from '../utils/thread-structure';
 import useTitle from '../utils/useTitle';
-
-import getInstanceStatusURL from './../utils/get-instance-status-url';
 
 // `react-intersection-observer`'s `InView` ships without working JSX
 // component typings under our React component types. Re-type as a React
@@ -170,8 +171,6 @@ const scrollIntoViewOptions: ScrollIntoViewOptions = {
 const STATUSES_SELECTOR =
   '.status-link:not(details:not([open]) > summary ~ *, details:not([open]) > summary ~ * *), .status-focus:not(details:not([open]) > summary ~ *, details:not([open]) > summary ~ * *)';
 
-const STATUS_URL_REGEX = /\/s\//i;
-
 const postViewState = (): 'large' | 'small' =>
   window.matchMedia('(min-width: calc(40em + 350px))').matches
     ? 'large'
@@ -264,15 +263,15 @@ function StatusPage(params: StatusPageParams) {
 
   const closeLink = useMemo(() => {
     const { prevLocation } = states;
+    const prevPathname = prevLocation?.pathname || '';
     const prevSearch = prevLocation?.search;
     const prevSearchStr = typeof prevSearch === 'string' ? prevSearch : '';
-    const pathname = (prevLocation?.pathname || '') + prevSearchStr;
-    const atUriParam = matchPath('/:atUri', pathname)?.params.atUri;
+    const pathname = prevPathname + prevSearchStr;
+    const atprotoURI = getAtprotoURIFromPathname(prevPathname);
     const matchStatusPath =
-      matchPath('/:instance/s/:id', pathname) ||
-      matchPath('/s/:id', pathname) ||
-      matchPath('/:scheme://*', pathname) ||
-      atUriParam?.toLowerCase().startsWith('at%3a');
+      matchPath('/:instance/s/:id', prevPathname) ||
+      matchPath('/s/:id', prevPathname) ||
+      isAtprotoPostURI(atprotoURI);
     if (!pathname || matchStatusPath) {
       return '/';
     }
@@ -441,13 +440,21 @@ function StatusPage(params: StatusPageParams) {
   }, [showMediaOnly]);
 
   useEffect(() => {
-    const $deckContainers = document.querySelectorAll('.deck-container');
+    const $deckContainers =
+      document.querySelectorAll<HTMLElement>('.deck-container');
+    const scrollTops = new Map<HTMLElement, number>();
     $deckContainers.forEach(($deckContainer) => {
+      scrollTops.set($deckContainer, $deckContainer.scrollTop);
       $deckContainer.setAttribute('inert', '');
     });
     return () => {
       $deckContainers.forEach(($deckContainer) => {
         $deckContainer.removeAttribute('inert');
+      });
+      requestAnimationFrame(() => {
+        scrollTops.forEach((scrollTop, $deckContainer) => {
+          $deckContainer.scrollTop = scrollTop;
+        });
       });
     };
   }, []);
@@ -470,16 +477,14 @@ function StatusPage(params: StatusPageParams) {
           </div>
         )
       ) : (
-        <Link to={closeLink} />
+        <Link to={closeLink} preservePrevLocation />
       )}
       {!showMediaOnly && (
-        <EditHistoryProvider statusID={id}>
-          <StatusThread
-            id={id}
-            instance={params.instance}
-            closeLink={closeLink}
-          />
-        </EditHistoryProvider>
+        <StatusThread
+          id={id}
+          instance={params.instance}
+          closeLink={closeLink}
+        />
       )}
     </div>
   );
@@ -494,7 +499,13 @@ interface StatusParentProps {
 function StatusParent(props: StatusParentProps) {
   const { linkable, to, onClick, ...restProps } = props;
   return linkable ? (
-    <Link className="status-link" to={to} onClick={onClick} {...restProps} />
+    <Link
+      className="status-link"
+      to={to}
+      onClick={onClick}
+      preservePrevLocation
+      {...restProps}
+    />
   ) : (
     <div className="status-focus" tabIndex={-1} role="article" {...restProps} />
   );
@@ -588,9 +599,6 @@ function StatusThread({
     };
   }, [id, isLoading]);
 
-  const { editHistoryMode, initEditHistory, editedAtIndex, editHistoryRef } =
-    useEditHistory();
-
   const scrollOffsets = useRef<{
     offsetTop?: number;
     scrollTop?: number;
@@ -602,30 +610,7 @@ function StatusThread({
     console.log({ fullContext: fullContext.current });
     if (!fullContext.current) return undefined;
     let ancestors: StatusThreadItem[] = fullContext.current.ancestors;
-    let { descendants, heroStatus } = fullContext.current;
-
-    if (editHistoryMode && descendants?.length) {
-      // Filter descendants based on createdAt/editedAt dates
-      // - editHistory items only has createdAt
-      // - descendants items has createdAt and optional editedAt
-      const currentEditedAtStatus = editHistoryRef.current[editedAtIndex];
-      const currentEditedAtStatusCreatedAt = Date.parse(
-        currentEditedAtStatus.createdAt,
-      );
-      const nextEditedAtStatus = editHistoryRef.current[editedAtIndex - 1];
-      const nextEditedAtStatusCreatedAt = nextEditedAtStatus
-        ? Date.parse(nextEditedAtStatus.createdAt)
-        : null;
-      descendants = descendants.filter((s) => {
-        // Show descendants created between current and next editedAt dates
-        const sCreatedAt = Date.parse(s.editedAt || s.createdAt);
-        return (
-          sCreatedAt >= currentEditedAtStatusCreatedAt &&
-          (!nextEditedAtStatusCreatedAt ||
-            sCreatedAt <= nextEditedAtStatusCreatedAt)
-        );
-      });
-    }
+    const { descendants, heroStatus } = fullContext.current;
 
     ancestors.sort(createdAtSort);
     descendants.sort(createdAtSort);
@@ -680,6 +665,7 @@ function StatusThread({
       (s) => isGhostStatus(s) || s.account?.id === heroStatus.account?.id,
     );
     const nestedDescendants: RawStatus[] = [];
+    clearThreadDescendantReplies(descendants);
     descendants.forEach((status) => {
       saveRawStatus(status, instance, {
         // skipThreading: true,
@@ -693,36 +679,12 @@ function StatusThread({
         missingStatuses.add(status.inReplyToId);
       }
 
-      if (status.inReplyToAccountId === status.account?.id) {
-        // If replying to self, it's part of the thread, level 1
-        nestedDescendants.push(status);
-      } else if (status.inReplyToId === heroStatus.id) {
-        // If replying to the hero status, it's a reply, level 1
-        nestedDescendants.push(status);
-      } else if (
-        !status.inReplyToAccountId &&
-        nestedDescendants.find(
-          (s) =>
-            s.id === status.inReplyToId &&
-            s.account?.id === heroStatus.account?.id,
-        ) &&
-        status.account?.id === heroStatus.account?.id
-      ) {
-        // If replying to hero's own statuses, it's part of the thread, level 1
-        nestedDescendants.push(status);
-      } else {
-        // If replying to someone else, it's a reply to a reply, level 2
-        const parent = descendants.find((s) => s.id === status.inReplyToId);
-        if (parent) {
-          if (!parent.__replies) {
-            parent.__replies = [];
-          }
-          parent.__replies.push(status);
-        } else {
-          // If no parent, something is wrong
-          console.warn('No parent found for', status);
-        }
-      }
+      appendThreadDescendant(
+        status,
+        heroStatus,
+        descendants,
+        nestedDescendants,
+      );
     });
 
     // sort hero author to top
@@ -942,7 +904,7 @@ function StatusThread({
       const restructured = restructureContextRef.current();
       if (restructured) setStatuses(restructured.allStatuses);
     } catch {}
-  }, [editHistoryMode, editedAtIndex]);
+  }, []);
 
   const [showRefresh, setShowRefresh] = useState(false);
   useEffect(() => {
@@ -1071,17 +1033,6 @@ function StatusThread({
         }),
     ['/:instance?/s/:id', '/s/:id', '/:scheme://*', '/:atUri'],
   );
-
-  const postInstance = useMemo<string | undefined>(() => {
-    if (!heroStatus) return undefined;
-    const { url } = heroStatus;
-    if (!url) return undefined;
-    return URL.parse(url)?.hostname;
-  }, [heroStatus]);
-  const postSameInstance = useMemo<boolean | undefined>(() => {
-    if (!postInstance) return undefined;
-    return postInstance === instance;
-  }, [postInstance, instance]);
 
   const [limit, setLimit] = useState(LIMIT);
   const showMore = useMemo(() => {
@@ -1343,7 +1294,10 @@ function StatusThread({
         level,
       } = status;
       const isHero = statusID === id;
-      const isLinkable = !!(!ghost && (isThread || ancestor));
+      const isLinkable = !!(
+        !ghost &&
+        (isThread || ancestor || descendant || thread)
+      );
 
       return (
         <li
@@ -1605,10 +1559,10 @@ function StatusThread({
       const prevEntry =
         navigation.entries()[(navigation.currentEntry?.index ?? 0) - 1];
       if (prevEntry?.url) {
-        return STATUS_URL_REGEX.test(prevEntry.url);
+        return isStatusPath(URL.parse(prevEntry.url)?.pathname ?? '');
       }
     }
-    return STATUS_URL_REGEX.test(states.prevLocation?.pathname ?? '');
+    return isStatusPath(states.prevLocation?.pathname ?? '');
   })();
 
   interface StatusKeyish {
@@ -1735,16 +1689,7 @@ function StatusThread({
           initialPageState.current === 'status' && !firstLoad.current
             ? 'slide-in'
             : ''
-        } ${viewMode ? `deck-view-${viewMode}` : ''} ${
-          editHistoryMode ? 'edit-history-mode' : ''
-        }`}
-        style={
-          editHistoryMode
-            ? {
-                '--edit-history-percentage': `${editedAtIndex / (editHistoryRef.current.length - 1)}`,
-              }
-            : undefined
-        }
+        } ${viewMode ? `deck-view-${viewMode}` : ''}`}
         onAnimationEnd={() => {
           // Fix the bounce effect when switching viewMode
           // `slide-in` animation kicks in when switching viewMode
@@ -1974,52 +1919,17 @@ function StatusThread({
                     <Trans>Show all sensitive content</Trans>
                   </span>
                 </MenuItem>
-                <MenuDivider />
-                <MenuHeader className="plain">
-                  <Trans>Experimental</Trans>
-                </MenuHeader>
-                <MenuItem
-                  disabled={!postInstance || postSameInstance}
-                  onClick={() => {
-                    const statusURL = getInstanceStatusURL(
-                      heroStatus?.url ?? '',
-                    );
-                    if (statusURL) {
-                      navigatePath(statusURL);
-                    } else {
-                      alert(t`Unable to switch`);
-                    }
-                  }}
-                >
-                  <Icon icon="transfer" />
-                  <small className="menu-double-lines">
-                    {postInstance
-                      ? t`Switch to post's PDS (${toUnicode(postInstance)})`
-                      : t`Switch to post's PDS`}
-                  </small>
-                </MenuItem>
-                <MenuItem
-                  disabled={
-                    !sameInstance ||
-                    uiState === 'loading' ||
-                    !heroStatus?.editedAt ||
-                    !totalDescendants.current
-                  }
-                  onClick={() => {
-                    void initEditHistory();
-                  }}
-                >
-                  <Icon icon="edit" />
-                  <span>{t`View Edit History Snapshots`}</span>
-                </MenuItem>
               </Menu2>
-              <Link className="button plain deck-close" to={closeLink}>
+              <Link
+                className="button plain deck-close"
+                to={closeLink}
+                preservePrevLocation
+              >
                 <Icon icon="x" size="xl" alt={t`Close`} />
               </Link>
             </div>
           </div>
         </header>
-        <EditHistoryControls />
         {!!statuses.length && heroStatus ? (
           <ul
             className={`timeline flat contextual grow ${
@@ -2179,6 +2089,13 @@ function SubComments({
     [setSearchParams],
   );
 
+  const handleStatusLinkClick = useCallback(
+    (_e: MouseEvent | globalThis.KeyboardEvent, status: AnyStatus) => {
+      resetScrollPosition(status.id);
+    },
+    [],
+  );
+
   // The Container element is either `div` or `details` depending on `open`.
   // Use a permissive ref type to satisfy both branches of the JSX union.
   const detailsRef = useRef<HTMLElement | null>(null);
@@ -2290,6 +2207,7 @@ function SubComments({
               className="replies-parent-link"
               to={parentLink.to}
               onClick={parentLink.onClick}
+              preservePrevLocation
               title={t`View post with its replies`}
             >
               &raquo;
@@ -2301,14 +2219,13 @@ function SubComments({
         <ul>
           {replies.map((r) => (
             <li key={r.id}>
-              {/* <Link
-              className="status-link"
-              to={instance ? `/${instance}/s/${r.id}` : `/s/${r.id}`}
-              onClick={() => {
-                resetScrollPosition(r.id);
-              }}
-            > */}
-              <div className="status-focus" tabIndex={-1} role="article">
+              <StatusParent
+                linkable
+                to={instance ? `/${instance}/s/${r.id}` : `/s/${r.id}`}
+                onClick={() => {
+                  resetScrollPosition(r.id);
+                }}
+              >
                 <Status
                   statusID={r.id}
                   instance={instance}
@@ -2316,6 +2233,7 @@ function SubComments({
                   size="s"
                   enableTranslate
                   onMediaClick={handleMediaClick}
+                  onStatusLinkClick={handleStatusLinkClick}
                   showActionsBar
                 />
                 {!r.replies?.length &&
@@ -2328,8 +2246,7 @@ function SubComments({
                       </span>
                     </div>
                   )}
-              </div>
-              {/* </Link> */}
+              </StatusParent>
               {!!r.replies?.length && (
                 <SubComments
                   instance={instance}
@@ -2355,7 +2272,6 @@ function SubComments({
 }
 
 const MEDIA_VIRTUAL_LENGTH = 140;
-const POLL_VIRTUAL_LENGTH = 35;
 const CARD_VIRTUAL_LENGTH = 70;
 const WEIGHT_SEGMENT = 140;
 const statusWeightCache = new Map<string, number>();
@@ -2370,26 +2286,24 @@ interface CalcStatusWeightInput {
   spoilerText?: unknown;
   content?: unknown;
   mediaAttachments?: { length?: number } | null;
-  poll?: { options?: { length?: number } } | null;
   card?: unknown;
 }
 
 function calcStatusWeight(status: CalcStatusWeightInput | RawStatus): number {
   const cachedWeight = statusWeightCache.get(status.id);
   if (cachedWeight) return cachedWeight;
-  const { spoilerText, content, mediaAttachments, poll, card } = status;
+  const { spoilerText, content, mediaAttachments, card } = status;
   // Preserve original JS string-concat semantics: `undefined + content`
   // yields `"undefined" + content`. Cast via `String()` to keep that
   // coercion under TypeScript's checker.
   const length = htmlContentLength(String(spoilerText) + String(content));
   const mediaLength = mediaAttachments?.length ? MEDIA_VIRTUAL_LENGTH : 0;
-  const pollOptions = poll?.options;
-  const pollLength = (pollOptions?.length || 0) * POLL_VIRTUAL_LENGTH;
+  // A link card is only rendered when there's a card and no media taking its
+  // place, so only that case adds card height. Previously the condition was
+  // inverted: every card-less post (the common case) was charged CARD_VIRTUAL_LENGTH.
   const cardLength =
-    card && (mediaAttachments?.length || pollOptions?.length)
-      ? 0
-      : CARD_VIRTUAL_LENGTH;
-  const totalLength = length + mediaLength + pollLength + cardLength;
+    card && !mediaAttachments?.length ? CARD_VIRTUAL_LENGTH : 0;
+  const totalLength = length + mediaLength + cardLength;
   const weight = totalLength / WEIGHT_SEGMENT;
   statusWeightCache.set(status.id, weight);
   return weight;

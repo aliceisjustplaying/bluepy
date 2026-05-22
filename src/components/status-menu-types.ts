@@ -1,8 +1,5 @@
-import type { MessageDescriptor } from '@lingui/core';
 import type { mastodon } from 'masto';
 import type { ReactNode } from 'react';
-
-import visibilityIconsMap from '../utils/visibility-icons-map';
 
 import type {
   AnyStatus,
@@ -13,7 +10,6 @@ import type {
 export interface StatusMenuPartsArgs {
   accountId?: string | null;
   mentions?: mastodon.v1.StatusMention[];
-  currentAccount?: string | null;
   repliesCount?: number;
   username?: string;
   acct?: string;
@@ -42,7 +38,6 @@ export interface StatusMenuPartsArgs {
   quote?: unknown;
   setShowQuoteChain: (value: boolean) => void;
   setShowEmbed: (value: boolean) => void;
-  setShowQuoteSettings: (value: boolean) => void;
   mediaFirst?: boolean;
   enableTranslate?: boolean;
   language?: string | null;
@@ -56,9 +51,6 @@ export interface StatusMenuPartsArgs {
     status: AnyStatus,
   ) => void;
   createdDateText?: string | false | null;
-  editedAt?: string | null;
-  setShowEdited: (value: string | false) => void;
-  editedDateText?: string | false | null;
   isPublic: boolean;
   authenticated?: boolean;
   isSelf?: boolean | string | null;
@@ -67,10 +59,7 @@ export interface StatusMenuPartsArgs {
   muted?: boolean | null;
   pinned?: boolean | null;
   isPinnable: boolean;
-  quoteApprovalPolicyMessages: Record<string, MessageDescriptor>;
-  postQuoteApprovalPolicy?: string | null;
-  visibility: keyof typeof visibilityIconsMap;
-  isQuotingMyPost?: boolean;
+  visibility: 'direct' | 'local' | 'private' | 'public' | 'unlisted';
   sKey: string;
   fetchBoostedLikedByAccounts: (
     firstLoad?: boolean,

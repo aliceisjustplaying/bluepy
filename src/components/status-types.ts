@@ -6,10 +6,6 @@ import type { AtprotoLabel } from '../utils/atproto-labels';
 
 export type AnyAccount = mastodon.v1.Account & Record<string, unknown>;
 
-export type AnyPoll = mastodon.v1.Poll & {
-  emojis?: mastodon.v1.CustomEmoji[];
-} & Record<string, unknown>;
-
 export type AnyPreviewCard = Omit<
   mastodon.v1.PreviewCard,
   | 'authorName'
@@ -91,6 +87,7 @@ export interface StatusAtprotoMeta {
   labels?: AtprotoLabel[];
   replyParentAccount?: AnyAccount | null;
   replyParentUnavailable?: boolean;
+  mutedAuthor?: boolean;
 }
 
 interface StatusQuoteApproval {
@@ -119,7 +116,6 @@ export type AnyStatus = Omit<
   editedAt: string | null;
   language?: string;
   mediaAttachments: AnyMediaAttachment[];
-  poll?: AnyPoll;
   quote?: AnyQuote | null;
   reblog?: AnyStatus | null;
   url?: string;
@@ -176,9 +172,6 @@ export interface StatusContentMasto {
         unpin(): Promise<mastodon.v1.Status>;
         pin(): Promise<mastodon.v1.Status>;
         remove(): Promise<unknown>;
-        history: {
-          list(): Promise<AnyStatus[] | undefined>;
-        };
         quotes: {
           $select(id: string): {
             revoke: { create(): Promise<unknown> };
@@ -186,14 +179,6 @@ export interface StatusContentMasto {
         };
         rebloggedBy: { list: StatusReactionList };
         favouritedBy: { list: StatusReactionList };
-      };
-    };
-    polls: {
-      $select(id: string): {
-        fetch(): Promise<AnyPoll>;
-        votes: {
-          create(options: { choices: number[] }): Promise<AnyPoll>;
-        };
       };
     };
   };
