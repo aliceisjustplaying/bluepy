@@ -1,8 +1,4 @@
-import type {
-  ComponentPropsWithoutRef,
-  ElementType,
-  Ref,
-} from 'react';
+import type { ComponentPropsWithRef, ComponentType, JSX } from 'react';
 
 import { sanitizeEmbedHtml, sanitizePostHtml } from '../utils/sanitize-html';
 
@@ -16,7 +12,13 @@ const SANITIZERS: Record<
   embed: sanitizeEmbedHtml,
 };
 
-type RawHtmlOwnProps<T extends ElementType> = {
+// Constrain the polymorphic element to intrinsic (host) elements only:
+// `dangerouslySetInnerHTML` is meaningful only on host elements, and every
+// call site renders a plain `div`/`span`/`p`. This also lets us derive the
+// correct per-tag props and ref type from `ComponentPropsWithRef<T>`.
+type HostTag = keyof JSX.IntrinsicElements;
+
+type RawHtmlOwnProps<T extends HostTag> = {
   /** Untrusted HTML. Sanitized against the chosen profile before rendering. */
   html: string | null | undefined;
   /**
@@ -24,14 +26,13 @@ type RawHtmlOwnProps<T extends ElementType> = {
    * sandboxed-iframe profile for third-party oEmbed HTML.
    */
   profile?: SanitizeProfile;
-  /** Element to render. Defaults to `div`. */
+  /** Host element to render. Defaults to `div`. */
   as?: T;
-  ref?: Ref<Element>;
 };
 
-type RawHtmlProps<T extends ElementType> = RawHtmlOwnProps<T> &
+type RawHtmlProps<T extends HostTag> = RawHtmlOwnProps<T> &
   Omit<
-    ComponentPropsWithoutRef<T>,
+    ComponentPropsWithRef<T>,
     keyof RawHtmlOwnProps<T> | 'dangerouslySetInnerHTML' | 'children'
   >;
 
@@ -42,21 +43,25 @@ type RawHtmlProps<T extends ElementType> = RawHtmlOwnProps<T> &
  * leave app-generated trusted HTML on a raw `dangerouslySetInnerHTML` with a
  * `TRUSTED-INTERNAL` comment.
  */
-function RawHtml<T extends ElementType = 'div'>({
+function RawHtml<T extends HostTag = 'div'>({
   html,
   profile = 'post',
   as,
-  ref,
   ...rest
 }: RawHtmlProps<T>) {
-  const Component: ElementType = as ?? 'div';
+  // Public props are constrained to `T` (callers get the correct per-tag attrs
+  // and ref). At the render boundary, `ComponentPropsWithRef<T>` for an open
+  // generic `T` is a union of every intrinsic prop shape, which JSX can't
+  // accept as a single element's props. Render through a host component typed
+  // to accept an arbitrary prop bag (one localized cast); the public surface
+  // stays strict, only this internal render is loosened — matching the
+  // `ComponentType<Record<string, unknown>>` pattern used elsewhere in the app.
+  const Component = (as ?? 'div') as unknown as ComponentType<
+    Record<string, unknown>
+  >;
   const sanitized = SANITIZERS[profile](html);
   return (
-    <Component
-      ref={ref}
-      {...rest}
-      dangerouslySetInnerHTML={{ __html: sanitized }}
-    />
+    <Component {...rest} dangerouslySetInnerHTML={{ __html: sanitized }} />
   );
 }
 

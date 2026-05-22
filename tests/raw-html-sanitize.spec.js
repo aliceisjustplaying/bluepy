@@ -246,12 +246,23 @@ test.describe('embed HTML sanitizer', () => {
         results.relativeIframeDropped = doc.querySelector('iframe') === null;
       }
 
-      // Protocol-relative same-host attempt dropped (resolves to our origin
-      // only when host matches; a foreign host would be kept, which is fine —
-      // here we assert a relative path is dropped).
+      // Protocol-relative src is dropped regardless of host — even a foreign
+      // provider — because we require a literal absolute http(s) URL.
       {
-        const doc = parse('<iframe src="//' + window.location.host + '/x"></iframe>');
-        results.sameHostDropped = doc.querySelector('iframe') === null;
+        const foreign = parse('<iframe src="//provider.test/embed"></iframe>');
+        results.protocolRelativeForeignDropped =
+          foreign.querySelector('iframe') === null;
+        const sameHost = parse(
+          '<iframe src="//' + window.location.host + '/x"></iframe>',
+        );
+        results.protocolRelativeSameHostDropped =
+          sameHost.querySelector('iframe') === null;
+      }
+
+      // http:// (non-https) src dropped — no downgrade / mixed content.
+      {
+        const doc = parse('<iframe src="http://provider.test/embed"></iframe>');
+        results.httpIframeDropped = doc.querySelector('iframe') === null;
       }
 
       // javascript: src rejected.
@@ -297,10 +308,108 @@ test.describe('embed HTML sanitizer', () => {
       'unsafe referrerpolicy overridden',
     ).toBe(true);
     expect(r.relativeIframeDropped, 'relative iframe src dropped').toBe(true);
-    expect(r.sameHostDropped, 'same-host iframe dropped').toBe(true);
+    expect(
+      r.protocolRelativeForeignDropped,
+      'protocol-relative foreign iframe dropped',
+    ).toBe(true);
+    expect(
+      r.protocolRelativeSameHostDropped,
+      'protocol-relative same-host iframe dropped',
+    ).toBe(true);
+    expect(r.httpIframeDropped, 'http:// iframe src dropped').toBe(true);
     expect(r.jsSrcDropped, 'javascript: iframe src dropped').toBe(true);
     expect(r.srcdocStripped, 'iframe srcdoc stripped').toBe(true);
     expect(r.scriptStripped, 'sibling script stripped').toBe(true);
     expect(r.embedStyleStripped, 'embed style attribute stripped').toBe(true);
+  });
+});
+
+test.describe('embed-code preview escaping', () => {
+  test('escapes untrusted post fields in generateHTMLCode', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    const r = await page.evaluate(async () => {
+      const { generateHTMLCode } = await import(
+        '/src/components/post-embed-modal.tsx'
+      );
+
+      // Malicious custom-emoji metadata: a URL/shortcode crafted to break out
+      // of the double-quoted attribute in emojifyText's <img>/<source>.
+      const evilEmoji = {
+        shortcode: 'x',
+        url: 'https://e.test/a.gif" onerror="alert(7)',
+        staticUrl: 'https://e.test/a.png" onerror="alert(8)',
+      };
+      const post = {
+        account: {
+          displayName: '<img src=x onerror=alert(1)>Mallory :x:',
+          acct: 'mallory"><script>alert(1)</script>',
+          emojis: [evilEmoji],
+        },
+        id: 'abc',
+        spoilerText: '</summary><img src=x onerror=alert(1)>',
+        language: 'en"><script>alert(2)</script>',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        content: 'hello :x:',
+        url: 'javascript:alert(1)',
+        emojis: [evilEmoji],
+        poll: {
+          options: [{ title: '<script>alert(3)</script>', votesCount: 5 }],
+        },
+        mediaAttachments: [
+          {
+            id: 'm1',
+            type: 'image',
+            description: '"><script>alert(4)</script>',
+            url: 'javascript:alert(5)',
+            remoteUrl: 'javascript:alert(6)',
+          },
+        ],
+      };
+
+      const html = generateHTMLCode(post, undefined);
+      // Parse the generated snippet and assert no LIVE injected markup exists
+      // in the structure built from untrusted fields. Escaped text (e.g.
+      // `&lt;script&gt;`) is harmless and expected.
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      // The only <script>/<img> elements that could appear come from the
+      // untrusted fields; legit structure here is blockquote/details/figure/
+      // a/time, and the one app-built <img> only when the media URL is a valid
+      // http(s) image (here it is javascript:, so it must be empty src).
+      const injectedScripts = doc.querySelectorAll('script').length;
+      const liveImgs = [...doc.querySelectorAll('img')];
+      return {
+        html,
+        // No live <script> elements from any untrusted field.
+        noLiveScript: injectedScripts === 0,
+        // No element carries a live onerror handler (escaped text is fine).
+        noOnerrorAttr: [...doc.querySelectorAll('*')].every(
+          (el) => !el.hasAttribute('onerror'),
+        ),
+        // javascript: URLs are rejected to empty in src/href/cite attributes.
+        noLiveJsUri:
+          !/(?:src|href|cite)="javascript:/i.test(html) &&
+          liveImgs.every((img) => !/^javascript:/i.test(img.getAttribute('src') ?? '')),
+        // The spoiler summary breakout did not create any live <img>; the
+        // payload survives only as inert escaped text.
+        summaryHasNoImg:
+          doc.querySelector('summary')?.querySelector('img') == null &&
+          (doc.querySelector('summary')?.textContent ?? '').includes(
+            '<img',
+          ),
+        // Legit text still present (escaped form of the display name).
+        hasName: (doc.body.textContent ?? '').includes('Mallory'),
+      };
+    });
+
+    expect(r.noLiveScript, 'no live <script> element in embed code').toBe(true);
+    expect(r.noOnerrorAttr, 'no onerror attribute in embed code').toBe(true);
+    expect(r.noLiveJsUri, 'no javascript: URI in url attributes').toBe(true);
+    expect(r.summaryHasNoImg, 'spoiler summary breakout neutralized').toBe(
+      true,
+    );
+    expect(r.hasName, 'legit display name text preserved').toBe(true);
   });
 });

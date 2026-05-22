@@ -129,17 +129,21 @@ function registerHooks(): void {
       // The iframe sandbox keeps `allow-same-origin` (third-party providers
       // need it to run their own player). That makes it critical the frame can
       // never point back at OUR origin — otherwise sandboxed scripts would be
-      // same-origin to bluepy. Require an absolute http(s) URL on a different
+      // same-origin to bluepy. Require an absolute HTTPS URL on a different
       // origin; drop the iframe entirely otherwise (relative/protocol-relative
-      // `/settings`, `//evil`, `javascript:`, missing src, etc.).
+      // `/settings`, `//evil`, `http://` downgrade, `javascript:`, missing
+      // src, etc.).
       const src = el.getAttribute('src');
       let ok = false;
-      if (src) {
+      // Require a literal absolute https URL. We deliberately do NOT pass a base
+      // to `new URL`, so protocol-relative (`//provider/embed`), root-relative
+      // (`/settings`), and scheme-relative inputs do not resolve and are
+      // rejected — only a fully-qualified cross-origin https frame survives.
+      // `http://` is rejected too (mixed content / downgrade).
+      if (src && /^https:\/\//i.test(src)) {
         try {
-          const u = new URL(src, window.location.href);
-          ok =
-            (u.protocol === 'https:' || u.protocol === 'http:') &&
-            u.origin !== window.location.origin;
+          const u = new URL(src);
+          ok = u.protocol === 'https:' && u.origin !== window.location.origin;
         } catch {
           ok = false;
         }
