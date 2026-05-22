@@ -80,7 +80,10 @@ guard_bash_command() {
 	local cmd="$1"
 	[ -z "$cmd" ] && deny "could not parse Bash command from hook payload"
 
-	if rg -q '(^|[;&|[:space:]])git[[:space:]]+push([^;&|]*)(--force|--force-with-lease|-[^-[:space:]]*f)' <<<"$cmd"; then
+	# Match force flags only as whole tokens. The previous `-[^-[:space:]]*f`
+	# matched the `-f` *inside* ordinary branch/ref names (e.g. `kill-feature`,
+	# `my-fix`, `refs/heads/foo-f`), false-blocking legitimate pushes.
+	if rg -q '(^|[;&|[:space:]])git[[:space:]]+push[[:space:]]+([^;&|]*[[:space:]])?(--force(-with-lease|-if-includes)?([[:space:]=]|$)|-[[:alpha:]]*f[[:alpha:]]*([[:space:]]|$))' <<<"$cmd"; then
 		deny "force-push is not part of the Bluepy workflow"
 	fi
 
