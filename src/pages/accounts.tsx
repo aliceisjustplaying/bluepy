@@ -15,7 +15,8 @@ import NameText, { type NameTextProps } from '../components/name-text';
 import RelativeTime from '../components/relative-time';
 import { getAccountProfileTarget } from '../utils/account-profile-target';
 import { api, getMastoV1Resource } from '../utils/api';
-import { revokeAccessToken } from '../utils/auth';
+import { logoutAtprotoSession } from '../utils/atproto-adapter';
+import { signOutAtprotoOAuthSession } from '../utils/atproto-oauth';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
 import { navigatePath } from '../utils/router';
@@ -98,12 +99,12 @@ function Accounts({ onClose }: AccountsProps) {
               };
 
               const logOutAccount = async () => {
-                await revokeAccessToken({
-                  instanceURL: account.instanceURL,
-                  client_id: String(account.clientId),
-                  client_secret: String(account.clientSecret),
-                  token: String(account.accessToken),
-                });
+                // OAuth and app-password accounts carry different token shapes;
+                // each helper no-ops for the other, so run both best-effort.
+                await Promise.allSettled([
+                  signOutAtprotoOAuthSession(account.accessToken),
+                  logoutAtprotoSession(account.accessToken),
+                ]);
               };
 
               const { acct, avatarStatic } = account.info;

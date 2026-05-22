@@ -47,8 +47,6 @@ type InstanceInfo = JsonRecord & {
   version?: string;
 };
 
-type CredentialApplication = JsonRecord;
-
 export function getAccounts(): StoredAccount[] {
   return store.local.getJSON<StoredAccount[]>('accounts') ?? [];
 }
@@ -96,11 +94,6 @@ export function getAccountByInstance(
 ): StoredAccount | undefined {
   const accounts = getAccounts();
   return accounts.find((account) => account.instanceURL === instance);
-}
-
-export function hasAccountInInstance(instance: string): boolean {
-  const accounts = getAccounts();
-  return accounts.some((account) => account.instanceURL === instance);
 }
 
 const standaloneMQ =
@@ -335,28 +328,4 @@ export function getVapidKey(instance?: InstanceInfo): unknown {
 export function isMediaFirstInstance(): boolean {
   const instance = getCurrentInstance();
   return /pixelfed/i.test(instance.version ?? '');
-}
-
-const CREDENTIAL_APPLICATIONS_KEY = 'credentialApplications';
-
-export function storeCredentialApplication(
-  instanceURL: string,
-  credentialApplication: CredentialApplication,
-): void {
-  const stored =
-    store.local.getJSON<Record<string, CredentialApplication>>(
-      CREDENTIAL_APPLICATIONS_KEY,
-    ) ?? {};
-  stored[instanceURL] = credentialApplication;
-  store.local.setJSON(CREDENTIAL_APPLICATIONS_KEY, stored);
-}
-
-export function getCredentialApplication(
-  instanceURL: string,
-): CredentialApplication | null {
-  const stored =
-    store.local.getJSON<Record<string, CredentialApplication>>(
-      CREDENTIAL_APPLICATIONS_KEY,
-    ) ?? {};
-  return stored[instanceURL] ?? null;
 }
