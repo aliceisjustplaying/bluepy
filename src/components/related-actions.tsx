@@ -12,7 +12,6 @@ import showCompose from '../utils/show-compose';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import { getCurrentAccountID, updateAccount } from '../utils/store-utils';
-import supports from '../utils/supports';
 
 import {
   type AccountInfoShape,
@@ -848,24 +847,21 @@ function RelatedActions({
                 </MenuItem>
               </>
             )}
-            {currentAuthenticated &&
-              isSelf &&
-              standalone &&
-              supports('@mastodon/profile-edit') && (
-                <>
-                  <MenuDivider />
-                  <MenuItem
-                    onClick={() => {
-                      setShowEditProfile(true);
-                    }}
-                  >
-                    <Icon icon="pencil" />
-                    <span>
-                      <Trans>Edit profile</Trans>
-                    </span>
-                  </MenuItem>
-                </>
-              )}
+            {currentAuthenticated && isSelf && standalone && (
+              <>
+                <MenuDivider />
+                <MenuItem
+                  onClick={() => {
+                    setShowEditProfile(true);
+                  }}
+                >
+                  <Icon icon="pencil" />
+                  <span>
+                    <Trans>Edit profile</Trans>
+                  </span>
+                </MenuItem>
+              </>
+            )}
           </Menu2>
           {!relationship && relationshipUIState === 'loading' && (
             <Loader abrupt />

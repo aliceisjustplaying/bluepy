@@ -14,7 +14,6 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -35,7 +34,6 @@ import {
 import showToast from '../utils/show-toast';
 import states, { statusKey } from '../utils/states';
 import statusPeek from '../utils/status-peek';
-import { isMediaFirstInstance } from '../utils/store-utils';
 import {
   canonicalTimelineContextId,
   dedupeTimelineContextItems,
@@ -535,7 +533,7 @@ function Timeline({
   console.debug('RENDER Timeline', id, refresh);
   __BENCHMARK.start(`timeline-${id}-load`);
 
-  const mediaFirst = useMemo(() => isMediaFirstInstance(), []);
+  const mediaFirst = false;
 
   const allowGrouping = view !== 'media';
   const loadItemsTS = useRef(0); // Ensures only one loadItems at a time

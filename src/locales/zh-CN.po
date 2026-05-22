@@ -58,7 +58,6 @@ msgstr "已静音 {username}"
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
-#: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "提及"
 
@@ -562,8 +561,8 @@ msgid "Error loading quotes"
 msgstr "加载引用的嘟文时出错"
 
 #: src/components/media-attachment.tsx
-msgid "Uploaded"
-msgstr "已上传"
+#~ msgid "Uploaded"
+#~ msgstr "已上传"
 
 #: src/components/shortcuts-settings.jsx
 #~ msgid "No columns yet. Tap on the Add column button."
@@ -1035,8 +1034,8 @@ msgid "Remove account…"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Back to showing trending posts"
-msgstr "返回热门嘟文页"
+#~ msgid "Back to showing trending posts"
+#~ msgstr "返回热门嘟文页"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
@@ -1057,8 +1056,8 @@ msgid "Automated"
 msgstr "机器人"
 
 #: src/pages/trending.tsx
-msgid "Trending News"
-msgstr "热门新闻"
+#~ msgid "Trending News"
+#~ msgstr "热门新闻"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -1130,10 +1129,9 @@ msgid "Follows"
 msgstr "关注"
 
 #. By [Author]
-#. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
-msgid "By {0}"
-msgstr "作者 {0}"
+#~ msgid "By {0}"
+#~ msgstr "作者 {0}"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
@@ -1283,10 +1281,9 @@ msgstr "已取消静音 @{username}"
 msgid "Reposted"
 msgstr ""
 
-#. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
-msgid "Showing posts mentioning <0>{0}</0>"
-msgstr "已显示提到 <0>{0}</0> 的嘟文"
+#~ msgid "Showing posts mentioning <0>{0}</0>"
+#~ msgstr "已显示提到 <0>{0}</0> 的嘟文"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
@@ -1845,8 +1842,8 @@ msgstr "搜索账户"
 #~ msgstr "{account} 请求关注你。"
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to list members"
-msgstr "显示对列表成员的回复"
+#~ msgid "Show replies to list members"
+#~ msgstr "显示对列表成员的回复"
 
 #: src/components/compose.tsx
 #~ msgid "Attachment #{i} failed"
@@ -1888,7 +1885,6 @@ msgid "Failed to generate description{0}"
 msgstr "描述生成失败{0}"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "编辑"
@@ -1992,10 +1988,9 @@ msgstr "敏感媒体"
 msgid "Add GIF"
 msgstr "添加GIF"
 
-#. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
-msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr "是否将此嘟文从 <0>@{0}</0> 的嘟文中移除？"
+#~ msgid "Remove my post from <0>@{0}</0>'s post?"
+#~ msgstr "是否将此嘟文从 <0>@{0}</0> 的嘟文中移除？"
 
 #: src/pages/welcome.tsx
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
@@ -2004,8 +1999,8 @@ msgstr "是否将此嘟文从 <0>@{0}</0> 的嘟文中移除？"
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
-msgid "Posts on this list are hidden from Home/Following"
-msgstr "此列表中的嘟文不会出现在首页/关注时间线中"
+#~ msgid "Posts on this list are hidden from Home/Following"
+#~ msgstr "此列表中的嘟文不会出现在首页/关注时间线中"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
@@ -2613,8 +2608,8 @@ msgid "Unable to load post"
 msgstr "无法加载嘟文"
 
 #: src/components/list-add-edit.tsx
-msgid "Hide posts on this list from Home/Following"
-msgstr "将此列表下的嘟文从主页/关注时间线隐藏"
+#~ msgid "Hide posts on this list from Home/Following"
+#~ msgstr "将此列表下的嘟文从主页/关注时间线隐藏"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2993,8 +2988,8 @@ msgid "Some media have no descriptions. Continue?"
 msgstr "某些媒体附件没有描述文本。是否继续？"
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to people I follow"
-msgstr "显示对我关注的人的回复"
+#~ msgid "Show replies to people I follow"
+#~ msgstr "显示对我关注的人的回复"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -3460,8 +3455,8 @@ msgid "Conversation unmuted"
 msgstr "已取消静音该对话"
 
 #: src/components/list-add-edit.tsx
-msgid "Don't show replies"
-msgstr "不显示回复"
+#~ msgid "Don't show replies"
+#~ msgstr "不显示回复"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
@@ -3968,12 +3963,9 @@ msgstr ""
 msgid "Log in"
 msgstr "登录"
 
-#. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
-msgid "{0} original posts, {1} replies, {2} reposts"
-msgstr ""
+#~ msgid "{0} original posts, {1} replies, {2} reposts"
+#~ msgstr ""
 
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
@@ -4188,8 +4180,8 @@ msgid "or override…"
 msgstr "或覆盖…"
 
 #: src/components/status-account-menu.tsx
-msgid "Remove quote…"
-msgstr "移除引用…"
+#~ msgid "Remove quote…"
+#~ msgstr "移除引用…"
 
 #: src/components/related-actions.tsx
 #: src/pages/hashtag.tsx
@@ -4395,8 +4387,8 @@ msgid "Hide"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Trending posts"
-msgstr "热门嘟文"
+#~ msgid "Trending posts"
+#~ msgstr "热门嘟文"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
@@ -4435,8 +4427,8 @@ msgstr "话题标签"
 #~ msgstr "你尚未登录。互动 ()"
 
 #: src/components/status-account-menu.tsx
-msgid "Unable to remove quote"
-msgstr "无法移除引用"
+#~ msgid "Unable to remove quote"
+#~ msgstr "无法移除引用"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
@@ -4696,12 +4688,12 @@ msgstr "之前的补看…"
 #~ msgstr "新建过滤规则"
 
 #: src/components/status-account-menu.tsx
-msgid "Quote removed"
-msgstr "引用的嘟文已被移除"
+#~ msgid "Quote removed"
+#~ msgstr "引用的嘟文已被移除"
 
 #: src/components/status-quick-menu.tsx
-msgid "Quote with link"
-msgstr "以链接形式引用"
+#~ msgid "Quote with link"
+#~ msgstr "以链接形式引用"
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server ({0})"

@@ -58,7 +58,6 @@ msgstr "{username} mutututa"
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
-#: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "Aipamenak"
 
@@ -562,8 +561,8 @@ msgid "Error loading quotes"
 msgstr "Errorea iruzkinak kargatzean"
 
 #: src/components/media-attachment.tsx
-msgid "Uploaded"
-msgstr "Igota"
+#~ msgid "Uploaded"
+#~ msgstr "Igota"
 
 #: src/components/shortcuts-settings.jsx
 #~ msgid "No columns yet. Tap on the Add column button."
@@ -1035,8 +1034,8 @@ msgid "Remove account…"
 msgstr "Kendu kontua…"
 
 #: src/pages/trending.tsx
-msgid "Back to showing trending posts"
-msgstr "Itzuli bogan dauden bidalketetara"
+#~ msgid "Back to showing trending posts"
+#~ msgstr "Itzuli bogan dauden bidalketetara"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
@@ -1057,8 +1056,8 @@ msgid "Automated"
 msgstr "Automatizatua"
 
 #: src/pages/trending.tsx
-msgid "Trending News"
-msgstr "Pil-pilean dauden albisteak"
+#~ msgid "Trending News"
+#~ msgstr "Pil-pilean dauden albisteak"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -1130,10 +1129,9 @@ msgid "Follows"
 msgstr "Jarraitzen die"
 
 #. By [Author]
-#. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
-msgid "By {0}"
-msgstr "{0}(r)en eskutik"
+#~ msgid "By {0}"
+#~ msgstr "{0}(r)en eskutik"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
@@ -1283,10 +1281,9 @@ msgstr "@{username} mututzeari utzi zaio"
 msgid "Reposted"
 msgstr ""
 
-#. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
-msgid "Showing posts mentioning <0>{0}</0>"
-msgstr "<0>{0}</0> aipatzen duten bidalketak erakusten"
+#~ msgid "Showing posts mentioning <0>{0}</0>"
+#~ msgstr "<0>{0}</0> aipatzen duten bidalketak erakusten"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
@@ -1845,8 +1842,8 @@ msgstr "Bilatu kontuak"
 #~ msgstr "{account}(e)k jarraitzeko eskaera egin dizu."
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to list members"
-msgstr "Erakutsi zerrandako kideen erantzunak"
+#~ msgid "Show replies to list members"
+#~ msgstr "Erakutsi zerrandako kideen erantzunak"
 
 #: src/components/compose.tsx
 #~ msgid "Attachment #{i} failed"
@@ -1888,7 +1885,6 @@ msgid "Failed to generate description{0}"
 msgstr "Ezin izan da deskribapena sortu{0}"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "Editatu"
@@ -1992,10 +1988,9 @@ msgstr "Multimedia fitxategi hunkigarria"
 msgid "Add GIF"
 msgstr "Gehitu GIFa"
 
-#. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
-msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr "Nire bidalketa <0>@{0}</0>(r)en bidalketatik kendu?"
+#~ msgid "Remove my post from <0>@{0}</0>'s post?"
+#~ msgstr "Nire bidalketa <0>@{0}</0>(r)en bidalketatik kendu?"
 
 #: src/pages/welcome.tsx
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
@@ -2004,8 +1999,8 @@ msgstr "Nire bidalketa <0>@{0}</0>(r)en bidalketatik kendu?"
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
-msgid "Posts on this list are hidden from Home/Following"
-msgstr "Zerrenda honetako bidalketak ez dira Hasiera / Jarraitzen denbora-lerroan erakutsiko"
+#~ msgid "Posts on this list are hidden from Home/Following"
+#~ msgstr "Zerrenda honetako bidalketak ez dira Hasiera / Jarraitzen denbora-lerroan erakutsiko"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
@@ -2613,8 +2608,8 @@ msgid "Unable to load post"
 msgstr "Ezin da bidalketa kargatu"
 
 #: src/components/list-add-edit.tsx
-msgid "Hide posts on this list from Home/Following"
-msgstr "Ezkutatu Hasiera / Jarraitzen -etik zerrenda honetako bidalketak"
+#~ msgid "Hide posts on this list from Home/Following"
+#~ msgstr "Ezkutatu Hasiera / Jarraitzen -etik zerrenda honetako bidalketak"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2993,8 +2988,8 @@ msgid "Some media have no descriptions. Continue?"
 msgstr "Ez dituzu multimedia fitxategi batzuk deskribatu. Jarraitu?"
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to people I follow"
-msgstr "Erakutsi erantzunak jarraitzen diedan pertsonei"
+#~ msgid "Show replies to people I follow"
+#~ msgstr "Erakutsi erantzunak jarraitzen diedan pertsonei"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -3460,8 +3455,8 @@ msgid "Conversation unmuted"
 msgstr "Elkarrizketa mututzeari utzi zaio"
 
 #: src/components/list-add-edit.tsx
-msgid "Don't show replies"
-msgstr "Ez erakutsi erantzunik"
+#~ msgid "Don't show replies"
+#~ msgstr "Ez erakutsi erantzunik"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
@@ -3968,12 +3963,9 @@ msgstr ""
 msgid "Log in"
 msgstr "Hasi saioa"
 
-#. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
-msgid "{0} original posts, {1} replies, {2} reposts"
-msgstr ""
+#~ msgid "{0} original posts, {1} replies, {2} reposts"
+#~ msgstr ""
 
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
@@ -4188,8 +4180,8 @@ msgid "or override…"
 msgstr "edo gainidatzi…"
 
 #: src/components/status-account-menu.tsx
-msgid "Remove quote…"
-msgstr "Kendu iruzkina…"
+#~ msgid "Remove quote…"
+#~ msgstr "Kendu iruzkina…"
 
 #: src/components/related-actions.tsx
 #: src/pages/hashtag.tsx
@@ -4395,8 +4387,8 @@ msgid "Hide"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Trending posts"
-msgstr "Bogan dauden bidalketak"
+#~ msgid "Trending posts"
+#~ msgstr "Bogan dauden bidalketak"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
@@ -4435,8 +4427,8 @@ msgstr "Traolak"
 #~ msgstr "Ez duzu saiorik hasi. Ezin duzu interaktuatu (erantzun, bultzatu...)"
 
 #: src/components/status-account-menu.tsx
-msgid "Unable to remove quote"
-msgstr "Ezin da iruzkina kendu"
+#~ msgid "Unable to remove quote"
+#~ msgstr "Ezin da iruzkina kendu"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
@@ -4696,12 +4688,12 @@ msgstr "Lehenago…"
 #~ msgstr "Iragazki berria"
 
 #: src/components/status-account-menu.tsx
-msgid "Quote removed"
-msgstr "Iruzkina kendu da"
+#~ msgid "Quote removed"
+#~ msgstr "Iruzkina kendu da"
 
 #: src/components/status-quick-menu.tsx
-msgid "Quote with link"
-msgstr "Iruzkindu estekarekin"
+#~ msgid "Quote with link"
+#~ msgstr "Iruzkindu estekarekin"
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server ({0})"

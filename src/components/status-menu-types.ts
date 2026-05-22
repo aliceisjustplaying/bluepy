@@ -10,7 +10,6 @@ import type {
 export interface StatusMenuPartsArgs {
   accountId?: string | null;
   mentions?: mastodon.v1.StatusMention[];
-  currentAccount?: string | null;
   repliesCount?: number;
   username?: string;
   acct?: string;
@@ -61,7 +60,6 @@ export interface StatusMenuPartsArgs {
   pinned?: boolean | null;
   isPinnable: boolean;
   visibility: 'direct' | 'local' | 'private' | 'public' | 'unlisted';
-  isQuotingMyPost?: boolean;
   sKey: string;
   fetchBoostedLikedByAccounts: (
     firstLoad?: boolean,

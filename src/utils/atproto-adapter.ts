@@ -567,7 +567,6 @@ interface AdaptedList {
   id: string;
   title: string;
   repliesPolicy: 'list';
-  exclusive: false;
   _atproto: {
     uri?: string;
     cid?: string;
@@ -1322,7 +1321,6 @@ function listToPhanpyList(list: AtprotoList = {}): AdaptedList {
     id: encodeURIComponent(String(uri)),
     title: list.name || list.displayName || uri || '',
     repliesPolicy: 'list',
-    exclusive: false,
     _atproto: {
       uri,
       cid: list.cid,
@@ -1341,7 +1339,6 @@ function feedGeneratorToPhanpyList(
     id: encodeURIComponent(String(uri)),
     title: feed.displayName || feed.name || uri || '',
     repliesPolicy: 'list',
-    exclusive: false,
     _atproto: {
       uri,
       cid: feed.cid,
@@ -3751,7 +3748,6 @@ export function atprotoInstanceInfo() {
         maxOptions: 0,
       },
     },
-    apiVersions: { mastodon: 7 },
   };
 }
 

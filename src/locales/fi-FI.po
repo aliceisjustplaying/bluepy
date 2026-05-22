@@ -58,7 +58,6 @@ msgstr "Mykistetty {username}"
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
-#: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "Maininnat"
 
@@ -562,8 +561,8 @@ msgid "Error loading quotes"
 msgstr "Virhe ladattaessa lainauksia"
 
 #: src/components/media-attachment.tsx
-msgid "Uploaded"
-msgstr "Ladattu"
+#~ msgid "Uploaded"
+#~ msgstr "Ladattu"
 
 #: src/components/shortcuts-settings.jsx
 #~ msgid "No columns yet. Tap on the Add column button."
@@ -1035,8 +1034,8 @@ msgid "Remove account…"
 msgstr "Poista tili…"
 
 #: src/pages/trending.tsx
-msgid "Back to showing trending posts"
-msgstr "Takaisin katsomaan suosittuja julkaisuja"
+#~ msgid "Back to showing trending posts"
+#~ msgstr "Takaisin katsomaan suosittuja julkaisuja"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
@@ -1057,8 +1056,8 @@ msgid "Automated"
 msgstr "Botti"
 
 #: src/pages/trending.tsx
-msgid "Trending News"
-msgstr "Suositut uutiset"
+#~ msgid "Trending News"
+#~ msgstr "Suositut uutiset"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -1130,10 +1129,9 @@ msgid "Follows"
 msgstr "Uudet seuraajat"
 
 #. By [Author]
-#. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
-msgid "By {0}"
-msgstr "Tehnyt {0}"
+#~ msgid "By {0}"
+#~ msgstr "Tehnyt {0}"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
@@ -1283,10 +1281,9 @@ msgstr "Kumottu käyttäjän @{username} mykistys"
 msgid "Reposted"
 msgstr ""
 
-#. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
-msgid "Showing posts mentioning <0>{0}</0>"
-msgstr "Näytetään julkaisut, joissa mainitaan <0>{0}</0>"
+#~ msgid "Showing posts mentioning <0>{0}</0>"
+#~ msgstr "Näytetään julkaisut, joissa mainitaan <0>{0}</0>"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
@@ -1845,8 +1842,8 @@ msgstr "Hae tilejä"
 #~ msgstr "{account} pyysi saada seurata sinua."
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to list members"
-msgstr "Näytä listan jäsenille osoitetut vastaukset"
+#~ msgid "Show replies to list members"
+#~ msgstr "Näytä listan jäsenille osoitetut vastaukset"
 
 #: src/components/compose.tsx
 #~ msgid "Attachment #{i} failed"
@@ -1888,7 +1885,6 @@ msgid "Failed to generate description{0}"
 msgstr "Kuvauksen luonti epäonnistui{0}"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "Muokkaa"
@@ -1992,10 +1988,9 @@ msgstr "Arkaluonteinen media"
 msgid "Add GIF"
 msgstr "Lisää GIF"
 
-#. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
-msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr "Poistetaanko julkaisuni käyttäjän <0>@{0}</0> julkaisusta?"
+#~ msgid "Remove my post from <0>@{0}</0>'s post?"
+#~ msgstr "Poistetaanko julkaisuni käyttäjän <0>@{0}</0> julkaisusta?"
 
 #: src/pages/welcome.tsx
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
@@ -2004,8 +1999,8 @@ msgstr "Poistetaanko julkaisuni käyttäjän <0>@{0}</0> julkaisusta?"
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
-msgid "Posts on this list are hidden from Home/Following"
-msgstr "Tämän listan julkaisut on piilotettu Koti‐ ja Seurattavat‐näkymistä"
+#~ msgid "Posts on this list are hidden from Home/Following"
+#~ msgstr "Tämän listan julkaisut on piilotettu Koti‐ ja Seurattavat‐näkymistä"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
@@ -2613,8 +2608,8 @@ msgid "Unable to load post"
 msgstr "Julkaisua ei voitu ladata"
 
 #: src/components/list-add-edit.tsx
-msgid "Hide posts on this list from Home/Following"
-msgstr "Piilota tämän listan julkaisut Koti‐ ja Seurattavat‐näkymistä"
+#~ msgid "Hide posts on this list from Home/Following"
+#~ msgstr "Piilota tämän listan julkaisut Koti‐ ja Seurattavat‐näkymistä"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2993,8 +2988,8 @@ msgid "Some media have no descriptions. Continue?"
 msgstr "Osalta mediasta puuttuu kuvaus. Jatketaanko?"
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to people I follow"
-msgstr "Näytä seuraamilleni käyttäjille osoitetut vastaukset"
+#~ msgid "Show replies to people I follow"
+#~ msgstr "Näytä seuraamilleni käyttäjille osoitetut vastaukset"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -3460,8 +3455,8 @@ msgid "Conversation unmuted"
 msgstr "Keskustelun mykistys kumottu"
 
 #: src/components/list-add-edit.tsx
-msgid "Don't show replies"
-msgstr "Älä näytä vastauksia"
+#~ msgid "Don't show replies"
+#~ msgstr "Älä näytä vastauksia"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
@@ -3968,12 +3963,9 @@ msgstr ""
 msgid "Log in"
 msgstr "Kirjaudu sisään"
 
-#. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
-msgid "{0} original posts, {1} replies, {2} reposts"
-msgstr ""
+#~ msgid "{0} original posts, {1} replies, {2} reposts"
+#~ msgstr ""
 
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
@@ -4188,8 +4180,8 @@ msgid "or override…"
 msgstr "tai korvaa…"
 
 #: src/components/status-account-menu.tsx
-msgid "Remove quote…"
-msgstr "Poista lainaus…"
+#~ msgid "Remove quote…"
+#~ msgstr "Poista lainaus…"
 
 #: src/components/related-actions.tsx
 #: src/pages/hashtag.tsx
@@ -4395,8 +4387,8 @@ msgid "Hide"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Trending posts"
-msgstr "Suositut julkaisut"
+#~ msgid "Trending posts"
+#~ msgstr "Suositut julkaisut"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
@@ -4435,8 +4427,8 @@ msgstr "Aihetunnisteet"
 #~ msgstr "Et ole kirjautuneena sisään. Vuorovaikutus (vastaaminen, tehostaminen jne.) ei ole mahdollista."
 
 #: src/components/status-account-menu.tsx
-msgid "Unable to remove quote"
-msgstr "Lainausta ei voitu poistaa"
+#~ msgid "Unable to remove quote"
+#~ msgstr "Lainausta ei voitu poistaa"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
@@ -4696,12 +4688,12 @@ msgstr "Aiemmin…"
 #~ msgstr "Uusi suodatin"
 
 #: src/components/status-account-menu.tsx
-msgid "Quote removed"
-msgstr "Lainaus poistettu"
+#~ msgid "Quote removed"
+#~ msgstr "Lainaus poistettu"
 
 #: src/components/status-quick-menu.tsx
-msgid "Quote with link"
-msgstr "Lainaa linkillä"
+#~ msgid "Quote with link"
+#~ msgstr "Lainaa linkillä"
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server ({0})"

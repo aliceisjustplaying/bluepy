@@ -618,6 +618,21 @@ test.describe('read flows', () => {
     await expect(page.locator('#lists-page')).toBeVisible({ timeout: 15_000 });
   });
 
+  // Phase 2D: the Mastodon-only list knobs (replies_policy, exclusive) were
+  // removed; ATProto list create/update only accepts a title.
+  test('new-list form is title-only (no Mastodon replies-policy / exclusive)', async ({
+    page,
+  }) => {
+    await goto(page, '/l');
+    await expect(page.locator('#lists-page')).toBeVisible({ timeout: 15_000 });
+    await page.getByRole('button', { name: /new list/i }).first().click();
+    const form = page.locator('form.list-form');
+    await expect(form).toBeVisible({ timeout: 10_000 });
+    await expect(form.locator('input[name="title"]')).toBeVisible();
+    await expect(form.locator('select[name="replies_policy"]')).toHaveCount(0);
+    await expect(form.locator('input[name="exclusive"]')).toHaveCount(0);
+  });
+
   test('bookmarks page renders', async ({ page }) => {
     await goto(page, '/b');
     await expect(page.locator('.deck-container').first()).toBeVisible({
@@ -637,6 +652,22 @@ test.describe('read flows', () => {
     await expect(page.locator('#catchup-page')).toBeVisible({
       timeout: 15_000,
     });
+  });
+
+  // Phase 2D: Trending was reduced to the Bluesky Discover feed. The Mastodon
+  // trending-hashtags / trending-links / link-mentions chrome was removed with
+  // the feature-detection system (those endpoints returned empty collections on
+  // ATProto). Assert the route still renders posts from the Discover feed.
+  test('trending page renders Discover-feed posts', async ({ page }) => {
+    await goto(page, '/trending');
+    await expect(page.locator('.deck-container').first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page
+        .locator('[data-state-post-id], article.status, .status-link')
+        .first(),
+    ).toBeVisible({ timeout: 30_000 });
   });
 
   test('year-in-posts page renders', async ({ page }) => {

@@ -58,7 +58,6 @@ msgstr "Silencia a @{username}"
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
-#: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "Mencions"
 
@@ -562,8 +561,8 @@ msgid "Error loading quotes"
 msgstr "S'ha produït un error en carregar les cites"
 
 #: src/components/media-attachment.tsx
-msgid "Uploaded"
-msgstr "Pujat"
+#~ msgid "Uploaded"
+#~ msgstr "Pujat"
 
 #: src/components/shortcuts-settings.jsx
 #~ msgid "No columns yet. Tap on the Add column button."
@@ -1035,8 +1034,8 @@ msgid "Remove account…"
 msgstr "Elimina el compte…"
 
 #: src/pages/trending.tsx
-msgid "Back to showing trending posts"
-msgstr "Torna a les publicacions en tendència"
+#~ msgid "Back to showing trending posts"
+#~ msgstr "Torna a les publicacions en tendència"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
@@ -1057,8 +1056,8 @@ msgid "Automated"
 msgstr "Automatitzat"
 
 #: src/pages/trending.tsx
-msgid "Trending News"
-msgstr "Ara és tendència"
+#~ msgid "Trending News"
+#~ msgstr "Ara és tendència"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -1130,10 +1129,9 @@ msgid "Follows"
 msgstr "Seguiments"
 
 #. By [Author]
-#. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
-msgid "By {0}"
-msgstr "Per {0}"
+#~ msgid "By {0}"
+#~ msgstr "Per {0}"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
@@ -1283,10 +1281,9 @@ msgstr "@{username} s'ha deixat de silenciar"
 msgid "Reposted"
 msgstr ""
 
-#. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
-msgid "Showing posts mentioning <0>{0}</0>"
-msgstr "Mostra publicacions mencionant <0>{0}</0>"
+#~ msgid "Showing posts mentioning <0>{0}</0>"
+#~ msgstr "Mostra publicacions mencionant <0>{0}</0>"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
@@ -1847,8 +1844,8 @@ msgstr "Cerca comptes"
 #~ msgstr "{account} ha enviat una sol·licitud de seguiment."
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to list members"
-msgstr "Mostra les respostes dels membres de la llista"
+#~ msgid "Show replies to list members"
+#~ msgstr "Mostra les respostes dels membres de la llista"
 
 #: src/components/compose.tsx
 #~ msgid "Attachment #{i} failed"
@@ -1890,7 +1887,6 @@ msgid "Failed to generate description{0}"
 msgstr "No s'ha pogut generar la descripció{0}"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "Edita"
@@ -1994,10 +1990,9 @@ msgstr "Contingut sensible"
 msgid "Add GIF"
 msgstr "Afegeix un GIF"
 
-#. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
-msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr "Voleu eliminar la vostra publicació de la publicació de <0>@{0}</0>?"
+#~ msgid "Remove my post from <0>@{0}</0>'s post?"
+#~ msgstr "Voleu eliminar la vostra publicació de la publicació de <0>@{0}</0>?"
 
 #: src/pages/welcome.tsx
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
@@ -2006,8 +2001,8 @@ msgstr "Voleu eliminar la vostra publicació de la publicació de <0>@{0}</0>?"
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
-msgid "Posts on this list are hidden from Home/Following"
-msgstr "Les publicacions d'aquesta llista estan ocultes a Inici/Seguint"
+#~ msgid "Posts on this list are hidden from Home/Following"
+#~ msgstr "Les publicacions d'aquesta llista estan ocultes a Inici/Seguint"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
@@ -2617,8 +2612,8 @@ msgid "Unable to load post"
 msgstr "No ha estat possible carregar la publicació"
 
 #: src/components/list-add-edit.tsx
-msgid "Hide posts on this list from Home/Following"
-msgstr "Amaga les publicacions d'inici/seguint en aquesta llista"
+#~ msgid "Hide posts on this list from Home/Following"
+#~ msgstr "Amaga les publicacions d'inici/seguint en aquesta llista"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2997,8 +2992,8 @@ msgid "Some media have no descriptions. Continue?"
 msgstr "Alguns mitjans no tenen descripcions. Voleu continuar?"
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to people I follow"
-msgstr "Mostra les respostes de gent que segueixo"
+#~ msgid "Show replies to people I follow"
+#~ msgstr "Mostra les respostes de gent que segueixo"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -3464,8 +3459,8 @@ msgid "Conversation unmuted"
 msgstr "La conversa ha deixat d'estar silenciada"
 
 #: src/components/list-add-edit.tsx
-msgid "Don't show replies"
-msgstr "No mostris les respostes"
+#~ msgid "Don't show replies"
+#~ msgstr "No mostris les respostes"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
@@ -3972,12 +3967,9 @@ msgstr ""
 msgid "Log in"
 msgstr "Inicieu la sessió"
 
-#. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
-msgid "{0} original posts, {1} replies, {2} reposts"
-msgstr ""
+#~ msgid "{0} original posts, {1} replies, {2} reposts"
+#~ msgstr ""
 
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
@@ -4192,8 +4184,8 @@ msgid "or override…"
 msgstr "o reemplaçar-les…"
 
 #: src/components/status-account-menu.tsx
-msgid "Remove quote…"
-msgstr "Elimina la cita…"
+#~ msgid "Remove quote…"
+#~ msgstr "Elimina la cita…"
 
 #: src/components/related-actions.tsx
 #: src/pages/hashtag.tsx
@@ -4399,8 +4391,8 @@ msgid "Hide"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Trending posts"
-msgstr "Publicacions influents"
+#~ msgid "Trending posts"
+#~ msgstr "Publicacions influents"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
@@ -4439,8 +4431,8 @@ msgstr "Etiquetes"
 #~ msgstr "No heu iniciat la sessió. Les interaccions (resposta, impuls, etc.) no són possibles."
 
 #: src/components/status-account-menu.tsx
-msgid "Unable to remove quote"
-msgstr "No s'ha pogut eliminar la cita"
+#~ msgid "Unable to remove quote"
+#~ msgstr "No s'ha pogut eliminar la cita"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
@@ -4700,12 +4692,12 @@ msgstr "Anteriorment…"
 #~ msgstr "Filtre nou"
 
 #: src/components/status-account-menu.tsx
-msgid "Quote removed"
-msgstr "S'ha eliminat la cita"
+#~ msgid "Quote removed"
+#~ msgstr "S'ha eliminat la cita"
 
 #: src/components/status-quick-menu.tsx
-msgid "Quote with link"
-msgstr "Cita amb enllaç"
+#~ msgid "Quote with link"
+#~ msgstr "Cita amb enllaç"
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server ({0})"

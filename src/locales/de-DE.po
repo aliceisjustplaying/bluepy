@@ -58,7 +58,6 @@ msgstr "@{username} Stumm geschaltet"
 #: src/pages/mentions.tsx
 #: src/pages/notifications.tsx
 #: src/pages/settings.tsx
-#: src/pages/trending.tsx
 msgid "Mentions"
 msgstr "Erwähnungen"
 
@@ -562,8 +561,8 @@ msgid "Error loading quotes"
 msgstr "Fehler beim Laden der Quotes"
 
 #: src/components/media-attachment.tsx
-msgid "Uploaded"
-msgstr "Hochgeladen"
+#~ msgid "Uploaded"
+#~ msgstr "Hochgeladen"
 
 #: src/components/shortcuts-settings.jsx
 #~ msgid "No columns yet. Tap on the Add column button."
@@ -1035,8 +1034,8 @@ msgid "Remove account…"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Back to showing trending posts"
-msgstr "Zurück zur Anzeige angesagter Posts"
+#~ msgid "Back to showing trending posts"
+#~ msgstr "Zurück zur Anzeige angesagter Posts"
 
 #: src/pages/settings.tsx
 msgid "Image description generator"
@@ -1057,8 +1056,8 @@ msgid "Automated"
 msgstr "Automatisiert"
 
 #: src/pages/trending.tsx
-msgid "Trending News"
-msgstr "Angesagte Nachrichten"
+#~ msgid "Trending News"
+#~ msgstr "Angesagte Nachrichten"
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -1130,10 +1129,9 @@ msgid "Follows"
 msgstr "Folgt"
 
 #. By [Author]
-#. placeholder {0}: author ? ( <NameText account={author} showAvatar /> ) : authorUrl ? ( <a href={authorUrl} target="_blank" rel="noopener noreferrer" > {authorName} </a> ) : ( authorName )
 #: src/pages/trending.tsx
-msgid "By {0}"
-msgstr "Von {0}"
+#~ msgid "By {0}"
+#~ msgstr "Von {0}"
 
 #: src/components/compose.tsx
 msgid "Looks like you already have a compose field open in the parent window. Popping in this window will discard the changes you made in the parent window. Continue?"
@@ -1283,10 +1281,9 @@ msgstr "Stummschaltung von @{username} aufgehoben"
 msgid "Reposted"
 msgstr ""
 
-#. placeholder {0}: (currentLink ?? '') .replace(/^https?:\/\/(www\.)?/i, '') .replace(/\/$/, '')
 #: src/pages/trending.tsx
-msgid "Showing posts mentioning <0>{0}</0>"
-msgstr "Zeige Posts in denen <0>{0}</0> erwähnt wird"
+#~ msgid "Showing posts mentioning <0>{0}</0>"
+#~ msgstr "Zeige Posts in denen <0>{0}</0> erwähnt wird"
 
 #: src/components/account-info.tsx
 #: src/components/related-actions.tsx
@@ -1845,8 +1842,8 @@ msgstr "Konten durchsuchen"
 #~ msgstr "{account} hat darum gebeten, Ihnen zu folgen."
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to list members"
-msgstr "Antworten auf Listenmitglieder anzeigen"
+#~ msgid "Show replies to list members"
+#~ msgstr "Antworten auf Listenmitglieder anzeigen"
 
 #: src/components/compose.tsx
 #~ msgid "Attachment #{i} failed"
@@ -1888,7 +1885,6 @@ msgid "Failed to generate description{0}"
 msgstr "Fehler beim Erzeugen der Beschreibung{0}"
 
 #: src/components/shortcuts-settings.tsx
-#: src/components/status-account-menu.tsx
 #: src/pages/list.tsx
 msgid "Edit"
 msgstr "Bearbeiten"
@@ -1992,10 +1988,9 @@ msgstr "Sensible Medien"
 msgid "Add GIF"
 msgstr "GIF hinzufügen"
 
-#. placeholder {0}: username || acct
 #: src/components/status-account-menu.tsx
-msgid "Remove my post from <0>@{0}</0>'s post?"
-msgstr "Meinen Beitrag von <0>@{0}</0>s Beitrag entfernen?"
+#~ msgid "Remove my post from <0>@{0}</0>'s post?"
+#~ msgstr "Meinen Beitrag von <0>@{0}</0>s Beitrag entfernen?"
 
 #: src/pages/welcome.tsx
 #~ msgid "Connect your existing Bluesky account.<0/>Your credentials are not stored by Bluepy."
@@ -2004,8 +1999,8 @@ msgstr "Meinen Beitrag von <0>@{0}</0>s Beitrag entfernen?"
 #: src/components/list-exclusive-badge.tsx
 #: src/pages/list.tsx
 #: src/pages/lists.tsx
-msgid "Posts on this list are hidden from Home/Following"
-msgstr "Beiträge auf dieser Liste sind ausgeblendet Home/Folgen"
+#~ msgid "Posts on this list are hidden from Home/Following"
+#~ msgstr "Beiträge auf dieser Liste sind ausgeblendet Home/Folgen"
 
 #. js-lingui-explicit-id
 #: src/components/account-info-mini.tsx
@@ -2613,8 +2608,8 @@ msgid "Unable to load post"
 msgstr "Post konnte nicht geladen werden"
 
 #: src/components/list-add-edit.tsx
-msgid "Hide posts on this list from Home/Following"
-msgstr "Verstecke Beiträge auf dieser Liste von Home/Folgen"
+#~ msgid "Hide posts on this list from Home/Following"
+#~ msgstr "Verstecke Beiträge auf dieser Liste von Home/Folgen"
 
 #: src/pages/notifications.tsx
 msgid "New notifications"
@@ -2993,8 +2988,8 @@ msgid "Some media have no descriptions. Continue?"
 msgstr "Einige Medien haben keine Beschreibungen. Fortfahren?"
 
 #: src/components/list-add-edit.tsx
-msgid "Show replies to people I follow"
-msgstr "Antworten auf Personen denen ich folge anzeigen"
+#~ msgid "Show replies to people I follow"
+#~ msgstr "Antworten auf Personen denen ich folge anzeigen"
 
 #: src/components/status-header.tsx
 #: src/components/status-large-footer.tsx
@@ -3460,8 +3455,8 @@ msgid "Conversation unmuted"
 msgstr "Unterhaltung entstummt"
 
 #: src/components/list-add-edit.tsx
-msgid "Don't show replies"
-msgstr "Antworten nicht anzeigen"
+#~ msgid "Don't show replies"
+#~ msgstr "Antworten nicht anzeigen"
 
 #: src/components/report-modal.tsx
 msgid "Unable to block {username}"
@@ -3968,12 +3963,9 @@ msgstr ""
 msgid "Log in"
 msgstr "Einloggen"
 
-#. placeholder {0}: ( postingStats.originals / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {1}: ( postingStats.replies / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
-#. placeholder {2}: ( postingStats.boosts / postingStats.total ).toLocaleString(i18n.locale || undefined, { style: 'percent', })
 #: src/components/account-info.tsx
-msgid "{0} original posts, {1} replies, {2} reposts"
-msgstr ""
+#~ msgid "{0} original posts, {1} replies, {2} reposts"
+#~ msgstr ""
 
 #. placeholder {0}: filterInfo.titlesStr
 #: src/components/timeline.tsx
@@ -4188,8 +4180,8 @@ msgid "or override…"
 msgstr "oder überschreiben…"
 
 #: src/components/status-account-menu.tsx
-msgid "Remove quote…"
-msgstr "Quote entfernen…"
+#~ msgid "Remove quote…"
+#~ msgstr "Quote entfernen…"
 
 #: src/components/related-actions.tsx
 #: src/pages/hashtag.tsx
@@ -4395,8 +4387,8 @@ msgid "Hide"
 msgstr ""
 
 #: src/pages/trending.tsx
-msgid "Trending posts"
-msgstr "Angesagte Posts"
+#~ msgid "Trending posts"
+#~ msgstr "Angesagte Posts"
 
 #: src/pages/settings.tsx
 msgid "Install {CLIENT_NAME}"
@@ -4435,8 +4427,8 @@ msgstr "Hashtags"
 #~ msgstr "Sie sind nicht eingeloggt. Interaktionen (Antworten, Boost usw.) sind nicht möglich."
 
 #: src/components/status-account-menu.tsx
-msgid "Unable to remove quote"
-msgstr "Quote konnte nicht entfernt werden"
+#~ msgid "Unable to remove quote"
+#~ msgstr "Quote konnte nicht entfernt werden"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post."
@@ -4696,12 +4688,12 @@ msgstr "Zuvor…"
 #~ msgstr "Neuer Filter"
 
 #: src/components/status-account-menu.tsx
-msgid "Quote removed"
-msgstr "Quote entfernt"
+#~ msgid "Quote removed"
+#~ msgstr "Quote entfernt"
 
 #: src/components/status-quick-menu.tsx
-msgid "Quote with link"
-msgstr "Mit Link zitieren"
+#~ msgid "Quote with link"
+#~ msgstr "Mit Link zitieren"
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server ({0})"

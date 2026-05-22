@@ -13,7 +13,6 @@ import AccountBlock from '../components/account-block';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import ListAddEdit from '../components/list-add-edit';
-import ListExclusiveBadge from '../components/list-exclusive-badge';
 import MenuConfirm from '../components/menu-confirm';
 import MenuLink from '../components/menu-link';
 import Menu2 from '../components/menu2';
@@ -36,7 +35,6 @@ const LIMIT = 20;
 interface ListLike {
   id: string;
   title: string;
-  exclusive?: boolean;
   [key: string]: unknown;
 }
 
@@ -247,15 +245,7 @@ function List(props: ListProps) {
                 </MenuHeader>
                 {menuLists.map((menuList) => (
                   <MenuLink key={menuList.id} to={`/l/${menuList.id}`}>
-                    <span>
-                      {menuList.title}
-                      {Boolean(menuList.exclusive) && (
-                        <>
-                          {' '}
-                          <ListExclusiveBadge />
-                        </>
-                      )}
-                    </span>
+                    <span>{menuList.title}</span>
                   </MenuLink>
                 ))}
               </>
@@ -297,17 +287,6 @@ function List(props: ListProps) {
                   </button>
                 }
               >
-                {list?.exclusive && (
-                  <>
-                    <MenuHeader className="plain">
-                      <ListExclusiveBadge />{' '}
-                      <Trans>
-                        Posts on this list are hidden from Home/Following
-                      </Trans>
-                    </MenuHeader>
-                    <MenuDivider />
-                  </>
-                )}
                 <MenuItem
                   onClick={() => {
                     setShowListAddEditModal({

@@ -10,7 +10,6 @@ import prettyBytes from '../utils/pretty-bytes';
 import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import { getCurrentInstanceConfiguration } from '../utils/store-utils';
-import supports from '../utils/supports';
 
 import Icon from './icon';
 import Menu2 from './menu2';
@@ -130,8 +129,6 @@ function MediaAttachment({
 }: MediaAttachmentProps) {
   const { i18n, t } = useLingui();
   const [uiState, setUIState] = useState('default');
-  const supportsEdit =
-    supports('@mastodon') || supports('@gotosocial/edit-media-attributes');
   const { type, id, fileData, fileName, file } = attachment;
   const fileSize = attachment.size ?? file?.size;
   const url = useMemo(() => {
@@ -342,45 +339,34 @@ function MediaAttachment({
 
   const descTextarea = (
     <>
-      {!!id && !supportsEdit ? (
-        <div className="media-desc">
-          <span className="tag">
-            <Trans>Uploaded</Trans>
-          </span>
-          <p title={description}>
-            {attachment.description || <i>No description</i>}
-          </p>
-        </div>
-      ) : (
-        <textarea
-          ref={textareaRef}
-          value={description || ''}
-          lang={lang}
-          placeholder={
-            (
-              {
-                image: t`Image description`,
-                video: t`Video description`,
-                gifv: t`Video description`,
-                audio: t`Audio description`,
-              } as Record<string, string>
-            )[suffixType]
-          }
-          autoCapitalize="sentences"
-          autoComplete="on"
-          autoCorrect="on"
-          spellCheck={true}
-          dir="auto"
-          disabled={disabled || uiState === 'loading'}
-          className={uiState === 'loading' ? 'loading' : ''}
-          maxLength={descriptionLimit} // Not unicode-aware :(
-          onInput={(e: SyntheticEvent<HTMLTextAreaElement>) => {
-            const { value } = e.target as HTMLTextAreaElement;
-            setDescription(value);
-            // debouncedOnDescriptionChange(value);
-          }}
-        ></textarea>
-      )}
+      <textarea
+        ref={textareaRef}
+        value={description || ''}
+        lang={lang}
+        placeholder={
+          (
+            {
+              image: t`Image description`,
+              video: t`Video description`,
+              gifv: t`Video description`,
+              audio: t`Audio description`,
+            } as Record<string, string>
+          )[suffixType]
+        }
+        autoCapitalize="sentences"
+        autoComplete="on"
+        autoCorrect="on"
+        spellCheck={true}
+        dir="auto"
+        disabled={disabled || uiState === 'loading'}
+        className={uiState === 'loading' ? 'loading' : ''}
+        maxLength={descriptionLimit} // Not unicode-aware :(
+        onInput={(e: SyntheticEvent<HTMLTextAreaElement>) => {
+          const { value } = e.target as HTMLTextAreaElement;
+          setDescription(value);
+          // debouncedOnDescriptionChange(value);
+        }}
+      ></textarea>
     </>
   );
 

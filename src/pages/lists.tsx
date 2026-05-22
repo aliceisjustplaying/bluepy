@@ -6,7 +6,6 @@ import { useEffect, useReducer, useState } from 'react';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import ListAddEdit from '../components/list-add-edit';
-import ListExclusiveBadge from '../components/list-exclusive-badge';
 import Loader from '../components/loader';
 import Modal from '../components/modal';
 import NavMenu from '../components/nav-menu';
@@ -16,7 +15,6 @@ import useTitle from '../utils/useTitle';
 interface ListItem {
   id: string;
   title: string;
-  exclusive?: boolean;
   [key: string]: unknown;
 }
 
@@ -49,9 +47,6 @@ function Lists() {
     useState<ListAddEditModalState>(false);
 
   const { lists: userLists, feeds } = splitListsAndFeeds(lists);
-  const hasExclusiveLists = userLists.some(
-    (list) => (list as ListItem).exclusive,
-  );
 
   return (
     <div id="lists-page" className="deck-container" tabIndex={-1}>
@@ -93,15 +88,7 @@ function Lists() {
                       <li key={list.id}>
                         <Link to={`/l/${list.id}`}>
                           <Icon icon="list" />{' '}
-                          <span>
-                            {list.title}
-                            {list.exclusive && (
-                              <>
-                                {' '}
-                                <ListExclusiveBadge insignificant />
-                              </>
-                            )}
-                          </span>
+                          <span>{list.title}</span>
                           {/* <button
                       type="button"
                       className="plain"
@@ -139,16 +126,6 @@ function Lists() {
               )}
               {lists.length > 1 && (
                 <footer className="ui-state">
-                  {hasExclusiveLists && (
-                    <p>
-                      <small className="insignificant">
-                        <ListExclusiveBadge />{' '}
-                        <Trans>
-                          Posts on this list are hidden from Home/Following
-                        </Trans>
-                      </small>
-                    </p>
-                  )}
                   <p>
                     <small className="insignificant">
                       {userLists.length > 0 && (
