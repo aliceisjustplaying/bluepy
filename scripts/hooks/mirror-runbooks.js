@@ -59,7 +59,11 @@ const claude = normalize(readFileSync('CLAUDE.md', 'utf8'));
 
 if (agents !== claude) {
   console.error(
-    'Bluepy hook blocked: AGENTS.md and CLAUDE.md drift outside reviewer-specific sections',
+    [
+      'Bluepy hook blocked: AGENTS.md and CLAUDE.md drift outside reviewer-specific sections.',
+      'Keep shared guidance identical in both files, or put reviewer-only differences in the normalized sections.',
+      'Run: bun scripts/hooks/mirror-runbooks.js',
+    ].join('\n'),
   );
   process.exit(2);
 }

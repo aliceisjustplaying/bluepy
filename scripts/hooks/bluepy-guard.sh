@@ -190,7 +190,7 @@ warn_behavioral_tests() {
 	fi
 
 	if rg -q 'src/.*(sanitize|embed|html|emoj|status-content|post-embed)' <<<"$changed"; then
-		if ! rg -q '^(tests/).*sanit|xss|embed|html' <<<"$changed"; then
+		if ! rg -q '^tests/.*(sanit|xss|embed|html)' <<<"$changed"; then
 			warn "HTML/sanitizer-adjacent code changed without an obvious XSS/sanitizer test"
 		fi
 	fi
@@ -216,14 +216,15 @@ warn_behavioral_tests() {
 }
 
 run_fast_checks() {
-	local scope files status
+	local scope status
+	local -a file_args
 	if [ "${BLUEPY_HOOK_SKIP_FAST_CHECKS:-0}" = "1" ]; then
 		return 0
 	fi
 
 	scope="${BLUEPY_HOOK_CHECK_SCOPE:-changed}"
-	files="$(source_changed_files | tr '\n' ' ')"
-	[ -z "$files" ] && return 0
+	mapfile -t file_args < <(source_changed_files)
+	[ "${#file_args[@]}" -eq 0 ] && return 0
 
 	status=0
 
@@ -246,7 +247,6 @@ run_fast_checks() {
 		bunx oxlint . || status=1
 		bunx oxfmt --check . || status=1
 	else
-		mapfile -t file_args <<<"$files"
 		bunx oxlint "${file_args[@]}" || status=1
 		bunx oxfmt --check "${file_args[@]}" || status=1
 	fi
