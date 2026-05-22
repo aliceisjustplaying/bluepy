@@ -2,8 +2,6 @@ import type { MessageDescriptor } from '@lingui/core';
 import type { mastodon } from 'masto';
 import type { ReactNode } from 'react';
 
-import visibilityIconsMap from '../utils/visibility-icons-map';
-
 import type {
   AnyStatus,
   LooseClickEvent,
@@ -56,9 +54,6 @@ export interface StatusMenuPartsArgs {
     status: AnyStatus,
   ) => void;
   createdDateText?: string | false | null;
-  editedAt?: string | null;
-  setShowEdited: (value: string | false) => void;
-  editedDateText?: string | false | null;
   isPublic: boolean;
   authenticated?: boolean;
   isSelf?: boolean | string | null;
@@ -69,7 +64,7 @@ export interface StatusMenuPartsArgs {
   isPinnable: boolean;
   quoteApprovalPolicyMessages: Record<string, MessageDescriptor>;
   postQuoteApprovalPolicy?: string | null;
-  visibility: keyof typeof visibilityIconsMap;
+  visibility: 'direct' | 'local' | 'private' | 'public' | 'unlisted';
   isQuotingMyPost?: boolean;
   sKey: string;
   fetchBoostedLikedByAccounts: (

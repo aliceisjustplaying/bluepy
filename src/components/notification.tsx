@@ -15,7 +15,6 @@ import { getCurrentAccountID } from '../utils/store-utils';
 import useTruncated from '../utils/useTruncated';
 
 import Avatar from './avatar';
-import CustomEmoji from './custom-emoji';
 import Icon from './icon';
 import Link, { type LinkProps } from './link';
 import NameTextComponent, {
@@ -174,7 +173,6 @@ const NOTIFICATION_ICONS: Record<string, string> = {
   reblog: 'rocket',
   follow: 'follow',
   favourite: 'heart',
-  poll: 'poll',
   update: 'pencil',
   'admin.sign_up': 'account-edit',
   'admin.report': 'account-warning',
@@ -195,7 +193,6 @@ status = Someone you enabled notifications for has posted a status
 reblog = Someone reposted one of your statuses
 follow = Someone followed you
 favourite = Someone liked one of your statuses
-poll = A poll you have voted in or created has ended
 update = A status you interacted with has been edited
 admin.sign_up = Someone signed up (optionally sent to admins)
 admin.report = A new report has been filed
@@ -205,23 +202,10 @@ quote = Someone quoted one of your statuses
 quoted_update = A status you have quoted has been edited
 */
 
-function emojiText({ account, emoji, emojiURL }: ContentTextArgs): JSX.Element {
-  let url: string | undefined;
-  let staticUrl: string | undefined;
-  if (typeof emojiURL === 'string') {
-    url = emojiURL;
-  } else {
-    url = emojiURL?.url;
-    staticUrl = emojiURL?.staticUrl;
-  }
-  const emojiObject = url ? (
-    <CustomEmoji url={url} staticUrl={staticUrl} alt={emoji} />
-  ) : (
-    emoji
-  );
+function emojiText({ account, emoji }: ContentTextArgs): JSX.Element {
   return (
     <Trans>
-      {account} reacted to your post with {emojiObject}
+      {account} reacted to your post with {emoji}
     </Trans>
   );
 }
@@ -355,9 +339,6 @@ const contentText: Record<string, ContentTextRenderer> = {
       />
     );
   },
-  poll: () => t`A poll you have voted in or created has ended.`,
-  'poll-self': () => t`A poll you have created has ended.`,
-  'poll-voted': () => t`A poll you have voted in has ended.`,
   update: ({ account }) =>
     account ? (
       <Trans>{account} edited a post.</Trans>
@@ -540,13 +521,12 @@ function Notification({
     return null;
   }
 
-  // status = Attached when type of the notification is favourite, reblog, status, mention, poll, or update
+  // status = Attached when type of the notification is favourite, reblog, status, mention, or update
   const actualStatus = status?.reblog || status;
   const actualStatusID = actualStatus?.id;
 
   const currentAccount = getCurrentAccountID();
   const isSelf = currentAccount === account?.id;
-  const isVoted = status?.poll?.voted;
   const isReplyToOthers =
     !!status?.inReplyToAccountId &&
     status?.inReplyToAccountId !== currentAccount &&
@@ -570,9 +550,7 @@ function Notification({
   }
 
   let text: ContentTextRenderer | JSX.Element | string | undefined;
-  if (type === 'poll') {
-    text = contentText[isSelf ? 'poll-self' : isVoted ? 'poll-voted' : 'poll'];
-  } else if (type && contentText[type]) {
+  if (type && contentText[type]) {
     text = contentText[type];
   } else {
     // Anticipate unhandled notification types, possibly from Mastodon forks or non-Mastodon instances
@@ -635,16 +613,9 @@ function Notification({
       (type === 'emoji_reaction' || type === 'pleroma:emoji_reaction') &&
       notification.emoji
     ) {
-      const emojiShortcode = notification.emoji
-        .replace(/^:/, '')
-        .replace(/:$/, '');
-      const emojiURL: string | EmojiUrlObject | undefined =
-        notification.emoji_url || // This is string
-        status?.emojis?.find?.((emoji) => emoji?.shortcode === emojiShortcode); // Emoji object instead of string
       text = renderer({
         account: <NameText account={account} showAvatar />,
         emoji: notification.emoji,
-        emojiURL,
       });
     } else {
       text = renderer({

@@ -681,7 +681,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                         <Trans>
                           Automatically show translation for posts in timeline.
                           Only works for <b>short</b> posts without content
-                          warning, media and poll.
+                          warning and media.
                         </Trans>
                       </small>
                     </p>
@@ -1369,7 +1369,6 @@ function PushNotificationsSection({
                 reblog: !!values.reblog,
                 follow: !!values.follow,
                 follow_request: !!values.followRequest,
-                poll: !!values.poll,
                 update: !!values.update,
                 status: !!values.status,
               },
@@ -1522,10 +1521,6 @@ function PushNotificationsSection({
                       {
                         value: 'followRequest',
                         label: t`Follow requests`,
-                      },
-                      {
-                        value: 'poll',
-                        label: t`Polls`,
                       },
                       {
                         value: 'update',
