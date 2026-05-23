@@ -26,7 +26,52 @@ export async function fetchProfile(
   return res.data;
 }
 
-export function useProfile(actor: string | undefined): {
+function useResolvedProfileDid(
+  actor: string | undefined,
+  options?: { directRoute?: boolean },
+): {
+  profileDid: string | undefined;
+  isResolving: boolean;
+  resolveError: Error | null;
+} {
+  const clients = useClients();
+  const scope = useViewerScope();
+  const activeDid = useActiveDid();
+  const qc = useQueryClient();
+  const actorIsDid = actor ? isDid(actor) : false;
+  const directRoute = options?.directRoute ?? false;
+
+  const resolutionQuery = useQuery({
+    queryKey:
+      actor && !actorIsDid
+        ? keys.actorResolution(scope, actor)
+        : ['actorResolution', 'disabled'],
+    enabled: Boolean(actor && !actorIsDid),
+    staleTime: directRoute ? DIRECT_ROUTE_STALE_TIME : Number.POSITIVE_INFINITY,
+    refetchOnMount: directRoute ? 'always' : undefined,
+    queryFn: async () => {
+      const profile = await fetchProfile(actor!, clients, activeDid);
+      primeProfiles(qc, scope, profile);
+      return profile.did;
+    },
+  });
+
+  return {
+    profileDid: actorIsDid ? actor : resolutionQuery.data,
+    isResolving: Boolean(actor && !actorIsDid && resolutionQuery.isLoading),
+    resolveError:
+      resolutionQuery.error instanceof Error ? resolutionQuery.error : null,
+  };
+}
+
+function useProfileByDid(
+  profileDid: string | undefined,
+  options: {
+    staleTime: number;
+    refetchOnMount?: 'always';
+    fetchActor?: string;
+  },
+): {
   data?: AppBskyActorDefs.ProfileViewDetailed;
   isLoading: boolean;
   error: Error | null;
@@ -37,19 +82,26 @@ export function useProfile(actor: string | undefined): {
   const qc = useQueryClient();
 
   const query = useQuery({
-    queryKey: actor
-      ? isDid(actor)
-        ? keys.profileByDid(scope, actor)
-        : keys.actorResolution(scope, actor)
+    queryKey: profileDid
+      ? keys.profileByDid(scope, profileDid)
       : ['profile', 'disabled'],
-    enabled: Boolean(actor),
-    staleTime: Number.POSITIVE_INFINITY,
+    enabled: Boolean(profileDid),
+    staleTime: options.staleTime,
+    refetchOnMount: options.refetchOnMount,
     queryFn: async () => {
-      const profile = await fetchProfile(actor!, clients, activeDid);
-      primeProfiles(qc, scope, profile);
-      if (!isDid(actor!)) {
-        qc.setQueryData(keys.actorResolution(scope, actor!), profile.did);
+      if (options.refetchOnMount !== 'always') {
+        const cached = qc.getQueryData<AppBskyActorDefs.ProfileViewDetailed>(
+          keys.profileByDid(scope, profileDid!),
+        );
+        if (cached) return cached;
       }
+
+      const profile = await fetchProfile(
+        options.fetchActor ?? profileDid!,
+        clients,
+        activeDid,
+      );
+      primeProfiles(qc, scope, profile);
       return (
         qc.getQueryData<AppBskyActorDefs.ProfileViewDetailed>(
           keys.profileByDid(scope, profile.did),
@@ -65,43 +117,42 @@ export function useProfile(actor: string | undefined): {
   };
 }
 
+export function useProfile(actor: string | undefined): {
+  data?: AppBskyActorDefs.ProfileViewDetailed;
+  isLoading: boolean;
+  error: Error | null;
+} {
+  const { profileDid, isResolving, resolveError } =
+    useResolvedProfileDid(actor);
+  const profileQuery = useProfileByDid(profileDid, {
+    staleTime: Number.POSITIVE_INFINITY,
+    fetchActor: actor,
+  });
+
+  return {
+    data: profileQuery.data,
+    isLoading: isResolving || profileQuery.isLoading,
+    error: resolveError ?? profileQuery.error,
+  };
+}
+
 export function useProfileRoute(actor: string | undefined): {
   data?: AppBskyActorDefs.ProfileViewDetailed;
   isLoading: boolean;
   error: Error | null;
 } {
-  const clients = useClients();
-  const scope = useViewerScope();
-  const activeDid = useActiveDid();
-  const qc = useQueryClient();
-
-  const query = useQuery({
-    queryKey: actor
-      ? isDid(actor)
-        ? keys.profileByDid(scope, actor)
-        : keys.actorResolution(scope, actor)
-      : ['profile', 'disabled'],
-    enabled: Boolean(actor),
+  const { profileDid, isResolving, resolveError } =
+    useResolvedProfileDid(actor, { directRoute: true });
+  const profileQuery = useProfileByDid(profileDid, {
     staleTime: DIRECT_ROUTE_STALE_TIME,
     refetchOnMount: 'always',
-    queryFn: async () => {
-      const profile = await fetchProfile(actor!, clients, activeDid);
-      primeProfiles(qc, scope, profile);
-      if (!isDid(actor!)) {
-        qc.setQueryData(keys.actorResolution(scope, actor!), profile.did);
-      }
-      return (
-        qc.getQueryData<AppBskyActorDefs.ProfileViewDetailed>(
-          keys.profileByDid(scope, profile.did),
-        ) ?? profile
-      );
-    },
+    fetchActor: actor,
   });
 
   return {
-    data: query.data,
-    isLoading: query.isLoading,
-    error: query.error instanceof Error ? query.error : null,
+    data: profileQuery.data,
+    isLoading: isResolving || profileQuery.isLoading,
+    error: resolveError ?? profileQuery.error,
   };
 }
 

@@ -50,7 +50,7 @@ function primeEmbed(
 ): AppBskyFeedDefs.PostView['embed'] {
   if (AppBskyEmbedRecord.isView(embed)) {
     const record = embed.record;
-    if (AppBskyEmbedRecord.isViewRecord(record)) {
+    if (AppBskyEmbedRecord.isViewRecord(record) && isPostView(record)) {
       primeOnePost(qc, scope, record);
       return { ...embed, record: toViewRef(record) };
     }
@@ -63,7 +63,7 @@ function primeEmbed(
       | { record?: AppBskyEmbedRecord.ViewRecord };
     if (AppBskyEmbedRecord.isView(recordWrapper)) {
       const inner = recordWrapper.record;
-      if (AppBskyEmbedRecord.isViewRecord(inner)) {
+      if (AppBskyEmbedRecord.isViewRecord(inner) && isPostView(inner)) {
         primeOnePost(qc, scope, inner);
         return {
           ...embed,
@@ -73,7 +73,7 @@ function primeEmbed(
       return embed as AppBskyFeedDefs.PostView['embed'];
     }
     const looseInner = recordWrapper.record;
-    if (looseInner && AppBskyEmbedRecord.isViewRecord(looseInner)) {
+    if (looseInner && AppBskyEmbedRecord.isViewRecord(looseInner) && isPostView(looseInner)) {
       primeOnePost(qc, scope, looseInner);
       return {
         ...embed,

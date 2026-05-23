@@ -2,7 +2,12 @@ import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { AppBskyEmbedRecordWithMedia, type AppBskyFeedDefs } from '@atproto/api';
+import {
+  AppBskyEmbedRecord,
+  AppBskyEmbedRecordWithMedia,
+  AppBskyFeedDefs,
+  type AppBskyFeedDefs as FeedDefs,
+} from '@atproto/api';
 
 import {
   getCachedPostUris,
@@ -23,6 +28,26 @@ const viewerScope = [
 
 function loadFixture<T>(name: string): T {
   return JSON.parse(readFileSync(join(fixtureDir, name), 'utf8')) as T;
+}
+
+function makePostWithEmbed(
+  embed: AppBskyFeedDefs.PostView['embed'],
+): AppBskyFeedDefs.PostView {
+  return {
+    uri: 'at://did:plc:fixture-parent/app.bsky.feed.post/parent',
+    cid: 'bafyparent',
+    author: {
+      did: 'did:plc:fixture-parent',
+      handle: 'parent.test',
+    },
+    record: {
+      $type: 'app.bsky.feed.post',
+      text: 'parent post',
+      createdAt: '2026-01-01T00:00:00.000Z',
+    },
+    indexedAt: '2026-01-01T00:00:00.000Z',
+    embed,
+  };
 }
 
 describe('primePosts', () => {
@@ -81,6 +106,100 @@ describe('primePosts', () => {
     const qc = createQueryClient();
     primePosts(qc, viewerScope, loadFixture('getPostThread.deep.json'));
     expect(getCachedPostUris(qc, viewerScope).length).toBeGreaterThan(3);
+  });
+
+  test('viewNotFound embed passes through unchanged', () => {
+    const qc = createQueryClient();
+    const embed = {
+      $type: 'app.bsky.embed.record#viewNotFound',
+      uri: 'at://did:plc:missing/app.bsky.feed.post/missing',
+      notFound: true,
+    };
+    const post = makePostWithEmbed(embed);
+    primePosts(qc, viewerScope, { feed: [{ post }] });
+
+    const cached = qc.getQueryData<FeedDefs.PostView>(
+      keys.post(viewerScope, post.uri),
+    );
+    expect(cached?.embed).toEqual(embed);
+    expect(getCachedPostUris(qc, viewerScope)).not.toContain(embed.uri);
+  });
+
+  test('viewBlocked embed passes through unchanged', () => {
+    const qc = createQueryClient();
+    const embed = {
+      $type: 'app.bsky.embed.record#viewBlocked',
+      uri: 'at://did:plc:blocked/app.bsky.feed.post/blocked',
+      blocked: true,
+      author: { did: 'did:plc:blocked' },
+    };
+    const post = makePostWithEmbed(embed);
+    primePosts(qc, viewerScope, { feed: [{ post }] });
+
+    const cached = qc.getQueryData<FeedDefs.PostView>(
+      keys.post(viewerScope, post.uri),
+    );
+    expect(cached?.embed).toEqual(embed);
+  });
+
+  test('viewDetached embed passes through unchanged', () => {
+    const qc = createQueryClient();
+    const embed = {
+      $type: 'app.bsky.embed.record#viewDetached',
+      uri: 'at://did:plc:detached/app.bsky.feed.post/detached',
+      detached: true,
+    };
+    const post = makePostWithEmbed(embed);
+    primePosts(qc, viewerScope, { feed: [{ post }] });
+
+    const cached = qc.getQueryData<FeedDefs.PostView>(
+      keys.post(viewerScope, post.uri),
+    );
+    expect(cached?.embed).toEqual(embed);
+  });
+
+  test('non-post record embed passes through unchanged', () => {
+    const qc = createQueryClient();
+    const embed = {
+      $type: 'app.bsky.embed.record#view',
+      record: {
+        $type: 'app.bsky.feed.defs#generatorView',
+        uri: 'at://did:plc:feed/app.bsky.feed.generator/custom',
+        cid: 'bafyfeed',
+        creator: {
+          did: 'did:plc:feed',
+          handle: 'feed.test',
+        },
+        displayName: 'Custom feed',
+      },
+    };
+    const post = makePostWithEmbed(embed);
+    primePosts(qc, viewerScope, { feed: [{ post }] });
+
+    const cached = qc.getQueryData<FeedDefs.PostView>(
+      keys.post(viewerScope, post.uri),
+    );
+    expect(AppBskyEmbedRecord.isView(cached?.embed)).toBe(true);
+    if (AppBskyEmbedRecord.isView(cached?.embed)) {
+      expect(cached.embed.record).toEqual(embed.record);
+    }
+    expect(getCachedPostUris(qc, viewerScope)).toHaveLength(1);
+  });
+
+  test('unknown embed record variant passes through unchanged', () => {
+    const qc = createQueryClient();
+    const embed = {
+      $type: 'app.bsky.embed.record#someFutureVariant',
+      uri: 'at://did:plc:future/app.bsky.feed.post/future',
+      futureField: 'fixture',
+    };
+    const post = makePostWithEmbed(embed);
+    primePosts(qc, viewerScope, { feed: [{ post }] });
+
+    const cached = qc.getQueryData<FeedDefs.PostView>(
+      keys.post(viewerScope, post.uri),
+    );
+    expect(cached?.embed).toEqual(embed);
   });
 });
 

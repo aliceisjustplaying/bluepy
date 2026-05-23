@@ -62,10 +62,16 @@ function moderationContextToOpts(ctx: ModerationContext): ModerationOpts {
     }
   }
 
-  const labelers = ctx.subscribedLabelers.map((labeler) => ({
-    did: labeler.did,
-    labels: { ...labels },
-  }));
+  const seen = new Set<string>();
+  const labelers: ModerationOpts['prefs']['labelers'] = [];
+  for (const labeler of [...ctx.baselineLabelers, ...ctx.subscribedLabelers]) {
+    if (seen.has(labeler.did)) continue;
+    seen.add(labeler.did);
+    labelers.push({
+      did: labeler.did,
+      labels: { ...labels },
+    });
+  }
 
   return {
     userDid: ctx.userDid,

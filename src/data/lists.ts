@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActiveDid, useClients } from '../contexts/SessionProvider';
 
 import { feedReadMode } from './_internal/dispatch';
-import { primeProfiles } from './_internal/prime';
+import { primePosts } from './_internal/prime';
 import { useInfiniteList } from './_internal/use-infinite';
 import { getReadAgent } from './clients';
 import { keys, type AtUri } from './keys';
@@ -49,9 +49,7 @@ export function useListFeed(listUri: AtUri | undefined) {
         limit: 30,
         cursor: pageParam,
       });
-      primeProfiles(qc, scope, {
-        actors: res.data.feed.map((item) => item.post.author),
-      });
+      primePosts(qc, scope, res.data);
       return {
         items: res.data.feed.map((item) => item.post.uri),
         cursor: res.data.cursor,
