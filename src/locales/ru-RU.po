@@ -42,6 +42,10 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "Слово целиком"
 
+#: src/pages/settings.tsx
+msgid "Default threadgate (Who can reply)"
+msgstr ""
+
 #: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr "Перейти на мой сервер (<0>{currentInstance}</0>)"
@@ -363,6 +367,10 @@ msgstr "Отклонить"
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
 msgstr "Давай посмотрим на посты из ваших подписок."
+
+#: src/components/compose.tsx
+#~ msgid "Anyone can reply"
+#~ msgstr ""
 
 #: src/components/follow-request-buttons.tsx
 #~ msgid "Reject"
@@ -816,9 +824,9 @@ msgstr "Посмотреть профиль"
 msgid "Keyboard shortcuts"
 msgstr "Горячие клавиши"
 
-#: src/pages/settings.tsx src/utils/visibility-text.ts
-#~ msgid "Public"
-#~ msgstr "Публичный"
+#: src/utils/visibility-text.ts
+msgid "Public"
+msgstr "Публичный"
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Optional, e.g. mastodon.social"
@@ -956,6 +964,10 @@ msgstr "{0, plural, one {# список} other {# списк(а/ов)}}"
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
 msgstr "Показать весь деликатный контент"
+
+#: src/components/compose.tsx
+msgid "(No user lists found)"
+msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
@@ -1189,6 +1201,10 @@ msgstr "Пост скрыт, потому что вы заблокировали
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/pages/scheduled-posts.tsx
 #~ msgid "Failed to delete scheduled post"
 #~ msgstr "Не удалось удалить запланированный пост"
@@ -1276,6 +1292,10 @@ msgstr "Не удалось скопировать имя пользовател
 #. [Name] reposted
 #: src/components/filtered-status.tsx
 msgid "<0/> reposted"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Default threadgate updated"
 msgstr ""
 
 #: src/pages/filters.tsx
@@ -1369,6 +1389,10 @@ msgstr "Этот пользователь предпочёл не раскрыв
 #~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
 #~ msgstr "<0>Собран</0> <1>@cheeaun</1>. <2>Политика конфиденциальности</2>."
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and mentioned people can reply"
+msgstr ""
+
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
 msgstr "Прокрутка к началу"
@@ -1376,6 +1400,10 @@ msgstr "Прокрутка к началу"
 #: src/pages/filters.tsx
 #~ msgid "Home and lists"
 #~ msgstr "Домашняя лента и списки"
+
+#: src/utils/visibility-text.ts
+msgid "Followers and followed people can reply"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1389,6 +1417,10 @@ msgstr "Перейти на страницу оригинального проф
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
 msgstr "Авто ({0})"
+
+#: src/components/compose.tsx
+msgid "Allowed:"
+msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
@@ -1582,8 +1614,8 @@ msgid "Login required."
 msgstr "Требуется авторизация."
 
 #: src/utils/visibility-text.ts
-#~ msgid "Local"
-#~ msgstr "Локальная"
+msgid "Local"
+msgstr "Локальная"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
@@ -1851,6 +1883,10 @@ msgstr "Сохранить"
 #~ msgid "Quote settings"
 #~ msgstr "Настройки цитирования"
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
 msgstr "{account} пожаловался на {targetAccount}"
@@ -1956,6 +1992,10 @@ msgstr ""
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
 msgstr "Примечание: Эта функция использует внешний сервис искусственного интеллекта, работающий на <0>img-alt-api</0>. Может работать некорректно. Только для изображений и на английском языке."
 
+#: src/utils/visibility-text.ts
+msgid "List members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Zoom out"
 #~ msgstr "Отдалить"
@@ -2021,6 +2061,10 @@ msgstr "Не уверены, что добавить? <0/>Попробуйте �
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
 msgstr "Не удалось обновить профиль."
+
+#: src/pages/settings.tsx
+msgid "Default threadgate settings are stored locally."
+msgstr ""
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
@@ -2200,6 +2244,10 @@ msgstr "Управление участниками"
 #: src/components/math-block.tsx
 msgid "Unable to format math"
 msgstr "Невозможно отформатировать математику"
+
+#: src/components/compose.tsx
+msgid "Select a list..."
+msgstr ""
 
 #: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Anyone can quote"
@@ -2391,6 +2439,10 @@ msgstr "Ответить"
 #~ msgid "Your {year} #Wrapstodon is here!"
 #~ msgstr "Ваш {year} #Warpstodon уже здесь!"
 
+#: src/components/compose.tsx
+msgid "No user lists found."
+msgstr ""
+
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
 msgstr ""
@@ -2424,6 +2476,10 @@ msgstr "Добавить существующую учетную запись"
 msgid "View post"
 msgstr "Просмотреть публикацию"
 
+#: src/utils/visibility-text.ts
+msgid "Followers, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/nav-menu.tsx
 msgid "New"
 msgstr "Новые"
@@ -2436,9 +2492,9 @@ msgstr "Текст поста скопирован"
 msgid "Violation"
 msgstr "Нарушение"
 
-#: src/components/status-header.tsx src/utils/visibility-text.ts
-#~ msgid "Private mention"
-#~ msgstr "Личное упоминание"
+#: src/utils/visibility-text.ts
+msgid "Private mention"
+msgstr "Личное упоминание"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
@@ -2592,6 +2648,11 @@ msgstr "Новые уведомления"
 msgid "Send Report <0>+ Block profile</0>"
 msgstr "Отправить жалобу <0>+ Заблокировать профиль</0>"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Nobody can reply"
+msgstr ""
+
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
 msgstr "Эмодзи:"
@@ -2626,6 +2687,11 @@ msgstr ""
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
 msgstr "Это уведомление от вашей другой учетной записи."
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only your followers can reply"
+msgstr ""
 
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
@@ -2685,6 +2751,10 @@ msgstr "{username} заблокирован(а)"
 #: src/pages/list.tsx
 msgid "Nothing yet."
 msgstr "Пока что ничего нет."
+
+#: src/utils/visibility-text.ts
+msgid "Followers and mentioned people can reply"
+msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
@@ -2794,6 +2864,10 @@ msgstr "Поделиться…"
 msgid "Image description"
 msgstr "Описание изображения"
 
+#: src/components/compose.tsx
+msgid "Mentioned"
+msgstr ""
+
 #: src/components/compose-poll.tsx
 #~ msgid "Duration"
 #~ msgstr "Продолжительность"
@@ -2890,6 +2964,11 @@ msgstr "Добавить"
 #: src/pages/filters.tsx
 #~ msgid "Expired"
 #~ msgstr "Срок действия истёк"
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you follow can reply"
+msgstr ""
 
 #: src/components/poll.tsx
 #~ msgid "Unable to vote in poll"
@@ -3156,6 +3235,10 @@ msgstr ""
 msgid "Posts with <0>{query}</0>"
 msgstr "Посты с <0>{query}</0>"
 
+#: src/components/compose.tsx
+#~ msgid "Some can reply"
+#~ msgstr ""
+
 #: src/components/poll.tsx
 #~ msgid "Ending"
 #~ msgstr "Завершение"
@@ -3354,8 +3437,8 @@ msgid "Joined <0>{0}</0>"
 msgstr "Присоединил(ся/ась) <0>{0}</0>"
 
 #: src/pages/settings.tsx
-#~ msgid "Posting"
-#~ msgstr "Публикация сообщений"
+msgid "Posting"
+msgstr "Публикация сообщений"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
@@ -3441,9 +3524,9 @@ msgstr "Пост"
 msgid "Set as default"
 msgstr "Установить по умолчанию"
 
-#: src/pages/settings.tsx src/utils/visibility-text.ts
-#~ msgid "Quiet public"
-#~ msgstr "Тихий публичный"
+#: src/utils/visibility-text.ts
+msgid "Quiet public"
+msgstr "Тихий публичный"
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -3568,6 +3651,10 @@ msgstr "Похоже, вы закрыли родительское окно."
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followed people and mentioned people can reply"
 msgstr ""
 
 #: src/pages/filters.tsx
@@ -3769,6 +3856,11 @@ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{
 #~ msgid "Max {SHORTCUTS_LIMIT} columns"
 #~ msgstr "Макс. {SHORTCUTS_LIMIT} столбцов"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Everybody can reply"
+msgstr ""
+
 #: src/pages/status.tsx
 #~ msgid "Experimental"
 #~ msgstr "Экспериментальные"
@@ -3784,6 +3876,10 @@ msgstr "Определение…"
 #: src/components/status-reply-menu.tsx
 #~ msgid "{mentionsCount, plural, other {# mentions}}"
 #~ msgstr "{mentionsCount, plural, other {# упоминаний}}"
+
+#: src/components/compose.tsx
+msgid "Who can reply:"
+msgstr ""
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server"
@@ -3843,6 +3939,10 @@ msgstr "Не удалось принять запрос на уведомлен�
 #: src/pages/lists.tsx
 msgid "New list"
 msgstr "Новый список"
+
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and list members can reply"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
@@ -4054,6 +4154,10 @@ msgstr "Сохранить"
 msgid "Unable to copy shortcut settings"
 msgstr "Не удалось скопировать настройки ярлыка"
 
+#: src/components/compose.tsx
+msgid "From List"
+msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
 msgstr "Не удалось найти пост, к которому относится этот ответ."
@@ -4116,6 +4220,10 @@ msgstr "Параметры"
 #~ msgid "Local timeline ({instance})"
 #~ msgstr "Локальная лента ({instance})"
 
+#: src/utils/visibility-text.ts
+msgid "Followed people and list members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Recently used"
 #~ msgstr "Недавно использованные"
@@ -4123,6 +4231,10 @@ msgstr "Параметры"
 #: src/pages/filters.tsx
 #~ msgid "Status: <0><1/></0>"
 #~ msgstr "Состояние: <0><1/></0>"
+
+#: src/utils/visibility-text.ts
+msgid "Mentioned people and list members can reply"
+msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -4272,6 +4384,10 @@ msgstr ""
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 msgstr "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 
+#: src/pages/settings.tsx
+#~ msgid "Quote settings are synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0> Default threadgate settings are stored locally."
+#~ msgstr ""
+
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
 msgstr "Некоторые из ваших сообщений были отмечены как деликатные."
@@ -4341,6 +4457,11 @@ msgstr "Статистика публикации постов недоступ�
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
 msgstr "Скриншот многоколоночного интерфейса"
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you mention can reply"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
@@ -4418,6 +4539,10 @@ msgstr ""
 msgid "Like"
 msgstr "Нравится"
 
+#: src/components/compose.tsx
+msgid "Select a list before publishing this post."
+msgstr ""
+
 #: src/pages/welcome.tsx
 #~ msgid "A minimalistic opinionated Bluesky web client."
 #~ msgstr ""
@@ -4432,6 +4557,10 @@ msgstr "Мульти-хэштег лента"
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and list members can reply"
 msgstr ""
 
 #: src/components/account-info.tsx
@@ -4509,6 +4638,8 @@ msgstr "людей, на которых я подписан(а)"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
+#: src/components/compose.tsx
+#: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr "Подписчик(а/ов)"
 
@@ -4582,6 +4713,10 @@ msgstr "Потеряны соединения с <0>{name}</0>."
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
 msgstr "{SHORTCUTS_LIMIT, plural, one {Достигнут предел в # ярлык. Не удалось добавить ярлык.} other {Достигнут предел в # ярлык(а/ов). Не удалось добавить ярлык.}}"
 
+#: src/components/compose.tsx
+msgid "Nobody"
+msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
 msgstr ""
@@ -4622,6 +4757,7 @@ msgid "Post reported"
 msgstr "Жалоба на публикацию была отправлена"
 
 #: src/components/account-block.tsx
+#: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
 msgstr "Подписка"
@@ -4790,6 +4926,10 @@ msgstr "Закрыть"
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 msgstr "Похоже, вы уже публикуете пост в родительском окне. Дождитесь публикации и попробуйте снова."
 
+#: src/components/compose.tsx
+msgid "Anyone"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
 msgstr "Поделиться"
@@ -4805,6 +4945,10 @@ msgstr "ПРИМЕЧАНИЕ: Push-уведомления работают то�
 #: src/components/status-reply-menu.tsx
 #~ msgid "Only <0>@{0}</0>"
 #~ msgstr "Только <0>@{0}</0>"
+
+#: src/components/compose.tsx
+msgid "Some"
+msgstr ""
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx

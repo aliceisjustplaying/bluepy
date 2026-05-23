@@ -54,7 +54,7 @@ export default function useStatusCommentIndicators({
       !isThread &&
       !withinContext &&
       !inReplyToId &&
-      visibility === 'public' &&
+      (visibility === 'public' || visibility === 'everybody') &&
       repliesCount > 0
     );
   }, [

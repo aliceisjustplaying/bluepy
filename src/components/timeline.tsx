@@ -1536,17 +1536,12 @@ function TimelineStatusCompact({
 }: TimelineStatusCompactProps) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
-  const { id, visibility, language } = status;
+  const { id, language } = status;
   const statusPeekText = statusPeek(status as StatusPeekPayload);
   const sKey = statusKey(id, instance);
   const filterInfo = isFiltered(status.filtered, filterContext as string);
   return (
-    <article
-      className={`status compact-thread ${
-        visibility === 'direct' ? 'visibility-direct' : ''
-      }`}
-      tabIndex={-1}
-    >
+    <article className="status compact-thread" tabIndex={-1}>
       <div className="status-thread-badge-container">
         <ThreadBadge
           index={sKey ? snapStates.statusThreadNumber[sKey] : undefined}

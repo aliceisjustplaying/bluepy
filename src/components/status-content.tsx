@@ -631,6 +631,7 @@ export default function StatusContent({
             showCommentHint={!!showCommentHint}
             showCommentCount={showCommentCount}
             repliesCount={repliesCount}
+            visibility={visibility}
             editedAt={editedAt}
             createdAtDate={createdAtDate}
             inReplyToAccount={inReplyToAccount as AnyStatus['account'] | null}

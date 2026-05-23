@@ -42,6 +42,10 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "Tuta vorto"
 
+#: src/pages/settings.tsx
+msgid "Default threadgate (Who can reply)"
+msgstr ""
+
 #: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr ""
@@ -363,6 +367,10 @@ msgstr "Fermi"
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
 msgstr "Ni atingu la afiŝojn de viaj sekvantoj."
+
+#: src/components/compose.tsx
+#~ msgid "Anyone can reply"
+#~ msgstr ""
 
 #: src/components/follow-request-buttons.tsx
 #~ msgid "Reject"
@@ -816,9 +824,9 @@ msgstr "Vidi profilon"
 msgid "Keyboard shortcuts"
 msgstr "Fulmoklavoj"
 
-#: src/pages/settings.tsx src/utils/visibility-text.ts
-#~ msgid "Public"
-#~ msgstr "Publika"
+#: src/utils/visibility-text.ts
+msgid "Public"
+msgstr "Publika"
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Optional, e.g. mastodon.social"
@@ -956,6 +964,10 @@ msgstr "{0, plural, one {#listo} other {# listoj}}"
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
 msgstr "Montri ĉiujn sentemajn enhavojn"
+
+#: src/components/compose.tsx
+msgid "(No user lists found)"
+msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
@@ -1189,6 +1201,10 @@ msgstr ""
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/pages/scheduled-posts.tsx
 #~ msgid "Failed to delete scheduled post"
 #~ msgstr "Malsukcesis forigi planitan afiŝon"
@@ -1276,6 +1292,10 @@ msgstr "Ne eblas kopii la tenilon"
 #. [Name] reposted
 #: src/components/filtered-status.tsx
 msgid "<0/> reposted"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Default threadgate updated"
 msgstr ""
 
 #: src/pages/filters.tsx
@@ -1369,6 +1389,10 @@ msgstr "Ĉi tiu uzanto elektis ne disponebligi ĉi tiun informon."
 #~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
 #~ msgstr "<0>Konstruita</0> de <1>@cheeaun</1>. <2>Regularo pri privateco</2>."
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and mentioned people can reply"
+msgstr ""
+
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
 msgstr "Rulumi supren"
@@ -1376,6 +1400,10 @@ msgstr "Rulumi supren"
 #: src/pages/filters.tsx
 #~ msgid "Home and lists"
 #~ msgstr "Hejmo kaj listoj"
+
+#: src/utils/visibility-text.ts
+msgid "Followers and followed people can reply"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1389,6 +1417,10 @@ msgstr "Malfermi la originalan profilpaĝon"
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
 msgstr "Aŭtomata ({0})"
+
+#: src/components/compose.tsx
+msgid "Allowed:"
+msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
@@ -1582,8 +1614,8 @@ msgid "Login required."
 msgstr "Ensaluto bezonata."
 
 #: src/utils/visibility-text.ts
-#~ msgid "Local"
-#~ msgstr "Loka"
+msgid "Local"
+msgstr "Loka"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
@@ -1851,6 +1883,10 @@ msgstr "Ĝisdatigi"
 #~ msgid "Quote settings"
 #~ msgstr "Agordoj de citaĵo"
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
 msgstr "{account} raportis {targetAccount}"
@@ -1956,6 +1992,10 @@ msgstr ""
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
 msgstr "Noto: Ĉi tiu funkcio uzas eksteran AI-servon, funkciigitan de <0>img-alt-api</0>. Eble ne funkcias bone. Nur por bildoj kaj en la angla."
 
+#: src/utils/visibility-text.ts
+msgid "List members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Zoom out"
 #~ msgstr "Malzomi"
@@ -2021,6 +2061,10 @@ msgstr "Ĉu vi ne certas, kion aldoni? <0/>Provu unue aldoni <1>Hejmo / Sekvatoj
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
 msgstr "Ne eblas ĝisdatigi la profilon."
+
+#: src/pages/settings.tsx
+msgid "Default threadgate settings are stored locally."
+msgstr ""
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
@@ -2199,6 +2243,10 @@ msgstr "Administri membrojn"
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Select a list..."
 msgstr ""
 
 #: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
@@ -2391,6 +2439,10 @@ msgstr "Respondi"
 #~ msgid "Your {year} #Wrapstodon is here!"
 #~ msgstr "Via #Wrapstodon {year} estas ĉi tie!"
 
+#: src/components/compose.tsx
+msgid "No user lists found."
+msgstr ""
+
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
 msgstr ""
@@ -2424,6 +2476,10 @@ msgstr "Aldoni ekzistantan konton"
 msgid "View post"
 msgstr "Vidi afiŝon"
 
+#: src/utils/visibility-text.ts
+msgid "Followers, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/nav-menu.tsx
 msgid "New"
 msgstr "Nova"
@@ -2436,9 +2492,9 @@ msgstr "Teksto de la afiŝo kopiita"
 msgid "Violation"
 msgstr "Malobservo"
 
-#: src/components/status-header.tsx src/utils/visibility-text.ts
-#~ msgid "Private mention"
-#~ msgstr "Privata mencio"
+#: src/utils/visibility-text.ts
+msgid "Private mention"
+msgstr "Privata mencio"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
@@ -2592,6 +2648,11 @@ msgstr "Novaj sciigoj"
 msgid "Send Report <0>+ Block profile</0>"
 msgstr "Sendi raporton <0>+ Bloki profilon</0>"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Nobody can reply"
+msgstr ""
+
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
 msgstr "Emoĝioj:"
@@ -2626,6 +2687,11 @@ msgstr ""
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
 msgstr "Ĉi tiu sciigo estas de via alia konto."
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only your followers can reply"
+msgstr ""
 
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
@@ -2685,6 +2751,10 @@ msgstr "Blokita {username}"
 #: src/pages/list.tsx
 msgid "Nothing yet."
 msgstr "Ankoraŭ nenio."
+
+#: src/utils/visibility-text.ts
+msgid "Followers and mentioned people can reply"
+msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
@@ -2794,6 +2864,10 @@ msgstr "Diskonigi…"
 msgid "Image description"
 msgstr "Priskribo de bildo"
 
+#: src/components/compose.tsx
+msgid "Mentioned"
+msgstr ""
+
 #: src/components/compose-poll.tsx
 #~ msgid "Duration"
 #~ msgstr "Daŭro"
@@ -2890,6 +2964,11 @@ msgstr "Aldoni"
 #: src/pages/filters.tsx
 #~ msgid "Expired"
 #~ msgstr "Finiĝita"
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you follow can reply"
+msgstr ""
 
 #: src/components/poll.tsx
 #~ msgid "Unable to vote in poll"
@@ -3156,6 +3235,10 @@ msgstr ""
 msgid "Posts with <0>{query}</0>"
 msgstr "Afiŝoj kun <0>{query}</0>"
 
+#: src/components/compose.tsx
+#~ msgid "Some can reply"
+#~ msgstr ""
+
 #: src/components/poll.tsx
 #~ msgid "Ending"
 #~ msgstr "Finante"
@@ -3354,8 +3437,8 @@ msgid "Joined <0>{0}</0>"
 msgstr "Aliĝis <0>{0}</0>"
 
 #: src/pages/settings.tsx
-#~ msgid "Posting"
-#~ msgstr "Afiŝante"
+msgid "Posting"
+msgstr "Afiŝante"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
@@ -3441,9 +3524,9 @@ msgstr "Afiŝo"
 msgid "Set as default"
 msgstr "Agordi kiel defaŭltan"
 
-#: src/pages/settings.tsx src/utils/visibility-text.ts
-#~ msgid "Quiet public"
-#~ msgstr "Diskrete publika"
+#: src/utils/visibility-text.ts
+msgid "Quiet public"
+msgstr "Diskrete publika"
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -3568,6 +3651,10 @@ msgstr "Ŝajnas, ke vi fermis la patran fenestron."
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followed people and mentioned people can reply"
 msgstr ""
 
 #: src/pages/filters.tsx
@@ -3769,6 +3856,11 @@ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{
 #~ msgid "Max {SHORTCUTS_LIMIT} columns"
 #~ msgstr "Maks. {SHORTCUTS_LIMIT} kolumnoj"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Everybody can reply"
+msgstr ""
+
 #: src/pages/status.tsx
 #~ msgid "Experimental"
 #~ msgstr "Eksperimenta"
@@ -3784,6 +3876,10 @@ msgstr "Solvante…"
 #: src/components/status-reply-menu.tsx
 #~ msgid "{mentionsCount, plural, other {# mentions}}"
 #~ msgstr ""
+
+#: src/components/compose.tsx
+msgid "Who can reply:"
+msgstr ""
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server"
@@ -3843,6 +3939,10 @@ msgstr "Ne eblas akcepti sciigan peton"
 #: src/pages/lists.tsx
 msgid "New list"
 msgstr "Nova listo"
+
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and list members can reply"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
@@ -4054,6 +4154,10 @@ msgstr "Konservi"
 msgid "Unable to copy shortcut settings"
 msgstr "Ne eblas kopii ŝparvojajn agordojn"
 
+#: src/components/compose.tsx
+msgid "From List"
+msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
 msgstr "Eraro ricevi respondan staton!"
@@ -4116,6 +4220,10 @@ msgstr "Agordoj"
 #~ msgid "Local timeline ({instance})"
 #~ msgstr "Loka templinio ({instance})"
 
+#: src/utils/visibility-text.ts
+msgid "Followed people and list members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Recently used"
 #~ msgstr "Ofte uzataj"
@@ -4123,6 +4231,10 @@ msgstr "Agordoj"
 #: src/pages/filters.tsx
 #~ msgid "Status: <0><1/></0>"
 #~ msgstr "Stato: <0><1/></0>"
+
+#: src/utils/visibility-text.ts
+msgid "Mentioned people and list members can reply"
+msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -4272,6 +4384,10 @@ msgstr ""
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 msgstr "<0>Ŝovo</0> + <1>Alt-klavo</1> + <2>k</2>"
 
+#: src/pages/settings.tsx
+#~ msgid "Quote settings are synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0> Default threadgate settings are stored locally."
+#~ msgstr ""
+
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
 msgstr "Kelkaj el viaj afiŝoj estis markitaj kiel sentemaj."
@@ -4341,6 +4457,11 @@ msgstr "Afiŝaj statistikoj ne disponeblaj."
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
 msgstr "Ekrankopio de plurkolumna uzantinterfaco"
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you mention can reply"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
@@ -4418,6 +4539,10 @@ msgstr ""
 msgid "Like"
 msgstr "Ŝatata"
 
+#: src/components/compose.tsx
+msgid "Select a list before publishing this post."
+msgstr ""
+
 #: src/pages/welcome.tsx
 #~ msgid "A minimalistic opinionated Bluesky web client."
 #~ msgstr ""
@@ -4432,6 +4557,10 @@ msgstr "Plurkradvorta templinio"
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and list members can reply"
 msgstr ""
 
 #: src/components/account-info.tsx
@@ -4509,6 +4638,8 @@ msgstr "homoj, kiujn mi sekvas"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
+#: src/components/compose.tsx
+#: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr "Sekvantoj"
 
@@ -4582,6 +4713,10 @@ msgstr "Perditaj konektoj kun <0>{name}</0>."
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
 msgstr "{SHORTCUTS_LIMIT, plural, one {Maks. # ŝparvojo atingita. Ne eblas aldoni ŝparvojon.} other {Maks. # ŝparvojoj atingitaj. Ne eblas aldoni ŝparvojon.}}"
 
+#: src/components/compose.tsx
+msgid "Nobody"
+msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
 msgstr "<0>Ŝovo</0> + <1>r</1>"
@@ -4622,6 +4757,7 @@ msgid "Post reported"
 msgstr "Afiŝo raportita"
 
 #: src/components/account-block.tsx
+#: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
 msgstr "Sekvante"
@@ -4790,6 +4926,10 @@ msgstr "Fermi"
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 msgstr "Ŝajnas, ke vi jam havas redaktan fenestron malfermita en la ĉefa fenestro kaj vi nun publikigas. Bonvolu atendi, ke ĝi estos publikigita kaj provu denove poste."
 
+#: src/components/compose.tsx
+msgid "Anyone"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
 msgstr "Diskonigi"
@@ -4805,6 +4945,10 @@ msgstr "NOTO: Puŝaj sciigoj funkcias nur por <0>unu konto</0>."
 #: src/components/status-reply-menu.tsx
 #~ msgid "Only <0>@{0}</0>"
 #~ msgstr ""
+
+#: src/components/compose.tsx
+msgid "Some"
+msgstr ""
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx

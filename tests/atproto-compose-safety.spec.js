@@ -29,6 +29,30 @@ test.describe('ATProto compose safety', () => {
     }).toThrow(/quote approval/);
   });
 
+  test('rejects list threadgates without a selected list', () => {
+    expect(() => {
+      assertAtprotoPostParamsSupported({
+        threadgate: [{ type: 'list', list: '' }],
+      });
+    }).toThrow(/selected list/);
+  });
+
+  test('rejects list threadgates without a native list AT URI', () => {
+    expect(() => {
+      assertAtprotoPostParamsSupported({
+        threadgate: [{ type: 'list', list: 'at:/bad' }],
+      });
+    }).toThrow(/native list AT URI/);
+
+    expect(() => {
+      assertAtprotoPostParamsSupported({
+        threadgate: [
+          { type: 'list', list: 'at://did:plc:test/app.bsky.feed.post/abc' },
+        ],
+      });
+    }).toThrow(/native list AT URI/);
+  });
+
   test('keeps shortened link text escaped', async ({ page }) => {
     await page.goto('/');
     const html = await page.evaluate(async () => {

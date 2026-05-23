@@ -1,6 +1,9 @@
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 
+import visibilityIconsMap from '../utils/visibility-icons-map';
+import visibilityText from '../utils/visibility-text';
+
 import Icon from './icon';
 import LazyRender from './lazy-render';
 import Link from './link';
@@ -38,6 +41,7 @@ interface StatusHeaderProps {
   showCommentHint: boolean;
   showCommentCount: boolean;
   repliesCount?: number;
+  visibility: keyof typeof visibilityIconsMap;
   editedAt?: string | null;
   createdAtDate: Date;
   inReplyToAccount?: AnyAccount | null;
@@ -48,6 +52,7 @@ interface StatusTimeIconProps {
   showCommentHint: boolean;
   showCommentCount: boolean;
   repliesCount: number;
+  visibility: keyof typeof visibilityIconsMap;
   editedAt?: string | null;
   size: string;
 }
@@ -56,10 +61,12 @@ function StatusTimeIcon({
   showCommentHint,
   showCommentCount,
   repliesCount,
+  visibility,
   editedAt,
   size,
 }: StatusTimeIconProps) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
+  const _ = i18n._.bind(i18n);
 
   if (showCommentHint && !showCommentCount) {
     return (
@@ -70,6 +77,15 @@ function StatusTimeIcon({
           one: '# reply',
           other: '# replies',
         })}
+      />
+    );
+  }
+  if (visibility !== 'everybody') {
+    return (
+      <Icon
+        icon={visibilityIconsMap[visibility]}
+        alt={_(visibilityText[visibility])}
+        size="s"
       />
     );
   }
@@ -104,6 +120,7 @@ export default function StatusHeader({
   showCommentHint,
   showCommentCount,
   repliesCount = 0,
+  visibility,
   editedAt,
   createdAtDate,
   inReplyToAccount,
@@ -172,6 +189,7 @@ export default function StatusHeader({
                   showCommentHint={showCommentHint}
                   showCommentCount={showCommentCount}
                   repliesCount={repliesCount}
+                  visibility={visibility}
                   editedAt={editedAt}
                   size={size}
                 />{' '}
@@ -186,6 +204,7 @@ export default function StatusHeader({
                   showCommentHint={showCommentHint}
                   showCommentCount={showCommentCount}
                   repliesCount={repliesCount}
+                  visibility={visibility}
                   editedAt={editedAt}
                   size={size}
                 />{' '}

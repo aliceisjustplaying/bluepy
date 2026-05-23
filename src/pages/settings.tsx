@@ -15,7 +15,7 @@ import LangSelector from '../components/lang-selector';
 import Link from '../components/link';
 import RelativeTime from '../components/relative-time';
 import languages from '../data/translang-languages.json';
-import { api } from '../utils/api';
+import { api, getPreferences, setPreferences } from '../utils/api';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import localeCode2Text from '../utils/localeCode2Text';
 import { isMutedPostVisibility } from '../utils/muted-post-visibility';
@@ -68,6 +68,8 @@ interface SettingsProps {
   onClose?: () => void;
 }
 
+type Preferences = Record<string, unknown>;
+
 function Settings({ onClose }: SettingsProps): ReactElement {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
@@ -86,6 +88,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
   const currentTextSize: number =
     parseInt(storedTextSize as string, 10) || DEFAULT_TEXT_SIZE;
 
+  const [prefs, setPrefs] = useState<Preferences>(getPreferences());
   const { authenticated } = api();
 
   // Get preferences every time Settings is opened
@@ -294,6 +297,62 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             </li>
           </ul>
         </section>
+        {authenticated && (
+          <>
+            <h3>
+              <Trans>Posting</Trans>
+            </h3>
+            <section>
+              <ul>
+                <li>
+                  <label htmlFor="posting-threadgate-field">
+                    <Trans>Default threadgate (Who can reply)</Trans>
+                  </label>
+                  <select
+                    id="posting-threadgate-field"
+                    aria-label={t`Default threadgate (Who can reply)`}
+                    value={
+                      (prefs['posting:default:threadgate'] as
+                        | string
+                        | undefined) || 'everybody'
+                    }
+                    onChange={(e) => {
+                      const { value } = e.currentTarget;
+                      const newPrefs: Preferences = {
+                        ...prefs,
+                        'posting:default:threadgate': value,
+                      };
+                      setPrefs(newPrefs);
+                      setPreferences(newPrefs);
+                      showToast(t`Default threadgate updated`);
+                    }}
+                  >
+                    <option value="everybody">
+                      <Trans>Everybody can reply</Trans>
+                    </option>
+                    <option value="nobody">
+                      <Trans>Nobody can reply</Trans>
+                    </option>
+                    <option value="mention">
+                      <Trans>Only people you mention can reply</Trans>
+                    </option>
+                    <option value="following">
+                      <Trans>Only people you follow can reply</Trans>
+                    </option>
+                    <option value="followers">
+                      <Trans>Only your followers can reply</Trans>
+                    </option>
+                  </select>
+                </li>
+              </ul>
+            </section>
+            <p className="section-postnote">
+              <small>
+                <Trans>Default threadgate settings are stored locally.</Trans>
+              </small>
+            </p>
+          </>
+        )}
         <h3>
           <Trans>Experiments</Trans>
         </h3>

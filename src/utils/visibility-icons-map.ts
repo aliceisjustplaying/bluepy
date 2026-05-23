@@ -1,0 +1,26 @@
+const visibilityIconsMap = {
+  direct: 'message',
+  local: 'building',
+  private: 'lock',
+  public: 'earth',
+  unlisted: 'moon',
+  nobody: 'block',
+  mention: 'message',
+  following: 'group',
+  followers: 'lock',
+  everybody: 'earth',
+  followers_following_mention: 'group',
+  followers_following: 'group',
+  followers_mention: 'group',
+  following_mention: 'group',
+  list: 'building',
+  followers_list: 'group',
+  following_list: 'group',
+  mention_list: 'group',
+  followers_following_list: 'group',
+  followers_mention_list: 'group',
+  following_mention_list: 'group',
+  followers_following_mention_list: 'group',
+} as const;
+
+export default visibilityIconsMap;

@@ -42,6 +42,10 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "Mot entier"
 
+#: src/pages/settings.tsx
+msgid "Default threadgate (Who can reply)"
+msgstr ""
+
 #: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr ""
@@ -363,6 +367,10 @@ msgstr "Rejeter"
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
 msgstr "Restez à la page avec vos abonnements."
+
+#: src/components/compose.tsx
+#~ msgid "Anyone can reply"
+#~ msgstr ""
 
 #: src/components/follow-request-buttons.tsx
 #~ msgid "Reject"
@@ -816,9 +824,9 @@ msgstr ""
 msgid "Keyboard shortcuts"
 msgstr "Raccourcis clavier"
 
-#: src/pages/settings.tsx src/utils/visibility-text.ts
-#~ msgid "Public"
-#~ msgstr "Public"
+#: src/utils/visibility-text.ts
+msgid "Public"
+msgstr "Public"
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Optional, e.g. mastodon.social"
@@ -956,6 +964,10 @@ msgstr "{0, plural, one {# liste} other {# listes}}"
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
 msgstr "Afficher tous les contenus sensibles"
+
+#: src/components/compose.tsx
+msgid "(No user lists found)"
+msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
@@ -1189,6 +1201,10 @@ msgstr ""
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/pages/scheduled-posts.tsx
 #~ msgid "Failed to delete scheduled post"
 #~ msgstr "Impossible de supprimer la publication planifiée"
@@ -1276,6 +1292,10 @@ msgstr "L’identifiant n’a pas pu être copié."
 #. [Name] reposted
 #: src/components/filtered-status.tsx
 msgid "<0/> reposted"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Default threadgate updated"
 msgstr ""
 
 #: src/pages/filters.tsx
@@ -1369,6 +1389,10 @@ msgstr "Cette personne ne souhaite pas partager cette information."
 #~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
 #~ msgstr "<0>Fabriqué</0> par <1>@cheeaun</1>. <2>Politique de confidentialité</2>."
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and mentioned people can reply"
+msgstr ""
+
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
 msgstr "Remonter"
@@ -1376,6 +1400,10 @@ msgstr "Remonter"
 #: src/pages/filters.tsx
 #~ msgid "Home and lists"
 #~ msgstr "Principal et listes"
+
+#: src/utils/visibility-text.ts
+msgid "Followers and followed people can reply"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1389,6 +1417,10 @@ msgstr "Visiter la page de profil originale"
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
 msgstr "Auto ({0})"
+
+#: src/components/compose.tsx
+msgid "Allowed:"
+msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
@@ -1582,8 +1614,8 @@ msgid "Login required."
 msgstr "Connexion requise."
 
 #: src/utils/visibility-text.ts
-#~ msgid "Local"
-#~ msgstr "Local"
+msgid "Local"
+msgstr "Local"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
@@ -1851,6 +1883,10 @@ msgstr "Mettre à jour"
 #~ msgid "Quote settings"
 #~ msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
 msgstr "{account} a signalé {targetAccount}"
@@ -1956,6 +1992,10 @@ msgstr ""
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
 msgstr "Remarque : Cette fonction utilise un service IA externe, propulsé par <0>img-alt-api</0>. Peut ne pas fonctionner correctement. Seulement pour les images et en anglais."
 
+#: src/utils/visibility-text.ts
+msgid "List members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Zoom out"
 #~ msgstr "Zoom arrière"
@@ -2021,6 +2061,10 @@ msgstr "Vous ne savez pas quoi ajouter ?<0/>Essayez d'abord d'ajouter <1>Accueil
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
 msgstr "Impossible de mettre à jour le profil."
+
+#: src/pages/settings.tsx
+msgid "Default threadgate settings are stored locally."
+msgstr ""
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
@@ -2199,6 +2243,10 @@ msgstr "Gestion des membres"
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Select a list..."
 msgstr ""
 
 #: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
@@ -2391,6 +2439,10 @@ msgstr "Répondre"
 #~ msgid "Your {year} #Wrapstodon is here!"
 #~ msgstr "Votre #Wrapstodon {year} est arrivé !"
 
+#: src/components/compose.tsx
+msgid "No user lists found."
+msgstr ""
+
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
 msgstr ""
@@ -2424,6 +2476,10 @@ msgstr "Ajouter un compte existant"
 msgid "View post"
 msgstr "Voir le message"
 
+#: src/utils/visibility-text.ts
+msgid "Followers, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/nav-menu.tsx
 msgid "New"
 msgstr "Nouveau"
@@ -2436,9 +2492,9 @@ msgstr "Texte de la publication copié"
 msgid "Violation"
 msgstr "Infraction"
 
-#: src/components/status-header.tsx src/utils/visibility-text.ts
-#~ msgid "Private mention"
-#~ msgstr "Mention privée"
+#: src/utils/visibility-text.ts
+msgid "Private mention"
+msgstr "Mention privée"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
@@ -2592,6 +2648,11 @@ msgstr "Nouvelles notifications"
 msgid "Send Report <0>+ Block profile</0>"
 msgstr "Signaler <0>+ Bloquer le profil</0>"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Nobody can reply"
+msgstr ""
+
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
 msgstr "Émojis :"
@@ -2626,6 +2687,11 @@ msgstr ""
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
 msgstr "Cette notification provient de votre autre compte."
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only your followers can reply"
+msgstr ""
 
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
@@ -2685,6 +2751,10 @@ msgstr "Compte {username} bloqué"
 #: src/pages/list.tsx
 msgid "Nothing yet."
 msgstr "Rien pour l’instant."
+
+#: src/utils/visibility-text.ts
+msgid "Followers and mentioned people can reply"
+msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
@@ -2794,6 +2864,10 @@ msgstr "Partager…"
 msgid "Image description"
 msgstr "Description de l’image"
 
+#: src/components/compose.tsx
+msgid "Mentioned"
+msgstr ""
+
 #: src/components/compose-poll.tsx
 #~ msgid "Duration"
 #~ msgstr "Durée"
@@ -2890,6 +2964,11 @@ msgstr "Insérer"
 #: src/pages/filters.tsx
 #~ msgid "Expired"
 #~ msgstr "Expiré"
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you follow can reply"
+msgstr ""
 
 #: src/components/poll.tsx
 #~ msgid "Unable to vote in poll"
@@ -3156,6 +3235,10 @@ msgstr ""
 msgid "Posts with <0>{query}</0>"
 msgstr "Messages avec <0>{query}</0>"
 
+#: src/components/compose.tsx
+#~ msgid "Some can reply"
+#~ msgstr ""
+
 #: src/components/poll.tsx
 #~ msgid "Ending"
 #~ msgstr "Sera clos"
@@ -3354,8 +3437,8 @@ msgid "Joined <0>{0}</0>"
 msgstr "Inscrit·e depuis le <0>{0}</0>"
 
 #: src/pages/settings.tsx
-#~ msgid "Posting"
-#~ msgstr "Publication"
+msgid "Posting"
+msgstr "Publication"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
@@ -3441,9 +3524,9 @@ msgstr ""
 msgid "Set as default"
 msgstr "Définir par défaut"
 
-#: src/pages/settings.tsx src/utils/visibility-text.ts
-#~ msgid "Quiet public"
-#~ msgstr ""
+#: src/utils/visibility-text.ts
+msgid "Quiet public"
+msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -3568,6 +3651,10 @@ msgstr "Il semblerait que vous ayez fermé la fenêtre d’origine."
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followed people and mentioned people can reply"
 msgstr ""
 
 #: src/pages/filters.tsx
@@ -3769,6 +3856,11 @@ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{
 #~ msgid "Max {SHORTCUTS_LIMIT} columns"
 #~ msgstr "Maximum de colonnes {SHORTCUTS_LIMIT}"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Everybody can reply"
+msgstr ""
+
 #: src/pages/status.tsx
 #~ msgid "Experimental"
 #~ msgstr "Expérimental"
@@ -3784,6 +3876,10 @@ msgstr "Résolution en cours …"
 #: src/components/status-reply-menu.tsx
 #~ msgid "{mentionsCount, plural, other {# mentions}}"
 #~ msgstr ""
+
+#: src/components/compose.tsx
+msgid "Who can reply:"
+msgstr ""
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server"
@@ -3843,6 +3939,10 @@ msgstr "La demande de notification n’a pas pu être acceptée"
 #: src/pages/lists.tsx
 msgid "New list"
 msgstr "Nouvelle liste"
+
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and list members can reply"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
@@ -4054,6 +4154,10 @@ msgstr "Enregistrer"
 msgid "Unable to copy shortcut settings"
 msgstr "Les paramètres de raccourcis n’ont pas pu être copiés."
 
+#: src/components/compose.tsx
+msgid "From List"
+msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
 msgstr "Erreur lors de la récupération du statut de la réponse !"
@@ -4116,6 +4220,10 @@ msgstr "Paramètres"
 #~ msgid "Local timeline ({instance})"
 #~ msgstr "Fil local ({instance})"
 
+#: src/utils/visibility-text.ts
+msgid "Followed people and list members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Recently used"
 #~ msgstr "Récemment utilisé"
@@ -4123,6 +4231,10 @@ msgstr "Paramètres"
 #: src/pages/filters.tsx
 #~ msgid "Status: <0><1/></0>"
 #~ msgstr "Statut : <0><1/></0>"
+
+#: src/utils/visibility-text.ts
+msgid "Mentioned people and list members can reply"
+msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -4272,6 +4384,10 @@ msgstr ""
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 msgstr "<0>Maj</0> + <1>Alt</1> + <2>k</2>"
 
+#: src/pages/settings.tsx
+#~ msgid "Quote settings are synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0> Default threadgate settings are stored locally."
+#~ msgstr ""
+
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
 msgstr "Certains de vos messages ont été marqués comme délicats."
@@ -4341,6 +4457,11 @@ msgstr "Les statistiques de ce message ne sont pas disponibles."
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
 msgstr "Capture d’écran de l’interface à plusieurs colonnes"
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you mention can reply"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
@@ -4418,6 +4539,10 @@ msgstr ""
 msgid "Like"
 msgstr "Ajouter en favori"
 
+#: src/components/compose.tsx
+msgid "Select a list before publishing this post."
+msgstr ""
+
 #: src/pages/welcome.tsx
 #~ msgid "A minimalistic opinionated Bluesky web client."
 #~ msgstr ""
@@ -4432,6 +4557,10 @@ msgstr "Fil d’actualité à mots-clés multiples"
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and list members can reply"
 msgstr ""
 
 #: src/components/account-info.tsx
@@ -4509,6 +4638,8 @@ msgstr "personnes à lesquelles je suis abonné·e"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
+#: src/components/compose.tsx
+#: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr "Abonné⋅e·s"
 
@@ -4582,6 +4713,10 @@ msgstr "Connexions perdues avec <0>{name}</0>."
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
 msgstr "{SHORTCUTS_LIMIT, plural, one {La limite de # raccourci a été atteinte. Le raccourci n’a pas pu être ajouté.} other {La limite de # raccourcis a été atteinte. Le raccourci n’a pas pu être ajouté.}}"
 
+#: src/components/compose.tsx
+msgid "Nobody"
+msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
 msgstr "<0>Maj</0> + <1>r</1>"
@@ -4622,6 +4757,7 @@ msgid "Post reported"
 msgstr "Message signalé"
 
 #: src/components/account-block.tsx
+#: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
 msgstr "Abonnements"
@@ -4790,6 +4926,10 @@ msgstr "Fermer"
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 msgstr "Il semblerait que vous ayez déjà un message en cours de publication ouvert dans la fenêtre d’origine. Merci de réessayer une fois ce message publié."
 
+#: src/components/compose.tsx
+msgid "Anyone"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
 msgstr "Partager"
@@ -4805,6 +4945,10 @@ msgstr "NOTE : Les notifications Push ne fonctionnent que pour <0>un compte</0>.
 #: src/components/status-reply-menu.tsx
 #~ msgid "Only <0>@{0}</0>"
 #~ msgstr ""
+
+#: src/components/compose.tsx
+msgid "Some"
+msgstr ""
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx

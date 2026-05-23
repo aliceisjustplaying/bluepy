@@ -34,11 +34,6 @@ export function appendThreadDescendant(
   const parentIsTopLevel =
     !!parent && topLevelDescendants.some((s) => s.id === parent.id);
 
-  if (parent && status.inReplyToId !== heroStatus.id && !parentIsTopLevel) {
-    appendReply(parent, status);
-    return;
-  }
-
   if (status.inReplyToAccountId === status.account?.id) {
     topLevelDescendants.push(status);
   } else if (status.inReplyToId === heroStatus.id) {

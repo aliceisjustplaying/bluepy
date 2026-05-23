@@ -42,6 +42,10 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "Visas žodis"
 
+#: src/pages/settings.tsx
+msgid "Default threadgate (Who can reply)"
+msgstr ""
+
 #: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr ""
@@ -363,6 +367,10 @@ msgstr "Atmesti"
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
 msgstr "Pasivykime tavo sekimų įrašus."
+
+#: src/components/compose.tsx
+#~ msgid "Anyone can reply"
+#~ msgstr ""
 
 #: src/components/follow-request-buttons.tsx
 #~ msgid "Reject"
@@ -816,9 +824,9 @@ msgstr ""
 msgid "Keyboard shortcuts"
 msgstr "Spartieji klaviatūros klavišai"
 
-#: src/pages/settings.tsx src/utils/visibility-text.ts
-#~ msgid "Public"
-#~ msgstr "Vieša"
+#: src/utils/visibility-text.ts
+msgid "Public"
+msgstr "Vieša"
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Optional, e.g. mastodon.social"
@@ -956,6 +964,10 @@ msgstr "{0, plural, one {# sąrašas} few {# sąrašai} many {# sąrašo} other 
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
 msgstr "Rodyti visą jautrų turinį"
+
+#: src/components/compose.tsx
+msgid "(No user lists found)"
+msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
@@ -1189,6 +1201,10 @@ msgstr ""
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/pages/scheduled-posts.tsx
 #~ msgid "Failed to delete scheduled post"
 #~ msgstr "Nepavyko ištrinti suplanuoto įrašo."
@@ -1276,6 +1292,10 @@ msgstr "Nepavyksta nukopijuoti socialinės medijos vardo."
 #. [Name] reposted
 #: src/components/filtered-status.tsx
 msgid "<0/> reposted"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Default threadgate updated"
 msgstr ""
 
 #: src/pages/filters.tsx
@@ -1369,6 +1389,10 @@ msgstr "Šis naudotojas pasirinko nepadaryti šią informaciją prieinamą."
 #~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
 #~ msgstr "<0>Sukūrė</0> <1>@cheeaun</1>. <2>Privatumo politika</2>."
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and mentioned people can reply"
+msgstr ""
+
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
 msgstr "Slinkti į viršų"
@@ -1376,6 +1400,10 @@ msgstr "Slinkti į viršų"
 #: src/pages/filters.tsx
 #~ msgid "Home and lists"
 #~ msgstr "Pagrindinis ir sąrašai"
+
+#: src/utils/visibility-text.ts
+msgid "Followers and followed people can reply"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1389,6 +1417,10 @@ msgstr "Eiti į originalų profilio puslapį"
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
 msgstr "Automatinis ({0})"
+
+#: src/components/compose.tsx
+msgid "Allowed:"
+msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
@@ -1582,8 +1614,8 @@ msgid "Login required."
 msgstr "Privalomas prisijungimas."
 
 #: src/utils/visibility-text.ts
-#~ msgid "Local"
-#~ msgstr "Vietinis"
+msgid "Local"
+msgstr "Vietinis"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
@@ -1851,6 +1883,10 @@ msgstr "Atnaujinti"
 #~ msgid "Quote settings"
 #~ msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
 msgstr "{account} pranešė apie {targetAccount}"
@@ -1956,6 +1992,10 @@ msgstr ""
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
 msgstr "Pastaba: ši funkcija naudoja išorinę DI paslaugą, veikiančią su <0>„img-alt-api“</0>. Gali veikti netinkamai. Tik vaizdams ir anglų kalba."
 
+#: src/utils/visibility-text.ts
+msgid "List members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Zoom out"
 #~ msgstr ""
@@ -2021,6 +2061,10 @@ msgstr "Nežinai, ką pridėti?<0/>Pirmiausia pabandyk pridėti <1>Pagrindinis /
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
 msgstr "Nepavyksta atnaujinti profilio."
+
+#: src/pages/settings.tsx
+msgid "Default threadgate settings are stored locally."
+msgstr ""
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
@@ -2200,6 +2244,10 @@ msgstr "Tvarkyti narius"
 #: src/components/math-block.tsx
 msgid "Unable to format math"
 msgstr "Nepavyksta formatuoti matematikos."
+
+#: src/components/compose.tsx
+msgid "Select a list..."
+msgstr ""
 
 #: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
 #~ msgid "Anyone can quote"
@@ -2391,6 +2439,10 @@ msgstr "Atsakyti"
 #~ msgid "Your {year} #Wrapstodon is here!"
 #~ msgstr "Jūsų #Wrapstodon {year} jau čia!"
 
+#: src/components/compose.tsx
+msgid "No user lists found."
+msgstr ""
+
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
 msgstr ""
@@ -2424,6 +2476,10 @@ msgstr "Pridėti esančią paskyrą"
 msgid "View post"
 msgstr "Peržiūrėti įrašą"
 
+#: src/utils/visibility-text.ts
+msgid "Followers, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/nav-menu.tsx
 msgid "New"
 msgstr "Naujas"
@@ -2436,9 +2492,9 @@ msgstr "Įrašo tekstas nukopijuotas"
 msgid "Violation"
 msgstr "Pažeidimas"
 
-#: src/components/status-header.tsx src/utils/visibility-text.ts
-#~ msgid "Private mention"
-#~ msgstr "Privatus paminėjimas"
+#: src/utils/visibility-text.ts
+msgid "Private mention"
+msgstr "Privatus paminėjimas"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
@@ -2592,6 +2648,11 @@ msgstr "Nauji pranešimai"
 msgid "Send Report <0>+ Block profile</0>"
 msgstr "Siųsti ataskaitą <0>+ blokuoti profilį</0>"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Nobody can reply"
+msgstr ""
+
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
 msgstr "Jaustukai:"
@@ -2626,6 +2687,11 @@ msgstr ""
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
 msgstr "Šis pranešimas yra iš kitos tavo paskyros."
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only your followers can reply"
+msgstr ""
 
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
@@ -2685,6 +2751,10 @@ msgstr "Užblokuotas {username}"
 #: src/pages/list.tsx
 msgid "Nothing yet."
 msgstr "Kol kas nieko."
+
+#: src/utils/visibility-text.ts
+msgid "Followers and mentioned people can reply"
+msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
@@ -2794,6 +2864,10 @@ msgstr "Bendrinti…"
 msgid "Image description"
 msgstr "Vaizdo aprašymas"
 
+#: src/components/compose.tsx
+msgid "Mentioned"
+msgstr ""
+
 #: src/components/compose-poll.tsx
 #~ msgid "Duration"
 #~ msgstr "Trukmė"
@@ -2890,6 +2964,11 @@ msgstr "Pridėti"
 #: src/pages/filters.tsx
 #~ msgid "Expired"
 #~ msgstr "Nebegalioja"
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you follow can reply"
+msgstr ""
 
 #: src/components/poll.tsx
 #~ msgid "Unable to vote in poll"
@@ -3156,6 +3235,10 @@ msgstr ""
 msgid "Posts with <0>{query}</0>"
 msgstr "Įrašai su <0>{query}</0>"
 
+#: src/components/compose.tsx
+#~ msgid "Some can reply"
+#~ msgstr ""
+
 #: src/components/poll.tsx
 #~ msgid "Ending"
 #~ msgstr "Baigsis"
@@ -3354,8 +3437,8 @@ msgid "Joined <0>{0}</0>"
 msgstr "Prisijungė <0>{0}</0>"
 
 #: src/pages/settings.tsx
-#~ msgid "Posting"
-#~ msgstr "Skelbimas"
+msgid "Posting"
+msgstr "Skelbimas"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
@@ -3441,9 +3524,9 @@ msgstr "Įrašas"
 msgid "Set as default"
 msgstr "Nustatyti kaip numatytąjį"
 
-#: src/pages/settings.tsx src/utils/visibility-text.ts
-#~ msgid "Quiet public"
-#~ msgstr ""
+#: src/utils/visibility-text.ts
+msgid "Quiet public"
+msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -3568,6 +3651,10 @@ msgstr "Atrodo, kad uždarėte pirminį langą."
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followed people and mentioned people can reply"
 msgstr ""
 
 #: src/pages/filters.tsx
@@ -3769,6 +3856,11 @@ msgstr ""
 #~ msgid "Max {SHORTCUTS_LIMIT} columns"
 #~ msgstr "Didžiausias {SHORTCUTS_LIMIT} stulpelių skaičius"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Everybody can reply"
+msgstr ""
+
 #: src/pages/status.tsx
 #~ msgid "Experimental"
 #~ msgstr "Eksperimentinis"
@@ -3784,6 +3876,10 @@ msgstr "Sprendžiama…"
 #: src/components/status-reply-menu.tsx
 #~ msgid "{mentionsCount, plural, other {# mentions}}"
 #~ msgstr ""
+
+#: src/components/compose.tsx
+msgid "Who can reply:"
+msgstr ""
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server"
@@ -3843,6 +3939,10 @@ msgstr "Nepavyksta priimti pranešimo prašymo."
 #: src/pages/lists.tsx
 msgid "New list"
 msgstr "Naujas sąrašas"
+
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and list members can reply"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
@@ -4054,6 +4154,10 @@ msgstr "Išsaugoti"
 msgid "Unable to copy shortcut settings"
 msgstr "Nepavyksta nukopijuoti trumpųjų nuorodų nustatymų."
 
+#: src/components/compose.tsx
+msgid "From List"
+msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
 msgstr "Klaida gaunant atsakymo į būseną."
@@ -4116,6 +4220,10 @@ msgstr "Nustatymai"
 #~ msgid "Local timeline ({instance})"
 #~ msgstr "Vietinė laiko skalė ({instance})"
 
+#: src/utils/visibility-text.ts
+msgid "Followed people and list members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Recently used"
 #~ msgstr "Neseniai naudoti"
@@ -4123,6 +4231,10 @@ msgstr "Nustatymai"
 #: src/pages/filters.tsx
 #~ msgid "Status: <0><1/></0>"
 #~ msgstr "Būsena: <0><1/></0>"
+
+#: src/utils/visibility-text.ts
+msgid "Mentioned people and list members can reply"
+msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -4272,6 +4384,10 @@ msgstr ""
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 msgstr "<0>Lyg2 (Shift)</0> + <1>Alt</1> + <2>k</2>"
 
+#: src/pages/settings.tsx
+#~ msgid "Quote settings are synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0> Default threadgate settings are stored locally."
+#~ msgstr ""
+
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
 msgstr "Kai kurie tavo įrašai buvo pažymėtos kaip jautrios."
@@ -4341,6 +4457,11 @@ msgstr "Įrašo statistika nepasiekiama."
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
 msgstr "Daugiastulpelių naudotojo sąsajos ekrano kopija"
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you mention can reply"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
@@ -4418,6 +4539,10 @@ msgstr ""
 msgid "Like"
 msgstr "Patinka"
 
+#: src/components/compose.tsx
+msgid "Select a list before publishing this post."
+msgstr ""
+
 #: src/pages/welcome.tsx
 #~ msgid "A minimalistic opinionated Bluesky web client."
 #~ msgstr ""
@@ -4432,6 +4557,10 @@ msgstr "Daugiasaitažodžių laiko skalė"
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and list members can reply"
 msgstr ""
 
 #: src/components/account-info.tsx
@@ -4509,6 +4638,8 @@ msgstr "žmonių, kuriuos seku"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
+#: src/components/compose.tsx
+#: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr "Sekėjai"
 
@@ -4582,6 +4713,10 @@ msgstr "Prarasti sąryšiai su <0>{name}</0>."
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
 msgstr "{SHORTCUTS_LIMIT, plural, one {Pasiektas didžiausias # trumpojo nuorodos. Nepavyksta pridėti trumposios nuorodos.} few {Pasiekti didžiausias # trumpųjų nuorodų. Nepavyksta pridėti trumposios nuorodos.} many {Pasiekta didžiausias # trumpojo nuorodos. Nepavyksta pridėti trumposios nuorodos.} other {Pasiekta didžiausias # trumpųjų nuorodų. Nepavyksta pridėti trumposios nuorodos.}}"
 
+#: src/components/compose.tsx
+msgid "Nobody"
+msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
 msgstr "<0>Lyg2 (Shift)</0> + <1>r</1>"
@@ -4622,6 +4757,7 @@ msgid "Post reported"
 msgstr "Įrašas praneštas"
 
 #: src/components/account-block.tsx
+#: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
 msgstr "Sekama"
@@ -4790,6 +4926,10 @@ msgstr "Uždaryti"
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 msgstr "Atrodo, kad pirminiame lange jau atidarytas sukūrimo laukas ir šiuo metu skelbiamas. Palauk, kol jis bus baigtas, ir pabandyk dar kartą vėliau."
 
+#: src/components/compose.tsx
+msgid "Anyone"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
 msgstr "Bendrinti"
@@ -4805,6 +4945,10 @@ msgstr "Pastaba: tiesioginiai pranešimai veikia tik <0>vienai paskyrai</0>."
 #: src/components/status-reply-menu.tsx
 #~ msgid "Only <0>@{0}</0>"
 #~ msgstr ""
+
+#: src/components/compose.tsx
+msgid "Some"
+msgstr ""
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx

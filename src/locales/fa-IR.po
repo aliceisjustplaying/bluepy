@@ -42,6 +42,10 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr "تمام واژه"
 
+#: src/pages/settings.tsx
+msgid "Default threadgate (Who can reply)"
+msgstr ""
+
 #: src/pages/hashtag.tsx src/pages/public.tsx src/pages/trending.tsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr ""
@@ -363,6 +367,10 @@ msgstr "رد کردن"
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
 msgstr ""
+
+#: src/components/compose.tsx
+#~ msgid "Anyone can reply"
+#~ msgstr ""
 
 #: src/components/follow-request-buttons.tsx
 #~ msgid "Reject"
@@ -816,9 +824,9 @@ msgstr ""
 msgid "Keyboard shortcuts"
 msgstr "میانبرهای صفحه کلید"
 
-#: src/pages/settings.tsx src/utils/visibility-text.ts
-#~ msgid "Public"
-#~ msgstr "همگانی"
+#: src/utils/visibility-text.ts
+msgid "Public"
+msgstr "همگانی"
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Optional, e.g. mastodon.social"
@@ -956,6 +964,10 @@ msgstr "{0, plural, one {# سیاهه} other {# سیاهه‌ها}}"
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
 msgstr "نمایش همهٔ محتوای حساس"
+
+#: src/components/compose.tsx
+msgid "(No user lists found)"
+msgstr ""
 
 #: src/components/status-account-menu.tsx
 msgid "Unable to mute conversation"
@@ -1189,6 +1201,10 @@ msgstr ""
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/pages/scheduled-posts.tsx
 #~ msgid "Failed to delete scheduled post"
 #~ msgstr ""
@@ -1276,6 +1292,10 @@ msgstr ""
 #. [Name] reposted
 #: src/components/filtered-status.tsx
 msgid "<0/> reposted"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Default threadgate updated"
 msgstr ""
 
 #: src/pages/filters.tsx
@@ -1369,6 +1389,10 @@ msgstr "این کاربر انتخاب کرده که این اطلاعات در 
 #~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
 #~ msgstr "<0>ساخته‌شده</0> توسط <1>@cheeaun</1>. <2>حریم خصوصی</2>."
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and mentioned people can reply"
+msgstr ""
+
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
 msgstr "پیمایش به بالا"
@@ -1376,6 +1400,10 @@ msgstr "پیمایش به بالا"
 #: src/pages/filters.tsx
 #~ msgid "Home and lists"
 #~ msgstr "خانه و سیاهه‌ها"
+
+#: src/utils/visibility-text.ts
+msgid "Followers and followed people can reply"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1389,6 +1417,10 @@ msgstr "برو به صفحهٔ اصلی نمایه"
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
 msgstr "خودکار ({0})"
+
+#: src/components/compose.tsx
+msgid "Allowed:"
+msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Accepted"
@@ -1582,8 +1614,8 @@ msgid "Login required."
 msgstr "نیاز به ورود."
 
 #: src/utils/visibility-text.ts
-#~ msgid "Local"
-#~ msgstr "محلی"
+msgid "Local"
+msgstr "محلی"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
@@ -1851,6 +1883,10 @@ msgstr "بروزرسانی"
 #~ msgid "Quote settings"
 #~ msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
 msgstr "{account} {targetAccount} را گزارش کرد"
@@ -1956,6 +1992,10 @@ msgstr ""
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
 msgstr "نکته: این قابلیت از یک خدمت هوش مصنوعی خارجی، قدرت گرفته از <0>img-alt-api</0>، استفاده میکند. شاید خوب کار نکند. فقط برای تصاویر و به زبان انگلیسی است."
 
+#: src/utils/visibility-text.ts
+msgid "List members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Zoom out"
 #~ msgstr ""
@@ -2020,6 +2060,10 @@ msgstr "هنوز مطمئن نیستید چه چیزی اضافه کنید؟ ا�
 
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Default threadgate settings are stored locally."
 msgstr ""
 
 #. X is the unspecified total number of posts in a thread
@@ -2199,6 +2243,10 @@ msgstr "مدیریت کردن اعضا"
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Select a list..."
 msgstr ""
 
 #: src/components/compose.tsx src/components/quote-settings-sheet.tsx src/components/status-helpers.ts src/pages/settings.tsx
@@ -2391,6 +2439,10 @@ msgstr "پاسخ دادن"
 #~ msgid "Your {year} #Wrapstodon is here!"
 #~ msgstr ""
 
+#: src/components/compose.tsx
+msgid "No user lists found."
+msgstr ""
+
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
 msgstr ""
@@ -2424,6 +2476,10 @@ msgstr "افزودن یک حساب کاربری موجود"
 msgid "View post"
 msgstr "نمایش فرسته"
 
+#: src/utils/visibility-text.ts
+msgid "Followers, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/nav-menu.tsx
 msgid "New"
 msgstr "جدید"
@@ -2436,9 +2492,9 @@ msgstr ""
 msgid "Violation"
 msgstr ""
 
-#: src/components/status-header.tsx src/utils/visibility-text.ts
-#~ msgid "Private mention"
-#~ msgstr "اشارهٔ خصوصی"
+#: src/utils/visibility-text.ts
+msgid "Private mention"
+msgstr "اشارهٔ خصوصی"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
@@ -2592,6 +2648,11 @@ msgstr ""
 msgid "Send Report <0>+ Block profile</0>"
 msgstr ""
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Nobody can reply"
+msgstr ""
+
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
 msgstr ""
@@ -2626,6 +2687,11 @@ msgstr ""
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
 msgstr "این آگاهی از حساب دیگر شماست."
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only your followers can reply"
+msgstr ""
 
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
@@ -2685,6 +2751,10 @@ msgstr ""
 #: src/pages/list.tsx
 msgid "Nothing yet."
 msgstr "هنوز چیزی نیست."
+
+#: src/utils/visibility-text.ts
+msgid "Followers and mentioned people can reply"
+msgstr ""
 
 #: src/components/media-attachment.tsx
 msgid "Edit audio description"
@@ -2794,6 +2864,10 @@ msgstr "همرسانی…"
 msgid "Image description"
 msgstr "شرح تصویر"
 
+#: src/components/compose.tsx
+msgid "Mentioned"
+msgstr ""
+
 #: src/components/compose-poll.tsx
 #~ msgid "Duration"
 #~ msgstr "طول"
@@ -2890,6 +2964,11 @@ msgstr "افزودن"
 #: src/pages/filters.tsx
 #~ msgid "Expired"
 #~ msgstr ""
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you follow can reply"
+msgstr ""
 
 #: src/components/poll.tsx
 #~ msgid "Unable to vote in poll"
@@ -3156,6 +3235,10 @@ msgstr ""
 msgid "Posts with <0>{query}</0>"
 msgstr "فرسته‌هایی با <0>{query}</0>"
 
+#: src/components/compose.tsx
+#~ msgid "Some can reply"
+#~ msgstr ""
+
 #: src/components/poll.tsx
 #~ msgid "Ending"
 #~ msgstr "در حال اتمام"
@@ -3354,8 +3437,8 @@ msgid "Joined <0>{0}</0>"
 msgstr "عضو شده<0>{0}</0>"
 
 #: src/pages/settings.tsx
-#~ msgid "Posting"
-#~ msgstr "درحال ارسال"
+msgid "Posting"
+msgstr "درحال ارسال"
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
@@ -3441,9 +3524,9 @@ msgstr ""
 msgid "Set as default"
 msgstr "تنظیم به عنوان پیش‌گزیده"
 
-#: src/pages/settings.tsx src/utils/visibility-text.ts
-#~ msgid "Quiet public"
-#~ msgstr ""
+#: src/utils/visibility-text.ts
+msgid "Quiet public"
+msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -3568,6 +3651,10 @@ msgstr "انگار شما پنجرهٔ اصلی را بستید."
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followed people and mentioned people can reply"
 msgstr ""
 
 #: src/pages/filters.tsx
@@ -3769,6 +3856,11 @@ msgstr "{count, plural, =1 {{postsCount, plural, =1 {{postType, select, reply {{
 #~ msgid "Max {SHORTCUTS_LIMIT} columns"
 #~ msgstr "بیشترین {SHORTCUTS_LIMIT} ستون"
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Everybody can reply"
+msgstr ""
+
 #: src/pages/status.tsx
 #~ msgid "Experimental"
 #~ msgstr "آزمایشی"
@@ -3784,6 +3876,10 @@ msgstr ""
 #: src/components/status-reply-menu.tsx
 #~ msgid "{mentionsCount, plural, other {# mentions}}"
 #~ msgstr ""
+
+#: src/components/compose.tsx
+msgid "Who can reply:"
+msgstr ""
 
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server"
@@ -3843,6 +3939,10 @@ msgstr "ناتوان در قبول کردن درخواست آگاهی"
 #: src/pages/lists.tsx
 msgid "New list"
 msgstr "سیاهه جدید"
+
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and list members can reply"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
@@ -4054,6 +4154,10 @@ msgstr "ذخیره"
 msgid "Unable to copy shortcut settings"
 msgstr "ناتوان در رونویسی از میانبرهای تنظیمات"
 
+#: src/components/compose.tsx
+msgid "From List"
+msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
 msgstr ""
@@ -4116,6 +4220,10 @@ msgstr "تنظیمات"
 #~ msgid "Local timeline ({instance})"
 #~ msgstr "خط زمانی محلی ({instance})"
 
+#: src/utils/visibility-text.ts
+msgid "Followed people and list members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.tsx
 #~ msgid "Recently used"
 #~ msgstr ""
@@ -4123,6 +4231,10 @@ msgstr "تنظیمات"
 #: src/pages/filters.tsx
 #~ msgid "Status: <0><1/></0>"
 #~ msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Mentioned people and list members can reply"
+msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -4272,6 +4384,10 @@ msgstr ""
 msgid "<0>Shift</0> + <1>Alt</1> + <2>k</2>"
 msgstr "<0>تبدیل</0> + <1>دگرساز</1> + <2>ن</2>"
 
+#: src/pages/settings.tsx
+#~ msgid "Quote settings are synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0> Default threadgate settings are stored locally."
+#~ msgstr ""
+
 #: src/components/notification.tsx
 msgid "Some of your posts have been marked as sensitive."
 msgstr "بعضی از فرسته‌های شما به عنوان حساس نشانه‌گذاری شده‌اند."
@@ -4340,6 +4456,11 @@ msgstr "اطلاعات فرسته غیرقابل دسترسی."
 
 #: src/pages/welcome.tsx
 msgid "Screenshot of multi-column UI"
+msgstr ""
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you mention can reply"
 msgstr ""
 
 #: src/components/shortcuts-settings.tsx
@@ -4418,6 +4539,10 @@ msgstr ""
 msgid "Like"
 msgstr "برگزیدن"
 
+#: src/components/compose.tsx
+msgid "Select a list before publishing this post."
+msgstr ""
+
 #: src/pages/welcome.tsx
 #~ msgid "A minimalistic opinionated Bluesky web client."
 #~ msgstr ""
@@ -4432,6 +4557,10 @@ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and list members can reply"
 msgstr ""
 
 #: src/components/account-info.tsx
@@ -4509,6 +4638,8 @@ msgstr ""
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
+#: src/components/compose.tsx
+#: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr "پی‌گیرنده"
 
@@ -4582,6 +4713,10 @@ msgstr "اتصال از دست رفته با <0>{name}</0>."
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "Nobody"
+msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
 msgstr "<0>تبدیل</0> + <1>ق</1>"
@@ -4622,6 +4757,7 @@ msgid "Post reported"
 msgstr "فرسته گزارش شد"
 
 #: src/components/account-block.tsx
+#: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
 msgstr "پی‌گرفته"
@@ -4790,6 +4926,10 @@ msgstr "بستن"
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 msgstr "انگار شما در حال حاضر یک زمینهٔ نوشتن در پنجرهٔ مادر دارید که در حال حاضر درحال انتشار است. لطفا صبر کنید تا تمام شود و بعدا دوباره تلاش کنید."
 
+#: src/components/compose.tsx
+msgid "Anyone"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
 msgstr "همرسانی"
@@ -4805,6 +4945,10 @@ msgstr "نکته: آگاهی‌های ارسالی فقط برای <0>یک حس�
 #: src/components/status-reply-menu.tsx
 #~ msgid "Only <0>@{0}</0>"
 #~ msgstr ""
+
+#: src/components/compose.tsx
+msgid "Some"
+msgstr ""
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx

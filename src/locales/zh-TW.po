@@ -42,6 +42,10 @@ msgstr ""
 #~ msgid "Whole word"
 #~ msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Default threadgate (Who can reply)"
+msgstr ""
+
 #: src/pages/hashtag.jsx
 #~ msgid "Go to my server (<0>{currentInstance}</0>)"
 #~ msgstr ""
@@ -359,6 +363,10 @@ msgstr ""
 #: src/pages/catchup.tsx
 msgid "Let's catch up on the posts from your followings."
 msgstr ""
+
+#: src/components/compose.tsx
+#~ msgid "Anyone can reply"
+#~ msgstr ""
 
 #: src/components/follow-request-buttons.jsx
 #~ msgid "Reject"
@@ -808,9 +816,9 @@ msgstr "查看個人資訊"
 msgid "Keyboard shortcuts"
 msgstr "鍵盤快捷鍵"
 
-#: src/components/compose.jsx
-#~ msgid "Public"
-#~ msgstr "公開"
+#: src/utils/visibility-text.ts
+msgid "Public"
+msgstr "公開"
 
 #: src/components/shortcuts-settings.jsx
 #~ msgid "Optional, e.g. mastodon.social"
@@ -947,6 +955,10 @@ msgstr ""
 
 #: src/pages/status.tsx
 msgid "Show all sensitive content"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "(No user lists found)"
 msgstr ""
 
 #: src/components/status-account-menu.tsx
@@ -1181,6 +1193,10 @@ msgstr ""
 msgid "Repost/Quote…"
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/pages/scheduled-posts.jsx
 #~ msgid "Failed to delete scheduled post"
 #~ msgstr ""
@@ -1268,6 +1284,10 @@ msgstr "無法複製用戶名"
 #. [Name] reposted
 #: src/components/filtered-status.tsx
 msgid "<0/> reposted"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Default threadgate updated"
 msgstr ""
 
 #: src/pages/filters.jsx
@@ -1361,6 +1381,10 @@ msgstr "此用戶選擇不提供資訊。"
 #~ msgid "<0>Built</0> by <1>@cheeaun</1>. <2>Privacy Policy</2>."
 #~ msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and mentioned people can reply"
+msgstr ""
+
 #: src/pages/catchup.tsx
 msgid "Scroll to top"
 msgstr ""
@@ -1368,6 +1392,10 @@ msgstr ""
 #: src/pages/filters.jsx
 #~ msgid "Home and lists"
 #~ msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and followed people can reply"
+msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
@@ -1380,6 +1408,10 @@ msgstr "前往原始帳號頁面"
 #. placeholder {0}: detectedLang ?? '…'
 #: src/components/translation-block.tsx
 msgid "Auto ({0})"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Allowed:"
 msgstr ""
 
 #: src/pages/notifications.tsx
@@ -1573,9 +1605,9 @@ msgstr ""
 msgid "Login required."
 msgstr "需要登入"
 
-#: src/components/compose.jsx
-#~ msgid "Local"
-#~ msgstr "本地"
+#: src/utils/visibility-text.ts
+msgid "Local"
+msgstr "本地"
 
 #: src/pages/settings.tsx
 msgid "GIF Picker for composer"
@@ -1843,6 +1875,10 @@ msgstr "更新"
 #~ msgid "Quote settings"
 #~ msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/notification.tsx
 msgid "{account} reported {targetAccount}"
 msgstr ""
@@ -1948,6 +1984,10 @@ msgstr ""
 msgid "Note: This feature uses external AI service, powered by <0>img-alt-api</0>. May not work well. Only for images and in English."
 msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "List members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.jsx
 #~ msgid "Zoom out"
 #~ msgstr "縮小"
@@ -2009,6 +2049,10 @@ msgstr ""
 #: src/components/edit-profile-sheet.tsx
 msgid "Unable to update profile."
 msgstr "無法更新個人資料。"
+
+#: src/pages/settings.tsx
+msgid "Default threadgate settings are stored locally."
+msgstr ""
 
 #. X is the unspecified total number of posts in a thread
 #: src/components/thread-badge.tsx
@@ -2183,6 +2227,10 @@ msgstr ""
 
 #: src/components/math-block.tsx
 msgid "Unable to format math"
+msgstr ""
+
+#: src/components/compose.tsx
+msgid "Select a list..."
 msgstr ""
 
 #: src/components/compose.jsx
@@ -2371,6 +2419,10 @@ msgstr "回覆"
 #~ msgid "Your {year} #Wrapstodon is here!"
 #~ msgstr ""
 
+#: src/components/compose.tsx
+msgid "No user lists found."
+msgstr ""
+
 #: src/components/feedback-modal.tsx
 msgid "Sending..."
 msgstr ""
@@ -2404,6 +2456,10 @@ msgstr ""
 msgid "View post"
 msgstr "查看貼文"
 
+#: src/utils/visibility-text.ts
+msgid "Followers, mentioned people, and list members can reply"
+msgstr ""
+
 #: src/components/nav-menu.tsx
 msgid "New"
 msgstr ""
@@ -2416,9 +2472,9 @@ msgstr ""
 msgid "Violation"
 msgstr ""
 
-#: src/components/compose.jsx
-#~ msgid "Private mention"
-#~ msgstr "私人訊息"
+#: src/utils/visibility-text.ts
+msgid "Private mention"
+msgstr "私人訊息"
 
 #: src/pages/settings.tsx
 msgid "Experiments"
@@ -2568,6 +2624,11 @@ msgstr ""
 msgid "Send Report <0>+ Block profile</0>"
 msgstr ""
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Nobody can reply"
+msgstr ""
+
 #: src/components/post-embed-modal.tsx
 msgid "Emojis:"
 msgstr ""
@@ -2601,6 +2662,11 @@ msgstr ""
 
 #: src/components/notification-service.tsx
 msgid "This notification is from your other account."
+msgstr ""
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only your followers can reply"
 msgstr ""
 
 #: src/components/account-info.tsx
@@ -2660,6 +2726,10 @@ msgstr ""
 
 #: src/pages/list.tsx
 msgid "Nothing yet."
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and mentioned people can reply"
 msgstr ""
 
 #: src/components/media-attachment.tsx
@@ -2770,6 +2840,10 @@ msgstr "分享…"
 msgid "Image description"
 msgstr "圖片說明"
 
+#: src/components/compose.tsx
+msgid "Mentioned"
+msgstr ""
+
 #: src/components/compose-poll.jsx
 #~ msgid "Duration"
 #~ msgstr "持續時間"
@@ -2858,6 +2932,11 @@ msgstr "新增"
 #: src/pages/filters.jsx
 #~ msgid "Expired"
 #~ msgstr ""
+
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you follow can reply"
+msgstr ""
 
 #: src/components/poll.jsx
 #~ msgid "Unable to vote in poll"
@@ -3124,6 +3203,10 @@ msgstr ""
 msgid "Posts with <0>{query}</0>"
 msgstr ""
 
+#: src/components/compose.tsx
+#~ msgid "Some can reply"
+#~ msgstr ""
+
 #: src/components/poll.jsx
 #~ msgid "Ending"
 #~ msgstr "結束"
@@ -3321,9 +3404,9 @@ msgstr ""
 msgid "Joined <0>{0}</0>"
 msgstr "加入於 <0>{0}</0>"
 
-#: src/pages/settings.jsx
-#~ msgid "Posting"
-#~ msgstr ""
+#: src/pages/settings.tsx
+msgid "Posting"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Edit shortcut"
@@ -3409,9 +3492,9 @@ msgstr ""
 msgid "Set as default"
 msgstr ""
 
-#: src/components/compose.jsx
-#~ msgid "Quiet public"
-#~ msgstr "不於公開時間軸顯示"
+#: src/utils/visibility-text.ts
+msgid "Quiet public"
+msgstr "不於公開時間軸顯示"
 
 #: src/components/feedback-modal.tsx
 msgid "Contact, optional"
@@ -3536,6 +3619,10 @@ msgstr ""
 
 #: src/components/atproto-labels.tsx
 msgid "Adult Content"
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followed people and mentioned people can reply"
 msgstr ""
 
 #: src/pages/filters.jsx
@@ -3733,6 +3820,11 @@ msgstr ""
 #~ msgid "Max {SHORTCUTS_LIMIT} columns"
 #~ msgstr ""
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Everybody can reply"
+msgstr ""
+
 #: src/pages/status.jsx
 #~ msgid "Experimental"
 #~ msgstr ""
@@ -3748,6 +3840,10 @@ msgstr ""
 #: src/components/status.jsx
 #~ msgid "{mentionsCount, plural, other {# mentions}}"
 #~ msgstr ""
+
+#: src/components/compose.tsx
+msgid "Who can reply:"
+msgstr ""
 
 #: src/pages/status.jsx
 #~ msgid "Switch to post's server"
@@ -3807,6 +3903,10 @@ msgstr ""
 #: src/pages/lists.tsx
 msgid "New list"
 msgstr "新增列表"
+
+#: src/utils/visibility-text.ts
+msgid "Followers, followed people, and list members can reply"
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Shortcuts imported. Exceeded max {SHORTCUTS_LIMIT}, so the rest are not imported."
@@ -4014,6 +4114,10 @@ msgstr "儲存"
 msgid "Unable to copy shortcut settings"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "From List"
+msgstr ""
+
 #: src/components/drafts.tsx
 msgid "Error fetching reply-to status!"
 msgstr ""
@@ -4076,6 +4180,10 @@ msgstr ""
 #~ msgid "Local timeline ({instance})"
 #~ msgstr ""
 
+#: src/utils/visibility-text.ts
+msgid "Followed people and list members can reply"
+msgstr ""
+
 #: src/components/custom-emojis-modal.jsx
 #~ msgid "Recently used"
 #~ msgstr "最近使用"
@@ -4083,6 +4191,10 @@ msgstr ""
 #: src/pages/filters.jsx
 #~ msgid "Status: <0><1/></0>"
 #~ msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Mentioned people and list members can reply"
+msgstr ""
 
 #: src/components/quote-suggestion.tsx
 msgid "Turn link into a quote?"
@@ -4298,6 +4410,11 @@ msgstr ""
 msgid "Screenshot of multi-column UI"
 msgstr ""
 
+#: src/pages/settings.tsx
+#: src/utils/visibility-text.ts
+msgid "Only people you mention can reply"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "No shortcuts yet. Tap on the Add shortcut button."
 msgstr ""
@@ -4374,6 +4491,10 @@ msgstr ""
 msgid "Like"
 msgstr "喜愛"
 
+#: src/components/compose.tsx
+msgid "Select a list before publishing this post."
+msgstr ""
+
 #: src/components/import-accounts-selection.tsx
 msgid "Select all"
 msgstr "選取全部"
@@ -4384,6 +4505,10 @@ msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "Visually separate original posts and re-shared posts (reposted posts)."
+msgstr ""
+
+#: src/utils/visibility-text.ts
+msgid "Followers and list members can reply"
 msgstr ""
 
 #: src/components/account-info.jsx
@@ -4453,6 +4578,8 @@ msgstr ""
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
+#: src/components/compose.tsx
+#: src/utils/visibility-text.ts
 msgid "Followers"
 msgstr "粉絲"
 
@@ -4526,6 +4653,10 @@ msgstr "與 <0>{name}</0> 失去連線"
 msgid "{SHORTCUTS_LIMIT, plural, one {Max # shortcut reached. Unable to add shortcut.} other {Max # shortcuts reached. Unable to add shortcut.}}"
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "Nobody"
+msgstr ""
+
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "<0>Shift</0> + <1>r</1>"
 msgstr ""
@@ -4566,6 +4697,7 @@ msgid "Post reported"
 msgstr "已檢舉貼文"
 
 #: src/components/account-block.tsx
+#: src/components/compose.tsx
 #: src/components/related-actions.tsx
 msgid "Following"
 msgstr "跟隨"
@@ -4721,6 +4853,10 @@ msgstr "關閉"
 msgid "Looks like you already have a compose field open in the parent window and currently publishing. Please wait for it to be done and try again later."
 msgstr ""
 
+#: src/components/compose.tsx
+msgid "Anyone"
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Share"
 msgstr "分享"
@@ -4736,6 +4872,10 @@ msgstr ""
 #: src/components/status.jsx
 #~ msgid "Only <0>@{0}</0>"
 #~ msgstr ""
+
+#: src/components/compose.tsx
+msgid "Some"
+msgstr ""
 
 #: src/components/drafts.tsx
 #: src/components/keyboard-shortcuts-help.tsx

@@ -39,6 +39,7 @@ import {
 import db from '../utils/db';
 import { getDtfLocale } from '../utils/dtf-locale';
 import haptics from '../utils/haptics';
+import { getUserLists, type ListLike } from '../utils/lists';
 import localeMatch from '../utils/locale-match';
 import localeCode2Text from '../utils/localeCode2Text';
 import mem from '../utils/mem';
@@ -58,6 +59,8 @@ import urlRegexObj from '../utils/url-regex';
 import useCloseWatcher from '../utils/useCloseWatcher';
 import useInterval from '../utils/useInterval';
 import useThrottledResizeObserver from '../utils/useThrottledResizeObserver';
+import visibilityIconsMap from '../utils/visibility-icons-map';
+import visibilityText from '../utils/visibility-text';
 
 type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => unknown;
@@ -134,6 +137,11 @@ interface DraftStatusLike {
   status?: string;
   language?: string | null;
   mediaAttachments?: MediaAttachmentLike[];
+  threadgate?: string;
+  threadgateRules?: string[];
+  threadgateList?: string;
+  threadgateListName?: string;
+  disableQuotes?: boolean;
   [key: string]: unknown;
 }
 
@@ -471,6 +479,8 @@ function Compose({
 
   const currentAccount = useMemo(getCurrentAccount, []);
   const currentAccountInfo = currentAccount?.info;
+  const isAtprotoCompose =
+    !!currentAccount?.atproto || currentAccount?.instanceURL === 'bsky.social';
 
   interface ConfigurationShape {
     statuses?: {
@@ -533,6 +543,131 @@ function Compose({
     const v = prefs[key];
     return typeof v === 'string' ? v : undefined;
   };
+
+  const defaultPrefThreadgate =
+    prefString('posting:default:threadgate') || 'everybody';
+
+  const [threadgate, setThreadgate] = useState<string>(() => {
+    const saved = store.session.get('currentThreadgate');
+    if (saved === 'everybody' || saved === 'nobody' || saved === 'custom') {
+      return saved;
+    }
+    if (
+      saved === 'mention' ||
+      saved === 'following' ||
+      saved === 'followers' ||
+      saved === 'list'
+    ) {
+      return 'custom';
+    }
+    if (
+      defaultPrefThreadgate === 'everybody' ||
+      defaultPrefThreadgate === 'nobody'
+    ) {
+      return defaultPrefThreadgate;
+    }
+    return 'custom';
+  });
+  const [threadgateRules, setThreadgateRules] = useState<string[]>(() => {
+    const savedThreadgate = store.session.get('currentThreadgate');
+    try {
+      const savedRules = store.session.get('currentThreadgateRules');
+      if (savedRules) {
+        const parsed: unknown = JSON.parse(savedRules);
+        if (
+          Array.isArray(parsed) &&
+          parsed.length > 0 &&
+          parsed.every((rule) => typeof rule === 'string')
+        ) {
+          return parsed;
+        }
+        if (
+          Array.isArray(parsed) &&
+          (savedThreadgate === 'everybody' || savedThreadgate === 'nobody')
+        ) {
+          return [];
+        }
+      }
+    } catch {}
+    if (
+      savedThreadgate === 'mention' ||
+      savedThreadgate === 'following' ||
+      savedThreadgate === 'followers' ||
+      savedThreadgate === 'list'
+    ) {
+      return [savedThreadgate];
+    }
+    if (
+      defaultPrefThreadgate !== 'everybody' &&
+      defaultPrefThreadgate !== 'nobody'
+    ) {
+      return [defaultPrefThreadgate];
+    }
+    return [];
+  });
+  const [threadgateList, setThreadgateList] = useState<string>(
+    store.session.get('currentThreadgateList') || '',
+  );
+  const [threadgateListName, setThreadgateListName] = useState<string>(
+    store.session.get('currentThreadgateListName') || '',
+  );
+  const [disableQuotes, setDisableQuotes] = useState<boolean>(
+    store.session.get('currentDisableQuotes') === 'true' ||
+      prefString('posting:default:quote_policy') === 'nobody' ||
+      false,
+  );
+  const [userLists, setUserLists] = useState<ListLike[]>([]);
+
+  useEffect(() => {
+    if (isAtprotoCompose) {
+      const loadLists = async () => {
+        try {
+          const lists = await getUserLists();
+          setUserLists(lists);
+        } catch (err) {
+          console.error('Failed to load user lists', err);
+        }
+      };
+      void loadLists();
+    }
+  }, [isAtprotoCompose]);
+  useEffect(() => {
+    if (
+      !threadgateRules.includes('list') ||
+      threadgateList ||
+      userLists.length === 0
+    ) {
+      return;
+    }
+    const firstList = userLists[0];
+    if (!firstList) return;
+    const uri = firstList._atproto?.uri || decodeURIComponent(firstList.id);
+    setThreadgateList(uri);
+    setThreadgateListName(firstList.title || '');
+    store.session.set('currentThreadgateList', uri);
+    store.session.set('currentThreadgateListName', firstList.title || '');
+  }, [threadgateRules, threadgateList, userLists]);
+
+  const replyGateIcon = (() => {
+    if (threadgate === 'nobody') return 'block';
+    if (threadgate !== 'custom') return 'earth';
+    const order = ['followers', 'following', 'mention', 'list'];
+    const sortedRules = order.filter((r) => threadgateRules.includes(r));
+    const key = sortedRules.length > 0 ? sortedRules.join('_') : 'everybody';
+    return (
+      visibilityIconsMap[key as keyof typeof visibilityIconsMap] || 'earth'
+    );
+  })();
+
+  const replyGateSummary = (() => {
+    if (threadgate === 'nobody') return _(visibilityText.nobody);
+    if (threadgate !== 'custom') return _(visibilityText.everybody);
+    const order = ['followers', 'following', 'mention', 'list'];
+    const sortedRules = order.filter((r) => threadgateRules.includes(r));
+    if (sortedRules.length === 0) return _(visibilityText.everybody);
+    const key = sortedRules.join('_');
+    return _(visibilityText[key as keyof typeof visibilityText]);
+  })();
 
   const currentQuoteStatus = localQuoteStatus || quoteStatus;
   const canShowLinkPreview =
@@ -812,6 +947,27 @@ function Compose({
           DEFAULT_LANG,
       );
       if (draftMediaAttachments) setMediaAttachments(draftMediaAttachments);
+      if (draftStatus.threadgate) {
+        const tg = draftStatus.threadgate;
+        if (tg === 'everybody' || tg === 'nobody' || tg === 'custom') {
+          setThreadgate(tg);
+        } else {
+          setThreadgate('custom');
+          setThreadgateRules([tg]);
+        }
+      }
+      if (draftStatus.threadgateRules) {
+        setThreadgateRules(draftStatus.threadgateRules);
+      }
+      if (draftStatus.threadgateList) {
+        setThreadgateList(draftStatus.threadgateList);
+      }
+      if (draftStatus.threadgateListName) {
+        setThreadgateListName(draftStatus.threadgateListName);
+      }
+      if (draftStatus.disableQuotes !== undefined) {
+        setDisableQuotes(draftStatus.disableQuotes);
+      }
     }
     // Effect deliberately runs only when an explicit source status changes;
     // prefString/prefs/masto are read through latest-value
@@ -1058,6 +1214,11 @@ function Compose({
         status: textareaRef.current?.value ?? '',
         language,
         mediaAttachments,
+        threadgate,
+        threadgateRules,
+        threadgateList,
+        threadgateListName,
+        disableQuotes,
       },
       quote: currentQuoteStatus?.id
         ? {
@@ -1294,6 +1455,11 @@ function Compose({
                         status: textareaRef.current?.value ?? '',
                         language,
                         mediaAttachments,
+                        threadgate,
+                        threadgateRules,
+                        threadgateList,
+                        threadgateListName,
+                        disableQuotes,
                       },
                       quoteStatus: currentQuoteStatus,
                     });
@@ -1386,6 +1552,11 @@ function Compose({
                           status: textareaRef.current?.value ?? '',
                           language,
                           mediaAttachments,
+                          threadgate,
+                          threadgateRules,
+                          threadgateList,
+                          threadgateListName,
+                          disableQuotes,
                         },
                         quoteStatus: currentQuoteStatus,
                       };
@@ -1501,6 +1672,18 @@ function Compose({
 
             status = status === '' ? undefined : status;
 
+            if (
+              isAtprotoCompose &&
+              !editStatus &&
+              !replyToStatus &&
+              threadgate === 'custom' &&
+              threadgateRules.includes('list') &&
+              !threadgateList
+            ) {
+              alert(t`Select a list before publishing this post.`);
+              return;
+            }
+
             // states.composerState.minimized = true;
             composerState.publishing = true;
             setUIState('loading');
@@ -1590,6 +1773,30 @@ function Compose({
                     params.disable_card = true;
                   } else if (linkPreview?.metadata) {
                     params.card_url = linkPreview.url;
+                  }
+                }
+                if (isAtprotoCompose && !editStatus && !replyToStatus) {
+                  params.disableQuotes = disableQuotes;
+                  if (threadgate === 'nobody') {
+                    params.threadgate = [{ type: 'nobody' }];
+                  } else if (threadgate === 'custom') {
+                    const rules: { type: string; list?: string }[] = [];
+                    if (threadgateRules.includes('mention')) {
+                      rules.push({ type: 'mention' });
+                    }
+                    if (threadgateRules.includes('following')) {
+                      rules.push({ type: 'following' });
+                    }
+                    if (threadgateRules.includes('followers')) {
+                      rules.push({ type: 'followers' });
+                    }
+                    if (threadgateRules.includes('list') && threadgateList) {
+                      rules.push({ type: 'list', list: threadgateList });
+                    }
+                    params.threadgate =
+                      rules.length > 0 ? rules : [{ type: 'everybody' }];
+                  } else {
+                    params.threadgate = [{ type: 'everybody' }];
                   }
                 }
                 params = removeNullUndefined(params);
@@ -1822,6 +2029,329 @@ function Compose({
               setQuoteSuggestion(null);
             }}
           />
+          {isAtprotoCompose && !editStatus && !replyToStatus && (
+            <details className="atproto-interaction-settings">
+              <summary className="atproto-interaction-settings-summary">
+                <Icon
+                  icon={replyGateIcon}
+                  size="s"
+                  className="atproto-interaction-settings-icon"
+                />
+                <span className="atproto-interaction-settings-title">
+                  <span>{replyGateSummary}</span>
+                </span>
+                <Icon
+                  icon="chevron-down"
+                  size="s"
+                  className="atproto-interaction-settings-chevron"
+                />
+              </summary>
+              <div className="atproto-interaction-settings-panel">
+                <div className="reply-pills-container">
+                  <span className="reply-pills-label">
+                    <Trans>Who can reply:</Trans>
+                  </span>
+                  <div className="reply-pills-list">
+                    {/* Anyone Button */}
+                    <button
+                      type="button"
+                      className={`reply-pill-btn ${threadgate === 'everybody' ? 'active' : ''}`}
+                      onClick={() => {
+                        setThreadgate('everybody');
+                        setThreadgateRules([]);
+                        store.session.set('currentThreadgate', 'everybody');
+                        store.session.set(
+                          'currentThreadgateRules',
+                          JSON.stringify([]),
+                        );
+                      }}
+                      disabled={uiState === 'loading'}
+                    >
+                      <Icon icon="earth" size="s" />
+                      <span>
+                        <Trans>Anyone</Trans>
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`reply-pill-btn ${threadgate === 'custom' ? 'active' : ''}`}
+                      onClick={() => {
+                        const nextRules =
+                          threadgateRules.length > 0
+                            ? threadgateRules
+                            : ['following', 'mention'];
+                        setThreadgate('custom');
+                        setThreadgateRules(nextRules);
+                        store.session.set('currentThreadgate', 'custom');
+                        store.session.set(
+                          'currentThreadgateRules',
+                          JSON.stringify(nextRules),
+                        );
+                      }}
+                      disabled={uiState === 'loading'}
+                    >
+                      <Icon icon="group" size="s" />
+                      <span>
+                        <Trans>Some</Trans>
+                      </span>
+                    </button>
+
+                    {/* Nobody Button */}
+                    <button
+                      type="button"
+                      className={`reply-pill-btn ${threadgate === 'nobody' ? 'active' : ''}`}
+                      onClick={() => {
+                        setThreadgate('nobody');
+                        setThreadgateRules([]);
+                        store.session.set('currentThreadgate', 'nobody');
+                        store.session.set(
+                          'currentThreadgateRules',
+                          JSON.stringify([]),
+                        );
+                      }}
+                      disabled={uiState === 'loading'}
+                    >
+                      <Icon icon="block" size="s" />
+                      <span>
+                        <Trans>Nobody</Trans>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {threadgate === 'custom' && (
+                  <div className="reply-detail-pills-container">
+                    <span className="reply-pills-label">
+                      <Trans>Allowed:</Trans>
+                    </span>
+                    <div className="reply-pills-list">
+                      {/* Your followers */}
+                      <button
+                        type="button"
+                        className={`reply-pill-btn ${threadgateRules.includes('followers') ? 'active' : ''}`}
+                        onClick={() => {
+                          const isChecked =
+                            threadgateRules.includes('followers');
+                          const nextRules = isChecked
+                            ? threadgateRules.filter((r) => r !== 'followers')
+                            : [...threadgateRules, 'followers'];
+                          setThreadgateRules(nextRules);
+                          setThreadgate(
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgate',
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgateRules',
+                            JSON.stringify(nextRules),
+                          );
+                        }}
+                        disabled={uiState === 'loading'}
+                      >
+                        <Icon icon="lock" size="s" />
+                        <span>
+                          <Trans>Followers</Trans>
+                        </span>
+                      </button>
+
+                      {/* People you follow */}
+                      <button
+                        type="button"
+                        className={`reply-pill-btn ${threadgateRules.includes('following') ? 'active' : ''}`}
+                        onClick={() => {
+                          const isChecked =
+                            threadgateRules.includes('following');
+                          const nextRules = isChecked
+                            ? threadgateRules.filter((r) => r !== 'following')
+                            : [...threadgateRules, 'following'];
+                          setThreadgateRules(nextRules);
+                          setThreadgate(
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgate',
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgateRules',
+                            JSON.stringify(nextRules),
+                          );
+                        }}
+                        disabled={uiState === 'loading'}
+                      >
+                        <Icon icon="group" size="s" />
+                        <span>
+                          <Trans>Following</Trans>
+                        </span>
+                      </button>
+
+                      {/* People you mention */}
+                      <button
+                        type="button"
+                        className={`reply-pill-btn ${threadgateRules.includes('mention') ? 'active' : ''}`}
+                        onClick={() => {
+                          const isChecked = threadgateRules.includes('mention');
+                          const nextRules = isChecked
+                            ? threadgateRules.filter((r) => r !== 'mention')
+                            : [...threadgateRules, 'mention'];
+                          setThreadgateRules(nextRules);
+                          setThreadgate(
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgate',
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgateRules',
+                            JSON.stringify(nextRules),
+                          );
+                        }}
+                        disabled={uiState === 'loading'}
+                      >
+                        <Icon icon="message" size="s" />
+                        <span>
+                          <Trans>Mentioned</Trans>
+                        </span>
+                      </button>
+
+                      {/* People from list */}
+                      <button
+                        type="button"
+                        className={`reply-pill-btn ${threadgateRules.includes('list') ? 'active' : ''}`}
+                        onClick={() => {
+                          const isChecked = threadgateRules.includes('list');
+                          if (
+                            !isChecked &&
+                            !threadgateList &&
+                            userLists.length === 0
+                          ) {
+                            alert(t`No user lists found.`);
+                            return;
+                          }
+                          const nextRules = isChecked
+                            ? threadgateRules.filter((r) => r !== 'list')
+                            : [...threadgateRules, 'list'];
+                          setThreadgateRules(nextRules);
+                          setThreadgate(
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgate',
+                            nextRules.length > 0 ? 'custom' : 'everybody',
+                          );
+                          store.session.set(
+                            'currentThreadgateRules',
+                            JSON.stringify(nextRules),
+                          );
+                          if (
+                            !isChecked &&
+                            !threadgateList &&
+                            userLists.length > 0
+                          ) {
+                            const firstList = userLists[0];
+                            const uri =
+                              firstList._atproto?.uri ||
+                              decodeURIComponent(firstList.id);
+                            setThreadgateList(uri);
+                            setThreadgateListName(firstList.title || '');
+                            store.session.set('currentThreadgateList', uri);
+                            store.session.set(
+                              'currentThreadgateListName',
+                              firstList.title || '',
+                            );
+                          }
+                        }}
+                        disabled={uiState === 'loading'}
+                      >
+                        <Icon icon="building" size="s" />
+                        <span>
+                          <Trans>From List</Trans>
+                        </span>
+                      </button>
+                    </div>
+
+                    {threadgateRules.includes('list') && (
+                      <div className="reply-list-dropdown-container-compact">
+                        {userLists.length > 0 ? (
+                          <Menu2
+                            align="center"
+                            overflow="auto"
+                            menuClassName="threadgate-list-menu"
+                            portal={{ target: document.body }}
+                            containerProps={{
+                              style: {
+                                zIndex: 1001,
+                              },
+                            }}
+                            menuButton={({ open }: { open: boolean }) => (
+                              <button
+                                type="button"
+                                className={`rule-list-select-bluepy-compact ${
+                                  open ? 'active' : ''
+                                }`}
+                                disabled={uiState === 'loading'}
+                                dir="auto"
+                              >
+                                <span>
+                                  {threadgateListName || (
+                                    <Trans>Select a list...</Trans>
+                                  )}
+                                </span>
+                                <Icon icon="chevron-down" size="s" />
+                              </button>
+                            )}
+                          >
+                            {userLists.map((list) => {
+                              const uri =
+                                list._atproto?.uri ||
+                                decodeURIComponent(list.id);
+                              const selected = uri === threadgateList;
+                              return (
+                                <MenuItem
+                                  key={uri}
+                                  className={`threadgate-list-menu-item ${
+                                    selected ? 'selected' : ''
+                                  }`}
+                                  onClick={() => {
+                                    setThreadgateList(uri);
+                                    store.session.set(
+                                      'currentThreadgateList',
+                                      uri,
+                                    );
+                                    const name = list.title || '';
+                                    setThreadgateListName(name);
+                                    store.session.set(
+                                      'currentThreadgateListName',
+                                      name,
+                                    );
+                                  }}
+                                >
+                                  <span className="threadgate-list-menu-check">
+                                    {selected && (
+                                      <Icon icon="check-circle" size="s" />
+                                    )}
+                                  </span>
+                                  <span>{list.title}</span>
+                                </MenuItem>
+                              );
+                            })}
+                          </Menu2>
+                        ) : (
+                          <span className="no-lists-warning-compact">
+                            <Trans>(No user lists found)</Trans>
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </details>
+          )}
           <div className="toolbar compose-footer">
             <span className="add-toolbar-button-group spacer">
               {showAddButton && (

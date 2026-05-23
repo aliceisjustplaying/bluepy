@@ -1081,7 +1081,7 @@ test.describe('ATProto reply mapping', () => {
     ).toEqual([[parentUri, middleUri, latestUri]]);
   });
 
-  test('keeps same-author replies nested when their parent is nested', () => {
+  test('promotes same-author replies even when their parent is nested', () => {
     /** @type {ThreadStatus} */
     const hero = {
       id: 'root',
@@ -1117,13 +1117,14 @@ test.describe('ATProto reply mapping', () => {
       appendThreadDescendant(descendant, hero, descendants, topLevel);
     }
 
-    expect(topLevel.map((status) => status.id)).toEqual(['direct-reply']);
+    expect(topLevel.map((status) => status.id)).toEqual([
+      'direct-reply',
+      'same-author-child',
+    ]);
     expect(directReply.__replies?.map((status) => status.id)).toEqual([
       'nested-alice-reply',
     ]);
-    expect(nestedAliceReply.__replies?.map((status) => status.id)).toEqual([
-      'same-author-child',
-    ]);
+    expect(nestedAliceReply.__replies).toBeUndefined();
 
     clearThreadDescendantReplies(descendants);
     /** @type {ThreadStatus[]} */
@@ -1134,12 +1135,11 @@ test.describe('ATProto reply mapping', () => {
 
     expect(rebuiltTopLevel.map((status) => status.id)).toEqual([
       'direct-reply',
+      'same-author-child',
     ]);
     expect(directReply.__replies?.map((status) => status.id)).toEqual([
       'nested-alice-reply',
     ]);
-    expect(nestedAliceReply.__replies?.map((status) => status.id)).toEqual([
-      'same-author-child',
-    ]);
+    expect(nestedAliceReply.__replies).toBeUndefined();
   });
 });

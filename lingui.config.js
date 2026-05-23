@@ -25,6 +25,9 @@ const config = {
     },
   ],
   // compileNamespace: 'es',
+  formatOptions: {
+    lineNumbers: false,
+  },
   orderBy: 'messageId',
 };
 
