@@ -19,7 +19,7 @@
     "readme:i18n-volunteers": "node scripts/update-i18n-volunteers-readme.js",
     "test": "bun run test:unit && bun run test:e2e",
     "test:e2e": "playwright test",
-    "test:unit": "bun test ./tests/*.test.ts ./tests/*.test.tsx ./tests/*.test.js",
+    "test:unit": "bun test ./tests/*.test.ts ./tests/*.test.tsx ./tests/*.test.js ./tests/unit/*.test.ts",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "typecheck": "tsgo --noEmit && tsgo --noEmit -p tests/tsconfig.json",
