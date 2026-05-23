@@ -75,7 +75,7 @@ claude -p \
 
 All secrets live in `~/.secrets/bluepy/` with private permissions. Never log, print, or commit them.
 
-- `source ~/.secrets/bluepy/source.env` sets `CLOUDFLARE_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `ATPROTO_TEST_IDENTIFIER`, `ATPROTO_TEST_PASSWORD`.
+- `source ~/.secrets/bluepy/source.env` sets `ATPROTO_TEST_IDENTIFIER`, `ATPROTO_TEST_PASSWORD`, `ATPROTO_TEST_IDENTIFIER_2`, `ATPROTO_TEST_PASSWORD_2`, `CLOUDFLARE_EMAIL`, `CLOUDFLARE_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `SENTRY_DSN`, `PLAUSIBLE_HOST`, `PLAUSIBLE_DOMAIN`, `CLIENT_METADATA_PROD`, `ATPROTO_PROD_IDENTIFIER`, `ATPROTO_PROD_PASSWORD`.
 - Reference clients are read-only: `~/social-app` (Linux/VPS) / `~/src/a/social-app` (macOS dev). The runbook writes `~/social-app`; if the path doesn't exist on the host, try `~/src/a/social-app` before failing — both are the same `bluesky-social/social-app` clone. Optionally `github.com/mozzius/graysky`.
 
 ## Branches, Remotes & Deploy
