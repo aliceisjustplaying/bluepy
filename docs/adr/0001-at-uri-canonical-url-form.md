@@ -1,0 +1,3 @@
+# ADR-0001: At-URIs are the canonical Bluepy URL form
+
+Bluepy uses literal at-URI permalinks in the browser address bar (`bluepy.social/at://<did>/<collection>/<rkey>`) instead of a conventional `/post/<did>/<rkey>` or `/profile/<handle>/post/<rkey>` shape. The trade-off accepted: routing layer must bend to support `:` and `//` as literal path characters (`/:scheme://*`), and SEO-friendly URL shapes are forgone; in return, the URL form *is* the record identifier with no translation layer between address bar and data layer. There is no legacy fallback — `/post/...` shapes are not redirected or supported.
