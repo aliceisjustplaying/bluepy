@@ -357,3 +357,107 @@ These are the questions still open. Filled in by additional grilling passes:
 | ... | ... |
 
 (Grows as more patterns are encountered.)
+
+---
+
+## Addenda — grilling round 2 (supersedes earlier sections where they conflict)
+
+The original plan referenced ADRs 0001-0011. A second grilling pass added ADRs 0012-0021. This section folds the deltas in.
+
+### Decisions referenced (full)
+
+| Topic | ADR |
+| --- | --- |
+| At-URI canonical URL form | ADR-0001 |
+| `@atproto/api` underneath (atcute deferred) | ADR-0002 |
+| Domain verbs + hooks + lexicon types | ADR-0003 |
+| Three-client dispatch | ADR-0004 |
+| Mutations + selective optimistic | ADR-0005 |
+| Zustand for UI state, Valtio removed | ADR-0006 |
+| Hook-level `isLoading`/`error` (no Suspense) | ADR-0007 |
+| Paginated hooks return flat shape | ADR-0008 |
+| Cache keys via factory; account-scoped | ADR-0009 |
+| Session lifecycle | ADR-0010 |
+| Facet-text rendering layout | ADR-0011 |
+| Intent-keyed multi-draft compose | ADR-0012 |
+| Upload-on-submit (no deleteBlob) | ADR-0013 |
+| All-or-nothing submit + aux records warn-on-fail | ADR-0014 |
+| Compose author picker (multi-account) | ADR-0015 |
+| **Per-URI canonical post/profile cache + URI-array list queries** | ADR-0016 |
+| **Preferences split: server (putPreferences) + device-local** | ADR-0017 |
+| **Shortcut bar hybrid (savedFeedsPrefV2 pinned + local Phanpy types)** | ADR-0018 |
+| **Testing strategy: fresh e2e + fixture-driven unit core** | ADR-0019 |
+| **Telemetry (Plausible self-hosted) + Sentry error tracking** | ADR-0020 |
+| **Client shell, PWA, web push, read-only offline** | ADR-0021 |
+
+### Additional files (extend the "New file structure" section)
+
+```
+src/
+  data/
+    preferences.ts        # ADR-0017. usePreferences() (TanStack against app.bsky.actor.getPreferences) + per-pref-type mutation hooks.
+    shortcuts.ts          # ADR-0018. useShortcutBar() composes local Zustand order with pinned savedFeedsPrefV2 entries.
+    _internal/
+      prime.ts            # primePosts(qc, response), primeProfiles(qc, response). ADR-0016. Exhaustively tested per ADR-0019.
+      reconcile-shortcuts.ts  # pure reconciliation function for ADR-0018.
+      persist.ts          # persistQueryClient wrapper, per-DID partition, LRU sweep, ADR-0021.
+  state/
+    ui-preferences.ts     # Zustand persist for Phanpy UI fields (ADR-0017): autoRefresh, cloakMode, noAnimations, etc.
+    shortcuts.ts          # Zustand: localOrder ShortcutEntry[] (ADR-0018).
+    modals.ts             # Zustand: every show* flag as one typed slice; replaces the 17 Valtio modal flags + index-signature squatters.
+    reveals.ts            # Zustand: spoilers, spoilersMedia, revealedQuotes, revealedMutedPosts (ADR-0006).
+  contexts/
+    ServiceWorkerBridge.tsx  # Owns navigator.serviceWorker 'message' subscription, exposes {lastRoute, clear()}. Replaces routeNotification Valtio slice.
+  utils/
+    telemetry.ts          # trackPage(path), trackEvent(name, props?); Plausible script in <head>. ADR-0020.
+    sentry.ts             # Sentry init w/ scrubbing beforeSend. PII never leaves the client. ADR-0020.
+tests/
+  e2e/*.spec.ts           # Fresh Playwright suite (ADR-0019). Existing tests/atproto-*.spec.js kept on bluesky branch as flow reference only — none ported.
+  unit/                   # primers, keys, patchers, reconcile, post-text (ADR-0019).
+  fixtures/atproto/       # Real ATProto API response captures.
+workers/
+  push/                   # Own web push service (Cloudflare Worker + DO). ADR-0021. Tracked in plan 0004 (separate).
+```
+
+### State inventory dispositions (closes the "Inventory of states.ts exports → Zustand slice mapping" open item)
+
+The full Valtio `proxy<StateProxy>` at `src/utils/states.ts:150` decomposes as follows:
+
+| Valtio field | Destination |
+| --- | --- |
+| `statuses`, `accounts`, `statusQuotes`, `statusReply`, `statusThreadNumber` | TanStack canonical caches (ADR-0016). Quotes/reply/threadNumber are derived at render time, no separate storage. |
+| `notifications`, `notificationsLast`, `notificationsLastFetchTime`, `notificationsShowNew` | TanStack: `useNotifications`, `useUnreadCount` against `app.bsky.notification.getUnreadCount`; `useUpdateSeen` against `updateSeen`. No client-side seen marker. |
+| `appVersion` | `useQuery(['appVersion'])`, `staleTime: 1h`. |
+| `routeNotification` | `<ServiceWorkerBridge>` React Context. |
+| `prevLocation`, `currentLocation` | React Router `useLocation()` + `location.state.from`. `currentLocation` was write-only dead code — deleted. |
+| `reloadStatusPage`, `reloadGenericAccounts` | Replaced by `qc.invalidateQueries(...)` at the call sites. Counter fields deleted. |
+| `showCompose`, `showSettings`, `showAccount`, `showAccounts`, `showDrafts`, `showMediaModal`, `showShortcutsSettings`, `showKeyboardShortcutsHelp`, `showGenericAccounts`, `showMediaAlt`, `showEmbedModal`, `showFeedbackModal`, `showReportModal`, `showQrCodeModal`, `showQrScannerModal`, `showImportExportAccounts`, `showSearchCommand`, `showOpenLink` | `src/state/modals.ts` Zustand slice as a typed discriminated union; no index-signature squatting. |
+| `composerState` | `src/state/compose.ts` (plan 0002). |
+| `spoilers`, `spoilersMedia`, `revealedQuotes`, `revealedMutedPosts` | `src/state/reveals.ts`. |
+| `shortcuts` (Phanpy bar config) | `src/state/shortcuts.ts` + `src/data/shortcuts.ts` per ADR-0018. |
+| `settings` (13 fields) | `src/state/ui-preferences.ts` device-local Zustand `persist` per ADR-0017. |
+| `home`, `homeNew`, `homeLast`, `homeLastFetchTime`, `notificationsNew`, `scrollPositions` (proxy slice) | Dead code — deleted, not carried. |
+
+Module-level singletons outside the proxy (`api.ts` clients, `store-utils.ts` mems, `pmem` caches across `src/utils/*` and components, OAuth singletons, profile fallbacks, labeler cache, `window.__*` globals, BENCH_RESULTS): all replaced by their corresponding `src/data/*.ts` `useQuery` hooks. `window.__*` globals deleted (dev-only telemetry can stay behind `import.meta.env.DEV`).
+
+### Acceptance criteria (supersedes section 326-336 where conflicting)
+
+The agent treats ADR-0019 as the authoritative "done" bar. The criteria there are exhaustive. Specifically:
+
+1. `src/utils/atproto-adapter.ts`, `states.ts`, `store.ts`, `store-utils.ts`, `api.ts`, `auth-context.tsx` do not exist.
+2. No file imports `AdaptedStatus`, `AdaptedAccount`, `AdaptedList`, `AdaptedNotification`, any `Atproto*` Phanpy alias.
+3. `bun run typecheck` passes. **Zero `as any` in code created/modified by this phase** (ADR-0019).
+4. `bunx oxlint .` passes; `bunx oxfmt --check .` passes.
+5. `bun run test` passes the **new** Playwright suite at `tests/e2e/*.spec.ts` (ADR-0019). The existing `tests/atproto-*.spec.js` files are kept as reference but are not part of the gate — the agent removes them at the end of the rebuild.
+6. `bun run test:unit` passes the new unit suite (`tests/unit/*.test.ts`) — primers, keys, patchers, reconcile, post-text. Fixture-driven, no snapshots, no input fabrication.
+7. `bun run build` succeeds.
+8. Sentry DSN injection works in prod build; Plausible script tag present in prod build; both no-ops in dev.
+
+### Remaining open items (was section "Things to confirm before the agent runs")
+
+- ~~Compose flow details~~ — plan 0002 done.
+- ~~Inventory of states.ts exports~~ — resolved above.
+- Specific list of operations that need `bskyAppviewAgent` (ADR-0004 says empirical; the agent populates this list as it encounters them).
+- Service-auth handling for video upload (`video.bsky.app` audience) — traced from `~/social-app`'s `useVideoUploadStatus` and `app.bsky.video.*` lexicon; covered briefly in plan 0002, agent verifies during rebuild.
+- Threadgate/postgate lexicon stability — defer until needed (per user).
+- Web push service worker code (`workers/push/`) — tracked separately, not in this plan.
