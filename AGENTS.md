@@ -116,3 +116,17 @@ All secrets live in `~/.secrets/bluepy/` with private permissions. Never log, pr
 - AT URIs are native: serialize as `at://…`, never `at:/…`.
 - Do not invent types that codify known-broken behavior.
 - Bluesky image limits: 2 MB and about 4000 px long edge.
+
+## Agent skills
+
+### Issue tracker
+
+Linear (team `Aliceisjustplaying`, project `Bluepy`) via the official Linear MCP server. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage roles map to Linear workflow states. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context — `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
