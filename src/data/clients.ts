@@ -171,3 +171,9 @@ export function getPdsRepoAgentFor(
 export function baselineAcceptedLabelers(): readonly string[] {
   return [BSKY_LABELER_DID];
 }
+
+export function resolveAcceptedLabelerDids(
+  subscribedDids: readonly string[],
+): readonly string[] {
+  return [...new Set([...baselineAcceptedLabelers(), ...subscribedDids])].toSorted();
+}

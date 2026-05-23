@@ -1,6 +1,7 @@
 import {
   createContext,
   use,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -25,6 +26,20 @@ import {
 
 const ClientsContext = createContext<ClientBundle | null>(null);
 const ActiveSessionContext = createContext<OAuthSession | null>(null);
+const AcceptedLabelerDidsContext = createContext<readonly string[]>(
+  baselineAcceptedLabelers(),
+);
+const AcceptedLabelerSyncContext = createContext<
+  (dids: readonly string[]) => void
+>(() => {});
+
+export function useAcceptedLabelerDids(): readonly string[] {
+  return use(AcceptedLabelerDidsContext);
+}
+
+export function useAcceptedLabelerSync(): (dids: readonly string[]) => void {
+  return use(AcceptedLabelerSyncContext);
+}
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const activeDid = useSessionsStore((state) => state.activeDid);
@@ -40,6 +55,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<OAuthSession | null>(() =>
     activeDid ? getCachedAtprotoOAuthSession(activeDid) : null,
   );
+  const [acceptedLabelerDids, setAcceptedLabelerDids] = useState<
+    readonly string[]
+  >(() => baselineAcceptedLabelers());
+  const syncAcceptedLabelers = useCallback((dids: readonly string[]) => {
+    setAcceptedLabelerDids((current) => {
+      if (
+        current.length === dids.length &&
+        current.every((did, index) => did === dids[index])
+      ) {
+        return current;
+      }
+      return dids;
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,22 +127,32 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, [activeDid]);
 
+  useEffect(() => {
+    if (!activeDid) {
+      setAcceptedLabelerDids(baselineAcceptedLabelers());
+    }
+  }, [activeDid]);
+
   const clients = useMemo(
     () =>
       createClients({
         session,
         activeAppViewService: appViewCfg.service,
         activeAppViewDid: appViewCfg.proxyDid,
-        acceptedLabelerDids: baselineAcceptedLabelers(),
+        acceptedLabelerDids,
       }),
-    [appViewCfg.proxyDid, appViewCfg.service, session],
+    [acceptedLabelerDids, appViewCfg.proxyDid, appViewCfg.service, session],
   );
 
   return (
     <ActiveSessionContext.Provider value={session}>
-      <ClientsContext.Provider value={clients}>
-        {children}
-      </ClientsContext.Provider>
+      <AcceptedLabelerSyncContext.Provider value={syncAcceptedLabelers}>
+        <AcceptedLabelerDidsContext.Provider value={acceptedLabelerDids}>
+          <ClientsContext.Provider value={clients}>
+            {children}
+          </ClientsContext.Provider>
+        </AcceptedLabelerDidsContext.Provider>
+      </AcceptedLabelerSyncContext.Provider>
     </ActiveSessionContext.Provider>
   );
 }
