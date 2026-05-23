@@ -28,11 +28,16 @@ Mandatory e2e coverage (each is its own `.spec.ts`):
 
 **Focused unit suite at `tests/unit/*.test.ts`.** Only deterministic spec-driven internals. Each unit test file is exhaustively enumerated below — the agent does not add others; if it wants to test something else, it writes an e2e.
 
-- `tests/unit/primers.test.ts` — `primePosts`, `primeProfiles`. Every fixture in `tests/fixtures/atproto/` must produce a cache containing every URI / DID the fixture references, with reshaped embeds (parent post stores `embed.record: {$type, uri, cid}`, embedded body lives at `keys.post(did, embed.record.uri)`).
-- `tests/unit/keys.test.ts` — `keys.*` factory output stability: every key starts with the active DID, every key serialises to its expected tuple shape, no two factory functions produce overlapping prefixes.
-- `tests/unit/patchers.test.ts` — every optimistic mutation patcher (likePost, repostPost, followAccount, muteAccount, blockAccount, bookmarkPost). Given a canonical cache entry, patch produces the expected post-mutation entry; restore (rollback) returns to the pre-mutation entry byte-for-byte.
+- `tests/unit/primers.test.ts` — `primePosts`, `primeProfiles`. Every fixture in `tests/fixtures/atproto/` must produce a cache containing every URI / DID the fixture references, with reshaped embeds (parent post stores `embed.record: {$type, uri, cid}`, embedded body lives at `keys.post(scope, embed.record.uri)`). Embed-variant primer table from ADR-0016 covered exhaustively.
+- `tests/unit/keys.test.ts` — `keys.*` factory output stability: every `AccountScope` key starts with `[viewerDid]`; every `ViewerScope` key starts with `[viewerDid, appviewKey, labelersHash]`; no two factory functions produce overlapping prefixes; `keys.preferences` uses `AccountScope`, all post/profile/feed/etc keys use `ViewerScope`.
+- `tests/unit/patchers.test.ts` — every optimistic mutation patcher (likePost, repostPost, followAccount, muteAccount, blockAccount, bookmarkPost). Given a canonical cache entry, patch produces the expected post-mutation entry; restore (rollback) returns to the pre-mutation entry byte-for-byte; cross-scope same-viewer patching covered (ADR-0005).
 - `tests/unit/reconcile.test.ts` — `reconcileShortcutBar`. Tabular inputs/outputs covering: orphan server-ref drop, new pinned saved feed appended, local-only entries pass through, idempotence on no-op, ordering preserved across reconcile.
-- `tests/unit/post-text.test.ts` — `renderPostText(text, facets)`. Fixture facets covering: link, mention, tag, nested ranges, RTL text, emoji/grapheme boundary edge cases, malicious-looking text safely passed through (sanitisation is a separate layer, but renderer must not break it).
+- `tests/unit/post-text.test.ts` — `renderPostText(text, facets)`. Fixture facets covering: link, mention (resolves to full profile at-URI per ADR-0011), tag, nested ranges, RTL text, emoji/grapheme boundary edge cases, malicious-looking text safely passed through (sanitisation is a separate layer, but renderer must not break it).
+- `tests/unit/preferences-preserve-unknown.test.ts` — fixture-driven test that stuffs an unrecognised `$type` entry into a `getPreferences` response, exercises each per-type mutation hook, and asserts the unknown entry is present and unchanged in the final `putPreferences` request body (ADR-0017 acceptance criterion).
+- `tests/unit/moderation-decision.test.ts` — `decidePostModeration` / `decideProfileModeration` (ADR-0022). Covers every cause in the taxonomy (label, muted-word, hidden-post, blocked-by, blocking, muted, detached, not-found); baseline-labelers-only vs baseline+subscribed; adult-content on/off (including under-age forced-off); media blur vs content warning; profile avatar/banner/displayName/bio blur; label visibility filtered by `acceptedLabelerDids`.
+- `tests/unit/route-category.test.ts` — pure router-to-category mapping (ADR-0020). Every route in `src/router.tsx` produces an expected `RouteCategory`; unknown paths produce `'not-found'`.
+- `tests/unit/sentry-scrub.test.ts` — `beforeSend` redactor (ADR-0020). Fixtures: DID strings, handle strings, JWT-shaped tokens, blob/record CIDs, at-URI paths in `event.request.url`, breadcrumbs, transaction names, exception messages, stacktrace frames. All redacted to opaque placeholders.
+- `tests/unit/compose/draft-key.test.ts` — `draftKeyToString` / `parseDraftKey` (plan 0002). Round-trip every `DraftKey` discriminant including `authorDid` partitioning; stable output (no Date.now / Math.random); unknown kinds throw / return null.
 
 **Anti-tautology guardrails encoded in the prompt:**
 - Unit tests load inputs from `tests/fixtures/atproto/*.json` (real ATProto API responses captured with `~/social-app` as a reference for shape). Agent does not fabricate inputs from the implementation.
@@ -45,10 +50,11 @@ Mandatory e2e coverage (each is its own `.spec.ts`):
 - `getTimeline.feed-mixed.json` — feed with reposts, replies, quoted posts, no embed, image embed, video embed, external embed
 - `getPostThread.deep.json` — thread with 3+ levels of replies and a quoted post mid-thread
 - `getProfile.basic.json` and `.with-pinned.json`
-- `getPreferences.full.json` — every preference type populated
+- `getPreferences.full.json` — every preference type populated; plus a `.with-unknown.json` variant that injects an `app.bsky.actor.defs#someFuturePref` for the preserve-unknown test
 - `getNotifications.grouped.json` — multiple notification kinds, including reply / mention / like / repost / follow / quote
 - `getActorLikes.json`, `getAuthorFeed.with-pins.json`, `searchPosts.json`
-- A "weird" set with intentionally malformed records (missing CIDs, unknown $type, unicode edge cases) for primer resilience.
+- A "weird" set with intentionally malformed records (missing CIDs, unknown $type, unicode edge cases) for primer resilience
+- `moderation/` subdir: one captured response per moderation cause (label/muted-word/hidden-post/blocked-by/blocking/muted/detached/not-found), one per labeler-subscription state (baseline-only / baseline+subscribed), one per adult-content state.
 
 **Rejected alternatives:**
 - **Keep existing e2e suite and port in place.** Per-file judgement on Valtio-coupling; agent gets stuck or makes wrong calls. Net rewrite ends up cheaper than careful port.

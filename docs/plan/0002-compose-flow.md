@@ -162,10 +162,10 @@ Order of operations, all-or-nothing (ADR-0014):
    - If `threadgate !== 'everyone'` (default): `createRecord` `app.bsky.feed.threadgate` with `post: post.uri` and the gate config.
    - If `postgate !== 'everyone'` (default): `createRecord` `app.bsky.feed.postgate` with `post: post.uri` and the gate config.
    - Either failure surfaces a non-blocking toast; the post stays.
-8. **Cache invalidation** (per ADR-0005 broad-invalidation rule on `createPost`):
-   - Invalidate every `keys.feed(authorDid, ...)` and `keys.timeline(authorDid)`.
-   - If reply: also invalidate `keys.thread(authorDid, replyTo.uri)` and `keys.thread(authorDid, replyRoot.uri)`.
-   - If quote: invalidate `keys.post(authorDid, quote.uri)` (engagement count changed).
+8. **Cache invalidation** (per ADR-0005 broad-invalidation rule on `createPost`).** Compute `scope = useViewerScope()` for the *author* — for a side-account post, build a side-account-scoped `ViewerScope = [authorDid, appviewKey, labelersHash]` via the per-account client helper (not the active-account scope). Then:
+   - Invalidate every `keys.feed(scope, ...)` and `keys.timeline(scope)`.
+   - If reply: also invalidate `keys.thread(scope, replyTo.uri)` and `keys.thread(scope, replyRoot.uri)`.
+   - If quote: invalidate `keys.post(scope, quote.uri)` (engagement count changed).
 9. **Reset draft.** Remove the entry from `drafts[activeKey]`, set `activeKey = null`.
 
 ### Video upload — `src/compose/video-upload.ts`

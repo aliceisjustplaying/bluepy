@@ -15,7 +15,7 @@ and reconciles them: every pinned server-feed has exactly one matching reference
 
 **Mutation routing:**
 - Reorder → write local order array only.
-- Toggle pin on a feed/list (from feed-discovery UI or shortcut-bar-settings) → `useUpdatePreference('savedFeeds')` flips `pinned`; reconcile picks it up on next render.
+- Toggle pin on a feed/list (from feed-discovery UI or shortcut-bar-settings) → `useUpdatePreference('savedFeeds')` flips `pinned` via `authenticated-active-appview-via-pds` (ADR-0004); reconcile picks it up on next render.
 - Add a local-only Phanpy entry (e.g. add a search shortcut) → write to local Zustand only.
 - Remove a server-feed entry from the shortcut bar → semantic is "unpin", flipping `pinned=false` on the savedFeeds entry, not deleting the entry.
 

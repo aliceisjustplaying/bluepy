@@ -524,15 +524,45 @@ Folded in from the architecture-critique review pass:
 - **Moderation/labels layer.** ADR-0022 added: `src/data/moderation.ts` + `src/render/moderation-decision.ts`. Mandatory in phase (b), not deferred. Every post/profile render path goes through it.
 - **Video upload audience.** Plan 0002 updated: two separate service-auth tokens. `getUploadLimits` uses `aud: did:web:video.bsky.app`; `uploadBlob` uses `aud: did:web:<author-PDS-hostname>` (verified against `~/src/a/social-app/src/lib/media/video/upload.shared.ts`).
 
+
+### Round-4 must-fix deltas (final review pass, supersedes earlier sections where contradictory)
+
+Folded in from the second-round architecture critique. These are guardrails against implementation mistakes, not architectural reversals.
+
+- **Two scope tuples.** ADR-0009 split: `AccountScope = [viewerDid]` for private account state (`keys.preferences`, `keys.uiPreferences`); `ViewerScope = [viewerDid, appviewKey, labelersHash]` for AppView-rendered views. Keying preferences by `labelersHash` would be circular — `labelersPref` lives in the preferences response. ADR-0017 updated to use `AccountScope`.
+- **5-mode dispatch.** ADR-0004 rewritten: `public-active-appview` / `authenticated-active-appview-via-pds` / `public-bluesky-appview` / `authenticated-bluesky-appview-via-pds` / `pds-repo-direct`. The last mode is for `com.atproto.repo.*` / `uploadBlob` only; authenticated `app.bsky.*` mutations (preferences, mutes, blocks, notifications updateSeen) are AppView APIs proxied through the PDS — `authenticated-active-appview-via-pds`, NOT `pds-repo-direct`.
+- **Preconfigured per-mode agents.** ADR-0004: `ClientBundle` exposes immutable per-mode agents (`pdsRepoAgent`, `activeAppViewProxyAgent`, `bskyAppViewProxyAgent`, `publicActiveAppViewAgent`, `publicBskyAppViewAgent`) with proxy + accepted-labeler headers fixed at construction time. **Header mutation on shared agents inside `queryFn`/`mutationFn` is forbidden** — leaks across concurrent requests.
+- **Accepted-labeler header configured explicitly.** ADR-0004 + ADR-0022: `acceptedLabelerDids = baselineAppLabelers ∪ userSubscribedLabelersFrom(labelersPref)`; baseline always accepted; `labelersHash` hashes the actual accepted set (matches the `atproto-accept-labelers` header sent on reads).
+- **Baseline labelers first-class.** ADR-0022: `ModerationContext` includes `baselineLabelers`, `subscribedLabelers`, `acceptedLabelerDids`. "Labels from unsubscribed labelers are filtered out" applies to labelers outside the accepted set — baseline labelers are always in. Adult-content-disabled forces hide/warn on adult labels per official label semantics, regardless of `contentLabelPref`.
+- **Telemetry route categories, not raw paths.** ADR-0020: `trackPage(routeCategory)` takes a `RouteCategory` enum, never `window.location.pathname` (which contains at-URIs per ADR-0001). Sentry scrubber covers `event.request.url`, transaction names, breadcrumbs, tags, query strings, exception messages, stacktrace frames — not just request bodies. Unit tests at `tests/unit/route-category.test.ts` and `tests/unit/sentry-scrub.test.ts`.
+- **DraftKey carries `authorDid`.** ADR-0012 + ADR-0015: `authorDid` is part of `DraftKey`, not a draft body field. Side-account top-level and active-account top-level drafts don't collide; author-switch forks the draft to a new key without overwriting (consistent with the plan 0002 implementation).
+- **Mention/profile permalinks use full profile at-URI.** ADR-0011: `bluepy.social/at://<did>/app.bsky.actor.profile/self`, never the bare `at://<did>` form. Bare DID-as-path is not a valid at-URI per the glossary.
+- **Expanded unit-test list.** ADR-0019 adds `tests/unit/preferences-preserve-unknown.test.ts`, `tests/unit/moderation-decision.test.ts`, `tests/unit/route-category.test.ts`, `tests/unit/sentry-scrub.test.ts`, `tests/unit/compose/draft-key.test.ts`. Each is fixture-driven and spec-enumerated; no snapshots.
+- **Cross-scope same-viewer optimistic patching.** ADR-0005 + ADR-0016: engagement mutations patch the current viewer scope and every cached scope under the same `viewerDid` (different `appviewKey`/`labelersHash`). Prevents stale-engagement bugs when a user switches AppViews/labelers and revisits a cached scope.
+- **Profile body keyed by DID; handle resolution is a separate cache.** ADR-0009 + ADR-0016: `keys.profileByDid(scope, did)` holds the body; `keys.actorResolution(scope, handle)` resolves handle → DID. Prevents stale-handle duplication.
+- **`appviewKey = ${did}|${origin}`.** ADR-0009: AppView scope includes origin alongside DID so preview/dev deploys serving the same DID cleanly partition.
+- **Push behind feature flag.** ADR-0021: `featureFlags.push = false` in phase (b). Client subscription code exists as a no-op throwing `FeatureDisabledError`; the Worker side is plan 0004. Hard rules around no-tokens-in-payloads restated so plan 0004 can flip the flag without revisiting them.
+- **Module surface deltas.**
+  - New: `src/render/route-category.ts` (pure router → category mapping for telemetry).
+  - New: `src/data/_internal/cross-scope-patch.ts` (engagement-mutation cross-scope helper).
+  - `src/data/clients.ts` exposes the five preconfigured per-mode agent fields rather than a single mutable agent triple.
+
 ### Remaining open items
 
-All but two cleared by round-3 must-fix folding:
-
 - `bskyAppviewAgent` exceptions list — empirical by design (ADR-0004). The agent grows it in `src/data/clients.ts` during the rebuild as it encounters third-party AppView gaps. Not a blocker.
-- Web push service worker (`workers/push/`) — separate plan 0004, intentionally out of scope here.
+- Web push service worker (`workers/push/`) — separate plan 0004, intentionally out of scope here. Client shell behind `featureFlags.push` ships no-op.
+- Baseline labeler DID list — the empirical set Bluesky's social-app uses as defaults. The agent reads `~/social-app` to pin the exact list during M3 (session/client layer); not blocking architecture.
 
-Cleared:
-- ~~Compose flow details~~ — plan 0002 complete.
-- ~~Inventory of states.ts exports~~ — full disposition table in round-2 addenda.
-- ~~Service-auth handling for video upload~~ — fixed in round-3 against `~/src/a/social-app` (two-token flow, see plan 0002).
-- ~~Threadgate/postgate lexicon stability~~ — explicitly deferred per user; not blocking the rebuild.
+Cleared in round-4:
+- ~~Preferences vs labeler circularity~~ — `AccountScope` / `ViewerScope` split.
+- ~~`pds-direct` vs `authenticated-app.bsky-via-pds` ambiguity~~ — 5-mode enum.
+- ~~Shared-agent header mutation hazard~~ — preconfigured per-mode agents.
+- ~~`labelersHash` semantics~~ — hashes the accepted set, not raw pref.
+- ~~Baseline labeler treatment~~ — first-class in `ModerationContext`.
+- ~~At-URI leakage into telemetry~~ — route categories, full scrubber coverage.
+- ~~DraftKey vs authorDid collision~~ — `authorDid` in the key.
+- ~~Bare DID-as-path mention links~~ — full profile at-URI.
+- ~~Unit-test list staleness~~ — expanded to cover later ADRs.
+- ~~Cross-scope stale engagement~~ — cross-scope same-viewer patching.
+- ~~Profile handle/DID duplication~~ — `profileByDid` + `actorResolution`.
+- ~~Push scope creep into phase (b)~~ — feature-flag shell, server in plan 0004.
