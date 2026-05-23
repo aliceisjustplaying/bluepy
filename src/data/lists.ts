@@ -64,7 +64,7 @@ export function useLists(actor: string | undefined) {
   const scope = useViewerScope();
 
   return useInfiniteList<AppBskyGraphDefs.ListView>({
-    queryKey: [...scope, 'lists', actor ?? ''] as const,
+    queryKey: actor ? [...scope, 'lists', actor] as const : ['lists', 'disabled'],
     enabled: Boolean(actor),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));

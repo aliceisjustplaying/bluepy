@@ -116,6 +116,33 @@ export function applyPreferenceMutation(
   }
 }
 
+const updateChains = new Map<string, Promise<unknown>>();
+
+// TanStack mutationKey does not serialize writes; this chain does.
+async function runSerialized<T>(
+  lockKey: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const previous = updateChains.get(lockKey) ?? Promise.resolve();
+  const operation = (async () => {
+    try {
+      await previous;
+    } catch {
+      // keep the chain alive after a failed update
+    }
+    return fn();
+  })();
+
+  updateChains.set(lockKey, operation);
+  try {
+    return await operation;
+  } finally {
+    if (updateChains.get(lockKey) === operation) {
+      updateChains.delete(lockKey);
+    }
+  }
+}
+
 export async function updatePreferences(
   agent: {
     app: {
@@ -132,9 +159,12 @@ export async function updatePreferences(
     };
   },
   mutate: (prefs: Preferences) => Preferences,
+  lockKey = 'default',
 ): Promise<Preferences> {
-  const res = await agent.app.bsky.actor.getPreferences({});
-  const next = mutate([...res.data.preferences]);
-  await agent.app.bsky.actor.putPreferences({ preferences: next });
-  return next;
+  return runSerialized(lockKey, async () => {
+    const res = await agent.app.bsky.actor.getPreferences({});
+    const next = mutate([...res.data.preferences]);
+    await agent.app.bsky.actor.putPreferences({ preferences: next });
+    return next;
+  });
 }

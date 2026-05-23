@@ -7,8 +7,21 @@ import { blueskyOnlyReadMode, feedReadMode } from './_internal/dispatch';
 import { primePosts } from './_internal/prime';
 import { useInfiniteList } from './_internal/use-infinite';
 import { getReadAgent } from './clients';
-import { keys, type AtUri, type FeedFilter } from './keys';
+import { keys, type AtUri, type FeedFilter, type ViewerScope } from './keys';
 import { useViewerScope } from './scope';
+
+export function timelineFeedQueryOptions(
+  activeDid: string | null | undefined,
+  scope: ViewerScope,
+): {
+  queryKey: readonly unknown[];
+  enabled: boolean;
+} {
+  return {
+    queryKey: activeDid ? keys.timeline(scope) : (['timeline', 'disabled'] as const),
+    enabled: Boolean(activeDid),
+  };
+}
 
 export interface TimelineFeedItem {
   uri: AtUri;
@@ -33,7 +46,7 @@ export function useTimelineFeed() {
   const qc = useQueryClient();
 
   return useInfiniteList<TimelineFeedItem>({
-    queryKey: keys.timeline(scope),
+    ...timelineFeedQueryOptions(activeDid, scope),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.getTimeline({ limit: 30, cursor: pageParam });

@@ -36,6 +36,8 @@ export interface PostModerationDecision {
     | 'not-found';
   blurAlt?: string;
   noOverride?: boolean;
+  mediaBlur?: boolean;
+  mediaNoOverride?: boolean;
   labels?: ComAtprotoLabelDefs.Label[];
   causeLabel?: ComAtprotoLabelDefs.Label;
 }
@@ -207,7 +209,8 @@ export function decidePostModeration(
 
   const mod = moderatePost(post, moderationContextToOpts(ctx));
   const labels = filterLabels(post.labels, ctx.acceptedLabelerDids);
-  const ui = mod.ui('contentView');
+  const contentViewUi = mod.ui('contentView');
+  const contentMediaUi = mod.ui('contentMedia');
   const visibility = mapVisibility(mod, 'contentView');
   const cause = mapPostCauseType(mod);
 
@@ -216,7 +219,9 @@ export function decidePostModeration(
     cause,
     labels,
     causeLabel: labelCause(mod),
-    noOverride: ui.noOverride || undefined,
+    noOverride: contentViewUi.noOverride || undefined,
+    mediaBlur: contentMediaUi.blurs.length > 0 || undefined,
+    mediaNoOverride: contentMediaUi.noOverride || undefined,
     blurAlt:
       visibility === 'blur' || visibility === 'hide'
         ? 'Content hidden by moderation settings'
@@ -228,8 +233,7 @@ function profileFieldBlurred(
   mod: ModerationDecision,
   context: 'avatar' | 'banner' | 'displayName' | 'profileView',
 ): boolean {
-  const ui = mod.ui(context);
-  return ui.blurs.length > 0 || ui.noOverride;
+  return mod.ui(context).blurs.length > 0;
 }
 
 export function decideProfileModeration(

@@ -9,7 +9,8 @@ import {
   updatePreferences,
   type PreferenceMutationType,
 } from './_internal/preferences-mutations';
-import { getWriteAgent } from './clients';
+import { getReadAgent, getWriteAgent } from './clients';
+import { NotAuthenticatedError } from './errors';
 import { keys } from './keys';
 import { useAccountScope } from './scope';
 
@@ -36,7 +37,7 @@ export function usePreferences(): {
     enabled: Boolean(accountScope && activeDid),
     staleTime: Number.POSITIVE_INFINITY,
     queryFn: async () => {
-      const agent = getWriteAgent(
+      const agent = getReadAgent(
         clients,
         'authenticated-active-appview-via-pds',
       );
@@ -66,18 +67,27 @@ export function useUpdatePreference(
 } {
   const clients = useClients();
   const accountScope = useAccountScope();
+  const activeDid = useActiveDid();
   const qc = useQueryClient();
 
   const mutation = useMutation({
+    mutationKey: accountScope
+      ? [...keys.preferences(accountScope), 'update']
+      : undefined,
     mutationFn: async (
       value: Parameters<typeof applyPreferenceMutation>[2],
     ) => {
+      if (!activeDid) {
+        throw new NotAuthenticatedError();
+      }
       const agent = getWriteAgent(
         clients,
         'authenticated-active-appview-via-pds',
       );
-      const nextPrefs = await updatePreferences(agent, (prefs) =>
-        applyPreferenceMutation(prefs, type, value),
+      const nextPrefs = await updatePreferences(
+        agent,
+        (prefs) => applyPreferenceMutation(prefs, type, value),
+        activeDid,
       );
       return normalizePreferences(nextPrefs);
     },

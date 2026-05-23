@@ -100,6 +100,15 @@ describe('decidePostModeration', () => {
     expect(decision.visibility).toBe('blur');
     expect(decision.noOverride).toBe(true);
   });
+
+  test('media-only blur surfaces contentMedia UI separately from contentView', () => {
+    const post = loadPost('label.json');
+    const decision = decidePostModeration(post, baseContext());
+    expect(decision.visibility).toBe('warn');
+    expect(decision.mediaBlur).toBe(true);
+    expect(decision.mediaNoOverride).toBe(true);
+    expect(decision.noOverride).toBeUndefined();
+  });
 });
 
 describe('decideProfileModeration', () => {
