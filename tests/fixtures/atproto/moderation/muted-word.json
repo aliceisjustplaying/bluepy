@@ -1,0 +1,77 @@
+{
+  "post": {
+    "uri": "at://did:plc:fixture011/app.bsky.feed.post/3mmk5wrxm2s2t",
+    "cid": "bafyreice7pm34iolgc74tepfgdk7kxlsfdwxroujvbbisq746u26yv7iha",
+    "author": {
+      "did": "did:plc:fixture011",
+      "handle": "fixture-12.test",
+      "displayName": "Fixture User 13",
+      "avatar": "https://fixture-8.test/img/avatar/plain/did:plc:fixture011/bafkreicmpkhaggfoagqj53jmzfmremae2qcw7oc3ugh5qvq6quncxp6wqq",
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        },
+        "germ": {
+          "showButtonTo": "usersIFollow",
+          "messageMeUrl": "https://fixture-9.test/newUser"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3l3xgwik3mv2m",
+        "followedBy": "at://did:plc:fixture011/app.bsky.graph.follow/3kbpqro36ta24"
+      },
+      "labels": [],
+      "createdAt": "2023-05-02T03:39:27.863Z",
+      "verification": {
+        "verifications": [
+          {
+            "issuer": "did:plc:fixture005",
+            "uri": "at://did:plc:fixture005/app.bsky.graph.verification/3ltmvuidftv2f",
+            "isValid": true,
+            "createdAt": "2025-07-10T17:59:36.528Z"
+          }
+        ],
+        "verifiedStatus": "valid",
+        "trustedVerifierStatus": "none"
+      }
+    },
+    "record": {
+      "text": "Fixture post content #1",
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2026-05-23T19:15:55.392Z",
+      "langs": [
+        "en"
+      ],
+      "reply": {
+        "parent": {
+          "cid": "bafyreib45w47fecopuzjjk7zbshez4g45qc3x2efhuvxt4zzm2qlflmmrm",
+          "uri": "at://did:plc:fixture012/app.bsky.feed.post/3mmk4tym6w227"
+        },
+        "root": {
+          "cid": "bafyreib45w47fecopuzjjk7zbshez4g45qc3x2efhuvxt4zzm2qlflmmrm",
+          "uri": "at://did:plc:fixture012/app.bsky.feed.post/3mmk4tym6w227"
+        }
+      }
+    },
+    "bookmarkCount": 0,
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 1,
+    "quoteCount": 0,
+    "indexedAt": "2026-05-23T19:15:55.776Z",
+    "viewer": {
+      "bookmarked": false,
+      "threadMuted": false,
+      "embeddingDisabled": false
+    },
+    "labels": []
+  },
+  "_captureMeta": {
+    "matchedWord": "ice"
+  }
+}

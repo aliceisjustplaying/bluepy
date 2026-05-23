@@ -1,0 +1,262 @@
+{
+  "did": "did:plc:fixture003",
+  "handle": "fixture-3.test",
+  "displayName": "Fixture User 9",
+  "avatar": "https://fixture-8.test/img/avatar/plain/did:plc:fixture003/bafkreiah7d37s25lki3mfmls7ojj7p7cinu3xupigoh6f6li5xzmc7u4ja",
+  "associated": {
+    "lists": 12,
+    "feedgens": 8,
+    "starterPacks": 1,
+    "labeler": false,
+    "chat": {
+      "allowIncoming": "all"
+    },
+    "activitySubscription": {
+      "allowSubscriptions": "followers"
+    },
+    "germ": {
+      "showButtonTo": "usersIFollow",
+      "messageMeUrl": "https://fixture-9.test/newUser"
+    }
+  },
+  "viewer": {
+    "muted": true,
+    "blockedBy": false,
+    "followedBy": "at://did:plc:fixture003/app.bsky.graph.follow/3l3ouzt6qfn2h",
+    "knownFollowers": {
+      "count": 52,
+      "followers": [
+        {
+          "did": "did:plc:fixture004",
+          "handle": "fixture-4.test",
+          "displayName": "Fixture User 10",
+          "avatar": "https://fixture-8.test/img/avatar/plain/did:plc:fixture004/bafkreihxtnc37g7jqdcgidtkknwuswtjiijcdnc6cx4imc4oq33cnsc5da",
+          "associated": {
+            "chat": {
+              "allowIncoming": "following"
+            },
+            "activitySubscription": {
+              "allowSubscriptions": "followers"
+            }
+          },
+          "viewer": {
+            "muted": false,
+            "blockedBy": false,
+            "following": "at://did:plc:fixture002/app.bsky.graph.follow/3jqfyi5vo422i",
+            "followedBy": "at://did:plc:fixture004/app.bsky.graph.follow/3jsvdlwqyu22k"
+          },
+          "labels": [],
+          "createdAt": "2022-11-17T06:31:40.296Z",
+          "verification": {
+            "verifications": [
+              {
+                "issuer": "did:plc:fixture005",
+                "uri": "at://did:plc:fixture005/app.bsky.graph.verification/3lndslpegeo2f",
+                "isValid": true,
+                "createdAt": "2025-04-21T11:35:53.359Z"
+              }
+            ],
+            "verifiedStatus": "valid",
+            "trustedVerifierStatus": "none"
+          }
+        },
+        {
+          "did": "did:plc:fixture006",
+          "handle": "fixture-6.test",
+          "displayName": "Fixture User 10",
+          "avatar": "https://fixture-8.test/img/avatar/plain/did:plc:fixture006/bafkreibhsikkbqnkfwsfx53x6ajv7d4un2tvphcyxaej5mdcad563wqoli",
+          "associated": {
+            "chat": {
+              "allowIncoming": "following"
+            },
+            "activitySubscription": {
+              "allowSubscriptions": "followers"
+            }
+          },
+          "viewer": {
+            "muted": false,
+            "blockedBy": false,
+            "following": "at://did:plc:fixture002/app.bsky.graph.follow/3l2pu6r2s6222",
+            "followedBy": "at://did:plc:fixture006/app.bsky.graph.follow/3l2pue33bbs26"
+          },
+          "labels": [],
+          "createdAt": "2023-08-15T03:48:23.045Z",
+          "verification": {
+            "verifications": [
+              {
+                "issuer": "did:plc:fixture005",
+                "uri": "at://did:plc:fixture005/app.bsky.graph.verification/3ltp7i2spls2h",
+                "isValid": true,
+                "createdAt": "2025-07-11T15:56:56.595Z"
+              }
+            ],
+            "verifiedStatus": "valid",
+            "trustedVerifierStatus": "none"
+          },
+          "status": {
+            "uri": "at://did:plc:fixture006/app.bsky.actor.status/self",
+            "cid": "bafyreifgiqyb3v66toilmq6hcbuvxgtzzzaenqrdk6j7ssiq3gzvm2delu",
+            "record": {
+              "$type": "app.bsky.actor.status",
+              "createdAt": "2025-10-12T19:41:32Z",
+              "durationMinutes": 2,
+              "embed": {
+                "$type": "app.bsky.embed.external",
+                "external": {
+                  "description": "Fixture external description",
+                  "thumb": {
+                    "$type": "blob",
+                    "ref": {
+                      "$link": "bafkreia5ax7swaonyziwjjkcg7qmvlvn4crz7f6jcoccjp5hzynf6vmetu"
+                    },
+                    "mimeType": "image/jpeg",
+                    "size": 200043
+                  },
+                  "title": "Fixture external title",
+                  "uri": "https://example.test/fixture-external"
+                }
+              },
+              "status": "app.bsky.actor.status#live"
+            },
+            "status": "app.bsky.actor.status#live",
+            "embed": {
+              "$type": "app.bsky.embed.external#view",
+              "external": {
+                "uri": "https://example.test/fixture-external",
+                "title": "Fixture external title",
+                "description": "Fixture external description",
+                "thumb": "https://fixture-8.test/img/feed_thumbnail/plain/did:plc:fixture006/bafkreia5ax7swaonyziwjjkcg7qmvlvn4crz7f6jcoccjp5hzynf6vmetu"
+              }
+            },
+            "labels": [],
+            "expiresAt": "2025-10-12T19:46:32.000Z",
+            "isActive": false
+          }
+        },
+        {
+          "did": "did:plc:fixture007",
+          "handle": "fixture-7.test",
+          "displayName": "Fixture User 11",
+          "avatar": "https://fixture-8.test/img/avatar/plain/did:plc:fixture007/bafkreigexuagm6poq5mbwq5oh3md2grrl4zk3mxqcbttfehveuatazsrgu",
+          "associated": {
+            "chat": {
+              "allowIncoming": "following"
+            },
+            "activitySubscription": {
+              "allowSubscriptions": "followers"
+            },
+            "germ": {
+              "showButtonTo": "usersIFollow",
+              "messageMeUrl": "https://fixture-9.test/newUser"
+            }
+          },
+          "viewer": {
+            "muted": false,
+            "blockedBy": false,
+            "following": "at://did:plc:fixture002/app.bsky.graph.follow/3lk54lnieoa2g",
+            "followedBy": "at://did:plc:fixture007/app.bsky.graph.follow/3l4j7imh7gn22"
+          },
+          "labels": [
+            {
+              "src": "did:plc:fixture007",
+              "uri": "at://did:plc:fixture007/app.bsky.actor.profile/self",
+              "cid": "bafyreighzlwbrpswtjmrcaahbv477z5vpm3hwrb6b72cadrdunzq73swri",
+              "val": "!no-unauthenticated",
+              "cts": "1970-01-01T00:00:00.000Z"
+            }
+          ],
+          "createdAt": "2023-04-23T20:11:04.375Z",
+          "verification": {
+            "verifications": [
+              {
+                "issuer": "did:plc:fixture005",
+                "uri": "at://did:plc:fixture005/app.bsky.graph.verification/3mig66iotb52n",
+                "isValid": true,
+                "createdAt": "2026-04-01T07:28:48.328Z"
+              }
+            ],
+            "verifiedStatus": "valid",
+            "trustedVerifierStatus": "none"
+          }
+        },
+        {
+          "did": "did:plc:fixture008",
+          "handle": "fixture-8.test",
+          "displayName": "Fixture User 11",
+          "pronouns": "he/him",
+          "avatar": "https://fixture-8.test/img/avatar/plain/did:plc:fixture008/bafkreiav4pabafng653wpcphzlmu3mai54nz2ycu6vrdd23oawwjgljrru",
+          "associated": {
+            "chat": {
+              "allowIncoming": "all"
+            },
+            "activitySubscription": {
+              "allowSubscriptions": "followers"
+            },
+            "germ": {
+              "showButtonTo": "usersIFollow",
+              "messageMeUrl": "https://fixture-9.test/newUser"
+            }
+          },
+          "viewer": {
+            "muted": false,
+            "blockedBy": false,
+            "following": "at://did:plc:fixture002/app.bsky.graph.follow/3ld2i53ruzt2e",
+            "followedBy": "at://did:plc:fixture008/app.bsky.graph.follow/3mlqonsact72r"
+          },
+          "labels": [],
+          "createdAt": "2023-06-22T04:19:53.084Z"
+        },
+        {
+          "did": "did:plc:fixture009",
+          "handle": "fixture-9.test",
+          "displayName": "Fixture User 11",
+          "avatar": "https://fixture-8.test/img/avatar/plain/did:plc:fixture009/bafkreiegdbepxyjj5mvqqtyqsocyafpiwol7eabcvxqfuiu7ai4bsgmzeu",
+          "associated": {
+            "chat": {
+              "allowIncoming": "all"
+            },
+            "activitySubscription": {
+              "allowSubscriptions": "followers"
+            },
+            "germ": {
+              "showButtonTo": "usersIFollow",
+              "messageMeUrl": "https://fixture-9.test/newUser"
+            }
+          },
+          "viewer": {
+            "muted": false,
+            "blockedBy": false,
+            "following": "at://did:plc:fixture002/app.bsky.graph.follow/3jsvahcnzu22c",
+            "followedBy": "at://did:plc:fixture009/app.bsky.graph.follow/3jsvmhlmwms2o"
+          },
+          "labels": [],
+          "createdAt": "2022-11-22T05:02:21.193Z",
+          "verification": {
+            "verifications": [
+              {
+                "issuer": "did:plc:fixture005",
+                "uri": "at://did:plc:fixture005/app.bsky.graph.verification/3ltkzoygsib2f",
+                "isValid": true,
+                "createdAt": "2025-07-10T00:02:47.546Z"
+              }
+            ],
+            "verifiedStatus": "valid",
+            "trustedVerifierStatus": "none"
+          }
+        }
+      ]
+    }
+  },
+  "labels": [],
+  "createdAt": "2023-04-10T23:17:41.680Z",
+  "description": "Fixture description",
+  "indexedAt": "2026-03-28T16:04:06.989Z",
+  "banner": "https://fixture-8.test/img/banner/plain/did:plc:fixture003/bafkreibfuu4xhbdbbcwcr4tvpkn5mfaojrcpsgfvrbwwf764chmhvp2i2q",
+  "followersCount": 16432,
+  "followsCount": 4302,
+  "postsCount": 14958,
+  "pinnedPost": {
+    "cid": "bafyreic7ag4glmz6kympojrpnhnduic6jqbyxaqo7gdymlu5i5z656wxgq",
+    "uri": "at://did:plc:fixture003/app.bsky.feed.post/3lozlswuapk2y"
+  }
+}

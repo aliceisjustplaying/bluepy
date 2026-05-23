@@ -20,6 +20,7 @@
  * insertion order). Invocation: `bun run scripts/sanitize-fixtures.ts`.
  */
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 const RAW_IN = '/tmp/bluepy-fixtures-raw';
@@ -212,28 +213,47 @@ function walk(node: unknown, key?: string): unknown {
   return node;
 }
 
-async function main(): Promise<void> {
-  await mkdir(SAFE_OUT, { recursive: true });
+async function sanitizeDir(rawIn: string, safeOut: string): Promise<number> {
+  if (!existsSync(rawIn)) {
+    console.log(`(skip) ${rawIn} does not exist`);
+    return 0;
+  }
+  await mkdir(safeOut, { recursive: true });
+  const files = (await readdir(rawIn)).filter((f) => f.endsWith('.json'));
+  console.log(`sanitizing ${files.length} files: ${rawIn} -> ${safeOut}`);
 
-  const files = (await readdir(RAW_IN)).filter((f) => f.endsWith('.json'));
-  console.log(`sanitizing ${files.length} files from ${RAW_IN} -> ${SAFE_OUT}`);
-
-  // Two-pass: first pass primes the didMap/handleMap from any 'did' field at any nesting,
-  // so subsequent string-level replacements use stable mappings even when a DID appears
-  // first as a substring in a URI rather than as a 'did' field.
+  // Two-pass: first pass primes the didMap/handleMap from any 'did' field at any nesting.
   for (const f of files) {
-    const raw = JSON.parse(await readFile(path.join(RAW_IN, f), 'utf8'));
+    const raw = JSON.parse(await readFile(path.join(rawIn, f), 'utf8'));
     primeMaps(raw);
   }
-  console.log(`primed mappings: ${didMap.size} DIDs, ${handleMap.size} handles`);
 
   for (const f of files) {
     textPostIdx = 0;
-    const raw = JSON.parse(await readFile(path.join(RAW_IN, f), 'utf8'));
+    const raw = JSON.parse(await readFile(path.join(rawIn, f), 'utf8'));
     const cleaned = walk(raw);
-    await writeFile(path.join(SAFE_OUT, f), JSON.stringify(cleaned, null, 2) + '\n');
+    await writeFile(path.join(safeOut, f), JSON.stringify(cleaned, null, 2) + '\n');
     console.log(`  ${f}`);
   }
+  // Pass through any non-json files (MISSING.md etc.)
+  for (const f of (await readdir(rawIn)).filter((f) => !f.endsWith('.json'))) {
+    const src = await readFile(path.join(rawIn, f), 'utf8');
+    await writeFile(path.join(safeOut, f), src);
+    console.log(`  ${f} (copied as-is)`);
+  }
+  return files.length;
+}
+
+async function main(): Promise<void> {
+  // Phase 1: structural fixtures (single shared didMap/handleMap so cross-references resolve)
+  const n1 = await sanitizeDir(RAW_IN, SAFE_OUT);
+  // Phase 2: moderation subdir (shares the same didMap so any DIDs already mapped stay consistent)
+  const n2 = await sanitizeDir(
+    '/tmp/bluepy-fixtures-raw-mod',
+    path.join(SAFE_OUT, 'moderation'),
+  );
+  console.log(`primed mappings after both phases: ${didMap.size} DIDs, ${handleMap.size} handles`);
+  console.log(`sanitized ${n1} structural + ${n2} moderation fixtures`);
 
   // Write the mapping report (NOT committed; useful for spot-checking)
   await writeFile(
