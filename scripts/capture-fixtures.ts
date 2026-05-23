@@ -117,7 +117,7 @@ async function main(): Promise<void> {
   withUnknown.preferences.push({
     $type: 'app.bsky.actor.defs#someFuturePref',
     futureField: 'fixture-future-value',
-  });
+  } as (typeof withUnknown.preferences)[number]);
   await dump('getPreferences.with-unknown.json', withUnknown);
 
   console.log('app.bsky.notification.listNotifications');

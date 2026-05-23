@@ -38,13 +38,11 @@ const CHROMIUM_ARGS =
  */
 export default defineConfig({
   testDir: './tests',
-  testMatch: '**/*.spec.js',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  retries: 0,
   /* Opt out of parallel tests on CI and when running live ATProto smoke tests. */
   workers: process.env.CI || HAS_ATPROTO_TEST_CREDS ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -61,7 +59,23 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'Chromium',
+      name: 'e2e',
+      testMatch: '**/e2e/**/*.spec.ts',
+      retries: 0,
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          executablePath:
+            process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ||
+            '/run/current-system/sw/bin/chromium',
+          args: CHROMIUM_ARGS,
+        },
+      },
+    },
+    {
+      name: 'legacy-atproto',
+      testMatch: '**/atproto-*.spec.js',
+      retries: process.env.CI ? 2 : 0,
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: {

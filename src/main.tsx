@@ -11,9 +11,12 @@ import { createRoot, type Root } from 'react-dom/client';
 // Polyfill needed for Firefox < 122
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1423593
 // import '@formatjs/intl-segmenter/polyfill';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './app';
+import { SessionProvider } from './contexts/SessionProvider';
+import { createQueryClient } from './data/query-client';
 import ErrorFallback from './components/error-fallback';
 import { IconSpriteProvider } from './components/icon-sprite-manager';
 import { applyAppviewTheme } from './utils/atproto-adapter';
@@ -29,6 +32,7 @@ import {
 } from './utils/router';
 import states from './utils/states';
 
+const queryClient = createQueryClient();
 const bluepyReactRoot = Symbol.for('bluepy.reactRoot');
 
 type RootContainer = HTMLElement & {
@@ -96,13 +100,17 @@ if (!redirectLegacyOrigin()) {
         (appContainer[bluepyReactRoot] = createRoot(appContainer));
       root.render(
         <I18nProvider i18n={i18n}>
-          <BrowserRouter>
-            <IconSpriteProvider>
-              <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
-                <App />
-              </Sentry.ErrorBoundary>
-            </IconSpriteProvider>
-          </BrowserRouter>
+          <QueryClientProvider client={queryClient}>
+            <SessionProvider>
+              <BrowserRouter>
+                <IconSpriteProvider>
+                  <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
+                    <App />
+                  </Sentry.ErrorBoundary>
+                </IconSpriteProvider>
+              </BrowserRouter>
+            </SessionProvider>
+          </QueryClientProvider>
         </I18nProvider>,
       );
 

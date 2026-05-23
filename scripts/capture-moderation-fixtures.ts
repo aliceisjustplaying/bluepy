@@ -95,7 +95,7 @@ async function main(): Promise<void> {
     const tl = await agent.app.bsky.feed.getTimeline({ limit: 100, cursor });
     pages += 1;
     for (const item of tl.data.feed) {
-      const post = item.post as AnyRec;
+      const post = item.post as unknown as AnyRec;
       const author = post.author as AnyRec;
       const viewer = (author?.viewer ?? {}) as AnyRec;
       const labels = post.labels as unknown[] | undefined;
@@ -187,7 +187,7 @@ async function main(): Promise<void> {
     try {
       // Search for benign common term to get a diverse author set
       const sr = await agent.app.bsky.feed.searchPosts({ q: 'the', limit: 100 });
-      for (const post of sr.data.posts as AnyRec[]) {
+      for (const post of sr.data.posts as unknown as AnyRec[]) {
         const author = post.author as AnyRec;
         const viewer = (author?.viewer ?? {}) as AnyRec;
         if (!candidates.blockedBy && viewer.blockedBy === true) { candidates.blockedBy = post; await dump('blocked-by', post); }
@@ -207,7 +207,7 @@ async function main(): Promise<void> {
   if (!candidates.blocking) {
     try {
       const blocks = await agent.app.bsky.graph.getBlocks({ limit: 5 });
-      const first = (blocks.data.blocks as AnyRec[])[0];
+      const first = (blocks.data.blocks as unknown as AnyRec[])[0];
       if (first && typeof first.did === 'string') {
         const prof = await agent.app.bsky.actor.getProfile({ actor: first.did });
         await dump('blocking-profile', prof.data);
@@ -223,7 +223,7 @@ async function main(): Promise<void> {
   if (!candidates.muted) {
     try {
       const mutes = await agent.app.bsky.graph.getMutes({ limit: 5 });
-      const first = (mutes.data.mutes as AnyRec[])[0];
+      const first = (mutes.data.mutes as unknown as AnyRec[])[0];
       if (first && typeof first.did === 'string') {
         const prof = await agent.app.bsky.actor.getProfile({ actor: first.did });
         await dump('muted-profile', prof.data);
