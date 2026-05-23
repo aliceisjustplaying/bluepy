@@ -115,6 +115,28 @@ const queryClient = createQueryClient();      // src/data/query-client.ts (ADR-0
 
 **No deletion in Phase 0.** The old adapter, Valtio, store-utils, and Masto-shaped APIs stay live during Phase 0. Phase 0 only **adds** the new substrate. Deletion happens module-by-module as each consumer is ported (and ultimately in the final deletion pass listed below).
 
+## Milestones (the agent commits between each)
+
+Big-bang branch, structured cadence. The agent runs M1 → M11 sequentially. Each milestone ends with a commit `phase-b/M{N}-<short-name>` so you can spot-check or interrupt at any boundary. A single PR opens at the end.
+
+| # | Milestone | Done when |
+| --- | --- | --- |
+| **M1** | Phase 0 scaffolding | `@tanstack/react-query` + `zustand` installed; `playwright.config` matches `tests/e2e/**/*.spec.ts` with `retries: 0`; `<QueryClientProvider>` + `<SessionProvider>` mounted in `src/main.tsx`; `bun run typecheck` clean. **No** module port yet. |
+| **M2** | Pure internals + unit gate | `src/data/keys.ts`, `src/data/_internal/prime.ts` (`primePosts`, `primeProfiles`), `src/data/_internal/patchers.ts` (optimistic patchers), `src/data/_internal/reconcile-shortcuts.ts`, `src/render/post-text.ts`, `src/render/moderation-decision.ts` written. **`bun run test:unit` green for every one** before M3 can start. This is a hard gate (ADR-0019 + grill round 3). |
+| **M3** | Session/client layer | `src/data/clients.ts` with `ClientBundle`, `getReadAgent(mode)`, `getWriteAgent()`, `getPdsAgentFor(did)` per ADR-0004; `<SessionProvider>` wired to `@atproto/oauth-client-browser` `restore(did)`; account-switch swaps the active scope; `useViewerScope()` exposes `[viewerDid, appviewDid, labelersHash]`. |
+| **M4** | Read-only data hooks | `posts.ts`, `profiles.ts`, `feeds.ts`, `search.ts`, `notifications.ts`, `lists.ts`, `feed-generators.ts`, `bookmarks.ts` read hooks + imperative fns. Primers fire on every list path. Direct-route hooks (`usePostRoute`, `useProfileRoute`, `useThread`) refetch on mount per ADR-0016. |
+| **M5** | Preferences + shortcuts + moderation context | `usePreferences()` + per-pref-type mutation hooks (preserve-unknown rule tested); `useShortcutBar()` with pure reconcile + `useEffect` writeback; `useModerationContext()` per ADR-0022. |
+| **M6** | UI state migration | `src/state/modals.ts`, `reveals.ts`, `ui-preferences.ts`, `shortcuts.ts` Zustand slices replace the Valtio decomposition. Old `src/utils/states.ts` references are removed from the data and state layers (consumer references still exist; M7 cleans them up). |
+| **M7** | Component migration | Every component reads from the new hooks. `AdaptedStatus`/`AdaptedAccount`/`AdaptedList` import sites converted. Every post-render and profile-render goes through `usePostModeration` / `useProfileModeration`. `bun run dev` + browser walkthrough works end-to-end. |
+| **M8** | Mutations | Engagement mutations (like/unlike/repost/unrepost/follow/unfollow/mute/unmute/block/unblock/bookmark/unbookmark) optimistic per ADR-0005; broad invalidation for createPost/deletePost. |
+| **M9** | Compose (plan 0002 in full) | Multi-account, intent-keyed multi-draft compose lands. Video upload uses the two-token flow (ADR-0022 / plan 0002). DraftKey canonical serializer + attachment ref-counting unit-tested. |
+| **M10** | Telemetry + Sentry + read-only offline | Plausible script tag in prod build; Sentry init with `beforeSend` PII scrubber (DIDs, handles, tokens, CIDs); `persistQueryClient` wired to IndexedDB with per-DID partition + 50MB LRU per ADR-0021. PWA manifest + Workbox service worker land here. Push (workers/push/) stays out — plan 0004. |
+| **M11** | Deletion pass | `src/utils/atproto-adapter.ts`, `states.ts`, `store.ts`, `store-utils.ts`, `api.ts`, `auth-context.tsx` deleted. `masto` + `valtio` removed from `package.json`. Old `tests/atproto-*.spec.js` deleted. `bun run typecheck && bun run test && bun run build` green. |
+
+**Testing tier — one live e2e suite, no mocked tier.** ADR-0019 requires fresh `tests/e2e/*.spec.ts` walking the real flow against `ATPROTO_TEST_*` credentials. The rebuild does NOT introduce a `msw`-mocked tier. Determinism comes from a dedicated test account with isolated test-feed/test-list rkeys, not from intercepting network. Unit tests (M2) handle the pure-function correctness layer; live e2e handles features.
+
+**If a milestone fails:** the agent stops, surfaces the failure with file:line refs, and waits for human intervention. No skipping ahead.
+
 ## Per-module specs
 
 ### `src/data/clients.ts`
@@ -491,6 +513,8 @@ The agent treats ADR-0019 as the authoritative "done" bar. The criteria there ar
 6. `bun run test:unit` passes the new unit suite (`tests/unit/*.test.ts`) — primers, keys, patchers, reconcile, post-text. Fixture-driven, no snapshots, no input fabrication.
 7. `bun run build` succeeds.
 8. Sentry DSN injection works in prod build; Plausible script tag present in prod build; both no-ops in dev.
+9. Read-only offline persistence (ADR-0021): `persistQueryClient` initialised against IndexedDB with per-DID partitioning + 50MB LRU; persisted query keys cover post/profile/timeline/feed/thread/notifications/preferences; search and mutations are NOT persisted. PWA manifest + Workbox service worker present. Logged-in browser walkthrough offline (after one-time cache fill) renders cached timeline + post permalinks without network.
+10. The 11 milestone commits are present on the branch in order (`phase-b/M1-*` … `phase-b/M11-*`).
 
 ### Round-3 must-fix deltas (review pass, supersedes earlier sections)
 

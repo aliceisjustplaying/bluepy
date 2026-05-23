@@ -64,7 +64,7 @@ interface Draft {
 }
 
 interface ComposeState {
-  drafts: Map<DraftKeyString, Draft>;       // DraftKeyString = JSON-encoded DraftKey
+  drafts: Map<DraftKeyString, Draft>;       // DraftKeyString = canonically-serialized DraftKey (see below)
   activeKey: DraftKeyString | null;          // currently-open compose modal
 
   openDraft(key: DraftKey, seed?: Partial<Draft>): void;  // creates or activates
@@ -79,6 +79,23 @@ interface ComposeState {
 ```
 
 **Persistence (Zustand `persist` middleware)**:
+#### `DraftKey` canonical serializer
+
+`DraftKey` is a discriminated union. To use it as a Map key we serialize to a canonical string. The serializer + parser live in `src/compose/draft-key.ts`:
+
+```ts
+export type DraftKeyString = `v1:${string}`;
+
+export function draftKeyToString(key: DraftKey): DraftKeyString;
+export function parseDraftKey(value: string): DraftKey | null;
+```
+
+Rules:
+- Output is prefixed `v1:` so future shape changes can co-exist (`v2:` etc.); `parseDraftKey` accepts only the version it understands and returns `null` otherwise.
+- Field order is **fixed by the serializer**, not JSON-key-order-dependent. The agent does NOT use raw `JSON.stringify` — runtimes differ on property iteration for objects with mixed string/numeric keys, which would silently produce duplicate draft entries for the same logical key.
+- Unknown `kind` discriminants throw at serialize time; `parseDraftKey` returns `null` for unrecognized kinds.
+- Unit-tested at `tests/unit/compose/draft-key.test.ts` against the full set of `DraftKey` discriminants (fresh, reply, quote, edit-draft) with fixture-driven round-trip assertions: `parse(serialize(key)) === structurallyEqual(key)` for every shape, and `serialize` outputs are stable across runs (no Date.now, no Math.random in the key).
+
 - Persisted fields: `drafts[*].text`, `replyTo`, `replyRoot`, `quote`, `externalCardDismissed`, `langs`, `selfLabels`, `threadgate`, `postgate`, `authorDid`, `updatedAt`. Plus `activeKey`.
 - **Not persisted**: `drafts[*].attachments` (File objects can't survive reload), `mentionResolutions` (cheap to recompute).
 - A custom `partialize` strips attachments on save and on load.
@@ -106,6 +123,7 @@ interface ComposeState {
 - Watches the draft text for URLs. The **last** URL in text is the candidate.
 - If `externalCardDismissed === true`, no card is fetched or shown.
 - Otherwise: fetch metadata from `https://cardyb.bsky.app/v1/extract?url=<url>`. Cardyb returns `{ url, title, description, image, error? }`. Cache results per-URL in compose-store for the duration of the draft (don't re-fetch on every keystroke).
+  - **Privacy note (acknowledged, not fixed in this plan).** The Cardyb fetch leaks every URL the user types into the draft to Bluesky's `cardyb.bsky.app` service, regardless of whether the user ever submits the post. We match Phanpy/social-app behaviour for now (auto-fetch on debounce). A future `linkPreviewFetch: 'auto' | 'ask' | 'off'` UI preference is tracked as a follow-up; defer until the rebuild lands. Document this in the privacy policy alongside the existing Bluesky integration.
 - Render the card preview with a `×` dismiss button. Clicking `×` sets `externalCardDismissed = true` for this draft and removes the card from the UI. The URL stays in the text as a plain link.
 - If the user pastes a different URL later in the same draft and `externalCardDismissed === false`, the card updates to the new (last) URL.
 
@@ -168,6 +186,13 @@ If the service-auth token expires mid-upload, mint a fresh one and retry. This i
 Renders only when `useSessionsStore(s => s.knownDids.length > 1)`. Avatar + handle of the current draft author with a dropdown to switch. Selecting an author:
 
 - Calls `compose.setAuthor(newDid)` which **forks the draft**: the previous draft (under the old `DraftKey` with `authorDid: oldDid`) is preserved; a new draft is created for `authorDid: newDid` with the same text/attachments/refs *copied*. This avoids a quietly-changed `authorDid` on a draft the user thought belonged to a different account.
+
+  **Attachment forking rules** (`src/compose/attachments.ts`):
+  - Forking shares the underlying `File` objects between the old and new draft (cheap, identical content).
+  - Each draft has its **own** attachment IDs (so removing from one draft doesn't change the other's ID set).
+  - Preview `objectURL`s are **ref-counted**: a small `Map<File, { url: string; refs: Set<attachmentId> }>` in compose-store. Adding an attachment increments the ref set for its file; removing decrements. `URL.revokeObjectURL` runs ONLY when the ref set becomes empty.
+  - Closing/discarding a draft drops every attachment in that draft, which decrements ref-counts on shared files; URLs survive as long as any other draft still references them.
+  - Unit-tested at `tests/unit/compose/attachment-refcount.test.ts`: fork-then-remove-from-one scenario asserts the other draft's preview URL is still resolvable.
 - Submit uses the author's `pdsAgent`. `<SessionProvider>` exposes a helper `getPdsAgentFor(did)` that constructs a `pdsAgent` for any logged-in DID, not just the active one.
 
 ## Files created / modified
