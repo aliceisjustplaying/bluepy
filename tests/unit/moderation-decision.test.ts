@@ -21,6 +21,7 @@ function baseContext(
     baselineLabelers: [{ did: labelerDid }],
     subscribedLabelers: [],
     acceptedLabelerDids: [labelerDid],
+    labelDefs: {},
     contentLabelPrefs: [],
     adultContent: false,
     mutedWords: [],

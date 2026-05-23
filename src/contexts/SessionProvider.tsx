@@ -7,12 +7,15 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import type { Agent } from '@atproto/api';
 import type { OAuthSession } from '@atproto/oauth-client-browser';
+import { useQuery } from '@tanstack/react-query';
 
 import {
   baselineAcceptedLabelers,
   createClients,
   getPdsRepoAgentFor,
+  restorePdsRepoAgentFor,
   type ClientBundle,
 } from '../data/clients';
 import {
@@ -173,10 +176,22 @@ export function useActiveOAuthSession(): OAuthSession | null {
   return use(ActiveSessionContext);
 }
 
-export function usePdsRepoAgentFor(did: string) {
+export function usePdsRepoAgentFor(did: string): Agent | null {
+  const clients = useClients();
   const activeDid = useActiveDid();
-  const activeSession = use(ActiveSessionContext);
-  const session =
-    did === activeDid ? activeSession : getCachedAtprotoOAuthSession(did);
-  return getPdsRepoAgentFor(session);
+  const knownDids = useSessionsStore((state) => state.knownDids);
+
+  const cachedAgent = useMemo(
+    () => getPdsRepoAgentFor(clients, did, activeDid),
+    [activeDid, clients, did],
+  );
+
+  const restoreQuery = useQuery({
+    queryKey: ['pdsRepoAgent', did],
+    enabled: knownDids.includes(did) && !cachedAgent,
+    staleTime: Number.POSITIVE_INFINITY,
+    queryFn: () => restorePdsRepoAgentFor(did),
+  });
+
+  return cachedAgent ?? restoreQuery.data ?? null;
 }

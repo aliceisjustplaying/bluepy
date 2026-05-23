@@ -6,7 +6,11 @@ import {
 } from '@atproto/api';
 import type { OAuthSession } from '@atproto/oauth-client-browser';
 
-import { createAtprotoOAuthAgent } from '../utils/atproto-oauth';
+import {
+  createAtprotoOAuthAgent,
+  getCachedAtprotoOAuthSession,
+  restoreAtprotoOAuthSession,
+} from '../utils/atproto-oauth';
 
 import { AppViewNotSupportedError, NotAuthenticatedError } from './errors';
 
@@ -163,9 +167,25 @@ export function getWriteAgent(
 }
 
 export function getPdsRepoAgentFor(
-  session: OAuthSession | null,
+  clients: ClientBundle,
+  did: string,
+  activeDid: string | null,
 ): Agent | null {
-  return createAtprotoOAuthAgent(session);
+  if (activeDid === did && clients.pdsRepoAgent) {
+    return clients.pdsRepoAgent;
+  }
+  return createAtprotoOAuthAgent(getCachedAtprotoOAuthSession(did));
+}
+
+export async function restorePdsRepoAgentFor(did: string): Promise<Agent> {
+  const session =
+    getCachedAtprotoOAuthSession(did) ??
+    (await restoreAtprotoOAuthSession(did));
+  const agent = createAtprotoOAuthAgent(session);
+  if (!agent) {
+    throw new NotAuthenticatedError();
+  }
+  return agent;
 }
 
 export function baselineAcceptedLabelers(): readonly string[] {

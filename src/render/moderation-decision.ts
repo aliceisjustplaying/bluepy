@@ -6,6 +6,7 @@ import {
   moderatePost,
   moderateProfile,
   type ComAtprotoLabelDefs,
+  type InterpretedLabelValueDefinition,
   type ModerationDecision,
   type ModerationOpts,
 } from '@atproto/api';
@@ -14,6 +15,7 @@ export interface ModerationContext {
   baselineLabelers: readonly { did: string }[];
   subscribedLabelers: readonly { did: string }[];
   acceptedLabelerDids: readonly string[];
+  labelDefs: Record<string, InterpretedLabelValueDefinition[]>;
   contentLabelPrefs: AppBskyActorDefs.ContentLabelPref[];
   adultContent: boolean;
   mutedWords: AppBskyActorDefs.MutedWord[];
@@ -82,6 +84,7 @@ function moderationContextToOpts(ctx: ModerationContext): ModerationOpts {
       mutedWords: [...ctx.mutedWords],
       hiddenPosts: [...ctx.hiddenPosts],
     },
+    labelDefs: ctx.labelDefs,
   };
 }
 
@@ -217,6 +220,14 @@ export function decidePostModeration(
   };
 }
 
+function profileFieldBlurred(
+  mod: ModerationDecision,
+  context: 'avatar' | 'banner' | 'displayName' | 'profileView',
+): boolean {
+  const ui = mod.ui(context);
+  return ui.blurs.length > 0 || ui.noOverride;
+}
+
 export function decideProfileModeration(
   profile:
     | AppBskyActorDefs.ProfileView
@@ -226,16 +237,15 @@ export function decideProfileModeration(
   const mod = moderateProfile(profile, moderationContextToOpts(ctx));
   const labels = filterLabels(profile.labels, ctx.acceptedLabelerDids);
   const visibility = mapVisibility(mod, 'profileView');
-  const ui = mod.ui('profileView');
 
   return {
     visibility,
     cause: mapProfileCauseType(mod),
     labels,
     causeLabel: labelCause(mod),
-    avatarBlur: ui.blurs.some((cause) => cause.type !== 'label'),
-    bannerBlur: ui.blurs.length > 0,
-    displayNameBlur: ui.blurs.length > 0,
-    bioBlur: ui.blurs.length > 0,
+    avatarBlur: profileFieldBlurred(mod, 'avatar'),
+    bannerBlur: profileFieldBlurred(mod, 'banner'),
+    displayNameBlur: profileFieldBlurred(mod, 'displayName'),
+    bioBlur: profileFieldBlurred(mod, 'profileView'),
   };
 }

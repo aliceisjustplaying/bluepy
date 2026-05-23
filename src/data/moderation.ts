@@ -3,6 +3,7 @@ import type {
   AppBskyFeedDefs,
   AppBskyLabelerDefs,
 } from '@atproto/api';
+import { interpretLabelValueDefinitions } from '@atproto/api';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 
@@ -78,6 +79,14 @@ export function useModerationContext(): ModerationContext {
     return map;
   }, [labelerQuery.data]);
 
+  const labelDefs = useMemo(() => {
+    const defs: ModerationContext['labelDefs'] = {};
+    for (const view of labelerQuery.data ?? []) {
+      defs[view.creator.did] = interpretLabelValueDefinitions(view);
+    }
+    return defs;
+  }, [labelerQuery.data]);
+
   const baselineLabelers = useMemo(
     () =>
       baselineAcceptedLabelers().map((did) => ({
@@ -99,6 +108,7 @@ export function useModerationContext(): ModerationContext {
       baselineLabelers,
       subscribedLabelers,
       acceptedLabelerDids,
+      labelDefs,
       contentLabelPrefs: prefs?.contentLabels ?? [],
       adultContent: prefs?.adultContent ?? false,
       mutedWords: prefs?.mutedWords ?? [],
@@ -109,6 +119,7 @@ export function useModerationContext(): ModerationContext {
       acceptedLabelerDids,
       activeDid,
       baselineLabelers,
+      labelDefs,
       prefs?.adultContent,
       prefs?.contentLabels,
       prefs?.hiddenPosts,
