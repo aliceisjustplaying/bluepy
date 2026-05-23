@@ -97,6 +97,8 @@ describe('decidePostModeration', () => {
     };
     const decision = decidePostModeration(blocked, baseContext());
     expect(decision.cause).toBe('blocking');
+    expect(decision.visibility).toBe('blur');
+    expect(decision.noOverride).toBe(true);
   });
 });
 
