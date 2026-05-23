@@ -86,6 +86,21 @@ export default defineConfig({
         },
       },
     },
+    {
+      name: 'legacy',
+      testMatch: '**/*.spec.js',
+      testIgnore: '**/atproto-*.spec.js',
+      retries: process.env.CI ? 2 : 0,
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          executablePath:
+            process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ||
+            '/run/current-system/sw/bin/chromium',
+          args: CHROMIUM_ARGS,
+        },
+      },
+    },
   ],
 
   /* Run your local dev server before starting the tests */

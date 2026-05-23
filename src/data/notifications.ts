@@ -2,6 +2,7 @@ import type { AppBskyNotificationListNotifications } from '@atproto/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useActiveDid, useClients } from '../contexts/SessionProvider';
+import { notificationStatusURI } from '../utils/atproto-adapter';
 
 import { feedReadMode } from './_internal/dispatch';
 import { primePosts, primeProfiles } from './_internal/prime';
@@ -35,8 +36,11 @@ export function useNotifications(filter?: NotifFilter) {
       const postUris = [
         ...new Set(
           res.data.notifications
-            .map((n) => n.uri)
-            .filter((uri) => uri.includes('/app.bsky.feed.post/')),
+            .map((notification) => notificationStatusURI(notification))
+            .filter(
+              (uri): uri is string =>
+                Boolean(uri?.includes('/app.bsky.feed.post/')),
+            ),
         ),
       ];
       if (postUris.length > 0) {
