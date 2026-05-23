@@ -173,7 +173,7 @@ guard_bash_command() {
 		deny "do not print Bluepy secret files; source ~/.secrets/bluepy/source.env is allowed"
 	fi
 
-	if rg -q '(^|[;&|[:space:]])(env|printenv)(\s|$).*(CLOUDFLARE|ATPROTO|PASSWORD|API_KEY)|echo[[:space:]]+["'\'']?\$[A-Z0-9_]*(PASSWORD|API_KEY|SECRET|TOKEN)' <<<"$cmd"; then
+	if rg -q '(^|[;&|[:space:]])(env|printenv)([[:space:]]+(-[a-zA-Z]|[A-Z_]+=|\||$)|[[:space:]]*[;&|]).*(CLOUDFLARE|ATPROTO|PASSWORD|API_KEY)|echo[[:space:]]+["'\'']?\$[A-Z0-9_]*(PASSWORD|API_KEY|SECRET|TOKEN)' <<<"$cmd"; then
 		deny "do not print secret-shaped environment variables"
 	fi
 
