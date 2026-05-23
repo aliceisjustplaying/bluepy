@@ -152,12 +152,14 @@ Order of operations, all-or-nothing (ADR-0014):
 
 ### Video upload — `src/compose/video-upload.ts`
 
-Bluesky video uploads use service-auth tokens against `https://video.bsky.app`. Sketch:
+Verified against `~/src/a/social-app/src/lib/media/video/upload.shared.ts` and `upload.web.ts` (the current Bluesky reference flow). **Two separate service-auth tokens are minted with different audiences and lexicon-methods — the agent does not reuse one for both calls.**
 
-1. Call `authorPdsAgent.com.atproto.server.getServiceAuth({ aud: 'did:web:video.bsky.app', lxm: 'com.atproto.repo.uploadBlob' })` to mint a service-auth token.
-2. Upload via `https://video.bsky.app/xrpc/app.bsky.video.uploadVideo` (or the current Bluesky endpoint — verify against the latest spec when porting) with the token as Bearer auth.
-3. Poll `app.bsky.video.getJobStatus` until processing completes.
-4. The resulting blob ref is what goes into `app.bsky.embed.video.video`.
+- **Step 1: check upload limits.** Mint a service-auth token with `aud: 'did:web:video.bsky.app'` (the video service DID) and `lxm: 'app.bsky.video.getUploadLimits'`. Call `app.bsky.video.getUploadLimits` against the video service with that token as Bearer auth. The response includes `canUpload`, an optional `message` (rate-limit / temporary-block reasoning), and the per-account size/duration ceiling. Block the upload UI and surface `message` if `canUpload === false`.
+- **Step 2: upload the blob.** Mint a second service-auth token with `aud: 'did:web:<authorPdsHostname>'` (derived from `authorPdsAgent.dispatchUrl.hostname` — the PDS host, NOT the video service DID) and `lxm: 'com.atproto.repo.uploadBlob'`, with a 30-minute `exp`. POST the raw bytes to `https://video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=<authorDid>&name=<random>.<ext>` with the token as Bearer auth and the file's MIME type as `Content-Type`. Response is `app.bsky.video.defs#jobStatus`.
+- **Step 3: poll status.** Call `app.bsky.video.getJobStatus({ jobId })` against the video service (unauthenticated read on Bluesky's AppView) until `state === 'JOB_STATE_COMPLETED'` and `blob` is present, or `state === 'JOB_STATE_FAILED'`.
+- **Step 4: attach.** The completed-job `blob` is what goes into `app.bsky.embed.video.video`.
+
+**Why the audiences differ.** The video service verifies upload-limit tokens against its own DID (it is the entity checking the limit). The actual blob upload is mediated through the PDS — the service-auth token there proves "the holder is authorised to call `com.atproto.repo.uploadBlob` against this PDS audience," and the video service forwards the blob into that PDS context. Hardcoding `aud: 'did:web:video.bsky.app'` for the blob upload step (an earlier draft of this plan said this) produces a token that the PDS will not accept and silently fails the upload.
 
 If the service-auth token expires mid-upload, mint a fresh one and retry. This is wrapped inside the attachment's submit-time upload step.
 

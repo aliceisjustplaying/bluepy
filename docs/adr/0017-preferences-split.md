@@ -40,3 +40,15 @@ Device-local UI prefs (all 13 Phanpy fields above).
 - Account switch: `usePreferences` invalidates and refetches (it's account-scoped via `keys.preferences(did)`); `useUiPreferences` swaps to the per-DID Zustand slice.
 - Initial boot: both fire in parallel; UI renders against `useUiPreferences` immediately (synchronous from localStorage) and reveals server-pref-gated UI (e.g. adult content visibility) when `usePreferences` resolves.
 - The Phanpy shortcut bar (covered separately) renders from a combination of `savedFeedsPrefV2` (feed entries) and `useUiPreferences().shortcutsViewMode` (display mode). See follow-on grill for shortcut-bar architecture.
+
+**Hard rule: preference writes preserve unknown `$type` entries byte-for-byte.**
+
+`app.bsky.actor.putPreferences` replaces the entire preferences array. Every per-type mutation hook (`useUpdatePreference('adultContent')`, `useUpdatePreference('savedFeeds')`, etc.) MUST:
+
+1. Read the latest `getPreferences` response (the SDK's `agent.updatePreferences(cb)` does this internally — use it; do not roll a separate read-modify-write path).
+2. Mutate or insert only entries whose `$type` the hook owns.
+3. Leave every other entry in the array untouched, including entries with `$type` values the agent does not recognise.
+
+Rebuilding the preferences array from only the normalized fields the hook reads is forbidden. A hook that ignored unknown entries would silently delete future Bluesky preference types and any prefs the AppView/PDS rounds-tripped through the open union — including types this client should not need to know about, like new third-party labeler prefs or experimental Bluesky preference rollouts.
+
+**Acceptance criterion (ADR-0019 done-bar).** A fixture-driven unit test stuffs an unrecognised `$type` entry (e.g. `app.bsky.actor.defs#someFuturePref`) into a `getPreferences` response fixture, exercises each per-type mutation hook against it, and asserts the unknown entry is present and unchanged in the final `putPreferences` request body. Lives at `tests/unit/preferences/preserve-unknown.test.ts`.

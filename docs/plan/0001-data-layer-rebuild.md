@@ -77,6 +77,44 @@ src/
     sanitize-html.ts      # Stays. DOMPurify wrappers (sanitizePostHtml, sanitizeEmbedHtml).
 ```
 
+## Phase 0 — Scaffolding (do this first, before any per-module work)
+
+The architecture assumes TanStack Query and Zustand. The current `package.json` ships `@atproto/api`, `@atproto/oauth-client-browser`, `idb-keyval`, `masto`, and `valtio`. The new foundational libraries are not present yet. Before any module port, the agent installs and configures them.
+
+**Dependencies:**
+
+```bash
+bun add @tanstack/react-query
+bun add -d @tanstack/react-query-devtools
+bun add zustand
+# masto + valtio stay installed until their last import is removed in the deletion pass.
+# @atproto/api + @atproto/oauth-client-browser stay.
+```
+
+**Playwright config update** (`playwright.config.js` or `.ts`):
+
+- ADR-0019 requires the new suite at `tests/e2e/*.spec.ts`. The current config matches `**/*.spec.js` only — TypeScript specs would never be discovered. Change `testMatch` to include `tests/e2e/**/*.spec.ts` and (during the rebuild) keep the old `tests/atproto-*.spec.js` glob so the existing flow-reference suite can still be run on the `bluesky` branch.
+- ADR-0019 says "every flake is a bug, not something to retry." Disable retries for the rebuild suite. If the current config sets `retries: process.env.CI ? 2 : 0`, replace with `retries: 0` for the new `tests/e2e/*.spec.ts` project. Old JS specs may keep their retries until they are removed.
+
+**Provider wiring** (before any consumer migration):
+
+```tsx
+// src/main.tsx (or wherever the React root mounts)
+const queryClient = createQueryClient();      // src/data/query-client.ts (ADR-0007/0009)
+
+<QueryClientProvider client={queryClient}>
+  <SessionProvider>                            // src/contexts/SessionProvider.tsx
+    <Router>
+      <App />
+    </Router>
+  </SessionProvider>
+</QueryClientProvider>
+```
+
+`createQueryClient()` and `<SessionProvider>` are themselves implemented as part of Phase 0; without them, no later data-layer module can run. After this scaffolding lands and typechecks, the agent moves on to the per-module specs below.
+
+**No deletion in Phase 0.** The old adapter, Valtio, store-utils, and Masto-shaped APIs stay live during Phase 0. Phase 0 only **adds** the new substrate. Deletion happens module-by-module as each consumer is ported (and ultimately in the final deletion pass listed below).
+
 ## Per-module specs
 
 ### `src/data/clients.ts`
@@ -389,6 +427,7 @@ The original plan referenced ADRs 0001-0011. A second grilling pass added ADRs 0
 | **Testing strategy: fresh e2e + fixture-driven unit core** | ADR-0019 |
 | **Telemetry (Plausible self-hosted) + Sentry error tracking** | ADR-0020 |
 | **Client shell, PWA, web push, read-only offline** | ADR-0021 |
+| **Moderation/labels subsystem (display decisions)** | ADR-0022 |
 
 ### Additional files (extend the "New file structure" section)
 
@@ -452,6 +491,19 @@ The agent treats ADR-0019 as the authoritative "done" bar. The criteria there ar
 6. `bun run test:unit` passes the new unit suite (`tests/unit/*.test.ts`) — primers, keys, patchers, reconcile, post-text. Fixture-driven, no snapshots, no input fabrication.
 7. `bun run build` succeeds.
 8. Sentry DSN injection works in prod build; Plausible script tag present in prod build; both no-ops in dev.
+
+### Round-3 must-fix deltas (review pass, supersedes earlier sections)
+
+Folded in from the architecture-critique review pass:
+
+- **4-category dispatch.** ADR-0004 rewritten: `public-active-appview` / `authenticated-active-appview-via-pds` / `public-bluesky-appview` / `pds-direct`. Default for a logged-in user is the PDS-proxied path, not the public AppView — viewer/moderation/label state must round-trip through the PDS so it carries account-sensitive context.
+- **Viewer-scope cache keys.** ADR-0009 + ADR-0016 rewritten: every key starts with `(viewerDid, appviewDid, labelersHash)`, not just `viewerDid`. Switching Active AppView or labelers naturally partitions the cache.
+- **Direct-route refetch.** ADR-0016: per-URI canonical entries keep `staleTime: Infinity` for list-driven priming, but direct-route hooks (`usePostRoute`, `useThread`, `useProfileRoute`) use `refetchOnMount: 'always'` with a finite 60s `staleTime`. Permalink opens revalidate.
+- **Embed-variant primer spec.** ADR-0016: primer enumerates `viewRecord` / `viewNotFound` / `viewBlocked` / `viewDetached` / non-post-record variants / unknown `$type`. Fixture corpus must cover all rows.
+- **Preserve-unknown preference writes.** ADR-0017: `putPreferences` writes must round-trip every entry whose `$type` the hook does not own. Unit test at `tests/unit/preferences/preserve-unknown.test.ts` is part of the done-bar.
+- **Pure shortcut reconciliation + `useEffect` writeback.** ADR-0018: `reconcileShortcutBar` is pure and returns `{ items, nextOrder, changed }`; the hook persists via `useEffect`, never inside `useMemo`.
+- **Moderation/labels layer.** ADR-0022 added: `src/data/moderation.ts` + `src/render/moderation-decision.ts`. Mandatory in phase (b), not deferred. Every post/profile render path goes through it.
+- **Video upload audience.** Plan 0002 updated: two separate service-auth tokens. `getUploadLimits` uses `aud: did:web:video.bsky.app`; `uploadBlob` uses `aud: did:web:<author-PDS-hostname>` (verified against `~/src/a/social-app/src/lib/media/video/upload.shared.ts`).
 
 ### Remaining open items (was section "Things to confirm before the agent runs")
 
