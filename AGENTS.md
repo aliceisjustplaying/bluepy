@@ -37,7 +37,7 @@ The Path above is yours to run autonomously. These few actions are the exception
 - Verify external review findings against current code before editing. CodeRabbit and GitHub summaries can be stale; compare the latest PR head SHA and review timestamp before declaring a PR clean.
 - Keep fixes minimal for review comments and merge conflicts. Resolve toward current `bluesky` behavior; put broader cleanup in a follow-up PR.
 - Treat post/profile/media/poll/spoiler/emoji fields as untrusted HTML input. Escape interpolated values before sanitizing and add XSS regression vectors when touching HTML preview/sanitizer code.
-- Do not guess ATProto behavior. Trace through `src/utils/atproto-adapter.ts` and `~/social-app`; logged-out public reads use AppView, PDS-facing writes/uploads need PDS audience/auth.
+- Do not guess ATProto behavior. Trace through `src/utils/atproto-adapter.ts` and the social-app reference clone (see Secrets & Paths for the host-conditional path); logged-out public reads use AppView, PDS-facing writes/uploads need PDS audience/auth.
 - For compose changes, verify the final `com.atproto.repo.createRecord` payload directly. UI text, facets, embed state, and reply refs are separate concerns.
 - Overlay links, icon buttons, comboboxes, and visually labeled inputs need keyboard reachability and accessible names. A browser snapshot with unnamed controls is not clean.
 - Behavioral changes to timeline, post, compose, notification, auth, routing, or settings need a focused regression test plus the relevant logged-in browser check.
@@ -76,7 +76,7 @@ claude -p \
 All secrets live in `~/.secrets/bluepy/` with private permissions. Never log, print, or commit them.
 
 - `source ~/.secrets/bluepy/source.env` sets `CLOUDFLARE_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `ATPROTO_TEST_IDENTIFIER`, `ATPROTO_TEST_PASSWORD`.
-- Reference clients are read-only: `~/social-app` first, optionally `github.com/mozzius/graysky`.
+- Reference clients are read-only: `~/social-app` (Linux/VPS) / `~/src/a/social-app` (macOS dev). The runbook writes `~/social-app`; if the path doesn't exist on the host, try `~/src/a/social-app` before failing — both are the same `bluesky-social/social-app` clone. Optionally `github.com/mozzius/graysky`.
 
 ## Branches, Remotes & Deploy
 

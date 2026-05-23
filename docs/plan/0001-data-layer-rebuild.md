@@ -396,12 +396,7 @@ Phase (b) is "done" when **all** of these are true:
 
 ## Things to confirm before the agent runs
 
-These are the questions still open. Filled in by additional grilling passes:
-
-- [ ] Compose flow details — plan 0002 (next grilling pass).
-- [ ] Specific list of operations that need `bskyAppviewAgent` (ADR-0004 says it's empirical; populate it as the agent encounters Blacksky/active-AppView gaps).
-- [ ] Service-auth handling for video upload (`video.bsky.app` audience).
-- [ ] Inventory of `src/utils/states.ts` exports → Zustand slice mapping.
+All resolved — see the round-2 and round-3 addenda below. The only item that remains empirical is the `bskyAppviewAgent` exceptions list, which the agent populates in `src/data/clients.ts` as it encounters third-party AppView blind spots during the rebuild. This is by design (ADR-0004) and not a blocker.
 
 ## Find/replace lookup (grows during port)
 
@@ -529,11 +524,15 @@ Folded in from the architecture-critique review pass:
 - **Moderation/labels layer.** ADR-0022 added: `src/data/moderation.ts` + `src/render/moderation-decision.ts`. Mandatory in phase (b), not deferred. Every post/profile render path goes through it.
 - **Video upload audience.** Plan 0002 updated: two separate service-auth tokens. `getUploadLimits` uses `aud: did:web:video.bsky.app`; `uploadBlob` uses `aud: did:web:<author-PDS-hostname>` (verified against `~/src/a/social-app/src/lib/media/video/upload.shared.ts`).
 
-### Remaining open items (was section "Things to confirm before the agent runs")
+### Remaining open items
 
-- ~~Compose flow details~~ — plan 0002 done.
-- ~~Inventory of states.ts exports~~ — resolved above.
-- Specific list of operations that need `bskyAppviewAgent` (ADR-0004 says empirical; the agent populates this list as it encounters them).
-- Service-auth handling for video upload (`video.bsky.app` audience) — traced from `~/social-app`'s `useVideoUploadStatus` and `app.bsky.video.*` lexicon; covered briefly in plan 0002, agent verifies during rebuild.
-- Threadgate/postgate lexicon stability — defer until needed (per user).
-- Web push service worker code (`workers/push/`) — tracked separately, not in this plan.
+All but two cleared by round-3 must-fix folding:
+
+- `bskyAppviewAgent` exceptions list — empirical by design (ADR-0004). The agent grows it in `src/data/clients.ts` during the rebuild as it encounters third-party AppView gaps. Not a blocker.
+- Web push service worker (`workers/push/`) — separate plan 0004, intentionally out of scope here.
+
+Cleared:
+- ~~Compose flow details~~ — plan 0002 complete.
+- ~~Inventory of states.ts exports~~ — full disposition table in round-2 addenda.
+- ~~Service-auth handling for video upload~~ — fixed in round-3 against `~/src/a/social-app` (two-token flow, see plan 0002).
+- ~~Threadgate/postgate lexicon stability~~ — explicitly deferred per user; not blocking the rebuild.
