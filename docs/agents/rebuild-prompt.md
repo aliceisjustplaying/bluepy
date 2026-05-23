@@ -41,9 +41,10 @@ The user has set these up. If any is missing, write `STUCK-PREFLIGHT.md` at the 
 ## Working environment
 
 - **Branch**: stay on `rewrite`. Do NOT touch `bluesky`. Do NOT switch branches. Do NOT create worktrees — the hook normally requires worktrees for branch-protected work, but `rewrite` is the rebuild branch by design.
-- **Shell**: source `~/.secrets/bluepy/source.env` in every terminal you spawn. Cursor's terminals do not inherit env from the parent shell automatically. First line of every terminal session: `source ~/.secrets/bluepy/source.env`.
+- **Shell**: load `~/.secrets/bluepy/source.env` in every terminal you spawn. Cursor's terminals do not inherit env from the parent shell automatically, AND source.env's lines don't include `export` — so a plain `source` would set shell vars but NOT make them visible to subprocesses like `bun`. First line of every terminal session: `set -a; source ~/.secrets/bluepy/source.env; set +a`. Verify with `[ -n "${ATPROTO_TEST_IDENTIFIER:-}" ]` before continuing.
 - **Package manager**: Bun only (`bun install`, `bun run …`, `bunx …`). Never npm, never yarn, never pnpm.
 - **Hooks**: project hooks under `.claude/settings.json` and `.codex/hooks.json` may or may not fire under Cursor Composer. Treat them as advisory. **The hard rules in this prompt are the source of truth.** If a hook blocks an action you believe is required, write `STUCK-M{N}.md` and stop — do not work around the hook.
+- **OAuth + localhost**: `vite.config.js` lines 68-84 + 217-230 generate the OAuth client metadata dynamically from the dev server's request origin. For local testing (`bun run dev`) and Playwright e2e (which hits the local dev server), the metadata Just Works — no deploy needed. The static `oauth-client-metadata.template.json` ships as the prod artifact at `https://bluepy.social/oauth-client-metadata.json`. The agent does NOT need to redeploy anything for OAuth to function during the rebuild.
 
 ## Per-milestone workflow
 
