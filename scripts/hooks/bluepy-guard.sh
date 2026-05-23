@@ -352,10 +352,6 @@ pre-write)
 		block_on_main_branch "$(dirname "$file_path")"
 		checked_target=1
 	fi
-	if [ -n "$workdir" ]; then
-		block_on_main_branch "$(normalize_path "$workdir")"
-		checked_target=1
-	fi
 	if [ -n "$paths" ]; then
 		while IFS= read -r patch_path; do
 			[ -n "$patch_path" ] || continue
@@ -366,6 +362,13 @@ pre-write)
 				block_on_main_branch "$(dirname "$patch_root/$patch_path")"
 			fi
 		done <<<"$paths"
+		checked_target=1
+	fi
+	# Workdir alone is the session cwd, which can be the bluesky checkout
+	# even when the actual write lands in a worktree off another branch.
+	# Only consult it as a fallback when there is no concrete file target.
+	if [ "$checked_target" -eq 0 ] && [ -n "$workdir" ]; then
+		block_on_main_branch "$(normalize_path "$workdir")"
 		checked_target=1
 	fi
 	if [ "$checked_target" -eq 0 ]; then
