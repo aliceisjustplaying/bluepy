@@ -290,14 +290,26 @@ warn_behavioral_tests() {
 
 run_fast_checks() {
 	local scope status
-	local -a file_args
+	local -a file_args lint_args shell_args
+	file_args=()
+	lint_args=()
+	shell_args=()
 	if [ "${BLUEPY_HOOK_SKIP_FAST_CHECKS:-0}" = "1" ]; then
 		return 0
 	fi
 
 	scope="${BLUEPY_HOOK_CHECK_SCOPE:-changed}"
-	mapfile -t file_args < <(source_changed_files)
+	while IFS= read -r file; do
+		[ -n "$file" ] && file_args+=("$file")
+	done < <(source_changed_files)
 	[ "${#file_args[@]}" -eq 0 ] && return 0
+
+	while IFS= read -r file; do
+		[ -n "$file" ] && lint_args+=("$file")
+	done < <(printf '%s\n' "${file_args[@]}" | rg '\.(cjs|js|jsx|mjs|ts|tsx)$' || true)
+	while IFS= read -r file; do
+		[ -n "$file" ] && shell_args+=("$file")
+	done < <(printf '%s\n' "${file_args[@]}" | rg '\.sh$' || true)
 
 	status=0
 
@@ -316,12 +328,18 @@ run_fast_checks() {
 		status=1
 	fi
 
+	if [ "${#shell_args[@]}" -gt 0 ]; then
+		for file in "${shell_args[@]}"; do
+			bash -n "$file" || status=1
+		done
+	fi
+
 	if [ "$scope" = "full" ]; then
 		bunx oxlint . || status=1
 		bunx oxfmt --check . || status=1
-	else
-		bunx oxlint "${file_args[@]}" || status=1
-		bunx oxfmt --check "${file_args[@]}" || status=1
+	elif [ "${#lint_args[@]}" -gt 0 ]; then
+		bunx oxlint "${lint_args[@]}" || status=1
+		bunx oxfmt --check "${lint_args[@]}" || status=1
 	fi
 
 	if [ "$status" -ne 0 ]; then
@@ -339,7 +357,7 @@ pre-bash)
 	guard_bash_command "$(tool_command)"
 	;;
 pre-write)
-	file_path="$(json_field '.tool_input.file_path')"
+	file_path="$(json_field '.tool_input.file_path // .tool_input.path // .tool_input.notebook_path')"
 	workdir="$(tool_workdir)"
 	paths="$(patch_file_paths)"
 	patch_root="$ROOT"
@@ -384,13 +402,16 @@ post-edit)
 	warn_behavioral_tests
 	;;
 stop)
-	require_tool rg
-	guard_forbidden_patterns
-	guard_runbook_mirror
-	guard_locale_churn
-	warn_i18n_needed
-	warn_behavioral_tests
-	run_fast_checks
+	{
+		require_tool rg
+		guard_forbidden_patterns
+		guard_runbook_mirror
+		guard_locale_churn
+		warn_i18n_needed
+		warn_behavioral_tests
+		run_fast_checks
+	} >&2
+	printf '{}\n'
 	;;
 *)
 	deny "unknown hook mode: ${MODE:-<empty>}"

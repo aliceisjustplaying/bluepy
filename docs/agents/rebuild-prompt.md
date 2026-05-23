@@ -211,8 +211,6 @@ Be brief and kind. The user is AFK and will scroll back later. Use this format:
 - At halt: `Halted at M{N}. Reason: <one line>. See STUCK-*.md.`
 - At M11 done: see *Done signal*.
 
-Do not narrate internal deliberation. Keep status messages short. The diff and NOTES files are the artifact.
-
 ## Style and conventions inside the code
 
 - Lexicon types throughout (`AppBskyFeedDefs.PostView`, `AppBskyActorDefs.ProfileViewDetailed`, etc.). Reuse `@atproto/*` types before defining new ones (CLAUDE.md rule).
