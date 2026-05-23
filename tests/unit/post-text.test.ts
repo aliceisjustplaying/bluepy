@@ -51,4 +51,20 @@ describe('renderPostText', () => {
     expect(html).toContain('href="/t/Bluepy"');
     expect(html).toContain('#<span>Bluepy</span>');
   });
+
+  test('rejects unsafe link facet schemes like javascript:', () => {
+    const html = renderPostText('click me', [
+      {
+        index: { byteStart: 0, byteEnd: 8 },
+        features: [
+          {
+            $type: 'app.bsky.richtext.facet#link',
+            uri: 'javascript:alert(1)',
+          },
+        ],
+      },
+    ]);
+    expect(html).toBe('click me');
+    expect(html).not.toContain('href=');
+  });
 });

@@ -13,6 +13,15 @@ function textToHTML(text: string): string {
   return escapeHTML(text).replace(/\n/g, '<br />');
 }
 
+function isSafeLinkUri(uri: string): boolean {
+  try {
+    const { protocol } = new URL(uri);
+    return protocol === 'http:' || protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 function profilePermalink(did: string): string {
   return `/at://${did}/app.bsky.actor.profile/self`;
 }
@@ -28,7 +37,10 @@ export function renderPostText(
     .map((segment) => {
       const html = textToHTML(segment.text);
       if (segment.link?.uri) {
-        return `<a href="${escapeHTML(segment.link.uri)}" target="_blank" rel="nofollow noopener noreferrer">${html}</a>`;
+        if (isSafeLinkUri(segment.link.uri)) {
+          return `<a href="${escapeHTML(segment.link.uri)}" target="_blank" rel="nofollow noopener noreferrer">${html}</a>`;
+        }
+        return html;
       }
       if (segment.mention?.did) {
         return `<a href="${escapeHTML(profilePermalink(segment.mention.did))}" class="mention" rel="nofollow noopener noreferrer">${html}</a>`;

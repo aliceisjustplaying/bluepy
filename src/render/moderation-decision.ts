@@ -174,7 +174,7 @@ function mapVisibility(
 ): 'show' | 'warn' | 'blur' | 'hide' {
   const ui = mod.ui(context);
   if (ui.filters.length > 0) return 'hide';
-  if (ui.blurs.length > 0 && !ui.noOverride) return 'blur';
+  if (ui.blurs.length > 0) return 'blur';
   if (ui.alerts.length > 0) return 'warn';
   if (ui.informs.length > 0) return 'warn';
   if (mod.causes.length > 0) return 'warn';
