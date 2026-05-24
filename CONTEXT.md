@@ -29,6 +29,10 @@ The AppView a given user has configured Bluepy to use. Defaults to the official 
 **Bluesky AppView**:
 The official Bluesky-operated AppView (`did:web:api.bsky.app#bsky_appview`, public endpoint `public.api.bsky.app`). Bluepy keeps a separate client pinned to this AppView as a fallback target for operations that the active AppView (e.g. Blacksky's) doesn't implement or implements incorrectly.
 
+**Push Gateway**:
+Bluepy-owned delivery infrastructure for Web Push notifications. It may store browser push subscriptions and delivery dedupe state, but it is not Bluepy's canonical notification inbox; canonical notification state remains AppView-shaped Bluepy data.
+_Avoid_: notification server, push inbox, notification source of truth
+
 ## Example dialogue
 
 > **A**: A user reports that trending topics don't load when they're signed into Blacksky's AppView. What's going on?
