@@ -54,7 +54,7 @@ function errorStatus(error: unknown): number {
 }
 
 function publicError(error: unknown): string {
-  if (!(error instanceof Error)) return 'bad_request';
+  if (!(error instanceof Error)) return 'internal_error';
   if (
     [
       'admin_only',
