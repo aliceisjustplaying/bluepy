@@ -17,11 +17,20 @@ import { getAccountProfileTarget } from '../utils/account-profile-target';
 import { api, getMastoV1Resource } from '../utils/api';
 import { logoutAtprotoSession } from '../utils/atproto-adapter';
 import { signOutAtprotoOAuthSession } from '../utils/atproto-oauth';
+import { useClients } from '../contexts/SessionProvider';
+import { createAppPasswordAgentForDid } from '../data/legacy-session';
+import { restorePdsRepoAgentFor } from '../data/clients';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
 import { navigatePath } from '../utils/router';
+import showToast from '../utils/show-toast';
 import states from '../utils/states';
 import store from '../utils/store';
+import {
+  deleteAllPushDataForAccount,
+  SERVICE_DID,
+  type ServiceAuthProvider,
+} from '../utils/web-push-subscriptions';
 import {
   getAccounts,
   getCurrentAccountID,
@@ -53,6 +62,7 @@ const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
 function Accounts({ onClose }: AccountsProps) {
   const { t } = useLingui();
+  const clients = useClients();
   const client = api().masto;
   // Accounts
   const accounts = getAccounts() as OAuthAccount[];
@@ -66,6 +76,28 @@ function Accounts({ onClose }: AccountsProps) {
   const [accountsListParent] = useAutoAnimate<HTMLUListElement>();
   const saveOAuthAccounts = () => {
     saveAccounts(accounts as readonly StoredAccount[]);
+  };
+  const serviceAuthFor = (did: string): ServiceAuthProvider => async (lxm) => {
+    const currentAgent = currentAccount === did ? clients.pdsRepoAgent : null;
+    const agent = (currentAgent ?? createAppPasswordAgentForDid(did) ?? await restorePdsRepoAgentFor(did)) as unknown as {
+      com?: { atproto?: { server?: { getServiceAuth?: (args: { aud: string; lxm: string }) => Promise<{ data: { token: string } }> } } };
+    };
+    const res = await agent.com?.atproto?.server?.getServiceAuth?.({
+      aud: SERVICE_DID,
+      lxm,
+    });
+    if (!res?.data.token) throw new Error('Missing Bluesky OAuth session for push');
+    return res.data.token;
+  };
+  const deletePushDataBeforeLocalLogout = async (did: string): Promise<boolean> => {
+    try {
+      await deleteAllPushDataForAccount(serviceAuthFor(did));
+      return true;
+    } catch (error) {
+      console.warn(error);
+      showToast(t`Unable to remove push notification data. Try again before logging out.`);
+      return false;
+    }
   };
 
   return (
@@ -286,19 +318,25 @@ function Accounts({ onClose }: AccountsProps) {
                           }
                           menuItemClassName="danger"
                           onClick={() => {
-                            logOutAccount();
-                            delete (account as { accessToken?: string })
-                              .accessToken;
-                            saveOAuthAccounts();
-                            reload();
+                            void (async () => {
+                              if (!(await deletePushDataBeforeLocalLogout(account.info.id))) return;
+                              logOutAccount();
+                              delete (account as { accessToken?: string })
+                                .accessToken;
+                              saveOAuthAccounts();
+                              reload();
+                            })();
                           }}
                           menuExtras={
                             <MenuItem
                               className="danger"
                               onClick={() => {
-                                logOutAccount();
-                                removeAccount();
-                                location.href = location.pathname || '/';
+                                void (async () => {
+                                  if (!(await deletePushDataBeforeLocalLogout(account.info.id))) return;
+                                  logOutAccount();
+                                  removeAccount();
+                                  location.href = location.pathname || '/';
+                                })();
                               }}
                             >
                               <Icon icon="x" />

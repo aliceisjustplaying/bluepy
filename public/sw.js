@@ -318,13 +318,67 @@ registerRoute(apiRoute);
 // PUSH NOTIFICATIONS
 // ==================
 
+function isBluepyPostAtUri(value) {
+  if (typeof value !== 'string') return false;
+  for (const char of value) {
+    if (char.charCodeAt(0) < 32) return false;
+  }
+  return /^at:\/\/did:[^/]+\/app\.bsky\.feed\.post\/[^/?#]+$/.test(value);
+}
+
 self.addEventListener('push', (event) => {
   const { data } = event;
   if (!data) return;
 
-  const payload = data.json();
+  let payload;
+  try {
+    payload = data.json();
+  } catch {
+    payload = {};
+  }
   delete payload.access_token;
   delete payload.accessToken;
+  delete payload.refresh_token;
+  delete payload.refreshToken;
+  delete payload.dpop;
+
+  if (payload.version === 1) {
+    const { title, body, notificationId, type, targetAtUri, recipientDid } =
+      payload;
+    if (!isBluepyPostAtUri(targetAtUri)) {
+      event.waitUntil(
+        self.registration.showNotification('New activity in Bluepy', {
+          body: 'Open Bluepy to view it.',
+          icon: '/logo-192.png',
+          dir: 'auto',
+          badge: '/logo-badge-72.png',
+          tag: notificationId || `bluepy-${Date.now()}`,
+          timestamp: Date.now(),
+        }),
+      );
+      return;
+    }
+    if (navigator.setAppBadge && type === 'mention') {
+      void navigator.setAppBadge(1);
+    }
+    event.waitUntil(
+      self.registration.showNotification(title || 'Bluepy', {
+        body: body || 'Open Bluepy to view it.',
+        icon: '/logo-192.png',
+        dir: 'auto',
+        badge: '/logo-badge-72.png',
+        tag: notificationId,
+        timestamp: Date.now(),
+        data: {
+          notificationId,
+          type,
+          targetAtUri,
+          recipientDid,
+        },
+      }),
+    );
+    return;
+  }
 
   const {
     title,
@@ -359,7 +413,45 @@ self.addEventListener('push', (event) => {
 });
 
 self.addEventListener('notificationclick', (event) => {
-  const { account_id, notification_id } = event.notification.data || {};
+  const { account_id, notification_id, notificationId, targetAtUri, recipientDid } =
+    event.notification.data || {};
+  if (targetAtUri) {
+    if (!isBluepyPostAtUri(targetAtUri)) {
+      event.waitUntil(event.notification.close());
+      return;
+    }
+    const url = new URL(`/${targetAtUri}`, self.location.origin).href;
+    event.waitUntil(
+      (async () => {
+        const clients = await self.clients.matchAll({
+          type: 'window',
+          includeUncontrolled: true,
+        });
+        const bestClient =
+          clients.find(
+            (client) => client.focused || client.visibilityState === 'visible',
+          ) || clients[0];
+        const message = {
+          type: 'push-notification-route',
+          targetAtUri,
+          recipientDid,
+          notificationId,
+        };
+        await storePendingNotificationRoute(message);
+        if (bestClient) {
+          if ('navigate' in bestClient) {
+            await bestClient.navigate(url);
+          }
+          await bestClient.focus();
+          bestClient.postMessage?.(message);
+        } else {
+          await self.clients.openWindow(url);
+        }
+        await event.notification.close();
+      })(),
+    );
+    return;
+  }
   const params = new URLSearchParams();
   const id = notification_id || event.notification.tag;
   if (id) params.set('notification_id', id);
@@ -393,6 +485,36 @@ self.addEventListener('notificationclick', (event) => {
     })(),
   );
 });
+
+function openPendingNotificationDb() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('bluepy:pending-notification-routes', 1);
+    request.addEventListener('upgradeneeded', () => {
+      request.result.createObjectStore('routes', { keyPath: 'notificationId' });
+    });
+    request.addEventListener('success', () => {
+      resolve(request.result);
+    });
+    request.addEventListener('error', () => {
+      reject(request.error || new Error('Failed to open pending notification database'));
+    });
+  });
+}
+
+async function storePendingNotificationRoute(route) {
+  const db = await openPendingNotificationDb();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction('routes', 'readwrite');
+    tx.objectStore('routes').put({ ...route, createdAt: Date.now() });
+    tx.addEventListener('complete', () => {
+      resolve();
+    });
+    tx.addEventListener('error', () => {
+      reject(new Error('Failed to store pending notification route'));
+    });
+  });
+  db.close();
+}
 
 // WEB SHARE TARGET
 // ================

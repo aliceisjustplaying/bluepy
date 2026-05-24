@@ -1,0 +1,22 @@
+[Unit]
+Description=Bluepy Push Gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bluepy
+Group=bluepy
+WorkingDirectory=/srv/bluepy/current/services/push-gateway
+EnvironmentFile=/etc/bluepy/push-gateway.env
+ExecStart=/usr/bin/node dist/server.js
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/bluepy-push-gateway
+
+[Install]
+WantedBy=multi-user.target

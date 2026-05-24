@@ -187,8 +187,8 @@ msgstr "Nastavení zkratky zkopírováno"
 #~ msgstr ""
 
 #: src/pages/settings.tsx
-msgid "anyone"
-msgstr ""
+#~ msgid "anyone"
+#~ msgstr ""
 
 #: src/components/search-data-results.tsx
 #: src/pages/search.tsx
@@ -267,6 +267,10 @@ msgstr "Zpět na začátek"
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
 msgstr "Toto je statické, nestylizované a bez skriptů. Možná budete muset použít vlastní styly a podle potřeby upravovat."
+
+#: src/pages/settings.tsx
+msgid "Remove this device"
+msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -499,7 +503,6 @@ msgstr "Čeká na posouzení"
 
 #: src/components/timeline-feed.tsx
 #: src/components/timeline.tsx
-#: src/pages/settings.tsx
 msgid "New posts"
 msgstr "Nové příspěvky"
 
@@ -765,8 +768,8 @@ msgid "We read every message even when we cannot reply."
 msgstr ""
 
 #: src/pages/settings.tsx
-msgid "Follow requests"
-msgstr ""
+#~ msgid "Follow requests"
+#~ msgstr ""
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Switch to account's server {0}"
@@ -1147,8 +1150,8 @@ msgid "Appearance"
 msgstr "Vzhled"
 
 #: src/pages/settings.tsx
-msgid "Follows"
-msgstr ""
+#~ msgid "Follows"
+#~ msgstr ""
 
 #. By [Author]
 #: src/pages/trending.tsx
@@ -2674,8 +2677,8 @@ msgid "Emojis:"
 msgstr "Emoji:"
 
 #: src/pages/settings.tsx
-msgid "Post edits"
-msgstr ""
+#~ msgid "Post edits"
+#~ msgstr ""
 
 #: src/pages/accounts.jsx
 #~ msgid "Log out <0>@{0}</0>?"
@@ -2803,6 +2806,10 @@ msgstr "Přečetli jste všechny komentáře."
 msgid "Muted @{username}"
 msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "Problém neodpovídá ostatním kategoriím"
@@ -2838,6 +2845,10 @@ msgstr "Skupina"
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
 msgstr "Jaký je s tímto příspěvkem problém?"
+
+#: src/pages/settings.tsx
+msgid "Rich previews"
+msgstr ""
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
@@ -3130,6 +3141,7 @@ msgstr "Seznam nemusí fungovat, pokud je z jiného účtu."
 #: src/components/status-post-body.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
@@ -3449,8 +3461,8 @@ msgid "Unable to block @{username}"
 msgstr "Nelze zablokovat uživatele @{username}"
 
 #: src/pages/settings.tsx
-msgid "followers"
-msgstr ""
+#~ msgid "followers"
+#~ msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
@@ -3761,10 +3773,9 @@ msgstr "Plovoucí tlačítko"
 msgid "Move up"
 msgstr "Posunout nahoru"
 
-#. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
-msgid "Allow from <0>{0}</0>"
-msgstr ""
+#~ msgid "Allow from <0>{0}</0>"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "PDS"
@@ -3866,7 +3877,6 @@ msgstr "Předchozí autor"
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
-#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4120,6 +4130,10 @@ msgstr "Poznámka: Budou uloženy pouze maximálně 3. Zbytek bude automaticky o
 #~ msgid "No keywords. Add one."
 #~ msgstr "Žádná klíčová slova. Přidejte jedno."
 
+#: src/pages/settings.tsx
+msgid "Push notifications"
+msgstr ""
+
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
@@ -4146,6 +4160,10 @@ msgstr ""
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
 msgstr "Extra pole"
+
+#: src/pages/accounts.tsx
+msgid "Unable to remove push notification data. Try again before logging out."
+msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
@@ -4243,6 +4261,10 @@ msgstr "Upravit seznam"
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
 msgstr "poslední 2 hodiny"
+
+#: src/pages/settings.tsx
+msgid "Push settings apply to the active Bluepy account. The notification screen still comes from Bluesky."
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Public (Local / Federated)"
@@ -4661,8 +4683,8 @@ msgstr "Upravit popis videa"
 #~ msgstr ""
 
 #: src/pages/settings.tsx
-msgid "people I follow"
-msgstr ""
+#~ msgid "people I follow"
+#~ msgstr ""
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -4978,8 +5000,8 @@ msgid "Share"
 msgstr "Sdílet"
 
 #: src/pages/settings.tsx
-msgid "NOTE: Push notifications only work for <0>one account</0>."
-msgstr ""
+#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
+#~ msgstr ""
 
 #: src/components/poll.tsx
 #~ msgid "Show results"
@@ -5112,6 +5134,5 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 #: src/pages/favourites.tsx
-#: src/pages/settings.tsx
 msgid "Likes"
 msgstr "Líbí se mi"

@@ -1,0 +1,65 @@
+export interface GatewayConfig {
+  port: number;
+  databasePath: string;
+  allowedOrigins: Set<string>;
+  gatewayPublicUrl: string;
+  serviceDid: string;
+  logHashSecret: string;
+  richPreviewsEnabled: boolean;
+  activeVapidKeyId: string;
+  vapidPublicKey: string;
+  vapidPrivateKey: string;
+  vapidKeys: Record<string, VapidKeyPair>;
+  vapidSubject: string;
+  adminToken?: string;
+  devAuthToken?: string;
+  jetstreamUrl: string;
+}
+
+export interface VapidKeyPair {
+  publicKey: string;
+  privateKey: string;
+}
+
+function required(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`Missing ${name}`);
+  return value;
+}
+
+function loadVapidKeys(activeKeyId: string, activePair: VapidKeyPair): Record<string, VapidKeyPair> {
+  let configured: Record<string, VapidKeyPair> = {};
+  if (process.env.VAPID_KEYS_JSON) {
+    try {
+      configured = JSON.parse(process.env.VAPID_KEYS_JSON) as Record<string, VapidKeyPair>;
+    } catch {
+      throw new Error('Invalid VAPID_KEYS_JSON');
+    }
+  }
+  return { ...configured, [activeKeyId]: activePair };
+}
+
+export function loadConfig(): GatewayConfig {
+  const activeVapidKeyId = required('VAPID_KEY_ID');
+  const activeVapidPair = {
+    publicKey: required('VAPID_PUBLIC_KEY'),
+    privateKey: required('VAPID_PRIVATE_KEY'),
+  };
+  return {
+    port: Number(process.env.PORT ?? 8787),
+    databasePath: process.env.PUSH_GATEWAY_DB ?? './push-gateway.sqlite3',
+    allowedOrigins: new Set((process.env.ALLOWED_ORIGINS ?? '').split(',').filter(Boolean)),
+    gatewayPublicUrl: required('GATEWAY_PUBLIC_URL'),
+    serviceDid: process.env.SERVICE_DID ?? 'did:web:notifications-gateway.bluepy.social',
+    logHashSecret: required('LOG_HASH_SECRET'),
+    richPreviewsEnabled: process.env.RICH_PREVIEWS_ENABLED !== 'false',
+    activeVapidKeyId,
+    vapidPublicKey: activeVapidPair.publicKey,
+    vapidPrivateKey: activeVapidPair.privateKey,
+    vapidKeys: loadVapidKeys(activeVapidKeyId, activeVapidPair),
+    vapidSubject: process.env.VAPID_SUBJECT ?? 'mailto:admin@bluepy.social',
+    adminToken: process.env.ADMIN_TOKEN,
+    devAuthToken: process.env.DEV_AUTH_TOKEN,
+    jetstreamUrl: process.env.JETSTREAM_URL ?? 'wss://jetstream2.us-east.bsky.network',
+  };
+}
