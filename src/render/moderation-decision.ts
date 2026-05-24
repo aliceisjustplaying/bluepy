@@ -110,6 +110,44 @@ function filterLabels(
   return labels.filter((label) => accepted.has(label.src));
 }
 
+function dropUnsupportedLabels(
+  labels: ComAtprotoLabelDefs.Label[] | undefined,
+): ComAtprotoLabelDefs.Label[] | undefined {
+  if (!labels?.some((label) => label.val === '!no-unauthenticated')) {
+    return labels;
+  }
+  return labels.filter((label) => label.val !== '!no-unauthenticated');
+}
+
+function withoutUnsupportedPostLabels(
+  post: AppBskyFeedDefs.PostView,
+): AppBskyFeedDefs.PostView {
+  const labels = dropUnsupportedLabels(post.labels);
+  const authorLabels = dropUnsupportedLabels(post.author.labels);
+  if (labels === post.labels && authorLabels === post.author.labels) {
+    return post;
+  }
+  return {
+    ...post,
+    labels,
+    author: {
+      ...post.author,
+      labels: authorLabels,
+    },
+  };
+}
+
+function withoutUnsupportedProfileLabels<
+  T extends
+    | AppBskyActorDefs.ProfileViewBasic
+    | AppBskyActorDefs.ProfileView
+    | AppBskyActorDefs.ProfileViewDetailed,
+>(profile: T): T {
+  const labels = dropUnsupportedLabels(profile.labels);
+  if (labels === profile.labels) return profile;
+  return { ...profile, labels };
+}
+
 function causeMatches(
   cause: ModerationDecision['causes'][number],
   candidate: PostModerationDecision['cause'],
@@ -183,18 +221,20 @@ export function decidePostModeration(
   post: AppBskyFeedDefs.PostView,
   ctx: ModerationContext,
 ): PostModerationDecision {
-  const mod = moderatePost(post, moderationContextToOpts(ctx));
-  const labels = filterLabels(post.labels, ctx.acceptedLabelerDids);
+  const moderationPost = withoutUnsupportedPostLabels(post);
+  const mod = moderatePost(moderationPost, moderationContextToOpts(ctx));
+  const labels = filterLabels(moderationPost.labels, ctx.acceptedLabelerDids);
   const contentViewUi = mod.ui('contentView');
   const contentMediaUi = mod.ui('contentMedia');
   const visibility = mapVisibility(mod, 'contentView');
   const cause = mapPostCauseType(mod);
+  const causeLabel = labelCause(mod);
 
   return {
     visibility,
     cause,
     labels,
-    causeLabel: labelCause(mod),
+    causeLabel,
     noOverride: contentViewUi.noOverride || undefined,
     mediaBlur: contentMediaUi.blurs.length > 0 || undefined,
     mediaNoOverride: contentMediaUi.noOverride || undefined,
@@ -219,8 +259,12 @@ export function decideProfileModeration(
     | AppBskyActorDefs.ProfileViewDetailed,
   ctx: ModerationContext,
 ): ProfileModerationDecision {
-  const mod = moderateProfile(profile, moderationContextToOpts(ctx));
-  const labels = filterLabels(profile.labels, ctx.acceptedLabelerDids);
+  const moderationProfile = withoutUnsupportedProfileLabels(profile);
+  const mod = moderateProfile(moderationProfile, moderationContextToOpts(ctx));
+  const labels = filterLabels(
+    moderationProfile.labels,
+    ctx.acceptedLabelerDids,
+  );
   const profileViewUi = mod.ui('profileView');
   const visibility = mapVisibility(mod, 'profileView');
 

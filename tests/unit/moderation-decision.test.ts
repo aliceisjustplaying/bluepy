@@ -34,18 +34,44 @@ function baseContext(
   };
 }
 
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isPostView(value: unknown): value is AppBskyFeedDefs.PostView {
+  return (
+    isObject(value) &&
+    typeof value.uri === 'string' &&
+    isObject(value.author) &&
+    typeof value.author.did === 'string'
+  );
+}
+
+function isProfileViewDetailed(
+  value: unknown,
+): value is AppBskyActorDefs.ProfileViewDetailed {
+  return (
+    isObject(value) &&
+    typeof value.did === 'string' &&
+    typeof value.handle === 'string'
+  );
+}
+
 function loadPost(name: string): AppBskyFeedDefs.PostView {
-  const raw = JSON.parse(
+  const raw: unknown = JSON.parse(
     readFileSync(join(fixtureDir, 'moderation', name), 'utf8'),
-  ) as AppBskyFeedDefs.PostView | { post: AppBskyFeedDefs.PostView };
-  if ('post' in raw) return raw.post;
-  return raw;
+  );
+  if (isObject(raw) && isPostView(raw.post)) return raw.post;
+  if (isPostView(raw)) return raw;
+  throw new Error(`Invalid post fixture: ${name}`);
 }
 
 function loadProfile(name: string): AppBskyActorDefs.ProfileViewDetailed {
-  return JSON.parse(
+  const profile: unknown = JSON.parse(
     readFileSync(join(fixtureDir, name), 'utf8'),
-  ) as AppBskyActorDefs.ProfileViewDetailed;
+  );
+  if (isProfileViewDetailed(profile)) return profile;
+  throw new Error(`Invalid profile fixture: ${name}`);
 }
 
 describe('decidePostModeration', () => {
@@ -110,6 +136,32 @@ describe('decidePostModeration', () => {
     expect(decision.visibility).toBe('show');
     expect(decision.mediaBlur).toBe(true);
     expect(decision.mediaNoOverride).toBe(true);
+    expect(decision.noOverride).toBeUndefined();
+  });
+
+  test('ignores no-unauthenticated self-labels for now', () => {
+    const basePost = loadPost('label.json');
+    const post = {
+      ...basePost,
+      labels: [],
+      author: {
+        ...basePost.author,
+        labels: [
+          {
+            src: basePost.author.did,
+            uri: basePost.author.did,
+            val: '!no-unauthenticated',
+            cts: '2026-05-24T00:00:00.000Z',
+          },
+        ],
+      },
+    };
+    const decision = decidePostModeration(
+      post,
+      baseContext({ userDid: undefined }),
+    );
+    expect(decision.visibility).toBe('show');
+    expect(decision.causeLabel).toBeUndefined();
     expect(decision.noOverride).toBeUndefined();
   });
 

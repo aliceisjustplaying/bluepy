@@ -321,6 +321,68 @@ test('loads native AT URI post URLs', async ({ page }) => {
   );
 });
 
+test('shows logged-out posts from no-unauthenticated authors for now', async ({
+  page,
+}) => {
+  const atUri =
+    'at://did:plc:oreyafohzt7gritctb7sc2at/app.bsky.feed.post/noauth';
+  const post = {
+    uri: atUri,
+    cid: 'bafyreihltdmuzgj3iaoj5woin7jn3yfhftewnsijzf4b5gqsuxorrhw4qi',
+    author: {
+      did: 'did:plc:oreyafohzt7gritctb7sc2at',
+      handle: 'lagedo.dev',
+      displayName: 'João Amaro Lagedo',
+      labels: [
+        {
+          src: 'did:plc:oreyafohzt7gritctb7sc2at',
+          uri: 'did:plc:oreyafohzt7gritctb7sc2at',
+          val: '!no-unauthenticated',
+          cts: '2026-05-24T00:00:00.000Z',
+        },
+      ],
+    },
+    record: {
+      $type: 'app.bsky.feed.post',
+      text: 'Logged out gated post',
+      createdAt: '2024-01-01T12:00:00.000Z',
+    },
+    indexedAt: '2024-01-01T12:00:00.000Z',
+    replyCount: 0,
+    repostCount: 0,
+    likeCount: 0,
+    quoteCount: 0,
+    labels: [],
+    viewer: {},
+  };
+  const headers = { 'access-control-allow-origin': '*' };
+
+  await page.route('**/xrpc/app.bsky.feed.getPosts*', async (route) => {
+    await route.fulfill({ headers, json: { posts: [post] } });
+  });
+  await page.route('**/xrpc/app.bsky.feed.getPostThread*', async (route) => {
+    await route.fulfill({
+      headers,
+      json: {
+        thread: {
+          $type: 'app.bsky.feed.defs#threadViewPost',
+          post,
+          replies: [],
+        },
+      },
+    });
+  });
+  await page.route('**/xrpc/app.bsky.labeler.getServices*', async (route) => {
+    await route.fulfill({ headers, json: { views: [] } });
+  });
+
+  await page.goto(`/${atUri}`);
+  await expect(page.getByText('Logged out gated post')).toBeVisible();
+  await expect(
+    page.getByText('Content hidden by moderation settings'),
+  ).toHaveCount(0);
+});
+
 test('canonicalizes Worker-encoded native AT URI post URLs', async ({
   page,
 }) => {
