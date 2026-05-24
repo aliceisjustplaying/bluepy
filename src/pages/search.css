@@ -30,9 +30,15 @@
   #search-page {
     --mobile-search-bottom: calc(52px + env(safe-area-inset-bottom));
     --mobile-search-height: 56px;
+    --mobile-search-filter-height: 0px;
     padding-bottom: calc(
-      var(--mobile-search-bottom) + var(--mobile-search-height) + 8px
+      var(--mobile-search-bottom) + var(--mobile-search-height) +
+        var(--mobile-search-filter-height) + 16px
     );
+
+    &:has(main > .filter-bar) {
+      --mobile-search-filter-height: 48px;
+    }
 
     .deck > header {
       position: fixed;
@@ -71,6 +77,18 @@
       width: 100%;
       max-height: min(60vh, 360px);
       overflow-y: auto;
+    }
+
+    main > .filter-bar {
+      position: fixed;
+      bottom: calc(
+        var(--mobile-search-bottom) + var(--mobile-search-height) + 8px
+      );
+      inset-inline: 0;
+      z-index: 119;
+      background-color: var(--bg-color);
+      border-top: var(--hairline-width) solid var(--outline-color);
+      box-shadow: 0 -8px 24px -16px var(--drop-shadow-color);
     }
   }
 

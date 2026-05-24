@@ -122,7 +122,7 @@ test('does not run a Mastodon runtime for legacy instance post routes', async ({
 test('uses cache-busting reloads when the app script never mounts', async ({
   page,
 }) => {
-  test.setTimeout(45_000);
+  await page.clock.install();
   let appScriptRequests = 0;
   await page.route(/\/src\/main\.tsx(?:\?.*)?$/, async (route) => {
     appScriptRequests++;
@@ -134,16 +134,22 @@ test('uses cache-busting reloads when the app script never mounts', async ({
 
   await page.goto('/');
 
-  await expect.poll(() => appScriptRequests, { timeout: 25_000 }).toBe(4);
+  await page.clock.runFor(29_000);
+  expect(appScriptRequests).toBe(1);
+  await page.clock.runFor(1_000);
+  await expect.poll(() => appScriptRequests).toBe(2);
+  await page.clock.runFor(30_000);
+  await expect.poll(() => appScriptRequests).toBe(3);
+  await page.clock.runFor(30_000);
+  await expect.poll(() => appScriptRequests).toBe(4);
+  await page.clock.runFor(30_000);
   await expect(page.locator('#boot-status')).toContainText(
     'Safari did not run the app script',
-    { timeout: 7_000 },
   );
   await expect.poll(() => page.evaluate(getBootReloadAttempts)).toBe(3);
   expect(new URL(page.url()).searchParams.has('__bluepy_boot_retry')).toBe(
     true,
   );
-  await page.waitForTimeout(6000);
   expect(appScriptRequests).toBe(4);
 });
 
@@ -183,7 +189,7 @@ test('shows boot failure without recovery on app runtime errors', async ({
   await page.goto('/');
 
   await expect(page.locator('#boot-status')).toContainText('boot boom');
-  await page.waitForTimeout(6000);
+  await page.waitForTimeout(1000);
   expect(appScriptRequests).toBe(1);
   await expect
     .poll(() =>
@@ -1151,6 +1157,7 @@ async function routeAtprotoScrollableFeed(page) {
  *   blueskyOmitPresentation?: boolean;
  *   fallbackFails?: boolean;
  *   onBlueskyProfile?: () => void;
+ *   searchPostsByQuery?: Record<string, AtprotoTestPost[]>;
  * }} [options]
  */
 async function routeAtprotoRecords(page, options = {}) {
@@ -1160,6 +1167,7 @@ async function routeAtprotoRecords(page, options = {}) {
     blueskyOmitPresentation = false,
     fallbackFails = false,
     onBlueskyProfile,
+    searchPostsByQuery = {},
   } = options;
   const post = makeAtprotoPost();
   const listPost = makeAtprotoPost(
@@ -1170,7 +1178,8 @@ async function routeAtprotoRecords(page, options = {}) {
     `at://${AT_REPO}/app.bsky.feed.post/feedpost`,
     'AT feed timeline post',
   );
-  const posts = [post, listPost, feedPost];
+  const searchPosts = Object.values(searchPostsByQuery).flat();
+  const posts = [post, listPost, feedPost, ...searchPosts];
   const profile = {
     $type: 'app.bsky.actor.defs#profileView',
     did: AT_REPO,
@@ -1323,7 +1332,11 @@ async function routeAtprotoRecords(page, options = {}) {
         return;
       }
       if (endpoint === 'app.bsky.feed.searchPosts') {
-        await route.fulfill({ headers, json: { posts: [] } });
+        const query = url.searchParams.get('q') || '';
+        await route.fulfill({
+          headers,
+          json: { posts: searchPostsByQuery[query] || [] },
+        });
         return;
       }
       await route.fulfill({ headers, json: {} });
@@ -1727,6 +1740,77 @@ test('renders a feed-backed post detail before the full thread returns', async (
   await expect(
     page.locator('.status-link[data-href$="/app.bsky.feed.post/thread-child"]'),
   ).toBeVisible();
+});
+
+test('keeps mobile search controls at the bottom and resets post results scroll', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await seedAtprotoLogin(page);
+  const alphaFirst = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/search-alpha-1`,
+    'Alpha first search result',
+  );
+  const alphaSecond = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/search-alpha-2`,
+    'Alpha second search result',
+  );
+  const betaFirst = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/search-beta-1`,
+    'Beta first search result',
+  );
+  const betaSecond = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/search-beta-2`,
+    'Beta second search result',
+  );
+  await routeAtprotoRecords(page, {
+    searchPostsByQuery: {
+      alpha: [alphaFirst, alphaSecond],
+      beta: [betaFirst, betaSecond],
+    },
+  });
+
+  await page.goto('/search?q=alpha&type=statuses', {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page.getByText('Alpha first search result')).toBeVisible();
+
+  const controlsGeometry = await page.evaluate(() => {
+    const input = document.querySelector('#search-page input[type="search"]');
+    const filter = document.querySelector('#search-page main > .filter-bar');
+    const inputBox = input?.getBoundingClientRect();
+    const filterBox = filter?.getBoundingClientRect();
+    return {
+      filterBottom: filterBox?.bottom ?? 0,
+      inputTop: inputBox?.top ?? 0,
+      viewportHeight: window.innerHeight,
+    };
+  });
+  expect(controlsGeometry.filterBottom).toBeLessThanOrEqual(
+    controlsGeometry.inputTop,
+  );
+  expect(controlsGeometry.filterBottom).toBeGreaterThan(
+    controlsGeometry.viewportHeight - 180,
+  );
+
+  await page.locator('#search-posts-page').evaluate((element) => {
+    element.scrollTop = 320;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+  });
+  await page.locator('#search-page input[type="search"]').fill('beta');
+  await page.locator('#search-page header form').evaluate((form) => {
+    if (form instanceof HTMLFormElement) form.requestSubmit();
+  });
+
+  await expect(page).toHaveURL(/\/search\?q=beta&type=statuses/);
+  await expect(page.getByText('Beta first search result')).toBeVisible();
+  await expect
+    .poll(() =>
+      page
+        .locator('#search-posts-page')
+        .evaluate((element) => element.scrollTop),
+    )
+    .toBeLessThan(8);
 });
 
 test('restores AT feed position after opening a feed post in the sidebar', async ({

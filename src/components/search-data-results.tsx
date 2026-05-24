@@ -138,12 +138,14 @@ function SearchPostsFeed({
 }: SearchDataResultsProps) {
   const { t } = useLingui();
   const source = useSearchPosts(query);
+  const path = `/search?q=${encodeURIComponent(query)}&type=statuses`;
 
   return (
     <PostUriFeed
+      key={path}
       source={source}
       title={t`Search: ${query} (Posts)`}
-      path="/search"
+      path={path}
       id="search-posts"
       headerStart={headerStart ?? false}
       emptyText={t`No posts found.`}

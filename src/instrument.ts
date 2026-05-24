@@ -1,13 +1,10 @@
-import * as Sentry from '@sentry/react';
-import * as React from 'react';
-import {
-  createRoutesFromChildren,
-  matchRoutes,
-  useLocation,
-  useNavigationType,
-} from 'react-router-dom';
+const dsn =
+  import.meta.env.VITE_ENABLE_SENTRY === '1' ||
+  import.meta.env.VITE_ENABLE_SENTRY === 'true'
+    ? import.meta.env.VITE_SENTRY_DSN
+    : undefined;
 
-const dsn = import.meta.env.VITE_SENTRY_DSN;
+export const isSentryEnabled = Boolean(dsn);
 
 const REDACTED = '[redacted]';
 const PII_PATTERNS = [
@@ -38,7 +35,20 @@ function redactUnknown(value: unknown): unknown {
   return redacted;
 }
 
-if (dsn) {
+async function initSentry() {
+  if (!dsn) return;
+  const [Sentry, React, router] = await Promise.all([
+    import('@sentry/react'),
+    import('react'),
+    import('react-router-dom'),
+  ]);
+  const {
+    createRoutesFromChildren,
+    matchRoutes,
+    useLocation,
+    useNavigationType,
+  } = router;
+
   Sentry.init({
     dsn,
     environment: import.meta.env.MODE,
@@ -64,3 +74,20 @@ if (dsn) {
     tracePropagationTargets: [/^https:\/\/bluepy\.mosphere\.at\//, /^\//],
   });
 }
+
+export async function captureSentryException(
+  error: unknown,
+  hint?: Record<string, unknown>,
+): Promise<void> {
+  if (!isSentryEnabled) return;
+  const Sentry = await import('@sentry/react');
+  Sentry.captureException(error, hint);
+}
+
+export async function getLastSentryEventId(): Promise<string | undefined> {
+  if (!isSentryEnabled) return undefined;
+  const Sentry = await import('@sentry/react');
+  return Sentry.lastEventId() || undefined;
+}
+
+void initSentry();

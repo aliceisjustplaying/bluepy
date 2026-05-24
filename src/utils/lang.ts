@@ -54,19 +54,16 @@ i18n.on('change', () => {
 export async function activateLang(lang: string | false | undefined | null) {
   if (!lang || lang === DEFAULT_LANG) {
     i18n.activate(DEFAULT_LANG);
-    console.log('💬 ACTIVATE LANG', DEFAULT_LANG, lang);
   } else {
     try {
       const { messages: loadedMessages } = await import(
         `../locales/${langFileMaps[lang] || lang}.po`
       );
       i18n.loadAndActivate({ locale: lang, messages: loadedMessages });
-      console.log('💬 ACTIVATE LANG', lang, loadedMessages);
     } catch (e) {
       console.error(e);
       // Fallback to default language
       i18n.activate(DEFAULT_LANG);
-      console.log('💬 ACTIVATE LANG', DEFAULT_LANG, lang);
     }
   }
 }

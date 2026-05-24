@@ -41,11 +41,40 @@ function rememberFeedScroll(locationKey: string, scrollTop: number): void {
 
 function getSavedFeedScroll(locationKey: string): number {
   const canonicalLocationKey = canonicalizeAppPath(locationKey);
-  return Math.max(
+  const savedScroll = Math.max(
     ...[locationKey, canonicalLocationKey].map((key) =>
       Number(window.sessionStorage.getItem(`bluepy:feed-scroll:${key}`) ?? 0),
     ),
-    Number(window.sessionStorage.getItem('bluepy:last-feed-scroll') ?? 0),
+  );
+  const lastFeedPath = window.sessionStorage.getItem('bluepy:last-feed-path');
+  const lastFeedScroll =
+    lastFeedPath === canonicalLocationKey
+      ? Number(window.sessionStorage.getItem('bluepy:last-feed-scroll') ?? 0)
+      : 0;
+  return Math.max(savedScroll, lastFeedScroll);
+}
+
+function getPathScrollKey(path: string | string[]): string {
+  if (Array.isArray(path)) return path.join('|');
+  return path;
+}
+
+function getCurrentLocationKey(): string {
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+function getFeedScrollLocationKey(path: string | string[]): string {
+  const scrollKey = getPathScrollKey(path);
+  return scrollKey || getCurrentLocationKey();
+}
+
+function getFeedScrollRestoreValue(path: string | string[]): number {
+  const locationKey = getFeedScrollLocationKey(path);
+  return Math.max(
+    getSavedFeedScroll(locationKey),
+    locationKey === getCurrentLocationKey()
+      ? getSavedFeedScroll(getCurrentLocationKey())
+      : 0,
   );
 }
 
@@ -353,18 +382,18 @@ export default function PostUriFeed({
     };
   }, [onScroll]);
 
+  const scrollRestoreKey = getPathScrollKey(path);
   useEffect(() => {
-    const locationKey = `${window.location.pathname}${window.location.search}`;
-    restoreFeedScroll(getSavedFeedScroll(locationKey));
+    restoreFeedScroll(getFeedScrollRestoreValue(path));
     const restoreAfterRouteChange = () => {
-      const nextLocationKey = `${window.location.pathname}${window.location.search}`;
+      const nextLocationKey = getCurrentLocationKey();
       restoreFeedScroll(getSavedFeedScroll(nextLocationKey));
     };
     window.addEventListener('popstate', restoreAfterRouteChange);
     return () => {
       window.removeEventListener('popstate', restoreAfterRouteChange);
     };
-  }, []);
+  }, [path, scrollRestoreKey]);
 
   const content = (
     <div
