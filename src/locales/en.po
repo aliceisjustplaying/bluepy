@@ -650,8 +650,8 @@ msgid "Push notifications are blocked. Please enable them in your browser settin
 msgstr ""
 
 #: src/components/account-info.tsx
-msgid "Loading post stats..."
-msgstr "Loading post stats..."
+#~ msgid "Loading post stats..."
+#~ msgstr "Loading post stats..."
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -3007,8 +3007,8 @@ msgstr ""
 #~ msgstr ""
 
 #: src/components/account-info.tsx
-msgid "View post stats"
-msgstr "View post stats"
+#~ msgid "View post stats"
+#~ msgstr "View post stats"
 
 #: src/components/notification.tsx
 msgid "{account} edited a post you have quoted."

@@ -791,8 +791,8 @@ msgid "Push notifications are blocked. Please enable them in your browser settin
 msgstr "Tiesioginiai pranešimai yra užblokuoti. Įjunkite juos naršyklės nustatymuose."
 
 #: src/components/account-info.tsx
-msgid "Loading post stats..."
-msgstr ""
+#~ msgid "Loading post stats..."
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -3530,8 +3530,8 @@ msgstr "Nukopijuota versijos eilutė"
 #~ msgstr "Rodomas įrašas su atsakymais"
 
 #: src/components/account-info.tsx
-msgid "View post stats"
-msgstr "Peržiūrėti įrašų statistiką"
+#~ msgid "View post stats"
+#~ msgstr "Peržiūrėti įrašų statistiką"
 
 #: src/pages/public.tsx
 #~ msgid "Local timeline"

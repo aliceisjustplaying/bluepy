@@ -791,8 +791,8 @@ msgid "Push notifications are blocked. Please enable them in your browser settin
 msgstr "Powiadomienia push są blokowane. Włącz je w ustawieniach przeglądarki."
 
 #: src/components/account-info.tsx
-msgid "Loading post stats..."
-msgstr ""
+#~ msgid "Loading post stats..."
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -3530,8 +3530,8 @@ msgstr "Numer wersji został skopiowany"
 #~ msgstr "Wpisy z odpowiedziami"
 
 #: src/components/account-info.tsx
-msgid "View post stats"
-msgstr "Pokaż statystyki wpisów"
+#~ msgid "View post stats"
+#~ msgstr "Pokaż statystyki wpisów"
 
 #: src/pages/public.tsx
 #~ msgid "Local timeline"

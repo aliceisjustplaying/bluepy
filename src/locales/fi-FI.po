@@ -791,8 +791,8 @@ msgid "Push notifications are blocked. Please enable them in your browser settin
 msgstr "Puskuilmoitukset on estetty. Ota ne käyttöön selaimesi asetuksissa."
 
 #: src/components/account-info.tsx
-msgid "Loading post stats..."
-msgstr ""
+#~ msgid "Loading post stats..."
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -3530,8 +3530,8 @@ msgstr "Version merkkijono kopioitu"
 #~ msgstr "Näytetään julkaisut vastaukset mukaan lukien"
 
 #: src/components/account-info.tsx
-msgid "View post stats"
-msgstr "Näytä julkaisutilastot"
+#~ msgid "View post stats"
+#~ msgstr "Näytä julkaisutilastot"
 
 #: src/pages/public.tsx
 #~ msgid "Local timeline"

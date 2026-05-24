@@ -791,8 +791,8 @@ msgid "Push notifications are blocked. Please enable them in your browser settin
 msgstr "푸시 알림이 차단되었습니다. 브라우저 설정에서 푸시 알림을 활성화하세요."
 
 #: src/components/account-info.tsx
-msgid "Loading post stats..."
-msgstr ""
+#~ msgid "Loading post stats..."
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -3530,8 +3530,8 @@ msgstr "버전 번호 복사 됨"
 #~ msgstr "댓글이 달린 게시물 보기"
 
 #: src/components/account-info.tsx
-msgid "View post stats"
-msgstr "게시물 통계 보기"
+#~ msgid "View post stats"
+#~ msgstr "게시물 통계 보기"
 
 #: src/pages/public.tsx
 #~ msgid "Local timeline"

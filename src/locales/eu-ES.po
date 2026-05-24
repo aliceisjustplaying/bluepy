@@ -791,8 +791,8 @@ msgid "Push notifications are blocked. Please enable them in your browser settin
 msgstr "Push jakinarazpenak blokeatuta daude. Gaitu itzazu nabigatzaileko ezarpenetan."
 
 #: src/components/account-info.tsx
-msgid "Loading post stats..."
-msgstr ""
+#~ msgid "Loading post stats..."
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -3530,8 +3530,8 @@ msgstr "Bertsioaren haria kopiatuta"
 #~ msgstr "Erantzunak dituzten bidalketak erakusten"
 
 #: src/components/account-info.tsx
-msgid "View post stats"
-msgstr "Ikusi bidalketen estatistikak"
+#~ msgid "View post stats"
+#~ msgstr "Ikusi bidalketen estatistikak"
 
 #: src/pages/public.tsx
 #~ msgid "Local timeline"

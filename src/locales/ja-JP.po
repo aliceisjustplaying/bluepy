@@ -791,8 +791,8 @@ msgid "Push notifications are blocked. Please enable them in your browser settin
 msgstr ""
 
 #: src/components/account-info.tsx
-msgid "Loading post stats..."
-msgstr ""
+#~ msgid "Loading post stats..."
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -3530,8 +3530,8 @@ msgstr ""
 #~ msgstr ""
 
 #: src/components/account-info.tsx
-msgid "View post stats"
-msgstr "投稿の統計を見る"
+#~ msgid "View post stats"
+#~ msgstr "投稿の統計を見る"
 
 #: src/pages/public.tsx
 #~ msgid "Local timeline"

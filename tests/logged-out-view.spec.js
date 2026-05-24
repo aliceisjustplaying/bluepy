@@ -1162,6 +1162,8 @@ async function routeAtprotoScrollableFeed(page) {
  *   profileFailures?: string[];
  *   preferences?: unknown[];
  *   profilesByDid?: Record<string, AtprotoTestActor | Record<string, unknown>>;
+ *   knownFollowersByActor?: Record<string, AtprotoTestActor[]>;
+ *   relationshipsByDid?: Record<string, Record<string, unknown>>;
  *   searchActorsByQuery?: Record<string, AtprotoTestActor[]>;
  *   searchActorTypeaheadByQuery?: Record<string, AtprotoTestActor[]>;
  *   searchPostsByQuery?: Record<string, AtprotoTestPost[]>;
@@ -1174,10 +1176,12 @@ async function routeAtprotoRecords(page, options = {}) {
     blueskyOmitPresentation = false,
     fallbackFails = false,
     labelerViews = [],
+    knownFollowersByActor = {},
     onBlueskyProfile,
     profileFailures = [],
     preferences = [],
     profilesByDid = {},
+    relationshipsByDid = {},
     searchActorsByQuery = {},
     searchActorTypeaheadByQuery = {},
     searchPostsByQuery = {},
@@ -1276,6 +1280,16 @@ async function routeAtprotoRecords(page, options = {}) {
         });
         return;
       }
+      if (endpoint === 'app.bsky.actor.getProfiles') {
+        const actors = url.searchParams.getAll('actors');
+        await route.fulfill({
+          headers,
+          json: {
+            profiles: actors.map((actor) => profilesByDid[actor] || profile),
+          },
+        });
+        return;
+      }
       if (endpoint === 'app.bsky.feed.getAuthorFeed') {
         await route.fulfill({
           headers,
@@ -1327,9 +1341,28 @@ async function routeAtprotoRecords(page, options = {}) {
         return;
       }
       if (endpoint === 'app.bsky.graph.getKnownFollowers') {
+        const actor = url.searchParams.get('actor') || '';
         await route.fulfill({
           headers,
-          json: { followers: [] },
+          json: { followers: knownFollowersByActor[actor] || [] },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.graph.getRelationships') {
+        const others = url.searchParams.getAll('others');
+        await route.fulfill({
+          headers,
+          json: {
+            relationships: others.map((did) =>
+              Object.assign(
+                {
+                  $type: 'app.bsky.graph.defs#relationship',
+                  did,
+                },
+                relationshipsByDid[did],
+              ),
+            ),
+          },
         });
         return;
       }
@@ -1964,6 +1997,13 @@ test('keeps the leading account search match visible', async ({ page }) => {
     'samueloakford.bsky.social',
     'Samuel Oakford',
   );
+  const familiarFollowers = Array.from({ length: 8 }, (_, index) =>
+    makeAtprotoTestActor(
+      `did:plc:familiar${index}`,
+      `mutual-${index}.test`,
+      `Mutual ${index}`,
+    ),
+  );
   await routeAtprotoRecords(page, {
     labelerViews: [
       {
@@ -2020,6 +2060,24 @@ test('keeps the leading account search match visible', async ({ page }) => {
         postsCount: 13,
         viewer: {},
       },
+      [fallbackActor.did]: {
+        ...fallbackActor,
+        $type: 'app.bsky.actor.defs#profileViewDetailed',
+        description: 'Hydrated fallback profile',
+        followersCount: 12,
+        followsCount: 3,
+        postsCount: 9,
+        viewer: {},
+      },
+    },
+    relationshipsByDid: {
+      [exactActor.did]: {
+        following: `at://${AT_REPO}/app.bsky.graph.follow/exact`,
+      },
+      [fallbackActor.did]: {},
+    },
+    knownFollowersByActor: {
+      [fallbackActor.did]: familiarFollowers,
     },
     searchActorsByQuery: {
       samuel: [exactActor, fallbackActor],
@@ -2045,6 +2103,23 @@ test('keeps the leading account search match visible', async ({ page }) => {
   await expect(sheet.getByText('42 Followers')).toBeVisible();
   await expect(sheet.getByText('7 Following')).toBeVisible();
   await expect(sheet.getByText('13 Posts')).toBeVisible();
+  await expect(
+    sheet.getByRole('button', { name: 'View post stats' }),
+  ).toHaveCount(0);
+  await expect(sheet.locator('.posting-stats-bar')).toBeVisible();
+  await sheet.getByRole('button', { name: 'Close' }).click();
+  await expect(sheet).toHaveCount(0);
+
+  await page.locator('.accounts-list .account-block').nth(1).click();
+  const fallbackSheet = page.locator('.sheet');
+  await expect(fallbackSheet.getByText('12 Followers')).toBeVisible();
+  await expect(
+    fallbackSheet.getByRole('button', { name: 'View post stats' }),
+  ).toHaveCount(0);
+  await expect(fallbackSheet.locator('.posting-stats-bar')).toBeVisible();
+  await expect
+    .poll(() => fallbackSheet.locator('.stats-avatars-bunch .avatar').count())
+    .toBeLessThanOrEqual(3);
   await expect
     .poll(() =>
       page

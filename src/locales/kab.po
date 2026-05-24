@@ -791,8 +791,8 @@ msgid "Push notifications are blocked. Please enable them in your browser settin
 msgstr "Ilɣa Push ttusweḥlen. Ttxil-k rmed-iten deg yiɣewwaren n yiminig."
 
 #: src/components/account-info.tsx
-msgid "Loading post stats..."
-msgstr ""
+#~ msgid "Loading post stats..."
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -3530,8 +3530,8 @@ msgstr "Azrir n lqem yettwanɣel"
 #~ msgstr "Askan n tsuffeɣt s tririyin"
 
 #: src/components/account-info.tsx
-msgid "View post stats"
-msgstr "Wali tidaddanin n tsuffeɣt"
+#~ msgid "View post stats"
+#~ msgstr "Wali tidaddanin n tsuffeɣt"
 
 #: src/pages/public.tsx
 #~ msgid "Local timeline"

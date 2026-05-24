@@ -791,8 +791,8 @@ msgid "Push notifications are blocked. Please enable them in your browser settin
 msgstr "通知推送已被阻止。请在你的浏览器设置中授予相关权限。"
 
 #: src/components/account-info.tsx
-msgid "Loading post stats..."
-msgstr ""
+#~ msgid "Loading post stats..."
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -3530,8 +3530,8 @@ msgstr "已复制版本号"
 #~ msgstr "已展示回复"
 
 #: src/components/account-info.tsx
-msgid "View post stats"
-msgstr "查看嘟文统计"
+#~ msgid "View post stats"
+#~ msgstr "查看嘟文统计"
 
 #: src/pages/public.tsx
 #~ msgid "Local timeline"

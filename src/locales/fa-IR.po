@@ -791,8 +791,8 @@ msgid "Push notifications are blocked. Please enable them in your browser settin
 msgstr "آگاهی‌های ارسالی مسدود شده‌اند. لطفا آنها را در تنظیمات مرورگر خود فعال کنید."
 
 #: src/components/account-info.tsx
-msgid "Loading post stats..."
-msgstr ""
+#~ msgid "Loading post stats..."
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
@@ -3530,8 +3530,8 @@ msgstr "رشتهٔ نگارش رونوشت شد"
 #~ msgstr "نمایش فرسته با پاسخ‌ها"
 
 #: src/components/account-info.tsx
-msgid "View post stats"
-msgstr "نمایش اطلاعات فرسته"
+#~ msgid "View post stats"
+#~ msgstr "نمایش اطلاعات فرسته"
 
 #: src/pages/public.tsx
 #~ msgid "Local timeline"

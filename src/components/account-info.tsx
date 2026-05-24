@@ -153,6 +153,7 @@ interface AccountIterPage {
 }
 
 const LIMIT = 80;
+const FAMILIAR_FOLLOWER_AVATAR_LIMIT = 3;
 
 const isValidUrl = (string: string): boolean => {
   try {
@@ -401,9 +402,26 @@ function AccountInfo({
   const [familiarFollowers, setFamiliarFollowers] = useState<
     AccountInfoShape[]
   >([]);
-  const [postingStats, setPostingStats] = useState<PostingStats | undefined>();
+  const [loadedPostingStats, setPostingStats] = useState<
+    PostingStats | undefined
+  >();
+  const [postingStatsActorId, setPostingStatsActorId] = useState<
+    string | undefined
+  >();
   const [postingStatsLoading, setPostingStatsLoading] = useState(false);
+  const visibleFamiliarFollowers = useMemo(
+    () => familiarFollowers.slice(0, FAMILIAR_FOLLOWER_AVATAR_LIMIT),
+    [familiarFollowers],
+  );
+  const postingStats =
+    postingStatsActorId === id ? loadedPostingStats : undefined;
   const hasPostingStats = !!postingStats?.total;
+
+  useEffect(() => {
+    setFamiliarFollowers([]);
+    setPostingStats(undefined);
+    setPostingStatsActorId(undefined);
+  }, [id]);
 
   const renderFamiliarFollowers = useCallback(async (): Promise<void> => {
     if (!activeDid || !id) {
@@ -418,11 +436,20 @@ function AccountInfo({
     setFamiliarFollowers(res.data.followers.map(profileToAccountInfo));
   }, [activeDid, clients, id]);
 
+  useEffect(() => {
+    if (standalone || !activeDid || !id || id === activeDid) {
+      return;
+    }
+    void renderFamiliarFollowers();
+  }, [activeDid, id, renderFamiliarFollowers, standalone]);
+
   const renderPostingStats = useCallback(async () => {
     if (!activeDid || !id) {
       setPostingStats(undefined);
+      setPostingStatsActorId(undefined);
       return;
     }
+    setPostingStatsActorId(id);
     setPostingStatsLoading(true);
     try {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
@@ -478,21 +505,33 @@ function AccountInfo({
     }
   }, [activeDid, clients, id]);
 
+  useEffect(() => {
+    if (
+      standalone ||
+      !id ||
+      statusesCount <= 0 ||
+      postingStatsLoading ||
+      postingStatsActorId === id
+    ) {
+      return;
+    }
+    void renderPostingStats();
+  }, [
+    id,
+    standalone,
+    statusesCount,
+    postingStatsLoading,
+    postingStatsActorId,
+    renderPostingStats,
+  ]);
+
   const onRelationshipChange = useCallback(
     ({
-      relationship,
+      relationship: _relationship,
     }: {
       relationship: { following?: boolean };
-    }) => {
-      if (!relationship.following) {
-        void renderFamiliarFollowers();
-        if (!standalone && statusesCount > 0) {
-          // Only render posting stats if not standalone and has posts
-          void renderPostingStats();
-        }
-      }
-    },
-    [standalone, statusesCount, renderFamiliarFollowers, renderPostingStats],
+    }) => {},
+    [],
   );
 
   const onProfileUpdate = useCallback(
@@ -976,10 +1015,10 @@ function AccountInfo({
                         }, 0);
                       }}
                     >
-                      {!!familiarFollowers.length && (
+                      {!!visibleFamiliarFollowers.length && (
                         <span className="shazam-container-horizontal">
                           <span className="shazam-container-inner stats-avatars-bunch">
-                            {familiarFollowers.map((follower) => (
+                            {visibleFamiliarFollowers.map((follower) => (
                               <Avatar
                                 key={follower.id}
                                 url={follower.avatarStatic}
@@ -1095,29 +1134,6 @@ function AccountInfo({
                     )}
                   </div>
                 </div>
-                {!postingStats && !standalone && statusesCount > 0 && (
-                  <button
-                    type="button"
-                    aria-label={t`View post stats`}
-                    className="account-metadata-box"
-                    disabled={postingStatsLoading}
-                    onClick={() => {
-                      void renderPostingStats();
-                    }}
-                  >
-                    <div className="shazam-container">
-                      <div className="shazam-container-inner">
-                        <div className="posting-stats">
-                          {postingStatsLoading ? (
-                            <Trans>Loading post stats...</Trans>
-                          ) : (
-                            <Trans>View post stats</Trans>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                )}
                 {!!postingStats && (
                   <LinkOrDiv
                     to={accountLink}
@@ -1265,7 +1281,7 @@ function AccountInfo({
                   info={info}
                   instance={instance}
                   standalone={standalone}
-                  authenticated={authenticated}
+                  authenticated={currentAuthenticated}
                   onRelationshipChange={onRelationshipChange}
                   onProfileUpdate={onProfileUpdate}
                   setShowEditProfile={setShowEditProfile}
