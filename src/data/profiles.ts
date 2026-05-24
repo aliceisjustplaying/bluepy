@@ -12,6 +12,7 @@ import {
   invalidateCachedProfileForViewer,
   patchCachedProfileForViewer,
 } from './_internal/mutation-cache';
+import { parseOwnedRecordUri } from './_internal/owned-record-uri';
 import {
   patchProfileBlock,
   patchProfileFollow,
@@ -41,10 +42,6 @@ const RELATIONSHIP_COLLECTIONS: Record<RelationshipRecordKey, string> = {
   following: 'app.bsky.graph.follow',
   blocking: 'app.bsky.graph.block',
 };
-
-function atprotoRkey(uri: string): string {
-  return uri.split('/').pop() ?? '';
-}
 
 function recordUriForCollection(
   uri: string | undefined,
@@ -390,8 +387,13 @@ export function useUnfollowAccount() {
         recordUri,
       );
       if (!followUri) throw new Error('Follow URI required');
+      const { repo, rkey } = parseOwnedRecordUri(
+        followUri,
+        activeDid,
+        'app.bsky.graph.follow',
+      );
       const agent = getWriteAgent(clients, 'pds-repo-direct');
-      await agent.deleteFollow(followUri);
+      await agent.app.bsky.graph.follow.delete({ repo, rkey });
       return null;
     },
     onMutate: async ({ did }) => ({
@@ -519,11 +521,13 @@ export function useUnblockAccount() {
         recordUri,
       );
       if (!blockUri) throw new Error('Block URI required');
+      const { repo, rkey } = parseOwnedRecordUri(
+        blockUri,
+        activeDid,
+        'app.bsky.graph.block',
+      );
       const agent = getWriteAgent(clients, 'pds-repo-direct');
-      await agent.app.bsky.graph.block.delete({
-        repo: activeDid,
-        rkey: atprotoRkey(blockUri),
-      });
+      await agent.app.bsky.graph.block.delete({ repo, rkey });
       return null;
     },
     onMutate: async ({ did }) => ({

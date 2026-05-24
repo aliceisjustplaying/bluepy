@@ -100,4 +100,13 @@ describe('post mutation record URI resolution', () => {
       ),
     ).toThrow('active account');
   });
+
+  test('post delete args reject URIs that merely contain the post collection segment', () => {
+    expect(() =>
+      postDeleteRecordArgs(
+        'https://example.test/app.bsky.feed.post/abc',
+        'did:plc:viewer',
+      ),
+    ).toThrow('Record URI required');
+  });
 });

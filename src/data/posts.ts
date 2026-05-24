@@ -12,6 +12,7 @@ import {
   patchCachedThreadPostsForViewer,
   removeCachedPostForViewer,
 } from './_internal/mutation-cache';
+import { parseOwnedRecordUri } from './_internal/owned-record-uri';
 import { patchPostLike, patchPostRepost } from './_internal/patchers';
 import { primePosts } from './_internal/prime';
 import { getReadAgent, getWriteAgent } from './clients';
@@ -112,22 +113,11 @@ export async function findViewerRecordUriForSubject(
   return undefined;
 }
 
-function atprotoRkey(uri: string): string {
-  return uri.split('/').pop() ?? '';
-}
-
 export function postDeleteRecordArgs(
   uri: string,
   activeDid: string | null,
 ): { repo: string; rkey: string } {
-  if (!activeDid) throw new Error('Active DID required');
-  const match = /^at:\/\/([^/]+)\/([^/]+)\/([^/]+)$/.exec(uri);
-  if (!match) throw new Error('Post URI required');
-  const [, repo, collection] = match;
-  if (repo !== activeDid || collection !== 'app.bsky.feed.post') {
-    throw new Error('Can only delete posts authored by the active account');
-  }
-  return { repo, rkey: atprotoRkey(uri) };
+  return parseOwnedRecordUri(uri, activeDid, 'app.bsky.feed.post');
 }
 
 function isThreadViewPost(
@@ -308,7 +298,12 @@ export function useUnlikePost() {
           uri,
         ));
       if (!currentLikeUri) throw new Error('Like URI required');
-      await agent.deleteLike(currentLikeUri);
+      const { repo, rkey } = parseOwnedRecordUri(
+        currentLikeUri,
+        activeDid,
+        'app.bsky.feed.like',
+      );
+      await agent.app.bsky.feed.like.delete({ repo, rkey });
       return null;
     },
     onMutate: async ({ uri }) => ({
@@ -374,7 +369,12 @@ export function useUnrepostPost() {
           uri,
         ));
       if (!currentRepostUri) throw new Error('Repost URI required');
-      await agent.deleteRepost(currentRepostUri);
+      const { repo, rkey } = parseOwnedRecordUri(
+        currentRepostUri,
+        activeDid,
+        'app.bsky.feed.repost',
+      );
+      await agent.app.bsky.feed.repost.delete({ repo, rkey });
       return null;
     },
     onMutate: async ({ uri }) => ({
