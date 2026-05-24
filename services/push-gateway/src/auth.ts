@@ -7,6 +7,7 @@ export const LXM = {
   'GET /settings': 'social.bluepy.push.getsettings',
   'PUT /settings': 'social.bluepy.push.putsettings',
   'POST /subscriptions': 'social.bluepy.push.registersubscription',
+  'POST /subscriptions/current': 'social.bluepy.push.getcurrentsubscription',
   'POST /subscriptions/unregister': 'social.bluepy.push.unregistersubscription',
   'POST /subscriptions/delete-all-for-account': 'social.bluepy.push.deleteaccountdata',
 } as const;

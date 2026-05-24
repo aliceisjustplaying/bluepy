@@ -192,7 +192,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
     }
     if (req.method === 'POST' && url.pathname === '/subscriptions/current') {
       if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
-      const auth = await requireAuth(req, db, config, LXM['GET /settings']);
+      const auth = await requireAuth(req, db, config, LXM['POST /subscriptions/current']);
       const body = await readJson(req);
       return send(res, 200, getCurrentSubscription(db, config.logHashSecret, auth.did, endpointInput(body)), headers);
     }

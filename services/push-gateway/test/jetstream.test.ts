@@ -44,7 +44,8 @@ void test('creates per-device attempts and preserves unsent devices on replay', 
   assert.equal(first.events, 1);
   assert.equal(first.attempts, 2);
 
-  db.prepare('DELETE FROM delivery_attempts WHERE subscription_id = 2').run();
+  const sub2 = db.prepare('SELECT id FROM subscriptions WHERE endpoint = ?').get('https://push.example/sub2') as { id: number };
+  db.prepare('DELETE FROM delivery_attempts WHERE subscription_id = ?').run(sub2.id);
   const replay = processJetstreamEvent(db, event);
   assert.equal(replay.events, 1);
   assert.equal(replay.attempts, 1);

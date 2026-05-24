@@ -34,7 +34,8 @@ function isRecordKey(value: unknown): value is string {
 
 function hasControlCharacter(value: string): boolean {
   for (let index = 0; index < value.length; index += 1) {
-    if (value.charCodeAt(index) < 32) return true;
+    const code = value.charCodeAt(index);
+    if (code < 32 || code === 127) return true;
   }
   return false;
 }
