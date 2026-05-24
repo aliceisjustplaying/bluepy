@@ -32,9 +32,12 @@ function loadProfile(): AppBskyActorDefs.ProfileViewDetailed {
 describe('optimistic patchers', () => {
   test('like patch toggles viewer.like and likeCount', () => {
     const before = loadPost();
-    const liked = patchPostLike(before, true);
-    expect(liked.viewer?.like).toBe(before.uri);
+    const likeUri = 'at://did:plc:viewer/app.bsky.feed.like/abc';
+    const liked = patchPostLike(before, true, likeUri);
+    expect(liked.viewer?.like).toBe(likeUri);
     expect(liked.likeCount).toBe((before.likeCount ?? 0) + 1);
+    const confirmed = patchPostLike(liked, true, likeUri);
+    expect(confirmed.likeCount).toBe(liked.likeCount);
     const restored = patchPostLike(liked, false);
     expect(restored.likeCount).toBe(before.likeCount);
     expect(restored.viewer?.like).toBeUndefined();
@@ -46,12 +49,16 @@ describe('optimistic patchers', () => {
     const reposted = patchPostRepost(before, true, repostUri);
     expect(reposted.viewer?.repost).toBe(repostUri);
     expect(reposted.repostCount).toBe((before.repostCount ?? 0) + 1);
+    const confirmed = patchPostRepost(reposted, true, repostUri);
+    expect(confirmed.repostCount).toBe(reposted.repostCount);
   });
 
   test('bookmark patch toggles viewer.bookmarked', () => {
     const before = loadPost();
     const bookmarked = patchPostBookmark(before, true);
     expect(bookmarked.viewer?.bookmarked).toBe(true);
+    const restored = patchPostBookmark(bookmarked, false);
+    expect(restored.viewer?.bookmarked).toBeUndefined();
   });
 
   test('follow patch toggles viewer.following', () => {

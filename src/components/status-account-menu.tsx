@@ -1,6 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
 
+import { useDeletePost, useMuteThread, useUnmuteThread } from '../data/posts';
 import haptics from '../utils/haptics';
 import showToast from '../utils/show-toast';
 import states, { getStatus, saveStatus } from '../utils/states';
@@ -28,16 +29,18 @@ type StatusAccountMenuProps = Pick<
 export default function StatusAccountMenu({
   isSelf,
   mentionSelf,
-  masto,
   id,
   muted,
   instance,
-  pinned,
-  isPinnable,
   status,
   isSizeLarge,
 }: StatusAccountMenuProps) {
   const { t } = useLingui();
+  const deletePost = useDeletePost();
+  const muteThread = useMuteThread();
+  const unmuteThread = useUnmuteThread();
+  const atprotoUri = status._atproto?.uri;
+  const atprotoThreadRoot = status._atproto?.root?.uri ?? atprotoUri;
 
   return (
     <>
@@ -48,11 +51,17 @@ export default function StatusAccountMenu({
             void haptics.trigger('light');
             void (async () => {
               try {
-                const stmtAction = masto.v1.statuses.$select(id);
-                const newStatus = await (muted
-                  ? stmtAction.unmute()
-                  : stmtAction.mute());
-                saveStatus(newStatus, instance);
+                if (!atprotoThreadRoot) {
+                  throw new Error('Thread root URI required');
+                }
+                await (muted ? unmuteThread : muteThread).mutateAsync({
+                  uri: atprotoThreadRoot,
+                });
+                const cachedStatus = getStatus(id, instance);
+                if (cachedStatus) {
+                  cachedStatus.muted = !muted;
+                  saveStatus(cachedStatus, instance);
+                }
                 showToast(
                   muted ? t`Conversation unmuted` : t`Conversation muted`,
                 );
@@ -84,48 +93,6 @@ export default function StatusAccountMenu({
           )}
         </MenuItem>
       )}
-      {isSelf && isPinnable && (
-        <MenuItem
-          onClick={() => {
-            void haptics.trigger('light');
-            void (async () => {
-              try {
-                const stmtAction = masto.v1.statuses.$select(id);
-                const newStatus = await (pinned
-                  ? stmtAction.unpin()
-                  : stmtAction.pin());
-                saveStatus(newStatus, instance);
-                showToast(
-                  pinned
-                    ? t`Post unpinned from profile`
-                    : t`Post pinned to profile`,
-                );
-              } catch (e) {
-                console.error(e);
-                showToast(
-                  pinned ? t`Unable to unpin post` : t`Unable to pin post`,
-                );
-              }
-            })();
-          }}
-        >
-          {pinned ? (
-            <>
-              <Icon icon="unpin" />
-              <span>
-                <Trans>Unpin from profile</Trans>
-              </span>
-            </>
-          ) : (
-            <>
-              <Icon icon="pin" />
-              <span>
-                <Trans>Pin to profile</Trans>
-              </span>
-            </>
-          )}
-        </MenuItem>
-      )}
       {isSelf && (
         <>
           <div className="menu-horizontal">
@@ -145,7 +112,10 @@ export default function StatusAccountMenu({
                 onClick={() => {
                   void (async () => {
                     try {
-                      await masto.v1.statuses.$select(id).remove();
+                      if (!atprotoUri) {
+                        throw new Error('Post URI required');
+                      }
+                      await deletePost.mutateAsync({ uri: atprotoUri });
                       const cachedStatus = getStatus(id, instance);
                       if (cachedStatus) {
                         cachedStatus._deleted = true;

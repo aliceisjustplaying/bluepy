@@ -21,22 +21,25 @@ const httpsTestHostIp = process.env.PHANPY_WEBSITE_HOST_IP;
 const HAS_ATPROTO_TEST_CREDS = Boolean(
   process.env.ATPROTO_TEST_IDENTIFIER && process.env.ATPROTO_TEST_PASSWORD,
 );
+const CONFIGURED_WORKERS = process.env.BLUEPY_PLAYWRIGHT_WORKERS
+  ? Number(process.env.BLUEPY_PLAYWRIGHT_WORKERS)
+  : undefined;
 const AGENT_CHROMIUM_ARGS = [
   '--disable-gpu',
   '--disable-dev-shm-usage',
   '--no-sandbox',
   '--single-process',
 ];
-const CHROMIUM_ARGS =
-  process.env.BLUEPY_CHROMIUM_ARGS?.split(/\s+/).filter(Boolean) ??
-  [
-    ...(process.env.BLUEPY_AGENT_BROWSER || process.env.CI
-      ? AGENT_CHROMIUM_ARGS
-      : []),
-    ...(httpsTestHost && httpsTestHostIp
-      ? [`--host-resolver-rules=MAP ${httpsTestHost} ${httpsTestHostIp}`]
-      : []),
-  ];
+const CHROMIUM_ARGS = process.env.BLUEPY_CHROMIUM_ARGS?.split(/\s+/).filter(
+  Boolean,
+) ?? [
+  ...(process.env.BLUEPY_AGENT_BROWSER || process.env.CI
+    ? AGENT_CHROMIUM_ARGS
+    : []),
+  ...(httpsTestHost && httpsTestHostIp
+    ? [`--host-resolver-rules=MAP ${httpsTestHost} ${httpsTestHostIp}`]
+    : []),
+];
 
 /**
  * Read environment variables from file.
@@ -56,8 +59,10 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   retries: 0,
-  /* Opt out of parallel tests on CI and when running live ATProto smoke tests. */
-  workers: process.env.CI || HAS_ATPROTO_TEST_CREDS ? 1 : undefined,
+  /* Keep live ATProto tests serial by default; opt in per run once a spec is isolated. */
+  workers:
+    CONFIGURED_WORKERS ??
+    (process.env.CI || HAS_ATPROTO_TEST_CREDS ? 1 : undefined),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI ? 'github' : 'list',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

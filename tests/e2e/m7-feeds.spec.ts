@@ -1,4 +1,4 @@
-import { expect, test as base, type Browser, type Page } from '@playwright/test';
+import { expect, test as base, type Page } from '@playwright/test';
 
 import {
   HAS_CREDS,
@@ -27,32 +27,16 @@ const test = base.extend({
 test.skip(!HAS_CREDS, 'ATPROTO_TEST_IDENTIFIER/PASSWORD not set');
 test.describe.configure({ mode: 'serial', timeout: 120_000 });
 
-async function expectFreshOauthRoute(
-  browser: Browser,
+async function expectOauthRoute(
+  page: Page,
   path: string,
   endpoint: string,
   selector: string,
-  options: { protectedRoute?: boolean } = {},
 ) {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  try {
-    let ready: Promise<void>;
-    if (options.protectedRoute) {
-      await page.goto(path);
-      await expect(page).toHaveURL(/\/login(?:[?#].*)?$/, { timeout: 60_000 });
-      ready = waitForXrpc(page, endpoint, 120_000);
-      await loginViaBrowserOAuth(page, { preserveCurrentPage: true });
-    } else {
-      await loginViaBrowserOAuth(page);
-      ready = waitForXrpc(page, endpoint, 120_000);
-      await page.goto(path);
-    }
-    await ready;
-    await expect(page.locator(selector)).toBeVisible({ timeout: 60_000 });
-  } finally {
-    await context.close();
-  }
+  const ready = waitForXrpc(page, endpoint, 120_000);
+  await page.goto(path);
+  await ready;
+  await expect(page.locator(selector)).toBeVisible({ timeout: 60_000 });
 }
 
 async function selectMaxCatchupRange(page: Page) {
@@ -73,10 +57,9 @@ async function enableProfileShortcutColumn(page: Page): Promise<string> {
     window.sessionStorage.setItem('currentAccount', account.info.id);
     const namespace = `${account.info.id}@${account.instanceURL}`;
     const setAccountValue = (key: string, value: unknown) => {
-      const data = JSON.parse(window.localStorage.getItem(key) || '{}') as Record<
-        string,
-        unknown
-      >;
+      const data = JSON.parse(
+        window.localStorage.getItem(key) || '{}',
+      ) as Record<string, unknown>;
       data[namespace] = value;
       window.localStorage.setItem(key, JSON.stringify(data));
     };
@@ -173,7 +156,10 @@ test.describe('M7 migrated feeds', () => {
     });
 
     await expect(
-      page.locator('.account-container .stats').getByText(/Followers?/).first(),
+      page
+        .locator('.account-container .stats')
+        .getByText(/Followers?/)
+        .first(),
     ).toBeVisible({ timeout: 60_000 });
     await Promise.all([
       waitForXrpc(page, 'app.bsky.graph.getFollowers'),
@@ -197,12 +183,14 @@ test.describe('M7 migrated feeds', () => {
     ).toBeVisible({ timeout: 60_000 });
 
     await page.locator('#generic-accounts-container .sheet-close').click();
-    await expect(page.locator('#generic-accounts-container')).toHaveCount(
-      0,
-      { timeout: 60_000 },
-    );
+    await expect(page.locator('#generic-accounts-container')).toHaveCount(0, {
+      timeout: 60_000,
+    });
     await expect(
-      page.locator('.account-container .stats').getByText(/Following/).first(),
+      page
+        .locator('.account-container .stats')
+        .getByText(/Following/)
+        .first(),
     ).toBeVisible({ timeout: 60_000 });
     await Promise.all([
       waitForXrpc(page, 'app.bsky.graph.getFollows'),
@@ -295,7 +283,9 @@ test.describe('M7 migrated feeds', () => {
     const ready = waitForXrpc(page, 'app.bsky.feed.searchPosts');
     await page.goto('/search?q=bluesky&type=statuses');
     await ready;
-    await expect(page.locator('[data-timeline-id="search-posts"]')).toBeVisible();
+    await expect(
+      page.locator('[data-timeline-id="search-posts"]'),
+    ).toBeVisible();
   });
 
   test('search accounts loads via searchActors', async ({ page }) => {
@@ -309,7 +299,9 @@ test.describe('M7 migrated feeds', () => {
   test('lists index renders', async ({ page }) => {
     test.setTimeout(120_000);
     await page.goto('/l');
-    await expect(page.locator('.timeline-page, .lists-page, main').first()).toBeVisible({
+    await expect(
+      page.locator('.timeline-page, .lists-page, main').first(),
+    ).toBeVisible({
       timeout: 60_000,
     });
   });
@@ -330,11 +322,17 @@ test.describe('M7 migrated feeds', () => {
     await link.focus();
     await page.keyboard.press('Enter');
     await ready;
-    await expect(page.locator('.status-deck .timeline.flat.contextual.grow')).toBeVisible();
-    await expect(page.locator('.status-deck li.hero .status').first()).toBeVisible();
+    await expect(
+      page.locator('.status-deck .timeline.flat.contextual.grow'),
+    ).toBeVisible();
+    await expect(
+      page.locator('.status-deck li.hero .status').first(),
+    ).toBeVisible();
   });
 
-  test('catch-up scans the OAuth timeline and renders rows', async ({ page }) => {
+  test('catch-up scans the OAuth timeline and renders rows', async ({
+    page,
+  }) => {
     test.setTimeout(180_000);
     const ready = waitForXrpc(page, 'app.bsky.feed.getTimeline', 120_000);
     await page.goto('/catchup');
@@ -350,50 +348,68 @@ test.describe('M7 migrated feeds', () => {
     browser,
   }) => {
     test.setTimeout(360_000);
-    await expectFreshOauthRoute(
-      browser,
-      '/notifications',
-      'app.bsky.notification.listNotifications',
-      '[data-timeline-id="notifications"]',
-      { protectedRoute: true },
-    );
-    await expectFreshOauthRoute(
-      browser,
-      `/a/${IDENTIFIER}`,
-      'app.bsky.actor.getProfile',
-      '.account-container',
-    );
-    await expectFreshOauthRoute(
-      browser,
-      '/trending',
-      'app.bsky.feed.getFeed',
-      '[data-timeline-id="trending"]',
-    );
-
     const context = await browser.newContext();
     const page = await context.newPage();
     try {
-      await loginViaBrowserOAuth(page);
+      await page.goto('/notifications');
+      await expect(page).toHaveURL(/\/login(?:[?#].*)?$/, { timeout: 60_000 });
+      const notificationsReady = waitForXrpc(
+        page,
+        'app.bsky.notification.listNotifications',
+        120_000,
+      );
+      await loginViaBrowserOAuth(page, { preserveCurrentPage: true });
+      await notificationsReady;
+      await expect(
+        page.locator('[data-timeline-id="notifications"]'),
+      ).toBeVisible({
+        timeout: 60_000,
+      });
+
+      await expectOauthRoute(
+        page,
+        `/a/${IDENTIFIER}`,
+        'app.bsky.actor.getProfile',
+        '.account-container',
+      );
+      await expectOauthRoute(
+        page,
+        '/trending',
+        'app.bsky.feed.getFeed',
+        '[data-timeline-id="trending"]',
+      );
       await page.goto('/trending');
       await waitForXrpc(page, 'app.bsky.feed.getFeed', 120_000);
       const href = await page
         .locator('.status-link[data-href]')
         .first()
         .getAttribute('data-href');
-      expect(href).toBeTruthy();
-      const threadReady = waitForXrpc(page, 'app.bsky.feed.getPostThread', 120_000);
-      await page.goto(href!);
+      if (!href) throw new Error('trending status is missing a detail link');
+      const threadReady = waitForXrpc(
+        page,
+        'app.bsky.feed.getPostThread',
+        120_000,
+      );
+      await page.goto(href);
       await threadReady;
-      await expect(page.locator('.status-deck li.hero .status').first()).toBeVisible({
+      await expect(
+        page.locator('.status-deck li.hero .status').first(),
+      ).toBeVisible({
         timeout: 60_000,
       });
 
-      const timelineReady = waitForXrpc(page, 'app.bsky.feed.getTimeline', 120_000);
+      const timelineReady = waitForXrpc(
+        page,
+        'app.bsky.feed.getTimeline',
+        120_000,
+      );
       await page.goto('/catchup');
       await selectMaxCatchupRange(page);
       await page.getByRole('button', { name: 'Catch up' }).click();
       await timelineReady;
-      await expect(page.locator('.catchup-list .post-line').first()).toBeVisible({
+      await expect(
+        page.locator('.catchup-list .post-line').first(),
+      ).toBeVisible({
         timeout: 120_000,
       });
     } finally {

@@ -121,7 +121,8 @@ export default function StatusContent({
   const sameInstance = instance === currentInstance;
   const snapStates = useSnapshot(states);
   const sKey = resolvedSKey;
-  const liveStatus = (snapStates.statuses[sKey] as AnyStatus | undefined) || status;
+  const liveStatus =
+    (snapStates.statuses[sKey] as AnyStatus | undefined) || status;
 
   const {
     account,
@@ -334,9 +335,7 @@ export default function StatusContent({
     fetchBoostedLikedByAccounts,
   } = useStatusInteractions({
     statusID,
-    status,
-    sKey,
-    id,
+    status: liveStatus,
     instance,
     masto,
     sameInstance,

@@ -1,5 +1,5 @@
 import type { AppBskyActorDefs } from '@atproto/api';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useActiveDid, useClients } from '../contexts/SessionProvider';
 import {
@@ -8,17 +8,94 @@ import {
 } from '../utils/atproto-profile-shape';
 
 import { feedReadMode } from './_internal/dispatch';
+import {
+  invalidateCachedProfileForViewer,
+  patchCachedProfileForViewer,
+} from './_internal/mutation-cache';
+import {
+  patchProfileBlock,
+  patchProfileFollow,
+  patchProfileMute,
+} from './_internal/patchers';
 import { primeProfiles } from './_internal/prime';
 import { useInfiniteList } from './_internal/use-infinite';
-import { getReadAgent } from './clients';
+import { getReadAgent, getWriteAgent } from './clients';
 import { keys } from './keys';
 import { useViewerScope } from './scope';
 
 const DIRECT_ROUTE_STALE_TIME = 60_000;
 const PROFILE_GRAPH_LIMIT = 80;
 
+interface ProfileMutationVars {
+  did: string;
+  recordUri?: string;
+}
+
+interface ProfileMutationContext {
+  rollback?: () => void;
+}
+
+type RelationshipRecordKey = 'following' | 'blocking';
+
+const RELATIONSHIP_COLLECTIONS: Record<RelationshipRecordKey, string> = {
+  following: 'app.bsky.graph.follow',
+  blocking: 'app.bsky.graph.block',
+};
+
+function atprotoRkey(uri: string): string {
+  return uri.split('/').pop() ?? '';
+}
+
+function recordUriForCollection(
+  uri: string | undefined,
+  collection: string,
+): string | undefined {
+  return uri?.includes(`/${collection}/`) ? uri : undefined;
+}
+
+function getRelationshipRecordUri(
+  relationship: unknown,
+  key: RelationshipRecordKey,
+): string | undefined {
+  if (typeof relationship !== 'object' || relationship === null) {
+    return undefined;
+  }
+  const value = (relationship as Record<RelationshipRecordKey, unknown>)[key];
+  return typeof value === 'string'
+    ? recordUriForCollection(value, RELATIONSHIP_COLLECTIONS[key])
+    : undefined;
+}
+
 function isDid(actor: string): boolean {
   return actor.startsWith('did:');
+}
+
+async function fetchRelationshipRecordUri(
+  clients: ReturnType<typeof useClients>,
+  activeDid: string | null,
+  did: string,
+  key: RelationshipRecordKey,
+): Promise<string | undefined> {
+  if (!activeDid) return undefined;
+  const agent = getReadAgent(clients, feedReadMode(activeDid));
+  const res = await agent.app.bsky.graph.getRelationships({
+    actor: activeDid,
+    others: [did],
+  });
+  return getRelationshipRecordUri(res.data.relationships[0], key);
+}
+
+export async function resolveRelationshipRecordUri(
+  clients: ReturnType<typeof useClients>,
+  activeDid: string | null,
+  did: string,
+  key: RelationshipRecordKey,
+  recordUri?: string,
+): Promise<string | undefined> {
+  return (
+    recordUriForCollection(recordUri, RELATIONSHIP_COLLECTIONS[key]) ??
+    (await fetchRelationshipRecordUri(clients, activeDid, did, key))
+  );
 }
 
 export async function fetchProfile(
@@ -54,8 +131,8 @@ function useResolvedProfileDid(
         : ['actorResolution', 'disabled'],
     enabled: Boolean(
       actor &&
-        !actorIsDid &&
-        (activeDid ? clients.activeAppViewProxyAgent : true),
+      !actorIsDid &&
+      (activeDid ? clients.activeAppViewProxyAgent : true),
     ),
     staleTime: directRoute ? DIRECT_ROUTE_STALE_TIME : Number.POSITIVE_INFINITY,
     refetchOnMount: directRoute ? 'always' : undefined,
@@ -153,8 +230,10 @@ export function useProfileRoute(actor: string | undefined): {
   isLoading: boolean;
   error: Error | null;
 } {
-  const { profileDid, isResolving, resolveError } =
-    useResolvedProfileDid(actor, { directRoute: true });
+  const { profileDid, isResolving, resolveError } = useResolvedProfileDid(
+    actor,
+    { directRoute: true },
+  );
   const profileQuery = useProfileByDid(profileDid, {
     staleTime: DIRECT_ROUTE_STALE_TIME,
     refetchOnMount: 'always',
@@ -175,11 +254,14 @@ export function useSearchActorsTypeahead(term: string | undefined) {
   const qc = useQueryClient();
 
   return useQuery({
-    queryKey: [...keys.search(scope, term ?? '', 'actors'), 'typeahead'] as const,
+    queryKey: [
+      ...keys.search(scope, term ?? '', 'actors'),
+      'typeahead',
+    ] as const,
     enabled: Boolean(
       term &&
-        term.length >= 1 &&
-        (activeDid ? clients.activeAppViewProxyAgent : true),
+      term.length >= 1 &&
+      (activeDid ? clients.activeAppViewProxyAgent : true),
     ),
     staleTime: 30_000,
     queryFn: async () => {
@@ -206,7 +288,9 @@ export function useFollowers(
       : ['followers', 'disabled'],
     enabled:
       (options?.enabled ?? true) &&
-      Boolean(subjectDid && (activeDid ? clients.activeAppViewProxyAgent : true)),
+      Boolean(
+        subjectDid && (activeDid ? clients.activeAppViewProxyAgent : true),
+      ),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.getFollowers({
@@ -238,7 +322,9 @@ export function useFollows(
       : ['follows', 'disabled'],
     enabled:
       (options?.enabled ?? true) &&
-      Boolean(subjectDid && (activeDid ? clients.activeAppViewProxyAgent : true)),
+      Boolean(
+        subjectDid && (activeDid ? clients.activeAppViewProxyAgent : true),
+      ),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.getFollows({
@@ -252,5 +338,203 @@ export function useFollows(
         cursor: res.data.cursor,
       };
     },
+  });
+}
+
+export function useFollowAccount() {
+  const clients = useClients();
+  const scope = useViewerScope();
+  const qc = useQueryClient();
+
+  return useMutation<
+    { uri: string },
+    Error,
+    ProfileMutationVars,
+    ProfileMutationContext
+  >({
+    mutationFn: async ({ did }) => {
+      const agent = getWriteAgent(clients, 'pds-repo-direct');
+      const follow = await agent.follow(did);
+      return { uri: follow.uri };
+    },
+    onMutate: async ({ did }) => ({
+      rollback: await patchCachedProfileForViewer(qc, scope, did, (profile) =>
+        patchProfileFollow(profile, true),
+      ),
+    }),
+    onSuccess: ({ uri }, { did }) =>
+      patchCachedProfileForViewer(qc, scope, did, (profile) =>
+        patchProfileFollow(profile, true, uri),
+      ),
+    onError: (_err, _vars, context) => {
+      context?.rollback?.();
+    },
+    onSettled: (_data, _err, { did }) =>
+      invalidateCachedProfileForViewer(qc, scope, did),
+  });
+}
+
+export function useUnfollowAccount() {
+  const clients = useClients();
+  const activeDid = useActiveDid();
+  const scope = useViewerScope();
+  const qc = useQueryClient();
+
+  return useMutation<null, Error, ProfileMutationVars, ProfileMutationContext>({
+    mutationFn: async ({ did, recordUri }) => {
+      const followUri = await resolveRelationshipRecordUri(
+        clients,
+        activeDid,
+        did,
+        'following',
+        recordUri,
+      );
+      if (!followUri) throw new Error('Follow URI required');
+      const agent = getWriteAgent(clients, 'pds-repo-direct');
+      await agent.deleteFollow(followUri);
+      return null;
+    },
+    onMutate: async ({ did }) => ({
+      rollback: await patchCachedProfileForViewer(qc, scope, did, (profile) =>
+        patchProfileFollow(profile, false),
+      ),
+    }),
+    onError: (_err, _vars, context) => {
+      context?.rollback?.();
+    },
+    onSettled: (_data, _err, { did }) =>
+      invalidateCachedProfileForViewer(qc, scope, did),
+  });
+}
+
+export function useMuteAccount() {
+  const clients = useClients();
+  const scope = useViewerScope();
+  const qc = useQueryClient();
+
+  return useMutation<null, Error, ProfileMutationVars, ProfileMutationContext>({
+    mutationFn: async ({ did }) => {
+      const agent = getWriteAgent(
+        clients,
+        'authenticated-active-appview-via-pds',
+      );
+      await agent.mute(did);
+      return null;
+    },
+    onMutate: async ({ did }) => ({
+      rollback: await patchCachedProfileForViewer(qc, scope, did, (profile) =>
+        patchProfileMute(profile, true),
+      ),
+    }),
+    onError: (_err, _vars, context) => {
+      context?.rollback?.();
+    },
+    onSettled: (_data, _err, { did }) =>
+      invalidateCachedProfileForViewer(qc, scope, did),
+  });
+}
+
+export function useUnmuteAccount() {
+  const clients = useClients();
+  const scope = useViewerScope();
+  const qc = useQueryClient();
+
+  return useMutation<null, Error, ProfileMutationVars, ProfileMutationContext>({
+    mutationFn: async ({ did }) => {
+      const agent = getWriteAgent(
+        clients,
+        'authenticated-active-appview-via-pds',
+      );
+      await agent.unmute(did);
+      return null;
+    },
+    onMutate: async ({ did }) => ({
+      rollback: await patchCachedProfileForViewer(qc, scope, did, (profile) =>
+        patchProfileMute(profile, false),
+      ),
+    }),
+    onError: (_err, _vars, context) => {
+      context?.rollback?.();
+    },
+    onSettled: (_data, _err, { did }) =>
+      invalidateCachedProfileForViewer(qc, scope, did),
+  });
+}
+
+export function useBlockAccount() {
+  const clients = useClients();
+  const activeDid = useActiveDid();
+  const scope = useViewerScope();
+  const qc = useQueryClient();
+
+  return useMutation<
+    { uri: string },
+    Error,
+    ProfileMutationVars,
+    ProfileMutationContext
+  >({
+    mutationFn: async ({ did }) => {
+      if (!activeDid) throw new Error('Active DID required');
+      const agent = getWriteAgent(clients, 'pds-repo-direct');
+      const block = await agent.app.bsky.graph.block.create(
+        { repo: activeDid },
+        {
+          subject: did,
+          createdAt: new Date().toISOString(),
+        },
+      );
+      return { uri: block.uri };
+    },
+    onMutate: async ({ did }) => ({
+      rollback: await patchCachedProfileForViewer(qc, scope, did, (profile) =>
+        patchProfileBlock(profile, true),
+      ),
+    }),
+    onSuccess: ({ uri }, { did }) =>
+      patchCachedProfileForViewer(qc, scope, did, (profile) =>
+        patchProfileBlock(profile, true, uri),
+      ),
+    onError: (_err, _vars, context) => {
+      context?.rollback?.();
+    },
+    onSettled: (_data, _err, { did }) =>
+      invalidateCachedProfileForViewer(qc, scope, did),
+  });
+}
+
+export function useUnblockAccount() {
+  const clients = useClients();
+  const activeDid = useActiveDid();
+  const scope = useViewerScope();
+  const qc = useQueryClient();
+
+  return useMutation<null, Error, ProfileMutationVars, ProfileMutationContext>({
+    mutationFn: async ({ did, recordUri }) => {
+      if (!activeDid) throw new Error('Active DID required');
+      const blockUri = await resolveRelationshipRecordUri(
+        clients,
+        activeDid,
+        did,
+        'blocking',
+        recordUri,
+      );
+      if (!blockUri) throw new Error('Block URI required');
+      const agent = getWriteAgent(clients, 'pds-repo-direct');
+      await agent.app.bsky.graph.block.delete({
+        repo: activeDid,
+        rkey: atprotoRkey(blockUri),
+      });
+      return null;
+    },
+    onMutate: async ({ did }) => ({
+      rollback: await patchCachedProfileForViewer(qc, scope, did, (profile) =>
+        patchProfileBlock(profile, false),
+      ),
+    }),
+    onError: (_err, _vars, context) => {
+      context?.rollback?.();
+    },
+    onSettled: (_data, _err, { did }) =>
+      invalidateCachedProfileForViewer(qc, scope, did),
   });
 }

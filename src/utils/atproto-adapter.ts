@@ -1942,7 +1942,7 @@ export function postToStatus(
     reblogged: !!post.viewer?.repost,
     favourited: !!post.viewer?.like,
     bookmarked: !!post.viewer?.bookmarked,
-    muted: false,
+    muted: !!post.viewer?.threadMuted,
     mediaAttachments,
     card,
     mentions,
