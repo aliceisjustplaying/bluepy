@@ -187,8 +187,8 @@ msgstr "바로 가기 설정을 복사함"
 #~ msgstr ""
 
 #: src/pages/settings.tsx
-msgid "anyone"
-msgstr "모두"
+#~ msgid "anyone"
+#~ msgstr "모두"
 
 #: src/components/search-data-results.tsx
 #: src/pages/search.tsx
@@ -267,6 +267,10 @@ msgstr "맨 위로 올라가기"
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
 msgstr "정적이며 스타일이나 JavaScript가 적용되지 않습니다. 필요에 따라 직접 스타일을 적용하시거나 고쳐서 쓰셔야 합니다."
+
+#: src/pages/settings.tsx
+msgid "Remove this device"
+msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -499,7 +503,6 @@ msgstr "검토 대기중"
 
 #: src/components/timeline-feed.tsx
 #: src/components/timeline.tsx
-#: src/pages/settings.tsx
 msgid "New posts"
 msgstr "새 게시물"
 
@@ -765,8 +768,8 @@ msgid "We read every message even when we cannot reply."
 msgstr ""
 
 #: src/pages/settings.tsx
-msgid "Follow requests"
-msgstr "팔로 요청"
+#~ msgid "Follow requests"
+#~ msgstr "팔로 요청"
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Switch to account's server {0}"
@@ -1147,8 +1150,8 @@ msgid "Appearance"
 msgstr "외관"
 
 #: src/pages/settings.tsx
-msgid "Follows"
-msgstr "팔로"
+#~ msgid "Follows"
+#~ msgstr "팔로"
 
 #. By [Author]
 #: src/pages/trending.tsx
@@ -2674,8 +2677,8 @@ msgid "Emojis:"
 msgstr "에모지:"
 
 #: src/pages/settings.tsx
-msgid "Post edits"
-msgstr "게시물 수정"
+#~ msgid "Post edits"
+#~ msgstr "게시물 수정"
 
 #: src/pages/accounts.jsx
 #~ msgid "Log out <0>@{0}</0>?"
@@ -2803,6 +2806,10 @@ msgstr "모두 따라잡았습니다."
 msgid "Muted @{username}"
 msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "어느 유형에도 속하지 않음"
@@ -2838,6 +2845,10 @@ msgstr "그룹"
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
 msgstr "이 게시물에 어떤 문제가 있나요?"
+
+#: src/pages/settings.tsx
+msgid "Rich previews"
+msgstr ""
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
@@ -3130,6 +3141,7 @@ msgstr "다른 계정에서 온 리스트는 못 가져올 수 있습니다."
 #: src/components/status-post-body.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
@@ -3449,8 +3461,8 @@ msgid "Unable to block @{username}"
 msgstr ""
 
 #: src/pages/settings.tsx
-msgid "followers"
-msgstr "팔로워"
+#~ msgid "followers"
+#~ msgstr "팔로워"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
@@ -3761,10 +3773,9 @@ msgstr "구석에 떠 있는 버튼"
 msgid "Move up"
 msgstr "위로 올리기"
 
-#. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
-msgid "Allow from <0>{0}</0>"
-msgstr "<0>{0}</0>에게서 알림 받기"
+#~ msgid "Allow from <0>{0}</0>"
+#~ msgstr "<0>{0}</0>에게서 알림 받기"
 
 #: src/components/shortcuts-settings.tsx
 msgid "PDS"
@@ -3866,7 +3877,6 @@ msgstr "이전 글쓴이"
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
-#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4120,6 +4130,10 @@ msgstr "참고: 총 3개까지만 보존됩니다. 나머지는 알아서 지워
 #~ msgid "No keywords. Add one."
 #~ msgstr "검색어가 없으니 추가하세요."
 
+#: src/pages/settings.tsx
+msgid "Push notifications"
+msgstr ""
+
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
@@ -4146,6 +4160,10 @@ msgstr ""
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
 msgstr "기타 항목"
+
+#: src/pages/accounts.tsx
+msgid "Unable to remove push notification data. Try again before logging out."
+msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
@@ -4243,6 +4261,10 @@ msgstr "리스트 고치기"
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
 msgstr "지난 2시간"
+
+#: src/pages/settings.tsx
+msgid "Push settings apply to the active Bluepy account. The notification screen still comes from Bluesky."
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Public (Local / Federated)"
@@ -4661,8 +4683,8 @@ msgstr "동영상 설명 고치기"
 #~ msgstr ""
 
 #: src/pages/settings.tsx
-msgid "people I follow"
-msgstr "내가 팔로하는 사람들"
+#~ msgid "people I follow"
+#~ msgstr "내가 팔로하는 사람들"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -4978,8 +5000,8 @@ msgid "Share"
 msgstr "공유"
 
 #: src/pages/settings.tsx
-msgid "NOTE: Push notifications only work for <0>one account</0>."
-msgstr "주의: 푸시 알림은 <0>단 하나의 계정</0>에만 작동합니다."
+#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
+#~ msgstr "주의: 푸시 알림은 <0>단 하나의 계정</0>에만 작동합니다."
 
 #: src/components/poll.tsx
 #~ msgid "Show results"
@@ -5112,6 +5134,5 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 #: src/pages/favourites.tsx
-#: src/pages/settings.tsx
 msgid "Likes"
 msgstr "좋아요"

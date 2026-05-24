@@ -4,7 +4,7 @@ import '../components/button-install';
 
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { HTMLAttributes, ReactElement } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useSnapshot } from 'valtio';
 
@@ -26,11 +26,17 @@ import states from '../utils/states';
 import store from '../utils/store';
 import { getVapidKey } from '../utils/store-utils';
 import {
-  initSubscription,
+  fetchPushSettings,
   isPushSupported,
-  removeSubscription,
-  updateSubscription,
+  isCurrentDeviceRegistered,
+  registerCurrentDevice,
+  savePushSettings,
+  SERVICE_DID,
+  unregisterCurrentDevice,
+  type ServiceAuthCapableAgent,
+  type ServiceAuthProvider,
 } from '../utils/web-push-subscriptions';
+import { useClients } from '../contexts/SessionProvider';
 
 // `button-install` is a custom element registered in
 // `../components/button-install`. Declare its JSX shape so the wrapper below
@@ -1139,61 +1145,50 @@ interface PushNotificationsSectionProps {
   onClose?: () => void;
 }
 
-interface BackendPushSubscriptionShape {
-  alerts: Record<string, unknown>;
-  policy: string;
-  [key: string]: unknown;
-}
-
 function PushNotificationsSection({
   onClose,
 }: PushNotificationsSectionProps): ReactElement | null {
   const { t } = useLingui();
   const pushSupported = isPushSupported();
+  const clients = useClients();
   const { instance } = api();
   const [uiState, setUIState] = useState<string>('default');
-  const pushFormRef = useRef<HTMLFormElement | null>(null);
   const [allowNotifications, setAllowNotifications] = useState<boolean>(false);
   const [needRelogin, setNeedRelogin] = useState<boolean>(false);
-  const previousPolicyRef = useRef<string | undefined>(undefined);
+  const [repliesEnabled, setRepliesEnabled] = useState<boolean>(true);
+  const [mentionsEnabled, setMentionsEnabled] = useState<boolean>(true);
+  const [richPreviewsEnabled, setRichPreviewsEnabled] = useState<boolean>(true);
+  const pushToggleVersions = useRef({
+    account: 0,
+    replies: 0,
+    mentions: 0,
+    richPreviews: 0,
+  });
+  const serviceAuth: ServiceAuthProvider = useCallback(async (lxm) => {
+    const agent = clients.pdsRepoAgent as ServiceAuthCapableAgent;
+    const res = await agent.com?.atproto?.server?.getServiceAuth?.({
+      aud: SERVICE_DID,
+      lxm,
+    });
+    if (!res?.data.token) throw new Error('Missing Bluesky OAuth session for push');
+    return res.data.token;
+  }, [clients.pdsRepoAgent]);
   useEffect(() => {
     if (!pushSupported) return;
     void (async () => {
       setUIState('loading');
       try {
-        const result = await initSubscription();
-        const backendSubscription =
-          (result?.backendSubscription as BackendPushSubscriptionShape | null) ??
-          null;
-        if (
-          backendSubscription?.policy &&
-          backendSubscription.policy !== 'none'
-        ) {
-          setAllowNotifications(true);
-          const { alerts, policy } = backendSubscription;
-          console.log('backendSubscription', backendSubscription);
-          previousPolicyRef.current = policy;
-          const form = pushFormRef.current;
-          if (form) {
-            const { elements } = form;
-            const policyEl = elements.namedItem('policy') as
-              | (HTMLElement & { value: string })
-              | null;
-            if (policyEl) policyEl.value = policy;
-            // alerts is {}, iterate it
-            Object.entries(alerts).forEach(([alert, value]) => {
-              const el = elements.namedItem(alert) as HTMLInputElement | null;
-              if (el?.type === 'checkbox') {
-                el.checked = !!value;
-              }
-            });
-          }
-        }
+        const settings = await fetchPushSettings(serviceAuth);
+        const currentDeviceRegistered = await isCurrentDeviceRegistered(serviceAuth);
+        setAllowNotifications(settings.enabled && currentDeviceRegistered);
+        setRepliesEnabled(settings.repliesEnabled);
+        setMentionsEnabled(settings.mentionsEnabled);
+        setRichPreviewsEnabled(settings.richPreviewsEnabled);
         setUIState('default');
       } catch (err) {
         console.warn(err);
         const message = err instanceof Error ? err.message : String(err);
-        if (/outside.*authorized/i.test(message)) {
+        if (/outside.*authorized|missing.*oauth.*session|missing_auth|expired_auth_token|invalid_auth/i.test(message)) {
           setNeedRelogin(true);
         } else {
           alert(message);
@@ -1201,105 +1196,24 @@ function PushNotificationsSection({
         setUIState('error');
       }
     })();
-  }, [pushSupported]);
+  }, [pushSupported, serviceAuth]);
 
   const isLoading = uiState === 'loading';
+
+  const handlePushError = (err: unknown, fallback: string) => {
+    console.warn(err);
+    const message = err instanceof Error ? err.message : String(err);
+    if (/outside.*authorized|missing.*oauth.*session|missing_auth|expired_auth_token|invalid_auth/i.test(message)) {
+      setNeedRelogin(true);
+    }
+    alert(message || fallback);
+  };
 
   if (!pushSupported) return null;
 
   return (
     <form
-      ref={pushFormRef}
-      onChange={() => {
-        setTimeout(() => {
-          const form = pushFormRef.current;
-          if (!form) return;
-          const values = Object.fromEntries(new FormData(form)) as Record<
-            string,
-            FormDataEntryValue
-          >;
-          const allowNext = !!values['policy-allow'];
-          // NOTE: original JS nested `policy` under `data` and did not pass a
-          // top-level `policy` argument to `updateSubscription`. The util
-          // destructures `policy` only at the top level, so the original code
-          // effectively sent `policy: undefined` to the backend update helper.
-          // Preserving that exact shape here; fixing the bug is out of scope
-          // for this TS migration batch.
-          const params: {
-            data: {
-              policy: string;
-              alerts: Record<string, boolean>;
-            };
-            policy: undefined;
-          } = {
-            data: {
-              policy: values.policy as string,
-              alerts: {
-                mention: !!values.mention,
-                favourite: !!values.favourite,
-                reblog: !!values.reblog,
-                follow: !!values.follow,
-                follow_request: !!values.followRequest,
-                update: !!values.update,
-                status: !!values.status,
-              },
-            },
-            policy: undefined,
-          };
-
-          let alertsCount = 0;
-          // Remove false values from data.alerts
-          // API defaults to false anyway
-          Object.keys(params.data.alerts).forEach((key) => {
-            if (!params.data.alerts[key]) {
-              delete params.data.alerts[key];
-            } else {
-              alertsCount++;
-            }
-          });
-          const policyChanged =
-            previousPolicyRef.current !== params.data.policy;
-
-          console.log('PN Form', {
-            values,
-            allowNotifications: allowNext,
-            params,
-          });
-
-          if (allowNext && alertsCount > 0) {
-            if (policyChanged) {
-              console.debug('Policy changed.');
-              void (async () => {
-                try {
-                  await removeSubscription();
-                  await updateSubscription(params);
-                } catch (err) {
-                  console.warn(err);
-                  alert(t`Failed to update subscription. Please try again.`);
-                }
-              })();
-            } else {
-              void (async () => {
-                try {
-                  await updateSubscription(params);
-                } catch (err) {
-                  console.warn(err);
-                  alert(t`Failed to update subscription. Please try again.`);
-                }
-              })();
-            }
-          } else {
-            void (async () => {
-              try {
-                await removeSubscription();
-              } catch (err) {
-                console.warn(err);
-                alert(t`Failed to remove subscription. Please try again.`);
-              }
-            })();
-          }
-        }, 100);
-      }}
+      onSubmit={(e) => e.preventDefault()}
     >
       <h3>
         <Trans>Push Notifications (beta)</Trans>
@@ -1312,56 +1226,63 @@ function PushNotificationsSection({
                 aria-label={t`Allow notifications`}
                 type="checkbox"
                 disabled={isLoading || needRelogin}
-                name="policy-allow"
                 checked={allowNotifications}
                 onChange={(e) => {
                   const { checked } = e.currentTarget;
+                  const version = pushToggleVersions.current.account + 1;
+                  pushToggleVersions.current.account = version;
                   if (checked) {
-                    // Request permission
                     void (async () => {
-                      const permission = await Notification.requestPermission();
-                      if (permission === 'granted') {
-                        setAllowNotifications(true);
-                      } else {
-                        setAllowNotifications(false);
-                        if (permission === 'denied') {
-                          alert(
-                            t`Push notifications are blocked. Please enable them in your browser settings.`,
-                          );
+                      setUIState('loading');
+                      try {
+                        const permission = await Notification.requestPermission();
+                        if (pushToggleVersions.current.account !== version) return;
+                        if (permission !== 'granted') {
+                          setAllowNotifications(false);
+                          if (permission === 'denied') {
+                            alert(
+                              t`Push notifications are blocked. Please enable them in your browser settings.`,
+                            );
+                          }
+                          return;
                         }
+                        await registerCurrentDevice(serviceAuth);
+                        if (pushToggleVersions.current.account !== version) return;
+                        try {
+                          await savePushSettings({ enabled: true }, serviceAuth);
+                        } catch (err) {
+                          await unregisterCurrentDevice(serviceAuth).catch(() => undefined);
+                          throw err;
+                        }
+                        if (pushToggleVersions.current.account !== version) return;
+                        setAllowNotifications(true);
+                      } catch (err) {
+                        if (pushToggleVersions.current.account !== version) return;
+                        setAllowNotifications(false);
+                        handlePushError(err, t`Failed to update subscription. Please try again.`);
+                      } finally {
+                        if (pushToggleVersions.current.account === version) setUIState('default');
                       }
                     })();
                   } else {
                     setAllowNotifications(false);
+                    void (async () => {
+                      setUIState('loading');
+                      try {
+                        await savePushSettings({ enabled: false }, serviceAuth);
+                        if (pushToggleVersions.current.account !== version) return;
+                      } catch (err) {
+                        if (pushToggleVersions.current.account !== version) return;
+                        setAllowNotifications(true);
+                        handlePushError(err, t`Failed to update subscription. Please try again.`);
+                      } finally {
+                        if (pushToggleVersions.current.account === version) setUIState('default');
+                      }
+                    })();
                   }
                 }}
               />{' '}
-              <Trans>
-                Allow from{' '}
-                <select
-                  name="policy"
-                  disabled={isLoading || needRelogin || !allowNotifications}
-                >
-                  {[
-                    {
-                      value: 'all',
-                      label: t`anyone`,
-                    },
-                    {
-                      value: 'followed',
-                      label: t`people I follow`,
-                    },
-                    {
-                      value: 'follower',
-                      label: t`followers`,
-                    },
-                  ].map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </Trans>
+              <Trans>Push notifications</Trans>
             </label>
             <div
               className="shazam-container no-animation"
@@ -1373,51 +1294,111 @@ function PushNotificationsSection({
               <div className="shazam-container-inner">
                 <div className="sub-section">
                   <ul>
-                    {[
-                      {
-                        value: 'mention',
-                        label: t`Mentions`,
-                      },
-                      {
-                        value: 'favourite',
-                        label: t`Likes`,
-                      },
-                      {
-                        value: 'reblog',
-                        label: t`Reposts`,
-                      },
-                      {
-                        value: 'follow',
-                        label: t`Follows`,
-                      },
-                      {
-                        value: 'followRequest',
-                        label: t`Follow requests`,
-                      },
-                      {
-                        value: 'update',
-                        label: t`Post edits`,
-                      },
-                      {
-                        value: 'status',
-                        label: t`New posts`,
-                      },
-                    ].map((alert) => (
-                      <li key={alert.value}>
-                        <label>
-                          <input
-                            aria-label={alert.label}
-                            type="checkbox"
-                            name={alert.value}
-                          />{' '}
-                          {alert.label}
-                        </label>
-                      </li>
-                    ))}
+                    <li>
+                      <label>
+                        <input
+                          aria-label={t`Replies`}
+                          type="checkbox"
+                          checked={repliesEnabled}
+                          onChange={(e) => {
+                            const checked = e.currentTarget.checked;
+                            const version = pushToggleVersions.current.replies + 1;
+                            pushToggleVersions.current.replies = version;
+                            setRepliesEnabled(checked);
+                            void (async () => {
+                              try {
+                                await savePushSettings({ repliesEnabled: checked }, serviceAuth);
+                              } catch (err) {
+                                if (pushToggleVersions.current.replies !== version) return;
+                                setRepliesEnabled(!checked);
+                                handlePushError(err, t`Failed to update subscription. Please try again.`);
+                              }
+                            })();
+                          }}
+                        />{' '}
+                        <Trans>Replies</Trans>
+                      </label>
+                    </li>
+                    <li>
+                      <label>
+                        <input
+                          aria-label={t`Mentions`}
+                          type="checkbox"
+                          checked={mentionsEnabled}
+                          onChange={(e) => {
+                            const checked = e.currentTarget.checked;
+                            const version = pushToggleVersions.current.mentions + 1;
+                            pushToggleVersions.current.mentions = version;
+                            setMentionsEnabled(checked);
+                            void (async () => {
+                              try {
+                                await savePushSettings({ mentionsEnabled: checked }, serviceAuth);
+                              } catch (err) {
+                                if (pushToggleVersions.current.mentions !== version) return;
+                                setMentionsEnabled(!checked);
+                                handlePushError(err, t`Failed to update subscription. Please try again.`);
+                              }
+                            })();
+                          }}
+                        />{' '}
+                        <Trans>Mentions</Trans>
+                      </label>
+                    </li>
+                    <li>
+                      <label>
+                        <input
+                          aria-label={t`Rich previews`}
+                          type="checkbox"
+                          checked={richPreviewsEnabled}
+                          onChange={(e) => {
+                            const checked = e.currentTarget.checked;
+                            const version = pushToggleVersions.current.richPreviews + 1;
+                            pushToggleVersions.current.richPreviews = version;
+                            setRichPreviewsEnabled(checked);
+                            void (async () => {
+                              try {
+                                await savePushSettings({ richPreviewsEnabled: checked }, serviceAuth);
+                              } catch (err) {
+                                if (pushToggleVersions.current.richPreviews !== version) return;
+                                setRichPreviewsEnabled(!checked);
+                                handlePushError(err, t`Failed to update subscription. Please try again.`);
+                              }
+                            })();
+                          }}
+                        />{' '}
+                        <Trans>Rich previews</Trans>
+                      </label>
+                    </li>
                   </ul>
                 </div>
               </div>
             </div>
+            <p className="section-postnote">
+              <small>
+                <Trans>
+                  Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives.
+                </Trans>
+              </small>
+            </p>
+            <p>
+              <button
+                type="button"
+                className="plain"
+                disabled={isLoading || needRelogin}
+                onClick={() => {
+                  void (async () => {
+                    try {
+                      await unregisterCurrentDevice(serviceAuth);
+                      setAllowNotifications(false);
+                    } catch (err) {
+                      handlePushError(err, t`Failed to remove subscription. Please try again.`);
+                    }
+                  })();
+                }}
+              >
+                <Trans>Remove this device</Trans>
+              </button>
+            </p>
             {needRelogin && (
               <div className="sub-section">
                 <p>
@@ -1438,7 +1419,7 @@ function PushNotificationsSection({
       <p className="section-postnote">
         <small>
           <Trans>
-            NOTE: Push notifications only work for <b>one account</b>.
+            Push settings apply to the active Bluepy account. The notification screen still comes from Bluesky.
           </Trans>
         </small>
       </p>

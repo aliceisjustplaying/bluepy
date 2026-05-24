@@ -150,8 +150,8 @@ msgid "Shortcut settings copied"
 msgstr ""
 
 #: src/pages/settings.tsx
-msgid "anyone"
-msgstr ""
+#~ msgid "anyone"
+#~ msgstr ""
 
 #: src/components/search-data-results.tsx
 #: src/pages/search.tsx
@@ -222,6 +222,10 @@ msgstr ""
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
 msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Remove this device"
+msgstr "Remove this device"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -418,7 +422,6 @@ msgstr ""
 
 #: src/components/timeline-feed.tsx
 #: src/components/timeline.tsx
-#: src/pages/settings.tsx
 msgid "New posts"
 msgstr ""
 
@@ -624,8 +627,8 @@ msgid "We read every message even when we cannot reply."
 msgstr "We read every message even when we cannot reply."
 
 #: src/pages/settings.tsx
-msgid "Follow requests"
-msgstr ""
+#~ msgid "Follow requests"
+#~ msgstr ""
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Switch to account's server {0}"
@@ -978,8 +981,8 @@ msgid "Appearance"
 msgstr ""
 
 #: src/pages/settings.tsx
-msgid "Follows"
-msgstr ""
+#~ msgid "Follows"
+#~ msgstr ""
 
 #. By [Author]
 #: src/pages/trending.tsx
@@ -2280,8 +2283,8 @@ msgid "Emojis:"
 msgstr ""
 
 #: src/pages/settings.tsx
-msgid "Post edits"
-msgstr ""
+#~ msgid "Post edits"
+#~ msgstr ""
 
 #: src/components/related-actions.tsx
 msgid "Disable reposts"
@@ -2401,6 +2404,10 @@ msgstr ""
 msgid "Muted @{username}"
 msgstr "Muted @{username}"
 
+#: src/pages/settings.tsx
+msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
+msgstr "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr ""
@@ -2432,6 +2439,10 @@ msgstr ""
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
 msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Rich previews"
+msgstr "Rich previews"
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
@@ -2680,6 +2691,7 @@ msgstr ""
 #: src/components/status-post-body.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
@@ -2938,8 +2950,8 @@ msgid "Unable to block @{username}"
 msgstr "Unable to block @{username}"
 
 #: src/pages/settings.tsx
-msgid "followers"
-msgstr ""
+#~ msgid "followers"
+#~ msgstr ""
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
@@ -3201,10 +3213,9 @@ msgstr ""
 msgid "Move up"
 msgstr ""
 
-#. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
-msgid "Allow from <0>{0}</0>"
-msgstr ""
+#~ msgid "Allow from <0>{0}</0>"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "PDS"
@@ -3298,7 +3309,6 @@ msgstr ""
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
-#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr "Reposts"
@@ -3516,6 +3526,10 @@ msgstr "Filtered: {0}"
 msgid "Note: Only max 3 will be stored. The rest will be automatically removed."
 msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Push notifications"
+msgstr "Push notifications"
+
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
@@ -3538,6 +3552,10 @@ msgstr "Go to Profile"
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
 msgstr ""
+
+#: src/pages/accounts.tsx
+msgid "Unable to remove push notification data. Try again before logging out."
+msgstr "Unable to remove push notification data. Try again before logging out."
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
@@ -3627,6 +3645,10 @@ msgstr ""
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
 msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Push settings apply to the active Bluepy account. The notification screen still comes from Bluesky."
+msgstr "Push settings apply to the active Bluepy account. The notification screen still comes from Bluesky."
 
 #: src/compose.tsx
 msgid "Editing source status"
@@ -3965,8 +3987,8 @@ msgid "Edit video description"
 msgstr "Edit video description"
 
 #: src/pages/settings.tsx
-msgid "people I follow"
-msgstr ""
+#~ msgid "people I follow"
+#~ msgstr ""
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -4230,8 +4252,8 @@ msgid "Share"
 msgstr ""
 
 #: src/pages/settings.tsx
-msgid "NOTE: Push notifications only work for <0>one account</0>."
-msgstr ""
+#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
+#~ msgstr ""
 
 #: src/components/poll.tsx
 #~ msgid "Show results"
@@ -4332,6 +4354,5 @@ msgstr "This account has marked itself as automated."
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 #: src/pages/favourites.tsx
-#: src/pages/settings.tsx
 msgid "Likes"
 msgstr ""

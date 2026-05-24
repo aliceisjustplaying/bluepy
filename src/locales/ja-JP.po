@@ -187,8 +187,8 @@ msgstr "ショートカット設定をコピーしました"
 #~ msgstr "メモを編集"
 
 #: src/pages/settings.tsx
-msgid "anyone"
-msgstr "誰でも"
+#~ msgid "anyone"
+#~ msgstr "誰でも"
 
 #: src/components/search-data-results.tsx
 #: src/pages/search.tsx
@@ -267,6 +267,10 @@ msgstr "トップへ戻る"
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
 msgstr "これは静的でスタイルやスクリプトもありません。必要に応じて独自のスタイルを適用して編集する必要があります。"
+
+#: src/pages/settings.tsx
+msgid "Remove this device"
+msgstr "このデバイスを削除"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -499,7 +503,6 @@ msgstr "審査待ち"
 
 #: src/components/timeline-feed.tsx
 #: src/components/timeline.tsx
-#: src/pages/settings.tsx
 msgid "New posts"
 msgstr "新しい投稿"
 
@@ -765,8 +768,8 @@ msgid "We read every message even when we cannot reply."
 msgstr ""
 
 #: src/pages/settings.tsx
-msgid "Follow requests"
-msgstr "フォローリクエスト"
+#~ msgid "Follow requests"
+#~ msgstr "フォローリクエスト"
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Switch to account's server {0}"
@@ -788,7 +791,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Push notifications are blocked. Please enable them in your browser settings."
-msgstr ""
+msgstr "プッシュ通知がブロックされています。ブラウザーの設定で有効にしてください。"
 
 #: src/components/account-info.tsx
 #~ msgid "Loading post stats..."
@@ -933,7 +936,7 @@ msgstr "いいね！しました"
 
 #: src/pages/settings.tsx
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-msgstr ""
+msgstr "前回のログイン以降、プッシュ通知の権限が付与されていません。権限を付与するには<0><1>再度ログイン</1>する必要があります</0>。"
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
@@ -1147,8 +1150,8 @@ msgid "Appearance"
 msgstr "外観"
 
 #: src/pages/settings.tsx
-msgid "Follows"
-msgstr "フォロー"
+#~ msgid "Follows"
+#~ msgstr "フォロー"
 
 #. By [Author]
 #: src/pages/trending.tsx
@@ -2381,7 +2384,7 @@ msgstr "会話のミュートを解除"
 
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
-msgstr ""
+msgstr "購読を更新できませんでした。もう一度お試しください。"
 
 #: src/pages/settings.tsx
 msgid "Content translation"
@@ -2674,8 +2677,8 @@ msgid "Emojis:"
 msgstr "絵文字"
 
 #: src/pages/settings.tsx
-msgid "Post edits"
-msgstr "投稿の編集"
+#~ msgid "Post edits"
+#~ msgstr "投稿の編集"
 
 #: src/pages/accounts.jsx
 #~ msgid "Log out <0>@{0}</0>?"
@@ -2803,6 +2806,10 @@ msgstr ""
 msgid "Muted @{username}"
 msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
+msgstr "リッチプレビューには、フィルター対応までミュートまたはブロックしたアカウントからの返信やメンションが含まれる場合があります。"
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "他のカテゴリに該当しない問題"
@@ -2838,6 +2845,10 @@ msgstr "グループ"
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
 msgstr "この投稿の問題点は何ですか？"
+
+#: src/pages/settings.tsx
+msgid "Rich previews"
+msgstr ""
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
@@ -3130,6 +3141,7 @@ msgstr "別のアカウントのリストは動作しない場合があります
 #: src/components/status-post-body.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
@@ -3449,8 +3461,8 @@ msgid "Unable to block @{username}"
 msgstr "@{username} をブロックできません"
 
 #: src/pages/settings.tsx
-msgid "followers"
-msgstr "フォロワー"
+#~ msgid "followers"
+#~ msgstr "フォロワー"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
@@ -3638,7 +3650,7 @@ msgstr "@{0}の投稿に返信します (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
 msgid "Failed to remove subscription. Please try again."
-msgstr ""
+msgstr "購読を削除できませんでした。もう一度お試しください。"
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."
@@ -3761,10 +3773,9 @@ msgstr "フローティングボタン"
 msgid "Move up"
 msgstr "上へ移動"
 
-#. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
-msgid "Allow from <0>{0}</0>"
-msgstr ""
+#~ msgid "Allow from <0>{0}</0>"
+#~ msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 msgid "PDS"
@@ -3866,7 +3877,6 @@ msgstr "前のユーザー"
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
-#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4120,6 +4130,10 @@ msgstr "注意：最大3つのみが保存されます。残りは自動的に�
 #~ msgid "No keywords. Add one."
 #~ msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Push notifications"
+msgstr ""
+
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
@@ -4146,6 +4160,10 @@ msgstr ""
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
 msgstr "補足情報"
+
+#: src/pages/accounts.tsx
+msgid "Unable to remove push notification data. Try again before logging out."
+msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
@@ -4243,6 +4261,10 @@ msgstr "リストの編集"
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
 msgstr "2時間以内"
+
+#: src/pages/settings.tsx
+msgid "Push settings apply to the active Bluepy account. The notification screen still comes from Bluesky."
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Public (Local / Federated)"
@@ -4661,8 +4683,8 @@ msgstr "動画の説明を編集"
 #~ msgstr "CWを追加"
 
 #: src/pages/settings.tsx
-msgid "people I follow"
-msgstr "フォローしている人"
+#~ msgid "people I follow"
+#~ msgstr "フォローしている人"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -4978,8 +5000,8 @@ msgid "Share"
 msgstr "共有"
 
 #: src/pages/settings.tsx
-msgid "NOTE: Push notifications only work for <0>one account</0>."
-msgstr ""
+#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
+#~ msgstr ""
 
 #: src/components/poll.tsx
 #~ msgid "Show results"
@@ -5112,6 +5134,5 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 #: src/pages/favourites.tsx
-#: src/pages/settings.tsx
 msgid "Likes"
 msgstr "いいね！"

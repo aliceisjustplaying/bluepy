@@ -187,8 +187,8 @@ msgstr "已复制快捷方式设置"
 #~ msgstr "编辑备注"
 
 #: src/pages/settings.tsx
-msgid "anyone"
-msgstr "任何人"
+#~ msgid "anyone"
+#~ msgstr "任何人"
 
 #: src/components/search-data-results.tsx
 #: src/pages/search.tsx
@@ -267,6 +267,10 @@ msgstr "返回顶部"
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
 msgstr "此代码是静态代码，不包含样式和脚本。你可能需要进行编辑并按需应用自己的样式。"
+
+#: src/pages/settings.tsx
+msgid "Remove this device"
+msgstr "移除此设备"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -499,7 +503,6 @@ msgstr "等待审核"
 
 #: src/components/timeline-feed.tsx
 #: src/components/timeline.tsx
-#: src/pages/settings.tsx
 msgid "New posts"
 msgstr "新嘟文"
 
@@ -765,8 +768,8 @@ msgid "We read every message even when we cannot reply."
 msgstr ""
 
 #: src/pages/settings.tsx
-msgid "Follow requests"
-msgstr "关注请求"
+#~ msgid "Follow requests"
+#~ msgstr "关注请求"
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Switch to account's server {0}"
@@ -1147,8 +1150,8 @@ msgid "Appearance"
 msgstr "外观"
 
 #: src/pages/settings.tsx
-msgid "Follows"
-msgstr "关注"
+#~ msgid "Follows"
+#~ msgstr "关注"
 
 #. By [Author]
 #: src/pages/trending.tsx
@@ -2674,8 +2677,8 @@ msgid "Emojis:"
 msgstr "表情:"
 
 #: src/pages/settings.tsx
-msgid "Post edits"
-msgstr "嘟文被编辑"
+#~ msgid "Post edits"
+#~ msgstr "嘟文被编辑"
 
 #: src/pages/accounts.jsx
 #~ msgid "Log out <0>@{0}</0>?"
@@ -2803,6 +2806,10 @@ msgstr "你已经全读完了。"
 msgid "Muted @{username}"
 msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
+msgstr "在过滤功能上线前，丰富预览可能包含来自已静音或已屏蔽账号的回复或提及。"
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "问题不适合其它的类别"
@@ -2838,6 +2845,10 @@ msgstr "群组"
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
 msgstr "这条嘟文有什么问题？"
+
+#: src/pages/settings.tsx
+msgid "Rich previews"
+msgstr ""
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
@@ -3130,6 +3141,7 @@ msgstr "如果列表来自不同的账户，则可能无法使用。"
 #: src/components/status-post-body.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
@@ -3449,8 +3461,8 @@ msgid "Unable to block @{username}"
 msgstr "无法屏蔽 @{username}"
 
 #: src/pages/settings.tsx
-msgid "followers"
-msgstr "粉丝"
+#~ msgid "followers"
+#~ msgstr "粉丝"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
@@ -3761,10 +3773,9 @@ msgstr "悬浮按钮"
 msgid "Move up"
 msgstr "向上移动"
 
-#. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
-msgid "Allow from <0>{0}</0>"
-msgstr "推送范围 <0>{0}</0>"
+#~ msgid "Allow from <0>{0}</0>"
+#~ msgstr "推送范围 <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 msgid "PDS"
@@ -3866,7 +3877,6 @@ msgstr "上一位作者"
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
-#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4120,6 +4130,10 @@ msgstr "注意: 最多只存储 3 次。更早的补看将被自动删除。"
 #~ msgid "No keywords. Add one."
 #~ msgstr "尚无关键词。请添加一个。"
 
+#: src/pages/settings.tsx
+msgid "Push notifications"
+msgstr ""
+
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
@@ -4146,6 +4160,10 @@ msgstr "转到个人资料"
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
 msgstr "附加信息"
+
+#: src/pages/accounts.tsx
+msgid "Unable to remove push notification data. Try again before logging out."
+msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
@@ -4243,6 +4261,10 @@ msgstr "编辑列表"
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
 msgstr "最近 2 小时"
+
+#: src/pages/settings.tsx
+msgid "Push settings apply to the active Bluepy account. The notification screen still comes from Bluesky."
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Public (Local / Federated)"
@@ -4661,8 +4683,8 @@ msgstr "编辑视频描述"
 #~ msgstr "添加内容警告"
 
 #: src/pages/settings.tsx
-msgid "people I follow"
-msgstr "我关注的人"
+#~ msgid "people I follow"
+#~ msgstr "我关注的人"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -4978,8 +5000,8 @@ msgid "Share"
 msgstr "分享"
 
 #: src/pages/settings.tsx
-msgid "NOTE: Push notifications only work for <0>one account</0>."
-msgstr "注意: 只能推送 <0>一个账户</0> 的通知。"
+#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
+#~ msgstr "注意: 只能推送 <0>一个账户</0> 的通知。"
 
 #: src/components/poll.tsx
 #~ msgid "Show results"
@@ -5112,6 +5134,5 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 #: src/pages/favourites.tsx
-#: src/pages/settings.tsx
 msgid "Likes"
 msgstr "点赞列表"

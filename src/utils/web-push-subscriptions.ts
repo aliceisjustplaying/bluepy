@@ -1,291 +1,206 @@
-// Utils for web push subscriptions
-import { api, getMastoV1Resource } from './api';
-import { getVapidKey } from './store-utils';
+import type { ComAtprotoServerGetServiceAuth } from '@atproto/api';
+import store from './store';
 
-// Subscription is an object with the following structure:
-// {
-//   data: {
-//     alerts: {
-//       admin: {
-//         report: boolean,
-//         signUp: boolean,
-//       },
-//       favourite: boolean,
-//       follow: boolean,
-//       mention: boolean,
-//       poll: boolean,
-//       reblog: boolean,
-//       status: boolean,
-//       update: boolean,
-//     }
-//   },
-//   policy: "all" | "followed" | "follower" | "none",
-//   subscription: {
-//     endpoint: string,
-//     keys: {
-//       auth: string,
-//       p256dh: string,
-//     },
-//   },
-// }
+const GATEWAY_URL = import.meta.env.PHANPY_PUSH_GATEWAY_URL || '';
+const SERVICE_DID =
+  import.meta.env.PHANPY_PUSH_GATEWAY_DID ||
+  'did:web:notifications-gateway.bluepy.social';
+const GATEWAY_TIMEOUT_MS = 30_000;
 
-// Minimal masto.v1.push surface used here. `masto.v1` carries an open index
-// signature in api.ts, so each nested member arrives as `unknown` and must be
-// narrowed locally. This shim disappears when the masto client gets fully
-// typed in a later wave.
-interface PushSubscriptionEndpoint {
-  create(subscription: unknown): Promise<BackendPushSubscription>;
-  fetch(): Promise<BackendPushSubscription>;
-  update(subscription: unknown): Promise<BackendPushSubscription>;
-  remove(): Promise<unknown>;
+export interface GatewaySettings {
+  enabled: boolean;
+  repliesEnabled: boolean;
+  mentionsEnabled: boolean;
+  richPreviewsEnabled: boolean;
 }
 
-interface BackendPushSubscription {
-  endpoint?: string;
-  serverKey?: string;
-  [key: string]: unknown;
+export interface GatewayPublicKey {
+  keyId: string;
+  publicKey: string;
 }
 
-function pushSubscriptionEndpoint(): PushSubscriptionEndpoint {
-  const { masto } = api();
-  return getMastoV1Resource<{ subscription: PushSubscriptionEndpoint }>(
-    masto,
-    'push',
-  ).subscription;
+export type ServiceAuthProvider = (lxm: string) => Promise<string>;
+export interface ServiceAuthCapableAgent {
+  com?: {
+    atproto?: {
+      server?: {
+        getServiceAuth?: (
+          args: ComAtprotoServerGetServiceAuth.QueryParams,
+        ) => Promise<ComAtprotoServerGetServiceAuth.Response>;
+      };
+    };
+  };
 }
-
-// Back-end CRUD
-// =============
-
-function createBackendPushSubscription(
-  subscription: unknown,
-): Promise<BackendPushSubscription> {
-  return pushSubscriptionEndpoint().create(subscription);
-}
-
-function fetchBackendPushSubscription(): Promise<BackendPushSubscription> {
-  return pushSubscriptionEndpoint().fetch();
-}
-
-function updateBackendPushSubscription(
-  subscription: unknown,
-): Promise<BackendPushSubscription> {
-  return pushSubscriptionEndpoint().update(subscription);
-}
-
-function removeBackendPushSubscription(): Promise<unknown> {
-  return pushSubscriptionEndpoint().remove();
-}
-
-// Front-end
-// =========
 
 export function isPushSupported(): boolean {
   return 'serviceWorker' in navigator && 'PushManager' in window;
 }
 
-function getRegistration(): Promise<ServiceWorkerRegistration | undefined> {
-  // return navigator.serviceWorker.ready;
-  return navigator.serviceWorker.getRegistration();
+function gateway(path: string): string {
+  if (!GATEWAY_URL) throw new Error('Push gateway is not configured');
+  const base = GATEWAY_URL.endsWith('/') ? GATEWAY_URL : `${GATEWAY_URL}/`;
+  return new URL(path.replace(/^\/+/, ''), base).href;
 }
 
-async function getSubscription(): Promise<{
-  registration: ServiceWorkerRegistration | undefined;
-  subscription: PushSubscription | null | undefined;
-}> {
-  const registration = await getRegistration();
-  const subscription = registration
-    ? await registration.pushManager.getSubscription()
-    : undefined;
-  return { registration, subscription };
+async function getRegistration(): Promise<ServiceWorkerRegistration> {
+  const registration =
+    (await navigator.serviceWorker.getRegistration()) ??
+    (await navigator.serviceWorker.ready);
+  if (!registration) throw new Error('Service worker is not ready');
+  await registration.update().catch(() => undefined);
+  return registration;
 }
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = `${base64String}${padding}`
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
-
+  const base64 = `${base64String}${padding}`.replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
   return outputArray;
 }
 
-// Front-end <-> back-end
-// ======================
-
-interface InitSubscriptionResult {
-  subscription: PushSubscription | null | undefined;
-  backendSubscription: BackendPushSubscription | null;
-}
-
-export async function initSubscription(): Promise<
-  InitSubscriptionResult | undefined
-> {
-  if (!isPushSupported()) return undefined;
-  const { subscription } = await getSubscription();
-  let backendSubscription: BackendPushSubscription | null = null;
+async function gatewayFetch<T>(path: string, lxm: string, auth: ServiceAuthProvider, init: RequestInit = {}): Promise<T> {
+  const token = await auth(lxm);
+  const headers: Record<string, string> = {
+    accept: 'application/json',
+    authorization: `Bearer ${token}`,
+  };
+  if (init.body) headers['content-type'] = 'application/json';
+  const controller = new AbortController();
+  const timeout = globalThis.setTimeout(() => {
+    controller.abort(new Error('Push gateway request timed out'));
+  }, GATEWAY_TIMEOUT_MS);
+  const abort = () => {
+    controller.abort(init.signal?.reason);
+  };
+  if (init.signal?.aborted) abort();
+  else init.signal?.addEventListener('abort', abort, { once: true });
+  let res: Response;
   try {
-    backendSubscription = await fetchBackendPushSubscription();
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (/(not found|unknown)/i.test(message)) {
-      // No subscription found
-    } else {
-      // Other error
-      throw err;
-    }
+    res = await fetch(gateway(path), {
+      ...init,
+      headers,
+      signal: controller.signal,
+    });
+  } finally {
+    globalThis.clearTimeout(timeout);
+    init.signal?.removeEventListener('abort', abort);
   }
-  console.log('INIT subscription', {
-    subscription,
-    backendSubscription,
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Push gateway request failed: ${res.status}${body ? ` ${body.slice(0, 240)}` : ''}`);
+  }
+  return (await res.json()) as T;
+}
+
+export async function getGatewayPublicKey(): Promise<GatewayPublicKey> {
+  const controller = new AbortController();
+  const timeout = globalThis.setTimeout(() => {
+    controller.abort(new Error('Push gateway request timed out'));
+  }, GATEWAY_TIMEOUT_MS);
+  try {
+    const res = await fetch(gateway('/vapid-public-key'), {
+      headers: { accept: 'application/json' },
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`Unable to fetch push key: ${res.status}`);
+    return (await res.json()) as GatewayPublicKey;
+  } finally {
+    globalThis.clearTimeout(timeout);
+  }
+}
+
+export async function fetchPushSettings(auth: ServiceAuthProvider): Promise<GatewaySettings> {
+  return gatewayFetch('/settings', 'social.bluepy.push.getsettings', auth);
+}
+
+export async function hasCurrentDeviceSubscription(): Promise<boolean> {
+  if (!isPushSupported()) return false;
+  const registration = await navigator.serviceWorker.getRegistration();
+  const subscription = registration ? await registration.pushManager.getSubscription() : null;
+  return Boolean(subscription && store.local.get('pushGatewayVapidKeyId'));
+}
+
+export async function isCurrentDeviceRegistered(auth: ServiceAuthProvider): Promise<boolean> {
+  if (!isPushSupported()) return false;
+  const registration = await navigator.serviceWorker.getRegistration();
+  const subscription = registration ? await registration.pushManager.getSubscription() : null;
+  if (!subscription || !store.local.get('pushGatewayVapidKeyId')) return false;
+  const result = await gatewayFetch<{ registered: boolean }>('/subscriptions/current', 'social.bluepy.push.getsettings', auth, {
+    method: 'POST',
+    body: JSON.stringify({ endpoint: subscription.endpoint }),
   });
-
-  // Check if the subscription changed
-  if (backendSubscription && subscription) {
-    const sameEndpoint = backendSubscription.endpoint === subscription.endpoint;
-    const vapidKey = getVapidKey();
-    const sameKey = backendSubscription.serverKey === vapidKey;
-    if (!sameEndpoint) {
-      throw new Error('Backend subscription endpoint changed');
-    }
-    if (sameKey) {
-      // Subscription didn't change
-    } else {
-      // Subscription changed
-      console.error('🔔 Subscription changed', {
-        sameEndpoint,
-        serverKey: backendSubscription.serverKey,
-        vapIdKey: vapidKey,
-        endpoint1: backendSubscription.endpoint,
-        endpoint2: subscription.endpoint,
-        sameKey,
-        key1: backendSubscription.serverKey,
-        key2: vapidKey,
-      });
-      throw new Error('Backend subscription key and vapid key changed');
-      // Only unsubscribe from backend, not from browser
-      // await removeBackendPushSubscription();
-      // // Now let's resubscribe
-      // // NOTE: I have no idea if this works
-      // return await updateSubscription({
-      //   data: backendSubscription.data,
-      //   policy: backendSubscription.policy,
-      // });
-    }
-  }
-
-  if (subscription && !backendSubscription) {
-    // check if account's vapidKey is same as subscription's applicationServerKey
-    const vapidKey = getVapidKey();
-    if (vapidKey) {
-      const { applicationServerKey } = subscription.options;
-      const vapidKeyStr = urlBase64ToUint8Array(vapidKey as string).toString();
-      const applicationServerKeyStr = new Uint8Array(
-        applicationServerKey as ArrayBuffer,
-      ).toString();
-      const sameKey = vapidKeyStr === applicationServerKeyStr;
-      if (sameKey) {
-        // Subscription didn't change
-      } else {
-        // Subscription changed
-        console.error('🔔 Subscription changed', {
-          vapidKeyStr,
-          applicationServerKeyStr,
-          sameKey,
-        });
-        // Unsubscribe since backend doesn't have a subscription
-        await subscription.unsubscribe();
-        throw new Error('Subscription key and vapid key changed');
-      }
-    } else {
-      console.warn('No vapidKey found');
-    }
-  }
-
-  // Check if backend subscription returns 404
-  // if (subscription && !backendSubscription) {
-  //   // Re-subscribe to backend
-  //   backendSubscription = await createBackendPushSubscription({
-  //     subscription,
-  //     data: {},
-  //     policy: 'all',
-  //   });
-  // }
-
-  return { subscription, backendSubscription };
+  return result.registered;
 }
 
-interface UpdateSubscriptionArgs {
-  data: unknown;
-  policy: unknown;
+export async function savePushSettings(settings: Partial<GatewaySettings>, auth: ServiceAuthProvider): Promise<GatewaySettings> {
+  return gatewayFetch('/settings', 'social.bluepy.push.putsettings', auth, {
+    method: 'PUT',
+    body: JSON.stringify(settings),
+  });
 }
 
-export async function updateSubscription({
-  data,
-  policy,
-}: UpdateSubscriptionArgs): Promise<
-  | {
-      subscription: PushSubscription | null | undefined;
-      backendSubscription: BackendPushSubscription | null;
-    }
-  | undefined
-> {
-  console.log('🔔 Updating subscription', { data, policy });
-  if (!isPushSupported()) return undefined;
-  let { registration, subscription } = await getSubscription();
-  let backendSubscription: BackendPushSubscription | null = null;
-
-  if (subscription) {
-    try {
-      backendSubscription = await updateBackendPushSubscription({
-        data,
-        policy,
-      });
-      // TODO: save subscription in user settings
-    } catch {
-      // Backend doesn't have a subscription for this user
-      // Create a new one
-      backendSubscription = await createBackendPushSubscription({
-        subscription,
-        data,
-        policy,
-      });
-      // TODO: save subscription in user settings
-    }
-  } else {
-    // User is not subscribed
-    const vapidKey = getVapidKey();
-    if (!vapidKey) throw new Error('No server key found');
-    subscription = await (
-      registration as ServiceWorkerRegistration
-    ).pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(
-        vapidKey as string,
-      ) as BufferSource,
-    });
-    backendSubscription = await createBackendPushSubscription({
-      subscription,
-      data,
-      policy,
-    });
-    // TODO: save subscription in user settings
-  }
-
-  return { subscription, backendSubscription };
-}
-
-export async function removeSubscription(): Promise<void> {
-  if (!isPushSupported()) return;
-  const { subscription } = await getSubscription();
-  if (subscription) {
-    await removeBackendPushSubscription();
+export async function registerCurrentDevice(auth: ServiceAuthProvider): Promise<void> {
+  if (!isPushSupported()) throw new Error('Push is not supported in this browser');
+  const key = await getGatewayPublicKey();
+  const registration = await getRegistration();
+  const existing = await registration.pushManager.getSubscription();
+  const storedKeyId = store.local.get('pushGatewayVapidKeyId');
+  let subscription = existing;
+  let shouldRollbackSubscription = false;
+  if (subscription && storedKeyId !== key.keyId) {
     await subscription.unsubscribe();
+    subscription = null;
+  }
+  if (!subscription) {
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(key.publicKey) as BufferSource,
+    });
+    shouldRollbackSubscription = true;
+  }
+  try {
+    await gatewayFetch('/subscriptions', 'social.bluepy.push.registersubscription', auth, {
+      method: 'POST',
+      body: JSON.stringify(subscription.toJSON()),
+    });
+  } catch (error) {
+    if (shouldRollbackSubscription) await subscription.unsubscribe().catch(() => undefined);
+    throw error;
+  }
+  store.local.set('pushGatewayVapidKeyId', key.keyId);
+}
+
+export async function unregisterCurrentDevice(auth: ServiceAuthProvider): Promise<void> {
+  if (!isPushSupported()) return;
+  const registration = await navigator.serviceWorker.getRegistration();
+  const subscription = registration ? await registration.pushManager.getSubscription() : null;
+  if (!subscription) return;
+  try {
+    await gatewayFetch('/subscriptions/unregister', 'social.bluepy.push.unregistersubscription', auth, {
+      method: 'POST',
+      body: JSON.stringify({ endpoint: subscription.endpoint }),
+    });
+  } finally {
+    await subscription.unsubscribe().catch(() => undefined);
+    store.local.del('pushGatewayVapidKeyId');
   }
 }
+
+export async function deleteAllPushDataForAccount(auth: ServiceAuthProvider): Promise<void> {
+  try {
+    await gatewayFetch('/subscriptions/delete-all-for-account', 'social.bluepy.push.deleteaccountdata', auth, {
+      method: 'POST',
+    });
+  } finally {
+    if (isPushSupported()) {
+      const registration = await navigator.serviceWorker.getRegistration();
+      const subscription = registration ? await registration.pushManager.getSubscription() : null;
+      await subscription?.unsubscribe().catch(() => undefined);
+    }
+    store.local.del('pushGatewayVapidKeyId');
+  }
+}
+
+export { SERVICE_DID };

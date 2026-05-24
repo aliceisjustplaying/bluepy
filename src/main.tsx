@@ -17,6 +17,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './app';
 import { SessionProvider } from './contexts/SessionProvider';
 import { createQueryClient } from './data/query-client';
+import { useSessionsStore } from './state/sessions';
 import ErrorFallback from './components/error-fallback';
 import { IconSpriteProvider } from './components/icon-sprite-manager';
 import { applyAppviewTheme } from './utils/atproto-adapter';
@@ -30,6 +31,7 @@ import { captureSentryException } from './instrument';
 import {
   migrateLegacyCanonicalRoute,
   migrateLegacyHashRoute,
+  navigatePath,
 } from './utils/router';
 import states from './utils/states';
 
@@ -50,6 +52,13 @@ interface SharedDataPayload {
   initialText: string;
   files: readonly File[];
 }
+interface PendingNotificationRoute {
+  type?: string;
+  targetAtUri?: string;
+  recipientDid?: string;
+  notificationId?: string;
+  createdAt?: number;
+}
 function processShareData(
   data: ShareData | null | undefined,
 ): SharedDataPayload | null {
@@ -64,6 +73,90 @@ function processShareData(
     initialText: textParts.join('\n\n'),
     files: data.files || [],
   };
+}
+
+function handlePushNotificationRoute(route: PendingNotificationRoute): void {
+  const { targetAtUri, recipientDid } = route;
+  if (!targetAtUri) {
+    return;
+  }
+  for (let index = 0; index < targetAtUri.length; index += 1) {
+    if (targetAtUri.charCodeAt(index) < 32) return;
+  }
+  if (!/^at:\/\/did:[a-z0-9:%._-]+\/app\.bsky\.feed\.post\/[a-zA-Z0-9._~-]+$/.test(targetAtUri)) {
+    return;
+  }
+  const sessions = useSessionsStore.getState();
+  if (recipientDid && sessions.knownDids.includes(recipientDid)) {
+    sessions.setActive(recipientDid);
+  }
+  navigatePath(`/${targetAtUri}`);
+}
+
+function openPendingNotificationDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('bluepy:pending-notification-routes', 1);
+    request.addEventListener('upgradeneeded', () => {
+      request.result.createObjectStore('routes', { keyPath: 'notificationId' });
+    });
+    request.addEventListener('success', () => {
+      resolve(request.result);
+    });
+    request.addEventListener('error', () => {
+      reject(request.error || new Error('Failed to open pending notification database'));
+    });
+  });
+}
+
+async function drainPendingNotificationRoutes(): Promise<void> {
+  if (!('indexedDB' in window)) return;
+  const db = await openPendingNotificationDb();
+  try {
+    const tx = db.transaction('routes', 'readwrite');
+    const store = tx.objectStore('routes');
+    const request = store.getAll();
+    const routeToHandle = await new Promise<PendingNotificationRoute | null>((resolve, reject) => {
+      request.addEventListener('success', () => {
+        const cutoff = Date.now() - 5 * 60 * 1000;
+        let selected: PendingNotificationRoute | null = null;
+        for (const route of request.result as PendingNotificationRoute[]) {
+          if (!route.notificationId) continue;
+          store.delete(route.notificationId);
+          if (!selected && (route.createdAt ?? 0) >= cutoff) selected = route;
+        }
+        resolve(selected);
+      });
+      request.addEventListener('error', () => {
+        reject(request.error || new Error('Failed to read pending notification routes'));
+      });
+    });
+    await new Promise<void>((resolve, reject) => {
+      tx.addEventListener('complete', () => {
+        resolve();
+      });
+      tx.addEventListener('error', () => {
+        reject(tx.error || new Error('Failed to clear pending notification routes'));
+      });
+      tx.addEventListener('abort', () => {
+        reject(tx.error || new Error('Failed to clear pending notification routes'));
+      });
+    });
+    if (routeToHandle) handlePushNotificationRoute(routeToHandle);
+  } finally {
+    db.close();
+  }
+}
+
+function schedulePendingNotificationRouteDrain(): void {
+  window.setTimeout(() => {
+    void (async () => {
+      try {
+        await drainPendingNotificationRoutes();
+      } catch (error) {
+        console.warn('Failed to drain push notification route', error);
+      }
+    })();
+  }, 0);
 }
 
 class AppErrorBoundary extends Component<
@@ -214,8 +307,14 @@ if (!redirectLegacyOrigin()) {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', (event) => {
           const { data, action } =
-            (event.data as { data?: ShareData; action?: string } | undefined) ||
+            (event.data as
+              | ({ data?: ShareData; action?: string } & PendingNotificationRoute)
+              | undefined) ||
             {};
+          if (event.data?.type === 'push-notification-route') {
+            handlePushNotificationRoute(event.data as PendingNotificationRoute);
+            return;
+          }
           if (action === 'compose-with-shared-data') {
             console.log('💪 Received shared data from SW', data);
             const sharedData = processShareData(data);
@@ -225,6 +324,19 @@ if (!redirectLegacyOrigin()) {
               ).__SHARED_DATA__ = sharedData;
               states.showCompose = true; // It'll use __SHARED_DATA__
             }
+          }
+        });
+        void (async () => {
+          try {
+            await drainPendingNotificationRoutes();
+          } catch (error) {
+            console.warn('Failed to drain push notification route', error);
+          }
+        })();
+        window.addEventListener('focus', schedulePendingNotificationRouteDrain);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            schedulePendingNotificationRouteDrain();
           }
         });
       }

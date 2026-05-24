@@ -187,8 +187,8 @@ msgstr "S'ha copiat la configuració de la drecera"
 #~ msgstr "Edita les notes"
 
 #: src/pages/settings.tsx
-msgid "anyone"
-msgstr "qualsevol"
+#~ msgid "anyone"
+#~ msgstr "qualsevol"
 
 #: src/components/search-data-results.tsx
 #: src/pages/search.tsx
@@ -267,6 +267,10 @@ msgstr "Torna a dalt"
 #: src/components/post-embed-modal.tsx
 msgid "This is static, unstyled and scriptless. You may need to apply your own styles and edit as needed."
 msgstr "Això és estàtic, sense estil i sense guió. És possible que hàgiu d'aplicar els vostres propis estils i editar-los segons sigui necessari."
+
+#: src/pages/settings.tsx
+msgid "Remove this device"
+msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -499,7 +503,6 @@ msgstr "Pendent de revisió"
 
 #: src/components/timeline-feed.tsx
 #: src/components/timeline.tsx
-#: src/pages/settings.tsx
 msgid "New posts"
 msgstr "Publicacions noves"
 
@@ -765,8 +768,8 @@ msgid "We read every message even when we cannot reply."
 msgstr ""
 
 #: src/pages/settings.tsx
-msgid "Follow requests"
-msgstr "Sol·licituds de seguiment"
+#~ msgid "Follow requests"
+#~ msgstr "Sol·licituds de seguiment"
 
 #: src/pages/account-statuses.tsx
 #~ msgid "Switch to account's server {0}"
@@ -1147,8 +1150,8 @@ msgid "Appearance"
 msgstr "Aparença"
 
 #: src/pages/settings.tsx
-msgid "Follows"
-msgstr "Seguiments"
+#~ msgid "Follows"
+#~ msgstr "Seguiments"
 
 #. By [Author]
 #: src/pages/trending.tsx
@@ -2678,8 +2681,8 @@ msgid "Emojis:"
 msgstr "Emojis:"
 
 #: src/pages/settings.tsx
-msgid "Post edits"
-msgstr "Edició de publicacions"
+#~ msgid "Post edits"
+#~ msgstr "Edició de publicacions"
 
 #: src/pages/accounts.jsx
 #~ msgid "Log out <0>@{0}</0>?"
@@ -2807,6 +2810,10 @@ msgstr "Ja les heu vist totes."
 msgid "Muted @{username}"
 msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
 msgstr "El problema no encaixa en altres categories"
@@ -2842,6 +2849,10 @@ msgstr "Grup"
 #: src/components/report-modal.tsx
 msgid "What's the issue with this post?"
 msgstr "Quin és el problema amb aquesta publicació?"
+
+#: src/pages/settings.tsx
+msgid "Rich previews"
+msgstr ""
 
 #: src/pages/settings.tsx
 #: src/pages/welcome.tsx
@@ -3134,6 +3145,7 @@ msgstr "És possible que la llista no funcioni si prové d'un compte diferent."
 #: src/components/status-post-body.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
+#: src/pages/settings.tsx
 #: src/pages/status.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Replies"
@@ -3453,8 +3465,8 @@ msgid "Unable to block @{username}"
 msgstr "No ha estat possible blocar @{username}"
 
 #: src/pages/settings.tsx
-msgid "followers"
-msgstr "seguidors"
+#~ msgid "followers"
+#~ msgstr "seguidors"
 
 #: src/components/gif-picker-modal.tsx
 msgid "Error loading GIFs"
@@ -3765,10 +3777,9 @@ msgstr "Botó flotant"
 msgid "Move up"
 msgstr "Mou cap amunt"
 
-#. placeholder {0}: [ { value: 'all', label: t`anyone`, }, { value: 'followed', label: t`people I follow`, }, { value: 'follower', label: t`followers`, }, ].map((type) => ( <option key={type.value} value={type.value}> {type.label} </option> ))
 #: src/pages/settings.tsx
-msgid "Allow from <0>{0}</0>"
-msgstr "Permet-les de <0>{0}</0>"
+#~ msgid "Allow from <0>{0}</0>"
+#~ msgstr "Permet-les de <0>{0}</0>"
 
 #: src/components/shortcuts-settings.tsx
 msgid "PDS"
@@ -3870,7 +3881,6 @@ msgstr "Autor anterior"
 #: src/components/account-info.tsx
 #: src/pages/account-statuses.tsx
 #: src/pages/catchup.tsx
-#: src/pages/settings.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Reposts"
 msgstr ""
@@ -4124,6 +4134,10 @@ msgstr "Nota: només s'emmagatzemaran un màxim de 3. La resta s'eliminarà auto
 #~ msgid "No keywords. Add one."
 #~ msgstr "No hi ha paraules clau. Afegiu-ne una."
 
+#: src/pages/settings.tsx
+msgid "Push notifications"
+msgstr ""
+
 #. placeholder {0}: username || acct
 #: src/components/status-interactions.ts
 msgid "Unliked @{0}'s post"
@@ -4150,6 +4164,10 @@ msgstr "Ves al perfil"
 #: src/components/edit-profile-sheet.tsx
 msgid "Extra fields"
 msgstr "Camps addicionals"
+
+#: src/pages/accounts.tsx
+msgid "Unable to remove push notification data. Try again before logging out."
+msgstr ""
 
 #: src/pages/welcome.tsx
 msgid "By default, single column for zen-mode seekers. Configurable multi-column for power users."
@@ -4247,6 +4265,10 @@ msgstr "Edita la llista"
 #: src/pages/catchup.tsx
 msgid "last 2 hours"
 msgstr "les últimes 2 hores"
+
+#: src/pages/settings.tsx
+msgid "Push settings apply to the active Bluepy account. The notification screen still comes from Bluesky."
+msgstr ""
 
 #: src/components/shortcuts-settings.tsx
 #~ msgid "Public (Local / Federated)"
@@ -4665,8 +4687,8 @@ msgstr "Edita la descripció del vídeo"
 #~ msgstr "Afegeix un avís de contingut"
 
 #: src/pages/settings.tsx
-msgid "people I follow"
-msgstr "persones que segueixo"
+#~ msgid "people I follow"
+#~ msgstr "persones que segueixo"
 
 #: src/components/account-info-mini.tsx
 #: src/components/account-info.tsx
@@ -4982,8 +5004,8 @@ msgid "Share"
 msgstr "Comparteix"
 
 #: src/pages/settings.tsx
-msgid "NOTE: Push notifications only work for <0>one account</0>."
-msgstr "NOTA: les notificacions només funcionen per a <0>un compte</0>."
+#~ msgid "NOTE: Push notifications only work for <0>one account</0>."
+#~ msgstr "NOTA: les notificacions només funcionen per a <0>un compte</0>."
 
 #: src/components/poll.tsx
 #~ msgid "Show results"
@@ -5116,6 +5138,5 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 #: src/pages/catchup.tsx
 #: src/pages/favourites.tsx
-#: src/pages/settings.tsx
 msgid "Likes"
 msgstr "\"M'agrada\""
