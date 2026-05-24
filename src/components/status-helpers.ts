@@ -195,12 +195,6 @@ export const detectLang = pmem(
 
     if (langDetector) {
       const langs = await langDetector.detect(text as string);
-      console.groupCollapsed(
-        '💬 DETECTLANG BROWSER',
-        langs.slice(0, 3).map((l) => l.detectedLanguage),
-      );
-      console.log(text, langs.slice(0, 3));
-      console.groupEnd();
       const lang = langs[0];
       if (
         lang?.detectedLanguage &&
@@ -213,12 +207,6 @@ export const detectLang = pmem(
 
     const { detectAll } = await import('tinyld/light');
     const langs = detectAll(text as string);
-    console.groupCollapsed(
-      '💬 DETECTLANG TINYLD',
-      langs.slice(0, 3).map((l) => l.lang),
-    );
-    console.log(text, langs.slice(0, 3));
-    console.groupEnd();
     const lang = langs[0];
     if (lang?.lang && lang?.accuracy > 0.5) {
       // If > 50% accurate, use it
