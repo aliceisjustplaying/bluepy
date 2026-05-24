@@ -70,8 +70,23 @@ async function resolveDidPlc(did: string): Promise<DidDocument> {
   return didDocumentSchema.parse(await res.json());
 }
 
+async function resolveDidWeb(did: string): Promise<DidDocument> {
+  const id = did.slice('did:web:'.length);
+  const parts = id.split(':').map((part) => decodeURIComponent(part));
+  const [host, ...path] = parts;
+  if (!host || host.includes('/') || host.includes('@')) throw new Error('invalid_did');
+  const url = new URL(`https://${host}/${[...path, 'did.json'].join('/')}`);
+  const res = await fetch(url, {
+    headers: { accept: 'application/did+json, application/json' },
+    signal: AbortSignal.timeout(2_000),
+  });
+  if (!res.ok) throw new Error('did_resolution_failed');
+  return didDocumentSchema.parse(await res.json());
+}
+
 export async function resolveDidDocument(did: string): Promise<DidDocument> {
   if (did.startsWith('did:plc:')) return resolveDidPlc(did);
+  if (did.startsWith('did:web:')) return resolveDidWeb(did);
   throw new Error('unsupported_did_method');
 }
 
@@ -123,6 +138,7 @@ export async function verifyServiceAuth({
   if (claims.aud !== expectedAud) throw new Error('invalid_auth_audience');
   if (claims.lxm !== expectedLxm) throw new Error('invalid_auth_method');
   if (!claims.exp || claims.exp <= nowSeconds) throw new Error('expired_auth_token');
+  if (claims.exp > 8_640_000_000_000) throw new Error('invalid_auth_token');
   if (!claims.jti) throw new Error('invalid_auth_token');
   if (!allowUnsignedDevTokens) {
     await verifyJwtSignature(rawToken, claims, didDocumentResolver);

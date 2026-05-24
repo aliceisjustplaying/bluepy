@@ -19,7 +19,11 @@ async function readJson(req: http.IncomingMessage): Promise<unknown> {
     chunks.push(buffer);
   }
   if (!chunks.length) return {};
-  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  } catch {
+    throw new Error('invalid_json');
+  }
 }
 
 function send(res: http.ServerResponse, status: number, body: unknown, headers: Record<string, string> = {}) {
@@ -42,6 +46,7 @@ function errorStatus(error: unknown): number {
     [
       'admin_only',
       'invalid_did',
+      'invalid_json',
       'invalid_subscription',
       'json_required',
       'localhost_only',
@@ -66,6 +71,7 @@ function publicError(error: unknown): string {
       'invalid_auth_subject',
       'invalid_auth_token',
       'invalid_did',
+      'invalid_json',
       'json_required',
       'localhost_only',
       'missing_auth',

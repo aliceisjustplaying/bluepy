@@ -26,6 +26,7 @@ function safePreviewText(value: string | undefined, fallback = '', maxLength = 1
     cleaned += code < 32 || code === 127 ? ' ' : text[index];
   }
   cleaned = cleaned.trim();
+  if (!cleaned) cleaned = fallback;
   return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength - 1)}…` : cleaned;
 }
 
@@ -39,7 +40,7 @@ export function buildPayload(input: Omit<PushPayload, 'version' | 'title' | 'bod
     : input.type === 'mention'
       ? 'New mention'
       : 'New reply';
-  const body = rich && input.textExcerpt ? safePreviewText(input.textExcerpt) : 'Open Bluepy to view it.';
+  const body = rich && input.textExcerpt ? safePreviewText(input.textExcerpt, 'Open Bluepy to view it.') : 'Open Bluepy to view it.';
   const payload: PushPayload = { version: 1, ...input, title, body };
   if (!rich) {
     delete payload.actorDid;

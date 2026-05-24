@@ -47,23 +47,24 @@ export function webPushTopic(endpoint: string, eventId: number): string | undefi
 
 export function createDeliveryAttemptsForEvent(db: Db, notificationEventId: number, recipientDid: string): number {
   const activeSubs = db.prepare('SELECT id FROM subscriptions WHERE did = ? AND active = 1').all(recipientDid) as { id: number }[];
+  const now = new Date().toISOString();
   const insert = db.prepare(
-    `INSERT INTO delivery_attempts (notification_event_id, subscription_id, status)
-     VALUES (?, ?, 'pending')
+    `INSERT INTO delivery_attempts (notification_event_id, subscription_id, status, next_attempt_at)
+     VALUES (?, ?, 'pending', ?)
      ON CONFLICT(notification_event_id, subscription_id) DO UPDATE SET
        status = CASE
          WHEN delivery_attempts.status IN ('failed', 'gone') THEN 'pending'
          ELSE delivery_attempts.status
        END,
        next_attempt_at = CASE
-         WHEN delivery_attempts.status IN ('failed', 'gone') THEN CURRENT_TIMESTAMP
+         WHEN delivery_attempts.status IN ('failed', 'gone') THEN excluded.next_attempt_at
          ELSE delivery_attempts.next_attempt_at
        END,
        updated_at = CURRENT_TIMESTAMP
      WHERE delivery_attempts.status IN ('failed', 'gone')`,
   );
   let created = 0;
-  for (const sub of activeSubs) created += insert.run(notificationEventId, sub.id).changes;
+  for (const sub of activeSubs) created += insert.run(notificationEventId, sub.id, now).changes;
   return created;
 }
 
@@ -179,6 +180,7 @@ export async function sendAttempt(db: Db, attemptId: number, vapid: { subject: s
         TTL: 60 * 60 * 6,
         urgency: 'normal',
         topic: webPushTopic(row.endpoint, row.event_id),
+        timeout: 10_000,
         vapidDetails: {
           subject: vapid.subject,
           publicKey: vapidKey.publicKey,

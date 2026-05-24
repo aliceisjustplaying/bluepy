@@ -117,6 +117,6 @@ void test('service auth rejects malformed claims payloads', async () => {
   );
 });
 
-void test('default DID resolver only fetches plc documents', async () => {
-  await assert.rejects(() => resolveDidDocument('did:web:example.com'), /unsupported_did_method/);
+void test('default DID resolver rejects unsupported DID methods', async () => {
+  await assert.rejects(() => resolveDidDocument('did:key:zQ3shokFTS3brHcDQrn82RUDfCZESWL1ZdCEJwekUDPQiYBme'), /unsupported_did_method/);
 });

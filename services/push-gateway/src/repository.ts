@@ -52,9 +52,12 @@ export function upsertSettings(db: Db, did: string, input: SettingsInput) {
 }
 
 function isPrivateIpAddress(hostname: string): boolean {
-  const family = isIP(hostname);
+  const normalizedHost = hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname;
+  const ipv4Mapped = normalizedHost.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  if (ipv4Mapped) return isPrivateIpAddress(ipv4Mapped[1]);
+  const family = isIP(normalizedHost);
   if (family === 4) {
-    const [a = 0, b = 0] = hostname.split('.').map(Number);
+    const [a = 0, b = 0] = normalizedHost.split('.').map(Number);
     return (
       a === 0 ||
       a === 10 ||
@@ -65,8 +68,15 @@ function isPrivateIpAddress(hostname: string): boolean {
     );
   }
   if (family === 6) {
-    const normalized = hostname.toLowerCase();
-    return normalized === '::1' || normalized.startsWith('fc') || normalized.startsWith('fd') || normalized.startsWith('fe80:');
+    const normalized = normalizedHost.toLowerCase();
+    return (
+      normalized === '::1' ||
+      normalized.startsWith('fc') ||
+      normalized.startsWith('fd') ||
+      normalized.startsWith('fe80:') ||
+      normalized.startsWith('::ffff:0:') ||
+      normalized.startsWith('::ffff:7f')
+    );
   }
   return false;
 }
