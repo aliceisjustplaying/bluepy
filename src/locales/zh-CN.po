@@ -2367,6 +2367,7 @@ msgstr "添加到快捷方式"
 #: src/pages/catchup.tsx
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
+#: src/pages/search.tsx
 msgid "Home"
 msgstr "主页"
 

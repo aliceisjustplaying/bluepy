@@ -1,7 +1,3 @@
-#search-page .deck > header .header-grid {
-  grid-template-columns: auto 1fr auto;
-}
-
 #search-page ~ #compose-button {
   display: none;
 }
@@ -11,7 +7,17 @@
   transform: none;
 }
 
-#search-page header {
+#search-page #search-posts-page > .deck > header {
+  display: none;
+}
+
+#search-page .search-input-dock {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+
   input {
     width: 100%;
     padding: 8px 16px;
@@ -53,18 +59,12 @@
   }
 
   #search-page {
-    > .deck > header {
+    .search-input-dock {
       position: fixed;
-      top: auto;
       bottom: var(--mobile-search-bottom);
       inset-inline: 0;
       z-index: 120;
-      transform: none;
       padding-inline: 8px;
-      pointer-events: none;
-    }
-
-    > .deck > header .header-grid {
       grid-template-columns: 1fr auto;
       width: min(var(--main-width), calc(100vw - 16px));
       margin-inline: auto;
@@ -72,15 +72,6 @@
       border-radius: 999px;
       overflow: visible;
       box-shadow: 0 10px 36px -4px var(--drop-shadow-color);
-      pointer-events: auto;
-    }
-
-    > .deck > header .header-grid > .header-side:first-child {
-      display: none;
-    }
-
-    > .deck > header .header-grid > .header-side:last-child {
-      grid-column: auto;
     }
 
     .search-popover {
@@ -199,8 +190,12 @@ ul.link-list.hashtag-list li a {
 
 @media (min-width: 40em) {
   #search-page {
-    header input {
+    .search-input-dock input {
       background-color: var(--bg-color);
+    }
+
+    .search-input-dock {
+      border-bottom: var(--hairline-width) solid var(--outline-color);
     }
 
     .filter-bar {

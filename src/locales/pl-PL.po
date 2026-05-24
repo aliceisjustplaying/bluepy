@@ -2367,6 +2367,7 @@ msgstr "Dodaj do skrótów"
 #: src/pages/catchup.tsx
 #: src/pages/home.tsx
 #: src/pages/notifications.tsx
+#: src/pages/search.tsx
 msgid "Home"
 msgstr "Strona główna"
 

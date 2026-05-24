@@ -1862,6 +1862,12 @@ test('keeps mobile search controls at the bottom and resets post results scroll'
   });
   await expect(page.getByText('Alpha first search result')).toBeVisible();
   await expect(page.locator('#compose-button')).toBeHidden();
+  await expect(
+    page.locator('#search-page > .timeline-deck > header').getByRole('heading'),
+  ).toHaveText('Search');
+  await expect(
+    page.locator('#search-page > .timeline-deck > header').getByLabel('Home'),
+  ).toBeVisible();
 
   const controlsGeometry = await page.evaluate(() => {
     const input = document.querySelector('#search-page input[type="search"]');
@@ -1946,7 +1952,7 @@ test('keeps mobile search controls at the bottom and resets post results scroll'
     element.dispatchEvent(new Event('scroll', { bubbles: true }));
   });
   await page.locator('#search-page input[type="search"]').fill('beta');
-  await page.locator('#search-page header form').evaluate((form) => {
+  await page.locator('#search-page .search-input-dock form').evaluate((form) => {
     if (form instanceof HTMLFormElement) form.requestSubmit();
   });
 

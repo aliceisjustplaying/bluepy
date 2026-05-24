@@ -539,8 +539,13 @@ function Search({ columnMode, ...props }: SearchProps) {
           <div className="header-grid">
             <div className="header-side">
               <NavMenu />
+              <Link to="/" className="button plain">
+                <Icon icon="home" size="l" alt={t`Home`} />
+              </Link>
             </div>
-            <SearchForm ref={searchFormRef} />
+            <h1>
+              <Trans>Search</Trans>
+            </h1>
             <div className="header-side">
               <button
                 type="button"
@@ -555,6 +560,19 @@ function Search({ columnMode, ...props }: SearchProps) {
             </div>
           </div>
         </header>
+        <div className="search-input-dock">
+          <SearchForm ref={searchFormRef} />
+          <button
+            type="button"
+            className="plain"
+            onClick={() => {
+              loadResults(true);
+            }}
+            disabled={uiState === 'loading'}
+          >
+            <Icon icon="search" size="l" alt={t`Search`} />
+          </button>
+        </div>
         <main>
           {useNestedFilterBar ? null : filterBar}
           {q ? (
