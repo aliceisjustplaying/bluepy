@@ -56,7 +56,7 @@ function ThreadReplyList({
   }
   if (threadReplies.length === 0) return null;
   return (
-    <ul>
+    <ul className="timeline flat contextual">
       {threadReplies.map((reply) => (
         <li key={reply.post.uri} className="descendant thread">
           <ThreadReplyLink

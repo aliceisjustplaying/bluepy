@@ -16,8 +16,7 @@ export default function ModerationGate({
   children,
 }: ModerationGateProps) {
   const [revealed, setRevealed] = useState(false);
-  const mustCoverPost =
-    decision?.visibility === 'blur' || decision?.visibility === 'warn';
+  const mustCoverPost = decision?.visibility === 'blur';
   const noOverride = decision?.noOverride;
 
   if (!decision) {

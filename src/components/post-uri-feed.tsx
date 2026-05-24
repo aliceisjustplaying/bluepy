@@ -2,7 +2,7 @@ import type { AppBskyFeedDefs } from '@atproto/api';
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { MouseEvent, ReactNode, UIEvent } from 'react';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import {
   groupBoostItems,
@@ -297,6 +297,7 @@ export default function PostUriFeed({
 }: PostUriFeedProps) {
   const { t } = useLingui();
   const { items, loadMore, hasMore, isLoadingMore, isLoading, error } = source;
+  const pageRef = useRef<HTMLDivElement>(null);
   const rows = useMemo(
     () =>
       boostsCarousel
@@ -336,6 +337,16 @@ export default function PostUriFeed({
   );
 
   useEffect(() => {
+    const element = pageRef.current;
+    if (!element || !hasMore || isLoading || isLoadingMore) return;
+    const remaining =
+      element.scrollHeight - element.scrollTop - element.clientHeight;
+    if (remaining < 800) {
+      loadMore();
+    }
+  }, [hasMore, isLoading, isLoadingMore, items.length, loadMore]);
+
+  useEffect(() => {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', onScroll);
@@ -357,6 +368,7 @@ export default function PostUriFeed({
 
   const content = (
     <div
+      ref={pageRef}
       id={`${id}-page`}
       className="timeline-page deck-container"
       data-timeline-id={id}
@@ -365,9 +377,18 @@ export default function PostUriFeed({
     >
       <div className="timeline-deck deck">
         <header className="timeline-header">
-          {headerStart === false ? null : (headerStart ?? <NavMenu />)}
-          {titleComponent ?? <h1>{title || t`Home`}</h1>}
-          {headerEnd}
+          <div className="header-grid">
+            <div className="header-side">
+              <NavMenu />
+              {headerStart === false ? null : (headerStart ?? (
+                <Link to="/" className="button plain home-button">
+                  <Icon icon="home" size="l" alt={t`Home`} />
+                </Link>
+              ))}
+            </div>
+            {titleComponent ?? <h1>{title || t`Home`}</h1>}
+            <div className="header-side">{headerEnd}</div>
+          </div>
         </header>
         {timelineStart}
         {error ? (
@@ -379,10 +400,7 @@ export default function PostUriFeed({
             {emptyText || t`Nothing to see here.`}
           </p>
         ) : (
-          <ul
-            className="timeline-list"
-            style={hasMore ? { minHeight: '2200px' } : undefined}
-          >
+          <ul className="timeline timeline-list">
             {rows.map((row) =>
               row.type === 'boosts' ? (
                 <PostUriBoostCarousel
@@ -395,7 +413,6 @@ export default function PostUriFeed({
             )}
           </ul>
         )}
-        {hasMore ? <div aria-hidden="true" style={{ height: 1600 }} /> : null}
         {isLoadingMore ? <Loader /> : null}
         {!hasMore && items.length > 0 ? (
           <p className="timeline-end">

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { AppBskyActorDefs, AppBskyFeedDefs } from '@atproto/api';
+import type { InterpretedLabelValueDefinition } from '@atproto/api';
 
 import {
   decidePostModeration,
@@ -13,6 +14,8 @@ import {
 const fixtureDir = join(import.meta.dir, '../fixtures/atproto');
 
 const labelerDid = 'did:plc:fixture010';
+const customLabelerDid = 'did:plc:custom-labeler';
+const otherLabelerDid = 'did:plc:other-labeler';
 
 function baseContext(
   overrides: Partial<ModerationContext> = {},
@@ -46,10 +49,10 @@ function loadProfile(name: string): AppBskyActorDefs.ProfileViewDetailed {
 }
 
 describe('decidePostModeration', () => {
-  test('label fixture warns when label is from accepted labeler', () => {
+  test('label fixture keeps post content visible when only media is blurred', () => {
     const post = loadPost('label.json');
     const decision = decidePostModeration(post, baseContext());
-    expect(['warn', 'blur', 'hide']).toContain(decision.visibility);
+    expect(decision.visibility).toBe('show');
     expect(decision.labels?.length).toBeGreaterThan(0);
   });
 
@@ -104,10 +107,65 @@ describe('decidePostModeration', () => {
   test('media-only blur surfaces contentMedia UI separately from contentView', () => {
     const post = loadPost('label.json');
     const decision = decidePostModeration(post, baseContext());
-    expect(decision.visibility).toBe('warn');
+    expect(decision.visibility).toBe('show');
     expect(decision.mediaBlur).toBe(true);
     expect(decision.mediaNoOverride).toBe(true);
     expect(decision.noOverride).toBeUndefined();
+  });
+
+  test('labeler-specific content label prefs do not apply to other labelers', () => {
+    const post = {
+      ...loadPost('label.json'),
+      labels: [
+        {
+          src: otherLabelerDid,
+          uri: 'at://did:plc:fixture010/app.bsky.feed.post/3mmjrhdk6sc2z',
+          val: 'custom-label',
+          cts: '2026-05-23T15:32:32.053Z',
+        },
+      ],
+    };
+    const customLabel: InterpretedLabelValueDefinition = {
+      identifier: 'custom-label',
+      locales: [],
+      severity: 'alert',
+      blurs: 'content',
+      defaultSetting: 'ignore',
+      configurable: true,
+      flags: [],
+      behaviors: {
+        content: {
+          contentView: 'blur',
+          contentList: 'blur',
+        },
+      },
+    };
+
+    const decision = decidePostModeration(
+      post,
+      baseContext({
+        subscribedLabelers: [
+          { did: customLabelerDid },
+          { did: otherLabelerDid },
+        ],
+        acceptedLabelerDids: [labelerDid, customLabelerDid, otherLabelerDid],
+        labelDefs: {
+          [customLabelerDid]: [customLabel],
+          [otherLabelerDid]: [customLabel],
+        },
+        contentLabelPrefs: [
+          {
+            $type: 'app.bsky.actor.defs#contentLabelPref',
+            label: 'custom-label',
+            labelerDid: customLabelerDid,
+            visibility: 'hide',
+          },
+        ],
+      }),
+    );
+
+    expect(decision.visibility).toBe('show');
+    expect(decision.labels).toHaveLength(1);
   });
 
   test.each([

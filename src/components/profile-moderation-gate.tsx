@@ -36,7 +36,7 @@ function ProfileModerationCover({
   }
 
   if (
-    (decision.visibility === 'blur' || decision.visibility === 'warn') &&
+    decision.visibility === 'blur' &&
     !revealed &&
     !decision.noOverride
   ) {
@@ -58,7 +58,7 @@ function ProfileModerationCover({
   }
 
   if (
-    (decision.visibility === 'blur' || decision.visibility === 'warn') &&
+    decision.visibility === 'blur' &&
     !revealed &&
     decision.noOverride
   ) {

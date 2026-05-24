@@ -488,11 +488,14 @@ function StatusPage(params: StatusPageParams) {
 
   if (useDataLayerThread && postUri) {
     return (
-      <PostThreadPage
-        uri={postUri}
-        closeLink={closeLink}
-        instance={params.instance ?? 'bsky.social'}
-      />
+      <div className="deck-backdrop">
+        <Link to={closeLink} preservePrevLocation />
+        <PostThreadPage
+          uri={postUri}
+          closeLink={closeLink}
+          instance={params.instance ?? 'bsky.social'}
+        />
+      </div>
     );
   }
 

@@ -52,17 +52,28 @@ export interface ProfileModerationDecision {
   causeLabel?: ComAtprotoLabelDefs.Label;
 }
 
-function isLabelPreference(
+function labelPreferenceVisibility(
   value: string | undefined,
-): value is 'hide' | 'warn' | 'ignore' {
-  return value === 'hide' || value === 'warn' || value === 'ignore';
+): 'hide' | 'warn' | 'ignore' | undefined {
+  if (value === 'hide' || value === 'warn' || value === 'ignore') {
+    return value;
+  }
+  if (value === 'show') return 'ignore';
+  return undefined;
 }
 
 function moderationContextToOpts(ctx: ModerationContext): ModerationOpts {
   const labels: Record<string, 'ignore' | 'warn' | 'hide'> = {};
+  const labelsByLabeler = new Map<string, Record<string, 'ignore' | 'warn' | 'hide'>>();
   for (const pref of ctx.contentLabelPrefs) {
-    if (pref.label && isLabelPreference(pref.visibility)) {
-      labels[pref.label] = pref.visibility;
+    const visibility = labelPreferenceVisibility(pref.visibility);
+    if (!pref.label || !visibility) continue;
+    if (pref.labelerDid) {
+      const labelerLabels = labelsByLabeler.get(pref.labelerDid) ?? {};
+      labelerLabels[pref.label] = visibility;
+      labelsByLabeler.set(pref.labelerDid, labelerLabels);
+    } else {
+      labels[pref.label] = visibility;
     }
   }
 
@@ -73,7 +84,7 @@ function moderationContextToOpts(ctx: ModerationContext): ModerationOpts {
     seen.add(labeler.did);
     labelers.push({
       did: labeler.did,
-      labels: { ...labels },
+      labels: { ...labelsByLabeler.get(labeler.did) },
     });
   }
 
@@ -157,7 +168,6 @@ function mapVisibility(
   if (ui.blurs.length > 0) return 'blur';
   if (ui.alerts.length > 0) return 'warn';
   if (ui.informs.length > 0) return 'warn';
-  if (mod.causes.length > 0) return 'warn';
   return 'show';
 }
 
