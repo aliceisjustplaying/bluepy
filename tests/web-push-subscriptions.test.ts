@@ -6,6 +6,7 @@ const originalGlobals = {
   navigator: globalThis.navigator,
   sessionStorage: globalThis.sessionStorage,
   window: globalThis.window,
+  pushGatewayUrl: process.env.PHANPY_PUSH_GATEWAY_URL,
 };
 
 function PushManager() {}
@@ -92,6 +93,8 @@ describe('web push subscriptions', () => {
     Object.defineProperty(globalThis, 'navigator', { configurable: true, value: originalGlobals.navigator });
     Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: originalGlobals.sessionStorage });
     Object.defineProperty(globalThis, 'window', { configurable: true, value: originalGlobals.window });
+    if (originalGlobals.pushGatewayUrl === undefined) delete process.env.PHANPY_PUSH_GATEWAY_URL;
+    else process.env.PHANPY_PUSH_GATEWAY_URL = originalGlobals.pushGatewayUrl;
   });
 
   test('checks the gateway row for the active DID and endpoint', async () => {

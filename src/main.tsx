@@ -111,37 +111,40 @@ function openPendingNotificationDb(): Promise<IDBDatabase> {
 async function drainPendingNotificationRoutes(): Promise<void> {
   if (!('indexedDB' in window)) return;
   const db = await openPendingNotificationDb();
-  const tx = db.transaction('routes', 'readwrite');
-  const store = tx.objectStore('routes');
-  const request = store.getAll();
-  const routeToHandle = await new Promise<PendingNotificationRoute | null>((resolve, reject) => {
-    request.addEventListener('success', () => {
-      const cutoff = Date.now() - 5 * 60 * 1000;
-      let selected: PendingNotificationRoute | null = null;
-      for (const route of request.result as PendingNotificationRoute[]) {
-        if (!route.notificationId) continue;
-        store.delete(route.notificationId);
-        if (!selected && (route.createdAt ?? 0) >= cutoff) selected = route;
-      }
-      resolve(selected);
+  try {
+    const tx = db.transaction('routes', 'readwrite');
+    const store = tx.objectStore('routes');
+    const request = store.getAll();
+    const routeToHandle = await new Promise<PendingNotificationRoute | null>((resolve, reject) => {
+      request.addEventListener('success', () => {
+        const cutoff = Date.now() - 5 * 60 * 1000;
+        let selected: PendingNotificationRoute | null = null;
+        for (const route of request.result as PendingNotificationRoute[]) {
+          if (!route.notificationId) continue;
+          store.delete(route.notificationId);
+          if (!selected && (route.createdAt ?? 0) >= cutoff) selected = route;
+        }
+        resolve(selected);
+      });
+      request.addEventListener('error', () => {
+        reject(request.error || new Error('Failed to read pending notification routes'));
+      });
     });
-    request.addEventListener('error', () => {
-      reject(request.error || new Error('Failed to read pending notification routes'));
+    await new Promise<void>((resolve, reject) => {
+      tx.addEventListener('complete', () => {
+        resolve();
+      });
+      tx.addEventListener('error', () => {
+        reject(tx.error || new Error('Failed to clear pending notification routes'));
+      });
+      tx.addEventListener('abort', () => {
+        reject(tx.error || new Error('Failed to clear pending notification routes'));
+      });
     });
-  });
-  await new Promise<void>((resolve, reject) => {
-    tx.addEventListener('complete', () => {
-      resolve();
-    });
-    tx.addEventListener('error', () => {
-      reject(tx.error || new Error('Failed to clear pending notification routes'));
-    });
-    tx.addEventListener('abort', () => {
-      reject(tx.error || new Error('Failed to clear pending notification routes'));
-    });
-  });
-  db.close();
-  if (routeToHandle) handlePushNotificationRoute(routeToHandle);
+    if (routeToHandle) handlePushNotificationRoute(routeToHandle);
+  } finally {
+    db.close();
+  }
 }
 
 function schedulePendingNotificationRouteDrain(): void {

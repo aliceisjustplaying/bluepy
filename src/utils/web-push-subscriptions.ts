@@ -62,7 +62,8 @@ async function gatewayFetch<T>(path: string, lxm: string, auth: ServiceAuthProvi
   const abort = () => {
     controller.abort(init.signal?.reason);
   };
-  init.signal?.addEventListener('abort', abort, { once: true });
+  if (init.signal?.aborted) abort();
+  else init.signal?.addEventListener('abort', abort, { once: true });
   let res: Response;
   try {
     res = await fetch(gateway(path), {
@@ -82,9 +83,20 @@ async function gatewayFetch<T>(path: string, lxm: string, auth: ServiceAuthProvi
 }
 
 export async function getGatewayPublicKey(): Promise<GatewayPublicKey> {
-  const res = await fetch(gateway('/vapid-public-key'), { headers: { accept: 'application/json' } });
-  if (!res.ok) throw new Error(`Unable to fetch push key: ${res.status}`);
-  return (await res.json()) as GatewayPublicKey;
+  const controller = new AbortController();
+  const timeout = globalThis.setTimeout(() => {
+    controller.abort(new Error('Push gateway request timed out'));
+  }, GATEWAY_TIMEOUT_MS);
+  try {
+    const res = await fetch(gateway('/vapid-public-key'), {
+      headers: { accept: 'application/json' },
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`Unable to fetch push key: ${res.status}`);
+    return (await res.json()) as GatewayPublicKey;
+  } finally {
+    globalThis.clearTimeout(timeout);
+  }
 }
 
 export async function fetchPushSettings(auth: ServiceAuthProvider): Promise<GatewaySettings> {

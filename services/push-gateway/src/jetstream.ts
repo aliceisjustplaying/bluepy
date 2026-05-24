@@ -137,11 +137,16 @@ export async function consumeJetstream(
       onError: options.onError,
     });
     const iterator = subscription[Symbol.asyncIterator]();
+    let removeAbortListener: (() => void) | undefined;
     const abortPromise = new Promise<IteratorResult<unknown>>((resolve) => {
-      options.signal.addEventListener('abort', () => {
+      const onAbort = () => {
         subscription.updateOptions({ url: options.url, wantedCollections: [] });
         resolve({ done: true, value: undefined });
-      }, { once: true });
+      };
+      options.signal.addEventListener('abort', onAbort, { once: true });
+      removeAbortListener = () => {
+        options.signal.removeEventListener('abort', onAbort);
+      };
     });
     try {
       while (!options.signal.aborted && hasActiveRecipients(db)) {
@@ -151,6 +156,7 @@ export async function consumeJetstream(
         options.onResult?.(result);
       }
     } finally {
+      removeAbortListener?.();
       await iterator.return?.();
     }
   }

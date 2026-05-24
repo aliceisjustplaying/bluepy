@@ -31,7 +31,27 @@ function loadVapidKeys(activeKeyId: string, activePair: VapidKeyPair): Record<st
   let configured: Record<string, VapidKeyPair> = {};
   if (process.env.VAPID_KEYS_JSON) {
     try {
-      configured = JSON.parse(process.env.VAPID_KEYS_JSON) as Record<string, VapidKeyPair>;
+      const parsed = JSON.parse(process.env.VAPID_KEYS_JSON) as unknown;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('invalid_shape');
+      configured = Object.fromEntries(
+        Object.entries(parsed).map(([keyId, value]) => {
+          if (
+            !value ||
+            typeof value !== 'object' ||
+            typeof (value as { publicKey?: unknown }).publicKey !== 'string' ||
+            typeof (value as { privateKey?: unknown }).privateKey !== 'string'
+          ) {
+            throw new Error('invalid_shape');
+          }
+          return [
+            keyId,
+            {
+              publicKey: (value as { publicKey: string }).publicKey,
+              privateKey: (value as { privateKey: string }).privateKey,
+            },
+          ];
+        }),
+      );
     } catch {
       throw new Error('Invalid VAPID_KEYS_JSON');
     }
