@@ -1,0 +1,35 @@
+{
+  "did": "did:plc:fixture001",
+  "handle": "fixture-1.test",
+  "displayName": "Fixture User 8",
+  "avatar": "https://fixture-8.test/img/avatar/plain/did:plc:fixture001/bafkreifdynhri3k6hhvrdxgxt5fojwc2acvkyvvbysnldmrvpfpgvt46du",
+  "associated": {
+    "lists": 0,
+    "feedgens": 0,
+    "starterPacks": 0,
+    "labeler": false,
+    "chat": {
+      "allowIncoming": "following"
+    },
+    "activitySubscription": {
+      "allowSubscriptions": "followers"
+    }
+  },
+  "viewer": {
+    "muted": false,
+    "blockedBy": false,
+    "blocking": "at://did:plc:fixture002/app.bsky.graph.block/3mmbv62eidj2q"
+  },
+  "labels": [],
+  "createdAt": "2024-01-12T15:10:13.930Z",
+  "description": "Fixture description",
+  "indexedAt": "2026-05-21T02:43:27.168Z",
+  "banner": "https://fixture-8.test/img/banner/plain/did:plc:fixture001/bafkreifk4xzqy64z45mnrdhcwj5kfnecr7i2n4cxsvc4lhghr7m4cn5pau",
+  "followersCount": 230,
+  "followsCount": 118,
+  "postsCount": 41,
+  "pinnedPost": {
+    "cid": "bafyreighleiqjse6nsuaqp37sokiqyzkycn6pe7yljatnse75dcnhig77a",
+    "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmbyyotccc2w"
+  }
+}

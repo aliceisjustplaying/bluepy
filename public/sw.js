@@ -320,79 +320,73 @@ registerRoute(apiRoute);
 
 self.addEventListener('push', (event) => {
   const { data } = event;
-  if (data) {
-    const payload = data.json();
-    console.log('PUSH payload', payload);
-    const {
-      access_token,
-      title,
+  if (!data) return;
+
+  const payload = data.json();
+  delete payload.access_token;
+  delete payload.accessToken;
+
+  const {
+    title,
+    body,
+    icon,
+    notification_id,
+    notification_type,
+    preferred_locale,
+    account_id,
+  } = payload;
+
+  if (navigator.setAppBadge && notification_type === 'mention') {
+    void navigator.setAppBadge(1);
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
       body,
       icon,
-      notification_id,
-      notification_type,
-      preferred_locale,
-    } = payload;
-
-    if (navigator.setAppBadge) {
-      if (notification_type === 'mention') {
-        void navigator.setAppBadge(1);
-      }
-    }
-
-    event.waitUntil(
-      self.registration.showNotification(title, {
-        body,
-        icon,
-        dir: 'auto',
-        badge: '/logo-badge-72.png',
-        lang: preferred_locale,
-        tag: notification_id,
-        timestamp: Date.now(),
-        data: {
-          access_token,
-          notification_type,
-        },
-      }),
-    );
-  }
+      dir: 'auto',
+      badge: '/logo-badge-72.png',
+      lang: preferred_locale,
+      tag: notification_id,
+      timestamp: Date.now(),
+      data: {
+        account_id,
+        notification_id,
+        notification_type,
+      },
+    }),
+  );
 });
 
 self.addEventListener('notificationclick', (event) => {
-  const payload = event.notification;
-  console.log('NOTIFICATION CLICK payload', payload);
-  const { data, tag } = payload;
-  const { access_token } = data;
-  const url = `/#/notifications?id=${tag}&access_token=${btoa(access_token)}`;
-
+  const { account_id, notification_id } = event.notification.data || {};
+  const params = new URLSearchParams();
+  const id = notification_id || event.notification.tag;
+  if (id) params.set('notification_id', id);
+  if (account_id) params.set('account_id', account_id);
+  const url = `/notifications${params.size ? `?${params}` : ''}`;
   event.waitUntil(
     (async () => {
       const clients = await self.clients.matchAll({
         type: 'window',
         includeUncontrolled: true,
       });
-      console.log('NOTIFICATION CLICK clients 1', clients);
-      if (clients.length && 'navigate' in clients[0]) {
-        console.log('NOTIFICATION CLICK clients 2', clients);
-        const bestClient =
-          clients.find(
-            (client) => client.focused || client.visibilityState === 'visible',
-          ) || clients[0];
-        console.log('NOTIFICATION CLICK navigate', url);
-        if (bestClient) {
-          console.log('NOTIFICATION CLICK postMessage', bestClient);
-          bestClient.focus();
+      const bestClient =
+        clients.find(
+          (client) => client.focused || client.visibilityState === 'visible',
+        ) || clients[0];
+      if (bestClient) {
+        await bestClient.focus();
+        if (account_id) {
           bestClient.postMessage?.({
             type: 'notification',
-            id: tag,
-            accessToken: access_token,
+            accountId: account_id,
+            id,
           });
-        } else {
-          console.log('NOTIFICATION CLICK openWindow', url);
-          await self.clients.openWindow(url);
+        } else if ('navigate' in bestClient) {
+          await bestClient.navigate(url);
         }
-        // }
       } else {
-        console.log('NOTIFICATION CLICK openWindow', url);
         await self.clients.openWindow(url);
       }
       await event.notification.close();

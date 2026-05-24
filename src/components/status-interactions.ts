@@ -2,16 +2,27 @@ import { useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
 import { useMemo, useRef } from 'react';
 
+import { useBookmarkPost, useUnbookmarkPost } from '../data/bookmarks';
+import {
+  useLikePost,
+  useRepostPost,
+  useUnlikePost,
+  useUnrepostPost,
+} from '../data/posts';
 import haptics from '../utils/haptics';
 import openCompose from '../utils/open-compose';
 import showCompose from '../utils/show-compose';
 import showToast from '../utils/show-toast';
-import states, { saveStatus } from '../utils/states';
+import { saveStatus } from '../utils/states';
 
 import { REACTIONS_LIMIT } from './status-helpers';
 import type { AnyAccount, AnyStatus, StatusContentMasto } from './status-types';
 
-type CachedStatus = (typeof states.statuses)[string];
+type SaveStatusInput = NonNullable<Parameters<typeof saveStatus>[0]>;
+
+function saveInteractionStatus(status: AnyStatus, instance: string): void {
+  saveStatus(status as SaveStatusInput, instance, { sync: true });
+}
 
 type ReplyEvent =
   | (MouseEvent & { syntheticEvent?: { shiftKey?: boolean } })
@@ -27,8 +38,6 @@ type IteratorResult = { value?: AnyAccount[]; done?: boolean };
 interface StatusInteractionsArgs {
   statusID?: string | null;
   status: AnyStatus;
-  sKey: string;
-  id: string;
   instance: string;
   masto: StatusContentMasto;
   sameInstance: boolean;
@@ -48,8 +57,6 @@ interface StatusInteractionsArgs {
 export default function useStatusInteractions({
   statusID,
   status,
-  sKey,
-  id,
   instance,
   masto,
   sameInstance,
@@ -66,7 +73,15 @@ export default function useStatusInteractions({
   createdAt,
 }: StatusInteractionsArgs) {
   const { t } = useLingui();
+  const likePost = useLikePost();
+  const unlikePost = useUnlikePost();
+  const repostPost = useRepostPost();
+  const unrepostPost = useUnrepostPost();
+  const bookmarkPost = useBookmarkPost();
+  const unbookmarkPost = useUnbookmarkPost();
   const unauthInteractionErrorMessage = t`Sorry, your current PDS can't interact with this post from another PDS.`;
+  const atprotoUri = status._atproto?.uri;
+  const atprotoCid = status._atproto?.cid;
   const mediaNoDesc = useMemo(() => {
     return mediaAttachments.some(
       (attachment: mastodon.v1.MediaAttachment) =>
@@ -96,53 +111,109 @@ export default function useStatusInteractions({
   };
 
   const confirmBoostStatus = async () => {
-    if (!sameInstance || !authenticated) {
+    const mutationUri = atprotoUri;
+    const mutationCid = atprotoCid;
+    if (!authenticated || !mutationUri || !mutationCid) {
       alert(unauthInteractionErrorMessage);
       return false;
     }
     try {
-      states.statuses[sKey] = {
-        ...status,
-        reblogged: !reblogged,
-        reblogsCount: reblogsCount + (reblogged ? -1 : 1),
-      } as CachedStatus;
+      saveInteractionStatus(
+        {
+          ...status,
+          reblogged: !reblogged,
+          reblogsCount: reblogsCount + (reblogged ? -1 : 1),
+        },
+        instance,
+      );
       if (reblogged) {
-        const newStatus = await masto.v1.statuses.$select(id).unreblog();
-        saveStatus(newStatus, instance);
+        await unrepostPost.mutateAsync({
+          uri: mutationUri,
+          cid: mutationCid,
+          repostUri: status._atproto?.repost,
+        });
+        saveInteractionStatus(
+          {
+            ...status,
+            reblogged: false,
+            reblogsCount: Math.max(0, reblogsCount - 1),
+            _atproto: { ...status._atproto, repost: undefined },
+          },
+          instance,
+        );
       } else {
-        const newStatus = await masto.v1.statuses.$select(id).reblog();
-        saveStatus(newStatus, instance);
+        const repost = await repostPost.mutateAsync({
+          uri: mutationUri,
+          cid: mutationCid,
+        });
+        saveInteractionStatus(
+          {
+            ...status,
+            reblogged: true,
+            reblogsCount: reblogsCount + 1,
+            _atproto: { ...status._atproto, repost: repost.uri },
+          },
+          instance,
+        );
       }
       return true;
     } catch (e) {
       console.error(e);
-      states.statuses[sKey] = status as CachedStatus;
+      saveInteractionStatus(status, instance);
       return false;
     }
   };
 
   const favouriteStatus = async () => {
-    if (!sameInstance || !authenticated) {
+    const mutationUri = atprotoUri;
+    const mutationCid = atprotoCid;
+    if (!authenticated || !mutationUri || !mutationCid) {
       alert(unauthInteractionErrorMessage);
       return false;
     }
     try {
-      states.statuses[sKey] = {
-        ...status,
-        favourited: !favourited,
-        favouritesCount: favouritesCount + (favourited ? -1 : 1),
-      } as CachedStatus;
+      saveInteractionStatus(
+        {
+          ...status,
+          favourited: !favourited,
+          favouritesCount: favouritesCount + (favourited ? -1 : 1),
+        },
+        instance,
+      );
       if (favourited) {
-        const newStatus = await masto.v1.statuses.$select(id).unfavourite();
-        saveStatus(newStatus, instance);
+        await unlikePost.mutateAsync({
+          uri: mutationUri,
+          cid: mutationCid,
+          likeUri: status._atproto?.like,
+        });
+        saveInteractionStatus(
+          {
+            ...status,
+            favourited: false,
+            favouritesCount: Math.max(0, favouritesCount - 1),
+            _atproto: { ...status._atproto, like: undefined },
+          },
+          instance,
+        );
       } else {
-        const newStatus = await masto.v1.statuses.$select(id).favourite();
-        saveStatus(newStatus, instance);
+        const like = await likePost.mutateAsync({
+          uri: mutationUri,
+          cid: mutationCid,
+        });
+        saveInteractionStatus(
+          {
+            ...status,
+            favourited: true,
+            favouritesCount: favouritesCount + 1,
+            _atproto: { ...status._atproto, like: like.uri },
+          },
+          instance,
+        );
       }
       return true;
     } catch (e) {
       console.error(e);
-      states.statuses[sKey] = status as CachedStatus;
+      saveInteractionStatus(status, instance);
       return false;
     }
   };
@@ -164,26 +235,29 @@ export default function useStatusInteractions({
   };
 
   const bookmarkStatus = async (): Promise<boolean> => {
-    if (!sameInstance || !authenticated) {
+    const mutationUri = atprotoUri;
+    const mutationCid = atprotoCid;
+    if (!authenticated || !mutationUri || !mutationCid) {
       alert(unauthInteractionErrorMessage);
       return false;
     }
     try {
-      states.statuses[sKey] = {
-        ...status,
-        bookmarked: !bookmarked,
-      } as CachedStatus;
+      saveInteractionStatus(
+        {
+          ...status,
+          bookmarked: !bookmarked,
+        },
+        instance,
+      );
       if (bookmarked) {
-        const newStatus = await masto.v1.statuses.$select(id).unbookmark();
-        saveStatus(newStatus, instance);
+        await unbookmarkPost.mutateAsync({ uri: mutationUri });
       } else {
-        const newStatus = await masto.v1.statuses.$select(id).bookmark();
-        saveStatus(newStatus, instance);
+        await bookmarkPost.mutateAsync({ uri: mutationUri, cid: mutationCid });
       }
       return true;
     } catch (e) {
       console.error(e);
-      states.statuses[sKey] = status as CachedStatus;
+      saveInteractionStatus(status, instance);
       return false;
     }
   };

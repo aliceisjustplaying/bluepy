@@ -6,27 +6,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/scripts/hooks/bluepy-guard.sh pre-bash"
+            "command": "${CLAUDE_PROJECT_DIR}/scripts/hooks/bluepy-hook-entry.sh pre-bash"
           }
         ]
       },
       {
-        "matcher": "Edit|Write|MultiEdit|apply_patch|ApplyPatch",
+        "matcher": "Edit|Write|StrReplace|Delete|EditNotebook|MultiEdit|apply_patch|ApplyPatch",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/scripts/hooks/bluepy-guard.sh pre-write"
+            "command": "${CLAUDE_PROJECT_DIR}/scripts/hooks/bluepy-hook-entry.sh pre-write"
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit",
+        "matcher": "Edit|Write|StrReplace|Delete|EditNotebook|MultiEdit|apply_patch|ApplyPatch",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/scripts/hooks/bluepy-guard.sh post-edit"
+            "command": "${CLAUDE_PROJECT_DIR}/scripts/hooks/bluepy-hook-entry.sh post-edit"
           }
         ]
       }
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/scripts/hooks/bluepy-guard.sh stop"
+            "command": "${CLAUDE_PROJECT_DIR}/scripts/hooks/bluepy-hook-entry.sh stop"
           }
         ]
       }

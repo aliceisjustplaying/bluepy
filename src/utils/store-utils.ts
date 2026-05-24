@@ -152,13 +152,6 @@ export function removeAccount(id: string): void {
 }
 
 export function getCurrentAccount(): StoredAccount | null {
-  if (!window.__IGNORE_GET_ACCOUNT_ERROR__) {
-    // Track down getCurrentAccount() calls before account-based states are initialized
-    console.error('getCurrentAccount() called before states are initialized');
-    if (import.meta.env.DEV) {
-      console.trace();
-    }
-  }
   const currentAccount = getCurrentAccountID();
   let account = getAccount(currentAccount);
   if (!account) {

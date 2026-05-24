@@ -50,6 +50,39 @@ type BackgroundApi = ReturnType<typeof api> & {
   streaming?: StreamingLike;
 };
 
+async function checkLatestNotification(
+  masto: MastoLike,
+  skipCheckMarkers?: boolean,
+) {
+  if (states.notificationsLast) {
+    const notificationsIterator = masto.v1.notifications
+      .list({
+        limit: 1,
+        sinceId: (states.notificationsLast as { id: string }).id,
+      })
+      .values();
+    const { value: notifications } = await notificationsIterator.next();
+    if (notifications?.length) {
+      if (skipCheckMarkers) {
+        states.notificationsShowNew = true;
+      } else {
+        let lastReadId;
+        try {
+          const markers = await masto.v1.markers.fetch({
+            timeline: 'notifications',
+          });
+          lastReadId = markers?.notifications?.lastReadId;
+        } catch {}
+        if (lastReadId) {
+          states.notificationsShowNew = notifications[0].id !== lastReadId;
+        } else {
+          states.notificationsShowNew = true;
+        }
+      }
+    }
+  }
+}
+
 export default memo(function BackgroundService() {
   const isLoggedIn = useAuth();
   const { t } = useLingui();
@@ -71,40 +104,6 @@ export default memo(function BackgroundService() {
     }
   });
 
-  const checkLatestNotification = async (
-    masto: MastoLike,
-    instance: string,
-    skipCheckMarkers?: boolean,
-  ) => {
-    if (states.notificationsLast) {
-      const notificationsIterator = masto.v1.notifications
-        .list({
-          limit: 1,
-          sinceId: (states.notificationsLast as { id: string }).id,
-        })
-        .values();
-      const { value: notifications } = await notificationsIterator.next();
-      if (notifications?.length) {
-        if (skipCheckMarkers) {
-          states.notificationsShowNew = true;
-        } else {
-          let lastReadId;
-          try {
-            const markers = await masto.v1.markers.fetch({
-              timeline: 'notifications',
-            });
-            lastReadId = markers?.notifications?.lastReadId;
-          } catch {}
-          if (lastReadId) {
-            states.notificationsShowNew = notifications[0].id !== lastReadId;
-          } else {
-            states.notificationsShowNew = true;
-          }
-        }
-      }
-    }
-  };
-
   useEffect(() => {
     let sub: NotificationSub | null = null;
     let streamTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -113,7 +112,7 @@ export default memo(function BackgroundService() {
       const { masto, streaming, instance } = api() as BackgroundApi;
       void (async () => {
         // 1. Get the latest notification
-        await checkLatestNotification(masto, instance);
+        await checkLatestNotification(masto);
 
         let hasStreaming = false;
         // 2. Start streaming
@@ -145,7 +144,7 @@ export default memo(function BackgroundService() {
               if (!hasStreaming) {
                 console.log('🎏 Streaming failed, fallback to polling');
                 pollNotifications = setInterval(() => {
-                  void checkLatestNotification(masto, instance, true);
+                  void checkLatestNotification(masto, true);
                 }, POLL_INTERVAL);
               }
             })();
@@ -169,6 +168,9 @@ export default memo(function BackgroundService() {
     void (async () => {
       try {
         const r = await fetch('./version.json');
+        if (!r.ok) return;
+        const contentType = r.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) return;
         const info = await r.json();
         if (info) states.appVersion = info;
       } catch (e) {

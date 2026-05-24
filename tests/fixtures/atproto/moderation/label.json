@@ -1,0 +1,94 @@
+{
+  "uri": "at://did:plc:fixture010/app.bsky.feed.post/3mmjrhdk6sc2z",
+  "cid": "bafyreia3lpneqboysrunc7axycu4gdpi4pcmwqf3lfvpn2mxozctfoioq4",
+  "author": {
+    "did": "did:plc:fixture010",
+    "handle": "fixture-11.test",
+    "displayName": "Fixture User 12",
+    "avatar": "https://fixture-8.test/img/avatar/plain/did:plc:fixture010/bafkreihek5ccy6opp2tgh52xiibkr4r35bj3urj5xsk3en7jmppoevzlei",
+    "associated": {
+      "chat": {
+        "allowIncoming": "all"
+      },
+      "activitySubscription": {
+        "allowSubscriptions": "followers"
+      }
+    },
+    "viewer": {
+      "muted": false,
+      "blockedBy": false
+    },
+    "labels": [],
+    "createdAt": "2023-08-25T19:19:57.778Z"
+  },
+  "record": {
+    "text": "Fixture post content #1",
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-05-23T15:32:32.053Z",
+    "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+        {
+          "alt": "",
+          "aspectRatio": {
+            "height": 1152,
+            "width": 1098
+          },
+          "image": {
+            "$type": "blob",
+            "ref": {
+              "$link": "bafkreig5mctaugbr52234s5ci6kejm3uxr7cn54tmz3zlw77cepvb4w5j4"
+            },
+            "mimeType": "image/jpeg",
+            "size": 665113
+          }
+        }
+      ]
+    },
+    "labels": {
+      "$type": "com.atproto.label.defs#selfLabels",
+      "values": [
+        {
+          "val": "sexual"
+        }
+      ]
+    },
+    "langs": [
+      "en"
+    ]
+  },
+  "embed": {
+    "images": [
+      {
+        "thumb": "https://fixture-8.test/img/feed_thumbnail/plain/did:plc:fixture010/bafkreig5mctaugbr52234s5ci6kejm3uxr7cn54tmz3zlw77cepvb4w5j4",
+        "fullsize": "https://fixture-8.test/img/feed_fullsize/plain/did:plc:fixture010/bafkreig5mctaugbr52234s5ci6kejm3uxr7cn54tmz3zlw77cepvb4w5j4",
+        "alt": "",
+        "aspectRatio": {
+          "height": 1152,
+          "width": 1098
+        }
+      }
+    ],
+    "$type": "app.bsky.embed.images#view"
+  },
+  "bookmarkCount": 156,
+  "replyCount": 27,
+  "repostCount": 585,
+  "likeCount": 1770,
+  "quoteCount": 8,
+  "indexedAt": "2026-05-23T15:32:34.273Z",
+  "viewer": {
+    "bookmarked": false,
+    "threadMuted": false,
+    "embeddingDisabled": false
+  },
+  "labels": [
+    {
+      "src": "did:plc:fixture010",
+      "uri": "at://did:plc:fixture010/app.bsky.feed.post/3mmjrhdk6sc2z",
+      "cid": "bafyreia3lpneqboysrunc7axycu4gdpi4pcmwqf3lfvpn2mxozctfoioq4",
+      "val": "sexual",
+      "cts": "2026-05-23T15:32:32.053Z"
+    }
+  ]
+}

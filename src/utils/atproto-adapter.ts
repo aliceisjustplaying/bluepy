@@ -29,6 +29,7 @@ import {
 import { getPdsEndpoint, isValidDidDoc } from '@atproto/common-web';
 
 import { prepareAtprotoImageUpload } from './atproto-image-compression';
+import { setBookmarkOverride } from './bookmark-overrides';
 import {
   type AtprotoLabel,
   type AtprotoLabelDefinitionMap,
@@ -1941,7 +1942,7 @@ export function postToStatus(
     reblogged: !!post.viewer?.repost,
     favourited: !!post.viewer?.like,
     bookmarked: !!post.viewer?.bookmarked,
-    muted: false,
+    muted: !!post.viewer?.threadMuted,
     mediaAttachments,
     card,
     mentions,
@@ -2504,11 +2505,13 @@ export function createAtprotoClient({
           uri,
           cid: current._atproto.cid ?? '',
         });
+        setBookmarkOverride(agentLoose.did ?? sessionData?.did, uri, true);
         return { ...current, bookmarked: true };
       },
       async unbookmark(): Promise<AdaptedStatus> {
         const current = await this.fetch();
         await agent.app.bsky.bookmark.deleteBookmark({ uri });
+        setBookmarkOverride(agentLoose.did ?? sessionData?.did, uri, false);
         return { ...current, bookmarked: false };
       },
       async remove() {

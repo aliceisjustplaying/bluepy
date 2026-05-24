@@ -10,14 +10,12 @@ test('feedback form submits from the welcome footer', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#welcome')).toBeVisible();
   await page.getByRole('button', { name: 'Send feedback' }).click();
-  await expect(page.getByTestId('feedback-modal')).toBeVisible();
+  const modal = page.locator('.feedback-modal-container');
+  await expect(modal).toBeVisible();
 
   await page.getByLabel('What happened?').fill('The timeline is stuck.');
   await page.getByLabel('Contact, optional').fill('@alice.test');
-  await page
-    .getByTestId('feedback-modal')
-    .getByRole('button', { name: 'Send' })
-    .click();
+  await modal.getByRole('button', { name: 'Send' }).click();
 
   await expect(page.getByText('Thanks, got it.')).toBeVisible();
   expect(requests).toHaveLength(1);

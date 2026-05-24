@@ -22,6 +22,7 @@ import Link from '../components/link';
 import Loader from '../components/loader';
 import NavMenu from '../components/nav-menu';
 import RecentSearches from '../components/recent-searches';
+import SearchDataResults from '../components/search-data-results';
 import SearchForm from '../components/search-form';
 import StatusComponent, {
   type StatusComponentProps,
@@ -29,7 +30,6 @@ import StatusComponent, {
 import { api, getMastoV2Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import shortenNumber from '../utils/shorten-number';
-import { sorted } from '../utils/sorted';
 import usePageVisibility from '../utils/usePageVisibility';
 import useTitle from '../utils/useTitle';
 
@@ -359,7 +359,9 @@ function Search({ columnMode, ...props }: SearchProps) {
     let timer: ReturnType<typeof setTimeout> | undefined;
     searchFormRef.current?.setValue?.(q || '');
     if (q) {
-      loadResults(true);
+      if (!atproto || type === 'hashtags') {
+        loadResults(true);
+      }
     } else {
       timer = setTimeout(() => {
         searchFormRef.current?.focus?.();
@@ -368,7 +370,7 @@ function Search({ columnMode, ...props }: SearchProps) {
     return () => {
       clearTimeout(timer);
     };
-  }, [q, type, instance, loadResults]);
+  }, [q, type, instance, loadResults, atproto]);
 
   useHotkeys(
     ['Slash', '/'],
@@ -476,6 +478,50 @@ function Search({ columnMode, ...props }: SearchProps) {
   );
 
   const [filterBarParent] = useAutoAnimate();
+  const filterLinks = q
+    ? [
+        {
+          label: t`All`,
+          type: null,
+          to: `/search?q=${encodeURIComponent(q)}`,
+        },
+        {
+          label: t`Accounts`,
+          type: 'accounts',
+          to: `/search?q=${encodeURIComponent(q)}&type=accounts`,
+        },
+        {
+          label: t`Hashtags`,
+          type: 'hashtags',
+          to: `/search?q=${encodeURIComponent(q)}&type=hashtags`,
+        },
+        {
+          label: t`Posts`,
+          type: 'statuses',
+          to: `/search?q=${encodeURIComponent(q)}&type=statuses`,
+        },
+      ]
+    : [];
+  const filterBar =
+    !!q && !columnMode ? (
+      <div
+        ref={filterBarParent}
+        className={`filter-bar search-filter-bar ${
+          uiState === 'loading' ? 'loading' : ''
+        }`}
+      >
+        {filterLinks.map((link) => (
+          <Link
+            to={link.to}
+            key={link.type ?? 'all'}
+            className={link.type === type ? 'is-active' : undefined}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    ) : null;
+  const useNestedFilterBar = atproto && type === 'statuses';
 
   return (
     <div
@@ -493,8 +539,13 @@ function Search({ columnMode, ...props }: SearchProps) {
           <div className="header-grid">
             <div className="header-side">
               <NavMenu />
+              <Link to="/" className="button plain">
+                <Icon icon="home" size="l" alt={t`Home`} />
+              </Link>
             </div>
-            <SearchForm ref={searchFormRef} />
+            <h1>
+              <Trans>Search</Trans>
+            </h1>
             <div className="header-side">
               <button
                 type="button"
@@ -509,48 +560,31 @@ function Search({ columnMode, ...props }: SearchProps) {
             </div>
           </div>
         </header>
+        <div className="search-input-dock">
+          <SearchForm ref={searchFormRef} />
+          <button
+            type="button"
+            className="plain"
+            onClick={() => {
+              loadResults(true);
+            }}
+            disabled={uiState === 'loading'}
+          >
+            <Icon icon="search" size="l" alt={t`Search`} />
+          </button>
+        </div>
         <main>
-          {!!q && !columnMode && (
-            <div
-              ref={filterBarParent}
-              className={`filter-bar ${uiState === 'loading' ? 'loading' : ''}`}
-            >
-              {!!type && (
-                <Link to={`/search${q ? `?q=${encodeURIComponent(q)}` : ''}`}>
-                  <Icon icon="chevron-left" /> <Trans>All</Trans>
-                </Link>
-              )}
-              {sorted(
-                [
-                  {
-                    label: t`Accounts`,
-                    type: 'accounts',
-                    to: `/search?q=${encodeURIComponent(q)}&type=accounts`,
-                  },
-                  {
-                    label: t`Hashtags`,
-                    type: 'hashtags',
-                    to: `/search?q=${encodeURIComponent(q)}&type=hashtags`,
-                  },
-                  {
-                    label: t`Posts`,
-                    type: 'statuses',
-                    to: `/search?q=${encodeURIComponent(q)}&type=statuses`,
-                  },
-                ],
-                (a, b) => {
-                  if (a.type === type) return -1;
-                  if (b.type === type) return 1;
-                  return 0;
-                },
-              ).map((link) => (
-                <Link to={link.to} key={link.type}>
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          )}
+          {useNestedFilterBar ? null : filterBar}
           {q ? (
+            atproto && type !== 'hashtags' ? (
+              <SearchDataResults
+                query={q}
+                type={type}
+                instance={instance}
+                headerStart={false}
+                filterBar={useNestedFilterBar ? filterBar : undefined}
+              />
+            ) : (
             <>
               {(!type || type === 'accounts') && (
                 <>
@@ -772,6 +806,7 @@ function Search({ columnMode, ...props }: SearchProps) {
                   )
                 ))}
             </>
+            )
           ) : uiState === 'loading' ? (
             <p className="ui-state">
               <Loader abrupt />
@@ -780,7 +815,7 @@ function Search({ columnMode, ...props }: SearchProps) {
             <>
               <p className="ui-state insignificant">
                 <Trans>
-                  Enter your search term or paste a URL above to get started.
+                  Enter your search term or paste a URL to get started.
                 </Trans>
               </p>
               <RecentSearches />

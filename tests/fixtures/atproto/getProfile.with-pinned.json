@@ -1,0 +1,229 @@
+{
+  "did": "did:plc:fixture006",
+  "handle": "fixture-58.test",
+  "displayName": "Fixture User 155",
+  "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture006/bafkreifbsxz4stfnpq6i5smnbhzoc65vpp6jdnj6qtcwqfxtvjcaog5s6y",
+  "associated": {
+    "lists": 0,
+    "feedgens": 0,
+    "starterPacks": 0,
+    "labeler": false,
+    "chat": {
+      "allowIncoming": "all"
+    },
+    "activitySubscription": {
+      "allowSubscriptions": "followers"
+    }
+  },
+  "viewer": {
+    "muted": false,
+    "blockedBy": false,
+    "following": "at://did:plc:fixture002/app.bsky.graph.follow/3l6t7wke3vj24",
+    "knownFollowers": {
+      "count": 22,
+      "followers": [
+        {
+          "did": "did:plc:fixture100",
+          "handle": "fixture-100.test",
+          "displayName": "Fixture User 155",
+          "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture100/bafkreif43mhqajnbnl62u3ezf37g6x22nd762im54thxbil4ga46eugcga",
+          "associated": {
+            "chat": {
+              "allowIncoming": "none"
+            },
+            "activitySubscription": {
+              "allowSubscriptions": "followers"
+            }
+          },
+          "viewer": {
+            "muted": false,
+            "blockedBy": false,
+            "following": "at://did:plc:fixture002/app.bsky.graph.follow/3jsv5kpuucc2k",
+            "followedBy": "at://did:plc:fixture100/app.bsky.graph.follow/3jsv5iuozr22g"
+          },
+          "labels": [],
+          "createdAt": "2023-04-08T20:19:22.589Z",
+          "verification": {
+            "verifications": [
+              {
+                "issuer": "did:plc:fixture007",
+                "uri": "at://did:plc:fixture007/app.bsky.graph.verification/3lndpxompy32z",
+                "isValid": true,
+                "createdAt": "2025-04-21T10:48:53.876Z"
+              }
+            ],
+            "verifiedStatus": "valid",
+            "trustedVerifierStatus": "none"
+          }
+        },
+        {
+          "did": "did:plc:fixture101",
+          "handle": "fixture-101.test",
+          "displayName": "Fixture User 155",
+          "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture101/bafkreihhpqdyntku66himwor5wlhtdo44hllmngj2ofmbqnm25bdm454wq",
+          "associated": {
+            "chat": {
+              "allowIncoming": "following"
+            },
+            "activitySubscription": {
+              "allowSubscriptions": "followers"
+            }
+          },
+          "viewer": {
+            "muted": false,
+            "blockedBy": false,
+            "following": "at://did:plc:fixture002/app.bsky.graph.follow/3jsubf7ihbl2h",
+            "followedBy": "at://did:plc:fixture101/app.bsky.graph.follow/3jtv6cxhf4t2e"
+          },
+          "labels": [],
+          "createdAt": "2022-11-17T00:35:16.391Z",
+          "verification": {
+            "verifications": [
+              {
+                "issuer": "did:plc:fixture007",
+                "uri": "at://did:plc:fixture007/app.bsky.graph.verification/3ltkwktj2hc2n",
+                "isValid": true,
+                "createdAt": "2025-07-09T23:06:46.951Z"
+              }
+            ],
+            "verifiedStatus": "valid",
+            "trustedVerifierStatus": "none"
+          }
+        },
+        {
+          "did": "did:plc:fixture046",
+          "handle": "fixture-100.test",
+          "displayName": "Fixture User 155",
+          "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture046/bafkreihrdgva6ebn3vmjb4qww3yqozf4eoq26mmraouegpawhr5mo5pnxu",
+          "associated": {
+            "chat": {
+              "allowIncoming": "none"
+            },
+            "activitySubscription": {
+              "allowSubscriptions": "followers"
+            },
+            "germ": {
+              "showButtonTo": "none",
+              "messageMeUrl": "https://fixture-62.test/newUser"
+            }
+          },
+          "viewer": {
+            "muted": false,
+            "blockedBy": false,
+            "following": "at://did:plc:fixture002/app.bsky.graph.follow/3jty5o2hl2a2l",
+            "followedBy": "at://did:plc:fixture046/app.bsky.graph.follow/3jtfs64asoi2q"
+          },
+          "labels": [],
+          "createdAt": "2023-04-14T18:12:06.575Z",
+          "verification": {
+            "verifications": [
+              {
+                "issuer": "did:plc:fixture007",
+                "uri": "at://did:plc:fixture007/app.bsky.graph.verification/3mdj36qhttc26",
+                "isValid": true,
+                "createdAt": "2026-01-28T20:07:16.306Z"
+              }
+            ],
+            "verifiedStatus": "valid",
+            "trustedVerifierStatus": "none"
+          },
+          "status": {
+            "uri": "at://did:plc:fixture046/app.bsky.actor.status/self",
+            "cid": "bafyreic6x6z7k3a745fi3lfdryn6bpisqtkci3be2thcuyzv6ajhczwsy4",
+            "record": {
+              "$type": "app.bsky.actor.status",
+              "createdAt": "2026-01-16T20:20:46.489Z",
+              "durationMinutes": 60,
+              "embed": {
+                "$type": "app.bsky.embed.external",
+                "external": {
+                  "$type": "app.bsky.embed.external#external",
+                  "description": "Fixture external description",
+                  "title": "Fixture external title",
+                  "uri": "https://example.test/fixture-external"
+                }
+              },
+              "status": "app.bsky.actor.status#live"
+            },
+            "status": "app.bsky.actor.status#live",
+            "embed": {
+              "$type": "app.bsky.embed.external#view",
+              "external": {
+                "uri": "https://example.test/fixture-external",
+                "title": "Fixture external title",
+                "description": "Fixture external description"
+              }
+            },
+            "labels": [],
+            "expiresAt": "2026-01-16T21:20:46.489Z",
+            "isActive": false
+          }
+        },
+        {
+          "did": "did:plc:fixture102",
+          "handle": "fixture-102.test",
+          "displayName": "Fixture User 155",
+          "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture102/bafkreigfgoglzu3fcumvkcctwj2yvnfyw5hdhws5bzel4ss5aett23yw3m",
+          "associated": {
+            "activitySubscription": {
+              "allowSubscriptions": "followers"
+            }
+          },
+          "viewer": {
+            "muted": false,
+            "blockedBy": false,
+            "following": "at://did:plc:fixture002/app.bsky.graph.follow/3lak5encw632m"
+          },
+          "labels": [],
+          "createdAt": "2023-04-25T08:08:30.078Z"
+        },
+        {
+          "did": "did:plc:fixture103",
+          "handle": "fixture-103.test",
+          "displayName": "Fixture User 155",
+          "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture103/bafkreialvgsyclkxly47nxe7mcaznztmp7cu2lzz4vkzspqbyif2iepydi",
+          "associated": {
+            "chat": {
+              "allowIncoming": "all"
+            },
+            "activitySubscription": {
+              "allowSubscriptions": "followers"
+            }
+          },
+          "viewer": {
+            "muted": false,
+            "blockedBy": false,
+            "following": "at://did:plc:fixture002/app.bsky.graph.follow/3l3xcxxxw732m",
+            "followedBy": "at://did:plc:fixture103/app.bsky.graph.follow/3l2uqu6c6td2p"
+          },
+          "labels": [],
+          "createdAt": "2023-05-05T11:25:54.743Z"
+        }
+      ]
+    }
+  },
+  "labels": [],
+  "createdAt": "2023-04-25T15:43:14.173Z",
+  "verification": {
+    "verifications": [
+      {
+        "issuer": "did:plc:fixture007",
+        "uri": "at://did:plc:fixture007/app.bsky.graph.verification/3lndpy4tejr2m",
+        "isValid": true,
+        "createdAt": "2025-04-21T10:49:08.860Z"
+      }
+    ],
+    "verifiedStatus": "valid",
+    "trustedVerifierStatus": "none"
+  },
+  "description": "Fixture description",
+  "indexedAt": "2026-02-04T09:32:05.091Z",
+  "banner": "https://fixture-53.test/img/banner/plain/did:plc:fixture006/bafkreigqphvfxpfmgjt5rpnm462iaslcf2idqkx2amuj5ouugvyn6di4wq",
+  "followersCount": 40494,
+  "followsCount": 505,
+  "postsCount": 1517,
+  "pinnedPost": {
+    "cid": "bafyreihwrins2of27shs3wynuayplvketpl3g7trynfb7mve3ielxpb5si",
+    "uri": "at://did:plc:fixture006/app.bsky.feed.post/3lrsetfsfj22h"
+  }
+}

@@ -43,6 +43,30 @@
   border-color: var(--link-color);
 }
 
+@media (max-width: calc(40em - 1px)) {
+  #search-command-container {
+    align-items: flex-end;
+    padding-bottom: calc(52px + env(safe-area-inset-bottom));
+  }
+
+  body.exp-tab-bar-v2 #search-command-container {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+
+  #search-command-container[hidden] form {
+    transform: translateY(64px) scale(0.9);
+  }
+
+  #search-command-container .search-popover {
+    bottom: calc(100% + 8px);
+    inset-inline-start: 0;
+    max-width: 100%;
+    width: 100%;
+    max-height: min(60vh, 360px);
+    overflow-y: auto;
+  }
+}
+
 @media (min-width: 40em) {
   #search-command-container {
     padding-top: max(calc(50vh - 10em), 16px);

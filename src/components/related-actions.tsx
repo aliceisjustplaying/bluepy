@@ -5,6 +5,14 @@ import { toUnicode as punycodeToUnicode } from 'punycode/';
 import type { HTMLAttributes, ReactElement } from 'react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
+import {
+  useBlockAccount,
+  useFollowAccount,
+  useMuteAccount,
+  useUnblockAccount,
+  useUnfollowAccount,
+  useUnmuteAccount,
+} from '../data/profiles';
 import { api } from '../utils/api';
 import isSearchEnabled from '../utils/is-search-enabled';
 import niceDateTime from '../utils/nice-date-time';
@@ -31,6 +39,12 @@ import TranslatedBioSheet from './translated-bio-sheet';
 // types `v1.accounts` as `unknown`. We narrow locally rather than widening the
 // shared interface. Removed when api.ts gains a tighter masto shape.
 type Relationship = mastodon.v1.Relationship;
+type RelationshipWithAtproto = Relationship & {
+  _atproto?: {
+    following?: string;
+    blocking?: string;
+  };
+};
 
 interface ListLike {
   id: string;
@@ -56,7 +70,6 @@ interface AccountSelectEndpoint {
   unmute(): Promise<Relationship>;
   block(): Promise<Relationship>;
   unblock(): Promise<Relationship>;
-  removeFromFollowers(): Promise<Relationship>;
 }
 
 interface AccountsEndpoint {
@@ -91,6 +104,38 @@ function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
 
 function getV2SearchEndpoint(masto: MastoLike): V2SearchEndpoint {
   return masto.v2.search as V2SearchEndpoint;
+}
+
+const RELATIONSHIP_COLLECTIONS: Record<
+  keyof NonNullable<RelationshipWithAtproto['_atproto']>,
+  string
+> = {
+  following: 'app.bsky.graph.follow',
+  blocking: 'app.bsky.graph.block',
+};
+
+function getRelationshipRecordUri(
+  relationship: Relationship | null,
+  key: keyof NonNullable<RelationshipWithAtproto['_atproto']>,
+): string | undefined {
+  const uri = (relationship as RelationshipWithAtproto | null)?._atproto?.[key];
+  return uri?.includes(`/${RELATIONSHIP_COLLECTIONS[key]}/`) ? uri : undefined;
+}
+
+function patchRelationship(
+  relationship: Relationship,
+  patch: Partial<Relationship>,
+  atprotoPatch?: NonNullable<RelationshipWithAtproto['_atproto']>,
+): Relationship {
+  const current = relationship as RelationshipWithAtproto;
+  return {
+    ...current,
+    ...patch,
+    _atproto: {
+      ...current._atproto,
+      ...atprotoPatch,
+    },
+  } as Relationship;
 }
 
 type RelationshipUIState = 'default' | 'loading' | 'error';
@@ -128,6 +173,12 @@ function RelatedActions({
     authenticated: currentAuthenticated,
   } = api();
   const sameInstance = instance === currentInstance;
+  const followAccount = useFollowAccount();
+  const unfollowAccount = useUnfollowAccount();
+  const muteAccount = useMuteAccount();
+  const unmuteAccount = useUnmuteAccount();
+  const blockAccount = useBlockAccount();
+  const unblockAccount = useUnblockAccount();
 
   const [relationshipUIState, setRelationshipUIState] =
     useState<RelationshipUIState>('default');
@@ -439,72 +490,81 @@ function RelatedActions({
                     <Trans>Translate bio</Trans>
                   </span>
                 </MenuItem>
-                {following && !!relationship && (
-                  <>
-                    <MenuItem
-                      onClick={() => {
-                        setRelationshipUIState('loading');
-                        void (async () => {
-                          try {
-                            const rel = await getAccountsEndpoint(currentMasto)
-                              .$select(accountID.current)
-                              .follow({
-                                notify: !notifying,
-                              });
-                            if (rel) setRelationship(rel);
-                            setRelationshipUIState('default');
-                            showToast(
-                              rel.notifying
-                                ? t`Notifications enabled for @${username}'s posts.`
-                                : t` Notifications disabled for @${username}'s posts.`,
-                            );
-                          } catch (e) {
-                            alert(e);
-                            setRelationshipUIState('error');
-                          }
-                        })();
-                      }}
-                    >
-                      <Icon icon="notification" />
-                      <span>
-                        {notifying
-                          ? t`Disable notifications`
-                          : t`Enable notifications`}
-                      </span>
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        setRelationshipUIState('loading');
-                        void (async () => {
-                          try {
-                            const rel = await getAccountsEndpoint(currentMasto)
-                              .$select(accountID.current)
-                              .follow({
-                                reblogs: !showingReblogs,
-                              });
-                            if (rel) setRelationship(rel);
-                            setRelationshipUIState('default');
-                            showToast(
-                              rel.showingReblogs
-                                ? t`Reposts from @${username} enabled.`
-                                : t`Reposts from @${username} disabled.`,
-                            );
-                          } catch (e) {
-                            alert(e);
-                            setRelationshipUIState('error');
-                          }
-                        })();
-                      }}
-                    >
-                      <Icon icon="rocket" />
-                      <span>
-                        {showingReblogs
-                          ? t`Disable reposts`
-                          : t`Enable reposts`}
-                      </span>
-                    </MenuItem>
-                  </>
-                )}
+                {/* ATProto follows do not have supported notification/repost
+                    preference writes yet, so those legacy-only controls stay
+                    hidden for native follow records during this migration. */}
+                {following &&
+                  !!relationship &&
+                  !getRelationshipRecordUri(relationship, 'following') && (
+                    <>
+                      <MenuItem
+                        onClick={() => {
+                          setRelationshipUIState('loading');
+                          void (async () => {
+                            try {
+                              const rel = await getAccountsEndpoint(
+                                currentMasto,
+                              )
+                                .$select(accountID.current)
+                                .follow({
+                                  notify: !notifying,
+                                });
+                              if (rel) setRelationship(rel);
+                              setRelationshipUIState('default');
+                              showToast(
+                                rel.notifying
+                                  ? t`Notifications enabled for @${username}'s posts.`
+                                  : t` Notifications disabled for @${username}'s posts.`,
+                              );
+                            } catch (e) {
+                              alert(e);
+                              setRelationshipUIState('error');
+                            }
+                          })();
+                        }}
+                      >
+                        <Icon icon="notification" />
+                        <span>
+                          {notifying
+                            ? t`Disable notifications`
+                            : t`Enable notifications`}
+                        </span>
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => {
+                          setRelationshipUIState('loading');
+                          void (async () => {
+                            try {
+                              const rel = await getAccountsEndpoint(
+                                currentMasto,
+                              )
+                                .$select(accountID.current)
+                                .follow({
+                                  reblogs: !showingReblogs,
+                                });
+                              if (rel) setRelationship(rel);
+                              setRelationshipUIState('default');
+                              showToast(
+                                rel.showingReblogs
+                                  ? t`Reposts from @${username} enabled.`
+                                  : t`Reposts from @${username} disabled.`,
+                              );
+                            } catch (e) {
+                              alert(e);
+                              setRelationshipUIState('error');
+                            }
+                          })();
+                        }}
+                      >
+                        <Icon icon="rocket" />
+                        <span>
+                          {showingReblogs
+                            ? t`Disable reposts`
+                            : t`Enable reposts`}
+                        </span>
+                      </MenuItem>
+                    </>
+                  )}
                 {/* Add/remove from lists is only possible if following the account */}
                 {following && (
                   <MenuItem
@@ -643,13 +703,13 @@ function RelatedActions({
                       setRelationshipUIState('loading');
                       void (async () => {
                         try {
-                          const newRelationship = await getAccountsEndpoint(
-                            currentMasto,
-                          )
-                            .$select(currentInfo?.id || id)
-                            .unmute();
-                          console.log('unmuting', newRelationship);
-                          setRelationship(newRelationship);
+                          const did = currentInfo?.id || id;
+                          await unmuteAccount.mutateAsync({ did });
+                          setRelationship(
+                            patchRelationship(relationship, {
+                              muting: false,
+                            }),
+                          );
                           setRelationshipUIState('default');
                           showToast(t`Unmuted @${username}`);
                           states.reloadGenericAccounts.id = 'mute';
@@ -674,13 +734,13 @@ function RelatedActions({
                       setRelationshipUIState('loading');
                       void (async () => {
                         try {
-                          const newRelationship = await getAccountsEndpoint(
-                            currentMasto,
-                          )
-                            .$select(currentInfo?.id || id)
-                            .mute();
-                          console.log('muting', newRelationship);
-                          setRelationship(newRelationship);
+                          const did = currentInfo?.id || id;
+                          await muteAccount.mutateAsync({ did });
+                          setRelationship(
+                            patchRelationship(relationship, {
+                              muting: true,
+                            }),
+                          );
                           setRelationshipUIState('default');
                           showToast(t`Muted @${username}`);
                           states.reloadGenericAccounts.id = 'mute';
@@ -700,53 +760,6 @@ function RelatedActions({
                       </Trans>
                     </span>
                   </MenuItem>
-                )}
-                {followedBy && (
-                  <MenuConfirm
-                    subMenu
-                    menuItemClassName="danger"
-                    confirmLabel={
-                      <>
-                        <Icon icon="user-x" />
-                        <span>
-                          <Trans>
-                            Remove{' '}
-                            <span className="bidi-isolate">@{username}</span>{' '}
-                            from followers?
-                          </Trans>
-                        </span>
-                      </>
-                    }
-                    onClick={() => {
-                      setRelationshipUIState('loading');
-                      void (async () => {
-                        try {
-                          const newRelationship = await getAccountsEndpoint(
-                            currentMasto,
-                          )
-                            .$select(currentInfo?.id || id)
-                            .removeFromFollowers();
-                          console.log(
-                            'removing from followers',
-                            newRelationship,
-                          );
-                          setRelationship(newRelationship);
-                          setRelationshipUIState('default');
-                          showToast(t`@${username} removed from followers`);
-                          states.reloadGenericAccounts.id = 'followers';
-                          states.reloadGenericAccounts.counter++;
-                        } catch (e) {
-                          console.error(e);
-                          setRelationshipUIState('error');
-                        }
-                      })();
-                    }}
-                  >
-                    <Icon icon="user-x" />
-                    <span>
-                      <Trans>Remove follower…</Trans>
-                    </span>
-                  </MenuConfirm>
                 )}
                 <MenuConfirm
                   subMenu
@@ -774,23 +787,33 @@ function RelatedActions({
                     void (async () => {
                       try {
                         if (blocking) {
-                          const newRelationship = await getAccountsEndpoint(
-                            currentMasto,
-                          )
-                            .$select(currentInfo?.id || id)
-                            .unblock();
-                          console.log('unblocking', newRelationship);
-                          setRelationship(newRelationship);
+                          const did = currentInfo?.id || id;
+                          await unblockAccount.mutateAsync({
+                            did,
+                            recordUri: getRelationshipRecordUri(
+                              relationship,
+                              'blocking',
+                            ),
+                          });
+                          setRelationship(
+                            patchRelationship(
+                              relationship,
+                              { blocking: false },
+                              { blocking: undefined },
+                            ),
+                          );
                           setRelationshipUIState('default');
                           showToast(t`Unblocked @${username}`);
                         } else {
-                          const newRelationship = await getAccountsEndpoint(
-                            currentMasto,
-                          )
-                            .$select(currentInfo?.id || id)
-                            .block();
-                          console.log('blocking', newRelationship);
-                          setRelationship(newRelationship);
+                          const did = currentInfo?.id || id;
+                          const block = await blockAccount.mutateAsync({ did });
+                          setRelationship(
+                            patchRelationship(
+                              relationship,
+                              { blocking: true },
+                              { blocking: block.uri },
+                            ),
+                          );
                           setRelationshipUIState('default');
                           showToast(t`Blocked @${username}`);
                         }
@@ -879,20 +902,32 @@ function RelatedActions({
                 setRelationshipUIState('loading');
                 void (async () => {
                   try {
-                    let newRelationship: Relationship | undefined;
-
                     if (following) {
-                      newRelationship = await getAccountsEndpoint(currentMasto)
-                        .$select(accountID.current)
-                        .unfollow();
+                      await unfollowAccount.mutateAsync({
+                        did: accountID.current,
+                        recordUri: getRelationshipRecordUri(
+                          relationship,
+                          'following',
+                        ),
+                      });
+                      setRelationship(
+                        patchRelationship(
+                          relationship,
+                          { following: false },
+                          { following: undefined },
+                        ),
+                      );
                     } else {
-                      newRelationship = await getAccountsEndpoint(currentMasto)
-                        .$select(accountID.current)
-                        .follow();
-                    }
-
-                    if (newRelationship) {
-                      setRelationship(newRelationship);
+                      const follow = await followAccount.mutateAsync({
+                        did: accountID.current,
+                      });
+                      setRelationship(
+                        patchRelationship(
+                          relationship,
+                          { following: true },
+                          { following: follow.uri },
+                        ),
+                      );
                     }
                     setRelationshipUIState('default');
                   } catch (e) {

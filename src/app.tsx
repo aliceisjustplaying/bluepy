@@ -27,6 +27,7 @@ import NavigationCommand from './components/navigation-command';
 import NotificationService from './components/notification-service';
 import SearchCommand from './components/search-command';
 import Shortcuts from './components/shortcuts';
+import { syncSessionsStoreFromLegacyAccount } from './data/legacy-session';
 import AccountStatuses from './pages/account-statuses';
 import {
   AtprotoNonStatusRoute,
@@ -50,6 +51,11 @@ import StatusRoute from './pages/status-route';
 import Trending from './pages/trending';
 import Welcome from './pages/welcome';
 import {
+  hideAllModals,
+  initLegacyStatesBridge,
+} from './state/legacy-states-bridge';
+import { useSessionsStore } from './state/sessions';
+import {
   api,
   hasInstance,
   hasPreferences,
@@ -62,6 +68,7 @@ import {
 import {
   createAtprotoOAuthAccessToken,
   initAtprotoOAuthClient,
+  redirectLocalhostToLoopback,
 } from './utils/atproto-oauth';
 import {
   getAtprotoURIFromPathname,
@@ -76,7 +83,7 @@ import {
 } from './utils/auth-context';
 import focusDeck from './utils/focus-deck';
 import { navigatePath } from './utils/router';
-import states, { hideAllModals, initStates, statusKey } from './utils/states';
+import states, { initStates, statusKey } from './utils/states';
 import store from './utils/store';
 import {
   getAccounts,
@@ -110,6 +117,16 @@ function QrScanTest() {
   }, []);
 
   return null;
+}
+
+function initStatesWithBridge(): void {
+  initStates();
+  syncSessionsStoreFromLegacyAccount();
+  const account = getCurrentAccount();
+  initLegacyStatesBridge(
+    useSessionsStore.getState().activeDid ??
+      (typeof account?.info?.id === 'string' ? account.info.id : null),
+  );
 }
 
 interface AppWindow extends Window {
@@ -497,7 +514,7 @@ function App() {
         return;
       }
       window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
-      initStates();
+      initStatesWithBridge();
       setIsLoggedIn(true);
     };
     window.addEventListener(AUTH_CHANGED_EVENT, updateAuthState);
@@ -521,12 +538,15 @@ function App() {
             );
             const client = initClient({ instance: 'bsky.social', accessToken });
             await initAccount(client, 'bsky.social', accessToken);
+            window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+            const sessionsStore = useSessionsStore.getState();
+            sessionsStore.addKnown(result.session.sub);
+            sessionsStore.setActive(result.session.sub);
             await Promise.allSettled([
               initPreferences(client),
               initInstance(client, 'bsky.social'),
             ]);
-            initStates();
-            window.__IGNORE_GET_ACCOUNT_ERROR__ = true;
+            initStatesWithBridge();
             if (cancelled) return;
             setIsLoggedIn(true);
             setUIState('default');
@@ -584,7 +604,7 @@ function App() {
       if (account) {
         const { client } = api({ account });
         const { instance } = client;
-        initStates();
+        initStatesWithBridge();
         if (cancelled) return;
         setUIState('loading');
         try {
@@ -824,6 +844,7 @@ function AuthRoute({ children }: { children: ReactElement }) {
   const location = useLocation();
 
   if (!isLoggedIn) {
+    if (redirectLocalhostToLoopback()) return null;
     const redirectPath = location.pathname + location.search;
     store.session.set('loginRedirect', redirectPath);
     return <Navigate to="/login" replace />;

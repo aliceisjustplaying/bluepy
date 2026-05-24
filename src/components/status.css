@@ -74,6 +74,44 @@
   vertical-align: text-bottom;
 }
 
+.status-reblog-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-block: 8px 0;
+  margin-inline-start: calc(14px + 50px + 10px);
+  padding-inline-end: 14px;
+  color: var(--text-insignificant-color);
+  font-size: smaller;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .icon {
+    flex: 0 0 auto;
+    color: var(--reblog-color);
+  }
+
+  span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  a {
+    color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+      color: var(--link-color);
+      text-decoration: underline;
+    }
+  }
+}
+
 /* STATUS */
 
 .status {
@@ -345,6 +383,8 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  padding-inline-start: calc(14px + 50px + 10px);
+  padding-inline-end: 14px;
 
   .status-carousel & {
     padding: 16px;
@@ -559,6 +599,16 @@
     padding-inline-start: 8px;
   }
 
+  .status-reblog-line {
+    margin-inline-start: calc(12px + 42px + 8px);
+    padding-inline-end: 12px;
+  }
+
+  .status.filtered {
+    padding-inline-start: calc(12px + 42px + 8px);
+    padding-inline-end: 12px;
+  }
+
   .status-card-container {
     margin-top: 5px;
     gap: 5px;
@@ -710,6 +760,32 @@
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: 100%;
+  }
+}
+.status-filtered-badge.horizontal.badge-meta {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.5em;
+  row-gap: 0.2em;
+  min-height: 40px;
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  white-space: normal;
+  text-align: start;
+
+  > .icon {
+    grid-row: 1 / span 2;
+  }
+
+  > span:not(.icon) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .show-filtered {
+    display: block;
   }
 }
 .status-filtered-badge:not(.horizontal).badge-meta {

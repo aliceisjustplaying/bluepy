@@ -87,6 +87,21 @@ export default function Modals() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!snapStates.showGenericAccounts) return undefined;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        states.showGenericAccounts = false;
+      }
+    };
+    document.addEventListener('keydown', closeOnEscape, { capture: true });
+    document.addEventListener('keyup', closeOnEscape, { capture: true });
+    return () => {
+      document.removeEventListener('keydown', closeOnEscape, { capture: true });
+      document.removeEventListener('keyup', closeOnEscape, { capture: true });
+    };
+  }, [snapStates.showGenericAccounts]);
+
   const composerState = snapStates.composerState as Payload;
   const composeWindow = window as WindowWithCompose;
 

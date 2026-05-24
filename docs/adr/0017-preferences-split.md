@@ -1,0 +1,57 @@
+# ADR-0017: Two preference surfaces — ATProto server-backed and device-local
+
+The data layer exposes two distinct preference hooks. They never merge into a single surface; components read whichever applies.
+
+**`usePreferences()` / `useUpdatePreference(type)` — ATProto server-backed.** Backed by `app.bsky.actor.getPreferences` / `putPreferences`. Private (PDS-scoped account state, not on firehose). Cross-device automatically. Lives in `src/data/preferences.ts`. Read as a normalized object: the hook fans the union array out by `$type` and returns `{adultContent, contentLabels, savedFeeds, mutedWords, threadView, feedView, postInteractionSettings, hiddenPosts, personalDetails, labelers}`. Writes use the SDK's read-modify-write loop (`agent.updatePreferences(callback)`); each pref-type mutation hook is a thin wrapper. **Routing per ADR-0004**: `getPreferences` and `putPreferences` use the `authenticated-active-appview-via-pds` mode — they are authenticated `app.bsky.*` operations proxied through the PDS, not raw `pds-repo-direct` repo writes.
+
+**Cache key**: `keys.preferences(account)` where `account: AccountScope = [viewerDid]` (ADR-0009). Preferences are private per-account state with no AppView or labeler dependency, so they use `AccountScope`, not `ViewerScope`. Scoping preferences by labelers would be circular (`labelersHash` is derived from `labelersPref`, which lives in the preferences response itself).
+
+**`useUiPreferences()` / `setUiPreference(field, value)` — device-local.** Backed by Zustand with `persist` middleware against `localStorage`, keyed per-DID. Lives in `src/state/ui-preferences.ts`. Holds the Phanpy-inherited UI fields that have no ATProto analog: `autoRefresh`, `shortcutsViewMode`, `shortcutsColumnsMode`, `boostsCarousel`, `contentTranslation`, `contentTranslationTargetLanguage`, `contentTranslationHideLanguages`, `contentTranslationAutoInline`, `mediaAltGenerator`, `composerGIFPicker`, `cloakMode`, `noAnimations`, `mutedPostVisibility`. Does not cross devices. Cache key (for the rare case it's mirrored into TanStack): `keys.uiPreferences(account)` — also `AccountScope`.
+
+**Why this split.** ATProto `putPreferences` rejects any `$type` outside the `app.bsky.*` namespace (PDS transactor enforces it). The lexicon union is technically open and we *could* squat `app.bsky.actor.defs#x-bluepy-*` for private custom storage — it works today via the namespace gate + open-union pass-through — but the entire mechanism is one validation change away from breaking silently. Bluesky's own social-app stores its UI prefs (colorMode, darkTheme, kawaii mode, disableHaptics, language) device-local for the same reason. We follow them.
+
+**Field-to-surface map.** The agent does not infer this — the map is exhaustive:
+
+ATProto preferences (must implement for parity):
+- `adultContentPref` — adult content gate
+- `contentLabelPref[]` — per-labeler label preferences
+- `savedFeedsPrefV2` — pinned/saved feed-generator list (renders as the Phanpy shortcut bar's feed entries)
+- `mutedWordsPref` — muted words list (cross-device, distinct from the *display behavior* in `mutedPostVisibility`)
+- `threadViewPref` — thread sort
+- `feedViewPref` (keyed per feed) — hideReplies, hideRepliesByUnfollowed, hideReposts, hideQuotePosts
+- `postInteractionSettingsPref` — default reply/quote restrictions on new posts
+- `hiddenPostsPref` — per-post hide list
+- `personalDetailsPref` — birth date (needed for adult content gating)
+- `labelersPref` — subscribed labelers
+
+ATProto preference types we do not implement (Bluesky-app-specific or not user-facing in Bluepy):
+- `bskyAppStatePref` — Bluesky-app NUX queue, irrelevant to Bluepy
+- `interestsPref` — Bluesky onboarding tags, no Bluepy UI for this
+- `verificationPrefs` — handle verification visibility, defer until UX is designed
+- `liveEventPreferences` — defer
+- `declaredAgePref` — subsumed by `personalDetailsPref` for our purposes
+
+Device-local UI prefs (all 13 Phanpy fields above).
+
+**Rejected alternatives:**
+- **Merged surface.** Single `usePreferences()` returning both — hides cross-device vs device-local, makes mutation routing ambiguous.
+- **Squat `app.bsky.actor.defs#x-bluepy-*` for UI prefs.** Works today; one PDS validation change away from breaking silently. Not worth the cross-device convenience for prefs Bluesky themselves keep local.
+- **Custom `social.bluepy.preferences` repo record.** Public on firehose. Leaks per-toggle setting changes.
+- **Key preferences by `ViewerScope` (with `appviewKey` + `labelersHash`).** Circular — `labelersHash` is derived from `labelersPref` which lives in the preferences response. Creates duplicate preference caches and an awkward first-boot path.
+
+**Implications:**
+- Account switch: `usePreferences` invalidates and refetches (it's account-scoped via `keys.preferences(account)`); `useUiPreferences` swaps to the per-DID Zustand slice.
+- Initial boot: both fire in parallel; UI renders against `useUiPreferences` immediately (synchronous from localStorage) and reveals server-pref-gated UI (e.g. adult content visibility) when `usePreferences` resolves.
+- The Phanpy shortcut bar (covered separately) renders from a combination of `savedFeedsPrefV2` (feed entries) and `useUiPreferences().shortcutsViewMode` (display mode). See follow-on grill for shortcut-bar architecture.
+
+**Hard rule: preference writes preserve unknown `$type` entries byte-for-byte.**
+
+`app.bsky.actor.putPreferences` replaces the entire preferences array. Every per-type mutation hook (`useUpdatePreference('adultContent')`, `useUpdatePreference('savedFeeds')`, etc.) MUST:
+
+1. Read the latest `getPreferences` response (the SDK's `agent.updatePreferences(cb)` does this internally — use it; do not roll a separate read-modify-write path).
+2. Mutate or insert only entries whose `$type` the hook owns.
+3. Leave every other entry in the array untouched, including entries with `$type` values the agent does not recognise.
+
+Rebuilding the preferences array from only the normalized fields the hook reads is forbidden. A hook that ignored unknown entries would silently delete future Bluesky preference types and any prefs the AppView/PDS rounds-tripped through the open union — including types this client should not need to know about, like new third-party labeler prefs or experimental Bluesky preference rollouts.
+
+**Acceptance criterion (ADR-0019 done-bar).** A fixture-driven unit test stuffs an unrecognised `$type` entry (e.g. `app.bsky.actor.defs#someFuturePref`) into a `getPreferences` response fixture, exercises each per-type mutation hook against it, and asserts the unknown entry is present and unchanged in the final `putPreferences` request body. Lives at `tests/unit/preferences-preserve-unknown.test.ts`.

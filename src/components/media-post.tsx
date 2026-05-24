@@ -177,7 +177,29 @@ function MediaPost({
               ? (e) => {
                   onMediaClick(e, i, media, status);
                 }
-              : undefined
+              : () => {
+                  window.sessionStorage.setItem(
+                    'bluepy:last-feed-path',
+                    `${window.location.pathname}${window.location.search}`,
+                  );
+                  const listPage =
+                    document.querySelector<HTMLElement>('#list-page');
+                  if (listPage) {
+                    window.sessionStorage.setItem(
+                      `bluepy:feed-scroll:${window.location.pathname}${window.location.search}`,
+                      String(listPage.scrollTop),
+                    );
+                    window.sessionStorage.setItem(
+                      'bluepy:last-feed-scroll',
+                      String(listPage.scrollTop),
+                    );
+                  }
+                  states.prevLocation = {
+                    pathname: window.location.pathname,
+                    search: window.location.search,
+                    hash: window.location.hash,
+                  };
+                }
           }
         />
       </Parent>

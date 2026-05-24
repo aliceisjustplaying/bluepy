@@ -93,6 +93,15 @@ function buildAtprotoPostPermalink(
   return new URL(buildAtprotoPostPath(uri), origin).href;
 }
 
+function buildBskyPostPermalink(uri: string): string {
+  const match = /^at:\/\/([^/]+)\/app\.bsky\.feed\.post\/([^/?#]+)/i.exec(
+    uri,
+  );
+  if (!match) return uri;
+  const [, repo, rkey] = match;
+  return `https://bsky.app/profile/${repo}/post/${rkey}`;
+}
+
 function buildAtprotoProfileURI(repo: string): string {
   return `at://${repo}/app.bsky.actor.profile/self`;
 }
@@ -148,6 +157,7 @@ function getAtprotoPathFromLegacyRoute(path: string): string | null {
 }
 
 export {
+  buildBskyPostPermalink,
   buildAtprotoProfileURI,
   buildAtprotoRecordPath,
   buildAtprotoPostPermalink,

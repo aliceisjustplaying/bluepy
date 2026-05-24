@@ -84,6 +84,9 @@ interface AnyQuote {
 export interface StatusAtprotoMeta {
   uri?: string;
   cid?: string;
+  root?: { uri: string; cid?: string };
+  like?: string;
+  repost?: string;
   labels?: AtprotoLabel[];
   replyParentAccount?: AnyAccount | null;
   replyParentUnavailable?: boolean;

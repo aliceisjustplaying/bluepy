@@ -1,0 +1,68 @@
+# ADR-0019: Rebuild test bar — fresh e2e + small fixture-driven unit core
+
+The AFK agent's "done" criterion for the data-layer rebuild is **all of**:
+
+```
+bun run typecheck            # no errors, no `as any` introduced (see ADR-0002 strictness)
+bunx oxlint <changed files>  # clean
+bun run build                # production bundle succeeds
+bun run test                 # fresh Playwright e2e suite (below) green
+bun run test:unit            # focused unit suite (below) green
+```
+
+Nothing ships until all five are green. Every flake is a bug — fix the bug, do not retry.
+
+**Fresh Playwright e2e at `tests/e2e/*.spec.ts`.** The existing suite (`tests/atproto-*.spec.js`, ~200k of Playwright code) is kept on the `bluesky` branch as a flow-coverage reference; none of it is ported. Rationale: existing tests assume Masto-adapter shapes and Valtio state — porting in-place is a per-file judgement call the AFK agent shouldn't make. Writing fresh against the new data layer is bounded work and the agent can lift flow ideas from the old tests file-by-file as a reading exercise.
+
+Mandatory e2e coverage (each is its own `.spec.ts`):
+- Logged-out — feed/profile/post permalink reads against AppView with anonymous fetch
+- OAuth login — full flow including the Tailscale HTTPS quirk (see `~/social-app` for the working pattern)
+- Multi-account — add second account, switch active, verify per-DID cache isolation
+- Timeline — load, paginate, refresh, optimistic like rollback when network errors
+- Post permalink — open, render embeds (quote, image, video, external), reply tree
+- Compose — top-level post, reply, quote, with image/video/external embed; threadgate/postgate aux records
+- Engagement — like, repost, follow, block, mute, bookmark — including optimistic rollback paths
+- Notifications — load, mark seen via `updateSeen`, unread badge derived from `getUnreadCount`
+- Shortcut bar — local entry add/reorder, pin a feed from feeds page, verify it appears in bar, unpin removes it
+- Settings — toggle a UI pref (device-local) and an ATProto pref (server-backed), confirm correct storage path
+
+**Focused unit suite at `tests/unit/*.test.ts`.** Only deterministic spec-driven internals. Each unit test file is exhaustively enumerated below — the agent does not add others; if it wants to test something else, it writes an e2e.
+
+- `tests/unit/primers.test.ts` — `primePosts`, `primeProfiles`. Every fixture in `tests/fixtures/atproto/` must produce a cache containing every URI / DID the fixture references, with reshaped embeds (parent post stores `embed.record: {$type, uri, cid}`, embedded body lives at `keys.post(scope, embed.record.uri)`). Embed-variant primer table from ADR-0016 covered exhaustively.
+- `tests/unit/keys.test.ts` — `keys.*` factory output stability: every `AccountScope` key starts with `[viewerDid]`; every `ViewerScope` key starts with `[viewerDid, appviewKey, labelersHash]`; no two factory functions produce overlapping prefixes; `keys.preferences` uses `AccountScope`, all post/profile/feed/etc keys use `ViewerScope`.
+- `tests/unit/patchers.test.ts` — every optimistic mutation patcher (likePost, repostPost, followAccount, muteAccount, blockAccount, bookmarkPost). Given a canonical cache entry, patch produces the expected post-mutation entry; restore (rollback) returns to the pre-mutation entry byte-for-byte; cross-scope same-viewer patching covered (ADR-0005).
+- `tests/unit/reconcile.test.ts` — `reconcileShortcutBar`. Tabular inputs/outputs covering: orphan server-ref drop, new pinned saved feed appended, local-only entries pass through, idempotence on no-op, ordering preserved across reconcile.
+- `tests/unit/post-text.test.ts` — `renderPostText(text, facets)`. Fixture facets covering: link, mention (resolves to full profile at-URI per ADR-0011), tag, nested ranges, RTL text, emoji/grapheme boundary edge cases, malicious-looking text safely passed through (sanitisation is a separate layer, but renderer must not break it).
+- `tests/unit/preferences-preserve-unknown.test.ts` — fixture-driven test that stuffs an unrecognised `$type` entry into a `getPreferences` response, exercises each per-type mutation hook, and asserts the unknown entry is present and unchanged in the final `putPreferences` request body (ADR-0017 acceptance criterion).
+- `tests/unit/moderation-decision.test.ts` — `decidePostModeration` / `decideProfileModeration` (ADR-0022). Covers every cause in the taxonomy (label, muted-word, hidden-post, blocked-by, blocking, muted, detached, not-found); baseline-labelers-only vs baseline+subscribed; adult-content on/off (including under-age forced-off); media blur vs content warning; profile avatar/banner/displayName/bio blur; label visibility filtered by `acceptedLabelerDids`.
+- `tests/unit/route-category.test.ts` — pure router-to-category mapping (ADR-0020). Every route in `src/router.tsx` produces an expected `RouteCategory`; unknown paths produce `'not-found'`.
+- `tests/unit/sentry-scrub.test.ts` — `beforeSend` redactor (ADR-0020). Fixtures: DID strings, handle strings, JWT-shaped tokens, blob/record CIDs, at-URI paths in `event.request.url`, breadcrumbs, transaction names, exception messages, stacktrace frames. All redacted to opaque placeholders.
+- `tests/unit/compose/draft-key.test.ts` — `draftKeyToString` / `parseDraftKey` (plan 0002). Round-trip every `DraftKey` discriminant including `authorDid` partitioning; stable output (no Date.now / Math.random); unknown kinds throw / return null.
+
+**Anti-tautology guardrails encoded in the prompt:**
+- Unit tests load inputs from `tests/fixtures/atproto/*.json` (real ATProto API responses captured with `~/social-app` as a reference for shape). Agent does not fabricate inputs from the implementation.
+- Expected outputs are spec-enumerated from the ADR or lexicon, not generated by running the implementation. For primers: every URI in the fixture is listed manually in the test file as `expectedUris = [...]` before the impl runs.
+- `toMatchSnapshot` is forbidden. Any snapshot assertion is a tautology for spec-driven code.
+- Property tests (fast-check) optional but not required; if used, properties must be derived from the ADR, not from the impl.
+- Coverage thresholds are NOT enforced. Coverage chases tautology; we care about the explicit cases above.
+
+**Fixture corpus at `tests/fixtures/atproto/`:** captured from a real PDS via `~/social-app` flows. Must include at minimum:
+- `getTimeline.feed-mixed.json` — feed with reposts, replies, quoted posts, no embed, image embed, video embed, external embed
+- `getPostThread.deep.json` — thread with 3+ levels of replies and a quoted post mid-thread
+- `getProfile.basic.json` and `.with-pinned.json`
+- `getPreferences.full.json` — every preference type populated; plus a `.with-unknown.json` variant that injects an `app.bsky.actor.defs#someFuturePref` for the preserve-unknown test
+- `getNotifications.grouped.json` — multiple notification kinds, including reply / mention / like / repost / follow / quote
+- `getActorLikes.json`, `getAuthorFeed.with-pins.json`, `searchPosts.json`
+- A "weird" set with intentionally malformed records (missing CIDs, unknown $type, unicode edge cases) for primer resilience
+- `moderation/` subdir: one captured response per moderation cause (label/muted-word/hidden-post/blocked-by/blocking/muted/detached/not-found), one per labeler-subscription state (baseline-only / baseline+subscribed), one per adult-content state.
+
+**Rejected alternatives:**
+- **Keep existing e2e suite and port in place.** Per-file judgement on Valtio-coupling; agent gets stuck or makes wrong calls. Net rewrite ends up cheaper than careful port.
+- **Skip unit tests entirely.** Primer cache-miss bugs surface as silent "this view is slow" on real network, not as failing tests. Worth the small spec-driven suite.
+- **Snapshot-heavy unit tests.** Tautology by definition — they freeze behavior, not specification.
+- **Coverage thresholds (e.g. 80% lines).** Chases tautology; doesn't catch the bugs we care about.
+
+**Implications:**
+- The plan doc for the rebuild references the fixture corpus and unit file list verbatim; the AFK agent treats them as the test surface, no scope creep.
+- E2E flake = bug, not retry. The agent prompt explicitly forbids `--retries > 0` for the rebuild loop.
+- Test fixtures are captured BEFORE the agent runs (we save real responses from social-app's network logs). The agent does not synthesise fixtures.

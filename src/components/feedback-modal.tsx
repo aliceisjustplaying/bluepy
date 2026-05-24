@@ -1,9 +1,9 @@
 import './feedback-modal.css';
 
 import { Trans, useLingui } from '@lingui/react/macro';
-import * as Sentry from '@sentry/react';
 import { useEffect, useRef, useState } from 'react';
 
+import { getLastSentryEventId, isSentryEnabled } from '../instrument';
 import showToast from '../utils/show-toast';
 import { getAccount, getCurrentAccountID } from '../utils/store-utils';
 
@@ -112,8 +112,8 @@ export default function FeedbackModal({
     setErrorMessage(null);
 
     try {
-      const sentryEventId = import.meta.env.VITE_SENTRY_DSN
-        ? Sentry.lastEventId() || undefined
+      const sentryEventId = isSentryEnabled
+        ? await getLastSentryEventId()
         : undefined;
       const response = await fetch('/api/feedback', {
         method: 'POST',
@@ -146,7 +146,7 @@ export default function FeedbackModal({
   }
 
   return (
-    <div className="feedback-modal-container" data-testid="feedback-modal">
+    <div className="feedback-modal-container">
       <div className="top-controls">
         <h1>
           <Trans>Send feedback</Trans>

@@ -68,6 +68,16 @@ function handleContentLinks(
     if (!(e.currentTarget as Node | null)?.contains(target)) return;
 
     const { href } = target as HTMLAnchorElement;
+    try {
+      const appUrl = new URL(href);
+      if (appUrl.origin === location.origin && appUrl.pathname.startsWith('/at://')) {
+        e.preventDefault();
+        e.stopPropagation();
+        navigatePath(`${appUrl.pathname}${appUrl.search}${appUrl.hash}`);
+        return;
+      }
+    } catch {}
+
     if (isLeafletUrl(href)) {
       e.preventDefault();
       e.stopPropagation();

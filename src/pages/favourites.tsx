@@ -1,39 +1,25 @@
 import { useLingui } from '@lingui/react/macro';
-import type { mastodon } from 'masto';
-import { useRef } from 'react';
 
-import Timeline from '../components/timeline';
-import { api } from '../utils/api';
+import { useActiveDid } from '../contexts/SessionProvider';
+import { useActorLikes } from '../data/search';
+
+import PostUriFeed from '../components/post-uri-feed';
 import useTitle from '../utils/useTitle';
-
-const LIMIT = 20;
 
 function Favourites() {
   const { t } = useLingui();
-  useTitle(t`Likes`, '/favourites');
-  const { masto, instance } = api();
-  const favouritesIterator = useRef<
-    AsyncIterator<mastodon.v1.Status[]> | undefined
-  >(undefined);
-  async function fetchFavourites(firstLoad?: boolean) {
-    if (firstLoad || !favouritesIterator.current) {
-      favouritesIterator.current = (
-        masto.v1.favourites as mastodon.rest.v1.FavouritesResource
-      )
-        .list({ limit: LIMIT })
-        .values();
-    }
-    return await favouritesIterator.current.next();
-  }
+  const activeDid = useActiveDid();
+  useTitle(t`Likes`, '/f');
+  const source = useActorLikes(activeDid ?? undefined);
 
   return (
-    <Timeline
+    <PostUriFeed
+      source={source}
       title={t`Likes`}
+      path="/f"
       id="favourites"
       emptyText={t`No likes yet. Go like something!`}
       errorText={t`Unable to load likes.`}
-      instance={instance}
-      fetchItems={fetchFavourites}
     />
   );
 }

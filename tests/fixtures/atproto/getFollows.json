@@ -1,0 +1,824 @@
+{
+  "follows": [
+    {
+      "did": "did:plc:fixture099",
+      "handle": "fixture-150.test",
+      "displayName": "Fixture User 191",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture099/bafkreig77roxjq5jevcwpc44mu7qgjrueyo2hwsxafosm5r2yvwjop3loa",
+      "associated": {
+        "chat": {
+          "allowIncoming": "none"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mmbyr5hci722",
+        "followedBy": "at://did:plc:fixture099/app.bsky.graph.follow/3mmbzp65ine2h"
+      },
+      "labels": [],
+      "createdAt": "2026-05-20T13:12:45.069Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-05-20T13:15:27.170Z"
+    },
+    {
+      "did": "did:plc:fixture096",
+      "handle": "fixture-191.test",
+      "displayName": "Fixture User 192",
+      "pronouns": "he/him",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture096/bafkreiesbpsv53cyw4a62r3ba3sw5l22ldw5lyag224uvtagq7gzqukzxa",
+      "associated": {
+        "chat": {
+          "allowIncoming": "none"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        },
+        "germ": {
+          "showButtonTo": "usersIFollow",
+          "messageMeUrl": "https://fixture-62.test/newUser"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mmbxgts4vc2h"
+      },
+      "labels": [],
+      "createdAt": "2023-05-01T03:43:42.434Z",
+      "verification": {
+        "verifications": [
+          {
+            "issuer": "did:plc:fixture007",
+            "uri": "at://did:plc:fixture007/app.bsky.graph.verification/3mihkc7rx552q",
+            "isValid": true,
+            "createdAt": "2026-04-01T20:38:17.853Z"
+          }
+        ],
+        "verifiedStatus": "valid",
+        "trustedVerifierStatus": "none"
+      },
+      "description": "Fixture description",
+      "indexedAt": "2026-05-14T15:47:34.569Z"
+    },
+    {
+      "did": "did:plc:fixture195",
+      "handle": "fixture-195.test",
+      "displayName": "Fixture User 192",
+      "pronouns": "",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture195/bafkreigd2bpfa6lhwlluahlc26ddzxme4s2jsdsejibxrt4mksbuv4kh3e",
+      "associated": {
+        "chat": {
+          "allowIncoming": "none"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mmbxgrvi7323"
+      },
+      "labels": [],
+      "createdAt": "2025-10-30T00:29:27.190Z",
+      "verification": {
+        "verifications": [
+          {
+            "issuer": "did:plc:fixture007",
+            "uri": "at://did:plc:fixture007/app.bsky.graph.verification/3mgt2akeoxy2m",
+            "isValid": true,
+            "createdAt": "2026-03-11T23:32:35.577Z"
+          }
+        ],
+        "verifiedStatus": "valid",
+        "trustedVerifierStatus": "none"
+      },
+      "description": "Fixture description",
+      "indexedAt": "2026-04-24T15:47:21.551Z"
+    },
+    {
+      "did": "did:plc:fixture196",
+      "handle": "fixture-196.test",
+      "displayName": "Fixture User 192",
+      "pronouns": "moth/moths",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture196/bafkreia43vphc4cd2r4uicjpfyctkzbsd676gkttzxxase2hwqhtwdrpby",
+      "associated": {
+        "chat": {
+          "allowIncoming": "all"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mm5v7lb3bf23"
+      },
+      "labels": [],
+      "createdAt": "2025-06-25T02:07:42.598Z",
+      "verification": {
+        "verifications": [
+          {
+            "issuer": "did:plc:fixture007",
+            "uri": "at://did:plc:fixture007/app.bsky.graph.verification/3mcy2atud5m2p",
+            "isValid": true,
+            "createdAt": "2026-01-22T01:35:17.668Z"
+          }
+        ],
+        "verifiedStatus": "valid",
+        "trustedVerifierStatus": "none"
+      },
+      "description": "Fixture description",
+      "indexedAt": "2026-05-07T12:24:08.071Z"
+    },
+    {
+      "did": "did:plc:fixture197",
+      "handle": "fixture-197.test",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture197/bafkreidvornhf6aayobtkqztqar5ysjywhigvp5wzefxewqefm2ynqwlsi",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mm3paxvtuz23"
+      },
+      "labels": [],
+      "createdAt": "2026-05-16T05:21:50.670Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-05-20T23:13:56.068Z"
+    },
+    {
+      "did": "did:plc:fixture198",
+      "handle": "fixture-198.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture198/bafkreihrerah44idexxg5hxvt4l6y6ivpfzyerjbu2zewtq7efybu64tte",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mly5kmwple2o"
+      },
+      "labels": [
+        {
+          "src": "did:plc:fixture198",
+          "uri": "at://did:plc:fixture198/app.bsky.actor.profile/self",
+          "cid": "bafyreihqj56cmni2yareqglcqhpaubto4mx3d2dulozrkzztkwn4rftgam",
+          "val": "bot",
+          "cts": "2026-05-15T20:54:28.430Z"
+        }
+      ],
+      "createdAt": "2026-05-15T20:54:29.411Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-05-16T03:13:49.072Z"
+    },
+    {
+      "did": "did:plc:fixture199",
+      "handle": "fixture-199.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture199/bafkreibkb7zannpfn4peclpdqbcmhvajxmgwrjqitgzuofalda2s2ic3oe",
+      "associated": {
+        "chat": {
+          "allowIncoming": "none"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mlt5ipmkwp26",
+        "followedBy": "at://did:plc:fixture199/app.bsky.graph.follow/3mlt3oskk7424"
+      },
+      "labels": [
+        {
+          "src": "did:plc:fixture199",
+          "uri": "at://did:plc:fixture199/app.bsky.actor.profile/self",
+          "cid": "bafyreibjuwx3jfqwuulwpb3pmmrpvldfjgq6uu3n4qotblzh4mkhrlahge",
+          "val": "!no-unauthenticated",
+          "cts": "2025-05-20T07:57:37.102Z"
+        }
+      ],
+      "createdAt": "2025-05-20T07:57:38.107Z",
+      "indexedAt": "2025-05-20T09:27:07.007Z"
+    },
+    {
+      "did": "did:plc:fixture200",
+      "handle": "fixture-200.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture200/bafkreidoozp67rq6uty52ujmq4367v4zj6q6x34atij6zypo2okhglob4y",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mlp4y4y3oi2m"
+      },
+      "labels": [],
+      "createdAt": "2025-01-30T04:11:16.212Z",
+      "description": "Fixture description",
+      "indexedAt": "2025-09-12T23:13:04.765Z"
+    },
+    {
+      "did": "did:plc:fixture064",
+      "handle": "fixture-64.test",
+      "displayName": "Fixture User 192",
+      "pronouns": "it/that",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture064/bafkreigs3vi57hg5usy2vqf3iuxfvapwjrhq77lwbijvi2k3lcjgyiu624",
+      "associated": {
+        "labeler": true,
+        "chat": {
+          "allowIncoming": "all"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mlljwp6axn24"
+      },
+      "labels": [
+        {
+          "src": "did:plc:fixture064",
+          "uri": "at://did:plc:fixture064/app.bsky.actor.profile/self",
+          "cid": "bafyreidiv7iro24j3msrkimhtquo57ln22lc34zmq2osrh63aruybd3ew4",
+          "val": "bot",
+          "cts": "2025-12-11T14:49:21.524Z"
+        },
+        {
+          "src": "did:plc:fixture064",
+          "uri": "at://did:plc:fixture064/app.bsky.actor.profile/self",
+          "cid": "bafyreidiv7iro24j3msrkimhtquo57ln22lc34zmq2osrh63aruybd3ew4",
+          "val": "pet",
+          "cts": "2025-12-11T14:49:21.524Z"
+        }
+      ],
+      "createdAt": "2023-11-30T10:31:00.787Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-05-18T16:54:41.779Z"
+    },
+    {
+      "did": "did:plc:fixture201",
+      "handle": "fixture-201.test",
+      "displayName": "Fixture User 192",
+      "pronouns": "he/him",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture201/bafkreietnn25ezxf2ug7rrsd7bumurj5sodapiwvzz2w2rm6lv5eicxqre",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mlljw6tlz724",
+        "followedBy": "at://did:plc:fixture201/app.bsky.graph.follow/3lool4fvf6u2d"
+      },
+      "labels": [],
+      "createdAt": "2024-10-17T08:08:59.447Z",
+      "description": "Fixture description",
+      "indexedAt": "2025-11-06T22:14:19.717Z"
+    },
+    {
+      "did": "did:plc:fixture202",
+      "handle": "fixture-202.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture202/bafkreib3ndnx4aavsbmf743dbuogeuhue544m7w33s2f67xnrgcmiiqm7y",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mkiuybslus2m"
+      },
+      "labels": [],
+      "createdAt": "2024-11-15T19:19:30.394Z",
+      "description": "Fixture description",
+      "indexedAt": "2024-11-17T00:23:33.384Z"
+    },
+    {
+      "did": "did:plc:fixture203",
+      "handle": "fixture-203.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture203/bafkreia3zmu7qvmzvvp6wzs4m3jyfluugpa2ubuqcz53b7rynwc7eqbxkm",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mkiuy347c326",
+        "followedBy": "at://did:plc:fixture203/app.bsky.graph.follow/3mktjemyyi627"
+      },
+      "labels": [],
+      "createdAt": "2024-11-16T13:59:15.107Z",
+      "description": "Fixture description",
+      "indexedAt": "2024-11-23T23:04:16.508Z"
+    },
+    {
+      "did": "did:plc:fixture204",
+      "handle": "fixture-204.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture204/bafkreiap2utfke66tx5sf6a4rh44e4vptmt5dbbqkdnu6c5k222d673q3y",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mkiuxwbxyy24"
+      },
+      "labels": [],
+      "createdAt": "2024-12-12T18:42:31.113Z",
+      "description": "Fixture description",
+      "indexedAt": "2025-06-25T13:52:37.097Z"
+    },
+    {
+      "did": "did:plc:fixture205",
+      "handle": "fixture-205.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture205/bafkreibhtpwpsrvpgot3sigxdq2ejvfk3vtzrajoqm6ihc32vi4sjmxrpy",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mkiuxp4l4t22"
+      },
+      "labels": [],
+      "createdAt": "2024-11-18T17:53:10.280Z",
+      "description": "Fixture description",
+      "indexedAt": "2024-11-19T17:14:20.237Z"
+    },
+    {
+      "did": "did:plc:fixture206",
+      "handle": "fixture-206.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture206/bafkreidv7uhxdcfjvjtyqzqwayiwz6knhkfgjrfxakm2vjqrnxibdhk764",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mkiuxex7vf2c"
+      },
+      "labels": [],
+      "createdAt": "2024-11-16T12:09:30.016Z",
+      "description": "Fixture description",
+      "indexedAt": "2025-05-07T22:25:27.007Z"
+    },
+    {
+      "did": "did:plc:fixture207",
+      "handle": "fixture-207.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture207/bafkreibwe6dfbibtyqhw3jzorzhowdnnuqki3e5ldifykafs6mn7b42lci",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mkiuxa7ah42h"
+      },
+      "labels": [],
+      "createdAt": "2025-02-11T13:38:19.213Z",
+      "description": "Fixture description",
+      "indexedAt": "2025-06-21T08:20:34.599Z"
+    },
+    {
+      "did": "did:plc:fixture013",
+      "handle": "fixture-64.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture013/bafkreigyfwcdlgfoo73jsjas2mtmcwzugmg37gdobl6psgfmz47lwuvncu",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mkgyrkazth2c",
+        "followedBy": "at://did:plc:fixture013/app.bsky.graph.follow/3mkgzoaa55b2w"
+      },
+      "labels": [],
+      "createdAt": "2024-11-14T02:19:10.119Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-05-22T17:26:00.173Z"
+    },
+    {
+      "did": "did:plc:fixture208",
+      "handle": "fixture-208.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture208/bafkreiel5kxxo7ywobawthtyqg34kfufzjiacq7bxifaab4cirsx4x6mhq",
+      "associated": {
+        "chat": {
+          "allowIncoming": "all"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mk4dk6tjsd2q"
+      },
+      "labels": [],
+      "createdAt": "2023-04-23T13:17:21.300Z",
+      "description": "Fixture description",
+      "indexedAt": "2025-09-23T17:29:44.364Z"
+    },
+    {
+      "did": "did:plc:fixture209",
+      "handle": "fixture-209.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture209/bafkreifin5zpcnr5a4mnvetzsti6a5bcyzn7amac7try2uhnsrpuzcrqu4",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mk4bzx7w2q2q"
+      },
+      "labels": [],
+      "createdAt": "2024-01-25T08:43:30.539Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-03-16T18:10:16.593Z"
+    },
+    {
+      "did": "did:plc:fixture210",
+      "handle": "fixture-210.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture210/bafkreicfonecwywoacb62ykaezsebnuphq5bev4v6czjdna5ywjelqlqju",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mjnrq3yoo52y"
+      },
+      "labels": [],
+      "createdAt": "2026-03-06T02:34:28.191Z",
+      "verification": {
+        "verifications": [
+          {
+            "issuer": "did:plc:fixture007",
+            "uri": "at://did:plc:fixture007/app.bsky.graph.verification/3mgecyawq4g2m",
+            "isValid": true,
+            "createdAt": "2026-03-06T02:59:04.736Z"
+          }
+        ],
+        "verifiedStatus": "valid",
+        "trustedVerifierStatus": "none"
+      },
+      "description": "Fixture description",
+      "indexedAt": "2026-03-06T02:41:14.689Z"
+    },
+    {
+      "did": "did:plc:fixture211",
+      "handle": "fixture-211.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture211/bafkreihhn7mh2ftyqagw33beithzy2ckhitg75ysbsozcsn4nczfjohdx4",
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mjamojidg22v",
+        "followedBy": "at://did:plc:fixture211/app.bsky.graph.follow/3mjbuunqbbe2d"
+      },
+      "labels": [],
+      "createdAt": "2023-05-05T08:49:30.327Z",
+      "description": "Fixture description",
+      "indexedAt": "2024-01-26T00:37:14.936Z"
+    },
+    {
+      "did": "did:plc:fixture212",
+      "handle": "fixture-212.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture212/bafkreiet3m7khtczl4fjvdi5zmzsostpcgbvkaej2goyng6rjnoop5757m",
+      "associated": {
+        "chat": {
+          "allowIncoming": "all"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mivznmk2de2q"
+      },
+      "labels": [],
+      "createdAt": "2023-05-02T21:28:59.199Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-03-10T02:10:12.293Z"
+    },
+    {
+      "did": "did:plc:fixture213",
+      "handle": "fixture-213.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture213/bafkreigzkszc3te7xtif7xtcmjaqigp2fhevzgjlcsndzgwmmjr7ouznmi",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mia26kk2gh2k"
+      },
+      "labels": [],
+      "createdAt": "2026-02-06T21:50:24.688Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-02-14T22:42:19.895Z"
+    },
+    {
+      "did": "did:plc:fixture020",
+      "handle": "fixture-72.test",
+      "displayName": "Fixture User 192",
+      "pronouns": "he/him",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture020/bafkreig4e2ay3xkugq4fakrhcp6mmjmq2zpjviu76jzy6m5iqvxtpp4t2m",
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        },
+        "germ": {
+          "showButtonTo": "usersIFollow",
+          "messageMeUrl": "https://fixture-62.test/newUser"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mht2xufmsb2q",
+        "followedBy": "at://did:plc:fixture020/app.bsky.graph.follow/3ldc5mvwdtc2h"
+      },
+      "labels": [],
+      "createdAt": "2023-06-27T16:00:03.966Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-02-22T01:59:45.591Z"
+    },
+    {
+      "did": "did:plc:fixture214",
+      "handle": "fixture-214.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture214/bafkreibbv54vqzzis4p4yqgonyqzgcnlocio5d4sx6ttjet2rxdyjrni7u",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mhnyctt4jn2m"
+      },
+      "labels": [],
+      "createdAt": "2025-08-08T21:38:15.663Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-05-16T05:56:38.768Z"
+    },
+    {
+      "did": "did:plc:fixture215",
+      "handle": "fixture-215.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture215/bafkreihhajczrxibcjug676luiigldg6vwgwx3vpowpglc7brpduw55wg4",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mhlwymhad32d"
+      },
+      "labels": [],
+      "createdAt": "2024-01-17T17:42:00.833Z",
+      "verification": {
+        "verifications": [
+          {
+            "issuer": "did:plc:fixture007",
+            "uri": "at://did:plc:fixture007/app.bsky.graph.verification/3mhlpsflsdi2i",
+            "isValid": true,
+            "createdAt": "2026-03-21T19:02:16.838Z"
+          }
+        ],
+        "verifiedStatus": "valid",
+        "trustedVerifierStatus": "none"
+      },
+      "description": "Fixture description",
+      "indexedAt": "2026-05-21T13:57:21.170Z"
+    },
+    {
+      "did": "did:plc:fixture216",
+      "handle": "fixture-216.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture216/bafkreih6tkczdwbkggcmmh37kxhhuv4ehj7gy7btskodpnoyq73rsbakci",
+      "associated": {
+        "chat": {
+          "allowIncoming": "all"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mhfoovr2zc24",
+        "followedBy": "at://did:plc:fixture216/app.bsky.graph.follow/3l6wii6wad22o"
+      },
+      "labels": [],
+      "createdAt": "2023-07-23T22:15:03.771Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-05-04T19:47:31.368Z"
+    },
+    {
+      "did": "did:plc:fixture217",
+      "handle": "fixture-217.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture217/bafkreicwc2m2aiw2vu5hmwr5gql235fbtr42g7hpxvoirq2c66vucgacpi",
+      "associated": {
+        "chat": {
+          "allowIncoming": "none"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mh2fovdgwh27"
+      },
+      "labels": [],
+      "createdAt": "2026-01-24T09:35:27.189Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-04-18T18:34:41.151Z"
+    },
+    {
+      "did": "did:plc:fixture218",
+      "handle": "fixture-218.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture218/bafkreid3opifl4cthuy4uwlawnjbnmyaqhql5evp3luay5u5amyiz5my2u",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mgsrdu6fbj24",
+        "followedBy": "at://did:plc:fixture218/app.bsky.graph.follow/3mgsxrghp2s2u"
+      },
+      "labels": [],
+      "createdAt": "2026-03-11T22:16:39.093Z",
+      "description": "Fixture description",
+      "indexedAt": "2026-03-12T19:18:40.994Z"
+    },
+    {
+      "did": "did:plc:fixture219",
+      "handle": "fixture-219.test",
+      "displayName": "Fixture User 192",
+      "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture219/bafkreicixoq23lsimr6cabhtss53jimjzouzkstif4xdjmvt4rcr5bjsku",
+      "associated": {
+        "chat": {
+          "allowIncoming": "none"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mgobhyfky523"
+      },
+      "labels": [],
+      "createdAt": "2023-11-28T19:15:32.965Z",
+      "verification": {
+        "verifications": [
+          {
+            "issuer": "did:plc:fixture007",
+            "uri": "at://did:plc:fixture007/app.bsky.graph.verification/3mgngmgwfk62n",
+            "isValid": true,
+            "createdAt": "2026-03-09T17:58:00.876Z"
+          }
+        ],
+        "verifiedStatus": "valid",
+        "trustedVerifierStatus": "none"
+      },
+      "description": "Fixture description",
+      "indexedAt": "2026-03-30T15:07:51.989Z"
+    }
+  ],
+  "subject": {
+    "did": "did:plc:fixture002",
+    "handle": "fixture-115.test",
+    "displayName": "Fixture User 192",
+    "pronouns": "aspiring handheld",
+    "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture002/bafkreiasojc6hmayrngr7iwghy7ixsssdwo23mv2ckaemyoznrnhyaldeu",
+    "associated": {
+      "chat": {
+        "allowIncoming": "all"
+      },
+      "activitySubscription": {
+        "allowSubscriptions": "followers"
+      }
+    },
+    "viewer": {
+      "muted": false,
+      "blockedBy": false
+    },
+    "labels": [],
+    "createdAt": "2023-03-07T07:41:49.577Z",
+    "status": {
+      "uri": "at://did:plc:fixture002/app.bsky.actor.status/self",
+      "cid": "bafyreicraejdjehbrczexcnm7wsw76uqcscxcllj2skncs3qyzgpvemvbe",
+      "record": {
+        "$type": "app.bsky.actor.status",
+        "createdAt": "2025-05-18T21:17:39.077Z",
+        "durationMinutes": 1440,
+        "embed": {
+          "$type": "app.bsky.embed.external",
+          "external": {
+            "$type": "app.bsky.embed.external#external",
+            "description": "Fixture external description",
+            "title": "Fixture external title",
+            "uri": "https://example.test/fixture-external"
+          }
+        },
+        "status": "app.bsky.actor.status#live"
+      },
+      "status": "app.bsky.actor.status#live",
+      "embed": {
+        "$type": "app.bsky.embed.external#view",
+        "external": {
+          "uri": "https://example.test/fixture-external",
+          "title": "Fixture external title",
+          "description": "Fixture external description"
+        }
+      },
+      "labels": [],
+      "expiresAt": "2025-05-19T01:17:39.077Z",
+      "isActive": false,
+      "isDisabled": false
+    },
+    "description": "Fixture description",
+    "indexedAt": "2026-05-20T13:39:25.770Z"
+  },
+  "cursor": "3mgobhyfky523"
+}

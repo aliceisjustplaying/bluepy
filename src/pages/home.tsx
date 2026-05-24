@@ -5,29 +5,32 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { ControlledMenu } from '@szhsin/react-menu';
 import type { RefObject } from 'react';
 import { memo } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import Columns from '../components/columns';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
-import Notification from '../components/notification';
-import { api } from '../utils/api';
+import {
+  isMutedNotification,
+  NotificationReasonLabel,
+} from '../components/notifications-feed';
+import PostByUri from '../components/post-by-uri';
+import { useActiveDid, useClients } from '../contexts/SessionProvider';
+import { feedReadMode } from '../data/_internal/dispatch';
+import { notificationPostUri } from '../data/_internal/notification-post-uri';
+import { getReadAgent } from '../data/clients';
+import { useNotifications } from '../data/notifications';
 import db from '../utils/db';
 import FilterContext from '../utils/filter-context';
-import { massageNotifications2 } from '../utils/group-notifications';
-import states, { saveStatus } from '../utils/states';
+import states from '../utils/states';
 import store from '../utils/store';
 import { getCurrentAccountNS } from '../utils/store-utils';
 
 import Following from './following';
 import Following2 from './following2';
 import List from './list';
-import {
-  getGroupedNotifications,
-  mastoFetchNotifications,
-} from './notifications';
 
 interface HomeTimeline {
   type?: string;
@@ -144,106 +147,40 @@ interface NotificationsMenuProps {
   onClose: () => void;
 }
 
-interface NotificationItem {
-  id: string;
-  _ids?: string;
-  type?: string;
-  status?: unknown;
-}
-
-interface ControlledMenuHandle {
-  closeMenu?: () => void;
-  scrollTop?: number;
-}
-
-type ControlledMenuRef = ControlledMenuHandle & HTMLElement;
-
 const NOTIFICATIONS_DISPLAY_LIMIT = 5;
 function NotificationsMenu({
   anchorRef,
   state,
   onClose,
 }: NotificationsMenuProps) {
-  const { masto, instance } = api();
   const snapStates = useSnapshot(states);
-  const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
-    'default',
-  );
+  const activeDid = useActiveDid();
+  const clients = useClients();
+  const { items, isLoading, error } = useNotifications();
 
-  const loadNotifications = useCallback(() => {
-    setUIState('loading');
-    void (async () => {
-      try {
-        const notificationsIterator =
-          mastoFetchNotifications() as AsyncIterator<unknown[]>;
-        const allNotifications = await notificationsIterator.next();
-        const notifications = massageNotifications2(
-          allNotifications.value as Parameters<typeof massageNotifications2>[0],
-        ) as NotificationItem[] | undefined;
-
-        if (notifications?.length) {
-          notifications.forEach((notification) => {
-            saveStatus(
-              notification.status as Parameters<typeof saveStatus>[0],
-              instance,
-              {
-                skipThreading: true,
-              },
-            );
-          });
-
-          const groupedNotifications = getGroupedNotifications(
-            notifications,
-          ) as NotificationItem[];
-
-          states.notificationsLast = groupedNotifications[0];
-          states.notifications = groupedNotifications;
-
-          // Update last read marker
-          (
-            masto.v1.markers as {
-              create(options: {
-                notifications: { lastReadId: string };
-              }): Promise<unknown>;
-            }
-          )
-            .create({
-              notifications: {
-                lastReadId: groupedNotifications[0].id,
-              },
-            })
-            .catch(() => {});
-        }
-
-        states.notificationsShowNew = false;
-        states.notificationsLastFetchTime = Date.now();
-
-        setUIState('default');
-      } catch {
-        setUIState('error');
-      }
-    })();
-  }, [masto, instance]);
-
-  const menuRef = useRef<ControlledMenuRef | null>(null);
-  const headerHeight = 52;
   useEffect(() => {
     if (state !== 'open') return;
-    if (
-      !snapStates.notificationsShowNew ||
-      (menuRef.current?.scrollTop ?? 0) <= headerHeight
-    ) {
-      loadNotifications();
+    if (snapStates.notificationsShowNew) {
+      states.notificationsShowNew = false;
+      states.notificationsLastFetchTime = Date.now();
+      if (!activeDid || !clients.activeAppViewProxyAgent) return;
+      try {
+        const agent = getReadAgent(clients, feedReadMode(activeDid));
+        void agent.app.bsky.notification.updateSeen({
+          seenAt: new Date().toISOString(),
+        });
+      } catch (seenError) {
+        console.warn('Failed to update notification seen marker', seenError);
+      }
     }
-  }, [state, snapStates.notificationsShowNew, loadNotifications]);
+  }, [activeDid, clients, state, snapStates.notificationsShowNew]);
 
-  const visibleNotifications = (
-    snapStates.notifications as NotificationItem[]
-  ).filter((notification) => notification.type !== 'follow_request');
+  const visibleNotifications = items
+    .filter((item) => !isMutedNotification(item, activeDid))
+    .slice(0, NOTIFICATIONS_DISPLAY_LIMIT);
 
   return (
     <ControlledMenu
-      ref={menuRef}
       menuClassName="notifications-menu"
       state={state}
       anchorRef={anchorRef as never}
@@ -253,7 +190,7 @@ function NotificationsMenu({
       }}
       containerProps={{
         onClick: () => {
-          menuRef.current?.closeMenu?.();
+          onClose();
         },
       }}
       overflow="auto"
@@ -270,44 +207,47 @@ function NotificationsMenu({
       <FilterContext.Provider value="notifications">
         <main>
           {visibleNotifications.length ? (
-            <>
-              {visibleNotifications
-                .slice(0, NOTIFICATIONS_DISPLAY_LIMIT)
-                .map((notification) => (
-                  <Notification
-                    key={notification._ids || notification.id}
-                    instance={instance}
-                    notification={
-                      notification as Parameters<
-                        typeof Notification
-                      >[0]['notification']
-                    }
-                    disableContextMenu
-                  />
-                ))}
-            </>
-          ) : uiState === 'loading' ? (
+            visibleNotifications.map((notification) => {
+              const handle =
+                notification.author.handle || notification.author.did;
+              const postUri = notificationPostUri(notification);
+              return (
+                <div key={notification.uri} className="notification-menu-item">
+                  <Link
+                    to={`/at://${notification.author.did}/app.bsky.actor.profile/self`}
+                  >
+                    {handle}
+                  </Link>{' '}
+                  <span>
+                    <NotificationReasonLabel reason={notification.reason} />
+                  </span>
+                  {postUri ? (
+                    <PostByUri
+                      uri={postUri}
+                      size="s"
+                      readOnly
+                      showActionsBar={false}
+                    />
+                  ) : null}
+                </div>
+              );
+            })
+          ) : isLoading ? (
             <div className="ui-state">
               <Loader abrupt />
             </div>
+          ) : error ? (
+            <div className="ui-state">
+              <p>
+                <Trans>Unable to fetch notifications.</Trans>
+              </p>
+            </div>
           ) : (
-            uiState === 'error' && (
-              <div className="ui-state">
-                <p>
-                  <Trans>Unable to fetch notifications.</Trans>
-                </p>
-                <p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      loadNotifications();
-                    }}
-                  >
-                    <Trans>Try again</Trans>
-                  </button>
-                </p>
-              </div>
-            )
+            <div className="ui-state">
+              <p>
+                <Trans>No notifications yet.</Trans>
+              </p>
+            </div>
           )}
         </main>
       </FilterContext.Provider>

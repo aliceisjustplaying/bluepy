@@ -22,40 +22,30 @@ import EmojiText from '../components/emoji-text';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import Menu2 from '../components/menu2';
-import Timeline from '../components/timeline';
+import ProfileFeed from '../components/profile-feed';
+import { useAccountStatusesFeed } from '../data/feeds';
+import type { FeedFilter } from '../data/keys';
 import {
   api,
   getMastoV1Resource,
-  getMastoV2Resource,
   type MastoClient,
 } from '../utils/api';
+import {
+  getAtprotoRepo,
+  isAtprotoProfileURI,
+  maybeDecodeAtprotoURI,
+} from '../utils/atproto-route';
 import isSearchEnabled from '../utils/is-search-enabled';
 import mem from '../utils/mem';
 import pmem from '../utils/pmem';
 import { navigatePath } from '../utils/router';
 import showToast from '../utils/show-toast';
 import { sorted } from '../utils/sorted';
-import states, { saveStatus } from '../utils/states';
+import states from '../utils/states';
 import { getCurrentAccountID } from '../utils/store-utils';
-import useTitle from '../utils/useTitle';
 
-type Status = mastodon.v1.Status;
 type Account = mastodon.v1.Account;
 type FeaturedTag = mastodon.v1.FeaturedTag;
-type SaveStatusInput = NonNullable<Parameters<typeof saveStatus>[0]>;
-
-interface PinnedGroup {
-  id: string[];
-  items: ReadonlyArray<Status & { _pinned?: boolean }>;
-  type: 'pinned';
-}
-
-type TimelineItem = (Status & { _pinned?: boolean }) | PinnedGroup;
-type AccountStatusesListParams = mastodon.rest.v1.ListAccountStatusesParams & {
-  exclude_replies?: boolean;
-  exclude_reblogs?: boolean;
-  only_media?: boolean;
-};
 
 interface AccountStatusesProps {
   columnMode?: boolean;
@@ -75,15 +65,8 @@ type SearchParamsUpdater =
   | ((params: URLSearchParams) => void);
 type SearchParamsSetter = (next: SearchParamsUpdater) => void;
 
-const LIMIT = 20;
 const MIN_YEAR = 1983;
 const MIN_YEAR_MONTH = `${MIN_YEAR}-01`; // Birth of the Internet
-
-function stateStatus<T extends mastodon.v1.Status>(
-  status: T,
-): T & SaveStatusInput {
-  return status as T & SaveStatusInput;
-}
 
 function isAccountInfoShape(account: unknown): account is AccountInfoShape {
   return !!account && typeof account === 'object';
@@ -124,6 +107,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
   const routeParams = useParams() as { id?: string; instance?: string };
   const [routeSearchParams, setRouteSearchParamsBase] = useSearchParams();
   const id = columnMode ? props.id : props.id || routeParams.id;
+  const atprotoProfileUri = maybeDecodeAtprotoURI(id);
+  const actorId =
+    isAtprotoProfileURI(atprotoProfileUri)
+      ? (getAtprotoRepo(atprotoProfileUri) ?? id)
+      : id;
   const params = columnMode
     ? { instance: props.instance }
     : { instance: props.instance || routeParams.instance };
@@ -201,17 +189,28 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     instance: params?.instance,
   });
   const { masto: currentMasto, instance: currentInstance } = api();
-  const accountStatusesIterator = useRef<AsyncIterator<Status[]> | undefined>(
-    undefined,
-  );
 
   const [account, setAccount] = useState<Account | undefined>();
-  const searchOffsetRef = useRef(0);
-  useEffect(() => {
-    searchOffsetRef.current = 0;
-  }, [month, excludeReplies, excludeBoosts, tagged, media]);
 
   const mediaFirst = false;
+
+  const profileFilter = useMemo((): FeedFilter | undefined => {
+    if (month || tagged) return undefined;
+    if (media) return 'media';
+    if (excludeReplies) return 'posts';
+    return 'posts-and-replies';
+  }, [month, tagged, media, excludeReplies]);
+
+  const waitForAccountHandle = Boolean((month || tagged) && !account?.acct);
+  const feedSource = useAccountStatusesFeed({
+    actor: waitForAccountHandle ? undefined : actorId,
+    acct: account?.acct,
+    filter: profileFilter,
+    month,
+    tagged,
+    excludeBoosts,
+    media,
+  });
 
   const sameCurrentInstance = useMemo(
     () => instance === currentInstance,
@@ -230,168 +229,8 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     })();
   }, [instance, sameCurrentInstance, account?.acct]);
 
-  async function fetchAccountStatuses(firstLoad?: boolean): Promise<{
-    value: ReadonlyArray<TimelineItem>;
-    done?: boolean;
-  }> {
-    const isValidMonth = /^\d{4}-[01]\d$/.test(month as string);
-    // JS: `string >= number` coerces the string via ToNumber. Preserve via
-    // explicit Number(); falls back to NaN >= MIN_YEAR (false) when month is
-    // nullish, matching the original.
-    const isValidYear = Number(month?.split?.('-')?.[0]) >= MIN_YEAR;
-    if (isValidMonth && isValidYear) {
-      if (!account) {
-        return {
-          value: [],
-          done: true,
-        };
-      }
-      const [_year, _month] = (month as string).split('-');
-      const yearNum = parseInt(_year, 10);
-      const monthIndex = parseInt(_month, 10) - 1;
-      // YYYY-MM (no day)
-      // Search options:
-      // - from:account
-      // - after:YYYY-MM-DD (non-inclusive)
-      // - before:YYYY-MM-DD (non-inclusive)
-
-      // Last day of previous month
-      const after = new Date(yearNum, monthIndex, 0);
-      const afterStr = `${after.getFullYear()}-${(after.getMonth() + 1)
-        .toString()
-        .padStart(2, '0')}-${after.getDate().toString().padStart(2, '0')}`;
-      // First day of next month
-      const before = new Date(yearNum, monthIndex + 1, 1);
-      const beforeStr = `${before.getFullYear()}-${(before.getMonth() + 1)
-        .toString()
-        .padStart(2, '0')}-${before.getDate().toString().padStart(2, '0')}`;
-      console.log({
-        month,
-        _year,
-        _month,
-        monthIndex,
-        after,
-        before,
-        afterStr,
-        beforeStr,
-      });
-
-      let limit: number;
-      if (firstLoad) {
-        limit = LIMIT + 1;
-        searchOffsetRef.current = 0;
-      } else {
-        limit = LIMIT + searchOffsetRef.current + 1;
-        searchOffsetRef.current += LIMIT;
-      }
-
-      const searchResource =
-        getMastoV2Resource<mastodon.rest.v2.SearchResource>(masto, 'search');
-      const searchResults = await searchResource.list({
-        q: `from:${account.acct} after:${afterStr} before:${beforeStr}`,
-        type: 'statuses',
-        limit,
-        offset: searchOffsetRef.current,
-      });
-      if (searchResults?.statuses?.length) {
-        const value = searchResults.statuses.slice(0, LIMIT);
-        value.forEach((item) => {
-          saveStatus(stateStatus(item), instance);
-        });
-        const done = searchResults.statuses.length <= LIMIT;
-        return { value, done };
-      } else {
-        return { value: [], done: true };
-      }
-    }
-
-    let results: TimelineItem[] = [];
-    const accountsResource =
-      getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
-    if (firstLoad && !columnMode) {
-      const { value } = await accountsResource
-        .$select(id as string)
-        .statuses.list({
-          pinned: true,
-        })
-        .values()
-        .next();
-      if (value?.length && !tagged && !media) {
-        const pinnedStatuses = value.map((status: Status) => {
-          saveStatus(stateStatus(status), instance);
-          return Object.assign({}, status, { _pinned: true });
-        });
-        if (pinnedStatuses.length >= 3) {
-          const pinnedStatusesIds = pinnedStatuses.map(
-            (status: Status) => status.id,
-          );
-          results.push({
-            id: pinnedStatusesIds,
-            items: pinnedStatuses,
-            type: 'pinned',
-          });
-        } else {
-          results.push(...pinnedStatuses);
-        }
-      }
-    }
-    if (firstLoad || !accountStatusesIterator.current) {
-      const listParams: AccountStatusesListParams = {
-        limit: LIMIT,
-        exclude_replies: excludeReplies,
-        exclude_reblogs: excludeBoosts,
-        only_media: media || undefined,
-        tagged,
-      };
-      accountStatusesIterator.current = accountsResource
-        .$select(id as string)
-        .statuses.list(listParams)
-        .values();
-    }
-    const { value, done } = await accountStatusesIterator.current.next();
-    if (value?.length) {
-      // Check if value is same as pinned post (results)
-      // If the index for every post is the same, means API might not support pinned posts
-      // TODO: This is a really weird check, fix this at some point
-      if (results.length) {
-        let pinnedStatusesIds: string[] = [];
-        const first = results[0];
-        if (
-          first &&
-          typeof first === 'object' &&
-          (first as PinnedGroup).type === 'pinned'
-        ) {
-          pinnedStatusesIds = (first as PinnedGroup).id;
-        } else {
-          // TODO(oxlint:no-underscore-dangle) `_pinned` is the project-wide
-          // pinned-status marker shared with timeline.tsx; renaming is out
-          // of scope.
-          pinnedStatusesIds = (results as Array<Status & { _pinned?: boolean }>)
-            .filter((status) => status._pinned)
-            .map((status) => status.id);
-        }
-        const containsAllPinned = pinnedStatusesIds.every((postId) =>
-          value.some((status: Status) => status.id === postId),
-        );
-        if (containsAllPinned) {
-          // Remove pinned posts
-          results = [];
-        }
-      }
-
-      results.push(...value);
-
-      value.forEach((item: Status) => {
-        saveStatus(stateStatus(item), instance);
-      });
-    }
-    return {
-      value: results,
-      done,
-    };
-  }
-
   const [featuredTags, setFeaturedTags] = useState<FeaturedTag[]>([]);
+  const accountFetchKeyRef = useRef<string | null>(null);
 
   let title = t`Account posts`;
   if (account?.acct) {
@@ -416,13 +255,16 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       title = accountDisplay;
     }
   }
-  useTitle(title, ['/:instance/a/:id', '/a/:id', '/:scheme://*', '/:atUri']);
 
   const refetchAccount = useCallback(() => {
-    return memFetchAccount(id as string, masto);
-  }, [id, masto]);
+    return memFetchAccount(actorId as string, masto);
+  }, [actorId, masto]);
 
   useEffect(() => {
+    if (!actorId) return;
+    const accountFetchKey = `${actorId}@${instance}`;
+    if (accountFetchKeyRef.current === accountFetchKey) return;
+    accountFetchKeyRef.current = accountFetchKey;
     const accountsResource =
       getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
     void (async () => {
@@ -438,7 +280,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
       if (!mediaFirst) {
         try {
           const fetchedFeaturedTags = await accountsResource
-            .$select(id as string)
+            .$select(actorId)
             .featuredTags.list();
           console.log({ fetchedFeaturedTags });
           setFeaturedTags(fetchedFeaturedTags);
@@ -447,7 +289,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         }
       }
     })();
-  }, [id, mediaFirst, refetchAccount, masto]);
+  }, [actorId, instance, mediaFirst, refetchAccount, masto]);
 
   const { displayName, acct } = account || ({} as Partial<Account>);
 
@@ -485,8 +327,11 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
         ) : (
           <AccountInfo
             instance={instance}
-            account={isAccountInfoShape(cachedAccount) ? cachedAccount : id}
-            fetchAccount={refetchAccount}
+            account={
+              account ??
+              (isAccountInfoShape(cachedAccount) ? cachedAccount : undefined)
+            }
+            fetchAccount={account ? refetchAccount : undefined}
             authenticated={authenticated}
             standalone
           />
@@ -525,6 +370,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
             <div className="filter-bar-group">
               <label>
                 <input
+                  aria-label={t`Replies`}
                   type="checkbox"
                   checked={!excludeReplies}
                   disabled={!!month}
@@ -541,6 +387,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
               </label>
               <label>
                 <input
+                  aria-label={t`Reposts`}
                   type="checkbox"
                   checked={!excludeBoosts}
                   disabled={!!month}
@@ -620,6 +467,7 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
                   <label className={`filter-field ${month ? 'is-active' : ''}`}>
                     <Icon icon="month" size="l" />
                     <input
+                      aria-label={t`Month`}
                       type="month"
                       disabled={!account?.acct}
                       value={month || ''}
@@ -725,7 +573,6 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
     setSearchParams,
     clearAndSetParam,
   ]);
-  const accountMonthKey = `${month ?? ''}${account?.acct ?? ''}`;
 
   useEffect(() => {
     const activeEls = [
@@ -763,18 +610,16 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
 
   return (
     <>
-      <Timeline
+      <ProfileFeed
         key={id}
-        title={account?.acct ? `@${account.acct}` : t`Posts`}
+        actor={id}
+        filter={profileFilter}
+        source={feedSource}
+        title={title}
+        path={['/:instance/a/:id', '/a/:id', '/:scheme://*', '/:atUri']}
         titleComponent={
           <h1
             className="header-double-lines header-account"
-            // onClick={() => {
-            //   states.showAccount = {
-            //     account,
-            //     instance,
-            //   };
-            // }}
           >
             <b>
               <EmojiText text={displayName} />
@@ -785,28 +630,9 @@ function AccountStatuses({ columnMode, ...props }: AccountStatusesProps) {
           </h1>
         }
         id="account-statuses"
-        timelineKey={`account-statuses-${instance}-${id}-${[
-          excludeReplies,
-          excludeBoosts,
-          tagged,
-          media,
-          accountMonthKey,
-        ].toString()}`}
-        instance={instance}
         emptyText={t`Nothing to see here yet.`}
         errorText={t`Unable to load posts`}
-        fetchItems={fetchAccountStatuses}
-        useItemID
-        view={media || mediaFirst ? 'media' : undefined}
-        boostsCarousel={false}
         timelineStart={TimelineStart}
-        refresh={[
-          excludeReplies,
-          excludeBoosts,
-          tagged,
-          media,
-          accountMonthKey,
-        ].toString()}
         headerEnd={
           <Menu2
             portal
@@ -921,7 +747,7 @@ interface MonthPickerProps {
 }
 
 function MonthPicker(props: MonthPickerProps) {
-  const { i18n } = useLingui();
+  const { i18n, t } = useLingui();
   const {
     class: classProp,
     className = classProp,
@@ -949,6 +775,7 @@ function MonthPicker(props: MonthPickerProps) {
     <div className={className}>
       <Icon icon="month" size="l" />
       <select
+        aria-label={t`Month`}
         ref={monthFieldRef}
         disabled={disabled}
         value={_month || ''}
@@ -988,6 +815,7 @@ function MonthPicker(props: MonthPickerProps) {
         ))}
       </select>{' '}
       <input
+        aria-label={t`Year`}
         ref={yearFieldRef}
         type="number"
         disabled={disabled}

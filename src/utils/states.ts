@@ -18,6 +18,11 @@ import {
   restoreShortcutsColumnsMode,
   restoreShortcutsViewMode,
 } from './settings-storage';
+import {
+  DEFAULT_SHARE_LINK_TARGET,
+  getShareLinkTarget,
+  type ShareLinkTarget,
+} from './share-link-target';
 import store from './store';
 
 // Intentionally loose typings — this hub is mutated by 60+ consumers and 139
@@ -67,6 +72,7 @@ interface StatesSettings {
   cloakMode: boolean;
   noAnimations: boolean;
   mutedPostVisibility: MutedPostVisibility;
+  shareLinkTarget: ShareLinkTarget;
   // Future settings keys land here without touching this hub.
   [key: string]: unknown;
 }
@@ -214,6 +220,7 @@ const states = proxy<StateProxy>({
     cloakMode: false,
     noAnimations: false,
     mutedPostVisibility: DEFAULT_MUTED_POST_VISIBILITY,
+    shareLinkTarget: DEFAULT_SHARE_LINK_TARGET,
   },
 });
 
@@ -270,6 +277,9 @@ export function initStates(): void {
       'settings-mutedPostVisibility',
     ),
   });
+  states.settings.shareLinkTarget = getShareLinkTarget(
+    store.account.get<ShareLinkTarget>('settings-shareLinkTarget'),
+  );
   // Apply persisted body classes on init (subscribe handlers only fire on change)
   if (typeof document !== 'undefined' && document.body) {
     document.body.classList.toggle(
@@ -340,6 +350,9 @@ subscribe(states, (changes) => {
         'settings-mutedPostVisibility',
         getMutedPostVisibility({ mutedPostVisibility: value }),
       );
+    }
+    if (path.join('.') === 'settings.shareLinkTarget') {
+      store.account.set('settings-shareLinkTarget', getShareLinkTarget(value));
     }
   }
 });

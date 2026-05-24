@@ -173,7 +173,7 @@ guard_bash_command() {
 		deny "do not print Bluepy secret files; source ~/.secrets/bluepy/source.env is allowed"
 	fi
 
-	if rg -q '(^|[;&|[:space:]])(env|printenv)(\s|$).*(CLOUDFLARE|ATPROTO|PASSWORD|API_KEY)|echo[[:space:]]+["'\'']?\$[A-Z0-9_]*(PASSWORD|API_KEY|SECRET|TOKEN)' <<<"$cmd"; then
+	if rg -q '(^|[;&|[:space:]])(env|printenv)([[:space:]]+(-[a-zA-Z]|[A-Z_]+=|\||$)|[[:space:]]*[;&|]).*(CLOUDFLARE|ATPROTO|PASSWORD|API_KEY)|echo[[:space:]]+["'\'']?\$[A-Z0-9_]*(PASSWORD|API_KEY|SECRET|TOKEN)' <<<"$cmd"; then
 		deny "do not print secret-shaped environment variables"
 	fi
 
@@ -290,14 +290,26 @@ warn_behavioral_tests() {
 
 run_fast_checks() {
 	local scope status
-	local -a file_args
+	local -a file_args lint_args shell_args
+	file_args=()
+	lint_args=()
+	shell_args=()
 	if [ "${BLUEPY_HOOK_SKIP_FAST_CHECKS:-0}" = "1" ]; then
 		return 0
 	fi
 
 	scope="${BLUEPY_HOOK_CHECK_SCOPE:-changed}"
-	mapfile -t file_args < <(source_changed_files)
+	while IFS= read -r file; do
+		[ -n "$file" ] && file_args+=("$file")
+	done < <(source_changed_files)
 	[ "${#file_args[@]}" -eq 0 ] && return 0
+
+	while IFS= read -r file; do
+		[ -n "$file" ] && lint_args+=("$file")
+	done < <(printf '%s\n' "${file_args[@]}" | rg '\.(cjs|js|jsx|mjs|ts|tsx)$' || true)
+	while IFS= read -r file; do
+		[ -n "$file" ] && shell_args+=("$file")
+	done < <(printf '%s\n' "${file_args[@]}" | rg '\.sh$' || true)
 
 	status=0
 
@@ -316,12 +328,18 @@ run_fast_checks() {
 		status=1
 	fi
 
+	if [ "${#shell_args[@]}" -gt 0 ]; then
+		for file in "${shell_args[@]}"; do
+			bash -n "$file" || status=1
+		done
+	fi
+
 	if [ "$scope" = "full" ]; then
 		bunx oxlint . || status=1
 		bunx oxfmt --check . || status=1
-	else
-		bunx oxlint "${file_args[@]}" || status=1
-		bunx oxfmt --check "${file_args[@]}" || status=1
+	elif [ "${#lint_args[@]}" -gt 0 ]; then
+		bunx oxlint "${lint_args[@]}" || status=1
+		bunx oxfmt --check "${lint_args[@]}" || status=1
 	fi
 
 	if [ "$status" -ne 0 ]; then
@@ -339,7 +357,7 @@ pre-bash)
 	guard_bash_command "$(tool_command)"
 	;;
 pre-write)
-	file_path="$(json_field '.tool_input.file_path')"
+	file_path="$(json_field '.tool_input.file_path // .tool_input.path // .tool_input.notebook_path')"
 	workdir="$(tool_workdir)"
 	paths="$(patch_file_paths)"
 	patch_root="$ROOT"
@@ -352,10 +370,6 @@ pre-write)
 		block_on_main_branch "$(dirname "$file_path")"
 		checked_target=1
 	fi
-	if [ -n "$workdir" ]; then
-		block_on_main_branch "$(normalize_path "$workdir")"
-		checked_target=1
-	fi
 	if [ -n "$paths" ]; then
 		while IFS= read -r patch_path; do
 			[ -n "$patch_path" ] || continue
@@ -366,6 +380,13 @@ pre-write)
 				block_on_main_branch "$(dirname "$patch_root/$patch_path")"
 			fi
 		done <<<"$paths"
+		checked_target=1
+	fi
+	# Workdir alone is the session cwd, which can be the bluesky checkout
+	# even when the actual write lands in a worktree off another branch.
+	# Only consult it as a fallback when there is no concrete file target.
+	if [ "$checked_target" -eq 0 ] && [ -n "$workdir" ]; then
+		block_on_main_branch "$(normalize_path "$workdir")"
 		checked_target=1
 	fi
 	if [ "$checked_target" -eq 0 ]; then
@@ -381,13 +402,16 @@ post-edit)
 	warn_behavioral_tests
 	;;
 stop)
-	require_tool rg
-	guard_forbidden_patterns
-	guard_runbook_mirror
-	guard_locale_churn
-	warn_i18n_needed
-	warn_behavioral_tests
-	run_fast_checks
+	{
+		require_tool rg
+		guard_forbidden_patterns
+		guard_runbook_mirror
+		guard_locale_churn
+		warn_i18n_needed
+		warn_behavioral_tests
+		run_fast_checks
+	} >&2
+	printf '{}\n'
 	;;
 *)
 	deny "unknown hook mode: ${MODE:-<empty>}"

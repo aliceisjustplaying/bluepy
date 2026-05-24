@@ -7,6 +7,7 @@ import { useSnapshot } from 'valtio';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import {
+  buildBskyPostPermalink,
   buildAtprotoPostPermalink,
   isAtprotoPostURI,
 } from '../utils/atproto-route';
@@ -120,6 +121,8 @@ export default function StatusContent({
   const sameInstance = instance === currentInstance;
   const snapStates = useSnapshot(states);
   const sKey = resolvedSKey;
+  const liveStatus =
+    (snapStates.statuses[sKey] as AnyStatus | undefined) || status;
 
   const {
     account,
@@ -155,7 +158,9 @@ export default function StatusContent({
     _deleted,
     _pinned,
     // _filtered,
-  } = status;
+  } = liveStatus;
+  const statusDataHref =
+    typeof _uri === 'string' && isAtprotoPostURI(_uri) ? `/${_uri}` : undefined;
   const {
     acct,
     avatar,
@@ -211,9 +216,16 @@ export default function StatusContent({
   const editedAtDate = editedAt ? new Date(editedAt) : createdAtDate;
 
   const atproto: StatusAtprotoMeta | undefined = status._atproto;
-  const permalink = isAtprotoPostURI(atproto?.uri)
+  const bluepyPermalink = isAtprotoPostURI(atproto?.uri)
     ? buildAtprotoPostPermalink(atproto.uri)
     : url;
+  const bskyPermalink = isAtprotoPostURI(atproto?.uri)
+    ? buildBskyPostPermalink(atproto.uri)
+    : url;
+  const permalink =
+    snapStates.settings.shareLinkTarget === 'bsky'
+      ? bskyPermalink
+      : bluepyPermalink;
   const { inReplyToAccount, mentionSelf, showReplyBadge } =
     useStatusReplyParent({
       instance,
@@ -323,9 +335,7 @@ export default function StatusContent({
     fetchBoostedLikedByAccounts,
   } = useStatusInteractions({
     statusID,
-    status,
-    sKey,
-    id,
+    status: liveStatus,
     instance,
     masto,
     sameInstance,
@@ -474,6 +484,7 @@ export default function StatusContent({
       )}
       <article
         data-state-post-id={sKey}
+        data-href={statusDataHref}
         ref={(node: HTMLElement | null) => {
           statusRef.current = node;
           // Use parent node if it's in focus
@@ -591,7 +602,7 @@ export default function StatusContent({
               e.preventDefault();
               e.stopPropagation();
               states.showAccount = {
-                account: status.account,
+                account,
                 instance,
               };
             }}

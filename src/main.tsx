@@ -6,14 +6,17 @@ import './instrument';
 
 import { i18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
-import * as Sentry from '@sentry/react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 // Polyfill needed for Firefox < 122
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1423593
 // import '@formatjs/intl-segmenter/polyfill';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './app';
+import { SessionProvider } from './contexts/SessionProvider';
+import { createQueryClient } from './data/query-client';
 import ErrorFallback from './components/error-fallback';
 import { IconSpriteProvider } from './components/icon-sprite-manager';
 import { applyAppviewTheme } from './utils/atproto-adapter';
@@ -23,12 +26,14 @@ import {
   redirectLegacyOrigin,
 } from './utils/origin-migration';
 import { initPWAViewport } from './utils/pwa-viewport';
+import { captureSentryException } from './instrument';
 import {
   migrateLegacyCanonicalRoute,
   migrateLegacyHashRoute,
 } from './utils/router';
 import states from './utils/states';
 
+const queryClient = createQueryClient();
 const bluepyReactRoot = Symbol.for('bluepy.reactRoot');
 
 type RootContainer = HTMLElement & {
@@ -59,6 +64,32 @@ function processShareData(
     initialText: textParts.join('\n\n'),
     files: data.files || [],
   };
+}
+
+class AppErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown, errorInfo: ErrorInfo) {
+    void captureSentryException(error, {
+      contexts: {
+        react: {
+          componentStack: errorInfo.componentStack,
+        },
+      },
+    });
+  }
+
+  render() {
+    if (this.state.hasError) return <ErrorFallback />;
+    return this.props.children;
+  }
 }
 
 if (!redirectLegacyOrigin()) {
@@ -96,13 +127,17 @@ if (!redirectLegacyOrigin()) {
         (appContainer[bluepyReactRoot] = createRoot(appContainer));
       root.render(
         <I18nProvider i18n={i18n}>
-          <BrowserRouter>
-            <IconSpriteProvider>
-              <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
-                <App />
-              </Sentry.ErrorBoundary>
-            </IconSpriteProvider>
-          </BrowserRouter>
+          <QueryClientProvider client={queryClient}>
+            <SessionProvider>
+              <BrowserRouter>
+                <IconSpriteProvider>
+                  <AppErrorBoundary>
+                    <App />
+                  </AppErrorBoundary>
+                </IconSpriteProvider>
+              </BrowserRouter>
+            </SessionProvider>
+          </QueryClientProvider>
         </I18nProvider>,
       );
 

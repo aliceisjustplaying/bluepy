@@ -43,11 +43,22 @@ function MenuConfirm({
   menuItemClassName,
   menuFooter,
   menuExtras,
+  itemProps,
   ...props
 }: MenuConfirmProps) {
   const { children, onClick, ...restProps } = props;
   if (!confirm) {
-    if (subMenu) return <MenuItem {...(props as MenuItemProps)} />;
+    if (subMenu) {
+      return (
+        <MenuItem
+          {...itemProps}
+          {...(restProps as MenuItemProps)}
+          onClick={onClick}
+        >
+          {children}
+        </MenuItem>
+      );
+    }
     if (onClick) {
       // JS contract requires `children` to be a single trigger ReactElement when
       // `onClick` is supplied without confirm; runtime crashes identically
@@ -75,7 +86,7 @@ function MenuConfirm({
       menuClassName="menu-emphasized"
       {...(restProps as unknown as MenuProps)}
       {...(subMenu
-        ? { label: children, openTrigger: 'clickOnly' }
+        ? { itemProps, label: children, openTrigger: 'clickOnly' }
         : { menuButton: children, openTrigger: 'clickOnly' })}
     >
       <MenuItem

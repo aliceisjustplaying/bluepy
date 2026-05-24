@@ -1,0 +1,432 @@
+{
+  "thread": {
+    "post": {
+      "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5ch5jik2y",
+      "cid": "bafyreiercqbjjpfpsxob7sri5ppr47zfrx326te6md3okpnqef65afrcrm",
+      "author": {
+        "did": "did:plc:fixture001",
+        "handle": "fixture-52.test",
+        "displayName": "Fixture User 53",
+        "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture001/bafkreicsvua5wy6s5qyclq6fswttccfnpltfrbfzsvli7wdptat4jpxlse",
+        "associated": {
+          "chat": {
+            "allowIncoming": "all"
+          },
+          "activitySubscription": {
+            "allowSubscriptions": "mutuals"
+          }
+        },
+        "viewer": {
+          "muted": false,
+          "blockedBy": false,
+          "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mckftacgtz2v",
+          "followedBy": "at://did:plc:fixture001/app.bsky.graph.follow/3la6irccpis2b"
+        },
+        "labels": [],
+        "createdAt": "2024-02-08T02:27:33.380Z"
+      },
+      "record": {
+        "text": "Fixture post content #1",
+        "$type": "app.bsky.feed.post",
+        "createdAt": "2026-05-23T19:04:32.963Z",
+        "langs": [
+          "en"
+        ]
+      },
+      "bookmarkCount": 0,
+      "replyCount": 4,
+      "repostCount": 0,
+      "likeCount": 14,
+      "quoteCount": 0,
+      "indexedAt": "2026-05-23T19:04:34.073Z",
+      "viewer": {
+        "bookmarked": false,
+        "threadMuted": false,
+        "embeddingDisabled": false
+      },
+      "labels": []
+    },
+    "replies": [
+      {
+        "post": {
+          "uri": "at://did:plc:fixture003/app.bsky.feed.post/3mmk5gjlexs2p",
+          "cid": "bafyreibunk3cn4d636rhj2jarivssibw45ertm3sokwzpatocf2ids66xa",
+          "author": {
+            "did": "did:plc:fixture003",
+            "handle": "fixture-54.test",
+            "displayName": "Fixture User 55",
+            "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture003/bafkreigqmjgxgojkxjy3d4xybrd52k2loq62zn5egp65tglor4phf5p3ia",
+            "associated": {
+              "chat": {
+                "allowIncoming": "following"
+              },
+              "activitySubscription": {
+                "allowSubscriptions": "followers"
+              }
+            },
+            "viewer": {
+              "muted": false,
+              "blockedBy": false
+            },
+            "labels": [
+              {
+                "src": "did:plc:fixture003",
+                "uri": "at://did:plc:fixture003/app.bsky.actor.profile/self",
+                "cid": "bafyreiauf2gw72ocryd3e3nio5xnlvvtiz6iv6qh77kavlk3l6cjdbpmsi",
+                "val": "!no-unauthenticated",
+                "cts": "1970-01-01T00:00:00.000Z"
+              }
+            ],
+            "createdAt": "2023-11-01T00:55:41.618Z"
+          },
+          "record": {
+            "text": "Fixture post content #2",
+            "$type": "app.bsky.feed.post",
+            "createdAt": "2026-05-23T19:06:49.731Z",
+            "embed": {
+              "$type": "app.bsky.embed.external",
+              "external": {
+                "description": "Fixture external description",
+                "thumb": {
+                  "$type": "blob",
+                  "ref": {
+                    "$link": "bafkreicd53qk4gycjo3oqug4xshfya5hwdzu3paqirs7uqgtqt7lltqyda"
+                  },
+                  "mimeType": "image/jpeg",
+                  "size": 41374
+                },
+                "title": "Fixture external title",
+                "uri": "https://example.test/fixture-external"
+              }
+            },
+            "langs": [
+              "en"
+            ],
+            "reply": {
+              "parent": {
+                "cid": "bafyreiercqbjjpfpsxob7sri5ppr47zfrx326te6md3okpnqef65afrcrm",
+                "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5ch5jik2y"
+              },
+              "root": {
+                "cid": "bafyreiercqbjjpfpsxob7sri5ppr47zfrx326te6md3okpnqef65afrcrm",
+                "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5ch5jik2y"
+              }
+            }
+          },
+          "embed": {
+            "$type": "app.bsky.embed.external#view",
+            "external": {
+              "uri": "https://example.test/fixture-external",
+              "title": "Fixture external title",
+              "description": "Fixture external description",
+              "thumb": "https://fixture-53.test/img/feed_thumbnail/plain/did:plc:fixture003/bafkreicd53qk4gycjo3oqug4xshfya5hwdzu3paqirs7uqgtqt7lltqyda"
+            }
+          },
+          "bookmarkCount": 0,
+          "replyCount": 0,
+          "repostCount": 0,
+          "likeCount": 1,
+          "quoteCount": 0,
+          "indexedAt": "2026-05-23T19:06:50.578Z",
+          "viewer": {
+            "bookmarked": false,
+            "threadMuted": false,
+            "embeddingDisabled": false
+          },
+          "labels": []
+        },
+        "replies": [],
+        "threadContext": {
+          "rootAuthorLike": "at://did:plc:fixture001/app.bsky.feed.like/3mmk5hlosxy2v"
+        },
+        "$type": "app.bsky.feed.defs#threadViewPost"
+      },
+      {
+        "post": {
+          "uri": "at://did:plc:fixture004/app.bsky.feed.post/3mmk5idwe522q",
+          "cid": "bafyreiggsxcocjrkswpvo637y3o2i7iz2vamhbz6xlzxwnjgxdxtniixla",
+          "author": {
+            "did": "did:plc:fixture004",
+            "handle": "fixture-56.test",
+            "displayName": "Fixture User 57",
+            "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture004/bafkreiempgjkhvjq2dobqkmd5pqd6lcbkhgejasfwh3zoygncjpwgqc7te",
+            "associated": {
+              "chat": {
+                "allowIncoming": "all"
+              },
+              "activitySubscription": {
+                "allowSubscriptions": "followers"
+              }
+            },
+            "viewer": {
+              "muted": false,
+              "blockedBy": false,
+              "followedBy": "at://did:plc:fixture004/app.bsky.graph.follow/3laxupent4c2j"
+            },
+            "labels": [],
+            "createdAt": "2023-08-13T21:30:56.810Z"
+          },
+          "record": {
+            "text": "Fixture post content #3",
+            "$type": "app.bsky.feed.post",
+            "createdAt": "2026-05-23T19:07:50.909Z",
+            "langs": [
+              "en"
+            ],
+            "reply": {
+              "parent": {
+                "cid": "bafyreiercqbjjpfpsxob7sri5ppr47zfrx326te6md3okpnqef65afrcrm",
+                "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5ch5jik2y"
+              },
+              "root": {
+                "cid": "bafyreiercqbjjpfpsxob7sri5ppr47zfrx326te6md3okpnqef65afrcrm",
+                "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5ch5jik2y"
+              }
+            }
+          },
+          "bookmarkCount": 0,
+          "replyCount": 0,
+          "repostCount": 0,
+          "likeCount": 3,
+          "quoteCount": 0,
+          "indexedAt": "2026-05-23T19:07:51.177Z",
+          "viewer": {
+            "bookmarked": false,
+            "threadMuted": false,
+            "embeddingDisabled": false
+          },
+          "labels": []
+        },
+        "replies": [],
+        "threadContext": {
+          "rootAuthorLike": "at://did:plc:fixture001/app.bsky.feed.like/3mmk5jfarzq2r"
+        },
+        "$type": "app.bsky.feed.defs#threadViewPost"
+      },
+      {
+        "post": {
+          "uri": "at://did:plc:fixture005/app.bsky.feed.post/3mmk5dmvr3g2w",
+          "cid": "bafyreibrjoml2lxr2pyo2rahj2viff53z43rivcettwcivlgy37ju2fgza",
+          "author": {
+            "did": "did:plc:fixture005",
+            "handle": "fixture-57.test",
+            "displayName": "Fixture User 58",
+            "pronouns": "hij/hem",
+            "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture005/bafkreie7k7ispfs2vi53rmzxjaql5rh63upjg4k4436txwd5mafckqieia",
+            "associated": {
+              "chat": {
+                "allowIncoming": "all"
+              },
+              "activitySubscription": {
+                "allowSubscriptions": "followers"
+              }
+            },
+            "viewer": {
+              "muted": false,
+              "blockedBy": false
+            },
+            "labels": [],
+            "createdAt": "2023-07-20T20:06:44.698Z"
+          },
+          "record": {
+            "text": "Fixture post content #4",
+            "$type": "app.bsky.feed.post",
+            "createdAt": "2026-05-23T19:05:12.428Z",
+            "langs": [
+              "en"
+            ],
+            "reply": {
+              "parent": {
+                "$type": "com.atproto.repo.strongRef",
+                "cid": "bafyreiercqbjjpfpsxob7sri5ppr47zfrx326te6md3okpnqef65afrcrm",
+                "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5ch5jik2y"
+              },
+              "root": {
+                "$type": "com.atproto.repo.strongRef",
+                "cid": "bafyreiercqbjjpfpsxob7sri5ppr47zfrx326te6md3okpnqef65afrcrm",
+                "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5ch5jik2y"
+              }
+            }
+          },
+          "bookmarkCount": 0,
+          "replyCount": 1,
+          "repostCount": 0,
+          "likeCount": 1,
+          "quoteCount": 0,
+          "indexedAt": "2026-05-23T19:05:12.775Z",
+          "viewer": {
+            "bookmarked": false,
+            "threadMuted": false,
+            "embeddingDisabled": false
+          },
+          "labels": []
+        },
+        "replies": [
+          {
+            "post": {
+              "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5gzyauk2y",
+              "cid": "bafyreibxjag6oy5cndy2lm5hxugklbmrpwg2i4ffhtvdivev4hq6tbxyzm",
+              "author": {
+                "did": "did:plc:fixture001",
+                "handle": "fixture-52.test",
+                "displayName": "Fixture User 58",
+                "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture001/bafkreicsvua5wy6s5qyclq6fswttccfnpltfrbfzsvli7wdptat4jpxlse",
+                "associated": {
+                  "chat": {
+                    "allowIncoming": "all"
+                  },
+                  "activitySubscription": {
+                    "allowSubscriptions": "mutuals"
+                  }
+                },
+                "viewer": {
+                  "muted": false,
+                  "blockedBy": false,
+                  "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mckftacgtz2v",
+                  "followedBy": "at://did:plc:fixture001/app.bsky.graph.follow/3la6irccpis2b"
+                },
+                "labels": [],
+                "createdAt": "2024-02-08T02:27:33.380Z"
+              },
+              "record": {
+                "text": "Fixture post content #5",
+                "$type": "app.bsky.feed.post",
+                "createdAt": "2026-05-23T19:07:06.931Z",
+                "langs": [
+                  "en"
+                ],
+                "reply": {
+                  "parent": {
+                    "cid": "bafyreibrjoml2lxr2pyo2rahj2viff53z43rivcettwcivlgy37ju2fgza",
+                    "uri": "at://did:plc:fixture005/app.bsky.feed.post/3mmk5dmvr3g2w"
+                  },
+                  "root": {
+                    "$type": "com.atproto.repo.strongRef",
+                    "cid": "bafyreiercqbjjpfpsxob7sri5ppr47zfrx326te6md3okpnqef65afrcrm",
+                    "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5ch5jik2y"
+                  }
+                }
+              },
+              "bookmarkCount": 0,
+              "replyCount": 0,
+              "repostCount": 0,
+              "likeCount": 0,
+              "quoteCount": 0,
+              "indexedAt": "2026-05-23T19:07:07.975Z",
+              "viewer": {
+                "bookmarked": false,
+                "threadMuted": false,
+                "embeddingDisabled": false
+              },
+              "labels": []
+            },
+            "replies": [],
+            "threadContext": {},
+            "$type": "app.bsky.feed.defs#threadViewPost"
+          }
+        ],
+        "threadContext": {
+          "rootAuthorLike": "at://did:plc:fixture001/app.bsky.feed.like/3mmk5fjwcsz2w"
+        },
+        "$type": "app.bsky.feed.defs#threadViewPost"
+      },
+      {
+        "post": {
+          "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5f43sts2y",
+          "cid": "bafyreiagzf5y2m564qmg4a2t35qqcy6d45stearm7mapfvkis3rdyoudly",
+          "author": {
+            "did": "did:plc:fixture001",
+            "handle": "fixture-52.test",
+            "displayName": "Fixture User 58",
+            "avatar": "https://fixture-53.test/img/avatar/plain/did:plc:fixture001/bafkreicsvua5wy6s5qyclq6fswttccfnpltfrbfzsvli7wdptat4jpxlse",
+            "associated": {
+              "chat": {
+                "allowIncoming": "all"
+              },
+              "activitySubscription": {
+                "allowSubscriptions": "mutuals"
+              }
+            },
+            "viewer": {
+              "muted": false,
+              "blockedBy": false,
+              "following": "at://did:plc:fixture002/app.bsky.graph.follow/3mckftacgtz2v",
+              "followedBy": "at://did:plc:fixture001/app.bsky.graph.follow/3la6irccpis2b"
+            },
+            "labels": [],
+            "createdAt": "2024-02-08T02:27:33.380Z"
+          },
+          "record": {
+            "text": "Fixture post content #6",
+            "$type": "app.bsky.feed.post",
+            "createdAt": "2026-05-23T19:06:02.030Z",
+            "embed": {
+              "$type": "app.bsky.embed.images",
+              "images": [
+                {
+                  "alt": "",
+                  "aspectRatio": {
+                    "height": 450,
+                    "width": 800
+                  },
+                  "image": {
+                    "$type": "blob",
+                    "ref": {
+                      "$link": "bafkreiddftwnvw7rhe5o2bzd5evj5se7c2kaf3oniffckiofnl22neix7u"
+                    },
+                    "mimeType": "image/jpeg",
+                    "size": 320047
+                  }
+                }
+              ]
+            },
+            "langs": [
+              "en"
+            ],
+            "reply": {
+              "parent": {
+                "cid": "bafyreiercqbjjpfpsxob7sri5ppr47zfrx326te6md3okpnqef65afrcrm",
+                "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5ch5jik2y"
+              },
+              "root": {
+                "cid": "bafyreiercqbjjpfpsxob7sri5ppr47zfrx326te6md3okpnqef65afrcrm",
+                "uri": "at://did:plc:fixture001/app.bsky.feed.post/3mmk5ch5jik2y"
+              }
+            }
+          },
+          "embed": {
+            "images": [
+              {
+                "thumb": "https://fixture-53.test/img/feed_thumbnail/plain/did:plc:fixture001/bafkreiddftwnvw7rhe5o2bzd5evj5se7c2kaf3oniffckiofnl22neix7u",
+                "fullsize": "https://fixture-53.test/img/feed_fullsize/plain/did:plc:fixture001/bafkreiddftwnvw7rhe5o2bzd5evj5se7c2kaf3oniffckiofnl22neix7u",
+                "alt": "",
+                "aspectRatio": {
+                  "height": 450,
+                  "width": 800
+                }
+              }
+            ],
+            "$type": "app.bsky.embed.images#view"
+          },
+          "bookmarkCount": 0,
+          "replyCount": 0,
+          "repostCount": 0,
+          "likeCount": 2,
+          "quoteCount": 0,
+          "indexedAt": "2026-05-23T19:06:03.872Z",
+          "viewer": {
+            "bookmarked": false,
+            "threadMuted": false,
+            "embeddingDisabled": false
+          },
+          "labels": []
+        },
+        "replies": [],
+        "threadContext": {},
+        "$type": "app.bsky.feed.defs#threadViewPost"
+      }
+    ],
+    "threadContext": {},
+    "$type": "app.bsky.feed.defs#threadViewPost"
+  }
+}

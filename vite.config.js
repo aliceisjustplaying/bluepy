@@ -52,10 +52,17 @@ const { PHANPY_WEBSITE: DEV_WEBSITE } = loadEnv(
 const devOrigin = DEV_WEBSITE?.replace(/\/$/, '') || null;
 const devHost = devOrigin ? new URL(devOrigin).hostname : null;
 const DEV_PORT = Number(process.env.PORT || process.env.VITE_PORT) || undefined;
+const devHttps =
+  process.env.VITE_HTTPS_CERT && process.env.VITE_HTTPS_KEY
+    ? {
+        cert: fs.readFileSync(process.env.VITE_HTTPS_CERT),
+        key: fs.readFileSync(process.env.VITE_HTTPS_KEY),
+      }
+    : undefined;
 
 function devRequestOrigin(req) {
   const host = req.headers.host || '';
-  if (!host || /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host)) {
+  if (!host) {
     return null;
   }
   const forwardedProto = String(req.headers['x-forwarded-proto'] || '').split(
@@ -177,6 +184,7 @@ export default defineConfig({
   server: {
     host: true,
     port: DEV_PORT,
+    https: devHttps,
     allowedHosts: devHost ? [devHost] : true,
     watch: {
       awaitWriteFinish: {

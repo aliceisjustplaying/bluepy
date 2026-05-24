@@ -3,8 +3,13 @@ import './account-info.css';
 import { msg, plural } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { MenuDivider, MenuItem } from '@szhsin/react-menu';
+import type {
+  AppBskyActorDefs,
+  AppBskyFeedDefs,
+  AppBskyRichtextFacet,
+} from '@atproto/api';
 import type { mastodon } from 'masto';
-import type { HTMLAttributes } from 'react';
+import type { HTMLAttributes, MouseEvent } from 'react';
 import {
   useCallback,
   useEffect,
@@ -14,11 +19,13 @@ import {
   useState,
 } from 'react';
 
-import { api } from '../utils/api';
+import { useActiveDid, useClients } from '../contexts/SessionProvider';
+import { feedReadMode } from '../data/_internal/dispatch';
+import { getReadAgent } from '../data/clients';
+import { useFollowers, useFollows, useProfileRoute } from '../data/profiles';
 import enhanceContent from '../utils/enhance-content';
 import handleContentLinks from '../utils/handle-content-links';
 import niceDateTime from '../utils/nice-date-time';
-import pmem from '../utils/pmem';
 import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
@@ -26,9 +33,10 @@ import states, { hideAllModals } from '../utils/states';
 import {
   type AccountInfo as StoredAccountInfo,
   getAccounts,
-  getCurrentAccountID,
   saveAccounts,
 } from '../utils/store-utils';
+import { renderPostText } from '../render/post-text';
+import { profileHasCounts } from '../utils/atproto-profile-shape';
 
 import AccountBlock from './account-block';
 import AccountHandleInfo from './account-handle-info';
@@ -43,17 +51,75 @@ import Link, { type LinkProps } from './link';
 import Menu2 from './menu2';
 import Modal from './modal';
 import RawHtml from './raw-html';
+import ProfileModerationGate from './profile-moderation-gate';
 // TODO(oxlint:import/no-cycle): account-info <-> related-actions cycle is
 // structural; related-actions consumes AccountInfoShape and handleScannerClick
 // while account-info renders RelatedActions. Breaking it requires extracting
 // scanner-click + types into a shared leaf module.
 import RelatedActions from './related-actions';
 
-// Augmented Account shape used internally. Adds optional fields the app
-// reads but the masto.v1.Account base does not declare: `_atproto` cache
-// flag, `hideCollections` (Mastodon API extension surfaced by some forks),
-// `roles` (server-specific), and `avatarDescription` /
-// `headerDescription` (Mastodon 4.x media alt-text extensions).
+function profileToAccountInfo(profile: {
+  did: string;
+  handle: string;
+  displayName?: string;
+  description?: string;
+  descriptionFacets?: AppBskyRichtextFacet.Main[];
+  avatar?: string;
+  banner?: string;
+  followersCount?: number;
+  followsCount?: number;
+  postsCount?: number;
+  createdAt?: string;
+  labels?: unknown;
+}): AccountInfoShape {
+  return {
+    id: profile.did,
+    username: profile.handle,
+    acct: profile.handle,
+    url: `https://bsky.app/profile/${profile.did}`,
+    displayName: profile.displayName || profile.handle,
+    note: renderPostText(profile.description || '', profile.descriptionFacets),
+    avatar: profile.avatar || '',
+    avatarStatic: profile.avatar || '',
+    header: profile.banner || '',
+    headerStatic: profile.banner || '',
+    followersCount: profile.followersCount || 0,
+    followingCount: profile.followsCount || 0,
+    statusesCount: profile.postsCount || 0,
+    createdAt: profile.createdAt || '',
+    locked: false,
+    bot: false,
+    group: false,
+    lastStatusAt: profile.createdAt || '',
+    roles: [],
+    emojis: [],
+    fields: [],
+    _atproto: {
+      hasProfileCounts: profileHasCounts(profile),
+      labels: profile.labels,
+    },
+  };
+}
+
+function accountInfoToProfile(
+  account: AccountInfoShape | null,
+): AppBskyActorDefs.ProfileViewDetailed | undefined {
+  if (!account) return undefined;
+  return {
+    did: account.id,
+    handle: account.acct || account.username || account.id,
+    displayName: account.displayName,
+    description: '',
+    avatar: account.avatar || account.avatarStatic,
+    banner: account.header || account.headerStatic,
+    followersCount: account.followersCount,
+    followsCount: account.followingCount,
+    postsCount: account.statusesCount,
+    indexedAt: account.createdAt,
+    labels: account._atproto?.labels as AppBskyActorDefs.ProfileViewDetailed['labels'],
+  };
+}
+
 export type AccountInfoShape = mastodon.v1.Account & {
   _atproto?: { hasProfileCounts?: boolean } & Record<string, unknown>;
   hideCollections?: boolean | null;
@@ -66,65 +132,12 @@ export function toStoredAccountInfo(info: AccountInfoShape): StoredAccountInfo {
   return { ...info };
 }
 
-// Endpoint shims for masto APIs reached through the loose ApiClient.masto
-// shape. The runtime client supports `accounts.$select(id).{statuses,
-// followers, following}` and `accounts.familiarFollowers.fetch(...)`; the
-// declared MastoClient in utils/api.ts intentionally leaves these as
-// `unknown`. We narrow locally rather than widening the shared interface.
-interface FamiliarFollowersEndpoint {
-  fetch(params: {
-    id: readonly string[];
-  }): Promise<mastodon.v1.FamiliarFollowers[]>;
-}
-interface AccountStatusesListParams {
-  limit?: number;
-  [key: string]: unknown;
-}
-interface AccountStatusesEndpoint {
-  list(params: AccountStatusesListParams): {
-    values(): AsyncIterator<mastodon.v1.Status[]>;
-  };
-}
-interface AccountFollowersListParams {
-  limit?: number;
-  [key: string]: unknown;
-}
-interface AccountFollowersEndpoint {
-  list(params: AccountFollowersListParams): {
-    values(): AsyncIterator<mastodon.v1.Account[]>;
-  };
-}
-interface AccountSelectEndpoint {
-  statuses: AccountStatusesEndpoint;
-  followers: AccountFollowersEndpoint;
-  following: AccountFollowersEndpoint;
-}
-interface AccountsEndpoint {
-  $select(id: string): AccountSelectEndpoint;
-  familiarFollowers: FamiliarFollowersEndpoint;
-}
-
-interface MastoLike {
-  v1: { accounts: unknown } & Record<string, unknown>;
-  [key: string]: unknown;
-}
-
-function getAccountsEndpoint(masto: MastoLike): AccountsEndpoint {
-  return masto.v1.accounts as AccountsEndpoint;
-}
-
-// Shim for EditProfileSheet: the peer declares its onClose result as
-// ProfileAccount (a deliberately loose local type), but the runtime value is
-// a real mastodon.v1.Account returned by masto.v1.accounts.updateCredentials.
-// This cast preserves that app-level knowledge.
 function EditProfileSheet(props: {
   onClose?: (arg?: { state?: string; account?: AccountInfoShape }) => void;
 }) {
   return <EditProfileSheetComponent {...(props as EditProfileSheetProps)} />;
 }
 
-// Posting stats are derived locally. `daysSinceLastPost` is conditionally
-// set inside fetchPostingStats — keep it optional in the type.
 interface PostingStats {
   total: number;
   originals: number;
@@ -134,95 +147,13 @@ interface PostingStats {
   daysSinceLastPost?: number;
 }
 
-// `info` updates may carry payload state for the app's flows. The QR/avatar
-// modal entries assign `unknown`-typed valtio state, mirrored locally.
 interface AccountIterPage {
   value: mastodon.v1.Account[] | undefined;
   done?: boolean;
 }
 
 const LIMIT = 80;
-
-const ACCOUNT_INFO_MAX_AGE = 1000 * 60 * 10; // 10 mins
-
-function fetchFamiliarFollowers(
-  currentID: string,
-  masto: MastoLike,
-): Promise<mastodon.v1.FamiliarFollowers[]> {
-  return getAccountsEndpoint(masto).familiarFollowers.fetch({
-    id: [currentID],
-  });
-}
-const memFetchFamiliarFollowers = pmem(fetchFamiliarFollowers, {
-  expires: ACCOUNT_INFO_MAX_AGE,
-});
-
-async function fetchPostingStats(
-  accountID: string,
-  masto: MastoLike,
-): Promise<PostingStats> {
-  const fetchStatuses = getAccountsEndpoint(masto)
-    .$select(accountID)
-    .statuses.list({
-      limit: 20,
-    })
-    .values()
-    .next();
-
-  const { value: statuses } = (await fetchStatuses) as {
-    value: mastodon.v1.Status[];
-  };
-  console.log('fetched statuses', statuses);
-  const stats: PostingStats = {
-    total: statuses.length,
-    originals: 0,
-    replies: 0,
-    boosts: 0,
-    quotes: 0,
-  };
-  // Categories statuses by type
-  // - Original posts (not replies to others)
-  // - Threads (self-replies + 1st original post)
-  // - Boosts (reblogs)
-  // - Replies (not-self replies)
-  // - Quotes
-  // The ATProto adapter attaches a non-standard `quote` field on Status.
-  // Narrow with a local shape rather than widening the masto type.
-  type StatusWithQuote = mastodon.v1.Status & {
-    quote?: {
-      id?: string;
-      quotedStatus?: { id?: string } | null;
-    } | null;
-  };
-  statuses.forEach((status: StatusWithQuote) => {
-    if (status.reblog) {
-      stats.boosts++;
-    } else if (
-      !!status.inReplyToId &&
-      status.inReplyToAccountId !== status.account.id // Not self-reply
-    ) {
-      stats.replies++;
-    } else if (status.quote?.id || status.quote?.quotedStatus?.id) {
-      stats.quotes++;
-    } else {
-      stats.originals++;
-    }
-  });
-
-  // Count days since last post
-  if (statuses.length) {
-    stats.daysSinceLastPost = Math.ceil(
-      (Date.now() - Date.parse(statuses[statuses.length - 1].createdAt)) /
-        86400000,
-    );
-  }
-
-  console.log('posting stats', stats);
-  return stats;
-}
-const memFetchPostingStats = pmem(fetchPostingStats, {
-  expires: ACCOUNT_INFO_MAX_AGE,
-});
+const FAMILIAR_FOLLOWER_AVATAR_LIMIT = 3;
 
 const isValidUrl = (string: string): boolean => {
   try {
@@ -263,28 +194,40 @@ function AccountInfo({
   authenticated,
 }: AccountInfoProps) {
   const { i18n, t } = useLingui();
-  const { masto, authenticated: currentAuthenticated } = api({
-    instance,
-  });
-  const { masto: currentMasto, instance: currentInstance } = api();
+  const clients = useClients();
+  const activeDid = useActiveDid();
+  const currentAuthenticated = authenticated ?? !!activeDid;
+  const currentInstance = instance;
   const [uiState, setUIState] = useState<UIState>('default');
   const isString = typeof account === 'string';
   const [info, setInfo] = useState<AccountInfoShape | null>(
     isString ? null : (account ?? null),
   );
+  const shouldHydrateProfile =
+    isString || (!isString && account?._atproto?.hasProfileCounts === false);
+  const profileQuery = useProfileRoute(
+    shouldHydrateProfile ? (isString ? account : account?.id) : undefined,
+  );
+  const moderationProfile = profileQuery.data ?? accountInfoToProfile(info);
   const [reloadCount, reload] = useReducer((c: number) => c + 1, 0);
 
-  const sameCurrentInstance = useMemo(
-    () => instance === currentInstance,
-    [instance, currentInstance],
-  );
-
   useEffect(() => {
+    if (profileQuery.data) {
+      const result = profileToAccountInfo(profileQuery.data);
+      states.accounts[`${result.id}@${instance}`] = { ...result };
+      setInfo(result);
+      setUIState('default');
+      return;
+    }
     if (!isString) {
       setInfo(account ?? null);
       // TODO(oxlint:no-underscore-dangle) `_atproto` is the project-wide
       // adapter cache key; renaming is out of scope.
       if (account?._atproto?.hasProfileCounts !== false) return;
+      if (profileQuery.isLoading) {
+        setUIState('loading');
+        return;
+      }
     }
     setUIState('loading');
     void (async () => {
@@ -304,7 +247,15 @@ function AccountInfo({
         setUIState('error');
       }
     })();
-  }, [isString, account, fetchAccount, reloadCount, instance]);
+  }, [
+    isString,
+    account,
+    fetchAccount,
+    reloadCount,
+    instance,
+    profileQuery.data,
+    profileQuery.isLoading,
+  ]);
 
   // `info` may be null while loading; fall back to an empty placeholder so
   // the destructure stays terse. All consumers below already guard with
@@ -349,7 +300,7 @@ function AccountInfo({
     }
   }
 
-  const isSelf = useMemo(() => id === getCurrentAccountID(), [id]);
+  const isSelf = useMemo(() => !!id && id === activeDid, [activeDid, id]);
 
   useEffect(() => {
     const infoHasEssentials = !!(
@@ -379,84 +330,51 @@ function AccountInfo({
 
   const [headerCornerColors, setHeaderCornerColors] = useState<string[]>([]);
 
-  const followersIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
-  >(undefined);
-  const familiarFollowersCache = useRef<mastodon.v1.Account[]>([]);
-  async function fetchFollowers(
-    firstLoad?: boolean,
-  ): Promise<AccountIterPage | IteratorResult<mastodon.v1.Account[]>> {
-    if (!id) return { value: undefined, done: true };
-    const accountsEndpoint = getAccountsEndpoint(masto);
-    if (firstLoad || !followersIterator.current) {
-      followersIterator.current = accountsEndpoint
-        .$select(id)
-        .followers.list({
-          limit: LIMIT,
-        })
-        .values();
-    }
-    const results = await followersIterator.current.next();
-    if (isSelf) return results;
-    if (!sameCurrentInstance) return results;
+  const followersSource = useFollowers(id, { enabled: false });
+  const followingSource = useFollows(id, { enabled: false });
+  const followerCountLoaded = useRef(0);
+  const followingCountLoaded = useRef(0);
 
-    const { value } = results;
-    let newValue: mastodon.v1.Account[] = [];
-    // On first load, fetch familiar followers, merge to top of results' `value`
-    // Remove dups on every fetch
-    if (firstLoad) {
-      let familiarFollowers: mastodon.v1.FamiliarFollowers[] = [];
-      try {
-        familiarFollowers = await accountsEndpoint.familiarFollowers.fetch({
-          id: [id],
-        });
-      } catch (err) {
-        console.warn('Failed to fetch familiar followers', err);
-      }
-      familiarFollowersCache.current = familiarFollowers?.[0]?.accounts || [];
-      newValue = [
-        ...familiarFollowersCache.current,
-        ...((value ?? []) as mastodon.v1.Account[]).filter(
-          (entry) =>
-            !familiarFollowersCache.current.some(
-              (familiar) => familiar.id === entry.id,
-            ),
-        ),
-      ];
-    } else if (value?.length) {
-      newValue = (value as mastodon.v1.Account[]).filter(
-        (entry) =>
-          !familiarFollowersCache.current.some(
-            (familiar) => familiar.id === entry.id,
-          ),
-      );
-    }
+  useEffect(() => {
+    followerCountLoaded.current = 0;
+    followingCountLoaded.current = 0;
+  }, [id]);
 
-    return {
-      ...results,
-      value: newValue,
-    };
-  }
+  const fetchFollowers = useCallback(
+    async (
+      firstLoad?: boolean,
+    ): Promise<AccountIterPage | IteratorResult<AccountInfoShape[]>> => {
+      if (!id) return { value: undefined, done: true };
+      if (firstLoad) followerCountLoaded.current = 0;
+      const snapshot = firstLoad
+        ? await followersSource.refetchItems()
+        : await followersSource.loadMoreItems();
+      const value = snapshot.items
+        .slice(followerCountLoaded.current)
+        .map(profileToAccountInfo);
+      followerCountLoaded.current = snapshot.items.length;
+      return { value, done: !snapshot.hasMore };
+    },
+    [followersSource, id],
+  );
 
-  const followingIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
-  >(undefined);
-  async function fetchFollowing(
-    firstLoad?: boolean,
-  ): Promise<AccountIterPage | IteratorResult<mastodon.v1.Account[]>> {
-    if (!id) return { value: undefined, done: true };
-    const accountsEndpoint = getAccountsEndpoint(masto);
-    if (firstLoad || !followingIterator.current) {
-      followingIterator.current = accountsEndpoint
-        .$select(id)
-        .following.list({
-          limit: LIMIT,
-        })
-        .values();
-    }
-    const results = await followingIterator.current.next();
-    return results;
-  }
+  const fetchFollowing = useCallback(
+    async (
+      firstLoad?: boolean,
+    ): Promise<AccountIterPage | IteratorResult<AccountInfoShape[]>> => {
+      if (!id) return { value: undefined, done: true };
+      if (firstLoad) followingCountLoaded.current = 0;
+      const snapshot = firstLoad
+        ? await followingSource.refetchItems()
+        : await followingSource.loadMoreItems();
+      const value = snapshot.items
+        .slice(followingCountLoaded.current)
+        .map(profileToAccountInfo);
+      followingCountLoaded.current = snapshot.items.length;
+      return { value, done: !snapshot.hasMore };
+    },
+    [followingSource, id],
+  );
 
   const LinkOrDiv = useCallback(
     ({ to, ...props }: LinkProps) => {
@@ -471,61 +389,145 @@ function AccountInfo({
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
 
   const [familiarFollowers, setFamiliarFollowers] = useState<
-    mastodon.v1.Account[]
+    AccountInfoShape[]
   >([]);
-  const [postingStats, setPostingStats] = useState<PostingStats | undefined>();
-  const [postingStatsUIState, setPostingStatsUIState] =
-    useState<UIState>('default');
+  const [loadedPostingStats, setPostingStats] = useState<
+    PostingStats | undefined
+  >();
+  const [postingStatsActorId, setPostingStatsActorId] = useState<
+    string | undefined
+  >();
+  const [postingStatsLoading, setPostingStatsLoading] = useState(false);
+  const visibleFamiliarFollowers = useMemo(
+    () => familiarFollowers.slice(0, FAMILIAR_FOLLOWER_AVATAR_LIMIT),
+    [familiarFollowers],
+  );
+  const postingStats =
+    postingStatsActorId === id ? loadedPostingStats : undefined;
   const hasPostingStats = !!postingStats?.total;
 
-  const renderFamiliarFollowers = useCallback(
-    async (currentID: string): Promise<void> => {
-      try {
-        const followers = await memFetchFamiliarFollowers(
-          currentID,
-          currentMasto,
-        );
-        console.log('fetched familiar followers', followers);
-        setFamiliarFollowers(
-          (followers[0]?.accounts ?? []).slice(0, FAMILIAR_FOLLOWERS_LIMIT),
-        );
-      } catch (e) {
-        console.error(e);
-      }
-    },
-    [currentMasto],
-  );
+  useEffect(() => {
+    setFamiliarFollowers([]);
+    setPostingStats(undefined);
+    setPostingStatsActorId(undefined);
+  }, [id]);
+
+  const renderFamiliarFollowers = useCallback(async (): Promise<void> => {
+    if (!activeDid || !id) {
+      setFamiliarFollowers([]);
+      return;
+    }
+    const agent = getReadAgent(clients, feedReadMode(activeDid));
+    try {
+      const res = await agent.app.bsky.graph.getKnownFollowers({
+        actor: id,
+        limit: LIMIT,
+      });
+      setFamiliarFollowers(res.data.followers.map(profileToAccountInfo));
+    } catch (error) {
+      // Familiar followers are decorative; profile rendering should not fail if
+      // this optional graph lookup is unavailable.
+      console.warn('Failed to load familiar followers', error);
+      setFamiliarFollowers([]);
+    }
+  }, [activeDid, clients, id]);
+
+  useEffect(() => {
+    if (standalone || !activeDid || !id || id === activeDid) {
+      return;
+    }
+    void renderFamiliarFollowers();
+  }, [activeDid, id, renderFamiliarFollowers, standalone]);
 
   const renderPostingStats = useCallback(async () => {
-    if (!id) return;
-    setPostingStatsUIState('loading');
-    try {
-      const stats = await memFetchPostingStats(id, masto);
-      setPostingStats(stats);
-      setPostingStatsUIState('default');
-    } catch (e) {
-      console.error(e);
-      setPostingStatsUIState('error');
+    if (!activeDid || !id) {
+      setPostingStats(undefined);
+      setPostingStatsActorId(undefined);
+      return;
     }
-  }, [id, masto]);
+    setPostingStatsActorId(id);
+    setPostingStatsLoading(true);
+    try {
+      const agent = getReadAgent(clients, feedReadMode(activeDid));
+      const res = await agent.getAuthorFeed({
+        actor: id,
+        limit: 20,
+        filter: 'posts_with_replies',
+      });
+      const stats: PostingStats = {
+        total: res.data.feed.length,
+        originals: 0,
+        replies: 0,
+        boosts: 0,
+        quotes: 0,
+      };
+
+      for (const item of res.data.feed) {
+        if (item.reason?.$type === 'app.bsky.feed.defs#reasonRepost') {
+          stats.boosts += 1;
+          continue;
+        }
+        const record = item.post.record as AppBskyFeedDefs.PostView['record'] & {
+          reply?: { parent?: { uri?: string } };
+        };
+        if (
+          record.reply?.parent?.uri &&
+          record.reply.parent.uri.split('/')[2] !== item.post.author.did
+        ) {
+          stats.replies += 1;
+        } else if (item.post.embed?.$type === 'app.bsky.embed.record#view') {
+          stats.quotes += 1;
+        } else if (
+          item.post.embed?.$type === 'app.bsky.embed.recordWithMedia#view'
+        ) {
+          stats.quotes += 1;
+        } else {
+          stats.originals += 1;
+        }
+      }
+
+      const lastPost = res.data.feed.at(-1)?.post;
+      const lastCreatedAt = (
+        lastPost?.record as { createdAt?: string } | undefined
+      )?.createdAt;
+      if (lastCreatedAt) {
+        stats.daysSinceLastPost = Math.ceil(
+          (Date.now() - Date.parse(lastCreatedAt)) / 86400000,
+        );
+      }
+      setPostingStats(stats);
+    } finally {
+      setPostingStatsLoading(false);
+    }
+  }, [activeDid, clients, id]);
+
+  useEffect(() => {
+    if (
+      standalone ||
+      !id ||
+      statusesCount <= 0 ||
+      postingStatsLoading ||
+      postingStatsActorId === id
+    ) {
+      return;
+    }
+    void renderPostingStats();
+  }, [
+    id,
+    standalone,
+    statusesCount,
+    postingStatsLoading,
+    postingStatsActorId,
+    renderPostingStats,
+  ]);
 
   const onRelationshipChange = useCallback(
     ({
-      relationship,
-      currentID,
+      relationship: _relationship,
     }: {
-      relationship: mastodon.v1.Relationship;
-      currentID: string;
-    }) => {
-      if (!relationship.following) {
-        void renderFamiliarFollowers(currentID);
-        if (!standalone && statusesCount > 0) {
-          // Only render posting stats if not standalone and has posts
-          void renderPostingStats();
-        }
-      }
-    },
-    [standalone, statusesCount, renderFamiliarFollowers, renderPostingStats],
+      relationship: { following?: boolean };
+    }) => {},
+    [],
   );
 
   const onProfileUpdate = useCallback(
@@ -631,7 +633,7 @@ function AccountInfo({
           </>
         ) : (
           info && (
-            <>
+            <ProfileModerationGate profile={moderationProfile}>
               {!!moved && (
                 <div className="account-moved">
                   <p>
@@ -989,8 +991,10 @@ function AccountInfo({
                     <LinkOrDiv
                       tabIndex={0}
                       to={accountLink}
-                      onClick={() => {
+                      onClick={(event: MouseEvent) => {
+                        event.preventDefault();
                         // states.showAccount = false;
+                        states.showGenericAccounts = false;
                         setTimeout(() => {
                           states.showGenericAccounts = {
                             id: 'followers',
@@ -1007,10 +1011,10 @@ function AccountInfo({
                         }, 0);
                       }}
                     >
-                      {!!familiarFollowers.length && (
+                      {!!visibleFamiliarFollowers.length && (
                         <span className="shazam-container-horizontal">
                           <span className="shazam-container-inner stats-avatars-bunch">
-                            {familiarFollowers.map((follower) => (
+                            {visibleFamiliarFollowers.map((follower) => (
                               <Avatar
                                 key={follower.id}
                                 url={follower.avatarStatic}
@@ -1046,8 +1050,10 @@ function AccountInfo({
                       className="insignificant"
                       tabIndex={0}
                       to={accountLink}
-                      onClick={() => {
+                      onClick={(event: MouseEvent) => {
+                        event.preventDefault();
                         // states.showAccount = false;
+                        states.showGenericAccounts = false;
                         setTimeout(() => {
                           states.showGenericAccounts = {
                             heading: t({
@@ -1265,49 +1271,19 @@ function AccountInfo({
                     </div>
                   </LinkOrDiv>
                 )}
-                {!moved && (
-                  <div className="account-metadata-box">
-                    <div
-                      className="shazam-container no-animation"
-                      hidden={!!postingStats}
-                    >
-                      <div className="shazam-container-inner">
-                        <button
-                          type="button"
-                          className="posting-stats-button"
-                          disabled={postingStatsUIState === 'loading'}
-                          onClick={() => {
-                            void renderPostingStats();
-                          }}
-                        >
-                          <div
-                            className={`posting-stats-icon ${
-                              postingStatsUIState === 'loading' ? 'loading' : ''
-                            }`}
-                          />
-                          <Trans>View post stats</Trans>{' '}
-                          {/* <Loader
-                        abrupt
-                        hidden={postingStatsUIState !== 'loading'}
-                      /> */}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </main>
               <footer>
                 <RelatedActions
                   info={info}
                   instance={instance}
                   standalone={standalone}
-                  authenticated={authenticated}
+                  authenticated={currentAuthenticated}
                   onRelationshipChange={onRelationshipChange}
                   onProfileUpdate={onProfileUpdate}
                   setShowEditProfile={setShowEditProfile}
                 />
               </footer>
-            </>
+            </ProfileModerationGate>
           )
         )}
       </div>
@@ -1330,8 +1306,6 @@ function AccountInfo({
     </>
   );
 }
-
-const FAMILIAR_FOLLOWERS_LIMIT = 3;
 
 function lightenRGB([r, g, b]: readonly number[]): [
   number,

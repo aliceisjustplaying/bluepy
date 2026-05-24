@@ -1,14 +1,13 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import type { mastodon } from 'masto';
-import { useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
-import { api, getMastoV1Resource } from '../utils/api';
+import { useFollowers, useFollows } from '../data/profiles';
+import { profileToAccount } from '../render/profile-view-map';
 import shortenNumber from '../utils/shorten-number';
 import states from '../utils/states';
 
 import Link from './link';
-
-const LIMIT = 80;
 
 type AccountWithHideCollections = mastodon.v1.Account & {
   hideCollections?: boolean | null;
@@ -25,44 +24,54 @@ export default function AccountInfoMini({
 }: AccountInfoMiniProps) {
   const { t } = useLingui();
 
-  const followersIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
-  >(undefined);
-  const followingIterator = useRef<
-    AsyncIterator<mastodon.v1.Account[]> | undefined
-  >(undefined);
+  const followersOffsetRef = useRef<number>(0);
+  const followingOffsetRef = useRef<number>(0);
+  const subjectDid = account?.id;
+  const followersSource = useFollowers(subjectDid, { enabled: false });
+  const followingSource = useFollows(subjectDid, { enabled: false });
+
+  useEffect(() => {
+    followersOffsetRef.current = 0;
+    followingOffsetRef.current = 0;
+  }, [subjectDid]);
+
+  const fetchFollowers = useCallback(
+    async (firstLoad?: boolean) => {
+      if (!subjectDid) return { value: [], done: true };
+      if (firstLoad) followersOffsetRef.current = 0;
+      const snapshot = firstLoad
+        ? await followersSource.refetchItems()
+        : await followersSource.loadMoreItems();
+      const value = snapshot.items
+        .slice(followersOffsetRef.current)
+        .map(profileToAccount);
+      followersOffsetRef.current = snapshot.items.length;
+      return { value, done: !snapshot.hasMore };
+    },
+    [followersSource, subjectDid],
+  );
+
+  const fetchFollowing = useCallback(
+    async (firstLoad?: boolean) => {
+      if (!subjectDid) return { value: [], done: true };
+      if (firstLoad) followingOffsetRef.current = 0;
+      const snapshot = firstLoad
+        ? await followingSource.refetchItems()
+        : await followingSource.loadMoreItems();
+      const value = snapshot.items
+        .slice(followingOffsetRef.current)
+        .map(profileToAccount);
+      followingOffsetRef.current = snapshot.items.length;
+      return { value, done: !snapshot.hasMore };
+    },
+    [followingSource, subjectDid],
+  );
 
   if (!account) return null;
 
   const { followersCount, followingCount, statusesCount, id, hideCollections } =
     account;
   const accountLink = instance ? `/${instance}/a/${id}` : `/a/${id}`;
-
-  const { masto } = api({ instance });
-  const accountsResource =
-    getMastoV1Resource<mastodon.rest.v1.AccountsResource>(masto, 'accounts');
-
-  async function fetchFollowers(firstLoad?: boolean) {
-    if (!id) return { value: [], done: true };
-    if (firstLoad || !followersIterator.current) {
-      followersIterator.current = accountsResource
-        .$select(id)
-        .followers.list({ limit: LIMIT })
-        .values();
-    }
-    return await followersIterator.current.next();
-  }
-
-  async function fetchFollowing(firstLoad?: boolean) {
-    if (!id) return { value: [], done: true };
-    if (firstLoad || !followingIterator.current) {
-      followingIterator.current = accountsResource
-        .$select(id)
-        .following.list({ limit: LIMIT })
-        .values();
-    }
-    return await followingIterator.current.next();
-  }
 
   return (
     <div className="account-container mini">

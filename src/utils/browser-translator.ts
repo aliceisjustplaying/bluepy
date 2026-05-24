@@ -58,37 +58,26 @@ export const supportsBrowserTranslator =
 
 // https://developer.chrome.com/docs/ai/language-detection
 export let langDetector: LanguageDetectorInstance | undefined;
-if (supportsLanguageDetector) {
-  void (async () => {
+let langDetectorPromise: Promise<LanguageDetectorInstance | undefined> | null =
+  null;
+
+async function getLanguageDetector(): Promise<
+  LanguageDetectorInstance | undefined
+> {
+  if (langDetector) return langDetector;
+  if (!supportsLanguageDetector) return undefined;
+  langDetectorPromise ??= (async () => {
     try {
       const availability = await LanguageDetector.availability();
-      if (availability === 'unavailable') {
-        console.log('🎺 Language detector is unavailable');
-        // The language detector isn't usable.
-        return;
-      }
-      if (availability === 'available') {
-        console.log('🎺 Language detector is available');
-        // The language detector can immediately be used.
-        langDetector = await LanguageDetector.create();
-      } else {
-        console.log(`🎺 Language detector is ${availability}`);
-        // The language detector can be used after model download.
-        langDetector = await LanguageDetector.create({
-          monitor(m) {
-            m.addEventListener('downloadprogress', (e) => {
-              console.log(
-                `🎺 Language detector: Downloaded ${e.loaded * 100}%`,
-              );
-            });
-          },
-        });
-        await langDetector.ready;
-      }
+      if (availability !== 'available') return undefined;
+      langDetector = await LanguageDetector.create();
+      return langDetector;
     } catch (e) {
-      console.error(e);
+      console.warn(e);
+      return undefined;
     }
   })();
+  return langDetectorPromise;
 }
 
 export interface TranslateResult {
@@ -112,13 +101,14 @@ export const translate = async (
   let detectedSourceLanguage: string | undefined;
   const originalSource = source;
   if (source === 'auto') {
-    if (!langDetector?.detect) {
+    const detector = await getLanguageDetector();
+    if (!detector?.detect) {
       return {
         error: 'No language detector',
       };
     }
     try {
-      const results = await langDetector.detect(text);
+      const results = await detector.detect(text);
       source = results[0].detectedLanguage;
       detectedSourceLanguage = source;
     } catch (e) {

@@ -7,6 +7,7 @@ import type { mastodon } from 'masto';
 import { Fragment, type InputHTMLAttributes } from 'react';
 import { useMemo, useRef, useState } from 'react';
 
+import { useBlockAccount, useMuteAccount } from '../data/profiles';
 import { api, getMastoV1Resource } from '../utils/api';
 import localeMatch from '../utils/locale-match';
 import showToast from '../utils/show-toast';
@@ -152,22 +153,13 @@ interface ReportsResource {
   }): Promise<unknown>;
 }
 
-interface ReportAccountsResource {
-  $select(id: string): {
-    mute(): Promise<unknown>;
-    block(): Promise<unknown>;
-  };
-}
-
 function ReportModal({ account, post, onClose }: ReportModalProps) {
   const { t, i18n } = useLingui();
   const _ = (descriptor: MessageDescriptor) => i18n._(descriptor);
   const { masto } = api();
   const reportsResource = getMastoV1Resource<ReportsResource>(masto, 'reports');
-  const accountsResource = getMastoV1Resource<ReportAccountsResource>(
-    masto,
-    'accounts',
-  );
+  const muteAccount = useMuteAccount();
+  const blockAccount = useBlockAccount();
   const [uiState, setUIState] = useState<
     'default' | 'loading' | 'success' | 'error'
   >('default');
@@ -306,6 +298,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                       type="radio"
                       name="category"
                       value={category}
+                      aria-label={_(CATEGORIES_INFO[category].label)}
                       required
                       disabled={uiState === 'loading'}
                       onChange={(e) => {
@@ -335,6 +328,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
                                   type="checkbox"
                                   name={`rule_ids[${i}]`}
                                   value={rule.id}
+                                  aria-label={rule._translatedText || rule.text}
                                   required={showRules && !hasRules}
                                   disabled={uiState === 'loading'}
                                   onChange={(e) => {
@@ -376,6 +370,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               rows={1}
               name="comment"
               id="report-comment"
+              aria-label={t`Additional info`}
               disabled={uiState === 'loading'}
               required={!post} // Required if not reporting a post
             />
@@ -412,7 +407,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               onClick={() => {
                 void (async () => {
                   try {
-                    await accountsResource.$select(account.id).mute(); // Infinite duration
+                    await muteAccount.mutateAsync({ did: account.id });
                     showToast(t`Muted ${username}`);
                   } catch (e) {
                     console.error(e);
@@ -433,7 +428,7 @@ function ReportModal({ account, post, onClose }: ReportModalProps) {
               onClick={() => {
                 void (async () => {
                   try {
-                    await accountsResource.$select(account.id).block();
+                    await blockAccount.mutateAsync({ did: account.id });
                     showToast(t`Blocked ${username}`);
                   } catch (e) {
                     console.error(e);

@@ -35,6 +35,9 @@ import RawHtml from '../components/raw-html';
 import StatusComponent, {
   type StatusComponentProps,
 } from '../components/status';
+import { useActiveDid, useClients } from '../contexts/SessionProvider';
+import { feedReadMode } from '../data/_internal/dispatch';
+import { getReadAgent } from '../data/clients';
 import { api } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
 import FilterContext from '../utils/filter-context';
@@ -45,10 +48,14 @@ import {
 import handleContentLinks from '../utils/handle-content-links';
 import haptics from '../utils/haptics';
 import niceDateTime from '../utils/nice-date-time';
+import { shouldShowMentionsShortcut } from '../utils/notifications-mentions-shortcut';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
-import { getCurrentInstance } from '../utils/store-utils';
+import {
+  getAccountByAccessToken,
+  getCurrentInstance,
+} from '../utils/store-utils';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScroll from '../utils/useScroll';
 import useTitle from '../utils/useTitle';
@@ -247,18 +254,27 @@ function Notifications({ columnMode }: NotificationsProps) {
   const _ = i18n._.bind(i18n);
   useTitle(t`Notifications`, '/notifications');
   const { masto, instance } = api();
+  const activeDid = useActiveDid();
+  const clients = useClients();
   const snapStates = useSnapshot(states);
   const [uiState, setUIState] = useState('default');
   const [routerSearchParams] = useSearchParams();
   const searchParams = columnMode ? emptySearchParams : routerSearchParams;
-  const notificationID = searchParams.get('id');
-  const notificationAccessToken = searchParams.get('access_token');
+  const notificationID =
+    searchParams.get('notification_id') || searchParams.get('id');
+  const notificationAccountID = searchParams.get('account_id');
+  const legacyNotificationAccessToken = searchParams.get('access_token');
   const [showMore, setShowMore] = useState(false);
   const [onlyMentions, setOnlyMentions] = useState(false);
-  const [showMentionsLink, setShowMentionsLink] = useState(false);
+  const cachedNotifications = (
+    states.notifications as NotificationLike[]
+  ).filter((notification) => notification.type !== 'follow_request');
+  const [showMentionsLink, setShowMentionsLink] = useState(() =>
+    shouldShowMentionsShortcut(cachedNotifications),
+  );
   const [hasAnalyzedFirstLoad, setHasAnalyzedFirstLoad] = useState<
     boolean | number
-  >(false);
+  >(cachedNotifications.length > 0);
   const scrollableRef = useRef<HTMLDivElement | null>(null);
   const { scrollDirection, reachStart, nearReachStart } = useScroll({
     scrollableRef,
@@ -346,19 +362,19 @@ function Notifications({ columnMode }: NotificationsProps) {
         states.notificationsLast = groupedNotifications[0];
         states.notifications = groupedNotifications;
 
-        // Update last read marker
-        const markers = masto.v1.markers as {
-          create(opts: {
-            notifications: { lastReadId: string | undefined };
-          }): Promise<unknown>;
-        };
-        markers
-          .create({
-            notifications: {
-              lastReadId: groupedNotifications[0].id,
-            },
-          })
-          .catch(() => {});
+        if (activeDid && clients.activeAppViewProxyAgent) {
+          try {
+            const agent = getReadAgent(clients, feedReadMode(activeDid));
+            void agent.app.bsky.notification.updateSeen({
+              seenAt: new Date().toISOString(),
+            });
+          } catch (seenError) {
+            console.warn(
+              'Failed to update notification seen marker',
+              seenError,
+            );
+          }
+        }
 
         if (!columnMode) analyzeNotifications(groupedNotifications);
       } else {
@@ -417,78 +433,8 @@ function Notifications({ columnMode }: NotificationsProps) {
     // Once Mentions link is shown, don't need to analyze again
     if (showMentionsLink) return;
 
-    const totalNotifications = notifications.length;
-    const totalActualNotifications = notifications.reduce(
-      (sum, n) => sum + (n.notificationsCount || 1),
-      0,
-    );
-    const totalMentions = notifications.filter(
-      (n) => n.type === 'mention',
-    ).length;
-    const mentionsCountPerDay: Record<string, number> = {};
-    const notificationCountPerDay: Record<string, number> = {};
-    notifications.forEach((n) => {
-      const { createdAt, notificationsCount, type } = n;
-      const date = new Date(createdAt as string).toDateString();
-      notificationCountPerDay[date] =
-        (notificationCountPerDay[date] || 0) + (notificationsCount || 1);
-      if (type === 'mention') {
-        mentionsCountPerDay[date] = (mentionsCountPerDay[date] || 0) + 1;
-      }
-    });
-    const mentionsPercentage =
-      totalNotifications > 0 ? totalMentions / totalNotifications : 0;
-    // Show mentions link if:
-    // - < 33% mentions OR
-    const littleMentions = mentionsPercentage < 0.33;
-    // - > 30 mentions in a day
-    const tooManyMentionsPerDay = Object.values(mentionsCountPerDay).some(
-      (count) => count > 30,
-    );
-    // - > 30 on any grouped notification (notificationCount > 30)
-    const tooManyNotificationsPerGroupNotification = notifications.some(
-      (n) => (n.notificationsCount as number) > 30,
-    );
-    // - > 30 notifications per hour
-    const notificationCountPerHour: Record<string, number> = {};
-    let tooManyNotificationsPerHour = false;
-    for (const n of notifications) {
-      const { createdAt, notificationsCount } = n;
-      const date = new Date(createdAt as string);
-      const hourKey = date.toISOString().slice(0, 13); // YYYY-MM-DDTHH
-      notificationCountPerHour[hourKey] =
-        (notificationCountPerHour[hourKey] || 0) + (notificationsCount || 1);
-      if (notificationCountPerHour[hourKey] > 30) {
-        tooManyNotificationsPerHour = true;
-        break;
-      }
-    }
-    setShowMentionsLink(
-      littleMentions ||
-        tooManyMentionsPerDay ||
-        tooManyNotificationsPerGroupNotification ||
-        tooManyNotificationsPerHour,
-    );
+    setShowMentionsLink(shouldShowMentionsShortcut(notifications));
     setHasAnalyzedFirstLoad(Date.now());
-
-    // [DEBUG]
-    console.log(
-      '🔔 Notifications analysis:',
-      {
-        totalNotifications,
-        totalActualNotifications,
-        totalMentions,
-        notificationCountPerDay,
-        notificationCountPerHour,
-        mentionsPercentage,
-      },
-      {
-        littleMentions,
-        tooManyMentionsPerDay,
-        tooManyNotificationsPerGroupNotification,
-        tooManyNotificationsPerHour,
-      },
-    );
   };
 
   const loadNotifications = (firstLoad?: boolean) => {
@@ -633,15 +579,22 @@ function Notifications({ columnMode }: NotificationsProps) {
 
   const syncRouteNotification = useEffectEvent(() => {
     if (notificationID) {
+      let legacyAccountId: string | undefined;
+      try {
+        legacyAccountId = legacyNotificationAccessToken
+          ? getAccountByAccessToken(atob(legacyNotificationAccessToken))?.info
+              .id
+          : undefined;
+      } catch {}
       states.routeNotification = {
         id: notificationID,
-        accessToken: atob(notificationAccessToken as string),
+        accountId: notificationAccountID ?? legacyAccountId,
       };
     }
   });
   useEffect(() => {
     syncRouteNotification();
-  }, [notificationID, notificationAccessToken]);
+  }, [notificationID, notificationAccountID, legacyNotificationAccessToken]);
 
   // useEffect(() => {
   //   if (uiState === 'default') {
@@ -815,6 +768,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     <div
       id="notifications-page"
       className="deck-container"
+      data-timeline-id="notifications"
       ref={(node) => {
         scrollableRef.current = node;
         jRef.current = node;
@@ -1042,6 +996,7 @@ function Notifications({ columnMode }: NotificationsProps) {
             ) : (
               <label>
                 <input
+                  aria-label={t`Only mentions`}
                   type="checkbox"
                   checked={onlyMentions}
                   onChange={(e: SyntheticEvent<HTMLInputElement>) => {
@@ -1241,6 +1196,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                         <label>
                           {_(NOTIFICATIONS_POLICIES_TEXT[key])}
                           <select
+                            aria-label={_(NOTIFICATIONS_POLICIES_TEXT[key])}
                             name={key}
                             defaultValue={value}
                             className="small"
