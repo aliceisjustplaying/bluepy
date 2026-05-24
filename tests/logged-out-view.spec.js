@@ -1159,6 +1159,8 @@ async function routeAtprotoScrollableFeed(page) {
  *   fallbackFails?: boolean;
  *   labelerViews?: unknown[];
  *   onBlueskyProfile?: () => void;
+ *   onPostThread?: () => void;
+ *   postThreadDelay?: Promise<void>;
  *   profileFailures?: string[];
  *   preferences?: unknown[];
  *   profilesByDid?: Record<string, AtprotoTestActor | Record<string, unknown>>;
@@ -1178,6 +1180,8 @@ async function routeAtprotoRecords(page, options = {}) {
     labelerViews = [],
     knownFollowersByActor = {},
     onBlueskyProfile,
+    onPostThread,
+    postThreadDelay,
     profileFailures = [],
     preferences = [],
     profilesByDid = {},
@@ -1309,6 +1313,8 @@ async function routeAtprotoRecords(page, options = {}) {
         return;
       }
       if (endpoint === 'app.bsky.feed.getPostThread') {
+        onPostThread?.();
+        await postThreadDelay;
         const requestedPost =
           posts.find(({ uri }) => uri === url.searchParams.get('uri')) || post;
         await route.fulfill({
@@ -1508,6 +1514,34 @@ test('canonicalizes Worker-decoded legacy AT record routes', async ({ page }) =>
   });
   await expect(page).toHaveURL(pathRegex(AT_LIST_PATH));
   await expect(page.getByRole('heading', { name: 'AT List' })).toBeVisible();
+});
+
+test('renders direct AT post before delayed thread response', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  /** @type {(() => void) | undefined} */
+  let releaseThread;
+  let threadRequested = false;
+  /** @type {Promise<void>} */
+  const postThreadDelay = new Promise((resolve) => {
+    releaseThread = () => {
+      resolve(undefined);
+    };
+  });
+  await routeAtprotoRecords(page, {
+    onPostThread: () => {
+      threadRequested = true;
+    },
+    postThreadDelay,
+  });
+
+  await page.goto(AT_POST_PATH, { waitUntil: 'domcontentloaded' });
+  await expect.poll(() => threadRequested).toBe(true);
+  await expect(page.locator('text=AT route post')).toBeVisible();
+
+  releaseThread?.();
+  await expect(page.locator('text=AT route post')).toBeVisible();
 });
 
 test('loads and reloads canonical AT profile URLs', async ({ page }) => {

@@ -11,6 +11,16 @@ import { useViewerScope } from './scope';
 
 const DIRECT_ROUTE_STALE_TIME = 60_000;
 
+function isThreadViewPost(
+  node: unknown,
+): node is AppBskyFeedDefs.ThreadViewPost {
+  return (
+    typeof node === 'object' &&
+    node !== null &&
+    (node as { $type?: string }).$type === 'app.bsky.feed.defs#threadViewPost'
+  );
+}
+
 export async function fetchPost(
   uri: AtUri,
   clients: ReturnType<typeof useClients>,
@@ -38,13 +48,13 @@ export async function fetchPostThread(
     parentHeight: depth,
   });
   if (
-    !res.data.thread ||
     res.data.thread.$type === 'app.bsky.feed.defs#blockedPost' ||
-    res.data.thread.$type === 'app.bsky.feed.defs#notFoundPost'
+    res.data.thread.$type === 'app.bsky.feed.defs#notFoundPost' ||
+    !isThreadViewPost(res.data.thread)
   ) {
     throw new Error('Thread not found');
   }
-  return res.data.thread as AppBskyFeedDefs.ThreadViewPost;
+  return res.data.thread;
 }
 
 function makePlaceholderThread(
@@ -73,9 +83,11 @@ export function usePost(uri: AtUri | undefined): {
     enabled: Boolean(uri && (activeDid ? clients.activeAppViewProxyAgent : true)),
     staleTime: Number.POSITIVE_INFINITY,
     queryFn: async () => {
-      const post = await fetchPost(uri!, clients, activeDid);
+      const postUri = uri;
+      if (!postUri) throw new Error('Post URI required');
+      const post = await fetchPost(postUri, clients, activeDid);
       primePosts(qc, scope, { posts: [post] });
-      return qc.getQueryData<AppBskyFeedDefs.PostView>(keys.post(scope, uri!)) ?? post;
+      return qc.getQueryData<AppBskyFeedDefs.PostView>(keys.post(scope, postUri)) ?? post;
     },
   });
 
@@ -102,9 +114,11 @@ export function usePostRoute(uri: AtUri | undefined): {
     staleTime: DIRECT_ROUTE_STALE_TIME,
     refetchOnMount: 'always',
     queryFn: async () => {
-      const post = await fetchPost(uri!, clients, activeDid);
+      const postUri = uri;
+      if (!postUri) throw new Error('Post URI required');
+      const post = await fetchPost(postUri, clients, activeDid);
       primePosts(qc, scope, { posts: [post] });
-      return qc.getQueryData<AppBskyFeedDefs.PostView>(keys.post(scope, uri!)) ?? post;
+      return qc.getQueryData<AppBskyFeedDefs.PostView>(keys.post(scope, postUri)) ?? post;
     },
   });
 
@@ -132,6 +146,7 @@ export function useThread(
     queryKey: uri ? keys.thread(scope, uri) : ['thread', 'disabled'],
     enabled: Boolean(uri && (activeDid ? clients.activeAppViewProxyAgent : true)),
     staleTime: DIRECT_ROUTE_STALE_TIME,
+    refetchOnMount: 'always',
     placeholderData: () =>
       uri
         ? makePlaceholderThread(
@@ -139,7 +154,9 @@ export function useThread(
           )
         : undefined,
     queryFn: async () => {
-      const thread = await fetchPostThread(uri!, clients, activeDid, depth);
+      const threadUri = uri;
+      if (!threadUri) throw new Error('Post URI required');
+      const thread = await fetchPostThread(threadUri, clients, activeDid, depth);
       primePosts(qc, scope, { thread });
       return thread;
     },

@@ -1,9 +1,14 @@
-import { Trans, useLingui } from '@lingui/react/macro';
 import type { AppBskyFeedDefs } from '@atproto/api';
-import { useMemo, type MouseEvent, type ReactNode } from 'react';
+import { Trans, useLingui } from '@lingui/react/macro';
+import {
+  useCallback,
+  useMemo,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+} from 'react';
 
 import { collectThreadUris } from '../data/_internal/thread-uris';
-import { useThread } from '../data/posts';
+import { usePostRoute, useThread } from '../data/posts';
 import { canonicalizeAppPath, navigatePath } from '../utils/router';
 import states from '../utils/states';
 import useTitle from '../utils/useTitle';
@@ -13,7 +18,7 @@ import LinkComponent from './link';
 import Loader from './loader';
 import PostByUri from './post-by-uri';
 
-function isModifiedClick(event: MouseEvent): boolean {
+function isModifiedClick(event: ReactMouseEvent): boolean {
   return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
@@ -43,6 +48,17 @@ function collectAncestors(thread: AppBskyFeedDefs.ThreadViewPost): string[] {
   return ancestors;
 }
 
+function makeAnchorThread(
+  post: AppBskyFeedDefs.PostView | undefined,
+): AppBskyFeedDefs.ThreadViewPost | undefined {
+  if (!post) return undefined;
+  return {
+    $type: 'app.bsky.feed.defs#threadViewPost',
+    post,
+    replies: [],
+  };
+}
+
 function ThreadReplyList({
   replies,
   instance,
@@ -59,10 +75,7 @@ function ThreadReplyList({
     <ul className="timeline flat contextual">
       {threadReplies.map((reply) => (
         <li key={reply.post.uri} className="descendant thread">
-          <ThreadReplyLink
-            className="status-link"
-            uri={reply.post.uri}
-          >
+          <ThreadReplyLink className="status-link" uri={reply.post.uri}>
             <PostByUri
               uri={reply.post.uri}
               instance={instance}
@@ -87,49 +100,30 @@ function ThreadReplyLink({
   children: ReactNode;
 }) {
   const href = canonicalizeAppPath(`/${uri}`);
-  const label = `Open post ${uri}`;
-  const navigate = () => {
+  const navigate = useCallback(() => {
     states.prevLocation = {
       pathname: window.location.pathname,
       search: window.location.search,
       hash: window.location.hash,
     };
     navigatePath(href);
-  };
+  }, [href]);
+  const handleClick = useCallback(
+    (event: ReactMouseEvent<HTMLAnchorElement>) => {
+      if (isModifiedClick(event)) return;
+      event.preventDefault();
+      navigate();
+    },
+    [navigate],
+  );
   return (
-    <div
-      className={className}
-      data-href={href}
-      role="link"
-      tabIndex={0}
-      aria-label={label}
-      onClick={(event) => {
-        const target = event.target;
-        if (target instanceof Element) {
-          const interactive = target.closest(
-            'a, button, input, textarea, select, summary, [role="button"], [data-menu-trigger]',
-          );
-          if (interactive && interactive !== event.currentTarget) return;
-        }
-        event.preventDefault();
-        navigate();
-      }}
-      onKeyDown={(event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') return;
-        event.preventDefault();
-        navigate();
-      }}
-    >
+    <div className={className} data-href={href}>
       <a
         className="status-link-native"
         href={href}
         aria-hidden="true"
         tabIndex={-1}
-        onClick={(event) => {
-          if (isModifiedClick(event)) return;
-          event.preventDefault();
-          navigate();
-        }}
+        onClick={handleClick}
       />
       {children}
     </div>
@@ -143,9 +137,14 @@ export default function PostThreadPage({
 }: PostThreadPageProps) {
   const { t } = useLingui();
   const { data: thread, isLoading, error } = useThread(uri);
+  const { data: anchorPost, isLoading: isAnchorLoading } = usePostRoute(uri);
+  const displayThread = useMemo(
+    () => thread ?? makeAnchorThread(anchorPost),
+    [anchorPost, thread],
+  );
   const uris = useMemo(
-    () => (thread ? collectThreadUris(thread) : []),
-    [thread],
+    () => (displayThread ? collectThreadUris(displayThread) : []),
+    [displayThread],
   );
   const ancestors = useMemo(
     () => (thread ? collectAncestors(thread) : []),
@@ -172,9 +171,9 @@ export default function PostThreadPage({
           </div>
         </div>
       </header>
-      {error ? (
+      {error && !displayThread ? (
         <p className="ui-state">{error.message}</p>
-      ) : isLoading && uris.length === 0 ? (
+      ) : (isLoading || isAnchorLoading) && uris.length === 0 ? (
         <ul className="timeline flat contextual grow loading">
           <li>
             <Loader />
@@ -189,15 +188,17 @@ export default function PostThreadPage({
               </ThreadReplyLink>
             </li>
           ))}
-          {thread ? (
+          {displayThread ? (
             <li className="hero">
               <PostByUri
-                uri={thread.post.uri}
+                uri={displayThread.post.uri}
                 instance={instance}
                 showActionsBar
                 size="l"
               />
-              <ThreadReplyList replies={thread.replies} instance={instance} />
+              {thread ? (
+                <ThreadReplyList replies={thread.replies} instance={instance} />
+              ) : null}
             </li>
           ) : null}
         </ul>

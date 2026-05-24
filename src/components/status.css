@@ -74,6 +74,44 @@
   vertical-align: text-bottom;
 }
 
+.status-reblog-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-block: 8px -8px;
+  margin-inline-start: calc(14px + 50px + 10px);
+  padding-inline-end: 14px;
+  color: var(--text-insignificant-color);
+  font-size: smaller;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .icon {
+    flex: 0 0 auto;
+    color: var(--reblog-color);
+  }
+
+  span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  a {
+    color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+      color: var(--link-color);
+      text-decoration: underline;
+    }
+  }
+}
+
 /* STATUS */
 
 .status {
@@ -559,6 +597,11 @@
 
   .status:not(.small) > .container {
     padding-inline-start: 8px;
+  }
+
+  .status-reblog-line {
+    margin-inline-start: calc(12px + 42px + 8px);
+    padding-inline-end: 12px;
   }
 
   .status.filtered {
