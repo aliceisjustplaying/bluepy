@@ -169,7 +169,7 @@ export function useSearchActorsTypeahead(term: string | undefined) {
   const qc = useQueryClient();
 
   return useQuery({
-    queryKey: keys.search(scope, term ?? '', 'actors'),
+    queryKey: [...keys.search(scope, term ?? '', 'actors'), 'typeahead'] as const,
     enabled: Boolean(
       term &&
         term.length >= 1 &&

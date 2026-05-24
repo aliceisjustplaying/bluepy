@@ -5,11 +5,13 @@ import { useState } from 'react';
 
 import { useProfileModeration } from '../data/moderation';
 import type { ProfileModerationDecision } from '../render/moderation-decision';
+import { profileModerationShowsContent } from '../render/profile-moderation-policy';
 
 import Icon from './icon';
 
 export interface ProfileModerationGateProps {
   profile:
+    | AppBskyActorDefs.ProfileViewBasic
     | AppBskyActorDefs.ProfileView
     | AppBskyActorDefs.ProfileViewDetailed
     | undefined;
@@ -86,7 +88,7 @@ export default function ProfileModerationGate({
     return null;
   }
 
-  if (!decision || decision.visibility === 'show' || revealed) {
+  if (!decision || profileModerationShowsContent(decision, revealed)) {
     return children;
   }
 

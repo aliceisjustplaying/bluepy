@@ -213,7 +213,10 @@ function profileFieldBlurred(
 }
 
 export function decideProfileModeration(
-  profile: AppBskyActorDefs.ProfileView | AppBskyActorDefs.ProfileViewDetailed,
+  profile:
+    | AppBskyActorDefs.ProfileViewBasic
+    | AppBskyActorDefs.ProfileView
+    | AppBskyActorDefs.ProfileViewDetailed,
   ctx: ModerationContext,
 ): ProfileModerationDecision {
   const mod = moderateProfile(profile, moderationContextToOpts(ctx));

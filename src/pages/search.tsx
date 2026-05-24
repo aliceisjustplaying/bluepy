@@ -30,7 +30,6 @@ import StatusComponent, {
 import { api, getMastoV2Resource } from '../utils/api';
 import { fetchRelationships } from '../utils/relationships';
 import shortenNumber from '../utils/shorten-number';
-import { sorted } from '../utils/sorted';
 import usePageVisibility from '../utils/usePageVisibility';
 import useTitle from '../utils/useTitle';
 
@@ -479,6 +478,50 @@ function Search({ columnMode, ...props }: SearchProps) {
   );
 
   const [filterBarParent] = useAutoAnimate();
+  const filterLinks = q
+    ? [
+        {
+          label: t`All`,
+          type: null,
+          to: `/search?q=${encodeURIComponent(q)}`,
+        },
+        {
+          label: t`Accounts`,
+          type: 'accounts',
+          to: `/search?q=${encodeURIComponent(q)}&type=accounts`,
+        },
+        {
+          label: t`Hashtags`,
+          type: 'hashtags',
+          to: `/search?q=${encodeURIComponent(q)}&type=hashtags`,
+        },
+        {
+          label: t`Posts`,
+          type: 'statuses',
+          to: `/search?q=${encodeURIComponent(q)}&type=statuses`,
+        },
+      ]
+    : [];
+  const filterBar =
+    !!q && !columnMode ? (
+      <div
+        ref={filterBarParent}
+        className={`filter-bar search-filter-bar ${
+          uiState === 'loading' ? 'loading' : ''
+        }`}
+      >
+        {filterLinks.map((link) => (
+          <Link
+            to={link.to}
+            key={link.type ?? 'all'}
+            className={link.type === type ? 'is-active' : undefined}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    ) : null;
+  const useNestedFilterBar = atproto && type === 'statuses';
 
   return (
     <div
@@ -513,46 +556,7 @@ function Search({ columnMode, ...props }: SearchProps) {
           </div>
         </header>
         <main>
-          {!!q && !columnMode && (
-            <div
-              ref={filterBarParent}
-              className={`filter-bar ${uiState === 'loading' ? 'loading' : ''}`}
-            >
-              {!!type && (
-                <Link to={`/search${q ? `?q=${encodeURIComponent(q)}` : ''}`}>
-                  <Icon icon="chevron-left" /> <Trans>All</Trans>
-                </Link>
-              )}
-              {sorted(
-                [
-                  {
-                    label: t`Accounts`,
-                    type: 'accounts',
-                    to: `/search?q=${encodeURIComponent(q)}&type=accounts`,
-                  },
-                  {
-                    label: t`Hashtags`,
-                    type: 'hashtags',
-                    to: `/search?q=${encodeURIComponent(q)}&type=hashtags`,
-                  },
-                  {
-                    label: t`Posts`,
-                    type: 'statuses',
-                    to: `/search?q=${encodeURIComponent(q)}&type=statuses`,
-                  },
-                ],
-                (a, b) => {
-                  if (a.type === type) return -1;
-                  if (b.type === type) return 1;
-                  return 0;
-                },
-              ).map((link) => (
-                <Link to={link.to} key={link.type}>
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          )}
+          {useNestedFilterBar ? null : filterBar}
           {q ? (
             atproto && type !== 'hashtags' ? (
               <SearchDataResults
@@ -560,6 +564,7 @@ function Search({ columnMode, ...props }: SearchProps) {
                 type={type}
                 instance={instance}
                 headerStart={false}
+                filterBar={useNestedFilterBar ? filterBar : undefined}
               />
             ) : (
             <>

@@ -143,6 +143,7 @@ export function usePostModeration(
 
 export function useProfileModeration(
   profile:
+    | AppBskyActorDefs.ProfileViewBasic
     | AppBskyActorDefs.ProfileView
     | AppBskyActorDefs.ProfileViewDetailed
     | undefined,

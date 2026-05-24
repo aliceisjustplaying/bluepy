@@ -696,16 +696,16 @@ function getBootReloadAttempts() {
 
 /**
  * @param {import('@playwright/test').Page} page
- * @param {{ homeTimeline?: { type: string; id: string } }} [options]
+ * @param {{ accessToken?: string; homeTimeline?: { type: string; id: string } }} [options]
  */
 async function seedAtprotoLogin(page, options = {}) {
   await page.addInitScript(
-    ({ avatar, homeTimeline, repo }) => {
+    ({ accessToken, avatar, homeTimeline, repo }) => {
       localStorage.setItem(
         'accounts',
         JSON.stringify([
           {
-            accessToken: 'test-token',
+            accessToken,
             atproto: true,
             info: {
               id: repo,
@@ -738,6 +738,7 @@ async function seedAtprotoLogin(page, options = {}) {
       }
     },
     {
+      accessToken: options.accessToken ?? 'test-token',
       avatar: AT_PROFILE_AVATAR,
       homeTimeline: options.homeTimeline,
       repo: AT_REPO,
@@ -1156,7 +1157,13 @@ async function routeAtprotoScrollableFeed(page) {
  *   blackskyOmitPresentation?: boolean;
  *   blueskyOmitPresentation?: boolean;
  *   fallbackFails?: boolean;
+ *   labelerViews?: unknown[];
  *   onBlueskyProfile?: () => void;
+ *   profileFailures?: string[];
+ *   preferences?: unknown[];
+ *   profilesByDid?: Record<string, AtprotoTestActor>;
+ *   searchActorsByQuery?: Record<string, AtprotoTestActor[]>;
+ *   searchActorTypeaheadByQuery?: Record<string, AtprotoTestActor[]>;
  *   searchPostsByQuery?: Record<string, AtprotoTestPost[]>;
  * }} [options]
  */
@@ -1166,7 +1173,13 @@ async function routeAtprotoRecords(page, options = {}) {
     blackskyOmitPresentation = false,
     blueskyOmitPresentation = false,
     fallbackFails = false,
+    labelerViews = [],
     onBlueskyProfile,
+    profileFailures = [],
+    preferences = [],
+    profilesByDid = {},
+    searchActorsByQuery = {},
+    searchActorTypeaheadByQuery = {},
     searchPostsByQuery = {},
   } = options;
   const post = makeAtprotoPost();
@@ -1227,8 +1240,12 @@ async function routeAtprotoRecords(page, options = {}) {
       const endpoint = url.pathname.replace('/xrpc/', '');
       if (endpoint === 'app.bsky.actor.getProfile') {
         const isBlacksky = url.hostname === 'api.blacksky.community';
+        const actor = url.searchParams.get('actor') || '';
         if (!isBlacksky) onBlueskyProfile?.();
-        if (!isBlacksky && fallbackFails) {
+        if (
+          !isBlacksky &&
+          (fallbackFails || profileFailures.includes(actor))
+        ) {
           await route.fulfill({
             headers,
             status: 500,
@@ -1241,7 +1258,9 @@ async function routeAtprotoRecords(page, options = {}) {
           : blueskyOmitPresentation;
         await route.fulfill({
           headers,
-          json: omitPresentation
+          json: profilesByDid[actor]
+            ? profilesByDid[actor]
+            : omitPresentation
             ? {
                 ...profile,
                 displayName: undefined,
@@ -1337,6 +1356,34 @@ async function routeAtprotoRecords(page, options = {}) {
           headers,
           json: { posts: searchPostsByQuery[query] || [] },
         });
+        return;
+      }
+      if (endpoint === 'app.bsky.actor.searchActors') {
+        const query = url.searchParams.get('q') || '';
+        await route.fulfill({
+          headers,
+          json: { actors: searchActorsByQuery[query] || [] },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.actor.searchActorsTypeahead') {
+        const query = url.searchParams.get('q') || '';
+        await route.fulfill({
+          headers,
+          json: { actors: searchActorTypeaheadByQuery[query] || [] },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.actor.getPreferences') {
+        await route.fulfill({ headers, json: { preferences } });
+        return;
+      }
+      if (endpoint === 'app.bsky.actor.putPreferences') {
+        await route.fulfill({ headers, json: {} });
+        return;
+      }
+      if (endpoint === 'app.bsky.labeler.getServices') {
+        await route.fulfill({ headers, json: { views: labelerViews } });
         return;
       }
       await route.fulfill({ headers, json: {} });
@@ -1774,24 +1821,85 @@ test('keeps mobile search controls at the bottom and resets post results scroll'
     waitUntil: 'domcontentloaded',
   });
   await expect(page.getByText('Alpha first search result')).toBeVisible();
+  await expect(page.locator('#compose-button')).toBeHidden();
 
   const controlsGeometry = await page.evaluate(() => {
     const input = document.querySelector('#search-page input[type="search"]');
-    const filter = document.querySelector('#search-page main > .filter-bar');
+    const filter = document.querySelector('.search-filter-bar');
     const inputBox = input?.getBoundingClientRect();
     const filterBox = filter?.getBoundingClientRect();
+    const filterStyle = filter ? getComputedStyle(filter) : undefined;
     return {
       filterBottom: filterBox?.bottom ?? 0,
       inputTop: inputBox?.top ?? 0,
       viewportHeight: window.innerHeight,
+      filterPosition: filterStyle?.position,
+      filterBackground: filterStyle?.backgroundColor,
+      filterRadius: filterStyle?.borderRadius,
     };
   });
+  expect(controlsGeometry.filterPosition).toBe('fixed');
+  expect(controlsGeometry.filterBackground).not.toBe('rgb(220, 226, 234)');
+  expect(Number.parseFloat(controlsGeometry.filterRadius || '0')).toBeGreaterThan(
+    20,
+  );
+  await expect
+    .poll(() =>
+      page
+        .locator('.search-filter-bar a')
+        .evaluateAll((links) =>
+          links.map((link) => link.textContent?.trim() || ''),
+        ),
+    )
+    .toEqual(['All', 'Accounts', 'Hashtags', 'Posts']);
   expect(controlsGeometry.filterBottom).toBeLessThanOrEqual(
     controlsGeometry.inputTop,
   );
   expect(controlsGeometry.filterBottom).toBeGreaterThan(
     controlsGeometry.viewportHeight - 180,
   );
+  await expect
+    .poll(() =>
+      page
+        .locator('#search-posts-page > .timeline-deck > header')
+        .evaluate((element) => getComputedStyle(element).position),
+    )
+    .not.toBe('fixed');
+
+  await page.locator('#search-posts-page').evaluate((element) => {
+    element.scrollTop = 160;
+  });
+  const scrolledControlsGeometry = await page.evaluate(() => {
+    const input = document.querySelector('#search-page input[type="search"]');
+    const filter = document.querySelector('.search-filter-bar');
+    const inputBox = input?.getBoundingClientRect();
+    const filterBox = filter?.getBoundingClientRect();
+    return {
+      filterBottom: filterBox?.bottom ?? 0,
+      inputTop: inputBox?.top ?? 0,
+    };
+  });
+  expect(scrolledControlsGeometry).toEqual({
+    filterBottom: controlsGeometry.filterBottom,
+    inputTop: controlsGeometry.inputTop,
+  });
+  await page.locator('#search-page').evaluate((element) => {
+    element.scrollTop = 160;
+  });
+  const outerScrolledControlsGeometry = await page.evaluate(() => {
+    const input = document.querySelector('#search-page input[type="search"]');
+    const filter = document.querySelector('.search-filter-bar');
+    const inputBox = input?.getBoundingClientRect();
+    const filterBox = filter?.getBoundingClientRect();
+    return {
+      filterBottom: filterBox?.bottom ?? 0,
+      inputTop: inputBox?.top ?? 0,
+    };
+  });
+  expect(outerScrolledControlsGeometry).toEqual({
+    filterBottom: controlsGeometry.filterBottom,
+    inputTop: controlsGeometry.inputTop,
+  });
 
   await page.locator('#search-posts-page').evaluate((element) => {
     element.scrollTop = 320;
@@ -1811,6 +1919,118 @@ test('keeps mobile search controls at the bottom and resets post results scroll'
         .evaluate((element) => element.scrollTop),
     )
     .toBeLessThan(8);
+});
+
+test('keeps the leading account search match visible', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await seedAtprotoLogin(page, {
+    accessToken: JSON.stringify({
+      type: 'atproto',
+      service: 'https://bsky.social',
+      session: {
+        refreshJwt: 'test-refresh',
+        accessJwt: 'test-access',
+        handle: 'alice.test',
+        did: AT_REPO,
+        active: true,
+      },
+    }),
+  });
+  const warningLabelerDid = 'did:plc:dm6tjhimvcxsgh2yxbppbqkx';
+  const exactActor = {
+    ...makeAtprotoTestActor(
+      'did:plc:samuelexact',
+      'samuel.fm',
+      'Samuel',
+    ),
+    labels: [
+      {
+        src: warningLabelerDid,
+        uri: 'did:plc:samuelexact',
+        val: 'folklore',
+        cts: '2024-11-08T20:16:43.383Z',
+      },
+    ],
+  };
+  const fallbackActor = makeAtprotoTestActor(
+    'did:plc:samuelfallback',
+    'samueloakford.bsky.social',
+    'Samuel Oakford',
+  );
+  await routeAtprotoRecords(page, {
+    labelerViews: [
+      {
+        $type: 'app.bsky.labeler.defs#labelerViewDetailed',
+        uri: `at://${warningLabelerDid}/app.bsky.labeler.service/self`,
+        cid: 'bafyreididididididididididididididididididididididididid',
+        creator: {
+          did: warningLabelerDid,
+          handle: 'labels.example.com',
+          displayName: 'Example Labeler',
+          labels: [],
+          viewer: {},
+        },
+        policies: {
+          labelValues: ['folklore'],
+          labelValueDefinitions: [
+            {
+              identifier: 'folklore',
+              severity: 'alert',
+              blurs: 'none',
+              defaultSetting: 'warn',
+              locales: [
+                {
+                  lang: 'en',
+                  name: 'Folklore',
+                  description: 'Folklore label used by the regression fixture.',
+                },
+              ],
+            },
+          ],
+        },
+        indexedAt: '2024-01-01T00:00:00.000Z',
+      },
+    ],
+    preferences: [
+      {
+        $type: 'app.bsky.actor.defs#labelersPref',
+        labelers: [{ did: warningLabelerDid }],
+      },
+      {
+        $type: 'app.bsky.actor.defs#contentLabelPref',
+        label: 'folklore',
+        labelerDid: warningLabelerDid,
+        visibility: 'warn',
+      },
+    ],
+    searchActorsByQuery: {
+      samuel: [exactActor, fallbackActor],
+    },
+    searchActorTypeaheadByQuery: {
+      samuel: [exactActor],
+    },
+  });
+
+  await page.goto('/search?q=samuel&type=accounts', {
+    waitUntil: 'domcontentloaded',
+  });
+
+  await expect(page.getByText('@samuel.fm')).toBeVisible();
+  await expect(page.getByText('@samueloakford.bsky.social')).toBeVisible();
+  const firstAccount = page.locator('.accounts-list .account-block').first();
+  await expect(firstAccount).toContainText('Samuel');
+  await expect(firstAccount).toContainText('@samuel.fm');
+  await page.waitForTimeout(1000);
+  await expect(firstAccount).toContainText('@samuel.fm');
+  await expect
+    .poll(() =>
+      page
+        .locator('.search-filter-bar a')
+        .evaluateAll((links) =>
+          links.map((link) => link.textContent?.trim() || ''),
+        ),
+    )
+    .toEqual(['All', 'Accounts', 'Hashtags', 'Posts']);
 });
 
 test('restores AT feed position after opening a feed post in the sidebar', async ({

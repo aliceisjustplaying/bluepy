@@ -4,12 +4,14 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useSearchActors, useSearchPosts } from '../data/search';
+import { profileToAccount } from '../render/profile-view-map';
 
+import AccountBlock from './account-block';
 import Icon from './icon';
 import Loader from './loader';
 import PostByUri from './post-by-uri';
 import PostUriFeed from './post-uri-feed';
-import ProfileByDid from './profile-by-did';
+import ProfileModerationGate from './profile-moderation-gate';
 
 const SHORT_LIMIT = 5;
 
@@ -18,6 +20,7 @@ export interface SearchDataResultsProps {
   type: string | null;
   instance?: string;
   headerStart?: ReactNode | false;
+  filterBar?: ReactNode;
 }
 
 function SearchActorsList({
@@ -48,9 +51,15 @@ function SearchActorsList({
   return (
     <>
       <ul className="timeline flat accounts-list">
-        {items.map((did) => (
-          <li key={did}>
-            <ProfileByDid did={did} instance={instance} showStats={full} />
+        {items.map((actor) => (
+          <li key={actor.did}>
+            <ProfileModerationGate profile={actor}>
+              <AccountBlock
+                account={profileToAccount(actor)}
+                instance={instance}
+                showStats={full}
+              />
+            </ProfileModerationGate>
           </li>
         ))}
       </ul>
@@ -135,6 +144,7 @@ function SearchPostsPreview({
 function SearchPostsFeed({
   query,
   headerStart,
+  filterBar,
 }: SearchDataResultsProps) {
   const { t } = useLingui();
   const source = useSearchPosts(query);
@@ -148,6 +158,7 @@ function SearchPostsFeed({
       path={path}
       id="search-posts"
       headerStart={headerStart ?? false}
+      timelineStart={filterBar}
       emptyText={t`No posts found.`}
       errorText={t`Unable to load search results.`}
     />

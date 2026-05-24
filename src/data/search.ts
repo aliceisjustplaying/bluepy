@@ -1,4 +1,8 @@
-import type { AppBskyFeedDefs, AppBskyFeedSearchPosts } from '@atproto/api';
+import type {
+  AppBskyActorDefs,
+  AppBskyFeedDefs,
+  AppBskyFeedSearchPosts,
+} from '@atproto/api';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useActiveDid, useClients } from '../contexts/SessionProvider';
@@ -103,7 +107,9 @@ export function useSearchActors(query: string | undefined) {
   const activeDid = useActiveDid();
   const qc = useQueryClient();
 
-  return useInfiniteList<string>({
+  return useInfiniteList<
+    AppBskyActorDefs.ProfileView | AppBskyActorDefs.ProfileViewBasic
+  >({
     queryKey: keys.search(scope, query ?? '', 'actors'),
     enabled: Boolean(
       query &&
@@ -112,15 +118,38 @@ export function useSearchActors(query: string | undefined) {
     ),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
-      const res = await agent.searchActors({
-        q: query!,
-        limit: 25,
-        cursor: pageParam,
+      const q = query!;
+      const [searchRes, typeaheadRes] = await Promise.all([
+        agent.searchActors({
+          q,
+          limit: 25,
+          cursor: pageParam,
+        }),
+        pageParam
+          ? Promise.resolve(undefined)
+          : agent.searchActorsTypeahead({ q, limit: 10 }).catch(() => undefined),
+      ]);
+      const searchActors = searchRes.data.actors;
+      const typeaheadActors = typeaheadRes?.data.actors ?? [];
+      const normalizedQuery = q.trim().replace(/^[@＠]/, '').toLowerCase();
+      const leadingActor = typeaheadActors.find((actor) => {
+        const handle = actor.handle.toLowerCase();
+        const displayName = actor.displayName?.toLowerCase() ?? '';
+        return (
+          handle.startsWith(normalizedQuery) ||
+          displayName.startsWith(normalizedQuery)
+        );
       });
-      primeProfiles(qc, scope, res.data);
+      const actors = leadingActor
+        ? [
+            leadingActor,
+            ...searchActors.filter((actor) => actor.did !== leadingActor.did),
+          ]
+        : searchActors;
+      primeProfiles(qc, scope, { actors });
       return {
-        items: res.data.actors.map((actor) => actor.did),
-        cursor: res.data.cursor,
+        items: actors,
+        cursor: searchRes.data.cursor,
       };
     },
   });
