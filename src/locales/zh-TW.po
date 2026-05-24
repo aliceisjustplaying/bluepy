@@ -161,6 +161,10 @@ msgstr ""
 #~ msgid "Scheduled Posts"
 #~ msgstr "排程的貼文"
 
+#: src/pages/settings.tsx
+msgid "Cloak mode"
+msgstr ""
+
 #: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
@@ -1105,6 +1109,10 @@ msgstr "搜尋"
 msgid "Post updated. Check it out."
 msgstr "貼文已發佈，請查看。"
 
+#: src/pages/settings.tsx
+msgid "Debug info"
+msgstr ""
+
 #: src/components/status-account-menu.tsx
 msgid "Unable to unpin post"
 msgstr ""
@@ -1848,6 +1856,10 @@ msgstr ""
 msgid "Link copied"
 msgstr "連結已複製"
 
+#: src/pages/settings.tsx
+msgid "Version"
+msgstr ""
+
 #: src/components/mention-modal.tsx
 msgid "Search accounts"
 msgstr "搜索帳號"
@@ -2061,6 +2073,10 @@ msgstr ""
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
 msgstr "您的帳號已被停用"
+
+#: src/pages/catchup.tsx
+msgid "Login required to run Catch-up."
+msgstr ""
 
 #: src/pages/login.tsx
 msgid "PDS URL, optional"
@@ -2346,6 +2362,10 @@ msgstr "取消此對話的靜音"
 msgid "Failed to update subscription. Please try again."
 msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Content translation"
+msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
 msgstr "開啟通知"
@@ -2416,6 +2436,10 @@ msgstr ""
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
 msgstr "回覆"
+
+#: src/pages/settings.tsx
+msgid "Allow notifications"
+msgstr ""
 
 #: src/components/notification.jsx
 #~ msgid "Your {year} #Wrapstodon is here!"
@@ -2725,6 +2749,10 @@ msgstr ""
 #~ msgid "Server rule violation"
 #~ msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Post links"
+msgstr ""
+
 #: src/components/notification.jsx
 #~ msgid "A poll you have created has ended."
 #~ msgstr "你創立的投票已結束"
@@ -2767,6 +2795,10 @@ msgstr ""
 #: src/components/shortcuts-settings.tsx
 msgid "Import"
 msgstr "匯入"
+
+#: src/pages/settings.tsx
+msgid "Tab bar v2"
+msgstr ""
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
@@ -3485,6 +3517,10 @@ msgstr ""
 msgid "Unable to block {username}"
 msgstr ""
 
+#: src/pages/settings.tsx
+msgid "Paginated timeline"
+msgstr ""
+
 #. js-lingui-explicit-id
 #: src/components/post-thread-page.tsx
 #: src/pages/status.tsx
@@ -3812,6 +3848,10 @@ msgstr ""
 #. placeholder {2}: lf.format( unsupportedFiles.map((f) => f.name), )
 #: src/components/compose.tsx
 msgid "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Controls copied and shared post links. Bluepy links stay in Bluepy; bsky.app links open the same post in Bluesky."
 msgstr ""
 
 #: src/components/notification.tsx

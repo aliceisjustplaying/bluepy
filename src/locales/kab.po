@@ -161,6 +161,10 @@ msgstr "<0>Shift</0> + <1>c</1>"
 #~ msgid "Scheduled Posts"
 #~ msgstr "Tisuffaɣ yettwasɣawsen"
 
+#: src/pages/settings.tsx
+msgid "Cloak mode"
+msgstr ""
+
 #: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
@@ -1113,6 +1117,10 @@ msgstr "Nadi"
 msgid "Post updated. Check it out."
 msgstr "Yettwalqam yizen-nni. Mmuqel-it."
 
+#: src/pages/settings.tsx
+msgid "Debug info"
+msgstr ""
+
 #: src/components/status-account-menu.tsx
 msgid "Unable to unpin post"
 msgstr "D awezɣi aserreḥ n tsuffeɣt"
@@ -1856,6 +1864,10 @@ msgstr "Ula yiwen"
 msgid "Link copied"
 msgstr "Yettwanɣel wasaɣ"
 
+#: src/pages/settings.tsx
+msgid "Version"
+msgstr ""
+
 #: src/components/mention-modal.tsx
 msgid "Search accounts"
 msgstr "Nadi imiḍanen"
@@ -2073,6 +2085,10 @@ msgstr "Asqerdec {index}/X"
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
 msgstr "Yettwaseḥbes umiḍan-ik."
+
+#: src/pages/catchup.tsx
+msgid "Login required to run Catch-up."
+msgstr ""
 
 #: src/pages/login.tsx
 msgid "PDS URL, optional"
@@ -2366,6 +2382,10 @@ msgstr "Kkes asgugem n udiwenni"
 msgid "Failed to update subscription. Please try again."
 msgstr "Yecceḍ uleqqem n uglam. Ttxil-k, εreḍ tikkelt niḍen."
 
+#: src/pages/settings.tsx
+msgid "Content translation"
+msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
 msgstr "Rmed ulɣuten"
@@ -2436,6 +2456,10 @@ msgstr "{hashtagTitle} ɣef {instance}"
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
 msgstr "Err"
+
+#: src/pages/settings.tsx
+msgid "Allow notifications"
+msgstr ""
 
 #: src/components/notification.tsx
 #~ msgid "Your {year} #Wrapstodon is here!"
@@ -2749,6 +2773,10 @@ msgstr "Yettwasenteḍ"
 #~ msgid "Server rule violation"
 #~ msgstr "Takriṭ n ulugen n uqeddac"
 
+#: src/pages/settings.tsx
+msgid "Post links"
+msgstr ""
+
 #: src/components/notification.tsx
 #~ msgid "A poll you have created has ended."
 #~ msgstr "Asisten i terniḍ ifukk."
@@ -2791,6 +2819,10 @@ msgstr "Askan n tsuffaɣ yettwabdaren s #{0}"
 #: src/components/shortcuts-settings.tsx
 msgid "Import"
 msgstr "Kter"
+
+#: src/pages/settings.tsx
+msgid "Tab bar v2"
+msgstr ""
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
@@ -3517,6 +3549,10 @@ msgstr "Yettwafsi usgugem ɣef udiwenni"
 msgid "Unable to block {username}"
 msgstr "D awezɣi asewḥel i {username}"
 
+#: src/pages/settings.tsx
+msgid "Paginated timeline"
+msgstr ""
+
 #. js-lingui-explicit-id
 #: src/components/post-thread-page.tsx
 #: src/pages/status.tsx
@@ -3848,6 +3884,10 @@ msgstr ""
 #. placeholder {2}: lf.format( unsupportedFiles.map((f) => f.name), )
 #: src/components/compose.tsx
 msgid "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
+msgstr ""
+
+#: src/pages/settings.tsx
+msgid "Controls copied and shared post links. Bluepy links stay in Bluepy; bsky.app links open the same post in Bluesky."
 msgstr ""
 
 #: src/components/notification.tsx

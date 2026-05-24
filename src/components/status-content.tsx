@@ -7,6 +7,7 @@ import { useSnapshot } from 'valtio';
 
 import { api, getMastoV1Resource } from '../utils/api';
 import {
+  buildBskyPostPermalink,
   buildAtprotoPostPermalink,
   isAtprotoPostURI,
 } from '../utils/atproto-route';
@@ -214,9 +215,16 @@ export default function StatusContent({
   const editedAtDate = editedAt ? new Date(editedAt) : createdAtDate;
 
   const atproto: StatusAtprotoMeta | undefined = status._atproto;
-  const permalink = isAtprotoPostURI(atproto?.uri)
+  const bluepyPermalink = isAtprotoPostURI(atproto?.uri)
     ? buildAtprotoPostPermalink(atproto.uri)
     : url;
+  const bskyPermalink = isAtprotoPostURI(atproto?.uri)
+    ? buildBskyPostPermalink(atproto.uri)
+    : url;
+  const permalink =
+    snapStates.settings.shareLinkTarget === 'bsky'
+      ? bskyPermalink
+      : bluepyPermalink;
   const { inReplyToAccount, mentionSelf, showReplyBadge } =
     useStatusReplyParent({
       instance,

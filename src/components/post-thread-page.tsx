@@ -184,7 +184,9 @@ export default function PostThreadPage({
         <ul className="timeline flat contextual grow">
           {ancestors.map((postUri) => (
             <li key={postUri} className="ancestor thread">
-              <PostByUri uri={postUri} instance={instance} showActionsBar />
+              <ThreadReplyLink className="status-link" uri={postUri}>
+                <PostByUri uri={postUri} instance={instance} showActionsBar />
+              </ThreadReplyLink>
             </li>
           ))}
           {thread ? (

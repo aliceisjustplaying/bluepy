@@ -811,8 +811,11 @@ function makeAtprotoThreadNode(post, options = {}) {
 
 /**
  * @param {import('@playwright/test').Page} page
+ * @param {{
+ *   onThreadRequest?: (uri: string) => Promise<void> | void,
+ * }} [options]
  */
-async function routeAtprotoThreadNavigation(page) {
+async function routeAtprotoThreadNavigation(page, options = {}) {
   const root = makeAtprotoPost(
     `at://${AT_REPO}/app.bsky.feed.post/thread-root`,
     'Thread root post',
@@ -990,6 +993,7 @@ async function routeAtprotoThreadNavigation(page) {
       if (!thread) {
         throw new Error(`Unexpected thread URI in test fixture: ${uri}`);
       }
+      await options.onThreadRequest?.(uri);
       await route.fulfill({ headers, json: { thread } });
       return;
     }
@@ -1678,6 +1682,51 @@ test('keeps AT thread links navigable from a feed-backed post detail', async ({
   await expect(page.getByText('Thread middle post').first()).toBeVisible();
   await page.locator('.deck-close').click();
   await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
+});
+
+test('renders a feed-backed post detail before the full thread returns', async ({
+  page,
+}) => {
+  /** @type {((uri: string) => void) | undefined} */
+  let resolveThreadStarted;
+  /** @type {(() => void) | undefined} */
+  let releaseThread;
+  /** @type {Promise<string>} */
+  const threadStarted = new Promise((resolve) => {
+    resolveThreadStarted = resolve;
+  });
+  const threadRelease = new Promise((resolve) => {
+    releaseThread = () => {
+      resolve(undefined);
+    };
+  });
+
+  await routeAtprotoThreadNavigation(page, {
+    onThreadRequest: async (uri) => {
+      resolveThreadStarted?.(uri);
+      await threadRelease;
+    },
+  });
+
+  await page.goto(AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Thread middle post')).toBeVisible();
+  await page
+    .locator(`.status-link-native[href$="/app.bsky.feed.post/thread-middle"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-middle`),
+  );
+  await expect(threadStarted).resolves.toBe(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-middle`,
+  );
+  await expect(
+    page.locator('.status-deck li.hero').getByText('Thread middle post'),
+  ).toBeVisible();
+  releaseThread?.();
+  await expect(
+    page.locator('.status-link[data-href$="/app.bsky.feed.post/thread-child"]'),
+  ).toBeVisible();
 });
 
 test('restores AT feed position after opening a feed post in the sidebar', async ({

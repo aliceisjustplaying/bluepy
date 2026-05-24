@@ -47,6 +47,17 @@ export async function fetchPostThread(
   return res.data.thread as AppBskyFeedDefs.ThreadViewPost;
 }
 
+function makePlaceholderThread(
+  post: AppBskyFeedDefs.PostView | undefined,
+): AppBskyFeedDefs.ThreadViewPost | undefined {
+  if (!post) return undefined;
+  return {
+    $type: 'app.bsky.feed.defs#threadViewPost',
+    post,
+    replies: [],
+  };
+}
+
 export function usePost(uri: AtUri | undefined): {
   data?: AppBskyFeedDefs.PostView;
   isLoading: boolean;
@@ -121,7 +132,12 @@ export function useThread(
     queryKey: uri ? keys.thread(scope, uri) : ['thread', 'disabled'],
     enabled: Boolean(uri && (activeDid ? clients.activeAppViewProxyAgent : true)),
     staleTime: DIRECT_ROUTE_STALE_TIME,
-    refetchOnMount: 'always',
+    placeholderData: () =>
+      uri
+        ? makePlaceholderThread(
+            qc.getQueryData<AppBskyFeedDefs.PostView>(keys.post(scope, uri)),
+          )
+        : undefined,
     queryFn: async () => {
       const thread = await fetchPostThread(uri!, clients, activeDid, depth);
       primePosts(qc, scope, { thread });

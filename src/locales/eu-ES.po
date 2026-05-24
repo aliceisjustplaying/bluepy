@@ -161,6 +161,10 @@ msgstr "<0>Shift</0> + <1>c</1>"
 #~ msgid "Scheduled Posts"
 #~ msgstr "Programatutako bidalketak"
 
+#: src/pages/settings.tsx
+msgid "Cloak mode"
+msgstr ""
+
 #: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
@@ -1113,6 +1117,10 @@ msgstr "Bilatu"
 msgid "Post updated. Check it out."
 msgstr "Bidalketa eguneratu da. Ikus ezazu."
 
+#: src/pages/settings.tsx
+msgid "Debug info"
+msgstr ""
+
 #: src/components/status-account-menu.tsx
 msgid "Unable to unpin post"
 msgstr "Ezin da bidalketa finkatzeari utzi"
@@ -1856,6 +1864,10 @@ msgstr "Bat ere ez"
 msgid "Link copied"
 msgstr "Esteka kopiatu da"
 
+#: src/pages/settings.tsx
+msgid "Version"
+msgstr ""
+
 #: src/components/mention-modal.tsx
 msgid "Search accounts"
 msgstr "Bilatu kontuak"
@@ -2073,6 +2085,10 @@ msgstr "Haria X/{index}"
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
 msgstr "Zure kontua bertan behera utzi da."
+
+#: src/pages/catchup.tsx
+msgid "Login required to run Catch-up."
+msgstr ""
 
 #: src/pages/login.tsx
 msgid "PDS URL, optional"
@@ -2366,6 +2382,10 @@ msgstr "Utzi elkarrizketa mututzeari"
 msgid "Failed to update subscription. Please try again."
 msgstr "Ezin da harpidetza eguneratu. Saiatu berriro."
 
+#: src/pages/settings.tsx
+msgid "Content translation"
+msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
 msgstr "Gaitu jakinarazpenak"
@@ -2436,6 +2456,10 @@ msgstr "{hashtagTitle} {instance}(e)n"
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
 msgstr "Erantzun"
+
+#: src/pages/settings.tsx
+msgid "Allow notifications"
+msgstr ""
 
 #: src/components/notification.tsx
 #~ msgid "Your {year} #Wrapstodon is here!"
@@ -2749,6 +2773,10 @@ msgstr "Finkatua"
 #~ msgid "Server rule violation"
 #~ msgstr "Zerbitzariaren arauen urraketa"
 
+#: src/pages/settings.tsx
+msgid "Post links"
+msgstr ""
+
 #: src/components/notification.tsx
 #~ msgid "A poll you have created has ended."
 #~ msgstr "Sortu zenuen bozketa bat amaitu da."
@@ -2791,6 +2819,10 @@ msgstr "#{0} traola duten bidalketak erakusten"
 #: src/components/shortcuts-settings.tsx
 msgid "Import"
 msgstr "Inportatu"
+
+#: src/pages/settings.tsx
+msgid "Tab bar v2"
+msgstr ""
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
@@ -3517,6 +3549,10 @@ msgstr "Elkarrizketa mututzeari utzi zaio"
 msgid "Unable to block {username}"
 msgstr "Ezin da {username} blokeatu"
 
+#: src/pages/settings.tsx
+msgid "Paginated timeline"
+msgstr ""
+
 #. js-lingui-explicit-id
 #: src/components/post-thread-page.tsx
 #: src/pages/status.tsx
@@ -3849,6 +3885,10 @@ msgstr ""
 #: src/components/compose.tsx
 msgid "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
 msgstr "{0, plural, one {{1} fitxategia ez da bateragarria.} other {{2} fitxategiak ez dira bateragarriak.}}"
+
+#: src/pages/settings.tsx
+msgid "Controls copied and shared post links. Bluepy links stay in Bluepy; bsky.app links open the same post in Bluesky."
+msgstr ""
 
 #: src/components/notification.tsx
 msgid "You have blocked <0>{targetName}</0>. Removed followers: {followersCount}, followings: {followingCount}."

@@ -40,6 +40,8 @@ import Status from '../components/status';
 import type { AnyStatus } from '../components/status-types';
 import { api, getMastoV2Resource } from '../utils/api';
 import {
+  buildBskyPostPermalink,
+  buildAtprotoPostPermalink,
   getAtprotoURIFromPathname,
   isAtprotoPostURI,
   isStatusPath,
@@ -246,9 +248,27 @@ function StatusPage(params: StatusPageParams) {
     }
   }, [sKey]);
 
+  const canonicalShareHref = useMemo(() => {
+    const shareTarget = snapStates.settings.shareLinkTarget;
+    if (isAtprotoPostURI(postUri)) {
+      return shareTarget === 'bsky'
+        ? buildBskyPostPermalink(postUri)
+        : buildAtprotoPostPermalink(postUri);
+    }
+    const atprotoUri = (
+      heroStatus as { _atproto?: { uri?: string | null } } | undefined
+    )?._atproto?.uri;
+    if (isAtprotoPostURI(atprotoUri)) {
+      return shareTarget === 'bsky'
+        ? buildBskyPostPermalink(atprotoUri)
+        : buildAtprotoPostPermalink(atprotoUri);
+    }
+    return heroStatus?.url;
+  }, [heroStatus, postUri, snapStates.settings.shareLinkTarget]);
+
   // Set canonical link, not for SEO, but for sharing
   useEffect(() => {
-    if (!heroStatus || !heroStatus.url) return undefined;
+    if (!canonicalShareHref) return undefined;
 
     const existingCanonical = document.querySelector<HTMLLinkElement>(
       'link[rel="canonical"]',
@@ -258,11 +278,11 @@ function StatusPage(params: StatusPageParams) {
 
     if (existingCanonical) {
       originalHref = existingCanonical.href;
-      existingCanonical.href = heroStatus.url;
+      existingCanonical.href = canonicalShareHref;
     } else {
       canonicalLink = document.createElement('link');
       canonicalLink.rel = 'canonical';
-      canonicalLink.href = heroStatus.url;
+      canonicalLink.href = canonicalShareHref;
       document.head.appendChild(canonicalLink);
     }
 
@@ -273,7 +293,7 @@ function StatusPage(params: StatusPageParams) {
         document.head.removeChild(canonicalLink);
       }
     };
-  }, [heroStatus]);
+  }, [canonicalShareHref]);
 
   const closeLink = useMemo(() => {
     const { prevLocation } = snapStates;

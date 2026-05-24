@@ -21,6 +21,7 @@ import localeCode2Text from '../utils/localeCode2Text';
 import { isMutedPostVisibility } from '../utils/muted-post-visibility';
 import prettyBytes from '../utils/pretty-bytes';
 import showToast from '../utils/show-toast';
+import { isShareLinkTarget } from '../utils/share-link-target';
 import states from '../utils/states';
 import store from '../utils/store';
 import { getVapidKey } from '../utils/store-utils';
@@ -302,6 +303,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <li className="block">
               <label>
                 <input
+                  aria-label={t`Auto refresh timeline posts`}
                   type="checkbox"
                   checked={snapStates.settings.autoRefresh}
                   onChange={(e) => {
@@ -314,6 +316,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <li className="block">
               <label>
                 <input
+                  aria-label={t`Reposts carousel`}
                   type="checkbox"
                   checked={snapStates.settings.boostsCarousel}
                   onChange={(e) => {
@@ -327,6 +330,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <label>
                 <Trans>Muted posts</Trans>{' '}
                 <select
+                  aria-label={t`Muted posts`}
                   value={snapStates.settings.mutedPostVisibility}
                   onChange={(e) => {
                     const visibility = e.currentTarget.value;
@@ -354,10 +358,37 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                 </small>
               </div>
             </li>
+            <li className="block">
+              <label>
+                <Trans>Post links</Trans>{' '}
+                <select
+                  aria-label={t`Post links`}
+                  value={snapStates.settings.shareLinkTarget}
+                  onChange={(e) => {
+                    const target = e.currentTarget.value;
+                    if (isShareLinkTarget(target)) {
+                      states.settings.shareLinkTarget = target;
+                    }
+                  }}
+                >
+                  <option value="bluepy">Bluepy</option>
+                  <option value="bsky">bsky.app</option>
+                </select>
+              </label>
+              <div className="sub-section insignificant">
+                <small>
+                  <Trans>
+                    Controls copied and shared post links. Bluepy links stay in
+                    Bluepy; bsky.app links open the same post in Bluesky.
+                  </Trans>
+                </small>
+              </div>
+            </li>
             {!!TRANSLANG_INSTANCES && (
               <li className="block">
                 <label>
                   <input
+                    aria-label={t`Content translation`}
                     type="checkbox"
                     checked={snapStates.settings.contentTranslation}
                     onChange={(e) => {
@@ -438,6 +469,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                         return (
                           <label key={lang.code}>
                             <input
+                              aria-label={common || lang.name}
                               type="checkbox"
                               checked={snapStates.settings.contentTranslationHideLanguages.includes(
                                 lang.code,
@@ -491,6 +523,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
                   <div>
                     <label>
                       <input
+                        aria-label={t`Auto inline translation`}
                         type="checkbox"
                         checked={
                           snapStates.settings.contentTranslationAutoInline
@@ -520,6 +553,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <li className="block">
                 <label>
                   <input
+                    aria-label={t`Paginated timeline`}
                     type="checkbox"
                     checked={!!expTimeline2}
                     onChange={(e) => {
@@ -550,6 +584,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <li className="block">
                 <label>
                   <input
+                    aria-label={t`GIF Picker for composer`}
                     type="checkbox"
                     checked={snapStates.settings.composerGIFPicker}
                     onChange={(e) => {
@@ -584,6 +619,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <li className="block">
                 <label>
                   <input
+                    aria-label={t`Image description generator`}
                     type="checkbox"
                     checked={snapStates.settings.mediaAltGenerator}
                     onChange={(e) => {
@@ -621,6 +657,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <li className="block">
               <label>
                 <input
+                  aria-label={t`Cloak mode`}
                   type="checkbox"
                   checked={snapStates.settings.cloakMode}
                   onChange={(e) => {
@@ -646,6 +683,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <li className="block">
               <label>
                 <input
+                  aria-label={t`Disable all animations`}
                   type="checkbox"
                   checked={snapStates.settings.noAnimations}
                   onChange={(e) => {
@@ -824,6 +862,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
               <Trans>
                 <span className="insignificant">Version:</span>{' '}
                 <input
+                  aria-label={t`Version`}
                   type="text"
                   className="version-string"
                   readOnly
@@ -863,7 +902,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
         </section>
         {(import.meta.env.DEV || import.meta.env.PHANPY_DEV) && (
           <details className="debug-info">
-            <summary></summary>
+            <summary aria-label={t`Debug info`}></summary>
             <p className="side">
               <Link
                 to="/_sandbox"
@@ -943,6 +982,7 @@ function Settings({ onClose }: SettingsProps): ReactElement {
             <p>Temporary Experiments</p>
             <label>
               <input
+                aria-label={t`Tab bar v2`}
                 type="checkbox"
                 checked={!!expTabBarV2}
                 onChange={(e) => {
@@ -972,6 +1012,7 @@ interface TextSizeControlProps {
 function TextSizeControl({
   currentTextSize,
 }: TextSizeControlProps): ReactElement {
+  const { t } = useLingui();
   const textSizeFieldRef = useRef<HTMLInputElement | null>(null);
   const [size, setSize] = useState<number>(currentTextSize);
   const [debouncedSize] = useDebounce(size, 1000);
@@ -1004,6 +1045,7 @@ function TextSizeControl({
         <Trans comment="Preview of one character, in smallest size">A</Trans>
       </button>{' '}
       <input
+        aria-label={t`Text size`}
         ref={textSizeFieldRef}
         type="range"
         min={SMALLEST_TEXT_SIZE}
@@ -1029,7 +1071,9 @@ function TextSizeControl({
       </button>
       <datalist id="sizes">
         {TEXT_SIZES.map((s) => (
-          <option key={s} value={s} />
+          <option key={s} value={s} label={String(s)}>
+            {s}
+          </option>
         ))}
       </datalist>
     </div>
@@ -1265,6 +1309,7 @@ function PushNotificationsSection({
           <li>
             <label>
               <input
+                aria-label={t`Allow notifications`}
                 type="checkbox"
                 disabled={isLoading || needRelogin}
                 name="policy-allow"
@@ -1360,7 +1405,11 @@ function PushNotificationsSection({
                     ].map((alert) => (
                       <li key={alert.value}>
                         <label>
-                          <input type="checkbox" name={alert.value} />{' '}
+                          <input
+                            aria-label={alert.label}
+                            type="checkbox"
+                            name={alert.value}
+                          />{' '}
                           {alert.label}
                         </label>
                       </li>

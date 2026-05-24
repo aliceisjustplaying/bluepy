@@ -161,6 +161,10 @@ msgstr "<0>Maiús</0> + <1>c</1>"
 #~ msgid "Scheduled Posts"
 #~ msgstr "Publicacións programadas"
 
+#: src/pages/settings.tsx
+msgid "Cloak mode"
+msgstr ""
+
 #: src/components/muted-status.tsx
 #: src/components/related-actions.tsx
 msgid "Muted"
@@ -1113,6 +1117,10 @@ msgstr "Buscar"
 msgid "Post updated. Check it out."
 msgstr "Actualizouse a publicación. Compróbao."
 
+#: src/pages/settings.tsx
+msgid "Debug info"
+msgstr ""
+
 #: src/components/status-account-menu.tsx
 msgid "Unable to unpin post"
 msgstr "Non se puido desprender a publicación"
@@ -1858,6 +1866,10 @@ msgstr "Ningún"
 msgid "Link copied"
 msgstr "Copiouse a ligazón"
 
+#: src/pages/settings.tsx
+msgid "Version"
+msgstr ""
+
 #: src/components/mention-modal.tsx
 msgid "Search accounts"
 msgstr "Buscar contas"
@@ -2075,6 +2087,10 @@ msgstr "Fío {index}/X"
 #: src/components/notification.tsx
 msgid "Your account has been suspended."
 msgstr "A túa conta foi suspendida."
+
+#: src/pages/catchup.tsx
+msgid "Login required to run Catch-up."
+msgstr ""
 
 #: src/pages/login.tsx
 msgid "PDS URL, optional"
@@ -2368,6 +2384,10 @@ msgstr "Reactivar a conversa"
 msgid "Failed to update subscription. Please try again."
 msgstr "Fallou a actualización da subscrición. Inténtao outra vez."
 
+#: src/pages/settings.tsx
+msgid "Content translation"
+msgstr ""
+
 #: src/components/related-actions.tsx
 msgid "Enable notifications"
 msgstr "Activar notificacións"
@@ -2438,6 +2458,10 @@ msgstr "{hashtagTitle} en {instance}"
 #: src/components/status-reply-menu.tsx
 msgid "Reply"
 msgstr "Responder"
+
+#: src/pages/settings.tsx
+msgid "Allow notifications"
+msgstr ""
 
 #: src/components/notification.tsx
 #~ msgid "Your {year} #Wrapstodon is here!"
@@ -2751,6 +2775,10 @@ msgstr "Fixada"
 #~ msgid "Server rule violation"
 #~ msgstr "Violación das regras do servidor"
 
+#: src/pages/settings.tsx
+msgid "Post links"
+msgstr ""
+
 #: src/components/notification.tsx
 #~ msgid "A poll you have created has ended."
 #~ msgstr "Finalizou unha enquisa creada por ti."
@@ -2793,6 +2821,10 @@ msgstr "Mostrando publicacións etiquetadas con #{0}"
 #: src/components/shortcuts-settings.tsx
 msgid "Import"
 msgstr "Importar"
+
+#: src/pages/settings.tsx
+msgid "Tab bar v2"
+msgstr ""
 
 #: src/components/account-block.tsx
 #: src/components/account-info.tsx
@@ -3519,6 +3551,10 @@ msgstr "Conversa reactivada"
 msgid "Unable to block {username}"
 msgstr "Non se puido bloquear a {username}"
 
+#: src/pages/settings.tsx
+msgid "Paginated timeline"
+msgstr ""
+
 #. js-lingui-explicit-id
 #: src/components/post-thread-page.tsx
 #: src/pages/status.tsx
@@ -3851,6 +3887,10 @@ msgstr ""
 #: src/components/compose.tsx
 msgid "{0, plural, one {File {1} is not supported.} other {Files {2} are not supported.}}"
 msgstr "{0, plural, one {O ficheiro {1} non é compatible.} other {Os ficheiros {2} non son compatibles.}}"
+
+#: src/pages/settings.tsx
+msgid "Controls copied and shared post links. Bluepy links stay in Bluepy; bsky.app links open the same post in Bluesky."
+msgstr ""
 
 #: src/components/notification.tsx
 msgid "You have blocked <0>{targetName}</0>. Removed followers: {followersCount}, followings: {followingCount}."
