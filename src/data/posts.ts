@@ -135,6 +135,7 @@ export function useThread(
 ): {
   data?: AppBskyFeedDefs.ThreadViewPost;
   isLoading: boolean;
+  isPlaceholderData: boolean;
   error: Error | null;
 } {
   const clients = useClients();
@@ -165,6 +166,7 @@ export function useThread(
   return {
     data: query.data,
     isLoading: query.isLoading,
+    isPlaceholderData: query.isPlaceholderData,
     error: query.error instanceof Error ? query.error : null,
   };
 }

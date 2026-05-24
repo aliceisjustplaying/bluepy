@@ -145,7 +145,12 @@ export default function PostThreadPage({
   instance = 'bsky.social',
 }: PostThreadPageProps) {
   const { t } = useLingui();
-  const { data: thread, isLoading, error } = useThread(uri);
+  const {
+    data: thread,
+    isLoading,
+    isPlaceholderData,
+    error,
+  } = useThread(uri);
   const { data: anchorPost, isLoading: isAnchorLoading } = usePostRoute(uri);
   const heroRef = useRef<HTMLLIElement | null>(null);
   const hasAlignedHeroRef = useRef(false);
@@ -178,20 +183,28 @@ export default function PostThreadPage({
   }, [backLink, closeLink]);
 
   useLayoutEffect(() => {
-    if (!thread || hasAlignedHeroRef.current) return undefined;
-    if (ancestors.length === 0) return undefined;
+    hasAlignedHeroRef.current = false;
+    const hero = heroRef.current;
+    const scroller = hero?.closest<HTMLElement>('.status-deck');
+    if (scroller) scroller.scrollTop = 0;
+  }, [uri]);
+
+  useLayoutEffect(() => {
+    if (!thread || isPlaceholderData || hasAlignedHeroRef.current) {
+      return undefined;
+    }
     hasAlignedHeroRef.current = true;
     const alignHero = () => {
       const hero = heroRef.current;
       const scroller = hero?.closest<HTMLElement>('.status-deck');
       if (!hero || !scroller) return;
-        const heroRect = hero.getBoundingClientRect();
-        const scrollerRect = scroller.getBoundingClientRect();
-        const centeredTop = Math.max(
-          0,
-          (scroller.clientHeight - heroRect.height) / 2,
-      );
-      scroller.scrollTop += heroRect.top - scrollerRect.top - centeredTop;
+      const heroRect = hero.getBoundingClientRect();
+      const scrollerRect = scroller.getBoundingClientRect();
+      const header = scroller.querySelector<HTMLElement>(':scope > header');
+      const headerBottom =
+        header?.getBoundingClientRect().bottom ?? scrollerRect.top;
+      const targetTop = Math.max(0, headerBottom - scrollerRect.top);
+      scroller.scrollTop += heroRect.top - scrollerRect.top - targetTop;
     };
     requestAnimationFrame(() => {
       requestAnimationFrame(alignHero);
@@ -200,7 +213,7 @@ export default function PostThreadPage({
     return () => {
       window.clearTimeout(settleTimer);
     };
-  }, [ancestors.length, thread]);
+  }, [isPlaceholderData, thread, uri]);
 
   useTitle(t`Post`, ['/s/:id', '/:instance/s/:id', '/:atUri', '/:scheme://*']);
 

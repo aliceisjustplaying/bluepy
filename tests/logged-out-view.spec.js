@@ -1896,6 +1896,18 @@ test('keeps quoted post detail in the post deck stack', async ({ page }) => {
     pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-quoted`),
   );
   await expect(page.locator('.deck-back')).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('.status-deck li.hero').evaluate((node) => {
+        const deck = node.closest('.status-deck');
+        const deckTop = deck?.getBoundingClientRect().top ?? 0;
+        const headerBottom =
+          deck?.querySelector(':scope > header')?.getBoundingClientRect()
+            .bottom ?? deckTop;
+        return node.getBoundingClientRect().top - headerBottom;
+      }),
+    )
+    .toBeLessThan(40);
 
   await page.locator('.deck-back').click();
   await expect(page).toHaveURL(
@@ -1917,7 +1929,7 @@ test('keeps quoted post detail in the post deck stack', async ({ page }) => {
   await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
 });
 
-test('keeps a feed-clicked reply centered after loading ancestors', async ({
+test('keeps a feed-clicked reply near the top after loading ancestors', async ({
   page,
 }) => {
   await routeAtprotoThreadNavigation(page, {
@@ -1946,16 +1958,22 @@ test('keeps a feed-clicked reply centered after loading ancestors', async ({
       page.locator('.status-deck li.hero').evaluate((node) => {
         const deck = node.closest('.status-deck');
         const deckTop = deck?.getBoundingClientRect().top ?? 0;
-        return node.getBoundingClientRect().top - deckTop;
+        const headerBottom =
+          deck?.querySelector(':scope > header')?.getBoundingClientRect()
+            .bottom ?? deckTop;
+        return node.getBoundingClientRect().top - headerBottom;
       }),
     )
-    .toBeLessThan(160);
+    .toBeLessThan(40);
   const heroTop = await page.locator('.status-deck li.hero').evaluate((node) => {
     const deck = node.closest('.status-deck');
     const deckTop = deck?.getBoundingClientRect().top ?? 0;
-    return node.getBoundingClientRect().top - deckTop;
+    const headerBottom =
+      deck?.querySelector(':scope > header')?.getBoundingClientRect().bottom ??
+      deckTop;
+    return node.getBoundingClientRect().top - headerBottom;
   });
-  expect(heroTop).toBeGreaterThanOrEqual(0);
+  expect(heroTop).toBeGreaterThanOrEqual(-1);
 });
 
 test('renders a feed-backed post detail before the full thread returns', async ({
