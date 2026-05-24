@@ -33,6 +33,7 @@ import {
   savePushSettings,
   SERVICE_DID,
   unregisterCurrentDevice,
+  type ServiceAuthCapableAgent,
   type ServiceAuthProvider,
 } from '../utils/web-push-subscriptions';
 import { useClients } from '../contexts/SessionProvider';
@@ -1158,9 +1159,7 @@ function PushNotificationsSection({
   const [mentionsEnabled, setMentionsEnabled] = useState<boolean>(true);
   const [richPreviewsEnabled, setRichPreviewsEnabled] = useState<boolean>(true);
   const serviceAuth: ServiceAuthProvider = useCallback(async (lxm) => {
-    const agent = clients.pdsRepoAgent as unknown as {
-      com?: { atproto?: { server?: { getServiceAuth?: (args: { aud: string; lxm: string }) => Promise<{ data: { token: string } }> } } };
-    };
+    const agent = clients.pdsRepoAgent as ServiceAuthCapableAgent;
     const res = await agent.com?.atproto?.server?.getServiceAuth?.({
       aud: SERVICE_DID,
       lxm,

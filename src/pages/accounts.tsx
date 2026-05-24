@@ -29,6 +29,7 @@ import store from '../utils/store';
 import {
   deleteAllPushDataForAccount,
   SERVICE_DID,
+  type ServiceAuthCapableAgent,
   type ServiceAuthProvider,
 } from '../utils/web-push-subscriptions';
 import {
@@ -79,9 +80,7 @@ function Accounts({ onClose }: AccountsProps) {
   };
   const serviceAuthFor = (did: string): ServiceAuthProvider => async (lxm) => {
     const currentAgent = currentAccount === did ? clients.pdsRepoAgent : null;
-    const agent = (currentAgent ?? createAppPasswordAgentForDid(did) ?? await restorePdsRepoAgentFor(did)) as unknown as {
-      com?: { atproto?: { server?: { getServiceAuth?: (args: { aud: string; lxm: string }) => Promise<{ data: { token: string } }> } } };
-    };
+    const agent = (currentAgent ?? createAppPasswordAgentForDid(did) ?? await restorePdsRepoAgentFor(did)) as ServiceAuthCapableAgent;
     const res = await agent.com?.atproto?.server?.getServiceAuth?.({
       aud: SERVICE_DID,
       lxm,

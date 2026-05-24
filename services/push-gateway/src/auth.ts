@@ -38,6 +38,19 @@ function base64urlJson(segment: string): unknown {
   return JSON.parse(Buffer.from(segment, 'base64url').toString('utf8'));
 }
 
+function isServiceAuthClaims(value: unknown): value is ServiceAuthClaims {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const claims = value as Record<string, unknown>;
+  return (
+    (claims.iss === undefined || typeof claims.iss === 'string') &&
+    (claims.sub === undefined || typeof claims.sub === 'string') &&
+    (claims.aud === undefined || typeof claims.aud === 'string') &&
+    (claims.lxm === undefined || typeof claims.lxm === 'string') &&
+    (claims.exp === undefined || (typeof claims.exp === 'number' && Number.isFinite(claims.exp))) &&
+    (claims.jti === undefined || typeof claims.jti === 'string')
+  );
+}
+
 function tokenHash(raw: string, claims: ServiceAuthClaims): string {
   const stable = claims.iss && claims.jti ? `${claims.iss}:${claims.jti}` : raw;
   return createHash('sha256').update(stable).digest('hex');
@@ -98,7 +111,9 @@ export async function verifyServiceAuth({
 }): Promise<AuthContext> {
   const parts = rawToken.split('.');
   if (parts.length !== 3) throw new Error('invalid_auth_token');
-  const claims = base64urlJson(parts[1]) as ServiceAuthClaims;
+  const payload = base64urlJson(parts[1]);
+  if (!isServiceAuthClaims(payload)) throw new Error('invalid_auth_token');
+  const claims = payload;
   if (!claims.iss || (claims.sub && claims.sub !== claims.iss)) throw new Error('invalid_auth_subject');
   if (claims.aud !== expectedAud) throw new Error('invalid_auth_audience');
   if (claims.lxm !== expectedLxm) throw new Error('invalid_auth_method');

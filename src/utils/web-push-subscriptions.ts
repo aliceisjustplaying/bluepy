@@ -19,6 +19,15 @@ export interface GatewayPublicKey {
 }
 
 export type ServiceAuthProvider = (lxm: string) => Promise<string>;
+export interface ServiceAuthCapableAgent {
+  com?: {
+    atproto?: {
+      server?: {
+        getServiceAuth?: (args: { aud: string; lxm: string }) => Promise<{ data: { token: string } }>;
+      };
+    };
+  };
+}
 
 export function isPushSupported(): boolean {
   return 'serviceWorker' in navigator && 'PushManager' in window;

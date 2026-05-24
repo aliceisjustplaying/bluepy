@@ -12,6 +12,14 @@ function token(claims: Record<string, unknown>) {
   ].join('.');
 }
 
+function rawTokenPayload(payload: string) {
+  return [
+    Buffer.from(JSON.stringify({ alg: 'none' })).toString('base64url'),
+    Buffer.from(payload).toString('base64url'),
+    '',
+  ].join('.');
+}
+
 void test('service auth derives did from token and rejects replay', async () => {
   const db = openDb(':memory:');
   migrate(db);
@@ -76,6 +84,37 @@ void test('service auth verifies DID document signing key', async () => {
     }),
   });
   assert.equal(result.did, 'did:plc:user');
+});
+
+void test('service auth rejects malformed claims payloads', async () => {
+  const db = openDb(':memory:');
+  migrate(db);
+  const options = {
+    db,
+    expectedAud: 'did:web:notifications-gateway.bluepy.social',
+    expectedLxm: LXM['GET /settings'],
+    allowUnsignedDevTokens: true,
+  };
+  await assert.rejects(
+    () => verifyServiceAuth({
+      ...options,
+      rawToken: rawTokenPayload('null'),
+    }),
+    /invalid_auth_token/,
+  );
+  await assert.rejects(
+    () => verifyServiceAuth({
+      ...options,
+      rawToken: token({
+        iss: 'did:plc:user',
+        aud: 'did:web:notifications-gateway.bluepy.social',
+        lxm: LXM['GET /settings'],
+        exp: 'not-a-number',
+        jti: 'bad-exp',
+      }),
+    }),
+    /invalid_auth_token/,
+  );
 });
 
 void test('default DID resolver only fetches plc documents', async () => {

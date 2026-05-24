@@ -27,7 +27,8 @@ interface DeliveryAttemptRow {
   rich_previews_enabled: number | null;
 }
 
-export function classifyWebPushFailure(statusCode: number): FailureClass {
+export function classifyWebPushFailure(statusCode: number | undefined): FailureClass {
+  if (statusCode === undefined) return 'transient';
   if (statusCode === 404 || statusCode === 410) return 'gone';
   if (statusCode === 413) return 'payload_too_large';
   if (statusCode === 408 || statusCode === 429 || statusCode >= 500) return 'transient';
@@ -176,10 +177,14 @@ export async function sendAttempt(db: Db, attemptId: number, vapid: { subject: s
     );
     db.prepare("UPDATE delivery_attempts SET status = 'sent', sent_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(attemptId);
   } catch (error: unknown) {
+    if (error instanceof Error && error.message === 'invalid_target_at_uri') {
+      db.prepare("UPDATE delivery_attempts SET status = 'failed', last_error = 'invalid_target_at_uri', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(attemptId);
+      return;
+    }
     const statusCode =
       typeof error === 'object' && error && 'statusCode' in error
         ? Number(error.statusCode)
-        : 0;
+        : undefined;
     const klass = classifyWebPushFailure(statusCode);
     if (klass === 'gone') db.prepare('UPDATE subscriptions SET active = 0, inactive_at = CURRENT_TIMESTAMP WHERE id = ?').run(row.subscription_id);
     if (klass === 'transient') {

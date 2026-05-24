@@ -340,6 +340,9 @@ self.addEventListener('push', (event) => {
   } catch {
     payload = {};
   }
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    payload = {};
+  }
   delete payload.access_token;
   delete payload.accessToken;
   delete payload.refresh_token;
@@ -422,7 +425,7 @@ self.addEventListener('notificationclick', (event) => {
     event.notification.data || {};
   if (targetAtUri) {
     if (!isBluepyPostAtUri(targetAtUri)) {
-      event.waitUntil(event.notification.close());
+      event.notification.close();
       return;
     }
     const url = new URL(`/${targetAtUri}`, self.location.origin).href;
@@ -442,7 +445,11 @@ self.addEventListener('notificationclick', (event) => {
           recipientDid,
           notificationId: pushNotificationId(notificationId || event.notification.tag),
         };
-        await storePendingNotificationRoute(message);
+        try {
+          await storePendingNotificationRoute(message);
+        } catch (error) {
+          console.warn('Failed to persist pending notification route', error);
+        }
         if (bestClient) {
           if ('navigate' in bestClient) {
             await bestClient.navigate(url);

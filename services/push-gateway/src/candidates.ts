@@ -28,6 +28,10 @@ function isDid(value: unknown): value is string {
   return typeof value === 'string' && value.startsWith('did:') && !hasControlCharacter(value);
 }
 
+function isRecordKey(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-zA-Z0-9._~-]+$/.test(value);
+}
+
 function hasControlCharacter(value: string): boolean {
   for (let index = 0; index < value.length; index += 1) {
     if (value.charCodeAt(index) < 32) return true;
@@ -62,7 +66,9 @@ export function extractCandidates(event: JetstreamPostEvent): Candidate[] {
   if (event.commit.collection !== 'app.bsky.feed.post') return [];
   const record = event.commit.record as { text?: unknown; facets?: unknown; reply?: unknown } | null;
   if (!record || typeof record !== 'object') return [];
-  if (!event.commit.cid || !event.commit.rkey) return [];
+  if (!isDid(event.did)) return [];
+  if (typeof event.commit.cid !== 'string' || hasControlCharacter(event.commit.cid)) return [];
+  if (!isRecordKey(event.commit.rkey)) return [];
 
   const recipients = new Map<string, CandidateType>();
   const facets = Array.isArray(record.facets) ? record.facets : [];
