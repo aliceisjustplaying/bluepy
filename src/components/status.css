@@ -346,6 +346,7 @@
   gap: 8px;
   align-items: center;
   padding-inline-start: calc(14px + 50px + 10px);
+  padding-inline-end: 14px;
 
   .status-carousel & {
     padding: 16px;
@@ -562,6 +563,7 @@
 
   .status.filtered {
     padding-inline-start: calc(12px + 42px + 8px);
+    padding-inline-end: 12px;
   }
 
   .status-card-container {
@@ -724,7 +726,8 @@
   column-gap: 0.5em;
   row-gap: 0.2em;
   min-height: 40px;
-  min-width: min(100%, 16rem);
+  width: 100%;
+  min-width: 0;
   padding: 7px 8px;
   white-space: normal;
   text-align: start;
