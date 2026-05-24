@@ -792,7 +792,7 @@ function Search({ columnMode, ...props }: SearchProps) {
             <>
               <p className="ui-state insignificant">
                 <Trans>
-                  Enter your search term or paste a URL above to get started.
+                  Enter your search term or paste a URL to get started.
                 </Trans>
               </p>
               <RecentSearches />

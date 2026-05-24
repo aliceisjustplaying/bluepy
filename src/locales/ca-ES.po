@@ -1994,8 +1994,8 @@ msgid "Unable to fetch account info"
 msgstr "No ha estat possible la informació del compte"
 
 #: src/pages/search.tsx
-msgid "Enter your search term or paste a URL above to get started."
-msgstr "Introduïu el vostre terme de cerca o enganxeu un URL a dalt per començar."
+#~ msgid "Enter your search term or paste a URL above to get started."
+#~ msgstr "Introduïu el vostre terme de cerca o enganxeu un URL a dalt per començar."
 
 #: src/pages/catchup.tsx
 msgid "Links shared by followings, sorted by shared counts, reposts and likes."
@@ -3310,6 +3310,10 @@ msgstr ""
 #: src/pages/notifications.tsx
 msgid "Who don't follow you"
 msgstr "Qui no et segueix"
+
+#: src/pages/search.tsx
+msgid "Enter your search term or paste a URL to get started."
+msgstr ""
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx

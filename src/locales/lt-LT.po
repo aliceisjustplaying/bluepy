@@ -1992,8 +1992,8 @@ msgid "Unable to fetch account info"
 msgstr "Nepavyksta gauti paskyros informacijos."
 
 #: src/pages/search.tsx
-msgid "Enter your search term or paste a URL above to get started."
-msgstr "Įvesk paieškos terminą arba įklijuok URL, kad pradėtum."
+#~ msgid "Enter your search term or paste a URL above to get started."
+#~ msgstr "Įvesk paieškos terminą arba įklijuok URL, kad pradėtum."
 
 #: src/pages/catchup.tsx
 msgid "Links shared by followings, sorted by shared counts, reposts and likes."
@@ -3306,6 +3306,10 @@ msgstr ""
 #: src/pages/notifications.tsx
 msgid "Who don't follow you"
 msgstr "Kurie tavęs neseka"
+
+#: src/pages/search.tsx
+msgid "Enter your search term or paste a URL to get started."
+msgstr ""
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx

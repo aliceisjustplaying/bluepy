@@ -1694,8 +1694,8 @@ msgid "Unable to fetch account info"
 msgstr ""
 
 #: src/pages/search.tsx
-msgid "Enter your search term or paste a URL above to get started."
-msgstr ""
+#~ msgid "Enter your search term or paste a URL above to get started."
+#~ msgstr ""
 
 #: src/pages/catchup.tsx
 msgid "Links shared by followings, sorted by shared counts, reposts and likes."
@@ -2832,6 +2832,10 @@ msgstr "Search: {query} (Posts)"
 #: src/pages/notifications.tsx
 msgid "Who don't follow you"
 msgstr ""
+
+#: src/pages/search.tsx
+msgid "Enter your search term or paste a URL to get started."
+msgstr "Enter your search term or paste a URL to get started."
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx

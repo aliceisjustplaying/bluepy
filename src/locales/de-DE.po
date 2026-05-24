@@ -1992,8 +1992,8 @@ msgid "Unable to fetch account info"
 msgstr "Kontoinformationen konnten nicht abgerufen werden"
 
 #: src/pages/search.tsx
-msgid "Enter your search term or paste a URL above to get started."
-msgstr "Geben Sie Ihren Suchbegriff ein oder fügen Sie oben eine URL ein, um zu beginnen."
+#~ msgid "Enter your search term or paste a URL above to get started."
+#~ msgstr "Geben Sie Ihren Suchbegriff ein oder fügen Sie oben eine URL ein, um zu beginnen."
 
 #: src/pages/catchup.tsx
 msgid "Links shared by followings, sorted by shared counts, reposts and likes."
@@ -3306,6 +3306,10 @@ msgstr ""
 #: src/pages/notifications.tsx
 msgid "Who don't follow you"
 msgstr "Wer Ihnen nicht folgt"
+
+#: src/pages/search.tsx
+msgid "Enter your search term or paste a URL to get started."
+msgstr ""
 
 #: src/components/status-inline-controls.tsx
 #: src/components/status-large-footer.tsx
