@@ -85,17 +85,7 @@ export async function processJetstreamEventWithProfileCache(
     };
   }
   const profile = await getOrFetchProfilePreview(db, event.did, appViewUrl);
-  const enrichedEvent =
-    profile && event.commit?.record
-      ? {
-          ...event,
-          commit: {
-            ...event.commit,
-            record: event.commit.record,
-          },
-        }
-      : event;
-  if (!profile) return processJetstreamEvent(db, enrichedEvent);
+  if (!profile) return processJetstreamEvent(db, event);
   let attempts = 0;
   let events = 0;
   const tx = db.transaction(() => {

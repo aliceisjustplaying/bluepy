@@ -270,7 +270,7 @@ msgstr "Це статичне, не стилізоване та без сцен�
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "Вилучити цей пристрій"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -2808,7 +2808,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "Розширені попередні перегляди можуть містити відповіді або згадки від ігнорованих чи заблокованих облікових записів, доки не з’явиться фільтрація."
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"

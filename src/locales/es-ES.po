@@ -270,7 +270,7 @@ msgstr "Esto es estático, sin estilos y sin guion. Necesitarás añadir tus pro
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "Eliminar este dispositivo"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -2808,7 +2808,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "Las vistas previas enriquecidas pueden incluir respuestas o menciones de cuentas silenciadas o bloqueadas hasta que llegue el filtrado."
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"

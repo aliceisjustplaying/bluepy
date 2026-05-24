@@ -91,8 +91,8 @@ export function getCurrentSubscription(db: Db, secret: string, did: string, endp
 }
 
 export function deleteAccountData(db: Db, did: string) {
-  const subIds = db.prepare('SELECT id FROM subscriptions WHERE did = ?').all(did).map((row) => (row as { id: number }).id);
   const tx = db.transaction(() => {
+    const subIds = db.prepare('SELECT id FROM subscriptions WHERE did = ?').all(did).map((row) => (row as { id: number }).id);
     for (const id of subIds) db.prepare('DELETE FROM delivery_attempts WHERE subscription_id = ?').run(id);
     db.prepare('DELETE FROM subscriptions WHERE did = ?').run(did);
     db.prepare('DELETE FROM settings WHERE did = ?').run(did);
@@ -161,7 +161,7 @@ export function upsertNotificationEvent(db: Db, candidate: Candidate): Notificat
     candidate.actorDid,
     candidate.actorHandle ?? null,
     candidate.actorDisplayName ?? null,
-    candidate.textExcerpt || null,
+    candidate.textExcerpt ?? null,
   );
   return db
     .prepare(

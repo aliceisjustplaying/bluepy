@@ -116,8 +116,13 @@ export async function verifyServiceAuth({
       expectedLxm,
       expiresAt,
     );
-  } catch {
-    throw new Error('replayed_auth_token');
+  } catch (error: unknown) {
+    const code =
+      typeof error === 'object' && error && 'code' in error
+        ? String((error as { code: unknown }).code)
+        : '';
+    if (code.startsWith('SQLITE_CONSTRAINT')) throw new Error('replayed_auth_token', { cause: error });
+    throw new Error('auth_token_store_failed', { cause: error });
   }
   return { did: claims.iss, lxm: expectedLxm };
 }

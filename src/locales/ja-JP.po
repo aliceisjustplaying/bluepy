@@ -270,7 +270,7 @@ msgstr "これは静的でスタイルやスクリプトもありません。必
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "このデバイスを削除"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -791,7 +791,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Push notifications are blocked. Please enable them in your browser settings."
-msgstr ""
+msgstr "プッシュ通知がブロックされています。ブラウザーの設定で有効にしてください。"
 
 #: src/components/account-info.tsx
 #~ msgid "Loading post stats..."
@@ -936,7 +936,7 @@ msgstr "いいね！しました"
 
 #: src/pages/settings.tsx
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-msgstr ""
+msgstr "前回のログイン以降、プッシュ通知の権限が付与されていません。権限を付与するには<0><1>再度ログイン</1>する必要があります</0>。"
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
@@ -2384,7 +2384,7 @@ msgstr "会話のミュートを解除"
 
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
-msgstr ""
+msgstr "購読を更新できませんでした。もう一度お試しください。"
 
 #: src/pages/settings.tsx
 msgid "Content translation"
@@ -2808,7 +2808,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "リッチプレビューには、フィルター対応までミュートまたはブロックしたアカウントからの返信やメンションが含まれる場合があります。"
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
@@ -3650,7 +3650,7 @@ msgstr "@{0}の投稿に返信します (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
 msgid "Failed to remove subscription. Please try again."
-msgstr ""
+msgstr "購読を削除できませんでした。もう一度お試しください。"
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."

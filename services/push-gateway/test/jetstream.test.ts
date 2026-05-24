@@ -47,7 +47,7 @@ void test('creates per-device attempts and preserves unsent devices on replay', 
   db.prepare('DELETE FROM delivery_attempts WHERE subscription_id = 2').run();
   const replay = processJetstreamEvent(db, event);
   assert.equal(replay.events, 1);
-  assert.equal(replay.attempts, 2);
+  assert.equal(replay.attempts, 1);
   assert.equal(
     (db.prepare('SELECT COUNT(*) AS count FROM delivery_attempts').get() as { count: number }).count,
     2,

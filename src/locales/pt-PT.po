@@ -270,7 +270,7 @@ msgstr "Isto é estático, instável e sem guião. Pode precisar para aplicar os
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "Remover este dispositivo"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -2808,7 +2808,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "As pré-visualizações detalhadas podem incluir respostas ou menções de contas silenciadas ou bloqueadas até a filtragem chegar."
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"

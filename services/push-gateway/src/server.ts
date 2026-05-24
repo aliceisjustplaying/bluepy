@@ -7,6 +7,7 @@ import { createDeliveryAttemptsForEvent, sendDueAttempts } from './delivery.js';
 import { createAdminTestEvent, deleteAccountData, getCurrentSubscription, getSettings, pruneExpiredData, registerSubscription, unregisterSubscription, upsertSettings } from './repository.js';
 import type { SettingsInput } from './repository.js';
 import { consumeJetstream } from './jetstream.js';
+import { sanitizeError } from './privacy.js';
 
 async function readJson(req: http.IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
@@ -109,78 +110,78 @@ export function createServer(db: Db, config: GatewayConfig): http.Server {
 }
 
 async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse, db: Db, config: GatewayConfig): Promise<void> {
-    const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
-    const headers = cors(req, config);
-    try {
-      if (req.method === 'OPTIONS') return send(res, 204, {}, headers);
-      if (req.method === 'GET' && url.pathname === '/healthz') return send(res, 200, { ok: true }, headers);
-      if (req.method === 'GET' && url.pathname === '/vapid-public-key') {
-        return send(res, 200, { keyId: config.activeVapidKeyId, publicKey: config.vapidPublicKey }, headers);
-      }
-      if (req.method === 'GET' && url.pathname === '/metrics') {
-        const remote = req.socket.remoteAddress;
-        if (remote !== '127.0.0.1' && remote !== '::1' && remote !== '::ffff:127.0.0.1') return send(res, 403, { error: 'localhost_only' }, headers);
-        res.writeHead(200, { 'content-type': 'text/plain; version=0.0.4' });
-        res.end(metrics(db));
-        return;
-      }
-      if (req.method === 'GET' && url.pathname === '/settings') {
-        const auth = await requireAuth(req, db, config, LXM['GET /settings']);
-        return send(res, 200, getSettings(db, auth.did), headers);
-      }
-      if (req.method === 'PUT' && url.pathname === '/settings') {
-        if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
-        const auth = await requireAuth(req, db, config, LXM['PUT /settings']);
-        return send(res, 200, upsertSettings(db, auth.did, settingsInput(await readJson(req))), headers);
-      }
-      if (req.method === 'POST' && url.pathname === '/subscriptions') {
-        if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
-        const auth = await requireAuth(req, db, config, LXM['POST /subscriptions']);
-        const sub = registerSubscription(db, config.logHashSecret, auth.did, await readJson(req), config.activeVapidKeyId, req.headers['user-agent']);
-        return send(res, 200, { subscription: sub }, headers);
-      }
-      if (req.method === 'POST' && url.pathname === '/subscriptions/current') {
-        if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
-        const auth = await requireAuth(req, db, config, LXM['GET /settings']);
-        const body = await readJson(req);
-        return send(res, 200, getCurrentSubscription(db, config.logHashSecret, auth.did, endpointInput(body)), headers);
-      }
-      if (req.method === 'POST' && url.pathname === '/subscriptions/unregister') {
-        if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
-        const auth = await requireAuth(req, db, config, LXM['POST /subscriptions/unregister']);
-        const body = await readJson(req);
-        unregisterSubscription(db, config.logHashSecret, auth.did, endpointInput(body));
-        return send(res, 200, { ok: true }, headers);
-      }
-      if (req.method === 'POST' && url.pathname === '/subscriptions/delete-all-for-account') {
-        const auth = await requireAuth(req, db, config, LXM['POST /subscriptions/delete-all-for-account']);
-        deleteAccountData(db, auth.did);
-        return send(res, 200, { ok: true }, headers);
-      }
-      if (req.method === 'POST' && url.pathname === '/admin/test-send') {
-        if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
-        const adminAuth = tokenEquals(req.headers.authorization, config.adminToken);
-        if (!adminAuth) return send(res, 403, { error: 'admin_only' }, headers);
-        const body = await readJson(req);
-        const did = typeof (body as { did?: unknown }).did === 'string' ? (body as { did: string }).did : '';
-        if (!did.startsWith('did:')) throw new Error('invalid_did');
-        if (!getSettings(db, did).enabled) return send(res, 400, { error: 'push_disabled' }, headers);
-        const event = createAdminTestEvent(db, did);
-        const attempts = createDeliveryAttemptsForEvent(db, event.id, did);
-        const sent = await sendDueAttempts(db, {
-          limit: 50,
-          vapid: {
-            subject: config.vapidSubject,
-            keys: config.vapidKeys,
-          },
-          richPreviewsEnabled: config.richPreviewsEnabled,
-        });
-        return send(res, 202, { accepted: true, notificationEventId: event.id, attempts, sent }, headers);
-      }
-      return send(res, 404, { error: 'not_found' }, headers);
-    } catch (error) {
-      return send(res, errorStatus(error), { error: error instanceof Error ? error.message : 'bad_request' }, headers);
+  const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
+  const headers = cors(req, config);
+  try {
+    if (req.method === 'OPTIONS') return send(res, 204, {}, headers);
+    if (req.method === 'GET' && url.pathname === '/healthz') return send(res, 200, { ok: true }, headers);
+    if (req.method === 'GET' && url.pathname === '/vapid-public-key') {
+      return send(res, 200, { keyId: config.activeVapidKeyId, publicKey: config.vapidPublicKey }, headers);
     }
+    if (req.method === 'GET' && url.pathname === '/metrics') {
+      const remote = req.socket.remoteAddress;
+      if (remote !== '127.0.0.1' && remote !== '::1' && remote !== '::ffff:127.0.0.1') return send(res, 403, { error: 'localhost_only' }, headers);
+      res.writeHead(200, { 'content-type': 'text/plain; version=0.0.4' });
+      res.end(metrics(db));
+      return;
+    }
+    if (req.method === 'GET' && url.pathname === '/settings') {
+      const auth = await requireAuth(req, db, config, LXM['GET /settings']);
+      return send(res, 200, getSettings(db, auth.did), headers);
+    }
+    if (req.method === 'PUT' && url.pathname === '/settings') {
+      if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
+      const auth = await requireAuth(req, db, config, LXM['PUT /settings']);
+      return send(res, 200, upsertSettings(db, auth.did, settingsInput(await readJson(req))), headers);
+    }
+    if (req.method === 'POST' && url.pathname === '/subscriptions') {
+      if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
+      const auth = await requireAuth(req, db, config, LXM['POST /subscriptions']);
+      const sub = registerSubscription(db, config.logHashSecret, auth.did, await readJson(req), config.activeVapidKeyId, req.headers['user-agent']);
+      return send(res, 200, { subscription: sub }, headers);
+    }
+    if (req.method === 'POST' && url.pathname === '/subscriptions/current') {
+      if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
+      const auth = await requireAuth(req, db, config, LXM['GET /settings']);
+      const body = await readJson(req);
+      return send(res, 200, getCurrentSubscription(db, config.logHashSecret, auth.did, endpointInput(body)), headers);
+    }
+    if (req.method === 'POST' && url.pathname === '/subscriptions/unregister') {
+      if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
+      const auth = await requireAuth(req, db, config, LXM['POST /subscriptions/unregister']);
+      const body = await readJson(req);
+      unregisterSubscription(db, config.logHashSecret, auth.did, endpointInput(body));
+      return send(res, 200, { ok: true }, headers);
+    }
+    if (req.method === 'POST' && url.pathname === '/subscriptions/delete-all-for-account') {
+      const auth = await requireAuth(req, db, config, LXM['POST /subscriptions/delete-all-for-account']);
+      deleteAccountData(db, auth.did);
+      return send(res, 200, { ok: true }, headers);
+    }
+    if (req.method === 'POST' && url.pathname === '/admin/test-send') {
+      if (!(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('json_required');
+      const adminAuth = tokenEquals(req.headers.authorization, config.adminToken);
+      if (!adminAuth) return send(res, 403, { error: 'admin_only' }, headers);
+      const body = await readJson(req);
+      const did = typeof (body as { did?: unknown }).did === 'string' ? (body as { did: string }).did : '';
+      if (!did.startsWith('did:')) throw new Error('invalid_did');
+      if (!getSettings(db, did).enabled) return send(res, 400, { error: 'push_disabled' }, headers);
+      const event = createAdminTestEvent(db, did);
+      const attempts = createDeliveryAttemptsForEvent(db, event.id, did);
+      const sent = await sendDueAttempts(db, {
+        limit: 50,
+        vapid: {
+          subject: config.vapidSubject,
+          keys: config.vapidKeys,
+        },
+        richPreviewsEnabled: config.richPreviewsEnabled,
+      });
+      return send(res, 202, { accepted: true, notificationEventId: event.id, attempts, sent }, headers);
+    }
+    return send(res, 404, { error: 'not_found' }, headers);
+  } catch (error) {
+    return send(res, errorStatus(error), { error: error instanceof Error ? error.message : 'bad_request' }, headers);
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -208,7 +209,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         richPreviewsEnabled: config.richPreviewsEnabled,
       });
     } catch (error) {
-      console.error(JSON.stringify({ event: 'push_delivery_error', error: error instanceof Error ? error.message : String(error) }));
+      console.error(JSON.stringify({ event: 'push_delivery_error', error: sanitizeError(error) }));
     } finally {
       deliveryInFlight = false;
     }
@@ -232,10 +233,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       void deliverDue();
     },
     onError: (error) => {
-      console.error(JSON.stringify({ event: 'jetstream_error', error: error instanceof Error ? error.message : String(error) }));
+      console.error(JSON.stringify({ event: 'jetstream_error', error: sanitizeError(error) }));
     },
   }).catch((error) => {
-    console.error(JSON.stringify({ event: 'jetstream_stopped', error: error instanceof Error ? error.message : String(error) }));
+    console.error(JSON.stringify({ event: 'jetstream_stopped', error: sanitizeError(error) }));
   });
   server.listen(config.port, () => {
     console.log(JSON.stringify({ event: 'push_gateway_started', port: config.port }));

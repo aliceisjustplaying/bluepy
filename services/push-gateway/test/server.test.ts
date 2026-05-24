@@ -156,15 +156,17 @@ void test('registration is idempotent and unregister deactivates current endpoin
 
 void test('delete-all removes account data for the authenticated DID', async () => {
   await withServer(async (base) => {
-    await fetch(`${base}/settings`, {
+    const put = await fetch(`${base}/settings`, {
       method: 'PUT',
       headers: authHeaders('did:plc:a'),
       body: JSON.stringify({ enabled: true }),
     });
-    await fetch(`${base}/subscriptions/delete-all-for-account`, {
+    assert.equal(put.status, 200, await put.text());
+    const deleted = await fetch(`${base}/subscriptions/delete-all-for-account`, {
       method: 'POST',
       headers: authHeaders('did:plc:a'),
     });
+    assert.equal(deleted.status, 200, await deleted.text());
     const get = await fetch(`${base}/settings`, { headers: authHeaders('did:plc:a') });
     assert.equal((await get.json() as { enabled: boolean }).enabled, false);
   });

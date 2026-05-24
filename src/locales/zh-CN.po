@@ -270,7 +270,7 @@ msgstr "此代码是静态代码，不包含样式和脚本。你可能需要进
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "移除此设备"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -2808,7 +2808,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "在过滤功能上线前，丰富预览可能包含来自已静音或已屏蔽账号的回复或提及。"
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"

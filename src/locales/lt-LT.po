@@ -270,7 +270,7 @@ msgstr "Tai – statiškas, nestilingas ir be skriptis. Gali reikėti taikyti sa
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "Pašalinti šį įrenginį"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -2808,7 +2808,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "Išsamiose peržiūrose gali būti atsakymų ar paminėjimų iš nutildytų ar užblokuotų paskyrų, kol bus pridėtas filtravimas."
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"

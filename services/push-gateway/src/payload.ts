@@ -18,9 +18,20 @@ export function payloadBytes(payload: PushPayload): number {
   return Buffer.byteLength(JSON.stringify(payload), 'utf8');
 }
 
+function safePreviewText(value: string | undefined, fallback = '', maxLength = 160): string {
+  const text = value ?? fallback;
+  let cleaned = '';
+  for (let index = 0; index < text.length; index += 1) {
+    const code = text.charCodeAt(index);
+    cleaned += code < 32 || code === 127 ? ' ' : text[index];
+  }
+  cleaned = cleaned.trim();
+  return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength - 1)}…` : cleaned;
+}
+
 export function buildPayload(input: Omit<PushPayload, 'version' | 'title' | 'body'>, rich: boolean): PushPayload {
   if (!validateTargetAtUri(input.targetAtUri)) throw new Error('invalid_target_at_uri');
-  const name = input.actorDisplayName || input.actorHandle || input.actorDid || 'Someone';
+  const name = safePreviewText(input.actorDisplayName || input.actorHandle || input.actorDid, 'Someone', 64);
   const title = rich
     ? input.type === 'mention'
       ? `${name} mentioned you`
@@ -28,7 +39,7 @@ export function buildPayload(input: Omit<PushPayload, 'version' | 'title' | 'bod
     : input.type === 'mention'
       ? 'New mention'
       : 'New reply';
-  const body = rich && input.textExcerpt ? input.textExcerpt : 'Open Bluepy to view it.';
+  const body = rich && input.textExcerpt ? safePreviewText(input.textExcerpt) : 'Open Bluepy to view it.';
   const payload: PushPayload = { version: 1, ...input, title, body };
   if (!rich) {
     delete payload.actorDid;

@@ -83,7 +83,7 @@ function handlePushNotificationRoute(route: PendingNotificationRoute): void {
   for (let index = 0; index < targetAtUri.length; index += 1) {
     if (targetAtUri.charCodeAt(index) < 32) return;
   }
-  if (!/^at:\/\/did:[^/]+\/app\.bsky\.feed\.post\/[^/?#]+$/.test(targetAtUri)) {
+  if (!/^at:\/\/did:[a-z0-9:%._-]+\/app\.bsky\.feed\.post\/[a-zA-Z0-9._~-]+$/.test(targetAtUri)) {
     return;
   }
   const sessions = useSessionsStore.getState();

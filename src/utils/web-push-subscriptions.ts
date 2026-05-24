@@ -4,6 +4,7 @@ const GATEWAY_URL = import.meta.env.PHANPY_PUSH_GATEWAY_URL || '';
 const SERVICE_DID =
   import.meta.env.PHANPY_PUSH_GATEWAY_DID ||
   'did:web:notifications-gateway.bluepy.social';
+const GATEWAY_TIMEOUT_MS = 30_000;
 
 export interface GatewaySettings {
   enabled: boolean;
@@ -54,10 +55,25 @@ async function gatewayFetch<T>(path: string, lxm: string, auth: ServiceAuthProvi
     authorization: `Bearer ${token}`,
   };
   if (init.body) headers['content-type'] = 'application/json';
-  const res = await fetch(gateway(path), {
-    ...init,
-    headers,
-  });
+  const controller = new AbortController();
+  const timeout = globalThis.setTimeout(() => {
+    controller.abort(new Error('Push gateway request timed out'));
+  }, GATEWAY_TIMEOUT_MS);
+  const abort = () => {
+    controller.abort(init.signal?.reason);
+  };
+  init.signal?.addEventListener('abort', abort, { once: true });
+  let res: Response;
+  try {
+    res = await fetch(gateway(path), {
+      ...init,
+      headers,
+      signal: controller.signal,
+    });
+  } finally {
+    globalThis.clearTimeout(timeout);
+    init.signal?.removeEventListener('abort', abort);
+  }
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new Error(`Push gateway request failed: ${res.status}${body ? ` ${body.slice(0, 240)}` : ''}`);
@@ -141,12 +157,14 @@ export async function unregisterCurrentDevice(auth: ServiceAuthProvider): Promis
     method: 'POST',
     body: JSON.stringify({ endpoint: subscription.endpoint }),
   });
+  store.local.del('pushGatewayVapidKeyId');
 }
 
 export async function deleteAllPushDataForAccount(auth: ServiceAuthProvider): Promise<void> {
   await gatewayFetch('/subscriptions/delete-all-for-account', 'social.bluepy.push.deleteaccountdata', auth, {
     method: 'POST',
   });
+  store.local.del('pushGatewayVapidKeyId');
 }
 
 export { SERVICE_DID };

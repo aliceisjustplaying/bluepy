@@ -323,7 +323,11 @@ function isBluepyPostAtUri(value) {
   for (const char of value) {
     if (char.charCodeAt(0) < 32) return false;
   }
-  return /^at:\/\/did:[^/]+\/app\.bsky\.feed\.post\/[^/?#]+$/.test(value);
+  return /^at:\/\/did:[a-z0-9:%._-]+\/app\.bsky\.feed\.post\/[a-zA-Z0-9._~-]+$/.test(value);
+}
+
+function pushNotificationId(value) {
+  return typeof value === 'string' && value ? value : `bluepy-${Date.now()}`;
 }
 
 self.addEventListener('push', (event) => {
@@ -345,6 +349,7 @@ self.addEventListener('push', (event) => {
   if (payload.version === 1) {
     const { title, body, notificationId, type, targetAtUri, recipientDid } =
       payload;
+    const normalizedNotificationId = pushNotificationId(notificationId);
     if (!isBluepyPostAtUri(targetAtUri)) {
       event.waitUntil(
         self.registration.showNotification('New activity in Bluepy', {
@@ -352,7 +357,7 @@ self.addEventListener('push', (event) => {
           icon: '/logo-192.png',
           dir: 'auto',
           badge: '/logo-badge-72.png',
-          tag: notificationId || `bluepy-${Date.now()}`,
+          tag: normalizedNotificationId,
           timestamp: Date.now(),
         }),
       );
@@ -367,10 +372,10 @@ self.addEventListener('push', (event) => {
         icon: '/logo-192.png',
         dir: 'auto',
         badge: '/logo-badge-72.png',
-        tag: notificationId,
+        tag: normalizedNotificationId,
         timestamp: Date.now(),
         data: {
-          notificationId,
+          notificationId: normalizedNotificationId,
           type,
           targetAtUri,
           recipientDid,
@@ -435,7 +440,7 @@ self.addEventListener('notificationclick', (event) => {
           type: 'push-notification-route',
           targetAtUri,
           recipientDid,
-          notificationId,
+          notificationId: pushNotificationId(notificationId || event.notification.tag),
         };
         await storePendingNotificationRoute(message);
         if (bestClient) {

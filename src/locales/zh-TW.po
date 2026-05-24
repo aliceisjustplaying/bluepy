@@ -270,7 +270,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "移除此裝置"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -783,7 +783,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Push notifications are blocked. Please enable them in your browser settings."
-msgstr ""
+msgstr "推播通知已被封鎖。請在瀏覽器設定中啟用。"
 
 #: src/components/account-info.tsx
 #~ msgid "Loading post stats..."
@@ -928,7 +928,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-msgstr ""
+msgstr "自上次登入後尚未授予推播權限。你需要<0><1>重新登入</1>以授予推播權限</0>。"
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
@@ -2364,7 +2364,7 @@ msgstr "取消此對話的靜音"
 
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
-msgstr ""
+msgstr "無法更新訂閱。請再試一次。"
 
 #: src/pages/settings.tsx
 msgid "Content translation"
@@ -2784,7 +2784,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "在篩選功能推出前，豐富預覽可能包含來自已靜音或已封鎖帳號的回覆或提及。"
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
@@ -3618,7 +3618,7 @@ msgstr "正在回覆 @{0} 的文章 (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
 msgid "Failed to remove subscription. Please try again."
-msgstr ""
+msgstr "無法移除訂閱。請再試一次。"
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."

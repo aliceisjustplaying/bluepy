@@ -270,7 +270,7 @@ msgstr "Dit is statisch, zonder vormgeving en scriptloos. Je moet mogelijk je ei
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "Dit apparaat verwijderen"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -791,7 +791,7 @@ msgstr "Toon minder"
 
 #: src/pages/settings.tsx
 msgid "Push notifications are blocked. Please enable them in your browser settings."
-msgstr ""
+msgstr "Pushmeldingen zijn geblokkeerd. Schakel ze in via je browserinstellingen."
 
 #: src/components/account-info.tsx
 #~ msgid "Loading post stats..."
@@ -936,7 +936,7 @@ msgstr "Geliket"
 
 #: src/pages/settings.tsx
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-msgstr ""
+msgstr "Pushmeldingstoestemming is sinds je laatste aanmelding niet verleend. Je moet <0><1>opnieuw inloggen</1> om pushmeldingen toe te staan</0>."
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
@@ -2384,7 +2384,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
-msgstr ""
+msgstr "Abonnement bijwerken mislukt. Probeer het opnieuw."
 
 #: src/pages/settings.tsx
 msgid "Content translation"
@@ -2808,7 +2808,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "Uitgebreide voorvertoningen kunnen antwoorden of vermeldingen bevatten van gedempte of geblokkeerde accounts totdat filtering beschikbaar is."
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
@@ -3650,7 +3650,7 @@ msgstr "Antwoord op @{0}'s bericht (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
 msgid "Failed to remove subscription. Please try again."
-msgstr ""
+msgstr "Abonnement verwijderen mislukt. Probeer het opnieuw."
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."

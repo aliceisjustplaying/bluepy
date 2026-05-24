@@ -1239,7 +1239,12 @@ function PushNotificationsSection({
                           return;
                         }
                         await registerCurrentDevice(serviceAuth);
-                        await savePushSettings({ enabled: true }, serviceAuth);
+                        try {
+                          await savePushSettings({ enabled: true }, serviceAuth);
+                        } catch (err) {
+                          await unregisterCurrentDevice(serviceAuth).catch(() => undefined);
+                          throw err;
+                        }
                         setAllowNotifications(true);
                       } catch (err) {
                         setAllowNotifications(false);
@@ -1358,8 +1363,13 @@ function PushNotificationsSection({
                 onClick={() => {
                   void (async () => {
                     try {
-                      await unregisterCurrentDevice(serviceAuth);
                       await savePushSettings({ enabled: false }, serviceAuth);
+                      try {
+                        await unregisterCurrentDevice(serviceAuth);
+                      } catch (err) {
+                        await savePushSettings({ enabled: true }, serviceAuth).catch(() => undefined);
+                        throw err;
+                      }
                       setAllowNotifications(false);
                     } catch (err) {
                       handlePushError(err, t`Failed to remove subscription. Please try again.`);

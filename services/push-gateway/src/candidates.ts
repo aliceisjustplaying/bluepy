@@ -37,7 +37,7 @@ function hasControlCharacter(value: string): boolean {
 
 export function parseDidFromAtUri(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  const match = value.match(/^at:\/\/(did:[^/]+)\/app\.bsky\.feed\.post\/[^/?#]+$/);
+  const match = value.match(/^at:\/\/(did:[a-z0-9:%._-]+)\/app\.bsky\.feed\.post\/[a-zA-Z0-9._~-]+$/);
   return match?.[1] ?? null;
 }
 

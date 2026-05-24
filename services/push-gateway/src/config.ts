@@ -45,10 +45,12 @@ export function loadConfig(): GatewayConfig {
     publicKey: required('VAPID_PUBLIC_KEY'),
     privateKey: required('VAPID_PRIVATE_KEY'),
   };
+  const port = Number(process.env.PORT ?? 8787);
+  if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error('Invalid PORT');
   return {
-    port: Number(process.env.PORT ?? 8787),
+    port,
     databasePath: process.env.PUSH_GATEWAY_DB ?? './push-gateway.sqlite3',
-    allowedOrigins: new Set((process.env.ALLOWED_ORIGINS ?? '').split(',').filter(Boolean)),
+    allowedOrigins: new Set((process.env.ALLOWED_ORIGINS ?? '').split(',').map((origin) => origin.trim()).filter(Boolean)),
     gatewayPublicUrl: required('GATEWAY_PUBLIC_URL'),
     serviceDid: process.env.SERVICE_DID ?? 'did:web:notifications-gateway.bluepy.social',
     logHashSecret: required('LOG_HASH_SECRET'),

@@ -270,7 +270,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "Fjern denne enheten"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -783,7 +783,7 @@ msgstr "Vis mindre"
 
 #: src/pages/settings.tsx
 msgid "Push notifications are blocked. Please enable them in your browser settings."
-msgstr ""
+msgstr "Push-varsler er blokkert. Slå dem på i nettleserinnstillingene."
 
 #: src/components/account-info.tsx
 #~ msgid "Loading post stats..."
@@ -928,7 +928,7 @@ msgstr "Likt"
 
 #: src/pages/settings.tsx
 msgid "Push permission was not granted since your last login. You'll need to <0><1>log in</1> again to grant push permission</0>."
-msgstr ""
+msgstr "Push-tillatelse ble ikke gitt siden forrige innlogging. Du må <0><1>logge inn</1> på nytt for å gi push-tillatelse</0>."
 
 #: src/components/notification.tsx
 #: src/components/quote-chain-modal.tsx
@@ -2364,7 +2364,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Failed to update subscription. Please try again."
-msgstr ""
+msgstr "Kunne ikke oppdatere abonnementet. Prøv igjen."
 
 #: src/pages/settings.tsx
 msgid "Content translation"
@@ -2784,7 +2784,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "Rike forhåndsvisninger kan inneholde svar eller omtaler fra dempede eller blokkerte kontoer frem til filtrering er på plass."
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
@@ -3618,7 +3618,7 @@ msgstr "Svarer til @{0} sitt innlegg (<0>{1}</0>)"
 
 #: src/pages/settings.tsx
 msgid "Failed to remove subscription. Please try again."
-msgstr ""
+msgstr "Kunne ikke fjerne abonnementet. Prøv igjen."
 
 #: src/components/notification.tsx
 msgid "An admin from <0>{from}</0> has blocked <1>{targetName}</1>. Affected followers: {followersCount}, followings: {followingCount}."

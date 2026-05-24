@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS settings (
   did TEXT PRIMARY KEY,
-  enabled INTEGER NOT NULL DEFAULT 0,
-  replies_enabled INTEGER NOT NULL DEFAULT 1,
-  mentions_enabled INTEGER NOT NULL DEFAULT 1,
-  rich_previews_enabled INTEGER NOT NULL DEFAULT 1,
+  enabled INTEGER NOT NULL DEFAULT 0 CHECK (enabled IN (0, 1)),
+  replies_enabled INTEGER NOT NULL DEFAULT 1 CHECK (replies_enabled IN (0, 1)),
+  mentions_enabled INTEGER NOT NULL DEFAULT 1 CHECK (mentions_enabled IN (0, 1)),
+  rich_previews_enabled INTEGER NOT NULL DEFAULT 1 CHECK (rich_previews_enabled IN (0, 1)),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   auth TEXT NOT NULL,
   vapid_key_id TEXT NOT NULL,
   user_agent TEXT,
-  active INTEGER NOT NULL DEFAULT 1,
+  active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   inactive_at TEXT,

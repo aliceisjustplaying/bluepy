@@ -270,7 +270,7 @@ msgstr "Tämä on staattinen, tyylittelemätön ja skriptitön. Saatat joutua k�
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "Poista tämä laite"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -2808,7 +2808,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "Runsaat esikatselut voivat sisältää vastauksia tai mainintoja mykistetyiltä tai estetyiltä tileiltä, kunnes suodatus on käytössä."
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"

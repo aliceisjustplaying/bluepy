@@ -50,8 +50,9 @@ export function createDeliveryAttemptsForEvent(db: Db, notificationEventId: numb
     `INSERT OR IGNORE INTO delivery_attempts (notification_event_id, subscription_id, status)
      VALUES (?, ?, 'pending')`,
   );
-  for (const sub of activeSubs) insert.run(notificationEventId, sub.id);
-  return activeSubs.length;
+  let created = 0;
+  for (const sub of activeSubs) created += insert.run(notificationEventId, sub.id).changes;
+  return created;
 }
 
 export function claimDueAttempts(db: Db, limit: number, leaseMs = 30_000): number[] {

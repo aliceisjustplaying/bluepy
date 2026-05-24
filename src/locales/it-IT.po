@@ -270,7 +270,7 @@ msgstr "È statico, senza stile e senza script. Potresti dover applicare i tuoi 
 
 #: src/pages/settings.tsx
 msgid "Remove this device"
-msgstr ""
+msgstr "Rimuovi questo dispositivo"
 
 #: src/pages/settings.tsx
 msgid "Post translation"
@@ -2808,7 +2808,7 @@ msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Rich previews may include replies or mentions from muted or blocked accounts until filtering arrives."
-msgstr ""
+msgstr "Le anteprime dettagliate possono includere risposte o menzioni da account silenziati o bloccati finché non sarà disponibile il filtro."
 
 #: src/components/report-modal.tsx
 msgid "Issue doesn't fit other categories"
