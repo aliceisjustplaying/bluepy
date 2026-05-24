@@ -177,18 +177,30 @@ export async function unregisterCurrentDevice(auth: ServiceAuthProvider): Promis
   const registration = await navigator.serviceWorker.getRegistration();
   const subscription = registration ? await registration.pushManager.getSubscription() : null;
   if (!subscription) return;
-  await gatewayFetch('/subscriptions/unregister', 'social.bluepy.push.unregistersubscription', auth, {
-    method: 'POST',
-    body: JSON.stringify({ endpoint: subscription.endpoint }),
-  });
-  store.local.del('pushGatewayVapidKeyId');
+  try {
+    await gatewayFetch('/subscriptions/unregister', 'social.bluepy.push.unregistersubscription', auth, {
+      method: 'POST',
+      body: JSON.stringify({ endpoint: subscription.endpoint }),
+    });
+  } finally {
+    await subscription.unsubscribe().catch(() => undefined);
+    store.local.del('pushGatewayVapidKeyId');
+  }
 }
 
 export async function deleteAllPushDataForAccount(auth: ServiceAuthProvider): Promise<void> {
-  await gatewayFetch('/subscriptions/delete-all-for-account', 'social.bluepy.push.deleteaccountdata', auth, {
-    method: 'POST',
-  });
-  store.local.del('pushGatewayVapidKeyId');
+  try {
+    await gatewayFetch('/subscriptions/delete-all-for-account', 'social.bluepy.push.deleteaccountdata', auth, {
+      method: 'POST',
+    });
+  } finally {
+    if (isPushSupported()) {
+      const registration = await navigator.serviceWorker.getRegistration();
+      const subscription = registration ? await registration.pushManager.getSubscription() : null;
+      await subscription?.unsubscribe().catch(() => undefined);
+    }
+    store.local.del('pushGatewayVapidKeyId');
+  }
 }
 
 export { SERVICE_DID };

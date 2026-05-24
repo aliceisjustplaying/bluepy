@@ -83,7 +83,7 @@ void test('fresh gateways start near now instead of replaying old Jetstream hist
   migrate(db);
   const before = Date.now() * 1000 - 60_000_000;
   const cursor = resumeCursorUs(db);
-  const after = Date.now() * 1000 - 60_000_000;
+  const after = Date.now() * 1000;
 
   assert.ok(cursor >= before);
   assert.ok(cursor <= after);

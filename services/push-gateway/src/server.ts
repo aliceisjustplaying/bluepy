@@ -87,8 +87,13 @@ function tokenEquals(actual: string | undefined, expected: string | undefined): 
   return actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer);
 }
 
+function objectInput(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return value as Record<string, unknown>;
+}
+
 function settingsInput(value: unknown): SettingsInput {
-  const body = value as Record<string, unknown>;
+  const body = objectInput(value);
   const input: SettingsInput = {};
   if (typeof body.enabled === 'boolean') input.enabled = body.enabled;
   if (typeof body.repliesEnabled === 'boolean') input.repliesEnabled = body.repliesEnabled;
@@ -98,7 +103,7 @@ function settingsInput(value: unknown): SettingsInput {
 }
 
 function endpointInput(value: unknown): string {
-  const body = value as Record<string, unknown>;
+  const body = objectInput(value);
   return typeof body.endpoint === 'string' ? body.endpoint : '';
 }
 
@@ -108,7 +113,7 @@ function cors(req: http.IncomingMessage, config: GatewayConfig): Record<string, 
   return {
     'access-control-allow-origin': origin,
     vary: 'origin',
-    'access-control-allow-headers': 'authorization, content-type',
+    'access-control-allow-headers': 'authorization, content-type, x-dev-did',
     'access-control-allow-methods': 'GET, PUT, POST, DELETE, OPTIONS',
   };
 }
@@ -263,7 +268,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     void deliverDue();
   }, 5_000);
   const pruneInterval = setInterval(() => {
-    pruneExpiredData(db);
+    try {
+      pruneExpiredData(db);
+    } catch (error) {
+      console.error(JSON.stringify({ event: 'prune_error', error: sanitizeError(error) }));
+    }
   }, 60 * 60 * 1000);
   const server = createServer(db, config);
   abort.signal.addEventListener('abort', () => {

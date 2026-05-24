@@ -1,24 +1,22 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { classifyWebPushFailure, deterministicTopic } from '../src/delivery.js';
-import { buildPayload, payloadBytes } from '../src/payload.js';
+import { buildPayload, payloadBytes, type PushPayload } from '../src/payload.js';
 
 void test('payload construction keeps URLs as Bluepy at-uri targets', () => {
-  const payload = buildPayload(
-    {
-      notificationId: '1',
-      recipientDid: 'did:plc:me',
-      type: 'mention',
-      targetAtUri: 'at://did:plc:actor/app.bsky.feed.post/abc',
-      actorDid: 'did:plc:actor',
-      actorHandle: 'actor.test',
-      textExcerpt: 'hello',
-    },
-    true,
-  );
+  const input = {
+    notificationId: '1',
+    recipientDid: 'did:plc:me',
+    type: 'mention',
+    targetAtUri: 'at://did:plc:actor/app.bsky.feed.post/abc',
+    actorDid: 'did:plc:actor',
+    actorHandle: 'actor.test',
+    textExcerpt: 'hello',
+  } satisfies Omit<PushPayload, 'body' | 'title' | 'version'>;
+  const payload = buildPayload(input, true);
   assert.equal(payload.body, 'hello');
   assert.equal(payloadBytes(payload) > 0, true);
-  assert.throws(() => buildPayload({ ...payload, targetAtUri: 'https://evil.test' }, true), /invalid_target_at_uri/);
+  assert.throws(() => buildPayload({ ...input, targetAtUri: 'https://evil.test' }, true), /invalid_target_at_uri/);
 });
 
 void test('payload construction strips actor identity when rich previews are disabled', () => {
