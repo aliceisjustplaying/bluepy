@@ -345,6 +345,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  padding-inline-start: calc(14px + 50px + 10px);
 
   .status-carousel & {
     padding: 16px;
@@ -559,6 +560,10 @@
     padding-inline-start: 8px;
   }
 
+  .status.filtered {
+    padding-inline-start: calc(12px + 42px + 8px);
+  }
+
   .status-card-container {
     margin-top: 5px;
     gap: 5px;
@@ -710,6 +715,31 @@
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: 100%;
+  }
+}
+.status-filtered-badge.horizontal.badge-meta {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.5em;
+  row-gap: 0.2em;
+  min-height: 40px;
+  min-width: min(100%, 16rem);
+  padding: 7px 8px;
+  white-space: normal;
+  text-align: start;
+
+  > .icon {
+    grid-row: 1 / span 2;
+  }
+
+  > span:not(.icon) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .show-filtered {
+    display: block;
   }
 }
 .status-filtered-badge:not(.horizontal).badge-meta {
