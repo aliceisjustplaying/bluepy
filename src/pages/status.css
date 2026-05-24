@@ -14,6 +14,13 @@
     margin-inline-start: -16px;
   }
 
+  header .post-thread-header h1 {
+    align-self: center;
+    display: flex;
+    align-items: center;
+    padding-inline-start: 0;
+  }
+
   .button-refresh .icon {
     animation: spin 1s linear;
   }

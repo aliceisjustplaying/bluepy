@@ -2,13 +2,22 @@ import type { AppBskyFeedDefs } from '@atproto/api';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
   useCallback,
+  useLayoutEffect,
   useMemo,
+  useRef,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react';
 
 import { collectThreadUris } from '../data/_internal/thread-uris';
 import { usePostRoute, useThread } from '../data/posts';
+import {
+  clearPostDeckBackStack,
+  getPostDeckCloseLink,
+  peekPostDeckBackEntry,
+  popPostDeckBackEntry,
+  setPostDeckCloseLink,
+} from '../utils/post-deck-stack';
 import { canonicalizeAppPath, navigatePath } from '../utils/router';
 import states from '../utils/states';
 import useTitle from '../utils/useTitle';
@@ -138,6 +147,12 @@ export default function PostThreadPage({
   const { t } = useLingui();
   const { data: thread, isLoading, error } = useThread(uri);
   const { data: anchorPost, isLoading: isAnchorLoading } = usePostRoute(uri);
+  const heroRef = useRef<HTMLLIElement | null>(null);
+  const hasAlignedHeroRef = useRef(false);
+  const backLink = peekPostDeckBackEntry();
+  const completeCloseLink = backLink
+    ? getPostDeckCloseLink() || closeLink
+    : closeLink;
   const displayThread = useMemo(
     () => thread ?? makeAnchorThread(anchorPost),
     [anchorPost, thread],
@@ -150,6 +165,42 @@ export default function PostThreadPage({
     () => (thread ? collectAncestors(thread) : []),
     [thread],
   );
+  const navigateBack = useCallback(() => {
+    const backTarget = popPostDeckBackEntry();
+    if (backTarget) navigatePath(backTarget);
+  }, []);
+  const clearBackStack = useCallback(() => {
+    clearPostDeckBackStack();
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!backLink) setPostDeckCloseLink(closeLink);
+  }, [backLink, closeLink]);
+
+  useLayoutEffect(() => {
+    if (!thread || hasAlignedHeroRef.current) return undefined;
+    if (ancestors.length === 0) return undefined;
+    hasAlignedHeroRef.current = true;
+    const alignHero = () => {
+      const hero = heroRef.current;
+      const scroller = hero?.closest<HTMLElement>('.status-deck');
+      if (!hero || !scroller) return;
+        const heroRect = hero.getBoundingClientRect();
+        const scrollerRect = scroller.getBoundingClientRect();
+        const centeredTop = Math.max(
+          0,
+          (scroller.clientHeight - heroRect.height) / 2,
+      );
+      scroller.scrollTop += heroRect.top - scrollerRect.top - centeredTop;
+    };
+    requestAnimationFrame(() => {
+      requestAnimationFrame(alignHero);
+    });
+    const settleTimer = window.setTimeout(alignHero, 80);
+    return () => {
+      window.clearTimeout(settleTimer);
+    };
+  }, [ancestors.length, thread]);
 
   useTitle(t`Post`, ['/s/:id', '/:instance/s/:id', '/:atUri', '/:scheme://*']);
 
@@ -160,12 +211,25 @@ export default function PostThreadPage({
       }`}
     >
       <header>
-        <div className="header-grid header-grid-2">
+        <div className="header-grid header-grid-2 post-thread-header">
           <h1>
+            {backLink ? (
+              <button
+                type="button"
+                className="plain deck-back"
+                onClick={navigateBack}
+              >
+                <Icon icon="chevron-left" size="xl" alt={t`Back`} />
+              </button>
+            ) : null}
             <Trans id="post.title">Post</Trans>
           </h1>
           <div className="header-side">
-            <LinkComponent className="button plain deck-close" to={closeLink}>
+            <LinkComponent
+              className="button plain deck-close"
+              to={completeCloseLink}
+              onClick={clearBackStack}
+            >
               <Icon icon="x" size="l" alt={t`Close`} />
             </LinkComponent>
           </div>
@@ -189,7 +253,7 @@ export default function PostThreadPage({
             </li>
           ))}
           {displayThread ? (
-            <li className="hero">
+            <li className="hero" ref={heroRef}>
               <PostByUri
                 uri={displayThread.post.uri}
                 instance={instance}

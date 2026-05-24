@@ -9,6 +9,7 @@ import { useSnapshot } from 'valtio';
 
 import FilterContext from '../utils/filter-context';
 import { isFiltered } from '../utils/filters';
+import { pushPostDeckBackEntry } from '../utils/post-deck-stack';
 import {
   canonicalizeAppPath,
   getPrevLocationSnapshot,
@@ -60,6 +61,7 @@ function StatusCardLink({
 }) {
   const href = canonicalizeAppPath(to);
   const navigateFromCurrentLocation = () => {
+    pushPostDeckBackEntry();
     states.prevLocation = getPrevLocationSnapshot();
     navigatePath(href);
   };

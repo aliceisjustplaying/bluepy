@@ -48,6 +48,7 @@ import {
   maybeDecodeAtprotoURI,
 } from '../utils/atproto-route';
 import htmlContentLength from '../utils/html-content-length';
+import { clearPostDeckBackStack } from '../utils/post-deck-stack';
 import { navigatePath } from '../utils/router';
 import shortenNumber from '../utils/shorten-number';
 import states, {
@@ -509,7 +510,11 @@ function StatusPage(params: StatusPageParams) {
   if (useDataLayerThread && postUri) {
     return (
       <div className="deck-backdrop">
-        <Link to={closeLink} preservePrevLocation />
+        <Link
+          to={closeLink}
+          preservePrevLocation
+          onClick={clearPostDeckBackStack}
+        />
         <PostThreadPage
           uri={postUri}
           closeLink={closeLink}

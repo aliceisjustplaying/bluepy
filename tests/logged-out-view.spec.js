@@ -819,6 +819,8 @@ function makeAtprotoThreadNode(post, options = {}) {
 /**
  * @param {import('@playwright/test').Page} page
  * @param {{
+ *   feedPost?: 'middle' | 'directOtherReply',
+ *   longAncestors?: boolean,
  *   onThreadRequest?: (uri: string) => Promise<void> | void,
  * }} [options]
  */
@@ -847,6 +849,20 @@ async function routeAtprotoThreadNavigation(page, options = {}) {
     `at://${AT_REPO}/app.bsky.feed.post/thread-direct-other-reply`,
     'Thread direct other reply post',
   );
+  const quotedPost = makeAtprotoPost(
+    `at://${AT_REPO}/app.bsky.feed.post/thread-quoted`,
+    'Thread quoted target post',
+  );
+  if (options.longAncestors) {
+    root.record.text = `Thread root post\n${Array.from(
+      { length: 18 },
+      (_line, index) => `root filler ${index}`,
+    ).join('\n')}`;
+    middle.record.text = `Thread middle post\n${Array.from(
+      { length: 18 },
+      (_line, index) => `middle filler ${index}`,
+    ).join('\n')}`;
+  }
   otherReply.author = {
     $type: 'app.bsky.actor.defs#profileViewBasic',
     did: 'did:plc:otherreplyauthor',
@@ -874,10 +890,27 @@ async function routeAtprotoThreadNavigation(page, options = {}) {
     root: atprotoReplyRef(root),
     parent: atprotoReplyRef(middle),
   };
+  middle.embed = {
+    $type: 'app.bsky.embed.record#view',
+    record: {
+      ...quotedPost,
+      $type: 'app.bsky.embed.record#viewRecord',
+      value: quotedPost.record,
+      embeds: [],
+    },
+  };
   root.replyCount = 1;
   middle.replyCount = 2;
   child.replyCount = 2;
-  const posts = [root, middle, child, grandchild, otherReply, directOtherReply];
+  const posts = [
+    root,
+    middle,
+    child,
+    grandchild,
+    otherReply,
+    directOtherReply,
+    quotedPost,
+  ];
   const profile = {
     $type: 'app.bsky.actor.defs#profileView',
     did: AT_REPO,
@@ -963,6 +996,7 @@ async function routeAtprotoThreadNavigation(page, options = {}) {
         parent: makeAtprotoThreadNode(root),
       }),
     });
+  const quotedPostNode = () => makeAtprotoThreadNode(quotedPost);
   const threadByURI = new Map([
     [root.uri, rootNode],
     [middle.uri, middleNode],
@@ -970,6 +1004,7 @@ async function routeAtprotoThreadNavigation(page, options = {}) {
     [grandchild.uri, grandchildNode],
     [otherReply.uri, otherReplyNode],
     [directOtherReply.uri, directOtherReplyNode],
+    [quotedPost.uri, quotedPostNode],
   ]);
   const headers = { 'access-control-allow-origin': '*' };
 
@@ -983,7 +1018,19 @@ async function routeAtprotoThreadNavigation(page, options = {}) {
     }
     if (endpoint === 'app.bsky.feed.getFeed') {
       expect(url.searchParams.get('feed')).toBe(AT_FEED_URI);
-      await route.fulfill({ headers, json: { feed: [{ post: middle }] } });
+      await route.fulfill({
+        headers,
+        json: {
+          feed: [
+            {
+              post:
+                options.feedPost === 'directOtherReply'
+                  ? directOtherReply
+                  : middle,
+            },
+          ],
+        },
+      });
       return;
     }
     if (endpoint === 'app.bsky.feed.getPosts') {
@@ -1250,10 +1297,7 @@ async function routeAtprotoRecords(page, options = {}) {
         const isBlacksky = url.hostname === 'api.blacksky.community';
         const actor = url.searchParams.get('actor') || '';
         if (!isBlacksky) onBlueskyProfile?.();
-        if (
-          !isBlacksky &&
-          (fallbackFails || profileFailures.includes(actor))
-        ) {
+        if (!isBlacksky && (fallbackFails || profileFailures.includes(actor))) {
           await route.fulfill({
             headers,
             status: 500,
@@ -1269,18 +1313,20 @@ async function routeAtprotoRecords(page, options = {}) {
           json: profilesByDid[actor]
             ? profilesByDid[actor]
             : omitPresentation
-            ? {
-                ...profile,
-                displayName: undefined,
-                description: undefined,
-                avatar: undefined,
-                banner: undefined,
-              }
-            : {
-                ...profile,
-                banner:
-                  isBlacksky && blackskyOmitBanner ? undefined : profile.banner,
-              },
+              ? {
+                  ...profile,
+                  displayName: undefined,
+                  description: undefined,
+                  avatar: undefined,
+                  banner: undefined,
+                }
+              : {
+                  ...profile,
+                  banner:
+                    isBlacksky && blackskyOmitBanner
+                      ? undefined
+                      : profile.banner,
+                },
         });
         return;
       }
@@ -1500,12 +1546,17 @@ test('canonicalizes legacy AT record routes on direct load', async ({
   await expect(page.getByRole('heading', { name: 'AT Feed' })).toBeVisible();
 });
 
-test('canonicalizes Worker-decoded legacy AT record routes', async ({ page }) => {
+test('canonicalizes Worker-decoded legacy AT record routes', async ({
+  page,
+}) => {
   await routeAtprotoRecords(page);
 
-  await page.goto(`/bsky.social/s/at%3A/${AT_REPO}/app.bsky.feed.post/post123`, {
-    waitUntil: 'domcontentloaded',
-  });
+  await page.goto(
+    `/bsky.social/s/at%3A/${AT_REPO}/app.bsky.feed.post/post123`,
+    {
+      waitUntil: 'domcontentloaded',
+    },
+  );
   await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
   await expect(page.locator('text=AT route post')).toBeVisible();
 
@@ -1787,7 +1838,9 @@ test('keeps AT thread links navigable from a feed-backed post detail', async ({
   );
 
   await page
-    .locator(`.status-link[data-href$="/app.bsky.feed.post/thread-other-reply"]`)
+    .locator(
+      `.status-link[data-href$="/app.bsky.feed.post/thread-other-reply"]`,
+    )
     .first()
     .click();
   await expect(page).toHaveURL(
@@ -1816,6 +1869,93 @@ test('keeps AT thread links navigable from a feed-backed post detail', async ({
   await expect(page.getByText('Thread middle post').first()).toBeVisible();
   await page.locator('.deck-close').click();
   await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
+});
+
+test('keeps quoted post detail in the post deck stack', async ({ page }) => {
+  await routeAtprotoThreadNavigation(page);
+
+  await page.goto(AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Thread middle post')).toBeVisible();
+  await page
+    .locator(`.status-link-native[href$="/app.bsky.feed.post/thread-middle"]`)
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-middle`),
+  );
+
+  await page
+    .locator(
+      `.quote-post-native .status-link-native[href$="/app.bsky.feed.post/thread-quoted"]`,
+    )
+    .first()
+    .evaluate((element) => {
+      if (element instanceof HTMLElement) element.click();
+    });
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-quoted`),
+  );
+  await expect(page.locator('.deck-back')).toBeVisible();
+
+  await page.locator('.deck-back').click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-middle`),
+  );
+
+  await page
+    .locator(
+      `.quote-post-native .status-link-native[href$="/app.bsky.feed.post/thread-quoted"]`,
+    )
+    .first()
+    .evaluate((element) => {
+      if (element instanceof HTMLElement) element.click();
+    });
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-quoted`),
+  );
+  await page.locator('.deck-close').click();
+  await expect(page).toHaveURL(pathRegex(AT_FEED_PATH));
+});
+
+test('keeps a feed-clicked reply centered after loading ancestors', async ({
+  page,
+}) => {
+  await routeAtprotoThreadNavigation(page, {
+    feedPost: 'directOtherReply',
+    longAncestors: true,
+  });
+
+  await page.goto(AT_FEED_PATH, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Thread direct other reply post')).toBeVisible();
+  await page
+    .locator(
+      `.status-link-native[href$="/app.bsky.feed.post/thread-direct-other-reply"]`,
+    )
+    .first()
+    .click();
+  await expect(page).toHaveURL(
+    pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-direct-other-reply`),
+  );
+  await expect(
+    page
+      .locator('.status-deck li.hero')
+      .getByText('Thread direct other reply post'),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.locator('.status-deck li.hero').evaluate((node) => {
+        const deck = node.closest('.status-deck');
+        const deckTop = deck?.getBoundingClientRect().top ?? 0;
+        return node.getBoundingClientRect().top - deckTop;
+      }),
+    )
+    .toBeLessThan(160);
+  const heroTop = await page.locator('.status-deck li.hero').evaluate((node) => {
+    const deck = node.closest('.status-deck');
+    const deckTop = deck?.getBoundingClientRect().top ?? 0;
+    return node.getBoundingClientRect().top - deckTop;
+  });
+  expect(heroTop).toBeGreaterThanOrEqual(0);
 });
 
 test('renders a feed-backed post detail before the full thread returns', async ({
@@ -1920,9 +2060,9 @@ test('keeps mobile search controls at the bottom and resets post results scroll'
   });
   expect(controlsGeometry.filterPosition).toBe('fixed');
   expect(controlsGeometry.filterBackground).not.toBe('rgb(220, 226, 234)');
-  expect(Number.parseFloat(controlsGeometry.filterRadius || '0')).toBeGreaterThan(
-    20,
-  );
+  expect(
+    Number.parseFloat(controlsGeometry.filterRadius || '0'),
+  ).toBeGreaterThan(20);
   await expect
     .poll(() =>
       page
@@ -1986,9 +2126,11 @@ test('keeps mobile search controls at the bottom and resets post results scroll'
     element.dispatchEvent(new Event('scroll', { bubbles: true }));
   });
   await page.locator('#search-page input[type="search"]').fill('beta');
-  await page.locator('#search-page .search-input-dock form').evaluate((form) => {
-    if (form instanceof HTMLFormElement) form.requestSubmit();
-  });
+  await page
+    .locator('#search-page .search-input-dock form')
+    .evaluate((form) => {
+      if (form instanceof HTMLFormElement) form.requestSubmit();
+    });
 
   await expect(page).toHaveURL(/\/search\?q=beta&type=statuses/);
   await expect(page.getByText('Beta first search result')).toBeVisible();
@@ -2018,11 +2160,7 @@ test('keeps the leading account search match visible', async ({ page }) => {
   });
   const warningLabelerDid = 'did:plc:dm6tjhimvcxsgh2yxbppbqkx';
   const exactActor = {
-    ...makeAtprotoTestActor(
-      'did:plc:samuelexact',
-      'samuel.fm',
-      'Samuel',
-    ),
+    ...makeAtprotoTestActor('did:plc:samuelexact', 'samuel.fm', 'Samuel'),
     labels: [
       {
         src: warningLabelerDid,
@@ -2185,7 +2323,9 @@ test('restores AT feed position after opening a feed post in the sidebar', async
     element.dispatchEvent(new Event('scroll', { bubbles: true }));
   });
   await expect(page.getByText('AT feed position post 59')).toBeVisible();
-  const savedScrollTop = await feedDeck.evaluate((element) => element.scrollTop);
+  const savedScrollTop = await feedDeck.evaluate(
+    (element) => element.scrollTop,
+  );
 
   await page.getByText('AT feed position post 59').first().click();
   await expect(page).toHaveURL(
@@ -2221,7 +2361,9 @@ test('restores AT feed position after opening an image from the feed', async ({
     element.dispatchEvent(new Event('scroll', { bubbles: true }));
   });
   await expect(page.getByText('AT feed position post 59')).toBeVisible();
-  const savedScrollTop = await feedDeck.evaluate((element) => element.scrollTop);
+  const savedScrollTop = await feedDeck.evaluate(
+    (element) => element.scrollTop,
+  );
 
   await page
     .locator(`a.media[href*="/app.bsky.feed.post/scroll-59"]`)
