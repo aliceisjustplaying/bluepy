@@ -1823,13 +1823,16 @@ test('keeps AT thread links navigable from a feed-backed post detail', async ({
     pathRegex(`/at://${AT_REPO}/app.bsky.feed.post/thread-middle`),
   );
   await expect(
-    page.locator('.status-deck .timeline .timeline > li.descendant.thread'),
-  ).toHaveCount(2);
-  const nestedReplyPaddingBottom = await page
-    .locator('.status-deck .timeline .timeline > li.descendant.thread')
+    page.locator('.status-deck li.hero > .timeline > li.descendant.thread'),
+  ).toHaveCount(4);
+  await expect(
+    page.locator('.status-deck li.descendant.thread .timeline'),
+  ).toHaveCount(0);
+  const replyPaddingBottom = await page
+    .locator('.status-deck li.hero > .timeline > li.descendant.thread')
     .last()
     .evaluate((element) => parseFloat(getComputedStyle(element).paddingBottom));
-  expect(nestedReplyPaddingBottom).toBeLessThan(100);
+  expect(replyPaddingBottom).toBeLessThan(100);
 
   await page
     .locator(

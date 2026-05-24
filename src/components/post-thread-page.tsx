@@ -2,6 +2,7 @@ import type { AppBskyFeedDefs } from '@atproto/api';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
   useCallback,
+  Fragment,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -68,7 +69,7 @@ function makeAnchorThread(
   };
 }
 
-function ThreadReplyList({
+function ThreadReplyItems({
   replies,
   instance,
 }: {
@@ -81,20 +82,38 @@ function ThreadReplyList({
   }
   if (threadReplies.length === 0) return null;
   return (
-    <ul className="timeline flat contextual">
+    <>
       {threadReplies.map((reply) => (
-        <li key={reply.post.uri} className="descendant thread">
-          <ThreadReplyLink className="status-link" uri={reply.post.uri}>
-            <PostByUri
-              uri={reply.post.uri}
-              instance={instance}
-              showActionsBar
-              showReplyParent
-            />
-          </ThreadReplyLink>
-          <ThreadReplyList replies={reply.replies} instance={instance} />
-        </li>
+        <Fragment key={reply.post.uri}>
+          <li className="descendant thread">
+            <ThreadReplyLink className="status-link" uri={reply.post.uri}>
+              <PostByUri
+                uri={reply.post.uri}
+                instance={instance}
+                showActionsBar
+                showReplyParent
+              />
+            </ThreadReplyLink>
+          </li>
+          <ThreadReplyItems replies={reply.replies} instance={instance} />
+        </Fragment>
       ))}
+    </>
+  );
+}
+
+function ThreadReplyList({
+  replies,
+  instance,
+}: {
+  replies: AppBskyFeedDefs.ThreadViewPost['replies'];
+  instance: string;
+}) {
+  const hasThreadReplies = replies?.some(isThreadViewPost) ?? false;
+  if (!hasThreadReplies) return null;
+  return (
+    <ul className="timeline flat contextual">
+      <ThreadReplyItems replies={replies} instance={instance} />
     </ul>
   );
 }
