@@ -35,7 +35,11 @@ interface JwtHeader {
 export type DidDocumentResolver = (did: string) => Promise<DidDocument>;
 
 function base64urlJson(segment: string): unknown {
-  return JSON.parse(Buffer.from(segment, 'base64url').toString('utf8'));
+  try {
+    return JSON.parse(Buffer.from(segment, 'base64url').toString('utf8'));
+  } catch {
+    throw new Error('invalid_auth_token');
+  }
 }
 
 function isServiceAuthClaims(value: unknown): value is ServiceAuthClaims {
@@ -46,7 +50,7 @@ function isServiceAuthClaims(value: unknown): value is ServiceAuthClaims {
     (claims.sub === undefined || typeof claims.sub === 'string') &&
     (claims.aud === undefined || typeof claims.aud === 'string') &&
     (claims.lxm === undefined || typeof claims.lxm === 'string') &&
-    (claims.exp === undefined || (typeof claims.exp === 'number' && Number.isFinite(claims.exp))) &&
+    (claims.exp === undefined || (typeof claims.exp === 'number' && Number.isSafeInteger(claims.exp))) &&
     (claims.jti === undefined || typeof claims.jti === 'string')
   );
 }

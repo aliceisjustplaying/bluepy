@@ -515,17 +515,20 @@ function openPendingNotificationDb() {
 
 async function storePendingNotificationRoute(route) {
   const db = await openPendingNotificationDb();
-  await new Promise((resolve, reject) => {
-    const tx = db.transaction('routes', 'readwrite');
-    tx.objectStore('routes').put({ ...route, createdAt: Date.now() });
-    tx.addEventListener('complete', () => {
-      resolve();
+  try {
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('routes', 'readwrite');
+      tx.objectStore('routes').put({ ...route, createdAt: Date.now() });
+      tx.addEventListener('complete', () => {
+        resolve();
+      });
+      tx.addEventListener('error', () => {
+        reject(new Error('Failed to store pending notification route'));
+      });
     });
-    tx.addEventListener('error', () => {
-      reject(new Error('Failed to store pending notification route'));
-    });
-  });
-  db.close();
+  } finally {
+    db.close();
+  }
 }
 
 // WEB SHARE TARGET

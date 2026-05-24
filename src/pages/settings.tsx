@@ -1158,6 +1158,11 @@ function PushNotificationsSection({
   const [repliesEnabled, setRepliesEnabled] = useState<boolean>(true);
   const [mentionsEnabled, setMentionsEnabled] = useState<boolean>(true);
   const [richPreviewsEnabled, setRichPreviewsEnabled] = useState<boolean>(true);
+  const pushToggleVersions = useRef({
+    replies: 0,
+    mentions: 0,
+    richPreviews: 0,
+  });
   const serviceAuth: ServiceAuthProvider = useCallback(async (lxm) => {
     const agent = clients.pdsRepoAgent as ServiceAuthCapableAgent;
     const res = await agent.com?.atproto?.server?.getServiceAuth?.({
@@ -1285,11 +1290,14 @@ function PushNotificationsSection({
                           checked={repliesEnabled}
                           onChange={(e) => {
                             const checked = e.currentTarget.checked;
+                            const version = pushToggleVersions.current.replies + 1;
+                            pushToggleVersions.current.replies = version;
                             setRepliesEnabled(checked);
                             void (async () => {
                               try {
                                 await savePushSettings({ repliesEnabled: checked }, serviceAuth);
                               } catch (err) {
+                                if (pushToggleVersions.current.replies !== version) return;
                                 setRepliesEnabled(!checked);
                                 handlePushError(err, t`Failed to update subscription. Please try again.`);
                               }
@@ -1307,11 +1315,14 @@ function PushNotificationsSection({
                           checked={mentionsEnabled}
                           onChange={(e) => {
                             const checked = e.currentTarget.checked;
+                            const version = pushToggleVersions.current.mentions + 1;
+                            pushToggleVersions.current.mentions = version;
                             setMentionsEnabled(checked);
                             void (async () => {
                               try {
                                 await savePushSettings({ mentionsEnabled: checked }, serviceAuth);
                               } catch (err) {
+                                if (pushToggleVersions.current.mentions !== version) return;
                                 setMentionsEnabled(!checked);
                                 handlePushError(err, t`Failed to update subscription. Please try again.`);
                               }
@@ -1329,11 +1340,14 @@ function PushNotificationsSection({
                           checked={richPreviewsEnabled}
                           onChange={(e) => {
                             const checked = e.currentTarget.checked;
+                            const version = pushToggleVersions.current.richPreviews + 1;
+                            pushToggleVersions.current.richPreviews = version;
                             setRichPreviewsEnabled(checked);
                             void (async () => {
                               try {
                                 await savePushSettings({ richPreviewsEnabled: checked }, serviceAuth);
                               } catch (err) {
+                                if (pushToggleVersions.current.richPreviews !== version) return;
                                 setRichPreviewsEnabled(!checked);
                                 handlePushError(err, t`Failed to update subscription. Please try again.`);
                               }

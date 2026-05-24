@@ -35,6 +35,33 @@ function errorStatus(error: unknown): number {
   return 400;
 }
 
+function publicError(error: unknown): string {
+  if (!(error instanceof Error)) return 'bad_request';
+  if (
+    [
+      'admin_only',
+      'body_too_large',
+      'expired_auth_token',
+      'invalid_auth_audience',
+      'invalid_auth_method',
+      'invalid_auth_signature',
+      'invalid_auth_subject',
+      'invalid_auth_token',
+      'invalid_did',
+      'json_required',
+      'localhost_only',
+      'missing_auth',
+      'missing_dev_did',
+      'push_disabled',
+      'replayed_auth_token',
+      'unsupported_auth_alg',
+    ].includes(error.message)
+  ) {
+    return error.message;
+  }
+  return 'bad_request';
+}
+
 function tokenEquals(actual: string | undefined, expected: string | undefined): boolean {
   if (!actual || !expected) return false;
   const actualBuffer = Buffer.from(actual);
@@ -110,9 +137,9 @@ export function createServer(db: Db, config: GatewayConfig): http.Server {
 }
 
 async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse, db: Db, config: GatewayConfig): Promise<void> {
-  const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
   const headers = cors(req, config);
   try {
+    const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
     if (req.method === 'OPTIONS') return send(res, 204, {}, headers);
     if (req.method === 'GET' && url.pathname === '/healthz') return send(res, 200, { ok: true }, headers);
     if (req.method === 'GET' && url.pathname === '/vapid-public-key') {
@@ -180,7 +207,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
     }
     return send(res, 404, { error: 'not_found' }, headers);
   } catch (error) {
-    return send(res, errorStatus(error), { error: error instanceof Error ? error.message : 'bad_request' }, headers);
+    return send(res, errorStatus(error), { error: publicError(error) }, headers);
   }
 }
 
