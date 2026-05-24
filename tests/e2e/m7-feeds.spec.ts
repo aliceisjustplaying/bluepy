@@ -61,6 +61,31 @@ async function selectMaxCatchupRange(page: Page) {
   await expect(page.getByText('until the max')).toBeVisible();
 }
 
+async function enableProfileShortcutColumn(page: Page): Promise<string> {
+  return await page.evaluate(() => {
+    const accounts = JSON.parse(
+      window.localStorage.getItem('accounts') || '[]',
+    ) as { info?: { id?: string }; instanceURL?: string }[];
+    const account = accounts[0];
+    if (!account?.info?.id || !account.instanceURL) {
+      throw new Error('No logged-in account found');
+    }
+    window.sessionStorage.setItem('currentAccount', account.info.id);
+    const namespace = `${account.info.id}@${account.instanceURL}`;
+    const setAccountValue = (key: string, value: unknown) => {
+      const data = JSON.parse(window.localStorage.getItem(key) || '{}') as Record<
+        string,
+        unknown
+      >;
+      data[namespace] = value;
+      window.localStorage.setItem(key, JSON.stringify(data));
+    };
+    setAccountValue('shortcuts', [{ type: 'profile' }]);
+    setAccountValue('settings-shortcutsViewMode', 'multi-column');
+    return account.info.id;
+  });
+}
+
 test.describe('M7 migrated feeds', () => {
   test.afterAll(async () => {
     await sharedPage?.context().close();
@@ -195,6 +220,57 @@ test.describe('M7 migrated feeds', () => {
     await expect(
       page.locator('#generic-accounts-container .accounts-list > li').first(),
     ).toBeVisible({ timeout: 60_000 });
+  });
+
+  test('profile shortcut column follow graph reads use ATProto endpoints', async ({
+    browser,
+  }) => {
+    test.setTimeout(120_000);
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    try {
+      const timelineReady = waitForXrpc(
+        page,
+        'app.bsky.feed.getTimeline',
+        120_000,
+      );
+      await loginViaBrowserOAuth(page);
+      await timelineReady;
+      const subjectDid = await enableProfileShortcutColumn(page);
+      await page.goto('/');
+      await expect(page.locator('.account-container.mini')).toBeVisible({
+        timeout: 60_000,
+      });
+      await Promise.all([
+        page.waitForResponse(
+          (response) => {
+            const url = new URL(response.url());
+            return (
+              url.pathname.endsWith('/xrpc/app.bsky.graph.getFollowers') &&
+              url.searchParams.get('actor') === subjectDid &&
+              response.status() < 400
+            );
+          },
+          { timeout: 120_000 },
+        ),
+        page
+          .locator('.account-container.mini .account-stat-button')
+          .first()
+          .click(),
+      ]);
+      await expect(page.locator('#generic-accounts-container')).toBeVisible({
+        timeout: 60_000,
+      });
+      await expect(
+        page
+          .locator(
+            '#generic-accounts-container .accounts-list > li, #generic-accounts-container .ui-state.insignificant',
+          )
+          .first(),
+      ).toBeVisible({ timeout: 60_000 });
+    } finally {
+      await context.close();
+    }
   });
 
   test('hashtag feed loads via searchPosts', async ({ page }) => {
