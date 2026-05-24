@@ -224,20 +224,19 @@ function FeedStatusLink({
       onTouchStartCapture={() => {
         saveFeedScroll();
       }}
-      onClickCapture={() => {
+      onClickCapture={(e) => {
         saveFeedScroll();
+        const nestedLink = (e.target as Element | null)?.closest?.('a');
+        if (nestedLink?.getAttribute('href')?.includes('media-only=1')) {
+          states.prevLocation = {
+            pathname: window.location.pathname,
+            search: window.location.search,
+            hash: window.location.hash,
+          };
+        }
       }}
       onClick={(e: MouseEvent<HTMLDivElement>) => {
         if (shouldLetStatusLinkTargetHandleEvent(e.target, e.currentTarget)) {
-          const nestedLink = (e.target as Element | null)?.closest?.('a');
-          if (nestedLink?.getAttribute('href')?.includes('media-only=1')) {
-            saveFeedScroll();
-            states.prevLocation = {
-              pathname: window.location.pathname,
-              search: window.location.search,
-              hash: window.location.hash,
-            };
-          }
           return;
         }
         e.preventDefault();
