@@ -114,7 +114,7 @@ function TimelineStatusLink({
       <a
         className="status-link-native"
         href={href}
-        aria-hidden="true"
+        aria-label="Open post"
         tabIndex={-1}
         onClick={(e: MouseEvent<HTMLAnchorElement>) => {
           if (isModifiedClick(e)) return;

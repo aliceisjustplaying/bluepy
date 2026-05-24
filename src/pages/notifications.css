@@ -325,15 +325,15 @@
 #mentions-option {
   position: relative;
   z-index: 2;
-  float: right;
-  &:dir(rtl) {
-    float: left;
-  }
-  margin: 16px 8px 0 0;
+  display: flex;
+  justify-content: flex-end;
+  margin: 8px 8px 0;
 }
 #mentions-option label {
   color: var(--text-insignificant-color);
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 8px;
   position: relative;
   cursor: pointer;

@@ -130,7 +130,7 @@ function ThreadReplyLink({
       <a
         className="status-link-native"
         href={href}
-        aria-hidden="true"
+        aria-label="Open post"
         tabIndex={-1}
         onClick={handleClick}
       />
