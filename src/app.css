@@ -1513,10 +1513,15 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
   color: var(--text-color) !important;
 }
 
+:is(button, .button).plain.has-badge {
+  position: relative;
+}
+
 :is(button, .button).plain.has-badge:after {
   content: '';
   display: inline-block;
   position: absolute;
+  inset-block-start: 6px;
   inset-inline-end: 10px;
   width: 4px;
   height: 4px;
