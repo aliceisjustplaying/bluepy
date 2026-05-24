@@ -1,6 +1,8 @@
 import type { AppBskyActorDefs } from '@atproto/api';
 import type { mastodon } from 'masto';
 
+import { profileHasCounts } from '../utils/atproto-profile-shape';
+
 export type RenderableProfile =
   | AppBskyActorDefs.ProfileViewBasic
   | AppBskyActorDefs.ProfileView
@@ -21,15 +23,15 @@ export function profileToAccount(
   const description =
     'description' in profile ? (profile.description ?? '') : '';
   const followersCount =
-    'followersCount' in profile && profile.followersCount
+    'followersCount' in profile && typeof profile.followersCount === 'number'
       ? profile.followersCount
       : 0;
   const followingCount =
-    'followsCount' in profile && profile.followsCount
+    'followsCount' in profile && typeof profile.followsCount === 'number'
       ? profile.followsCount
       : 0;
   const postsCount =
-    'postsCount' in profile && profile.postsCount
+    'postsCount' in profile && typeof profile.postsCount === 'number'
       ? profile.postsCount
       : 0;
 
@@ -55,5 +57,9 @@ export function profileToAccount(
     emojis: [],
     fields: [],
     roles: [],
+    _atproto: {
+      hasProfileCounts: profileHasCounts(profile),
+      labels: profile.labels,
+    },
   } as mastodon.v1.Account;
 }

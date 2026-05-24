@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import {
   AppBskyEmbedRecord,
   AppBskyEmbedRecordWithMedia,
+  type AppBskyActorDefs,
   AppBskyFeedDefs,
   type AppBskyFeedDefs as FeedDefs,
 } from '@atproto/api';
@@ -260,5 +261,31 @@ describe('primeProfiles', () => {
     const fixture = loadFixture<{ did: string }>('getProfile.basic.json');
     primeProfiles(qc, viewerScope, fixture);
     expect(getCachedProfileDids(qc, viewerScope)).toContain(fixture.did);
+  });
+
+  test('basic search profiles do not overwrite cached detailed profile counts', () => {
+    const qc = createQueryClient();
+    const detailed: AppBskyActorDefs.ProfileViewDetailed = {
+      did: 'did:plc:profile-counts',
+      handle: 'counts.test',
+      displayName: 'Counts',
+      followersCount: 42,
+      followsCount: 7,
+      postsCount: 13,
+    };
+    const basic: AppBskyActorDefs.ProfileViewBasic = {
+      did: detailed.did,
+      handle: detailed.handle,
+      displayName: detailed.displayName,
+    };
+
+    primeProfiles(qc, viewerScope, detailed);
+    primeProfiles(qc, viewerScope, { actors: [basic] });
+
+    expect(qc.getQueryData(keys.profileByDid(viewerScope, detailed.did))).toMatchObject({
+      followersCount: 42,
+      followsCount: 7,
+      postsCount: 13,
+    });
   });
 });

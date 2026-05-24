@@ -7,6 +7,10 @@ import {
 import type { QueryClient } from '@tanstack/react-query';
 
 import { applyBookmarkOverride } from '../../utils/bookmark-overrides';
+import {
+  profileHasCounts,
+  type AtprotoProfileView,
+} from '../../utils/atproto-profile-shape';
 import { keys, type ViewerScope } from '../keys';
 
 const VIEW_REF_TYPE = 'app.bsky.embed.record#viewRef';
@@ -26,7 +30,7 @@ function isPostView(value: unknown): value is AppBskyFeedDefs.PostView {
 
 function isProfileView(
   value: unknown,
-): value is AppBskyActorDefs.ProfileView | AppBskyActorDefs.ProfileViewDetailed {
+): value is AtprotoProfileView {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -119,13 +123,13 @@ function primeOnePost(
 function primeOneProfile(
   qc: QueryClient,
   scope: ViewerScope,
-  profile:
-    | AppBskyActorDefs.ProfileView
-    | AppBskyActorDefs.ProfileViewDetailed
-    | AppBskyActorDefs.ProfileViewBasic,
+  profile: AtprotoProfileView,
 ): void {
   if (!profile.did) return;
-  qc.setQueryData(keys.profileByDid(scope, profile.did), profile);
+  const key = keys.profileByDid(scope, profile.did);
+  const cached = qc.getQueryData<AtprotoProfileView>(key);
+  if (profileHasCounts(cached) && !profileHasCounts(profile)) return;
+  qc.setQueryData(key, profile);
 }
 
 function walkThreadNode(

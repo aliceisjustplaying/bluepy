@@ -1161,7 +1161,7 @@ async function routeAtprotoScrollableFeed(page) {
  *   onBlueskyProfile?: () => void;
  *   profileFailures?: string[];
  *   preferences?: unknown[];
- *   profilesByDid?: Record<string, AtprotoTestActor>;
+ *   profilesByDid?: Record<string, AtprotoTestActor | Record<string, unknown>>;
  *   searchActorsByQuery?: Record<string, AtprotoTestActor[]>;
  *   searchActorTypeaheadByQuery?: Record<string, AtprotoTestActor[]>;
  *   searchPostsByQuery?: Record<string, AtprotoTestPost[]>;
@@ -1323,6 +1323,13 @@ async function routeAtprotoRecords(page, options = {}) {
               },
             ],
           },
+        });
+        return;
+      }
+      if (endpoint === 'app.bsky.graph.getKnownFollowers') {
+        await route.fulfill({
+          headers,
+          json: { followers: [] },
         });
         return;
       }
@@ -2003,6 +2010,17 @@ test('keeps the leading account search match visible', async ({ page }) => {
         visibility: 'warn',
       },
     ],
+    profilesByDid: {
+      [exactActor.did]: {
+        ...exactActor,
+        $type: 'app.bsky.actor.defs#profileViewDetailed',
+        description: 'Hydrated Samuel profile',
+        followersCount: 42,
+        followsCount: 7,
+        postsCount: 13,
+        viewer: {},
+      },
+    },
     searchActorsByQuery: {
       samuel: [exactActor, fallbackActor],
     },
@@ -2022,6 +2040,11 @@ test('keeps the leading account search match visible', async ({ page }) => {
   await expect(firstAccount).toContainText('@samuel.fm');
   await page.waitForTimeout(1000);
   await expect(firstAccount).toContainText('@samuel.fm');
+  await firstAccount.click();
+  const sheet = page.locator('.sheet');
+  await expect(sheet.getByText('42 Followers')).toBeVisible();
+  await expect(sheet.getByText('7 Following')).toBeVisible();
+  await expect(sheet.getByText('13 Posts')).toBeVisible();
   await expect
     .poll(() =>
       page

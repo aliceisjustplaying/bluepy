@@ -2,6 +2,10 @@ import type { AppBskyActorDefs } from '@atproto/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useActiveDid, useClients } from '../contexts/SessionProvider';
+import {
+  profileHasCounts,
+  type AtprotoProfileView,
+} from '../utils/atproto-profile-shape';
 
 import { feedReadMode } from './_internal/dispatch';
 import { primeProfiles } from './_internal/prime';
@@ -97,10 +101,10 @@ function useProfileByDid(
     refetchOnMount: options.refetchOnMount,
     queryFn: async () => {
       if (options.refetchOnMount !== 'always') {
-        const cached = qc.getQueryData<AppBskyActorDefs.ProfileViewDetailed>(
+        const cached = qc.getQueryData<AtprotoProfileView>(
           keys.profileByDid(scope, profileDid!),
         );
-        if (cached) return cached;
+        if (profileHasCounts(cached)) return cached;
       }
 
       const profile = await fetchProfile(
@@ -152,6 +156,7 @@ export function useProfileRoute(actor: string | undefined): {
     useResolvedProfileDid(actor, { directRoute: true });
   const profileQuery = useProfileByDid(profileDid, {
     staleTime: DIRECT_ROUTE_STALE_TIME,
+    refetchOnMount: 'always',
     fetchActor: actor,
   });
 

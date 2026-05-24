@@ -36,6 +36,7 @@ import {
   saveAccounts,
 } from '../utils/store-utils';
 import { renderPostText } from '../render/post-text';
+import { profileHasCounts } from '../utils/atproto-profile-shape';
 
 import AccountBlock from './account-block';
 import AccountHandleInfo from './account-handle-info';
@@ -94,7 +95,7 @@ function profileToAccountInfo(profile: {
     emojis: [],
     fields: [],
     _atproto: {
-      hasProfileCounts: true,
+      hasProfileCounts: profileHasCounts(profile),
       labels: profile.labels,
     },
   };
@@ -201,7 +202,11 @@ function AccountInfo({
   const [info, setInfo] = useState<AccountInfoShape | null>(
     isString ? null : (account ?? null),
   );
-  const profileQuery = useProfileRoute(isString ? account : undefined);
+  const shouldHydrateProfile =
+    isString || (!isString && account?._atproto?.hasProfileCounts === false);
+  const profileQuery = useProfileRoute(
+    shouldHydrateProfile ? (isString ? account : account?.id) : undefined,
+  );
   const moderationProfile = profileQuery.data ?? accountInfoToProfile(info);
   const [reloadCount, reload] = useReducer((c: number) => c + 1, 0);
 
@@ -218,6 +223,10 @@ function AccountInfo({
       // TODO(oxlint:no-underscore-dangle) `_atproto` is the project-wide
       // adapter cache key; renaming is out of scope.
       if (account?._atproto?.hasProfileCounts !== false) return;
+      if (profileQuery.isLoading) {
+        setUIState('loading');
+        return;
+      }
     }
     setUIState('loading');
     void (async () => {
@@ -237,7 +246,15 @@ function AccountInfo({
         setUIState('error');
       }
     })();
-  }, [isString, account, fetchAccount, reloadCount, instance, profileQuery.data]);
+  }, [
+    isString,
+    account,
+    fetchAccount,
+    reloadCount,
+    instance,
+    profileQuery.data,
+    profileQuery.isLoading,
+  ]);
 
   // `info` may be null while loading; fall back to an empty placeholder so
   // the destructure stays terse. All consumers below already guard with
